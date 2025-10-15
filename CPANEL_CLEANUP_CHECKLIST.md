@@ -7,20 +7,7 @@
 
 ## 🧹 Step-by-Step Cleanup Guide
 
-### Step 1: Backup Current Files (If Any)
-
-**Before deleting anything, backup existing files:**
-
-1. Log in to cPanel
-2. Go to **Backup** or **Backup Wizard**
-3. Click **Download a Full Account Backup** or **Download a Home Directory Backup**
-4. Wait for backup to complete
-5. Download to your computer
-6. ✅ Backup saved safely
-
----
-
-### Step 2: Clean public_html Directory
+### Step 1: Clean public_html Directory
 
 **Go to File Manager → public_html/**
 
@@ -47,7 +34,7 @@
 
 ---
 
-### Step 3: Clean Home Directory
+### Step 2: Clean Home Directory
 
 **Go to File Manager → Home Directory (`/home/yourusername/`)**
 
@@ -71,7 +58,7 @@
 
 ---
 
-### Step 4: Clean Databases
+### Step 3: Clean Databases
 
 **Go to MySQL Databases**
 
@@ -91,7 +78,7 @@
 
 ---
 
-### Step 5: Clean Database Users
+### Step 4: Clean Database Users
 
 **Still in MySQL Databases section:**
 
@@ -101,7 +88,7 @@
 
 ---
 
-### Step 6: Clean Email Accounts
+### Step 5: Clean Email Accounts
 
 **Go to Email Accounts**
 
@@ -116,7 +103,7 @@
 
 ---
 
-### Step 7: Review Subdomains & Addon Domains (DO NOT DELETE)
+### Step 6: Review Subdomains & Addon Domains (DO NOT DELETE)
 
 **Go to Domains or Subdomains**
 
@@ -135,7 +122,7 @@
 
 ---
 
-### Step 8: Clean Cron Jobs
+### Step 7: Clean Cron Jobs
 
 **Go to Cron Jobs**
 
@@ -144,7 +131,7 @@
 
 ---
 
-### Step 9: Clean File Manager Hidden Files
+### Step 8: Clean File Manager Hidden Files
 
 **In File Manager:**
 
@@ -158,7 +145,7 @@
 
 ---
 
-### Step 10: Check Disk Space Usage
+### Step 9: Check Disk Space Usage
 
 **Go to Disk Usage**
 
@@ -170,7 +157,7 @@
 
 ---
 
-### Step 11: Review Installed SSL Certificates
+### Step 10: Review Installed SSL Certificates
 
 **Go to SSL/TLS Status**
 
@@ -180,7 +167,7 @@
 
 ---
 
-### Step 12: Clean Temporary Files
+### Step 11: Clean Temporary Files
 
 **In File Manager:**
 
@@ -224,14 +211,13 @@ After cleanup, before deployment:
 
 ## ⚠️ Important Safety Notes
 
-1. **Always backup before deleting**
-2. **Don't delete system folders** (`.cpanel`, `etc`, `.ssh`)
-3. **Don't delete subdomain folders** (keep ALL subdomain.domain.com folders)
-4. **Keep `.well-known/`** (needed for SSL)
-5. **Keep `mail/`** (if you're using email)
-6. **If unsure, don't delete** - ask first
-7. **Take screenshots** of important configurations before deleting
-8. **Verify before deleting** - better to keep than to lose important files
+1. **Don't delete system folders** (`.cpanel`, `etc`, `.ssh`)
+2. **Don't delete subdomain folders** (keep ALL subdomain.domain.com folders)
+3. **Keep `.well-known/`** (needed for SSL)
+4. **Keep `mail/`** (if you're using email)
+5. **If unsure, don't delete** - ask first
+6. **Verify before deleting** - better to keep than to lose important files
+7. **Only delete files you're certain you don't need**
 
 ---
 
@@ -274,10 +260,7 @@ Ready for deployment: YES ✅
 
 **Accidentally deleted something important?**
 
-1. Restore from the backup you made in Step 1
-2. Go to **Backup** → **Restore**
-3. Select the backup file
-4. Restore the files/database
+Contact your hosting provider's support - they may have automatic backups available for restoration.
 
 ---
 
