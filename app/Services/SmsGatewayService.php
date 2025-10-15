@@ -37,16 +37,19 @@ class SmsGatewayService
             // Format phone number
             $phoneNumber = $this->formatPhoneNumber($phoneNumber);
 
-            // Use V1 API format which expects individual parameters
+            // Use the correct V2 API endpoint with proper authentication
             $response = Http::timeout($this->timeout)
                 ->withHeaders([
                     'X-API-Key' => $this->apiKey,
+                    'Authorization' => 'Bearer ' . $this->apiKey,
                     'Accept' => 'application/json',
                     'Content-Type' => 'application/json',
                 ])
-                ->post("{$this->apiUrl}/../v1/sms/send", [
+                ->post("{$this->apiUrl}/sms/send", [
                     'to' => $phoneNumber,
                     'message' => $message,
+                    'sender_id' => $options['sender_id'] ?? 'AKURU',
+                    'type' => $options['type'] ?? 'notification',
                 ]);
 
             if ($response->successful()) {
@@ -55,7 +58,6 @@ class SmsGatewayService
                 Log::info('SMS sent successfully', [
                     'to' => $phoneNumber,
                     'message_id' => $result['data']['id'] ?? null,
-                    'reference' => $options['reference'] ?? null,
                 ]);
 
                 return [
@@ -66,6 +68,8 @@ class SmsGatewayService
                 ];
             } else {
                 $errorBody = $response->body();
+                $errorJson = $response->json();
+                
                 Log::error('SMS sending failed', [
                     'to' => $phoneNumber,
                     'status_code' => $response->status(),
@@ -74,14 +78,15 @@ class SmsGatewayService
 
                 return [
                     'success' => false,
-                    'error' => $response->json('message') ?? $errorBody,
-                    'error_code' => $response->json('error_code') ?? 'SMS_FAILED',
+                    'error' => $errorJson['message'] ?? $errorBody,
+                    'error_code' => $errorJson['error_code'] ?? 'SMS_FAILED',
                 ];
             }
         } catch (\Exception $e) {
             Log::error('SMS service error', [
                 'to' => $phoneNumber,
                 'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
             ]);
 
             return [
