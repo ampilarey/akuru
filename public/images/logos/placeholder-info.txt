@@ -1,0 +1,38 @@
+AKURU INSTITUTE LOGO SETUP
+==========================
+
+To use the official Akuru Institute logo:
+
+1. SAVE THE OFFICIAL LOGO as one of these files:
+   - public/images/logos/akuru-logo.png (recommended)
+   - public/images/logos/akuru-logo.jpg
+   - public/images/logos/akuru-logo.svg
+
+2. RECOMMENDED SPECIFICATIONS:
+   - Format: PNG with transparent background (preferred)
+   - Size: 200x60px or similar aspect ratio
+   - Resolution: High-DPI ready (300 DPI or higher)
+   - Background: Transparent or white
+
+3. WHERE TO FIND THE LOGO:
+   - Contact Akuru Institute administration
+   - Check their official website
+   - Request from their marketing/communications team
+   - Look for official letterhead or documents
+
+4. CURRENT FALLBACK:
+   The system currently shows a beautiful Islamic-themed fallback design
+   with crescent moon, star, and Arabic/English text until the real logo
+   is added.
+
+5. AUTOMATIC DETECTION:
+   Once you place the logo file, it will automatically appear throughout
+   the system without any code changes needed.
+
+LOCATIONS WHERE LOGO APPEARS:
+- Public website header (all language versions)
+- Admin dashboard
+- Login pages
+- Email templates
+- PDF documents (future)
+- Mobile app (future)
