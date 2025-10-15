@@ -1,7 +1,7 @@
 <nav class="bg-white border-b shadow-sm">
   <div class="container mx-auto flex items-center justify-between py-4 px-4">
     <div class="flex items-center space-x-4 rtl:space-x-reverse">
-      <a href="{{ url(app()->getLocale()) }}" class="flex items-center">
+      <a href="{{ LaravelLocalization::localizeURL('/') }}" class="flex items-center">
         <x-akuru-logo size="h-10" class="mr-3 rtl:ml-3 rtl:mr-0" />
         <span class="font-bold text-xl text-brandBlue-600 hidden sm:inline">{{ __('public.Akuru Institute') }}</span>
       </a>
