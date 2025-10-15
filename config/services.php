@@ -35,4 +35,19 @@ return [
         ],
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | SMS Gateway Configuration
+    |--------------------------------------------------------------------------
+    |
+    | Configuration for the SMS Gateway service at sms.akuru.edu.mv
+    | Get your API key from the SMS system user settings
+    |
+    */
+    'sms_gateway' => [
+        'url' => env('SMS_GATEWAY_URL', 'https://sms.akuru.edu.mv/api/v2'),
+        'api_key' => env('SMS_GATEWAY_API_KEY', ''),
+        'enabled' => env('SMS_GATEWAY_ENABLED', true),
+    ],
+
 ];
