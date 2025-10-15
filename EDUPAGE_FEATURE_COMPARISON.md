@@ -1,14 +1,124 @@
-# EduPage Feature Comparison for Akuru LMS
+# Akuru Institute LMS - Complete Features & EduPage Comparison
 
 **Date Created:** October 15, 2025  
+**Last Updated:** October 16, 2025  
 **Reference:** akuru.edupage.org  
-**Project:** Akuru Institute LMS
+**Project:** Akuru Institute LMS  
+**Current Version:** 2.0.0  
+**Total Features:** 200+
 
 ---
 
-## Overview
+## 📋 Table of Contents
 
-This document tracks features from EduPage that can be replicated or enhanced in the Akuru LMS system. The goal is to achieve feature parity with EduPage while maintaining the unique Islamic education focus of Akuru Institute.
+1. [Akuru LMS Complete Features](#akuru-lms-complete-features)
+2. [EduPage Features Comparison](#edupage-features-comparison)
+3. [Unique Akuru Features](#unique-akuru-features)
+4. [Planned Enhancements](#planned-enhancements)
+
+---
+
+## 🎯 Akuru LMS Complete Features
+
+### 📊 Feature Count Summary
+
+| Category | Features Implemented |
+|----------|---------------------|
+| **Public Website** | 35+ |
+| **Authentication & Security** | 15+ |
+| **Student Management** | 20+ |
+| **Teacher Management** | 12+ |
+| **Quran & Islamic Education** | 15+ |
+| **Attendance System** | 10+ |
+| **Grades & Assessments** | 12+ |
+| **Assignments & Homework** | 10+ |
+| **E-Learning & Quizzes** | 15+ |
+| **Timetable System** | 10+ |
+| **Communication & Messaging** | 15+ |
+| **SMS Integration** | 12+ |
+| **Website CMS** | 20+ |
+| **Administrative Tools** | 20+ |
+| **Technical Infrastructure** | 25+ |
+| **GRAND TOTAL** | **200+ Features** |
+
+---
+
+### 🌟 Highlighted Features
+
+#### **Authentication & Security (15+ features)**
+- ✅ Email/Password login
+- ✅ **OTP Login via SMS** (Phone number + 6-digit code)
+- ✅ **OTP Password Reset** (SMS-based recovery)
+- ✅ Email verification
+- ✅ Remember me functionality
+- ✅ Role-based access control (6 roles)
+- ✅ Permission system
+- ✅ Session security with timeout
+- ✅ Rate limiting on OTP (3 per 10 min)
+- ✅ IP & user agent tracking
+- ✅ Secure password hashing
+- ✅ CSRF protection
+- ✅ XSS prevention
+
+#### **SMS Integration (12+ features)**
+- ✅ Integration with dedicated SMS Gateway (sms.akuru.edu.mv)
+- ✅ API-based communication
+- ✅ Single SMS sending
+- ✅ Bulk SMS broadcasting
+- ✅ Automated attendance notifications to parents
+- ✅ Automated grade notifications
+- ✅ Announcement broadcasts
+- ✅ OTP delivery for authentication
+- ✅ Delivery tracking
+- ✅ Cost monitoring
+- ✅ Usage statistics
+- ✅ Phone number auto-formatting (Maldives format)
+
+#### **Quran & Islamic Education (15+ features)**
+- ✅ Surah-by-surah progress tracking
+- ✅ Ayat-level memorization tracking
+- ✅ Recitation practice with audio recording
+- ✅ Tajweed feedback system
+- ✅ Teacher assessments
+- ✅ Progress percentages
+- ✅ Performance reports
+- ✅ Islamic calendar integration (Hijri dates)
+- ✅ Prayer time awareness
+- ✅ Specialized Quran subjects
+- ✅ Arabic typography support (Amiri font)
+- ✅ Surah database (complete Quran)
+
+#### **Multi-Language Support**
+- ✅ English (EN)
+- ✅ Arabic (العربية) with full RTL support
+- ✅ Dhivehi (ދިވެހި) with Thaana script
+- ✅ URL-based language switching (/en/, /ar/, /dv/)
+- ✅ Localized translations
+- ✅ RTL/LTR automatic switching
+- ✅ Multi-language names for users
+
+#### **Public Website (35+ features)**
+- ✅ Professional homepage with hero banners
+- ✅ Course catalog with filtering
+- ✅ News & blog system
+- ✅ Events management
+- ✅ Photo galleries with modal viewer
+- ✅ Online admission applications
+- ✅ Contact form with office hours
+- ✅ About/Static pages
+- ✅ Testimonials section
+- ✅ FAQ section
+- ✅ Responsive navigation
+- ✅ Mobile menu
+- ✅ Social media links
+- ✅ Footer with quick links
+- ✅ SEO-friendly URLs
+
+---
+
+## 🔄 EduPage Features Comparison
+
+Below is a comparison of features between EduPage and Akuru LMS.
 
 ---
 
