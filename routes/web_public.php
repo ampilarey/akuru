@@ -14,6 +14,11 @@ use App\Http\Controllers\PublicSite\{
 // Home page
 Route::get('/', [HomeController::class, 'index'])->name('public.home');
 
+// Test page (remove in production)
+Route::get('/test', function() {
+    return view('public.test');
+})->name('public.test');
+
 // Static pages
 Route::get('/about', [PageController::class, 'show'])->defaults('slug', 'about')->name('public.about');
 Route::get('/page/{slug}', [PageController::class, 'show'])->name('public.page.show');
