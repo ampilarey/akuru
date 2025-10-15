@@ -37,31 +37,17 @@ class SmsGatewayService
             // Format phone number
             $phoneNumber = $this->formatPhoneNumber($phoneNumber);
 
-            // Prepare request data
-            $data = [
-                'to' => $phoneNumber,
-                'message' => $message,
-                'sender_id' => $options['sender_id'] ?? 'AKURU',
-                'type' => $options['type'] ?? 'notification',
-            ];
-
-            // Add optional fields
-            if (isset($options['scheduled_at'])) {
-                $data['scheduled_at'] = $options['scheduled_at'];
-            }
-
-            if (isset($options['reference'])) {
-                $data['reference'] = $options['reference'];
-            }
-
-            // Send request
+            // Use V1 API format which expects individual parameters
             $response = Http::timeout($this->timeout)
                 ->withHeaders([
                     'X-API-Key' => $this->apiKey,
                     'Accept' => 'application/json',
                     'Content-Type' => 'application/json',
                 ])
-                ->post("{$this->apiUrl}/sms/send", $data);
+                ->post("{$this->apiUrl}/../v1/sms/send", [
+                    'to' => $phoneNumber,
+                    'message' => $message,
+                ]);
 
             if ($response->successful()) {
                 $result = $response->json();
@@ -79,15 +65,16 @@ class SmsGatewayService
                     'cost' => $result['data']['cost'] ?? 0,
                 ];
             } else {
+                $errorBody = $response->body();
                 Log::error('SMS sending failed', [
                     'to' => $phoneNumber,
                     'status_code' => $response->status(),
-                    'response' => $response->body(),
+                    'response' => $errorBody,
                 ]);
 
                 return [
                     'success' => false,
-                    'error' => $response->json('message') ?? 'Failed to send SMS',
+                    'error' => $response->json('message') ?? $errorBody,
                     'error_code' => $response->json('error_code') ?? 'SMS_FAILED',
                 ];
             }
