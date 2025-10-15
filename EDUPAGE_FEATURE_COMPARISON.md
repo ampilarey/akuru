@@ -1,8 +1,7 @@
-# Akuru Institute LMS - Complete Features & EduPage Comparison
+# Akuru Institute LMS - Documentation
 
 **Date Created:** October 15, 2025  
 **Last Updated:** October 16, 2025  
-**Reference:** akuru.edupage.org  
 **Project:** Akuru Institute LMS  
 **Current Version:** 2.0.0  
 **Total Features:** 200+
@@ -11,10 +10,20 @@
 
 ## 📋 Table of Contents
 
-1. [Akuru LMS Complete Features](#akuru-lms-complete-features)
-2. [EduPage Features Comparison](#edupage-features-comparison)
-3. [Unique Akuru Features](#unique-akuru-features)
-4. [Planned Enhancements](#planned-enhancements)
+1. [PART A: Akuru LMS Current Features (200+)](#part-a-akuru-lms-current-features)
+2. [PART B: EduPage Features Comparison](#part-b-edupage-features-comparison)
+3. [PART C: Unique Akuru Features](#part-c-unique-akuru-features)
+4. [PART D: Planned Enhancements](#part-d-planned-enhancements)
+
+---
+---
+---
+
+# PART A: AKURU LMS CURRENT FEATURES
+
+**Reference:** This section documents ALL features currently implemented in Akuru Institute LMS.
+
+---
 
 ---
 
@@ -115,14 +124,17 @@
 - ✅ SEO-friendly URLs
 
 ---
+---
+---
 
-## 🔄 EduPage Features Comparison
+# PART B: EDUPAGE FEATURES COMPARISON
 
-Below is a comparison of features between EduPage and Akuru LMS.
+**Reference:** akuru.edupage.org  
+**Purpose:** Compare EduPage features with Akuru LMS to identify gaps and opportunities.
 
 ---
 
-## ✅ Features Already Implemented in Akuru LMS
+## ✅ EduPage Features Already in Akuru LMS
 
 ### 1. **Electronic Class Register**
 - ✅ Attendance tracking system
@@ -225,7 +237,7 @@ Below is a comparison of features between EduPage and Akuru LMS.
 
 ---
 
-## 🎯 EduPage Features to Consider Adding
+## ❌ EduPage Features NOT Yet in Akuru LMS
 
 ### 1. **Enhanced Communication Features**
 - [ ] Internal messaging system improvements
@@ -353,8 +365,53 @@ Below is a comparison of features between EduPage and Akuru LMS.
 **Estimated Time:** 1-2 weeks
 
 ---
+---
+---
 
-## 📊 Feature Implementation Priority Matrix
+# PART C: UNIQUE AKURU FEATURES
+
+**Purpose:** Features that Akuru LMS has that EduPage doesn't have.
+
+---
+
+## 🌟 Islamic Education Features (Unique to Akuru)
+
+1. **Quran Memorization Tracking**
+   - Surah-by-surah progress
+   - Ayat-level tracking
+   - Memorization percentages
+   
+2. **Recitation Practice System**
+   - Audio recording submissions
+   - Tajweed feedback
+   - Teacher assessments
+   
+3. **Islamic Calendar Integration**
+   - Hijri date display
+   - Islamic event tracking
+   - Prayer time awareness
+
+4. **Arabic & Dhivehi Support**
+   - Full RTL support for Arabic
+   - Thaana script for Dhivehi
+   - Multi-language names (EN/AR/DV)
+
+5. **SMS-Based OTP Authentication**
+   - Modern phone-based login
+   - OTP password reset
+   - Maldives phone number formatting
+
+---
+---
+---
+
+# PART D: PLANNED ENHANCEMENTS
+
+**Purpose:** Features to add based on EduPage comparison and user needs.
+
+---
+
+## 📊 Implementation Priority Matrix
 
 ### High Priority (Next 3 months)
 1. Enhanced Communication (Messaging improvements + SMS)
@@ -426,27 +483,6 @@ When implementing EduPage features:
    - Get user feedback
    - Iterate and improve
 
----
-
-## 🌟 Unique Akuru Advantages
-
-Features that Akuru has that EduPage doesn't:
-
-1. **Islamic Education Focus:**
-   - Qur'an recitation tracking
-   - Tajweed feedback
-   - Surah progress monitoring
-   - Hijri calendar integration
-
-2. **Multilingual Islamic Context:**
-   - Arabic, English, Dhivehi support
-   - RTL support for Arabic
-   - Islamic terminology localization
-
-3. **Maldivian Context:**
-   - Local timezone (Indian/Maldives)
-   - Dhivehi language support
-   - Local payment integration ready (BML)
 
 ---
 
