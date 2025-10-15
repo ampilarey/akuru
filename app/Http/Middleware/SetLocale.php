@@ -5,7 +5,6 @@ namespace App\Http\Middleware;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
-use Illuminate\Support\Facades\Session;
 use Symfony\Component\HttpFoundation\Response;
 
 class SetLocale
@@ -17,16 +16,12 @@ class SetLocale
      */
     public function handle(Request $request, Closure $next): Response
     {
-        // Get locale from session or default to 'en'
-        $locale = Session::get('locale', 'en');
+        // LaravelLocalization package already handles locale from URL
+        // This middleware is only needed as a fallback for non-localized routes
+        // But since all routes use LaravelLocalization, we just pass through
         
-        // Ensure the locale is valid
-        if (!in_array($locale, ['en', 'ar', 'dv'])) {
-            $locale = 'en';
-        }
-        
-        // Set the application locale
-        App::setLocale($locale);
+        // The locale is already set by LaravelLocalization middleware
+        // via the URL prefix (/en/, /ar/, /dv/)
         
         return $next($request);
     }
