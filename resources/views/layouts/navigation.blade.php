@@ -19,6 +19,7 @@
                         {{ __('Dashboard') }}
                     </x-nav-link>
                     
+                    @auth
                     @if(auth()->user()->hasRole('admin') || auth()->user()->hasRole('headmaster') || auth()->user()->hasRole('supervisor'))
                     <x-nav-link :href="route('students.index')" :active="request()->routeIs('students.*')">
                         {{ __('Students') }}
@@ -33,6 +34,7 @@
                         {{ __('Quran Progress') }}
                     </x-nav-link>
                     @endif
+                    @endauth
                     
                     <x-nav-link :href="route('e-learning.index')" :active="request()->routeIs('e-learning.*')">
                         {{ __('E-Learning') }}
@@ -42,7 +44,8 @@
                         {{ __('Announcements') }}
                     </x-nav-link>
                     
-                                    @if(auth()->user()->hasAnyRole(['admin', 'headmaster', 'supervisor', 'teacher']))
+                    @auth
+                    @if(auth()->user()->hasAnyRole(['admin', 'headmaster', 'supervisor', 'teacher']))
                 <x-nav-link :href="route('substitutions.requests.index')" :active="request()->routeIs('substitutions.*')">
                     {{ __('Substitutions') }}
                 </x-nav-link>
@@ -53,6 +56,7 @@
                     {{ __('Website CMS') }}
                 </x-nav-link>
                 @endif
+                @endauth
                 </div>
             </div>
 
