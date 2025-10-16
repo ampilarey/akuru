@@ -20,7 +20,7 @@
                     </x-nav-link>
                     
                     @auth
-                    @if(auth()->user()->hasRole('admin') || auth()->user()->hasRole('headmaster') || auth()->user()->hasRole('supervisor'))
+                    @if(auth()->user()->hasAnyRole(['super_admin', 'admin', 'headmaster', 'supervisor']))
                     <x-nav-link :href="route('students.index')" :active="request()->routeIs('students.*')">
                         {{ __('Students') }}
                     </x-nav-link>
@@ -29,7 +29,7 @@
                     </x-nav-link>
                     @endif
                     
-                    @if(auth()->user()->hasRole('teacher') || auth()->user()->hasRole('admin') || auth()->user()->hasRole('headmaster'))
+                    @if(auth()->user()->hasAnyRole(['super_admin', 'teacher', 'admin', 'headmaster']))
                     <x-nav-link :href="route('quran-progress.index')" :active="request()->routeIs('quran-progress.*')">
                         {{ __('Quran Progress') }}
                     </x-nav-link>
@@ -45,15 +45,21 @@
                     </x-nav-link>
                     
                     @auth
-                    @if(auth()->user()->hasAnyRole(['admin', 'headmaster', 'supervisor', 'teacher']))
+                    @if(auth()->user()->hasAnyRole(['super_admin', 'admin', 'headmaster', 'supervisor', 'teacher']))
                 <x-nav-link :href="route('requests.index')" :active="request()->routeIs('requests.*')">
                     {{ __('Substitutions') }}
                 </x-nav-link>
                 @endif
                 
-                @if(auth()->user()->hasAnyRole(['admin', 'headmaster', 'supervisor']))
+                @if(auth()->user()->hasAnyRole(['super_admin', 'admin']))
                 <x-nav-link :href="route('admin.pages.index')" :active="request()->routeIs('admin.*')">
                     {{ __('Website CMS') }}
+                </x-nav-link>
+                @endif
+                
+                @if(auth()->user()->hasRole('super_admin'))
+                <x-nav-link :href="route('admin.pages.index')" :active="request()->routeIs('system.*')" class="text-red-600">
+                    {{ __('⚙️ System') }}
                 </x-nav-link>
                 @endif
                 @endauth

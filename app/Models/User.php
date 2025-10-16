@@ -102,4 +102,25 @@ class User extends Authenticatable
     {
         return $this->hasRole('supervisor');
     }
+
+    public function isSuperAdmin()
+    {
+        return $this->hasRole('super_admin');
+    }
+
+    /**
+     * Check if user is admin or higher (Super Admin or Admin)
+     */
+    public function isAdminLevel()
+    {
+        return $this->hasAnyRole(['super_admin', 'admin']);
+    }
+
+    /**
+     * Check if user is management level (Super Admin, Admin, or Headmaster)
+     */
+    public function isManagementLevel()
+    {
+        return $this->hasAnyRole(['super_admin', 'admin', 'headmaster']);
+    }
 }

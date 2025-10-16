@@ -30,7 +30,9 @@ class DashboardController extends Controller
         }
         
         // Get dashboard data based on user role
-        if ($user->isAdmin() || $user->isHeadmaster()) {
+        if ($user->hasRole('super_admin')) {
+            return $this->superAdminDashboard();
+        } elseif ($user->isAdmin() || $user->isHeadmaster()) {
             return $this->adminDashboard();
         } elseif ($user->isTeacher()) {
             return $this->teacherDashboard();
@@ -42,6 +44,39 @@ class DashboardController extends Controller
         
         // If user has no specific role, show admin dashboard as fallback
         return $this->adminDashboard();
+    }
+    
+    private function superAdminDashboard()
+    {
+        // Super Admin sees everything + system stats
+        $stats = [
+            'total_students' => Student::count(),
+            'total_teachers' => Teacher::count(),
+            'total_users' => \App\Models\User::count(),
+            'active_quran_students' => Student::whereHas('quranProgress')->count(),
+            'total_assignments' => Assignment::count(),
+            'total_announcements' => Announcement::count(),
+            'database_size' => $this->getDatabaseSize(),
+            'sms_usage_today' => $this->getSmsUsageToday(),
+        ];
+        
+        // System metrics
+        $metrics = [
+            'student_growth' => $this->getStudentGrowthMetrics(),
+            'quran_progress_stats' => $this->getQuranProgressStats(),
+            'attendance_rate' => $this->getOverallAttendanceRate(),
+            'recent_activities' => $this->getRecentActivities(),
+            'system_health' => $this->getSystemHealth(),
+            'sms_gateway_status' => $this->getSmsGatewayStatus(),
+        ];
+        
+        // Islamic calendar data
+        $islamicDate = IslamicCalendarService::getCurrentIslamicDate();
+        $prayerTimes = IslamicCalendarService::getPrayerTimes();
+        $currentPrayer = IslamicCalendarService::getCurrentPrayerTime();
+        $specialDays = IslamicCalendarService::getSpecialIslamicDays();
+        
+        return view('dashboard.super-admin', compact('stats', 'metrics', 'islamicDate', 'prayerTimes', 'currentPrayer', 'specialDays'));
     }
     
     private function adminDashboard()
@@ -511,5 +546,78 @@ class DashboardController extends Controller
             return $newValue > 0 ? 100 : 0;
         }
         return round((($newValue - $oldValue) / $oldValue) * 100, 2);
+    }
+    
+    // Super Admin specific methods
+    
+    private function getDatabaseSize()
+    {
+        try {
+            $dbName = config('database.connections.mysql.database');
+            $size = DB::select("
+                SELECT ROUND(SUM(data_length + index_length) / 1024 / 1024, 2) AS size_mb 
+                FROM information_schema.TABLES 
+                WHERE table_schema = ?
+            ", [$dbName]);
+            
+            return $size[0]->size_mb ?? 0;
+        } catch (\Exception $e) {
+            return 0;
+        }
+    }
+    
+    private function getSmsUsageToday()
+    {
+        try {
+            // This would connect to SMS Gateway API to get usage
+            // For now, return placeholder
+            return 0;
+        } catch (\Exception $e) {
+            return 0;
+        }
+    }
+    
+    private function getSystemHealth()
+    {
+        return [
+            'database' => $this->checkDatabaseHealth(),
+            'storage' => $this->checkStorageHealth(),
+            'sms_gateway' => $this->getSmsGatewayStatus(),
+        ];
+    }
+    
+    private function checkDatabaseHealth()
+    {
+        try {
+            DB::connection()->getPdo();
+            return 'healthy';
+        } catch (\Exception $e) {
+            return 'error';
+        }
+    }
+    
+    private function checkStorageHealth()
+    {
+        $path = storage_path();
+        $free = disk_free_space($path);
+        $total = disk_total_space($path);
+        $used_percentage = 100 - (($free / $total) * 100);
+        
+        if ($used_percentage > 90) {
+            return 'critical';
+        } elseif ($used_percentage > 75) {
+            return 'warning';
+        }
+        return 'healthy';
+    }
+    
+    private function getSmsGatewayStatus()
+    {
+        try {
+            $smsService = app(\App\Services\SmsGatewayService::class);
+            return $smsService->checkHealth() ? 'online' : 'offline';
+        } catch (\Exception $e) {
+            return 'offline';
+        }
     }
 }

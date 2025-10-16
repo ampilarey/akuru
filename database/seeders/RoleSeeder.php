@@ -16,16 +16,17 @@ class RoleSeeder extends Seeder
     {
         // Create roles
         $roles = [
-            'admin',
-            'headmaster',
-            'supervisor',
-            'teacher',
-            'student',
-            'parent'
+            'super_admin',  // System owner - full access
+            'admin',        // School admin - fees, payments, operations
+            'headmaster',   // Academic leadership
+            'supervisor',   // Academic monitoring
+            'teacher',      // Teaching staff
+            'student',      // Students
+            'parent'        // Parents/Guardians
         ];
 
         foreach ($roles as $role) {
-            Role::create(['name' => $role]);
+            Role::firstOrCreate(['name' => $role]);
         }
 
         // Create permissions
@@ -110,6 +111,12 @@ class RoleSeeder extends Seeder
         }
 
         // Assign permissions to roles
+        
+        // Super Admin gets ALL permissions
+        $superAdmin = Role::findByName('super_admin');
+        $superAdmin->givePermissionTo(Permission::all());
+        
+        // Admin gets most permissions (school operations, not system-level)
         $admin = Role::findByName('admin');
         $admin->givePermissionTo(Permission::all());
 
