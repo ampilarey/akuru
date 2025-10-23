@@ -8,7 +8,8 @@ use App\Http\Controllers\PublicSite\{
     GalleryController, 
     EventController, 
     PageController, 
-    ContactController
+    ContactController,
+    SitemapController
 };
 
 // Home page
@@ -51,3 +52,32 @@ Route::get('/gallery/{gallery}', [GalleryController::class, 'show'])->name('publ
 // Contact
 Route::get('/contact', [ContactController::class, 'create'])->name('public.contact.create');
 Route::post('/contact', [ContactController::class, 'store'])->name('public.contact.store');
+
+// SEO Routes
+Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('public.sitemap');
+Route::get('/robots.txt', function() {
+    $content = "User-agent: *\n";
+    $content .= "Allow: /\n";
+    $content .= "Disallow: /admin/\n";
+    $content .= "Disallow: /login\n";
+    $content .= "Disallow: /register\n";
+    $content .= "Disallow: /password/\n";
+    $content .= "Disallow: /email/\n";
+    $content .= "Disallow: /dashboard\n";
+    $content .= "Disallow: /students/\n";
+    $content .= "Disallow: /teachers/\n";
+    $content .= "Disallow: /quran-progress/\n";
+    $content .= "Disallow: /announcements/\n";
+    $content .= "Disallow: /e-learning/\n";
+    $content .= "Disallow: /substitutions/\n";
+    $content .= "Disallow: /requests/\n";
+    $content .= "Disallow: /absences/\n";
+    $content .= "Disallow: /otp-login\n";
+    $content .= "Disallow: /otp-verify\n";
+    $content .= "Disallow: /otp-password/\n";
+    $content .= "Disallow: /test\n";
+    $content .= "Disallow: /lang-test\n\n";
+    $content .= "Sitemap: " . url('/sitemap.xml') . "\n";
+    
+    return response($content, 200, ['Content-Type' => 'text/plain']);
+})->name('public.robots');

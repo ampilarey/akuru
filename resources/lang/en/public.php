@@ -19,6 +19,23 @@ return [
     'Terms of Service' => 'Terms of Service',
     'All rights reserved' => 'All rights reserved',
     
+    // Error pages
+    'Page Not Found' => 'Page Not Found',
+    'The page you are looking for could not be found.' => 'The page you are looking for could not be found.',
+    'Go Home' => 'Go Home',
+    'Need help?' => 'Need help?',
+    'Contact Us' => 'Contact Us',
+    'Popular Pages' => 'Popular Pages',
+    'Server Error' => 'Server Error',
+    'Something went wrong on our end. Please try again later.' => 'Something went wrong on our end. Please try again later.',
+    'Try Again' => 'Try Again',
+    'Still having issues?' => 'Still having issues?',
+    'Contact Support' => 'Contact Support',
+    'Get Help' => 'Get Help',
+    'Email' => 'Email',
+    'Phone' => 'Phone',
+    'Language' => 'Language',
+    
     // Home page
     'Welcome to Akuru Institute' => 'Welcome to Akuru Institute',
     'Learn Quran, Arabic, and Islamic Studies' => 'Learn Quran, Arabic, and Islamic Studies with experienced teachers',
