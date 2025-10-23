@@ -192,4 +192,16 @@ return [
     'Tuesday' => 'Tuesday',
     'Wednesday' => 'Wednesday',
     'Thursday' => 'Thursday',
+    
+    // Homepage
+    'Our Courses' => 'Our Courses',
+    'Choose from our comprehensive range of Islamic education programs' => 'Choose from our comprehensive range of Islamic education programs',
+    'Learn More' => 'Learn More',
+    'Latest News' => 'Latest News',
+    'View All News' => 'View All News',
+    'Upcoming Events' => 'Upcoming Events',
+    'View All Events' => 'View All Events',
+    'Ready to Start Your Journey?' => 'Ready to Start Your Journey?',
+    'Join thousands of students who have chosen Akuru Institute for their Islamic education' => 'Join thousands of students who have chosen Akuru Institute for their Islamic education',
+    'View Courses' => 'View Courses',
 ];
