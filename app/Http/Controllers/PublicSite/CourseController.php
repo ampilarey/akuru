@@ -37,13 +37,63 @@ class CourseController extends Controller
             $query->byLevel($request->level);
         }
         
-        $courses = $query->orderBy('status')
-                        ->orderBy('title')
-                        ->paginate(12);
+        // Filter by featured courses
+        if ($request->filled('featured')) {
+            $query->featured();
+        }
+        
+        // Filter by enrollment status
+        if ($request->filled('enrollment')) {
+            if ($request->enrollment === 'open') {
+                $query->available();
+            } elseif ($request->enrollment === 'upcoming') {
+                $query->upcoming();
+            }
+        }
+        
+        // Search functionality
+        if ($request->filled('search')) {
+            $searchTerm = $request->search;
+            $query->where(function($q) use ($searchTerm) {
+                $q->where('title', 'like', "%{$searchTerm}%")
+                  ->orWhere('short_desc', 'like', "%{$searchTerm}%")
+                  ->orWhere('body', 'like', "%{$searchTerm}%");
+            });
+        }
+        
+        // Sort options
+        $sortBy = $request->get('sort', 'default');
+        switch ($sortBy) {
+            case 'title':
+                $query->orderBy('title');
+                break;
+            case 'fee_low':
+                $query->orderBy('fee', 'asc');
+                break;
+            case 'fee_high':
+                $query->orderBy('fee', 'desc');
+                break;
+            case 'start_date':
+                $query->orderBy('start_date', 'asc');
+                break;
+            case 'featured':
+                $query->orderBy('is_featured', 'desc')->orderBy('title');
+                break;
+            default:
+                $query->ordered();
+        }
+        
+        $courses = $query->paginate(12)->withQueryString();
         
         $categories = CourseCategory::ordered()->get();
         
-        return view('public.courses.index', compact('courses', 'categories'));
+        // Get featured courses for sidebar
+        $featuredCourses = Course::featured()
+                                ->whereIn('status', ['open', 'upcoming'])
+                                ->take(3)
+                                ->get();
+        
+        return view('public.courses.index', compact('courses', 'categories', 'featuredCourses'));
     }
     
     public function show(Course $course)
@@ -57,6 +107,20 @@ class CourseController extends Controller
             ->take(3)
             ->get();
         
-        return view('public.courses.show', compact('course', 'relatedCourses'));
+        // Featured courses for sidebar
+        $featuredCourses = Course::featured()
+                                ->where('id', '!=', $course->id)
+                                ->whereIn('status', ['open', 'upcoming'])
+                                ->take(3)
+                                ->get();
+        
+        // Recent courses
+        $recentCourses = Course::where('id', '!=', $course->id)
+                              ->whereIn('status', ['open', 'upcoming'])
+                              ->orderBy('created_at', 'desc')
+                              ->take(3)
+                              ->get();
+        
+        return view('public.courses.show', compact('course', 'relatedCourses', 'featuredCourses', 'recentCourses'));
     }
 }
