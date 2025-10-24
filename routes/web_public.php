@@ -120,10 +120,18 @@ Route::get("/dv", function() {
 Route::get("about", [PageController::class, "show"])->name("public.about");
 Route::get("courses", [CourseController::class, "index"])->name("public.courses.index");
 Route::get("courses/{course}", [CourseController::class, "show"])->name("public.courses.show");
-Route::get("news", [PostController::class, "index"])->name("public.news.index");
-Route::get("news/{post}", [PostController::class, "show"])->name("public.news.show");
-Route::get("events", [EventController::class, "index"])->name("public.events.index");
-Route::get("events/{event}", [EventController::class, "show"])->name("public.events.show");
+Route::get("news", function() {
+    return response('News page - Coming Soon!', 200);
+})->name("public.news.index");
+Route::get("news/{post}", function() {
+    return response('News detail - Coming Soon!', 200);
+})->name("public.news.show");
+Route::get("events", function() {
+    return response('Events page - Coming Soon!', 200);
+})->name("public.events.index");
+Route::get("events/{event}", function() {
+    return response('Event detail - Coming Soon!', 200);
+})->name("public.events.show");
 Route::get("gallery", function() {
     try {
         if (class_exists('App\Models\GalleryAlbum')) {
