@@ -124,7 +124,16 @@ Route::get("news", [PostController::class, "index"])->name("public.news.index");
 Route::get("news/{post}", [PostController::class, "show"])->name("public.news.show");
 Route::get("events", [EventController::class, "index"])->name("public.events.index");
 Route::get("events/{event}", [EventController::class, "show"])->name("public.events.show");
-Route::get("gallery", [GalleryController::class, "index"])->name("public.gallery.index");
+Route::get("gallery", function() {
+    try {
+        $albums = \App\Models\GalleryAlbum::published()->public()->with(['items' => function($q) {
+            $q->public()->ordered()->limit(4);
+        }])->get();
+        return view('public.gallery.index', compact('albums'));
+    } catch (\Exception $e) {
+        return response('Gallery error: ' . $e->getMessage(), 500);
+    }
+})->name("public.gallery.index");
 Route::get("gallery/{gallery}", [GalleryController::class, "show"])->name("public.gallery.show");
 Route::get("admissions", [AdmissionController::class, "create"])->name("public.admissions.create");
 Route::post("admissions", [AdmissionController::class, "store"])->name("public.admissions.store");
