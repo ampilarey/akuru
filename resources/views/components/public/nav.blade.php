@@ -147,42 +147,52 @@
 </nav>
 
 <script>
-function toggleMobileMenu() {
-  const menu = document.getElementById('mobileMenu');
-  const button = document.querySelector('[onclick="toggleMobileMenu()"]');
-  
-  if (menu.classList.contains('hidden')) {
-    menu.classList.remove('hidden');
-    menu.style.maxHeight = menu.scrollHeight + 'px';
-    button.setAttribute('aria-expanded', 'true');
-  } else {
-    menu.classList.add('hidden');
-    menu.style.maxHeight = '0px';
-    button.setAttribute('aria-expanded', 'false');
-  }
-}
+// Wait for DOM to be fully loaded
+document.addEventListener('DOMContentLoaded', function() {
+  // Add global function after DOM is loaded
+  window.toggleMobileMenu = function() {
+    const menu = document.getElementById('mobileMenu');
+    const button = document.querySelector('[onclick="toggleMobileMenu()"]');
+    
+    if (!menu || !button) return; // Safety check
+    
+    if (menu.classList.contains('hidden')) {
+      menu.classList.remove('hidden');
+      menu.style.maxHeight = menu.scrollHeight + 'px';
+      button.setAttribute('aria-expanded', 'true');
+    } else {
+      menu.classList.add('hidden');
+      menu.style.maxHeight = '0px';
+      button.setAttribute('aria-expanded', 'false');
+    }
+  };
 
-// Close mobile menu when clicking outside
-document.addEventListener('click', function(event) {
-  const menu = document.getElementById('mobileMenu');
-  const button = document.querySelector('[onclick="toggleMobileMenu()"]');
-  
-  if (!menu.contains(event.target) && !button.contains(event.target)) {
-    menu.classList.add('hidden');
-    menu.style.maxHeight = '0px';
-    button.setAttribute('aria-expanded', 'false');
-  }
-});
+  // Close mobile menu when clicking outside
+  document.addEventListener('click', function(event) {
+    const menu = document.getElementById('mobileMenu');
+    const button = document.querySelector('[onclick="toggleMobileMenu()"]');
+    
+    if (!menu || !button) return; // Safety check
+    
+    if (!menu.contains(event.target) && !button.contains(event.target)) {
+      menu.classList.add('hidden');
+      menu.style.maxHeight = '0px';
+      button.setAttribute('aria-expanded', 'false');
+    }
+  });
 
-// Close mobile menu on window resize
-window.addEventListener('resize', function() {
-  const menu = document.getElementById('mobileMenu');
-  const button = document.querySelector('[onclick="toggleMobileMenu()"]');
-  
-  if (window.innerWidth >= 1024) { // lg breakpoint
-    menu.classList.add('hidden');
-    menu.style.maxHeight = '0px';
-    button.setAttribute('aria-expanded', 'false');
-  }
+  // Close mobile menu on window resize
+  window.addEventListener('resize', function() {
+    const menu = document.getElementById('mobileMenu');
+    const button = document.querySelector('[onclick="toggleMobileMenu()"]');
+    
+    if (!menu || !button) return; // Safety check
+    
+    if (window.innerWidth >= 1024) { // lg breakpoint
+      menu.classList.add('hidden');
+      menu.style.maxHeight = '0px';
+      button.setAttribute('aria-expanded', 'false');
+    }
+  });
 });
 </script>

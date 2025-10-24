@@ -34,7 +34,7 @@ Route::middleware(['auth'])->group(function () {
     
     // Quran Progress routes
     Route::resource('quran-progress', QuranProgressController::class);
-    Route::post('/quran-progress/{student}/update', [QuranProgressController::class, 'updateProgress'])->name('quran-progress.update');
+    Route::post('/quran-progress/{student}/update', [QuranProgressController::class, 'updateProgress'])->name('quran-progress.update-progress');
     
     // Announcement routes
     Route::resource('announcements', AnnouncementController::class);
