@@ -120,10 +120,38 @@ Route::get("/dv", function() {
 Route::get("about", [PageController::class, "show"])->name("public.about");
 Route::get("courses", [CourseController::class, "index"])->name("public.courses.index");
 Route::get("courses/{course}", [CourseController::class, "show"])->name("public.courses.show");
-Route::get("news", [PostController::class, "index"])->name("public.news.index");
-Route::get("news/{post}", [PostController::class, "show"])->name("public.news.show");
-Route::get("events", [EventController::class, "index"])->name("public.events.index");
-Route::get("events/{event}", [EventController::class, "show"])->name("public.events.show");
+Route::get("news", function() {
+    try {
+        $posts = \App\Models\Post::published()->public()->with('category')->paginate(12);
+        return view('public.news.index', compact('posts'));
+    } catch (\Exception $e) {
+        return response('News error: ' . $e->getMessage(), 500);
+    }
+})->name("public.news.index");
+Route::get("news/{post}", function($id) {
+    try {
+        $post = \App\Models\Post::published()->public()->with('category')->findOrFail($id);
+        return view('public.news.show', compact('post'));
+    } catch (\Exception $e) {
+        return response('News detail error: ' . $e->getMessage(), 500);
+    }
+})->name("public.news.show");
+Route::get("events", function() {
+    try {
+        $events = \App\Models\Event::published()->public()->with('registrations')->paginate(12);
+        return view('public.events.index', compact('events'));
+    } catch (\Exception $e) {
+        return response('Events error: ' . $e->getMessage(), 500);
+    }
+})->name("public.events.index");
+Route::get("events/{event}", function($id) {
+    try {
+        $event = \App\Models\Event::published()->public()->with('registrations')->findOrFail($id);
+        return view('public.events.show', compact('event'));
+    } catch (\Exception $e) {
+        return response('Event detail error: ' . $e->getMessage(), 500);
+    }
+})->name("public.events.show");
 Route::get("gallery", [GalleryController::class, "index"])->name("public.gallery.index");
 Route::get("gallery/{gallery}", [GalleryController::class, "show"])->name("public.gallery.show");
 Route::get("admissions", [AdmissionController::class, "create"])->name("public.admissions.create");
