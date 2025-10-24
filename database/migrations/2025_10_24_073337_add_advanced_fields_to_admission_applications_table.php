@@ -6,60 +6,151 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
+    private function indexExists($table, $index)
+    {
+        $indexes = \DB::select("SHOW INDEX FROM {$table}");
+        foreach ($indexes as $idx) {
+            if ($idx->Key_name === $index) {
+                return true;
+            }
+        }
+        return false;
+    }
     /**
      * Run the migrations.
      */
     public function up(): void
     {
         Schema::table('admission_applications', function (Blueprint $table) {
-            // Add new fields
-            $table->string('application_number')->unique()->after('course_id');
-            $table->date('date_of_birth')->after('full_name');
-            $table->enum('gender', ['male', 'female', 'other'])->default('male')->after('date_of_birth');
-            $table->text('address')->after('email');
-            $table->string('guardian_email')->nullable()->after('guardian_phone');
-            $table->string('guardian_relationship')->after('guardian_email');
-            $table->string('emergency_contact_name')->after('guardian_relationship');
-            $table->string('emergency_contact_phone')->after('emergency_contact_name');
-            $table->string('emergency_contact_relationship')->after('emergency_contact_phone');
-            $table->text('previous_education')->nullable()->after('emergency_contact_relationship');
-            $table->text('previous_islamic_education')->nullable()->after('previous_education');
-            $table->enum('quran_knowledge_level', ['none', 'basic', 'intermediate', 'advanced'])->default('none')->after('previous_islamic_education');
-            $table->enum('arabic_knowledge_level', ['none', 'basic', 'intermediate', 'advanced'])->default('none')->after('quran_knowledge_level');
-            $table->text('learning_goals')->nullable()->after('arabic_knowledge_level');
-            $table->text('special_needs')->nullable()->after('learning_goals');
-            $table->text('medical_conditions')->nullable()->after('special_needs');
-            $table->text('allergies')->nullable()->after('medical_conditions');
-            $table->enum('status', ['new', 'under_review', 'interview_scheduled', 'accepted', 'rejected', 'enrolled', 'withdrawn'])->default('new')->after('user_agent');
-            $table->enum('priority', ['low', 'medium', 'high', 'urgent'])->default('medium')->after('status');
-            $table->boolean('application_fee_paid')->default(false)->after('priority');
-            $table->decimal('application_fee_amount', 10, 2)->nullable()->after('application_fee_paid');
-            $table->string('application_fee_payment_method')->nullable()->after('application_fee_amount');
-            $table->string('application_fee_payment_reference')->nullable()->after('application_fee_payment_method');
-            $table->datetime('application_fee_payment_date')->nullable()->after('application_fee_payment_reference');
-            $table->json('documents_submitted')->nullable()->after('application_fee_payment_date');
-            $table->boolean('documents_verified')->default(false)->after('documents_submitted');
-            $table->boolean('interview_scheduled')->default(false)->after('documents_verified');
-            $table->datetime('interview_date')->nullable()->after('interview_scheduled');
-            $table->text('interview_notes')->nullable()->after('interview_date');
-            $table->integer('interview_score')->nullable()->after('interview_notes');
-            $table->text('recommendation_notes')->nullable()->after('interview_score');
-            $table->enum('admission_decision', ['pending', 'accepted', 'rejected', 'waitlisted'])->default('pending')->after('recommendation_notes');
-            $table->date('admission_decision_date')->nullable()->after('admission_decision');
-            $table->text('admission_decision_notes')->nullable()->after('admission_decision_date');
-            $table->date('enrollment_date')->nullable()->after('admission_decision_notes');
-            $table->foreignId('assigned_to')->nullable()->after('enrollment_date')->constrained('users')->onDelete('set null');
-            $table->text('admin_notes')->nullable()->after('assigned_to');
-            $table->json('custom_fields')->nullable()->after('admin_notes');
-            $table->json('meta')->nullable()->after('custom_fields');
+            // Add new fields only if they don't exist
+            if (!Schema::hasColumn('admission_applications', 'application_number')) {
+                $table->string('application_number')->unique()->after('course_id');
+            }
+            if (!Schema::hasColumn('admission_applications', 'date_of_birth')) {
+                $table->date('date_of_birth')->after('student_name');
+            }
+            if (!Schema::hasColumn('admission_applications', 'gender')) {
+                $table->enum('gender', ['male', 'female', 'other'])->default('male')->after('date_of_birth');
+            }
+            if (!Schema::hasColumn('admission_applications', 'address')) {
+                $table->text('address')->after('parent_email');
+            }
+            if (!Schema::hasColumn('admission_applications', 'guardian_email')) {
+                $table->string('guardian_email')->nullable()->after('parent_phone');
+            }
+            if (!Schema::hasColumn('admission_applications', 'guardian_relationship')) {
+                $table->string('guardian_relationship')->after('guardian_email');
+            }
+            if (!Schema::hasColumn('admission_applications', 'emergency_contact_name')) {
+                $table->string('emergency_contact_name')->after('guardian_relationship');
+            }
+            if (!Schema::hasColumn('admission_applications', 'emergency_contact_phone')) {
+                $table->string('emergency_contact_phone')->after('emergency_contact_name');
+            }
+            if (!Schema::hasColumn('admission_applications', 'emergency_contact_relationship')) {
+                $table->string('emergency_contact_relationship')->after('emergency_contact_phone');
+            }
+            if (!Schema::hasColumn('admission_applications', 'previous_education')) {
+                $table->text('previous_education')->nullable()->after('emergency_contact_relationship');
+            }
+            if (!Schema::hasColumn('admission_applications', 'previous_islamic_education')) {
+                $table->text('previous_islamic_education')->nullable()->after('previous_education');
+            }
+            if (!Schema::hasColumn('admission_applications', 'quran_knowledge_level')) {
+                $table->enum('quran_knowledge_level', ['none', 'basic', 'intermediate', 'advanced'])->default('none')->after('previous_islamic_education');
+            }
+            if (!Schema::hasColumn('admission_applications', 'arabic_knowledge_level')) {
+                $table->enum('arabic_knowledge_level', ['none', 'basic', 'intermediate', 'advanced'])->default('none')->after('quran_knowledge_level');
+            }
+            if (!Schema::hasColumn('admission_applications', 'learning_goals')) {
+                $table->text('learning_goals')->nullable()->after('arabic_knowledge_level');
+            }
+            if (!Schema::hasColumn('admission_applications', 'special_needs')) {
+                $table->text('special_needs')->nullable()->after('learning_goals');
+            }
+            if (!Schema::hasColumn('admission_applications', 'medical_conditions')) {
+                $table->text('medical_conditions')->nullable()->after('special_needs');
+            }
+            if (!Schema::hasColumn('admission_applications', 'allergies')) {
+                $table->text('allergies')->nullable()->after('medical_conditions');
+            }
+            if (!Schema::hasColumn('admission_applications', 'application_fee_paid')) {
+                $table->boolean('application_fee_paid')->default(false)->after('priority');
+            }
+            if (!Schema::hasColumn('admission_applications', 'application_fee_amount')) {
+                $table->decimal('application_fee_amount', 10, 2)->nullable()->after('application_fee_paid');
+            }
+            if (!Schema::hasColumn('admission_applications', 'application_fee_payment_method')) {
+                $table->string('application_fee_payment_method')->nullable()->after('application_fee_amount');
+            }
+            if (!Schema::hasColumn('admission_applications', 'application_fee_payment_reference')) {
+                $table->string('application_fee_payment_reference')->nullable()->after('application_fee_payment_method');
+            }
+            if (!Schema::hasColumn('admission_applications', 'application_fee_payment_date')) {
+                $table->datetime('application_fee_payment_date')->nullable()->after('application_fee_payment_reference');
+            }
+            if (!Schema::hasColumn('admission_applications', 'documents_submitted')) {
+                $table->json('documents_submitted')->nullable()->after('application_fee_payment_date');
+            }
+            if (!Schema::hasColumn('admission_applications', 'documents_verified')) {
+                $table->boolean('documents_verified')->default(false)->after('documents_submitted');
+            }
+            if (!Schema::hasColumn('admission_applications', 'interview_scheduled')) {
+                $table->boolean('interview_scheduled')->default(false)->after('documents_verified');
+            }
+            if (!Schema::hasColumn('admission_applications', 'interview_date')) {
+                $table->datetime('interview_date')->nullable()->after('interview_scheduled');
+            }
+            if (!Schema::hasColumn('admission_applications', 'interview_notes')) {
+                $table->text('interview_notes')->nullable()->after('interview_date');
+            }
+            if (!Schema::hasColumn('admission_applications', 'interview_score')) {
+                $table->integer('interview_score')->nullable()->after('interview_notes');
+            }
+            if (!Schema::hasColumn('admission_applications', 'recommendation_notes')) {
+                $table->text('recommendation_notes')->nullable()->after('interview_score');
+            }
+            if (!Schema::hasColumn('admission_applications', 'admission_decision')) {
+                $table->enum('admission_decision', ['pending', 'accepted', 'rejected', 'waitlisted'])->default('pending')->after('recommendation_notes');
+            }
+            if (!Schema::hasColumn('admission_applications', 'admission_decision_date')) {
+                $table->date('admission_decision_date')->nullable()->after('admission_decision');
+            }
+            if (!Schema::hasColumn('admission_applications', 'admission_decision_notes')) {
+                $table->text('admission_decision_notes')->nullable()->after('admission_decision_date');
+            }
+            if (!Schema::hasColumn('admission_applications', 'enrollment_date')) {
+                $table->date('enrollment_date')->nullable()->after('admission_decision_notes');
+            }
+            if (!Schema::hasColumn('admission_applications', 'admin_notes')) {
+                $table->text('admin_notes')->nullable()->after('assigned_to');
+            }
+            if (!Schema::hasColumn('admission_applications', 'custom_fields')) {
+                $table->json('custom_fields')->nullable()->after('admin_notes');
+            }
+            if (!Schema::hasColumn('admission_applications', 'meta')) {
+                $table->json('meta')->nullable()->after('custom_fields');
+            }
             
-            // Add indexes
-            $table->index(['status', 'priority']);
-            $table->index(['course_id', 'status']);
-            $table->index(['assigned_to', 'status']);
-            $table->index('created_at');
-            $table->index('email');
-            $table->index('application_number');
+            // Add indexes only if they don't exist
+            if (!$this->indexExists('admission_applications', 'admission_applications_status_priority_index')) {
+                $table->index(['status', 'priority']);
+            }
+            if (!$this->indexExists('admission_applications', 'admission_applications_course_id_status_index')) {
+                $table->index(['course_id', 'status']);
+            }
+            if (!$this->indexExists('admission_applications', 'admission_applications_assigned_to_status_index')) {
+                $table->index(['assigned_to', 'status']);
+            }
+            if (!$this->indexExists('admission_applications', 'admission_applications_created_at_index')) {
+                $table->index('created_at');
+            }
+            if (!$this->indexExists('admission_applications', 'admission_applications_parent_email_index')) {
+                $table->index('parent_email');
+            }
+            if (!$this->indexExists('admission_applications', 'admission_applications_application_number_index')) {
+                $table->index('application_number');
+            }
         });
     }
 
