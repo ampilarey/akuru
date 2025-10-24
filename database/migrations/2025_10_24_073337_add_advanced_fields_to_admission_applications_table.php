@@ -136,7 +136,8 @@ return new class extends Migration
             if (!$this->indexExists('admission_applications', 'admission_applications_status_priority_index')) {
                 $table->index(['status', 'priority']);
             }
-            if (!$this->indexExists('admission_applications', 'admission_applications_course_id_status_index')) {
+            // Check if course_id column exists before creating index
+            if (Schema::hasColumn('admission_applications', 'course_id') && !$this->indexExists('admission_applications', 'admission_applications_course_id_status_index')) {
                 $table->index(['course_id', 'status']);
             }
             if (!$this->indexExists('admission_applications', 'admission_applications_assigned_to_status_index')) {
