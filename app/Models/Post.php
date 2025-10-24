@@ -56,6 +56,12 @@ class Post extends Model
                     ->where('published_at', '<=', now());
     }
 
+    public function scopePublic($query)
+    {
+        return $query->where('is_published', true)
+                    ->where('published_at', '<=', now());
+    }
+
     public function scopeFeatured($query)
     {
         return $query->where('is_featured', true);
