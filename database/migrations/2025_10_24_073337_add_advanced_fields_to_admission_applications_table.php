@@ -8,22 +8,10 @@ return new class extends Migration
 {
     private function indexExists($table, $index)
     {
-        $connection = \DB::connection();
-        $driver = $connection->getDriverName();
-        
-        if ($driver === 'sqlite') {
-            $indexes = \DB::select("PRAGMA index_list({$table})");
-            foreach ($indexes as $idx) {
-                if ($idx->name === $index) {
-                    return true;
-                }
-            }
-        } else {
-            $indexes = \DB::select("SHOW INDEX FROM {$table}");
-            foreach ($indexes as $idx) {
-                if ($idx->Key_name === $index) {
-                    return true;
-                }
+        $indexes = \DB::select("SHOW INDEX FROM {$table}");
+        foreach ($indexes as $idx) {
+            if ($idx->Key_name === $index) {
+                return true;
             }
         }
         return false;
