@@ -82,7 +82,7 @@ class GalleryController extends Controller
                                  ->pluck('type')
                                  ->sort();
         
-        return view('public.gallery.index', compact('albums', 'featuredAlbums', 'recentAlbums', 'albumTypes'))->with('galleries', $albums);
+        return view('public.gallery.index', compact('featuredAlbums', 'recentAlbums', 'albumTypes'))->with('galleries', $albums);
     }
 
     public function show(GalleryAlbum $album)
