@@ -3,8 +3,7 @@
     <!-- Logo -->
     <div class="flex items-center space-x-3 rtl:space-x-reverse">
       <a href="{{ LaravelLocalization::localizeURL('/') }}" class="flex items-center">
-        <x-akuru-logo size="h-8 sm:h-10" class="mr-2 rtl:ml-2 rtl:mr-0" />
-        <span class="font-bold text-lg sm:text-xl text-brandBlue-600 hidden sm:inline">{{ __('public.Akuru Institute') }}</span>
+        <x-akuru-logo size="h-10 sm:h-12" />
       </a>
     </div>
     
