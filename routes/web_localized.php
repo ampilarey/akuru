@@ -16,6 +16,7 @@ use App\Http\Controllers\Substitutions\SubstitutionRequestController;
 use App\Http\Controllers\Admin\PublicSite\PageController as AdminPageController;
 use App\Http\Controllers\Admin\PublicSite\CourseController as AdminCourseController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\AnalyticsController;
 
 // Authentication routes (using Breeze)
 require __DIR__.'/auth.php';
@@ -56,6 +57,15 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
     
     // Notification routes
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
+    
+    // Analytics routes (admin only)
+    Route::middleware(['role:admin|super_admin'])->group(function() {
+        Route::get('/analytics', [AnalyticsController::class, 'index'])->name('analytics.index');
+        Route::get('/analytics/reports', [AnalyticsController::class, 'reports'])->name('analytics.reports');
+        Route::post('/analytics/reports/generate', [AnalyticsController::class, 'generateReport'])->name('analytics.reports.generate');
+        Route::get('/analytics/reports/{id}/download', [AnalyticsController::class, 'downloadReport'])->name('analytics.reports.download');
+        Route::delete('/analytics/reports/{id}', [AnalyticsController::class, 'deleteReport'])->name('analytics.reports.delete');
+    });
     
     // Substitution routes (for admin, headmaster, supervisor, teacher roles)
     Route::middleware(['role:admin|headmaster|supervisor|teacher'])->group(function() {
