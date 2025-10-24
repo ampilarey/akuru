@@ -15,6 +15,7 @@ use App\Http\Controllers\Substitutions\TeacherAbsenceController;
 use App\Http\Controllers\Substitutions\SubstitutionRequestController;
 use App\Http\Controllers\Admin\PublicSite\PageController as AdminPageController;
 use App\Http\Controllers\Admin\PublicSite\CourseController as AdminCourseController;
+use App\Http\Controllers\NotificationController;
 
 // Authentication routes (using Breeze)
 require __DIR__.'/auth.php';
@@ -52,6 +53,9 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    
+    // Notification routes
+    Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
     
     // Substitution routes (for admin, headmaster, supervisor, teacher roles)
     Route::middleware(['role:admin|headmaster|supervisor|teacher'])->group(function() {

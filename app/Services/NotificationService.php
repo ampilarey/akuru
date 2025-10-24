@@ -2,191 +2,377 @@
 
 namespace App\Services;
 
-use App\Models\User;
-use App\Models\Device;
-use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Log;
-use NotificationChannels\Fcm\FcmChannel;
-use NotificationChannels\Fcm\FcmMessage;
-use NotificationChannels\Fcm\Resources\Notification;
+use App\Models\{User, UserNotification, NotificationTemplate};
+use App\Services\SmsGatewayService;
+use Illuminate\Support\Facades\{Mail, Log, Queue};
+use Carbon\Carbon;
 
 class NotificationService
 {
-    protected array $users = [];
-    protected string $title = '';
-    protected string $body = '';
-    protected array $data = [];
+    protected $smsService;
 
-    /**
-     * Set the users to send notifications to
-     */
-    public function toUsers($users): self
+    public function __construct(SmsGatewayService $smsService)
     {
-        if ($users instanceof Collection) {
-            $this->users = $users->toArray();
-        } elseif (is_array($users)) {
-            $this->users = $users;
-        } else {
-            $this->users = [$users];
-        }
-
-        return $this;
+        $this->smsService = $smsService;
     }
 
     /**
-     * Set the notification title
+     * Send notification to a single user
      */
-    public function title(string $title): self
-    {
-        $this->title = $title;
-        return $this;
-    }
-
-    /**
-     * Set the notification body
-     */
-    public function body(string $body): self
-    {
-        $this->body = $body;
-        return $this;
-    }
-
-    /**
-     * Set additional data
-     */
-    public function data(array $data): self
-    {
-        $this->data = $data;
-        return $this;
-    }
-
-    /**
-     * Send the notifications
-     */
-    public function send(): bool
-    {
-        try {
-            foreach ($this->users as $user) {
-                if ($user instanceof User) {
-                    $this->sendToUser($user);
-                }
-            }
-            return true;
-        } catch (\Exception $e) {
-            Log::error('Failed to send notification: ' . $e->getMessage());
-            return false;
-        }
-    }
-
-    /**
-     * Send notification to a specific user
-     */
-    protected function sendToUser(User $user): void
-    {
-        // Create database notification
-        $user->notifications()->create([
-            'id' => \Str::uuid(),
-            'type' => 'App\\Notifications\\CustomNotification',
-            'data' => [
-                'title' => $this->title,
-                'body' => $this->body,
-                'data' => $this->data,
-            ],
-            'created_at' => now(),
+    public function sendToUser(
+        int $userId,
+        string $type,
+        string $title,
+        string $message,
+        array $data = [],
+        Carbon $scheduledAt = null
+    ) {
+        $notification = UserNotification::create([
+            'user_id' => $userId,
+            'type' => $type,
+            'category' => $data['category'] ?? 'system',
+            'title' => $title,
+            'message' => $message,
+            'data' => $data,
+            'status' => 'pending',
+            'scheduled_at' => $scheduledAt,
         ]);
 
-        // Send FCM push notification if user has devices
-        $devices = Device::where('user_id', $user->id)
-                        ->where('is_active', true)
-                        ->get();
+        if (!$scheduledAt || $scheduledAt <= now()) {
+            $this->processNotification($notification);
+        }
 
-        foreach ($devices as $device) {
-            $this->sendFcmNotification($device);
+        return $notification;
+    }
+
+    /**
+     * Send notification from template
+     */
+    public function sendFromTemplate(
+        int $userId,
+        string $templateName,
+        array $variables = [],
+        string $type = 'email',
+        Carbon $scheduledAt = null
+    ) {
+        try {
+            $notification = UserNotification::createFromTemplate(
+                $userId,
+                $templateName,
+                $variables,
+                $type,
+                $scheduledAt
+            );
+
+            if (!$scheduledAt || $scheduledAt <= now()) {
+                $this->processNotification($notification);
+            }
+
+            return $notification;
+        } catch (\Exception $e) {
+            Log::error("Failed to send notification from template: " . $e->getMessage());
+            return null;
         }
     }
 
     /**
-     * Send FCM notification to a device
+     * Send notification to multiple users
      */
-    protected function sendFcmNotification(Device $device): void
+    public function sendToUsers(
+        array $userIds,
+        string $type,
+        string $title,
+        string $message,
+        array $data = [],
+        Carbon $scheduledAt = null
+    ) {
+        $notifications = [];
+
+        foreach ($userIds as $userId) {
+            $notifications[] = $this->sendToUser($userId, $type, $title, $message, $data, $scheduledAt);
+        }
+
+        return $notifications;
+    }
+
+    /**
+     * Send notification to users by role
+     */
+    public function sendToRole(
+        string $role,
+        string $type,
+        string $title,
+        string $message,
+        array $data = [],
+        Carbon $scheduledAt = null
+    ) {
+        $userIds = User::role($role)->pluck('id')->toArray();
+        return $this->sendToUsers($userIds, $type, $title, $message, $data, $scheduledAt);
+    }
+
+    /**
+     * Process a single notification
+     */
+    public function processNotification(UserNotification $notification)
     {
         try {
-            // This would require proper FCM setup and credentials
-            // For now, we'll just log the notification
-            Log::info('FCM Notification would be sent', [
-                'device_token' => $device->token,
-                'title' => $this->title,
-                'body' => $this->body,
-                'data' => $this->data,
-            ]);
+            switch ($notification->type) {
+                case 'email':
+                    $this->sendEmailNotification($notification);
+                    break;
+                case 'sms':
+                    $this->sendSmsNotification($notification);
+                    break;
+                case 'push':
+                    $this->sendPushNotification($notification);
+                    break;
+                case 'in_app':
+                    $this->sendInAppNotification($notification);
+                    break;
+                default:
+                    throw new \Exception("Unknown notification type: {$notification->type}");
+            }
 
-            // Update device last seen
-            $device->update(['last_seen_at' => now()]);
+            $notification->markAsSent();
+            Log::info("Notification sent successfully", ['notification_id' => $notification->id]);
 
         } catch (\Exception $e) {
-            Log::error('Failed to send FCM notification: ' . $e->getMessage(), [
-                'device_id' => $device->id,
-                'user_id' => $device->user_id,
+            $notification->markAsFailed($e->getMessage());
+            Log::error("Failed to send notification", [
+                'notification_id' => $notification->id,
+                'error' => $e->getMessage()
             ]);
         }
     }
 
     /**
-     * Helper methods for common notification types
+     * Send email notification
      */
-    public static function assignmentCreated($assignment, $students): bool
+    protected function sendEmailNotification(UserNotification $notification)
     {
-        return (new self())
-            ->toUsers($students)
-            ->title('New Assignment')
-            ->body("New assignment: {$assignment->title}")
-            ->data([
-                'type' => 'assignment_created',
-                'assignment_id' => $assignment->id,
-                'url' => route('assignments.show', $assignment),
-            ])
-            ->send();
+        $user = $notification->user;
+        
+        if (!$user->email) {
+            throw new \Exception("User has no email address");
+        }
+
+        // For now, we'll use a simple mail implementation
+        // In production, you'd want to use proper Mailable classes
+        Mail::raw($notification->message, function ($mail) use ($user, $notification) {
+            $mail->to($user->email)
+                 ->subject($notification->title);
+        });
     }
 
-    public static function quizPublished($quiz, $students): bool
+    /**
+     * Send SMS notification
+     */
+    protected function sendSmsNotification(UserNotification $notification)
     {
-        return (new self())
-            ->toUsers($students)
-            ->title('New Quiz Available')
-            ->body("Quiz available: {$quiz->title}")
-            ->data([
-                'type' => 'quiz_published',
-                'quiz_id' => $quiz->id,
-                'url' => route('quizzes.show', $quiz),
-            ])
-            ->send();
+        $user = $notification->user;
+        
+        if (!$user->phone) {
+            throw new \Exception("User has no phone number");
+        }
+
+        $result = $this->smsService->sendSms(
+            $user->phone,
+            $notification->message
+        );
+
+        if (!$result['success']) {
+            throw new \Exception($result['message'] ?? 'SMS sending failed');
+        }
     }
 
-    public static function substitutionAssigned($substitution, $teacher): bool
+    /**
+     * Send push notification
+     */
+    protected function sendPushNotification(UserNotification $notification)
     {
-        return (new self())
-            ->toUsers([$teacher])
-            ->title('Substitution Assigned')
-            ->body("You have been assigned a substitution for {$substitution->date->format('M d')}")
-            ->data([
-                'type' => 'substitution_assigned',
-                'substitution_id' => $substitution->id,
-                'url' => route('substitutions.requests.show', $substitution),
-            ])
-            ->send();
+        // This would integrate with Firebase Cloud Messaging or similar
+        // For now, we'll just log it
+        Log::info("Push notification would be sent", [
+            'user_id' => $notification->user_id,
+            'title' => $notification->title,
+            'message' => $notification->message
+        ]);
     }
 
-    public static function announcementPublished($announcement, $users): bool
+    /**
+     * Send in-app notification
+     */
+    protected function sendInAppNotification(UserNotification $notification)
     {
-        return (new self())
-            ->toUsers($users)
-            ->title('New Announcement')
-            ->body($announcement->title)
-            ->data([
-                'type' => 'announcement_published',
-                'announcement_id' => $announcement->id,
-                'url' => route('announcements.show', $announcement),
-            ])
-            ->send();
+        // In-app notifications are already stored in the database
+        // They just need to be marked as sent
+        $notification->markAsDelivered();
+    }
+
+    /**
+     * Process scheduled notifications
+     */
+    public function processScheduledNotifications()
+    {
+        $scheduledNotifications = UserNotification::scheduled()->get();
+
+        foreach ($scheduledNotifications as $notification) {
+            $this->processNotification($notification);
+        }
+
+        return $scheduledNotifications->count();
+    }
+
+    /**
+     * Retry failed notifications
+     */
+    public function retryFailedNotifications()
+    {
+        $failedNotifications = UserNotification::retryable()->get();
+
+        foreach ($failedNotifications as $notification) {
+            $this->processNotification($notification);
+        }
+
+        return $failedNotifications->count();
+    }
+
+    /**
+     * Get user's notifications
+     */
+    public function getUserNotifications(int $userId, int $limit = 20, bool $unreadOnly = false)
+    {
+        $query = UserNotification::forUser($userId);
+
+        if ($unreadOnly) {
+            $query->unread();
+        }
+
+        return $query->orderBy('created_at', 'desc')
+                    ->limit($limit)
+                    ->get();
+    }
+
+    /**
+     * Mark notification as read
+     */
+    public function markAsRead(int $notificationId, int $userId)
+    {
+        $notification = UserNotification::where('id', $notificationId)
+                                      ->where('user_id', $userId)
+                                      ->first();
+
+        if ($notification) {
+            $notification->markAsRead();
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Mark all notifications as read for a user
+     */
+    public function markAllAsRead(int $userId)
+    {
+        return UserNotification::forUser($userId)
+                              ->unread()
+                              ->update(['read_at' => now()]);
+    }
+
+    /**
+     * Get notification statistics
+     */
+    public function getNotificationStats(int $userId = null, int $days = 30)
+    {
+        $query = UserNotification::query();
+
+        if ($userId) {
+            $query->forUser($userId);
+        }
+
+        $query->where('created_at', '>=', now()->subDays($days));
+
+        return [
+            'total' => $query->count(),
+            'sent' => $query->status('sent')->count(),
+            'delivered' => $query->status('delivered')->count(),
+            'failed' => $query->status('failed')->count(),
+            'unread' => $query->unread()->count(),
+            'by_type' => $query->selectRaw('type, count(*) as count')
+                              ->groupBy('type')
+                              ->pluck('count', 'type'),
+            'by_category' => $query->selectRaw('category, count(*) as count')
+                                  ->groupBy('category')
+                                  ->pluck('count', 'category'),
+        ];
+    }
+
+    /**
+     * Create default notification templates
+     */
+    public function createDefaultTemplates()
+    {
+        $templates = [
+            // Welcome templates
+            [
+                'name' => 'welcome_email',
+                'type' => 'email',
+                'category' => 'system',
+                'subject' => 'Welcome to Akuru Institute!',
+                'body' => 'Dear {{name}}, welcome to Akuru Institute! We are excited to have you join our community.',
+                'variables' => ['name', 'email'],
+                'is_system' => true,
+            ],
+            [
+                'name' => 'welcome_sms',
+                'type' => 'sms',
+                'category' => 'system',
+                'subject' => null,
+                'body' => 'Welcome to Akuru Institute! Your account has been created successfully.',
+                'variables' => ['name'],
+                'is_system' => true,
+            ],
+
+            // Course enrollment
+            [
+                'name' => 'course_enrollment',
+                'type' => 'email',
+                'category' => 'course',
+                'subject' => 'Course Enrollment Confirmation',
+                'body' => 'Dear {{name}}, you have been successfully enrolled in {{course_name}}. Classes start on {{start_date}}.',
+                'variables' => ['name', 'course_name', 'start_date'],
+                'is_system' => true,
+            ],
+
+            // Assignment due
+            [
+                'name' => 'assignment_due',
+                'type' => 'email',
+                'category' => 'assignment',
+                'subject' => 'Assignment Due Reminder',
+                'body' => 'Dear {{name}}, your assignment "{{assignment_title}}" is due on {{due_date}}. Please submit it on time.',
+                'variables' => ['name', 'assignment_title', 'due_date'],
+                'is_system' => true,
+            ],
+
+            // Event reminder
+            [
+                'name' => 'event_reminder',
+                'type' => 'email',
+                'category' => 'event',
+                'subject' => 'Upcoming Event Reminder',
+                'body' => 'Dear {{name}}, don\'t forget about the event "{{event_title}}" on {{event_date}} at {{event_time}}.',
+                'variables' => ['name', 'event_title', 'event_date', 'event_time'],
+                'is_system' => true,
+            ],
+        ];
+
+        foreach ($templates as $template) {
+            NotificationTemplate::updateOrCreate(
+                ['name' => $template['name'], 'type' => $template['type']],
+                $template
+            );
+        }
     }
 }
