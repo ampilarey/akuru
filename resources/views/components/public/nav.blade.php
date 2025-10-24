@@ -56,18 +56,18 @@
       <!-- Login Link - Hidden on small screens -->
       <div class="hidden md:block">
         @auth
-          <a href="{{ route('dashboard') }}" class="text-brandGray-600 hover:text-brandBlue-600 transition-colors duration-200 text-sm">
+          <a href="{{ route('dashboard') }}" class="text-brandGray-600 hover:text-brandMaroon-600 transition-colors duration-200 text-sm">
             {{ __('public.Dashboard') }}
           </a>
         @else
-          <a href="{{ route('login') }}" class="text-brandGray-600 hover:text-brandBlue-600 transition-colors duration-200 text-sm">
+          <a href="{{ route('login') }}" class="text-brandGray-600 hover:text-brandMaroon-600 transition-colors duration-200 text-sm">
             {{ __('public.Login') }}
           </a>
         @endauth
       </div>
 
       <!-- Mobile Menu Button -->
-      <button class="lg:hidden p-2 text-brandGray-600 hover:text-brandBlue-600 transition-colors duration-200" 
+      <button class="lg:hidden p-2 text-brandGray-600 hover:text-brandMaroon-600 transition-colors duration-200" 
               onclick="toggleMobileMenu()" 
               aria-label="Toggle mobile menu">
         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -123,12 +123,12 @@
       <div class="pt-2 border-t border-gray-200 mt-4">
         @auth
           <a href="{{ route('dashboard') }}" 
-             class="block py-3 px-4 text-brandGray-600 hover:text-brandBlue-600 hover:bg-brandBlue-50 rounded-lg transition-colors duration-200">
+             class="block py-3 px-4 text-brandGray-600 hover:text-brandMaroon-600 hover:bg-brandBeige-100 rounded-lg transition-colors duration-200">
             {{ __('public.Dashboard') }}
           </a>
         @else
           <a href="{{ route('login') }}" 
-             class="block py-3 px-4 text-brandGray-600 hover:text-brandBlue-600 hover:bg-brandBlue-50 rounded-lg transition-colors duration-200">
+             class="block py-3 px-4 text-brandGray-600 hover:text-brandMaroon-600 hover:bg-brandBeige-100 rounded-lg transition-colors duration-200">
             {{ __('public.Login') }}
           </a>
         @endauth

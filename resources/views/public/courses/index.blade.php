@@ -5,9 +5,9 @@
 
 @section('content')
 <!-- Page Header -->
-<section class="bg-gradient-to-br from-brandBlue-50 to-brandBlue-100 py-12">
+<section class="bg-gradient-to-br from-brandMaroon-50 to-brandBeige-100 py-12">
     <div class="container mx-auto px-4">
-        <h1 class="text-4xl font-bold text-brandBlue-900 mb-4">{{ __('public.Our Courses') }}</h1>
+        <h1 class="text-4xl font-bold text-brandMaroon-900 mb-4">{{ __('public.Our Courses') }}</h1>
         <p class="text-xl text-brandGray-700">{{ __('public.Explore our comprehensive Islamic education programs') }}</p>
     </div>
 </section>
@@ -74,8 +74,8 @@
                                  alt="{{ $course->title }}"
                                  class="w-full h-48 object-cover">
                         @else
-                            <div class="w-full h-48 bg-gradient-to-br from-brandBlue-100 to-brandBlue-200 flex items-center justify-center">
-                                <svg class="w-16 h-16 text-brandBlue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <div class="w-full h-48 bg-gradient-to-br from-brandBeige-100 to-brandBeige-200 flex items-center justify-center">
+                                <svg class="w-16 h-16 text-brandGold-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
                                 </svg>
                             </div>
@@ -84,7 +84,7 @@
                         <div class="p-6">
                             <!-- Category Badge -->
                             @if($course->courseCategory)
-                                <span class="inline-block px-3 py-1 text-xs font-medium bg-brandBlue-100 text-brandBlue-800 rounded-full mb-3">
+                                <span class="inline-block px-3 py-1 text-xs font-medium bg-brandBeige-100 text-brandMaroon-800 rounded-full mb-3">
                                     {{ $course->courseCategory->name }}
                                 </span>
                             @endif
@@ -128,7 +128,7 @@
 
                             <!-- Fee (if any) -->
                             @if($course->fee)
-                                <div class="text-2xl font-bold text-brandBlue-600 mb-4">
+                                <div class="text-2xl font-bold text-brandMaroon-600 mb-4">
                                     {{ number_format($course->fee, 2) }} MVR
                                 </div>
                             @endif
@@ -164,11 +164,11 @@
 </section>
 
 <!-- Call to Action -->
-<section class="bg-brandBlue-600 py-12">
+<section class="bg-brandMaroon-600 py-12">
     <div class="container mx-auto px-4 text-center">
         <h2 class="text-3xl font-bold text-white mb-4">{{ __('public.Ready to Start Learning?') }}</h2>
-        <p class="text-xl text-brandBlue-100 mb-6">{{ __('public.Apply now and begin your Islamic education journey') }}</p>
-        <a href="{{ route('public.admissions.create', app()->getLocale()) }}" class="btn-secondary bg-white text-brandBlue-600 hover:bg-brandBlue-50">
+        <p class="text-xl text-brandBeige-100 mb-6">{{ __('public.Apply now and begin your Islamic education journey') }}</p>
+        <a href="{{ route('public.admissions.create', app()->getLocale()) }}" class="btn-secondary bg-white text-brandMaroon-600 hover:bg-brandMaroon-50">
             {{ __('public.Apply Now') }}
         </a>
     </div>

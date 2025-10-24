@@ -39,7 +39,7 @@
                             </label>
                             <input type="text" name="name" id="name" 
                                    value="{{ old('name') }}" required
-                                   class="w-full px-3 py-2 border border-brandGray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brandBlue-500">
+                                   class="w-full px-3 py-2 border border-brandGray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brandMaroon-500">
                             @error('name')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                             @enderror
@@ -52,7 +52,7 @@
                             </label>
                             <input type="email" name="email" id="email" 
                                    value="{{ old('email') }}"
-                                   class="w-full px-3 py-2 border border-brandGray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brandBlue-500">
+                                   class="w-full px-3 py-2 border border-brandGray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brandMaroon-500">
                             @error('email')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                             @enderror
@@ -65,7 +65,7 @@
                             </label>
                             <input type="tel" name="phone" id="phone" 
                                    value="{{ old('phone') }}"
-                                   class="w-full px-3 py-2 border border-brandGray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brandBlue-500">
+                                   class="w-full px-3 py-2 border border-brandGray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brandMaroon-500">
                             @error('phone')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                             @enderror
@@ -77,7 +77,7 @@
                                 {{ __('public.Message') }} <span class="text-red-500">*</span>
                             </label>
                             <textarea name="message" id="message" rows="6" required
-                                      class="w-full px-3 py-2 border border-brandGray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brandBlue-500"
+                                      class="w-full px-3 py-2 border border-brandGray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brandMaroon-500"
                                       placeholder="{{ __('public.contact_message_placeholder') }}">{{ old('message') }}</textarea>
                             @error('message')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -96,7 +96,7 @@
                 <!-- Contact Information -->
                 <div class="space-y-8">
                     <!-- Contact Details -->
-                    <div class="bg-brandBlue-50 rounded-lg p-8">
+                    <div class="bg-brandMaroon-50 rounded-lg p-8">
                         <h2 class="text-2xl font-semibold text-brandGray-900 mb-6">
                             {{ __('public.Get in Touch') }}
                         </h2>
@@ -104,7 +104,7 @@
                         <div class="space-y-6">
                             <!-- Address -->
                             <div class="flex items-start">
-                                <div class="w-10 h-10 bg-brandBlue-600 text-white rounded-full flex items-center justify-center mr-4 flex-shrink-0">
+                                <div class="w-10 h-10 bg-brandMaroon-600 text-white rounded-full flex items-center justify-center mr-4 flex-shrink-0">
                                     <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                                         <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"></path>
                                     </svg>
@@ -117,7 +117,7 @@
 
                             <!-- Phone -->
                             <div class="flex items-start">
-                                <div class="w-10 h-10 bg-brandBlue-600 text-white rounded-full flex items-center justify-center mr-4 flex-shrink-0">
+                                <div class="w-10 h-10 bg-brandMaroon-600 text-white rounded-full flex items-center justify-center mr-4 flex-shrink-0">
                                     <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                                         <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z"></path>
                                     </svg>
@@ -130,7 +130,7 @@
 
                             <!-- Email -->
                             <div class="flex items-start">
-                                <div class="w-10 h-10 bg-brandBlue-600 text-white rounded-full flex items-center justify-center mr-4 flex-shrink-0">
+                                <div class="w-10 h-10 bg-brandMaroon-600 text-white rounded-full flex items-center justify-center mr-4 flex-shrink-0">
                                     <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                                         <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"></path>
                                         <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"></path>
@@ -172,15 +172,15 @@
                         </h3>
                         <div class="space-y-3">
                             <a href="{{ route('public.admissions.create', app()->getLocale()) }}" 
-                               class="block text-brandBlue-600 hover:text-brandBlue-800 transition-colors">
+                               class="block text-brandMaroon-600 hover:text-brandMaroon-800 transition-colors">
                                 {{ __('public.Apply for Admission') }}
                             </a>
                             <a href="{{ route('public.courses.index', app()->getLocale()) }}" 
-                               class="block text-brandBlue-600 hover:text-brandBlue-800 transition-colors">
+                               class="block text-brandMaroon-600 hover:text-brandMaroon-800 transition-colors">
                                 {{ __('public.View Courses') }}
                             </a>
                             <a href="{{ route('public.news.index', app()->getLocale()) }}" 
-                               class="block text-brandBlue-600 hover:text-brandBlue-800 transition-colors">
+                               class="block text-brandMaroon-600 hover:text-brandMaroon-800 transition-colors">
                                 {{ __('public.Latest News') }}
                             </a>
                         </div>

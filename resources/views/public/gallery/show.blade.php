@@ -9,7 +9,7 @@
             <!-- Gallery Header -->
             <div class="mb-8">
                 <div class="flex items-center text-sm text-brandGray-500 mb-4">
-                    <a href="{{ route('public.gallery.index', app()->getLocale()) }}" class="hover:text-brandBlue-600">
+                    <a href="{{ route('public.gallery.index', app()->getLocale()) }}" class="hover:text-brandMaroon-600">
                         {{ __('public.Gallery') }}
                     </a>
                     <svg class="w-4 h-4 mx-2" fill="currentColor" viewBox="0 0 20 20">

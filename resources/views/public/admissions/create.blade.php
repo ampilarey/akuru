@@ -26,7 +26,7 @@
                         <label for="course_id" class="block text-sm font-medium text-brandGray-700 mb-2">
                             {{ __('public.Course of Interest') }}
                         </label>
-                        <select name="course_id" id="course_id" class="w-full px-3 py-2 border border-brandGray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brandBlue-500">
+                        <select name="course_id" id="course_id" class="w-full px-3 py-2 border border-brandGray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brandMaroon-500">
                             <option value="">{{ __('public.Select a course') }}</option>
                             @foreach($courses as $course)
                                 <option value="{{ $course->id }}" 
@@ -51,7 +51,7 @@
                             </label>
                             <input type="text" name="full_name" id="full_name" 
                                    value="{{ old('full_name') }}" required
-                                   class="w-full px-3 py-2 border border-brandGray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brandBlue-500">
+                                   class="w-full px-3 py-2 border border-brandGray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brandMaroon-500">
                             @error('full_name')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                             @enderror
@@ -63,7 +63,7 @@
                             </label>
                             <input type="tel" name="phone" id="phone" 
                                    value="{{ old('phone') }}" required
-                                   class="w-full px-3 py-2 border border-brandGray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brandBlue-500">
+                                   class="w-full px-3 py-2 border border-brandGray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brandMaroon-500">
                             @error('phone')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                             @enderror
@@ -77,7 +77,7 @@
                             </label>
                             <input type="email" name="email" id="email" 
                                    value="{{ old('email') }}"
-                                   class="w-full px-3 py-2 border border-brandGray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brandBlue-500">
+                                   class="w-full px-3 py-2 border border-brandGray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brandMaroon-500">
                             @error('email')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                             @enderror
@@ -89,7 +89,7 @@
                             </label>
                             <input type="text" name="guardian_name" id="guardian_name" 
                                    value="{{ old('guardian_name') }}"
-                                   class="w-full px-3 py-2 border border-brandGray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brandBlue-500">
+                                   class="w-full px-3 py-2 border border-brandGray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brandMaroon-500">
                             @error('guardian_name')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                             @enderror
@@ -102,7 +102,7 @@
                             {{ __('public.Message') }}
                         </label>
                         <textarea name="message" id="message" rows="4" 
-                                  class="w-full px-3 py-2 border border-brandGray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brandBlue-500"
+                                  class="w-full px-3 py-2 border border-brandGray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brandMaroon-500"
                                   placeholder="{{ __('public.admission_message_placeholder') }}">{{ old('message') }}</textarea>
                         @error('message')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -114,7 +114,7 @@
                         <label for="source" class="block text-sm font-medium text-brandGray-700 mb-2">
                             {{ __('public.How did you hear about us?') }}
                         </label>
-                        <select name="source" id="source" class="w-full px-3 py-2 border border-brandGray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brandBlue-500">
+                        <select name="source" id="source" class="w-full px-3 py-2 border border-brandGray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brandMaroon-500">
                             <option value="web">{{ __('public.Website') }}</option>
                             <option value="social">{{ __('public.Social Media') }}</option>
                             <option value="whatsapp">{{ __('public.WhatsApp') }}</option>
@@ -132,27 +132,27 @@
             </div>
 
             <!-- Additional Information -->
-            <div class="mt-12 bg-brandBlue-50 rounded-lg p-8">
+            <div class="mt-12 bg-brandMaroon-50 rounded-lg p-8">
                 <h3 class="text-2xl font-semibold text-brandGray-900 mb-4">
                     {{ __('public.Admission Process') }}
                 </h3>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div class="text-center">
-                        <div class="w-12 h-12 bg-brandBlue-600 text-white rounded-full flex items-center justify-center mx-auto mb-4">
+                        <div class="w-12 h-12 bg-brandMaroon-600 text-white rounded-full flex items-center justify-center mx-auto mb-4">
                             <span class="text-xl font-bold">1</span>
                         </div>
                         <h4 class="font-semibold text-brandGray-900 mb-2">{{ __('public.Submit Application') }}</h4>
                         <p class="text-brandGray-600 text-sm">{{ __('public.step1_description') }}</p>
                     </div>
                     <div class="text-center">
-                        <div class="w-12 h-12 bg-brandBlue-600 text-white rounded-full flex items-center justify-center mx-auto mb-4">
+                        <div class="w-12 h-12 bg-brandMaroon-600 text-white rounded-full flex items-center justify-center mx-auto mb-4">
                             <span class="text-xl font-bold">2</span>
                         </div>
                         <h4 class="font-semibold text-brandGray-900 mb-2">{{ __('public.Review Process') }}</h4>
                         <p class="text-brandGray-600 text-sm">{{ __('public.step2_description') }}</p>
                     </div>
                     <div class="text-center">
-                        <div class="w-12 h-12 bg-brandBlue-600 text-white rounded-full flex items-center justify-center mx-auto mb-4">
+                        <div class="w-12 h-12 bg-brandMaroon-600 text-white rounded-full flex items-center justify-center mx-auto mb-4">
                             <span class="text-xl font-bold">3</span>
                         </div>
                         <h4 class="font-semibold text-brandGray-900 mb-2">{{ __('public.Confirmation') }}</h4>

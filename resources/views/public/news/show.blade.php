@@ -7,12 +7,12 @@
         <header class="mb-8">
             <div class="text-sm text-brandGray-500 mb-4">
                 <a href="{{ route('public.news.index', app()->getLocale()) }}" 
-                   class="text-brandBlue-600 hover:text-brandBlue-700">
+                   class="text-brandMaroon-600 hover:text-brandMaroon-700">
                     ← {{ __('public.Back to News') }}
                 </a>
             </div>
             
-            <h1 class="text-4xl font-bold text-brandBlue-600 mb-4">{{ $post->title }}</h1>
+            <h1 class="text-4xl font-bold text-brandMaroon-600 mb-4">{{ $post->title }}</h1>
             
             <div class="flex items-center text-brandGray-500 text-sm">
                 <time datetime="{{ $post->published_at->toISOString() }}">
@@ -36,7 +36,7 @@
 
         <!-- Summary -->
         @if($post->summary)
-            <div class="text-lg text-brandGray-700 mb-8 p-6 bg-brandBlue-50 rounded-lg border-l-4 border-brandBlue-600">
+            <div class="text-lg text-brandGray-700 mb-8 p-6 bg-brandMaroon-50 rounded-lg border-l-4 border-brandMaroon-600">
                 {{ $post->summary }}
             </div>
         @endif

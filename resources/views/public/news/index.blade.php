@@ -3,7 +3,7 @@
 @section('content')
 <div class="container mx-auto px-4 py-8">
     <div class="mb-8">
-        <h1 class="text-3xl font-bold text-brandBlue-600 mb-4">{{ __('public.Latest News') }}</h1>
+        <h1 class="text-3xl font-bold text-brandMaroon-600 mb-4">{{ __('public.Latest News') }}</h1>
         <p class="text-brandGray-600">{{ __('public.Stay updated with the latest news and announcements from Akuru Institute') }}</p>
     </div>
 
@@ -27,9 +27,9 @@
                             @endif
                         </div>
                         
-                        <h2 class="text-xl font-semibold text-brandBlue-600 mb-3">
+                        <h2 class="text-xl font-semibold text-brandMaroon-600 mb-3">
                             <a href="{{ route('public.news.show', [app()->getLocale(), $post->slug]) }}" 
-                               class="hover:text-brandBlue-700">
+                               class="hover:text-brandMaroon-700">
                                 {{ $post->title }}
                             </a>
                         </h2>
@@ -37,7 +37,7 @@
                         <p class="text-brandGray-600 mb-4">{{ $post->summary }}</p>
                         
                         <a href="{{ route('public.news.show', [app()->getLocale(), $post->slug]) }}" 
-                           class="text-brandBlue-600 hover:text-brandBlue-700 font-medium">
+                           class="text-brandMaroon-600 hover:text-brandMaroon-700 font-medium">
                             {{ __('public.Read More') }} →
                         </a>
                     </div>

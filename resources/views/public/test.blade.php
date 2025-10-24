@@ -10,7 +10,7 @@
             
             <!-- Basic Info -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                <div class="bg-brandBlue-50 rounded-lg p-6">
+                <div class="bg-brandMaroon-50 rounded-lg p-6">
                     <h2 class="text-xl font-semibold text-brandGray-900 mb-4">System Information</h2>
                     <ul class="space-y-2 text-brandGray-700">
                         <li><strong>App Name:</strong> {{ config('app.name') }}</li>
@@ -67,7 +67,7 @@
                     @try
                         <div class="text-center p-4 border rounded-lg">
                             <h3 class="font-semibold text-brandGray-900 mb-2">Pages</h3>
-                            <p class="text-2xl font-bold text-brandBlue-600">{{ \App\Models\Page::count() }}</p>
+                            <p class="text-2xl font-bold text-brandMaroon-600">{{ \App\Models\Page::count() }}</p>
                             <p class="text-sm text-brandGray-600">Total Pages</p>
                         </div>
                     @catch(Exception $e)
@@ -80,7 +80,7 @@
                     @try
                         <div class="text-center p-4 border rounded-lg">
                             <h3 class="font-semibold text-brandGray-900 mb-2">Posts</h3>
-                            <p class="text-2xl font-bold text-brandBlue-600">{{ \App\Models\Post::count() }}</p>
+                            <p class="text-2xl font-bold text-brandMaroon-600">{{ \App\Models\Post::count() }}</p>
                             <p class="text-sm text-brandGray-600">Total Posts</p>
                         </div>
                     @catch(Exception $e)
@@ -93,7 +93,7 @@
                     @try
                         <div class="text-center p-4 border rounded-lg">
                             <h3 class="font-semibold text-brandGray-900 mb-2">Courses</h3>
-                            <p class="text-2xl font-bold text-brandBlue-600">{{ \App\Models\Course::count() }}</p>
+                            <p class="text-2xl font-bold text-brandMaroon-600">{{ \App\Models\Course::count() }}</p>
                             <p class="text-sm text-brandGray-600">Total Courses</p>
                         </div>
                     @catch(Exception $e)
@@ -124,7 +124,7 @@
                             <span class="text-brandGray-700">{{ $name }}</span>
                             @try
                                 @php $url = route($route, app()->getLocale()); @endphp
-                                <a href="{{ $url }}" class="text-brandBlue-600 hover:text-brandBlue-800 text-sm">
+                                <a href="{{ $url }}" class="text-brandMaroon-600 hover:text-brandMaroon-800 text-sm">
                                     Test Route
                                 </a>
                             @catch(Exception $e)
@@ -144,15 +144,15 @@
                     
                     <div class="flex space-x-4">
                         <a href="{{ LaravelLocalization::getLocalizedURL('en') }}" 
-                           class="px-4 py-2 bg-brandBlue-600 text-white rounded-md hover:bg-brandBlue-700">
+                           class="px-4 py-2 bg-brandMaroon-600 text-white rounded-md hover:bg-brandMaroon-700">
                             English
                         </a>
                         <a href="{{ LaravelLocalization::getLocalizedURL('ar') }}" 
-                           class="px-4 py-2 bg-brandBlue-600 text-white rounded-md hover:bg-brandBlue-700">
+                           class="px-4 py-2 bg-brandMaroon-600 text-white rounded-md hover:bg-brandMaroon-700">
                             العربية
                         </a>
                         <a href="{{ LaravelLocalization::getLocalizedURL('dv') }}" 
-                           class="px-4 py-2 bg-brandBlue-600 text-white rounded-md hover:bg-brandBlue-700">
+                           class="px-4 py-2 bg-brandMaroon-600 text-white rounded-md hover:bg-brandMaroon-700">
                             ދިވެހި
                         </a>
                     </div>

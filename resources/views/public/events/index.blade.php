@@ -3,7 +3,7 @@
 @section('content')
 <div class="container mx-auto px-4 py-8">
     <div class="mb-8">
-        <h1 class="text-3xl font-bold text-brandBlue-600 mb-4">{{ __('public.Upcoming Events') }}</h1>
+        <h1 class="text-3xl font-bold text-brandMaroon-600 mb-4">{{ __('public.Upcoming Events') }}</h1>
         <p class="text-brandGray-600">{{ __('public.Join us for our upcoming events and activities') }}</p>
     </div>
 
@@ -13,7 +13,7 @@
                 <div class="bg-white rounded-lg shadow-sm border hover:shadow-md transition-shadow">
                     <div class="p-6">
                         <div class="flex items-center justify-between mb-4">
-                            <div class="bg-brandBlue-100 text-brandBlue-600 px-3 py-1 rounded-full text-sm font-medium">
+                            <div class="bg-brandBeige-100 text-brandMaroon-600 px-3 py-1 rounded-full text-sm font-medium">
                                 {{ \Carbon\Carbon::parse($event->date)->format('M d') }}
                             </div>
                             <div class="text-sm text-brandGray-500">
@@ -21,9 +21,9 @@
                             </div>
                         </div>
                         
-                        <h2 class="text-xl font-semibold text-brandBlue-600 mb-3">
+                        <h2 class="text-xl font-semibold text-brandMaroon-600 mb-3">
                             <a href="{{ route('public.events.show', [app()->getLocale(), $event->id]) }}" 
-                               class="hover:text-brandBlue-700">
+                               class="hover:text-brandMaroon-700">
                                 {{ $event->title }}
                             </a>
                         </h2>
@@ -39,7 +39,7 @@
                                 @endif
                             </div>
                             <a href="{{ route('public.events.show', [app()->getLocale(), $event->id]) }}" 
-                               class="text-brandBlue-600 hover:text-brandBlue-700 font-medium text-sm">
+                               class="text-brandMaroon-600 hover:text-brandMaroon-700 font-medium text-sm">
                                 {{ __('public.Learn More') }} →
                             </a>
                         </div>

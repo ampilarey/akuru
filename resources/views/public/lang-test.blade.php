@@ -9,7 +9,7 @@
             <h1 class="text-4xl font-bold text-brandGray-900 mb-8">Language Switching Test</h1>
             
             <!-- Current Locale Info -->
-            <div class="bg-brandBlue-50 rounded-lg p-6 mb-8">
+            <div class="bg-brandMaroon-50 rounded-lg p-6 mb-8">
                 <h2 class="text-xl font-semibold text-brandGray-900 mb-4">Current Locale Information</h2>
                 <ul class="space-y-2 text-brandGray-700">
                     <li><strong>app()->getLocale():</strong> <code class="bg-white px-2 py-1 rounded">{{ app()->getLocale() }}</code></li>
@@ -42,7 +42,7 @@
                                 </div>
                                 <div>
                                     <a href="{{ LaravelLocalization::getLocalizedURL($locale) }}" 
-                                       class="inline-flex items-center px-4 py-2 bg-brandBlue-600 text-white rounded-md hover:bg-brandBlue-700">
+                                       class="inline-flex items-center px-4 py-2 bg-brandMaroon-600 text-white rounded-md hover:bg-brandMaroon-700">
                                         Switch to {{ $locale === 'en' ? 'English' : ($locale === 'ar' ? 'العربية' : 'ދިވެހި') }}
                                     </a>
                                 </div>
@@ -91,7 +91,7 @@
             <!-- Back to Home -->
             <div class="mt-8">
                 <a href="{{ route('public.home', app()->getLocale()) }}" 
-                   class="inline-flex items-center px-6 py-3 bg-brandBlue-600 text-white rounded-lg hover:bg-brandBlue-700">
+                   class="inline-flex items-center px-6 py-3 bg-brandMaroon-600 text-white rounded-lg hover:bg-brandMaroon-700">
                     Back to Home
                 </a>
             </div>

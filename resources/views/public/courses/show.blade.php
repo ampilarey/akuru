@@ -5,19 +5,19 @@
 
 @section('content')
 <!-- Course Header -->
-<section class="bg-gradient-to-br from-brandBlue-50 to-brandBlue-100 py-12">
+<section class="bg-gradient-to-br from-brandMaroon-50 to-brandBeige-100 py-12">
     <div class="container mx-auto px-4">
         <div class="grid lg:grid-cols-2 gap-8 items-center">
             <!-- Course Info -->
             <div>
                 <!-- Category Badge -->
                 @if($course->courseCategory)
-                    <span class="inline-block px-3 py-1 text-sm font-medium bg-brandBlue-600 text-white rounded-full mb-4">
+                    <span class="inline-block px-3 py-1 text-sm font-medium bg-brandMaroon-600 text-white rounded-full mb-4">
                         {{ $course->courseCategory->name }}
                     </span>
                 @endif
 
-                <h1 class="text-4xl lg:text-5xl font-bold text-brandBlue-900 mb-4">{{ $course->title }}</h1>
+                <h1 class="text-4xl lg:text-5xl font-bold text-brandMaroon-900 mb-4">{{ $course->title }}</h1>
                 <p class="text-xl text-brandGray-700 mb-6">{{ $course->short_desc }}</p>
 
                 <!-- Course Meta -->
@@ -64,7 +64,7 @@
                 <!-- Fee -->
                 @if($course->fee)
                     <div class="mb-6">
-                        <div class="text-3xl font-bold text-brandBlue-600">
+                        <div class="text-3xl font-bold text-brandMaroon-600">
                             {{ number_format($course->fee, 2) }} MVR
                         </div>
                     </div>
@@ -87,8 +87,8 @@
                          alt="{{ $course->title }}"
                          class="rounded-lg shadow-xl w-full h-auto">
                 @else
-                    <div class="aspect-[4/3] bg-gradient-to-br from-brandBlue-200 to-brandBlue-300 rounded-lg shadow-xl flex items-center justify-center">
-                        <svg class="w-32 h-32 text-brandBlue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div class="aspect-[4/3] bg-gradient-to-br from-brandBeige-200 to-brandGold-300 rounded-lg shadow-xl flex items-center justify-center">
+                        <svg class="w-32 h-32 text-brandGold-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
                         </svg>
                     </div>
@@ -119,7 +119,7 @@
                         <div class="space-y-3">
                             @foreach($course->schedule as $item)
                                 <div class="flex items-start gap-3 p-3 bg-gray-50 rounded">
-                                    <svg class="w-5 h-5 text-brandBlue-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <svg class="w-5 h-5 text-brandMaroon-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                     </svg>
                                     <span class="text-gray-700">{{ $item }}</span>
@@ -166,7 +166,7 @@
                         @if($course->fee)
                             <div>
                                 <dt class="text-sm font-medium text-gray-500">{{ __('public.Course Fee') }}</dt>
-                                <dd class="mt-1 text-2xl font-bold text-brandBlue-600">{{ number_format($course->fee, 2) }} MVR</dd>
+                                <dd class="mt-1 text-2xl font-bold text-brandMaroon-600">{{ number_format($course->fee, 2) }} MVR</dd>
                             </div>
                         @endif
 
@@ -180,8 +180,8 @@
                 </div>
 
                 <!-- CTA Card -->
-                <div class="card p-6 bg-gradient-to-br from-brandBlue-50 to-brandBlue-100 border-brandBlue-200">
-                    <h3 class="text-lg font-bold text-brandBlue-900 mb-3">{{ __('public.Interested in this course?') }}</h3>
+                <div class="card p-6 bg-gradient-to-br from-brandMaroon-50 to-brandBeige-100 border-brandBeige-200">
+                    <h3 class="text-lg font-bold text-brandMaroon-900 mb-3">{{ __('public.Interested in this course?') }}</h3>
                     <p class="text-sm text-brandGray-700 mb-4">{{ __('public.Submit your application and we will contact you soon') }}</p>
                     <a href="{{ route('public.admissions.create', [app()->getLocale(), 'course' => $course->id]) }}" 
                        class="btn-primary w-full text-center">
@@ -210,7 +210,7 @@
         <div class="grid md:grid-cols-3 gap-6">
             <!-- You can add related courses here if needed -->
             <p class="text-gray-500 col-span-3 text-center">{{ __('public.Explore more courses') }} 
-                <a href="{{ route('public.courses.index', app()->getLocale()) }}" class="text-brandBlue-600 hover:underline">{{ __('public.here') }}</a>
+                <a href="{{ route('public.courses.index', app()->getLocale()) }}" class="text-brandMaroon-600 hover:underline">{{ __('public.here') }}</a>
             </p>
         </div>
     </div>

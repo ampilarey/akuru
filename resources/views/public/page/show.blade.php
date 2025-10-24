@@ -5,7 +5,7 @@
     <article class="max-w-4xl mx-auto">
         <!-- Header -->
         <header class="mb-8">
-            <h1 class="text-4xl font-bold text-brandBlue-600 mb-4">{{ $page->title }}</h1>
+            <h1 class="text-4xl font-bold text-brandMaroon-600 mb-4">{{ $page->title }}</h1>
             
             @if($page->excerpt)
                 <p class="text-lg text-brandGray-600">{{ $page->excerpt }}</p>
