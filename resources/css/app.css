@@ -4,6 +4,17 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Brand Color Variables */
+:root {
+  --brand-primary: #7C2D37;
+  --brand-secondary: #C9A227;
+  --brand-background: #F9F4EE;
+  --gradient-primary: linear-gradient(135deg, #7C2D37 0%, #491821 100%);
+  --gradient-secondary: linear-gradient(135deg, #C9A227 0%, #6B5414 100%);
+  --gradient-accent: linear-gradient(135deg, #7C2D37 0%, #C9A227 100%);
+  --gradient-background: linear-gradient(135deg, #F9F4EE 0%, #F3EBE0 100%);
+}
+
 /* Custom Components */
 @layer components {
   .btn-primary {

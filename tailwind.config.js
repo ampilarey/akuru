@@ -10,19 +10,19 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Akuru Maroon + Gold Theme - Heritage & Excellence
+        // Akuru Rich Wine + Gold Theme - Professional & Modern
         brandMaroon: { 
-          DEFAULT: '#6E1E25', // Main maroon
-          50: '#FDF5F6',      // Very light maroon/pink for backgrounds
-          100: '#F9EAEB',     // Light maroon
-          200: '#F3D5D7',     // Soft maroon
-          300: '#E8B0B4',     // Medium maroon
-          400: '#D77B82',     // Bright maroon
-          500: '#B94651',     // Vibrant maroon
-          600: '#6E1E25',     // Primary - Deep maroon
-          700: '#5A1820',     // Dark maroon
-          800: '#47131A',     // Deeper maroon
-          900: '#340E13',     // Darkest maroon
+          DEFAULT: '#7C2D37', // Main Rich Wine
+          50: '#FDF7F8',      // Very light wine/pink for backgrounds
+          100: '#FAECED',     // Light wine
+          200: '#F4D8DB',     // Soft wine
+          300: '#EAB5BA',     // Medium wine
+          400: '#DD8A92',     // Bright wine
+          500: '#C85A65',     // Vibrant wine
+          600: '#7C2D37',     // Primary - Rich Wine
+          700: '#6B2630',     // Dark wine
+          800: '#5A1F28',     // Deeper wine
+          900: '#491821',     // Darkest wine
         },
         brandGold: { 
           DEFAULT: '#C9A227', // Warm gold accent
