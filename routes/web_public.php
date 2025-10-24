@@ -125,7 +125,15 @@ Route::get("news/{post}", [PostController::class, "show"])->name("public.news.sh
 Route::get("events", [EventController::class, "index"])->name("public.events.index");
 Route::get("events/{event}", [EventController::class, "show"])->name("public.events.show");
 Route::get("gallery", function() {
-    return response('Gallery route is working!', 200);
+    try {
+        if (class_exists('App\Models\GalleryAlbum')) {
+            return response('GalleryAlbum model exists!', 200);
+        } else {
+            return response('GalleryAlbum model NOT found!', 500);
+        }
+    } catch (\Exception $e) {
+        return response('Error: ' . $e->getMessage(), 500);
+    }
 })->name("public.gallery.index");
 Route::get("gallery/{gallery}", [GalleryController::class, "show"])->name("public.gallery.show");
 Route::get("admissions", [AdmissionController::class, "create"])->name("public.admissions.create");
