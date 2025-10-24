@@ -10,18 +10,45 @@ export default {
   theme: {
     extend: {
       colors: {
-        brandBlue: { 
-          DEFAULT: '#1f5aa6',
-          50: '#eff6ff',
-          100: '#dbeafe',
-          200: '#bfdbfe',
-          300: '#93c5fd',
-          400: '#60a5fa',
-          500: '#3b82f6',
-          600: '#1f5aa6',
-          700: '#1d4ed8',
-          800: '#1e40af',
-          900: '#1e3a8a',
+        // Akuru Maroon + Gold Theme - Heritage & Excellence
+        brandMaroon: { 
+          DEFAULT: '#6E1E25', // Main maroon
+          50: '#FDF5F6',      // Very light maroon/pink for backgrounds
+          100: '#F9EAEB',     // Light maroon
+          200: '#F3D5D7',     // Soft maroon
+          300: '#E8B0B4',     // Medium maroon
+          400: '#D77B82',     // Bright maroon
+          500: '#B94651',     // Vibrant maroon
+          600: '#6E1E25',     // Primary - Deep maroon
+          700: '#5A1820',     // Dark maroon
+          800: '#47131A',     // Deeper maroon
+          900: '#340E13',     // Darkest maroon
+        },
+        brandGold: { 
+          DEFAULT: '#C9A227', // Warm gold accent
+          50: '#FEFBF3',
+          100: '#FDF6E3',
+          200: '#FBEDC7',
+          300: '#F7E0A0',
+          400: '#F0CE69',
+          500: '#E8BC3C',     // Bright gold
+          600: '#C9A227',     // Secondary - Main gold
+          700: '#A8861F',     // Dark gold
+          800: '#876B19',     // Deeper gold
+          900: '#6B5414',     // Darkest gold
+        },
+        brandBeige: {
+          DEFAULT: '#F9F4EE', // Warm beige background
+          50: '#FEFDFB',
+          100: '#FDF9F5',
+          200: '#F9F4EE',     // Main beige background
+          300: '#F3EBE0',
+          400: '#E8DCC9',
+          500: '#DCCDAB',
+          600: '#C9B388',
+          700: '#A89165',
+          800: '#85714F',
+          900: '#65563D',
         },
         brandGray: { 
           DEFAULT: '#4b5563',

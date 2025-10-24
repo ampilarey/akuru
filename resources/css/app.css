@@ -7,11 +7,11 @@
 /* Custom Components */
 @layer components {
   .btn-primary {
-    @apply inline-flex items-center px-4 py-2 bg-brandBlue text-white rounded-md hover:bg-brandBlue-700 focus:outline-none focus:ring-2 focus:ring-brandBlue-500 focus:ring-offset-2 transition-colors duration-200;
+    @apply inline-flex items-center px-4 py-2 bg-brandMaroon-600 text-white rounded-md hover:bg-brandMaroon-700 focus:outline-none focus:ring-2 focus:ring-brandGold-500 focus:ring-offset-2 transition-colors duration-200 shadow-md;
   }
   
   .btn-secondary {
-    @apply inline-flex items-center px-4 py-2 bg-white text-brandBlue border border-brandBlue rounded-md hover:bg-brandBlue-50 focus:outline-none focus:ring-2 focus:ring-brandBlue-500 focus:ring-offset-2 transition-colors duration-200;
+    @apply inline-flex items-center px-4 py-2 bg-white text-brandMaroon-600 border border-brandMaroon-600 rounded-md hover:bg-brandBeige-100 focus:outline-none focus:ring-2 focus:ring-brandMaroon-500 focus:ring-offset-2 transition-colors duration-200;
   }
   
   .card {
@@ -19,7 +19,7 @@
   }
   
   .form-input {
-    @apply block w-full rounded-md border-gray-300 shadow-sm focus:border-brandBlue-500 focus:ring-brandBlue-500;
+    @apply block w-full rounded-md border-gray-300 shadow-sm focus:border-brandMaroon-500 focus:ring-brandMaroon-500;
   }
 }
 
@@ -35,7 +35,7 @@
 /* Custom components */
 @layer components {
   .btn-primary {
-    @apply px-4 py-2 bg-brandBlue-600 text-white rounded-lg hover:bg-brandBlue-700 transition-colors duration-200;
+    @apply px-4 py-2 bg-brandMaroon-600 text-white rounded-lg hover:bg-brandMaroon-700 transition-colors duration-200 shadow-md;
   }
   
   .btn-secondary {
@@ -47,7 +47,7 @@
   }
   
   .form-input {
-    @apply block w-full rounded-md border-gray-300 shadow-sm focus:border-brandBlue-500 focus:ring-brandBlue-500;
+    @apply block w-full rounded-md border-gray-300 shadow-sm focus:border-brandMaroon-500 focus:ring-brandMaroon-500;
   }
   
   .form-label {

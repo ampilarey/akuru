@@ -10,27 +10,27 @@
     <!-- Desktop Navigation -->
     <div class="hidden lg:flex items-center space-x-6 rtl:space-x-reverse">
       <a href="{{ route('public.courses.index', app()->getLocale()) }}" 
-         class="text-brandGray-600 hover:text-brandBlue-600 transition-colors duration-200">
+         class="text-brandGray-600 hover:text-brandMaroon-600 transition-colors duration-200">
         {{ __('public.Courses') }}
       </a>
       <a href="{{ route('public.news.index', app()->getLocale()) }}" 
-         class="text-brandGray-600 hover:text-brandBlue-600 transition-colors duration-200">
+         class="text-brandGray-600 hover:text-brandMaroon-600 transition-colors duration-200">
         {{ __('public.News') }}
       </a>
       <a href="{{ route('public.events.index', app()->getLocale()) }}" 
-         class="text-brandGray-600 hover:text-brandBlue-600 transition-colors duration-200">
+         class="text-brandGray-600 hover:text-brandGold-600 transition-colors duration-200">
         {{ __('public.Events') }}
       </a>
       <a href="{{ route('public.gallery.index', app()->getLocale()) }}" 
-         class="text-brandGray-600 hover:text-brandBlue-600 transition-colors duration-200">
+         class="text-brandGray-600 hover:text-brandMaroon-600 transition-colors duration-200">
         {{ __('public.Gallery') }}
       </a>
       <a href="{{ route('public.contact.create', app()->getLocale()) }}" 
-         class="text-brandGray-600 hover:text-brandBlue-600 transition-colors duration-200">
+         class="text-brandGray-600 hover:text-brandMaroon-600 transition-colors duration-200">
         {{ __('public.Contact') }}
       </a>
       <a href="{{ route('public.admissions.create', app()->getLocale()) }}" 
-         class="btn-primary">
+         class="bg-brandMaroon-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-brandMaroon-700 transition-colors shadow-md">
         {{ __('public.Apply Now') }}
       </a>
     </div>
@@ -40,15 +40,15 @@
       <!-- Language Switcher - Hidden on very small screens -->
       <div class="hidden sm:flex items-center space-x-1 rtl:space-x-reverse text-sm">
         <a href="{{ LaravelLocalization::getLocalizedURL('en') }}" 
-           class="px-2 py-1 rounded text-xs {{ app()->getLocale() === 'en' ? 'bg-brandBlue-600 text-white' : 'text-brandGray-600 hover:bg-brandGray-100' }}">
+           class="px-2 py-1 rounded text-xs {{ app()->getLocale() === 'en' ? 'bg-brandMaroon-600 text-white' : 'text-brandGray-600 hover:bg-brandGold-100' }}">
           EN
         </a>
         <a href="{{ LaravelLocalization::getLocalizedURL('ar') }}" 
-           class="px-2 py-1 rounded text-xs {{ app()->getLocale() === 'ar' ? 'bg-brandBlue-600 text-white' : 'text-brandGray-600 hover:bg-brandGray-100' }}">
+           class="px-2 py-1 rounded text-xs {{ app()->getLocale() === 'ar' ? 'bg-brandMaroon-600 text-white' : 'text-brandGray-600 hover:bg-brandGold-100' }}">
           العربية
         </a>
         <a href="{{ LaravelLocalization::getLocalizedURL('dv') }}" 
-           class="px-2 py-1 rounded text-xs {{ app()->getLocale() === 'dv' ? 'bg-brandBlue-600 text-white' : 'text-brandGray-600 hover:bg-brandGray-100' }}">
+           class="px-2 py-1 rounded text-xs {{ app()->getLocale() === 'dv' ? 'bg-brandMaroon-600 text-white' : 'text-brandGray-600 hover:bg-brandGold-100' }}">
           ދިވެހި
         </a>
       </div>
@@ -84,38 +84,38 @@
       <div class="flex items-center justify-center space-x-2 py-3 border-b border-gray-200 mb-4">
         <span class="text-sm text-brandGray-500 mr-2">{{ __('public.Language') }}:</span>
         <a href="{{ LaravelLocalization::getLocalizedURL('en') }}" 
-           class="px-3 py-1 rounded text-sm {{ app()->getLocale() === 'en' ? 'bg-brandBlue-600 text-white' : 'text-brandGray-600 hover:bg-brandGray-100' }}">
+           class="px-3 py-1 rounded text-sm {{ app()->getLocale() === 'en' ? 'bg-brandMaroon-600 text-white' : 'text-brandGray-600 hover:bg-brandGold-100' }}">
           EN
         </a>
         <a href="{{ LaravelLocalization::getLocalizedURL('ar') }}" 
-           class="px-3 py-1 rounded text-sm {{ app()->getLocale() === 'ar' ? 'bg-brandBlue-600 text-white' : 'text-brandGray-600 hover:bg-brandGray-100' }}">
+           class="px-3 py-1 rounded text-sm {{ app()->getLocale() === 'ar' ? 'bg-brandMaroon-600 text-white' : 'text-brandGray-600 hover:bg-brandGold-100' }}">
           العربية
         </a>
         <a href="{{ LaravelLocalization::getLocalizedURL('dv') }}" 
-           class="px-3 py-1 rounded text-sm {{ app()->getLocale() === 'dv' ? 'bg-brandBlue-600 text-white' : 'text-brandGray-600 hover:bg-brandGray-100' }}">
+           class="px-3 py-1 rounded text-sm {{ app()->getLocale() === 'dv' ? 'bg-brandMaroon-600 text-white' : 'text-brandGray-600 hover:bg-brandGold-100' }}">
           ދިވެހި
         </a>
       </div>
 
       <!-- Mobile Navigation Links -->
       <a href="{{ route('public.courses.index', app()->getLocale()) }}" 
-         class="block py-3 px-4 text-brandGray-600 hover:text-brandBlue-600 hover:bg-brandBlue-50 rounded-lg transition-colors duration-200">
+         class="block py-3 px-4 text-brandGray-600 hover:text-brandMaroon-600 hover:bg-brandBeige-100 rounded-lg transition-colors duration-200">
         {{ __('public.Courses') }}
       </a>
       <a href="{{ route('public.news.index', app()->getLocale()) }}" 
-         class="block py-3 px-4 text-brandGray-600 hover:text-brandBlue-600 hover:bg-brandBlue-50 rounded-lg transition-colors duration-200">
+         class="block py-3 px-4 text-brandGray-600 hover:text-brandMaroon-600 hover:bg-brandBeige-100 rounded-lg transition-colors duration-200">
         {{ __('public.News') }}
       </a>
       <a href="{{ route('public.events.index', app()->getLocale()) }}" 
-         class="block py-3 px-4 text-brandGray-600 hover:text-brandBlue-600 hover:bg-brandBlue-50 rounded-lg transition-colors duration-200">
+         class="block py-3 px-4 text-brandGray-600 hover:text-brandGold-600 hover:bg-brandGold-50 rounded-lg transition-colors duration-200">
         {{ __('public.Events') }}
       </a>
       <a href="{{ route('public.gallery.index', app()->getLocale()) }}" 
-         class="block py-3 px-4 text-brandGray-600 hover:text-brandBlue-600 hover:bg-brandBlue-50 rounded-lg transition-colors duration-200">
+         class="block py-3 px-4 text-brandGray-600 hover:text-brandMaroon-600 hover:bg-brandBeige-100 rounded-lg transition-colors duration-200">
         {{ __('public.Gallery') }}
       </a>
       <a href="{{ route('public.contact.create', app()->getLocale()) }}" 
-         class="block py-3 px-4 text-brandGray-600 hover:text-brandBlue-600 hover:bg-brandBlue-50 rounded-lg transition-colors duration-200">
+         class="block py-3 px-4 text-brandGray-600 hover:text-brandMaroon-600 hover:bg-brandBeige-100 rounded-lg transition-colors duration-200">
         {{ __('public.Contact') }}
       </a>
       
@@ -137,7 +137,7 @@
       <!-- Mobile Apply Now Button -->
       <div class="pt-4">
         <a href="{{ route('public.admissions.create', app()->getLocale()) }}" 
-           class="block w-full py-3 px-4 btn-primary text-center rounded-lg font-medium">
+           class="block w-full py-3 px-4 bg-brandMaroon-600 text-white text-center rounded-lg font-semibold hover:bg-brandMaroon-700 transition-colors shadow-md">
           {{ __('public.Apply Now') }}
         </a>
       </div>

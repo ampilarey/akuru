@@ -133,6 +133,11 @@ Route::get("contact", [ContactController::class, "create"])->name("public.contac
 Route::post("contact", [ContactController::class, "store"])->name("public.contact.store");
 Route::get("page/{slug}", [PageController::class, "show"])->name("public.page.show");
 
+// Color preview for logo design
+Route::get("color-preview", function() {
+    return view('public.color-preview');
+})->name("public.color-preview");
+
 // SEO routes
 Route::get("sitemap.xml", [SitemapController::class, "index"])->name("public.sitemap");
 Route::get("robots.txt", function() {
