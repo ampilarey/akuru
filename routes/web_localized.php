@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\EnhancedDashboardController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\TeacherController;
 use App\Http\Controllers\QuranProgressController;
@@ -22,8 +23,9 @@ require __DIR__.'/auth.php';
 Route::get('/locale/{locale}', [LocaleController::class, 'setLocale'])->name('locale');
 
 // Dashboard routes
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth', 'trackActivity'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/enhanced-dashboard', [EnhancedDashboardController::class, 'index'])->name('enhanced.dashboard');
     
     // Student routes
     Route::resource('students', StudentController::class);
