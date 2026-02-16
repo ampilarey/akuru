@@ -8,8 +8,9 @@ use Illuminate\Support\Facades\Cache;
 
 /**
  * SMS Gateway Service
- * 
- * Integrates with the Dhiraagu SMS Gateway at sms.akuru.edu.mv
+ *
+ * Uses Dhiraagu API directly (config from akurusms) when SMS_USE_DHIRAAGU=true.
+ * Otherwise falls back to HTTP gateway at akuru.edu.mv.
  */
 class SmsGatewayService
 {
@@ -19,7 +20,7 @@ class SmsGatewayService
 
     public function __construct()
     {
-        $this->apiUrl = config('services.sms_gateway.url', 'https://sms.akuru.edu.mv/api/v2');
+        $this->apiUrl = config('services.sms_gateway.url', 'https://akuru.edu.mv/api/v2');
         $this->apiKey = config('services.sms_gateway.api_key', '');
     }
 
@@ -33,11 +34,103 @@ class SmsGatewayService
      */
     public function sendSms(string $phoneNumber, string $message, array $options = []): array
     {
+        if ($this->useDhiraagu()) {
+            return $this->sendViaDhiraagu($phoneNumber, $message, $options);
+        }
+        return $this->sendViaHttpGateway($phoneNumber, $message, $options);
+    }
+
+    /**
+     * Send via Dhiraagu API (config from akurusms)
+     */
+    protected function sendViaDhiraagu(string $phoneNumber, string $message, array $options = []): array
+    {
         try {
-            // Format phone number
+            $phoneNumber = $this->formatPhoneNumber($phoneNumber);
+            if (!preg_match('/^960\d{7}$/', $phoneNumber)) {
+                return [
+                    'success' => false,
+                    'error' => 'Invalid phone number format for Maldives (e.g. 7820288 or 9607820288)',
+                    'error_code' => 'INVALID_PHONE',
+                ];
+            }
+
+            $username = config('services.dhiraagu.username');
+            $password = config('services.dhiraagu.password');
+            $apiUrl = config('services.dhiraagu.api_url', 'https://messaging.dhiraagu.com.mv/v1/api/sms');
+
+            if (!$username || !$password) {
+                Log::info('SMS Demo Mode - Would send', ['to' => $phoneNumber]);
+                return [
+                    'success' => true,
+                    'message_id' => 'demo_' . uniqid(),
+                    'status' => 'sent',
+                    'cost' => 0,
+                ];
+            }
+
+            $authorizationKey = base64_encode($username . ':' . $password);
+
+            $response = Http::timeout($this->timeout)
+                ->withHeaders(['Content-Type' => 'application/json'])
+                ->post($apiUrl, [
+                    'destination' => [$phoneNumber],
+                    'content' => $message,
+                    'authorizationKey' => $authorizationKey,
+                ]);
+
+            if ($response->successful()) {
+                $data = $response->json();
+                $success = isset($data['transactionStatus']) && $data['transactionStatus'] === 'true';
+                $messageId = $data['transactionId'] ?? $data['referenceNumber'] ?? null;
+
+                if ($success) {
+                    Log::info('SMS sent via Dhiraagu', ['to' => $phoneNumber, 'message_id' => $messageId]);
+                    return [
+                        'success' => true,
+                        'message_id' => $messageId,
+                        'status' => 'sent',
+                        'cost' => 0,
+                    ];
+                }
+
+                return [
+                    'success' => false,
+                    'error' => $data['transactionDescription'] ?? 'SMS delivery failed',
+                    'error_code' => 'DHIRAAGU_FAILED',
+                ];
+            }
+
+            Log::error('Dhiraagu API error', ['status' => $response->status(), 'body' => $response->body()]);
+            return [
+                'success' => false,
+                'error' => $response->body(),
+                'error_code' => 'DHIRAAGU_API_ERROR',
+            ];
+        } catch (\Exception $e) {
+            Log::error('Dhiraagu SMS error', ['to' => $phoneNumber, 'error' => $e->getMessage()]);
+            return [
+                'success' => false,
+                'error' => $e->getMessage(),
+                'error_code' => 'EXCEPTION',
+            ];
+        }
+    }
+
+    protected function useDhiraagu(): bool
+    {
+        return config('services.dhiraagu.enabled', false)
+            && (config('services.dhiraagu.username') || config('services.dhiraagu.password'));
+    }
+
+    /**
+     * Send via HTTP gateway (akuru.edu.mv or sms.akuru.edu.mv)
+     */
+    protected function sendViaHttpGateway(string $phoneNumber, string $message, array $options = []): array
+    {
+        try {
             $phoneNumber = $this->formatPhoneNumber($phoneNumber);
 
-            // Use the correct V2 API endpoint with proper authentication
             $response = Http::timeout($this->timeout)
                 ->withHeaders([
                     'X-API-Key' => $this->apiKey,
@@ -54,41 +147,22 @@ class SmsGatewayService
 
             if ($response->successful()) {
                 $result = $response->json();
-                
-                Log::info('SMS sent successfully', [
-                    'to' => $phoneNumber,
-                    'message_id' => $result['data']['id'] ?? null,
-                ]);
-
                 return [
                     'success' => true,
                     'message_id' => $result['data']['id'] ?? null,
                     'status' => $result['data']['status'] ?? 'sent',
                     'cost' => $result['data']['cost'] ?? 0,
                 ];
-            } else {
-                $errorBody = $response->body();
-                $errorJson = $response->json();
-                
-                Log::error('SMS sending failed', [
-                    'to' => $phoneNumber,
-                    'status_code' => $response->status(),
-                    'response' => $errorBody,
-                ]);
-
-                return [
-                    'success' => false,
-                    'error' => $errorJson['message'] ?? $errorBody,
-                    'error_code' => $errorJson['error_code'] ?? 'SMS_FAILED',
-                ];
             }
-        } catch (\Exception $e) {
-            Log::error('SMS service error', [
-                'to' => $phoneNumber,
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-            ]);
 
+            $errorJson = $response->json();
+            return [
+                'success' => false,
+                'error' => $errorJson['message'] ?? $response->body(),
+                'error_code' => $errorJson['error_code'] ?? 'SMS_FAILED',
+            ];
+        } catch (\Exception $e) {
+            Log::error('SMS gateway error', ['to' => $phoneNumber, 'error' => $e->getMessage()]);
             return [
                 'success' => false,
                 'error' => $e->getMessage(),
@@ -246,25 +320,22 @@ class SmsGatewayService
     {
         try {
             $cacheKey = 'sms_gateway_health';
-            
-            // Check cache first (cache for 5 minutes)
             if (Cache::has($cacheKey)) {
                 return Cache::get($cacheKey);
             }
 
-            $response = Http::timeout(10)
-                ->get("{$this->apiUrl}/health");
+            $isHealthy = false;
+            if ($this->useDhiraagu()) {
+                $isHealthy = (bool) (config('services.dhiraagu.username') && config('services.dhiraagu.password'));
+            } else {
+                $response = Http::timeout(10)->get("{$this->apiUrl}/health");
+                $isHealthy = $response->successful();
+            }
 
-            $isHealthy = $response->successful();
-            
             Cache::put($cacheKey, $isHealthy, now()->addMinutes(5));
-            
             return $isHealthy;
         } catch (\Exception $e) {
-            Log::warning('SMS gateway health check failed', [
-                'error' => $e->getMessage(),
-            ]);
-
+            Log::warning('SMS gateway health check failed', ['error' => $e->getMessage()]);
             return false;
         }
     }

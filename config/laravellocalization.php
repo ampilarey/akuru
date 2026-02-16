@@ -305,7 +305,7 @@ return [
 
     // URLs which should not be processed, e.g. '/nova', '/nova/*', '/nova-api/*' or specific application URLs
     // Defaults to []
-    'urlsIgnored' => ['/skipped'],
+    'urlsIgnored' => ['/skipped', '/verify-email', '/verify-email/*'],
 
     'httpMethodsIgnored' => ['POST', 'PUT', 'PATCH', 'DELETE'],
 ];

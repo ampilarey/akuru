@@ -66,6 +66,8 @@ The program is structured over 2-3 years with regular assessments and progress t
                     'Sunday: 2:00 PM - 4:00 PM'
                 ],
                 'fee' => 500.00,
+                'registration_fee_amount' => 500.00,
+                'registration_fee_currency' => 'MVR',
                 'status' => 'open',
                 'seats' => 25,
             ],
@@ -93,6 +95,8 @@ Perfect for beginners and those who want to strengthen their prayer recitation."
                     'Saturday: 10:00 AM - 11:30 AM'
                 ],
                 'fee' => 200.00,
+                'registration_fee_amount' => 200.00,
+                'registration_fee_currency' => 'MVR',
                 'status' => 'open',
                 'seats' => 30,
             ],
@@ -122,6 +126,8 @@ The course uses modern teaching methods with interactive activities and practica
                     'Saturday: 9:00 AM - 10:30 AM'
                 ],
                 'fee' => 300.00,
+                'registration_fee_amount' => 300.00,
+                'registration_fee_currency' => 'MVR',
                 'status' => 'open',
                 'seats' => 20,
             ],

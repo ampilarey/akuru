@@ -2,122 +2,32 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PublicSite\{
-    PostController,
+    HomeController,
     CourseController,
     AdmissionController,
     GalleryController,
-    EventController,
     PageController,
     ContactController,
     SitemapController
 };
 
-// Professional homepage with real content
-Route::get("/", function() {
-    return view('public.home', [
-        'title' => 'Welcome to Akuru Institute',
-        'description' => 'Learn Quran, Arabic, and Islamic Studies in the Maldives',
-        'heroBanners' => collect([
-            (object)['title' => 'Learn Quran with Expert Teachers', 'subtitle' => 'Master the Holy Quran with our qualified instructors', 'image' => 'hero-1.jpg'],
-            (object)['title' => 'Arabic Language Courses', 'subtitle' => 'Learn Arabic from beginner to advanced levels', 'image' => 'hero-2.jpg'],
-            (object)['title' => 'Islamic Studies Program', 'subtitle' => 'Comprehensive Islamic education for all ages', 'image' => 'hero-3.jpg']
-        ]),
-        'courses' => collect([
-            (object)['name' => 'Quran Memorization (Hifz)', 'description' => 'Complete Quran memorization program', 'duration' => '2-3 years', 'image' => 'hifz.jpg'],
-            (object)['name' => 'Arabic Language', 'description' => 'Learn Arabic from basics to fluency', 'duration' => '1-2 years', 'image' => 'arabic.jpg'],
-            (object)['name' => 'Islamic Studies', 'description' => 'Comprehensive Islamic education', 'duration' => '1 year', 'image' => 'islamic.jpg']
-        ]),
-        'posts' => collect([
-            (object)['title' => 'New Academic Year Starts', 'content' => 'Registration is now open for the new academic year...', 'date' => '2024-01-15'],
-            (object)['title' => 'Quran Competition Results', 'content' => 'Congratulations to all participants...', 'date' => '2024-01-10']
-        ]),
-        'events' => collect([
-            (object)['title' => 'Open House Day', 'date' => '2024-02-15', 'location' => 'Main Campus'],
-            (object)['title' => 'Quran Recitation Competition', 'date' => '2024-03-01', 'location' => 'Auditorium']
-        ])
-    ]);
-});
-
-Route::get("/en", function() {
+// Dynamic homepage - DB-driven content
+Route::get("/", [HomeController::class, "index"])->name("public.home");
+Route::get("/en", function () {
     app()->setLocale("en");
-    return view('public.home', [
-        'title' => 'Welcome to Akuru Institute',
-        'description' => 'Learn Quran, Arabic, and Islamic Studies in the Maldives',
-        'heroBanners' => collect([
-            (object)['title' => 'Learn Quran with Expert Teachers', 'subtitle' => 'Master the Holy Quran with our qualified instructors', 'image' => 'hero-1.jpg'],
-            (object)['title' => 'Arabic Language Courses', 'subtitle' => 'Learn Arabic from beginner to advanced levels', 'image' => 'hero-2.jpg'],
-            (object)['title' => 'Islamic Studies Program', 'subtitle' => 'Comprehensive Islamic education for all ages', 'image' => 'hero-3.jpg']
-        ]),
-        'courses' => collect([
-            (object)['name' => 'Quran Memorization (Hifz)', 'description' => 'Complete Quran memorization program', 'duration' => '2-3 years', 'image' => 'hifz.jpg'],
-            (object)['name' => 'Arabic Language', 'description' => 'Learn Arabic from basics to fluency', 'duration' => '1-2 years', 'image' => 'arabic.jpg'],
-            (object)['name' => 'Islamic Studies', 'description' => 'Comprehensive Islamic education', 'duration' => '1 year', 'image' => 'islamic.jpg']
-        ]),
-        'posts' => collect([
-            (object)['title' => 'New Academic Year Starts', 'content' => 'Registration is now open for the new academic year...', 'date' => '2024-01-15'],
-            (object)['title' => 'Quran Competition Results', 'content' => 'Congratulations to all participants...', 'date' => '2024-01-10']
-        ]),
-        'events' => collect([
-            (object)['title' => 'Open House Day', 'date' => '2024-02-15', 'location' => 'Main Campus'],
-            (object)['title' => 'Quran Recitation Competition', 'date' => '2024-03-01', 'location' => 'Auditorium']
-        ])
-    ]);
+    return app(HomeController::class)->index(request());
 });
-
-Route::get("/ar", function() {
+Route::get("/ar", function () {
     app()->setLocale("ar");
-    return view('public.home', [
-        'title' => 'مرحباً بكم في معهد أكورو',
-        'description' => 'تعلم القرآن الكريم واللغة العربية والدراسات الإسلامية في المالديف',
-        'heroBanners' => collect([
-            (object)['title' => 'تعلم القرآن مع المعلمين الخبراء', 'subtitle' => 'أتقن القرآن الكريم مع معلمينا المؤهلين', 'image' => 'hero-1.jpg'],
-            (object)['title' => 'دورات اللغة العربية', 'subtitle' => 'تعلم العربية من المبتدئ إلى المتقدم', 'image' => 'hero-2.jpg'],
-            (object)['title' => 'برنامج الدراسات الإسلامية', 'subtitle' => 'التعليم الإسلامي الشامل لجميع الأعمار', 'image' => 'hero-3.jpg']
-        ]),
-        'courses' => collect([
-            (object)['name' => 'حفظ القرآن الكريم', 'description' => 'برنامج حفظ القرآن الكريم الكامل', 'duration' => '2-3 سنوات', 'image' => 'hifz.jpg'],
-            (object)['name' => 'اللغة العربية', 'description' => 'تعلم العربية من الأساسيات إلى الطلاقة', 'duration' => '1-2 سنة', 'image' => 'arabic.jpg'],
-            (object)['name' => 'الدراسات الإسلامية', 'description' => 'التعليم الإسلامي الشامل', 'duration' => 'سنة واحدة', 'image' => 'islamic.jpg']
-        ]),
-        'posts' => collect([
-            (object)['title' => 'بداية العام الدراسي الجديد', 'content' => 'التسجيل مفتوح الآن للعام الدراسي الجديد...', 'date' => '2024-01-15'],
-            (object)['title' => 'نتائج مسابقة القرآن', 'content' => 'تهانينا لجميع المشاركين...', 'date' => '2024-01-10']
-        ]),
-        'events' => collect([
-            (object)['title' => 'يوم الباب المفتوح', 'date' => '2024-02-15', 'location' => 'الحرم الرئيسي'],
-            (object)['title' => 'مسابقة تلاوة القرآن', 'date' => '2024-03-01', 'location' => 'القاعة الكبرى']
-        ])
-    ]);
+    return app(HomeController::class)->index(request());
 });
-
-Route::get("/dv", function() {
+Route::get("/dv", function () {
     app()->setLocale("dv");
-    return view('public.home', [
-        'title' => 'އެކުރު އިންސްޓިޓިއުޓުގައި ރައްކާ',
-        'description' => 'ދިވެހިރާއްޖެ ގައި ޤުރުން، ޢަރަބި ބަހުން އަދި އިސްލާމީ ދަސްކަމުގެ ދެނެވިފައި',
-        'heroBanners' => collect([
-            (object)['title' => 'ހެކުރު އުސްތާދުގެ އަދި ޤުރުން ދެނެވިފައި', 'subtitle' => 'ހެކުރު އުސްތާދުގެ އަދި ޤުރުން ހުންނަ ހެކުރު އުސްތާދުގެ އަދި', 'image' => 'hero-1.jpg'],
-            (object)['title' => 'ޢަރަބި ބަހުން ދެނެވިފައި', 'subtitle' => 'ޢަރަބި ބަހުން ދެނެވިފައި ހުންނަ ހެކުރު އުސްތާދުގެ އަދި', 'image' => 'hero-2.jpg'],
-            (object)['title' => 'އިސްލާމީ ދަސްކަމުގެ ހުންނަ', 'subtitle' => 'އިސްލާމީ ދަސްކަމުގެ ހުންނަ ހެކުރު އުސްތާދުގެ އަދި', 'image' => 'hero-3.jpg']
-        ]),
-        'courses' => collect([
-            (object)['name' => 'ޤުރުން ހުންނަ (ހިފްސް)', 'description' => 'ޤުރުން ހުންނަ ހުންނަ ހެކުރު އުސްތާދުގެ އަދި', 'duration' => '2-3 އަހަރު', 'image' => 'hifz.jpg'],
-            (object)['name' => 'ޢަރަބި ބަހުން', 'description' => 'ޢަރަބި ބަހުން ދެނެވިފައި ހުންނަ ހެކުރު އުސްތާދުގެ އަދި', 'duration' => '1-2 އަހަރު', 'image' => 'arabic.jpg'],
-            (object)['name' => 'އިސްލާމީ ދަސްކަމުގެ', 'description' => 'އިސްލާމީ ދަސްކަމުގެ ހުންނަ ހެކުރު އުސްތާދުގެ އަދި', 'duration' => '1 އަހަރު', 'image' => 'islamic.jpg']
-        ]),
-        'posts' => collect([
-            (object)['title' => 'އަހަރު ދެނެވިފައި ހުންނަ', 'content' => 'އަހަރު ދެނެވިފައި ހުންނަ ހެކުރު އުސްތާދުގެ އަދި...', 'date' => '2024-01-15'],
-            (object)['title' => 'ޤުރުން ހުންނަ ހުންނަ', 'content' => 'ޤުރުން ހުންނަ ހުންނަ ހެކުރު އުސްތާދުގެ އަދި...', 'date' => '2024-01-10']
-        ]),
-        'events' => collect([
-            (object)['title' => 'އަހަރު ދެނެވިފައި ހުންނަ', 'date' => '2024-02-15', 'location' => 'އަހަރު ދެނެވިފައި ހުންނަ'],
-            (object)['title' => 'ޤުރުން ހުންނަ ހުންނަ', 'date' => '2024-03-01', 'location' => 'ޤުރުން ހުންނަ ހުންނަ']
-        ])
-    ]);
+    return app(HomeController::class)->index(request());
 });
 
 // Other routes
-Route::get("about", [PageController::class, "show"])->name("public.about");
+Route::get("about", fn() => app(PageController::class)->show('about'))->name("public.about");
 Route::get("courses", [CourseController::class, "index"])->name("public.courses.index");
 Route::get("courses/{course}", [CourseController::class, "show"])->name("public.courses.show");
 Route::get("news", function() {
@@ -128,9 +38,12 @@ Route::get("news", function() {
         return response('News error: ' . $e->getMessage(), 500);
     }
 })->name("public.news.index");
-Route::get("news/{post}", function($id) {
+Route::get("news/{post}", function($identifier) {
     try {
-        $post = \App\Models\Post::published()->public()->with('category')->findOrFail($id);
+        $post = \App\Models\Post::published()->public()->with('category')
+            ->where(function($q) use ($identifier) {
+                $q->where('id', $identifier)->orWhere('slug', $identifier);
+            })->firstOrFail();
         return view('public.news.show', compact('post'));
     } catch (\Exception $e) {
         return response('News detail error: ' . $e->getMessage(), 500);
@@ -154,11 +67,53 @@ Route::get("events/{event}", function($id) {
 })->name("public.events.show");
 Route::get("gallery", [GalleryController::class, "index"])->name("public.gallery.index");
 Route::get("gallery/{gallery}", [GalleryController::class, "show"])->name("public.gallery.show");
+// Public course registration flow (guest + auth)
+Route::get("courses/{course}/register", [\App\Http\Controllers\CourseRegistrationController::class, "show"])
+    ->name("courses.register.show");
+Route::post("courses/register/start", [\App\Http\Controllers\CourseRegistrationController::class, "start"])
+    ->name("courses.register.start")->middleware('throttle:10,1');
+Route::get("courses/register/otp", [\App\Http\Controllers\CourseRegistrationController::class, "otpForm"])
+    ->name("courses.register.otp");
+Route::post("courses/register/verify", [\App\Http\Controllers\CourseRegistrationController::class, "verify"])
+    ->name("courses.register.verify")->middleware('throttle:10,1');
+Route::get("courses/register/set-password", [\App\Http\Controllers\CourseRegistrationController::class, "passwordForm"])
+    ->name("courses.register.set-password");
+Route::post("courses/register/set-password", [\App\Http\Controllers\CourseRegistrationController::class, "setPassword"])
+    ->name("courses.register.set-password.store");
+Route::get("courses/register/continue", [\App\Http\Controllers\CourseRegistrationController::class, "continueForm"])
+    ->name("courses.register.continue");
+Route::post("courses/register/enroll", [\App\Http\Controllers\CourseRegistrationController::class, "enroll"])
+    ->name("courses.register.enroll")->middleware('auth');
+Route::get("courses/register/complete", [\App\Http\Controllers\CourseRegistrationController::class, "complete"])
+    ->name("courses.register.complete");
+
+// Checkout (compliance checkbox required before payment; auth required)
+Route::get("checkout/course/{course}", [\App\Http\Controllers\CheckoutController::class, "show"])
+    ->name("checkout.course.show")->middleware('auth');
+Route::post("payments/course/{course}/start", [\App\Http\Controllers\CheckoutController::class, "start"])
+    ->name("payments.course.start")->middleware('auth');
+
+// Payment routes
+Route::get("payments/status/{payment}", [\App\Http\Controllers\PaymentController::class, "statusByPayment"])
+    ->name("payments.status.by_id");
+Route::get("payments/return/{payment}", [\App\Http\Controllers\PaymentController::class, "returnByPayment"])
+    ->name("payments.return");
+Route::get("payments/ref/{merchant_reference}/status", [\App\Http\Controllers\PaymentController::class, "status"])
+    ->name("payments.status");
+Route::post("payments/bml/initiate", [\App\Http\Controllers\PaymentController::class, "initiate"])
+    ->name("payments.bml.initiate");
+Route::get("payments/bml/return", [\App\Http\Controllers\PaymentController::class, "return"])
+    ->name("payments.bml.return");
+
 Route::get("admissions", [AdmissionController::class, "create"])->name("public.admissions.create");
 Route::post("admissions", [AdmissionController::class, "store"])->name("public.admissions.store");
 Route::get("admissions/thanks", [AdmissionController::class, "thanks"])->name("public.admissions.thanks");
 Route::get("contact", [ContactController::class, "create"])->name("public.contact.create");
 Route::post("contact", [ContactController::class, "store"])->name("public.contact.store");
+Route::get("terms", [\App\Http\Controllers\PolicyViewController::class, "terms"])->name("public.terms");
+Route::get("privacy", [\App\Http\Controllers\PolicyViewController::class, "privacy"])->name("public.privacy");
+Route::get("refunds", [\App\Http\Controllers\PolicyViewController::class, "refunds"])->name("public.refunds");
+Route::get("services", [\App\Http\Controllers\PolicyViewController::class, "services"])->name("public.services");
 Route::get("page/{slug}", [PageController::class, "show"])->name("public.page.show");
 
 // SEO routes

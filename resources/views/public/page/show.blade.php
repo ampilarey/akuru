@@ -15,9 +15,11 @@
         <!-- Featured Image -->
         @if($page->cover_image)
             <div class="mb-8">
-                <img src="{{ asset('storage/' . $page->cover_image) }}" 
-                     alt="{{ $page->title }}"
-                     class="w-full max-h-96 object-cover rounded-lg shadow-sm">
+                <x-public.picture
+                    :src="$page->cover_image"
+                    :alt="$page->title"
+                    class="w-full max-h-96 object-cover rounded-lg shadow-sm"
+                />
             </div>
         @endif
 

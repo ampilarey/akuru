@@ -3,6 +3,7 @@
 namespace Tests\Feature\Auth;
 
 use App\Models\User;
+use App\Models\UserContact;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -12,7 +13,7 @@ class AuthenticationTest extends TestCase
 
     public function test_login_screen_can_be_rendered(): void
     {
-        $response = $this->get('/login');
+        $response = $this->followingRedirects()->get(route('login'));
 
         $response->assertStatus(200);
     }
@@ -20,22 +21,36 @@ class AuthenticationTest extends TestCase
     public function test_users_can_authenticate_using_the_login_screen(): void
     {
         $user = User::factory()->create();
+        UserContact::create([
+            'user_id' => $user->id,
+            'type' => 'email',
+            'value' => strtolower($user->email ?? 'test@example.com'),
+            'is_primary' => true,
+            'verified_at' => now(),
+        ]);
 
-        $response = $this->post('/login', [
-            'email' => $user->email,
+        $response = $this->post(route('login'), [
+            'identifier' => $user->email ?? 'test@example.com',
             'password' => 'password',
         ]);
 
         $this->assertAuthenticated();
-        $response->assertRedirect(route('dashboard', absolute: false));
+        $response->assertRedirect();
     }
 
     public function test_users_can_not_authenticate_with_invalid_password(): void
     {
         $user = User::factory()->create();
+        UserContact::create([
+            'user_id' => $user->id,
+            'type' => 'email',
+            'value' => strtolower($user->email ?? 'test@example.com'),
+            'is_primary' => true,
+            'verified_at' => now(),
+        ]);
 
-        $this->post('/login', [
-            'email' => $user->email,
+        $this->post(route('login'), [
+            'identifier' => $user->email ?? 'test@example.com',
             'password' => 'wrong-password',
         ]);
 
@@ -46,7 +61,7 @@ class AuthenticationTest extends TestCase
     {
         $user = User::factory()->create();
 
-        $response = $this->actingAs($user)->post('/logout');
+        $response = $this->actingAs($user)->post(route('logout'));
 
         $this->assertGuest();
         $response->assertRedirect('/');

@@ -1,6 +1,26 @@
 @extends('public.layouts.public')
 
 @section('title', $event->title . ' - ' . config('app.name'))
+@section('description', $event->short_description ?? Str::limit(strip_tags($event->description ?? ''), 155))
+
+@push('scripts')
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Event",
+  "name": {{ json_encode($event->title) }},
+  "description": {{ json_encode(Str::limit(strip_tags($event->short_description ?? $event->description ?? ''), 200)) }},
+  "startDate": "{{ \Carbon\Carbon::parse($event->start_date ?? $event->end_date ?? now())->format('c') }}",
+  "endDate": "{{ \Carbon\Carbon::parse($event->end_date ?? $event->start_date ?? now())->format('c') }}",
+  "location": {
+    "@type": "Place",
+    "name": "Akuru Institute",
+    "address": {{ json_encode($event->location ?? 'Malé, Maldives') }}
+  },
+  "organizer": {"@type": "Organization", "name": "Akuru Institute", "url": "{{ config('app.url') }}"}
+}
+</script>
+@endpush
 
 @section('content')
 <div class="bg-white py-16">
@@ -23,20 +43,26 @@
                 </h1>
 
                 <!-- Event Meta -->
+                @php 
+$eventDate = $event->start_date ?? null; 
+$eventTime = ($event->start_time && is_object($event->start_time)) ? $event->start_time->format('g:i A') : (($event->start_time && is_string($event->start_time)) ? $event->start_time : null); 
+@endphp
                 <div class="flex flex-wrap items-center gap-6 text-brandGray-600 mb-6">
+                    @if($eventDate)
                     <div class="flex items-center">
                         <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
                             <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"></path>
                         </svg>
-                        <span>{{ $event->date->format('F j, Y') }}</span>
+                        <span>{{ \Carbon\Carbon::parse($eventDate)->format('F j, Y') }}</span>
                     </div>
+                    @endif
                     
-                    @if($event->time)
+                    @if($eventTime)
                     <div class="flex items-center">
                         <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
                             <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"></path>
                         </svg>
-                        <span>{{ $event->time }}</span>
+                        <span>{{ $eventTime }}</span>
                     </div>
                     @endif
 
@@ -55,11 +81,14 @@
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <!-- Main Content -->
                 <div class="lg:col-span-2">
-                    @if($event->image)
+                    @if($event->cover_image ?? $event->image ?? null)
                     <div class="mb-8">
-                        <img src="{{ Storage::url($event->image) }}" 
-                             alt="{{ $event->title }}" 
-                             class="w-full h-64 object-cover rounded-lg">
+                        <x-public.picture
+                            :src="$event->cover_image ?? $event->image"
+                            :alt="$event->title"
+                            class="w-full h-64 object-cover rounded-lg"
+                            loading="lazy"
+                        />
                     </div>
                     @endif
 
@@ -67,13 +96,21 @@
                         {!! $event->description !!}
                     </div>
 
-                    @if($event->requirements)
+                    @if($event->requirements && (is_array($event->requirements) ? count($event->requirements) > 0 : $event->requirements))
                     <div class="mt-8">
                         <h3 class="text-xl font-semibold text-brandGray-900 mb-4">
                             {{ __('public.Requirements') }}
                         </h3>
                         <div class="prose max-w-none">
-                            {!! $event->requirements !!}
+                            @if(is_array($event->requirements))
+                                <ul class="list-disc pl-6">
+                                    @foreach($event->requirements as $req)
+                                    <li>{{ is_array($req) ? ($req['text'] ?? json_encode($req)) : $req }}</li>
+                                    @endforeach
+                                </ul>
+                            @else
+                                {!! $event->requirements !!}
+                            @endif
                         </div>
                     </div>
                     @endif
@@ -88,15 +125,17 @@
                         </h3>
                         
                         <div class="space-y-4">
+                            @if($eventDate)
                             <div>
                                 <span class="text-sm font-medium text-brandGray-700">{{ __('public.Date') }}</span>
-                                <p class="text-brandGray-900">{{ $event->date->format('F j, Y') }}</p>
+                                <p class="text-brandGray-900">{{ \Carbon\Carbon::parse($eventDate)->format('F j, Y') }}</p>
                             </div>
+                            @endif
                             
-                            @if($event->time)
+                            @if($eventTime)
                             <div>
                                 <span class="text-sm font-medium text-brandGray-700">{{ __('public.Time') }}</span>
-                                <p class="text-brandGray-900">{{ $event->time }}</p>
+                                <p class="text-brandGray-900">{{ $eventTime }}</p>
                             </div>
                             @endif
                             
@@ -116,8 +155,18 @@
                         </div>
                     </div>
 
+                    <!-- Social Share -->
+                    <div class="bg-white border border-brandGray-200 rounded-lg p-6">
+                        <h3 class="text-lg font-semibold text-brandGray-900 mb-4">{{ __('public.Share this event') }}</h3>
+                        <div class="flex gap-2">
+                            <a href="https://www.facebook.com/sharer/sharer.php?u={{ urlencode(request()->url()) }}" target="_blank" rel="noopener" class="inline-flex items-center px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm">Facebook</a>
+                            <a href="https://twitter.com/intent/tweet?url={{ urlencode(request()->url()) }}&text={{ urlencode($event->title) }}" target="_blank" rel="noopener" class="inline-flex items-center px-3 py-2 bg-sky-500 text-white rounded hover:bg-sky-600 text-sm">Twitter</a>
+                            <a href="https://wa.me/?text={{ urlencode($event->title . ' ' . request()->url()) }}" target="_blank" rel="noopener" class="inline-flex items-center px-3 py-2 bg-green-500 text-white rounded hover:bg-green-600 text-sm">WhatsApp</a>
+                        </div>
+                    </div>
+
                     <!-- Registration -->
-                    @if($event->registration_required)
+                    @if($event->registration_type !== 'none' ?? $event->registration_required ?? false)
                     <div class="bg-white border border-brandGray-200 rounded-lg p-6">
                         <h3 class="text-lg font-semibold text-brandGray-900 mb-4">
                             {{ __('public.Registration') }}

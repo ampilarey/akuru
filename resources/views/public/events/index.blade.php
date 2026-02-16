@@ -14,10 +14,10 @@
                     <div class="p-6">
                         <div class="flex items-center justify-between mb-4">
                             <div class="bg-brandBeige-100 text-brandMaroon-600 px-3 py-1 rounded-full text-sm font-medium">
-                                {{ \Carbon\Carbon::parse($event->date)->format('M d') }}
+                                {{ \Carbon\Carbon::parse($event->start_date ?? $event->date ?? now())->format('M d') }}
                             </div>
                             <div class="text-sm text-brandGray-500">
-                                {{ \Carbon\Carbon::parse($event->date)->format('Y') }}
+                                {{ \Carbon\Carbon::parse($event->start_date ?? $event->date ?? now())->format('Y') }}
                             </div>
                         </div>
                         
@@ -34,7 +34,9 @@
                         
                         <div class="flex items-center justify-between">
                             <div class="text-sm text-brandGray-500">
-                                @if(isset($event->time))
+                                @if($event->start_time && is_object($event->start_time))
+                                    <span>{{ $event->start_time->format('g:i A') }}</span>
+                                @elseif(isset($event->time))
                                     <span>{{ $event->time }}</span>
                                 @endif
                             </div>

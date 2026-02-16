@@ -12,10 +12,13 @@
             @foreach($galleries as $gallery)
                 <div class="bg-white rounded-lg shadow-sm border hover:shadow-md transition-shadow">
                     <div class="aspect-video bg-brandGray-100 rounded-t-lg overflow-hidden">
-                        @if($gallery->items->first())
-                            <img src="{{ asset('storage/' . $gallery->items->first()->file_path) }}" 
-                                 alt="{{ $gallery->title }}"
-                                 class="w-full h-full object-cover">
+                        @if($gallery->items->first() && $gallery->items->first()->file_type === 'image')
+                            <x-public.picture
+                                :src="$gallery->items->first()->file_path"
+                                :alt="$gallery->title"
+                                class="w-full h-full object-cover"
+                                loading="lazy"
+                            />
                         @else
                             <div class="w-full h-full flex items-center justify-center">
                                 <svg class="w-12 h-12 text-brandGray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">

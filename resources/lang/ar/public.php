@@ -17,6 +17,7 @@ return [
     'Admissions' => 'القبول',
     'Privacy Policy' => 'سياسة الخصوصية',
     'Terms of Service' => 'شروط الخدمة',
+    'Last updated' => 'آخر تحديث',
     'All rights reserved' => 'جميع الحقوق محفوظة',
     
     // Home page
@@ -80,6 +81,11 @@ return [
     'Our Location' => 'موقعنا',
     'Phone' => 'الهاتف',
     'Email' => 'البريد الإلكتروني',
+    'cookie_consent_message' => 'نستخدم ملفات تعريف الارتباط لتحسين تجربتك. باستمرارك في استخدام هذا الموقع، فإنك توافق على استخدامنا لملفات تعريف الارتباط. انظر',
+    'Accept' => 'قبول',
+    'Decline' => 'رفض',
+    'Share this article' => 'مشاركة هذا المقال',
+    'Share this event' => 'مشاركة هذا الحدث',
     
     // Footer
     'address' => 'م. قولضاستا آگي، مونيا ماگو، ماليه 20026، المالديف',

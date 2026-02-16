@@ -163,9 +163,12 @@
                         <!-- Course Image -->
                         <div class="relative overflow-hidden">
                             @if($course->cover_image)
-                                <img src="{{ asset('storage/' . $course->cover_image) }}" 
-                                     alt="{{ $course->title }}"
-                                     class="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300">
+                                <x-public.picture
+                                    :src="$course->cover_image"
+                                    :alt="$course->title"
+                                    class="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+                                    loading="lazy"
+                                />
                             @else
                                 <div class="w-full h-48 bg-gradient-to-br from-brandBeige-100 to-brandBeige-200 flex items-center justify-center">
                                     <svg class="w-16 h-16 text-brandGold-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -267,7 +270,7 @@
                             </div>
 
                             <!-- CTA Button -->
-                            <a href="{{ route('public.courses.show', [app()->getLocale(), $course->slug]) }}" 
+                            <a href="{{ LaravelLocalization::localizeURL(route('public.courses.show', $course->slug)) }}" 
                                class="btn-primary w-full text-center group-hover:bg-brandMaroon-700 transition-colors">
                                 {{ __('public.View Details') }}
                             </a>
@@ -297,7 +300,7 @@
                                 @foreach($featuredCourses as $featuredCourse)
                                     <div class="border-l-4 border-brandGold-500 pl-4">
                                         <h4 class="font-semibold text-gray-900 mb-1">
-                                            <a href="{{ route('public.courses.show', [app()->getLocale(), $featuredCourse->slug]) }}" 
+                                            <a href="{{ LaravelLocalization::localizeURL(route('public.courses.show', $featuredCourse->slug)) }}" 
                                                class="hover:text-brandMaroon-600 transition-colors">
                                                 {{ $featuredCourse->title }}
                                             </a>
@@ -341,7 +344,7 @@
                         <h3 class="text-lg font-bold text-gray-900 mb-4">{{ __('public.Course Categories') }}</h3>
                         <div class="space-y-2">
                             @foreach($categories as $category)
-                                <a href="{{ route('public.courses.index', [app()->getLocale(), 'category' => $category->slug]) }}" 
+                                <a href="{{ route('public.courses.index', app()->getLocale()) }}?category={{ urlencode($category->slug) }}" 
                                    class="block px-3 py-2 text-sm text-gray-700 hover:bg-brandBeige-100 hover:text-brandMaroon-600 rounded transition-colors">
                                     {{ $category->name }}
                                     <span class="float-right text-xs text-gray-500">

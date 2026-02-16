@@ -1,0 +1,3 @@
+CREATE DATABASE IF NOT EXISTS akuru_test;
+GRANT ALL PRIVILEGES ON akuru_test.* TO 'akuru_user'@'%';
+FLUSH PRIVILEGES;

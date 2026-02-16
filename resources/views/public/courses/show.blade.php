@@ -3,6 +3,19 @@
 @section('title', $course->title)
 @section('description', $course->short_desc)
 
+@push('scripts')
+<script type="application/ld+json">
+{
+  "@@context": "https://schema.org",
+  "@type": "Course",
+  "name": {{ json_encode($course->title) }},
+  "description": {{ json_encode($course->short_desc ?? '') }},
+  "provider": {"@type": "Organization", "name": "Akuru Institute", "url": "{{ config('app.url') }}"},
+  "offers": {"@type": "Offer", "price": "{{ $course->fee ?? 0 }}", "priceCurrency": "MVR"}
+}
+</script>
+@endpush
+
 @section('content')
 <!-- Course Header -->
 <section class="bg-gradient-to-br from-brandMaroon-50 to-brandBeige-100 py-12">
@@ -11,9 +24,9 @@
             <!-- Course Info -->
             <div>
                 <!-- Category Badge -->
-                @if($course->courseCategory)
+                @if($course->category)
                     <span class="inline-block px-3 py-1 text-sm font-medium bg-brandMaroon-600 text-white rounded-full mb-4">
-                        {{ $course->courseCategory->name }}
+                        {{ $course->category->name }}
                     </span>
                 @endif
 
@@ -70,22 +83,39 @@
                     </div>
                 @endif
 
-                <!-- CTA Button -->
-                <a href="{{ route('public.admissions.create', [app()->getLocale(), 'course' => $course->id]) }}" 
-                   class="btn-primary inline-flex items-center px-8 py-4 text-lg">
-                    {{ __('public.Apply for This Course') }}
-                    <svg class="w-5 h-5 ml-2 rtl:ml-0 rtl:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
-                    </svg>
-                </a>
+                <!-- CTA Buttons -->
+                <div class="flex flex-wrap gap-4">
+                    @if($course->hasRegistrationFee())
+                        <a href="{{ route('checkout.course.show', [app()->getLocale(), $course]) }}" 
+                           class="btn-primary inline-flex items-center px-8 py-4 text-lg">
+                            Pay {{ number_format($course->getRegistrationFeeAmount(), 2) }} MVR
+                            <svg class="w-5 h-5 ml-2 rtl:ml-0 rtl:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+                            </svg>
+                        </a>
+                    @endif
+                    <a href="{{ route('courses.register.show', [app()->getLocale(), $course]) }}" 
+                       class="{{ $course->hasRegistrationFee() ? 'btn-secondary' : 'btn-primary' }} inline-flex items-center px-8 py-4 text-lg">
+                        {{ __('public.Register Now') }}
+                        <svg class="w-5 h-5 ml-2 rtl:ml-0 rtl:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+                        </svg>
+                    </a>
+                    <a href="{{ route('public.admissions.create', [app()->getLocale(), 'course' => $course->id]) }}" 
+                       class="btn-secondary inline-flex items-center px-8 py-4 text-lg">
+                        {{ __('public.Apply for Admission') }}
+                    </a>
+                </div>
             </div>
 
             <!-- Course Image -->
             <div>
                 @if($course->cover_image)
-                    <img src="{{ asset('storage/' . $course->cover_image) }}" 
-                         alt="{{ $course->title }}"
-                         class="rounded-lg shadow-xl w-full h-auto">
+                    <x-public.picture
+                        :src="$course->cover_image"
+                        :alt="$course->title"
+                        class="rounded-lg shadow-xl w-full h-auto"
+                    />
                 @else
                     <div class="aspect-[4/3] bg-gradient-to-br from-brandBeige-200 to-brandGold-300 rounded-lg shadow-xl flex items-center justify-center">
                         <svg class="w-32 h-32 text-brandGold-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">

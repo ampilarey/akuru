@@ -2,13 +2,13 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
 
-class User extends Authenticatable
+class User extends Authenticatable implements MustVerifyEmail
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable, HasRoles;
@@ -29,6 +29,7 @@ class User extends Authenticatable
         'national_id',
         'photo',
         'is_active',
+        'force_password_change',
     ];
 
     /**
@@ -53,10 +54,44 @@ class User extends Authenticatable
             'password' => 'hashed',
             'date_of_birth' => 'date',
             'is_active' => 'boolean',
+            'force_password_change' => 'boolean',
+            'last_login_at' => 'datetime',
         ];
     }
 
     // Relationships
+    public function contacts()
+    {
+        return $this->hasMany(UserContact::class);
+    }
+
+    public function primaryMobile()
+    {
+        return $this->hasOne(UserContact::class)->where('type', 'mobile')->where('is_primary', true);
+    }
+
+    public function primaryEmail()
+    {
+        return $this->hasOne(UserContact::class)->where('type', 'email')->where('is_primary', true);
+    }
+
+    public function guardianStudents()
+    {
+        return $this->belongsToMany(RegistrationStudent::class, 'student_guardians', 'guardian_user_id', 'student_id')
+            ->withPivot('relationship', 'is_primary')
+            ->withTimestamps();
+    }
+
+    public function registrationStudentProfile()
+    {
+        return $this->hasOne(RegistrationStudent::class, 'user_id');
+    }
+
+    public function payments()
+    {
+        return $this->hasMany(Payment::class);
+    }
+
     public function student()
     {
         return $this->hasOne(Student::class);
@@ -122,5 +157,10 @@ class User extends Authenticatable
     public function isManagementLevel()
     {
         return $this->hasAnyRole(['super_admin', 'admin', 'headmaster']);
+    }
+
+    public function hasVerifiedContact(): bool
+    {
+        return $this->contacts()->whereNotNull('verified_at')->exists();
     }
 }

@@ -27,7 +27,7 @@ class LoginRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'email' => ['required', 'string', 'email'],
+            'identifier' => ['required', 'string'],
             'password' => ['required', 'string'],
         ];
     }
@@ -41,14 +41,26 @@ class LoginRequest extends FormRequest
     {
         $this->ensureIsNotRateLimited();
 
-        if (! Auth::attempt($this->only('email', 'password'), $this->boolean('remember'))) {
-            RateLimiter::hit($this->throttleKey());
+        $identifier = $this->input('identifier');
+        $normalizer = app(\App\Services\ContactNormalizer::class);
+        $type = str_contains($identifier, '@') ? 'email' : 'mobile';
+        $value = $type === 'email' ? $normalizer->normalizeEmail($identifier) : $normalizer->normalizePhone($identifier);
 
-            throw ValidationException::withMessages([
-                'email' => trans('auth.failed'),
-            ]);
+        $contact = \App\Models\UserContact::where('type', $type)->where('value', $value)->whereNotNull('verified_at')->first();
+
+        if (!$contact) {
+            RateLimiter::hit($this->throttleKey());
+            throw ValidationException::withMessages(['identifier' => trans('auth.failed')]);
         }
 
+        $user = $contact->user;
+        if (!$user || !\Illuminate\Support\Facades\Hash::check($this->input('password'), $user->password)) {
+            RateLimiter::hit($this->throttleKey());
+            throw ValidationException::withMessages(['identifier' => trans('auth.failed')]);
+        }
+
+        $user->update(['last_login_at' => now()]);
+        Auth::login($user, $this->boolean('remember'));
         RateLimiter::clear($this->throttleKey());
     }
 
@@ -68,7 +80,7 @@ class LoginRequest extends FormRequest
         $seconds = RateLimiter::availableIn($this->throttleKey());
 
         throw ValidationException::withMessages([
-            'email' => trans('auth.throttle', [
+            'identifier' => trans('auth.throttle', [
                 'seconds' => $seconds,
                 'minutes' => ceil($seconds / 60),
             ]),
@@ -80,6 +92,6 @@ class LoginRequest extends FormRequest
      */
     public function throttleKey(): string
     {
-        return Str::transliterate(Str::lower($this->string('email')).'|'.$this->ip());
+        return Str::transliterate(Str::lower($this->string('identifier')).'|'.$this->ip());
     }
 }

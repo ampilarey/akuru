@@ -12,16 +12,25 @@ class AdmissionController extends Controller
 {
     public function create(Request $request)
     {
-        $courses = Course::open()
+        // Include both open and upcoming courses (both accept applications)
+        $courses = Course::whereIn('status', ['open', 'upcoming'])
             ->with('category')
             ->orderBy('title')
             ->get();
-        
+
         $selectedCourse = null;
         if ($request->filled('course')) {
-            $selectedCourse = Course::where('slug', $request->course)->first();
+            $selectedCourse = Course::where('slug', $request->course)
+                ->orWhere('id', $request->course)
+                ->first();
+
+            // Ensure selected course is in the list when coming from course page (e.g. if status changed)
+            if ($selectedCourse && $courses->doesntContain('id', $selectedCourse->id)) {
+                $selectedCourse->load('category');
+                $courses = $courses->push($selectedCourse)->sortBy('title')->values();
+            }
         }
-        
+
         return view('public.admissions.create', compact('courses', 'selectedCourse'));
     }
     

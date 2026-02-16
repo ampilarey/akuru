@@ -13,9 +13,12 @@
                 <article class="bg-white rounded-lg shadow-sm border hover:shadow-md transition-shadow">
                     @if($post->cover_image)
                         <div class="aspect-video bg-brandGray-100 rounded-t-lg overflow-hidden">
-                            <img src="{{ asset('storage/' . $post->cover_image) }}" 
-                                 alt="{{ $post->title }}"
-                                 class="w-full h-full object-cover">
+                            <x-public.picture
+                                :src="$post->cover_image"
+                                :alt="$post->title"
+                                class="w-full h-full object-cover"
+                                loading="lazy"
+                            />
                         </div>
                     @endif
                     
@@ -28,7 +31,7 @@
                         </div>
                         
                         <h2 class="text-xl font-semibold text-brandMaroon-600 mb-3">
-                            <a href="{{ route('public.news.show', [app()->getLocale(), $post->slug]) }}" 
+                            <a href="{{ route('public.news.show', [app()->getLocale(), $post->slug ?? $post->id]) }}" 
                                class="hover:text-brandMaroon-700">
                                 {{ $post->title }}
                             </a>

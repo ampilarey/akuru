@@ -16,6 +16,26 @@
                 </p>
             </div>
 
+            <!-- Progress Indicator -->
+            <div class="mb-8">
+                <div class="flex items-center justify-between max-w-md mx-auto">
+                    <div class="flex flex-col items-center">
+                        <div class="w-10 h-10 rounded-full bg-brandMaroon-600 text-white flex items-center justify-center font-bold">1</div>
+                        <span class="text-xs mt-1 text-brandGray-600">{{ __('public.Personal Info') }}</span>
+                    </div>
+                    <div class="flex-1 h-1 bg-gray-200 mx-2"></div>
+                    <div class="flex flex-col items-center">
+                        <div class="w-10 h-10 rounded-full bg-brandMaroon-600 text-white flex items-center justify-center font-bold">2</div>
+                        <span class="text-xs mt-1 text-brandGray-600">{{ __('public.Course') }}</span>
+                    </div>
+                    <div class="flex-1 h-1 bg-gray-200 mx-2"></div>
+                    <div class="flex flex-col items-center">
+                        <div class="w-10 h-10 rounded-full bg-brandMaroon-100 text-brandMaroon-600 flex items-center justify-center font-bold">3</div>
+                        <span class="text-xs mt-1 text-brandGray-600">{{ __('public.Review') }}</span>
+                    </div>
+                </div>
+            </div>
+
             <!-- Application Form -->
             <div class="bg-white rounded-lg shadow-lg p-8">
                 <form method="POST" action="{{ route('public.admissions.store', app()->getLocale()) }}" class="space-y-6">

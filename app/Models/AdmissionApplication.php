@@ -7,6 +7,22 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class AdmissionApplication extends Model
 {
+    protected static function booted(): void
+    {
+        static::creating(function (AdmissionApplication $model) {
+            if (empty($model->application_number)) {
+                $year = now()->year;
+                $prefix = 'AKU';
+                $sequence = str_pad(static::whereYear('created_at', $year)->count() + 1, 4, '0', STR_PAD_LEFT);
+                $model->application_number = "{$prefix}{$year}{$sequence}";
+            }
+            // Public form uses full_name; sync to student_name for legacy admin compatibility
+            if (empty($model->student_name) && !empty($model->full_name)) {
+                $model->student_name = $model->full_name;
+            }
+        });
+    }
+
     protected $fillable = [
         'course_id',
         'application_number',

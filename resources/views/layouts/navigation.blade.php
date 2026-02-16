@@ -46,7 +46,7 @@
                     
                     @auth
                     @if(auth()->user()->hasAnyRole(['super_admin', 'admin', 'headmaster', 'supervisor', 'teacher']))
-                <x-nav-link :href="route('requests.index')" :active="request()->routeIs('requests.*')">
+                <x-nav-link :href="route('substitutions.requests.index')" :active="request()->routeIs('substitutions.requests.*')">
                     {{ __('Substitutions') }}
                 </x-nav-link>
                 @endif

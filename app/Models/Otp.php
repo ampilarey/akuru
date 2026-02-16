@@ -3,87 +3,70 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\Hash;
 
 class Otp extends Model
 {
+    protected $table = 'user_contact_otps';
+
     protected $fillable = [
-        'identifier',
-        'code',
-        'type',
+        'user_contact_id',
+        'purpose',
+        'channel',
+        'code_hash',
         'expires_at',
-        'verified_at',
-        'ip_address',
-        'user_agent',
+        'used_at',
         'attempts',
-        'is_used',
     ];
 
-    protected $casts = [
-        'expires_at' => 'datetime',
-        'verified_at' => 'datetime',
-        'is_used' => 'boolean',
-    ];
+    protected function casts(): array
+    {
+        return [
+            'expires_at' => 'datetime',
+            'used_at' => 'datetime',
+            'attempts' => 'integer',
+        ];
+    }
 
-    /**
-     * Check if OTP is expired
-     */
+    public function userContact(): BelongsTo
+    {
+        return $this->belongsTo(UserContact::class);
+    }
+
     public function isExpired(): bool
     {
         return $this->expires_at->isPast();
     }
 
-    /**
-     * Check if OTP is valid
-     */
-    public function isValid(): bool
+    public function isUsed(): bool
     {
-        return !$this->is_used && !$this->isExpired() && $this->attempts < 5;
+        return $this->used_at !== null;
     }
 
-    /**
-     * Mark OTP as verified
-     */
-    public function markAsVerified(): void
+    public function verify(string $code): bool
     {
-        $this->update([
-            'verified_at' => now(),
-            'is_used' => true,
+        if ($this->isUsed() || $this->isExpired()) {
+            return false;
+        }
+        if (!Hash::check($code, $this->code_hash)) {
+            $this->increment('attempts');
+            return false;
+        }
+        $this->update(['used_at' => now()]);
+        return true;
+    }
+
+    public static function createForContact(UserContact $contact, string $purpose, string $code): self
+    {
+        return static::create([
+            'user_contact_id' => $contact->id,
+            'purpose' => $purpose,
+            'channel' => $contact->channel,
+            'code_hash' => Hash::make($code),
+            'expires_at' => $purpose === 'verify_contact'
+                ? now()->addMinutes(5)
+                : now()->addMinutes(15),
         ]);
     }
-
-    /**
-     * Increment verification attempts
-     */
-    public function incrementAttempts(): void
-    {
-        $this->increment('attempts');
-    }
-
-    /**
-     * Scope: Get valid OTPs
-     */
-    public function scopeValid($query)
-    {
-        return $query->where('is_used', false)
-                    ->where('expires_at', '>', now())
-                    ->where('attempts', '<', 5);
-    }
-
-    /**
-     * Scope: Get OTPs by identifier
-     */
-    public function scopeForIdentifier($query, string $identifier)
-    {
-        return $query->where('identifier', $identifier);
-    }
-
-    /**
-     * Scope: Get OTPs by type
-     */
-    public function scopeOfType($query, string $type)
-    {
-        return $query->where('type', $type);
-    }
 }
-

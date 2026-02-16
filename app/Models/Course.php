@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -9,6 +10,7 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 
 class Course extends Model
 {
+    use HasFactory;
     protected $fillable = [
         'course_category_id',
         'title',
@@ -20,6 +22,9 @@ class Course extends Model
         'level',
         'schedule',
         'fee',
+        'registration_fee_amount',
+        'registration_fee_currency',
+        'requires_admin_approval',
         'status',
         'seats',
         'meta',
@@ -37,6 +42,8 @@ class Course extends Model
     protected $casts = [
         'schedule' => 'array',
         'fee' => 'decimal:2',
+        'registration_fee_amount' => 'decimal:2',
+        'requires_admin_approval' => 'boolean',
         'meta' => 'array',
         'prerequisites' => 'array',
         'learning_objectives' => 'array',
@@ -46,6 +53,11 @@ class Course extends Model
         'end_date' => 'date',
     ];
 
+    public function getRouteKeyName(): string
+    {
+        return 'slug';
+    }
+
     public function category(): BelongsTo
     {
         return $this->belongsTo(CourseCategory::class, 'course_category_id');
@@ -54,6 +66,21 @@ class Course extends Model
     public function admissionApplications(): HasMany
     {
         return $this->hasMany(AdmissionApplication::class);
+    }
+
+    public function enrollments(): HasMany
+    {
+        return $this->hasMany(CourseEnrollment::class);
+    }
+
+    public function hasRegistrationFee(): bool
+    {
+        return (float) ($this->registration_fee_amount ?? 0) > 0;
+    }
+
+    public function getRegistrationFeeAmount(): float
+    {
+        return (float) ($this->registration_fee_amount ?? 0);
     }
 
     public function scopeOpen($query)

@@ -70,7 +70,7 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
     // Substitution routes (for admin, headmaster, supervisor, teacher roles)
     Route::middleware(['role:admin|headmaster|supervisor|teacher'])->group(function() {
         Route::resource('substitutions/absences', TeacherAbsenceController::class)->except(['show']);
-        Route::resource('substitutions/requests', SubstitutionRequestController::class);
+        Route::resource('substitutions/requests', SubstitutionRequestController::class)->names('substitutions.requests');
         Route::post('substitutions/requests/{request}/take', [SubstitutionRequestController::class, 'take'])->name('substitutions.requests.take');
         Route::post('substitutions/requests/{request}/assign', [SubstitutionRequestController::class, 'assign'])->name('substitutions.requests.assign');
     });

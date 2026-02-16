@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\Api\SmsApiController;
 
 /*
 |--------------------------------------------------------------------------
@@ -17,6 +18,12 @@ use App\Http\Controllers\NotificationController;
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
+});
+
+// SMS API (akuru.edu.mv/api/v2) - API key auth
+Route::prefix('v2')->group(function () {
+    Route::get('health', [SmsApiController::class, 'health']);
+    Route::post('sms/send', [SmsApiController::class, 'send']);
 });
 
 // Notification API routes

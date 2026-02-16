@@ -85,15 +85,15 @@ class GalleryController extends Controller
         return view('public.gallery.index', compact('featuredAlbums', 'recentAlbums', 'albumTypes'))->with('galleries', $albums);
     }
 
-    public function show(GalleryAlbum $album)
+    public function show(GalleryAlbum $gallery)
     {
         // Ensure album is published and public
-        if ($album->status !== 'published' || !$album->is_public) {
+        if ($gallery->status !== 'published' || !$gallery->is_public) {
             abort(404);
         }
         
         // Load items with pagination
-        $items = $album->publicItems()
+        $items = $gallery->publicItems()
                        ->ordered()
                        ->paginate(20)
                        ->withQueryString();
@@ -101,7 +101,7 @@ class GalleryController extends Controller
         // Get featured items for sidebar
         $featuredItems = GalleryItem::public()
                                    ->featured()
-                                   ->where('gallery_album_id', '!=', $album->id)
+                                   ->where('gallery_album_id', '!=', $gallery->id)
                                    ->with('album')
                                    ->take(6)
                                    ->get();
@@ -109,7 +109,7 @@ class GalleryController extends Controller
         // Get recent albums for sidebar
         $recentAlbums = GalleryAlbum::published()
                                    ->public()
-                                   ->where('id', '!=', $album->id)
+                                   ->where('id', '!=', $gallery->id)
                                    ->with(['items' => function($q) {
                                        $q->public()->ordered()->limit(1);
                                    }])
@@ -117,7 +117,7 @@ class GalleryController extends Controller
                                    ->take(6)
                                    ->get();
         
-        return view('public.gallery.show', compact('album', 'items', 'featuredItems', 'recentAlbums'));
+        return view('public.gallery.show', compact('gallery', 'items', 'featuredItems', 'recentAlbums'));
     }
 
     public function item(GalleryItem $item)

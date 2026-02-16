@@ -66,11 +66,11 @@
         </div>
         
         <div class="flex items-center space-x-6 rtl:space-x-reverse">
-          <a href="{{ route('public.page.show', [app()->getLocale(), 'privacy']) }}" 
+          <a href="{{ route('public.page.show', 'privacy-policy') }}" 
              class="text-sm text-gray-600 hover:text-brandMaroon-700 transition-colors font-medium">
             {{ __('public.Privacy Policy') }}
           </a>
-          <a href="{{ route('public.page.show', [app()->getLocale(), 'terms']) }}" 
+          <a href="{{ route('public.page.show', 'terms') }}" 
              class="text-sm text-gray-600 hover:text-brandMaroon-700 transition-colors font-medium">
             {{ __('public.Terms of Service') }}
           </a>

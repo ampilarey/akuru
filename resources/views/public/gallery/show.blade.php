@@ -30,16 +30,19 @@
             </div>
 
             <!-- Gallery Items -->
-            @if($gallery->items && $gallery->items->count() > 0)
+            @if(isset($items) && $items->count() > 0)
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                @foreach($gallery->items as $item)
-                <div class="group cursor-pointer" onclick="openModal('{{ Storage::url($item->file_path) }}', '{{ $item->title }}', '{{ $item->description }}')">
+                @foreach($items as $item)
+                <div class="group cursor-pointer" onclick="openModal('{{ Storage::url($item->file_path) }}', '{{ addslashes($item->title ?? '') }}', '{{ addslashes($item->caption ?? $item->description ?? '') }}')">
                     <div class="relative overflow-hidden rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300">
-                        @if($item->type === 'image')
-                        <img src="{{ Storage::url($item->file_path) }}" 
-                             alt="{{ $item->title }}" 
-                             class="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300">
-                        @elseif($item->type === 'video')
+                        @if($item->file_type === 'image')
+                        <x-public.picture
+                            :src="$item->file_path"
+                            :alt="$item->title ?? ''"
+                            class="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+                            loading="lazy"
+                        />
+                        @elseif($item->file_type === 'video')
                         <div class="w-full h-48 bg-brandGray-200 flex items-center justify-center">
                             <svg class="w-12 h-12 text-brandGray-400" fill="currentColor" viewBox="0 0 20 20">
                                 <path d="M8 5v10l8-5-8-5z"></path>
@@ -69,6 +72,11 @@
                 </div>
                 @endforeach
             </div>
+            @if($items->hasPages())
+            <div class="mt-8 flex justify-center">
+                {{ $items->links() }}
+            </div>
+            @endif
             @else
             <!-- Empty State -->
             <div class="text-center py-12">
