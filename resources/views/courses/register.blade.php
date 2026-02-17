@@ -41,7 +41,8 @@
                         <label for="contact_value" class="block text-sm font-medium text-gray-700 mb-1">Mobile number</label>
                         <input id="contact_value" type="tel" name="contact_value" value="{{ old('contact_value') }}"
                             placeholder="960 123 4567" required
-                            class="w-full rounded-md border-gray-300 shadow-sm focus:border-brandMaroon-500 focus:ring-brandMaroon-500">
+                            class="w-full rounded-md border-gray-300 shadow-sm focus:border-brandMaroon-500 focus:ring-brandMaroon-500"
+                            :disabled="contactType !== 'mobile'">
                         <p class="text-xs text-gray-500 mt-1">Include country code (e.g. +960 or 960)</p>
                     </div>
                     <div class="mb-4" x-show="contactType === 'email'" style="display: none;">
@@ -49,6 +50,7 @@
                         <input id="contact_value_email" type="email" name="contact_value" value="{{ old('contact_value') }}"
                             placeholder="you@example.com"
                             class="w-full rounded-md border-gray-300 shadow-sm focus:border-brandMaroon-500 focus:ring-brandMaroon-500"
+                            :disabled="contactType !== 'email'"
                             x-bind:required="contactType === 'email'">
                         <p class="text-xs text-gray-500 mt-1">For students outside Maldives</p>
                     </div>
