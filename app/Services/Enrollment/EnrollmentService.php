@@ -139,7 +139,10 @@ class EnrollmentService
                     continue;
                 }
 
-                $feeAmount = (float) ($course->registration_fee_amount ?? $course->fee ?? 0);
+                $feeAmount = (float) ($course->registration_fee_amount ?? 0);
+                if ($feeAmount <= 0 && (float) ($course->fee ?? 0) > 0) {
+                    $feeAmount = (float) $course->fee;
+                }
                 $paymentStatus = $feeAmount > 0 ? 'pending' : 'not_required';
 
                 $enrollment = CourseEnrollment::create([

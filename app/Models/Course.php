@@ -75,12 +75,16 @@ class Course extends Model
 
     public function hasRegistrationFee(): bool
     {
-        return (float) ($this->registration_fee_amount ?? 0) > 0;
+        return $this->getRegistrationFeeAmount() > 0;
     }
 
     public function getRegistrationFeeAmount(): float
     {
-        return (float) ($this->registration_fee_amount ?? 0);
+        $amount = (float) ($this->registration_fee_amount ?? 0);
+        if ($amount <= 0 && (float) ($this->fee ?? 0) > 0) {
+            return (float) $this->fee;
+        }
+        return $amount;
     }
 
     public function scopeOpen($query)
