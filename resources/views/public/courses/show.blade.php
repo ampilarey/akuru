@@ -83,27 +83,24 @@
                     </div>
                 @endif
 
-                <!-- CTA Buttons -->
-                <div class="flex flex-wrap gap-4">
-                    @if($course->hasRegistrationFee())
-                        <a href="{{ route('checkout.course.show', [app()->getLocale(), $course]) }}" 
-                           class="btn-primary inline-flex items-center px-8 py-4 text-lg">
-                            Pay {{ number_format($course->getRegistrationFeeAmount(), 2) }} MVR
-                            <svg class="w-5 h-5 ml-2 rtl:ml-0 rtl:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
-                            </svg>
-                        </a>
-                    @endif
+                <!-- CTA: One unified flow - Apply → OTP verify → Register → Pay -->
+                <div class="space-y-3">
                     <a href="{{ route('courses.register.show', [app()->getLocale(), $course]) }}" 
-                       class="{{ $course->hasRegistrationFee() ? 'btn-secondary' : 'btn-primary' }} inline-flex items-center px-8 py-4 text-lg">
-                        {{ __('public.Register Now') }}
+                       class="btn-primary inline-flex items-center px-8 py-4 text-lg">
+                        {{ __('public.Enroll in this course') }}
+                        @if($course->hasRegistrationFee())
+                            <span class="ml-2">({{ number_format($course->getRegistrationFeeAmount(), 2) }} MVR)</span>
+                        @endif
                         <svg class="w-5 h-5 ml-2 rtl:ml-0 rtl:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
                         </svg>
                     </a>
+                    <p class="text-sm text-gray-600">
+                        {{ __('public.One flow') }}: {{ __('public.Verify via OTP') }} → {{ __('public.register') }} → {{ $course->hasRegistrationFee() ? __('public.pay to complete') : __('public.complete enrollment') }}
+                    </p>
                     <a href="{{ route('public.admissions.create', [app()->getLocale(), 'course' => $course->id]) }}" 
-                       class="btn-secondary inline-flex items-center px-8 py-4 text-lg">
-                        {{ __('public.Apply for Admission') }}
+                       class="text-sm text-gray-500 hover:text-brandMaroon-600">
+                        {{ __('public.Or submit an inquiry') }} →
                     </a>
                 </div>
             </div>
@@ -212,11 +209,14 @@
                 <!-- CTA Card -->
                 <div class="card p-6 bg-gradient-to-br from-brandMaroon-50 to-brandBeige-100 border-brandBeige-200">
                     <h3 class="text-lg font-bold text-brandMaroon-900 mb-3">{{ __('public.Interested in this course?') }}</h3>
-                    <p class="text-sm text-brandGray-700 mb-4">{{ __('public.Submit your application and we will contact you soon') }}</p>
-                    <a href="{{ route('public.admissions.create', [app()->getLocale(), 'course' => $course->id]) }}" 
+                    <p class="text-sm text-brandGray-700 mb-4">{{ __('public.Enroll with OTP verification and payment') }}</p>
+                    <a href="{{ route('courses.register.show', [app()->getLocale(), $course]) }}" 
                        class="btn-primary w-full text-center">
-                        {{ __('public.Apply Now') }}
+                        {{ __('public.Enroll in this course') }}
                     </a>
+                    <p class="text-xs text-gray-500 mt-3">
+                        <a href="{{ route('public.admissions.create', [app()->getLocale(), 'course' => $course->id]) }}" class="hover:text-brandMaroon-600">{{ __('public.Or submit an inquiry') }}</a>
+                    </p>
                 </div>
 
                 <!-- Contact Card -->

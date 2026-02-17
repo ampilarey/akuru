@@ -196,6 +196,15 @@ return [
     'Saturday' => 'Saturday',
     'Closed' => 'Closed',
     'Apply for Admission' => 'Apply for Admission',
+    'Enroll in this course' => 'Enroll in this course',
+    'Verify via OTP' => 'Verify via OTP',
+    'register' => 'register',
+    'and pay to complete' => 'and pay to complete',
+    'One flow' => 'One flow',
+    'pay to complete' => 'pay to complete',
+    'Enroll with OTP verification and payment' => 'Enroll with OTP verification and payment',
+    'complete enrollment' => 'complete enrollment',
+    'Or submit an inquiry' => 'Or submit an inquiry',
     'Latest News' => 'Latest News',
     
     // Events
