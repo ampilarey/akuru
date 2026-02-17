@@ -11,9 +11,9 @@
             <h1 class="text-3xl sm:text-4xl md:text-6xl font-bold mb-4 sm:mb-6 leading-tight drop-shadow-lg">{{ $text['title'] ?? __('public.Welcome to Akuru Institute') }}</h1>
             <p class="text-lg sm:text-xl md:text-2xl mb-6 sm:mb-8 max-w-3xl mx-auto leading-relaxed drop-shadow-md">{{ $text['desc'] ?? __('public.Learn Quran, Arabic, and Islamic Studies in the Maldives') }}</p>
             <div class="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center">
-                <a href="{{ route('public.admissions.create', app()->getLocale()) }}" 
+                <a href="{{ route('public.courses.index') }}" 
                    class="w-full sm:w-auto bg-brandGold-600 text-brandMaroon-900 px-6 sm:px-8 py-3 rounded-lg font-bold hover:bg-brandGold-500 transition-colors text-center text-base sm:text-lg shadow-lg">
-                    {{ __('public.Apply Now') }}
+                    {{ __('public.Enroll') }}
                 </a>
                 <a href="{{ route('public.courses.index') }}" 
                    class="w-full sm:w-auto border-2 border-brandGold-600 text-brandGold-600 bg-white/10 backdrop-blur-sm px-6 sm:px-8 py-3 rounded-lg font-semibold hover:bg-brandGold-600 hover:text-brandMaroon-900 transition-colors text-center text-base sm:text-lg">
@@ -162,9 +162,9 @@
         <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold mb-4 sm:mb-6 drop-shadow-lg">{{ __('public.Ready to Start Your Journey?') }}</h2>
         <p class="text-base sm:text-lg md:text-xl mb-6 sm:mb-8 max-w-2xl mx-auto leading-relaxed drop-shadow-md">{{ __('public.Join thousands of students who have chosen Akuru Institute for their Islamic education') }}</p>
         <div class="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center">
-            <a href="{{ route('public.admissions.create', app()->getLocale()) }}" 
+            <a href="{{ route('public.courses.index') }}" 
                class="w-full sm:w-auto bg-brandGold-600 text-brandMaroon-900 px-6 sm:px-8 py-3 rounded-lg font-bold hover:bg-brandGold-500 transition-colors text-center shadow-lg">
-                {{ __('public.Apply Now') }}
+                {{ __('public.Enroll') }}
             </a>
             <a href="{{ route('public.contact.create', app()->getLocale()) }}" 
                class="w-full sm:w-auto border-2 border-brandGold-600 text-brandGold-600 bg-white/10 backdrop-blur-sm px-6 sm:px-8 py-3 rounded-lg font-semibold hover:bg-brandGold-600 hover:text-brandMaroon-900 transition-colors text-center">

@@ -29,9 +29,9 @@
          class="text-brandGray-600 hover:text-brandMaroon-600 transition-colors duration-200">
         {{ __('public.Contact') }}
       </a>
-      <a href="{{ route('public.admissions.create', app()->getLocale()) }}" 
+      <a href="{{ route('public.courses.index') }}" 
          class="bg-brandMaroon-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-brandMaroon-700 transition-colors shadow-md">
-        {{ __('public.Apply Now') }}
+        {{ __('public.Enroll') }}
       </a>
     </div>
 
@@ -136,9 +136,9 @@
 
       <!-- Mobile Apply Now Button -->
       <div class="pt-4">
-        <a href="{{ route('public.admissions.create', app()->getLocale()) }}" 
+        <a href="{{ route('public.courses.index') }}" 
            class="block w-full py-3 px-4 bg-brandMaroon-600 text-white text-center rounded-lg font-semibold hover:bg-brandMaroon-700 transition-colors shadow-md">
-          {{ __('public.Apply Now') }}
+          {{ __('public.Enroll') }}
         </a>
       </div>
     </div>
