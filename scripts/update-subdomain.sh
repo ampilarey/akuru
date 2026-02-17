@@ -16,6 +16,7 @@ php artisan migrate --force
 
 echo "Rebuilding caches..."
 php artisan config:cache
-php artisan route:cache
+# route:cache breaks mcamara localized routes; clear so routes load correctly
+php artisan route:clear
 
 echo "Subdomain updated successfully."

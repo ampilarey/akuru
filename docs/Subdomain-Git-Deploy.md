@@ -29,7 +29,7 @@ cp .env.test-subdomain.example .env
 composer install --no-dev --optimize-autoloader
 php artisan key:generate
 php artisan config:cache
-php artisan route:cache
+php artisan route:clear
 chmod -R 775 storage bootstrap/cache
 php artisan migrate --force
 ```
@@ -72,9 +72,9 @@ composer install --no-dev --optimize-autoloader
 # If there are new migrations
 php artisan migrate --force
 
-# Rebuild caches
+# Rebuild caches (do NOT use route:cache - it breaks mcamara localized routes)
 php artisan config:cache
-php artisan route:cache
+php artisan route:clear
 ```
 
 ---
@@ -91,7 +91,7 @@ git pull origin main
 composer install --no-dev --optimize-autoloader --no-interaction
 php artisan migrate --force
 php artisan config:cache
-php artisan route:cache
+php artisan route:clear
 echo "Subdomain updated."
 ```
 
