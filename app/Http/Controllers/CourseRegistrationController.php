@@ -159,7 +159,15 @@ class CourseRegistrationController extends Controller
     public function enroll(Request $request): RedirectResponse
     {
         $user = $request->user();
-        if (!$user || !$user->hasVerifiedContact()) {
+        if (!$user) {
+            $userId = session('pending_user_id');
+            if (!$userId) {
+                return redirect()->route('public.courses.index')->with('error', 'Session expired. Please start again.');
+            }
+            $user = \App\Models\User::findOrFail($userId);
+            Auth::login($user);
+        }
+        if (!$user->hasVerifiedContact()) {
             return redirect()->route('public.courses.index')->with('error', 'Please verify your contact first.');
         }
 

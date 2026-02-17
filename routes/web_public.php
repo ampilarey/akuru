@@ -83,7 +83,7 @@ Route::post("courses/register/set-password", [\App\Http\Controllers\CourseRegist
 Route::get("courses/register/continue", [\App\Http\Controllers\CourseRegistrationController::class, "continueForm"])
     ->name("courses.register.continue");
 Route::post("courses/register/enroll", [\App\Http\Controllers\CourseRegistrationController::class, "enroll"])
-    ->name("courses.register.enroll")->middleware('auth');
+    ->name("courses.register.enroll");
 Route::get("courses/register/complete", [\App\Http\Controllers\CourseRegistrationController::class, "complete"])
     ->name("courses.register.complete");
 
