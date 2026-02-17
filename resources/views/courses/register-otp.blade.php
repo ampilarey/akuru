@@ -32,7 +32,7 @@
             @php $pendingCourse = session('pending_course_id') ? \App\Models\Course::find(session('pending_course_id')) : null; @endphp
             <p class="mt-4 text-sm text-gray-500 text-center">
                 @if($pendingCourse)
-                    <a href="{{ route('courses.register.show', [app()->getLocale(), $pendingCourse]) }}" class="text-brandMaroon-600 hover:underline">Use a different contact</a>
+                    <a href="{{ route('courses.register.show', $pendingCourse) }}" class="text-brandMaroon-600 hover:underline">Use a different contact</a>
                 @else
                     <a href="{{ route('public.courses.index') }}" class="text-brandMaroon-600 hover:underline">Start over</a>
                 @endif

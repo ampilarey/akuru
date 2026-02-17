@@ -85,7 +85,7 @@
 
                 <!-- CTA: One unified flow - Apply → OTP verify → Register → Pay -->
                 <div class="space-y-3">
-                    <a href="{{ route('courses.register.show', [app()->getLocale(), $course]) }}" 
+                    <a href="{{ route('courses.register.show', $course) }}" 
                        class="btn-primary inline-flex items-center px-8 py-4 text-lg">
                         {{ __('public.Enroll in this course') }}
                         @if($course->hasRegistrationFee())
@@ -210,7 +210,7 @@
                 <div class="card p-6 bg-gradient-to-br from-brandMaroon-50 to-brandBeige-100 border-brandBeige-200">
                     <h3 class="text-lg font-bold text-brandMaroon-900 mb-3">{{ __('public.Interested in this course?') }}</h3>
                     <p class="text-sm text-brandGray-700 mb-4">{{ __('public.Enroll with OTP verification and payment') }}</p>
-                    <a href="{{ route('courses.register.show', [app()->getLocale(), $course]) }}" 
+                    <a href="{{ route('courses.register.show', $course) }}" 
                        class="btn-primary w-full text-center">
                         {{ __('public.Enroll in this course') }}
                     </a>
