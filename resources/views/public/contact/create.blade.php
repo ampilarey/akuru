@@ -221,7 +221,7 @@
                                class="block text-brandMaroon-600 hover:text-brandMaroon-800 transition-colors">
                                 {{ __('public.Apply for Admission') }}
                             </a>
-                            <a href="{{ route('public.courses.index', app()->getLocale()) }}" 
+                            <a href="{{ route('public.courses.index') }}" 
                                class="block text-brandMaroon-600 hover:text-brandMaroon-800 transition-colors">
                                 {{ __('public.View Courses') }}
                             </a>

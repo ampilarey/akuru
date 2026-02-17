@@ -57,15 +57,15 @@ SUBDOMAIN_FOLDER/
 3. On the server, **unzip** inside SUBDOMAIN_FOLDER so that `public`, `app`, `composer.json`, etc. are directly inside SUBDOMAIN_FOLDER (not inside an extra subfolder).
 4. Remove the ZIP file from the server if you want.
 
-### Option B: Git (if the server has Git and your repo is online)
+### Option B: Git (recommended – easy updates with `git pull`)
 
 1. SSH into the server and go to the parent of SUBDOMAIN_FOLDER, e.g.:
    ```bash
    cd /var/www
    ```
-2. Clone into the subdomain folder (use your real repo URL):
+2. Clone into the subdomain folder:
    ```bash
-   git clone https://github.com/your-org/akuru-institute.git test.akuru.edu.mv
+   git clone https://github.com/ampilarey/akuru.git test.akuru.edu.mv
    ```
 3. Then:
    ```bash
@@ -74,6 +74,8 @@ SUBDOMAIN_FOLDER/
    # If you use Laravel Mix/Vite for frontend:
    # npm ci && npm run build
    ```
+
+   For the full Git workflow (including how to update with `git pull`), see **[Subdomain-Git-Deploy.md](Subdomain-Git-Deploy.md)**.
 
 ---
 

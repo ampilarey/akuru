@@ -2,6 +2,8 @@
 
 Follow these steps **in order**. Do each step before moving to the next.
 
+> **Tip:** For easier updates, use **Git** instead of ZIP uploads. See [Subdomain-Git-Deploy.md](Subdomain-Git-Deploy.md) to clone on the server and update with `git pull` after any change.
+
 ---
 
 ## PART 1 – On your computer (prepare the files)

@@ -240,7 +240,7 @@
         <div class="grid md:grid-cols-3 gap-6">
             <!-- You can add related courses here if needed -->
             <p class="text-gray-500 col-span-3 text-center">{{ __('public.Explore more courses') }} 
-                <a href="{{ route('public.courses.index', app()->getLocale()) }}" class="text-brandMaroon-600 hover:underline">{{ __('public.here') }}</a>
+                <a href="{{ route('public.courses.index') }}" class="text-brandMaroon-600 hover:underline">{{ __('public.here') }}</a>
             </p>
         </div>
     </div>

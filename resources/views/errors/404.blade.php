@@ -34,7 +34,7 @@
         <div class="mt-8">
             <h3 class="text-sm font-medium text-gray-900 mb-4">{{ __('public.Popular Pages') }}</h3>
             <div class="grid grid-cols-1 gap-2">
-                <a href="{{ route('public.courses.index', app()->getLocale()) }}" class="text-sm text-brandMaroon-600 hover:text-brandGold-600 font-medium">
+                <a href="{{ route('public.courses.index') }}" class="text-sm text-brandMaroon-600 hover:text-brandGold-600 font-medium">
                     {{ __('public.Courses') }}
                 </a>
                 <a href="{{ route('public.news.index', app()->getLocale()) }}" class="text-sm text-brandMaroon-600 hover:text-brandGold-600 font-medium">

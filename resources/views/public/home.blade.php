@@ -15,7 +15,7 @@
                    class="w-full sm:w-auto bg-brandGold-600 text-brandMaroon-900 px-6 sm:px-8 py-3 rounded-lg font-bold hover:bg-brandGold-500 transition-colors text-center text-base sm:text-lg shadow-lg">
                     {{ __('public.Apply Now') }}
                 </a>
-                <a href="{{ route('public.courses.index', app()->getLocale()) }}" 
+                <a href="{{ route('public.courses.index') }}" 
                    class="w-full sm:w-auto border-2 border-brandGold-600 text-brandGold-600 bg-white/10 backdrop-blur-sm px-6 sm:px-8 py-3 rounded-lg font-semibold hover:bg-brandGold-600 hover:text-brandMaroon-900 transition-colors text-center text-base sm:text-lg">
                     {{ __('public.View Courses') }}
                 </a>
@@ -79,7 +79,7 @@
                     <p class="text-sm sm:text-base text-gray-700 mb-4 leading-relaxed">{{ Str::limit($courseDesc, 100) }}</p>
                     <div class="flex justify-between items-center pt-2 border-t border-gray-200">
                         <span class="text-xs sm:text-sm text-brandMaroon-700 font-bold bg-brandGold-100 px-3 py-1 rounded-full">{{ $courseDuration }}</span>
-                        <a href="{{ $courseSlug ? LaravelLocalization::localizeURL(route('public.courses.show', $courseSlug)) : route('public.courses.index', app()->getLocale()) }}" 
+                        <a href="{{ $courseSlug ? LaravelLocalization::localizeURL(route('public.courses.show', $courseSlug)) : route('public.courses.index') }}" 
                            class="text-sm sm:text-base text-brandMaroon-600 hover:text-brandGold-600 font-semibold">
                             {{ __('public.Learn More') }} →
                         </a>

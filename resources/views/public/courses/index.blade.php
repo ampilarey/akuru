@@ -17,7 +17,7 @@
     <div class="container mx-auto px-4">
         <!-- Search Bar -->
         <div class="mb-6">
-            <form method="GET" action="{{ route('public.courses.index', app()->getLocale()) }}" class="max-w-2xl mx-auto">
+            <form method="GET" action="{{ route('public.courses.index') }}" class="max-w-2xl mx-auto">
                 <div class="relative">
                     <input type="text" 
                            name="search" 
@@ -37,7 +37,7 @@
         </div>
 
         <!-- Advanced Filters -->
-        <form method="GET" action="{{ route('public.courses.index', app()->getLocale()) }}" class="space-y-4">
+        <form method="GET" action="{{ route('public.courses.index') }}" class="space-y-4">
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <!-- Category Filter -->
                 <div>
@@ -130,7 +130,7 @@
                 <button type="submit" class="btn-primary">
                     {{ __('public.Apply Filters') }}
                 </button>
-                <a href="{{ route('public.courses.index', app()->getLocale()) }}" class="btn-secondary">
+                <a href="{{ route('public.courses.index') }}" class="btn-secondary">
                     {{ __('public.Clear All') }}
                 </a>
             </div>
@@ -344,7 +344,7 @@
                         <h3 class="text-lg font-bold text-gray-900 mb-4">{{ __('public.Course Categories') }}</h3>
                         <div class="space-y-2">
                             @foreach($categories as $category)
-                                <a href="{{ route('public.courses.index', app()->getLocale()) }}?category={{ urlencode($category->slug) }}" 
+                                <a href="{{ route('public.courses.index') }}?category={{ urlencode($category->slug) }}" 
                                    class="block px-3 py-2 text-sm text-gray-700 hover:bg-brandBeige-100 hover:text-brandMaroon-600 rounded transition-colors">
                                     {{ $category->name }}
                                     <span class="float-right text-xs text-gray-500">
@@ -364,7 +364,7 @@
                 </svg>
                 <h3 class="text-2xl font-semibold text-gray-700 mb-2">{{ __('public.No Courses Found') }}</h3>
                 <p class="text-gray-500 mb-6">{{ __('public.Please try different filters or check back later') }}</p>
-                <a href="{{ route('public.courses.index', app()->getLocale()) }}" class="btn-secondary">
+                <a href="{{ route('public.courses.index') }}" class="btn-secondary">
                     {{ __('public.Clear Filters') }}
                 </a>
             </div>

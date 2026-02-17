@@ -34,7 +34,7 @@
                 @if($pendingCourse)
                     <a href="{{ route('courses.register.show', [app()->getLocale(), $pendingCourse]) }}" class="text-brandMaroon-600 hover:underline">Use a different contact</a>
                 @else
-                    <a href="{{ route('public.courses.index', app()->getLocale()) }}" class="text-brandMaroon-600 hover:underline">Start over</a>
+                    <a href="{{ route('public.courses.index') }}" class="text-brandMaroon-600 hover:underline">Start over</a>
                 @endif
             </p>
         </div>

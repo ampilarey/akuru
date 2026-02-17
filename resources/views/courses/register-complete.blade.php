@@ -82,7 +82,7 @@
                 @endif
             </p>
 
-            <a href="{{ route('public.courses.index', app()->getLocale()) }}" class="btn-secondary mt-6 inline-block">Back to courses</a>
+            <a href="{{ route('public.courses.index') }}" class="btn-secondary mt-6 inline-block">Back to courses</a>
         </div>
     </div>
 </section>

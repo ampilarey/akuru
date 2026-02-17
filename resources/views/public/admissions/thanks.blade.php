@@ -79,7 +79,7 @@
                 <a href="{{ route('public.home', app()->getLocale()) }}" class="btn-primary">
                     {{ __('public.Back to Home') }}
                 </a>
-                <a href="{{ route('public.courses.index', app()->getLocale()) }}" class="btn-secondary">
+                <a href="{{ route('public.courses.index') }}" class="btn-secondary">
                     {{ __('public.View Courses') }}
                 </a>
             </div>

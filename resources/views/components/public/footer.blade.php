@@ -37,7 +37,7 @@
         <h4 class="font-bold text-lg mb-4 text-brandMaroon-700">{{ __('public.Quick Links') }}</h4>
         <ul class="space-y-2 text-sm text-gray-700">
           <li><a href="{{ route('public.about', app()->getLocale()) }}" class="hover:text-brandGold-700 transition-colors">{{ __('public.About Us') }}</a></li>
-          <li><a href="{{ route('public.courses.index', app()->getLocale()) }}" class="hover:text-brandGold-700 transition-colors">{{ __('public.Courses') }}</a></li>
+          <li><a href="{{ route('public.courses.index') }}" class="hover:text-brandGold-700 transition-colors">{{ __('public.Courses') }}</a></li>
           <li><a href="{{ route('public.admissions.create', app()->getLocale()) }}" class="hover:text-brandGold-700 transition-colors">{{ __('public.Admissions') }}</a></li>
           <li><a href="{{ route('public.news.index', app()->getLocale()) }}" class="hover:text-brandGold-700 transition-colors">{{ __('public.News') }}</a></li>
           <li><a href="{{ route('public.events.index', app()->getLocale()) }}" class="hover:text-brandGold-700 transition-colors">{{ __('public.Events') }}</a></li>

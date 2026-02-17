@@ -9,7 +9,7 @@
     
     <!-- Desktop Navigation -->
     <div class="hidden lg:flex items-center space-x-6 rtl:space-x-reverse">
-      <a href="{{ route('public.courses.index', app()->getLocale()) }}" 
+      <a href="{{ route('public.courses.index') }}" 
          class="text-brandGray-600 hover:text-brandMaroon-600 transition-colors duration-200">
         {{ __('public.Courses') }}
       </a>
@@ -98,7 +98,7 @@
       </div>
 
       <!-- Mobile Navigation Links -->
-      <a href="{{ route('public.courses.index', app()->getLocale()) }}" 
+      <a href="{{ route('public.courses.index') }}" 
          class="block py-3 px-4 text-brandGray-600 hover:text-brandMaroon-600 hover:bg-brandBeige-100 rounded-lg transition-colors duration-200">
         {{ __('public.Courses') }}
       </a>
