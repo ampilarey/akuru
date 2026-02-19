@@ -14,8 +14,11 @@ class BmlPaymentProvider implements PaymentProviderInterface
         $baseUrl = rtrim(config('bml.base_url', ''), '/');
         $apiKey = config('bml.api_key');
         $appId = config('bml.app_id');
-        // Use ?: (not ??) so empty string BML_RETURN_URL falls through to context/default
-        $returnUrl = config('bml.return_url') ?: ($context['return_url'] ?? url('/payments/bml/return'));
+        // Build return URL from APP_URL to avoid locale prefix added by route().
+        // BML_RETURN_URL (if set) overrides everything.
+        $baseReturnUrl = config('bml.return_url')
+            ?: rtrim(config('app.url'), '/') . '/payments/bml/return';
+        $returnUrl = $baseReturnUrl . '?ref=' . $localId;
 
         if (!$baseUrl || !$apiKey) {
             Log::warning('BML payment provider: Missing configuration');
