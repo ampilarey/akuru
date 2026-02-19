@@ -157,12 +157,17 @@ class CourseRegistrationController extends PublicRegistrationController
         $existingProfile = $user->registrationStudentProfile;
         $user->loadMissing('guardianStudents');
 
+        // Default flow: adult if user has a self-profile, parent if they have children
+        $defaultFlow = $existingProfile ? 'adult'
+            : ($user->guardianStudents->isNotEmpty() ? 'parent' : 'adult');
+
         return view('courses.register-continue', [
             'user'            => $user,
             'courses'         => $courses,
             'courseIds'       => $courseIds,
             'termId'          => session('pending_term_id'),
             'existingProfile' => $existingProfile,
+            'defaultFlow'     => $defaultFlow,
         ]);
     }
 

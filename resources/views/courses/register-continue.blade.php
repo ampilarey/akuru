@@ -74,7 +74,12 @@
                         </div>
                     </div>
 
-                    <div x-show="flow === 'adult'" x-cloak class="space-y-4">
+                    <div x-show="flow === 'adult'" class="space-y-4">
+                        @if($existingProfile)
+                            <p class="text-sm text-green-700 bg-green-50 rounded p-2">
+                                Your details are pre-filled from your profile. Update if needed.
+                            </p>
+                        @endif
                         <div><label class="block text-sm font-medium mb-1">First name</label><input type="text" name="first_name" class="w-full rounded-md border-gray-300" :disabled="flow !== 'adult'" value="{{ old('first_name', $existingProfile?->first_name) }}"></div>
                         <div><label class="block text-sm font-medium mb-1">Last name</label><input type="text" name="last_name" class="w-full rounded-md border-gray-300" :disabled="flow !== 'adult'" value="{{ old('last_name', $existingProfile?->last_name) }}"></div>
                         <div><label class="block text-sm font-medium mb-1">Date of birth</label><input type="date" name="dob" class="w-full rounded-md border-gray-300" :disabled="flow !== 'adult'" value="{{ old('dob', $existingProfile?->dob?->format('Y-m-d')) }}"></div>
@@ -99,7 +104,7 @@
 <script>
 function enrollFlow() {
     return {
-        flow: 'parent',
+        flow: '{{ $defaultFlow }}',
         studentMode: '{{ $user->guardianStudents->isNotEmpty() ? "existing" : "new" }}',
         init() {
             if (this.studentMode === 'existing' && document.querySelector('input[name="student_mode"][value="existing"]')) {
