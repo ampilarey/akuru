@@ -60,9 +60,9 @@
                             </select>
                         </div>
                         <div x-show="studentMode === 'new'" x-cloak class="space-y-4">
-                            <div><label class="block text-sm font-medium mb-1">First name</label><input type="text" name="first_name" class="w-full rounded-md border-gray-300" :disabled="flow !== 'parent' || studentMode !== 'new'"></div>
-                            <div><label class="block text-sm font-medium mb-1">Last name</label><input type="text" name="last_name" class="w-full rounded-md border-gray-300" :disabled="flow !== 'parent' || studentMode !== 'new'"></div>
-                            <div><label class="block text-sm font-medium mb-1">Date of birth</label><input type="date" name="dob" class="w-full rounded-md border-gray-300" :disabled="flow !== 'parent' || studentMode !== 'new'"></div>
+                            <div><label class="block text-sm font-medium mb-1">First name</label><input type="text" name="first_name" class="w-full rounded-md border-gray-300" :disabled="flow !== 'parent' || studentMode !== 'new'" value="{{ old('first_name') }}"></div>
+                            <div><label class="block text-sm font-medium mb-1">Last name</label><input type="text" name="last_name" class="w-full rounded-md border-gray-300" :disabled="flow !== 'parent' || studentMode !== 'new'" value="{{ old('last_name') }}"></div>
+                            <div><label class="block text-sm font-medium mb-1">Date of birth</label><input type="date" name="dob" class="w-full rounded-md border-gray-300" :disabled="flow !== 'parent' || studentMode !== 'new'" value="{{ old('dob') }}"></div>
                             <div><label class="block text-sm font-medium mb-1">Relationship</label>
                                 <select name="relationship" class="w-full rounded-md border-gray-300" :disabled="flow !== 'parent' || studentMode !== 'new'">
                                     <option value="father">Father</option>
@@ -75,9 +75,9 @@
                     </div>
 
                     <div x-show="flow === 'adult'" x-cloak class="space-y-4">
-                        <div><label class="block text-sm font-medium mb-1">First name</label><input type="text" name="first_name" class="w-full rounded-md border-gray-300" :disabled="flow !== 'adult'"></div>
-                        <div><label class="block text-sm font-medium mb-1">Last name</label><input type="text" name="last_name" class="w-full rounded-md border-gray-300" :disabled="flow !== 'adult'"></div>
-                        <div><label class="block text-sm font-medium mb-1">Date of birth</label><input type="date" name="dob" class="w-full rounded-md border-gray-300" :disabled="flow !== 'adult'"></div>
+                        <div><label class="block text-sm font-medium mb-1">First name</label><input type="text" name="first_name" class="w-full rounded-md border-gray-300" :disabled="flow !== 'adult'" value="{{ old('first_name', $existingProfile?->first_name) }}"></div>
+                        <div><label class="block text-sm font-medium mb-1">Last name</label><input type="text" name="last_name" class="w-full rounded-md border-gray-300" :disabled="flow !== 'adult'" value="{{ old('last_name', $existingProfile?->last_name) }}"></div>
+                        <div><label class="block text-sm font-medium mb-1">Date of birth</label><input type="date" name="dob" class="w-full rounded-md border-gray-300" :disabled="flow !== 'adult'" value="{{ old('dob', $existingProfile?->dob?->format('Y-m-d')) }}"></div>
                     </div>
 
                     <div class="mt-6 p-3 bg-gray-50 rounded">

@@ -153,11 +153,16 @@ class CourseRegistrationController extends PublicRegistrationController
             return redirect()->route('public.courses.index')->with('error', 'No course selected. Please start registration from a course page.');
         }
 
+        // Pre-fill existing student profile for returning users
+        $existingProfile = $user->registrationStudentProfile;
+        $user->loadMissing('guardianStudents');
+
         return view('courses.register-continue', [
-            'user' => $user,
-            'courses' => $courses,
-            'courseIds' => $courseIds,
-            'termId' => session('pending_term_id'),
+            'user'            => $user,
+            'courses'         => $courses,
+            'courseIds'       => $courseIds,
+            'termId'          => session('pending_term_id'),
+            'existingProfile' => $existingProfile,
         ]);
     }
 
