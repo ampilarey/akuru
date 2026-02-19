@@ -43,7 +43,7 @@ class PaymentService
             'course_id'          => $firstCourse->id,
             'amount'             => $totalAmount,
             'amount_laar'        => $totalLaar,
-            'currency'           => $firstCourse->registration_fee_currency ?? 'MVR',
+            'currency'           => config('bml.default_currency') ?: ($firstCourse->registration_fee_currency ?? 'MVR'),
             'status'             => 'initiated',
             'provider'           => 'bml',
             'merchant_reference' => 'AKURU-' . strtoupper(Str::uuid()->toString()),

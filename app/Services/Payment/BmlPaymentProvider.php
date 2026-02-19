@@ -39,9 +39,12 @@ class BmlPaymentProvider implements PaymentProviderInterface
         $returnUrl = $baseReturnUrl . '?ref=' . urlencode($rawLocalId);
 
         $path    = config('bml.paths.create_transaction', '/v2/transactions');
+        // Always use configured BML currency (UAT=USD, production=MVR) regardless of what's stored in the payment record
+        $currency = config('bml.default_currency') ?: ($payment->currency ?? 'MVR');
+
         $payload = [
             'amount'      => $amountLaar,
-            'currency'    => $payment->currency ?? 'MVR',
+            'currency'    => $currency,
             'localId'     => $localId,
             'redirectUrl' => $returnUrl,
         ];
