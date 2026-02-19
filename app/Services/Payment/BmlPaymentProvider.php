@@ -41,10 +41,23 @@ class BmlPaymentProvider implements PaymentProviderInterface
         }
 
         try {
-            $response = Http::withHeaders(array_merge(
+            $headers = array_merge(
                 $this->authHeaders($apiKey, $appId),
                 ['Content-Type' => 'application/json'],
-            ))->timeout(config('bml.timeout', 30))->post($baseUrl . $path, $payload);
+            );
+
+            // Debug: log auth mode and header type (never log the key value itself)
+            Log::info('BML initiate request', [
+                'auth_mode' => config('bml.auth_mode', 'auto'),
+                'auth_header_prefix' => substr($headers['Authorization'] ?? '', 0, 10) . '...',
+                'url' => $baseUrl . $path,
+                'amount_laar' => $amountLaar,
+                'local_id' => $localId,
+            ]);
+
+            $response = Http::withHeaders($headers)
+                ->timeout(config('bml.timeout', 30))
+                ->post($baseUrl . $path, $payload);
 
             if ($response->successful()) {
                 $data = $response->json();
