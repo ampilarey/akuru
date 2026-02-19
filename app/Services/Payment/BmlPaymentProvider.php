@@ -85,10 +85,11 @@ class BmlPaymentProvider implements PaymentProviderInterface
                 $url = $data['url'] ?? $data['shortUrl'] ?? $data['paymentUrl'] ?? $data['redirectUrl'] ?? null;
                 if ($url) {
                     $payment->update([
-                        'redirect_url' => $url,
-                        'payment_url' => $url,
+                        'local_id'           => $localId,
+                        'redirect_url'       => $url,
+                        'payment_url'        => $url,
                         'bml_transaction_id' => $data['id'] ?? $data['transactionId'] ?? null,
-                        'status' => 'pending',
+                        'status'             => 'pending',
                     ]);
                     return new PaymentInitiationResult(true, $url, null);
                 }

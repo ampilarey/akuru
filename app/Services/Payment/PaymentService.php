@@ -93,8 +93,10 @@ class PaymentService
                 return $payment;
             }
 
-            // Query provider for authoritative status
-            $result = $this->provider->queryStatus($payment->merchant_reference);
+            // Query provider by BML's own transaction ID (preferred) or fall back to merchant_reference.
+            // BML knows transactions by their internal ID, not our merchant_reference.
+            $queryRef = $payment->bml_transaction_id ?? $payment->merchant_reference;
+            $result = $this->provider->queryStatus($queryRef);
 
             if (! $result) {
                 Log::info('PaymentService::finalizeByReference – provider query returned null', [
