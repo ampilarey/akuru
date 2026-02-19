@@ -38,8 +38,9 @@ class BmlPaymentProvider implements PaymentProviderInterface
         }
 
         try {
+            $authHeader = $this->bmlAuthorizationHeader($apiKey, $appId);
             $response = Http::withHeaders([
-                'Authorization' => 'Bearer ' . base64_encode($apiKey . ':' . $appId),
+                'Authorization' => $authHeader,
                 'Content-Type' => 'application/json',
             ])->post($baseUrl . $path, $payload);
 
@@ -68,6 +69,19 @@ class BmlPaymentProvider implements PaymentProviderInterface
             Log::error('BML initiate exception', ['error' => $e->getMessage()]);
             return new PaymentInitiationResult(false, null, null, 'Payment gateway error');
         }
+    }
+
+    /**
+     * BML UAT may use JWT as API key; production may use base64(app_id:api_key).
+     * If api_key looks like a JWT (eyJ...), send as Bearer token; otherwise use legacy format.
+     */
+    private function bmlAuthorizationHeader(string $apiKey, string $appId): string
+    {
+        $trimmed = trim($apiKey);
+        if (str_starts_with($trimmed, 'eyJ')) {
+            return 'Bearer ' . $trimmed;
+        }
+        return 'Bearer ' . base64_encode($apiKey . ':' . $appId);
     }
 
     public function verifyCallback(Request $request): PaymentVerificationResult

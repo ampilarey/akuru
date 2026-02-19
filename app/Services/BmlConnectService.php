@@ -76,8 +76,9 @@ class BmlConnectService
         $this->log('info', 'BML createTransaction request', ['local_id' => $localId, 'amount_laar' => $amountLaar, 'correlation_id' => $localId]);
 
         try {
+            $authHeader = $this->bmlAuthorizationHeader($apiKey, $appId);
             $response = Http::withHeaders([
-                'Authorization' => 'Bearer ' . base64_encode($apiKey . ':' . $appId),
+                'Authorization' => $authHeader,
                 'Content-Type' => 'application/json',
             ])
                 ->timeout(30)
@@ -115,6 +116,18 @@ class BmlConnectService
     }
 
     /**
+     * BML UAT may use JWT as API key. If api_key looks like a JWT (eyJ...), send as Bearer; else base64(apiKey:appId).
+     */
+    private function bmlAuthorizationHeader(string $apiKey, string $appId): string
+    {
+        $trimmed = trim($apiKey);
+        if (str_starts_with($trimmed, 'eyJ')) {
+            return 'Bearer ' . $trimmed;
+        }
+        return 'Bearer ' . base64_encode($apiKey . ':' . $appId);
+    }
+
+    /**
      * Fetch transaction status from BML (for reconciliation / fallback).
      */
     public function getTransactionStatus(string $reference): ?array
@@ -130,8 +143,9 @@ class BmlConnectService
         }
 
         try {
+            $authHeader = $this->bmlAuthorizationHeader($apiKey, $appId);
             $response = Http::withHeaders([
-                'Authorization' => 'Bearer ' . base64_encode($apiKey . ':' . $appId),
+                'Authorization' => $authHeader,
                 'Content-Type' => 'application/json',
             ])
                 ->timeout(15)
