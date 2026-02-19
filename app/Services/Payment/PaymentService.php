@@ -2,6 +2,7 @@
 
 namespace App\Services\Payment;
 
+use App\Mail\EnrollmentConfirmedMail;
 use App\Models\Course;
 use App\Models\CourseEnrollment;
 use App\Models\Payment;
@@ -11,6 +12,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use App\Services\Payment\PaymentVerificationResult;
 
@@ -130,6 +132,8 @@ class PaymentService
                         ]);
                     }
                 }
+
+                $this->sendConfirmationEmail($payment->fresh());
             } elseif (in_array($providerStatus, ['failed', 'cancelled', 'declined'], true)) {
                 $payment->update([
                     'status'    => 'failed',
@@ -209,6 +213,8 @@ class PaymentService
                         ]);
                     }
                 }
+
+                $this->sendConfirmationEmail($payment->fresh());
             } else {
                 $providerStatus = strtolower((string) ($result->status ?? ''));
                 if (in_array($providerStatus, ['failed', 'cancelled', 'declined'], true)) {
@@ -219,6 +225,32 @@ class PaymentService
                 }
             }
         });
+    }
+
+    /**
+     * Dispatch an enrollment confirmation email if the payer has a verified email contact.
+     * Silently skipped when no email is on file (OTP-only users) or if mailer is log-only.
+     */
+    private function sendConfirmationEmail(Payment $payment): void
+    {
+        try {
+            $payment->loadMissing(['user', 'items.course', 'items.enrollment', 'student']);
+            $user = $payment->user;
+            if (! $user) {
+                return;
+            }
+            $emailContact = $user->contacts()->where('type', 'email')->whereNotNull('verified_at')->first();
+            $toAddress = $emailContact?->value ?? $user->email ?? null;
+            if (! $toAddress) {
+                return;
+            }
+            Mail::to($toAddress)->send(new EnrollmentConfirmedMail($payment));
+        } catch (\Throwable $e) {
+            Log::warning('EnrollmentConfirmedMail: failed to send', [
+                'payment_id' => $payment->id,
+                'error'      => $e->getMessage(),
+            ]);
+        }
     }
 
     public function getPaymentStatus(string $merchantReference): ?array

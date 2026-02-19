@@ -1,0 +1,89 @@
+<?php
+
+namespace App\Http\Controllers\Admin;
+
+use App\Http\Controllers\Controller;
+use App\Models\Course;
+use App\Models\CourseEnrollment;
+use App\Models\Payment;
+use Illuminate\Http\Request;
+
+class EnrollmentController extends Controller
+{
+    public function index(Request $request)
+    {
+        $query = CourseEnrollment::with(['student', 'course', 'payment', 'creator'])
+            ->latest();
+
+        if ($courseId = $request->input('course_id')) {
+            $query->where('course_id', $courseId);
+        }
+
+        if ($status = $request->input('status')) {
+            $query->where('status', $status);
+        }
+
+        if ($paymentStatus = $request->input('payment_status')) {
+            $query->where('payment_status', $paymentStatus);
+        }
+
+        if ($search = $request->input('search')) {
+            $query->whereHas('student', function ($q) use ($search) {
+                $q->where('first_name', 'like', "%{$search}%")
+                  ->orWhere('last_name', 'like', "%{$search}%");
+            });
+        }
+
+        $enrollments = $query->paginate(20)->withQueryString();
+        $courses     = Course::orderBy('title')->get(['id', 'title']);
+
+        return view('admin.enrollments.index', compact('enrollments', 'courses'));
+    }
+
+    public function show(CourseEnrollment $enrollment)
+    {
+        $enrollment->load(['student.guardians', 'course', 'payment.items.course', 'creator']);
+        return view('admin.enrollments.show', compact('enrollment'));
+    }
+
+    public function activate(CourseEnrollment $enrollment)
+    {
+        $enrollment->update([
+            'status'      => 'active',
+            'enrolled_at' => $enrollment->enrolled_at ?? now(),
+        ]);
+
+        return back()->with('success', 'Enrollment activated.');
+    }
+
+    public function reject(CourseEnrollment $enrollment)
+    {
+        $enrollment->update(['status' => 'rejected']);
+        return back()->with('success', 'Enrollment rejected.');
+    }
+
+    public function payments(Request $request)
+    {
+        $query = Payment::with(['user', 'student', 'items.course'])
+            ->latest();
+
+        if ($status = $request->input('status')) {
+            $query->where('status', $status);
+        }
+
+        if ($search = $request->input('search')) {
+            $query->where(function ($q) use ($search) {
+                $q->where('merchant_reference', 'like', "%{$search}%")
+                  ->orWhereHas('user', fn($u) => $u->where('name', 'like', "%{$search}%"))
+                  ->orWhereHas('student', function ($s) use ($search) {
+                      $s->where('first_name', 'like', "%{$search}%")
+                        ->orWhere('last_name', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        $payments = $query->paginate(20)->withQueryString();
+
+        return view('admin.enrollments.payments', compact('payments'));
+    }
+}

@@ -15,6 +15,7 @@ use App\Http\Controllers\Substitutions\TeacherAbsenceController;
 use App\Http\Controllers\Substitutions\SubstitutionRequestController;
 use App\Http\Controllers\Admin\PublicSite\PageController as AdminPageController;
 use App\Http\Controllers\Admin\PublicSite\CourseController as AdminCourseController;
+use App\Http\Controllers\Admin\EnrollmentController as AdminEnrollmentController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\AnalyticsController;
 
@@ -75,6 +76,15 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::post('substitutions/requests/{request}/assign', [SubstitutionRequestController::class, 'assign'])->name('substitutions.requests.assign');
     });
     
+    // Admin enrollment management
+    Route::prefix('admin/enrollments')->middleware(['role:admin|headmaster|supervisor'])->group(function() {
+        Route::get('/', [AdminEnrollmentController::class, 'index'])->name('admin.enrollments.index');
+        Route::get('/payments', [AdminEnrollmentController::class, 'payments'])->name('admin.enrollments.payments');
+        Route::get('/{enrollment}', [AdminEnrollmentController::class, 'show'])->name('admin.enrollments.show');
+        Route::patch('/{enrollment}/activate', [AdminEnrollmentController::class, 'activate'])->name('admin.enrollments.activate');
+        Route::patch('/{enrollment}/reject', [AdminEnrollmentController::class, 'reject'])->name('admin.enrollments.reject');
+    });
+
     // Admin CMS routes (for admin, headmaster, supervisor roles)
     Route::prefix('admin/public-site')->middleware(['role:admin|headmaster|supervisor'])->group(function() {
         Route::resource('pages', AdminPageController::class)->names([

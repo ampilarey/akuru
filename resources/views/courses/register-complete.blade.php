@@ -12,6 +12,7 @@
                 <div id="payment-status" class="mb-6" x-data="{
                     loading: true,
                     confirmed: false,
+                    timedOut: false,
                     async init() {
                         const url = '{{ route("payments.status.by_id", ["payment" => $paymentIdForStatus]) }}';
                         for (let i = 0; i < 60; i++) {
@@ -27,6 +28,7 @@
                             await new Promise(r => setTimeout(r, 3000));
                         }
                         this.loading = false;
+                        this.timedOut = true;
                     }
                 }">
                     <div x-show="loading" class="p-4 bg-amber-50 rounded flex items-center gap-3">
@@ -36,7 +38,20 @@
                         </svg>
                         <span>Waiting for payment confirmation...</span>
                     </div>
-                    <div x-show="!loading && confirmed" x-cloak class="p-4 bg-green-100 text-green-800 rounded">Payment confirmed.</div>
+                    <div x-show="!loading && confirmed" x-cloak class="p-4 bg-green-100 text-green-800 rounded font-medium">
+                        Payment confirmed. A confirmation email has been sent if you have an email on file.
+                    </div>
+                    <div x-show="timedOut && !confirmed" x-cloak class="p-4 bg-amber-50 border border-amber-200 rounded">
+                        <p class="text-amber-800 font-medium mb-2">Payment confirmation is taking longer than expected.</p>
+                        <p class="text-amber-700 text-sm mb-3">If you completed the payment, it will be confirmed automatically once we receive notification from the bank. You can also:</p>
+                        <a href="{{ route('courses.register.payment.retry', ['ref' => $paymentRef]) }}"
+                           class="inline-block bg-brandMaroon-600 text-white text-sm py-2 px-4 rounded hover:bg-brandMaroon-700 mr-2">
+                            Try payment again
+                        </a>
+                        <a href="{{ route('public.courses.index') }}" class="inline-block text-sm text-gray-600 hover:underline py-2">
+                            Return to courses
+                        </a>
+                    </div>
                 </div>
             @endif
 
