@@ -25,20 +25,33 @@ class BmlPaymentProvider implements PaymentProviderInterface
         $amountLaar = isset($payment->amount_laar) && $payment->amount_laar > 0
             ? (int) $payment->amount_laar
             : (int) round((float) $payment->amount * 100);
-        $localId = $payment->local_id ?? $payment->merchant_reference;
+        // BML requires alphanumeric localId (no hyphens). Strip them.
+        $rawLocalId = $payment->local_id ?? $payment->merchant_reference;
+        $localId    = preg_replace('/[^A-Za-z0-9]/', '', $rawLocalId);
+        // Ensure max 50 chars
+        $localId    = substr($localId, 0, 50);
 
         // Build return URL from APP_URL to avoid locale prefix (/en/) added by route().
         // BML_RETURN_URL (if set) overrides everything.
         $baseReturnUrl = config('bml.return_url')
             ?: rtrim(config('app.url'), '/') . '/payments/bml/return';
-        $returnUrl = $baseReturnUrl . '?ref=' . $localId;
+        // Pass original ref (with hyphens) so our return controller can look up the payment.
+        $returnUrl = $baseReturnUrl . '?ref=' . urlencode($rawLocalId);
 
-        $path = config('bml.paths.create_transaction', '/v2/transactions');
+        $path    = config('bml.paths.create_transaction', '/v2/transactions');
         $payload = [
-            'amount' => $amountLaar,
-            'currency' => $payment->currency ?? 'MVR',
-            'localId' => $localId,
+            'amount'      => $amountLaar,
+            'currency'    => $payment->currency ?? 'MVR',
+            'localId'     => $localId,
             'redirectUrl' => $returnUrl,
+        ];
+
+        // paymentPortalExperience — required by newer BML Connect API versions
+        $portalExp = config('bml.payment_portal_experience', []);
+        $payload['paymentPortalExperience'] = [
+            'externalWebsiteTermsAccepted' => (bool) ($portalExp['external_website_terms_accepted'] ?? true),
+            'externalWebsiteTermsUrl'      => $portalExp['external_website_terms_url']
+                                                ?: rtrim(config('app.url'), '/') . '/terms',
         ];
 
         if ($provider = ($context['provider'] ?? config('bml.provider'))) {
@@ -48,17 +61,16 @@ class BmlPaymentProvider implements PaymentProviderInterface
         try {
             $headers = array_merge(
                 $this->authHeaders($apiKey, $appId),
-                ['Content-Type' => 'application/json'],
+                ['Content-Type' => 'application/json', 'Accept' => 'application/json'],
             );
 
-            // Debug: log auth mode and header type (never log the key value itself)
             Log::info('BML initiate request', [
-                'auth_mode'          => config('bml.auth_mode', 'auto'),
-                'auth_header_prefix' => substr($headers['Authorization'] ?? '', 0, 10) . '...',
-                'url'                => $baseUrl . $path,
-                'amount_laar'        => $amountLaar,
-                'local_id'           => $localId,
-                'redirect_url'       => $returnUrl,
+                'auth_mode'    => config('bml.auth_mode', 'auto'),
+                'url'          => $baseUrl . $path,
+                'amount_laar'  => $amountLaar,
+                'local_id'     => $localId,
+                'redirect_url' => $returnUrl,
+                'payload'      => $payload,
             ]);
 
             $response = Http::withHeaders($headers)
