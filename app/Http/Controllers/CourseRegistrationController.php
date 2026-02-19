@@ -184,7 +184,6 @@ class CourseRegistrationController extends PublicRegistrationController
         $courseValidator = Validator::make($request->all(), [
             'course_ids'   => ['required', 'array', 'min:1'],
             'course_ids.*' => ['integer', 'exists:courses,id'],
-            'term_id'      => ['nullable', 'integer', 'exists:terms,id'],
         ]);
 
         if ($courseValidator->fails()) {
@@ -192,7 +191,10 @@ class CourseRegistrationController extends PublicRegistrationController
         }
 
         $courseIds = $courseValidator->validated()['course_ids'];
-        $termId    = $courseValidator->validated()['term_id'] ?? null;
+        // term_id is optional; treat empty string as null
+        $termId = ($request->input('term_id') !== '' && $request->input('term_id') !== null)
+            ? (int) $request->input('term_id')
+            : null;
 
         $data = $this->validateEnrollRequest($request, $flow);
         if ($data instanceof RedirectResponse) {
