@@ -52,7 +52,14 @@ class EnrollmentService
             ]);
         }
 
-        return $this->enrollStudentInCourses($student, $courseIds, $termId, $user, $user);
+        $result = $this->enrollStudentInCourses($student, $courseIds, $termId, $user, $user);
+
+        // Auto-fix default "User" name after successful enrollment
+        if ($user->name === 'User') {
+            $user->update(['name' => $studentData['first_name'] . ' ' . $studentData['last_name']]);
+        }
+
+        return $result;
     }
 
     /**
@@ -74,7 +81,14 @@ class EnrollmentService
             ? $this->createOrGetStudentForParent($parent, $studentDataOrExistingId, $guardianMeta)
             : $this->ensureGuardianCanManageStudent($parent, $studentDataOrExistingId);
 
-        return $this->enrollStudentInCourses($student, $courseIds, $termId, $parent, null);
+        $result = $this->enrollStudentInCourses($student, $courseIds, $termId, $parent, null);
+
+        // Auto-fix default "User" name after successful enrollment (parent flow)
+        if ($parent->name === 'User' && is_array($studentDataOrExistingId)) {
+            $parent->update(['name' => $studentDataOrExistingId['first_name'] . ' ' . $studentDataOrExistingId['last_name']]);
+        }
+
+        return $result;
     }
 
     protected function createOrGetStudentForParent(User $parent, array $studentData, array $guardianMeta): RegistrationStudent

@@ -86,6 +86,10 @@ Route::post("courses/register/enroll", [\App\Http\Controllers\CourseRegistration
     ->name("courses.register.enroll");
 Route::get("courses/register/complete", [\App\Http\Controllers\CourseRegistrationController::class, "complete"])
     ->name("courses.register.complete");
+Route::get("courses/register/resume", [\App\Http\Controllers\CourseRegistrationController::class, "resume"])
+    ->name("courses.register.resume");
+Route::get("courses/register/payment/retry", [\App\Http\Controllers\CourseRegistrationController::class, "retryPayment"])
+    ->name("courses.register.payment.retry");
 
 // Checkout (compliance checkbox required before payment; auth required)
 Route::get("checkout/course/{course}", [\App\Http\Controllers\CheckoutController::class, "show"])

@@ -19,11 +19,12 @@ class ContactNormalizer
     {
         $digits = preg_replace('/[^\d]/', '', $raw);
 
+        // Already has country code (e.g. 9607771234 → +9607771234)
         if (str_starts_with($digits, $this->defaultCountryCode)) {
             return '+' . $digits;
         }
 
-        // 7-digit Maldives local number
+        // 7-digit Maldives local number (e.g. 7771234 → +9607771234)
         if (strlen($digits) === 7 && $this->defaultCountryCode === '960') {
             return '+' . $this->defaultCountryCode . $digits;
         }

@@ -15,6 +15,25 @@ return [
     'merchant_id' => env('BML_MERCHANT_ID'),
 
     /*
+    | Auth mode for BML API header.
+    | raw          → Authorization: {API_KEY}
+    | bearer_jwt   → Authorization: Bearer {API_KEY}   (use when API_KEY is a JWT)
+    | bearer_basic → Authorization: Bearer base64(API_KEY:APP_ID)
+    | auto         → detect by API_KEY prefix (eyJ = JWT, otherwise bearer_basic)
+    */
+    'auth_mode' => env('BML_AUTH_MODE', 'auto'),
+
+    /*
+    | Payment expiry (minutes). Enrollments older than this should be retried.
+    */
+    'payment_expiry_minutes' => (int) env('PAYMENT_EXPIRY_MINUTES', 30),
+
+    /*
+    | Request timeout in seconds.
+    */
+    'timeout' => (int) env('BML_TIMEOUT', 30),
+
+    /*
     | Webhook (PRIMARY method for payment confirmation). Redirect is not authoritative.
     */
     'webhook_secret' => env('BML_WEBHOOK_SECRET', env('BML_CALLBACK_SECRET')),

@@ -52,7 +52,8 @@
                         </div>
                         <div x-show="studentMode === 'existing'" x-cloak class="mb-4">
                             <label class="block text-sm font-medium text-gray-700 mb-2">Select child</label>
-                            <select name="student_id" class="w-full rounded-md border-gray-300" :disabled="flow !== 'parent' || studentMode !== 'existing'">
+                            <select name="student_id" class="w-full rounded-md border-gray-300" :disabled="flow !== 'parent' || studentMode !== 'existing'" required>
+                                <option value="">Select a child</option>
                                 @foreach($user->guardianStudents as $s)
                                     <option value="{{ $s->id }}">{{ $s->full_name }} ({{ $s->age() }} years)</option>
                                 @endforeach

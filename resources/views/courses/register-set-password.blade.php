@@ -13,7 +13,7 @@
                 <div class="mb-4 p-3 bg-red-100 text-red-800 rounded">{{ $errors->first() }}</div>
             @endif
 
-            <form method="POST" action="{{ route('courses.register.set-password.store', app()->getLocale()) }}">
+            <form method="POST" action="{{ route('courses.register.set-password.store') }}">
                 @csrf
                 <div class="mb-4">
                     <label for="password" class="block text-sm font-medium text-gray-700 mb-1">Password</label>

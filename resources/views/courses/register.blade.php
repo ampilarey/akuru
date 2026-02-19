@@ -18,7 +18,7 @@
                 </div>
             @endif
 
-            <form method="POST" action="{{ route('courses.register.start', app()->getLocale()) }}">
+            <form method="POST" action="{{ route('courses.register.start') }}">
                 @csrf
                 <input type="hidden" name="course_id" value="{{ $course->id }}">
 

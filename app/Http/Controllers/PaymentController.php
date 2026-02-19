@@ -79,28 +79,40 @@ class PaymentController extends Controller
         return view('payments.processing', ['payment' => $payment]);
     }
 
+    /**
+     * Sessionless return endpoint. Works without session by accepting ?ref= from URL.
+     *
+     * BML redirects here after payment. We finalizeByReference() server-side so the
+     * result is authoritative regardless of whether the user's session is still alive.
+     */
     public function return(Request $request)
     {
+        // Accept ref from URL first (BML appends it), fall back to session for older flows
         $ref = $request->query('ref') ?? session('pending_payment_ref');
+
         if (! $ref) {
-            return redirect()->route('public.courses.index')->with('error', 'Invalid payment return.');
+            return view('payments.return-missing');
         }
 
         $payment = Payment::where('merchant_reference', $ref)->orWhere('local_id', $ref)->first();
-        if ($payment) {
-            $payment->update(['redirect_return_payload' => $request->query->all()]);
-            $bmlTransactionId = $request->query('transactionId') ?? $request->query('transaction_id');
-            if ($bmlTransactionId && $this->bml && in_array($payment->status, ['pending', 'initiated'], true)) {
-                $this->applyBmlTransactionStatus($payment, $bmlTransactionId);
-            }
-            if (! $payment->bml_transaction_id && $bmlTransactionId) {
-                $payment->update(['bml_transaction_id' => $bmlTransactionId]);
-            }
-            return view('payments.processing', ['payment' => $payment]);
+
+        if (! $payment) {
+            return view('payments.return-missing', ['ref' => $ref]);
         }
 
-        session(['pending_payment_ref' => $ref]);
-        return redirect()->route('courses.register.complete');
+        // Store BML-appended query params for debugging
+        $payment->update(['redirect_return_payload' => $request->query->all()]);
+
+        // Pre-set BML transaction id if present
+        $bmlTransactionId = $request->query('transactionId') ?? $request->query('transaction_id');
+        if ($bmlTransactionId && ! $payment->bml_transaction_id) {
+            $payment->update(['bml_transaction_id' => $bmlTransactionId]);
+        }
+
+        // Finalize server-side (idempotent); ignores return URL state entirely
+        $payment = $this->paymentService->finalizeByReference($ref) ?? $payment;
+
+        return view('payments.processing', ['payment' => $payment]);
     }
 
     /** Fetch BML transaction state and update payment (same logic as reconciliation). */

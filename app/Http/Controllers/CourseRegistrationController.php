@@ -6,6 +6,8 @@ use App\Http\Requests\Registration\SetPasswordRequest;
 use App\Http\Requests\Registration\StartRegistrationRequest;
 use App\Http\Requests\Registration\VerifyOtpRequest;
 use App\Models\Course;
+use App\Models\Payment;
+use App\Models\RegistrationFlow;
 use App\Models\UserContact;
 use App\Services\AccountResolverService;
 use App\Services\ContactNormalizer;
@@ -147,6 +149,10 @@ class CourseRegistrationController extends PublicRegistrationController
             }
         }
 
+        if ($courses->isEmpty()) {
+            return redirect()->route('public.courses.index')->with('error', 'No course selected. Please start registration from a course page.');
+        }
+
         return view('courses.register-continue', [
             'user' => $user,
             'courses' => $courses,
@@ -170,20 +176,23 @@ class CourseRegistrationController extends PublicRegistrationController
             return redirect()->route('public.courses.index')->with('error', 'Please verify your contact first.');
         }
 
-        $flow = $request->input('flow', 'adult');
-        $courseIds = $request->input('course_ids', session('pending_selected_course_ids', []));
-        $termId = $request->input('term_id') ?: session('pending_term_id');
+        $flow      = $request->input('flow', 'adult');
+        $courseIds = $request->input('course_ids');
+        $termId    = $request->input('term_id');
 
-        if (empty($courseIds)) {
-            $courseId = session('pending_course_id');
-            if ($courseId) {
-                $courseIds = [$courseId];
-            }
+        // Strict validation: course_ids must be explicitly present in the request
+        $courseValidator = Validator::make($request->all(), [
+            'course_ids'   => ['required', 'array', 'min:1'],
+            'course_ids.*' => ['integer', 'exists:courses,id'],
+            'term_id'      => ['nullable', 'integer', 'exists:terms,id'],
+        ]);
+
+        if ($courseValidator->fails()) {
+            return back()->withErrors($courseValidator)->withInput();
         }
 
-        if (empty($courseIds)) {
-            return back()->withErrors(['course_ids' => ['Please select at least one course.']]);
-        }
+        $courseIds = $courseValidator->validated()['course_ids'];
+        $termId    = $courseValidator->validated()['term_id'] ?? null;
 
         $data = $this->validateEnrollRequest($request, $flow);
         if ($data instanceof RedirectResponse) {
@@ -230,6 +239,9 @@ class CourseRegistrationController extends PublicRegistrationController
             if (stripos($paymentError, 'unauthorized') !== false) {
                 $paymentError = 'Payment service is not available right now. Your registration was saved. Please contact us to complete payment, or try again later.';
             }
+            if (stripos($paymentError, 'different mobile') !== false || stripos($paymentError, 'already be linked') !== false) {
+                $paymentError = 'This number or account may already be linked to a payment. Please use a different mobile number, or contact us to complete payment.';
+            }
             return back()->withErrors(['payment' => $paymentError])->withInput();
         }
 
@@ -273,11 +285,8 @@ class CourseRegistrationController extends PublicRegistrationController
      */
     protected function validateEnrollRequest(Request $request, string $flow): array|RedirectResponse
     {
-        $rules = [
-            'course_ids' => ['required', 'array'],
-            'course_ids.*' => ['exists:courses,id'],
-            'term_id' => ['nullable', 'integer'],
-        ];
+        // course_ids and term_id are validated upstream in enroll() before this method is called.
+        $rules = [];
 
         if ($flow === 'parent') {
             if ($request->input('student_mode') === 'new') {
@@ -312,6 +321,109 @@ class CourseRegistrationController extends PublicRegistrationController
         }
 
         return $validator->validated();
+    }
+
+    /**
+     * Resume a registration that may have lost session state.
+     * Accepts ?flow=<uuid> or finds the latest active flow for the authenticated user.
+     */
+    public function resume(Request $request): RedirectResponse
+    {
+        $user = $request->user();
+
+        $flowUuid = $request->query('flow');
+        $flow = null;
+
+        if ($flowUuid) {
+            $flow = RegistrationFlow::findResumable($flowUuid, $user?->id);
+        } elseif ($user) {
+            $flow = RegistrationFlow::latestActiveForUser($user->id);
+        }
+
+        if (! $flow) {
+            return redirect()->route('public.courses.index')
+                ->with('error', 'No active registration found. Please start again from a course page.');
+        }
+
+        // Re-hydrate session from DB-backed payload
+        $payload = $flow->payload ?? [];
+        if (! empty($payload['course_ids'])) {
+            session([
+                'pending_selected_course_ids' => $payload['course_ids'],
+                'pending_term_id'             => $payload['term_id'] ?? null,
+            ]);
+        }
+
+        if ($flow->user_id && ! $user) {
+            $user = \App\Models\User::find($flow->user_id);
+            if ($user) {
+                Auth::login($user);
+            }
+        }
+
+        if (! $user || ! $user->hasVerifiedContact()) {
+            session(['pending_contact_id' => $flow->contact_id, 'pending_user_id' => $flow->user_id]);
+            return redirect()->route('courses.register.otp')
+                ->with('info', 'Please verify your contact to continue.');
+        }
+
+        return redirect()->route('courses.register.continue')
+            ->with('info', 'Welcome back! Please complete your enrollment.');
+    }
+
+    /**
+     * Retry payment for an existing enrollment whose payment failed or expired.
+     * Accepts ?ref=<merchant_reference> or ?flow=<uuid>.
+     */
+    public function retryPayment(Request $request): RedirectResponse
+    {
+        $user = $request->user();
+        if (! $user) {
+            return redirect()->route('public.courses.index')->with('error', 'Please log in to retry payment.');
+        }
+
+        $ref = $request->query('ref');
+        $payment = null;
+
+        if ($ref) {
+            $payment = Payment::where('merchant_reference', $ref)
+                ->orWhere('local_id', $ref)
+                ->first();
+        }
+
+        if (! $payment) {
+            // Try via flow uuid
+            $flowUuid = $request->query('flow');
+            if ($flowUuid) {
+                $flow = RegistrationFlow::findResumable($flowUuid, $user->id);
+                if ($flow?->payment_id) {
+                    $payment = Payment::find($flow->payment_id);
+                }
+            }
+        }
+
+        if (! $payment) {
+            return redirect()->route('public.courses.index')->with('error', 'Payment not found.');
+        }
+
+        // If already confirmed, go straight to complete
+        if ($payment->isConfirmed()) {
+            return redirect()->route('courses.register.complete')
+                ->with('success', 'Your payment is already confirmed!');
+        }
+
+        // For failed/expired payments, try to re-initiate
+        $init = $this->paymentService->initiatePayment($payment, [
+            'return_url' => route('payments.bml.return') . '?ref=' . $payment->merchant_reference,
+        ]);
+
+        if ($init->success && $init->redirectUrl) {
+            session(['pending_payment_ref' => $payment->merchant_reference]);
+            return redirect()->away($init->redirectUrl);
+        }
+
+        $error = $init->error ?? 'Payment initiation failed.';
+        return redirect()->route('public.courses.index')->with('error', $error);
     }
 
     protected function clearPendingSession(): void

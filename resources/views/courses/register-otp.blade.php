@@ -18,7 +18,7 @@
                 <div class="mb-4 p-3 bg-red-100 text-red-800 rounded">{{ $errors->first() }}</div>
             @endif
 
-            <form method="POST" action="{{ route('courses.register.verify', app()->getLocale()) }}">
+            <form method="POST" action="{{ route('courses.register.verify') }}">
                 @csrf
                 <div class="mb-4">
                     <label for="code" class="block text-sm font-medium text-gray-700 mb-1">Verification code</label>
