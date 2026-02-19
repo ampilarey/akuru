@@ -8,12 +8,12 @@
         <div class="card p-6">
             <h1 class="text-2xl font-bold text-brandMaroon-900 mb-6">Registration complete</h1>
 
-            @if($paymentRef)
+            @if($paymentRef && $paymentIdForStatus)
                 <div id="payment-status" class="mb-6" x-data="{
                     loading: true,
                     confirmed: false,
                     async init() {
-                        const url = '{{ url("/") }}/{{ app()->getLocale() }}/payments/{{ $paymentRef }}/status';
+                        const url = '{{ route("payments.status.by_id", ["payment" => $paymentIdForStatus]) }}';
                         for (let i = 0; i < 60; i++) {
                             try {
                                 const res = await fetch(url);

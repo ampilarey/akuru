@@ -2,8 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\Registration\EnrollAdultRequest;
-use App\Http\Requests\Registration\EnrollParentRequest;
 use App\Http\Requests\Registration\SetPasswordRequest;
 use App\Http\Requests\Registration\StartRegistrationRequest;
 use App\Http\Requests\Registration\VerifyOtpRequest;
@@ -18,9 +16,10 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\View\View;
 
-class CourseRegistrationController extends Controller
+class CourseRegistrationController extends PublicRegistrationController
 {
     public function __construct(
         protected AccountResolverService $accountResolver,
@@ -186,14 +185,13 @@ class CourseRegistrationController extends Controller
             return back()->withErrors(['course_ids' => ['Please select at least one course.']]);
         }
 
+        $data = $this->validateEnrollRequest($request, $flow);
+        if ($data instanceof RedirectResponse) {
+            return $data;
+        }
+
         try {
             if ($flow === 'parent') {
-                $req = EnrollParentRequest::createFrom($request)->replace($request->all());
-                $req->setContainer(app());
-                $req->setRedirector(app('redirect'));
-                $req->validateResolved();
-                $data = $req->validated();
-
                 if (($data['student_mode'] ?? '') === 'new') {
                     $studentData = [
                         'first_name' => $data['first_name'],
@@ -207,12 +205,6 @@ class CourseRegistrationController extends Controller
                     $result = $this->enrollmentService->enrollByParent($user, (int) $data['student_id'], $courseIds, $termId);
                 }
             } else {
-                $req = EnrollAdultRequest::createFrom($request)->replace($request->all());
-                $req->setContainer(app());
-                $req->setRedirector(app('redirect'));
-                $req->validateResolved();
-                $data = $req->validated();
-
                 $studentData = [
                     'first_name' => $data['first_name'],
                     'last_name' => $data['last_name'],
@@ -234,7 +226,11 @@ class CourseRegistrationController extends Controller
                 session(['pending_payment_ref' => $payment->merchant_reference]);
                 return redirect()->away($init->redirectUrl);
             }
-            return back()->withErrors(['payment' => $init->error ?? 'Payment initiation failed.'])->withInput();
+            $paymentError = $init->error ?? 'Payment initiation failed.';
+            if (stripos($paymentError, 'unauthorized') !== false) {
+                $paymentError = 'Payment service is not available right now. Your registration was saved. Please contact us to complete payment, or try again later.';
+            }
+            return back()->withErrors(['payment' => $paymentError])->withInput();
         }
 
         $this->clearPendingSession();
@@ -251,9 +247,11 @@ class CourseRegistrationController extends Controller
         }
 
         $enrollments = $enrollments ?? [];
+        $paymentIdForStatus = null;
         if ($paymentRef) {
             $payment = \App\Models\Payment::where('merchant_reference', $paymentRef)->first();
             if ($payment) {
+                $paymentIdForStatus = $payment->id;
                 foreach ($payment->items as $item) {
                     $enrollments[] = $item->enrollment;
                 }
@@ -265,7 +263,55 @@ class CourseRegistrationController extends Controller
         return view('courses.register-complete', [
             'enrollments' => collect($enrollments)->unique('id')->values(),
             'paymentRef' => $paymentRef,
+            'paymentIdForStatus' => $paymentIdForStatus,
         ]);
+    }
+
+    /**
+     * Validate enroll form without using Form Request (avoids any authorization check).
+     * Returns validated data array or a RedirectResponse on failure.
+     */
+    protected function validateEnrollRequest(Request $request, string $flow): array|RedirectResponse
+    {
+        $rules = [
+            'course_ids' => ['required', 'array'],
+            'course_ids.*' => ['exists:courses,id'],
+            'term_id' => ['nullable', 'integer'],
+        ];
+
+        if ($flow === 'parent') {
+            if ($request->input('student_mode') === 'new') {
+                $rules['first_name'] = ['required', 'string', 'max:100'];
+                $rules['last_name'] = ['required', 'string', 'max:100'];
+                $rules['dob'] = ['required', 'date', 'before:today'];
+                $rules['gender'] = ['nullable', 'in:male,female'];
+                $rules['relationship'] = ['nullable', 'in:father,mother,guardian,other'];
+            } else {
+                $rules['student_id'] = ['required', 'exists:registration_students,id'];
+            }
+        } else {
+            $rules['first_name'] = ['required', 'string', 'max:100'];
+            $rules['last_name'] = ['required', 'string', 'max:100'];
+            $rules['dob'] = ['required', 'date', 'before:today'];
+            $rules['gender'] = ['nullable', 'in:male,female'];
+        }
+
+        $validator = Validator::make($request->all(), $rules);
+
+        if ($flow === 'adult') {
+            $validator->after(function ($validator) use ($request) {
+                $dob = $request->input('dob');
+                if ($dob && \Carbon\Carbon::parse($dob)->age < 18) {
+                    $validator->errors()->add('dob', 'You must be 18 or older to enroll yourself.');
+                }
+            });
+        }
+
+        if ($validator->fails()) {
+            return back()->withErrors($validator)->withInput();
+        }
+
+        return $validator->validated();
     }
 
     protected function clearPendingSession(): void

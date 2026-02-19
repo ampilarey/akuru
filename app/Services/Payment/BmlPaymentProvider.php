@@ -57,8 +57,12 @@ class BmlPaymentProvider implements PaymentProviderInterface
                 }
             }
 
-            $error = $response->json('message') ?? $response->body() ?? 'Payment initiation failed';
+            $raw = $response->json('message') ?? $response->body() ?? 'Payment initiation failed';
             Log::error('BML initiate failed', ['status' => $response->status(), 'body' => $response->body()]);
+            // Don't show BML's "Unauthorized" (401) to users; use a friendly message
+            $error = ($response->status() === 401 || stripos((string) $raw, 'unauthorized') !== false)
+                ? 'Payment service is not available right now. Your registration was saved. Please contact us to complete payment, or try again later.'
+                : $raw;
             return new PaymentInitiationResult(false, null, null, $error);
         } catch (\Throwable $e) {
             Log::error('BML initiate exception', ['error' => $e->getMessage()]);

@@ -136,6 +136,28 @@ class EnrollmentService
 
                 if ($existing) {
                     $result->existingEnrollments[] = $existing;
+                    // If existing enrollment has pending payment, ensure we redirect to BML
+                    if ($existing->payment_status === 'pending') {
+                        $feeAmount = $course->getRegistrationFeeAmount();
+                        $addToFeeEnrollments = $feeAmount > 0;
+
+                        if ($existing->payment_id) {
+                            $existingPayment = Payment::find($existing->payment_id);
+                            if ($existingPayment && in_array($existingPayment->status, ['initiated', 'pending'], true)) {
+                                $alreadyAdded = collect($result->paymentsInitiated)->contains('id', $existingPayment->id);
+                                if (!$alreadyAdded) {
+                                    $result->paymentsInitiated[] = $existingPayment;
+                                    $addToFeeEnrollments = false;
+                                }
+                            }
+                        }
+
+                        // No usable payment: create one (orphaned or previous payment failed/expired)
+                        if ($addToFeeEnrollments) {
+                            $feeEnrollments[] = ['enrollment' => $existing, 'course' => $course, 'amount' => $feeAmount];
+                            $totalFee += $feeAmount;
+                        }
+                    }
                     continue;
                 }
 

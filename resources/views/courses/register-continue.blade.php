@@ -31,7 +31,7 @@
                     </div>
                 </div>
 
-                <form method="POST" action="{{ route('courses.register.enroll', app()->getLocale()) }}">
+                <form method="POST" action="{{ route('courses.register.enroll') }}">
                     @csrf
                     <input type="hidden" name="flow" x-model="flow">
                     <input type="hidden" name="term_id" value="{{ $termId }}">

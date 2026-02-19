@@ -22,6 +22,7 @@ class PaymentController extends Controller
     {
         return response()->json([
             'status' => $payment->status,
+            'confirmed' => $payment->isConfirmed(),
             'paid_at' => $payment->paid_at?->toIso8601String(),
         ]);
     }
