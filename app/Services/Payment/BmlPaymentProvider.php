@@ -49,11 +49,12 @@ class BmlPaymentProvider implements PaymentProviderInterface
 
             // Debug: log auth mode and header type (never log the key value itself)
             Log::info('BML initiate request', [
-                'auth_mode' => config('bml.auth_mode', 'auto'),
+                'auth_mode'          => config('bml.auth_mode', 'auto'),
                 'auth_header_prefix' => substr($headers['Authorization'] ?? '', 0, 10) . '...',
-                'url' => $baseUrl . $path,
-                'amount_laar' => $amountLaar,
-                'local_id' => $localId,
+                'url'                => $baseUrl . $path,
+                'amount_laar'        => $amountLaar,
+                'local_id'           => $localId,
+                'redirect_url'       => $returnUrl,
             ]);
 
             $response = Http::withHeaders($headers)
