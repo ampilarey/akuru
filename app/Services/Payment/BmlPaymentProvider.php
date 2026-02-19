@@ -12,13 +12,8 @@ class BmlPaymentProvider implements PaymentProviderInterface
     public function initiate(Payment $payment, array $context = []): PaymentInitiationResult
     {
         $baseUrl = rtrim(config('bml.base_url', ''), '/');
-        $apiKey = config('bml.api_key');
-        $appId = config('bml.app_id');
-        // Build return URL from APP_URL to avoid locale prefix added by route().
-        // BML_RETURN_URL (if set) overrides everything.
-        $baseReturnUrl = config('bml.return_url')
-            ?: rtrim(config('app.url'), '/') . '/payments/bml/return';
-        $returnUrl = $baseReturnUrl . '?ref=' . $localId;
+        $apiKey  = config('bml.api_key');
+        $appId   = config('bml.app_id');
 
         if (!$baseUrl || !$apiKey) {
             Log::warning('BML payment provider: Missing configuration');
@@ -31,6 +26,12 @@ class BmlPaymentProvider implements PaymentProviderInterface
             ? (int) $payment->amount_laar
             : (int) round((float) $payment->amount * 100);
         $localId = $payment->local_id ?? $payment->merchant_reference;
+
+        // Build return URL from APP_URL to avoid locale prefix (/en/) added by route().
+        // BML_RETURN_URL (if set) overrides everything.
+        $baseReturnUrl = config('bml.return_url')
+            ?: rtrim(config('app.url'), '/') . '/payments/bml/return';
+        $returnUrl = $baseReturnUrl . '?ref=' . $localId;
 
         $path = config('bml.paths.create_transaction', '/v2/transactions');
         $payload = [
