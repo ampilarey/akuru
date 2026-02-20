@@ -3,189 +3,166 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
+use App\Models\UserContact;
+use App\Services\ContactNormalizer;
 use App\Services\OtpService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Validation\Rules\Password;
+use Illuminate\Validation\ValidationException;
 
 class OtpPasswordResetController extends Controller
 {
-    protected OtpService $otpService;
-
-    public function __construct(OtpService $otpService)
-    {
+    public function __construct(
+        protected OtpService $otpService,
+        protected ContactNormalizer $normalizer,
+    ) {
         $this->middleware('guest');
-        $this->otpService = $otpService;
     }
 
-    /**
-     * Show password reset request form
-     */
+    /** Step 1 – show the "enter mobile/email" form */
     public function showRequestForm()
     {
         return view('auth.passwords.otp-request');
     }
 
-    /**
-     * Request OTP for password reset
-     */
+    /** Step 1 – send OTP */
     public function requestOtp(Request $request)
     {
         $request->validate([
-            'phone' => 'required|string',
+            'contact' => ['required', 'string', 'max:120'],
         ]);
 
-        $phone = $request->phone;
+        $raw     = trim($request->input('contact'));
+        $type    = str_contains($raw, '@') ? 'email' : 'mobile';
+        $normalized = $this->normalizer->normalize($type, $raw);
 
-        // Check if user exists with this phone
-        $user = User::where('phone', $phone)->first();
+        // Intentionally do NOT reveal whether the account exists.
+        $contact = UserContact::where('type', $type)
+            ->where('value', $normalized)
+            ->first();
 
-        if (!$user) {
-            return back()->withErrors([
-                'phone' => 'No account found with this phone number.',
-            ])->withInput();
+        if ($contact) {
+            try {
+                $this->otpService->send($contact, 'password_reset');
+            } catch (ValidationException $e) {
+                return back()->withErrors($e->errors())->withInput();
+            }
         }
 
-        // Generate and send OTP
-        $result = $this->otpService->generate($phone, 'password_reset');
-
-        if (!$result['success']) {
-            return back()->withErrors([
-                'phone' => $result['error'],
-            ])->withInput();
-        }
-
-        // Store phone in session
-        session(['password_reset_phone' => $phone]);
+        // Generic message always shown
+        session([
+            'password_reset_contact_type'  => $type,
+            'password_reset_contact_value' => $normalized,
+            'password_reset_contact_id'    => $contact?->id,
+        ]);
 
         return redirect()->route('password.otp.verify.form')
-            ->with('success', 'OTP sent to your phone. Please enter the code.');
+            ->with('success', "If that contact is registered, a verification code has been sent.");
     }
 
-    /**
-     * Show OTP verification form
-     */
+    /** Step 2 – show OTP input form */
     public function showVerifyForm()
     {
-        if (!session('password_reset_phone')) {
-            return redirect()->route('password.otp.request')
-                ->withErrors(['error' => 'Please enter your phone number first.']);
+        if (! session('password_reset_contact_value')) {
+            return redirect()->route('password.otp.request');
         }
 
         return view('auth.passwords.otp-verify');
     }
 
-    /**
-     * Verify OTP
-     */
+    /** Step 2 – verify OTP */
     public function verifyOtp(Request $request)
     {
         $request->validate([
-            'code' => 'required|string|size:6',
+            'code' => ['required', 'string', 'size:6'],
         ]);
 
-        $phone = session('password_reset_phone');
-
-        if (!$phone) {
+        $contactId = session('password_reset_contact_id');
+        if (! $contactId) {
             return redirect()->route('password.otp.request')
-                ->withErrors(['error' => 'Session expired. Please try again.']);
+                ->withErrors(['contact' => 'Session expired. Please try again.']);
         }
 
-        // Verify OTP
-        $result = $this->otpService->verify($phone, $request->code, 'password_reset');
-
-        if (!$result['success']) {
-            return back()->withErrors([
-                'code' => $result['error'],
-            ]);
+        $contact = UserContact::find($contactId);
+        if (! $contact) {
+            return redirect()->route('password.otp.request')
+                ->withErrors(['contact' => 'Session expired. Please try again.']);
         }
 
-        // Store verification status
-        session(['otp_verified' => true]);
+        try {
+            $this->otpService->verify($contact, 'password_reset', $request->input('code'));
+        } catch (ValidationException $e) {
+            return back()->withErrors($e->errors());
+        }
+
+        session(['password_reset_otp_verified' => true]);
 
         return redirect()->route('password.otp.reset.form')
-            ->with('success', 'OTP verified. Please set your new password.');
+            ->with('success', 'Code verified. Please set your new password.');
     }
 
-    /**
-     * Show password reset form
-     */
+    /** Step 3 – show new-password form */
     public function showResetForm()
     {
-        if (!session('otp_verified') || !session('password_reset_phone')) {
-            return redirect()->route('password.otp.request')
-                ->withErrors(['error' => 'Please verify your OTP first.']);
+        if (! session('password_reset_otp_verified') || ! session('password_reset_contact_id')) {
+            return redirect()->route('password.otp.request');
         }
 
         return view('auth.passwords.otp-reset');
     }
 
-    /**
-     * Reset password
-     */
+    /** Step 3 – save new password */
     public function reset(Request $request)
     {
         $request->validate([
-            'password' => ['required', 'confirmed', Password::defaults()],
+            'password' => ['required', 'string', 'min:8', 'confirmed'],
         ]);
 
-        $phone = session('password_reset_phone');
-        $verified = session('otp_verified');
-
-        if (!$phone || !$verified) {
+        if (! session('password_reset_otp_verified') || ! session('password_reset_contact_id')) {
             return redirect()->route('password.otp.request')
-                ->withErrors(['error' => 'Session expired. Please try again.']);
+                ->withErrors(['contact' => 'Session expired. Please try again.']);
         }
 
-        // Find user
-        $user = User::where('phone', $phone)->first();
+        $contact = UserContact::find(session('password_reset_contact_id'));
+        $user    = $contact?->user;
 
-        if (!$user) {
+        if (! $user) {
+            session()->forget(['password_reset_otp_verified', 'password_reset_contact_id', 'password_reset_contact_value', 'password_reset_contact_type']);
             return redirect()->route('password.otp.request')
-                ->withErrors(['error' => 'User not found.']);
+                ->withErrors(['contact' => 'Account not found.']);
         }
 
-        // Update password
-        $user->update([
-            'password' => Hash::make($request->password),
-        ]);
+        $user->update(['password' => Hash::make($request->input('password'))]);
 
-        // Clear session
-        session()->forget(['password_reset_phone', 'otp_verified']);
+        session()->forget(['password_reset_otp_verified', 'password_reset_contact_id', 'password_reset_contact_value', 'password_reset_contact_type']);
 
-        Log::info('Password reset via OTP', [
-            'user_id' => $user->id,
-            'phone' => $phone,
-        ]);
+        Log::info('Password reset via OTP', ['user_id' => $user->id]);
 
         return redirect()->route('login')
-            ->with('success', 'Password reset successfully. You can now login with your new password.');
+            ->with('status', 'Password reset successfully. You can now log in.');
     }
 
-    /**
-     * Resend OTP
-     */
+    /** Resend OTP */
     public function resendOtp(Request $request)
     {
-        $phone = session('password_reset_phone');
+        $contactId = session('password_reset_contact_id');
 
-        if (!$phone) {
-            return redirect()->route('password.otp.request')
-                ->withErrors(['error' => 'Session expired. Please try again.']);
+        if (! $contactId) {
+            return redirect()->route('password.otp.request');
         }
 
-        // Generate and send new OTP
-        $result = $this->otpService->generate($phone, 'password_reset');
-
-        if (!$result['success']) {
-            return back()->withErrors([
-                'error' => $result['error'],
-            ]);
+        $contact = UserContact::find($contactId);
+        if (! $contact) {
+            return redirect()->route('password.otp.request');
         }
 
-        return back()->with('success', 'New OTP sent to your phone.');
+        try {
+            $this->otpService->send($contact, 'password_reset');
+        } catch (ValidationException $e) {
+            return back()->withErrors($e->errors());
+        }
+
+        return back()->with('success', 'A new code has been sent.');
     }
 }
-

@@ -153,7 +153,7 @@
 
                     <p class="text-center text-sm text-gray-500 mt-4">
                         Don't remember your password?
-                        <a href="{{ route('password.request') }}" class="text-brandMaroon-600 hover:underline">Reset it</a>
+                        <a href="{{ route('password.otp.request') }}" class="text-brandMaroon-600 hover:underline">Reset it</a>
                         or
                         <a href="#" @click.prevent="tab = 'new'; useOtp = true" class="text-brandMaroon-600 hover:underline">use OTP instead</a>
                     </p>
