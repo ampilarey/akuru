@@ -60,35 +60,30 @@
         </button>
 
         <div id="gt-dropdown"
-             class="hidden absolute right-0 top-full mt-1 z-50 bg-white rounded-xl shadow-xl border border-gray-200 w-56">
+             class="hidden absolute right-0 top-full mt-1 z-50 bg-white rounded-xl shadow-xl border border-gray-200 w-48">
 
-          {{-- Pinned: English · Arabic · Dhivehi --}}
-          <div class="flex gap-1 p-2 border-b border-gray-100">
+          {{-- Pinned: column of 3 --}}
+          <div class="p-2 space-y-1">
             <button onclick="translateTo('en')"
-                    class="gt-pin flex-1 text-center text-xs font-semibold py-2 rounded-lg border border-gray-200 hover:border-brandMaroon-400 hover:bg-brandBeige-50 transition-colors text-gray-700"
-                    data-code="en">🇬🇧 EN</button>
+                    class="gt-pin w-full text-left px-3 py-2 text-sm rounded-lg border border-gray-200 hover:border-brandMaroon-400 hover:bg-brandBeige-50 transition-colors text-gray-700 font-medium"
+                    data-code="en">🇬🇧 English</button>
             <button onclick="translateTo('ar')"
-                    class="gt-pin flex-1 text-center text-xs font-semibold py-2 rounded-lg border border-gray-200 hover:border-brandMaroon-400 hover:bg-brandBeige-50 transition-colors text-gray-700"
-                    data-code="ar">🇸🇦 AR</button>
+                    class="gt-pin w-full text-left px-3 py-2 text-sm rounded-lg border border-gray-200 hover:border-brandMaroon-400 hover:bg-brandBeige-50 transition-colors text-gray-700 font-medium"
+                    data-code="ar">🇸🇦 العربية</button>
             <button onclick="translateTo('dv')"
-                    class="gt-pin flex-1 text-center text-xs font-semibold py-2 rounded-lg border border-gray-200 hover:border-brandMaroon-400 hover:bg-brandBeige-50 transition-colors text-gray-700"
-                    data-code="dv">🇲🇻 DV</button>
+                    class="gt-pin w-full text-left px-3 py-2 text-sm rounded-lg border border-gray-200 hover:border-brandMaroon-400 hover:bg-brandBeige-50 transition-colors text-gray-700 font-medium"
+                    data-code="dv">🇲🇻 ދިވެހި</button>
           </div>
 
-          {{-- Search other languages --}}
-          <div class="p-2 border-b border-gray-100">
-            <div class="relative">
-              <svg class="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-              </svg>
-              <input id="gt-search" type="text" placeholder="Search language…"
-                     oninput="filterGTLangs(this.value)"
-                     class="w-full pl-7 pr-3 py-1.5 text-xs border border-gray-200 rounded-lg focus:outline-none focus:border-brandMaroon-400">
-            </div>
+          {{-- Search --}}
+          <div class="px-2 pb-2">
+            <input id="gt-search" type="text" placeholder="Search other language…"
+                   oninput="filterGTLangs(this.value)"
+                   class="w-full px-3 py-1.5 text-xs border border-gray-200 rounded-lg focus:outline-none focus:border-brandMaroon-400 placeholder-gray-400">
           </div>
 
-          {{-- Other languages list --}}
-          <div id="gt-lang-list" class="max-h-44 overflow-y-auto py-1"></div>
+          {{-- Search results (hidden until typing) --}}
+          <div id="gt-lang-list" class="hidden max-h-44 overflow-y-auto border-t border-gray-100 py-1"></div>
         </div>
       </div>
       {{-- GT init element: off-screen so GT can initialise its hidden select --}}
@@ -265,27 +260,30 @@ var GT_PINNED = ['en','ar','dv'];
 
 function googleTranslateElementInit() {
   new google.translate.TranslateElement({ pageLanguage: 'en', autoDisplay: false }, 'google_translate_element');
-  renderGTList('');
   markActiveLang();
 }
 
-function renderGTList(query) {
+function filterGTLangs(q) {
   var list = document.getElementById('gt-lang-list');
   if (!list) return;
-  var q = query.toLowerCase().trim();
+  var trimmed = q.trim();
+  if (!trimmed) {
+    list.innerHTML = '';
+    list.classList.add('hidden');
+    return;
+  }
   var filtered = GT_LANGS.filter(function(l) {
-    return !GT_PINNED.includes(l.c) && (!q || l.l.toLowerCase().includes(q));
+    return !GT_PINNED.includes(l.c) && l.l.toLowerCase().includes(trimmed.toLowerCase());
   });
+  list.classList.remove('hidden');
   if (!filtered.length) {
-    list.innerHTML = '<p class="px-4 py-3 text-xs text-gray-400">No results for "' + query + '"</p>';
+    list.innerHTML = '<p class="px-4 py-3 text-xs text-gray-400">No results</p>';
     return;
   }
   list.innerHTML = filtered.map(function(l) {
     return '<button onclick="translateTo(\'' + l.c + '\')" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-brandBeige-50 hover:text-brandMaroon-700 transition-colors">' + l.l + '</button>';
   }).join('');
 }
-
-function filterGTLangs(q) { renderGTList(q); }
 
 function markActiveLang() {
   var m = document.cookie.match(/googtrans=\/en\/([a-z-]+)/);
@@ -300,8 +298,10 @@ function markActiveLang() {
 
 function translateTo(lang) {
   document.getElementById('gt-dropdown')?.classList.add('hidden');
-  document.getElementById('gt-search') && (document.getElementById('gt-search').value = '');
-  renderGTList('');
+  var search = document.getElementById('gt-search');
+  if (search) search.value = '';
+  var list = document.getElementById('gt-lang-list');
+  if (list) { list.innerHTML = ''; list.classList.add('hidden'); }
 
   if (lang === 'en') {
     var d = location.hostname;
