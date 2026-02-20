@@ -48,19 +48,8 @@
     <!-- Right Side: Translate + User + Hamburger -->
     <div class="flex items-center gap-2">
 
-      {{-- ── Translate button (visible on all screens) ── --}}
-      <div id="gt-wrapper" class="relative">
-        <button id="gt-btn" onclick="toggleGT()" aria-label="Translate page"
-                class="flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-medium text-brandGray-600 hover:text-brandMaroon-600 hover:bg-brandBeige-100 border border-gray-200 transition-colors">
-          <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"/>
-          </svg>
-          <span class="hidden sm:inline">Translate</span>
-        </button>
-        <div id="google_translate_element"
-             class="absolute right-0 top-full mt-1 z-50 bg-white rounded-xl shadow-xl border border-gray-200 p-3 hidden min-w-max"></div>
-      </div>
+      {{-- ── Google Translate (always visible, inline) ── --}}
+      <div id="google_translate_element" class="gt-nav-widget"></div>
 
       {{-- ── User menu (desktop, md+) ── --}}
       <div class="hidden md:block">
@@ -130,12 +119,6 @@
   <!-- Mobile Navigation -->
   <div id="mobileMenu" class="hidden lg:hidden bg-white border-t shadow-lg">
     <div class="container mx-auto py-4 px-4 space-y-1">
-      <!-- Mobile Translate -->
-      <div class="py-3 border-b border-gray-200 mb-4">
-        <p class="text-xs text-brandGray-400 mb-2 px-1">Translate this page:</p>
-        <div id="google_translate_element_mobile"></div>
-      </div>
-
       <!-- Mobile Navigation Links -->
       <a href="{{ route('public.courses.index') }}" 
          class="block py-3 px-4 text-brandGray-600 hover:text-brandMaroon-600 hover:bg-brandBeige-100 rounded-lg transition-colors duration-200">
@@ -207,51 +190,49 @@
 <script>
 // ── Google Translate ──────────────────────────────────────────────
 function googleTranslateElementInit() {
-  // Desktop dropdown widget
   new google.translate.TranslateElement({
     pageLanguage: 'en',
     layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
     autoDisplay: false
   }, 'google_translate_element');
-
-  // Mobile inline widget
-  new google.translate.TranslateElement({
-    pageLanguage: 'en',
-    layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
-    autoDisplay: false
-  }, 'google_translate_element_mobile');
 }
 
-function toggleGT() {
-  document.getElementById('google_translate_element')?.classList.toggle('hidden');
-  document.getElementById('user-menu-dropdown')?.classList.add('hidden');
-}
-
+// ── User dropdown ─────────────────────────────────────────────────
 function toggleUserMenu() {
   document.getElementById('user-menu-dropdown')?.classList.toggle('hidden');
-  document.getElementById('google_translate_element')?.classList.add('hidden');
 }
 
-// Close both dropdowns when clicking outside
 document.addEventListener('click', function(e) {
-  if (!document.getElementById('gt-wrapper')?.contains(e.target)) {
-    document.getElementById('google_translate_element')?.classList.add('hidden');
-  }
   if (!document.getElementById('user-menu-wrapper')?.contains(e.target)) {
     document.getElementById('user-menu-dropdown')?.classList.add('hidden');
   }
 });
 
-// Hide the "Powered by Google" bar that GT injects at the top
-const gtStyle = document.createElement('style');
-gtStyle.textContent = `
-  body { top: 0 !important; }
-  .goog-te-banner-frame { display: none !important; }
-  .skiptranslate { display: none !important; }
-  .goog-te-gadget { font-size: 0 !important; }
-  .goog-te-gadget select { font-size: 13px !important; border-radius: 6px; border: 1px solid #e5e7eb; padding: 4px 8px; }
-`;
-document.head.appendChild(gtStyle);
+// ── Suppress Google Translate injected banner ─────────────────────
+(function() {
+  const s = document.createElement('style');
+  s.textContent = `
+    body { top: 0 !important; }
+    .goog-te-banner-frame, .goog-te-balloon-frame { display: none !important; }
+    .skiptranslate > iframe { display: none !important; }
+    /* Style the GT select to look like a nav button */
+    .gt-nav-widget .goog-te-gadget { font-size: 0 !important; }
+    .gt-nav-widget .goog-te-gadget select {
+      font-size: 12px !important;
+      font-family: inherit !important;
+      color: #4b5563 !important;
+      background: #fff !important;
+      border: 1px solid #e5e7eb !important;
+      border-radius: 6px !important;
+      padding: 5px 8px !important;
+      cursor: pointer !important;
+      max-width: 130px !important;
+      outline: none !important;
+    }
+    .gt-nav-widget .goog-te-gadget select:hover { border-color: #9b1c1c !important; }
+  `;
+  document.head.appendChild(s);
+})();
 
 // ── Mobile menu ───────────────────────────────────────────────────
 // Wait for DOM to be fully loaded
