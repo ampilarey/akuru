@@ -138,6 +138,39 @@
     </div>
 </section>
 
+<!-- Educational Articles Section -->
+@if(isset($articles) && $articles->count() > 0)
+<section class="py-16 bg-brandBeige-50">
+    <div class="container mx-auto px-4">
+        <div class="flex items-center justify-between mb-8">
+            <div>
+                <h2 class="text-2xl sm:text-3xl font-bold text-gray-900">Educational Articles</h2>
+                <p class="text-gray-600 mt-1">Knowledge and insights on Quran, Arabic &amp; Islamic studies</p>
+            </div>
+            <a href="{{ route('public.articles.index') }}" class="hidden sm:inline-block text-brandMaroon-600 hover:underline text-sm font-medium">View all →</a>
+        </div>
+        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            @foreach($articles as $article)
+            <a href="{{ route('public.articles.show', $article->slug) }}" class="group block card overflow-hidden hover:shadow-md transition-shadow">
+                @if($article->cover_image)
+                    <div class="aspect-video overflow-hidden">
+                        <x-public.picture :src="$article->cover_image" :alt="$article->title"
+                            class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"/>
+                    </div>
+                @endif
+                <div class="p-5">
+                    <p class="font-semibold text-gray-900 group-hover:text-brandMaroon-600 transition-colors leading-snug mb-1">{{ $article->title }}</p>
+                    <p class="text-sm text-gray-500 line-clamp-2">{{ $article->excerpt }}</p>
+                    <p class="text-xs text-gray-400 mt-2">{{ $article->published_at->format('d M Y') }}</p>
+                </div>
+            </a>
+            @endforeach
+        </div>
+        <a href="{{ route('public.articles.index') }}" class="sm:hidden inline-block mt-6 text-brandMaroon-600 hover:underline text-sm font-medium">View all articles →</a>
+    </div>
+</section>
+@endif
+
 @if(isset($testimonials) && $testimonials->isNotEmpty())
 <!-- Testimonials Section -->
 <section class="py-16 bg-brandBeige-200">

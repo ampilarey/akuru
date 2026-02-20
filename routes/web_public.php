@@ -30,6 +30,16 @@ Route::get("/dv", function () {
 Route::get("about", fn() => app(PageController::class)->show('about'))->name("public.about");
 Route::get("courses", [CourseController::class, "index"])->name("public.courses.index");
 Route::get("courses/{course}", [CourseController::class, "show"])->name("public.courses.show");
+// Search
+Route::get("search", [\App\Http\Controllers\PublicSite\SearchController::class, "index"])->name("public.search");
+
+// Articles (type=article posts)
+Route::get("articles", [\App\Http\Controllers\PublicSite\PostController::class, "articlesIndex"])->name("public.articles.index");
+Route::get("articles/{post:slug}", [\App\Http\Controllers\PublicSite\PostController::class, "show"])->name("public.articles.show");
+
+// Calendar .ics download for individual event
+Route::get("events/{event}/calendar.ics", [\App\Http\Controllers\PublicSite\EventController::class, "downloadCalendar"])->name("public.events.calendar");
+
 Route::get("news", function() {
     try {
         $posts = \App\Models\Post::published()->public()->with('category')->paginate(12);

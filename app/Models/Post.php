@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 class Post extends Model
 {
     protected $fillable = [
+        'type',
         'post_category_id',
         'title',
         'slug',
@@ -60,6 +61,16 @@ class Post extends Model
     {
         return $query->where('is_published', true)
                     ->where('published_at', '<=', now());
+    }
+
+    public function scopeNews($query)
+    {
+        return $query->where('type', 'news');
+    }
+
+    public function scopeArticles($query)
+    {
+        return $query->where('type', 'article');
     }
 
     public function scopeFeatured($query)

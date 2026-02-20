@@ -164,6 +164,39 @@
                     </div>
                 </div>
 
+                <!-- Instructors -->
+                @if($course->instructors->count() > 0)
+                <div class="card p-6 mb-6">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-4">Instructors</h2>
+                    <div class="space-y-4">
+                        @foreach($course->instructors as $instructor)
+                        <div class="flex items-start gap-4">
+                            @if($instructor->photo)
+                                <img src="{{ asset('storage/' . $instructor->photo) }}" alt="{{ $instructor->name }}"
+                                     class="w-14 h-14 rounded-full object-cover shrink-0">
+                            @else
+                                <div class="w-14 h-14 rounded-full bg-brandBeige-200 flex items-center justify-center shrink-0 text-brandMaroon-600 font-bold text-xl">
+                                    {{ strtoupper(substr($instructor->name, 0, 1)) }}
+                                </div>
+                            @endif
+                            <div>
+                                <p class="font-semibold text-gray-900">{{ $instructor->name }}</p>
+                                @if($instructor->qualification)
+                                    <p class="text-sm text-brandMaroon-600">{{ $instructor->qualification }}</p>
+                                @endif
+                                @if($instructor->specialization)
+                                    <p class="text-xs text-gray-500">{{ $instructor->specialization }}</p>
+                                @endif
+                                @if($instructor->bio)
+                                    <p class="text-sm text-gray-600 mt-1">{{ Str::limit($instructor->bio, 180) }}</p>
+                                @endif
+                            </div>
+                        </div>
+                        @endforeach
+                    </div>
+                </div>
+                @endif
+
                 <!-- Schedule (if available) -->
                 @if($course->schedule && is_array($course->schedule) && count($course->schedule) > 0)
                     <div class="card p-6">

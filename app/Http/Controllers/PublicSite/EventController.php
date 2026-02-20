@@ -228,6 +228,48 @@ class EventController extends Controller
         return view('public.events.qr-code', compact('registration'));
     }
 
+    public function downloadCalendar(Event $event)
+    {
+        if ($event->status !== 'published' || !$event->is_public) {
+            abort(404);
+        }
+
+        $start = \Carbon\Carbon::parse($event->start_date);
+        $end   = $event->end_date ? \Carbon\Carbon::parse($event->end_date) : $start->copy()->addHours(2);
+
+        $summary     = addcslashes(strip_tags($event->title), ',;\\');
+        $description = addcslashes(strip_tags($event->short_description ?? $event->description ?? ''), ',;\\');
+        $location    = addcslashes($event->location ?? '', ',;\\');
+        $uid         = 'event-' . $event->id . '@akuru.edu.mv';
+        $url         = route('public.events.show', $event->slug);
+
+        $ics = implode("\r\n", [
+            'BEGIN:VCALENDAR',
+            'VERSION:2.0',
+            'PRODID:-//Akuru Institute//EN',
+            'CALSCALE:GREGORIAN',
+            'METHOD:PUBLISH',
+            'BEGIN:VEVENT',
+            'UID:' . $uid,
+            'DTSTAMP:' . now()->format('Ymd\THis\Z'),
+            'DTSTART:' . $start->format('Ymd\THis'),
+            'DTEND:'   . $end->format('Ymd\THis'),
+            'SUMMARY:' . $summary,
+            'DESCRIPTION:' . $description,
+            'LOCATION:' . $location,
+            'URL:' . $url,
+            'END:VEVENT',
+            'END:VCALENDAR',
+        ]);
+
+        $filename = \Str::slug($event->title) . '.ics';
+
+        return response($ics, 200, [
+            'Content-Type'        => 'text/calendar; charset=utf-8',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        ]);
+    }
+
     public function calendar()
     {
         $events = Event::published()

@@ -92,6 +92,48 @@ class PostController extends Controller
         return view('public.news.index', compact('posts', 'categories', 'featuredPosts', 'recentPosts', 'popularTags'));
     }
 
+    public function newsIndex(Request $request)
+    {
+        return $this->indexByType($request, 'news', 'public.news.index');
+    }
+
+    public function articlesIndex(Request $request)
+    {
+        return $this->indexByType($request, 'article', 'public.articles.index');
+    }
+
+    private function indexByType(Request $request, string $type, string $view)
+    {
+        $query = Post::published()->where('type', $type)->with(['author', 'category']);
+
+        if ($request->filled('category')) {
+            $query->byCategory($request->category);
+        }
+        if ($request->filled('tag')) {
+            $query->byTag($request->tag);
+        }
+        if ($request->filled('search')) {
+            $query->search($request->search);
+        }
+
+        $sortBy = $request->get('sort', 'recent');
+        match ($sortBy) {
+            'popular'  => $query->popular(),
+            'title'    => $query->orderBy('title'),
+            'featured' => $query->orderBy('is_featured', 'desc')->orderBy('published_at', 'desc'),
+            default    => $query->recent(),
+        };
+
+        $posts      = $query->paginate(12)->withQueryString();
+        $categories = PostCategory::active()->ordered()->withCount('publishedPosts')->get();
+        $featuredPosts = Post::published()->where('type', $type)->featured()->with('author', 'category')->take(5)->get();
+        $recentPosts   = Post::published()->where('type', $type)->with('author', 'category')->recent()->take(5)->get();
+        $popularTags   = Post::published()->where('type', $type)->whereNotNull('tags')
+            ->get()->pluck('tags')->flatten()->countBy()->sortDesc()->take(10)->keys();
+
+        return view($view, compact('posts', 'categories', 'featuredPosts', 'recentPosts', 'popularTags'));
+    }
+
     public function show(Post $post)
     {
         // Ensure the post is published
@@ -130,7 +172,8 @@ class PostController extends Controller
                                  ->withCount('publishedPosts')
                                  ->get();
         
-        return view('public.news.show', compact('post', 'relatedPosts', 'featuredPosts', 'recentPosts', 'categories'));
+        $viewName = $post->type === 'article' ? 'public.articles.show' : 'public.news.show';
+        return view($viewName, compact('post', 'relatedPosts', 'featuredPosts', 'recentPosts', 'categories'));
     }
 
     public function category(PostCategory $category)

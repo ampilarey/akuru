@@ -53,8 +53,17 @@ class HomeController extends Controller
             ]);
         }
 
-        // Posts from DB
+        // News posts
         $posts = Post::published()
+            ->where('type', 'news')
+            ->with('category')
+            ->latest('published_at')
+            ->take(3)
+            ->get();
+
+        // Educational articles
+        $articles = Post::published()
+            ->where('type', 'article')
             ->with('category')
             ->latest('published_at')
             ->take(3)
@@ -103,6 +112,7 @@ class HomeController extends Controller
             'heroBanners',
             'courses',
             'posts',
+            'articles',
             'events',
             'stats',
             'testimonials'

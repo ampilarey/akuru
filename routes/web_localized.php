@@ -16,6 +16,7 @@ use App\Http\Controllers\Substitutions\SubstitutionRequestController;
 use App\Http\Controllers\Admin\PublicSite\PageController as AdminPageController;
 use App\Http\Controllers\Admin\PublicSite\CourseController as AdminCourseController;
 use App\Http\Controllers\Admin\EnrollmentController as AdminEnrollmentController;
+use App\Http\Controllers\Admin\InstructorController as AdminInstructorController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\AnalyticsController;
 
@@ -84,6 +85,16 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::get('/{enrollment}', [AdminEnrollmentController::class, 'show'])->name('admin.enrollments.show');
         Route::patch('/{enrollment}/activate', [AdminEnrollmentController::class, 'activate'])->name('admin.enrollments.activate');
         Route::patch('/{enrollment}/reject', [AdminEnrollmentController::class, 'reject'])->name('admin.enrollments.reject');
+    });
+
+    // Instructor management
+    Route::prefix('admin/instructors')->middleware(['role:admin|headmaster|supervisor'])->group(function() {
+        Route::get('/', [AdminInstructorController::class, 'index'])->name('admin.instructors.index');
+        Route::get('/create', [AdminInstructorController::class, 'create'])->name('admin.instructors.create');
+        Route::post('/', [AdminInstructorController::class, 'store'])->name('admin.instructors.store');
+        Route::get('/{instructor}/edit', [AdminInstructorController::class, 'edit'])->name('admin.instructors.edit');
+        Route::put('/{instructor}', [AdminInstructorController::class, 'update'])->name('admin.instructors.update');
+        Route::delete('/{instructor}', [AdminInstructorController::class, 'destroy'])->name('admin.instructors.destroy');
     });
 
     // Admin CMS routes (for admin, headmaster, supervisor roles)

@@ -181,6 +181,18 @@ $eventTime = ($event->start_time && is_object($event->start_time)) ? $event->sta
                     </div>
                     @endif
 
+                    <!-- Add to Calendar -->
+                    <div class="bg-brandBeige-50 border border-brandBeige-200 rounded-lg p-4">
+                        <h3 class="text-sm font-semibold text-gray-700 mb-2">Add to Calendar</h3>
+                        <a href="{{ route('public.events.calendar', $event->slug ?? $event->id) }}"
+                           class="inline-flex items-center gap-2 text-sm text-brandMaroon-600 hover:text-brandMaroon-800 font-medium">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                            </svg>
+                            Download .ics (Apple / Google / Outlook)
+                        </a>
+                    </div>
+
                     <!-- Contact for More Info -->
                     <div class="bg-brandGray-50 rounded-lg p-6">
                         <h3 class="text-lg font-semibold text-brandGray-900 mb-4">
