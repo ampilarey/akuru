@@ -22,7 +22,7 @@ class BmlWebhookController extends Controller
      */
     public function __invoke(Request $request): Response
     {
-        $log = fn ($msg, $ctx = []) => Log::channel('payments')->info($msg, $ctx);
+        $log = fn ($msg, $ctx = []) => Log::info($msg, $ctx);
 
         // Optional IP allowlist check
         if (! $this->bml->isWebhookIpAllowed($request)) {
