@@ -7,6 +7,7 @@ use App\Models\ContactMessage;
 use App\Notifications\NewContactMessage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\RateLimiter;
 
 class ContactController extends Controller
 {
@@ -17,6 +18,19 @@ class ContactController extends Controller
     
     public function store(Request $request)
     {
+        // Honeypot check — bots fill the hidden "website" field, humans leave it empty
+        if ($request->filled('website')) {
+            return back()->with('success', __('public.contact_message_sent'));
+        }
+
+        // Rate limit: max 5 contact messages per IP per 10 minutes
+        $rateLimitKey = 'contact.' . $request->ip();
+        if (RateLimiter::tooManyAttempts($rateLimitKey, 5)) {
+            $seconds = RateLimiter::availableIn($rateLimitKey);
+            return back()->withErrors(['message' => "Too many messages. Please wait {$seconds} seconds before trying again."]);
+        }
+        RateLimiter::hit($rateLimitKey, 600);
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'nullable|email|max:255',

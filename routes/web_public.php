@@ -40,25 +40,8 @@ Route::get("articles/{post:slug}", [\App\Http\Controllers\PublicSite\PostControl
 // Calendar .ics download for individual event
 Route::get("events/{event}/calendar.ics", [\App\Http\Controllers\PublicSite\EventController::class, "downloadCalendar"])->name("public.events.calendar");
 
-Route::get("news", function() {
-    try {
-        $posts = \App\Models\Post::published()->public()->with('category')->paginate(12);
-        return view('public.news.index', compact('posts'));
-    } catch (\Exception $e) {
-        return response('News error: ' . $e->getMessage(), 500);
-    }
-})->name("public.news.index");
-Route::get("news/{post}", function($identifier) {
-    try {
-        $post = \App\Models\Post::published()->public()->with('category')
-            ->where(function($q) use ($identifier) {
-                $q->where('id', $identifier)->orWhere('slug', $identifier);
-            })->firstOrFail();
-        return view('public.news.show', compact('post'));
-    } catch (\Exception $e) {
-        return response('News detail error: ' . $e->getMessage(), 500);
-    }
-})->name("public.news.show");
+Route::get("news", [\App\Http\Controllers\PublicSite\PostController::class, "newsIndex"])->name("public.news.index");
+Route::get("news/{post:slug}", [\App\Http\Controllers\PublicSite\PostController::class, "show"])->name("public.news.show");
 Route::get("events", function() {
     try {
         $events = \App\Models\Event::published()->public()->with('registrations')->paginate(12);
@@ -119,6 +102,17 @@ Route::get("payments/ref/{merchant_reference}/status", [\App\Http\Controllers\Pa
     ->name("payments.status");
 Route::post("payments/bml/initiate", [\App\Http\Controllers\PaymentController::class, "initiate"])
     ->name("payments.bml.initiate");
+
+// Portal (authenticated)
+Route::middleware('auth')->prefix('portal')->name('portal.')->group(function () {
+    Route::redirect('/', 'portal/dashboard');
+    Route::get('/dashboard',    [\App\Http\Controllers\Portal\PortalController::class, 'dashboard'])->name('dashboard');
+    Route::get('/enrollments',  [\App\Http\Controllers\Portal\PortalController::class, 'enrollments'])->name('enrollments');
+    Route::get('/payments',     [\App\Http\Controllers\Portal\PortalController::class, 'payments'])->name('payments');
+    Route::get('/certificates', [\App\Http\Controllers\Portal\PortalController::class, 'certificates'])->name('certificates');
+    Route::get('/profile',      [\App\Http\Controllers\Portal\PortalController::class, 'profile'])->name('profile');
+    Route::post('/profile',     [\App\Http\Controllers\Portal\PortalController::class, 'updateProfile'])->name('profile.update');
+});
 
 // Account management (auth required)
 Route::middleware('auth')->group(function () {

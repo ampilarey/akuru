@@ -5,6 +5,7 @@ namespace App\Http\Controllers\PublicSite;
 use App\Http\Controllers\Controller;
 use App\Models\{HeroBanner, Post, Course, Event, Testimonial, Faq, GalleryAlbum, AdmissionApplication};
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class HomeController extends Controller
 {
@@ -12,6 +13,16 @@ class HomeController extends Controller
     {
         $locale = app()->getLocale();
 
+        // Cache homepage blocks for 10 minutes, keyed by locale
+        $cached = Cache::remember("homepage_data_{$locale}", 600, function () use ($locale) {
+            return $this->buildHomepageData($locale);
+        });
+
+        return view('public.home', array_merge(['text' => $cached['text']], $cached));
+    }
+
+    private function buildHomepageData(string $locale): array
+    {
         // Titles/descriptions per locale
         $titles = [
             'en' => ['title' => 'Welcome to Akuru Institute', 'desc' => 'Learn Quran, Arabic, and Islamic Studies in the Maldives'],
@@ -107,15 +118,6 @@ class HomeController extends Controller
             ->take(5)
             ->get();
 
-        return view('public.home', compact(
-            'text',
-            'heroBanners',
-            'courses',
-            'posts',
-            'articles',
-            'events',
-            'stats',
-            'testimonials'
-        ));
+        return compact('text', 'heroBanners', 'courses', 'posts', 'articles', 'events', 'stats', 'testimonials');
     }
 }

@@ -56,6 +56,10 @@
 
                     <form method="POST" action="{{ route('public.contact.store', app()->getLocale()) }}" class="space-y-6">
                         @csrf
+                        {{-- Honeypot: hidden field, bots fill it, humans don't --}}
+                        <div style="display:none" aria-hidden="true">
+                            <input type="text" name="website" tabindex="-1" autocomplete="off" value="">
+                        </div>
                         
                         <!-- Name -->
                         <div>

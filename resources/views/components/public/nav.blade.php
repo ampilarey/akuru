@@ -63,18 +63,17 @@
         </a>
       </div>
 
-      <!-- Login Link - Hidden on small screens -->
+      <!-- Login / Portal Link - Hidden on small screens -->
       <div class="hidden md:block">
         @auth
-          <a href="{{ route('my.enrollments') }}" class="text-brandGray-600 hover:text-brandMaroon-600 transition-colors duration-200 text-sm">
-            My Enrollments
-          </a>
-          &nbsp;
-          <a href="{{ route('dashboard') }}" class="text-brandGray-600 hover:text-brandMaroon-600 transition-colors duration-200 text-sm">
-            {{ __('public.Dashboard') }}
+          <a href="{{ route('portal.dashboard') }}" class="inline-flex items-center gap-1 text-sm font-medium text-brandMaroon-700 border border-brandMaroon-200 px-3 py-1.5 rounded-lg hover:bg-brandMaroon-50 transition-colors">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+            </svg>
+            My Portal
           </a>
         @else
-          <a href="{{ route('login') }}" class="text-brandGray-600 hover:text-brandMaroon-600 transition-colors duration-200 text-sm">
+          <a href="{{ route('login') }}" class="inline-flex items-center gap-1 text-sm font-medium text-brandGray-600 hover:text-brandMaroon-600 transition-colors">
             {{ __('public.Login') }}
           </a>
         @endauth
@@ -133,16 +132,20 @@
         {{ __('public.Contact') }}
       </a>
       
-      <!-- Mobile Login/Dashboard -->
+      <!-- Mobile Login/Portal -->
       <div class="pt-2 border-t border-gray-200 mt-4">
         @auth
-          <a href="{{ route('my.enrollments') }}"
+          <a href="{{ route('portal.dashboard') }}"
+             class="block py-3 px-4 text-brandMaroon-700 font-medium hover:bg-brandMaroon-50 rounded-lg transition-colors duration-200">
+            My Portal
+          </a>
+          <a href="{{ route('portal.enrollments') }}"
              class="block py-3 px-4 text-brandGray-600 hover:text-brandMaroon-600 hover:bg-brandBeige-100 rounded-lg transition-colors duration-200">
             My Enrollments
           </a>
-          <a href="{{ route('dashboard') }}" 
+          <a href="{{ route('portal.payments') }}"
              class="block py-3 px-4 text-brandGray-600 hover:text-brandMaroon-600 hover:bg-brandBeige-100 rounded-lg transition-colors duration-200">
-            {{ __('public.Dashboard') }}
+            My Payments
           </a>
         @else
           <a href="{{ route('login') }}" 
