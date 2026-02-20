@@ -77,8 +77,8 @@
           @endforeach
         </div>
       </div>
-      {{-- Hidden GT init element --}}
-      <div id="google_translate_element" class="hidden"></div>
+      {{-- GT init element: off-screen but NOT display:none so it initialises properly --}}
+      <div id="google_translate_element" style="position:absolute;left:-9999px;top:-9999px;width:1px;height:1px;overflow:hidden;" aria-hidden="true"></div>
 
       {{-- ── User menu (desktop, md+) ── --}}
       <div class="hidden md:block">
@@ -242,14 +242,22 @@ function translateTo(lang) {
     return;
   }
 
-  // Apply font + RTL class immediately for a smoother experience
+  // Swap font class immediately (no layout/direction change)
   var html = document.documentElement;
   html.classList.remove('gt-lang-ar', 'gt-lang-dv');
   if (lang === 'ar' || lang === 'dv') {
     html.classList.add('gt-lang-' + lang);
-    html.setAttribute('dir', 'rtl');
-  } else {
-    html.setAttribute('dir', 'ltr');
+    // Load font if not already loaded
+    var fontUrls = {
+      ar: 'https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&display=swap',
+      dv: 'https://fonts.googleapis.com/css2?family=Noto+Sans+Thaana:wght@400;500;600;700&display=swap'
+    };
+    if (!document.querySelector('link[href="' + fontUrls[lang] + '"]')) {
+      var link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = fontUrls[lang];
+      document.head.appendChild(link);
+    }
   }
 
   var tries = 0;
@@ -291,7 +299,6 @@ document.addEventListener('click', function(e) {
     body { top: 0 !important; }
     .goog-te-banner-frame { display: none !important; }
     .skiptranslate { display: none !important; }
-    #google_translate_element { display: none !important; }
   `;
   document.head.appendChild(s);
 })();
