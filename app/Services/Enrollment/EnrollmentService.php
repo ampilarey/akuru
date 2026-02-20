@@ -171,6 +171,13 @@ class EnrollmentService
             $feeEnrollments = [];
 
             foreach ($courses as $course) {
+                // Check seat availability before enrolling
+                if ($course->isFull()) {
+                    throw ValidationException::withMessages([
+                        'course' => ["\"{$course->title}\" is fully booked. No seats are available."],
+                    ]);
+                }
+
                 $existing = CourseEnrollment::where('student_id', $student->id)
                     ->where('course_id', $course->id)
                     ->whereRaw('IFNULL(term_id, 0) = ?', [$termId ?? 0])

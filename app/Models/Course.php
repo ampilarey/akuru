@@ -127,15 +127,23 @@ class Course extends Model
                     ->where('start_date', '>', now());
     }
 
-    public function getAvailableSeatsAttribute()
+    public function getAvailableSeatsAttribute(): ?int
     {
-        if (!$this->seats) return null;
-        
-        $enrolled = $this->admissionApplications()
-                         ->whereIn('status', ['pending', 'approved'])
-                         ->count();
-        
+        if (! $this->seats) {
+            return null;
+        }
+
+        $enrolled = $this->enrollments()
+            ->whereIn('status', ['pending', 'active'])
+            ->count();
+
         return max(0, $this->seats - $enrolled);
+    }
+
+    public function isFull(): bool
+    {
+        $available = $this->available_seats;
+        return $available !== null && $available <= 0;
     }
 
     public function getIsEnrollmentOpenAttribute()
