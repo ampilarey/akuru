@@ -363,7 +363,8 @@ class CourseRegistrationController extends PublicRegistrationController
             return back()->withErrors(['payment' => $paymentError])->withInput();
         }
 
-        // Notify admins about the free enrollment
+        // Send student confirmation and notify admins for free enrollments
+        $this->sendFreeEnrollmentStudentNotifications($user, $result->allEnrollments());
         $this->notifyAdminFreeEnrollment($user, $result->allEnrollments());
 
         $this->clearPendingSession();
@@ -571,6 +572,42 @@ class CourseRegistrationController extends PublicRegistrationController
             'pending_selected_course_ids', 'pending_term_id', 'pending_flow',
             'pending_payment_ref', 'enrollments',
         ]);
+    }
+
+    protected function sendFreeEnrollmentStudentNotifications(\App\Models\User $user, $enrollments): void
+    {
+        foreach (collect($enrollments)->filter() as $enrollment) {
+            $enrollment->loadMissing(['course', 'student']);
+
+            // Email
+            $emailAddress = $user->email
+                ?? $user->contacts()->where('type', 'email')->value('value');
+
+            if ($emailAddress) {
+                try {
+                    \Illuminate\Support\Facades\Mail::to($emailAddress)
+                        ->queue(new \App\Mail\FreeEnrollmentConfirmedMail($enrollment));
+                } catch (\Throwable) {
+                    // non-critical
+                }
+            }
+
+            // SMS
+            $mobile = $user->mobile
+                ?? $user->contacts()->where('type', 'mobile')->value('value');
+
+            if ($mobile) {
+                try {
+                    app(\App\Services\SmsGatewayService::class)->sendSms(
+                        $mobile,
+                        "Akuru Institute: Your enrollment for \"{$enrollment->course?->title}\" " .
+                        "has been received. We will confirm your enrollment shortly."
+                    );
+                } catch (\Throwable) {
+                    // non-critical
+                }
+            }
+        }
     }
 
     protected function notifyAdminFreeEnrollment(\App\Models\User $user, $enrollments): void
