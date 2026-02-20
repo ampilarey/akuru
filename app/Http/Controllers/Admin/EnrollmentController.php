@@ -69,6 +69,68 @@ class EnrollmentController extends Controller
         return back()->with('success', 'Enrollment rejected and student notified.');
     }
 
+    public function export(Request $request)
+    {
+        $query = CourseEnrollment::with(['student', 'course', 'payment', 'creator'])
+            ->latest();
+
+        if ($courseId = $request->input('course_id')) {
+            $query->where('course_id', $courseId);
+        }
+        if ($status = $request->input('status')) {
+            $query->where('status', $status);
+        }
+        if ($search = $request->input('search')) {
+            $query->whereHas('student', function ($q) use ($search) {
+                $q->where('first_name', 'like', "%{$search}%")
+                  ->orWhere('last_name', 'like', "%{$search}%");
+            });
+        }
+
+        $enrollments = $query->get();
+
+        $filename = 'enrollments-' . now()->format('Ymd-His') . '.csv';
+
+        $headers = [
+            'Content-Type'        => 'text/csv',
+            'Content-Disposition' => "attachment; filename=\"{$filename}\"",
+        ];
+
+        $callback = function () use ($enrollments) {
+            $handle = fopen('php://output', 'w');
+
+            fputcsv($handle, [
+                'ID', 'Course', 'Student Name', 'Enrolled By (Mobile/Email)',
+                'Status', 'Payment Status', 'Amount (MVR)', 'Payment Ref',
+                'Enrolled At', 'Created At',
+            ]);
+
+            foreach ($enrollments as $e) {
+                $user   = $e->creator;
+                $mobile = $user?->mobile ?? $user?->contacts()->where('type', 'mobile')->value('value') ?? '';
+                $email  = $user?->email  ?? $user?->contacts()->where('type', 'email')->value('value')  ?? '';
+                $contact = $mobile ?: $email;
+
+                fputcsv($handle, [
+                    $e->id,
+                    $e->course?->title ?? '',
+                    $e->student?->full_name ?? '',
+                    $contact,
+                    $e->status,
+                    $e->payment_status,
+                    $e->payment?->amount ?? '',
+                    $e->payment?->merchant_reference ?? '',
+                    $e->enrolled_at?->format('Y-m-d H:i') ?? '',
+                    $e->created_at?->format('Y-m-d H:i') ?? '',
+                ]);
+            }
+
+            fclose($handle);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
+
     private function notifyUser(CourseEnrollment $enrollment, string $status): void
     {
         $enrollment->loadMissing(['creator', 'course', 'student']);

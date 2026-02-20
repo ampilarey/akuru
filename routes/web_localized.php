@@ -79,6 +79,7 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
     // Admin enrollment management
     Route::prefix('admin/enrollments')->middleware(['role:admin|headmaster|supervisor'])->group(function() {
         Route::get('/', [AdminEnrollmentController::class, 'index'])->name('admin.enrollments.index');
+        Route::get('/export', [AdminEnrollmentController::class, 'export'])->name('admin.enrollments.export');
         Route::get('/payments', [AdminEnrollmentController::class, 'payments'])->name('admin.enrollments.payments');
         Route::get('/{enrollment}', [AdminEnrollmentController::class, 'show'])->name('admin.enrollments.show');
         Route::patch('/{enrollment}/activate', [AdminEnrollmentController::class, 'activate'])->name('admin.enrollments.activate');
