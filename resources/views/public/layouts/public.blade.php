@@ -40,14 +40,16 @@
       var lang = m ? m[1] : 'en';
       var fontUrls = {
         ar: 'https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&display=swap',
-        dv: 'https://fonts.googleapis.com/css2?family=Noto+Sans+Thaana:wght@400;500;600;700&display=swap'
+        dv: null  // Faruma & MV Boli are system fonts on Maldivian devices — no external URL needed
       };
-      if (fontUrls[lang]) {
+      if (fontUrls[lang] !== undefined) {
         document.documentElement.classList.add('gt-lang-' + lang);
-        var link = document.createElement('link');
-        link.rel = 'stylesheet';
-        link.href = fontUrls[lang];
-        document.head.appendChild(link);
+        if (fontUrls[lang]) {
+          var link = document.createElement('link');
+          link.rel = 'stylesheet';
+          link.href = fontUrls[lang];
+          document.head.appendChild(link);
+        }
       }
     })();
     </script>
@@ -55,7 +57,7 @@
     <!-- Font overrides for translated languages — layout/direction unchanged -->
     <style>
       .gt-lang-ar * { font-family: 'Cairo', 'Noto Sans Arabic', Arial, sans-serif !important; letter-spacing: 0 !important; }
-      .gt-lang-dv * { font-family: 'Noto Sans Thaana', 'MV Boli', sans-serif !important; letter-spacing: 0 !important; }
+      .gt-lang-dv * { font-family: 'Faruma', 'MV Boli', 'A Thaana Handwriting', sans-serif !important; letter-spacing: 0 !important; }
     </style>
 
     <!-- Favicon -->

@@ -48,7 +48,7 @@
     <!-- Right Side: Translate + User + Hamburger -->
     <div class="flex items-center gap-2">
 
-      {{-- ── Translate: custom dropdown, GT widget hidden ── --}}
+      {{-- ── Translate dropdown ── --}}
       <div class="relative" id="gt-wrapper">
         <button onclick="toggleGT(event)" aria-label="Translate"
                 class="flex items-center gap-1 px-2 py-1.5 rounded-lg text-sm text-brandGray-600 hover:text-brandMaroon-600 hover:bg-brandBeige-100 border border-gray-200 transition-colors">
@@ -58,26 +58,40 @@
           </svg>
           <span class="hidden sm:inline text-xs font-medium">Translate</span>
         </button>
+
         <div id="gt-dropdown"
-             class="hidden absolute right-0 top-full mt-1 z-50 bg-white rounded-xl shadow-xl border border-gray-200 py-1 min-w-36">
-          @foreach([
-            ['code'=>'en',    'label'=>'🇬🇧 English'],
-            ['code'=>'dv',    'label'=>'🇲🇻 ދިވެހި'],
-            ['code'=>'ar',    'label'=>'🇸🇦 العربية'],
-            ['code'=>'ur',    'label'=>'🇵🇰 اردو'],
-            ['code'=>'hi',    'label'=>'🇮🇳 हिन्दी'],
-            ['code'=>'ms',    'label'=>'🇲🇾 Melayu'],
-            ['code'=>'fr',    'label'=>'🇫🇷 Français'],
-            ['code'=>'de',    'label'=>'🇩🇪 Deutsch'],
-          ] as $lang)
-          <button onclick="translateTo('{{ $lang['code'] }}')"
-                  class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-brandBeige-50 hover:text-brandMaroon-700 transition-colors">
-            {{ $lang['label'] }}
-          </button>
-          @endforeach
+             class="hidden absolute right-0 top-full mt-1 z-50 bg-white rounded-xl shadow-xl border border-gray-200 w-56">
+
+          {{-- Pinned: English · Arabic · Dhivehi --}}
+          <div class="flex gap-1 p-2 border-b border-gray-100">
+            <button onclick="translateTo('en')"
+                    class="gt-pin flex-1 text-center text-xs font-semibold py-2 rounded-lg border border-gray-200 hover:border-brandMaroon-400 hover:bg-brandBeige-50 transition-colors text-gray-700"
+                    data-code="en">🇬🇧 EN</button>
+            <button onclick="translateTo('ar')"
+                    class="gt-pin flex-1 text-center text-xs font-semibold py-2 rounded-lg border border-gray-200 hover:border-brandMaroon-400 hover:bg-brandBeige-50 transition-colors text-gray-700"
+                    data-code="ar">🇸🇦 AR</button>
+            <button onclick="translateTo('dv')"
+                    class="gt-pin flex-1 text-center text-xs font-semibold py-2 rounded-lg border border-gray-200 hover:border-brandMaroon-400 hover:bg-brandBeige-50 transition-colors text-gray-700"
+                    data-code="dv">🇲🇻 DV</button>
+          </div>
+
+          {{-- Search other languages --}}
+          <div class="p-2 border-b border-gray-100">
+            <div class="relative">
+              <svg class="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+              </svg>
+              <input id="gt-search" type="text" placeholder="Search language…"
+                     oninput="filterGTLangs(this.value)"
+                     class="w-full pl-7 pr-3 py-1.5 text-xs border border-gray-200 rounded-lg focus:outline-none focus:border-brandMaroon-400">
+            </div>
+          </div>
+
+          {{-- Other languages list --}}
+          <div id="gt-lang-list" class="max-h-44 overflow-y-auto py-1"></div>
         </div>
       </div>
-      {{-- GT init element: off-screen but NOT display:none so it initialises properly --}}
+      {{-- GT init element: off-screen so GT can initialise its hidden select --}}
       <div id="google_translate_element" style="position:absolute;left:-9999px;top:-9999px;width:1px;height:1px;overflow:hidden;" aria-hidden="true"></div>
 
       {{-- ── User menu (desktop, md+) ── --}}
@@ -218,44 +232,99 @@
 
 <script>
 // ── Google Translate ──────────────────────────────────────────────
+var GT_LANGS = [
+  {c:'af',l:'Afrikaans'},{c:'sq',l:'Albanian'},{c:'am',l:'Amharic'},{c:'ar',l:'Arabic'},
+  {c:'hy',l:'Armenian'},{c:'az',l:'Azerbaijani'},{c:'eu',l:'Basque'},{c:'be',l:'Belarusian'},
+  {c:'bn',l:'Bengali'},{c:'bs',l:'Bosnian'},{c:'bg',l:'Bulgarian'},{c:'ca',l:'Catalan'},
+  {c:'ceb',l:'Cebuano'},{c:'ny',l:'Chichewa'},{c:'zh-CN',l:'Chinese (Simplified)'},
+  {c:'zh-TW',l:'Chinese (Traditional)'},{c:'co',l:'Corsican'},{c:'hr',l:'Croatian'},
+  {c:'cs',l:'Czech'},{c:'da',l:'Danish'},{c:'nl',l:'Dutch'},{c:'eo',l:'Esperanto'},
+  {c:'et',l:'Estonian'},{c:'tl',l:'Filipino'},{c:'fi',l:'Finnish'},{c:'fr',l:'French'},
+  {c:'fy',l:'Frisian'},{c:'gl',l:'Galician'},{c:'ka',l:'Georgian'},{c:'de',l:'German'},
+  {c:'el',l:'Greek'},{c:'gu',l:'Gujarati'},{c:'ht',l:'Haitian Creole'},{c:'ha',l:'Hausa'},
+  {c:'haw',l:'Hawaiian'},{c:'iw',l:'Hebrew'},{c:'hi',l:'Hindi'},{c:'hmn',l:'Hmong'},
+  {c:'hu',l:'Hungarian'},{c:'is',l:'Icelandic'},{c:'ig',l:'Igbo'},{c:'id',l:'Indonesian'},
+  {c:'ga',l:'Irish'},{c:'it',l:'Italian'},{c:'ja',l:'Japanese'},{c:'jw',l:'Javanese'},
+  {c:'kn',l:'Kannada'},{c:'kk',l:'Kazakh'},{c:'km',l:'Khmer'},{c:'ko',l:'Korean'},
+  {c:'ku',l:'Kurdish'},{c:'ky',l:'Kyrgyz'},{c:'lo',l:'Lao'},{c:'la',l:'Latin'},
+  {c:'lv',l:'Latvian'},{c:'lt',l:'Lithuanian'},{c:'lb',l:'Luxembourgish'},{c:'mk',l:'Macedonian'},
+  {c:'mg',l:'Malagasy'},{c:'ms',l:'Malay'},{c:'ml',l:'Malayalam'},{c:'mt',l:'Maltese'},
+  {c:'mi',l:'Maori'},{c:'mr',l:'Marathi'},{c:'mn',l:'Mongolian'},{c:'my',l:'Myanmar (Burmese)'},
+  {c:'ne',l:'Nepali'},{c:'no',l:'Norwegian'},{c:'ps',l:'Pashto'},{c:'fa',l:'Persian'},
+  {c:'pl',l:'Polish'},{c:'pt',l:'Portuguese'},{c:'pa',l:'Punjabi'},{c:'ro',l:'Romanian'},
+  {c:'ru',l:'Russian'},{c:'sm',l:'Samoan'},{c:'gd',l:'Scots Gaelic'},{c:'sr',l:'Serbian'},
+  {c:'st',l:'Sesotho'},{c:'sn',l:'Shona'},{c:'sd',l:'Sindhi'},{c:'si',l:'Sinhala'},
+  {c:'sk',l:'Slovak'},{c:'sl',l:'Slovenian'},{c:'so',l:'Somali'},{c:'es',l:'Spanish'},
+  {c:'su',l:'Sundanese'},{c:'sw',l:'Swahili'},{c:'sv',l:'Swedish'},{c:'tg',l:'Tajik'},
+  {c:'ta',l:'Tamil'},{c:'te',l:'Telugu'},{c:'th',l:'Thai'},{c:'tr',l:'Turkish'},
+  {c:'uk',l:'Ukrainian'},{c:'ur',l:'Urdu'},{c:'uz',l:'Uzbek'},{c:'vi',l:'Vietnamese'},
+  {c:'cy',l:'Welsh'},{c:'xh',l:'Xhosa'},{c:'yi',l:'Yiddish'},{c:'yo',l:'Yoruba'},{c:'zu',l:'Zulu'}
+];
+// Pinned languages excluded from the search list
+var GT_PINNED = ['en','ar','dv'];
+
 function googleTranslateElementInit() {
-  new google.translate.TranslateElement({
-    pageLanguage: 'en',
-    autoDisplay: false
-  }, 'google_translate_element');
+  new google.translate.TranslateElement({ pageLanguage: 'en', autoDisplay: false }, 'google_translate_element');
+  renderGTList('');
+  markActiveLang();
 }
 
-// Trigger translation by programmatically setting the hidden GT select
+function renderGTList(query) {
+  var list = document.getElementById('gt-lang-list');
+  if (!list) return;
+  var q = query.toLowerCase().trim();
+  var filtered = GT_LANGS.filter(function(l) {
+    return !GT_PINNED.includes(l.c) && (!q || l.l.toLowerCase().includes(q));
+  });
+  if (!filtered.length) {
+    list.innerHTML = '<p class="px-4 py-3 text-xs text-gray-400">No results for "' + query + '"</p>';
+    return;
+  }
+  list.innerHTML = filtered.map(function(l) {
+    return '<button onclick="translateTo(\'' + l.c + '\')" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-brandBeige-50 hover:text-brandMaroon-700 transition-colors">' + l.l + '</button>';
+  }).join('');
+}
+
+function filterGTLangs(q) { renderGTList(q); }
+
+function markActiveLang() {
+  var m = document.cookie.match(/googtrans=\/en\/([a-z-]+)/);
+  var active = m ? m[1] : 'en';
+  document.querySelectorAll('.gt-pin').forEach(function(btn) {
+    var isActive = btn.dataset.code === active;
+    btn.classList.toggle('border-brandMaroon-500', isActive);
+    btn.classList.toggle('bg-brandMaroon-50', isActive);
+    btn.classList.toggle('text-brandMaroon-700', isActive);
+  });
+}
+
 function translateTo(lang) {
-  // Close dropdown
   document.getElementById('gt-dropdown')?.classList.add('hidden');
+  document.getElementById('gt-search') && (document.getElementById('gt-search').value = '');
+  renderGTList('');
 
   if (lang === 'en') {
-    // Clear the googtrans cookie on all path/domain variants then reload
     var d = location.hostname;
-    ['/', window.location.pathname].forEach(function(path) {
-      document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:01 GMT; path=' + path;
-      document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:01 GMT; path=' + path + '; domain=' + d;
-      document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:01 GMT; path=' + path + '; domain=.' + d;
+    ['/', window.location.pathname].forEach(function(p) {
+      document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:01 GMT; path=' + p;
+      document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:01 GMT; path=' + p + '; domain=' + d;
+      document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:01 GMT; path=' + p + '; domain=.' + d;
     });
     window.location.reload();
     return;
   }
 
-  // Swap font class immediately (no layout/direction change)
+  // Apply font class (no layout/direction change)
   var html = document.documentElement;
   html.classList.remove('gt-lang-ar', 'gt-lang-dv');
-  if (lang === 'ar' || lang === 'dv') {
+  var fontUrls = {
+    ar: 'https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&display=swap',
+    dv: null  // Faruma / MV Boli are system fonts — no external load needed
+  };
+  if (fontUrls[lang] !== undefined) {
     html.classList.add('gt-lang-' + lang);
-    // Load font if not already loaded
-    var fontUrls = {
-      ar: 'https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&display=swap',
-      dv: 'https://fonts.googleapis.com/css2?family=Noto+Sans+Thaana:wght@400;500;600;700&display=swap'
-    };
-    if (!document.querySelector('link[href="' + fontUrls[lang] + '"]')) {
-      var link = document.createElement('link');
-      link.rel = 'stylesheet';
-      link.href = fontUrls[lang];
+    if (fontUrls[lang] && !document.querySelector('link[href="' + fontUrls[lang] + '"]')) {
+      var link = document.createElement('link'); link.rel = 'stylesheet'; link.href = fontUrls[lang];
       document.head.appendChild(link);
     }
   }
@@ -271,11 +340,15 @@ function translateTo(lang) {
   attempt();
 }
 
-// Toggle custom translate dropdown
 function toggleGT(e) {
   e.stopPropagation();
-  document.getElementById('gt-dropdown')?.classList.toggle('hidden');
+  var dd = document.getElementById('gt-dropdown');
+  var opening = dd.classList.contains('hidden');
+  dd.classList.toggle('hidden');
   document.getElementById('user-menu-dropdown')?.classList.add('hidden');
+  if (opening) {
+    setTimeout(function() { document.getElementById('gt-search')?.focus(); }, 50);
+  }
 }
 
 // ── User dropdown ─────────────────────────────────────────────────
