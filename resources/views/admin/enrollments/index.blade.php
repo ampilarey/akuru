@@ -27,9 +27,9 @@
     {{-- Filters --}}
     <form method="GET" class="card p-4 mb-6 flex flex-wrap gap-3 items-end">
         <div>
-            <label class="block text-xs font-medium text-gray-600 mb-1">Search student</label>
-            <input type="text" name="search" value="{{ request('search') }}" placeholder="Name..."
-                   class="border rounded px-3 py-2 text-sm w-44">
+            <label class="block text-xs font-medium text-gray-600 mb-1">Search</label>
+            <input type="text" name="search" value="{{ request('search') }}" placeholder="Name, mobile, email…"
+                   class="border rounded px-3 py-2 text-sm w-52">
         </div>
         <div>
             <label class="block text-xs font-medium text-gray-600 mb-1">Course</label>

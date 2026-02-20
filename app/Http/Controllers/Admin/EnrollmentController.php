@@ -30,9 +30,14 @@ class EnrollmentController extends Controller
         }
 
         if ($search = $request->input('search')) {
-            $query->whereHas('student', function ($q) use ($search) {
-                $q->where('first_name', 'like', "%{$search}%")
-                  ->orWhere('last_name', 'like', "%{$search}%");
+            $query->where(function ($q) use ($search) {
+                $q->whereHas('student', function ($s) use ($search) {
+                    $s->where('first_name', 'like', "%{$search}%")
+                      ->orWhere('last_name', 'like', "%{$search}%");
+                })->orWhereHas('creator', function ($u) use ($search) {
+                    $u->where('name', 'like', "%{$search}%")
+                      ->orWhereHas('contacts', fn ($c) => $c->where('value', 'like', "%{$search}%"));
+                });
             });
         }
 
@@ -81,9 +86,14 @@ class EnrollmentController extends Controller
             $query->where('status', $status);
         }
         if ($search = $request->input('search')) {
-            $query->whereHas('student', function ($q) use ($search) {
-                $q->where('first_name', 'like', "%{$search}%")
-                  ->orWhere('last_name', 'like', "%{$search}%");
+            $query->where(function ($q) use ($search) {
+                $q->whereHas('student', function ($s) use ($search) {
+                    $s->where('first_name', 'like', "%{$search}%")
+                      ->orWhere('last_name', 'like', "%{$search}%");
+                })->orWhereHas('creator', function ($u) use ($search) {
+                    $u->where('name', 'like', "%{$search}%")
+                      ->orWhereHas('contacts', fn ($c) => $c->where('value', 'like', "%{$search}%"));
+                });
             });
         }
 
