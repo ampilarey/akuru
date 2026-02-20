@@ -68,6 +68,11 @@ Route::get("events/{event}", function($id) {
 Route::get("gallery", [GalleryController::class, "index"])->name("public.gallery.index");
 Route::get("gallery/{gallery}", [GalleryController::class, "show"])->name("public.gallery.show");
 // Public course registration flow (guest + auth)
+Route::get("courses/{course}/checkout", [\App\Http\Controllers\CourseRegistrationController::class, "checkout"])
+    ->name("courses.checkout.show");
+Route::post("courses/{course}/checkout/login", [\App\Http\Controllers\CourseRegistrationController::class, "checkoutLogin"])
+    ->name("courses.checkout.login")->middleware('throttle:10,1');
+// Legacy register route kept for backward compatibility
 Route::get("courses/{course}/register", [\App\Http\Controllers\CourseRegistrationController::class, "show"])
     ->name("courses.register.show");
 Route::post("courses/register/start", [\App\Http\Controllers\CourseRegistrationController::class, "start"])

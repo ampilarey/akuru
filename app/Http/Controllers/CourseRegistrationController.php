@@ -31,11 +31,76 @@ class CourseRegistrationController extends PublicRegistrationController
         protected PaymentService $paymentService
     ) {}
 
+    /** New checkout start page — replaces the old register form. */
+    public function checkout(Course $course): View
+    {
+        if (! $course->is_enrollment_open) {
+            return view('courses.register', [
+                'course' => $course,
+                'fee'    => $course->getRegistrationFeeAmount(),
+                'closed' => true,
+            ]);
+        }
+
+        return view('courses.checkout', [
+            'course' => $course,
+            'fee'    => $course->getRegistrationFeeAmount(),
+        ]);
+    }
+
+    /** Password login at checkout — for returning users who know their password. */
+    public function checkoutLogin(Request $request, Course $course): RedirectResponse
+    {
+        $request->validate([
+            'login_contact' => ['required', 'string'],
+            'password'      => ['required', 'string'],
+        ]);
+
+        $raw        = trim($request->input('login_contact'));
+        $isEmail    = str_contains($raw, '@');
+        $type       = $isEmail ? 'email' : 'mobile';
+        $normalized = $this->normalizer->normalize($type, $raw);
+
+        // Find contact → user
+        $contact = \App\Models\UserContact::where('type', $type)
+            ->where('value', $normalized)
+            ->first();
+
+        $user = $contact?->user;
+
+        // Generic error — never reveal whether account exists
+        $fail = fn() => back()
+            ->withInput($request->only('login_contact'))
+            ->withErrors(['login_contact' => 'Incorrect contact or password. Try OTP login instead.']);
+
+        if (! $user || ! $user->password || ! Hash::check($request->input('password'), $user->password)) {
+            return $fail();
+        }
+
+        Auth::login($user);
+
+        // Carry course into session for the continue form
+        session([
+            'pending_course_id'          => $course->id,
+            'pending_selected_course_ids' => [$course->id],
+            'pending_term_id'            => null,
+        ]);
+
+        // Pre-select flow based on existing profile
+        $flow = $user->registrationStudentProfile ? 'adult' : ($user->guardianStudents()->exists() ? 'parent' : null);
+        if ($flow) {
+            session(['checkout_flow' => $flow]);
+        }
+
+        return redirect()->route('courses.register.continue');
+    }
+
+    /** Legacy entry point — kept for backward compatibility. */
     public function show(Course $course): View
     {
         return view('courses.register', [
             'course' => $course,
-            'fee' => $course->getRegistrationFeeAmount(),
+            'fee'    => $course->getRegistrationFeeAmount(),
         ]);
     }
 
@@ -50,11 +115,12 @@ class CourseRegistrationController extends PublicRegistrationController
         $this->otpService->send($contact, 'verify_contact');
 
         session([
-            'pending_contact_id' => $contact->id,
-            'pending_user_id' => $user->id,
-            'pending_course_id' => $request->input('course_id'),
+            'pending_contact_id'          => $contact->id,
+            'pending_user_id'             => $user->id,
+            'pending_course_id'           => $request->input('course_id'),
             'pending_selected_course_ids' => $request->input('course_id') ? [(int) $request->input('course_id')] : [],
-            'pending_term_id' => $request->input('term_id'),
+            'pending_term_id'             => $request->input('term_id'),
+            'checkout_flow'               => $request->input('flow_type'), // adult / parent
         ]);
 
         return redirect()->route('courses.register.otp')
@@ -157,9 +223,10 @@ class CourseRegistrationController extends PublicRegistrationController
         $existingProfile = $user->registrationStudentProfile;
         $user->loadMissing('guardianStudents');
 
-        // Default flow: adult if user has a self-profile, parent if they have children
-        $defaultFlow = $existingProfile ? 'adult'
-            : ($user->guardianStudents->isNotEmpty() ? 'parent' : 'adult');
+        // Default flow: honour the choice made on checkout start, then fall back to profile
+        $checkoutFlow = session('checkout_flow'); // 'adult' or 'parent' set at checkout start
+        $defaultFlow  = $checkoutFlow
+            ?? ($existingProfile ? 'adult' : ($user->guardianStudents->isNotEmpty() ? 'parent' : 'adult'));
 
         return view('courses.register-continue', [
             'user'            => $user,
