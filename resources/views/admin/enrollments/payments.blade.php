@@ -16,8 +16,8 @@
     <form method="GET" class="card p-4 mb-6 flex flex-wrap gap-3 items-end">
         <div>
             <label class="block text-xs font-medium text-gray-600 mb-1">Search</label>
-            <input type="text" name="search" value="{{ request('search') }}" placeholder="Name or reference..."
-                   class="border rounded px-3 py-2 text-sm w-52">
+            <input type="text" name="search" value="{{ request('search') }}" placeholder="Name, mobile, email, ref…"
+                   class="border rounded px-3 py-2 text-sm w-56">
         </div>
         <div>
             <label class="block text-xs font-medium text-gray-600 mb-1">Status</label>

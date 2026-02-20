@@ -165,7 +165,11 @@ class EnrollmentController extends Controller
         if ($search = $request->input('search')) {
             $query->where(function ($q) use ($search) {
                 $q->where('merchant_reference', 'like', "%{$search}%")
-                  ->orWhereHas('user', fn($u) => $u->where('name', 'like', "%{$search}%"))
+                  ->orWhere('local_id', 'like', "%{$search}%")
+                  ->orWhereHas('user', function ($u) use ($search) {
+                      $u->where('name', 'like', "%{$search}%")
+                        ->orWhereHas('contacts', fn ($c) => $c->where('value', 'like', "%{$search}%"));
+                  })
                   ->orWhereHas('student', function ($s) use ($search) {
                       $s->where('first_name', 'like', "%{$search}%")
                         ->orWhere('last_name', 'like', "%{$search}%");
