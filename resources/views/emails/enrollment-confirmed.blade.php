@@ -71,6 +71,14 @@
             <strong>Date:</strong> {{ $payment->paid_at?->format('d M Y, H:i') ?? now()->format('d M Y, H:i') }}
         </div>
 
+        {{-- Receipt link --}}
+        <div style="text-align:center; margin: 24px 0;">
+            <a href="{{ url(route('payment.receipt', $payment, false)) }}"
+               style="display:inline-block; background:#7c1a2b; color:#fff; text-decoration:none; padding:12px 28px; border-radius:6px; font-size:14px; font-weight:600;">
+                View / Print Receipt
+            </a>
+        </div>
+
         <p>
             If any of the courses above require admin approval, our team will review your enrollment and contact you shortly.
         </p>
