@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ in_array(app()->getLocale(), ['ar','dv']) ? 'rtl' : 'ltr' }}">
+<html lang="en" dir="ltr">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes">
@@ -30,11 +30,9 @@
     <!-- Canonical URL -->
     <link rel="canonical" href="{{ url()->current() }}">
     
-    <!-- Hreflang Tags for Multilingual SEO -->
-    @foreach(config('laravellocalization.supportedLocales') as $localeCode => $properties)
-        <link rel="alternate" hreflang="{{ $localeCode }}" href="{{ LaravelLocalization::getLocalizedURL($localeCode, null, [], true) }}">
-    @endforeach
-    <link rel="alternate" hreflang="x-default" href="{{ LaravelLocalization::getLocalizedURL(config('app.locale'), null, [], true) }}">
+    <!-- Canonical (single-language — translation handled by Google Translate client-side) -->
+    <!-- Google Translate API -->
+    <script src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit" defer></script>
     
     <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">

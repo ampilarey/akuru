@@ -13,7 +13,7 @@
          class="text-brandGray-600 hover:text-brandMaroon-600 transition-colors duration-200">
         {{ __('public.Courses') }}
       </a>
-      <a href="{{ route('public.news.index', app()->getLocale()) }}" 
+      <a href="{{ route('public.news.index') }}" 
          class="text-brandGray-600 hover:text-brandMaroon-600 transition-colors duration-200">
         {{ __('public.News') }}
       </a>
@@ -21,15 +21,15 @@
          class="text-brandGray-600 hover:text-brandMaroon-600 transition-colors duration-200">
         Articles
       </a>
-      <a href="{{ route('public.events.index', app()->getLocale()) }}" 
+      <a href="{{ route('public.events.index') }}" 
          class="text-brandGray-600 hover:text-brandGold-600 transition-colors duration-200">
         {{ __('public.Events') }}
       </a>
-      <a href="{{ route('public.gallery.index', app()->getLocale()) }}" 
+      <a href="{{ route('public.gallery.index') }}" 
          class="text-brandGray-600 hover:text-brandMaroon-600 transition-colors duration-200">
         {{ __('public.Gallery') }}
       </a>
-      <a href="{{ route('public.contact.create', app()->getLocale()) }}" 
+      <a href="{{ route('public.contact.create') }}" 
          class="text-brandGray-600 hover:text-brandMaroon-600 transition-colors duration-200">
         {{ __('public.Contact') }}
       </a>
@@ -45,22 +45,21 @@
       </a>
     </div>
 
-    <!-- Right Side - Language Switcher, Login, Mobile Menu -->
-    <div class="flex items-center space-x-2 sm:space-x-4 rtl:space-x-reverse">
-      <!-- Language Switcher - Hidden on very small screens -->
-      <div class="hidden sm:flex items-center space-x-1 rtl:space-x-reverse text-sm">
-        <a href="{{ LaravelLocalization::getLocalizedURL('en') }}" 
-           class="px-2 py-1 rounded text-xs {{ app()->getLocale() === 'en' ? 'bg-brandMaroon-600 text-white' : 'text-brandGray-600 hover:bg-brandGold-100' }}">
-          EN
-        </a>
-        <a href="{{ LaravelLocalization::getLocalizedURL('ar') }}" 
-           class="px-2 py-1 rounded text-xs {{ app()->getLocale() === 'ar' ? 'bg-brandMaroon-600 text-white' : 'text-brandGray-600 hover:bg-brandGold-100' }}">
-          العربية
-        </a>
-        <a href="{{ LaravelLocalization::getLocalizedURL('dv') }}" 
-           class="px-2 py-1 rounded text-xs {{ app()->getLocale() === 'dv' ? 'bg-brandMaroon-600 text-white' : 'text-brandGray-600 hover:bg-brandGold-100' }}">
-          ދިވެހި
-        </a>
+    <!-- Right Side - Translate, Login, Mobile Menu -->
+    <div class="flex items-center space-x-2 sm:space-x-4">
+      <!-- Google Translate Button -->
+      <div id="gt-wrapper" class="relative hidden sm:block">
+        <button onclick="toggleGT()" aria-label="Translate page"
+                class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-brandGray-600 hover:text-brandMaroon-600 hover:bg-brandBeige-100 border border-gray-200 transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"/>
+          </svg>
+          Translate
+        </button>
+        {{-- GT widget renders here --}}
+        <div id="google_translate_element"
+             class="absolute right-0 top-full mt-1 z-50 bg-white rounded-lg shadow-lg border border-gray-200 p-2 hidden min-w-max"></div>
       </div>
 
       <!-- Login / Portal Link - Hidden on small screens -->
@@ -93,21 +92,10 @@
   <!-- Mobile Navigation -->
   <div id="mobileMenu" class="hidden lg:hidden bg-white border-t shadow-lg">
     <div class="container mx-auto py-4 px-4 space-y-1">
-      <!-- Mobile Language Switcher -->
-      <div class="flex items-center justify-center space-x-2 py-3 border-b border-gray-200 mb-4">
-        <span class="text-sm text-brandGray-500 mr-2">{{ __('public.Language') }}:</span>
-        <a href="{{ LaravelLocalization::getLocalizedURL('en') }}" 
-           class="px-3 py-1 rounded text-sm {{ app()->getLocale() === 'en' ? 'bg-brandMaroon-600 text-white' : 'text-brandGray-600 hover:bg-brandGold-100' }}">
-          EN
-        </a>
-        <a href="{{ LaravelLocalization::getLocalizedURL('ar') }}" 
-           class="px-3 py-1 rounded text-sm {{ app()->getLocale() === 'ar' ? 'bg-brandMaroon-600 text-white' : 'text-brandGray-600 hover:bg-brandGold-100' }}">
-          العربية
-        </a>
-        <a href="{{ LaravelLocalization::getLocalizedURL('dv') }}" 
-           class="px-3 py-1 rounded text-sm {{ app()->getLocale() === 'dv' ? 'bg-brandMaroon-600 text-white' : 'text-brandGray-600 hover:bg-brandGold-100' }}">
-          ދިވެހި
-        </a>
+      <!-- Mobile Translate -->
+      <div class="py-3 border-b border-gray-200 mb-4">
+        <p class="text-xs text-brandGray-400 mb-2 px-1">Translate this page:</p>
+        <div id="google_translate_element_mobile"></div>
       </div>
 
       <!-- Mobile Navigation Links -->
@@ -115,19 +103,19 @@
          class="block py-3 px-4 text-brandGray-600 hover:text-brandMaroon-600 hover:bg-brandBeige-100 rounded-lg transition-colors duration-200">
         {{ __('public.Courses') }}
       </a>
-      <a href="{{ route('public.news.index', app()->getLocale()) }}" 
+      <a href="{{ route('public.news.index') }}" 
          class="block py-3 px-4 text-brandGray-600 hover:text-brandMaroon-600 hover:bg-brandBeige-100 rounded-lg transition-colors duration-200">
         {{ __('public.News') }}
       </a>
-      <a href="{{ route('public.events.index', app()->getLocale()) }}" 
+      <a href="{{ route('public.events.index') }}" 
          class="block py-3 px-4 text-brandGray-600 hover:text-brandGold-600 hover:bg-brandGold-50 rounded-lg transition-colors duration-200">
         {{ __('public.Events') }}
       </a>
-      <a href="{{ route('public.gallery.index', app()->getLocale()) }}" 
+      <a href="{{ route('public.gallery.index') }}" 
          class="block py-3 px-4 text-brandGray-600 hover:text-brandMaroon-600 hover:bg-brandBeige-100 rounded-lg transition-colors duration-200">
         {{ __('public.Gallery') }}
       </a>
-      <a href="{{ route('public.contact.create', app()->getLocale()) }}" 
+      <a href="{{ route('public.contact.create') }}" 
          class="block py-3 px-4 text-brandGray-600 hover:text-brandMaroon-600 hover:bg-brandBeige-100 rounded-lg transition-colors duration-200">
         {{ __('public.Contact') }}
       </a>
@@ -167,6 +155,48 @@
 </nav>
 
 <script>
+// ── Google Translate ──────────────────────────────────────────────
+function googleTranslateElementInit() {
+  // Desktop dropdown widget
+  new google.translate.TranslateElement({
+    pageLanguage: 'en',
+    layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
+    autoDisplay: false
+  }, 'google_translate_element');
+
+  // Mobile inline widget
+  new google.translate.TranslateElement({
+    pageLanguage: 'en',
+    layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
+    autoDisplay: false
+  }, 'google_translate_element_mobile');
+}
+
+function toggleGT() {
+  const el = document.getElementById('google_translate_element');
+  el.classList.toggle('hidden');
+}
+
+// Close GT dropdown when clicking outside
+document.addEventListener('click', function(e) {
+  const wrapper = document.getElementById('gt-wrapper');
+  if (wrapper && !wrapper.contains(e.target)) {
+    document.getElementById('google_translate_element')?.classList.add('hidden');
+  }
+});
+
+// Hide the "Powered by Google" bar that GT injects at the top
+const gtStyle = document.createElement('style');
+gtStyle.textContent = `
+  body { top: 0 !important; }
+  .goog-te-banner-frame { display: none !important; }
+  .skiptranslate { display: none !important; }
+  .goog-te-gadget { font-size: 0 !important; }
+  .goog-te-gadget select { font-size: 13px !important; border-radius: 6px; border: 1px solid #e5e7eb; padding: 4px 8px; }
+`;
+document.head.appendChild(gtStyle);
+
+// ── Mobile menu ───────────────────────────────────────────────────
 // Wait for DOM to be fully loaded
 document.addEventListener('DOMContentLoaded', function() {
   // Add global function after DOM is loaded
