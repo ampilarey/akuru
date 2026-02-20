@@ -231,15 +231,14 @@ function translateTo(lang) {
   document.getElementById('gt-dropdown')?.classList.add('hidden');
 
   if (lang === 'en') {
-    // Restore original — GT uses a cookie; navigate to /en removes it
-    var frame = document.querySelector('.goog-te-banner-frame');
-    if (frame) {
-      var restore = frame.contentDocument?.querySelector('.goog-te-button button');
-      if (restore) { restore.click(); return; }
-    }
-    // Fallback: reload with no-translate cookie cleared
-    window.location = window.location.pathname +
-      window.location.search.replace(/[?&]_x_tr_sl=[^&]*/,'');
+    // Clear the googtrans cookie on all path/domain variants then reload
+    var d = location.hostname;
+    ['/', window.location.pathname].forEach(function(path) {
+      document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:01 GMT; path=' + path;
+      document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:01 GMT; path=' + path + '; domain=' + d;
+      document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:01 GMT; path=' + path + '; domain=.' + d;
+    });
+    window.location.reload();
     return;
   }
 
