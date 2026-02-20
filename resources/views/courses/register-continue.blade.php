@@ -163,6 +163,23 @@
                         </div>
                     </div>
 
+                    {{-- Email (optional, used for confirmation receipt) --}}
+                    <div class="mt-2 pt-4 border-t border-gray-100">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            Email address <span class="text-gray-400 font-normal">(optional — for your receipt)</span>
+                        </label>
+                        @php $existingEmail = $user->contacts()->where('type','email')->first()?->value; @endphp
+                        <input type="email" name="email"
+                               value="{{ old('email', $existingEmail) }}"
+                               placeholder="you@example.com"
+                               class="w-full rounded-md border-gray-300 shadow-sm focus:border-brandMaroon-500 focus:ring-brandMaroon-500">
+                        @if($existingEmail)
+                            <p class="text-xs text-gray-500 mt-1">Your email is already saved. Update if needed.</p>
+                        @else
+                            <p class="text-xs text-gray-500 mt-1">We'll send your enrollment confirmation here.</p>
+                        @endif
+                    </div>
+
                     <div class="mt-6 p-3 bg-gray-50 rounded">
                         <p class="font-medium mb-2">Courses selected:</p>
                         <ul class="list-disc list-inside">

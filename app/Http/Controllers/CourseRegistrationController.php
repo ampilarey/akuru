@@ -278,6 +278,21 @@ class CourseRegistrationController extends PublicRegistrationController
             return $data;
         }
 
+        // Save optional email contact if provided and not already on file
+        $emailInput = trim((string) $request->input('email', ''));
+        if ($emailInput && filter_var($emailInput, FILTER_VALIDATE_EMAIL)) {
+            $normalized = $this->normalizer->normalize('email', $emailInput);
+            $exists = $user->contacts()->where('type', 'email')->exists();
+            if (! $exists) {
+                $user->contacts()->create([
+                    'type'        => 'email',
+                    'value'       => $normalized,
+                    'is_primary'  => false,
+                    'verified_at' => null,
+                ]);
+            }
+        }
+
         try {
             if ($flow === 'parent') {
                 // Read student_mode from request directly — it's not a validated field
