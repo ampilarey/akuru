@@ -116,6 +116,9 @@ Route::middleware('auth')->group(function () {
         ->name('account.set-password');
     Route::post('account/set-password', [\App\Http\Controllers\AccountController::class, 'setPassword'])
         ->name('account.set-password.store');
+
+    Route::get('my-enrollments', [\App\Http\Controllers\MyEnrollmentsController::class, 'index'])
+        ->name('my.enrollments');
 });
 
 Route::get("admissions", [AdmissionController::class, "create"])->name("public.admissions.create");

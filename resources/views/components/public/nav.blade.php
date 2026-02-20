@@ -56,6 +56,10 @@
       <!-- Login Link - Hidden on small screens -->
       <div class="hidden md:block">
         @auth
+          <a href="{{ route('my.enrollments') }}" class="text-brandGray-600 hover:text-brandMaroon-600 transition-colors duration-200 text-sm">
+            My Enrollments
+          </a>
+          &nbsp;
           <a href="{{ route('dashboard') }}" class="text-brandGray-600 hover:text-brandMaroon-600 transition-colors duration-200 text-sm">
             {{ __('public.Dashboard') }}
           </a>
@@ -122,6 +126,10 @@
       <!-- Mobile Login/Dashboard -->
       <div class="pt-2 border-t border-gray-200 mt-4">
         @auth
+          <a href="{{ route('my.enrollments') }}"
+             class="block py-3 px-4 text-brandGray-600 hover:text-brandMaroon-600 hover:bg-brandBeige-100 rounded-lg transition-colors duration-200">
+            My Enrollments
+          </a>
           <a href="{{ route('dashboard') }}" 
              class="block py-3 px-4 text-brandGray-600 hover:text-brandMaroon-600 hover:bg-brandBeige-100 rounded-lg transition-colors duration-200">
             {{ __('public.Dashboard') }}
