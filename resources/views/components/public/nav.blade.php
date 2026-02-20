@@ -242,6 +242,16 @@ function translateTo(lang) {
     return;
   }
 
+  // Apply font + RTL class immediately for a smoother experience
+  var html = document.documentElement;
+  html.classList.remove('gt-lang-ar', 'gt-lang-dv');
+  if (lang === 'ar' || lang === 'dv') {
+    html.classList.add('gt-lang-' + lang);
+    html.setAttribute('dir', 'rtl');
+  } else {
+    html.setAttribute('dir', 'ltr');
+  }
+
   var tries = 0;
   function attempt() {
     var sel = document.querySelector('.goog-te-combo');

@@ -30,10 +30,53 @@
     <!-- Canonical URL -->
     <link rel="canonical" href="{{ url()->current() }}">
     
-    <!-- Canonical (single-language — translation handled by Google Translate client-side) -->
     <!-- Google Translate API -->
     <script src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit" defer></script>
-    
+
+    <!-- Detect GT language from cookie; load script fonts and set html class BEFORE render -->
+    <script>
+    (function() {
+      var m = document.cookie.match(/googtrans=\/en\/([a-z]{2,})/);
+      var lang = m ? m[1] : 'en';
+      if (lang === 'ar' || lang === 'dv') {
+        var html = document.documentElement;
+        html.classList.add('gt-lang-' + lang);
+        html.setAttribute('dir', 'rtl');
+        // Dynamically load the right font stylesheet
+        var urls = {
+          ar: 'https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&display=swap',
+          dv: 'https://fonts.googleapis.com/css2?family=Noto+Sans+Thaana:wght@400;500;600;700&display=swap'
+        };
+        var link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = urls[lang];
+        document.head.appendChild(link);
+      }
+    })();
+    </script>
+
+    <!-- Per-language font overrides (applied when GT adds gt-lang-* class) -->
+    <style>
+      .gt-lang-ar, .gt-lang-ar * {
+        font-family: 'Cairo', 'Noto Sans Arabic', Arial, sans-serif !important;
+        direction: rtl !important;
+        text-align: right !important;
+        letter-spacing: 0 !important;
+      }
+      .gt-lang-dv, .gt-lang-dv * {
+        font-family: 'Noto Sans Thaana', 'MV Boli', sans-serif !important;
+        direction: rtl !important;
+        text-align: right !important;
+        letter-spacing: 0 !important;
+      }
+      /* Keep LTR elements (logos, icons, numbers) unaffected */
+      .gt-lang-ar .ltr-always, .gt-lang-dv .ltr-always,
+      .gt-lang-ar input[type=number], .gt-lang-dv input[type=number] {
+        direction: ltr !important;
+        text-align: left !important;
+      }
+    </style>
+
     <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
     <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('images/apple-touch-icon.png') }}">
