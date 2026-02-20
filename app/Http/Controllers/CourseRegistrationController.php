@@ -17,6 +17,7 @@ use App\Services\Payment\PaymentService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\View\View;
@@ -56,6 +57,15 @@ class CourseRegistrationController extends PublicRegistrationController
             'password'      => ['required', 'string'],
         ]);
 
+        // Brute-force protection: max 10 attempts per contact+IP per 15 minutes
+        $throttleKey = 'checkout-login:' . sha1($request->input('login_contact') . '|' . $request->ip());
+        if (RateLimiter::tooManyAttempts($throttleKey, 10)) {
+            $seconds = RateLimiter::availableIn($throttleKey);
+            return back()
+                ->withInput($request->only('login_contact'))
+                ->withErrors(['login_contact' => 'Too many login attempts. Please try again in ' . ceil($seconds / 60) . ' minutes, or use OTP login.']);
+        }
+
         $raw        = trim($request->input('login_contact'));
         $isEmail    = str_contains($raw, '@');
         $type       = $isEmail ? 'email' : 'mobile';
@@ -74,9 +84,11 @@ class CourseRegistrationController extends PublicRegistrationController
             ->withErrors(['login_contact' => 'Incorrect contact or password. Try OTP login instead.']);
 
         if (! $user || ! $user->password || ! Hash::check($request->input('password'), $user->password)) {
+            RateLimiter::hit($throttleKey, 15 * 60);
             return $fail();
         }
 
+        RateLimiter::clear($throttleKey);
         Auth::login($user);
 
         // Carry course into session for the continue form
