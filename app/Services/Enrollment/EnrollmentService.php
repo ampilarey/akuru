@@ -35,21 +35,23 @@ class EnrollmentService
         }
 
         $student = $user->registrationStudentProfile;
+        $idFields = $this->extractIdFields($studentData);
+
         if (!$student) {
-            $student = RegistrationStudent::create([
-                'user_id' => $user->id,
+            $student = RegistrationStudent::create(array_merge([
+                'user_id'    => $user->id,
                 'first_name' => $studentData['first_name'],
-                'last_name' => $studentData['last_name'],
-                'dob' => $dob,
-                'gender' => $studentData['gender'] ?? null,
-            ]);
+                'last_name'  => $studentData['last_name'],
+                'dob'        => $dob,
+                'gender'     => $studentData['gender'] ?? null,
+            ], $idFields));
         } else {
-            $student->update([
+            $student->update(array_merge([
                 'first_name' => $studentData['first_name'],
-                'last_name' => $studentData['last_name'],
-                'dob' => $dob,
-                'gender' => $studentData['gender'] ?? null,
-            ]);
+                'last_name'  => $studentData['last_name'],
+                'dob'        => $dob,
+                'gender'     => $studentData['gender'] ?? null,
+            ], $idFields));
         }
 
         $result = $this->enrollStudentInCourses($student, $courseIds, $termId, $user, $user);
@@ -94,21 +96,47 @@ class EnrollmentService
     protected function createOrGetStudentForParent(User $parent, array $studentData, array $guardianMeta): RegistrationStudent
     {
         $dob = \Carbon\Carbon::parse($studentData['dob']);
+        $idFields = $this->extractIdFields($studentData);
 
-        $student = RegistrationStudent::create([
-            'user_id' => null,
-            'first_name' => $studentData['first_name'],
-            'last_name' => $studentData['last_name'],
-            'dob' => $dob,
-            'gender' => $studentData['gender'] ?? null,
-        ]);
+        // If a student with the same national_id or passport already exists, reuse them
+        $student = null;
+        if (! empty($idFields['national_id'])) {
+            $student = RegistrationStudent::where('national_id', $idFields['national_id'])->first();
+        } elseif (! empty($idFields['passport'])) {
+            $student = RegistrationStudent::where('passport', $idFields['passport'])->first();
+        }
 
-        $parent->guardianStudents()->attach($student->id, [
-            'relationship' => $guardianMeta['relationship'] ?? 'guardian',
-            'is_primary' => true,
-        ]);
+        if (! $student) {
+            $student = RegistrationStudent::create(array_merge([
+                'user_id'    => null,
+                'first_name' => $studentData['first_name'],
+                'last_name'  => $studentData['last_name'],
+                'dob'        => $dob,
+                'gender'     => $studentData['gender'] ?? null,
+            ], $idFields));
+        }
+
+        // Ensure this parent is linked as a guardian (avoid duplicate pivot rows)
+        if (! $parent->guardianStudents()->where('registration_students.id', $student->id)->exists()) {
+            $parent->guardianStudents()->attach($student->id, [
+                'relationship' => $guardianMeta['relationship'] ?? 'guardian',
+                'is_primary'   => true,
+            ]);
+        }
 
         return $student;
+    }
+
+    /**
+     * Extract national_id / passport from student data based on id_type selector.
+     */
+    private function extractIdFields(array $studentData): array
+    {
+        $idType = $studentData['id_type'] ?? null;
+        return [
+            'national_id' => $idType === 'national_id' ? (strtoupper(trim($studentData['national_id'] ?? '')) ?: null) : null,
+            'passport'    => $idType === 'passport'    ? (strtoupper(trim($studentData['passport']    ?? '')) ?: null) : null,
+        ];
     }
 
     protected function ensureGuardianCanManageStudent(User $parent, int $studentId): RegistrationStudent

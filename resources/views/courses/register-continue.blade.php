@@ -60,15 +60,54 @@
                             </select>
                         </div>
                         <div x-show="studentMode === 'new'" x-cloak class="space-y-4">
-                            <div><label class="block text-sm font-medium mb-1">First name</label><input type="text" name="first_name" class="w-full rounded-md border-gray-300" :disabled="flow !== 'parent' || studentMode !== 'new'" value="{{ old('first_name') }}"></div>
-                            <div><label class="block text-sm font-medium mb-1">Last name</label><input type="text" name="last_name" class="w-full rounded-md border-gray-300" :disabled="flow !== 'parent' || studentMode !== 'new'" value="{{ old('last_name') }}"></div>
-                            <div><label class="block text-sm font-medium mb-1">Date of birth</label><input type="date" name="dob" class="w-full rounded-md border-gray-300" :disabled="flow !== 'parent' || studentMode !== 'new'" value="{{ old('dob') }}"></div>
-                            <div><label class="block text-sm font-medium mb-1">Relationship</label>
+                            <div class="grid sm:grid-cols-2 gap-4">
+                                <div><label class="block text-sm font-medium mb-1">First name <span class="text-red-500">*</span></label><input type="text" name="first_name" class="w-full rounded-md border-gray-300" :disabled="flow !== 'parent' || studentMode !== 'new'" value="{{ old('first_name') }}" required></div>
+                                <div><label class="block text-sm font-medium mb-1">Last name <span class="text-red-500">*</span></label><input type="text" name="last_name" class="w-full rounded-md border-gray-300" :disabled="flow !== 'parent' || studentMode !== 'new'" value="{{ old('last_name') }}" required></div>
+                            </div>
+                            <div class="grid sm:grid-cols-2 gap-4">
+                                <div><label class="block text-sm font-medium mb-1">Date of birth <span class="text-red-500">*</span></label><input type="date" name="dob" class="w-full rounded-md border-gray-300" :disabled="flow !== 'parent' || studentMode !== 'new'" value="{{ old('dob') }}" required></div>
+                                <div>
+                                    <label class="block text-sm font-medium mb-1">Gender</label>
+                                    <select name="gender" class="w-full rounded-md border-gray-300" :disabled="flow !== 'parent' || studentMode !== 'new'">
+                                        <option value="">Prefer not to say</option>
+                                        <option value="male" @selected(old('gender') === 'male')>Male</option>
+                                        <option value="female" @selected(old('gender') === 'female')>Female</option>
+                                    </select>
+                                </div>
+                            </div>
+                            {{-- ID document --}}
+                            <div>
+                                <label class="block text-sm font-medium mb-2">ID document <span class="text-red-500">*</span></label>
+                                <div class="flex gap-4 mb-3">
+                                    <label class="flex items-center gap-1.5 cursor-pointer">
+                                        <input type="radio" name="id_type" value="national_id" x-model="childIdType" :disabled="flow !== 'parent' || studentMode !== 'new'"> Maldivian ID card
+                                    </label>
+                                    <label class="flex items-center gap-1.5 cursor-pointer">
+                                        <input type="radio" name="id_type" value="passport" x-model="childIdType" :disabled="flow !== 'parent' || studentMode !== 'new'"> Passport
+                                    </label>
+                                </div>
+                                <div x-show="childIdType === 'national_id'">
+                                    <input type="text" name="national_id" placeholder="e.g. A211217"
+                                           class="w-full rounded-md border-gray-300 uppercase" maxlength="10"
+                                           :disabled="flow !== 'parent' || studentMode !== 'new' || childIdType !== 'national_id'"
+                                           value="{{ old('national_id') }}"
+                                           oninput="this.value=this.value.toUpperCase()">
+                                    <p class="text-xs text-gray-500 mt-1">Format: letter followed by digits (e.g. A211217)</p>
+                                </div>
+                                <div x-show="childIdType === 'passport'" x-cloak>
+                                    <input type="text" name="passport" placeholder="Passport number"
+                                           class="w-full rounded-md border-gray-300 uppercase" maxlength="20"
+                                           :disabled="flow !== 'parent' || studentMode !== 'new' || childIdType !== 'passport'"
+                                           value="{{ old('passport') }}"
+                                           oninput="this.value=this.value.toUpperCase()">
+                                </div>
+                            </div>
+                            <div><label class="block text-sm font-medium mb-1">Relationship to child <span class="text-red-500">*</span></label>
                                 <select name="relationship" class="w-full rounded-md border-gray-300" :disabled="flow !== 'parent' || studentMode !== 'new'">
-                                    <option value="father">Father</option>
-                                    <option value="mother">Mother</option>
-                                    <option value="guardian">Guardian</option>
-                                    <option value="other">Other</option>
+                                    <option value="father" @selected(old('relationship') === 'father')>Father</option>
+                                    <option value="mother" @selected(old('relationship') === 'mother')>Mother</option>
+                                    <option value="guardian" @selected(old('relationship') === 'guardian')>Guardian</option>
+                                    <option value="other" @selected(old('relationship') === 'other')>Other</option>
                                 </select>
                             </div>
                         </div>
@@ -80,9 +119,48 @@
                                 Your details are pre-filled from your profile. Update if needed.
                             </p>
                         @endif
-                        <div><label class="block text-sm font-medium mb-1">First name</label><input type="text" name="first_name" class="w-full rounded-md border-gray-300" :disabled="flow !== 'adult'" value="{{ old('first_name', $existingProfile?->first_name) }}"></div>
-                        <div><label class="block text-sm font-medium mb-1">Last name</label><input type="text" name="last_name" class="w-full rounded-md border-gray-300" :disabled="flow !== 'adult'" value="{{ old('last_name', $existingProfile?->last_name) }}"></div>
-                        <div><label class="block text-sm font-medium mb-1">Date of birth</label><input type="date" name="dob" class="w-full rounded-md border-gray-300" :disabled="flow !== 'adult'" value="{{ old('dob', $existingProfile?->dob?->format('Y-m-d')) }}"></div>
+                        <div class="grid sm:grid-cols-2 gap-4">
+                            <div><label class="block text-sm font-medium mb-1">First name <span class="text-red-500">*</span></label><input type="text" name="first_name" class="w-full rounded-md border-gray-300" :disabled="flow !== 'adult'" value="{{ old('first_name', $existingProfile?->first_name) }}" required></div>
+                            <div><label class="block text-sm font-medium mb-1">Last name <span class="text-red-500">*</span></label><input type="text" name="last_name" class="w-full rounded-md border-gray-300" :disabled="flow !== 'adult'" value="{{ old('last_name', $existingProfile?->last_name) }}" required></div>
+                        </div>
+                        <div class="grid sm:grid-cols-2 gap-4">
+                            <div><label class="block text-sm font-medium mb-1">Date of birth <span class="text-red-500">*</span></label><input type="date" name="dob" class="w-full rounded-md border-gray-300" :disabled="flow !== 'adult'" value="{{ old('dob', $existingProfile?->dob?->format('Y-m-d')) }}" required></div>
+                            <div>
+                                <label class="block text-sm font-medium mb-1">Gender</label>
+                                <select name="gender" class="w-full rounded-md border-gray-300" :disabled="flow !== 'adult'">
+                                    <option value="">Prefer not to say</option>
+                                    <option value="male" @selected(old('gender', $existingProfile?->gender) === 'male')>Male</option>
+                                    <option value="female" @selected(old('gender', $existingProfile?->gender) === 'female')>Female</option>
+                                </select>
+                            </div>
+                        </div>
+                        {{-- ID document --}}
+                        <div>
+                            <label class="block text-sm font-medium mb-2">ID document <span class="text-red-500">*</span></label>
+                            <div class="flex gap-4 mb-3">
+                                <label class="flex items-center gap-1.5 cursor-pointer">
+                                    <input type="radio" name="id_type" value="national_id" x-model="adultIdType" :disabled="flow !== 'adult'"> Maldivian ID card
+                                </label>
+                                <label class="flex items-center gap-1.5 cursor-pointer">
+                                    <input type="radio" name="id_type" value="passport" x-model="adultIdType" :disabled="flow !== 'adult'"> Passport
+                                </label>
+                            </div>
+                            <div x-show="adultIdType === 'national_id'">
+                                <input type="text" name="national_id" placeholder="e.g. A211217"
+                                       class="w-full rounded-md border-gray-300 uppercase" maxlength="10"
+                                       :disabled="flow !== 'adult' || adultIdType !== 'national_id'"
+                                       value="{{ old('national_id', $existingProfile?->national_id) }}"
+                                       oninput="this.value=this.value.toUpperCase()">
+                                <p class="text-xs text-gray-500 mt-1">Format: letter followed by digits (e.g. A211217)</p>
+                            </div>
+                            <div x-show="adultIdType === 'passport'" x-cloak>
+                                <input type="text" name="passport" placeholder="Passport number"
+                                       class="w-full rounded-md border-gray-300 uppercase" maxlength="20"
+                                       :disabled="flow !== 'adult' || adultIdType !== 'passport'"
+                                       value="{{ old('passport', $existingProfile?->passport) }}"
+                                       oninput="this.value=this.value.toUpperCase()">
+                            </div>
+                        </div>
                     </div>
 
                     <div class="mt-6 p-3 bg-gray-50 rounded">
@@ -106,6 +184,8 @@ function enrollFlow() {
     return {
         flow: '{{ $defaultFlow }}',
         studentMode: '{{ $user->guardianStudents->isNotEmpty() ? "existing" : "new" }}',
+        adultIdType: '{{ old("id_type", $existingProfile?->national_id ? "national_id" : ($existingProfile?->passport ? "passport" : "national_id")) }}',
+        childIdType: '{{ old("id_type", "national_id") }}',
         init() {
             if (this.studentMode === 'existing' && document.querySelector('input[name="student_mode"][value="existing"]')) {
                 this.studentMode = 'existing';

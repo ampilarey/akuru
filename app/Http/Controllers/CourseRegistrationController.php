@@ -302,22 +302,39 @@ class CourseRegistrationController extends PublicRegistrationController
 
         if ($flow === 'parent') {
             if ($request->input('student_mode') === 'new') {
-                $rules['first_name'] = ['required', 'string', 'max:100'];
-                $rules['last_name'] = ['required', 'string', 'max:100'];
-                $rules['dob'] = ['required', 'date', 'before:today'];
-                $rules['gender'] = ['nullable', 'in:male,female'];
+                $rules['first_name']   = ['required', 'string', 'max:100'];
+                $rules['last_name']    = ['required', 'string', 'max:100'];
+                $rules['dob']          = ['required', 'date', 'before:today'];
+                $rules['gender']       = ['nullable', 'in:male,female'];
                 $rules['relationship'] = ['nullable', 'in:father,mother,guardian,other'];
+                $rules['id_type']      = ['required', 'in:national_id,passport'];
+                $rules['national_id']  = ['nullable', 'string', 'max:20', 'regex:/^[A-Za-z][0-9]{5,9}$/'];
+                $rules['passport']     = ['nullable', 'string', 'max:20'];
             } else {
                 $rules['student_id'] = ['required', 'exists:registration_students,id'];
             }
         } else {
-            $rules['first_name'] = ['required', 'string', 'max:100'];
-            $rules['last_name'] = ['required', 'string', 'max:100'];
-            $rules['dob'] = ['required', 'date', 'before:today'];
-            $rules['gender'] = ['nullable', 'in:male,female'];
+            $rules['first_name']  = ['required', 'string', 'max:100'];
+            $rules['last_name']   = ['required', 'string', 'max:100'];
+            $rules['dob']         = ['required', 'date', 'before:today'];
+            $rules['gender']      = ['nullable', 'in:male,female'];
+            $rules['id_type']     = ['required', 'in:national_id,passport'];
+            $rules['national_id'] = ['nullable', 'string', 'max:20', 'regex:/^[A-Za-z][0-9]{5,9}$/'];
+            $rules['passport']    = ['nullable', 'string', 'max:20'];
         }
 
         $validator = Validator::make($request->all(), $rules);
+
+        // Require whichever ID type was selected
+        $validator->after(function ($v) use ($request) {
+            $idType = $request->input('id_type');
+            if ($idType === 'national_id' && empty(trim((string) $request->input('national_id')))) {
+                $v->errors()->add('national_id', 'Please enter your Maldivian ID card number.');
+            }
+            if ($idType === 'passport' && empty(trim((string) $request->input('passport')))) {
+                $v->errors()->add('passport', 'Please enter your passport number.');
+            }
+        });
 
         if ($flow === 'adult') {
             $validator->after(function ($validator) use ($request) {
