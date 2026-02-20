@@ -119,6 +119,9 @@ Route::middleware('auth')->group(function () {
 
     Route::get('my-enrollments', [\App\Http\Controllers\MyEnrollmentsController::class, 'index'])
         ->name('my.enrollments');
+
+    Route::get('payments/{payment}/receipt', [\App\Http\Controllers\PaymentReceiptController::class, 'show'])
+        ->name('payment.receipt');
 });
 
 Route::get("admissions", [AdmissionController::class, "create"])->name("public.admissions.create");
