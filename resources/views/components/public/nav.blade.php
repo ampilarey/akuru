@@ -45,47 +45,85 @@
       </a>
     </div>
 
-    <!-- Right Side - Translate, Login, Mobile Menu -->
-    <div class="flex items-center space-x-2 sm:space-x-4">
-      <!-- Google Translate Button -->
-      <div id="gt-wrapper" class="relative hidden sm:block">
-        <button onclick="toggleGT()" aria-label="Translate page"
-                class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-brandGray-600 hover:text-brandMaroon-600 hover:bg-brandBeige-100 border border-gray-200 transition-colors">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <!-- Right Side: Translate + User + Hamburger -->
+    <div class="flex items-center gap-2">
+
+      {{-- ── Translate button (visible on all screens) ── --}}
+      <div id="gt-wrapper" class="relative">
+        <button id="gt-btn" onclick="toggleGT()" aria-label="Translate page"
+                class="flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-medium text-brandGray-600 hover:text-brandMaroon-600 hover:bg-brandBeige-100 border border-gray-200 transition-colors">
+          <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                   d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"/>
           </svg>
-          Translate
+          <span class="hidden sm:inline">Translate</span>
         </button>
-        {{-- GT widget renders here --}}
         <div id="google_translate_element"
-             class="absolute right-0 top-full mt-1 z-50 bg-white rounded-lg shadow-lg border border-gray-200 p-2 hidden min-w-max"></div>
+             class="absolute right-0 top-full mt-1 z-50 bg-white rounded-xl shadow-xl border border-gray-200 p-3 hidden min-w-max"></div>
       </div>
 
-      <!-- Login / Portal Link - Hidden on small screens -->
+      {{-- ── User menu (desktop, md+) ── --}}
       <div class="hidden md:block">
         @auth
-          <a href="{{ route('portal.dashboard') }}" class="inline-flex items-center gap-1 text-sm font-medium text-brandMaroon-700 border border-brandMaroon-200 px-3 py-1.5 rounded-lg hover:bg-brandMaroon-50 transition-colors">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
-            </svg>
-            My Portal
-          </a>
+          {{-- Dropdown: My Portal + Logout --}}
+          <div class="relative" id="user-menu-wrapper">
+            <button onclick="toggleUserMenu()"
+                    class="flex items-center gap-1.5 text-sm font-medium text-brandMaroon-700 border border-brandMaroon-200 px-3 py-1.5 rounded-lg hover:bg-brandMaroon-50 transition-colors">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+              </svg>
+              {{ auth()->user()->name }}
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+              </svg>
+            </button>
+            <div id="user-menu-dropdown"
+                 class="absolute right-0 top-full mt-1 z-50 bg-white rounded-xl shadow-xl border border-gray-200 min-w-44 py-1 hidden">
+              <a href="{{ route('portal.dashboard') }}"
+                 class="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-brandBeige-50 hover:text-brandMaroon-700">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                </svg>
+                My Portal
+              </a>
+              <a href="{{ route('portal.enrollments') }}"
+                 class="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-brandBeige-50 hover:text-brandMaroon-700">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                </svg>
+                My Enrollments
+              </a>
+              <div class="border-t border-gray-100 my-1"></div>
+              <form method="POST" action="{{ route('logout') }}">
+                @csrf
+                <button type="submit"
+                        class="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                  </svg>
+                  Log out
+                </button>
+              </form>
+            </div>
+          </div>
         @else
-          <a href="{{ route('login') }}" class="inline-flex items-center gap-1 text-sm font-medium text-brandGray-600 hover:text-brandMaroon-600 transition-colors">
-            {{ __('public.Login') }}
+          <a href="{{ route('login') }}"
+             class="inline-flex items-center gap-1 text-sm font-medium text-brandGray-600 hover:text-brandMaroon-600 border border-gray-200 px-3 py-1.5 rounded-lg hover:bg-brandBeige-50 transition-colors">
+            Login
           </a>
         @endauth
       </div>
 
-      <!-- Mobile Menu Button -->
-      <button class="lg:hidden p-2 text-brandGray-600 hover:text-brandMaroon-600 transition-colors duration-200" 
-              onclick="toggleMobileMenu()" 
-              aria-label="Toggle mobile menu">
+      {{-- ── Hamburger (mobile/tablet) ── --}}
+      <button class="lg:hidden p-2 text-brandGray-600 hover:text-brandMaroon-600 transition-colors"
+              onclick="toggleMobileMenu()" aria-label="Toggle mobile menu">
         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
         </svg>
       </button>
+
     </div>
   </div>
 
@@ -120,9 +158,10 @@
         {{ __('public.Contact') }}
       </a>
       
-      <!-- Mobile Login/Portal -->
+      <!-- Mobile Login/Portal/Logout -->
       <div class="pt-2 border-t border-gray-200 mt-4">
         @auth
+          <p class="px-4 py-1 text-xs text-gray-400">Signed in as {{ auth()->user()->name }}</p>
           <a href="{{ route('portal.dashboard') }}"
              class="block py-3 px-4 text-brandMaroon-700 font-medium hover:bg-brandMaroon-50 rounded-lg transition-colors duration-200">
             My Portal
@@ -135,10 +174,21 @@
              class="block py-3 px-4 text-brandGray-600 hover:text-brandMaroon-600 hover:bg-brandBeige-100 rounded-lg transition-colors duration-200">
             My Payments
           </a>
+          <form method="POST" action="{{ route('logout') }}" class="px-4 pt-1 pb-2">
+            @csrf
+            <button type="submit"
+                    class="w-full text-left py-2.5 px-0 text-sm text-red-600 hover:text-red-700 flex items-center gap-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+              </svg>
+              Log out
+            </button>
+          </form>
         @else
-          <a href="{{ route('login') }}" 
+          <a href="{{ route('login') }}"
              class="block py-3 px-4 text-brandGray-600 hover:text-brandMaroon-600 hover:bg-brandBeige-100 rounded-lg transition-colors duration-200">
-            {{ __('public.Login') }}
+            Login
           </a>
         @endauth
       </div>
@@ -173,15 +223,22 @@ function googleTranslateElementInit() {
 }
 
 function toggleGT() {
-  const el = document.getElementById('google_translate_element');
-  el.classList.toggle('hidden');
+  document.getElementById('google_translate_element')?.classList.toggle('hidden');
+  document.getElementById('user-menu-dropdown')?.classList.add('hidden');
 }
 
-// Close GT dropdown when clicking outside
+function toggleUserMenu() {
+  document.getElementById('user-menu-dropdown')?.classList.toggle('hidden');
+  document.getElementById('google_translate_element')?.classList.add('hidden');
+}
+
+// Close both dropdowns when clicking outside
 document.addEventListener('click', function(e) {
-  const wrapper = document.getElementById('gt-wrapper');
-  if (wrapper && !wrapper.contains(e.target)) {
+  if (!document.getElementById('gt-wrapper')?.contains(e.target)) {
     document.getElementById('google_translate_element')?.classList.add('hidden');
+  }
+  if (!document.getElementById('user-menu-wrapper')?.contains(e.target)) {
+    document.getElementById('user-menu-dropdown')?.classList.add('hidden');
   }
 });
 
