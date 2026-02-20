@@ -51,8 +51,14 @@
                 </x-nav-link>
                 @endif
                 
+                @if(auth()->user()->hasAnyRole(['super_admin', 'admin', 'headmaster', 'supervisor']))
+                <x-nav-link :href="route('admin.enrollments.index')" :active="request()->routeIs('admin.enrollments.*')">
+                    {{ __('Enrollments') }}
+                </x-nav-link>
+                @endif
+
                 @if(auth()->user()->hasAnyRole(['super_admin', 'admin']))
-                <x-nav-link :href="route('admin.pages.index')" :active="request()->routeIs('admin.*')">
+                <x-nav-link :href="route('admin.pages.index')" :active="request()->routeIs('admin.pages.*') || request()->routeIs('admin.courses.*')">
                     {{ __('Website CMS') }}
                 </x-nav-link>
                 @endif
