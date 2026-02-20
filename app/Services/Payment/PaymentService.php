@@ -9,6 +9,7 @@ use App\Models\Payment;
 use App\Models\PaymentItem;
 use App\Models\RegistrationStudent;
 use App\Models\User;
+use App\Services\SmsGatewayService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -22,7 +23,8 @@ class PaymentService
     private const FINAL_STATUSES = ['confirmed', 'failed', 'cancelled', 'expired', 'paid'];
 
     public function __construct(
-        protected PaymentProviderInterface $provider
+        protected PaymentProviderInterface $provider,
+        protected SmsGatewayService        $sms,
     ) {}
 
     /**
@@ -228,25 +230,65 @@ class PaymentService
     }
 
     /**
-     * Dispatch an enrollment confirmation email if the payer has a verified email contact.
-     * Silently skipped when no email is on file (OTP-only users) or if mailer is log-only.
+     * Dispatch enrollment confirmation notifications (email + SMS).
+     * Both are silently skipped if no contact is on file.
      */
     private function sendConfirmationEmail(Payment $payment): void
     {
+        $payment->loadMissing(['user', 'items.course', 'items.enrollment', 'student']);
+        $this->sendConfirmationEmailNotification($payment);
+        $this->sendConfirmationSms($payment);
+    }
+
+    private function sendConfirmationEmailNotification(Payment $payment): void
+    {
         try {
-            $payment->loadMissing(['user', 'items.course', 'items.enrollment', 'student']);
             $user = $payment->user;
             if (! $user) {
                 return;
             }
             $emailContact = $user->contacts()->where('type', 'email')->whereNotNull('verified_at')->first();
-            $toAddress = $emailContact?->value ?? $user->email ?? null;
+            $toAddress    = $emailContact?->value ?? $user->email ?? null;
+            // Also try unverified email contacts (user may not have verified yet)
+            if (! $toAddress) {
+                $toAddress = $user->contacts()->where('type', 'email')->first()?->value;
+            }
             if (! $toAddress) {
                 return;
             }
             Mail::to($toAddress)->send(new EnrollmentConfirmedMail($payment));
         } catch (\Throwable $e) {
             Log::warning('EnrollmentConfirmedMail: failed to send', [
+                'payment_id' => $payment->id,
+                'error'      => $e->getMessage(),
+            ]);
+        }
+    }
+
+    private function sendConfirmationSms(Payment $payment): void
+    {
+        try {
+            $user = $payment->user;
+            if (! $user) {
+                return;
+            }
+            $mobileContact = $user->contacts()->where('type', 'mobile')->first();
+            if (! $mobileContact?->value) {
+                return;
+            }
+
+            $student    = $payment->student;
+            $studentName = $student?->first_name ?? $user->name ?? 'Student';
+            $courses    = $payment->items->map(fn ($i) => $i->course?->title)->filter()->implode(', ');
+            $ref        = $payment->local_id ?? $payment->merchant_reference;
+
+            $message = "Akuru Institute: Enrollment confirmed for {$studentName}.\n"
+                     . "Course(s): {$courses}.\n"
+                     . "Ref: {$ref}";
+
+            $this->sms->sendSms($mobileContact->value, $message);
+        } catch (\Throwable $e) {
+            Log::warning('EnrollmentConfirmedSms: failed to send', [
                 'payment_id' => $payment->id,
                 'error'      => $e->getMessage(),
             ]);
