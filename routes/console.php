@@ -10,3 +10,6 @@ Artisan::command('inspire', function () {
 
 // Reconcile pending BML payments every 10 minutes (webhook is primary; this is fallback)
 Schedule::command('payments:reconcile', ['--older-than' => 5, '--not-updated-in' => 2])->everyTenMinutes();
+
+// Prune expired OTPs and stale draft/pending enrollments once per hour
+Schedule::command('akuru:prune-expired')->hourly();
