@@ -270,10 +270,22 @@
                             </div>
 
                             <!-- CTA Button -->
-                            <a href="{{ LaravelLocalization::localizeURL(route('public.courses.show', $course->slug)) }}" 
-                               class="btn-primary w-full text-center group-hover:bg-brandMaroon-700 transition-colors">
-                                {{ __('public.View Details') }}
-                            </a>
+                            @if($course->isFull())
+                                <div class="flex gap-2">
+                                    <span class="flex-1 text-center py-2 px-3 text-sm bg-red-50 text-red-700 border border-red-200 rounded-lg font-medium">
+                                        Fully booked
+                                    </span>
+                                    <a href="{{ LaravelLocalization::localizeURL(route('public.courses.show', $course->slug)) }}"
+                                       class="py-2 px-3 text-sm border border-gray-300 text-gray-600 rounded-lg hover:bg-gray-50">
+                                        Details
+                                    </a>
+                                </div>
+                            @else
+                                <a href="{{ LaravelLocalization::localizeURL(route('public.courses.show', $course->slug)) }}"
+                                   class="btn-primary w-full text-center group-hover:bg-brandMaroon-700 transition-colors">
+                                    {{ __('public.View Details') }}
+                                </a>
+                            @endif
                         </div>
                     </article>
                     @endforeach

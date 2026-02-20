@@ -83,25 +83,50 @@
                     </div>
                 @endif
 
-                <!-- CTA: One unified flow - Apply → OTP verify → Register → Pay -->
+                <!-- CTA -->
                 <div class="space-y-3">
-                    <a href="{{ route('courses.checkout.show', $course) }}" 
-                       class="btn-primary inline-flex items-center px-8 py-4 text-lg">
-                        {{ __('public.Enroll in this course') }}
-                        @if($course->hasRegistrationFee())
-                            <span class="ml-2">({{ number_format($course->getRegistrationFeeAmount(), 2) }} MVR)</span>
+                    @if($course->status !== 'open')
+                        <div class="inline-flex items-center gap-2 px-6 py-3 bg-gray-100 text-gray-500 rounded-lg font-medium">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                            {{ $course->status === 'upcoming' ? 'Enrollment opening soon' : 'Enrollment closed' }}
+                        </div>
+                    @elseif($course->isFull())
+                        <div class="inline-flex items-center gap-2 px-6 py-3 bg-red-50 text-red-700 border border-red-200 rounded-lg font-medium">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/>
+                            </svg>
+                            Fully booked — no seats available
+                        </div>
+                        <a href="{{ route('public.admissions.create', [app()->getLocale(), 'course' => $course->id]) }}"
+                           class="text-sm text-brandMaroon-600 hover:underline">
+                            Submit an inquiry to join the waitlist →
+                        </a>
+                    @else
+                        <a href="{{ route('courses.checkout.show', $course) }}"
+                           class="btn-primary inline-flex items-center px-8 py-4 text-lg">
+                            {{ __('public.Enroll in this course') }}
+                            @if($course->hasRegistrationFee())
+                                <span class="ml-2">({{ number_format($course->getRegistrationFeeAmount(), 2) }} MVR)</span>
+                            @endif
+                            <svg class="w-5 h-5 ml-2 rtl:ml-0 rtl:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+                            </svg>
+                        </a>
+                        <p class="text-sm text-gray-600">
+                            {{ __('public.One flow') }}: {{ __('public.Verify via OTP') }} → {{ __('public.register') }} → {{ $course->hasRegistrationFee() ? __('public.pay to complete') : __('public.complete enrollment') }}
+                        </p>
+                        @if($course->available_seats !== null && $course->available_seats <= 5)
+                            <p class="text-sm text-amber-600 font-medium">
+                                ⚠ Only {{ $course->available_seats }} seat{{ $course->available_seats == 1 ? '' : 's' }} left
+                            </p>
                         @endif
-                        <svg class="w-5 h-5 ml-2 rtl:ml-0 rtl:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
-                        </svg>
-                    </a>
-                    <p class="text-sm text-gray-600">
-                        {{ __('public.One flow') }}: {{ __('public.Verify via OTP') }} → {{ __('public.register') }} → {{ $course->hasRegistrationFee() ? __('public.pay to complete') : __('public.complete enrollment') }}
-                    </p>
-                    <a href="{{ route('public.admissions.create', [app()->getLocale(), 'course' => $course->id]) }}" 
-                       class="text-sm text-gray-500 hover:text-brandMaroon-600">
-                        {{ __('public.Or submit an inquiry') }} →
-                    </a>
+                        <a href="{{ route('public.admissions.create', [app()->getLocale(), 'course' => $course->id]) }}"
+                           class="text-sm text-gray-500 hover:text-brandMaroon-600">
+                            {{ __('public.Or submit an inquiry') }} →
+                        </a>
+                    @endif
                 </div>
             </div>
 
@@ -209,14 +234,34 @@
                 <!-- CTA Card -->
                 <div class="card p-6 bg-gradient-to-br from-brandMaroon-50 to-brandBeige-100 border-brandBeige-200">
                     <h3 class="text-lg font-bold text-brandMaroon-900 mb-3">{{ __('public.Interested in this course?') }}</h3>
-                    <p class="text-sm text-brandGray-700 mb-4">{{ __('public.Enroll with OTP verification and payment') }}</p>
-                    <a href="{{ route('courses.checkout.show', $course) }}" 
-                       class="btn-primary w-full text-center">
-                        {{ __('public.Enroll in this course') }}
-                    </a>
-                    <p class="text-xs text-gray-500 mt-3">
-                        <a href="{{ route('public.admissions.create', [app()->getLocale(), 'course' => $course->id]) }}" class="hover:text-brandMaroon-600">{{ __('public.Or submit an inquiry') }}</a>
-                    </p>
+
+                    @if($course->status !== 'open')
+                        <span class="inline-block w-full text-center py-2 px-4 rounded-lg bg-gray-200 text-gray-600 text-sm font-medium">
+                            {{ $course->status === 'upcoming' ? 'Opening soon' : 'Enrollment closed' }}
+                        </span>
+                    @elseif($course->isFull())
+                        <span class="inline-block w-full text-center py-2 px-4 rounded-lg bg-red-100 text-red-700 text-sm font-semibold">
+                            Fully booked
+                        </span>
+                        <p class="text-xs text-gray-500 mt-3">
+                            <a href="{{ route('public.admissions.create', [app()->getLocale(), 'course' => $course->id]) }}" class="hover:text-brandMaroon-600">Submit a waitlist inquiry →</a>
+                        </p>
+                    @else
+                        @if($course->available_seats !== null && $course->available_seats <= 5)
+                            <p class="text-sm text-amber-600 font-medium mb-3">
+                                ⚠ Only {{ $course->available_seats }} seat{{ $course->available_seats == 1 ? '' : 's' }} left
+                            </p>
+                        @else
+                            <p class="text-sm text-brandGray-700 mb-4">{{ __('public.Enroll with OTP verification and payment') }}</p>
+                        @endif
+                        <a href="{{ route('courses.checkout.show', $course) }}"
+                           class="btn-primary w-full text-center">
+                            {{ __('public.Enroll in this course') }}
+                        </a>
+                        <p class="text-xs text-gray-500 mt-3">
+                            <a href="{{ route('public.admissions.create', [app()->getLocale(), 'course' => $course->id]) }}" class="hover:text-brandMaroon-600">{{ __('public.Or submit an inquiry') }}</a>
+                        </p>
+                    @endif
                 </div>
 
                 <!-- Contact Card -->

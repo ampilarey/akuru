@@ -42,10 +42,35 @@ class DashboardController extends Controller
             return $this->parentDashboard();
         }
         
-        // If user has no specific role, show admin dashboard as fallback
-        return $this->adminDashboard();
+        // Public users (registered via OTP for course enrollment)
+        return $this->publicUserDashboard();
     }
     
+    private function publicUserDashboard()
+    {
+        $user = auth()->user();
+
+        $enrollments = \App\Models\CourseEnrollment::with(['course', 'student', 'payment'])
+            ->where('created_by_user_id', $user->id)
+            ->latest()
+            ->get();
+
+        $activeEnrollments   = $enrollments->whereIn('status', ['active']);
+        $pendingEnrollments  = $enrollments->whereIn('status', ['pending', 'pending_payment']);
+        $openCourses = \App\Models\Course::where('status', 'open')->latest()->take(4)->get();
+
+        $hasPassword = !empty($user->password);
+
+        return view('dashboard.public-user', compact(
+            'user',
+            'enrollments',
+            'activeEnrollments',
+            'pendingEnrollments',
+            'openCourses',
+            'hasPassword'
+        ));
+    }
+
     private function superAdminDashboard()
     {
         // Super Admin sees everything + system stats
