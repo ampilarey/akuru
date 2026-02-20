@@ -189,7 +189,24 @@
                         </ul>
                     </div>
 
-                    <button type="submit" class="btn-primary w-full py-3 mt-6">Complete enrollment</button>
+                    {{-- Terms acceptance --}}
+                    <div class="mt-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                        <label class="flex items-start gap-3 cursor-pointer select-none">
+                            <input type="checkbox" name="terms_accepted" id="terms_accepted" value="1" required
+                                   class="mt-0.5 h-4 w-4 rounded border-gray-300 text-brandMaroon-600 focus:ring-brandMaroon-500 shrink-0">
+                            <span class="text-sm text-gray-700">
+                                I have read and agree to the
+                                <a href="{{ route('public.home') }}#terms" target="_blank"
+                                   class="text-brandMaroon-600 hover:underline font-medium">terms and conditions</a>
+                                of Akuru Institute. I understand that enrollment fees are non-refundable unless the course is cancelled.
+                            </span>
+                        </label>
+                        @error('terms_accepted')
+                            <p class="text-red-600 text-xs mt-2">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <button type="submit" class="btn-primary w-full py-3 mt-4">Complete enrollment</button>
                 </form>
             </div>
         </div>

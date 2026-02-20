@@ -273,6 +273,11 @@ class CourseRegistrationController extends PublicRegistrationController
             ? (int) $request->input('term_id')
             : null;
 
+        // Terms must be accepted
+        if (! $request->boolean('terms_accepted')) {
+            return back()->withErrors(['terms_accepted' => 'You must accept the terms and conditions to continue.'])->withInput();
+        }
+
         $data = $this->validateEnrollRequest($request, $flow);
         if ($data instanceof RedirectResponse) {
             return $data;
