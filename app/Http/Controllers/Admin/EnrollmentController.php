@@ -3,10 +3,12 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Mail\EnrollmentStatusMail;
 use App\Models\Course;
 use App\Models\CourseEnrollment;
 use App\Models\Payment;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 
 class EnrollmentController extends Controller
 {
@@ -53,13 +55,30 @@ class EnrollmentController extends Controller
             'enrolled_at' => $enrollment->enrolled_at ?? now(),
         ]);
 
-        return back()->with('success', 'Enrollment activated.');
+        $this->notifyUser($enrollment, 'active');
+
+        return back()->with('success', 'Enrollment activated and student notified.');
     }
 
     public function reject(CourseEnrollment $enrollment)
     {
         $enrollment->update(['status' => 'rejected']);
-        return back()->with('success', 'Enrollment rejected.');
+
+        $this->notifyUser($enrollment, 'rejected');
+
+        return back()->with('success', 'Enrollment rejected and student notified.');
+    }
+
+    private function notifyUser(CourseEnrollment $enrollment, string $status): void
+    {
+        $enrollment->loadMissing(['creator', 'course', 'student']);
+
+        $user  = $enrollment->creator;
+        $email = $user?->email ?? $user?->contacts()->where('type', 'email')->value('value');
+
+        if ($email) {
+            Mail::to($email)->queue(new EnrollmentStatusMail($enrollment, $status));
+        }
     }
 
     public function payments(Request $request)
