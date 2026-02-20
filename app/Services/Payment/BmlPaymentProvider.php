@@ -197,17 +197,24 @@ class BmlPaymentProvider implements PaymentProviderInterface
         try {
             $pathTemplate = config('bml.paths.get_transaction', '/v2/transactions/{reference}');
             $path = str_replace('{reference}', $merchantReference, $pathTemplate);
+            Log::info('BML queryStatus request', ['url' => $baseUrl . $path]);
             $response = Http::withHeaders(array_merge(
                 $this->authHeaders($apiKey, $appId ?? ''),
                 ['Content-Type' => 'application/json'],
             ))->timeout(config('bml.timeout', 30))->get($baseUrl . $path);
 
             if (!$response->successful()) {
+                Log::warning('BML queryStatus: non-success response', [
+                    'ref'    => $merchantReference,
+                    'status' => $response->status(),
+                    'body'   => $response->body(),
+                ]);
                 return null;
             }
 
             $data = $response->json();
             $status = $data['state'] ?? $data['status'] ?? $data['transactionStatus'] ?? null;
+            Log::info('BML queryStatus response', ['ref' => $merchantReference, 'state' => $status]);
             $providerRef = $data['id'] ?? $data['transactionId'] ?? null;
             $isConfirmed = in_array(strtolower((string) $status), ['completed', 'success', 'confirmed', 'true'], true);
 
