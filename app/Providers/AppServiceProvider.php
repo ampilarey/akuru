@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Services\Payment\PaymentProviderInterface;
 use App\Services\Payment\PaymentService;
+use App\Services\SmsGatewayService;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -20,7 +21,10 @@ class AppServiceProvider extends ServiceProvider
         });
 
         $this->app->singleton(PaymentService::class, function ($app) {
-            return new PaymentService($app->make(PaymentProviderInterface::class));
+            return new PaymentService(
+                $app->make(PaymentProviderInterface::class),
+                $app->make(SmsGatewayService::class),
+            );
         });
     }
 
