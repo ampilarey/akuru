@@ -137,7 +137,7 @@
                         <select name="source" id="source" class="w-full px-3 py-2 border border-brandGray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brandMaroon-500">
                             <option value="web">{{ __('public.Website') }}</option>
                             <option value="social">{{ __('public.Social Media') }}</option>
-                            <option value="whatsapp">{{ __('public.WhatsApp') }}</option>
+                            <option value="viber">Viber</option>
                             <option value="other">{{ __('public.Other') }}</option>
                         </select>
                     </div>

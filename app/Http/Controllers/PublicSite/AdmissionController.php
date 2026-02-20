@@ -43,7 +43,7 @@ class AdmissionController extends Controller
             'email' => 'nullable|email|max:255',
             'guardian_name' => 'nullable|string|max:255',
             'message' => 'nullable|string|max:1000',
-            'source' => 'in:web,social,whatsapp,other',
+            'source' => 'in:web,social,viber,other',
         ]);
         
         $validated['locale'] = app()->getLocale();

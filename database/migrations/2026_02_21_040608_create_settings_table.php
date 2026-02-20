@@ -22,7 +22,7 @@ return new class extends Migration
         // Seed default settings
         $defaults = [
             ['key' => 'phone',        'value' => '+960 797 2434',                       'group' => 'contact',  'label' => 'Phone number'],
-            ['key' => 'whatsapp',     'value' => '9607972434',                          'group' => 'contact',  'label' => 'WhatsApp number (digits only)'],
+            ['key' => 'viber',        'value' => '9607972434',                          'group' => 'contact',  'label' => 'Viber number (digits only, with country code)'],
             ['key' => 'email',        'value' => 'info@akuru.edu.mv',                   'group' => 'contact',  'label' => 'Contact email'],
             ['key' => 'address',      'value' => "Malé, Republic of Maldives",          'group' => 'contact',  'label' => 'Office address'],
             ['key' => 'facebook',     'value' => '',                                    'group' => 'social',   'label' => 'Facebook URL'],

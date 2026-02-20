@@ -73,7 +73,7 @@
             <div class="flex gap-2 mt-2">
                 <a href="https://www.facebook.com/sharer/sharer.php?u={{ urlencode(request()->url()) }}" target="_blank" rel="noopener" class="inline-flex items-center px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm" aria-label="Share on Facebook">Facebook</a>
                 <a href="https://twitter.com/intent/tweet?url={{ urlencode(request()->url()) }}&text={{ urlencode($post->title) }}" target="_blank" rel="noopener" class="inline-flex items-center px-3 py-2 bg-sky-500 text-white rounded hover:bg-sky-600 text-sm" aria-label="Share on Twitter">Twitter</a>
-                <a href="https://wa.me/?text={{ urlencode($post->title . ' ' . request()->url()) }}" target="_blank" rel="noopener" class="inline-flex items-center px-3 py-2 bg-green-500 text-white rounded hover:bg-green-600 text-sm" aria-label="Share on WhatsApp">WhatsApp</a>
+                <a href="viber://forward?text={{ urlencode($post->title . ' ' . request()->url()) }}" target="_blank" rel="noopener" class="inline-flex items-center px-3 py-2 bg-purple-600 text-white rounded hover:bg-purple-700 text-sm" aria-label="Share on Viber">Viber</a>
             </div>
         </div>
 

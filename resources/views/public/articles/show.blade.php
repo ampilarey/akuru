@@ -96,8 +96,8 @@
         <div class="mt-6 pt-6 border-t border-gray-200">
             <span class="text-sm font-medium text-gray-700 mr-3">Share:</span>
             <div class="inline-flex gap-2 mt-1 flex-wrap">
-                <a href="https://wa.me/?text={{ urlencode($post->title . ' ' . request()->url()) }}" target="_blank" rel="noopener"
-                   class="inline-flex items-center gap-1 px-3 py-1.5 bg-green-500 text-white rounded text-sm hover:bg-green-600">WhatsApp</a>
+                <a href="viber://forward?text={{ urlencode($post->title . ' ' . request()->url()) }}" target="_blank" rel="noopener"
+                   class="inline-flex items-center gap-1 px-3 py-1.5 bg-purple-600 text-white rounded text-sm hover:bg-purple-700">Viber</a>
                 <a href="https://www.facebook.com/sharer/sharer.php?u={{ urlencode(request()->url()) }}" target="_blank" rel="noopener"
                    class="inline-flex items-center gap-1 px-3 py-1.5 bg-blue-600 text-white rounded text-sm hover:bg-blue-700">Facebook</a>
                 <a href="https://twitter.com/intent/tweet?url={{ urlencode(request()->url()) }}&text={{ urlencode($post->title) }}" target="_blank" rel="noopener"
