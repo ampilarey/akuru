@@ -98,16 +98,12 @@ Route::post("payments/course/{course}/start", [\App\Http\Controllers\CheckoutCon
     ->name("payments.course.start")->middleware('auth');
 
 // Payment routes
-Route::get("payments/status/{payment}", [\App\Http\Controllers\PaymentController::class, "statusByPayment"])
-    ->name("payments.status.by_id");
 Route::get("payments/return/{payment}", [\App\Http\Controllers\PaymentController::class, "returnByPayment"])
     ->name("payments.return");
 Route::get("payments/ref/{merchant_reference}/status", [\App\Http\Controllers\PaymentController::class, "status"])
     ->name("payments.status");
 Route::post("payments/bml/initiate", [\App\Http\Controllers\PaymentController::class, "initiate"])
     ->name("payments.bml.initiate");
-Route::get("payments/bml/return", [\App\Http\Controllers\PaymentController::class, "return"])
-    ->name("payments.bml.return");
 
 Route::get("admissions", [AdmissionController::class, "create"])->name("public.admissions.create");
 Route::post("admissions", [AdmissionController::class, "store"])->name("public.admissions.store");

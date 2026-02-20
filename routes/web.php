@@ -11,6 +11,13 @@ Route::post('payments/bml/callback', [\App\Http\Controllers\PaymentController::c
 Route::post('webhooks/bml', \App\Http\Controllers\BmlWebhookController::class)
     ->name('webhooks.bml')->middleware('throttle:120,1');
 
+// BML return URL and status poll - must be outside localized group so BML's
+// redirect lands here directly without a locale-prefix 302 redirect dropping query params.
+Route::get('payments/bml/return', [\App\Http\Controllers\PaymentController::class, 'return'])
+    ->name('payments.bml.return');
+Route::get('payments/status/{payment}', [\App\Http\Controllers\PaymentController::class, 'statusByPayment'])
+    ->name('payments.status.by_id');
+
 // Localized routes
 Route::group([
     'prefix' => LaravelLocalization::setLocale(),
