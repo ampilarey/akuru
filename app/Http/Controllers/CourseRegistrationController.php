@@ -213,12 +213,16 @@ class CourseRegistrationController extends PublicRegistrationController
 
         try {
             if ($flow === 'parent') {
-                if (($data['student_mode'] ?? '') === 'new') {
+                // Read student_mode from request directly — it's not a validated field
+                if ($request->input('student_mode') === 'new') {
                     $studentData = [
-                        'first_name' => $data['first_name'],
-                        'last_name' => $data['last_name'],
-                        'dob' => $data['dob'],
-                        'gender' => $data['gender'] ?? null,
+                        'first_name'  => $data['first_name'],
+                        'last_name'   => $data['last_name'],
+                        'dob'         => $data['dob'],
+                        'gender'      => $data['gender'] ?? null,
+                        'id_type'     => $data['id_type'] ?? null,
+                        'national_id' => $data['national_id'] ?? null,
+                        'passport'    => $data['passport'] ?? null,
                     ];
                     $guardianMeta = ['relationship' => $data['relationship'] ?? 'guardian'];
                     $result = $this->enrollmentService->enrollByParent($user, $studentData, $courseIds, $termId, $guardianMeta);
@@ -227,10 +231,13 @@ class CourseRegistrationController extends PublicRegistrationController
                 }
             } else {
                 $studentData = [
-                    'first_name' => $data['first_name'],
-                    'last_name' => $data['last_name'],
-                    'dob' => $data['dob'],
-                    'gender' => $data['gender'] ?? null,
+                    'first_name'  => $data['first_name'],
+                    'last_name'   => $data['last_name'],
+                    'dob'         => $data['dob'],
+                    'gender'      => $data['gender'] ?? null,
+                    'id_type'     => $data['id_type'] ?? null,
+                    'national_id' => $data['national_id'] ?? null,
+                    'passport'    => $data['passport'] ?? null,
                 ];
                 $result = $this->enrollmentService->enrollAdultSelf($user, $studentData, $courseIds, $termId);
             }
