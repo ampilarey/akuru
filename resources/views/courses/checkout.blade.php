@@ -25,7 +25,7 @@
             </div>
         </div>
 
-        <div class="card p-6" x-data="checkoutStart()">
+        <div class="card p-6" x-data="checkoutStart()" x-cloak>
 
             @if($errors->any())
                 <div class="mb-4 p-3 bg-red-100 text-red-800 rounded text-sm">{{ $errors->first() }}</div>
@@ -126,38 +126,70 @@
             </div>
 
             {{-- ── RETURNING USER (LOGIN) TAB ── --}}
-            <div x-show="tab === 'login'" x-cloak>
-                <p class="text-sm text-gray-600 mb-5">
-                    Log in with your mobile number or email and password.
-                </p>
+            <div x-show="tab === 'login'">
 
-                <form method="POST" action="{{ route('courses.checkout.login', $course) }}">
-                    @csrf
+                {{-- Password login --}}
+                <div x-show="!otpLogin">
+                    <p class="text-sm text-gray-600 mb-5">
+                        Log in with your mobile number or email and password.
+                    </p>
 
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Mobile or email <span class="text-red-500">*</span></label>
-                        <input type="text" name="login_contact" value="{{ old('login_contact') }}"
-                               placeholder="7654321 or you@example.com" autocomplete="username"
-                               class="w-full rounded-md border-gray-300 shadow-sm focus:border-brandMaroon-500 focus:ring-brandMaroon-500">
-                    </div>
+                    <form method="POST" action="{{ route('courses.checkout.login', $course) }}">
+                        @csrf
 
-                    <div class="mb-5">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Password <span class="text-red-500">*</span></label>
-                        <input type="password" name="password" autocomplete="current-password"
-                               class="w-full rounded-md border-gray-300 shadow-sm focus:border-brandMaroon-500 focus:ring-brandMaroon-500">
-                    </div>
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Mobile or email <span class="text-red-500">*</span></label>
+                            <input type="text" name="login_contact" value="{{ old('login_contact') }}"
+                                   placeholder="7654321 or you@example.com" autocomplete="username"
+                                   class="w-full rounded-md border-gray-300 shadow-sm focus:border-brandMaroon-500 focus:ring-brandMaroon-500">
+                        </div>
 
-                    <button type="submit" class="btn-primary w-full py-3">
-                        Log in &amp; continue
-                    </button>
+                        <div class="mb-5">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Password <span class="text-red-500">*</span></label>
+                            <input type="password" name="password" autocomplete="current-password"
+                                   class="w-full rounded-md border-gray-300 shadow-sm focus:border-brandMaroon-500 focus:ring-brandMaroon-500">
+                        </div>
+
+                        <button type="submit" class="btn-primary w-full py-3">
+                            Log in &amp; continue
+                        </button>
+
+                        <p class="text-center text-sm text-gray-500 mt-4">
+                            <a href="{{ route('password.otp.request') }}" class="text-brandMaroon-600 hover:underline">Forgot password?</a>
+                            &nbsp;·&nbsp;
+                            <a href="#" @click.prevent="otpLogin = true" class="text-brandMaroon-600 hover:underline">Use OTP instead</a>
+                        </p>
+                    </form>
+                </div>
+
+                {{-- OTP login fallback --}}
+                <div x-show="otpLogin">
+                    <p class="text-sm text-gray-600 mb-5">
+                        Enter your registered mobile number or email — we'll send you a verification code to log in.
+                    </p>
+
+                    <form method="POST" action="{{ route('courses.register.start') }}">
+                        @csrf
+                        <input type="hidden" name="course_id" value="{{ $course->id }}">
+                        {{-- flow_type omitted — continueForm() will derive it from existing profile --}}
+
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Mobile or email <span class="text-red-500">*</span></label>
+                            <input type="text" name="contact_value" value="{{ old('contact_value') }}"
+                                   placeholder="7654321 or you@example.com" autocomplete="username"
+                                   class="w-full rounded-md border-gray-300 shadow-sm focus:border-brandMaroon-500 focus:ring-brandMaroon-500">
+                            {{-- Determine type from value --}}
+                            <input type="hidden" name="contact_type" id="otp_contact_type" value="mobile">
+                        </div>
+
+                        <button type="submit" class="btn-primary w-full py-3">Send verification code</button>
+                    </form>
 
                     <p class="text-center text-sm text-gray-500 mt-4">
-                        Don't remember your password?
-                        <a href="{{ route('password.otp.request') }}" class="text-brandMaroon-600 hover:underline">Reset it</a>
-                        or
-                        <a href="#" @click.prevent="tab = 'new'; useOtp = true" class="text-brandMaroon-600 hover:underline">use OTP instead</a>
+                        <a href="#" @click.prevent="otpLogin = false" class="text-brandMaroon-600 hover:underline">← Back to password login</a>
                     </p>
-                </form>
+                </div>
+
             </div>
 
         </div>
@@ -169,7 +201,19 @@ function checkoutStart() {
     return {
         tab: '{{ $errors->has("login_contact") || $errors->has("password") ? "login" : "new" }}',
         flowType: '{{ old("flow_type", "") }}',
+        otpLogin: false,
     }
 }
+
+// Auto-set the hidden contact_type field based on whether the value looks like an email
+document.addEventListener('DOMContentLoaded', function () {
+    const field = document.querySelector('[name="contact_value"]');
+    const typeField = document.getElementById('otp_contact_type');
+    if (field && typeField) {
+        field.addEventListener('input', function () {
+            typeField.value = this.value.includes('@') ? 'email' : 'mobile';
+        });
+    }
+});
 </script>
 @endsection
