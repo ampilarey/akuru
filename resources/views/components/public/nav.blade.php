@@ -48,8 +48,37 @@
     <!-- Right Side: Translate + User + Hamburger -->
     <div class="flex items-center gap-2">
 
-      {{-- ── Google Translate (always visible, inline) ── --}}
-      <div id="google_translate_element" class="gt-nav-widget"></div>
+      {{-- ── Translate: custom dropdown, GT widget hidden ── --}}
+      <div class="relative" id="gt-wrapper">
+        <button onclick="toggleGT(event)" aria-label="Translate"
+                class="flex items-center gap-1 px-2 py-1.5 rounded-lg text-sm text-brandGray-600 hover:text-brandMaroon-600 hover:bg-brandBeige-100 border border-gray-200 transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"/>
+          </svg>
+          <span class="hidden sm:inline text-xs font-medium">Translate</span>
+        </button>
+        <div id="gt-dropdown"
+             class="hidden absolute right-0 top-full mt-1 z-50 bg-white rounded-xl shadow-xl border border-gray-200 py-1 min-w-36">
+          @foreach([
+            ['code'=>'en',    'label'=>'🇬🇧 English'],
+            ['code'=>'dv',    'label'=>'🇲🇻 ދިވެހި'],
+            ['code'=>'ar',    'label'=>'🇸🇦 العربية'],
+            ['code'=>'ur',    'label'=>'🇵🇰 اردو'],
+            ['code'=>'hi',    'label'=>'🇮🇳 हिन्दी'],
+            ['code'=>'ms',    'label'=>'🇲🇾 Melayu'],
+            ['code'=>'fr',    'label'=>'🇫🇷 Français'],
+            ['code'=>'de',    'label'=>'🇩🇪 Deutsch'],
+          ] as $lang)
+          <button onclick="translateTo('{{ $lang['code'] }}')"
+                  class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-brandBeige-50 hover:text-brandMaroon-700 transition-colors">
+            {{ $lang['label'] }}
+          </button>
+          @endforeach
+        </div>
+      </div>
+      {{-- Hidden GT init element --}}
+      <div id="google_translate_element" class="hidden"></div>
 
       {{-- ── User menu (desktop, md+) ── --}}
       <div class="hidden md:block">
@@ -192,44 +221,68 @@
 function googleTranslateElementInit() {
   new google.translate.TranslateElement({
     pageLanguage: 'en',
-    layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
     autoDisplay: false
   }, 'google_translate_element');
+}
+
+// Trigger translation by programmatically setting the hidden GT select
+function translateTo(lang) {
+  // Close dropdown
+  document.getElementById('gt-dropdown')?.classList.add('hidden');
+
+  if (lang === 'en') {
+    // Restore original — GT uses a cookie; navigate to /en removes it
+    var frame = document.querySelector('.goog-te-banner-frame');
+    if (frame) {
+      var restore = frame.contentDocument?.querySelector('.goog-te-button button');
+      if (restore) { restore.click(); return; }
+    }
+    // Fallback: reload with no-translate cookie cleared
+    window.location = window.location.pathname +
+      window.location.search.replace(/[?&]_x_tr_sl=[^&]*/,'');
+    return;
+  }
+
+  var tries = 0;
+  function attempt() {
+    var sel = document.querySelector('.goog-te-combo');
+    if (!sel && tries++ < 20) { setTimeout(attempt, 300); return; }
+    if (!sel) return;
+    sel.value = lang;
+    sel.dispatchEvent(new Event('change'));
+  }
+  attempt();
+}
+
+// Toggle custom translate dropdown
+function toggleGT(e) {
+  e.stopPropagation();
+  document.getElementById('gt-dropdown')?.classList.toggle('hidden');
+  document.getElementById('user-menu-dropdown')?.classList.add('hidden');
 }
 
 // ── User dropdown ─────────────────────────────────────────────────
 function toggleUserMenu() {
   document.getElementById('user-menu-dropdown')?.classList.toggle('hidden');
+  document.getElementById('gt-dropdown')?.classList.add('hidden');
 }
 
+// Close dropdowns on outside click
 document.addEventListener('click', function(e) {
-  if (!document.getElementById('user-menu-wrapper')?.contains(e.target)) {
+  if (!document.getElementById('gt-wrapper')?.contains(e.target))
+    document.getElementById('gt-dropdown')?.classList.add('hidden');
+  if (!document.getElementById('user-menu-wrapper')?.contains(e.target))
     document.getElementById('user-menu-dropdown')?.classList.add('hidden');
-  }
 });
 
-// ── Suppress Google Translate injected banner ─────────────────────
+// ── Suppress GT banner bar ────────────────────────────────────────
 (function() {
   const s = document.createElement('style');
   s.textContent = `
     body { top: 0 !important; }
-    .goog-te-banner-frame, .goog-te-balloon-frame { display: none !important; }
-    .skiptranslate > iframe { display: none !important; }
-    /* Style the GT select to look like a nav button */
-    .gt-nav-widget .goog-te-gadget { font-size: 0 !important; }
-    .gt-nav-widget .goog-te-gadget select {
-      font-size: 12px !important;
-      font-family: inherit !important;
-      color: #4b5563 !important;
-      background: #fff !important;
-      border: 1px solid #e5e7eb !important;
-      border-radius: 6px !important;
-      padding: 5px 8px !important;
-      cursor: pointer !important;
-      max-width: 130px !important;
-      outline: none !important;
-    }
-    .gt-nav-widget .goog-te-gadget select:hover { border-color: #9b1c1c !important; }
+    .goog-te-banner-frame { display: none !important; }
+    .skiptranslate { display: none !important; }
+    #google_translate_element { display: none !important; }
   `;
   document.head.appendChild(s);
 })();
