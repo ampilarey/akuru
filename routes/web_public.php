@@ -110,6 +110,14 @@ Route::get("payments/ref/{merchant_reference}/status", [\App\Http\Controllers\Pa
 Route::post("payments/bml/initiate", [\App\Http\Controllers\PaymentController::class, "initiate"])
     ->name("payments.bml.initiate");
 
+// Account management (auth required)
+Route::middleware('auth')->group(function () {
+    Route::get('account/set-password', [\App\Http\Controllers\AccountController::class, 'setPasswordForm'])
+        ->name('account.set-password');
+    Route::post('account/set-password', [\App\Http\Controllers\AccountController::class, 'setPassword'])
+        ->name('account.set-password.store');
+});
+
 Route::get("admissions", [AdmissionController::class, "create"])->name("public.admissions.create");
 Route::post("admissions", [AdmissionController::class, "store"])->name("public.admissions.store");
 Route::get("admissions/thanks", [AdmissionController::class, "thanks"])->name("public.admissions.thanks");

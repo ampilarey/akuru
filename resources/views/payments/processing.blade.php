@@ -7,9 +7,34 @@
     <div class="container mx-auto px-4 max-w-md text-center">
         <div class="card p-8">
             <div id="payment-success" class="hidden">
-                <p class="text-green-600 font-semibold text-lg mb-2">Payment successful</p>
-                <p class="text-gray-600 mb-4">Your registration has been confirmed.</p>
-                <a href="{{ route('courses.register.complete') }}" class="inline-block bg-brandMaroon-600 text-white py-2 px-6 rounded-lg hover:bg-brandMaroon-700">Continue</a>
+                <div class="w-14 h-14 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg class="w-7 h-7 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                    </svg>
+                </div>
+                <p class="text-green-600 font-semibold text-lg mb-1">Payment successful</p>
+                <p class="text-gray-600 mb-5">Your registration has been confirmed.</p>
+
+                @auth
+                    @if(! auth()->user()->password)
+                    <div class="mb-5 p-4 bg-brandMaroon-50 border border-brandMaroon-200 rounded-lg text-left">
+                        <p class="text-sm font-semibold text-brandMaroon-800 mb-1">Save time next time</p>
+                        <p class="text-sm text-brandMaroon-700 mb-3">Create a password so you can log in directly without needing an OTP code.</p>
+                        <a href="{{ route('account.set-password') }}"
+                           class="inline-block bg-brandMaroon-600 text-white text-sm py-2 px-4 rounded hover:bg-brandMaroon-700">
+                            Set password
+                        </a>
+                        <a href="{{ route('courses.register.complete') }}"
+                           class="inline-block ml-3 text-sm text-gray-500 hover:underline">
+                            Skip
+                        </a>
+                    </div>
+                    @else
+                        <a href="{{ route('courses.register.complete') }}" class="inline-block bg-brandMaroon-600 text-white py-2 px-6 rounded-lg hover:bg-brandMaroon-700">Continue</a>
+                    @endif
+                @else
+                    <a href="{{ route('courses.register.complete') }}" class="inline-block bg-brandMaroon-600 text-white py-2 px-6 rounded-lg hover:bg-brandMaroon-700">Continue</a>
+                @endauth
             </div>
             <div id="payment-pending">
                 <p class="text-brandMaroon-700 font-semibold mb-2">Payment processing</p>
