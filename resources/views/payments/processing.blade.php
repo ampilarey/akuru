@@ -13,7 +13,8 @@
                     </svg>
                 </div>
                 <p class="text-green-600 font-semibold text-lg mb-1">Payment successful</p>
-                <p class="text-gray-600 mb-5">Your registration has been confirmed.</p>
+                <p class="text-gray-600 mb-3">Your registration has been confirmed.</p>
+                <p class="text-xs text-gray-500 mb-4">Please retain a copy of your receipt for your records.</p>
 
                 @auth
                     @if(! auth()->user()->password)
@@ -45,6 +46,8 @@
                 <p class="text-gray-600">If your payment was completed, your registration will be confirmed shortly. You can close this page and return later.</p>
                 <a href="{{ route('public.home') }}" class="inline-block mt-4 text-brandMaroon-600 hover:underline">Return to home</a>
             </div>
+
+            <x-payment-trust-bar />
         </div>
     </div>
 </section>

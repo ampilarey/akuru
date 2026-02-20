@@ -112,7 +112,13 @@
                 </div>
             </div>
 
-            <p class="text-xs text-gray-400 mt-6 text-center">
+            {{-- Req #11: retain a copy --}}
+            <div class="mt-6 p-3 bg-blue-50 border border-blue-100 rounded text-xs text-blue-700">
+                <strong>Please retain a copy of this receipt</strong> for your records.
+                You can print or save this page as a PDF using the button above.
+            </div>
+
+            <p class="text-xs text-gray-400 mt-4 text-center">
                 Thank you for enrolling with Akuru Institute. For questions: info@akuru.edu.mv
             </p>
         </div>

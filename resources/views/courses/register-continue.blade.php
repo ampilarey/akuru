@@ -196,8 +196,11 @@
                                    class="mt-0.5 h-4 w-4 rounded border-gray-300 text-brandMaroon-600 focus:ring-brandMaroon-500 shrink-0">
                             <span class="text-sm text-gray-700">
                                 I have read and agree to the
-                                <a href="{{ route('public.home') }}#terms" target="_blank"
+                                <a href="{{ route('public.page.show', 'terms') }}" target="_blank"
                                    class="text-brandMaroon-600 hover:underline font-medium">terms and conditions</a>
+                                and
+                                <a href="{{ route('public.page.show', 'refund-policy') }}" target="_blank"
+                                   class="text-brandMaroon-600 hover:underline font-medium">refund policy</a>
                                 of Akuru Institute. I understand that enrollment fees are non-refundable unless the course is cancelled.
                             </span>
                         </label>
@@ -207,6 +210,8 @@
                     </div>
 
                     <button type="submit" class="btn-primary w-full py-3 mt-4">Complete enrollment</button>
+
+                    <x-payment-trust-bar />
                 </form>
             </div>
         </div>
