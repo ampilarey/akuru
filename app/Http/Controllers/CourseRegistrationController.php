@@ -346,6 +346,9 @@ class CourseRegistrationController extends PublicRegistrationController
             return back()->withErrors(['payment' => $paymentError])->withInput();
         }
 
+        // Notify admins about the free enrollment
+        $this->notifyAdminFreeEnrollment($user, $result->allEnrollments());
+
         $this->clearPendingSession();
         return redirect()->route('courses.register.complete')->with('enrollments', $result->allEnrollments());
     }
@@ -551,5 +554,24 @@ class CourseRegistrationController extends PublicRegistrationController
             'pending_selected_course_ids', 'pending_term_id', 'pending_flow',
             'pending_payment_ref', 'enrollments',
         ]);
+    }
+
+    protected function notifyAdminFreeEnrollment(\App\Models\User $user, $enrollments): void
+    {
+        $adminEmail = config('mail.admin_notification_address')
+            ?? config('mail.from.address');
+
+        if (! $adminEmail) {
+            return;
+        }
+
+        foreach (collect($enrollments)->filter() as $enrollment) {
+            try {
+                \Illuminate\Support\Facades\Mail::to($adminEmail)
+                    ->queue(new \App\Mail\AdminFreeEnrollmentMail($user, $enrollment));
+            } catch (\Throwable) {
+                // non-critical
+            }
+        }
     }
 }

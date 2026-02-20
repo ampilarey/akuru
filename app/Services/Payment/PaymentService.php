@@ -238,6 +238,26 @@ class PaymentService
         $payment->loadMissing(['user', 'items.course', 'items.enrollment', 'student']);
         $this->sendConfirmationEmailNotification($payment);
         $this->sendConfirmationSms($payment);
+        $this->sendAdminNewEnrollmentNotification($payment);
+    }
+
+    private function sendAdminNewEnrollmentNotification(Payment $payment): void
+    {
+        $adminEmail = config('mail.admin_notification_address')
+            ?? config('mail.from.address');
+
+        if (! $adminEmail) {
+            return;
+        }
+
+        try {
+            Mail::to($adminEmail)->queue(new \App\Mail\AdminNewEnrollmentMail($payment));
+        } catch (\Throwable $e) {
+            Log::warning('AdminNewEnrollmentMail: failed to queue', [
+                'payment_id' => $payment->id,
+                'error'      => $e->getMessage(),
+            ]);
+        }
     }
 
     private function sendConfirmationEmailNotification(Payment $payment): void

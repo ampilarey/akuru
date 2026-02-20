@@ -115,4 +115,10 @@ return [
         'name' => env('MAIL_FROM_NAME', 'Example'),
     ],
 
+    /*
+     * Address that receives admin notifications (new enrollments, etc.).
+     * Falls back to MAIL_FROM_ADDRESS if not set.
+     */
+    'admin_notification_address' => env('ADMIN_NOTIFICATION_EMAIL'),
+
 ];
