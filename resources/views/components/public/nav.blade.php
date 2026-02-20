@@ -317,16 +317,20 @@ function translateTo(lang) {
   // Apply font class (no layout/direction change)
   var html = document.documentElement;
   html.classList.remove('gt-lang-ar', 'gt-lang-dv');
-  var fontUrls = {
-    ar: 'https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&display=swap',
-    dv: null  // Faruma / MV Boli are system fonts — no external load needed
+  var fontMeta = {
+    ar: { url: 'https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&display=swap', stack: "'Cairo','Noto Sans Arabic',Arial,sans-serif" },
+    dv: { url: null, stack: "'Faruma','MV Boli',sans-serif" }
   };
-  if (fontUrls[lang] !== undefined) {
+  if (fontMeta[lang]) {
     html.classList.add('gt-lang-' + lang);
-    if (fontUrls[lang] && !document.querySelector('link[href="' + fontUrls[lang] + '"]')) {
-      var link = document.createElement('link'); link.rel = 'stylesheet'; link.href = fontUrls[lang];
+    // Force font on body so GT-injected elements inherit it
+    document.body.style.setProperty('font-family', fontMeta[lang].stack, 'important');
+    if (fontMeta[lang].url && !document.querySelector('link[href="' + fontMeta[lang].url + '"]')) {
+      var link = document.createElement('link'); link.rel = 'stylesheet'; link.href = fontMeta[lang].url;
       document.head.appendChild(link);
     }
+  } else {
+    document.body.style.removeProperty('font-family');
   }
 
   var tries = 0;

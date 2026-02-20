@@ -60,12 +60,21 @@
         font-family: 'Faruma';
         src: url('{{ asset('fonts/Faruma.woff2') }}') format('woff2'),
              url('{{ asset('fonts/Faruma.woff') }}') format('woff');
-        font-weight: normal;
+        font-weight: 100 900;
         font-style: normal;
         font-display: swap;
+        unicode-range: U+0780-U+07BF; /* Thaana block */
       }
-      .gt-lang-ar * { font-family: 'Cairo', 'Noto Sans Arabic', Arial, sans-serif !important; letter-spacing: 0 !important; }
-      .gt-lang-dv * { font-family: 'Faruma', 'MV Boli', sans-serif !important; letter-spacing: 0 !important; }
+      /* Arabic font */
+      .gt-lang-ar, .gt-lang-ar body, .gt-lang-ar * {
+        font-family: 'Cairo', 'Noto Sans Arabic', Arial, sans-serif !important;
+        letter-spacing: 0 !important;
+      }
+      /* Dhivehi font — target everything including GT-injected <font> tags */
+      .gt-lang-dv, .gt-lang-dv body, .gt-lang-dv * {
+        font-family: 'Faruma', 'MV Boli', sans-serif !important;
+        letter-spacing: 0 !important;
+      }
     </style>
 
     <!-- Favicon -->
