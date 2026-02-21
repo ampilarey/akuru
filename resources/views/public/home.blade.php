@@ -104,24 +104,24 @@
      2. STATS STRIP
 ══════════════════════════════════════════════════════════════ --}}
 @if(isset($stats) && ($stats['courses'] > 0 || $stats['students'] > 0))
-<section class="py-8 bg-white border-b border-gray-100 shadow-sm">
+<section class="py-8 bg-brandMaroon-800 border-b border-brandMaroon-700">
     <div class="container mx-auto px-4">
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-6 text-center">
             <div>
-                <div class="text-3xl sm:text-4xl font-bold text-brandMaroon-600">{{ number_format($stats['students']) }}+</div>
-                <div class="text-gray-500 text-sm mt-0.5">Students Enrolled</div>
+                <div class="text-3xl sm:text-4xl font-bold text-white">{{ number_format($stats['students']) }}+</div>
+                <div class="text-white/60 text-sm mt-0.5">Students Enrolled</div>
             </div>
             <div>
-                <div class="text-3xl sm:text-4xl font-bold text-brandMaroon-600">{{ $stats['courses'] }}</div>
-                <div class="text-gray-500 text-sm mt-0.5">Courses Offered</div>
+                <div class="text-3xl sm:text-4xl font-bold text-white">{{ $stats['courses'] }}</div>
+                <div class="text-white/60 text-sm mt-0.5">Courses Offered</div>
             </div>
             <div>
-                <div class="text-3xl sm:text-4xl font-bold text-brandGold-600">5+</div>
-                <div class="text-gray-500 text-sm mt-0.5">Years of Service</div>
+                <div class="text-3xl sm:text-4xl font-bold text-brandGold-400">5+</div>
+                <div class="text-white/60 text-sm mt-0.5">Years of Service</div>
             </div>
             <div>
-                <div class="text-3xl sm:text-4xl font-bold text-brandGold-600">{{ $stats['teachers'] ?? 10 }}+</div>
-                <div class="text-gray-500 text-sm mt-0.5">Qualified Teachers</div>
+                <div class="text-3xl sm:text-4xl font-bold text-brandGold-400">{{ $stats['teachers'] ?? 10 }}+</div>
+                <div class="text-white/60 text-sm mt-0.5">Qualified Teachers</div>
             </div>
         </div>
     </div>
@@ -131,7 +131,7 @@
 {{-- ══════════════════════════════════════════════════════════════
      3. OPEN COURSES
 ══════════════════════════════════════════════════════════════ --}}
-<section class="py-14 sm:py-20 bg-brandBeige-200">
+<section class="py-14 sm:py-20 bg-brandBeige-300">
     <div class="container mx-auto px-4">
         <div class="flex flex-col sm:flex-row sm:items-end justify-between mb-10 gap-4">
             <div>
@@ -210,29 +210,29 @@
 {{-- ══════════════════════════════════════════════════════════════
      4. WHY AKURU
 ══════════════════════════════════════════════════════════════ --}}
-<section class="py-14 sm:py-20 bg-white">
+<section class="py-14 sm:py-20 bg-brandMaroon-900">
     <div class="container mx-auto px-4">
         <div class="text-center mb-12">
-            <span class="text-brandMaroon-600 font-bold text-xs uppercase tracking-widest">Why choose us</span>
-            <h2 class="text-3xl sm:text-4xl font-bold text-gray-900 mt-1">Why Akuru Institute?</h2>
-            <p class="text-gray-500 mt-2 max-w-xl mx-auto">Trusted by hundreds of Maldivian families for authentic, structured Islamic education.</p>
+            <span class="text-brandGold-400 font-bold text-xs uppercase tracking-widest">Why choose us</span>
+            <h2 class="text-3xl sm:text-4xl font-bold text-white mt-1">Why Akuru Institute?</h2>
+            <p class="text-white/60 mt-2 max-w-xl mx-auto">Trusted by hundreds of Maldivian families for authentic, structured Islamic education.</p>
         </div>
         <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 max-w-5xl mx-auto">
             @foreach([
-                ['icon'=>'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z', 'title'=>'Qualified Instructors', 'desc'=>'All teachers hold recognised Islamic education qualifications with years of teaching experience.', 'color'=>'bg-brandMaroon-100 text-brandMaroon-700'],
-                ['icon'=>'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253', 'title'=>'Structured Curriculum', 'desc'=>'Well-planned programmes for Quran, Arabic, and Islamic Studies from beginner to advanced.', 'color'=>'bg-brandGold-100 text-brandGold-700'],
-                ['icon'=>'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z', 'title'=>'Flexible Schedules', 'desc'=>'Morning, evening, and weekend classes designed to fit around school, work, and family.', 'color'=>'bg-brandMaroon-100 text-brandMaroon-700'],
-                ['icon'=>'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z', 'title'=>'All Ages Welcome', 'desc'=>'Dedicated programmes for children, teenagers, and adults — everyone learns at the right pace.', 'color'=>'bg-brandGold-100 text-brandGold-700'],
-                ['icon'=>'M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z', 'title'=>'Affordable Fees', 'desc'=>'Quality Islamic education should be accessible to all. Our fees are fair and transparent.', 'color'=>'bg-brandMaroon-100 text-brandMaroon-700'],
-                ['icon'=>'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4', 'title'=>'Recognised Certificates', 'desc'=>'Earn certificates upon completion that recognise your achievement and dedication.', 'color'=>'bg-brandGold-100 text-brandGold-700'],
+                ['icon'=>'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z', 'title'=>'Qualified Instructors', 'desc'=>'All teachers hold recognised Islamic education qualifications with years of teaching experience.', 'color'=>'bg-brandMaroon-700 text-brandGold-400'],
+                ['icon'=>'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253', 'title'=>'Structured Curriculum', 'desc'=>'Well-planned programmes for Quran, Arabic, and Islamic Studies from beginner to advanced.', 'color'=>'bg-brandGold-600 text-white'],
+                ['icon'=>'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z', 'title'=>'Flexible Schedules', 'desc'=>'Morning, evening, and weekend classes designed to fit around school, work, and family.', 'color'=>'bg-brandMaroon-700 text-brandGold-400'],
+                ['icon'=>'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z', 'title'=>'All Ages Welcome', 'desc'=>'Dedicated programmes for children, teenagers, and adults — everyone learns at the right pace.', 'color'=>'bg-brandGold-600 text-white'],
+                ['icon'=>'M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z', 'title'=>'Affordable Fees', 'desc'=>'Quality Islamic education should be accessible to all. Our fees are fair and transparent.', 'color'=>'bg-brandMaroon-700 text-brandGold-400'],
+                ['icon'=>'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4', 'title'=>'Recognised Certificates', 'desc'=>'Earn certificates upon completion that recognise your achievement and dedication.', 'color'=>'bg-brandGold-600 text-white'],
             ] as $f)
-            <div class="flex gap-4 p-5 rounded-xl border border-gray-100 hover:border-brandMaroon-200 hover:shadow-sm transition-all">
+            <div class="flex gap-4 p-5 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-brandGold-500/40 transition-all">
                 <div class="w-11 h-11 {{ $f['color'] }} rounded-lg flex items-center justify-center shrink-0">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $f['icon'] }}"/></svg>
                 </div>
                 <div>
-                    <h3 class="font-bold text-gray-900 mb-1 text-sm">{{ $f['title'] }}</h3>
-                    <p class="text-xs text-gray-500 leading-relaxed">{{ $f['desc'] }}</p>
+                    <h3 class="font-bold text-white mb-1 text-sm">{{ $f['title'] }}</h3>
+                    <p class="text-xs text-white/60 leading-relaxed">{{ $f['desc'] }}</p>
                 </div>
             </div>
             @endforeach
@@ -306,7 +306,7 @@
      6. TESTIMONIALS CAROUSEL
 ══════════════════════════════════════════════════════════════ --}}
 @if(isset($testimonials) && $testimonials->isNotEmpty())
-<section class="py-14 sm:py-20 bg-white" x-data="{
+<section class="py-14 sm:py-20 bg-brandGold-100" x-data="{
     current: 0,
     total: {{ $testimonials->count() }},
     timer: null,
@@ -315,7 +315,7 @@
 }" x-init="start()">
     <div class="container mx-auto px-4">
         <div class="text-center mb-10">
-            <span class="text-brandMaroon-600 font-bold text-xs uppercase tracking-widest">Student voices</span>
+            <span class="text-brandMaroon-700 font-bold text-xs uppercase tracking-widest">Student voices</span>
             <h2 class="text-3xl sm:text-4xl font-bold text-gray-900 mt-1">What Our Students Say</h2>
         </div>
 
@@ -325,7 +325,7 @@
                  x-transition:enter="transition duration-500"
                  x-transition:enter-start="opacity-0 scale-95"
                  x-transition:enter-end="opacity-100 scale-100"
-                 class="bg-brandBeige-200 border border-brandBeige-300 rounded-2xl p-8 text-center relative">
+                 class="bg-white border border-brandGold-200 shadow-md rounded-2xl p-8 text-center relative">
                 <div class="text-brandGold-400 text-6xl font-serif absolute -top-2 left-6 leading-none opacity-30">"</div>
                 <p class="text-gray-700 text-lg leading-relaxed mb-6 relative">"{{ $t->quote }}"</p>
                 <div class="flex items-center justify-center gap-3">
@@ -356,7 +356,7 @@
 {{-- ══════════════════════════════════════════════════════════════
      7. NEWS & EVENTS
 ══════════════════════════════════════════════════════════════ --}}
-<section class="py-14 bg-brandBeige-200 border-t border-brandBeige-300">
+<section class="py-14 bg-white border-t border-gray-100">
     <div class="container mx-auto px-4">
         <div class="grid lg:grid-cols-2 gap-12">
             {{-- News --}}
@@ -424,7 +424,7 @@
     $upcomingCourses = $courses->filter(fn($c)=>is_object($c)&&method_exists($c,'getAttribute')&&in_array($c->status??'',['open','upcoming'])&&!empty($c->start_date));
 @endphp
 @if($upcomingCourses->count() > 0)
-<section class="py-10 bg-brandGold-50 border-t border-brandGold-200">
+<section class="py-10 bg-brandGold-200 border-t border-brandGold-300">
     <div class="container mx-auto px-4">
         <div class="flex items-center justify-between mb-5">
             <h2 class="text-lg font-bold text-gray-900">📅 Upcoming Intakes</h2>
@@ -455,7 +455,7 @@
      9. EDUCATIONAL ARTICLES
 ══════════════════════════════════════════════════════════════ --}}
 @if(isset($articles) && $articles->count() > 0)
-<section class="py-14 bg-white border-t border-gray-100">
+<section class="py-14 bg-brandBeige-300 border-t border-brandBeige-400">
     <div class="container mx-auto px-4">
         <div class="flex items-center justify-between mb-8">
             <div>
