@@ -11,14 +11,10 @@
         <div class="text-center">
             <h1 class="text-3xl sm:text-4xl md:text-6xl font-bold mb-4 sm:mb-6 leading-tight drop-shadow-lg">{{ $text['title'] ?? __('public.Welcome to Akuru Institute') }}</h1>
             <p class="text-lg sm:text-xl md:text-2xl mb-6 sm:mb-8 max-w-3xl mx-auto leading-relaxed drop-shadow-md text-white/90">{{ $text['desc'] ?? __('public.Learn Quran, Arabic, and Islamic Studies in the Maldives') }}</p>
-            <div class="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center">
+            <div class="flex justify-center">
                 <a href="{{ route('public.courses.index') }}"
-                   class="w-full sm:w-auto bg-brandGold-600 text-brandMaroon-900 px-6 sm:px-8 py-3 rounded-lg font-bold hover:bg-brandGold-500 transition-colors text-center text-base sm:text-lg shadow-lg">
+                   class="bg-brandGold-600 text-brandMaroon-900 px-8 py-3 rounded-lg font-bold hover:bg-brandGold-500 transition-colors text-center text-base sm:text-lg shadow-lg">
                     {{ __('public.Enroll Now') }}
-                </a>
-                <a href="{{ route('public.courses.index') }}"
-                   class="w-full sm:w-auto border-2 border-brandGold-600 text-brandGold-600 bg-white/10 backdrop-blur-sm px-6 sm:px-8 py-3 rounded-lg font-semibold hover:bg-brandGold-600 hover:text-brandMaroon-900 transition-colors text-center text-base sm:text-lg">
-                    {{ __('public.View Courses') }}
                 </a>
             </div>
         </div>
