@@ -31,52 +31,111 @@
 
             <!-- Gallery Items -->
             @if(isset($items) && $items->count() > 0)
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                @foreach($items as $item)
-                <div class="group cursor-pointer" onclick="openModal('{{ Storage::url($item->file_path) }}', '{{ addslashes($item->title ?? '') }}', '{{ addslashes($item->caption ?? $item->description ?? '') }}')">
-                    <div class="relative overflow-hidden rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300">
-                        @if($item->file_type === 'image')
-                        <x-public.picture
-                            :src="$item->file_path"
-                            :alt="$item->title ?? ''"
-                            class="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
-                            loading="lazy"
-                        />
-                        @elseif($item->file_type === 'video')
-                        <div class="w-full h-48 bg-brandGray-200 flex items-center justify-center">
-                            <svg class="w-12 h-12 text-brandGray-400" fill="currentColor" viewBox="0 0 20 20">
-                                <path d="M8 5v10l8-5-8-5z"></path>
-                            </svg>
-                        </div>
-                        @else
-                        <div class="w-full h-48 bg-brandGray-200 flex items-center justify-center">
-                            <svg class="w-12 h-12 text-brandGray-400" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd"></path>
-                            </svg>
-                        </div>
-                        @endif
-                        
-                        <!-- Overlay -->
-                        <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all duration-300 flex items-center justify-center">
-                            <svg class="w-8 h-8 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"></path>
-                            </svg>
-                        </div>
+            @php $imageItems = $items->filter(fn($i) => $i->file_type === 'image')->values(); @endphp
+            <div class="columns-2 sm:columns-3 lg:columns-4 gap-3 space-y-3">
+                @foreach($items as $idx => $item)
+                @php $lightboxIdx = $imageItems->search(fn($i) => $i->id === $item->id); @endphp
+                <div class="group break-inside-avoid cursor-pointer rounded-xl overflow-hidden relative shadow-sm hover:shadow-xl transition-all duration-300"
+                     @if($item->file_type === 'image') onclick="openLightbox({{ $lightboxIdx !== false ? $lightboxIdx : 0 }})" @endif>
+                    @if($item->file_type === 'image')
+                    <x-public.picture
+                        :src="$item->file_path"
+                        :alt="$item->title ?? ''"
+                        class="w-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        loading="lazy"
+                    />
+                    {{-- Hover overlay --}}
+                    <div class="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all duration-300 flex items-center justify-center">
+                        <svg class="w-10 h-10 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300 drop-shadow-lg" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"/>
+                        </svg>
                     </div>
-                    
-                    @if($item->title)
-                    <h3 class="mt-2 text-sm font-medium text-brandGray-900 truncate">
-                        {{ $item->title }}
-                    </h3>
+                    @elseif($item->file_type === 'video')
+                    <div class="w-full h-48 bg-gray-200 flex flex-col items-center justify-center gap-2">
+                        <svg class="w-12 h-12 text-gray-400" fill="currentColor" viewBox="0 0 20 20"><path d="M8 5v10l8-5-8-5z"/></svg>
+                        @if($item->title)<p class="text-xs text-gray-500 px-3 text-center">{{ $item->title }}</p>@endif
+                    </div>
                     @endif
                 </div>
                 @endforeach
             </div>
             @if($items->hasPages())
-            <div class="mt-8 flex justify-center">
-                {{ $items->links() }}
-            </div>
+            <div class="mt-8 flex justify-center">{{ $items->links() }}</div>
             @endif
+
+            {{-- ─── LIGHTBOX ─────────────────────────────────────────────── --}}
+            @php
+                $lbImages = $imageItems->map(fn($i) => [
+                    'src'     => Storage::url($i->file_path),
+                    'title'   => $i->title ?? '',
+                    'caption' => $i->caption ?? $i->description ?? '',
+                ])->values();
+            @endphp
+            <script>
+            const _lbImages = @json($lbImages);
+            let _lbCurrent = 0, _lbStartX = null;
+
+            function openLightbox(idx) {
+                _lbCurrent = idx;
+                _renderLb();
+                document.getElementById('lb').classList.remove('hidden');
+                document.getElementById('lb').classList.add('flex');
+                document.body.style.overflow = 'hidden';
+            }
+            function closeLightbox() {
+                document.getElementById('lb').classList.add('hidden');
+                document.getElementById('lb').classList.remove('flex');
+                document.body.style.overflow = '';
+            }
+            function lbNav(dir) {
+                _lbCurrent = (_lbCurrent + dir + _lbImages.length) % _lbImages.length;
+                _renderLb();
+            }
+            function _renderLb() {
+                const img = _lbImages[_lbCurrent];
+                const el = document.getElementById('lb-img');
+                el.style.opacity = '0';
+                el.src = img.src;
+                el.alt = img.title;
+                el.onload = () => { el.style.opacity = '1'; };
+                document.getElementById('lb-title').textContent = img.title;
+                document.getElementById('lb-caption').textContent = img.caption;
+                document.getElementById('lb-counter').textContent = (_lbCurrent + 1) + ' / ' + _lbImages.length;
+            }
+            document.addEventListener('keydown', e => {
+                if (document.getElementById('lb').classList.contains('hidden')) return;
+                if (e.key === 'Escape')  closeLightbox();
+                if (e.key === 'ArrowRight') lbNav(1);
+                if (e.key === 'ArrowLeft')  lbNav(-1);
+            });
+            </script>
+
+            <div id="lb" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/95 p-4" onclick="if(event.target===this)closeLightbox()">
+                {{-- Close --}}
+                <button onclick="closeLightbox()" class="absolute top-4 right-4 w-10 h-10 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+                {{-- Counter --}}
+                <span id="lb-counter" class="absolute top-4 left-1/2 -translate-x-1/2 text-white/60 text-sm"></span>
+                {{-- Prev --}}
+                <button onclick="lbNav(-1)" class="absolute left-3 sm:left-6 w-11 h-11 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+                </button>
+                {{-- Image --}}
+                <div class="flex flex-col items-center max-w-5xl max-h-full w-full">
+                    <img id="lb-img" src="" alt="" class="max-h-[75vh] max-w-full object-contain rounded-lg transition-opacity duration-300 select-none"
+                         ontouchstart="if(event.changedTouches)_lbStartX=event.changedTouches[0].clientX"
+                         ontouchend="if(event.changedTouches){const dx=event.changedTouches[0].clientX-_lbStartX;if(dx>50)lbNav(-1);else if(dx<-50)lbNav(1);}">
+                    <div class="mt-4 text-center">
+                        <p id="lb-title" class="text-white font-semibold text-base"></p>
+                        <p id="lb-caption" class="text-white/60 text-sm mt-1"></p>
+                    </div>
+                </div>
+                {{-- Next --}}
+                <button onclick="lbNav(1)" class="absolute right-3 sm:right-6 w-11 h-11 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                </button>
+            </div>
             @else
             <!-- Empty State -->
             <div class="text-center py-12">
@@ -95,51 +154,4 @@
     </div>
 </div>
 
-<!-- Modal -->
-<div id="galleryModal" class="fixed inset-0 bg-black bg-opacity-75 z-50 hidden flex items-center justify-center p-4">
-    <div class="max-w-4xl max-h-full bg-white rounded-lg overflow-hidden">
-        <div class="flex justify-between items-center p-4 border-b">
-            <h3 id="modalTitle" class="text-lg font-semibold text-brandGray-900"></h3>
-            <button onclick="closeModal()" class="text-brandGray-400 hover:text-brandGray-600">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                </svg>
-            </button>
-        </div>
-        <div class="p-4">
-            <img id="modalImage" src="" alt="" class="max-w-full max-h-96 mx-auto">
-            <p id="modalDescription" class="mt-4 text-brandGray-600 text-center"></p>
-        </div>
-    </div>
-</div>
-
-<script>
-function openModal(imageSrc, title, description) {
-    document.getElementById('modalImage').src = imageSrc;
-    document.getElementById('modalImage').alt = title;
-    document.getElementById('modalTitle').textContent = title;
-    document.getElementById('modalDescription').textContent = description;
-    document.getElementById('galleryModal').classList.remove('hidden');
-    document.body.style.overflow = 'hidden';
-}
-
-function closeModal() {
-    document.getElementById('galleryModal').classList.add('hidden');
-    document.body.style.overflow = 'auto';
-}
-
-// Close modal on escape key
-document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') {
-        closeModal();
-    }
-});
-
-// Close modal on background click
-document.getElementById('galleryModal').addEventListener('click', function(e) {
-    if (e.target === this) {
-        closeModal();
-    }
-});
-</script>
 @endsection

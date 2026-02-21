@@ -63,6 +63,23 @@ class AdmissionController extends Controller
                         ->with('success', __('public.admission_submitted'));
     }
     
+    public function applyPage(Request $request)
+    {
+        $courses = Course::whereIn('status', ['open', 'upcoming'])
+            ->with('category')
+            ->orderBy('title')
+            ->get();
+
+        $selectedCourse = null;
+        if ($request->filled('course')) {
+            $selectedCourse = Course::where('slug', $request->course)
+                ->orWhere('id', $request->course)
+                ->first();
+        }
+
+        return view('public.admissions.apply', compact('courses', 'selectedCourse'));
+    }
+
     public function thanks()
     {
         return view('public.admissions.thanks');

@@ -27,7 +27,7 @@ Route::get("/dv", function () {
 });
 
 // Other routes
-Route::get("about", fn() => app(PageController::class)->show('about'))->name("public.about");
+Route::get("about", [\App\Http\Controllers\PublicSite\AboutController::class, 'index'])->name("public.about");
 Route::get("courses", [CourseController::class, "index"])->name("public.courses.index");
 Route::get("courses/{course}", [CourseController::class, "show"])->name("public.courses.show");
 // Search
@@ -131,6 +131,9 @@ Route::middleware('auth')->group(function () {
 Route::get("admissions", [AdmissionController::class, "create"])->name("public.admissions.create");
 Route::post("admissions", [AdmissionController::class, "store"])->name("public.admissions.store");
 Route::get("admissions/thanks", [AdmissionController::class, "thanks"])->name("public.admissions.thanks");
+// /apply is a friendly alias for the admissions form (shows a cleaner marketing-focused view)
+Route::get("apply", [AdmissionController::class, "applyPage"])->name("public.apply");
+Route::post("apply", [AdmissionController::class, "store"])->name("public.apply.store");
 Route::get("contact", [ContactController::class, "create"])->name("public.contact.create");
 Route::post("contact", [ContactController::class, "store"])->name("public.contact.store");
 Route::get("terms", [\App\Http\Controllers\PolicyViewController::class, "terms"])->name("public.terms");
