@@ -45,7 +45,7 @@
 {{-- ══════════════════════════════════════════════════════════════
      2. OPEN COURSES (most important — right after hero)
 ══════════════════════════════════════════════════════════════ --}}
-<section class="py-14 sm:py-20 bg-white">
+<section class="py-14 sm:py-20 bg-brandBeige-200">
     <div class="container mx-auto px-4">
         <div class="flex flex-col sm:flex-row sm:items-end justify-between mb-10 gap-4">
             <div>
@@ -142,7 +142,7 @@
 {{-- ══════════════════════════════════════════════════════════════
      3. WHY AKURU?
 ══════════════════════════════════════════════════════════════ --}}
-<section class="py-14 sm:py-20 bg-brandBeige-50">
+<section class="py-14 sm:py-20 bg-white">
     <div class="container mx-auto px-4">
         <div class="text-center mb-12">
             <span class="text-brandMaroon-600 font-semibold text-sm uppercase tracking-wider">Why choose us</span>
@@ -205,7 +205,7 @@
 {{-- ══════════════════════════════════════════════════════════════
      5. NEWS & EVENTS
 ══════════════════════════════════════════════════════════════ --}}
-<section class="py-14 sm:py-20 bg-white">
+<section class="py-14 sm:py-20 bg-brandBeige-100">
     <div class="container mx-auto px-4">
         <div class="grid lg:grid-cols-2 gap-12">
             {{-- News --}}
@@ -307,7 +307,7 @@
      7. TESTIMONIALS
 ══════════════════════════════════════════════════════════════ --}}
 @if(isset($testimonials) && $testimonials->isNotEmpty())
-<section class="py-14 sm:py-20 bg-white">
+<section class="py-14 sm:py-20 bg-brandBeige-200">
     <div class="container mx-auto px-4">
         <div class="text-center mb-12">
             <span class="text-brandMaroon-600 font-semibold text-sm uppercase tracking-wider">Student voices</span>
