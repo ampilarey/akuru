@@ -14,7 +14,7 @@
             <div class="flex justify-center">
                 <a href="{{ route('public.courses.index') }}"
                    class="bg-brandGold-600 text-brandMaroon-900 px-8 py-3 rounded-lg font-bold hover:bg-brandGold-500 transition-colors text-center text-base sm:text-lg shadow-lg">
-                    {{ __('public.Enroll Now') }}
+                    {{ __('public.Enroll') }}
                 </a>
             </div>
         </div>
@@ -308,7 +308,7 @@
         <div class="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center">
             <a href="{{ route('public.courses.index') }}"
                class="w-full sm:w-auto bg-brandGold-600 text-brandMaroon-900 px-6 sm:px-8 py-3 rounded-lg font-bold hover:bg-brandGold-500 transition-colors text-center shadow-lg">
-                {{ __('public.Enroll Now') }}
+                {{ __('public.Enroll') }}
             </a>
             <a href="{{ route('public.contact.create') }}"
                class="w-full sm:w-auto border-2 border-brandGold-600 text-brandGold-600 bg-white/10 backdrop-blur-sm px-6 sm:px-8 py-3 rounded-lg font-semibold hover:bg-brandGold-600 hover:text-brandMaroon-900 transition-colors text-center">
