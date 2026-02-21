@@ -216,7 +216,8 @@
                 </div>
                 <div class="space-y-4">
                     @forelse($posts as $post)
-                    <a href="{{ route('public.news.show', $post->slug ?? $post->id) }}" class="group flex gap-4 p-4 rounded-xl hover:bg-brandBeige-50 transition-colors border border-transparent hover:border-brandBeige-200">
+                    @php $postSlug = $post->slug ?? $post->id ?? null; @endphp
+                    <a href="{{ $postSlug ? route('public.news.show', $postSlug) : route('public.news.index') }}" class="group flex gap-4 p-4 rounded-xl hover:bg-brandBeige-50 transition-colors border border-transparent hover:border-brandBeige-200">
                         <div class="w-16 h-16 rounded-lg bg-brandMaroon-100 shrink-0 overflow-hidden">
                             @if(isset($post->cover_image) && $post->cover_image)
                                 <img src="{{ asset('storage/'.$post->cover_image) }}" class="w-full h-full object-cover">
@@ -245,7 +246,8 @@
                 </div>
                 <div class="space-y-4">
                     @forelse($events as $event)
-                    <a href="{{ route('public.events.show', $event->slug ?? $event->id) }}" class="group flex gap-4 p-4 rounded-xl border border-gray-100 hover:border-brandGold-200 hover:bg-brandGold-50/50 transition-all">
+                    @php $evSlug = $event->slug ?? $event->id ?? null; @endphp
+                    <a href="{{ $evSlug ? route('public.events.show', $evSlug) : route('public.events.index') }}" class="group flex gap-4 p-4 rounded-xl border border-gray-100 hover:border-brandGold-200 hover:bg-brandGold-50/50 transition-all">
                         @php $evDate = \Carbon\Carbon::parse($event->start_date ?? now()); @endphp
                         <div class="w-14 shrink-0 text-center">
                             <div class="bg-brandMaroon-600 text-white rounded-t-lg py-1 text-xs font-bold uppercase">{{ $evDate->format('M') }}</div>
