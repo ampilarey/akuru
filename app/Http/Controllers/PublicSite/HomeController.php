@@ -14,7 +14,7 @@ class HomeController extends Controller
         $locale = app()->getLocale();
 
         // Cache homepage blocks for 10 minutes, keyed by locale
-        $cached = Cache::remember("homepage_data_{$locale}", 600, function () use ($locale) {
+        $cached = Cache::remember("homepage_data_v2_{$locale}", 600, function () use ($locale) {
             return $this->buildHomepageData($locale);
         });
 
@@ -115,9 +115,18 @@ class HomeController extends Controller
         // Testimonials
         $testimonials = Testimonial::where('is_public', true)
             ->orderBy('order')
-            ->take(5)
+            ->take(8)
             ->get();
 
-        return compact('text', 'heroBanners', 'courses', 'posts', 'articles', 'events', 'stats', 'testimonials');
+        // Gallery strip — up to 12 photos from all albums
+        $galleryPhotos = GalleryAlbum::where('is_published', true)
+            ->with(['items' => fn($q) => $q->where('file_type', 'image')->orderBy('sort_order')])
+            ->orderBy('sort_order')
+            ->get()
+            ->flatMap(fn($album) => $album->items)
+            ->take(12)
+            ->values();
+
+        return compact('text', 'heroBanners', 'courses', 'posts', 'articles', 'events', 'stats', 'testimonials', 'galleryPhotos');
     }
 }

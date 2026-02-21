@@ -272,8 +272,13 @@
                     @endif
 
                     <div class="mt-5 pt-5 border-t border-gray-100">
-                        <p class="text-xs text-gray-400 text-center mb-3">Have questions about this course?</p>
-                        <a href="{{ route('public.contact.create') }}" class="btn-secondary w-full text-center block text-sm">Contact Us</a>
+                        <p class="text-xs text-gray-400 text-center mb-3">Have questions? Chat with us on Viber.</p>
+                        <a href="viber://chat?number=%2B{{ $siteSettings['viber'] ?? '9607972434' }}&text={{ urlencode('Assalaamu alaikum, I want to apply for '.$course->title.'. Please send me more details.') }}"
+                           class="flex items-center justify-center gap-2 w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-2.5 rounded-xl text-sm transition-colors mb-2">
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M11.993 0C5.5 0 .527 4.972.527 11.473c0 3.107 1.2 5.943 3.17 8.053V23l2.953-1.628A11.03 11.03 0 0011.993 22.736c6.457 0 11.43-4.972 11.43-11.472C23.459 4.813 18.487 0 11.993 0z"/></svg>
+                            Chat on Viber
+                        </a>
+                        <a href="{{ route('public.contact.create') }}" class="btn-secondary w-full text-center block text-sm">Send a Message</a>
                     </div>
                 </div>
             </div>
