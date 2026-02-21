@@ -45,7 +45,7 @@
 {{-- ══════════════════════════════════════════════════════════════
      2. OPEN COURSES (most important — right after hero)
 ══════════════════════════════════════════════════════════════ --}}
-<section class="py-14 sm:py-20 bg-brandBeige-200">
+<section class="py-14 sm:py-20 bg-white">
     <div class="container mx-auto px-4">
         <div class="flex flex-col sm:flex-row sm:items-end justify-between mb-10 gap-4">
             <div>
@@ -140,16 +140,16 @@
 </section>
 
 {{-- ══════════════════════════════════════════════════════════════
-     3. WHY AKURU?
+     3. WHY AKURU? — dark maroon background
 ══════════════════════════════════════════════════════════════ --}}
-<section class="py-14 sm:py-20 bg-white">
+<section class="py-14 sm:py-20 bg-brandMaroon-700">
     <div class="container mx-auto px-4">
         <div class="text-center mb-12">
-            <span class="text-brandMaroon-600 font-semibold text-sm uppercase tracking-wider">Why choose us</span>
-            <h2 class="text-3xl sm:text-4xl font-bold text-gray-900 mt-1">Why Akuru Institute?</h2>
-            <p class="text-gray-500 mt-3 max-w-xl mx-auto">Trusted by hundreds of families across the Maldives for quality Islamic education.</p>
+            <span class="text-brandGold-400 font-semibold text-sm uppercase tracking-wider">Why choose us</span>
+            <h2 class="text-3xl sm:text-4xl font-bold text-white mt-1">Why Akuru Institute?</h2>
+            <p class="text-white/60 mt-3 max-w-xl mx-auto">Trusted by hundreds of families across the Maldives for quality Islamic education.</p>
         </div>
-        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
+        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 max-w-5xl mx-auto">
             @foreach([
                 ['icon'=>'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z', 'title'=>'Qualified Instructors', 'desc'=>'All our teachers hold recognised Islamic education qualifications and bring years of teaching experience.'],
                 ['icon'=>'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253', 'title'=>'Structured Curriculum', 'desc'=>'Well-planned programmes for Quran, Arabic, and Islamic Studies — from beginners to advanced levels.'],
@@ -158,12 +158,12 @@
                 ['icon'=>'M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z', 'title'=>'Affordable Fees', 'desc'=>'Quality Islamic education should be accessible. Our fees are kept reasonable with flexible payment options.'],
                 ['icon'=>'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4', 'title'=>'Recognised Certificates', 'desc'=>'Earn certificates upon completion that recognise your achievement and dedication to learning.'],
             ] as $f)
-            <div class="bg-white rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow border border-gray-100">
-                <div class="w-12 h-12 bg-brandMaroon-100 text-brandMaroon-700 rounded-xl flex items-center justify-center mb-4">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $f['icon'] }}"/></svg>
+            <div class="bg-white/10 hover:bg-white/15 border border-white/10 rounded-2xl p-6 transition-colors">
+                <div class="w-11 h-11 bg-brandGold-500 text-brandMaroon-900 rounded-xl flex items-center justify-center mb-4">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $f['icon'] }}"/></svg>
                 </div>
-                <h3 class="font-bold text-gray-900 mb-2">{{ $f['title'] }}</h3>
-                <p class="text-sm text-gray-500 leading-relaxed">{{ $f['desc'] }}</p>
+                <h3 class="font-bold text-white mb-2">{{ $f['title'] }}</h3>
+                <p class="text-sm text-white/65 leading-relaxed">{{ $f['desc'] }}</p>
             </div>
             @endforeach
         </div>
@@ -205,7 +205,7 @@
 {{-- ══════════════════════════════════════════════════════════════
      5. NEWS & EVENTS
 ══════════════════════════════════════════════════════════════ --}}
-<section class="py-14 sm:py-20 bg-brandBeige-100">
+<section class="py-14 sm:py-20 bg-brandGold-100">
     <div class="container mx-auto px-4">
         <div class="grid lg:grid-cols-2 gap-12">
             {{-- News --}}
@@ -274,7 +274,7 @@
      6. EDUCATIONAL ARTICLES
 ══════════════════════════════════════════════════════════════ --}}
 @if(isset($articles) && $articles->count() > 0)
-<section class="py-14 bg-brandBeige-50 border-t border-brandBeige-200">
+<section class="py-14 bg-white">
     <div class="container mx-auto px-4">
         <div class="flex items-center justify-between mb-8">
             <div>
@@ -307,24 +307,24 @@
      7. TESTIMONIALS
 ══════════════════════════════════════════════════════════════ --}}
 @if(isset($testimonials) && $testimonials->isNotEmpty())
-<section class="py-14 sm:py-20 bg-brandBeige-200">
+<section class="py-14 sm:py-20 bg-brandMaroon-800">
     <div class="container mx-auto px-4">
         <div class="text-center mb-12">
-            <span class="text-brandMaroon-600 font-semibold text-sm uppercase tracking-wider">Student voices</span>
-            <h2 class="text-3xl sm:text-4xl font-bold text-gray-900 mt-1">What Our Students Say</h2>
+            <span class="text-brandGold-400 font-semibold text-sm uppercase tracking-wider">Student voices</span>
+            <h2 class="text-3xl sm:text-4xl font-bold text-white mt-1">What Our Students Say</h2>
         </div>
         <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
             @foreach($testimonials as $t)
-            <div class="bg-brandBeige-50 border border-brandBeige-200 p-6 rounded-2xl relative">
+            <div class="bg-white/10 border border-white/10 p-6 rounded-2xl relative">
                 <div class="text-brandGold-400 text-5xl leading-none font-serif absolute top-4 right-5 opacity-40">"</div>
-                <p class="text-gray-700 leading-relaxed mb-5 relative z-10">"{{ $t->quote }}"</p>
+                <p class="text-white/85 leading-relaxed mb-5 relative z-10">"{{ $t->quote }}"</p>
                 <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-full bg-brandMaroon-200 flex items-center justify-center text-brandMaroon-700 font-bold shrink-0">
+                    <div class="w-10 h-10 rounded-full bg-brandGold-500 flex items-center justify-center text-brandMaroon-900 font-bold shrink-0">
                         {{ strtoupper(substr($t->name ?? 'A', 0, 1)) }}
                     </div>
                     <div>
-                        <p class="font-semibold text-gray-900 text-sm">{{ $t->name }}</p>
-                        @if($t->role)<p class="text-xs text-gray-500">{{ $t->role }}</p>@endif
+                        <p class="font-semibold text-white text-sm">{{ $t->name }}</p>
+                        @if($t->role)<p class="text-xs text-white/50">{{ $t->role }}</p>@endif
                     </div>
                 </div>
             </div>
@@ -341,17 +341,17 @@
     $upcomingCourses = $courses->filter(fn($c) => is_object($c) && in_array($c->status ?? '', ['open','upcoming']) && ($c->start_date ?? null));
 @endphp
 @if($upcomingCourses->count() > 0)
-<section class="py-12 bg-brandMaroon-50 border-t border-brandMaroon-100">
+<section class="py-12 bg-brandGold-200">
     <div class="container mx-auto px-4">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-3">
             <h2 class="text-xl font-bold text-brandMaroon-900">📅 Upcoming Intakes</h2>
-            <a href="{{ route('public.admissions.create') }}" class="text-sm font-semibold text-brandMaroon-700 hover:underline">Reserve your place →</a>
+            <a href="{{ route('public.admissions.create') }}" class="text-sm font-semibold text-brandMaroon-800 hover:underline">Reserve your place →</a>
         </div>
         <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
             @foreach($upcomingCourses->take(6) as $uc)
             @php $ucDate = \Carbon\Carbon::parse($uc->start_date); @endphp
             <a href="{{ $uc->slug ? route('public.courses.show', $uc->slug) : route('public.courses.index') }}"
-               class="flex items-center gap-4 bg-white rounded-xl px-4 py-3 shadow-sm hover:shadow-md border border-brandMaroon-100 hover:border-brandMaroon-300 transition-all">
+               class="flex items-center gap-4 bg-white rounded-xl px-4 py-3 shadow-sm hover:shadow-md border border-brandGold-300 hover:border-brandMaroon-400 transition-all">
                 <div class="text-center shrink-0 w-12">
                     <div class="text-xs font-bold text-brandMaroon-600 uppercase">{{ $ucDate->format('M') }}</div>
                     <div class="text-2xl font-bold text-brandMaroon-900 leading-none">{{ $ucDate->format('d') }}</div>
