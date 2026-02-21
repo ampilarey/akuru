@@ -58,7 +58,18 @@ class AdmissionController extends Controller
         if ($adminUsers->count() > 0) {
             Notification::send($adminUsers, new NewAdmissionApplication($application));
         }
-        
+
+        // If a course was selected and it's open, redirect straight to the enrollment checkout
+        // so both the Apply and Enroll flows converge at the same OTP → details → payment step.
+        if (!empty($validated['course_id'])) {
+            $course = Course::find($validated['course_id']);
+            if ($course && $course->status === 'open' && !$course->isFull()) {
+                return redirect()
+                    ->route('courses.checkout.show', $course)
+                    ->with('info', 'Your enquiry has been saved. Complete your enrollment below.');
+            }
+        }
+
         return redirect()->route('public.admissions.thanks', app()->getLocale())
                         ->with('success', __('public.admission_submitted'));
     }
