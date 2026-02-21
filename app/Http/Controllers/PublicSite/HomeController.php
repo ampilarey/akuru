@@ -119,8 +119,7 @@ class HomeController extends Controller
             ->get();
 
         // Gallery strip — up to 12 photos from all albums
-        $galleryPhotos = GalleryAlbum::where('is_published', true)
-            ->with(['items' => fn($q) => $q->where('file_type', 'image')->orderBy('sort_order')])
+        $galleryPhotos = GalleryAlbum::with(['items' => fn($q) => $q->where('file_type', 'image')->orderBy('sort_order')])
             ->orderBy('sort_order')
             ->get()
             ->flatMap(fn($album) => $album->items)
