@@ -16,9 +16,9 @@
                    class="w-full sm:w-auto bg-brandGold-600 text-brandMaroon-900 px-6 sm:px-8 py-3 rounded-lg font-bold hover:bg-brandGold-500 transition-colors text-center text-base sm:text-lg shadow-lg">
                     {{ __('public.Enroll Now') }}
                 </a>
-                <a href="{{ route('public.admissions.create') }}"
+                <a href="{{ route('public.courses.index') }}"
                    class="w-full sm:w-auto border-2 border-brandGold-600 text-brandGold-600 bg-white/10 backdrop-blur-sm px-6 sm:px-8 py-3 rounded-lg font-semibold hover:bg-brandGold-600 hover:text-brandMaroon-900 transition-colors text-center text-base sm:text-lg">
-                    Apply / Enquire
+                    {{ __('public.View Courses') }}
                 </a>
             </div>
         </div>
@@ -126,7 +126,7 @@
         <div class="text-center mt-10">
             <a href="{{ route('public.courses.index') }}"
                class="inline-block bg-brandMaroon-600 hover:bg-brandMaroon-700 text-white font-bold px-8 py-3 rounded-lg shadow transition-colors">
-                View All Courses
+                {{ __('public.View All Courses') }}
             </a>
         </div>
     </div>
@@ -225,7 +225,7 @@
     <div class="container mx-auto px-4">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-5 gap-3">
             <h2 class="text-lg font-bold text-gray-900">📅 Upcoming Intakes</h2>
-            <a href="{{ route('public.admissions.create') }}" class="text-sm text-brandMaroon-600 hover:underline font-semibold">Reserve your place →</a>
+            <a href="{{ route('public.courses.index') }}" class="text-sm text-brandMaroon-600 hover:underline font-semibold">View all →</a>
         </div>
         <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
             @foreach($upcomingCourses->take(6) as $uc)
@@ -312,7 +312,7 @@
         <div class="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center">
             <a href="{{ route('public.courses.index') }}"
                class="w-full sm:w-auto bg-brandGold-600 text-brandMaroon-900 px-6 sm:px-8 py-3 rounded-lg font-bold hover:bg-brandGold-500 transition-colors text-center shadow-lg">
-                {{ __('public.Enroll') }}
+                {{ __('public.Enroll Now') }}
             </a>
             <a href="{{ route('public.contact.create') }}"
                class="w-full sm:w-auto border-2 border-brandGold-600 text-brandGold-600 bg-white/10 backdrop-blur-sm px-6 sm:px-8 py-3 rounded-lg font-semibold hover:bg-brandGold-600 hover:text-brandMaroon-900 transition-colors text-center">
