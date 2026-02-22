@@ -33,7 +33,7 @@ class CourseRegistrationController extends PublicRegistrationController
     ) {}
 
     /** New checkout start page — replaces the old register form. */
-    public function checkout(Course $course): View
+    public function checkout(Course $course): View|\Illuminate\Http\RedirectResponse
     {
         if (! $course->is_enrollment_open) {
             return view('courses.register', [
@@ -41,6 +41,16 @@ class CourseRegistrationController extends PublicRegistrationController
                 'fee'    => $course->getRegistrationFeeAmount(),
                 'closed' => true,
             ]);
+        }
+
+        // If the user is already logged in, skip the login/register step entirely
+        if (auth()->check() && auth()->user()->hasVerifiedContact()) {
+            session([
+                'pending_selected_course_ids' => [$course->id],
+                'pending_term_id'             => null,
+                'checkout_flow'               => 'adult',
+            ]);
+            return redirect()->route('courses.register.continue');
         }
 
         return view('courses.checkout', [
