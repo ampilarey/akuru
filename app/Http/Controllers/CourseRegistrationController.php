@@ -45,6 +45,22 @@ class CourseRegistrationController extends PublicRegistrationController
 
         // If the user is already logged in, skip the login/register step entirely
         if (auth()->check() && auth()->user()->hasVerifiedContact()) {
+            $loggedUser = auth()->user();
+
+            // Block if already enrolled in this course
+            $studentProfile = $loggedUser->registrationStudentProfile;
+            if ($studentProfile) {
+                $alreadyIn = \App\Models\CourseEnrollment::where('student_id', $studentProfile->id)
+                    ->where('course_id', $course->id)
+                    ->where('status', '!=', 'rejected')
+                    ->exists();
+
+                if ($alreadyIn) {
+                    return redirect()->route('my.enrollments')
+                        ->with('info', "You are already enrolled in \"{$course->title}\".");
+                }
+            }
+
             session([
                 'pending_selected_course_ids' => [$course->id],
                 'pending_term_id'             => null,
@@ -568,6 +584,42 @@ class CourseRegistrationController extends PublicRegistrationController
                     'is_primary'  => false,
                     'verified_at' => null,
                 ]);
+            }
+        }
+
+        // Hard pre-check: if the user already has a non-rejected enrollment for every
+        // requested course, block immediately before touching the service layer.
+        $studentProfile = $user->registrationStudentProfile;
+        if ($flow === 'adult' && $studentProfile) {
+            $alreadyEnrolled = \App\Models\CourseEnrollment::where('student_id', $studentProfile->id)
+                ->whereIn('course_id', $courseIds)
+                ->where('status', '!=', 'rejected')
+                ->pluck('course_id')
+                ->toArray();
+
+            if (! empty($alreadyEnrolled) && count(array_diff($courseIds, $alreadyEnrolled)) === 0) {
+                $this->clearEnrollPendingSession();
+                $this->clearPendingSession();
+                $title = \App\Models\Course::whereIn('id', $alreadyEnrolled)->first()?->title ?? 'the selected course';
+                return redirect()->route('my.enrollments')
+                    ->with('info', "You are already enrolled in \"{$title}\". No duplicate enrollment was created.");
+            }
+        }
+
+        // For parent/existing-child flow: check against existing student
+        if ($flow === 'parent' && $studentMode === 'existing' && ! empty($data['student_id'])) {
+            $alreadyEnrolled = \App\Models\CourseEnrollment::where('student_id', (int) $data['student_id'])
+                ->whereIn('course_id', $courseIds)
+                ->where('status', '!=', 'rejected')
+                ->pluck('course_id')
+                ->toArray();
+
+            if (! empty($alreadyEnrolled) && count(array_diff($courseIds, $alreadyEnrolled)) === 0) {
+                $this->clearEnrollPendingSession();
+                $this->clearPendingSession();
+                $title = \App\Models\Course::whereIn('id', $alreadyEnrolled)->first()?->title ?? 'the selected course';
+                return redirect()->route('my.enrollments')
+                    ->with('info', "This student is already enrolled in \"{$title}\".");
             }
         }
 
