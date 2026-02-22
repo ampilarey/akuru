@@ -256,6 +256,45 @@ class CourseRegistrationController extends PublicRegistrationController
         // Notify super admins via SMS about new registration
         $this->notifyAdminNewRegistration($user);
 
+        // If a course is pending, skip the enrollment form and go straight to OTP consent.
+        // We already have all the student data from the profile they just filled in.
+        $courseIds = session('pending_selected_course_ids', []);
+        if (!empty($courseIds)) {
+            $studentData = [
+                'first_name'  => trim($request->first_name),
+                'last_name'   => trim($request->last_name),
+                'dob'         => $request->dob,
+                'gender'      => $request->gender,
+                'id_type'     => $request->id_type,
+                'national_id' => $request->id_type === 'national_id' ? strtoupper(trim($request->national_id)) : null,
+                'passport'    => $request->id_type === 'passport'    ? strtoupper(trim($request->passport))    : null,
+            ];
+
+            session([
+                'enroll_pending_data'         => $studentData,
+                'enroll_pending_flow'         => session('checkout_flow', 'adult'),
+                'enroll_pending_course_ids'   => $courseIds,
+                'enroll_pending_term_id'      => session('pending_term_id'),
+                'enroll_pending_email'        => $request->filled('email') ? $this->normalizer->normalizeEmail($request->email) : '',
+                'enroll_pending_student_mode' => 'new',
+            ]);
+
+            // Send enrollment OTP
+            $mobileContact = $user->contacts()->where('type', 'mobile')->whereNotNull('verified_at')->first();
+            if ($mobileContact) {
+                try {
+                    $this->otpService->send($mobileContact, 'login');
+                    session(['enroll_otp_contact_id' => $mobileContact->id]);
+                } catch (\Illuminate\Validation\ValidationException $e) {
+                    // OTP rate-limited — still go to enrollment form as fallback
+                    return redirect()->route('courses.register.continue');
+                }
+            }
+
+            return redirect()->route('courses.register.enroll.otp')
+                ->with('success', 'Registration complete! Please verify your OTP to confirm enrollment.');
+        }
+
         return redirect()->route('courses.register.continue');
     }
 
