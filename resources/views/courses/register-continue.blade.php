@@ -210,8 +210,6 @@
                     </div>
 
                     <button type="submit" class="btn-primary w-full py-3 mt-4">Complete enrollment</button>
-
-                    <x-payment-trust-bar />
                 </form>
             </div>
         </div>
