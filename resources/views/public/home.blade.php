@@ -36,7 +36,7 @@ $bannerCount = count($bannerList);
   <div style="position:absolute;inset:0;opacity:.07;background-image:url(\"data:image/svg+xml,%3Csvg width='52' height='26' viewBox='0 0 52 26' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23C9A227' fill-opacity='1'%3E%3Cpath d='M10 10c0-2.21-1.79-4-4-4-3.314 0-6-2.686-6-6h2c0 2.21 1.79 4 4 4 3.314 0 6 2.686 6 6 0 2.21 1.79 4 4 4 3.314 0 6 2.686 6 6 0 2.21 1.79 4 4 4v2c-3.314 0-6-2.686-6-6 0-2.21-1.79-4-4-4-3.314 0-6-2.686-6-6zm25.464-1.95l8.486 8.486-1.414 1.414-8.486-8.486 1.414-1.414z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E\")"></div>
 
   {{-- Slide stage: fixed-height container so transitioning slides overlap instead of stacking --}}
-  <div style="position:relative;min-height:28rem;display:flex;align-items:center">
+  <div style="position:relative;min-height:clamp(32rem,60vw,30rem);display:flex;align-items:center">
   @foreach($bannerList as $i => $bn)
   <div
       x-show="active === {{ $i }}"
@@ -75,30 +75,36 @@ $bannerCount = count($bannerList);
   @endforeach
   </div>{{-- end slide stage --}}
 
-  {{-- Prev / Next arrows + dots (only when multiple banners) --}}
+  {{-- Prev / Next arrows — hidden on mobile, visible on tablet+ --}}
   @if($bannerCount > 1)
-  <button @click="prev()"
-      style="position:absolute;left:1rem;top:50%;transform:translateY(-60%);background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:white;width:2.5rem;height:2.5rem;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .2s;z-index:10"
+  <button @click="prev()" class="hero-arrow"
+      style="position:absolute;left:1rem;top:50%;transform:translateY(-50%);background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:white;width:2.5rem;height:2.5rem;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .2s;z-index:10"
       onmouseover="this.style.background='rgba(255,255,255,.3)'" onmouseout="this.style.background='rgba(255,255,255,.15)'"
       aria-label="Previous slide">
     <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
   </button>
-  <button @click="next()"
-      style="position:absolute;right:1rem;top:50%;transform:translateY(-60%);background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:white;width:2.5rem;height:2.5rem;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .2s;z-index:10"
+  <button @click="next()" class="hero-arrow"
+      style="position:absolute;right:1rem;top:50%;transform:translateY(-50%);background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:white;width:2.5rem;height:2.5rem;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .2s;z-index:10"
       onmouseover="this.style.background='rgba(255,255,255,.3)'" onmouseout="this.style.background='rgba(255,255,255,.15)'"
       aria-label="Next slide">
     <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
   </button>
 
-  <div style="position:absolute;bottom:1.25rem;left:50%;transform:translateX(-50%);display:flex;gap:.5rem;z-index:10">
+  {{-- Dot indicators --}}
+  <div style="position:absolute;bottom:1.25rem;left:0;right:0;display:flex;justify-content:center;align-items:center;gap:.5rem;z-index:10">
     @foreach($bannerList as $i => $bn)
     <button @click="go({{ $i }})"
-        :style="active === {{ $i }} ? 'background:#C9A227;width:1.5rem' : 'background:rgba(255,255,255,.4);width:.625rem'"
-        style="height:.625rem;border-radius:9999px;border:none;cursor:pointer;transition:all .35s"
+        :style="active === {{ $i }}
+            ? 'width:1.5rem;height:10px;background:#C9A227;border-radius:9999px;border:none;padding:0;cursor:pointer;transition:all .35s;flex-shrink:0'
+            : 'width:10px;height:10px;background:rgba(255,255,255,.45);border-radius:9999px;border:none;padding:0;cursor:pointer;transition:all .35s;flex-shrink:0'"
         aria-label="Slide {{ $i + 1 }}"></button>
     @endforeach
   </div>
   @endif
+
+  <style>
+    @media (max-width: 639px) { .hero-arrow { display: none !important; } }
+  </style>
 
   {{-- White wave into next section --}}
   <div style="position:absolute;bottom:0;left:0;right:0;line-height:0">
