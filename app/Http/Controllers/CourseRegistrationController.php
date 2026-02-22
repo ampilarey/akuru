@@ -304,9 +304,23 @@ class CourseRegistrationController extends PublicRegistrationController
         $user->loadMissing('guardianStudents');
 
         // Default flow: honour the choice made on checkout start, then fall back to profile
-        $checkoutFlow = session('checkout_flow'); // 'adult' or 'parent' set at checkout start
+        $checkoutFlow = session('checkout_flow');
         $defaultFlow  = $checkoutFlow
             ?? ($existingProfile ? 'adult' : ($user->guardianStudents->isNotEmpty() ? 'parent' : 'adult'));
+
+        // Pre-fill data from user profile (name, gender, DOB, ID) for new users
+        $nameParts   = explode(' ', $user->name ?? '', 2);
+        $hasNationalId = ! empty($existingProfile?->national_id ?? $user->national_id);
+        $hasPassport   = ! empty($existingProfile?->passport);
+        $prefill = [
+            'first_name'  => $existingProfile?->first_name  ?? $nameParts[0] ?? '',
+            'last_name'   => $existingProfile?->last_name   ?? $nameParts[1] ?? '',
+            'dob'         => $existingProfile?->dob?->format('Y-m-d') ?? $user->date_of_birth?->format('Y-m-d') ?? '',
+            'gender'      => $existingProfile?->gender      ?? $user->gender ?? '',
+            'national_id' => $existingProfile?->national_id ?? $user->national_id ?? '',
+            'passport'    => $existingProfile?->passport    ?? '',
+            'id_type'     => $hasNationalId ? 'national_id' : ($hasPassport ? 'passport' : 'national_id'),
+        ];
 
         return view('courses.register-continue', [
             'user'            => $user,
@@ -315,6 +329,7 @@ class CourseRegistrationController extends PublicRegistrationController
             'termId'          => session('pending_term_id'),
             'existingProfile' => $existingProfile,
             'defaultFlow'     => $defaultFlow,
+            'prefill'         => $prefill,
         ]);
     }
 

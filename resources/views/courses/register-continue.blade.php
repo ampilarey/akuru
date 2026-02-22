@@ -114,23 +114,23 @@
                     </div>
 
                     <div x-show="flow === 'adult'" class="space-y-4">
-                        @if($existingProfile)
+                        @if($prefill['first_name'] || $prefill['national_id'])
                             <p class="text-sm text-green-700 bg-green-50 rounded p-2">
-                                Your details are pre-filled from your profile. Update if needed.
+                                ✓ Your details have been pre-filled from your profile. Please review and confirm.
                             </p>
                         @endif
                         <div class="grid sm:grid-cols-2 gap-4">
-                            <div><label class="block text-sm font-medium mb-1">First name <span class="text-red-500">*</span></label><input type="text" name="first_name" class="w-full rounded-md border-gray-300" :disabled="flow !== 'adult'" value="{{ old('first_name', $existingProfile?->first_name) }}" required></div>
-                            <div><label class="block text-sm font-medium mb-1">Last name <span class="text-red-500">*</span></label><input type="text" name="last_name" class="w-full rounded-md border-gray-300" :disabled="flow !== 'adult'" value="{{ old('last_name', $existingProfile?->last_name) }}" required></div>
+                            <div><label class="block text-sm font-medium mb-1">First name <span class="text-red-500">*</span></label><input type="text" name="first_name" class="w-full rounded-md border-gray-300" :disabled="flow !== 'adult'" value="{{ old('first_name', $prefill['first_name']) }}" required></div>
+                            <div><label class="block text-sm font-medium mb-1">Last name <span class="text-red-500">*</span></label><input type="text" name="last_name" class="w-full rounded-md border-gray-300" :disabled="flow !== 'adult'" value="{{ old('last_name', $prefill['last_name']) }}" required></div>
                         </div>
                         <div class="grid sm:grid-cols-2 gap-4">
-                            <div><label class="block text-sm font-medium mb-1">Date of birth <span class="text-red-500">*</span></label><input type="date" name="dob" class="w-full rounded-md border-gray-300" :disabled="flow !== 'adult'" value="{{ old('dob', $existingProfile?->dob?->format('Y-m-d')) }}" required></div>
+                            <div><label class="block text-sm font-medium mb-1">Date of birth <span class="text-red-500">*</span></label><input type="date" name="dob" class="w-full rounded-md border-gray-300" :disabled="flow !== 'adult'" value="{{ old('dob', $prefill['dob']) }}" required></div>
                             <div>
                                 <label class="block text-sm font-medium mb-1">Gender</label>
                                 <select name="gender" class="w-full rounded-md border-gray-300" :disabled="flow !== 'adult'">
-                                    <option value="">Prefer not to say</option>
-                                    <option value="male" @selected(old('gender', $existingProfile?->gender) === 'male')>Male</option>
-                                    <option value="female" @selected(old('gender', $existingProfile?->gender) === 'female')>Female</option>
+                                    <option value="">Select</option>
+                                    <option value="male" @selected(old('gender', $prefill['gender']) === 'male')>Male</option>
+                                    <option value="female" @selected(old('gender', $prefill['gender']) === 'female')>Female</option>
                                 </select>
                             </div>
                         </div>
@@ -149,7 +149,7 @@
                                 <input type="text" name="national_id" placeholder="e.g. A211217"
                                        class="w-full rounded-md border-gray-300 uppercase" maxlength="10"
                                        :disabled="flow !== 'adult' || adultIdType !== 'national_id'"
-                                       value="{{ old('national_id', $existingProfile?->national_id) }}"
+                                       value="{{ old('national_id', $prefill['national_id']) }}"
                                        oninput="this.value=this.value.toUpperCase()">
                                 <p class="text-xs text-gray-500 mt-1">Format: letter followed by digits (e.g. A211217)</p>
                             </div>
@@ -157,7 +157,7 @@
                                 <input type="text" name="passport" placeholder="Passport number"
                                        class="w-full rounded-md border-gray-300 uppercase" maxlength="20"
                                        :disabled="flow !== 'adult' || adultIdType !== 'passport'"
-                                       value="{{ old('passport', $existingProfile?->passport) }}"
+                                       value="{{ old('passport', $prefill['passport']) }}"
                                        oninput="this.value=this.value.toUpperCase()">
                             </div>
                         </div>
@@ -189,27 +189,11 @@
                         </ul>
                     </div>
 
-                    {{-- Terms acceptance --}}
-                    <div class="mt-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
-                        <label class="flex items-start gap-3 cursor-pointer select-none">
-                            <input type="checkbox" name="terms_accepted" id="terms_accepted" value="1" required
-                                   class="mt-0.5 h-4 w-4 rounded border-gray-300 text-brandMaroon-600 focus:ring-brandMaroon-500 shrink-0">
-                            <span class="text-sm text-gray-700">
-                                I have read and agree to the
-                                <a href="{{ route('public.page.show', 'terms') }}" target="_blank"
-                                   class="text-brandMaroon-600 hover:underline font-medium">terms and conditions</a>
-                                and
-                                <a href="{{ route('public.page.show', 'refund-policy') }}" target="_blank"
-                                   class="text-brandMaroon-600 hover:underline font-medium">refund policy</a>
-                                of Akuru Institute. I understand that enrollment fees are non-refundable unless the course is cancelled.
-                            </span>
-                        </label>
-                        @error('terms_accepted')
-                            <p class="text-red-600 text-xs mt-2">{{ $message }}</p>
-                        @enderror
-                    </div>
+                    <p class="mt-4 text-xs text-gray-500 text-center">
+                        You will review the Terms &amp; Conditions and verify with OTP in the next step.
+                    </p>
 
-                    <button type="submit" class="btn-primary w-full py-3 mt-4">Complete enrollment</button>
+                    <button type="submit" class="btn-primary w-full py-3 mt-4">Continue to Verify &amp; Confirm →</button>
                 </form>
             </div>
         </div>
@@ -221,7 +205,7 @@ function enrollFlow() {
     return {
         flow: '{{ $defaultFlow }}',
         studentMode: '{{ $user->guardianStudents->isNotEmpty() ? "existing" : "new" }}',
-        adultIdType: '{{ old("id_type", $existingProfile?->national_id ? "national_id" : ($existingProfile?->passport ? "passport" : "national_id")) }}',
+        adultIdType: '{{ old("id_type", $prefill["id_type"]) }}',
         childIdType: '{{ old("id_type", "national_id") }}',
         init() {
             if (this.studentMode === 'existing' && document.querySelector('input[name="student_mode"][value="existing"]')) {
