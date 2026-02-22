@@ -105,7 +105,7 @@ class DashboardController extends Controller
         ];
 
         // Recent enrollments (last 10)
-        $recentEnrollments = \App\Models\CourseEnrollment::with(['student', 'course', 'payment', 'createdByUser'])
+        $recentEnrollments = \App\Models\CourseEnrollment::with(['student', 'course', 'payment'])
             ->latest()
             ->take(10)
             ->get();
