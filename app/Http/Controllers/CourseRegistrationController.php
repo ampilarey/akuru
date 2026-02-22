@@ -584,8 +584,27 @@ class CourseRegistrationController extends PublicRegistrationController
             return redirect()->route('courses.register.enroll.otp')->withErrors($e->errors());
         }
 
-        // Notify admin via SMS
-        $this->notifyAdminNewEnrollment($user, $result->allEnrollments());
+        // If nothing new was created and no payment is pending, the student is already enrolled
+        if (empty($result->createdEnrollments) && ! $result->hasPaymentsPending()) {
+            $this->clearEnrollPendingSession();
+            $this->clearPendingSession();
+
+            $courseTitle = '';
+            if (! empty($result->existingEnrollments)) {
+                $e = $result->existingEnrollments[0];
+                $e->loadMissing('course');
+                $courseTitle = $e->course?->title ?? '';
+            }
+
+            $msg = $courseTitle
+                ? "You are already enrolled in \"{$courseTitle}\"."
+                : 'You are already enrolled in the selected course(s).';
+
+            return redirect()->route('my.enrollments')->with('info', $msg);
+        }
+
+        // Only notify admin for truly new enrollments
+        $this->notifyAdminNewEnrollment($user, $result->createdEnrollments);
 
         if ($result->hasPaymentsPending()) {
             $payment = $result->getConsolidatedPayment();
@@ -604,8 +623,11 @@ class CourseRegistrationController extends PublicRegistrationController
             return redirect()->route('courses.register.enroll.otp')->withErrors(['payment' => $paymentError]);
         }
 
-        $this->sendFreeEnrollmentStudentNotifications($user, $result->allEnrollments());
-        $this->notifyAdminFreeEnrollment($user, $result->allEnrollments());
+        // Only send free-enrollment notifications for newly created enrollments
+        if (! empty($result->createdEnrollments)) {
+            $this->sendFreeEnrollmentStudentNotifications($user, $result->createdEnrollments);
+            $this->notifyAdminFreeEnrollment($user, $result->createdEnrollments);
+        }
 
         $this->clearEnrollPendingSession();
         $this->clearPendingSession();

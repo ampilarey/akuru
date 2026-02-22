@@ -7,6 +7,22 @@
     <div class="container mx-auto px-4 max-w-3xl">
         <h1 class="text-2xl font-bold text-brandMaroon-900 mb-6">My Enrollments</h1>
 
+        @if(session('info'))
+        <div style="margin-bottom:1rem;padding:.875rem 1rem;background:#EFF6FF;border:1px solid #BFDBFE;border-radius:.625rem;font-size:.875rem;color:#1E40AF;font-weight:500">
+            ℹ️ {{ session('info') }}
+        </div>
+        @endif
+        @if(session('success'))
+        <div style="margin-bottom:1rem;padding:.875rem 1rem;background:#ECFDF5;border:1px solid #6EE7B7;border-radius:.625rem;font-size:.875rem;color:#065F46;font-weight:500">
+            ✓ {{ session('success') }}
+        </div>
+        @endif
+        @if(session('error'))
+        <div style="margin-bottom:1rem;padding:.875rem 1rem;background:#FEF2F2;border:1px solid #FECACA;border-radius:.625rem;font-size:.875rem;color:#991B1B;font-weight:500">
+            {{ session('error') }}
+        </div>
+        @endif
+
         @if($enrollments->isEmpty())
             <div class="card p-8 text-center text-gray-500">
                 <svg class="mx-auto mb-3 w-10 h-10 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
