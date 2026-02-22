@@ -153,7 +153,7 @@ class OtpService
 
     protected function validatePurpose(string $purpose): void
     {
-        if (! in_array($purpose, ['verify_contact', 'password_reset'], true)) {
+        if (! in_array($purpose, ['verify_contact', 'password_reset', 'login', 'enroll'], true)) {
             throw new \InvalidArgumentException("Invalid OTP purpose: {$purpose}");
         }
     }
