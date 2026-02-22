@@ -5,27 +5,63 @@
 @section('content')
 
 {{-- ═══════════════════════════════════════════════════════════
-  SECTION 1 — HERO   bg: deep maroon gradient
+  SECTION 1 — HERO CAROUSEL
 ═══════════════════════════════════════════════════════════ --}}
-@php $banner = $heroBanners->first(); @endphp
-<section style="background:linear-gradient(135deg,#3D1219 0%,#7C2D37 55%,#5A1F28 100%);position:relative;overflow:hidden;padding-bottom:56px">
+@php
+$bannerList = $heroBanners->map(fn($b) => [
+    'title'    => $b->title    ?? $text['title'] ?? 'Welcome to Akuru Institute',
+    'subtitle' => $b->subtitle ?? $text['desc']  ?? 'Learn Quran, Arabic, and Islamic Studies in the Maldives',
+    'cta_text' => $b->cta_text ?? null,
+    'cta_url'  => $b->cta_url  ?? null,
+])->values()->toArray();
+$bannerCount = count($bannerList);
+@endphp
+
+<section
+    x-data="{
+        active: 0,
+        total: {{ $bannerCount }},
+        paused: false,
+        timer: null,
+        start() { this.timer = setInterval(() => { if (!this.paused) this.next(); }, 5500); },
+        next() { this.active = (this.active + 1) % this.total; },
+        prev() { this.active = (this.active - 1 + this.total) % this.total; },
+        go(i)  { this.active = i; }
+    }"
+    x-init="start()"
+    @mouseenter="paused=true" @mouseleave="paused=false"
+    style="background:linear-gradient(135deg,#3D1219 0%,#7C2D37 55%,#5A1F28 100%);position:relative;overflow:hidden;padding-bottom:56px">
+
   {{-- subtle pattern --}}
   <div style="position:absolute;inset:0;opacity:.07;background-image:url(\"data:image/svg+xml,%3Csvg width='52' height='26' viewBox='0 0 52 26' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23C9A227' fill-opacity='1'%3E%3Cpath d='M10 10c0-2.21-1.79-4-4-4-3.314 0-6-2.686-6-6h2c0 2.21 1.79 4 4 4 3.314 0 6 2.686 6 6 0 2.21 1.79 4 4 4 3.314 0 6 2.686 6 6 0 2.21 1.79 4 4 4v2c-3.314 0-6-2.686-6-6 0-2.21-1.79-4-4-4-3.314 0-6-2.686-6-6zm25.464-1.95l8.486 8.486-1.414 1.414-8.486-8.486 1.414-1.414z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E\")"></div>
-  <div class="container mx-auto px-4 relative text-center text-white" style="padding-top:5rem;padding-bottom:5rem">
+
+  {{-- Slides --}}
+  @foreach($bannerList as $i => $bn)
+  <div
+      x-show="active === {{ $i }}"
+      x-transition:enter="transition ease-out duration-700"
+      x-transition:enter-start="opacity-0 translate-y-4"
+      x-transition:enter-end="opacity-100 translate-y-0"
+      x-transition:leave="transition ease-in duration-300"
+      x-transition:leave-start="opacity-100"
+      x-transition:leave-end="opacity-0"
+      class="container mx-auto px-4 relative text-center text-white"
+      style="padding-top:5rem;padding-bottom:{{ $bannerCount > 1 ? '4rem' : '5rem' }}">
+
     <span style="display:inline-block;background:rgba(201,162,39,0.2);border:1px solid rgba(201,162,39,0.4);color:#E8BC3C;font-size:.75rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:.375rem 1rem;border-radius:9999px;margin-bottom:1.25rem">
       🕌 Islamic Education in the Maldives
     </span>
     <h1 style="font-size:clamp(2rem,5vw,3.5rem);font-weight:800;line-height:1.15;margin-bottom:1.25rem;text-shadow:0 2px 16px rgba(0,0,0,.4)">
-      {{ $banner->title ?? $text['title'] ?? 'Welcome to Akuru Institute' }}
+      {{ $bn['title'] }}
     </h1>
     <p style="font-size:clamp(1rem,2vw,1.25rem);color:rgba(255,255,255,.8);max-width:40rem;margin:0 auto 2.5rem;line-height:1.7">
-      {{ $banner->subtitle ?? $text['desc'] ?? 'Learn Quran, Arabic, and Islamic Studies in the Maldives' }}
+      {{ $bn['subtitle'] }}
     </p>
     <div style="display:flex;flex-wrap:wrap;gap:.875rem;justify-content:center">
-      <a href="{{ route('public.courses.index') }}"
+      <a href="{{ $bn['cta_url'] ?? route('public.courses.index') }}"
          style="display:inline-flex;align-items:center;gap:.5rem;background:#C9A227;color:#3D1219;font-weight:700;padding:.875rem 2rem;border-radius:.75rem;font-size:1.05rem;text-decoration:none;transition:opacity .2s,transform .2s"
          onmouseover="this.style.opacity='.88';this.style.transform='scale(1.04)'" onmouseout="this.style.opacity='1';this.style.transform='scale(1)'">
-        Enroll Now
+        {{ $bn['cta_text'] ?? 'Enroll Now' }}
       </a>
       <a href="viber://chat?number=%2B{{ $siteSettings['viber'] ?? '9607972434' }}&text={{ urlencode('Assalaamu alaikum, I want to know about Akuru Institute.') }}"
          style="display:inline-flex;align-items:center;gap:.5rem;background:rgba(255,255,255,.12);color:white;border:2px solid rgba(255,255,255,.35);font-weight:600;padding:.875rem 2rem;border-radius:.75rem;font-size:1.05rem;text-decoration:none;transition:background .2s"
@@ -35,6 +71,33 @@
       </a>
     </div>
   </div>
+  @endforeach
+
+  {{-- Prev / Next arrows + dots (only when multiple banners) --}}
+  @if($bannerCount > 1)
+  <button @click="prev()"
+      style="position:absolute;left:1rem;top:50%;transform:translateY(-60%);background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:white;width:2.5rem;height:2.5rem;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .2s;z-index:10"
+      onmouseover="this.style.background='rgba(255,255,255,.3)'" onmouseout="this.style.background='rgba(255,255,255,.15)'"
+      aria-label="Previous slide">
+    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+  </button>
+  <button @click="next()"
+      style="position:absolute;right:1rem;top:50%;transform:translateY(-60%);background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:white;width:2.5rem;height:2.5rem;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .2s;z-index:10"
+      onmouseover="this.style.background='rgba(255,255,255,.3)'" onmouseout="this.style.background='rgba(255,255,255,.15)'"
+      aria-label="Next slide">
+    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+  </button>
+
+  <div style="position:absolute;bottom:1.25rem;left:50%;transform:translateX(-50%);display:flex;gap:.5rem;z-index:10">
+    @foreach($bannerList as $i => $bn)
+    <button @click="go({{ $i }})"
+        :style="active === {{ $i }} ? 'background:#C9A227;width:1.5rem' : 'background:rgba(255,255,255,.4);width:.625rem'"
+        style="height:.625rem;border-radius:9999px;border:none;cursor:pointer;transition:all .35s"
+        aria-label="Slide {{ $i + 1 }}"></button>
+    @endforeach
+  </div>
+  @endif
+
   {{-- White wave into next section --}}
   <div style="position:absolute;bottom:0;left:0;right:0;line-height:0">
     <svg viewBox="0 0 1440 56" preserveAspectRatio="none" style="width:100%;height:56px;display:block"><path d="M0 56h1440V28C1080 56 720 0 360 28 180 42 0 28 0 28v28z" fill="white"/></svg>
