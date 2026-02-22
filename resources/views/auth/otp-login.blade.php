@@ -1,39 +1,45 @@
 <x-guest-layout>
-    <div class="mb-6 text-center">
-        <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-indigo-100 mb-3">
-            <svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
-            </svg>
-        </div>
-        <h2 class="text-lg font-bold text-gray-800">Admin Login</h2>
-        <p class="text-sm text-gray-500 mt-1">Enter your email or phone — we'll send you a one-time code.</p>
-    </div>
 
-    @if (session('success'))
-        <div class="mb-4 p-3 bg-green-50 border border-green-200 rounded-md text-sm text-green-700">
-            {{ session('success') }}
-        </div>
+    @if(session('success'))
+    <div style="margin-bottom:1rem;padding:.75rem 1rem;background:#ECFDF5;border:1px solid #6EE7B7;border-radius:.5rem;font-size:.85rem;color:#065F46">
+        {{ session('success') }}
+    </div>
     @endif
 
-    <form method="POST" action="{{ route('otp.request') }}">
+    <div style="margin-bottom:1.75rem">
+        <div style="display:inline-flex;align-items:center;gap:.5rem;background:rgba(124,45,55,.08);border:1px solid rgba(124,45,55,.2);color:#7C2D37;font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;padding:.25rem .75rem;border-radius:9999px;margin-bottom:.875rem">
+            <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944"/></svg>
+            Admin Access
+        </div>
+        <h2 style="font-size:1.5rem;font-weight:800;color:#111827;margin:0 0 .25rem">Admin Login</h2>
+        <p style="font-size:.85rem;color:#6B7280;margin:0">Enter your email or phone — we'll send a one-time code.</p>
+    </div>
+
+    <form method="POST" action="{{ route('otp.request') }}" style="display:flex;flex-direction:column;gap:1.125rem">
         @csrf
 
         <div>
-            <x-input-label for="identifier" :value="__('Email or Phone Number')" />
-            <x-text-input id="identifier" class="block mt-1 w-full" type="text" name="identifier"
-                          :value="old('identifier')" required autofocus
-                          placeholder="admin@akuru.edu.mv  or  7972434" />
-            <x-input-error :messages="$errors->get('identifier')" class="mt-2" />
-            <p class="mt-1 text-xs text-gray-400">For Maldives numbers, you can enter just the 7-digit number.</p>
+            <label class="auth-label" for="identifier">Email or Phone Number</label>
+            <input id="identifier" class="auth-input" type="text" name="identifier"
+                   value="{{ old('identifier') }}" required autofocus
+                   placeholder="admin@akuru.edu.mv  ·  7972434">
+            @error('identifier')
+            <p class="auth-error">{{ $message }}</p>
+            @enderror
+            <p style="font-size:.75rem;color:#9CA3AF;margin-top:.375rem">For Maldives numbers, enter the 7-digit number without country code.</p>
         </div>
 
-        <div class="flex items-center justify-between mt-5">
-            <a class="underline text-sm text-gray-500 hover:text-gray-800" href="{{ route('login') }}">
-                ← Staff / Student Login
-            </a>
-            <x-primary-button>
-                {{ __('Send OTP') }}
-            </x-primary-button>
-        </div>
+        <button type="submit" class="auth-btn">
+            Send OTP Code
+        </button>
     </form>
+
+    <div style="text-align:center;margin-top:1.5rem">
+        <a href="{{ route('login') }}"
+           style="font-size:.85rem;color:#6B7280;text-decoration:none"
+           onmouseover="this.style.color='#7C2D37'" onmouseout="this.style.color='#6B7280'">
+            ← Back to regular login
+        </a>
+    </div>
+
 </x-guest-layout>

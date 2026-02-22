@@ -1,60 +1,61 @@
 <x-guest-layout>
-    <div class="mb-6 text-center">
-        <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-indigo-100 mb-3">
-            <svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
-            </svg>
-        </div>
-        <h2 class="text-lg font-bold text-gray-800">Enter Verification Code</h2>
-        <p class="text-sm text-gray-500 mt-1">
+
+    @if(session('success'))
+    <div style="margin-bottom:1rem;padding:.75rem 1rem;background:#ECFDF5;border:1px solid #6EE7B7;border-radius:.5rem;font-size:.85rem;color:#065F46">
+        {{ session('success') }}
+    </div>
+    @endif
+
+    <div style="margin-bottom:1.75rem">
+        <h2 style="font-size:1.5rem;font-weight:800;color:#111827;margin:0 0 .375rem">Enter OTP Code</h2>
+        <p style="font-size:.85rem;color:#6B7280;margin:0">
             We sent a 6-digit code to
-            <strong class="text-gray-700">{{ session('otp_login_identifier', 'your contact') }}</strong>
+            <strong style="color:#374151">{{ session('otp_login_identifier', 'your contact') }}</strong>
         </p>
     </div>
 
-    @if (session('success'))
-        <div class="mb-4 p-3 bg-green-50 border border-green-200 rounded-md text-sm text-green-700">
-            {{ session('success') }}
-        </div>
-    @endif
-
-    <form method="POST" action="{{ route('otp.verify') }}">
+    <form method="POST" action="{{ route('otp.verify') }}" style="display:flex;flex-direction:column;gap:1.25rem">
         @csrf
 
         <div>
-            <x-input-label for="code" :value="__('6-Digit Code')" />
-            <x-text-input id="code"
-                          class="block mt-1 w-full text-center text-3xl tracking-[.5em] font-bold"
-                          type="text" name="code" required autofocus
-                          placeholder="000000" maxlength="6" pattern="[0-9]{6}"
-                          inputmode="numeric" autocomplete="one-time-code" />
-            <x-input-error :messages="$errors->get('code')" class="mt-2" />
+            <label class="auth-label" for="code">6-Digit Code</label>
+            <input id="code" class="auth-input" type="text" name="code"
+                   required autofocus maxlength="6" pattern="[0-9]{6}"
+                   inputmode="numeric" autocomplete="one-time-code"
+                   placeholder="0  0  0  0  0  0"
+                   style="text-align:center;font-size:1.75rem;font-weight:700;letter-spacing:.5em;padding:.75rem">
+            @error('code')
+            <p class="auth-error">{{ $message }}</p>
+            @enderror
+            <p style="font-size:.75rem;color:#9CA3AF;margin-top:.375rem;text-align:center">Code expires in 15 minutes. Auto-submits when 6 digits are entered.</p>
         </div>
 
-        <div class="mt-5">
-            <x-primary-button class="w-full justify-center">
-                {{ __('Verify & Log In') }}
-            </x-primary-button>
-        </div>
-
-        <div class="flex items-center justify-between mt-4">
-            <a href="{{ route('otp.login.form') }}" class="text-sm text-gray-500 hover:text-gray-800 underline">
-                ← Use different account
-            </a>
-            <form method="POST" action="{{ route('otp.resend') }}" class="inline">
-                @csrf
-                <button type="submit" class="text-sm text-indigo-600 hover:text-indigo-800 underline">
-                    Resend code
-                </button>
-            </form>
-        </div>
+        <button type="submit" class="auth-btn">
+            Verify &amp; Sign In
+        </button>
     </form>
 
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-top:1.25rem">
+        <a href="{{ route('otp.login.form') }}"
+           style="font-size:.82rem;color:#6B7280;text-decoration:none"
+           onmouseover="this.style.color='#374151'" onmouseout="this.style.color='#6B7280'">
+            ← Use different account
+        </a>
+        <form method="POST" action="{{ route('otp.resend') }}" style="display:inline">
+            @csrf
+            <button type="submit"
+                    style="background:none;border:none;cursor:pointer;font-size:.82rem;color:#7C2D37;font-weight:600;text-decoration:underline;padding:0">
+                Resend code
+            </button>
+        </form>
+    </div>
+
     <script>
-        const input = document.getElementById('code');
-        input.addEventListener('input', function () {
-            this.value = this.value.replace(/\D/g, '');
-            if (this.value.length === 6) this.form.submit();
-        });
+    const codeInput = document.getElementById('code');
+    codeInput.addEventListener('input', function () {
+        this.value = this.value.replace(/\D/g, '');
+        if (this.value.length === 6) this.form.submit();
+    });
     </script>
+
 </x-guest-layout>
