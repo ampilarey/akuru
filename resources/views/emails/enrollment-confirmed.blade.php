@@ -36,8 +36,12 @@
 
         <p>Dear <strong>{{ $payment->user->name ?? 'Parent/Guardian' }}</strong>,</p>
         <p>
-            We are pleased to confirm that <strong>{{ $studentName }}</strong>'s enrollment has been successfully registered
-            and payment has been received.
+            Thank you! We have received your payment for <strong>{{ $studentName }}</strong>'s enrollment.
+            Your enrollment is now <strong>pending admin approval</strong>.
+        </p>
+        <p style="color:#555;font-size:13px;">
+            You will receive a confirmation SMS/email once the admin approves your enrollment.
+            This usually takes 1–2 business days.
         </p>
 
         <table class="courses">

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Enrollment Confirmed</title>
+<title>Enrollment Received – Pending Approval</title>
 <style>
   body { font-family: Arial, sans-serif; background: #f9f7f4; margin: 0; padding: 0; color: #222; }
   .wrapper { max-width: 560px; margin: 32px auto; background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,.07); }
@@ -24,9 +24,10 @@
   </div>
   <div class="body">
     <p>Dear {{ $enrollment->creator?->name ?? 'Student' }},</p>
-    <p>Your enrollment has been <strong>confirmed</strong>. Welcome to the course!</p>
+    <p>Thank you — your enrollment request has been <strong>received</strong> and is now <strong>pending admin approval</strong>.</p>
+    <p style="color:#555;font-size:13px;">You will receive another notification once your enrollment is approved. This usually takes 1–2 business days.</p>
 
-    <span class="badge">✓ Enrollment confirmed</span>
+    <span class="badge" style="background:#FEF3C7;color:#92400E;">⏳ Pending Approval</span>
 
     <div style="background:#f9f7f4; border-radius:6px; padding:16px; margin:16px 0;">
       <div class="detail-row">
