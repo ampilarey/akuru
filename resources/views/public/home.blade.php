@@ -61,45 +61,46 @@
       @forelse($courses as $course)
       @php
         $isModel = is_object($course) && method_exists($course,'getAttribute');
-        $slug = $isModel ? ($course->slug ?? '') : '';
-        $title = $isModel ? ($course->title ?? '') : '';
-        $desc = $isModel ? ($course->short_desc ?? '') : '';
-        $fee = $isModel ? ($course->fee ?? null) : null;
-        $status = $isModel ? ($course->status ?? 'open') : 'open';
-        $startDate = $isModel && !empty($course->start_date) ? \Carbon\Carbon::parse($course->start_date) : null;
-        $seats = $isModel ? ($course->available_seats ?? null) : null;
-        $img = $isModel && !empty($course->cover_image) ? asset('storage/'.$course->cover_image) : null;
+        $cSlug  = $isModel ? ($course->slug ?? '') : '';
+        $cTitle = $isModel ? ($course->title ?? '') : '';
+        $cDesc  = $isModel ? ($course->short_desc ?? '') : '';
+        $cFee   = $isModel ? ($course->fee ?? null) : null;
+        $cStatus = $isModel ? ($course->status ?? 'open') : 'open';
+        $cDate  = $isModel && !empty($course->start_date) ? \Carbon\Carbon::parse($course->start_date) : null;
+        $cSeats = $isModel ? ($course->available_seats ?? null) : null;
+        $cImg   = $isModel && !empty($course->cover_image) ? asset('storage/'.$course->cover_image) : null;
+        $cHref  = $cSlug ? route('public.courses.show',$cSlug) : route('public.courses.index');
+        $cStatusStyle = $cStatus === 'open' ? 'background:#DCFCE7;color:#15803D' : 'background:#FEF9C3;color:#92400E';
+        $cFeeColor = ($cFee && $cFee > 0) ? '#7C2D37' : '#15803D';
+        $cFeeText  = ($cFee && $cFee > 0) ? 'MVR '.number_format($cFee,0) : 'Free';
+        $cDateText = $cDate ? '📅 '.$cDate->format('d M Y') : 'Date TBC';
       @endphp
-      <a href="{{ $slug ? route('public.courses.show',$slug) : route('public.courses.index') }}"
+      <a href="{{ $cHref }}"
          style="display:flex;flex-direction:column;background:#fff;border:1.5px solid #E5E7EB;border-radius:1rem;overflow:hidden;text-decoration:none;transition:box-shadow .25s,transform .25s"
          onmouseover="this.style.boxShadow='0 12px 36px rgba(0,0,0,.12)';this.style.transform='translateY(-3px)'" onmouseout="this.style.boxShadow='none';this.style.transform='translateY(0)'">
         <div style="position:relative;height:11rem;background:linear-gradient(135deg,#F3EBE0,#FBEDC7);overflow:hidden">
-          @if($img)
-          <img src="{{ $img }}" alt="{{ $title }}" style="width:100%;height:100%;object-fit:cover">
+          @if($cImg)
+          <img src="{{ $cImg }}" alt="{{ $cTitle }}" style="width:100%;height:100%;object-fit:cover">
           @else
           <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center">
             <svg width="52" height="52" fill="none" stroke="#C9A227" stroke-opacity=".4" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253"/></svg>
           </div>
           @endif
-          <span style="position:absolute;top:.625rem;left:.625rem;font-size:.7rem;font-weight:700;padding:.2rem .6rem;border-radius:9999px;{{ $status==='open' ? 'background:#DCFCE7;color:#15803D' : 'background:#FEF9C3;color:#92400E' }}">
-            {{ $status==='open' ? '● Open' : '◷ Upcoming' }}
+          <span style="position:absolute;top:.625rem;left:.625rem;font-size:.7rem;font-weight:700;padding:.2rem .6rem;border-radius:9999px;{{ $cStatusStyle }}">
+            {{ $cStatus === 'open' ? '● Open' : '◷ Upcoming' }}
           </span>
-          @if($seats !== null && $seats <= 5 && $seats > 0)
-          <span style="position:absolute;top:.625rem;right:.625rem;font-size:.7rem;font-weight:700;padding:.2rem .6rem;border-radius:9999px;background:#FEE2E2;color:#B91C1C">{{ $seats }} left!</span>
-          @elseif($seats === 0)
+          @if($cSeats !== null && $cSeats <= 5 && $cSeats > 0)
+          <span style="position:absolute;top:.625rem;right:.625rem;font-size:.7rem;font-weight:700;padding:.2rem .6rem;border-radius:9999px;background:#FEE2E2;color:#B91C1C">{{ $cSeats }} left!</span>
+          @elseif($cSeats === 0)
           <span style="position:absolute;top:.625rem;right:.625rem;font-size:.7rem;font-weight:700;padding:.2rem .6rem;border-radius:9999px;background:#F3F4F6;color:#6B7280">Full</span>
           @endif
         </div>
         <div style="padding:1.125rem;flex:1;display:flex;flex-direction:column">
-          <h3 style="font-weight:700;color:#111827;font-size:1.05rem;line-height:1.3;margin-bottom:.375rem">{{ $title }}</h3>
-          <p style="font-size:.825rem;color:#6B7280;line-height:1.5;flex:1;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical">{{ $desc }}</p>
+          <h3 style="font-weight:700;color:#111827;font-size:1.05rem;line-height:1.3;margin-bottom:.375rem">{{ $cTitle }}</h3>
+          <p style="font-size:.825rem;color:#6B7280;line-height:1.5;flex:1;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical">{{ $cDesc }}</p>
           <div style="display:flex;justify-content:space-between;align-items:center;padding-top:.875rem;margin-top:.875rem;border-top:1px solid #F3F4F6">
-            <span style="font-size:.78rem;color:#9CA3AF">
-              @if($startDate)📅 {{ $startDate->format('d M Y') }}@else Date TBC@endif
-            </span>
-            <span style="font-weight:700;font-size:.9rem;color:{{ $fee && $fee > 0 ? '#7C2D37' : '#15803D' }}">
-              {{ $fee && $fee > 0 ? 'MVR '.number_format($fee,0) : 'Free' }}
-            </span>
+            <span style="font-size:.78rem;color:#9CA3AF">{{ $cDateText }}</span>
+            <span style="font-weight:700;font-size:.9rem;color:{{ $cFeeColor }}">{{ $cFeeText }}</span>
           </div>
         </div>
       </a>
