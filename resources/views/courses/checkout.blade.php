@@ -198,7 +198,6 @@
 
             </div>
 
-        <x-payment-trust-bar />
         </div>
     </div>
 </section>
