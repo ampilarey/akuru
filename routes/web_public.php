@@ -81,7 +81,13 @@ Route::post("courses/register/set-password", [\App\Http\Controllers\CourseRegist
 Route::get("courses/register/continue", [\App\Http\Controllers\CourseRegistrationController::class, "continueForm"])
     ->name("courses.register.continue");
 Route::post("courses/register/enroll", [\App\Http\Controllers\CourseRegistrationController::class, "enroll"])
-    ->name("courses.register.enroll");
+    ->name("courses.register.enroll")->middleware('throttle:10,1');
+Route::get("courses/register/enroll/confirm", [\App\Http\Controllers\CourseRegistrationController::class, "enrollOtpForm"])
+    ->name("courses.register.enroll.otp");
+Route::post("courses/register/enroll/confirm", [\App\Http\Controllers\CourseRegistrationController::class, "enrollConfirm"])
+    ->name("courses.register.enroll.confirm")->middleware('throttle:10,1');
+Route::post("courses/register/enroll/resend", [\App\Http\Controllers\CourseRegistrationController::class, "enrollResendOtp"])
+    ->name("courses.register.enroll.resend")->middleware('throttle:5,1');
 Route::get("courses/register/complete", [\App\Http\Controllers\CourseRegistrationController::class, "complete"])
     ->name("courses.register.complete");
 Route::get("courses/register/resume", [\App\Http\Controllers\CourseRegistrationController::class, "resume"])
