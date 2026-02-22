@@ -120,6 +120,34 @@
                                     <option value="other" @selected(old('relationship') === 'other')>Other</option>
                                 </select>
                             </div>
+
+                            {{-- Child login password --}}
+                            <div style="background:#F0FDF4;border:1.5px solid #86EFAC;border-radius:.625rem;padding:1rem;margin-top:.5rem">
+                                <p style="font-size:.8rem;font-weight:700;color:#166534;margin:0 0 .5rem">🔐 Set Login Password for Child</p>
+                                <p style="font-size:.75rem;color:#15803D;margin:0 0 .75rem">
+                                    Your child will log in using their ID card number and this password.
+                                    If they forget it, the reset code will be sent to your mobile.
+                                </p>
+                                <div class="grid sm:grid-cols-2 gap-3">
+                                    <div>
+                                        <label class="block text-sm font-medium mb-1">Password <span class="text-red-500">*</span></label>
+                                        <input type="password" name="child_password"
+                                               class="w-full rounded-md border-gray-300"
+                                               :disabled="flow !== 'parent' || studentMode !== 'new'"
+                                               minlength="8" required
+                                               placeholder="Min. 8 characters">
+                                        @error('child_password')<p class="text-xs text-red-600 mt-1">{{ $message }}</p>@enderror
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium mb-1">Confirm password <span class="text-red-500">*</span></label>
+                                        <input type="password" name="child_password_confirmation"
+                                               class="w-full rounded-md border-gray-300"
+                                               :disabled="flow !== 'parent' || studentMode !== 'new'"
+                                               minlength="8" required
+                                               placeholder="Repeat password">
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
 

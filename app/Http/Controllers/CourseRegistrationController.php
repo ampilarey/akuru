@@ -437,12 +437,15 @@ class CourseRegistrationController extends PublicRegistrationController
 
         // Store all form data in session
         session([
-            'enroll_pending_data'         => $data,
-            'enroll_pending_flow'         => $flow,
-            'enroll_pending_course_ids'   => $courseIds,
-            'enroll_pending_term_id'      => $termId,
-            'enroll_pending_email'        => trim((string) $request->input('email', '')),
-            'enroll_pending_student_mode' => $request->input('student_mode'),
+            'enroll_pending_data'          => $data,
+            'enroll_pending_flow'          => $flow,
+            'enroll_pending_course_ids'    => $courseIds,
+            'enroll_pending_term_id'       => $termId,
+            'enroll_pending_email'         => trim((string) $request->input('email', '')),
+            'enroll_pending_student_mode'  => $request->input('student_mode'),
+            'enroll_pending_child_password'=> $flow === 'parent' && $request->input('student_mode') === 'new'
+                                               ? $request->input('child_password')
+                                               : null,
         ]);
 
         // Send enrollment consent OTP to verified mobile
@@ -547,12 +550,13 @@ class CourseRegistrationController extends PublicRegistrationController
     /** Process enrollment from session data (called after OTP consent) */
     protected function processEnrollmentFromSession(\App\Models\User $user): RedirectResponse
     {
-        $flow        = session('enroll_pending_flow', 'adult');
-        $data        = session('enroll_pending_data', []);
-        $courseIds   = session('enroll_pending_course_ids', []);
-        $termId      = session('enroll_pending_term_id');
-        $emailInput  = session('enroll_pending_email', '');
-        $studentMode = session('enroll_pending_student_mode');
+        $flow          = session('enroll_pending_flow', 'adult');
+        $data          = session('enroll_pending_data', []);
+        $courseIds     = session('enroll_pending_course_ids', []);
+        $termId        = session('enroll_pending_term_id');
+        $emailInput    = session('enroll_pending_email', '');
+        $studentMode   = session('enroll_pending_student_mode');
+        $childPassword = session('enroll_pending_child_password');
 
         // Save optional email contact
         if ($emailInput && filter_var($emailInput, FILTER_VALIDATE_EMAIL)) {
@@ -571,7 +575,7 @@ class CourseRegistrationController extends PublicRegistrationController
             if ($flow === 'parent') {
                 if ($studentMode === 'new') {
                     $studentData  = ['first_name' => $data['first_name'], 'last_name' => $data['last_name'], 'dob' => $data['dob'], 'gender' => $data['gender'] ?? null, 'id_type' => $data['id_type'] ?? null, 'national_id' => $data['national_id'] ?? null, 'passport' => $data['passport'] ?? null];
-                    $guardianMeta = ['relationship' => $data['relationship'] ?? 'guardian'];
+                    $guardianMeta = ['relationship' => $data['relationship'] ?? 'guardian', 'child_password' => $childPassword];
                     $result = $this->enrollmentService->enrollByParent($user, $studentData, $courseIds, $termId, $guardianMeta);
                 } else {
                     $result = $this->enrollmentService->enrollByParent($user, (int) $data['student_id'], $courseIds, $termId);
@@ -657,7 +661,7 @@ class CourseRegistrationController extends PublicRegistrationController
 
     protected function clearEnrollPendingSession(): void
     {
-        session()->forget(['enroll_pending_data','enroll_pending_flow','enroll_pending_course_ids','enroll_pending_term_id','enroll_pending_email','enroll_pending_student_mode','enroll_otp_contact_id']);
+        session()->forget(['enroll_pending_data','enroll_pending_flow','enroll_pending_course_ids','enroll_pending_term_id','enroll_pending_email','enroll_pending_student_mode','enroll_pending_child_password','enroll_otp_contact_id']);
     }
 
     public function complete(Request $request): View|RedirectResponse
@@ -701,14 +705,16 @@ class CourseRegistrationController extends PublicRegistrationController
 
         if ($flow === 'parent') {
             if ($request->input('student_mode') === 'new') {
-                $rules['first_name']   = ['required', 'string', 'max:100'];
-                $rules['last_name']    = ['required', 'string', 'max:100'];
-                $rules['dob']          = ['required', 'date', 'before:today'];
-                $rules['gender']       = ['nullable', 'in:male,female'];
-                $rules['relationship'] = ['nullable', 'in:father,mother,guardian,other'];
-                $rules['id_type']      = ['required', 'in:national_id,passport'];
-                $rules['national_id']  = ['nullable', 'string', 'max:20', 'regex:/^[A-Za-z][0-9]{5,9}$/'];
-                $rules['passport']     = ['nullable', 'string', 'max:20'];
+                $rules['first_name']                  = ['required', 'string', 'max:100'];
+                $rules['last_name']                   = ['required', 'string', 'max:100'];
+                $rules['dob']                         = ['required', 'date', 'before:today'];
+                $rules['gender']                      = ['nullable', 'in:male,female'];
+                $rules['relationship']                = ['nullable', 'in:father,mother,guardian,other'];
+                $rules['id_type']                     = ['required', 'in:national_id,passport'];
+                $rules['national_id']                 = ['nullable', 'string', 'max:20', 'regex:/^[A-Za-z][0-9]{5,9}$/'];
+                $rules['passport']                    = ['nullable', 'string', 'max:20'];
+                $rules['child_password']              = ['required', 'string', 'min:8', 'confirmed'];
+                $rules['child_password_confirmation'] = ['required', 'string'];
             } else {
                 $rules['student_id'] = ['required', 'exists:registration_students,id'];
             }

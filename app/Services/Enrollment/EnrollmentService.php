@@ -8,7 +8,9 @@ use App\Models\Payment;
 use App\Models\PaymentItem;
 use App\Models\RegistrationStudent;
 use App\Models\User;
+use App\Models\UserContact;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 
 class EnrollmentService
@@ -124,7 +126,58 @@ class EnrollmentService
             ]);
         }
 
+        // Create a login account for the child if they don't have one yet
+        $childPassword = $guardianMeta['child_password'] ?? null;
+        if ($childPassword && ! $student->user_id) {
+            $this->createChildUserAccount($student, $parent, $childPassword);
+        }
+
         return $student;
+    }
+
+    /**
+     * Create a User login account for a child student.
+     * The child logs in with their national_id/passport.
+     * Password reset OTP is sent to the parent's verified mobile.
+     */
+    private function createChildUserAccount(RegistrationStudent $student, User $parent, string $plainPassword): void
+    {
+        try {
+            $childUser = User::create([
+                'name'          => $student->first_name . ' ' . $student->last_name,
+                'national_id'   => $student->national_id ?? $student->passport,
+                'passport'      => $student->passport,
+                'date_of_birth' => $student->dob,
+                'gender'        => $student->gender,
+                'password'      => Hash::make($plainPassword),
+                'is_active'     => true,
+            ]);
+
+            // Assign student role
+            $childUser->assignRole('student');
+
+            // Link parent's verified mobile as the child's password-reset contact
+            // (so reset OTPs go to the parent's phone)
+            $parentMobile = $parent->contacts()
+                ->where('type', 'mobile')
+                ->whereNotNull('verified_at')
+                ->first();
+
+            if ($parentMobile) {
+                // Only create if not already linked
+                UserContact::firstOrCreate(
+                    ['user_id' => $childUser->id, 'type' => 'mobile', 'value' => $parentMobile->value],
+                    ['is_primary' => true, 'verified_at' => now()]
+                );
+            }
+
+            // Link the user account to the student profile
+            $student->update(['user_id' => $childUser->id]);
+
+        } catch (\Throwable $e) {
+            // Log but don't fail enrollment — child can still be enrolled without an account
+            \Illuminate\Support\Facades\Log::error('Failed to create child user account: ' . $e->getMessage());
+        }
     }
 
     /**
