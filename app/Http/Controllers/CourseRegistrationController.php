@@ -118,9 +118,23 @@ class CourseRegistrationController extends PublicRegistrationController
 
     public function start(StartRegistrationRequest $request): RedirectResponse
     {
-        $type = $request->input('contact_type');
-        $value = $request->input('contact_value');
+        $type       = $request->input('contact_type');
+        $value      = $request->input('contact_value');
         $normalized = $this->normalizer->normalize($type, $value);
+
+        // If this contact already exists → ask the user to log in instead of sending OTP
+        $existing = \App\Models\UserContact::where('type', $type)
+            ->where('value', $normalized)
+            ->whereNotNull('verified_at')
+            ->first();
+
+        if ($existing) {
+            $course = \App\Models\Course::find($request->input('course_id'));
+            return redirect()
+                ->route('courses.register.checkout', $course ?? abort(404))
+                ->with('existing_account', $value)
+                ->withInput(['login_contact' => $value]);
+        }
 
         [$user, $contact, $isNew] = $this->accountResolver->resolveOrCreateByContact($type, $normalized);
 
@@ -132,7 +146,7 @@ class CourseRegistrationController extends PublicRegistrationController
             'pending_course_id'           => $request->input('course_id'),
             'pending_selected_course_ids' => $request->input('course_id') ? [(int) $request->input('course_id')] : [],
             'pending_term_id'             => $request->input('term_id'),
-            'checkout_flow'               => $request->input('flow_type'), // adult / parent
+            'checkout_flow'               => $request->input('flow_type'),
         ]);
 
         return redirect()->route('courses.register.otp')

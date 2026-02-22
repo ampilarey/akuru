@@ -40,6 +40,17 @@
                 </div>
             @endif
 
+            {{-- Existing account notice --}}
+            @if(session('existing_account'))
+                <div class="mb-4 p-4 bg-amber-50 border border-amber-300 rounded-lg text-sm">
+                    <p class="font-semibold text-amber-800 mb-1">Account already registered</p>
+                    <p class="text-amber-700">
+                        <strong>{{ session('existing_account') }}</strong> is already registered.
+                        Please log in below to continue your enrollment.
+                    </p>
+                </div>
+            @endif
+
             {{-- Tab switcher --}}
             <div class="flex border-b mb-6">
                 <button type="button"
@@ -205,9 +216,18 @@
 <script>
 function checkoutStart() {
     return {
-        tab: '{{ $errors->has("login_contact") || $errors->has("password") ? "login" : "new" }}',
+        tab: '{{ session("existing_account") || $errors->has("login_contact") || $errors->has("password") ? "login" : "new" }}',
         flowType: '{{ old("flow_type", "") }}',
         otpLogin: false,
+        init() {
+            @if(session('existing_account'))
+            // Pre-fill the login contact field with the number they entered
+            this.$nextTick(() => {
+                const f = document.querySelector('[name="login_contact"]');
+                if (f && !f.value) f.value = '{{ session("existing_account") }}';
+            });
+            @endif
+        }
     }
 }
 
