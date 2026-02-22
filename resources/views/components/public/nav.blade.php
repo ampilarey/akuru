@@ -109,6 +109,15 @@
             </button>
             <div id="user-menu-dropdown"
                  class="absolute right-0 top-full mt-1 z-50 bg-white rounded-xl shadow-xl border border-gray-200 min-w-44 py-1 hidden">
+              @if(auth()->user()->hasAnyRole(['super_admin','admin','headmaster','supervisor']))
+              <a href="{{ route('dashboard') }}"
+                 class="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-white rounded-lg mx-1 mb-1"
+                 style="background:linear-gradient(135deg,#7C2D37,#5A1F28)">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+                Admin Dashboard
+              </a>
+              <div class="border-t border-gray-100 my-1"></div>
+              @endif
               <a href="{{ route('portal.dashboard') }}"
                  class="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-brandBeige-50 hover:text-brandMaroon-700">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -185,6 +194,13 @@
       <div class="pt-2 border-t border-gray-200 mt-4">
         @auth
           <p class="px-4 py-1 text-xs text-gray-400">Signed in as {{ auth()->user()->name }}</p>
+          @if(auth()->user()->hasAnyRole(['super_admin','admin','headmaster','supervisor']))
+          <a href="{{ route('dashboard') }}"
+             class="block py-3 px-4 font-semibold text-white rounded-lg mb-1"
+             style="background:linear-gradient(135deg,#7C2D37,#5A1F28)">
+            ⚙️ Admin Dashboard
+          </a>
+          @endif
           <a href="{{ route('portal.dashboard') }}"
              class="block py-3 px-4 text-brandMaroon-700 font-medium hover:bg-brandMaroon-50 rounded-lg transition-colors duration-200">
             My Portal
