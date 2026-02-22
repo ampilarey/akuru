@@ -23,13 +23,22 @@ $bannerCount = count($bannerList);
         total: {{ $bannerCount }},
         paused: false,
         timer: null,
+        touchX: 0,
+        touchY: 0,
         start() { this.timer = setInterval(() => { if (!this.paused) this.next(); }, 5500); },
         next() { this.active = (this.active + 1) % this.total; },
         prev() { this.active = (this.active - 1 + this.total) % this.total; },
-        go(i)  { this.active = i; }
+        go(i)  { this.active = i; },
+        swipeStart(e) { this.touchX = e.touches[0].clientX; this.touchY = e.touches[0].clientY; },
+        swipeEnd(e) {
+            const dx = e.changedTouches[0].clientX - this.touchX;
+            const dy = e.changedTouches[0].clientY - this.touchY;
+            if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 45) { dx < 0 ? this.next() : this.prev(); }
+        }
     }"
     x-init="start()"
     @mouseenter="paused=true" @mouseleave="paused=false"
+    @touchstart.passive="swipeStart($event)" @touchend.passive="swipeEnd($event)"
     style="background:linear-gradient(135deg,#3D1219 0%,#7C2D37 55%,#5A1F28 100%);position:relative;overflow:hidden;padding-bottom:56px">
 
   {{-- subtle pattern --}}
@@ -91,13 +100,13 @@ $bannerCount = count($bannerList);
   </button>
 
   {{-- Dot indicators --}}
-  <div style="position:absolute;bottom:1.25rem;left:0;right:0;display:flex;justify-content:center;align-items:center;gap:.5rem;z-index:10">
+  <div style="position:absolute;bottom:1rem;left:0;right:0;display:flex;justify-content:center;align-items:center;gap:6px;z-index:10">
     @foreach($bannerList as $i => $bn)
-    <button @click="go({{ $i }})"
+    <span @click="go({{ $i }})"
         :style="active === {{ $i }}
-            ? 'width:1.5rem;height:10px;background:#C9A227;border-radius:9999px;border:none;padding:0;cursor:pointer;transition:all .35s;flex-shrink:0'
-            : 'width:10px;height:10px;background:rgba(255,255,255,.45);border-radius:9999px;border:none;padding:0;cursor:pointer;transition:all .35s;flex-shrink:0'"
-        aria-label="Slide {{ $i + 1 }}"></button>
+            ? 'display:inline-block;width:20px;height:6px;background:#C9A227;border-radius:9999px;transition:all .35s;cursor:pointer;flex-shrink:0'
+            : 'display:inline-block;width:6px;height:6px;background:rgba(255,255,255,.5);border-radius:9999px;transition:all .35s;cursor:pointer;flex-shrink:0'"
+        aria-label="Slide {{ $i + 1 }}"></span>
     @endforeach
   </div>
   @endif
