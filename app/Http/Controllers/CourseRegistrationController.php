@@ -323,7 +323,7 @@ class CourseRegistrationController extends PublicRegistrationController
             $id   = $user->national_id ?? $user->passport ?? 'N/A';
             $time = now()->format('d M Y, g:i A');
 
-            $message = "[Akuru] New student registered:\nName: {$name}\nMobile: {$mobile}\nID: {$id}\nTime: {$time}";
+            $message = "[Akuru] New registration: {$name} ({$mobile})";
 
             foreach ($admins as $admin) {
                 $adminMobile = $admin->contacts()->where('type', 'mobile')->value('value')
@@ -700,7 +700,8 @@ class CourseRegistrationController extends PublicRegistrationController
                 $fee        = $enrollment->course?->fee ?? 0;
                 $name       = $user->name ?? 'Unknown';
                 $mobile     = $user->contacts()->where('type','mobile')->value('value') ?? 'N/A';
-                $message    = "[Akuru] New enrollment:\nStudent: {$name}\nMobile: {$mobile}\nCourse: {$courseName}\nFee: MVR {$fee}\nStatus: Pending payment";
+                $feeText = $fee > 0 ? " MVR {$fee}" : " Free";
+                $message = "[Akuru] Enrollment: {$name} → {$courseName} ({$feeText})";
                 foreach ($admins as $admin) {
                     $adminMobile = $admin->contacts()->where('type','mobile')->value('value') ?? $admin->phone ?? null;
                     if ($adminMobile) {
@@ -947,8 +948,7 @@ class CourseRegistrationController extends PublicRegistrationController
                 try {
                     app(\App\Services\SmsGatewayService::class)->sendSms(
                         $mobile,
-                        "Akuru Institute: Your enrollment for \"{$enrollment->course?->title}\" " .
-                        "has been received. We will confirm your enrollment shortly."
+                        "Akuru: Enrollment received for {$enrollment->course?->title}. Pending approval."
                     );
                 } catch (\Throwable) {
                     // non-critical

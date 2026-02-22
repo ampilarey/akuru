@@ -302,9 +302,7 @@ class PaymentService
             $courses    = $payment->items->map(fn ($i) => $i->course?->title)->filter()->implode(', ');
             $ref        = $payment->local_id ?? $payment->merchant_reference;
 
-            $message = "Akuru Institute: Enrollment confirmed for {$studentName}.\n"
-                     . "Course(s): {$courses}.\n"
-                     . "Ref: {$ref}";
+            $message = "Akuru: Payment received for {$studentName} – {$courses}. Pending admin approval.";
 
             $this->sms->sendSms($mobileContact->value, $message);
         } catch (\Throwable $e) {

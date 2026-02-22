@@ -171,11 +171,8 @@ class EnrollmentController extends Controller
             $fee         = $enrollment->payment?->amount;
             $feeText     = $fee ? ' Fee paid: MVR ' . number_format($fee, 2) . '.' : '';
 
-            $message = "Akuru Institute: Your enrollment has been CONFIRMED!\n"
-                . "Student: {$studentName}\n"
-                . "Course: {$courseName}\n"
-                . "{$feeText}\n"
-                . "Welcome! We look forward to seeing you.";
+            $feeText = $fee ? ' MVR ' . number_format($fee, 2) . ' paid.' : '';
+            $message = "Akuru: {$studentName} enrolled in {$courseName}.{$feeText} See you soon!";
 
             app(SmsGatewayService::class)->sendSms($mobile, $message);
         } catch (\Throwable $e) {
@@ -196,9 +193,7 @@ class EnrollmentController extends Controller
             $studentName = $enrollment->student?->full_name ?? $user?->name ?? 'Student';
             $courseName  = $enrollment->course?->title ?? 'the course';
 
-            $message = "Akuru Institute: We're sorry, the enrollment for {$studentName} "
-                . "in {$courseName} could not be approved at this time. "
-                . "Please contact us for more information.";
+            $message = "Akuru: Sorry, {$studentName}'s enrollment in {$courseName} was not approved. Contact us for details.";
 
             app(SmsGatewayService::class)->sendSms($mobile, $message);
         } catch (\Throwable $e) {
