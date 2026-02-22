@@ -90,26 +90,26 @@
                                 <a href="{{ route('admin.courses.index') }}" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-md">
                                     Manage Courses
                                 </a>
-                                <a href="{{ route('admin.posts.index') }}" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-md">
-                                    Manage Posts
+                                <a href="{{ route('admin.pages.index') }}" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-md">
+                                    Manage Pages
                                 </a>
                             @endif
                             
                             @if($dashboardData['role'] === 'teacher')
-                                <a href="{{ route('teacher.students.index') }}" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-md">
+                                <a href="{{ route('students.index') }}" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-md">
                                     View Students
                                 </a>
-                                <a href="{{ route('teacher.courses.index') }}" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-md">
-                                    My Courses
+                                <a href="{{ route('quran-progress.index') }}" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-md">
+                                    Quran Progress
                                 </a>
                             @endif
                             
                             @if($dashboardData['role'] === 'student')
-                                <a href="{{ route('student.courses.index') }}" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-md">
-                                    My Courses
+                                <a href="{{ route('my.enrollments') }}" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-md">
+                                    My Enrollments
                                 </a>
-                                <a href="{{ route('student.progress') }}" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-md">
-                                    View Progress
+                                <a href="{{ route('portal.dashboard') }}" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-md">
+                                    My Portal
                                 </a>
                             @endif
                             

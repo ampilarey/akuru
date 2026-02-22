@@ -19,6 +19,7 @@ use App\Http\Controllers\Admin\EnrollmentController as AdminEnrollmentController
 use App\Http\Controllers\Admin\InstructorController as AdminInstructorController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\AnalyticsController;
+use App\Http\Controllers\Admin\SettingsController as AdminSettingsController;
 
 // Authentication routes (using Breeze)
 require __DIR__.'/auth.php';
@@ -101,6 +102,12 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::get('/{instructor}/edit', [AdminInstructorController::class, 'edit'])->name('admin.instructors.edit');
         Route::put('/{instructor}', [AdminInstructorController::class, 'update'])->name('admin.instructors.update');
         Route::delete('/{instructor}', [AdminInstructorController::class, 'destroy'])->name('admin.instructors.destroy');
+    });
+
+    // Admin Settings
+    Route::prefix('admin/settings')->middleware(['role:super_admin'])->group(function () {
+        Route::get('/', [AdminSettingsController::class, 'index'])->name('admin.settings.index');
+        Route::post('/clear-cache', [AdminSettingsController::class, 'clearCache'])->name('admin.settings.clear-cache');
     });
 
     // Admin CMS routes
