@@ -35,43 +35,45 @@ $bannerCount = count($bannerList);
   {{-- subtle pattern --}}
   <div style="position:absolute;inset:0;opacity:.07;background-image:url(\"data:image/svg+xml,%3Csvg width='52' height='26' viewBox='0 0 52 26' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23C9A227' fill-opacity='1'%3E%3Cpath d='M10 10c0-2.21-1.79-4-4-4-3.314 0-6-2.686-6-6h2c0 2.21 1.79 4 4 4 3.314 0 6 2.686 6 6 0 2.21 1.79 4 4 4 3.314 0 6 2.686 6 6 0 2.21 1.79 4 4 4v2c-3.314 0-6-2.686-6-6 0-2.21-1.79-4-4-4-3.314 0-6-2.686-6-6zm25.464-1.95l8.486 8.486-1.414 1.414-8.486-8.486 1.414-1.414z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E\")"></div>
 
-  {{-- Slides --}}
+  {{-- Slide stage: fixed-height container so transitioning slides overlap instead of stacking --}}
+  <div style="position:relative;min-height:28rem;display:flex;align-items:center">
   @foreach($bannerList as $i => $bn)
   <div
       x-show="active === {{ $i }}"
       x-transition:enter="transition ease-out duration-700"
-      x-transition:enter-start="opacity-0 translate-y-4"
-      x-transition:enter-end="opacity-100 translate-y-0"
+      x-transition:enter-start="opacity-0 scale-95"
+      x-transition:enter-end="opacity-100 scale-100"
       x-transition:leave="transition ease-in duration-300"
-      x-transition:leave-start="opacity-100"
-      x-transition:leave-end="opacity-0"
-      class="container mx-auto px-4 relative text-center text-white"
-      style="padding-top:5rem;padding-bottom:{{ $bannerCount > 1 ? '4rem' : '5rem' }}">
-
-    <span style="display:inline-block;background:rgba(201,162,39,0.2);border:1px solid rgba(201,162,39,0.4);color:#E8BC3C;font-size:.75rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:.375rem 1rem;border-radius:9999px;margin-bottom:1.25rem">
-      🕌 Islamic Education in the Maldives
-    </span>
-    <h1 style="font-size:clamp(2rem,5vw,3.5rem);font-weight:800;line-height:1.15;margin-bottom:1.25rem;text-shadow:0 2px 16px rgba(0,0,0,.4)">
-      {{ $bn['title'] }}
-    </h1>
-    <p style="font-size:clamp(1rem,2vw,1.25rem);color:rgba(255,255,255,.8);max-width:40rem;margin:0 auto 2.5rem;line-height:1.7">
-      {{ $bn['subtitle'] }}
-    </p>
-    <div style="display:flex;flex-wrap:wrap;gap:.875rem;justify-content:center">
-      <a href="{{ $bn['cta_url'] ?? route('public.courses.index') }}"
-         style="display:inline-flex;align-items:center;gap:.5rem;background:#C9A227;color:#3D1219;font-weight:700;padding:.875rem 2rem;border-radius:.75rem;font-size:1.05rem;text-decoration:none;transition:opacity .2s,transform .2s"
-         onmouseover="this.style.opacity='.88';this.style.transform='scale(1.04)'" onmouseout="this.style.opacity='1';this.style.transform='scale(1)'">
-        {{ $bn['cta_text'] ?? 'Enroll Now' }}
-      </a>
-      <a href="viber://chat?number=%2B{{ $siteSettings['viber'] ?? '9607972434' }}&text={{ urlencode('Assalaamu alaikum, I want to know about Akuru Institute.') }}"
-         style="display:inline-flex;align-items:center;gap:.5rem;background:rgba(255,255,255,.12);color:white;border:2px solid rgba(255,255,255,.35);font-weight:600;padding:.875rem 2rem;border-radius:.75rem;font-size:1.05rem;text-decoration:none;transition:background .2s"
-         onmouseover="this.style.background='rgba(255,255,255,.2)'" onmouseout="this.style.background='rgba(255,255,255,.12)'">
-        <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M11.993 0C5.5 0 .527 4.972.527 11.473c0 3.107 1.2 5.943 3.17 8.053V23l2.953-1.628A11.03 11.03 0 0011.993 22.736c6.457 0 11.43-4.972 11.43-11.472C23.459 4.813 18.487 0 11.993 0z"/></svg>
-        Chat on Viber
-      </a>
+      x-transition:leave-start="opacity-100 scale-100"
+      x-transition:leave-end="opacity-0 scale-95"
+      style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center">
+    <div class="container mx-auto px-4 text-center text-white" style="width:100%;padding-top:5rem;padding-bottom:{{ $bannerCount > 1 ? '3.5rem' : '5rem' }}">
+      <span style="display:inline-block;background:rgba(201,162,39,0.2);border:1px solid rgba(201,162,39,0.4);color:#E8BC3C;font-size:.75rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:.375rem 1rem;border-radius:9999px;margin-bottom:1.25rem">
+        🕌 Islamic Education in the Maldives
+      </span>
+      <h1 style="font-size:clamp(2rem,5vw,3.5rem);font-weight:800;line-height:1.15;margin-bottom:1.25rem;text-shadow:0 2px 16px rgba(0,0,0,.4)">
+        {{ $bn['title'] }}
+      </h1>
+      <p style="font-size:clamp(1rem,2vw,1.25rem);color:rgba(255,255,255,.8);max-width:40rem;margin:0 auto 2.5rem;line-height:1.7">
+        {{ $bn['subtitle'] }}
+      </p>
+      <div style="display:flex;flex-wrap:wrap;gap:.875rem;justify-content:center">
+        <a href="{{ $bn['cta_url'] ?? route('public.courses.index') }}"
+           style="display:inline-flex;align-items:center;gap:.5rem;background:#C9A227;color:#3D1219;font-weight:700;padding:.875rem 2rem;border-radius:.75rem;font-size:1.05rem;text-decoration:none;transition:opacity .2s,transform .2s"
+           onmouseover="this.style.opacity='.88';this.style.transform='scale(1.04)'" onmouseout="this.style.opacity='1';this.style.transform='scale(1)'">
+          {{ $bn['cta_text'] ?? 'Enroll Now' }}
+        </a>
+        <a href="viber://chat?number=%2B{{ $siteSettings['viber'] ?? '9607972434' }}&text={{ urlencode('Assalaamu alaikum, I want to know about Akuru Institute.') }}"
+           style="display:inline-flex;align-items:center;gap:.5rem;background:rgba(255,255,255,.12);color:white;border:2px solid rgba(255,255,255,.35);font-weight:600;padding:.875rem 2rem;border-radius:.75rem;font-size:1.05rem;text-decoration:none;transition:background .2s"
+           onmouseover="this.style.background='rgba(255,255,255,.2)'" onmouseout="this.style.background='rgba(255,255,255,.12)'">
+          <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M11.993 0C5.5 0 .527 4.972.527 11.473c0 3.107 1.2 5.943 3.17 8.053V23l2.953-1.628A11.03 11.03 0 0011.993 22.736c6.457 0 11.43-4.972 11.43-11.472C23.459 4.813 18.487 0 11.993 0z"/></svg>
+          Chat on Viber
+        </a>
+      </div>
     </div>
   </div>
   @endforeach
+  </div>{{-- end slide stage --}}
 
   {{-- Prev / Next arrows + dots (only when multiple banners) --}}
   @if($bannerCount > 1)
