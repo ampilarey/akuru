@@ -13,12 +13,25 @@ class HomeController extends Controller
     {
         $locale = app()->getLocale();
 
-        // Cache homepage blocks for 10 minutes, keyed by locale
-        $cached = Cache::remember("homepage_data_v2_{$locale}", 600, function () use ($locale) {
+        // Cache courses/posts/events/stats for 10 minutes; gallery+testimonials are fetched fresh
+        $cached = Cache::remember("homepage_data_v4_{$locale}", 600, function () use ($locale) {
             return $this->buildHomepageData($locale);
         });
 
-        return view('public.home', array_merge(['text' => $cached['text']], $cached));
+        // These are always fetched fresh so they never appear missing due to stale cache
+        $galleryPhotos = GalleryAlbum::with(['items' => fn($q) => $q->where('file_type', 'image')->orderBy('sort_order')])
+            ->orderBy('sort_order')
+            ->get()
+            ->flatMap(fn($album) => $album->items)
+            ->take(12)
+            ->values();
+
+        $testimonials = Testimonial::where('is_public', true)
+            ->orderBy('order')
+            ->take(8)
+            ->get();
+
+        return view('public.home', array_merge($cached, compact('galleryPhotos', 'testimonials')));
     }
 
     private function buildHomepageData(string $locale): array
@@ -112,20 +125,6 @@ class HomeController extends Controller
             'teachers' => $teacherCount ?: 25,
         ];
 
-        // Testimonials
-        $testimonials = Testimonial::where('is_public', true)
-            ->orderBy('order')
-            ->take(8)
-            ->get();
-
-        // Gallery strip — up to 12 photos from all albums
-        $galleryPhotos = GalleryAlbum::with(['items' => fn($q) => $q->where('file_type', 'image')->orderBy('sort_order')])
-            ->orderBy('sort_order')
-            ->get()
-            ->flatMap(fn($album) => $album->items)
-            ->take(12)
-            ->values();
-
-        return compact('text', 'heroBanners', 'courses', 'posts', 'articles', 'events', 'stats', 'testimonials', 'galleryPhotos');
+        return compact('text', 'heroBanners', 'courses', 'posts', 'articles', 'events', 'stats');
     }
 }

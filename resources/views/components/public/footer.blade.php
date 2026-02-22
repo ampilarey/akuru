@@ -1,99 +1,88 @@
-<footer class="bg-brandBeige-200 border-t-4 border-brandGold-600 mt-16">
+<footer style="background:linear-gradient(160deg,#3D1219 0%,#491821 60%,#5A1F28 100%)">
+  {{-- Gold top accent --}}
+  <div style="height:4px;background:linear-gradient(90deg,#A8861F,#C9A227,#E8BC3C,#C9A227,#A8861F)"></div>
+
   <div class="container mx-auto py-12 px-4">
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
-      <!-- About Section -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-10">
+
+      {{-- Brand column --}}
       <div class="col-span-1 md:col-span-2">
-        <div class="flex items-center space-x-3 rtl:space-x-reverse mb-4">
-          <x-akuru-logo size="h-12" />
+        <div class="flex items-center gap-3 mb-5">
+          <x-akuru-logo size="h-12" class="brightness-0 invert" />
         </div>
-        <p class="text-gray-700 mb-4 max-w-md leading-relaxed">
+        <p class="text-white/65 text-sm leading-relaxed mb-6 max-w-sm">
           {{ __('public.footer_description') }}
         </p>
-        <div class="space-y-2 text-sm text-gray-700">
-          <div class="flex items-center space-x-2 rtl:space-x-reverse">
-            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-              <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"/>
-            </svg>
-            <span>{{ __('public.address') }}</span>
+        <div class="space-y-2.5">
+          <div class="flex items-center gap-3 text-white/70 text-sm">
+            <div class="w-7 h-7 rounded-lg flex items-center justify-center shrink-0" style="background:rgba(201,162,39,0.2)">
+              <svg class="w-3.5 h-3.5" style="color:#C9A227" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"/></svg>
+            </div>
+            <span>{{ $siteSettings['address'] ?? 'Malé, Republic of Maldives' }}</span>
           </div>
-          <div class="flex items-center space-x-2 rtl:space-x-reverse">
-            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-              <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z"/>
-            </svg>
-            <span>+960 797 2434</span>
+          <div class="flex items-center gap-3 text-white/70 text-sm">
+            <div class="w-7 h-7 rounded-lg flex items-center justify-center shrink-0" style="background:rgba(201,162,39,0.2)">
+              <svg class="w-3.5 h-3.5" style="color:#C9A227" fill="currentColor" viewBox="0 0 20 20"><path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z"/></svg>
+            </div>
+            <a href="tel:{{ $siteSettings['phone'] ?? '+9607972434' }}" class="hover:text-white transition-colors">{{ $siteSettings['phone'] ?? '+960 797 2434' }}</a>
           </div>
-          <div class="flex items-center space-x-2 rtl:space-x-reverse">
-            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-              <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"/>
-              <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"/>
-            </svg>
-            <span>info@akuru.edu.mv</span>
+          <div class="flex items-center gap-3 text-white/70 text-sm">
+            <div class="w-7 h-7 rounded-lg flex items-center justify-center shrink-0" style="background:rgba(201,162,39,0.2)">
+              <svg class="w-3.5 h-3.5" style="color:#C9A227" fill="currentColor" viewBox="0 0 20 20"><path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"/><path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"/></svg>
+            </div>
+            <a href="mailto:{{ $siteSettings['email'] ?? 'info@akuru.edu.mv' }}" class="hover:text-white transition-colors">{{ $siteSettings['email'] ?? 'info@akuru.edu.mv' }}</a>
+          </div>
+          <div class="flex items-center gap-3 text-white/70 text-sm">
+            <div class="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 bg-purple-700">
+              <svg class="w-3.5 h-3.5 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M11.993 0C5.5 0 .527 4.972.527 11.473c0 3.107 1.2 5.943 3.17 8.053V23l2.953-1.628A11.03 11.03 0 0011.993 22.736c6.457 0 11.43-4.972 11.43-11.472C23.459 4.813 18.487 0 11.993 0z"/></svg>
+            </div>
+            <a href="viber://chat?number=%2B{{ $siteSettings['viber'] ?? '9607972434' }}" class="hover:text-white transition-colors">Viber: +{{ $siteSettings['viber'] ?? '960 797 2434' }}</a>
           </div>
         </div>
       </div>
 
-      <!-- Quick Links -->
+      {{-- Quick Links --}}
       <div>
-        <h4 class="font-bold text-lg mb-4 text-brandMaroon-700">{{ __('public.Quick Links') }}</h4>
-        <ul class="space-y-2 text-sm text-gray-700">
-          <li><a href="{{ route('public.about', app()->getLocale()) }}" class="hover:text-brandGold-700 transition-colors">{{ __('public.About Us') }}</a></li>
-          <li><a href="{{ route('public.courses.index') }}" class="hover:text-brandGold-700 transition-colors">{{ __('public.Courses') }}</a></li>
-          <li><a href="{{ route('public.admissions.create', app()->getLocale()) }}" class="hover:text-brandGold-700 transition-colors">{{ __('public.Admissions') }}</a></li>
-          <li><a href="{{ route('public.news.index', app()->getLocale()) }}" class="hover:text-brandGold-700 transition-colors">{{ __('public.News') }}</a></li>
-          <li><a href="{{ route('public.events.index', app()->getLocale()) }}" class="hover:text-brandGold-700 transition-colors">{{ __('public.Events') }}</a></li>
-          <li><a href="{{ route('public.contact.create', app()->getLocale()) }}" class="hover:text-brandGold-700 transition-colors">{{ __('public.Contact') }}</a></li>
+        <h4 class="font-bold text-sm uppercase tracking-widest mb-5" style="color:#C9A227">Quick Links</h4>
+        <ul class="space-y-2.5">
+          @foreach([
+            ['About Us', route('public.about', app()->getLocale())],
+            ['Courses', route('public.courses.index')],
+            ['Admissions', route('public.admissions.create', app()->getLocale())],
+            ['News', route('public.news.index', app()->getLocale())],
+            ['Events', route('public.events.index', app()->getLocale())],
+            ['Gallery', route('public.gallery.index')],
+            ['Contact', route('public.contact.create', app()->getLocale())],
+          ] as [$label, $url])
+          <li><a href="{{ $url }}" class="text-white/60 hover:text-white text-sm transition-colors">{{ $label }}</a></li>
+          @endforeach
         </ul>
       </div>
 
-      <!-- Programs -->
+      {{-- Programs --}}
       <div>
-        <h4 class="font-bold text-lg mb-4 text-brandMaroon-700">{{ __('public.Programs') }}</h4>
-        <ul class="space-y-2 text-sm text-gray-700">
-          <li><a href="#" class="hover:text-brandGold-700 transition-colors">{{ __('public.Quran Memorization') }}</a></li>
-          <li><a href="#" class="hover:text-brandGold-700 transition-colors">{{ __('public.Arabic Language') }}</a></li>
-          <li><a href="#" class="hover:text-brandGold-700 transition-colors">{{ __('public.Islamic Studies') }}</a></li>
-          <li><a href="#" class="hover:text-brandGold-700 transition-colors">{{ __('public.Tajweed Classes') }}</a></li>
-          <li><a href="#" class="hover:text-brandGold-700 transition-colors">{{ __('public.Adult Education') }}</a></li>
+        <h4 class="font-bold text-sm uppercase tracking-widest mb-5" style="color:#C9A227">Programs</h4>
+        <ul class="space-y-2.5">
+          @foreach([
+            ['Quran Memorization', route('public.courses.index')],
+            ['Arabic Language', route('public.courses.index')],
+            ['Islamic Studies', route('public.courses.index')],
+            ['Tajweed Classes', route('public.courses.index')],
+            ['Adult Education', route('public.courses.index')],
+          ] as [$label, $url])
+          <li><a href="{{ $url }}" class="text-white/60 hover:text-white text-sm transition-colors">{{ $label }}</a></li>
+          @endforeach
         </ul>
       </div>
     </div>
 
-    <!-- Bottom Section -->
-    <div class="border-t border-brandGold-300 mt-8 pt-8">
-      <div class="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
-        <div class="text-sm text-gray-600">
-          © {{ date('Y') }} {{ __('public.Akuru Institute') }}. {{ __('public.All rights reserved') }}.
-        </div>
-        
-        <div class="flex items-center space-x-6 rtl:space-x-reverse">
-          <a href="{{ route('public.page.show', 'privacy-policy') }}" 
-             class="text-sm text-gray-600 hover:text-brandMaroon-700 transition-colors font-medium">
-            {{ __('public.Privacy Policy') }}
-          </a>
-          <a href="{{ route('public.page.show', 'terms') }}" 
-             class="text-sm text-gray-600 hover:text-brandMaroon-700 transition-colors font-medium">
-            {{ __('public.Terms of Service') }}
-          </a>
-        </div>
-
-        <!-- Social Links -->
-        <div class="flex items-center space-x-4 rtl:space-x-reverse">
-          <a href="#" class="text-gray-600 hover:text-brandMaroon-700 transition-colors">
-            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z"/>
-            </svg>
-          </a>
-          <a href="#" class="text-gray-600 hover:text-brandMaroon-700 transition-colors">
-            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M22.46 6c-.77.35-1.6.58-2.46.69.88-.53 1.56-1.37 1.88-2.38-.83.5-1.75.85-2.72 1.05C18.37 4.5 17.26 4 16 4c-2.35 0-4.27 1.92-4.27 4.29 0 .34.04.67.11.98C8.28 9.09 5.11 7.38 3 4.79c-.37.63-.58 1.37-.58 2.15 0 1.49.75 2.81 1.91 3.56-.71 0-1.37-.2-1.95-.5v.03c0 2.08 1.48 3.82 3.44 4.21a4.22 4.22 0 0 1-1.93.07 4.28 4.28 0 0 0 4 2.98 8.521 8.521 0 0 1-5.33 1.84c-.34 0-.68-.02-1.02-.06C3.44 20.29 5.7 21 8.12 21 16 21 20.33 14.46 20.33 8.79c0-.19 0-.37-.01-.56.84-.6 1.56-1.36 2.14-2.23z"/>
-            </svg>
-          </a>
-          <a href="#" class="text-gray-600 hover:text-brandMaroon-700 transition-colors">
-            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
-            </svg>
-          </a>
-        </div>
+    {{-- Bottom bar --}}
+    <div class="mt-10 pt-6 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <p class="text-white/40 text-sm">© {{ date('Y') }} Akuru Institute. All rights reserved.</p>
+      <div class="flex items-center gap-5">
+        <a href="{{ route('public.page.show', 'privacy-policy') }}" class="text-white/40 hover:text-white text-xs transition-colors">Privacy Policy</a>
+        <a href="{{ route('public.page.show', 'terms') }}" class="text-white/40 hover:text-white text-xs transition-colors">Terms of Service</a>
+        <a href="{{ route('public.page.show', 'refund-policy') }}" class="text-white/40 hover:text-white text-xs transition-colors">Refund Policy</a>
       </div>
     </div>
   </div>

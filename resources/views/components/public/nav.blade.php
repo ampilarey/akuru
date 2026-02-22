@@ -1,4 +1,5 @@
-<nav class="bg-white border-b shadow-sm sticky top-0 z-50">
+<div style="height:3px;background:linear-gradient(90deg,#A8861F,#C9A227,#E8BC3C,#C9A227,#A8861F)"></div>
+<nav class="bg-white border-b border-gray-100 shadow-sm sticky top-0 z-50">
   <div class="container mx-auto flex items-center justify-between py-3 px-4">
     <!-- Logo -->
     <div class="flex items-center space-x-3 rtl:space-x-reverse">
@@ -39,8 +40,9 @@
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
         </svg>
       </a>
-      <a href="{{ route('public.courses.index') }}" 
-         class="bg-brandMaroon-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-brandMaroon-700 transition-colors shadow-md">
+      <a href="{{ route('public.courses.index') }}"
+         class="font-bold px-5 py-2 rounded-lg shadow-md transition-all hover:scale-105"
+         style="background:#C9A227;color:#491821">
         {{ __('public.Enroll') }}
       </a>
     </div>
@@ -216,8 +218,9 @@
 
       <!-- Mobile Apply Now Button -->
       <div class="pt-4">
-        <a href="{{ route('public.courses.index') }}" 
-           class="block w-full py-3 px-4 bg-brandMaroon-600 text-white text-center rounded-lg font-semibold hover:bg-brandMaroon-700 transition-colors shadow-md">
+        <a href="{{ route('public.courses.index') }}"
+           class="block w-full py-3 px-4 text-center rounded-lg font-bold shadow-md transition-colors"
+           style="background:#C9A227;color:#491821">
           {{ __('public.Enroll') }}
         </a>
       </div>

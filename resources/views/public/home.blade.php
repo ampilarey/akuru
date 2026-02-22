@@ -45,12 +45,8 @@
         </div>
     </div>
 
-    {{-- Decorative bottom wave --}}
-    <div class="absolute bottom-0 left-0 right-0">
-        <svg viewBox="0 0 1440 40" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full" style="display:block">
-            <path d="M0 40 Q360 0 720 20 Q1080 40 1440 10 L1440 40 Z" fill="white"/>
-        </svg>
-    </div>
+    {{-- Gold divider at bottom --}}
+    <div class="absolute bottom-0 left-0 right-0" style="height:4px;background:linear-gradient(90deg,transparent,#C9A227,transparent)"></div>
 </section>
 
 {{-- ══════════════════════════════════════════════════════════════
@@ -349,7 +345,11 @@ document.addEventListener('keydown',e=>{if(document.getElementById('hlb').style.
                         </div>
                     </a>
                     @empty
-                    <p class="text-sm text-gray-400">No upcoming events.</p>
+                    <div class="text-center py-8 text-gray-400">
+                        <svg class="w-10 h-10 mx-auto mb-2 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                        <p class="text-sm">No upcoming events scheduled.</p>
+                        <a href="{{ route('public.contact.create') }}" class="text-xs mt-1 block text-brandMaroon-500 hover:underline">Enquire about workshops →</a>
+                    </div>
                     @endforelse
                 </div>
             </div>
@@ -412,20 +412,21 @@ document.addEventListener('keydown',e=>{if(document.getElementById('hlb').style.
 </section>
 
 {{-- ══════════════════════════════════════════════════════════════
-     9. FINAL CTA  — maroon gradient
+     9. FINAL CTA  — gold gradient (contrasts with dark maroon Location above)
 ══════════════════════════════════════════════════════════════ --}}
-<section class="py-14" style="background:linear-gradient(135deg,#7C2D37,#491821)">
+<section class="py-14 sm:py-16" style="background:linear-gradient(135deg,#A8861F 0%,#C9A227 50%,#E8BC3C 100%)">
     <div class="container mx-auto px-4 text-center">
-        <h2 class="text-3xl sm:text-4xl font-bold text-white mb-3">Ready to Start Your Journey?</h2>
-        <p class="text-white/70 mb-8 max-w-xl mx-auto">Join hundreds of students who chose Akuru Institute for their Islamic education.</p>
+        <h2 class="text-3xl sm:text-4xl font-bold mb-3" style="color:#3D1219">Ready to Start Your Journey?</h2>
+        <p class="mb-8 max-w-xl mx-auto" style="color:rgba(61,18,25,0.65)">Join hundreds of students who chose Akuru Institute for their Islamic education.</p>
         <div class="flex flex-col sm:flex-row gap-4 justify-center">
             <a href="{{ route('public.courses.index') }}"
                class="inline-flex items-center justify-center gap-2 font-bold px-8 py-4 rounded-xl text-lg shadow-lg transition-all hover:scale-105"
-               style="background:#C9A227;color:#491821">
+               style="background:#491821;color:white">
                 {{ __('public.Enroll') }}
             </a>
             <a href="{{ route('public.contact.create') }}"
-               class="inline-flex items-center justify-center gap-2 font-semibold px-8 py-4 rounded-xl text-lg text-white transition-all hover:bg-white/10 border-2 border-white/30">
+               class="inline-flex items-center justify-center gap-2 font-semibold px-8 py-4 rounded-xl text-lg transition-all hover:scale-105"
+               style="background:rgba(61,18,25,0.12);color:#3D1219;border:2px solid rgba(61,18,25,0.25)">
                 {{ __('public.Contact Us') }}
             </a>
         </div>
