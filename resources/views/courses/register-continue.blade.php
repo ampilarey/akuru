@@ -17,16 +17,26 @@
                     <p class="text-gray-600 mb-4">How would you like to enroll?</p>
                     <div class="grid sm:grid-cols-2 gap-4">
                         <button type="button" @click="flow = 'parent'"
-                            :class="flow === 'parent' ? 'ring-2 ring-brandMaroon-500' : ''"
-                            class="p-4 border rounded-lg text-left hover:bg-gray-50 transition">
-                            <span class="font-medium block">I am a parent/guardian enrolling my child</span>
-                            <span class="text-sm text-gray-500">Add or select your child's details</span>
+                            :style="flow === 'parent'
+                                ? 'border:2px solid #7C2D37;background:#FDF2F2;color:#7C2D37'
+                                : 'border:1px solid #D1D5DB;background:white;color:#374151'"
+                            style="padding:1rem;border-radius:.5rem;text-align:left;transition:all .15s;cursor:pointer;display:block;width:100%">
+                            <span style="font-weight:600;display:flex;align-items:center;gap:.4rem">
+                                <span x-show="flow === 'parent'" style="color:#7C2D37">✓</span>
+                                I am a parent/guardian enrolling my child
+                            </span>
+                            <span style="font-size:.82rem;color:#6B7280;margin-top:.2rem;display:block">Add or select your child's details</span>
                         </button>
                         <button type="button" @click="flow = 'adult'"
-                            :class="flow === 'adult' ? 'ring-2 ring-brandMaroon-500' : ''"
-                            class="p-4 border rounded-lg text-left hover:bg-gray-50 transition">
-                            <span class="font-medium block">I am 18+ enrolling myself</span>
-                            <span class="text-sm text-gray-500">Enter your own details</span>
+                            :style="flow === 'adult'
+                                ? 'border:2px solid #7C2D37;background:#FDF2F2;color:#7C2D37'
+                                : 'border:1px solid #D1D5DB;background:white;color:#374151'"
+                            style="padding:1rem;border-radius:.5rem;text-align:left;transition:all .15s;cursor:pointer;display:block;width:100%">
+                            <span style="font-weight:600;display:flex;align-items:center;gap:.4rem">
+                                <span x-show="flow === 'adult'" style="color:#7C2D37">✓</span>
+                                I am 18+ enrolling myself
+                            </span>
+                            <span style="font-size:.82rem;color:#6B7280;margin-top:.2rem;display:block">Enter your own details</span>
                         </button>
                     </div>
                 </div>
@@ -202,16 +212,18 @@
 
 <script>
 function enrollFlow() {
+    @php
+        $restoredFlow        = old('flow', $defaultFlow);
+        $restoredStudentMode = old('student_mode', $user->guardianStudents->isNotEmpty() ? 'existing' : 'new');
+        $restoredIdType      = old('id_type', 'national_id');
+        $adultIdTypeDefault  = $prefill['id_type'] ?: 'national_id';
+    @endphp
     return {
-        flow: '{{ $defaultFlow }}',
-        studentMode: '{{ $user->guardianStudents->isNotEmpty() ? "existing" : "new" }}',
-        adultIdType: '{{ old("id_type", $prefill["id_type"]) }}',
-        childIdType: '{{ old("id_type", "national_id") }}',
-        init() {
-            if (this.studentMode === 'existing' && document.querySelector('input[name="student_mode"][value="existing"]')) {
-                this.studentMode = 'existing';
-            }
-        }
+        flow: '{{ $restoredFlow }}',
+        studentMode: '{{ $restoredStudentMode }}',
+        adultIdType: '{{ $restoredFlow === "adult" ? $restoredIdType : $adultIdTypeDefault }}',
+        childIdType: '{{ $restoredFlow === "parent" ? $restoredIdType : "national_id" }}',
+        init() {}
     }
 }
 </script>
