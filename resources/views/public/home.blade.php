@@ -1,398 +1,335 @@
 @extends('public.layouts.public')
-
-@section('title', $text['title'] ?? __('public.Welcome to Akuru Institute'))
-@section('description', $text['desc'] ?? __('public.Learn Quran, Arabic, and Islamic Studies'))
+@section('title', $text['title'] ?? 'Welcome to Akuru Institute')
+@section('description', $text['desc'] ?? 'Learn Quran, Arabic, and Islamic Studies in the Maldives')
 
 @section('content')
 
-{{-- ── 1. HERO ─────────────────────────────────────────────────────── --}}
-@php $firstBanner = $heroBanners->first(); @endphp
-<section class="relative bg-gradient-to-br from-brandMaroon-900 via-brandMaroon-700 to-brandMaroon-800 text-white overflow-hidden">
-    <div class="absolute inset-0 opacity-10" style="background-image:url(\"data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E\")"></div>
-    {{-- Optional hero background image --}}
-    @if($firstBanner && !empty($firstBanner->image_path))
-    <div class="absolute inset-0 bg-cover bg-center opacity-20" style="background-image:url('{{ asset('storage/'.$firstBanner->image_path) }}')"></div>
-    @endif
-    <div class="container mx-auto px-4 py-16 sm:py-24 relative">
-        <div class="max-w-3xl mx-auto text-center">
-            <span class="inline-block bg-brandGold-500/20 border border-brandGold-400/40 text-brandGold-300 text-sm font-semibold px-4 py-1.5 rounded-full mb-6">
-                🕌 Islamic Education in the Maldives
+{{-- ═══════════════════════════════════════════════════════════
+  SECTION 1 — HERO   bg: deep maroon gradient
+═══════════════════════════════════════════════════════════ --}}
+@php $banner = $heroBanners->first(); @endphp
+<section style="background:linear-gradient(135deg,#3D1219 0%,#7C2D37 55%,#5A1F28 100%);position:relative;overflow:hidden">
+  {{-- subtle pattern --}}
+  <div style="position:absolute;inset:0;opacity:.07;background-image:url(\"data:image/svg+xml,%3Csvg width='52' height='26' viewBox='0 0 52 26' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23C9A227' fill-opacity='1'%3E%3Cpath d='M10 10c0-2.21-1.79-4-4-4-3.314 0-6-2.686-6-6h2c0 2.21 1.79 4 4 4 3.314 0 6 2.686 6 6 0 2.21 1.79 4 4 4 3.314 0 6 2.686 6 6 0 2.21 1.79 4 4 4v2c-3.314 0-6-2.686-6-6 0-2.21-1.79-4-4-4-3.314 0-6-2.686-6-6zm25.464-1.95l8.486 8.486-1.414 1.414-8.486-8.486 1.414-1.414z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E\")"></div>
+  <div class="container mx-auto px-4 py-20 sm:py-28 relative text-center text-white">
+    <span style="display:inline-block;background:rgba(201,162,39,0.2);border:1px solid rgba(201,162,39,0.4);color:#E8BC3C;font-size:.75rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:.375rem 1rem;border-radius:9999px;margin-bottom:1.25rem">
+      🕌 Islamic Education in the Maldives
+    </span>
+    <h1 style="font-size:clamp(2rem,5vw,3.5rem);font-weight:800;line-height:1.15;margin-bottom:1.25rem;text-shadow:0 2px 16px rgba(0,0,0,.4)">
+      {{ $banner->title ?? $text['title'] ?? 'Welcome to Akuru Institute' }}
+    </h1>
+    <p style="font-size:clamp(1rem,2vw,1.25rem);color:rgba(255,255,255,.8);max-width:40rem;margin:0 auto 2.5rem;line-height:1.7">
+      {{ $banner->subtitle ?? $text['desc'] ?? 'Learn Quran, Arabic, and Islamic Studies in the Maldives' }}
+    </p>
+    <div style="display:flex;flex-wrap:wrap;gap:.875rem;justify-content:center">
+      <a href="{{ route('public.courses.index') }}"
+         style="display:inline-flex;align-items:center;gap:.5rem;background:#C9A227;color:#3D1219;font-weight:700;padding:.875rem 2rem;border-radius:.75rem;font-size:1.05rem;text-decoration:none;transition:opacity .2s,transform .2s"
+         onmouseover="this.style.opacity='.88';this.style.transform='scale(1.04)'" onmouseout="this.style.opacity='1';this.style.transform='scale(1)'">
+        <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13"/></svg>
+        Enroll Now
+      </a>
+      <a href="viber://chat?number=%2B{{ $siteSettings['viber'] ?? '9607972434' }}&text={{ urlencode('Assalaamu alaikum, I want to know about Akuru Institute.') }}"
+         style="display:inline-flex;align-items:center;gap:.5rem;background:rgba(255,255,255,.12);color:white;border:2px solid rgba(255,255,255,.35);font-weight:600;padding:.875rem 2rem;border-radius:.75rem;font-size:1.05rem;text-decoration:none;transition:background .2s"
+         onmouseover="this.style.background='rgba(255,255,255,.2)'" onmouseout="this.style.background='rgba(255,255,255,.12)'">
+        <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M11.993 0C5.5 0 .527 4.972.527 11.473c0 3.107 1.2 5.943 3.17 8.053V23l2.953-1.628A11.03 11.03 0 0011.993 22.736c6.457 0 11.43-4.972 11.43-11.472C23.459 4.813 18.487 0 11.993 0z"/></svg>
+        Chat on Viber
+      </a>
+    </div>
+  </div>
+  {{-- White wave into next section --}}
+  <div style="position:absolute;bottom:0;left:0;right:0;line-height:0">
+    <svg viewBox="0 0 1440 56" preserveAspectRatio="none" style="width:100%;height:56px;display:block"><path d="M0 56h1440V28C1080 56 720 0 360 28 180 42 0 28 0 28v28z" fill="white"/></svg>
+  </div>
+</section>
+
+{{-- ═══════════════════════════════════════════════════════════
+  SECTION 2 — OPEN COURSES   bg: white
+═══════════════════════════════════════════════════════════ --}}
+<section style="background:#FFFFFF;padding:3rem 0 4rem">
+  <div class="container mx-auto px-4">
+    <div style="display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:1rem;margin-bottom:2.5rem">
+      <div>
+        <span style="color:#7C2D37;font-weight:600;font-size:.75rem;text-transform:uppercase;letter-spacing:.08em">Enroll today</span>
+        <h2 style="font-size:clamp(1.75rem,3vw,2.5rem);font-weight:800;color:#111827;margin:.25rem 0 .5rem">Open Courses</h2>
+        <p style="color:#6b7280;font-size:.9rem">Secure your seat — limited places available</p>
+      </div>
+      <a href="{{ route('public.courses.index') }}" style="color:#7C2D37;font-weight:600;font-size:.875rem;text-decoration:none;display:flex;align-items:center;gap:.25rem">
+        View all <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+      </a>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,280px),1fr));gap:1.5rem">
+      @forelse($courses as $course)
+      @php
+        $isModel = is_object($course) && method_exists($course,'getAttribute');
+        $slug = $isModel ? ($course->slug ?? '') : '';
+        $title = $isModel ? ($course->title ?? '') : '';
+        $desc = $isModel ? ($course->short_desc ?? '') : '';
+        $fee = $isModel ? ($course->fee ?? null) : null;
+        $status = $isModel ? ($course->status ?? 'open') : 'open';
+        $startDate = $isModel && !empty($course->start_date) ? \Carbon\Carbon::parse($course->start_date) : null;
+        $seats = $isModel ? ($course->available_seats ?? null) : null;
+        $img = $isModel && !empty($course->cover_image) ? asset('storage/'.$course->cover_image) : null;
+      @endphp
+      <a href="{{ $slug ? route('public.courses.show',$slug) : route('public.courses.index') }}"
+         style="display:flex;flex-direction:column;background:#fff;border:1.5px solid #E5E7EB;border-radius:1rem;overflow:hidden;text-decoration:none;transition:box-shadow .25s,transform .25s"
+         onmouseover="this.style.boxShadow='0 12px 36px rgba(0,0,0,.12)';this.style.transform='translateY(-3px)'" onmouseout="this.style.boxShadow='none';this.style.transform='translateY(0)'">
+        <div style="position:relative;height:11rem;background:linear-gradient(135deg,#F3EBE0,#FBEDC7);overflow:hidden">
+          @if($img)
+          <img src="{{ $img }}" alt="{{ $title }}" style="width:100%;height:100%;object-fit:cover">
+          @else
+          <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center">
+            <svg width="52" height="52" fill="none" stroke="#C9A227" stroke-opacity=".4" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253"/></svg>
+          </div>
+          @endif
+          <span style="position:absolute;top:.625rem;left:.625rem;font-size:.7rem;font-weight:700;padding:.2rem .6rem;border-radius:9999px;{{ $status==='open' ? 'background:#DCFCE7;color:#15803D' : 'background:#FEF9C3;color:#92400E' }}">
+            {{ $status==='open' ? '● Open' : '◷ Upcoming' }}
+          </span>
+          @if($seats !== null && $seats <= 5 && $seats > 0)
+          <span style="position:absolute;top:.625rem;right:.625rem;font-size:.7rem;font-weight:700;padding:.2rem .6rem;border-radius:9999px;background:#FEE2E2;color:#B91C1C">{{ $seats }} left!</span>
+          @elseif($seats === 0)
+          <span style="position:absolute;top:.625rem;right:.625rem;font-size:.7rem;font-weight:700;padding:.2rem .6rem;border-radius:9999px;background:#F3F4F6;color:#6B7280">Full</span>
+          @endif
+        </div>
+        <div style="padding:1.125rem;flex:1;display:flex;flex-direction:column">
+          <h3 style="font-weight:700;color:#111827;font-size:1.05rem;line-height:1.3;margin-bottom:.375rem">{{ $title }}</h3>
+          <p style="font-size:.825rem;color:#6B7280;line-height:1.5;flex:1;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical">{{ $desc }}</p>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding-top:.875rem;margin-top:.875rem;border-top:1px solid #F3F4F6">
+            <span style="font-size:.78rem;color:#9CA3AF">
+              @if($startDate)📅 {{ $startDate->format('d M Y') }}@else Date TBC@endif
             </span>
-            <h1 class="text-4xl sm:text-5xl md:text-6xl font-bold mb-6 leading-tight">
-                {{ $firstBanner->title ?? $text['title'] ?? 'Welcome to Akuru Institute' }}
-            </h1>
-            <p class="text-lg sm:text-xl md:text-2xl mb-10 text-white/85 max-w-2xl mx-auto leading-relaxed">
-                {{ $firstBanner->subtitle ?? $text['desc'] ?? 'Learn Quran, Arabic, and Islamic Studies in the Maldives' }}
-            </p>
-            <div class="flex flex-col sm:flex-row gap-4 justify-center">
-                <a href="{{ route('public.courses.index') }}"
-                   class="inline-flex items-center justify-center gap-2 bg-brandGold-500 hover:bg-brandGold-400 text-brandMaroon-900 font-bold px-8 py-4 rounded-xl text-lg shadow-lg transition-all hover:scale-105">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253"/></svg>
-                    {{ __('public.Enroll') }}
-                </a>
-                <a href="viber://chat?number=%2B{{ $siteSettings['viber'] ?? '9607972434' }}&text={{ urlencode('Assalaamu alaikum, I want to know about Akuru Institute.') }}"
-                   class="inline-flex items-center justify-center gap-2 border-2 border-white/40 text-white hover:bg-white/10 font-semibold px-8 py-4 rounded-xl text-lg transition-all">
-                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M11.993 0C5.5 0 .527 4.972.527 11.473c0 3.107 1.2 5.943 3.17 8.053V23l2.953-1.628A11.03 11.03 0 0011.993 22.736c6.457 0 11.43-4.972 11.43-11.472C23.459 4.813 18.487 0 11.993 0z"/></svg>
-                    Chat on Viber
-                </a>
-            </div>
+            <span style="font-weight:700;font-size:.9rem;color:{{ $fee && $fee > 0 ? '#7C2D37' : '#15803D' }}">
+              {{ $fee && $fee > 0 ? 'MVR '.number_format($fee,0) : 'Free' }}
+            </span>
+          </div>
         </div>
+      </a>
+      @empty
+      <div style="grid-column:1/-1;text-align:center;padding:3rem;color:#9CA3AF">
+        No open courses right now. <a href="{{ route('public.admissions.create') }}" style="color:#7C2D37">Leave your details</a> and we'll notify you.
+      </div>
+      @endforelse
     </div>
-    {{-- Wave pointing into white Open Courses section --}}
-    <div class="absolute bottom-0 left-0 right-0 leading-none">
-        <svg viewBox="0 0 1440 48" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" style="display:block;width:100%;height:48px"><path d="M0 48h1440V24C1200 48 960 0 720 0S240 48 0 24v24z" fill="white"/></svg>
+    <div style="text-align:center;margin-top:2.5rem">
+      <a href="{{ route('public.courses.index') }}"
+         style="display:inline-flex;align-items:center;gap:.5rem;background:#7C2D37;color:white;font-weight:700;padding:.875rem 2rem;border-radius:.75rem;text-decoration:none;transition:background .2s"
+         onmouseover="this.style.background='#6B2630'" onmouseout="this.style.background='#7C2D37'">
+        View All Courses
+        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4-4 4m4-4H3"/></svg>
+      </a>
     </div>
+  </div>
 </section>
 
-{{-- ── 2. OPEN COURSES ──────────────────────────────────────────────── --}}
-<section class="pt-4 pb-14 sm:pb-20 bg-white">
-    <div class="container mx-auto px-4">
-        <div class="flex flex-col sm:flex-row sm:items-end justify-between mb-10 gap-4">
-            <div>
-                <span class="text-brandMaroon-600 font-semibold text-sm uppercase tracking-wider">Enroll today</span>
-                <h2 class="text-3xl sm:text-4xl font-bold text-gray-900 mt-1">Open Courses</h2>
-                <p class="text-gray-500 mt-2">Secure your seat — limited places available</p>
-            </div>
-            <a href="{{ route('public.courses.index') }}" class="text-brandMaroon-600 hover:text-brandMaroon-800 font-semibold text-sm flex items-center gap-1 shrink-0">
-                View all <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-            </a>
-        </div>
-        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            @forelse($courses as $course)
-            @php
-                $isModel   = is_object($course) && method_exists($course,'getAttribute');
-                $slug      = $isModel ? ($course->slug ?? '') : '';
-                $title     = $isModel ? ($course->title ?? '') : '';
-                $shortDesc = $isModel ? ($course->short_desc ?? $course->description ?? '') : '';
-                $fee       = $isModel ? ($course->fee ?? null) : null;
-                $status    = $isModel ? ($course->status ?? 'open') : 'open';
-                $startDate = $isModel && !empty($course->start_date) ? \Carbon\Carbon::parse($course->start_date) : null;
-                $seats     = $isModel ? ($course->available_seats ?? null) : null;
-                $image     = $isModel && !empty($course->cover_image) ? asset('storage/'.$course->cover_image) : null;
-            @endphp
-            <a href="{{ $slug ? route('public.courses.show', $slug) : route('public.courses.index') }}"
-               class="group block bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
-                <div class="relative h-44 bg-gradient-to-br from-brandBeige-200 to-brandGold-200 overflow-hidden">
-                    @if($image)
-                    <img src="{{ $image }}" alt="{{ $title }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
-                    @else
-                    <div class="w-full h-full flex items-center justify-center">
-                        <svg class="w-16 h-16 text-brandGold-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253"/></svg>
-                    </div>
-                    @endif
-                    <span class="absolute top-3 left-3 text-xs font-bold px-2.5 py-1 rounded-full {{ $status==='open' ? 'bg-green-100 text-green-800' : 'bg-amber-100 text-amber-800' }}">
-                        {{ $status==='open' ? '● Open' : '◷ Upcoming' }}
-                    </span>
-                    @if($seats !== null && $seats <= 5 && $seats > 0)
-                    <span class="absolute top-3 right-3 text-xs font-bold px-2.5 py-1 rounded-full bg-red-100 text-red-700">{{ $seats }} left!</span>
-                    @elseif($seats === 0)
-                    <span class="absolute top-3 right-3 text-xs font-bold px-2.5 py-1 rounded-full bg-gray-200 text-gray-600">Full</span>
-                    @endif
-                </div>
-                <div class="p-5">
-                    <h3 class="font-bold text-gray-900 text-lg leading-snug mb-1 group-hover:text-brandMaroon-700 transition-colors">{{ $title }}</h3>
-                    <p class="text-sm text-gray-500 line-clamp-2 mb-4">{{ $shortDesc }}</p>
-                    <div class="flex items-center justify-between pt-3 border-t border-gray-100">
-                        <div class="text-sm text-gray-500">
-                            @if($startDate)
-                            <span class="flex items-center gap-1"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>{{ $startDate->format('d M Y') }}</span>
-                            @else
-                            <span class="text-xs text-gray-400">Date TBC</span>
-                            @endif
-                        </div>
-                        <div>
-                            @if($fee && $fee > 0)
-                            <span class="font-bold text-brandMaroon-700">{{ number_format($fee,0) }} <span class="text-xs font-normal text-gray-500">MVR</span></span>
-                            @else
-                            <span class="font-bold text-green-600 text-sm">Free</span>
-                            @endif
-                        </div>
-                    </div>
-                </div>
-            </a>
-            @empty
-            <div class="col-span-3 text-center py-12 text-gray-400">
-                No open courses right now. <a href="{{ route('public.admissions.create') }}" class="text-brandMaroon-600 hover:underline">Leave your details</a> and we'll notify you.
-            </div>
-            @endforelse
-        </div>
-        <div class="text-center mt-10">
-            <a href="{{ route('public.courses.index') }}"
-               class="inline-flex items-center gap-2 bg-brandMaroon-600 hover:bg-brandMaroon-700 text-white font-bold px-8 py-3.5 rounded-xl shadow transition-all hover:scale-105">
-                View All Courses
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
-            </a>
-        </div>
+{{-- ═══════════════════════════════════════════════════════════
+  SECTION 3 — WHY AKURU   bg: warm cream #F0E6D3
+═══════════════════════════════════════════════════════════ --}}
+<section style="background:#F0E6D3;padding:4rem 0">
+  <div class="container mx-auto px-4">
+    <div style="text-align:center;margin-bottom:2.75rem">
+      <span style="color:#7C2D37;font-weight:600;font-size:.75rem;text-transform:uppercase;letter-spacing:.08em">Why choose us</span>
+      <h2 style="font-size:clamp(1.75rem,3vw,2.5rem);font-weight:800;color:#111827;margin:.25rem 0 .5rem">Why Akuru Institute?</h2>
+      <p style="color:#6B7280;max-width:36rem;margin:0 auto;font-size:.9rem">Trusted by hundreds of families across the Maldives for quality Islamic education.</p>
     </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,290px),1fr));gap:1.25rem;max-width:70rem;margin:0 auto">
+      @foreach([
+        ['M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z','Qualified Instructors','All our teachers hold recognised Islamic qualifications with years of teaching experience.'],
+        ['M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5','Structured Curriculum','Well-planned programmes for Quran, Arabic, and Islamic Studies — beginner to advanced.'],
+        ['M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z','Flexible Schedules','Morning, evening and weekend classes to fit around school, work, and family life.'],
+        ['M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z','All Ages Welcome','Classes for children, teenagers, and adults — everyone learns at the right pace.'],
+        ['M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z','Affordable Fees','Quality Islamic education accessible to all with fair, transparent fees.'],
+        ['M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4','Recognised Certificates','Earn certificates upon completion that recognise your achievement.'],
+      ] as [$icon,$title,$desc])
+      <div style="background:#FFFFFF;border-radius:.875rem;padding:1.5rem;border:1px solid rgba(124,45,55,.1);box-shadow:0 1px 4px rgba(0,0,0,.06)">
+        <div style="width:2.75rem;height:2.75rem;background:#FAECED;border-radius:.625rem;display:flex;align-items:center;justify-content:center;margin-bottom:1rem">
+          <svg width="20" height="20" fill="none" stroke="#7C2D37" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $icon }}"/></svg>
+        </div>
+        <h3 style="font-weight:700;color:#111827;margin-bottom:.375rem;font-size:.95rem">{{ $title }}</h3>
+        <p style="font-size:.82rem;color:#6B7280;line-height:1.55">{{ $desc }}</p>
+      </div>
+      @endforeach
+    </div>
+  </div>
 </section>
 
-{{-- ── 3. WHY AKURU ────────────────────────────────────────────────── --}}
-<section class="py-14 sm:py-20 bg-brandBeige-50">
-    <div class="container mx-auto px-4">
-        <div class="text-center mb-12">
-            <span class="text-brandMaroon-600 font-semibold text-sm uppercase tracking-wider">Why choose us</span>
-            <h2 class="text-3xl sm:text-4xl font-bold text-gray-900 mt-1">Why Akuru Institute?</h2>
-            <p class="text-gray-500 mt-3 max-w-xl mx-auto">Trusted by hundreds of families across the Maldives for quality Islamic education.</p>
-        </div>
-        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
-            @foreach([
-                ['icon'=>'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z', 'title'=>'Qualified Instructors', 'desc'=>'All our teachers hold recognised Islamic education qualifications and bring years of teaching experience.'],
-                ['icon'=>'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5', 'title'=>'Structured Curriculum', 'desc'=>'Well-planned programmes for Quran, Arabic, and Islamic Studies — from beginners to advanced levels.'],
-                ['icon'=>'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z', 'title'=>'Flexible Schedules', 'desc'=>'Morning, evening, and weekend classes designed to fit around school, work, and family life.'],
-                ['icon'=>'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z', 'title'=>'All Ages Welcome', 'desc'=>'Dedicated classes for children, teenagers, and adults. Everyone learns at the right pace.'],
-                ['icon'=>'M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z', 'title'=>'Affordable Fees', 'desc'=>'Quality Islamic education should be accessible. Our fees are kept reasonable with flexible payment options.'],
-                ['icon'=>'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4', 'title'=>'Recognised Certificates', 'desc'=>'Earn certificates upon completion that recognise your achievement and dedication to learning.'],
-            ] as $f)
-            <div class="bg-white rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow border border-gray-100">
-                <div class="w-12 h-12 bg-brandMaroon-100 text-brandMaroon-700 rounded-xl flex items-center justify-center mb-4">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $f['icon'] }}"/></svg>
-                </div>
-                <h3 class="font-bold text-gray-900 mb-2">{{ $f['title'] }}</h3>
-                <p class="text-sm text-gray-500 leading-relaxed">{{ $f['desc'] }}</p>
-            </div>
-            @endforeach
-        </div>
-    </div>
-</section>
-
-{{-- ── 4. STATS STRIP ──────────────────────────────────────────────── --}}
+{{-- ═══════════════════════════════════════════════════════════
+  SECTION 4 — STATS   bg: brand maroon #7C2D37
+═══════════════════════════════════════════════════════════ --}}
 @if(isset($stats))
-<section class="bg-brandMaroon-700 text-white py-12">
-    <div class="container mx-auto px-4">
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-8 text-center">
-            <div>
-                <div class="text-4xl sm:text-5xl font-bold text-brandGold-400">{{ number_format($stats['students']) }}+</div>
-                <div class="text-white/70 mt-1 text-sm">Students enrolled</div>
-            </div>
-            <div>
-                <div class="text-4xl sm:text-5xl font-bold text-brandGold-400">{{ $stats['courses'] }}</div>
-                <div class="text-white/70 mt-1 text-sm">Courses offered</div>
-            </div>
-            <div>
-                <div class="text-4xl sm:text-5xl font-bold text-brandGold-400">5+</div>
-                <div class="text-white/70 mt-1 text-sm">Years of service</div>
-            </div>
-            <div>
-                <div class="text-4xl sm:text-5xl font-bold text-brandGold-400">100%</div>
-                <div class="text-white/70 mt-1 text-sm">Qualified teachers</div>
-            </div>
-        </div>
+<section style="background:#7C2D37;padding:3rem 0">
+  <div class="container mx-auto px-4">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:2rem;text-align:center">
+      <div><div style="font-size:2.75rem;font-weight:800;color:#C9A227;line-height:1">{{ number_format($stats['students']) }}+</div><div style="color:rgba(255,255,255,.65);font-size:.82rem;margin-top:.375rem">Students enrolled</div></div>
+      <div><div style="font-size:2.75rem;font-weight:800;color:#C9A227;line-height:1">{{ $stats['courses'] }}</div><div style="color:rgba(255,255,255,.65);font-size:.82rem;margin-top:.375rem">Courses offered</div></div>
+      <div><div style="font-size:2.75rem;font-weight:800;color:#C9A227;line-height:1">5+</div><div style="color:rgba(255,255,255,.65);font-size:.82rem;margin-top:.375rem">Years of service</div></div>
+      <div><div style="font-size:2.75rem;font-weight:800;color:#C9A227;line-height:1">100%</div><div style="color:rgba(255,255,255,.65);font-size:.82rem;margin-top:.375rem">Qualified teachers</div></div>
     </div>
+  </div>
 </section>
 @endif
 
-{{-- ── 5. NEWS & EVENTS ───────────────────────────────────────────── --}}
-<section class="py-14 sm:py-20 bg-white">
-    <div class="container mx-auto px-4">
-        <div class="grid lg:grid-cols-2 gap-12">
-            <div>
-                <div class="flex items-center justify-between mb-6">
-                    <h2 class="text-2xl sm:text-3xl font-bold text-gray-900">Latest News</h2>
-                    <a href="{{ route('public.news.index') }}" class="text-sm text-brandMaroon-600 hover:underline font-medium">All news →</a>
-                </div>
-                <div class="space-y-3">
-                    @forelse($posts as $post)
-                    @php $postSlug = $post->slug ?? $post->id ?? null; @endphp
-                    <a href="{{ $postSlug ? route('public.news.show', $postSlug) : route('public.news.index') }}"
-                       class="group flex gap-4 p-4 rounded-xl hover:bg-brandBeige-50 transition-colors border border-transparent hover:border-brandBeige-200">
-                        <div class="w-14 h-14 rounded-lg bg-brandMaroon-100 shrink-0 overflow-hidden flex items-center justify-center text-brandMaroon-400">
-                            @if(isset($post->cover_image) && $post->cover_image)
-                            <img src="{{ asset('storage/'.$post->cover_image) }}" class="w-full h-full object-cover">
-                            @else
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7"/></svg>
-                            @endif
-                        </div>
-                        <div class="min-w-0">
-                            <p class="font-semibold text-gray-900 group-hover:text-brandMaroon-700 transition-colors leading-snug line-clamp-2">{{ $post->title }}</p>
-                            <p class="text-xs text-gray-400 mt-1">{{ \Carbon\Carbon::parse($post->published_at ?? now())->format('d M Y') }}</p>
-                        </div>
-                    </a>
-                    @empty
-                    <p class="text-gray-400 text-sm py-4">No news yet.</p>
-                    @endforelse
-                </div>
-            </div>
-            <div>
-                <div class="flex items-center justify-between mb-6">
-                    <h2 class="text-2xl sm:text-3xl font-bold text-gray-900">Upcoming Events</h2>
-                    <a href="{{ route('public.events.index') }}" class="text-sm text-brandGold-700 hover:underline font-medium">All events →</a>
-                </div>
-                <div class="space-y-3">
-                    @forelse($events as $event)
-                    @php $evSlug = $event->slug ?? $event->id ?? null; @endphp
-                    <a href="{{ $evSlug ? route('public.events.show', $evSlug) : route('public.events.index') }}"
-                       class="group flex gap-4 p-4 rounded-xl border border-gray-100 hover:border-brandGold-200 hover:bg-brandGold-50/50 transition-all">
-                        @php $evDate = \Carbon\Carbon::parse($event->start_date ?? now()); @endphp
-                        <div class="w-14 shrink-0 text-center">
-                            <div class="bg-brandMaroon-600 text-white rounded-t-lg py-1 text-xs font-bold uppercase">{{ $evDate->format('M') }}</div>
-                            <div class="border border-t-0 border-gray-200 rounded-b-lg py-1.5 text-2xl font-bold text-gray-900 leading-none">{{ $evDate->format('d') }}</div>
-                        </div>
-                        <div class="min-w-0">
-                            <p class="font-semibold text-gray-900 group-hover:text-brandMaroon-700 transition-colors leading-snug">{{ $event->title }}</p>
-                            <p class="text-xs text-gray-500 mt-1">{{ $event->location ?? 'Akuru Institute' }}</p>
-                        </div>
-                    </a>
-                    @empty
-                    <div class="text-center py-10 text-gray-400">
-                        <svg class="w-10 h-10 mx-auto mb-2 opacity-20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                        <p class="text-sm">No upcoming events scheduled.</p>
-                    </div>
-                    @endforelse
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-
-{{-- ── 6. GALLERY (new) ────────────────────────────────────────────── --}}
+{{-- ═══════════════════════════════════════════════════════════
+  SECTION 5 — GALLERY   bg: white
+═══════════════════════════════════════════════════════════ --}}
 @if(isset($galleryPhotos) && $galleryPhotos->count() > 0)
-@php $lbData = $galleryPhotos->map(fn($p)=>['src'=>\Storage::url($p->file_path),'title'=>$p->title??'','caption'=>$p->caption??''])->values(); @endphp
+@php $lbData = $galleryPhotos->map(fn($p)=>['src'=>\Storage::url($p->file_path),'title'=>$p->title??''])->values(); @endphp
 <script>
-const _hLb=@json($lbData);let _hLbI=0,_hLbX=null;
-function openHLb(i){_hLbI=i;_hLbRend();document.getElementById('hlb').style.display='flex';document.body.style.overflow='hidden';}
-function closeHLb(){document.getElementById('hlb').style.display='none';document.body.style.overflow='';}
-function navHLb(d){_hLbI=(_hLbI+d+_hLb.length)%_hLb.length;_hLbRend();}
-function _hLbRend(){const p=_hLb[_hLbI],el=document.getElementById('hlb-img');el.style.opacity=0;el.src=p.src;el.onload=()=>el.style.opacity=1;document.getElementById('hlb-ttl').textContent=p.title;document.getElementById('hlb-cnt').textContent=(_hLbI+1)+' / '+_hLb.length;}
-document.addEventListener('keydown',e=>{if(document.getElementById('hlb').style.display==='none')return;if(e.key==='Escape')closeHLb();if(e.key==='ArrowRight')navHLb(1);if(e.key==='ArrowLeft')navHLb(-1);});
+const _lb=@json($lbData);let _lbI=0,_lbX=null;
+function oLb(i){_lbI=i;_rLb();document.getElementById('glb').style.display='flex';document.body.style.overflow='hidden';}
+function cLb(){document.getElementById('glb').style.display='none';document.body.style.overflow='';}
+function nLb(d){_lbI=(_lbI+d+_lb.length)%_lb.length;_rLb();}
+function _rLb(){const p=_lb[_lbI],e=document.getElementById('glb-img');e.style.opacity=0;e.src=p.src;e.onload=()=>e.style.opacity=1;document.getElementById('glb-ttl').textContent=p.title;document.getElementById('glb-cnt').textContent=(_lbI+1)+'/'+_lb.length;}
+document.addEventListener('keydown',e=>{if(!document.getElementById('glb')||document.getElementById('glb').style.display==='none')return;if(e.key==='Escape')cLb();if(e.key==='ArrowRight')nLb(1);if(e.key==='ArrowLeft')nLb(-1);});
 </script>
-<section class="py-14 bg-brandBeige-50 border-t border-brandBeige-100">
-    <div class="container mx-auto px-4">
-        <div class="flex items-center justify-between mb-8">
-            <div>
-                <span class="text-brandMaroon-600 font-semibold text-sm uppercase tracking-wider">Life at Akuru</span>
-                <h2 class="text-2xl sm:text-3xl font-bold text-gray-900 mt-1">Our Gallery</h2>
-            </div>
-            <a href="{{ route('public.gallery.index') }}" class="text-sm text-brandMaroon-600 hover:underline font-medium">View all →</a>
-        </div>
-        <div class="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-2">
-            @foreach($galleryPhotos as $idx => $photo)
-            <button onclick="openHLb({{ $idx }})" class="group relative aspect-square overflow-hidden rounded-xl focus:outline-none focus:ring-2 focus:ring-brandMaroon-400">
-                <img src="{{ \Storage::url($photo->thumbnail_path ?? $photo->file_path) }}" alt="{{ $photo->alt_text ?? '' }}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" loading="lazy">
-                <div class="absolute inset-0 bg-black/0 group-hover:bg-black/30 flex items-center justify-center transition-all">
-                    <svg class="w-6 h-6 text-white opacity-0 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"/></svg>
-                </div>
-            </button>
-            @endforeach
-        </div>
+<section style="background:#FFFFFF;padding:4rem 0">
+  <div class="container mx-auto px-4">
+    <div style="display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:1rem;margin-bottom:2rem">
+      <div>
+        <span style="color:#7C2D37;font-weight:600;font-size:.75rem;text-transform:uppercase;letter-spacing:.08em">Life at Akuru</span>
+        <h2 style="font-size:clamp(1.75rem,3vw,2.25rem);font-weight:800;color:#111827;margin:.25rem 0 0">Our Gallery</h2>
+      </div>
+      <a href="{{ route('public.gallery.index') }}" style="color:#7C2D37;font-weight:600;font-size:.875rem;text-decoration:none">View all →</a>
     </div>
+    <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:.5rem">
+      @foreach($galleryPhotos as $idx => $photo)
+      <button onclick="oLb({{ $idx }})" style="position:relative;aspect-ratio:1;overflow:hidden;border-radius:.5rem;border:none;padding:0;cursor:pointer;background:#F3F4F6"
+              onmouseover="this.querySelector('img').style.transform='scale(1.1)';this.querySelector('.ov').style.opacity='1'" onmouseout="this.querySelector('img').style.transform='scale(1)';this.querySelector('.ov').style.opacity='0'">
+        <img src="{{ \Storage::url($photo->thumbnail_path ?? $photo->file_path) }}" alt="{{ $photo->alt_text ?? '' }}" style="width:100%;height:100%;object-fit:cover;transition:transform .4s" loading="lazy">
+        <div class="ov" style="position:absolute;inset:0;background:rgba(0,0,0,.3);display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .3s">
+          <svg width="24" height="24" fill="none" stroke="white" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"/></svg>
+        </div>
+      </button>
+      @endforeach
+    </div>
+  </div>
 </section>
-<div id="hlb" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.94);align-items:center;justify-content:center;padding:1rem" onclick="if(event.target===this)closeHLb()">
-    <button onclick="closeHLb()" style="position:absolute;top:1rem;right:1rem;background:rgba(255,255,255,0.12);border:none;border-radius:50%;width:2.5rem;height:2.5rem;color:white;cursor:pointer;display:flex;align-items:center;justify-content:center"><svg style="width:1.1rem;height:1.1rem" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
-    <span id="hlb-cnt" style="position:absolute;top:1rem;left:50%;transform:translateX(-50%);color:rgba(255,255,255,.45);font-size:.8rem"></span>
-    <button onclick="navHLb(-1)" style="position:absolute;left:.75rem;top:50%;transform:translateY(-50%);background:rgba(255,255,255,0.12);border:none;border-radius:50%;width:2.75rem;height:2.75rem;color:white;cursor:pointer;display:flex;align-items:center;justify-content:center"><svg style="width:1.25rem;height:1.25rem" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg></button>
-    <div style="display:flex;flex-direction:column;align-items:center;max-width:900px;width:100%">
-        <img id="hlb-img" src="" alt="" style="max-height:74vh;max-width:100%;object-fit:contain;border-radius:.5rem;transition:opacity .25s" ontouchstart="_hLbX=event.changedTouches[0].clientX" ontouchend="const dx=event.changedTouches[0].clientX-_hLbX;if(dx>50)navHLb(-1);else if(dx<-50)navHLb(1)">
-        <p id="hlb-ttl" style="color:white;font-weight:600;margin-top:.75rem;text-align:center"></p>
-    </div>
-    <button onclick="navHLb(1)" style="position:absolute;right:.75rem;top:50%;transform:translateY(-50%);background:rgba(255,255,255,0.12);border:none;border-radius:50%;width:2.75rem;height:2.75rem;color:white;cursor:pointer;display:flex;align-items:center;justify-content:center"><svg style="width:1.25rem;height:1.25rem" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg></button>
+{{-- Lightbox --}}
+<div id="glb" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.94);align-items:center;justify-content:center;padding:1rem" onclick="if(event.target===this)cLb()">
+  <button onclick="cLb()" style="position:absolute;top:1rem;right:1rem;background:rgba(255,255,255,.12);border:none;border-radius:50%;width:2.5rem;height:2.5rem;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center"><svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
+  <span id="glb-cnt" style="position:absolute;top:1rem;left:50%;transform:translateX(-50%);color:rgba(255,255,255,.45);font-size:.8rem"></span>
+  <button onclick="nLb(-1)" style="position:absolute;left:.75rem;top:50%;transform:translateY(-50%);background:rgba(255,255,255,.12);border:none;border-radius:50%;width:2.75rem;height:2.75rem;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center"><svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg></button>
+  <div style="display:flex;flex-direction:column;align-items:center;max-width:900px;width:100%">
+    <img id="glb-img" src="" alt="" style="max-height:74vh;max-width:100%;object-fit:contain;border-radius:.5rem;transition:opacity .25s" ontouchstart="_lbX=event.changedTouches?event.changedTouches[0].clientX:null" ontouchend="if(event.changedTouches){const d=event.changedTouches[0].clientX-_lbX;if(d>50)nLb(-1);else if(d<-50)nLb(1);}">
+    <p id="glb-ttl" style="color:#fff;font-weight:600;margin-top:.75rem;text-align:center"></p>
+  </div>
+  <button onclick="nLb(1)" style="position:absolute;right:.75rem;top:50%;transform:translateY(-50%);background:rgba(255,255,255,.12);border:none;border-radius:50%;width:2.75rem;height:2.75rem;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center"><svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg></button>
 </div>
 @endif
 
-{{-- ── 7. TESTIMONIALS ─────────────────────────────────────────────── --}}
+{{-- ═══════════════════════════════════════════════════════════
+  SECTION 6 — TESTIMONIALS   bg: warm gold #FDF3D8
+═══════════════════════════════════════════════════════════ --}}
 @if(isset($testimonials) && $testimonials->isNotEmpty())
-<section class="py-14 sm:py-20 bg-white">
-    <div class="container mx-auto px-4">
-        <div class="text-center mb-10">
-            <span class="text-brandMaroon-600 font-semibold text-sm uppercase tracking-wider">Student voices</span>
-            <h2 class="text-3xl sm:text-4xl font-bold text-gray-900 mt-1">What Our Students Say</h2>
+<section style="background:#FDF3D8;padding:4rem 0;border-top:1px solid #F0D987">
+  <div class="container mx-auto px-4">
+    <div style="text-align:center;margin-bottom:2.5rem">
+      <span style="color:#92400E;font-weight:600;font-size:.75rem;text-transform:uppercase;letter-spacing:.08em">Student voices</span>
+      <h2 style="font-size:clamp(1.75rem,3vw,2.5rem);font-weight:800;color:#111827;margin:.25rem 0 0">What Our Students Say</h2>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,300px),1fr));gap:1.25rem;max-width:70rem;margin:0 auto">
+      @foreach($testimonials as $t)
+      <div style="background:#FFFFFF;border:1px solid rgba(201,162,39,.25);border-radius:.875rem;padding:1.5rem;position:relative">
+        <div style="font-size:3.5rem;line-height:1;font-family:Georgia,serif;position:absolute;top:.5rem;right:1rem;color:#C9A227;opacity:.25">"</div>
+        <p style="color:#374151;line-height:1.65;margin-bottom:1.25rem;font-size:.9rem;position:relative">"{{ $t->quote }}"</p>
+        <div style="display:flex;align-items:center;gap:.75rem">
+          <div style="width:2.5rem;height:2.5rem;border-radius:50%;background:#FAECED;display:flex;align-items:center;justify-content:center;color:#7C2D37;font-weight:700;font-size:.9rem;flex-shrink:0">{{ strtoupper(substr($t->name??'A',0,1)) }}</div>
+          <div>
+            <p style="font-weight:600;color:#111827;font-size:.875rem;margin:0">{{ $t->name }}</p>
+            @if(!empty($t->role))<p style="font-size:.75rem;color:#9CA3AF;margin:0">{{ $t->role }}</p>@endif
+          </div>
         </div>
-        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
-            @foreach($testimonials as $t)
-            <div class="bg-brandBeige-50 border border-brandBeige-200 p-6 rounded-2xl relative">
-                <div class="text-brandGold-400 text-5xl leading-none font-serif absolute top-4 right-5 opacity-40">"</div>
-                <p class="text-gray-700 leading-relaxed mb-5 relative z-10">"{{ $t->quote }}"</p>
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-full bg-brandMaroon-200 flex items-center justify-center text-brandMaroon-700 font-bold shrink-0">{{ strtoupper(substr($t->name??'A',0,1)) }}</div>
-                    <div>
-                        <p class="font-semibold text-gray-900 text-sm">{{ $t->name }}</p>
-                        @if(!empty($t->role))<p class="text-xs text-gray-500">{{ $t->role }}</p>@endif
-                    </div>
-                </div>
+      </div>
+      @endforeach
+    </div>
+  </div>
+</section>
+@endif
+
+{{-- ═══════════════════════════════════════════════════════════
+  SECTION 7 — NEWS & EVENTS   bg: white
+═══════════════════════════════════════════════════════════ --}}
+<section style="background:#FFFFFF;padding:4rem 0;border-top:1px solid #F3F4F6">
+  <div class="container mx-auto px-4">
+    <div style="display:grid;grid-template-columns:1fr;gap:3rem">
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,400px),1fr));gap:3rem">
+        {{-- News --}}
+        <div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem">
+            <h2 style="font-size:1.5rem;font-weight:800;color:#111827;margin:0">Latest News</h2>
+            <a href="{{ route('public.news.index') }}" style="font-size:.825rem;color:#7C2D37;font-weight:600;text-decoration:none">All news →</a>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:.75rem">
+            @forelse($posts as $post)
+            @php $ps = $post->slug ?? $post->id ?? null; @endphp
+            <a href="{{ $ps ? route('public.news.show',$ps) : route('public.news.index') }}"
+               style="display:flex;gap:1rem;padding:.875rem;border-radius:.75rem;text-decoration:none;background:#F9FAFB;transition:background .2s"
+               onmouseover="this.style.background='#FDF7F8'" onmouseout="this.style.background='#F9FAFB'">
+              <div style="width:3rem;height:3rem;background:#FAECED;border-radius:.5rem;flex-shrink:0;display:flex;align-items:center;justify-content:center">
+                <svg width="20" height="20" fill="none" stroke="#7C2D37" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7"/></svg>
+              </div>
+              <div style="min-width:0">
+                <p style="font-weight:600;color:#111827;font-size:.875rem;line-height:1.4;margin:0 0 .25rem;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical">{{ $post->title }}</p>
+                <p style="font-size:.75rem;color:#9CA3AF;margin:0">{{ \Carbon\Carbon::parse($post->published_at ?? now())->format('d M Y') }}</p>
+              </div>
+            </a>
+            @empty
+            <p style="color:#9CA3AF;font-size:.875rem;padding:1rem 0">No news yet.</p>
+            @endforelse
+          </div>
+        </div>
+        {{-- Events --}}
+        <div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem">
+            <h2 style="font-size:1.5rem;font-weight:800;color:#111827;margin:0">Upcoming Events</h2>
+            <a href="{{ route('public.events.index') }}" style="font-size:.825rem;color:#A8861F;font-weight:600;text-decoration:none">All events →</a>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:.75rem">
+            @forelse($events as $event)
+            @php $es = $event->slug ?? $event->id ?? null; $ed = \Carbon\Carbon::parse($event->start_date ?? now()); @endphp
+            <a href="{{ $es ? route('public.events.show',$es) : route('public.events.index') }}"
+               style="display:flex;gap:1rem;padding:.875rem;border-radius:.75rem;text-decoration:none;border:1px solid #F3F4F6;transition:border-color .2s,background .2s"
+               onmouseover="this.style.borderColor='#FDE68A';this.style.background='#FFFBEB'" onmouseout="this.style.borderColor='#F3F4F6';this.style.background='transparent'">
+              <div style="flex-shrink:0;text-align:center;width:3rem">
+                <div style="background:#7C2D37;color:white;border-radius:.375rem .375rem 0 0;padding:.125rem .25rem;font-size:.65rem;font-weight:700;text-transform:uppercase">{{ $ed->format('M') }}</div>
+                <div style="border:1px solid #E5E7EB;border-top:none;border-radius:0 0 .375rem .375rem;padding:.25rem;font-size:1.25rem;font-weight:800;color:#111827;line-height:1.2">{{ $ed->format('d') }}</div>
+              </div>
+              <div>
+                <p style="font-weight:600;color:#111827;font-size:.875rem;margin:0 0 .25rem">{{ $event->title }}</p>
+                <p style="font-size:.75rem;color:#9CA3AF;margin:0">{{ $event->location ?? 'Akuru Institute' }}</p>
+              </div>
+            </a>
+            @empty
+            <div style="text-align:center;padding:2rem;color:#9CA3AF">
+              <svg width="36" height="36" style="margin:0 auto .5rem;display:block;opacity:.3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+              <p style="font-size:.875rem;margin:0">No upcoming events scheduled.</p>
             </div>
-            @endforeach
+            @endforelse
+          </div>
         </div>
+      </div>
     </div>
+  </div>
 </section>
-@endif
 
-{{-- ── 8. UPCOMING INTAKES ─────────────────────────────────────────── --}}
-@php $upcomingCourses = $courses->filter(fn($c)=>is_object($c)&&method_exists($c,'getAttribute')&&in_array($c->status??'',['open','upcoming'])&&!empty($c->start_date)); @endphp
-@if($upcomingCourses->count() > 0)
-<section class="py-12 bg-brandMaroon-50 border-t border-brandMaroon-100">
-    <div class="container mx-auto px-4">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-3">
-            <h2 class="text-xl font-bold text-brandMaroon-900 flex items-center gap-2">
-                <svg class="w-5 h-5 text-brandMaroon-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                Upcoming Intakes
-            </h2>
-            <a href="{{ route('public.courses.index') }}" class="text-sm font-semibold text-brandMaroon-700 hover:underline">View all courses →</a>
-        </div>
-        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            @foreach($upcomingCourses->take(6) as $uc)
-            @php $ucDate = \Carbon\Carbon::parse($uc->start_date); @endphp
-            <a href="{{ $uc->slug ? route('public.courses.show', $uc->slug) : route('public.courses.index') }}"
-               class="flex items-center gap-4 bg-white rounded-xl px-4 py-3 shadow-sm hover:shadow-md border border-brandMaroon-100 hover:border-brandMaroon-300 transition-all">
-                <div class="text-center shrink-0 w-12">
-                    <div class="text-xs font-bold text-brandMaroon-600 uppercase">{{ $ucDate->format('M') }}</div>
-                    <div class="text-2xl font-bold text-brandMaroon-900 leading-none">{{ $ucDate->format('d') }}</div>
-                </div>
-                <div class="min-w-0">
-                    <p class="font-semibold text-gray-900 text-sm truncate">{{ $uc->title }}</p>
-                    <p class="text-xs {{ $uc->fee > 0 ? 'text-gray-500' : 'text-green-600' }}">{{ $uc->fee > 0 ? number_format($uc->fee,0).' MVR' : 'Free' }}</p>
-                </div>
-                <span class="ml-auto shrink-0 text-xs font-bold px-2 py-0.5 rounded-full {{ $uc->status==='open' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700' }}">{{ ucfirst($uc->status) }}</span>
-            </a>
-            @endforeach
-        </div>
+{{-- ═══════════════════════════════════════════════════════════
+  SECTION 8 — CTA   bg: deep maroon gradient
+═══════════════════════════════════════════════════════════ --}}
+<section style="background:linear-gradient(135deg,#5A1F28 0%,#7C2D37 50%,#491821 100%);padding:4.5rem 0;text-align:center">
+  <div class="container mx-auto px-4">
+    <h2 style="font-size:clamp(1.75rem,4vw,2.75rem);font-weight:800;color:white;margin:0 0 1rem">Ready to Start Your Journey?</h2>
+    <p style="color:rgba(255,255,255,.72);font-size:1.05rem;max-width:36rem;margin:0 auto 2.5rem;line-height:1.65">Join hundreds of students who chose Akuru Institute for their Islamic education.</p>
+    <div style="display:flex;flex-wrap:wrap;gap:1rem;justify-content:center">
+      <a href="{{ route('public.courses.index') }}"
+         style="display:inline-flex;align-items:center;gap:.5rem;background:#C9A227;color:#3D1219;font-weight:700;padding:.875rem 2.25rem;border-radius:.75rem;font-size:1.05rem;text-decoration:none;transition:opacity .2s"
+         onmouseover="this.style.opacity='.88'" onmouseout="this.style.opacity='1'">
+        {{ __('public.Enroll') }}
+      </a>
+      <a href="{{ route('public.contact.create') }}"
+         style="display:inline-flex;align-items:center;gap:.5rem;border:2px solid rgba(255,255,255,.35);color:white;font-weight:600;padding:.875rem 2.25rem;border-radius:.75rem;font-size:1.05rem;text-decoration:none;transition:background .2s"
+         onmouseover="this.style.background='rgba(255,255,255,.1)'" onmouseout="this.style.background='transparent'">
+        {{ __('public.Contact Us') }}
+      </a>
     </div>
-</section>
-@endif
-
-{{-- ── 9. EDUCATIONAL ARTICLES ────────────────────────────────────── --}}
-@if(isset($articles) && $articles->count() > 0)
-<section class="py-14 bg-brandBeige-50 border-t border-brandBeige-100">
-    <div class="container mx-auto px-4">
-        <div class="flex items-center justify-between mb-8">
-            <div>
-                <span class="text-brandMaroon-600 font-semibold text-sm uppercase tracking-wider">Learn & grow</span>
-                <h2 class="text-2xl sm:text-3xl font-bold text-gray-900 mt-1">Educational Articles</h2>
-            </div>
-            <a href="{{ route('public.articles.index') }}" class="hidden sm:block text-brandMaroon-600 hover:underline text-sm font-medium">View all →</a>
-        </div>
-        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            @foreach($articles as $article)
-            <a href="{{ route('public.articles.show', $article->slug) }}" class="group block bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow border border-gray-100">
-                @if($article->cover_image)
-                <div class="aspect-video overflow-hidden"><img src="{{ asset('storage/'.$article->cover_image) }}" alt="{{ $article->title }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"></div>
-                @endif
-                <div class="p-5">
-                    <p class="font-semibold text-gray-900 group-hover:text-brandMaroon-700 transition-colors leading-snug mb-1">{{ $article->title }}</p>
-                    <p class="text-sm text-gray-500 line-clamp-2">{{ $article->excerpt }}</p>
-                    <p class="text-xs text-gray-400 mt-3">{{ $article->published_at->format('d M Y') }}</p>
-                </div>
-            </a>
-            @endforeach
-        </div>
-    </div>
-</section>
-@endif
-
-{{-- ── 10. FINAL CTA ────────────────────────────────────────────────── --}}
-<section class="bg-gradient-to-br from-brandMaroon-800 to-brandMaroon-900 text-white py-16 sm:py-20">
-    <div class="container mx-auto px-4 text-center">
-        <h2 class="text-3xl sm:text-4xl font-bold mb-4">Ready to Start Your Journey?</h2>
-        <p class="text-white/75 text-lg mb-8 max-w-xl mx-auto">Join hundreds of students who chose Akuru Institute for their Islamic education.</p>
-        <div class="flex flex-col sm:flex-row gap-4 justify-center">
-            <a href="{{ route('public.courses.index') }}"
-               class="inline-flex items-center justify-center gap-2 bg-brandGold-500 hover:bg-brandGold-400 text-brandMaroon-900 font-bold px-8 py-4 rounded-xl text-lg shadow-lg transition-all hover:scale-105">
-                {{ __('public.Enroll') }}
-            </a>
-            <a href="{{ route('public.contact.create') }}"
-               class="inline-flex items-center justify-center gap-2 border-2 border-white/40 text-white hover:bg-white/10 font-semibold px-8 py-4 rounded-xl text-lg transition-all">
-                {{ __('public.Contact Us') }}
-            </a>
-        </div>
-    </div>
+  </div>
 </section>
 
 @endsection
