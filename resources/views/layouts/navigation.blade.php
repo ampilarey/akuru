@@ -82,6 +82,10 @@
                         <a href="{{ route('admin.pages.index') }}" style="display:block;padding:.5rem .75rem;border-radius:.375rem;font-size:.8rem;color:#374151;text-decoration:none" onmouseover="this.style.background='#F9FAFB'" onmouseout="this.style.background='transparent'">🌐 Website CMS</a>
                         <a href="{{ route('admin.courses.index') }}" style="display:block;padding:.5rem .75rem;border-radius:.375rem;font-size:.8rem;color:#374151;text-decoration:none" onmouseover="this.style.background='#F9FAFB'" onmouseout="this.style.background='transparent'">📚 Manage Courses</a>
                         @endif
+                        @if(auth()->user()->hasRole('super_admin'))
+                        <div style="height:1px;background:#F3F4F6;margin:.25rem 0"></div>
+                        <a href="{{ route('admin.users.index') }}" style="display:block;padding:.5rem .75rem;border-radius:.375rem;font-size:.8rem;color:#991B1B;text-decoration:none;font-weight:600" onmouseover="this.style.background='#FEF2F2'" onmouseout="this.style.background='transparent'">👥 Manage Users</a>
+                        @endif
                         <a href="{{ route('e-learning.index') }}" style="display:block;padding:.5rem .75rem;border-radius:.375rem;font-size:.8rem;color:#374151;text-decoration:none" onmouseover="this.style.background='#F9FAFB'" onmouseout="this.style.background='transparent'">💻 E-Learning</a>
                     </div>
                 </div>

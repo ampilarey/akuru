@@ -77,6 +77,12 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::post('substitutions/requests/{request}/assign', [SubstitutionRequestController::class, 'assign'])->name('substitutions.requests.assign');
     });
     
+    // Admin user management (super_admin only)
+    Route::prefix('admin/users')->middleware(['role:super_admin'])->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\AdminUserController::class, 'index'])->name('admin.users.index');
+        Route::delete('/{user}', [\App\Http\Controllers\Admin\AdminUserController::class, 'destroy'])->name('admin.users.destroy');
+    });
+
     // Admin enrollment management
     Route::prefix('admin/enrollments')->middleware(['role:admin|headmaster|supervisor'])->group(function() {
         Route::get('/', [AdminEnrollmentController::class, 'index'])->name('admin.enrollments.index');
