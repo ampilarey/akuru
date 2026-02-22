@@ -100,12 +100,27 @@ class EnrollmentService
         $dob = \Carbon\Carbon::parse($studentData['dob']);
         $idFields = $this->extractIdFields($studentData);
 
-        // If a student with the same national_id or passport already exists, reuse them
+        // national_id / passport are encrypted — cannot query directly.
+        // Search the parent's existing guardian students first (PHP comparison after decryption),
+        // then fall back to scanning all registration_students with a user_id (smaller set).
         $student = null;
-        if (! empty($idFields['national_id'])) {
-            $student = RegistrationStudent::where('national_id', $idFields['national_id'])->first();
-        } elseif (! empty($idFields['passport'])) {
-            $student = RegistrationStudent::where('passport', $idFields['passport'])->first();
+        $searchNid      = $idFields['national_id'] ?? null;
+        $searchPassport = $idFields['passport']    ?? null;
+
+        // 1. Check among parent's already-linked children (most common re-enrol case)
+        $parent->loadMissing('guardianStudents');
+        foreach ($parent->guardianStudents as $gs) {
+            if ($searchNid      && $gs->national_id === $searchNid)      { $student = $gs; break; }
+            if ($searchPassport && $gs->passport    === $searchPassport) { $student = $gs; break; }
+        }
+
+        // 2. Broader scan: students that have a user_id (child accounts) — smaller table subset
+        if (! $student) {
+            $candidates = RegistrationStudent::whereNotNull('user_id')->get();
+            foreach ($candidates as $c) {
+                if ($searchNid      && $c->national_id === $searchNid)      { $student = $c; break; }
+                if ($searchPassport && $c->passport    === $searchPassport) { $student = $c; break; }
+            }
         }
 
         if (! $student) {
