@@ -79,7 +79,7 @@
           <div style="margin-bottom:1.25rem">
             <label style="display:block;font-size:.8rem;font-weight:600;color:#374151;margin-bottom:.5rem">6-Digit OTP Code</label>
             <input id="otp-code" type="text" name="otp_code" required maxlength="6" pattern="[0-9]{6}"
-                   inputmode="numeric" autocomplete="one-time-code"
+                   inputmode="numeric" autocomplete="off"
                    placeholder="0  0  0  0  0  0"
                    style="width:100%;padding:.875rem;border:1.5px solid #E5E7EB;border-radius:.625rem;font-size:1.75rem;font-weight:700;text-align:center;letter-spacing:.5em;outline:none;box-sizing:border-box"
                    onfocus="this.style.borderColor='#7C2D37'" onblur="this.style.borderColor='#E5E7EB'">

@@ -256,10 +256,14 @@ class CourseRegistrationController extends PublicRegistrationController
         // Notify super admins via SMS about new registration
         $this->notifyAdminNewRegistration($user);
 
-        // If a course is pending, skip the enrollment form and go straight to OTP consent.
-        // We already have all the student data from the profile they just filled in.
-        $courseIds = session('pending_selected_course_ids', []);
-        if (!empty($courseIds)) {
+        // If a course is pending AND this is an adult self-enrollment, we already have
+        // all student data from the profile form — skip register-continue.
+        // For parent/guardian flow the child's details are NOT on this form,
+        // so we must always send them to register-continue to fill in the child's data.
+        $courseIds    = session('pending_selected_course_ids', []);
+        $checkoutFlow = session('checkout_flow', 'adult');
+
+        if (!empty($courseIds) && $checkoutFlow === 'adult') {
             $studentData = [
                 'first_name'  => trim($request->first_name),
                 'last_name'   => trim($request->last_name),
@@ -272,7 +276,7 @@ class CourseRegistrationController extends PublicRegistrationController
 
             session([
                 'enroll_pending_data'         => $studentData,
-                'enroll_pending_flow'         => session('checkout_flow', 'adult'),
+                'enroll_pending_flow'         => 'adult',
                 'enroll_pending_course_ids'   => $courseIds,
                 'enroll_pending_term_id'      => session('pending_term_id'),
                 'enroll_pending_email'        => $request->filled('email') ? $this->normalizer->normalizeEmail($request->email) : '',
@@ -286,7 +290,7 @@ class CourseRegistrationController extends PublicRegistrationController
                     $this->otpService->send($mobileContact, 'login');
                     session(['enroll_otp_contact_id' => $mobileContact->id]);
                 } catch (\Illuminate\Validation\ValidationException $e) {
-                    // OTP rate-limited — still go to enrollment form as fallback
+                    // OTP rate-limited — fall back to enrollment form
                     return redirect()->route('courses.register.continue');
                 }
             }
@@ -295,6 +299,7 @@ class CourseRegistrationController extends PublicRegistrationController
                 ->with('success', 'Registration complete! Please verify your OTP to confirm enrollment.');
         }
 
+        // Parent flow (or adult with no pending courses) → must fill in enrollment form
         return redirect()->route('courses.register.continue');
     }
 
@@ -485,17 +490,21 @@ class CourseRegistrationController extends PublicRegistrationController
             return redirect()->route('public.courses.index')->with('error', 'Session expired. Please start again.');
         }
 
-        // Verify OTP if a contact was set
+        // OTP verification is always required
         $contactId = session('enroll_otp_contact_id');
-        if ($contactId) {
-            $contact = \App\Models\UserContact::find($contactId);
-            if ($contact) {
-                try {
-                    $this->otpService->verify($contact, 'login', $request->otp_code);
-                } catch (\Illuminate\Validation\ValidationException $e) {
-                    return back()->withErrors($e->errors());
-                }
-            }
+        if (!$contactId) {
+            return redirect()->route('public.courses.index')
+                ->with('error', 'Session expired. Please start the enrollment again.');
+        }
+        $contact = \App\Models\UserContact::find($contactId);
+        if (!$contact) {
+            return redirect()->route('public.courses.index')
+                ->with('error', 'Verification contact not found. Please start again.');
+        }
+        try {
+            $this->otpService->verify($contact, 'login', $request->otp_code);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return back()->withErrors($e->errors());
         }
 
         $user = $request->user();
