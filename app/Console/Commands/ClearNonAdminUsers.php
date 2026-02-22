@@ -40,13 +40,20 @@ class ClearNonAdminUsers extends Command
             return self::SUCCESS;
         }
 
+        // Get student IDs belonging to users being deleted (for course_enrollments)
+        $deleteStudentIds = DB::table('registration_students')
+            ->whereNotIn('user_id', $keepIds)
+            ->pluck('id');
+
         DB::statement('SET FOREIGN_KEY_CHECKS=0;');
         DB::table('user_contacts')->whereNotIn('user_id', $keepIds)->delete();
         DB::table('model_has_roles')->whereNotIn('model_id', $keepIds)->where('model_type', \App\Models\User::class)->delete();
         DB::table('model_has_permissions')->whereNotIn('model_id', $keepIds)->where('model_type', \App\Models\User::class)->delete();
         DB::table('otps')->truncate();
+        if ($deleteStudentIds->isNotEmpty()) {
+            DB::table('course_enrollments')->whereIn('student_id', $deleteStudentIds)->delete();
+        }
         DB::table('registration_students')->whereNotIn('user_id', $keepIds)->delete();
-        DB::table('course_enrollments')->whereNotIn('user_id', $keepIds)->delete();
         DB::table('payments')->whereNotIn('user_id', $keepIds)->delete();
         User::whereNotIn('id', $keepIds)->delete();
         DB::statement('SET FOREIGN_KEY_CHECKS=1;');
