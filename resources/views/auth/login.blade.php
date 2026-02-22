@@ -2,7 +2,7 @@
     <x-auth-session-status class="mb-4" :status="session('status')" />
 
     <div class="mb-5 text-center">
-        <p class="text-sm text-gray-500">Sign in with your email or phone number and password.</p>
+        <p class="text-sm text-gray-500">Sign in with your email, phone number, or ID card number.</p>
     </div>
 
     <form method="POST" action="{{ route('login') }}">
@@ -13,7 +13,7 @@
             <x-input-label for="identifier" :value="__('Email or Phone Number')" />
             <x-text-input id="identifier" class="block mt-1 w-full" type="text" name="identifier"
                           :value="old('identifier')" required autofocus autocomplete="username"
-                          placeholder="email@example.com  or  7972434" />
+                          placeholder="email@example.com  /  7972434  /  A123456" />
             <x-input-error :messages="$errors->get('identifier')" class="mt-2" />
         </div>
 

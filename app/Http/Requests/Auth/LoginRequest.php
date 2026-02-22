@@ -35,28 +35,54 @@ class LoginRequest extends FormRequest
     /**
      * Attempt to authenticate the request's credentials.
      *
+     * Supports three identifier types:
+     *  - Email      → contains '@'          → looked up in user_contacts
+     *  - Mobile     → digits only            → looked up in user_contacts (E.164 normalised)
+     *  - National ID → anything else         → looked up directly on users.national_id
+     *
      * @throws \Illuminate\Validation\ValidationException
      */
     public function authenticate(): void
     {
         $this->ensureIsNotRateLimited();
 
-        $identifier = $this->input('identifier');
+        $identifier = trim($this->input('identifier'));
+        $password   = $this->input('password');
         $normalizer = app(\App\Services\ContactNormalizer::class);
-        $type = str_contains($identifier, '@') ? 'email' : 'mobile';
-        $value = $type === 'email' ? $normalizer->normalizeEmail($identifier) : $normalizer->normalizePhone($identifier);
 
-        $contact = \App\Models\UserContact::where('type', $type)->where('value', $value)->whereNotNull('verified_at')->first();
+        $user = null;
 
-        if (!$contact) {
+        if (str_contains($identifier, '@')) {
+            // ── Email login via user_contacts ──────────────────────────────
+            $value   = $normalizer->normalizeEmail($identifier);
+            $contact = \App\Models\UserContact::where('type', 'email')
+                ->where('value', $value)
+                ->whereNotNull('verified_at')
+                ->first();
+            $user = $contact?->user;
+
+        } elseif (preg_match('/^\+?[\d\s\-]+$/', $identifier)) {
+            // ── Mobile login via user_contacts ─────────────────────────────
+            $value   = $normalizer->normalizePhone($identifier);
+            $contact = \App\Models\UserContact::where('type', 'mobile')
+                ->where('value', $value)
+                ->whereNotNull('verified_at')
+                ->first();
+            $user = $contact?->user;
+
+        } else {
+            // ── National ID login directly on users table ──────────────────
+            $user = \App\Models\User::whereRaw('LOWER(national_id) = ?', [strtolower($identifier)])->first();
+        }
+
+        if (! $user || ! \Illuminate\Support\Facades\Hash::check($password, $user->password)) {
             RateLimiter::hit($this->throttleKey());
             throw ValidationException::withMessages(['identifier' => trans('auth.failed')]);
         }
 
-        $user = $contact->user;
-        if (!$user || !\Illuminate\Support\Facades\Hash::check($this->input('password'), $user->password)) {
+        if (! $user->is_active) {
             RateLimiter::hit($this->throttleKey());
-            throw ValidationException::withMessages(['identifier' => trans('auth.failed')]);
+            throw ValidationException::withMessages(['identifier' => 'Your account is inactive. Please contact support.']);
         }
 
         $user->update(['last_login_at' => now()]);
