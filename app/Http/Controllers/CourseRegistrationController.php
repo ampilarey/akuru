@@ -131,7 +131,7 @@ class CourseRegistrationController extends PublicRegistrationController
         if ($existing) {
             $course = \App\Models\Course::find($request->input('course_id'));
             return redirect()
-                ->route('courses.register.checkout', $course ?? abort(404))
+                ->route('courses.checkout.show', $course ?? abort(404))
                 ->with('existing_account', $value)
                 ->withInput(['login_contact' => $value]);
         }
