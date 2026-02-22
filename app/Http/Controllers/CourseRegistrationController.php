@@ -433,14 +433,15 @@ class CourseRegistrationController extends PublicRegistrationController
         if ($flow === 'adult') {
             $studentProfile = $user->registrationStudentProfile;
             if ($studentProfile) {
-                $alreadyIn = \App\Models\CourseEnrollment::where('student_id', $studentProfile->id)
+                $existing = \App\Models\CourseEnrollment::where('student_id', $studentProfile->id)
                     ->whereIn('course_id', $courseIds)
                     ->where('status', '!=', 'rejected')
-                    ->exists();
-                if ($alreadyIn) {
-                    $title = \App\Models\Course::whereIn('id', $courseIds)->first()?->title ?? 'this course';
+                    ->first();
+                if ($existing) {
+                    $title  = $existing->course?->title ?? (\App\Models\Course::whereIn('id', $courseIds)->first()?->title ?? 'this course');
+                    $status = $this->humanEnrollmentStatus($existing);
                     return redirect()->route('my.enrollments')
-                        ->with('info', "You are already enrolled in \"{$title}\". To enroll a child, go back and choose the parent/guardian option.");
+                        ->with('info', "You are already enrolled in \"{$title}\" — {$status}. To enroll a child instead, go back and choose the parent/guardian option.");
                 }
             }
         }
@@ -587,39 +588,41 @@ class CourseRegistrationController extends PublicRegistrationController
             }
         }
 
-        // Hard pre-check: if the user already has a non-rejected enrollment for every
-        // requested course, block immediately before touching the service layer.
+        // Hard pre-check: block before touching the service layer.
         $studentProfile = $user->registrationStudentProfile;
         if ($flow === 'adult' && $studentProfile) {
-            $alreadyEnrolled = \App\Models\CourseEnrollment::where('student_id', $studentProfile->id)
+            $existingEnrollment = \App\Models\CourseEnrollment::where('student_id', $studentProfile->id)
                 ->whereIn('course_id', $courseIds)
                 ->where('status', '!=', 'rejected')
-                ->pluck('course_id')
-                ->toArray();
+                ->with('course')
+                ->first();
 
-            if (! empty($alreadyEnrolled) && count(array_diff($courseIds, $alreadyEnrolled)) === 0) {
+            if ($existingEnrollment) {
                 $this->clearEnrollPendingSession();
                 $this->clearPendingSession();
-                $title = \App\Models\Course::whereIn('id', $alreadyEnrolled)->first()?->title ?? 'the selected course';
+                $title  = $existingEnrollment->course?->title ?? 'the selected course';
+                $status = $this->humanEnrollmentStatus($existingEnrollment);
                 return redirect()->route('my.enrollments')
-                    ->with('info', "You are already enrolled in \"{$title}\". No duplicate enrollment was created.");
+                    ->with('info', "You are already enrolled in \"{$title}\" — {$status}.");
             }
         }
 
-        // For parent/existing-child flow: check against existing student
+        // For parent/existing-child flow: check against the selected child student
         if ($flow === 'parent' && $studentMode === 'existing' && ! empty($data['student_id'])) {
-            $alreadyEnrolled = \App\Models\CourseEnrollment::where('student_id', (int) $data['student_id'])
+            $existingEnrollment = \App\Models\CourseEnrollment::where('student_id', (int) $data['student_id'])
                 ->whereIn('course_id', $courseIds)
                 ->where('status', '!=', 'rejected')
-                ->pluck('course_id')
-                ->toArray();
+                ->with('course')
+                ->first();
 
-            if (! empty($alreadyEnrolled) && count(array_diff($courseIds, $alreadyEnrolled)) === 0) {
+            if ($existingEnrollment) {
                 $this->clearEnrollPendingSession();
                 $this->clearPendingSession();
-                $title = \App\Models\Course::whereIn('id', $alreadyEnrolled)->first()?->title ?? 'the selected course';
+                $title      = $existingEnrollment->course?->title ?? 'the selected course';
+                $studentName = \App\Models\RegistrationStudent::find((int) $data['student_id'])?->full_name ?? 'This student';
+                $status      = $this->humanEnrollmentStatus($existingEnrollment);
                 return redirect()->route('my.enrollments')
-                    ->with('info', "This student is already enrolled in \"{$title}\".");
+                    ->with('info', "{$studentName} is already enrolled in \"{$title}\" — {$status}.");
             }
         }
 
@@ -645,16 +648,16 @@ class CourseRegistrationController extends PublicRegistrationController
             $this->clearEnrollPendingSession();
             $this->clearPendingSession();
 
-            $courseTitle = '';
+            $msg = 'You are already enrolled in the selected course(s).';
             if (! empty($result->existingEnrollments)) {
                 $e = $result->existingEnrollments[0];
                 $e->loadMissing('course');
                 $courseTitle = $e->course?->title ?? '';
+                $status      = $this->humanEnrollmentStatus($e);
+                $msg = $courseTitle
+                    ? "You are already enrolled in \"{$courseTitle}\" — {$status}."
+                    : "You are already enrolled — {$status}.";
             }
-
-            $msg = $courseTitle
-                ? "You are already enrolled in \"{$courseTitle}\"."
-                : 'You are already enrolled in the selected course(s).';
 
             return redirect()->route('my.enrollments')->with('info', $msg);
         }
@@ -710,6 +713,21 @@ class CourseRegistrationController extends PublicRegistrationController
                 }
             }
         } catch (\Throwable) {}
+    }
+
+    /** Return a human-readable enrollment status for user-facing messages. */
+    private function humanEnrollmentStatus(\App\Models\CourseEnrollment $enrollment): string
+    {
+        if ($enrollment->status === 'active') {
+            return 'enrollment confirmed';
+        }
+        if ($enrollment->status === 'pending') {
+            if (in_array($enrollment->payment_status, ['pending', 'initiated'], true)) {
+                return 'payment pending';
+            }
+            return 'pending admin approval';
+        }
+        return ucfirst($enrollment->status);
     }
 
     protected function clearEnrollPendingSession(): void
