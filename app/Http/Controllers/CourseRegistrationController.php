@@ -429,6 +429,22 @@ class CourseRegistrationController extends PublicRegistrationController
         $termId    = ($request->input('term_id') !== '' && $request->input('term_id') !== null)
             ? (int) $request->input('term_id') : null;
 
+        // Duplicate guard for adult self-enrollment: block before OTP is even sent
+        if ($flow === 'adult') {
+            $studentProfile = $user->registrationStudentProfile;
+            if ($studentProfile) {
+                $alreadyIn = \App\Models\CourseEnrollment::where('student_id', $studentProfile->id)
+                    ->whereIn('course_id', $courseIds)
+                    ->where('status', '!=', 'rejected')
+                    ->exists();
+                if ($alreadyIn) {
+                    $title = \App\Models\Course::whereIn('id', $courseIds)->first()?->title ?? 'this course';
+                    return redirect()->route('my.enrollments')
+                        ->with('info', "You are already enrolled in \"{$title}\". To enroll a child, go back and choose the parent/guardian option.");
+                }
+            }
+        }
+
         // Validate student data fields
         $data = $this->validateEnrollRequest($request, $flow);
         if ($data instanceof RedirectResponse) {
