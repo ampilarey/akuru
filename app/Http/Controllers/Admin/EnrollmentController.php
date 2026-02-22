@@ -7,6 +7,7 @@ use App\Mail\EnrollmentStatusMail;
 use App\Models\Course;
 use App\Models\CourseEnrollment;
 use App\Models\Payment;
+use App\Services\SmsGatewayService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 
@@ -61,8 +62,9 @@ class EnrollmentController extends Controller
         ]);
 
         $this->notifyUser($enrollment, 'active');
+        $this->sendActivationSms($enrollment);
 
-        return back()->with('success', 'Enrollment activated and student notified.');
+        return back()->with('success', 'Enrollment activated and student notified via SMS.');
     }
 
     public function reject(CourseEnrollment $enrollment)
@@ -70,6 +72,7 @@ class EnrollmentController extends Controller
         $enrollment->update(['status' => 'rejected']);
 
         $this->notifyUser($enrollment, 'rejected');
+        $this->sendRejectionSms($enrollment);
 
         return back()->with('success', 'Enrollment rejected and student notified.');
     }
@@ -150,6 +153,56 @@ class EnrollmentController extends Controller
 
         if ($email) {
             Mail::to($email)->queue(new EnrollmentStatusMail($enrollment, $status));
+        }
+    }
+
+    private function sendActivationSms(CourseEnrollment $enrollment): void
+    {
+        try {
+            $enrollment->loadMissing(['creator', 'course', 'student']);
+
+            $user   = $enrollment->creator;
+            $mobile = $user?->contacts()->where('type', 'mobile')->whereNotNull('verified_at')->value('value');
+
+            if (! $mobile) return;
+
+            $studentName = $enrollment->student?->full_name ?? $user?->name ?? 'Student';
+            $courseName  = $enrollment->course?->title ?? 'the course';
+            $fee         = $enrollment->payment?->amount;
+            $feeText     = $fee ? ' Fee paid: MVR ' . number_format($fee, 2) . '.' : '';
+
+            $message = "Akuru Institute: Your enrollment has been CONFIRMED!\n"
+                . "Student: {$studentName}\n"
+                . "Course: {$courseName}\n"
+                . "{$feeText}\n"
+                . "Welcome! We look forward to seeing you.";
+
+            app(SmsGatewayService::class)->sendSms($mobile, $message);
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('Enrollment activation SMS failed: ' . $e->getMessage());
+        }
+    }
+
+    private function sendRejectionSms(CourseEnrollment $enrollment): void
+    {
+        try {
+            $enrollment->loadMissing(['creator', 'course', 'student']);
+
+            $user   = $enrollment->creator;
+            $mobile = $user?->contacts()->where('type', 'mobile')->whereNotNull('verified_at')->value('value');
+
+            if (! $mobile) return;
+
+            $studentName = $enrollment->student?->full_name ?? $user?->name ?? 'Student';
+            $courseName  = $enrollment->course?->title ?? 'the course';
+
+            $message = "Akuru Institute: We're sorry, the enrollment for {$studentName} "
+                . "in {$courseName} could not be approved at this time. "
+                . "Please contact us for more information.";
+
+            app(SmsGatewayService::class)->sendSms($mobile, $message);
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('Enrollment rejection SMS failed: ' . $e->getMessage());
         }
     }
 
