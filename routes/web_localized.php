@@ -69,8 +69,8 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::delete('/analytics/reports/{id}', [AnalyticsController::class, 'deleteReport'])->name('analytics.reports.delete');
     });
     
-    // Substitution routes (for admin, headmaster, supervisor, teacher roles)
-    Route::middleware(['role:admin|headmaster|supervisor|teacher'])->group(function() {
+    // Substitution routes
+    Route::middleware(['role:super_admin|admin|headmaster|supervisor|teacher'])->group(function() {
         Route::resource('substitutions/absences', TeacherAbsenceController::class)->except(['show']);
         Route::resource('substitutions/requests', SubstitutionRequestController::class)->names('substitutions.requests');
         Route::post('substitutions/requests/{request}/take', [SubstitutionRequestController::class, 'take'])->name('substitutions.requests.take');
@@ -84,7 +84,7 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
     });
 
     // Admin enrollment management
-    Route::prefix('admin/enrollments')->middleware(['role:admin|headmaster|supervisor'])->group(function() {
+    Route::prefix('admin/enrollments')->middleware(['role:super_admin|admin|headmaster|supervisor'])->group(function() {
         Route::get('/', [AdminEnrollmentController::class, 'index'])->name('admin.enrollments.index');
         Route::get('/export', [AdminEnrollmentController::class, 'export'])->name('admin.enrollments.export');
         Route::get('/payments', [AdminEnrollmentController::class, 'payments'])->name('admin.enrollments.payments');
@@ -94,7 +94,7 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
     });
 
     // Instructor management
-    Route::prefix('admin/instructors')->middleware(['role:admin|headmaster|supervisor'])->group(function() {
+    Route::prefix('admin/instructors')->middleware(['role:super_admin|admin|headmaster|supervisor'])->group(function() {
         Route::get('/', [AdminInstructorController::class, 'index'])->name('admin.instructors.index');
         Route::get('/create', [AdminInstructorController::class, 'create'])->name('admin.instructors.create');
         Route::post('/', [AdminInstructorController::class, 'store'])->name('admin.instructors.store');
@@ -103,8 +103,8 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::delete('/{instructor}', [AdminInstructorController::class, 'destroy'])->name('admin.instructors.destroy');
     });
 
-    // Admin CMS routes (for admin, headmaster, supervisor roles)
-    Route::prefix('admin/public-site')->middleware(['role:admin|headmaster|supervisor'])->group(function() {
+    // Admin CMS routes
+    Route::prefix('admin/public-site')->middleware(['role:super_admin|admin|headmaster|supervisor'])->group(function() {
         Route::resource('pages', AdminPageController::class)->names([
             'index' => 'admin.pages.index',
             'create' => 'admin.pages.create',
