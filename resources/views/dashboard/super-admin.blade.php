@@ -115,7 +115,7 @@
                     </div>
                     <div>
                         <p class="text-sm text-gray-600">Current Prayer</p>
-                        <p class="text-xl font-bold">{{ ucfirst($currentPrayer['name']) }} - {{ $currentPrayer['time'] }}</p>
+                        <p class="text-xl font-bold">{{ $currentPrayer['prayer'] ? ucfirst($currentPrayer['prayer']).' - '.($currentPrayer['time'] ? $currentPrayer['time']->format('H:i') : '') : 'No prayer time now' }}</p>
                     </div>
                 </div>
             </div>
