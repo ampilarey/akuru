@@ -3,24 +3,24 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
+use App\Models\UserContact;
+use App\Services\ContactNormalizer;
 use App\Services\OtpService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\ValidationException;
 
 class OtpLoginController extends Controller
 {
-    protected OtpService $otpService;
-
-    public function __construct(OtpService $otpService)
-    {
+    public function __construct(
+        protected OtpService $otpService,
+        protected ContactNormalizer $normalizer
+    ) {
         $this->middleware('guest')->except('logout');
-        $this->otpService = $otpService;
     }
 
     /**
-     * Show OTP login form
+     * Show admin OTP login form
      */
     public function showLoginForm()
     {
@@ -28,46 +28,54 @@ class OtpLoginController extends Controller
     }
 
     /**
-     * Request OTP for login
+     * Request OTP — admin/super_admin only
      */
     public function requestOtp(Request $request)
     {
         $request->validate([
-            'phone' => 'required|string',
+            'identifier' => ['required', 'string'],
         ]);
 
-        $phone = $request->phone;
+        $identifier = trim($request->identifier);
+        $type  = str_contains($identifier, '@') ? 'email' : 'mobile';
+        $value = $type === 'email'
+            ? $this->normalizer->normalizeEmail($identifier)
+            : $this->normalizer->normalizePhone($identifier);
 
-        // Check if user exists with this phone
-        $user = User::where('phone', $phone)->first();
+        $contact = UserContact::where('type', $type)
+            ->where('value', $value)
+            ->whereNotNull('verified_at')
+            ->with('user')
+            ->first();
 
-        if (!$user) {
-            return back()->withErrors([
-                'phone' => 'No account found with this phone number.',
-            ])->withInput();
+        if (! $contact || ! $contact->user) {
+            return back()->withErrors(['identifier' => 'No account found with this email or phone number.'])->withInput();
         }
 
-        // Check if user is active
-        if (!$user->is_active) {
-            return back()->withErrors([
-                'phone' => 'Your account is inactive. Please contact support.',
-            ])->withInput();
+        $user = $contact->user;
+
+        if (! $user->is_active) {
+            return back()->withErrors(['identifier' => 'Your account is inactive. Please contact support.'])->withInput();
         }
 
-        // Generate and send OTP
-        $result = $this->otpService->generate($phone, 'login');
-
-        if (!$result['success']) {
-            return back()->withErrors([
-                'phone' => $result['error'],
-            ])->withInput();
+        // Only admin and super_admin may use OTP login
+        if (! $user->hasAnyRole(['admin', 'super_admin'])) {
+            return back()->withErrors(['identifier' => 'OTP login is only available for admin accounts. Please use the password login.'])->withInput();
         }
 
-        // Store phone in session for verification step
-        session(['otp_phone' => $phone]);
+        try {
+            $this->otpService->send($contact, 'login');
+        } catch (ValidationException $e) {
+            return back()->withErrors($e->errors())->withInput();
+        }
+
+        session([
+            'otp_login_contact_id'   => $contact->id,
+            'otp_login_identifier'   => $type === 'mobile' ? $identifier : $value,
+        ]);
 
         return redirect()->route('otp.verify.form')
-            ->with('success', 'OTP sent to your phone. Please enter the code.');
+            ->with('success', 'OTP sent to your ' . ($type === 'mobile' ? 'phone' : 'email') . '. Please enter the 6-digit code.');
     }
 
     /**
@@ -75,60 +83,50 @@ class OtpLoginController extends Controller
      */
     public function showVerifyForm()
     {
-        if (!session('otp_phone')) {
+        if (! session('otp_login_contact_id')) {
             return redirect()->route('otp.login.form')
-                ->withErrors(['error' => 'Please enter your phone number first.']);
+                ->withErrors(['identifier' => 'Please enter your email or phone number first.']);
         }
 
         return view('auth.otp-verify');
     }
 
     /**
-     * Verify OTP and login
+     * Verify OTP and log in
      */
     public function verifyOtp(Request $request)
     {
         $request->validate([
-            'code' => 'required|string|size:6',
+            'code' => ['required', 'string', 'size:6'],
         ]);
 
-        $phone = session('otp_phone');
+        $contactId = session('otp_login_contact_id');
 
-        if (!$phone) {
+        if (! $contactId) {
             return redirect()->route('otp.login.form')
-                ->withErrors(['error' => 'Session expired. Please try again.']);
+                ->withErrors(['identifier' => 'Session expired. Please try again.']);
         }
 
-        // Verify OTP
-        $result = $this->otpService->verify($phone, $request->code, 'login');
+        $contact = UserContact::with('user')->find($contactId);
 
-        if (!$result['success']) {
-            return back()->withErrors([
-                'code' => $result['error'],
-            ]);
-        }
-
-        // Find user
-        $user = User::where('phone', $phone)->first();
-
-        if (!$user) {
+        if (! $contact || ! $contact->user) {
             return redirect()->route('otp.login.form')
-                ->withErrors(['error' => 'User not found.']);
+                ->withErrors(['identifier' => 'Account not found. Please try again.']);
         }
 
-        // Log the user in
+        try {
+            $this->otpService->verify($contact, 'login', $request->code);
+        } catch (ValidationException $e) {
+            return back()->withErrors($e->errors());
+        }
+
+        $user = $contact->user;
+
         Auth::login($user, true);
+        $user->update(['last_login_at' => now()]);
 
-        // Clear session
-        session()->forget('otp_phone');
-
-        // Regenerate session
+        session()->forget(['otp_login_contact_id', 'otp_login_identifier']);
         $request->session()->regenerate();
-
-        Log::info('User logged in via OTP', [
-            'user_id' => $user->id,
-            'phone' => $phone,
-        ]);
 
         return redirect()->intended(route('dashboard'));
     }
@@ -138,23 +136,26 @@ class OtpLoginController extends Controller
      */
     public function resendOtp(Request $request)
     {
-        $phone = session('otp_phone');
+        $contactId = session('otp_login_contact_id');
 
-        if (!$phone) {
+        if (! $contactId) {
             return redirect()->route('otp.login.form')
-                ->withErrors(['error' => 'Session expired. Please try again.']);
+                ->withErrors(['identifier' => 'Session expired. Please try again.']);
         }
 
-        // Generate and send new OTP
-        $result = $this->otpService->generate($phone, 'login');
+        $contact = UserContact::find($contactId);
 
-        if (!$result['success']) {
-            return back()->withErrors([
-                'error' => $result['error'],
-            ]);
+        if (! $contact) {
+            return redirect()->route('otp.login.form')
+                ->withErrors(['identifier' => 'Account not found.']);
         }
 
-        return back()->with('success', 'New OTP sent to your phone.');
+        try {
+            $this->otpService->send($contact, 'login');
+        } catch (ValidationException $e) {
+            return back()->withErrors($e->errors());
+        }
+
+        return back()->with('success', 'New OTP sent.');
     }
 }
-

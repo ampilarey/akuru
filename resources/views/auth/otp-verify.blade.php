@@ -1,10 +1,19 @@
 <x-guest-layout>
-    <div class="mb-4 text-sm text-gray-600">
-        {{ __('Enter the 6-digit OTP code sent to your phone number') }}: <strong>{{ session('otp_phone') }}</strong>
+    <div class="mb-6 text-center">
+        <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-indigo-100 mb-3">
+            <svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+            </svg>
+        </div>
+        <h2 class="text-lg font-bold text-gray-800">Enter Verification Code</h2>
+        <p class="text-sm text-gray-500 mt-1">
+            We sent a 6-digit code to
+            <strong class="text-gray-700">{{ session('otp_login_identifier', 'your contact') }}</strong>
+        </p>
     </div>
 
     @if (session('success'))
-        <div class="mb-4 font-medium text-sm text-green-600">
+        <div class="mb-4 p-3 bg-green-50 border border-green-200 rounded-md text-sm text-green-700">
             {{ session('success') }}
         </div>
     @endif
@@ -12,52 +21,40 @@
     <form method="POST" action="{{ route('otp.verify') }}">
         @csrf
 
-        <!-- OTP Code -->
         <div>
-            <x-input-label for="code" :value="__('OTP Code')" />
-            <x-text-input id="code" class="block mt-1 w-full text-center text-2xl tracking-widest" 
-                          type="text" name="code" required autofocus 
-                          placeholder="000000" maxlength="6" 
-                          pattern="[0-9]{6}" />
+            <x-input-label for="code" :value="__('6-Digit Code')" />
+            <x-text-input id="code"
+                          class="block mt-1 w-full text-center text-3xl tracking-[.5em] font-bold"
+                          type="text" name="code" required autofocus
+                          placeholder="000000" maxlength="6" pattern="[0-9]{6}"
+                          inputmode="numeric" autocomplete="one-time-code" />
             <x-input-error :messages="$errors->get('code')" class="mt-2" />
-            <p class="mt-1 text-xs text-gray-500">{{ __('Enter the 6-digit code') }}</p>
         </div>
 
-        <div class="flex items-center justify-between mt-4">
-            <form method="POST" action="{{ route('otp.resend') }}" class="inline">
-                @csrf
-                <button type="submit" class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                    {{ __('Resend OTP') }}
-                </button>
-            </form>
-
-            <x-primary-button>
-                {{ __('Verify & Login') }}
+        <div class="mt-5">
+            <x-primary-button class="w-full justify-center">
+                {{ __('Verify & Log In') }}
             </x-primary-button>
         </div>
 
-        <div class="mt-4 text-center">
-            <a class="text-sm text-gray-600 hover:text-gray-900" href="{{ route('otp.login.form') }}">
-                {{ __('Use different number') }}
+        <div class="flex items-center justify-between mt-4">
+            <a href="{{ route('otp.login.form') }}" class="text-sm text-gray-500 hover:text-gray-800 underline">
+                ← Use different account
             </a>
+            <form method="POST" action="{{ route('otp.resend') }}" class="inline">
+                @csrf
+                <button type="submit" class="text-sm text-indigo-600 hover:text-indigo-800 underline">
+                    Resend code
+                </button>
+            </form>
         </div>
     </form>
 
     <script>
-        // Auto-submit when 6 digits are entered
-        document.getElementById('code').addEventListener('input', function(e) {
-            if (e.target.value.length === 6) {
-                // Optional: auto-submit
-                // e.target.form.submit();
-            }
-        });
-
-        // Only allow numbers
-        document.getElementById('code').addEventListener('keypress', function(e) {
-            if (!/[0-9]/.test(e.key)) {
-                e.preventDefault();
-            }
+        const input = document.getElementById('code');
+        input.addEventListener('input', function () {
+            this.value = this.value.replace(/\D/g, '');
+            if (this.value.length === 6) this.form.submit();
         });
     </script>
 </x-guest-layout>
-
