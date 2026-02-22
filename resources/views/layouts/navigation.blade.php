@@ -1,169 +1,182 @@
-<nav x-data="{ open: false }" class="bg-white border-b border-brandGray-200 shadow-sm">
-    <!-- Primary Navigation Menu -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex justify-between h-16">
-            <div class="flex">
-                <!-- Logo -->
-                <div class="shrink-0 flex items-center">
-                    <a href="{{ route('dashboard') }}" class="flex items-center space-x-3">
-                        <div class="w-8 h-8 bg-brandBlue-500 rounded-full flex items-center justify-center">
-                            <span class="text-white text-sm font-bold">A</span>
-                        </div>
-                        <span class="text-xl font-bold text-brandBlue-500">Akuru Institute</span>
-                    </a>
+<nav x-data="{ open: false, adminOpen: false, cmsOpen: false }"
+     style="background:linear-gradient(135deg,#3D1219 0%,#7C2D37 100%);box-shadow:0 2px 12px rgba(0,0,0,.25);position:sticky;top:0;z-index:50">
+
+    <div style="max-width:80rem;margin:0 auto;padding:0 1.25rem">
+        <div style="display:flex;justify-content:space-between;align-items:center;height:3.75rem">
+
+            {{-- ── Logo ─────────────────────────────────────────────────────── --}}
+            <a href="{{ route('dashboard') }}" style="display:flex;align-items:center;gap:.625rem;text-decoration:none;flex-shrink:0">
+                <x-akuru-logo size="h-8" class="brightness-0 invert" />
+                <span style="color:white;font-weight:700;font-size:.95rem;letter-spacing:.01em">Akuru Institute</span>
+            </a>
+
+            {{-- ── Desktop nav links ────────────────────────────────────────── --}}
+            <div class="hidden sm:flex" style="align-items:center;gap:.125rem;flex:1;justify-content:center">
+
+                {{-- Dashboard --}}
+                <a href="{{ route('dashboard') }}"
+                   style="padding:.4rem .75rem;border-radius:.375rem;font-size:.8rem;font-weight:500;text-decoration:none;transition:background .15s;{{ request()->routeIs('dashboard') ? 'background:rgba(255,255,255,.18);color:white' : 'color:rgba(255,255,255,.8)' }}"
+                   onmouseover="this.style.background='rgba(255,255,255,.12)'" onmouseout="this.style.background='{{ request()->routeIs('dashboard') ? 'rgba(255,255,255,.18)' : 'transparent' }}'">
+                    Dashboard
+                </a>
+
+                @auth
+                {{-- Enrollments (admin+) --}}
+                @if(auth()->user()->hasAnyRole(['super_admin','admin','headmaster','supervisor']))
+                <a href="{{ route('admin.enrollments.index') }}"
+                   style="padding:.4rem .75rem;border-radius:.375rem;font-size:.8rem;font-weight:500;text-decoration:none;transition:background .15s;{{ request()->routeIs('admin.enrollments.*') ? 'background:rgba(255,255,255,.18);color:white' : 'color:rgba(255,255,255,.8)' }}"
+                   onmouseover="this.style.background='rgba(255,255,255,.12)'" onmouseout="this.style.background='{{ request()->routeIs('admin.enrollments.*') ? 'rgba(255,255,255,.18)' : 'transparent' }}'">
+                    Enrollments
+                </a>
+                @endif
+
+                {{-- Students --}}
+                @if(auth()->user()->hasAnyRole(['super_admin','admin','headmaster','supervisor']))
+                <a href="{{ route('students.index') }}"
+                   style="padding:.4rem .75rem;border-radius:.375rem;font-size:.8rem;font-weight:500;text-decoration:none;transition:background .15s;{{ request()->routeIs('students.*') ? 'background:rgba(255,255,255,.18);color:white' : 'color:rgba(255,255,255,.8)' }}"
+                   onmouseover="this.style.background='rgba(255,255,255,.12)'" onmouseout="this.style.background='{{ request()->routeIs('students.*') ? 'rgba(255,255,255,.18)' : 'transparent' }}'">
+                    Students
+                </a>
+                @endif
+
+                {{-- Teachers --}}
+                @if(auth()->user()->hasAnyRole(['super_admin','admin','headmaster','supervisor']))
+                <a href="{{ route('teachers.index') }}"
+                   style="padding:.4rem .75rem;border-radius:.375rem;font-size:.8rem;font-weight:500;text-decoration:none;transition:background .15s;{{ request()->routeIs('teachers.*') ? 'background:rgba(255,255,255,.18);color:white' : 'color:rgba(255,255,255,.8)' }}"
+                   onmouseover="this.style.background='rgba(255,255,255,.12)'" onmouseout="this.style.background='{{ request()->routeIs('teachers.*') ? 'rgba(255,255,255,.18)' : 'transparent' }}'">
+                    Teachers
+                </a>
+                @endif
+
+                {{-- Quran Progress --}}
+                @if(auth()->user()->hasAnyRole(['super_admin','admin','headmaster','teacher']))
+                <a href="{{ route('quran-progress.index') }}"
+                   style="padding:.4rem .75rem;border-radius:.375rem;font-size:.8rem;font-weight:500;text-decoration:none;transition:background .15s;{{ request()->routeIs('quran-progress.*') ? 'background:rgba(255,255,255,.18);color:white' : 'color:rgba(255,255,255,.8)' }}"
+                   onmouseover="this.style.background='rgba(255,255,255,.12)'" onmouseout="this.style.background='{{ request()->routeIs('quran-progress.*') ? 'rgba(255,255,255,.18)' : 'transparent' }}'">
+                    Quran
+                </a>
+                @endif
+
+                {{-- More dropdown (CMS + Instructors + Substitutions + Announcements) --}}
+                @if(auth()->user()->hasAnyRole(['super_admin','admin','headmaster','supervisor','teacher']))
+                <div style="position:relative" @click.away="adminOpen=false">
+                    <button @click="adminOpen=!adminOpen"
+                            style="display:flex;align-items:center;gap:.3rem;padding:.4rem .75rem;border-radius:.375rem;font-size:.8rem;font-weight:500;background:transparent;border:none;cursor:pointer;color:rgba(255,255,255,.8);transition:background .15s"
+                            onmouseover="this.style.background='rgba(255,255,255,.12)'" onmouseout="this.style.background='transparent'">
+                        More
+                        <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
+                    </button>
+                    <div x-show="adminOpen" x-transition
+                         style="position:absolute;top:calc(100% + .5rem);left:0;min-width:180px;background:white;border-radius:.625rem;box-shadow:0 8px 30px rgba(0,0,0,.15);border:1px solid #E5E7EB;padding:.375rem;z-index:100">
+                        @if(auth()->user()->hasAnyRole(['super_admin','admin','headmaster','supervisor','teacher']))
+                        <a href="{{ route('announcements.index') }}" style="display:block;padding:.5rem .75rem;border-radius:.375rem;font-size:.8rem;color:#374151;text-decoration:none" onmouseover="this.style.background='#F9FAFB'" onmouseout="this.style.background='transparent'">📢 Announcements</a>
+                        @endif
+                        @if(auth()->user()->hasAnyRole(['super_admin','admin','headmaster','supervisor','teacher']))
+                        <a href="{{ route('substitutions.requests.index') }}" style="display:block;padding:.5rem .75rem;border-radius:.375rem;font-size:.8rem;color:#374151;text-decoration:none" onmouseover="this.style.background='#F9FAFB'" onmouseout="this.style.background='transparent'">🔄 Substitutions</a>
+                        @endif
+                        @if(auth()->user()->hasAnyRole(['super_admin','admin','headmaster','supervisor']))
+                        <a href="{{ route('admin.instructors.index') }}" style="display:block;padding:.5rem .75rem;border-radius:.375rem;font-size:.8rem;color:#374151;text-decoration:none" onmouseover="this.style.background='#F9FAFB'" onmouseout="this.style.background='transparent'">👨‍🏫 Instructors</a>
+                        @endif
+                        @if(auth()->user()->hasAnyRole(['super_admin','admin']))
+                        <div style="height:1px;background:#F3F4F6;margin:.25rem 0"></div>
+                        <a href="{{ route('admin.pages.index') }}" style="display:block;padding:.5rem .75rem;border-radius:.375rem;font-size:.8rem;color:#374151;text-decoration:none" onmouseover="this.style.background='#F9FAFB'" onmouseout="this.style.background='transparent'">🌐 Website CMS</a>
+                        <a href="{{ route('admin.courses.index') }}" style="display:block;padding:.5rem .75rem;border-radius:.375rem;font-size:.8rem;color:#374151;text-decoration:none" onmouseover="this.style.background='#F9FAFB'" onmouseout="this.style.background='transparent'">📚 Manage Courses</a>
+                        @endif
+                        <a href="{{ route('e-learning.index') }}" style="display:block;padding:.5rem .75rem;border-radius:.375rem;font-size:.8rem;color:#374151;text-decoration:none" onmouseover="this.style.background='#F9FAFB'" onmouseout="this.style.background='transparent'">💻 E-Learning</a>
+                    </div>
                 </div>
-
-                <!-- Navigation Links -->
-                <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                    <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
-                        {{ __('Dashboard') }}
-                    </x-nav-link>
-                    
-                    @auth
-                    @if(auth()->user()->hasAnyRole(['super_admin', 'admin', 'headmaster', 'supervisor']))
-                    <x-nav-link :href="route('students.index')" :active="request()->routeIs('students.*')">
-                        {{ __('Students') }}
-                    </x-nav-link>
-                    <x-nav-link :href="route('teachers.index')" :active="request()->routeIs('teachers.*')">
-                        {{ __('Teachers') }}
-                    </x-nav-link>
-                    @endif
-                    
-                    @if(auth()->user()->hasAnyRole(['super_admin', 'teacher', 'admin', 'headmaster']))
-                    <x-nav-link :href="route('quran-progress.index')" :active="request()->routeIs('quran-progress.*')">
-                        {{ __('Quran Progress') }}
-                    </x-nav-link>
-                    @endif
-                    @endauth
-                    
-                    <x-nav-link :href="route('e-learning.index')" :active="request()->routeIs('e-learning.*')">
-                        {{ __('E-Learning') }}
-                    </x-nav-link>
-                    
-                    <x-nav-link :href="route('announcements.index')" :active="request()->routeIs('announcements.*')">
-                        {{ __('Announcements') }}
-                    </x-nav-link>
-                    
-                    @auth
-                    @if(auth()->user()->hasAnyRole(['super_admin', 'admin', 'headmaster', 'supervisor', 'teacher']))
-                <x-nav-link :href="route('substitutions.requests.index')" :active="request()->routeIs('substitutions.requests.*')">
-                    {{ __('Substitutions') }}
-                </x-nav-link>
-                @endif
-                
-                @if(auth()->user()->hasAnyRole(['super_admin', 'admin', 'headmaster', 'supervisor']))
-                <x-nav-link :href="route('admin.enrollments.index')" :active="request()->routeIs('admin.enrollments.*')">
-                    {{ __('Enrollments') }}
-                </x-nav-link>
                 @endif
 
-                @if(auth()->user()->hasAnyRole(['super_admin', 'admin', 'headmaster', 'supervisor']))
-                <x-nav-link :href="route('admin.instructors.index')" :active="request()->routeIs('admin.instructors.*')">
-                    {{ __('Instructors') }}
-                </x-nav-link>
-                @endif
-
-                @if(auth()->user()->hasAnyRole(['super_admin', 'admin']))
-                <x-nav-link :href="route('admin.pages.index')" :active="request()->routeIs('admin.pages.*') || request()->routeIs('admin.courses.*')">
-                    {{ __('Website CMS') }}
-                </x-nav-link>
-                @endif
-                
-                @if(auth()->user()->hasRole('super_admin'))
-                <x-nav-link :href="route('admin.pages.index')" :active="request()->routeIs('system.*')" class="text-red-600">
-                    {{ __('⚙️ System') }}
-                </x-nav-link>
-                @endif
+                {{-- View Website link --}}
+                <a href="{{ route('public.home') }}" target="_blank"
+                   style="padding:.4rem .75rem;border-radius:.375rem;font-size:.8rem;font-weight:500;text-decoration:none;color:rgba(255,255,255,.6);transition:background .15s"
+                   onmouseover="this.style.color='white'" onmouseout="this.style.color='rgba(255,255,255,.6)'">
+                    ↗ Website
+                </a>
                 @endauth
-                </div>
             </div>
 
-            <!-- Settings Dropdown -->
-            <div class="hidden sm:flex sm:items-center sm:ms-6 space-x-4">
-                <!-- Language Switcher -->
-                <div class="relative">
-                    <select id="language-switcher" class="form-input text-sm py-1 px-2 border-brandGray-300 focus:border-brandBlue-500 focus:ring-brandBlue-500">
-                        <option value="en" {{ app()->getLocale() === 'en' ? 'selected' : '' }}>EN</option>
-                        <option value="ar" {{ app()->getLocale() === 'ar' ? 'selected' : '' }}>العربية</option>
-                        <option value="dv" {{ app()->getLocale() === 'dv' ? 'selected' : '' }}>ދިވެހި</option>
-                    </select>
-                </div>
-                
-                <x-dropdown align="right" width="48">
-                    <x-slot name="trigger">
-                        <button class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 bg-white hover:text-gray-700 focus:outline-none transition ease-in-out duration-150">
-                            <div>{{ Auth::user()?->name ?? 'User' }}</div>
+            {{-- ── Right: user dropdown ─────────────────────────────────────── --}}
+            <div class="hidden sm:flex" style="align-items:center;gap:.75rem">
 
-                            <div class="ms-1">
-                                <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
-                                </svg>
-                            </div>
-                        </button>
-                    </x-slot>
+                @auth
+                {{-- Role badge --}}
+                @php $role = auth()->user()->getRoleNames()->first(); @endphp
+                @if($role)
+                <span style="font-size:.65rem;font-weight:700;padding:.2rem .55rem;border-radius:9999px;background:rgba(255,255,255,.15);color:rgba(255,255,255,.85);letter-spacing:.05em;text-transform:uppercase">
+                    {{ str_replace('_',' ',$role) }}
+                </span>
+                @endif
 
-                    <x-slot name="content">
-                        <x-dropdown-link :href="route('profile.edit')">
-                            {{ __('Profile') }}
-                        </x-dropdown-link>
+                {{-- User dropdown --}}
+                <div style="position:relative" @click.away="cmsOpen=false">
+                    <button @click="cmsOpen=!cmsOpen"
+                            style="display:flex;align-items:center;gap:.5rem;padding:.375rem .75rem;border-radius:.5rem;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);cursor:pointer;transition:background .15s"
+                            onmouseover="this.style.background='rgba(255,255,255,.2)'" onmouseout="this.style.background='rgba(255,255,255,.12)'">
+                        <div style="width:1.75rem;height:1.75rem;border-radius:50%;background:rgba(255,255,255,.25);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                            <span style="font-size:.75rem;font-weight:700;color:white">{{ strtoupper(substr(Auth::user()?->name ?? 'U', 0, 1)) }}</span>
+                        </div>
+                        <span style="font-size:.8rem;font-weight:500;color:white;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ Auth::user()?->name ?? 'User' }}</span>
+                        <svg width="12" height="12" fill="none" stroke="white" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
+                    </button>
 
-                        <!-- Authentication -->
-                        <form method="POST" action="{{ route('logout') }}">
+                    <div x-show="cmsOpen" x-transition
+                         style="position:absolute;top:calc(100% + .5rem);right:0;min-width:180px;background:white;border-radius:.625rem;box-shadow:0 8px 30px rgba(0,0,0,.15);border:1px solid #E5E7EB;padding:.375rem;z-index:100">
+                        <div style="padding:.5rem .75rem;border-bottom:1px solid #F3F4F6;margin-bottom:.25rem">
+                            <p style="font-size:.75rem;font-weight:600;color:#111827;margin:0">{{ Auth::user()?->name }}</p>
+                            <p style="font-size:.7rem;color:#6B7280;margin:.1rem 0 0">{{ ucwords(str_replace('_',' ', $role ?? '')) }}</p>
+                        </div>
+                        <a href="{{ route('profile.edit') }}" style="display:block;padding:.5rem .75rem;border-radius:.375rem;font-size:.8rem;color:#374151;text-decoration:none" onmouseover="this.style.background='#F9FAFB'" onmouseout="this.style.background='transparent'">👤 My Profile</a>
+                        <div style="height:1px;background:#F3F4F6;margin:.25rem 0"></div>
+                        <form method="POST" action="{{ route('logout') }}" style="margin:0">
                             @csrf
-
-                            <x-dropdown-link :href="route('logout')"
-                                    onclick="event.preventDefault();
-                                                this.closest('form').submit();">
-                                {{ __('Log Out') }}
-                            </x-dropdown-link>
+                            <button type="submit" style="width:100%;display:block;padding:.5rem .75rem;border-radius:.375rem;font-size:.8rem;color:#991B1B;text-decoration:none;background:none;border:none;cursor:pointer;text-align:left" onmouseover="this.style.background='#FEF2F2'" onmouseout="this.style.background='transparent'">🔒 Log Out</button>
                         </form>
-                    </x-slot>
-                </x-dropdown>
+                    </div>
+                </div>
+                @endauth
             </div>
 
-            <!-- Hamburger -->
-            <div class="-me-2 flex items-center sm:hidden">
-                <button @click="open = ! open" class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 focus:text-gray-500 transition duration-150 ease-in-out">
-                    <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
-                        <path :class="{'hidden': open, 'inline-flex': ! open }" class="inline-flex" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-                        <path :class="{'hidden': ! open, 'inline-flex': open }" class="hidden" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                </button>
-            </div>
+            {{-- ── Hamburger (mobile) ───────────────────────────────────────── --}}
+            <button @click="open=!open" class="sm:hidden"
+                    style="padding:.5rem;border-radius:.375rem;background:rgba(255,255,255,.12);border:none;cursor:pointer">
+                <svg style="width:1.25rem;height:1.25rem;stroke:white" fill="none" viewBox="0 0 24 24">
+                    <path :class="{'hidden':open}" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                    <path :class="{'hidden':!open}" class="hidden" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
         </div>
     </div>
 
-    <!-- Responsive Navigation Menu -->
-    <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden">
-        <div class="pt-2 pb-3 space-y-1">
-            <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
-                {{ __('Dashboard') }}
-            </x-responsive-nav-link>
+    {{-- ── Mobile menu ──────────────────────────────────────────────────── --}}
+    <div x-show="open" x-transition class="sm:hidden" style="border-top:1px solid rgba(255,255,255,.1);padding:.75rem 1rem">
+        @auth
+        <div style="margin-bottom:.75rem;padding:.625rem;background:rgba(255,255,255,.1);border-radius:.5rem">
+            <p style="color:white;font-size:.85rem;font-weight:600;margin:0">{{ Auth::user()?->name }}</p>
+            <p style="color:rgba(255,255,255,.6);font-size:.72rem;margin:.15rem 0 0">{{ ucwords(str_replace('_',' ', auth()->user()->getRoleNames()->first() ?? '')) }}</p>
         </div>
+        @endauth
 
-        <!-- Responsive Settings Options -->
-        <div class="pt-4 pb-1 border-t border-gray-200">
-            <div class="px-4">
-                <div class="font-medium text-base text-gray-800">{{ Auth::user()?->name ?? 'User' }}</div>
-                <div class="font-medium text-sm text-gray-500">{{ Auth::user()?->email ?? 'user@example.com' }}</div>
-            </div>
+        <a href="{{ route('dashboard') }}" style="display:block;padding:.625rem .75rem;color:white;font-size:.85rem;text-decoration:none;border-radius:.375rem" onmouseover="this.style.background='rgba(255,255,255,.1)'" onmouseout="this.style.background='transparent'">Dashboard</a>
 
-            <div class="mt-3 space-y-1">
-                <x-responsive-nav-link :href="route('profile.edit')">
-                    {{ __('Profile') }}
-                </x-responsive-nav-link>
+        @auth
+        @if(auth()->user()->hasAnyRole(['super_admin','admin','headmaster','supervisor']))
+        <a href="{{ route('admin.enrollments.index') }}" style="display:block;padding:.625rem .75rem;color:rgba(255,255,255,.85);font-size:.85rem;text-decoration:none;border-radius:.375rem" onmouseover="this.style.background='rgba(255,255,255,.1)'" onmouseout="this.style.background='transparent'">Enrollments</a>
+        <a href="{{ route('students.index') }}" style="display:block;padding:.625rem .75rem;color:rgba(255,255,255,.85);font-size:.85rem;text-decoration:none;border-radius:.375rem" onmouseover="this.style.background='rgba(255,255,255,.1)'" onmouseout="this.style.background='transparent'">Students</a>
+        <a href="{{ route('teachers.index') }}" style="display:block;padding:.625rem .75rem;color:rgba(255,255,255,.85);font-size:.85rem;text-decoration:none;border-radius:.375rem" onmouseover="this.style.background='rgba(255,255,255,.1)'" onmouseout="this.style.background='transparent'">Teachers</a>
+        @endif
+        <a href="{{ route('announcements.index') }}" style="display:block;padding:.625rem .75rem;color:rgba(255,255,255,.85);font-size:.85rem;text-decoration:none;border-radius:.375rem" onmouseover="this.style.background='rgba(255,255,255,.1)'" onmouseout="this.style.background='transparent'">Announcements</a>
+        @if(auth()->user()->hasAnyRole(['super_admin','admin']))
+        <a href="{{ route('admin.pages.index') }}" style="display:block;padding:.625rem .75rem;color:rgba(255,255,255,.85);font-size:.85rem;text-decoration:none;border-radius:.375rem" onmouseover="this.style.background='rgba(255,255,255,.1)'" onmouseout="this.style.background='transparent'">Website CMS</a>
+        @endif
 
-                <!-- Authentication -->
-                <form method="POST" action="{{ route('logout') }}">
-                    @csrf
-
-                    <x-responsive-nav-link :href="route('logout')"
-                            onclick="event.preventDefault();
-                                        this.closest('form').submit();">
-                        {{ __('Log Out') }}
-                    </x-responsive-nav-link>
-                </form>
-            </div>
+        <div style="border-top:1px solid rgba(255,255,255,.1);margin:.75rem 0;padding-top:.75rem">
+            <a href="{{ route('profile.edit') }}" style="display:block;padding:.625rem .75rem;color:rgba(255,255,255,.85);font-size:.85rem;text-decoration:none;border-radius:.375rem">My Profile</a>
+            <form method="POST" action="{{ route('logout') }}">
+                @csrf
+                <button type="submit" style="width:100%;padding:.625rem .75rem;color:#FCA5A5;font-size:.85rem;background:none;border:none;cursor:pointer;text-align:left;border-radius:.375rem">Log Out</button>
+            </form>
         </div>
+        @endauth
     </div>
 </nav>
