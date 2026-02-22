@@ -69,7 +69,7 @@
                                 <div>
                                     <label class="block text-sm font-medium mb-1">Gender</label>
                                     <select name="gender" class="w-full rounded-md border-gray-300" :disabled="flow !== 'parent' || studentMode !== 'new'">
-                                        <option value="">Prefer not to say</option>
+                                        <option value="">Select</option>
                                         <option value="male" @selected(old('gender') === 'male')>Male</option>
                                         <option value="female" @selected(old('gender') === 'female')>Female</option>
                                     </select>
