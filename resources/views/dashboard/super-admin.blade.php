@@ -1,20 +1,19 @@
-<x-app-layout>
-<x-slot name="header">
-    <div style="display:flex;justify-content:space-between;align-items:center">
-        <div>
-            <h2 style="font-size:1.25rem;font-weight:800;color:#1F2937;margin:0">
-                Super Admin Dashboard
-            </h2>
-            <p style="font-size:.8rem;color:#6B7280;margin:.25rem 0 0">
-                {{ now()->format('l, d F Y') }} &nbsp;·&nbsp;
-                {{ $islamicDate['day'] }} {{ $islamicDate['month_name'] }} {{ $islamicDate['year'] }} AH
-            </p>
-        </div>
-        <span style="padding:.35rem .85rem;background:linear-gradient(135deg,#7C2D37,#5A1F28);color:white;font-size:.7rem;font-weight:700;border-radius:9999px;letter-spacing:.06em">
-            SUPER ADMIN
-        </span>
+@extends('layouts.app')
+
+@section('content')
+{{-- Brand header bar --}}
+<div style="background:linear-gradient(135deg,#3D1219,#7C2D37);padding:1.25rem 1.5rem;display:flex;justify-content:space-between;align-items:center">
+    <div>
+        <h2 style="font-size:1.15rem;font-weight:800;color:white;margin:0">Super Admin Dashboard</h2>
+        <p style="font-size:.75rem;color:rgba(255,255,255,.65);margin:.2rem 0 0">
+            {{ now()->format('l, d F Y') }} &nbsp;·&nbsp;
+            {{ $islamicDate['day'] }} {{ $islamicDate['month_name'] }} {{ $islamicDate['year'] }} AH
+        </p>
     </div>
-</x-slot>
+    <span style="padding:.35rem .85rem;background:rgba(255,255,255,.15);color:white;font-size:.7rem;font-weight:700;border-radius:9999px;letter-spacing:.06em;border:1px solid rgba(255,255,255,.25)">
+        SUPER ADMIN
+    </span>
+</div>
 
 <div style="padding:1.5rem 1rem 3rem;max-width:80rem;margin:0 auto">
 
@@ -231,4 +230,4 @@
     </div>
 
 </div>
-</x-app-layout>
+@endsection
