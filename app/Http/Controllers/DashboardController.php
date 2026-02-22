@@ -73,35 +73,54 @@ class DashboardController extends Controller
 
     private function superAdminDashboard()
     {
-        // Super Admin sees everything + system stats
         $stats = [
-            'total_students' => Student::count(),
-            'total_teachers' => Teacher::count(),
-            'total_users' => \App\Models\User::count(),
-            'active_quran_students' => Student::whereHas('quranProgress')->count(),
-            'total_assignments' => Assignment::count(),
-            'total_announcements' => Announcement::count(),
-            'database_size' => $this->getDatabaseSize(),
-            'sms_usage_today' => $this->getSmsUsageToday(),
+            'total_users'            => \App\Models\User::count(),
+            'total_students'         => Student::count(),
+            'total_teachers'         => Teacher::count(),
+            'active_quran_students'  => Student::whereHas('quranProgress')->count(),
+            'total_assignments'      => Assignment::count(),
+            'total_announcements'    => Announcement::count(),
+            'database_size'          => $this->getDatabaseSize(),
+            'sms_usage_today'        => $this->getSmsUsageToday(),
+            // Course & enrollment stats
+            'total_courses'          => \App\Models\Course::count(),
+            'open_courses'           => \App\Models\Course::where('status', 'open')->count(),
+            'total_enrollments'      => \App\Models\CourseEnrollment::count(),
+            'pending_enrollments'    => \App\Models\CourseEnrollment::whereIn('status', ['pending', 'pending_payment'])->count(),
+            'active_enrollments'     => \App\Models\CourseEnrollment::where('status', 'active')->count(),
+            'enrollments_today'      => \App\Models\CourseEnrollment::whereDate('created_at', today())->count(),
+            'revenue_total'          => \App\Models\Payment::where('status', 'paid')->sum('amount'),
+            'revenue_today'          => \App\Models\Payment::where('status', 'paid')->whereDate('created_at', today())->sum('amount'),
+            'new_users_today'        => \App\Models\User::whereDate('created_at', today())->count(),
+            'new_users_this_month'   => \App\Models\User::whereMonth('created_at', now()->month)->whereYear('created_at', now()->year)->count(),
         ];
-        
-        // System metrics
+
         $metrics = [
-            'student_growth' => $this->getStudentGrowthMetrics(),
+            'student_growth'    => $this->getStudentGrowthMetrics(),
             'quran_progress_stats' => $this->getQuranProgressStats(),
-            'attendance_rate' => $this->getOverallAttendanceRate(),
+            'attendance_rate'   => $this->getOverallAttendanceRate(),
             'recent_activities' => $this->getRecentActivities(),
-            'system_health' => $this->getSystemHealth(),
+            'system_health'     => $this->getSystemHealth(),
             'sms_gateway_status' => $this->getSmsGatewayStatus(),
         ];
-        
-        // Islamic calendar data
-        $islamicDate = IslamicCalendarService::getCurrentIslamicDate();
-        $prayerTimes = IslamicCalendarService::getPrayerTimes();
+
+        // Recent enrollments (last 10)
+        $recentEnrollments = \App\Models\CourseEnrollment::with(['student', 'course', 'payment', 'createdByUser'])
+            ->latest()
+            ->take(10)
+            ->get();
+
+        // Islamic calendar
+        $islamicDate   = IslamicCalendarService::getCurrentIslamicDate();
+        $prayerTimes   = IslamicCalendarService::getPrayerTimes();
         $currentPrayer = IslamicCalendarService::getCurrentPrayerTime();
-        $specialDays = IslamicCalendarService::getSpecialIslamicDays();
-        
-        return view('dashboard.super-admin', compact('stats', 'metrics', 'islamicDate', 'prayerTimes', 'currentPrayer', 'specialDays'));
+        $specialDays   = IslamicCalendarService::getSpecialIslamicDays();
+
+        return view('dashboard.super-admin', compact(
+            'stats', 'metrics',
+            'recentEnrollments',
+            'islamicDate', 'prayerTimes', 'currentPrayer', 'specialDays'
+        ));
     }
     
     private function adminDashboard()
