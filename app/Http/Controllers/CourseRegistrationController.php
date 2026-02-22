@@ -45,22 +45,6 @@ class CourseRegistrationController extends PublicRegistrationController
 
         // If the user is already logged in, skip the login/register step entirely
         if (auth()->check() && auth()->user()->hasVerifiedContact()) {
-            $loggedUser = auth()->user();
-
-            // Block if already enrolled in this course
-            $studentProfile = $loggedUser->registrationStudentProfile;
-            if ($studentProfile) {
-                $alreadyIn = \App\Models\CourseEnrollment::where('student_id', $studentProfile->id)
-                    ->where('course_id', $course->id)
-                    ->where('status', '!=', 'rejected')
-                    ->exists();
-
-                if ($alreadyIn) {
-                    return redirect()->route('my.enrollments')
-                        ->with('info', "You are already enrolled in \"{$course->title}\".");
-                }
-            }
-
             session([
                 'pending_selected_course_ids' => [$course->id],
                 'pending_term_id'             => null,
