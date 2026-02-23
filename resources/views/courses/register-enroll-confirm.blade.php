@@ -169,6 +169,11 @@
           </form>
         </div>
 
+        {{-- BML compliance: card logos, country, currency, security statement (Req #1,4,5,10,11) --}}
+        @if($totalFee > 0)
+            <x-payment-trust-bar />
+        @endif
+
         @endif
       </div>
     </div>

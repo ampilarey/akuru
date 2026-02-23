@@ -211,6 +211,13 @@
 
         </div>
     </div>
+
+    {{-- BML compliance: card logos, country, currency, security (Req #1,4,5,10,11) --}}
+    @if($fee > 0)
+    <div class="max-w-md mx-auto px-4 pb-6">
+        <x-payment-trust-bar />
+    </div>
+    @endif
 </section>
 
 <script>
