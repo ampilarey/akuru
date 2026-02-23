@@ -274,6 +274,12 @@ class CourseRegistrationController extends PublicRegistrationController
         $checkoutFlow = session('checkout_flow', 'adult');
 
         if (!empty($courseIds) && $checkoutFlow === 'adult') {
+            // Age check — enrollAdultSelf requires 18+; catch early before OTP step
+            if (\Carbon\Carbon::parse($request->dob)->age < 18) {
+                return back()->withInput()
+                    ->withErrors(['dob' => 'You must be 18 or older to enroll yourself. If this is for a child, use the parent/guardian enrollment flow.']);
+            }
+
             $studentData = [
                 'first_name'  => trim($request->first_name),
                 'last_name'   => trim($request->last_name),
