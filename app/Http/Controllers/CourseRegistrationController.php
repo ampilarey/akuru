@@ -452,6 +452,46 @@ class CourseRegistrationController extends PublicRegistrationController
             return $data;
         }
 
+        // Duplicate child pre-check (parent/new flow) — catch before OTP is sent
+        if ($flow === 'parent' && $request->input('student_mode') === 'new') {
+            $searchNid      = isset($data['id_type']) && $data['id_type'] === 'national_id'
+                              ? strtoupper(trim($data['national_id'] ?? '')) : null;
+            $searchPassport = isset($data['id_type']) && $data['id_type'] === 'passport'
+                              ? strtoupper(trim($data['passport'] ?? '')) : null;
+
+            $existingStudent = null;
+            // Check parent's already-linked children first
+            $user->loadMissing('guardianStudents');
+            foreach ($user->guardianStudents as $gs) {
+                if ($searchNid && $gs->national_id === $searchNid)           { $existingStudent = $gs; break; }
+                if ($searchPassport && $gs->passport === $searchPassport)    { $existingStudent = $gs; break; }
+            }
+            // Broader scan: child accounts
+            if (! $existingStudent) {
+                foreach (\App\Models\RegistrationStudent::whereNotNull('user_id')->get() as $c) {
+                    if ($searchNid && $c->national_id === $searchNid)        { $existingStudent = $c; break; }
+                    if ($searchPassport && $c->passport === $searchPassport) { $existingStudent = $c; break; }
+                }
+            }
+
+            if ($existingStudent) {
+                $existingEnrollment = \App\Models\CourseEnrollment::where('student_id', $existingStudent->id)
+                    ->whereIn('course_id', $courseIds)
+                    ->where('status', '!=', 'rejected')
+                    ->first();
+                if ($existingEnrollment) {
+                    $title  = $existingEnrollment->course?->title
+                              ?? \App\Models\Course::find($courseIds[0])?->title
+                              ?? 'this course';
+                    $status = $this->humanEnrollmentStatus($existingEnrollment);
+                    $name   = trim(($data['first_name'] ?? '') . ' ' . ($data['last_name'] ?? ''));
+                    return back()
+                        ->withInput()
+                        ->withErrors(['national_id' => "{$name} is already enrolled in \"{$title}\" — {$status}. No action needed."]);
+                }
+            }
+        }
+
         // Store all form data in session
         session([
             'enroll_pending_data'          => $data,
@@ -549,13 +589,21 @@ class CourseRegistrationController extends PublicRegistrationController
     public function enrollResendOtp(Request $request): RedirectResponse
     {
         $contactId = session('enroll_otp_contact_id');
+
+        // Session expired — redirect to enrollment form, not homepage
         if (!$contactId) {
-            return redirect()->route('courses.register.enroll.otp')->withErrors(['otp_code' => 'Session expired. Please start again.']);
+            return redirect()->route('courses.register.continue')
+                ->with('error', 'Your session expired. Please fill in the enrollment form again.');
         }
+
         $contact = \App\Models\UserContact::find($contactId);
         if (!$contact) {
-            return redirect()->route('public.courses.index')->with('error', 'Contact not found.');
+            // Contact gone — send user back to the enrollment form start
+            $this->clearEnrollPendingSession();
+            return redirect()->route('courses.register.continue')
+                ->with('error', 'Could not find your verification contact. Please start the enrollment again.');
         }
+
         try {
             $this->otpService->send($contact, 'login');
         } catch (\Illuminate\Validation\ValidationException $e) {
@@ -640,7 +688,17 @@ class CourseRegistrationController extends PublicRegistrationController
                 $result = $this->enrollmentService->enrollAdultSelf($user, $studentData, $courseIds, $termId);
             }
         } catch (\Illuminate\Validation\ValidationException $e) {
-            return redirect()->route('courses.register.enroll.otp')->withErrors($e->errors());
+            // OTP was already consumed — send a fresh one so the user can retry
+            $contactId = session('enroll_otp_contact_id');
+            if ($contactId) {
+                $contact = \App\Models\UserContact::find($contactId);
+                if ($contact) {
+                    try { $this->otpService->send($contact, 'login'); } catch (\Throwable) {}
+                }
+            }
+            return redirect()->route('courses.register.enroll.otp')
+                ->withErrors($e->errors())
+                ->with('info', 'A new OTP has been sent to your mobile.');
         }
 
         // If nothing new was created and no payment is pending, the student is already enrolled
