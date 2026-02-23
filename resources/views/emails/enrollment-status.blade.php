@@ -23,18 +23,24 @@
 <body>
 <div class="wrapper">
   <div class="header">
-    <h1>Akuru Institute</h1>
+    @if($newStatus === 'active')
+      <h1>Your Enrollment is Confirmed!</h1>
+    @elseif($newStatus === 'rejected')
+      <h1>Enrollment Update</h1>
+    @else
+      <h1>Akuru Institute</h1>
+    @endif
   </div>
   <div class="body">
     <p>Dear {{ $enrollment->creator?->name ?? 'Student' }},</p>
 
     @if($newStatus === 'active')
-      <p>We are pleased to inform you that your enrollment has been <strong>approved</strong>.</p>
-      <span class="status-badge status-active">✓ Approved</span>
+      <p>Great news! Your enrollment has been <strong>reviewed and confirmed</strong> by our team. Welcome to Akuru Institute!</p>
+      <span class="status-badge status-active">✓ Enrollment Confirmed</span>
     @elseif($newStatus === 'rejected')
-      <p>We regret to inform you that your enrollment has been <strong>declined</strong>.</p>
-      <span class="status-badge status-rejected">✗ Declined</span>
-      <p style="color:#666; font-size:14px;">If you have any questions, please contact us at <a href="mailto:info@akuru.edu.mv">info@akuru.edu.mv</a>.</p>
+      <p>We regret to inform you that your enrollment application was <strong>not approved</strong> at this time.</p>
+      <span class="status-badge status-rejected">✗ Not Approved</span>
+      <p style="color:#666; font-size:14px;">If you have any questions, please contact us at <a href="mailto:{{ config('mail.from.address') }}">{{ config('mail.from.address') }}</a>.</p>
     @else
       <p>Your enrollment status has been updated to: <strong>{{ ucfirst($newStatus) }}</strong>.</p>
     @endif

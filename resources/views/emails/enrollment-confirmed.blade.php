@@ -25,8 +25,8 @@
 <body>
 <div class="wrapper">
     <div class="header">
-        <h1>Enrollment Confirmed</h1>
-        <p>Akuru Institute – Registration Receipt</p>
+        <h1>Payment Received</h1>
+        <p>Akuru Institute – Enrollment Pending Approval</p>
     </div>
     <div class="body">
         @php
@@ -37,10 +37,10 @@
         <p>Dear <strong>{{ $payment->user->name ?? 'Parent/Guardian' }}</strong>,</p>
         <p>
             Thank you! We have received your payment for <strong>{{ $studentName }}</strong>'s enrollment.
-            Your enrollment is now <strong>pending admin approval</strong>.
+            Your enrollment is currently <strong>pending admin verification</strong>.
         </p>
         <p style="color:#555;font-size:13px;">
-            You will receive a confirmation SMS/email once the admin approves your enrollment.
+            You will receive a separate confirmation email and SMS once your enrollment is reviewed and approved by our team.
             This usually takes 1–2 business days.
         </p>
 

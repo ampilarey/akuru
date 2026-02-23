@@ -19,7 +19,7 @@ class EnrollmentConfirmedMail extends Mailable implements ShouldQueue
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Your Enrollment is Confirmed – Akuru Institute',
+            subject: 'Payment Received – Enrollment Pending Approval – Akuru Institute',
         );
     }
 

@@ -21,9 +21,9 @@ class EnrollmentStatusMail extends Mailable
     public function envelope(): Envelope
     {
         $subject = match ($this->newStatus) {
-            'active'   => 'Your enrollment has been approved — ' . ($this->enrollment->course?->title ?? 'Akuru Institute'),
-            'rejected' => 'Enrollment update — ' . ($this->enrollment->course?->title ?? 'Akuru Institute'),
-            default    => 'Enrollment update — Akuru Institute',
+            'active'   => 'Your Enrollment is Confirmed – Akuru Institute',
+            'rejected' => 'Enrollment Update – ' . ($this->enrollment->course?->title ?? 'Akuru Institute'),
+            default    => 'Enrollment Update – Akuru Institute',
         };
 
         return new Envelope(subject: $subject);
