@@ -84,7 +84,7 @@
                    style="width:100%;padding:.875rem;border:1.5px solid #E5E7EB;border-radius:.625rem;font-size:1.75rem;font-weight:700;text-align:center;letter-spacing:.5em;outline:none;box-sizing:border-box"
                    onfocus="this.style.borderColor='#7C2D37'" onblur="this.style.borderColor='#E5E7EB'">
             @error('otp_code')<p style="font-size:.75rem;color:#DC2626;margin:.25rem 0 0">{{ $message }}</p>@enderror
-            <p style="font-size:.75rem;color:#9CA3AF;margin:.375rem 0 0;text-align:center">Code expires in 15 minutes · Auto-submits on 6 digits</p>
+            <p style="font-size:.75rem;color:#9CA3AF;margin:.375rem 0 0;text-align:center">Code expires in 15 minutes · Auto-submits when T&amp;C accepted + 6 digits entered</p>
           </div>
 
           <button type="submit"
@@ -109,10 +109,22 @@
 </section>
 
 <script>
-const otp = document.getElementById('otp-code');
-otp.addEventListener('input', function () {
-  this.value = this.value.replace(/\D/g,'');
-  if (this.value.length === 6) this.form.submit();
+const otpInput   = document.getElementById('otp-code');
+const termsCheck = document.querySelector('input[name="terms_accepted"]');
+
+function tryAutoSubmit() {
+  if (otpInput.value.length === 6 && termsCheck && termsCheck.checked) {
+    otpInput.form.submit();
+  }
+}
+
+otpInput.addEventListener('input', function () {
+  this.value = this.value.replace(/\D/g, '');
+  tryAutoSubmit();
 });
+
+if (termsCheck) {
+  termsCheck.addEventListener('change', tryAutoSubmit);
+}
 </script>
 @endsection
