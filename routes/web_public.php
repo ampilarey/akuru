@@ -82,6 +82,17 @@ Route::get("courses/register/continue", [\App\Http\Controllers\CourseRegistratio
     ->name("courses.register.continue");
 Route::post("courses/register/enroll", [\App\Http\Controllers\CourseRegistrationController::class, "enroll"])
     ->name("courses.register.enroll")->middleware('throttle:10,1');
+// Graceful GET fallback — browser history / stale link navigation
+Route::get("courses/register/enroll", function () {
+    if (session('enroll_pending_course_ids')) {
+        return redirect()->route('courses.register.enroll.otp');
+    }
+    if (session('pending_selected_course_ids') || session('pending_course_id')) {
+        return redirect()->route('courses.register.continue');
+    }
+    return redirect()->route('public.courses.index')
+        ->with('info', 'Please select a course to start enrollment.');
+});
 Route::get("courses/register/enroll/confirm", [\App\Http\Controllers\CourseRegistrationController::class, "enrollOtpForm"])
     ->name("courses.register.enroll.otp");
 Route::post("courses/register/enroll/confirm", [\App\Http\Controllers\CourseRegistrationController::class, "enrollConfirm"])
