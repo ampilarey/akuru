@@ -25,10 +25,22 @@ $bannerCount = count($bannerList);
         timer: null,
         touchX: 0,
         touchY: 0,
-        start() { this.timer = setInterval(() => { if (!this.paused) this.next(); }, 5500); },
-        next() { this.active = (this.active + 1) % this.total; },
-        prev() { this.active = (this.active - 1 + this.total) % this.total; },
-        go(i)  { this.active = i; },
+        init() {
+            this.$nextTick(() => {
+                this.startTimer();
+                document.addEventListener('visibilitychange', () => {
+                    document.hidden ? this.stopTimer() : this.startTimer();
+                });
+            });
+        },
+        startTimer() {
+            this.stopTimer();
+            this.timer = setInterval(() => { if (!this.paused) this.next(); }, 5500);
+        },
+        stopTimer() { if (this.timer) { clearInterval(this.timer); this.timer = null; } },
+        next() { this.active = (this.active + 1) % this.total; this.startTimer(); },
+        prev() { this.active = (this.active - 1 + this.total) % this.total; this.startTimer(); },
+        go(i)  { this.active = i; this.startTimer(); },
         swipeStart(e) { this.touchX = e.touches[0].clientX; this.touchY = e.touches[0].clientY; },
         swipeEnd(e) {
             const dx = e.changedTouches[0].clientX - this.touchX;
@@ -36,7 +48,7 @@ $bannerCount = count($bannerList);
             if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 45) { dx < 0 ? this.next() : this.prev(); }
         }
     }"
-    x-init="start()"
+    x-init="init()"
     @mouseenter="paused=true" @mouseleave="paused=false"
     @touchstart.passive="swipeStart($event)" @touchend.passive="swipeEnd($event)"
     style="background:linear-gradient(135deg,#3D1219 0%,#7C2D37 55%,#5A1F28 100%);position:relative;overflow:hidden;padding-bottom:56px">
