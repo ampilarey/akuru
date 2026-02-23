@@ -681,17 +681,21 @@ class CourseRegistrationController extends PublicRegistrationController
                 $result = $this->enrollmentService->enrollAdultSelf($user, $studentData, $courseIds, $termId);
             }
         } catch (\Illuminate\Validation\ValidationException $e) {
-            // OTP was already consumed — send a fresh one so the user can retry
+            // OTP was already consumed — send a fresh one and reset to step 1 on OTP page
+            session()->forget('enroll_otp_sent');
             $contactId = session('enroll_otp_contact_id');
             if ($contactId) {
                 $contact = \App\Models\UserContact::find($contactId);
                 if ($contact) {
-                    try { $this->otpService->send($contact, 'login'); } catch (\Throwable) {}
+                    try {
+                        $this->otpService->send($contact, 'login');
+                        session(['enroll_otp_sent' => true]);
+                    } catch (\Throwable) {}
                 }
             }
             return redirect()->route('courses.register.enroll.otp')
                 ->withErrors($e->errors())
-                ->with('info', 'A new OTP has been sent to your mobile.');
+                ->with('info', 'A new OTP has been sent to your mobile. Please enter it below.');
         }
 
         // If nothing new was created and no payment is pending, the student is already enrolled
@@ -726,11 +730,14 @@ class CourseRegistrationController extends PublicRegistrationController
                 $this->clearEnrollPendingSession();
                 return redirect()->away($init->redirectUrl);
             }
-            $paymentError = $init->error ?? 'Payment initiation failed.';
-            if (stripos($paymentError, 'unauthorized') !== false) {
-                $paymentError = 'Payment service is not available right now. Your registration was saved. Please contact us to complete payment, or try again later.';
-            }
-            return redirect()->route('courses.register.enroll.otp')->withErrors(['payment' => $paymentError]);
+            // Payment initiation failed — enrollment is saved, but BML redirect unavailable.
+            // Send to complete page so user can see enrollment and retry payment from there.
+            $this->clearEnrollPendingSession();
+            $this->clearPendingSession();
+            session(['pending_payment_ref' => $payment->merchant_reference]);
+            return redirect()->route('courses.register.complete')
+                ->with('enrollments', $result->allEnrollments())
+                ->with('error', 'Your enrollment was saved but we could not connect to the payment gateway right now. Please use the "Retry payment" button below to complete your payment.');
         }
 
         // Only send free-enrollment notifications for newly created enrollments
