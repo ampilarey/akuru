@@ -717,9 +717,6 @@ class CourseRegistrationController extends PublicRegistrationController
             return redirect()->route('my.enrollments')->with('info', $msg);
         }
 
-        // Only notify admin for truly new enrollments
-        $this->notifyAdminNewEnrollment($user, $result->createdEnrollments);
-
         if ($result->hasPaymentsPending()) {
             $payment = $result->getConsolidatedPayment();
             $init    = $this->paymentService->initiatePayment($payment, [

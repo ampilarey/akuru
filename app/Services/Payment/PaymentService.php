@@ -136,6 +136,7 @@ class PaymentService
                 }
 
                 $this->sendConfirmationEmail($payment->fresh());
+                $this->notifyAdminsPaymentConfirmed($payment);
             } elseif (in_array($providerStatus, ['failed', 'cancelled', 'declined'], true)) {
                 $payment->update([
                     'status'    => 'failed',
@@ -217,6 +218,7 @@ class PaymentService
                 }
 
                 $this->sendConfirmationEmail($payment->fresh());
+                $this->notifyAdminsPaymentConfirmed($payment);
             } else {
                 $providerStatus = strtolower((string) ($result->status ?? ''));
                 if (in_array($providerStatus, ['failed', 'cancelled', 'declined'], true)) {
@@ -307,6 +309,43 @@ class PaymentService
             $this->sms->sendSms($mobileContact->value, $message);
         } catch (\Throwable $e) {
             Log::warning('EnrollmentConfirmedSms: failed to send', [
+                'payment_id' => $payment->id,
+                'error'      => $e->getMessage(),
+            ]);
+        }
+    }
+
+    private function notifyAdminsPaymentConfirmed(Payment $payment): void
+    {
+        try {
+            $payment->loadMissing(['user', 'items.enrollment.course']);
+            $payer = $payment->user;
+            $payerName = $payer?->name ?? 'Unknown';
+
+            $admins = \App\Models\User::role(['super_admin', 'admin'])->get();
+
+            foreach ($payment->items as $item) {
+                $enrollment = $item->enrollment;
+                if (! $enrollment) {
+                    continue;
+                }
+                $enrollment->loadMissing('course');
+                $courseName = $enrollment->course?->title ?? 'Unknown';
+                $amount     = number_format((float) ($payment->amount ?? 0), 2);
+                $currency   = $payment->currency ?? 'MVR';
+                $message    = "[Akuru] Payment confirmed: {$payerName} → {$courseName} ({$currency} {$amount})";
+
+                foreach ($admins as $admin) {
+                    $adminMobile = $admin->contacts()->where('type', 'mobile')->value('value')
+                        ?? $admin->phone
+                        ?? null;
+                    if ($adminMobile) {
+                        $this->sms->sendSms($adminMobile, $message);
+                    }
+                }
+            }
+        } catch (\Throwable $e) {
+            Log::warning('notifyAdminsPaymentConfirmed: failed', [
                 'payment_id' => $payment->id,
                 'error'      => $e->getMessage(),
             ]);
