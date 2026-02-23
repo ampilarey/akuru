@@ -284,6 +284,33 @@ class CourseRegistrationController extends PublicRegistrationController
                 'passport'    => $request->id_type === 'passport'    ? strtoupper(trim($request->passport))    : null,
             ];
 
+            // Duplicate check — same as enroll() adult path
+            $searchNid      = $request->id_type === 'national_id' ? strtoupper(trim($request->national_id ?? '')) : null;
+            $searchPassport = $request->id_type === 'passport'    ? strtoupper(trim($request->passport ?? ''))    : null;
+            foreach (\App\Models\RegistrationStudent::whereNotNull('user_id')->get() as $candidate) {
+                $idMatch = ($searchNid && $candidate->national_id === $searchNid)
+                        || ($searchPassport && $candidate->passport === $searchPassport);
+                if (! $idMatch) {
+                    continue;
+                }
+                $existingEnrollment = \App\Models\CourseEnrollment::where('student_id', $candidate->id)
+                    ->whereIn('course_id', $courseIds)
+                    ->where('status', '!=', 'rejected')
+                    ->with('course')
+                    ->first();
+                $idLabel  = $searchNid ? "ID card {$searchNid}" : "Passport {$searchPassport}";
+                $realName = trim($candidate->first_name . ' ' . $candidate->last_name);
+                if ($existingEnrollment) {
+                    $title  = $existingEnrollment->course?->title
+                              ?? \App\Models\Course::whereIn('id', $courseIds)->first()?->title ?? 'this course';
+                    $status = $this->humanEnrollmentStatus($existingEnrollment);
+                    return back()->withInput()
+                        ->withErrors(['national_id' => "This {$idLabel} belongs to {$realName}, who is already enrolled in \"{$title}\" — {$status}."]);
+                }
+                return back()->withInput()
+                    ->withErrors(['national_id' => "This {$idLabel} is already registered to {$realName}. Please log in to that account instead."]);
+            }
+
             session([
                 'enroll_pending_data'         => $studentData,
                 'enroll_pending_flow'         => 'adult',
@@ -293,20 +320,15 @@ class CourseRegistrationController extends PublicRegistrationController
                 'enroll_pending_student_mode' => 'new',
             ]);
 
-            // Send enrollment OTP
+            // Store contact for OTP — do NOT send yet; user reads T&C first then clicks "Send OTP"
             $mobileContact = $user->contacts()->where('type', 'mobile')->whereNotNull('verified_at')->first();
             if ($mobileContact) {
-                try {
-                    $this->otpService->send($mobileContact, 'login');
-                    session(['enroll_otp_contact_id' => $mobileContact->id]);
-                } catch (\Illuminate\Validation\ValidationException $e) {
-                    // OTP rate-limited — fall back to enrollment form
-                    return redirect()->route('courses.register.continue');
-                }
+                session(['enroll_otp_contact_id' => $mobileContact->id]);
             }
+            session()->forget('enroll_otp_sent');
 
             return redirect()->route('courses.register.enroll.otp')
-                ->with('success', 'Registration complete! Please verify your OTP to confirm enrollment.');
+                ->with('success', 'Account created! Please read the terms and send your OTP to confirm enrollment.');
         }
 
         // Parent flow (or adult with no pending courses) → must fill in enrollment form
