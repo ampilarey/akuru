@@ -429,65 +429,86 @@ class CourseRegistrationController extends PublicRegistrationController
         $termId    = ($request->input('term_id') !== '' && $request->input('term_id') !== null)
             ? (int) $request->input('term_id') : null;
 
-        // Duplicate guard for adult self-enrollment: block before OTP is even sent
+        // ── Validate student data fields FIRST ───────────────────────────────
+        $data = $this->validateEnrollRequest($request, $flow);
+        if ($data instanceof RedirectResponse) {
+            return $data;
+        }
+
+        // ── ALL duplicate checks happen here, before OTP is ever sent ─────────
+
+        // Adult self-enrollment duplicate
         if ($flow === 'adult') {
             $studentProfile = $user->registrationStudentProfile;
             if ($studentProfile) {
                 $existing = \App\Models\CourseEnrollment::where('student_id', $studentProfile->id)
                     ->whereIn('course_id', $courseIds)
                     ->where('status', '!=', 'rejected')
+                    ->with('course')
                     ->first();
                 if ($existing) {
-                    $title  = $existing->course?->title ?? (\App\Models\Course::whereIn('id', $courseIds)->first()?->title ?? 'this course');
+                    $title  = $existing->course?->title
+                              ?? \App\Models\Course::whereIn('id', $courseIds)->first()?->title
+                              ?? 'this course';
                     $status = $this->humanEnrollmentStatus($existing);
-                    return redirect()->route('my.enrollments')
-                        ->with('info', "You are already enrolled in \"{$title}\" — {$status}. To enroll a child instead, go back and choose the parent/guardian option.");
+                    return back()->withInput()
+                        ->withErrors(['course_ids' => "You are already enrolled in \"{$title}\" — {$status}."]);
                 }
             }
         }
 
-        // Validate student data fields
-        $data = $this->validateEnrollRequest($request, $flow);
-        if ($data instanceof RedirectResponse) {
-            return $data;
+        // Parent enrolling existing child duplicate
+        if ($flow === 'parent' && $request->input('student_mode') === 'existing' && !empty($data['student_id'])) {
+            $studentId = (int) $data['student_id'];
+            $existing  = \App\Models\CourseEnrollment::where('student_id', $studentId)
+                ->whereIn('course_id', $courseIds)
+                ->where('status', '!=', 'rejected')
+                ->with('course')
+                ->first();
+            if ($existing) {
+                $title       = $existing->course?->title
+                               ?? \App\Models\Course::find($courseIds[0])?->title
+                               ?? 'this course';
+                $status      = $this->humanEnrollmentStatus($existing);
+                $studentName = \App\Models\RegistrationStudent::find($studentId)?->full_name ?? 'This student';
+                return back()->withInput()
+                    ->withErrors(['student_id' => "{$studentName} is already enrolled in \"{$title}\" — {$status}."]);
+            }
         }
 
-        // Duplicate child pre-check (parent/new flow) — catch before OTP is sent
+        // Parent enrolling new child — match encrypted national_id / passport
         if ($flow === 'parent' && $request->input('student_mode') === 'new') {
-            $searchNid      = isset($data['id_type']) && $data['id_type'] === 'national_id'
+            $searchNid      = ($data['id_type'] ?? '') === 'national_id'
                               ? strtoupper(trim($data['national_id'] ?? '')) : null;
-            $searchPassport = isset($data['id_type']) && $data['id_type'] === 'passport'
+            $searchPassport = ($data['id_type'] ?? '') === 'passport'
                               ? strtoupper(trim($data['passport'] ?? '')) : null;
 
             $existingStudent = null;
-            // Check parent's already-linked children first
             $user->loadMissing('guardianStudents');
             foreach ($user->guardianStudents as $gs) {
                 if ($searchNid && $gs->national_id === $searchNid)           { $existingStudent = $gs; break; }
                 if ($searchPassport && $gs->passport === $searchPassport)    { $existingStudent = $gs; break; }
             }
-            // Broader scan: child accounts
             if (! $existingStudent) {
                 foreach (\App\Models\RegistrationStudent::whereNotNull('user_id')->get() as $c) {
                     if ($searchNid && $c->national_id === $searchNid)        { $existingStudent = $c; break; }
                     if ($searchPassport && $c->passport === $searchPassport) { $existingStudent = $c; break; }
                 }
             }
-
             if ($existingStudent) {
-                $existingEnrollment = \App\Models\CourseEnrollment::where('student_id', $existingStudent->id)
+                $existing = \App\Models\CourseEnrollment::where('student_id', $existingStudent->id)
                     ->whereIn('course_id', $courseIds)
                     ->where('status', '!=', 'rejected')
+                    ->with('course')
                     ->first();
-                if ($existingEnrollment) {
-                    $title  = $existingEnrollment->course?->title
+                if ($existing) {
+                    $title  = $existing->course?->title
                               ?? \App\Models\Course::find($courseIds[0])?->title
                               ?? 'this course';
-                    $status = $this->humanEnrollmentStatus($existingEnrollment);
+                    $status = $this->humanEnrollmentStatus($existing);
                     $name   = trim(($data['first_name'] ?? '') . ' ' . ($data['last_name'] ?? ''));
-                    return back()
-                        ->withInput()
-                        ->withErrors(['national_id' => "{$name} is already enrolled in \"{$title}\" — {$status}. No action needed."]);
+                    return back()->withInput()
+                        ->withErrors(['national_id' => "{$name} is already enrolled in \"{$title}\" — {$status}."]);
                 }
             }
         }
@@ -635,44 +656,6 @@ class CourseRegistrationController extends PublicRegistrationController
                     'is_primary'  => false,
                     'verified_at' => null,
                 ]);
-            }
-        }
-
-        // Hard pre-check: block before touching the service layer.
-        $studentProfile = $user->registrationStudentProfile;
-        if ($flow === 'adult' && $studentProfile) {
-            $existingEnrollment = \App\Models\CourseEnrollment::where('student_id', $studentProfile->id)
-                ->whereIn('course_id', $courseIds)
-                ->where('status', '!=', 'rejected')
-                ->with('course')
-                ->first();
-
-            if ($existingEnrollment) {
-                $this->clearEnrollPendingSession();
-                $this->clearPendingSession();
-                $title  = $existingEnrollment->course?->title ?? 'the selected course';
-                $status = $this->humanEnrollmentStatus($existingEnrollment);
-                return redirect()->route('my.enrollments')
-                    ->with('info', "You are already enrolled in \"{$title}\" — {$status}.");
-            }
-        }
-
-        // For parent/existing-child flow: check against the selected child student
-        if ($flow === 'parent' && $studentMode === 'existing' && ! empty($data['student_id'])) {
-            $existingEnrollment = \App\Models\CourseEnrollment::where('student_id', (int) $data['student_id'])
-                ->whereIn('course_id', $courseIds)
-                ->where('status', '!=', 'rejected')
-                ->with('course')
-                ->first();
-
-            if ($existingEnrollment) {
-                $this->clearEnrollPendingSession();
-                $this->clearPendingSession();
-                $title      = $existingEnrollment->course?->title ?? 'the selected course';
-                $studentName = \App\Models\RegistrationStudent::find((int) $data['student_id'])?->full_name ?? 'This student';
-                $status      = $this->humanEnrollmentStatus($existingEnrollment);
-                return redirect()->route('my.enrollments')
-                    ->with('info', "{$studentName} is already enrolled in \"{$title}\" — {$status}.");
             }
         }
 
