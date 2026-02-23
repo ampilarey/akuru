@@ -505,19 +505,16 @@ class CourseRegistrationController extends PublicRegistrationController
                                                : null,
         ]);
 
-        // Send enrollment consent OTP to verified mobile
+        // Store the contact ID in session so the OTP page can send OTP on demand
         $mobileContact = $user->contacts()->where('type', 'mobile')->whereNotNull('verified_at')->first();
         if ($mobileContact) {
-            try {
-                $this->otpService->send($mobileContact, 'login');
-                session(['enroll_otp_contact_id' => $mobileContact->id]);
-            } catch (\Illuminate\Validation\ValidationException $e) {
-                return back()->withErrors($e->errors())->withInput();
-            }
+            session(['enroll_otp_contact_id' => $mobileContact->id]);
         }
 
-        return redirect()->route('courses.register.enroll.otp')
-            ->with('success', $mobileContact ? 'An OTP has been sent to your mobile. Please confirm to complete enrollment.' : null);
+        // Do NOT send OTP here — user will click "Send OTP" after reading T&C
+        session()->forget('enroll_otp_sent');
+
+        return redirect()->route('courses.register.enroll.otp');
     }
 
     /** Show enrollment consent OTP page */
@@ -543,7 +540,8 @@ class CourseRegistrationController extends PublicRegistrationController
             $maskedContact = substr($val, 0, 6) . str_repeat('*', max(0, strlen($val) - 9)) . substr($val, -3);
         }
 
-        return view('courses.register-enroll-confirm', compact('courses', 'totalFee', 'maskedContact'));
+        $otpSent = (bool) session('enroll_otp_sent');
+        return view('courses.register-enroll-confirm', compact('courses', 'totalFee', 'maskedContact', 'otpSent'));
     }
 
     /** Verify enrollment consent OTP + T&C → process enrollment */
@@ -585,7 +583,7 @@ class CourseRegistrationController extends PublicRegistrationController
         return $this->processEnrollmentFromSession($user);
     }
 
-    /** Resend enrollment OTP */
+    /** Send (or resend) enrollment OTP — triggered by user clicking "Send OTP" button */
     public function enrollResendOtp(Request $request): RedirectResponse
     {
         $contactId = session('enroll_otp_contact_id');
@@ -598,7 +596,6 @@ class CourseRegistrationController extends PublicRegistrationController
 
         $contact = \App\Models\UserContact::find($contactId);
         if (!$contact) {
-            // Contact gone — send user back to the enrollment form start
             $this->clearEnrollPendingSession();
             return redirect()->route('courses.register.continue')
                 ->with('error', 'Could not find your verification contact. Please start the enrollment again.');
@@ -606,10 +603,15 @@ class CourseRegistrationController extends PublicRegistrationController
 
         try {
             $this->otpService->send($contact, 'login');
+            session(['enroll_otp_sent' => true]);
         } catch (\Illuminate\Validation\ValidationException $e) {
             return back()->withErrors($e->errors());
         }
-        return redirect()->route('courses.register.enroll.otp')->with('success', 'New OTP sent to your mobile.');
+
+        $isResend = session('enroll_otp_sent_before');
+        session(['enroll_otp_sent_before' => true]);
+        $msg = $isResend ? 'New OTP sent to your mobile.' : 'OTP sent to your mobile. Enter it below.';
+        return redirect()->route('courses.register.enroll.otp')->with('success', $msg);
     }
 
     /** Process enrollment from session data (called after OTP consent) */
@@ -790,7 +792,7 @@ class CourseRegistrationController extends PublicRegistrationController
 
     protected function clearEnrollPendingSession(): void
     {
-        session()->forget(['enroll_pending_data','enroll_pending_flow','enroll_pending_course_ids','enroll_pending_term_id','enroll_pending_email','enroll_pending_student_mode','enroll_pending_child_password','enroll_otp_contact_id']);
+        session()->forget(['enroll_pending_data','enroll_pending_flow','enroll_pending_course_ids','enroll_pending_term_id','enroll_pending_email','enroll_pending_student_mode','enroll_pending_child_password','enroll_otp_contact_id','enroll_otp_sent','enroll_otp_sent_before']);
     }
 
     public function complete(Request $request): View|RedirectResponse
