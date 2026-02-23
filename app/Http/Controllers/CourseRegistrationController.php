@@ -501,15 +501,23 @@ class CourseRegistrationController extends PublicRegistrationController
                     ->where('status', '!=', 'rejected')
                     ->with('course')
                     ->first();
+
+                // The ID belongs to a known student — always report the real name
+                $realName = trim($existingStudent->first_name . ' ' . $existingStudent->last_name);
+                $idLabel  = $searchNid ? "ID card {$searchNid}" : "Passport {$searchPassport}";
+
                 if ($existing) {
                     $title  = $existing->course?->title
                               ?? \App\Models\Course::find($courseIds[0])?->title
                               ?? 'this course';
                     $status = $this->humanEnrollmentStatus($existing);
-                    $name   = trim(($data['first_name'] ?? '') . ' ' . ($data['last_name'] ?? ''));
                     return back()->withInput()
-                        ->withErrors(['national_id' => "{$name} is already enrolled in \"{$title}\" — {$status}."]);
+                        ->withErrors(['national_id' => "This {$idLabel} belongs to {$realName}, who is already enrolled in \"{$title}\" — {$status}."]);
                 }
+
+                // ID exists but not yet enrolled in this course — warn the parent
+                return back()->withInput()
+                    ->withErrors(['national_id' => "This {$idLabel} is already registered to {$realName}. If this is your child, select \"Enroll existing child\" and choose them from the list."]);
             }
         }
 
