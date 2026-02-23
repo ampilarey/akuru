@@ -271,7 +271,9 @@ class CourseRegistrationController extends PublicRegistrationController
         // For parent/guardian flow the child's details are NOT on this form,
         // so we must always send them to register-continue to fill in the child's data.
         $courseIds    = session('pending_selected_course_ids', []);
-        $checkoutFlow = session('checkout_flow', 'adult');
+        // session('checkout_flow') is often "" (empty string) because the hidden input
+        // is never populated on new-account checkout — treat falsy as 'adult'.
+        $checkoutFlow = session('checkout_flow') ?: 'adult';
 
         if (!empty($courseIds) && $checkoutFlow === 'adult') {
             // Age check — enrollAdultSelf requires 18+; catch early before OTP step
