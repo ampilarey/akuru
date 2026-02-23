@@ -44,6 +44,8 @@
                 <form method="POST" action="{{ route('courses.register.enroll') }}">
                     @csrf
                     <input type="hidden" name="flow" x-model="flow">
+                    {{-- Always submit the correct id_type regardless of radio/disabled state --}}
+                    <input type="hidden" name="id_type" :value="flow === 'parent' ? childIdType : adultIdType">
                     <input type="hidden" name="term_id" value="{{ $termId }}">
 
                     @foreach($courses as $c)
@@ -90,10 +92,10 @@
                                 <label class="block text-sm font-medium mb-2">ID document <span class="text-red-500">*</span></label>
                                 <div class="flex gap-4 mb-3">
                                     <label class="flex items-center gap-1.5 cursor-pointer">
-                                        <input type="radio" name="id_type" value="national_id" x-model="childIdType" :disabled="flow !== 'parent' || studentMode !== 'new'"> Maldivian ID card
+                                        <input type="radio" value="national_id" x-model="childIdType"> Maldivian ID card
                                     </label>
                                     <label class="flex items-center gap-1.5 cursor-pointer">
-                                        <input type="radio" name="id_type" value="passport" x-model="childIdType" :disabled="flow !== 'parent' || studentMode !== 'new'"> Passport
+                                        <input type="radio" value="passport" x-model="childIdType"> Passport
                                     </label>
                                 </div>
                                 <div x-show="childIdType === 'national_id'">
@@ -177,10 +179,10 @@
                             <label class="block text-sm font-medium mb-2">ID document <span class="text-red-500">*</span></label>
                             <div class="flex gap-4 mb-3">
                                 <label class="flex items-center gap-1.5 cursor-pointer">
-                                    <input type="radio" name="id_type" value="national_id" x-model="adultIdType" :disabled="flow !== 'adult'"> Maldivian ID card
-                                </label>
-                                <label class="flex items-center gap-1.5 cursor-pointer">
-                                    <input type="radio" name="id_type" value="passport" x-model="adultIdType" :disabled="flow !== 'adult'"> Passport
+                                    <input type="radio" value="national_id" x-model="adultIdType"> Maldivian ID card
+                                    </label>
+                                    <label class="flex items-center gap-1.5 cursor-pointer">
+                                        <input type="radio" value="passport" x-model="adultIdType"> Passport
                                 </label>
                             </div>
                             <div x-show="adultIdType === 'national_id'">
