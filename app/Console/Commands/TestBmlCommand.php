@@ -72,46 +72,83 @@ class TestBmlCommand extends Command
         $this->line(json_encode($payload, JSON_PRETTY_PRINT));
         $this->newLine();
 
-        try {
-            $response = Http::withHeaders([
-                'Authorization' => $headerValue,
-                'Content-Type'  => 'application/json',
-                'Accept'        => 'application/json',
-            ])->timeout(15)->post($baseUrl . $path, $payload);
+        $headers = [
+            'Authorization' => $headerValue,
+            'Content-Type'  => 'application/json',
+            'Accept'        => 'application/json',
+        ];
 
-            $this->info('HTTP Status: ' . $response->status());
-            $this->line('Raw response body:');
-            $this->line($response->body());
+        $this->info('--- Attempt 1: configured currency (' . $currency . ') with paymentPortalExperience ---');
+        $result = $this->postAndReport($baseUrl . $path, $headers, $payload);
+
+        if (! $result && $currency === 'MVR') {
             $this->newLine();
+            $this->warn('Configured currency MVR failed. UAT environment usually requires USD. Trying USD...');
+            $payload2 = array_merge($payload, ['currency' => 'USD', 'localId' => 'BMLTEST' . strtoupper(substr(md5(microtime(true)), 0, 12))]);
+            $this->info('--- Attempt 2: USD currency ---');
+            $result = $this->postAndReport($baseUrl . $path, $headers, $payload2);
+        }
 
-            $data = $response->json();
-            if (is_array($data)) {
-                $this->info('Parsed JSON keys: ' . implode(', ', array_keys($data)));
-                if (isset($data['data']) && is_array($data['data'])) {
-                    $this->line('  -> nested data keys: ' . implode(', ', array_keys($data['data'])));
-                }
-            }
+        if (! $result) {
+            $this->newLine();
+            $this->warn('Trying without paymentPortalExperience...');
+            $payload3 = $payload;
+            unset($payload3['paymentPortalExperience']);
+            $payload3['currency'] = 'USD';
+            $payload3['localId']  = 'BMLTEST' . strtoupper(substr(md5(microtime(true) . 'x'), 0, 12));
+            $this->info('--- Attempt 3: USD, no paymentPortalExperience ---');
+            $result = $this->postAndReport($baseUrl . $path, $headers, $payload3);
+        }
 
-            // Try to find payment URL
-            $keys   = ['url', 'shortUrl', 'paymentUrl', 'redirectUrl', 'payment_url', 'redirect_url'];
-            $found  = null;
-            foreach ($keys as $k) {
-                if (! empty($data[$k])) { $found = $data[$k]; $this->info("Payment URL found at key '{$k}': {$found}"); break; }
-            }
-            if (! $found && isset($data['data']) && is_array($data['data'])) {
-                foreach ($keys as $k) {
-                    if (! empty($data['data'][$k])) { $found = $data['data'][$k]; $this->info("Payment URL found at data.{$k}: {$found}"); break; }
-                }
-            }
-            if (! $found) {
-                $this->warn('No payment URL found in response. Check the keys above and tell the developer which key holds the URL.');
-            }
-
-        } catch (\Throwable $e) {
-            $this->error('Exception: ' . $e->getMessage());
-            return 1;
+        if ($result) {
+            $this->newLine();
+            $this->info('SUCCESS — open this URL in a browser to verify the BML payment page loads:');
+            $this->line($result);
+            $this->newLine();
+            $this->warn('ACTION REQUIRED: If attempt 1 failed but attempt 2/3 succeeded, set BML_DEFAULT_CURRENCY=USD in .env on the server.');
+        } else {
+            $this->newLine();
+            $this->error('All attempts failed. Share the output above with the developer.');
         }
 
         return 0;
+    }
+
+    private function postAndReport(string $url, array $headers, array $payload): ?string
+    {
+        try {
+            $response = Http::withHeaders($headers)->timeout(15)->post($url, $payload);
+
+            $this->line('HTTP Status: ' . $response->status());
+            $this->line('Response: ' . $response->body());
+
+            if (! $response->successful()) {
+                return null;
+            }
+
+            $data = $response->json();
+            $keys = ['url', 'shortUrl', 'paymentUrl', 'redirectUrl', 'payment_url', 'redirect_url'];
+            foreach ($keys as $k) {
+                if (! empty($data[$k]) && is_string($data[$k])) {
+                    $this->info("  -> Payment URL at '{$k}': " . $data[$k]);
+                    return $data[$k];
+                }
+            }
+            if (isset($data['data']) && is_array($data['data'])) {
+                foreach ($keys as $k) {
+                    if (! empty($data['data'][$k]) && is_string($data['data'][$k])) {
+                        $this->info("  -> Payment URL at 'data.{$k}': " . $data['data'][$k]);
+                        return $data['data'][$k];
+                    }
+                }
+                $this->warn('  -> 200 OK but no URL key found. data keys: ' . implode(', ', array_keys($data['data'])));
+            } else {
+                $this->warn('  -> 200 OK but no URL key found. keys: ' . implode(', ', array_keys($data ?? [])));
+            }
+            return null;
+        } catch (\Throwable $e) {
+            $this->error('Exception: ' . $e->getMessage());
+            return null;
+        }
     }
 }
