@@ -158,6 +158,16 @@
                   onclick="disableConfirmForm()">
             {{ $totalFee > 0 ? 'Confirm &amp; Proceed to Payment' : 'Confirm Enrollment' }}
           </button>
+
+          {{-- Consent notice --}}
+          <p style="font-size:.75rem;color:#6B7280;text-align:center;margin:.875rem 0 0;line-height:1.6">
+            By submitting this OTP, you confirm your identity and acknowledge your acceptance of our
+            <a href="{{ route('public.page.show','terms') }}" target="_blank" style="color:#7C2D37;font-weight:600;text-decoration:underline">Terms &amp; Conditions</a>
+            and
+            <a href="{{ route('public.page.show','refund-policy') }}" target="_blank" style="color:#7C2D37;font-weight:600;text-decoration:underline">Refund Policy</a>.
+            Your OTP serves as your digital signature for this enrollment.
+          </p>
+
         </form>
 
         {{-- Resend --}}
