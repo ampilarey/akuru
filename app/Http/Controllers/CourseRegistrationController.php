@@ -132,7 +132,7 @@ class CourseRegistrationController extends PublicRegistrationController
         $value      = $request->input('contact_value');
         $normalized = $this->normalizer->normalize($type, $value);
 
-        // If this contact already exists → ask the user to log in instead of sending OTP
+        // If this contact already exists + verified → ask the user to log in
         $existing = \App\Models\UserContact::where('type', $type)
             ->where('value', $normalized)
             ->whereNotNull('verified_at')
@@ -146,6 +146,65 @@ class CourseRegistrationController extends PublicRegistrationController
                 ->withInput(['login_contact' => $value]);
         }
 
+        // ── NEW REGISTRATION path (form includes personal info + password) ──
+        if ($request->filled('first_name')) {
+            $request->validate([
+                'first_name'  => ['required', 'string', 'max:100'],
+                'last_name'   => ['required', 'string', 'max:100'],
+                'gender'      => ['required', 'in:male,female'],
+                'dob'         => ['required', 'date', 'before:today'],
+                'id_type'     => ['required', 'in:national_id,passport'],
+                'national_id' => ['nullable', 'string', 'max:20'],
+                'passport'    => ['nullable', 'string', 'max:20'],
+                'email'       => ['nullable', 'email', 'max:255'],
+                'password'    => ['required', 'string', 'min:8', 'confirmed'],
+            ]);
+
+            if ($request->id_type === 'national_id' && empty(trim((string) $request->national_id))) {
+                return back()->withErrors(['national_id' => 'Please enter your Maldivian ID card number.'])->withInput();
+            }
+            if ($request->id_type === 'passport' && empty(trim((string) $request->passport))) {
+                return back()->withErrors(['passport' => 'Please enter your passport number.'])->withInput();
+            }
+
+            $flowType = $request->input('flow_type') ?: 'adult';
+            if ($flowType === 'adult' && \Carbon\Carbon::parse($request->dob)->age < 18) {
+                return back()->withInput()
+                    ->withErrors(['dob' => 'You must be 18 or older to enroll yourself. If enrolling a child, choose "Parent / guardian".']);
+            }
+
+            $emailNorm = $request->filled('email') ? $this->normalizer->normalizeEmail($request->email) : null;
+
+            // Store full registration data in session — NO account created yet
+            session([
+                'reg_pending_data' => [
+                    'contact_type' => $type,
+                    'contact_value' => $normalized,
+                    'first_name'  => trim($request->first_name),
+                    'last_name'   => trim($request->last_name),
+                    'gender'      => $request->gender,
+                    'dob'         => $request->dob,
+                    'id_type'     => $request->id_type,
+                    'national_id' => $request->id_type === 'national_id' ? strtoupper(trim($request->national_id ?? '')) : null,
+                    'passport'    => $request->id_type === 'passport'    ? strtoupper(trim($request->passport ?? ''))    : null,
+                    'email'       => $emailNorm,
+                    'password_hash' => Hash::make($request->password),
+                    'flow_type'   => $flowType,
+                ],
+                'pending_course_id'           => $request->input('course_id'),
+                'pending_selected_course_ids' => $request->input('course_id') ? [(int) $request->input('course_id')] : [],
+                'pending_term_id'             => $request->input('term_id'),
+                'checkout_flow'               => $flowType,
+            ]);
+
+            // Send OTP via cache — no UserContact created yet
+            $this->otpService->sendForNewRegistration($type, $normalized);
+
+            return redirect()->route('courses.register.otp')
+                ->with('success', 'Verification code sent to your ' . ($type === 'mobile' ? 'phone' : 'email') . '.');
+        }
+
+        // ── RETURNING USER / OTP LOGIN path ──
         [$user, $contact, $isNew] = $this->accountResolver->resolveOrCreateByContact($type, $normalized);
 
         $this->otpService->send($contact, 'verify_contact');
@@ -165,22 +224,82 @@ class CourseRegistrationController extends PublicRegistrationController
 
     public function otpForm(Request $request): View|RedirectResponse
     {
-        if (!session('pending_contact_id')) {
+        $pendingReg = session('reg_pending_data');
+
+        if ($pendingReg) {
+            return view('courses.register-otp', [
+                'contact'        => null,
+                'contactType'    => $pendingReg['contact_type'],
+                'contactDisplay' => $this->maskContact($pendingReg['contact_type'], $pendingReg['contact_value']),
+                'isNewReg'       => true,
+            ]);
+        }
+
+        if (! session('pending_contact_id')) {
             return redirect()->route('public.courses.index')->with('error', 'Session expired. Please start again.');
         }
 
         $contact = UserContact::find(session('pending_contact_id'));
-        if (!$contact) {
+        if (! $contact) {
             return redirect()->route('public.courses.index')->with('error', 'Session expired.');
         }
 
-        return view('courses.register-otp', ['contact' => $contact]);
+        return view('courses.register-otp', [
+            'contact'        => $contact,
+            'contactType'    => $contact->type,
+            'contactDisplay' => $this->maskContact($contact->type, $contact->value),
+            'isNewReg'       => false,
+        ]);
     }
 
     public function verify(VerifyOtpRequest $request): RedirectResponse
     {
+        $pendingReg = session('reg_pending_data');
+
+        if ($pendingReg) {
+            // ── New registration: verify cache OTP then create account ──
+            $type  = $pendingReg['contact_type'];
+            $value = $pendingReg['contact_value'];
+
+            $this->otpService->verifyForNewRegistration($type, $value, $request->input('code'));
+
+            $user = \App\Models\User::create([
+                'name'                 => trim($pendingReg['first_name'] . ' ' . $pendingReg['last_name']),
+                'gender'               => $pendingReg['gender'],
+                'date_of_birth'        => $pendingReg['dob'],
+                'national_id'          => $pendingReg['national_id'],
+                'passport'             => $pendingReg['passport'],
+                'password'             => $pendingReg['password_hash'],
+                'force_password_change' => false,
+            ]);
+
+            UserContact::create([
+                'user_id'    => $user->id,
+                'type'       => $type,
+                'value'      => $value,
+                'is_primary' => true,
+                'verified_at' => now(),
+            ]);
+
+            if (! empty($pendingReg['email'])) {
+                \App\Models\UserContact::firstOrCreate(
+                    ['type' => 'email', 'value' => $pendingReg['email']],
+                    ['user_id' => $user->id, 'is_primary' => false, 'verified_at' => null]
+                );
+            }
+
+            session()->forget('reg_pending_data');
+            session(['checkout_flow' => $pendingReg['flow_type'] ?? 'adult']);
+
+            Auth::login($user);
+            $this->notifyAdminNewRegistration($user);
+
+            return redirect()->route('courses.register.continue');
+        }
+
+        // ── Returning user / OTP login ──
         $contactId = session('pending_contact_id');
-        if (!$contactId) {
+        if (! $contactId) {
             return redirect()->route('public.courses.index')->with('error', 'Session expired.');
         }
 
@@ -197,6 +316,29 @@ class CourseRegistrationController extends PublicRegistrationController
 
         Auth::login($user);
         return redirect()->route('courses.register.continue');
+    }
+
+    public function resendNewRegistrationOtp(Request $request): RedirectResponse
+    {
+        $pendingReg = session('reg_pending_data');
+        if (! $pendingReg) {
+            return redirect()->route('public.courses.index')->with('error', 'Session expired. Please start again.');
+        }
+
+        $this->otpService->sendForNewRegistration($pendingReg['contact_type'], $pendingReg['contact_value']);
+
+        return back()->with('success', 'A new verification code has been sent.');
+    }
+
+    private function maskContact(string $type, string $value): string
+    {
+        if ($type === 'mobile') {
+            return '****' . substr($value, -4);
+        }
+        $parts  = explode('@', $value);
+        $name   = $parts[0] ?? '';
+        $domain = $parts[1] ?? '';
+        return substr($name, 0, 2) . str_repeat('*', max(2, strlen($name) - 2)) . '@' . $domain;
     }
 
     public function passwordForm(Request $request): View|RedirectResponse

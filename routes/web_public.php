@@ -74,6 +74,8 @@ Route::get("courses/register/otp", [\App\Http\Controllers\CourseRegistrationCont
     ->name("courses.register.otp");
 Route::post("courses/register/verify", [\App\Http\Controllers\CourseRegistrationController::class, "verify"])
     ->name("courses.register.verify")->middleware('throttle:10,1');
+Route::post("courses/register/otp/resend-new", [\App\Http\Controllers\CourseRegistrationController::class, "resendNewRegistrationOtp"])
+    ->name("courses.register.otp.resend-new")->middleware('throttle:5,1');
 Route::get("courses/register/set-password", [\App\Http\Controllers\CourseRegistrationController::class, "passwordForm"])
     ->name("courses.register.set-password");
 Route::post("courses/register/set-password", [\App\Http\Controllers\CourseRegistrationController::class, "setPassword"])

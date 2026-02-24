@@ -70,7 +70,7 @@
             {{-- ── NEW REGISTRATION TAB ── --}}
             <div x-show="tab === 'new'" x-cloak>
                 <p class="text-sm text-gray-600 mb-5">
-                    Enter your mobile number. We'll send a verification code after you continue.
+                    Fill in your details below. We'll send a verification code as the <strong>last step</strong> to confirm your contact and create your account.
                 </p>
 
                 <form method="POST" action="{{ route('courses.register.start') }}">
@@ -78,67 +78,157 @@
                     <input type="hidden" name="course_id" value="{{ $course->id }}">
                     <input type="hidden" name="flow_type" x-model="flowType">
 
-                    {{-- Mobile / email toggle --}}
-                    <div x-data="{ contactType: 'mobile' }">
+                    <div x-data="{ contactType: '{{ old('contact_type', 'mobile') }}' }">
+
+                        {{-- ── Contact method ── --}}
                         <div class="mb-4">
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Contact method</label>
-                            <div class="flex gap-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Contact method <span class="text-red-500">*</span></label>
+                            <div class="flex gap-4 mb-3">
                                 <label class="inline-flex items-center gap-2 cursor-pointer">
-                                    <input type="radio" name="contact_type" value="mobile" x-model="contactType" checked>
-                                    <span class="text-sm">Mobile</span>
+                                    <input type="radio" name="contact_type" value="mobile" x-model="contactType" {{ old('contact_type','mobile') === 'mobile' ? 'checked' : '' }}>
+                                    <span class="text-sm">Mobile (SMS)</span>
                                 </label>
                                 <label class="inline-flex items-center gap-2 cursor-pointer">
-                                    <input type="radio" name="contact_type" value="email" x-model="contactType">
+                                    <input type="radio" name="contact_type" value="email" x-model="contactType" {{ old('contact_type') === 'email' ? 'checked' : '' }}>
                                     <span class="text-sm">Email</span>
                                 </label>
                             </div>
+
+                            <div x-show="contactType === 'mobile'">
+                                <input type="tel" name="contact_value" value="{{ old('contact_value') }}"
+                                       placeholder="7654321" autocomplete="tel"
+                                       class="w-full rounded-md border-gray-300 shadow-sm focus:border-brandMaroon-500 focus:ring-brandMaroon-500"
+                                       :disabled="contactType !== 'mobile'">
+                                <p class="text-xs text-gray-500 mt-1">Maldives number — country code added automatically</p>
+                            </div>
+                            <div x-show="contactType === 'email'" x-cloak>
+                                <input type="email" name="contact_value" value="{{ old('contact_value') }}"
+                                       placeholder="you@example.com" autocomplete="email"
+                                       class="w-full rounded-md border-gray-300 shadow-sm focus:border-brandMaroon-500 focus:ring-brandMaroon-500"
+                                       :disabled="contactType !== 'email'">
+                                <p class="text-xs text-gray-500 mt-1">OTP will be sent to this email address</p>
+                            </div>
                         </div>
 
-                        <div class="mb-5" x-show="contactType === 'mobile'">
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Mobile number <span class="text-red-500">*</span></label>
-                            <input type="tel" name="contact_value" value="{{ old('contact_value') }}"
-                                   placeholder="7654321" autocomplete="tel"
-                                   class="w-full rounded-md border-gray-300 shadow-sm focus:border-brandMaroon-500 focus:ring-brandMaroon-500"
-                                   :disabled="contactType !== 'mobile'">
-                            <p class="text-xs text-gray-500 mt-1">Maldives number — country code added automatically</p>
+                        {{-- ── Who is enrolling ── --}}
+                        <div class="mb-5">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Who is enrolling? <span class="text-red-500">*</span></label>
+                            <div class="grid sm:grid-cols-2 gap-3">
+                                <button type="button" @click="flowType = 'adult'"
+                                        :class="flowType === 'adult' ? 'ring-2 ring-brandMaroon-500 bg-brandMaroon-50' : 'border border-gray-200'"
+                                        class="p-3 rounded-lg text-left hover:bg-gray-50 transition">
+                                    <span class="font-medium text-sm block">I am enrolling myself</span>
+                                    <span class="text-xs text-gray-500">Must be 18 or older</span>
+                                </button>
+                                <button type="button" @click="flowType = 'parent'"
+                                        :class="flowType === 'parent' ? 'ring-2 ring-brandMaroon-500 bg-brandMaroon-50' : 'border border-gray-200'"
+                                        class="p-3 rounded-lg text-left hover:bg-gray-50 transition">
+                                    <span class="font-medium text-sm block">I am a parent / guardian</span>
+                                    <span class="text-xs text-gray-500">Enrolling a child</span>
+                                </button>
+                            </div>
+                            <p x-show="!flowType" x-cloak class="text-xs text-red-500 mt-1">Please select one</p>
                         </div>
-                        <div class="mb-5" x-show="contactType === 'email'" x-cloak>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Email address <span class="text-red-500">*</span></label>
-                            <input type="email" name="contact_value" value="{{ old('contact_value') }}"
-                                   placeholder="you@example.com" autocomplete="email"
-                                   class="w-full rounded-md border-gray-300 shadow-sm focus:border-brandMaroon-500 focus:ring-brandMaroon-500"
-                                   :disabled="contactType !== 'email'">
-                            <p class="text-xs text-gray-500 mt-1">For students outside Maldives</p>
-                        </div>
-                    </div>
 
-                    {{-- Who is enrolling? --}}
-                    <div class="mb-6">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Who is enrolling? <span class="text-red-500">*</span></label>
-                        <div class="grid sm:grid-cols-2 gap-3">
-                            <button type="button"
-                                    @click="flowType = 'adult'"
-                                    :class="flowType === 'adult' ? 'ring-2 ring-brandMaroon-500 bg-brandMaroon-50' : 'border border-gray-200'"
-                                    class="p-3 rounded-lg text-left hover:bg-gray-50 transition">
-                                <span class="font-medium text-sm block">I am enrolling myself</span>
-                                <span class="text-xs text-gray-500">Must be 18 or older</span>
-                            </button>
-                            <button type="button"
-                                    @click="flowType = 'parent'"
-                                    :class="flowType === 'parent' ? 'ring-2 ring-brandMaroon-500 bg-brandMaroon-50' : 'border border-gray-200'"
-                                    class="p-3 rounded-lg text-left hover:bg-gray-50 transition">
-                                <span class="font-medium text-sm block">I am a parent / guardian</span>
-                                <span class="text-xs text-gray-500">Enrolling a child</span>
-                            </button>
+                        <hr class="my-5 border-gray-100">
+                        <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-4">Your details</p>
+
+                        {{-- ── Name ── --}}
+                        <div class="grid grid-cols-2 gap-3 mb-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">First name <span class="text-red-500">*</span></label>
+                                <input type="text" name="first_name" value="{{ old('first_name') }}" required
+                                       class="w-full rounded-md border-gray-300 shadow-sm focus:border-brandMaroon-500 focus:ring-brandMaroon-500">
+                                @error('first_name')<p class="text-xs text-red-600 mt-1">{{ $message }}</p>@enderror
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Last name <span class="text-red-500">*</span></label>
+                                <input type="text" name="last_name" value="{{ old('last_name') }}" required
+                                       class="w-full rounded-md border-gray-300 shadow-sm focus:border-brandMaroon-500 focus:ring-brandMaroon-500">
+                                @error('last_name')<p class="text-xs text-red-600 mt-1">{{ $message }}</p>@enderror
+                            </div>
                         </div>
-                        <p x-show="!flowType" x-cloak class="text-xs text-red-500 mt-1">Please select one</p>
-                    </div>
+
+                        {{-- ── Gender + DOB ── --}}
+                        <div class="grid grid-cols-2 gap-3 mb-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Gender <span class="text-red-500">*</span></label>
+                                <select name="gender" required class="w-full rounded-md border-gray-300 shadow-sm focus:border-brandMaroon-500 focus:ring-brandMaroon-500 bg-white">
+                                    <option value="">Select</option>
+                                    <option value="male"   {{ old('gender') === 'male'   ? 'selected' : '' }}>Male</option>
+                                    <option value="female" {{ old('gender') === 'female' ? 'selected' : '' }}>Female</option>
+                                </select>
+                                @error('gender')<p class="text-xs text-red-600 mt-1">{{ $message }}</p>@enderror
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Date of birth <span class="text-red-500">*</span></label>
+                                <input type="date" name="dob" value="{{ old('dob') }}" required max="{{ date('Y-m-d') }}"
+                                       class="w-full rounded-md border-gray-300 shadow-sm focus:border-brandMaroon-500 focus:ring-brandMaroon-500">
+                                @error('dob')<p class="text-xs text-red-600 mt-1">{{ $message }}</p>@enderror
+                            </div>
+                        </div>
+
+                        {{-- ── ID Document ── --}}
+                        <div class="mb-4" x-data="{ idType: '{{ old('id_type','national_id') }}' }">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">ID document <span class="text-red-500">*</span></label>
+                            <div class="flex gap-3 mb-2">
+                                <label class="inline-flex items-center gap-2 cursor-pointer">
+                                    <input type="radio" name="id_type" value="national_id" x-model="idType" {{ old('id_type','national_id') === 'national_id' ? 'checked' : '' }}>
+                                    <span class="text-sm">Maldivian ID</span>
+                                </label>
+                                <label class="inline-flex items-center gap-2 cursor-pointer">
+                                    <input type="radio" name="id_type" value="passport" x-model="idType" {{ old('id_type') === 'passport' ? 'checked' : '' }}>
+                                    <span class="text-sm">Passport</span>
+                                </label>
+                            </div>
+                            <div x-show="idType === 'national_id'">
+                                <input type="text" name="national_id" value="{{ old('national_id') }}" placeholder="e.g. A123456"
+                                       class="w-full rounded-md border-gray-300 shadow-sm focus:border-brandMaroon-500 focus:ring-brandMaroon-500 uppercase"
+                                       :disabled="idType !== 'national_id'">
+                                @error('national_id')<p class="text-xs text-red-600 mt-1">{{ $message }}</p>@enderror
+                            </div>
+                            <div x-show="idType === 'passport'" x-cloak>
+                                <input type="text" name="passport" value="{{ old('passport') }}" placeholder="Passport number"
+                                       class="w-full rounded-md border-gray-300 shadow-sm focus:border-brandMaroon-500 focus:ring-brandMaroon-500 uppercase"
+                                       :disabled="idType !== 'passport'">
+                                @error('passport')<p class="text-xs text-red-600 mt-1">{{ $message }}</p>@enderror
+                            </div>
+                        </div>
+
+                        {{-- ── Optional email (only shown when mobile is the primary contact) ── --}}
+                        <div class="mb-4" x-show="contactType === 'mobile'">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">
+                                Email address <span class="text-xs font-normal text-gray-400">(optional — for notifications)</span>
+                            </label>
+                            <input type="email" name="email" value="{{ old('email') }}" placeholder="you@example.com"
+                                   class="w-full rounded-md border-gray-300 shadow-sm focus:border-brandMaroon-500 focus:ring-brandMaroon-500">
+                            @error('email')<p class="text-xs text-red-600 mt-1">{{ $message }}</p>@enderror
+                        </div>
+
+                        <hr class="my-5 border-gray-100">
+                        <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-4">Create a password</p>
+
+                        {{-- ── Password ── --}}
+                        <div class="mb-3">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Password <span class="text-red-500">*</span></label>
+                            <input type="password" name="password" required placeholder="Min 8 characters" autocomplete="new-password"
+                                   class="w-full rounded-md border-gray-300 shadow-sm focus:border-brandMaroon-500 focus:ring-brandMaroon-500">
+                            @error('password')<p class="text-xs text-red-600 mt-1">{{ $message }}</p>@enderror
+                        </div>
+                        <div class="mb-6">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Confirm password <span class="text-red-500">*</span></label>
+                            <input type="password" name="password_confirmation" required placeholder="Repeat password" autocomplete="new-password"
+                                   class="w-full rounded-md border-gray-300 shadow-sm focus:border-brandMaroon-500 focus:ring-brandMaroon-500">
+                        </div>
+
+                    </div>{{-- end x-data contactType --}}
 
                     <button type="submit"
                             :disabled="!flowType"
                             class="btn-primary w-full py-3 disabled:opacity-50 disabled:cursor-not-allowed">
-                        Continue — send verification code
+                        Send verification code →
                     </button>
+                    <p class="text-xs text-gray-400 text-center mt-2">Your account will be created after OTP is verified.</p>
                 </form>
             </div>
 
