@@ -752,6 +752,11 @@ class CourseRegistrationController extends PublicRegistrationController
             $init    = $this->paymentService->initiatePayment($payment, [
                 'return_url' => route('payments.bml.return') . '?ref=' . $payment->merchant_reference,
             ]);
+            \Illuminate\Support\Facades\Log::info('BML post-OTP initiation', [
+                'success' => $init->success,
+                'has_redirect_url' => ! empty($init->redirectUrl),
+                'error' => $init->error ?? null,
+            ]);
             if ($init->success && $init->redirectUrl) {
                 session(['pending_payment_ref' => $payment->merchant_reference]);
                 $this->clearEnrollPendingSession();
@@ -764,7 +769,7 @@ class CourseRegistrationController extends PublicRegistrationController
             session(['pending_payment_ref' => $payment->merchant_reference]);
             return redirect()->route('courses.register.complete')
                 ->with('enrollments', $result->allEnrollments())
-                ->with('error', 'Your enrollment was saved but we could not connect to the payment gateway right now. Please use the "Retry payment" button below to complete your payment.');
+                ->with('error', 'Your enrollment was saved but we could not connect to the payment gateway right now. Please use the "Proceed to payment" button below to complete your payment.');
         }
 
         // Only send free-enrollment notifications for newly created enrollments
@@ -831,13 +836,17 @@ class CourseRegistrationController extends PublicRegistrationController
 
         $enrollments = $enrollments ?? [];
         $paymentIdForStatus = null;
+        $showProceedToPayment = false;
         if ($paymentRef) {
             $payment = \App\Models\Payment::where('merchant_reference', $paymentRef)->first();
             if ($payment) {
                 $paymentIdForStatus = $payment->id;
+                $showProceedToPayment = ! in_array($payment->status ?? '', ['confirmed', 'paid'], true);
                 foreach ($payment->items as $item) {
                     $enrollments[] = $item->enrollment;
                 }
+            } else {
+                $showProceedToPayment = true;
             }
         }
 
@@ -847,6 +856,8 @@ class CourseRegistrationController extends PublicRegistrationController
             'enrollments' => collect($enrollments)->unique('id')->values(),
             'paymentRef' => $paymentRef,
             'paymentIdForStatus' => $paymentIdForStatus,
+            'paymentError' => session('error'),
+            'showProceedToPayment' => $showProceedToPayment,
         ]);
     }
 

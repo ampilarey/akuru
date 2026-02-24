@@ -31,10 +31,15 @@ class BmlPaymentProvider implements PaymentProviderInterface
         // Ensure max 50 chars
         $localId    = substr($localId, 0, 50);
 
-        // Build return URL from APP_URL to avoid locale prefix (/en/) added by route().
-        // BML_RETURN_URL (if set) overrides everything.
-        $baseReturnUrl = config('bml.return_url')
-            ?: rtrim(config('app.url'), '/') . '/payments/bml/return';
+        // Build return URL: context (from controller) > BML_RETURN_URL > APP_URL.
+        $baseReturnUrl = null;
+        if (! empty($context['return_url']) && is_string($context['return_url'])) {
+            $baseReturnUrl = preg_replace('/\?.*/', '', $context['return_url']);
+        }
+        if (! $baseReturnUrl) {
+            $baseReturnUrl = config('bml.return_url')
+                ?: rtrim(config('app.url'), '/') . '/payments/bml/return';
+        }
         // Pass original ref (with hyphens) so our return controller can look up the payment.
         $returnUrl = $baseReturnUrl . '?ref=' . urlencode($rawLocalId);
 
@@ -82,17 +87,21 @@ class BmlPaymentProvider implements PaymentProviderInterface
 
             if ($response->successful()) {
                 $data = $response->json();
-                $url = $data['url'] ?? $data['shortUrl'] ?? $data['paymentUrl'] ?? $data['redirectUrl'] ?? null;
+                $url = $this->extractPaymentUrl($data);
                 if ($url) {
                     $payment->update([
                         'local_id'           => $localId,
                         'redirect_url'       => $url,
                         'payment_url'        => $url,
-                        'bml_transaction_id' => $data['id'] ?? $data['transactionId'] ?? null,
+                        'bml_transaction_id' => $this->extractTransactionId($data),
                         'status'             => 'pending',
                     ]);
                     return new PaymentInitiationResult(true, $url, null);
                 }
+                Log::warning('BML initiate: 200 OK but no payment URL in response', [
+                    'response_keys' => array_keys($data ?? []),
+                    'body'          => $response->body(),
+                ]);
             }
 
             $body = $response->body();
@@ -106,6 +115,51 @@ class BmlPaymentProvider implements PaymentProviderInterface
             Log::error('BML initiate exception', ['error' => $e->getMessage()]);
             return new PaymentInitiationResult(false, null, null, 'Payment gateway error');
         }
+    }
+
+    /**
+     * Extract payment redirect URL from BML response (top-level or nested under "data").
+     */
+    private function extractPaymentUrl(?array $data): ?string
+    {
+        if (! is_array($data)) {
+            return null;
+        }
+        $keys = ['url', 'shortUrl', 'paymentUrl', 'redirectUrl', 'payment_url', 'redirect_url'];
+        foreach ($keys as $key) {
+            if (! empty($data[$key]) && is_string($data[$key])) {
+                return $data[$key];
+            }
+        }
+        $nested = $data['data'] ?? null;
+        if (is_array($nested)) {
+            foreach ($keys as $key) {
+                if (! empty($nested[$key]) && is_string($nested[$key])) {
+                    return $nested[$key];
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Extract BML transaction ID from response (top-level or nested under "data").
+     */
+    private function extractTransactionId(?array $data): ?string
+    {
+        if (! is_array($data)) {
+            return null;
+        }
+        $id = $data['id'] ?? $data['transactionId'] ?? $data['transaction_id'] ?? null;
+        if ($id !== null) {
+            return (string) $id;
+        }
+        $nested = $data['data'] ?? null;
+        if (is_array($nested)) {
+            $id = $nested['id'] ?? $nested['transactionId'] ?? $nested['transaction_id'] ?? null;
+            return $id !== null ? (string) $id : null;
+        }
+        return null;
     }
 
     /**

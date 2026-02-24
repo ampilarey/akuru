@@ -25,8 +25,32 @@
                 <p style="font-size:.78rem;color:#92400E;margin:.75rem 0 0">⏱ Approval usually takes 1–2 business days.</p>
             </div>
 
-            {{-- Payment status poller (BML) --}}
-            @if($paymentRef && $paymentIdForStatus)
+            {{-- Message when payment gateway could not be reached after OTP --}}
+            @if(!empty($paymentError))
+            <div class="mb-5 p-4 bg-amber-50 border border-amber-200 rounded">
+                <p class="text-amber-800 font-medium text-sm">{{ $paymentError }}</p>
+                @if($paymentRef)
+                <a href="{{ route('courses.register.payment.retry', ['ref' => $paymentRef]) }}"
+                   class="inline-block mt-3 bg-brandMaroon-600 text-white text-xs py-2 px-4 rounded hover:bg-brandMaroon-700">
+                    Proceed to payment
+                </a>
+                @endif
+            </div>
+            @endif
+
+            {{-- Proceed to payment when payment still pending (so user can open BML even if error flash didn't show) --}}
+            @if(!empty($showProceedToPayment) && $paymentRef && empty($paymentError))
+            <div class="mb-5 p-4 bg-amber-50 border border-amber-200 rounded">
+                <p class="text-amber-800 font-medium text-sm">Complete your payment at the bank to finish enrollment.</p>
+                <a href="{{ route('courses.register.payment.retry', ['ref' => $paymentRef]) }}"
+                   class="inline-block mt-3 bg-brandMaroon-600 text-white text-xs py-2 px-4 rounded hover:bg-brandMaroon-700">
+                    Proceed to payment
+                </a>
+            </div>
+            @endif
+
+            {{-- Payment status poller (BML) — when we have a pending payment and no gateway error --}}
+            @if($paymentRef && $paymentIdForStatus && empty($paymentError))
             <div id="payment-status" class="mb-5" x-data="{
                 loading: true,
                 confirmed: false,
