@@ -217,8 +217,9 @@ function disableConfirmForm() {
     btn.style.cursor  = 'not-allowed';
     btn.textContent   = 'Processing…';
   }
+  // Do NOT disable the input — disabled fields are excluded from form submission
   const input = document.getElementById('otp-code');
-  if (input) input.disabled = true;
+  if (input) input.readOnly = true;
 }
 </script>
 @endsection
