@@ -25,7 +25,7 @@
             <div>
                 <h3 class="text-sm font-medium text-gray-500 mb-1">Content</h3>
                 <div class="prose max-w-none text-gray-700">
-                    {!! nl2br(e($page->body)) !!}
+                    {!! $page->body !!}
                 </div>
             </div>
 

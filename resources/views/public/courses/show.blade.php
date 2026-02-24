@@ -121,7 +121,7 @@
                 <div class="card p-6">
                     <h2 class="text-2xl font-bold text-gray-900 mb-4">Course Description</h2>
                     <div class="prose max-w-none text-gray-700 leading-relaxed">
-                        {!! nl2br(e($course->body)) !!}
+                        {!! $course->body !!}
                     </div>
                 </div>
 

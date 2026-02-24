@@ -76,7 +76,7 @@
 
         <!-- Body -->
         <div class="prose prose-lg max-w-none text-gray-800">
-            {!! nl2br(e($post->body)) !!}
+            {!! $post->body !!}
         </div>
 
         <!-- Tags -->

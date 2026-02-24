@@ -43,7 +43,7 @@
 <section class="py-12 bg-brandBeige-50 border-t border-brandBeige-200">
     <div class="container mx-auto px-4">
         <div class="max-w-3xl mx-auto prose prose-lg prose-headings:text-brandMaroon-800 prose-a:text-brandMaroon-600">
-            {!! nl2br(e($page->body)) !!}
+            {!! $page->body !!}
         </div>
     </div>
 </section>

@@ -38,14 +38,14 @@
                 <div class="announcement-content">
                     @if(app()->getLocale() === 'ar' && $announcement->content_arabic)
                         <div class="arabic-text">
-                            {!! nl2br(e($announcement->content_arabic)) !!}
+                            {!! $announcement->content_arabic !!}
                         </div>
                     @elseif(app()->getLocale() === 'dv' && $announcement->content_dhivehi)
                         <div class="dhivehi-text">
-                            {!! nl2br(e($announcement->content_dhivehi)) !!}
+                            {!! $announcement->content_dhivehi !!}
                         </div>
                     @else
-                        {!! nl2br(e($announcement->content)) !!}
+                        {!! $announcement->content !!}
                     @endif
                 </div>
                 

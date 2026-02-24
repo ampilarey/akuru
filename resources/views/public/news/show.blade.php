@@ -64,7 +64,7 @@
 
         <!-- Content -->
         <div class="prose prose-lg max-w-none">
-            {!! nl2br(e($post->body)) !!}
+            {!! $post->body !!}
         </div>
 
         <!-- Social Share -->
