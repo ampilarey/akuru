@@ -180,7 +180,7 @@
                   style="width:100%;padding:.875rem;border-radius:.625rem;font-weight:700;font-size:1rem;cursor:pointer;border:none;background:linear-gradient(135deg,#7C2D37,#5A1F28);color:white;transition:opacity .2s"
                   onmouseover="if(!this.disabled)this.style.opacity='.9'" onmouseout="this.style.opacity='1'"
                   onclick="disableConfirmForm()">
-            {{ $totalFee > 0 ? 'Confirm &amp; Proceed to Payment' : 'Confirm Enrollment' }}
+            {{ $totalFee > 0 ? 'Confirm & Proceed to Payment' : 'Confirm Enrollment' }}
           </button>
 
           {{-- Consent notice --}}
