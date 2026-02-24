@@ -120,4 +120,17 @@ return [
     'This field is required' => 'هذا الحقل مطلوب',
     'Please enter a valid email' => 'يرجى إدخال بريد إلكتروني صحيح',
     'Please enter a valid phone number' => 'يرجى إدخال رقم هاتف صحيح',
+
+    // News
+    'No News Available' => 'لا توجد أخبار',
+    'Check back later for the latest updates' => 'تفقد لاحقاً للاطلاع على آخر التحديثات.',
+    'Stay updated with the latest news and announcements from Akuru Institute' => 'ابق على اطلاع بآخر الأخبار والإعلانات من معهد أكورو.',
+
+    // Events
+    'Check back later for upcoming events and activities' => 'تفقد لاحقاً للاطلاع على الفعاليات والأنشطة القادمة.',
+
+    // Gallery
+    'No items in this gallery' => 'لا توجد عناصر في هذه المعرض',
+    'gallery_empty_message' => 'هذا المعرض فارغ حالياً. تفقد لاحقاً للاطلاع على المحتوى الجديد.',
+    'Check back later for photo galleries' => 'تفقد لاحقاً للاطلاع على معارض الصور.',
 ];

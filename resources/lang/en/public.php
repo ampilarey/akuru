@@ -220,9 +220,18 @@ return [
     'Need More Information?' => 'Need More Information?',
     'contact_for_more_info' => 'If you need more information about this event, please contact us.',
     
+    // News
+    'No News Available' => 'No News Available',
+    'Check back later for the latest updates' => 'Check back later for the latest updates.',
+    'Stay updated with the latest news and announcements from Akuru Institute' => 'Stay updated with the latest news and announcements from Akuru Institute.',
+
+    // Events
+    'Check back later for upcoming events and activities' => 'Check back later for upcoming events and activities.',
+
     // Gallery
     'No items in this gallery' => 'No items in this gallery',
     'gallery_empty_message' => 'This gallery is currently empty. Please check back later for new content.',
+    'Check back later for photo galleries' => 'Check back later for photo galleries.',
     
     // General
     'Thank you' => 'Thank you',

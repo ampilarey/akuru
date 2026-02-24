@@ -120,4 +120,17 @@ return [
     'This field is required' => 'މި ފީލްޑް ފުރިހަމަ ކުރަން ޖެހޭ',
     'Please enter a valid email' => 'ސައްޙަ އީމެއިލް އެޑްރެހެއް ލިޔާ',
     'Please enter a valid phone number' => 'ސައްޙަ ފޯނު ނަމްބަރެއް ލިޔާ',
+
+    // News
+    'No News Available' => 'ޚަބަރެއް ނެތް',
+    'Check back later for the latest updates' => 'އެންމެ ފަހުގެ ޚަބަރު ދެނެގަތުމަށް ފަހުން ބައްލަވާ.',
+    'Stay updated with the latest news and announcements from Akuru Institute' => 'އަކުރު އިންސްޓިޓިއުޓުގެ އެންމެ ފަހުގެ ޚަބަރާއި އިޢުލާންތަކާ ގިނަ ގިނައިން ހިއްސާ ވެލައްވާ.',
+
+    // Events
+    'Check back later for upcoming events and activities' => 'ކުރިއަށް ހުރި ހަރަކާތްތަކަށް ފަހުން ބައްލަވާ.',
+
+    // Gallery
+    'No items in this gallery' => 'މި ގެލެރީގައި ފޮޓޯތަކެއް ނެތް',
+    'gallery_empty_message' => 'މި ގެލެރީ މިހާރު ހުސްކޮށް ހުރި. ފަހަށް ބެލެހެއްޓި ބައްލަވާ.',
+    'Check back later for photo galleries' => 'ފޮޓޯ ގެލެރީތަކަށް ފަހުން ބައްލަވާ.',
 ];
