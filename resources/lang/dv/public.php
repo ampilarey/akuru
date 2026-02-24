@@ -145,6 +145,8 @@ return [
     'Stay updated with the latest news and announcements from Akuru Institute' => 'އަކުރު އިންސްޓިޓިއުޓުގެ އެންމެ ފަހުގެ ޚަބަރާއި އިޢުލާންތަކާ ގިނަ ގިނައިން ހިއްސާ ވެލައްވާ.',
 
     // Events
+    'Join us for our upcoming events and activities' => 'ކުރިއަށް ހުރި ހަރަކާތްތަކާ ބައިވެރިވެލައްވާ.',
+    'No Events Scheduled' => 'ތާވަލު ކޮށްފައިވާ ހަރަކާތެއް ނެތް',
     'Check back later for upcoming events and activities' => 'ކުރިއަށް ހުރި ހަރަކާތްތަކަށް ފަހުން ބައްލަވާ.',
 
     // Gallery

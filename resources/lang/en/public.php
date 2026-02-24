@@ -244,6 +244,8 @@ return [
     'Stay updated with the latest news and announcements from Akuru Institute' => 'Stay updated with the latest news and announcements from Akuru Institute.',
 
     // Events
+    'Join us for our upcoming events and activities' => 'Join us for our upcoming events and activities.',
+    'No Events Scheduled' => 'No Events Scheduled',
     'Check back later for upcoming events and activities' => 'Check back later for upcoming events and activities.',
 
     // Gallery

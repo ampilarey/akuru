@@ -145,6 +145,8 @@ return [
     'Stay updated with the latest news and announcements from Akuru Institute' => 'ابق على اطلاع بآخر الأخبار والإعلانات من معهد أكورو.',
 
     // Events
+    'Join us for our upcoming events and activities' => 'انضم إلينا في فعالياتنا وأنشطتنا القادمة.',
+    'No Events Scheduled' => 'لا توجد فعاليات مجدولة',
     'Check back later for upcoming events and activities' => 'تفقد لاحقاً للاطلاع على الفعاليات والأنشطة القادمة.',
 
     // Gallery
