@@ -23,14 +23,14 @@
         <div style="display:flex;justify-content:space-between;align-items:center;padding:.5rem 0;{{ !$loop->last ? 'border-bottom:1px solid #F3F4F6' : '' }}">
           <span style="font-weight:600;color:#111827;font-size:.9rem">{{ $course->title }}</span>
           <span style="font-weight:700;color:#7C2D37;font-size:.9rem">
-            {{ $course->fee && $course->fee > 0 ? 'MVR '.number_format($course->fee,2) : 'Free' }}
+            {{ $course->fee && $course->fee > 0 ? config('bml.default_currency','MVR').' '.number_format($course->fee,2) : 'Free' }}
           </span>
         </div>
         @endforeach
         @if($totalFee > 0)
         <div style="display:flex;justify-content:space-between;align-items:center;padding-top:.625rem;margin-top:.25rem;border-top:2px solid #E5E7EB">
           <span style="font-weight:700;color:#111827;font-size:.9rem">Total</span>
-          <span style="font-weight:800;color:#7C2D37;font-size:1rem">MVR {{ number_format($totalFee,2) }}</span>
+          <span style="font-weight:800;color:#7C2D37;font-size:1rem">{{ config('bml.default_currency','MVR') }} {{ number_format($totalFee,2) }}</span>
         </div>
         @endif
       </div>
@@ -152,9 +152,10 @@
             </p>
           </div>
 
-          <button type="submit"
+          <button type="submit" id="confirm-btn"
                   style="width:100%;padding:.875rem;border-radius:.625rem;font-weight:700;font-size:1rem;cursor:pointer;border:none;background:linear-gradient(135deg,#7C2D37,#5A1F28);color:white;transition:opacity .2s"
-                  onmouseover="this.style.opacity='.9'" onmouseout="this.style.opacity='1'">
+                  onmouseover="if(!this.disabled)this.style.opacity='.9'" onmouseout="this.style.opacity='1'"
+                  onclick="disableConfirmForm()">
             {{ $totalFee > 0 ? 'Confirm &amp; Proceed to Payment' : 'Confirm Enrollment' }}
           </button>
         </form>
@@ -201,8 +202,23 @@ termsCheck.addEventListener('change', function () {
 const otpInput = document.getElementById('otp-code');
 otpInput.addEventListener('input', function () {
   this.value = this.value.replace(/\D/g, '');
-  if (this.value.length === 6) this.form.submit();
+  if (this.value.length === 6) {
+    disableConfirmForm();
+    this.form.submit();
+  }
 });
 @endif
+
+function disableConfirmForm() {
+  const btn = document.getElementById('confirm-btn');
+  if (btn) {
+    btn.disabled = true;
+    btn.style.opacity = '0.6';
+    btn.style.cursor  = 'not-allowed';
+    btn.textContent   = 'Processing…';
+  }
+  const input = document.getElementById('otp-code');
+  if (input) input.disabled = true;
+}
 </script>
 @endsection
