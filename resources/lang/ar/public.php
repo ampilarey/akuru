@@ -92,6 +92,16 @@ return [
     'footer_description' => 'معهد أكورو مكرس لتقديم التعليم الإسلامي الجيد من خلال برامج حفظ القرآن واللغة العربية والدراسات الإسلامية لجميع الأعمار.',
     
     // General
+    'Clear' => 'مسح',
+    'Clear filters' => 'مسح الفلاتر',
+    'By' => 'بقلم',
+    'Published' => 'نُشر',
+    'Back to News' => 'العودة إلى الأخبار',
+    'Review Process' => 'عملية المراجعة',
+    'Confirmation' => 'التأكيد',
+    'Thank You' => 'شكراً',
+    'Explore our Quranic and Islamic studies courses' => 'استكشف دوراتنا في القرآن والدراسات الإسلامية',
+    'Explore our comprehensive Islamic education programs' => 'استكشف برامجنا الشاملة في التعليم الإسلامي',
     'Read More' => 'اقرأ المزيد',
     'Learn More' => 'تعلم المزيد',
     'View All' => 'عرض الكل',
@@ -121,6 +131,14 @@ return [
     'Please enter a valid email' => 'يرجى إدخال بريد إلكتروني صحيح',
     'Please enter a valid phone number' => 'يرجى إدخال رقم هاتف صحيح',
 
+    // Articles
+    'Educational Articles' => 'مقالات تعليمية',
+    'Insights and knowledge on Quran, Arabic language, and Islamic studies' => 'رؤى ومعرفة حول القرآن الكريم واللغة العربية والدراسات الإسلامية',
+    'Read educational articles on Quran, Arabic, and Islamic studies' => 'اقرأ مقالات تعليمية حول القرآن الكريم واللغة العربية والدراسات الإسلامية',
+    'Search articles...' => 'البحث في المقالات...',
+    'Read Article' => 'اقرأ المقالة',
+    'No articles found' => 'لم يتم العثور على مقالات',
+
     // News
     'No News Available' => 'لا توجد أخبار',
     'Check back later for the latest updates' => 'تفقد لاحقاً للاطلاع على آخر التحديثات.',
@@ -130,7 +148,12 @@ return [
     'Check back later for upcoming events and activities' => 'تفقد لاحقاً للاطلاع على الفعاليات والأنشطة القادمة.',
 
     // Gallery
-    'No items in this gallery' => 'لا توجد عناصر في هذه المعرض',
+    'Photo Gallery' => 'معرض الصور',
+    'Explore moments and memories from our institute' => 'استعرض اللحظات والذكريات من معهدنا',
+    'photos' => 'صور',
+    'View Gallery' => 'عرض المعرض',
+    'No Galleries Available' => 'لا توجد معارض',
+    'No items in this gallery' => 'لا توجد عناصر في هذا المعرض',
     'gallery_empty_message' => 'هذا المعرض فارغ حالياً. تفقد لاحقاً للاطلاع على المحتوى الجديد.',
     'Check back later for photo galleries' => 'تفقد لاحقاً للاطلاع على معارض الصور.',
 ];

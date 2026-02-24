@@ -92,6 +92,16 @@ return [
     'footer_description' => 'އަކުރު އިންސްޓިޓިއުޓް އަކީ ހުރިހާ އުމުރެއްގެ މީހުންނަށް ޤުރުއާން ހިފުޒް، ޢަރަބި ބަސް، އަދި އިސްލާމީ ތަޢުލީމުގެ ޕްރޮގްރާމްތަކުން ފުރިހަމަ އިސްލާމީ ތަޢުލީމު ދިނުމަށް ވަޤުފުވެފައިވާ އިދާރާއެކެވެ.',
     
     // General
+    'Clear' => 'ފިލުވާ',
+    'Clear filters' => 'ފިލްޓަރ ފިލުވާ',
+    'By' => 'ލިޔުނީ',
+    'Published' => 'ޝާއިޢުކުރެވިފައި',
+    'Back to News' => 'ޚަބަރަށް އެނބުރި',
+    'Review Process' => 'މުރާޖަޢާ ޕްރޮސެސް',
+    'Confirmation' => 'ކަށަވަރުކުރުން',
+    'Thank You' => 'ޝުކުރިއްޔާ',
+    'Explore our Quranic and Islamic studies courses' => 'ޤުރުއާން ޙިފުޒާއި އިސްލާމީ ތަޢުލީމުގެ ކޯސްތައް ހޯދާ',
+    'Explore our comprehensive Islamic education programs' => 'ފުރިހަމަ އިސްލާމީ ތަޢުލީމުގެ ޕްރޮގްރާމްތައް ހޯދާ',
     'Read More' => 'އިތުރަށް ކިޔާ',
     'Learn More' => 'އިތުރަށް ދަސްކުރާ',
     'View All' => 'ހުރިހާ ބައްލަވާ',
@@ -121,6 +131,14 @@ return [
     'Please enter a valid email' => 'ސައްޙަ އީމެއިލް އެޑްރެހެއް ލިޔާ',
     'Please enter a valid phone number' => 'ސައްޙަ ފޯނު ނަމްބަރެއް ލިޔާ',
 
+    // Articles
+    'Educational Articles' => 'ތަޢުލީމީ މަޒުމޫންތައް',
+    'Insights and knowledge on Quran, Arabic language, and Islamic studies' => 'ޤުރުއާން، ޢަރަބި ބަސް، އަދި އިސްލާމީ ތަޢުލީމާ ބެހޭ ޚިޔާލާއި ޢިލްމު',
+    'Read educational articles on Quran, Arabic, and Islamic studies' => 'ޤުރުއާން، ޢަރަބި ބަސް، އަދި އިސްލާމީ ތަޢުލީމާ ބެހޭ ތަޢުލީމީ މަޒުމޫންތައް ކިޔާ',
+    'Search articles...' => 'މަޒުމޫން ހޯދާ...',
+    'Read Article' => 'މަޒުމޫން ކިޔާ',
+    'No articles found' => 'އެއްވެސް މަޒުމޫނެއް ނުފެނުނު',
+
     // News
     'No News Available' => 'ޚަބަރެއް ނެތް',
     'Check back later for the latest updates' => 'އެންމެ ފަހުގެ ޚަބަރު ދެނެގަތުމަށް ފަހުން ބައްލަވާ.',
@@ -130,6 +148,11 @@ return [
     'Check back later for upcoming events and activities' => 'ކުރިއަށް ހުރި ހަރަކާތްތަކަށް ފަހުން ބައްލަވާ.',
 
     // Gallery
+    'Photo Gallery' => 'ފޮޓޯ ގެލެރީ',
+    'Explore moments and memories from our institute' => 'އަޅުގަނޑުމެންގެ ތައުލީމީ ތަޖުރިބާތަކުގެ ފޮޓޯ ބައްލަވާ',
+    'photos' => 'ފޮޓޯ',
+    'View Gallery' => 'ގެލެރީ ބައްލަވާ',
+    'No Galleries Available' => 'ގެލެރީ ނެތް',
     'No items in this gallery' => 'މި ގެލެރީގައި ފޮޓޯތަކެއް ނެތް',
     'gallery_empty_message' => 'މި ގެލެރީ މިހާރު ހުސްކޮށް ހުރި. ފަހަށް ބެލެހެއްޓި ބައްލަވާ.',
     'Check back later for photo galleries' => 'ފޮޓޯ ގެލެރީތަކަށް ފަހުން ބައްލަވާ.',

@@ -132,6 +132,16 @@ return [
     'footer_description' => 'Akuru Institute is dedicated to providing quality Islamic education through Quran memorization, Arabic language, and Islamic studies programs for all ages.',
     
     // General
+    'Clear' => 'Clear',
+    'Clear filters' => 'Clear filters',
+    'By' => 'By',
+    'Published' => 'Published',
+    'Back to News' => 'Back to News',
+    'Review Process' => 'Review Process',
+    'Confirmation' => 'Confirmation',
+    'Thank You' => 'Thank You',
+    'Explore our Quranic and Islamic studies courses' => 'Explore our Quranic and Islamic studies courses',
+    'Explore our comprehensive Islamic education programs' => 'Explore our comprehensive Islamic education programs',
     'Read More' => 'Read More',
     'Learn More' => 'Learn More',
     'View All' => 'View All',
@@ -220,6 +230,14 @@ return [
     'Need More Information?' => 'Need More Information?',
     'contact_for_more_info' => 'If you need more information about this event, please contact us.',
     
+    // Articles
+    'Educational Articles' => 'Educational Articles',
+    'Insights and knowledge on Quran, Arabic language, and Islamic studies' => 'Insights and knowledge on Quran, Arabic language, and Islamic studies',
+    'Read educational articles on Quran, Arabic, and Islamic studies' => 'Read educational articles on Quran, Arabic, and Islamic studies',
+    'Search articles...' => 'Search articles...',
+    'Read Article' => 'Read Article',
+    'No articles found' => 'No articles found',
+
     // News
     'No News Available' => 'No News Available',
     'Check back later for the latest updates' => 'Check back later for the latest updates.',
@@ -229,6 +247,11 @@ return [
     'Check back later for upcoming events and activities' => 'Check back later for upcoming events and activities.',
 
     // Gallery
+    'Photo Gallery' => 'Photo Gallery',
+    'Explore moments and memories from our institute' => 'Explore moments and memories from our institute',
+    'photos' => 'photos',
+    'View Gallery' => 'View Gallery',
+    'No Galleries Available' => 'No Galleries Available',
     'No items in this gallery' => 'No items in this gallery',
     'gallery_empty_message' => 'This gallery is currently empty. Please check back later for new content.',
     'Check back later for photo galleries' => 'Check back later for photo galleries.',
