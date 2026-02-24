@@ -25,7 +25,7 @@
 
         <!-- Content -->
         <div class="prose prose-lg max-w-none">
-            {!! nl2br(e($page->body)) !!}
+            {!! $page->body !!}
         </div>
 
         <!-- Footer -->
