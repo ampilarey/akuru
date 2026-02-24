@@ -748,19 +748,41 @@ class CourseRegistrationController extends PublicRegistrationController
         $courses   = Course::whereIn('id', $courseIds)->get();
         $totalFee  = $courses->sum(fn($c) => $c->fee ?? 0);
 
-        $contact = session('enroll_otp_contact_id')
-            ? \App\Models\UserContact::find(session('enroll_otp_contact_id'))
-            : null;
+        // All verified contacts the user can receive an OTP on
+        $availableContacts = $user
+            ? $user->contacts()->whereNotNull('verified_at')->get()
+            : collect();
 
-        // Mask contact for display: +960 7**2434
-        $maskedContact = 'your mobile';
-        if ($contact) {
-            $val = $contact->value;
-            $maskedContact = substr($val, 0, 6) . str_repeat('*', max(0, strlen($val) - 9)) . substr($val, -3);
+        // Ensure session contact is one of the available contacts; default to mobile → email
+        $currentContactId = session('enroll_otp_contact_id');
+        if (! $currentContactId || ! $availableContacts->contains('id', $currentContactId)) {
+            $preferred = $availableContacts->firstWhere('type', 'mobile')
+                      ?? $availableContacts->first();
+            if ($preferred) {
+                session(['enroll_otp_contact_id' => $preferred->id]);
+                $currentContactId = $preferred->id;
+            }
         }
 
+        $contact = $availableContacts->firstWhere('id', $currentContactId);
+
+        $maskedContact = $contact
+            ? $this->maskContact($contact->type, $contact->value)
+            : 'your contact';
+
+        // Pre-compute masked values for all contacts so the view doesn't need controller methods
+        $contactsForDisplay = $availableContacts->map(fn ($c) => (object) [
+            'id'     => $c->id,
+            'type'   => $c->type,
+            'masked' => $this->maskContact($c->type, $c->value),
+        ]);
+
         $otpSent = (bool) session('enroll_otp_sent');
-        return view('courses.register-enroll-confirm', compact('courses', 'totalFee', 'maskedContact', 'otpSent'));
+
+        return view('courses.register-enroll-confirm', compact(
+            'courses', 'totalFee', 'maskedContact', 'otpSent',
+            'availableContacts', 'currentContactId', 'contactsForDisplay'
+        ));
     }
 
     /** Verify enrollment consent OTP + T&C → process enrollment */
@@ -805,6 +827,22 @@ class CourseRegistrationController extends PublicRegistrationController
     /** Send (or resend) enrollment OTP — triggered by user clicking "Send OTP" button */
     public function enrollResendOtp(Request $request): RedirectResponse
     {
+        // Allow switching contact before or after OTP is sent
+        if ($request->filled('contact_id')) {
+            $user = $request->user();
+            $chosen = $user?->contacts()
+                ->whereNotNull('verified_at')
+                ->where('id', (int) $request->input('contact_id'))
+                ->first();
+            if ($chosen) {
+                session([
+                    'enroll_otp_contact_id' => $chosen->id,
+                    'enroll_otp_sent'       => false,
+                ]);
+                session()->forget('enroll_otp_sent_before');
+            }
+        }
+
         $contactId = session('enroll_otp_contact_id');
 
         // Session expired — redirect to enrollment form, not homepage
@@ -829,7 +867,12 @@ class CourseRegistrationController extends PublicRegistrationController
 
         $isResend = session('enroll_otp_sent_before');
         session(['enroll_otp_sent_before' => true]);
-        $msg = $isResend ? 'New OTP sent to your mobile.' : 'OTP sent to your mobile. Enter it below.';
+
+        $contactLabel = $contact->type === 'email' ? 'email' : 'mobile';
+        $msg = $isResend
+            ? "New OTP sent to your {$contactLabel}."
+            : "OTP sent to your {$contactLabel}. Enter it below.";
+
         return redirect()->route('courses.register.enroll.otp')->with('success', $msg);
     }
 

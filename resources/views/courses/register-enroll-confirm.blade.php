@@ -91,7 +91,29 @@
           </label>
         </div>
 
-        {{-- Mobile number info --}}
+        {{-- Contact selector (shown when user has more than one verified contact) --}}
+        @if($availableContacts->count() > 1)
+        <div style="margin-bottom:1.25rem">
+          <p style="font-size:.75rem;font-weight:600;color:#374151;margin:0 0 .5rem">Send OTP to:</p>
+          <div style="display:flex;flex-direction:column;gap:.5rem">
+            @foreach($contactsForDisplay as $c)
+            <label style="display:flex;align-items:center;gap:.625rem;padding:.625rem .875rem;border:1.5px solid {{ $c->id == $currentContactId ? '#7C2D37' : '#E5E7EB' }};border-radius:.5rem;cursor:pointer;background:{{ $c->id == $currentContactId ? '#FDF2F3' : 'white' }}">
+              <input type="radio" name="contact_choice" value="{{ $c->id }}"
+                     {{ $c->id == $currentContactId ? 'checked' : '' }}
+                     onchange="selectContact({{ $c->id }})"
+                     style="accent-color:#7C2D37;width:1rem;height:1rem">
+              <div>
+                <span style="font-size:.8rem;font-weight:600;color:#111827">
+                  {{ $c->type === 'mobile' ? '📱 Mobile' : '✉️ Email' }}
+                </span>
+                <span style="font-size:.8rem;color:#6B7280;margin-left:.375rem">{{ $c->masked }}</span>
+              </div>
+            </label>
+            @endforeach
+          </div>
+        </div>
+        @else
+        {{-- Single contact — just show it --}}
         <div style="display:flex;align-items:center;gap:.75rem;padding:.875rem;background:#F9FAFB;border-radius:.625rem;margin-bottom:1.5rem">
           <div style="width:2.25rem;height:2.25rem;background:#FAECED;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0">
             <svg width="16" height="16" fill="none" stroke="#7C2D37" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
@@ -101,10 +123,12 @@
             <p style="font-weight:600;color:#111827;font-size:.875rem;margin:0">{{ $maskedContact }}</p>
           </div>
         </div>
+        @endif
 
         {{-- Send OTP button (enabled only after checkbox is ticked) --}}
         <form method="POST" action="{{ route('courses.register.enroll.resend') }}" id="send-otp-form">
           @csrf
+          <input type="hidden" name="contact_id" id="selected-contact-id" value="{{ $currentContactId }}">
           <button id="send-otp-btn" type="submit" disabled
                   style="width:100%;padding:.875rem;border-radius:.625rem;font-weight:700;font-size:1rem;cursor:not-allowed;border:none;background:#D1D5DB;color:#6B7280;transition:all .2s">
             ✔ Accept &amp; Send OTP
@@ -192,6 +216,21 @@
 </section>
 
 <script>
+function selectContact(contactId) {
+  document.getElementById('selected-contact-id').value = contactId;
+  // Re-style all radio labels
+  document.querySelectorAll('[name="contact_choice"]').forEach(function(radio) {
+    var label = radio.closest('label');
+    if (parseInt(radio.value) === contactId) {
+      label.style.borderColor = '#7C2D37';
+      label.style.background  = '#FDF2F3';
+    } else {
+      label.style.borderColor = '#E5E7EB';
+      label.style.background  = 'white';
+    }
+  });
+}
+
 @if(! $otpSent)
 const termsCheck = document.getElementById('terms-check');
 const sendBtn    = document.getElementById('send-otp-btn');
