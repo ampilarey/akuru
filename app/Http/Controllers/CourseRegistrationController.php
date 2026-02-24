@@ -693,6 +693,24 @@ class CourseRegistrationController extends PublicRegistrationController
             }
         }
 
+        // Guard: check for an existing un-confirmed pending payment (deferred enrollment)
+        // to prevent duplicate payment records for the same user + courses.
+        $existingPendingPayment = \App\Models\Payment::where('user_id', $user->id)
+            ->whereNotNull('enrollment_pending_payload')
+            ->whereIn('status', ['initiated', 'pending'])
+            ->get()
+            ->first(function ($p) use ($courseIds) {
+                $payload = $p->enrollment_pending_payload ?? [];
+                return ! empty(array_intersect($payload['course_ids'] ?? [], $courseIds));
+            });
+
+        if ($existingPendingPayment) {
+            session(['pending_payment_ref' => $existingPendingPayment->merchant_reference]);
+            $this->clearEnrollPendingSession();
+            return redirect()->route('courses.register.complete')
+                ->with('info', 'You already have a pending payment for this course. Please complete it below.');
+        }
+
         // Store all form data in session
         session([
             'enroll_pending_data'          => $data,
@@ -829,7 +847,7 @@ class CourseRegistrationController extends PublicRegistrationController
         // Save optional email contact
         if ($emailInput && filter_var($emailInput, FILTER_VALIDATE_EMAIL)) {
             $normalized = $this->normalizer->normalize('email', $emailInput);
-            if (!$user->contacts()->where('type', 'email')->exists()) {
+            if (! $user->contacts()->where('type', 'email')->exists()) {
                 $user->contacts()->create([
                     'type'        => 'email',
                     'value'       => $normalized,
@@ -839,21 +857,62 @@ class CourseRegistrationController extends PublicRegistrationController
             }
         }
 
+        $courses   = \App\Models\Course::whereIn('id', $courseIds)->get();
+        $totalFee  = $courses->sum(fn ($c) => (float) ($c->registration_fee_amount ?? $c->fee ?? 0));
+
+        // ── PAID COURSES: deferred enrollment — create only a Payment record now ──
+        // RegistrationStudent + CourseEnrollment are created AFTER BML confirms payment.
+        if ($totalFee > 0) {
+            $enrollmentPayload = [
+                'user_id'      => $user->id,
+                'flow'         => $flow,
+                'student_data' => $data,
+                'course_ids'   => $courseIds,
+                'term_id'      => $termId,
+                'student_mode' => $studentMode,
+                'child_password' => $childPassword,
+            ];
+
+            $payment = $this->paymentService->createPaymentForPendingEnrollment($user, $enrollmentPayload, $courses);
+
+            $init = $this->paymentService->initiatePayment($payment, [
+                'return_url' => route('payments.bml.return') . '?ref=' . $payment->merchant_reference,
+            ]);
+
+            \Illuminate\Support\Facades\Log::info('BML deferred-enrollment initiation', [
+                'payment_id'       => $payment->id,
+                'success'          => $init->success,
+                'has_redirect_url' => ! empty($init->redirectUrl),
+                'error'            => $init->error ?? null,
+            ]);
+
+            if ($init->success && $init->redirectUrl) {
+                session(['pending_payment_ref' => $payment->merchant_reference]);
+                $this->clearEnrollPendingSession();
+                return redirect()->away($init->redirectUrl);
+            }
+
+            // BML initiation failed — payment record created but no redirect available
+            $this->clearEnrollPendingSession();
+            $this->clearPendingSession();
+            session(['pending_payment_ref' => $payment->merchant_reference]);
+            return redirect()->route('courses.register.complete')
+                ->with('error', 'Your enrollment request was received but we could not connect to the payment gateway right now. Please use the "Proceed to payment" button below to complete your payment.');
+        }
+
+        // ── FREE COURSES: create enrollment immediately (no payment needed) ──
         try {
             if ($flow === 'parent') {
                 if ($studentMode === 'new') {
-                    $studentData  = ['first_name' => $data['first_name'], 'last_name' => $data['last_name'], 'dob' => $data['dob'], 'gender' => $data['gender'] ?? null, 'id_type' => $data['id_type'] ?? null, 'national_id' => $data['national_id'] ?? null, 'passport' => $data['passport'] ?? null];
                     $guardianMeta = ['relationship' => $data['relationship'] ?? 'guardian', 'child_password' => $childPassword];
-                    $result = $this->enrollmentService->enrollByParent($user, $studentData, $courseIds, $termId, $guardianMeta);
+                    $result = $this->enrollmentService->enrollByParent($user, $data, $courseIds, $termId, $guardianMeta);
                 } else {
                     $result = $this->enrollmentService->enrollByParent($user, (int) $data['student_id'], $courseIds, $termId);
                 }
             } else {
-                $studentData = ['first_name' => $data['first_name'], 'last_name' => $data['last_name'], 'dob' => $data['dob'], 'gender' => $data['gender'] ?? null, 'id_type' => $data['id_type'] ?? null, 'national_id' => $data['national_id'] ?? null, 'passport' => $data['passport'] ?? null];
-                $result = $this->enrollmentService->enrollAdultSelf($user, $studentData, $courseIds, $termId);
+                $result = $this->enrollmentService->enrollAdultSelf($user, $data, $courseIds, $termId);
             }
         } catch (\Illuminate\Validation\ValidationException $e) {
-            // OTP was already consumed — send a fresh one and reset to step 1 on OTP page
             session()->forget('enroll_otp_sent');
             $contactId = session('enroll_otp_contact_id');
             if ($contactId) {
@@ -870,7 +929,6 @@ class CourseRegistrationController extends PublicRegistrationController
                 ->with('info', 'A new OTP has been sent to your mobile. Please enter it below.');
         }
 
-        // If nothing new was created and no payment is pending, the student is already enrolled
         if (empty($result->createdEnrollments) && ! $result->hasPaymentsPending()) {
             $this->clearEnrollPendingSession();
             $this->clearPendingSession();
@@ -889,32 +947,6 @@ class CourseRegistrationController extends PublicRegistrationController
             return redirect()->route('my.enrollments')->with('info', $msg);
         }
 
-        if ($result->hasPaymentsPending()) {
-            $payment = $result->getConsolidatedPayment();
-            $init    = $this->paymentService->initiatePayment($payment, [
-                'return_url' => route('payments.bml.return') . '?ref=' . $payment->merchant_reference,
-            ]);
-            \Illuminate\Support\Facades\Log::info('BML post-OTP initiation', [
-                'success' => $init->success,
-                'has_redirect_url' => ! empty($init->redirectUrl),
-                'error' => $init->error ?? null,
-            ]);
-            if ($init->success && $init->redirectUrl) {
-                session(['pending_payment_ref' => $payment->merchant_reference]);
-                $this->clearEnrollPendingSession();
-                return redirect()->away($init->redirectUrl);
-            }
-            // Payment initiation failed — enrollment is saved, but BML redirect unavailable.
-            // Send to complete page so user can see enrollment and retry payment from there.
-            $this->clearEnrollPendingSession();
-            $this->clearPendingSession();
-            session(['pending_payment_ref' => $payment->merchant_reference]);
-            return redirect()->route('courses.register.complete')
-                ->with('enrollments', $result->allEnrollments())
-                ->with('error', 'Your enrollment was saved but we could not connect to the payment gateway right now. Please use the "Proceed to payment" button below to complete your payment.');
-        }
-
-        // Only send free-enrollment notifications for newly created enrollments
         if (! empty($result->createdEnrollments)) {
             $this->sendFreeEnrollmentStudentNotifications($user, $result->createdEnrollments);
             $this->notifyAdminFreeEnrollment($user, $result->createdEnrollments);

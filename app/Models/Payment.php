@@ -37,6 +37,7 @@ class Payment extends Model
         'paid_at',
         'failed_at',
         'notes',
+        'enrollment_pending_payload',
     ];
 
     protected function casts(): array
@@ -48,6 +49,7 @@ class Payment extends Model
             'bml_status_raw' => 'array',
             'redirect_return_payload' => 'array',
             'webhook_payload' => 'array',
+            'enrollment_pending_payload' => 'array',
             'confirmed_at' => 'datetime',
             'paid_at' => 'datetime',
             'failed_at' => 'datetime',

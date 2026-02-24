@@ -318,6 +318,111 @@ class EnrollmentService
         return $result;
     }
 
+    /**
+     * Called after BML confirms a payment that used the deferred-enrollment flow.
+     * Creates RegistrationStudent + CourseEnrollment + PaymentItem records and
+     * clears the pending payload from the payment row.
+     *
+     * Must be idempotent: if items already exist, skip silently.
+     */
+    public function createEnrollmentForConfirmedPayment(\App\Models\Payment $payment): void
+    {
+        $payload = $payment->enrollment_pending_payload;
+        if (! $payload) {
+            return;
+        }
+
+        // Already finalised by a previous call (webhook race-condition guard)
+        if ($payment->items()->exists()) {
+            $payment->update(['enrollment_pending_payload' => null]);
+            return;
+        }
+
+        $user        = User::findOrFail($payload['user_id']);
+        $flow        = $payload['flow'] ?? 'adult';
+        $data        = $payload['student_data'] ?? [];
+        $courseIds   = $payload['course_ids'] ?? [];
+        $termId      = $payload['term_id'] ?? null;
+        $studentMode = $payload['student_mode'] ?? 'new';
+        $childPw     = $payload['child_password'] ?? null;
+
+        DB::transaction(function () use ($user, $flow, $data, $courseIds, $termId, $studentMode, $childPw, $payment) {
+
+            // ── Resolve / create student ──────────────────────────────────────
+            if ($flow === 'adult') {
+                $idFields = $this->extractIdFields($data);
+                $student  = $user->registrationStudentProfile;
+                if (! $student) {
+                    $student = RegistrationStudent::create(array_merge([
+                        'user_id'    => $user->id,
+                        'first_name' => $data['first_name'],
+                        'last_name'  => $data['last_name'],
+                        'dob'        => \Carbon\Carbon::parse($data['dob']),
+                        'gender'     => $data['gender'] ?? null,
+                    ], $idFields));
+                } else {
+                    $student->update(array_merge([
+                        'first_name' => $data['first_name'],
+                        'last_name'  => $data['last_name'],
+                        'dob'        => \Carbon\Carbon::parse($data['dob']),
+                        'gender'     => $data['gender'] ?? null,
+                    ], $idFields));
+                }
+
+                if ($user->name === 'User') {
+                    $user->update(['name' => $data['first_name'] . ' ' . $data['last_name']]);
+                }
+            } else {
+                // parent flow
+                $guardianMeta = ['relationship' => $data['relationship'] ?? 'guardian', 'child_password' => $childPw];
+                $student = $studentMode === 'existing'
+                    ? $this->ensureGuardianCanManageStudent($user, (int) $data['student_id'])
+                    : $this->createOrGetStudentForParent($user, $data, $guardianMeta);
+            }
+
+            // Link student_id on the payment
+            $payment->update(['student_id' => $student->id]);
+
+            // ── Create enrollments + payment items ────────────────────────────
+            $courses = Course::whereIn('id', $courseIds)->get();
+            foreach ($courses as $course) {
+                // Skip if already enrolled (idempotency)
+                $alreadyEnrolled = CourseEnrollment::where('student_id', $student->id)
+                    ->where('course_id', $course->id)
+                    ->whereRaw('IFNULL(term_id, 0) = ?', [$termId ?? 0])
+                    ->exists();
+
+                if ($alreadyEnrolled) {
+                    continue;
+                }
+
+                $requiresApproval = (bool) ($course->requires_admin_approval ?? false);
+                $feeAmount = (float) ($course->registration_fee_amount ?? $course->fee ?? 0);
+
+                $enrollment = CourseEnrollment::create([
+                    'student_id'         => $student->id,
+                    'course_id'          => $course->id,
+                    'term_id'            => $termId,
+                    'status'             => $requiresApproval ? 'pending' : 'active',
+                    'enrolled_at'        => now(),
+                    'created_by_user_id' => $user->id,
+                    'payment_status'     => 'confirmed',
+                    'payment_id'         => $payment->id,
+                ]);
+
+                PaymentItem::create([
+                    'payment_id'    => $payment->id,
+                    'enrollment_id' => $enrollment->id,
+                    'course_id'     => $course->id,
+                    'amount'        => $feeAmount,
+                ]);
+            }
+
+            // Clear the pending payload — enrollment is now in the DB
+            $payment->update(['enrollment_pending_payload' => null]);
+        });
+    }
+
     protected function ensureUserHasVerifiedContact(User $user): void
     {
         if (!$user->hasVerifiedContact()) {

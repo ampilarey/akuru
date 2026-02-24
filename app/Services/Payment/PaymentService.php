@@ -32,6 +32,34 @@ class PaymentService
      *
      * @param array<int, array{enrollment: CourseEnrollment, course: Course, amount: float}> $feeEnrollments
      */
+    /**
+     * Create a Payment record for a paid course enrollment WITHOUT creating any
+     * RegistrationStudent or CourseEnrollment rows yet.  The full enrollment data
+     * is stored in enrollment_pending_payload and is written to the DB only once
+     * BML confirms the payment (see EnrollmentService::createEnrollmentForConfirmedPayment).
+     *
+     * @param \Illuminate\Support\Collection $courses
+     */
+    public function createPaymentForPendingEnrollment(User $payer, array $enrollmentPayload, $courses): Payment
+    {
+        $totalAmount = collect($courses)->sum(fn ($c) => (float) ($c->registration_fee_amount ?? $c->fee ?? 0));
+        $totalLaar   = (int) round($totalAmount * 100);
+        $firstCourse = collect($courses)->first();
+
+        return Payment::create([
+            'user_id'                    => $payer->id,
+            'student_id'                 => null,
+            'course_id'                  => $firstCourse->id,
+            'amount'                     => $totalAmount,
+            'amount_laar'                => $totalLaar,
+            'currency'                   => config('bml.default_currency') ?: ($firstCourse->registration_fee_currency ?? 'MVR'),
+            'status'                     => 'initiated',
+            'provider'                   => 'bml',
+            'merchant_reference'         => 'AKURU-' . strtoupper(Str::uuid()->toString()),
+            'enrollment_pending_payload' => $enrollmentPayload,
+        ]);
+    }
+
     public function createConsolidatedPayment(User $payer, RegistrationStudent $student, array $feeEnrollments): Payment
     {
         $totalAmount = array_sum(array_column($feeEnrollments, 'amount'));
@@ -120,18 +148,23 @@ class PaymentService
                     'paid_at'            => $payment->paid_at ?? now(),
                 ]);
 
-                foreach ($payment->items as $item) {
-                    $enrollment = $item->enrollment;
-                    if (! $enrollment) {
-                        continue;
-                    }
-                    $enrollment->update(['payment_status' => 'confirmed']);
-                    $course = $enrollment->course;
-                    if (! ($course->requires_admin_approval ?? false)) {
-                        $enrollment->update([
-                            'status'      => 'active',
-                            'enrolled_at' => $enrollment->enrolled_at ?? now(),
-                        ]);
+                // Deferred-enrollment flow
+                if ($payment->enrollment_pending_payload) {
+                    $this->finalizeDeferredEnrollment($payment->fresh());
+                } else {
+                    foreach ($payment->items as $item) {
+                        $enrollment = $item->enrollment;
+                        if (! $enrollment) {
+                            continue;
+                        }
+                        $enrollment->update(['payment_status' => 'confirmed']);
+                        $course = $enrollment->course;
+                        if (! ($course->requires_admin_approval ?? false)) {
+                            $enrollment->update([
+                                'status'      => 'active',
+                                'enrolled_at' => $enrollment->enrolled_at ?? now(),
+                            ]);
+                        }
                     }
                 }
 
@@ -202,18 +235,24 @@ class PaymentService
                     'paid_at'            => $payment->paid_at ?? now(),
                 ]);
 
-                foreach ($payment->items as $item) {
-                    $enrollment = $item->enrollment;
-                    if (! $enrollment) {
-                        continue;
-                    }
-                    $enrollment->update(['payment_status' => 'confirmed']);
-                    $course = $enrollment->course;
-                    if (! ($course->requires_admin_approval ?? false)) {
-                        $enrollment->update([
-                            'status'      => 'active',
-                            'enrolled_at' => $enrollment->enrolled_at ?? now(),
-                        ]);
+                // Deferred-enrollment flow: create student + enrollment records now
+                if ($payment->enrollment_pending_payload) {
+                    $this->finalizeDeferredEnrollment($payment->fresh());
+                } else {
+                    // Legacy / existing-enrollment flow: just activate the linked enrollments
+                    foreach ($payment->items as $item) {
+                        $enrollment = $item->enrollment;
+                        if (! $enrollment) {
+                            continue;
+                        }
+                        $enrollment->update(['payment_status' => 'confirmed']);
+                        $course = $enrollment->course;
+                        if (! ($course->requires_admin_approval ?? false)) {
+                            $enrollment->update([
+                                'status'      => 'active',
+                                'enrolled_at' => $enrollment->enrolled_at ?? now(),
+                            ]);
+                        }
                     }
                 }
 
@@ -229,6 +268,22 @@ class PaymentService
                 }
             }
         });
+    }
+
+    /**
+     * Resolve EnrollmentService lazily (avoids circular DI) and create the deferred enrollment.
+     */
+    private function finalizeDeferredEnrollment(Payment $payment): void
+    {
+        try {
+            app(\App\Services\Enrollment\EnrollmentService::class)
+                ->createEnrollmentForConfirmedPayment($payment);
+        } catch (\Throwable $e) {
+            Log::error('PaymentService: deferred enrollment creation failed', [
+                'payment_id' => $payment->id,
+                'error'      => $e->getMessage(),
+            ]);
+        }
     }
 
     /**

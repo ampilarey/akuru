@@ -137,23 +137,33 @@ class PaymentController extends Controller
             if ($newStatus === 'confirmed') {
                 $payment->paid_at = $payment->paid_at ?? now();
                 $payment->confirmed_at = $payment->confirmed_at ?? $payment->paid_at;
-                foreach ($payment->items as $item) {
-                    $enrollment = $item->enrollment;
-                    if ($enrollment) {
-                        $enrollment->update(['payment_status' => 'confirmed', 'payment_id' => $payment->id]);
-                        $course = $enrollment->course;
-                        if (! ($course->requires_admin_approval ?? false)) {
-                            $enrollment->update([
-                                'status' => 'active',
-                                'enrolled_at' => $enrollment->enrolled_at ?? now(),
-                            ]);
+                $payment->save();
+
+                // Deferred-enrollment flow
+                if ($payment->enrollment_pending_payload) {
+                    app(\App\Services\Enrollment\EnrollmentService::class)
+                        ->createEnrollmentForConfirmedPayment($payment->fresh());
+                } else {
+                    foreach ($payment->items as $item) {
+                        $enrollment = $item->enrollment;
+                        if ($enrollment) {
+                            $enrollment->update(['payment_status' => 'confirmed', 'payment_id' => $payment->id]);
+                            $course = $enrollment->course;
+                            if (! ($course->requires_admin_approval ?? false)) {
+                                $enrollment->update([
+                                    'status'      => 'active',
+                                    'enrolled_at' => $enrollment->enrolled_at ?? now(),
+                                ]);
+                            }
                         }
                     }
                 }
             } elseif ($newStatus === 'failed') {
                 $payment->failed_at = now();
+                $payment->save();
+            } else {
+                $payment->save();
             }
-            $payment->save();
         });
     }
 
