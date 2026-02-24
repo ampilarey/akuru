@@ -7,8 +7,8 @@
     <div class="container mx-auto px-4 max-w-md text-center">
         <div class="card p-8">
             <div id="payment-success" class="hidden">
-                <div class="w-14 h-14 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <svg class="w-7 h-7 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div style="width:3.5rem;height:3.5rem;background:#dcfce7;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem">
+                    <svg style="width:1.75rem;height:1.75rem;color:#16a34a;flex-shrink:0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                     </svg>
                 </div>
