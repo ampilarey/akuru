@@ -307,7 +307,7 @@
 <script>
 function checkoutStart() {
     return {
-        tab: '{{ session("existing_account") || $errors->has("login_contact") || $errors->has("password") ? "login" : "new" }}',
+        tab: '{{ session("existing_account") || $errors->has("login_contact") ? "login" : "new" }}',
         flowType: '{{ old("flow_type", "") }}',
         otpLogin: false,
         init() {
