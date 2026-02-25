@@ -1,8 +1,8 @@
 # Modular Monolith — Implementation Guide
 
-> **Execution directive:** Work through phases **in order**. The repository must remain runnable
-> and all tests must pass after every phase commit. Do not skip ahead. Do not batch multiple
-> phases into a single commit.
+> **Execution directive:** Proceed through phases automatically, in order, without pausing between phases.
+> The repository must remain working at every step. All tests must pass after every phase commit.
+> Do not skip ahead. Do not batch multiple phases into a single commit.
 
 ---
 
@@ -16,15 +16,16 @@ break Enrollment, and changes in OTP cannot break the public site.
 
 ## Non-Negotiables
 
-1. **Preserve all existing route paths AND request/response payload shapes** unless a change is explicitly versioned.
-2. **Routes only route. Controllers only thin-orchestrate.** All business logic lives in Domain Actions or Services.
-3. **Webhook and return URLs must remain stable and must NOT be locale- or session-dependent.** The BML return URL never confirms a payment — it only shows a status page. Confirmation is the webhook's job only.
-4. **Cross-domain calls only via Events/Listeners OR Contracts + DI.** No direct service-to-service coupling across domain boundaries.
-5. **Refactor in safe commits.** The repo must stay runnable and tests must pass after each phase.
+1. **Do NOT break any existing public site, portal, admin dashboard, enrollment, OTP, or payment flows.**
+2. **Preserve all existing route paths AND request/response payload shapes** unless a change is explicitly versioned.
+3. **Routes only route. Controllers only thin-orchestrate.** All business logic lives in Domain Actions or Services.
+4. **Webhook and return URLs must remain stable and must NOT be locale- or session-dependent.** The BML return URL never confirms a payment — it only shows a status page. Confirmation is the webhook's job only.
+5. **Cross-domain calls only via Events/Listeners OR Contracts + DI.** No direct service-to-service coupling across domain boundaries.
 6. **No secrets committed.** `.env` is gitignored; only `.env.example` exists in the repo.
 7. **Do NOT move Eloquent models out of `App\Models`** unless proven safe against stored morph strings in the database.
 8. **Deferred enrollment:** `RegistrationStudent` + `CourseEnrollment` are created only after BML confirms payment via webhook.
 9. **BML payment state transitions are idempotent.** Receiving the same webhook twice must not create duplicate enrollments or double-charge.
+10. **Refactor in safe commits; add tests as you go; run tests after each phase; no half-broken intermediate states.**
 
 ---
 
@@ -391,15 +392,13 @@ Each controller method calls at most one or two actions. No Eloquent queries or 
 
 ## NOW START — Execution Checklist
 
-Work through these in order. Do not proceed to the next step until the current step is committed and tests pass.
+Proceed automatically, in order. Do not stop until all 8 steps are complete and all tests pass.
 
-1. - [ ] Write `docs/ARCHITECTURE_AUDIT.md` (Phase 0)
-2. - [ ] Add baseline contract tests (Phase 1)
-3. - [ ] Set up Pint + CI (Phase 2)
-4. - [ ] Create `app/Domains/` skeleton + providers (Phase 3)
-5. - [ ] Refactor Payments domain with idempotent state machine and webhook guard (Phase 4)
-6. - [ ] Decouple enrollment activation via `PaymentConfirmed` event (Phase 5)
-7. - [ ] Refactor course registration flow into domain actions (Phase 6)
-8. - [ ] Refactor public site, CMS, portal, and admin into actions gradually (Phase 7)
-9. - [ ] Refactor notifications + SMS API v2 (Phase 8)
-10. - [ ] Update docs, ensure all tests pass, tag release (Phase 9)
+1. - [ ] Write `docs/ARCHITECTURE_AUDIT.md`
+2. - [ ] Add baseline contract tests
+3. - [ ] Create `app/Domains/` structure + providers
+4. - [ ] Refactor Payments domain (idempotent state machine, webhook guard, `PaymentConfirmed` event, enrollment activation via listener)
+5. - [ ] Refactor CourseRegistration flow into domain actions
+6. - [ ] Refactor public site, CMS, portal, and admin into actions gradually
+7. - [ ] Refactor notifications + SMS v2
+8. - [ ] Update docs and ensure all tests pass
