@@ -1,30 +1,30 @@
 # Modular Monolith — Implementation Guide
 
-> **Status:** Not started. Do this AFTER the site goes live and is stable.
->
-> **Why wait?** The current codebase works. All critical flows (OTP, BML payments, enrollment,
-> deferred enrollment) are tested and running. Refactoring before launch risks breaking things
-> that already work. Go live first, then come back here.
+> **Execution directive:** Work through phases **in order**. The repository must remain runnable
+> and all tests must pass after every phase commit. Do not skip ahead. Do not batch multiple
+> phases into a single commit.
 
 ---
 
 ## What We're Building
 
 Convert the current flat Laravel structure into a **Modular Monolith** under `app/Domains/`.
-One app, one database — just much better internal organisation so changes in payments
-don't accidentally break enrollment, and changes in OTP don't break the public site.
+One app, one database — better internal boundaries so changes in Payments cannot accidentally
+break Enrollment, and changes in OTP cannot break the public site.
 
 ---
 
-## Non-Negotiables (Do NOT Break These)
+## Non-Negotiables
 
-1. OTP send/verify and the login/registration flow
-2. Course registration (adult 18+ self-enroll vs parent/guardian)
-3. Payment flow: checkout → BML redirect → return URL → webhook confirmation
-4. Deferred enrollment: `RegistrationStudent` + `CourseEnrollment` created **only after** BML confirms payment
-5. BML webhook + return URLs must stay **outside** locale prefix routes (stable URLs)
-6. Do NOT move Eloquent models out of `App\Models` — morph strings in the DB depend on class names
-7. Keep `.env` out of git — only `.env.example`
+1. **Preserve all existing route paths AND request/response payload shapes** unless a change is explicitly versioned.
+2. **Routes only route. Controllers only thin-orchestrate.** All business logic lives in Domain Actions or Services.
+3. **Webhook and return URLs must remain stable and must NOT be locale- or session-dependent.** The BML return URL never confirms a payment — it only shows a status page. Confirmation is the webhook's job only.
+4. **Cross-domain calls only via Events/Listeners OR Contracts + DI.** No direct service-to-service coupling across domain boundaries.
+5. **Refactor in safe commits.** The repo must stay runnable and tests must pass after each phase.
+6. **No secrets committed.** `.env` is gitignored; only `.env.example` exists in the repo.
+7. **Do NOT move Eloquent models out of `App\Models`** unless proven safe against stored morph strings in the database.
+8. **Deferred enrollment:** `RegistrationStudent` + `CourseEnrollment` are created only after BML confirms payment via webhook.
+9. **BML payment state transitions are idempotent.** Receiving the same webhook twice must not create duplicate enrollments or double-charge.
 
 ---
 
@@ -113,39 +113,115 @@ app/Domains/
 
 ---
 
+## Provider Wiring Rules
+
+### `App\Providers\DomainsServiceProvider`
+- Registered in `bootstrap/providers.php`.
+- Binds every interface → concrete implementation. Example:
+  ```php
+  $this->app->bind(PaymentGatewayInterface::class, BmlGateway::class);
+  $this->app->bind(OtpSenderInterface::class, fn ($app) =>
+      new CompoundOtpSender($app->make(SmsOtpSender::class), $app->make(EmailOtpSender::class))
+  );
+  ```
+- No scattered `app()->bind()` calls anywhere else.
+
+### `App\Providers\DomainsEventServiceProvider`
+- Registered in `bootstrap/providers.php`.
+- Declares **all** `$listen` mappings in one place. No `Event::listen()` calls scattered in controllers or services.
+  ```php
+  protected $listen = [
+      PaymentConfirmed::class => [
+          ActivateEnrollmentOnPaymentConfirmedListener::class,
+      ],
+  ];
+  ```
+- All listeners run `afterCommit` where they touch the database.
+
+---
+
+## Payment Gateway Contract
+
+### `PaymentGatewayInterface`
+```php
+initiate(Payment $payment): InitiatePaymentDTO        // returns redirect URL
+verifyWebhook(array $payload, array $headers): VerifiedCallbackDTO
+queryStatus(Payment $payment): GatewayStatusDTO
+```
+
+### BML-specific rules
+| Rule | Detail |
+|------|--------|
+| Webhook is source of truth | `POST /webhooks/bml` is the only place a payment is confirmed |
+| Return URL never confirms | `GET /payments/bml/return` only reads current payment status and renders a page |
+| Amount/currency mismatch | Log and reject — treat as suspicious, never confirm |
+| Transitions are idempotent | `confirmed → confirmed` is a no-op; no duplicate enrollment or charges |
+| Stable URLs | Both URLs must be outside locale-prefixed route groups and must not require session |
+
+---
+
 ## Implementation Phases
 
 ### Phase 0 — Audit First (No Code Changes)
-**Goal:** Understand the full codebase before touching anything.
+**Goal:** Fully understand the codebase before touching anything.
 
-- [ ] Create `docs/ARCHITECTURE_AUDIT.md` with:
-  - Full route catalog (path, method, name, middleware, controller@method)
-  - Module map inferred from routes
-  - Coupling hotspots (controllers doing too many things)
-  - Risk list and recommended refactor order
-- [ ] Identify all morph relationships in the database before moving any model
-- [ ] Map all Event/Listener bindings currently scattered across providers
+- [ ] Create `docs/ARCHITECTURE_AUDIT.md` containing:
+
+  **Route catalog** — cover all four route files:
+  `routes/web.php`, `routes/web_public.php`, `routes/web_localized.php`, `routes/api.php`
+
+  Each entry must have these fields:
+  | Field | Description |
+  |-------|-------------|
+  | `path` | Full URI pattern |
+  | `method` | HTTP verb(s) |
+  | `name` | Named route identifier |
+  | `middleware` | All middleware applied |
+  | `controller@method` | Fully qualified class and method |
+
+  **Module map** — infer logical modules from routes (Enrollment, Payments, Portal, Admin, PublicSite, API, etc.)
+
+  **Critical flows — document each one end-to-end:**
+  - **A)** OTP-first auth / account resolver (new vs existing user by contact)
+  - **B)** Course registration: parent vs adult 18+ rule, stub account creation, profile completion
+  - **C)** Payment flow: checkout → BML redirect → return page → webhook confirmation
+  - **D)** Enrollment activation after payment confirmed
+  - **E)** Portal: enrollments, payments, certificates, profile
+  - **F)** Admin dashboard modules: students, teachers, quran-progress, announcements, e-learning, substitutions, reports, settings
+  - **G)** Notifications APIs: mark-read endpoint, stats endpoint
+  - **H)** SMS API v2 send endpoint with API-key middleware
+
+  **Coupling hotspots** — controllers doing too many things, services calling other services directly across domain lines
+
+  **Risk list** — ranked by blast radius if refactored incorrectly
+
+  **Recommended refactor order** — based on risk and dependency graph
+
+- [ ] Identify all morph relationships (`morphTo`/`morphMany`) and record which class names are stored in the DB
+- [ ] Map all current `Event::listen()` and `EventServiceProvider::$listen` bindings
 
 ---
 
-### Phase 1 — Safety Net (Tests Before Refactoring)
-**Goal:** Make sure nothing breaks silently during the refactor.
+### Phase 1 — Safety Net (Contract Tests Before Refactoring)
+**Goal:** Baseline tests that lock in the observable behaviour of every critical flow.
+These are **contract tests** — they assert that status codes, redirect targets, and critical JSON keys/shapes remain unchanged throughout the refactor.
 
-Add feature tests for:
-- [ ] OTP: `can_request_otp`, `can_verify_otp` (mock SMS/email)
-- [ ] Enrollment: adult age rule blocks under-18, guardian flow works
-- [ ] Free course: enrollment activated immediately
-- [ ] Paid course: creates Payment record with `enrollment_pending_payload`, returns BML redirect
-- [ ] Webhook: `POST /webhooks/bml` confirms payment and creates enrollment exactly once (idempotency)
-- [ ] Portal routes: require authentication
-- [ ] BML return URL: accessible without session/locale
+- [ ] OTP flow: `can_request_otp` (mock SMS + email senders), `can_verify_otp_success`, `can_reject_invalid_otp`
+- [ ] Age rule: adult 18+ enrolls directly, under-18 requires guardian — assert correct redirect/validation response
+- [ ] Free course: enrollment record created immediately after OTP verify
+- [ ] Paid course: `Payment` record created with `enrollment_pending_payload`; response shape contains BML redirect URL; no `RegistrationStudent` or `CourseEnrollment` exists yet
+- [ ] BML webhook idempotency: fire the same webhook payload twice → `RegistrationStudent` + `CourseEnrollment` exist exactly once; second call returns the same success response shape
+- [ ] BML return URL: accessible without session or locale prefix; returns HTTP 200
+- [ ] Portal routes: unauthenticated request returns 302 redirect to login
+- [ ] Notifications API: mark-read returns expected JSON shape; stats endpoint returns expected keys
 
-Use dependency injection to bind `PaymentGatewayInterface` → `FakeGateway` in tests.
+Use `PaymentGatewayInterface` bound to a `FakeGateway` in the test environment.
+Mock SMS and email channels so no real messages are dispatched.
 
 ---
 
-### Phase 2 — Formatter + CI
-**Low risk. Do this first.**
+### Phase 2 — Formatter + CI *(allowed addition — zero runtime behaviour change)*
+**Install code formatting and CI. Must not change any runtime logic.**
 
 - [ ] Install Laravel Pint: `composer require laravel/pint --dev`
 - [ ] Add to `composer.json` scripts:
@@ -153,147 +229,177 @@ Use dependency injection to bind `PaymentGatewayInterface` → `FakeGateway` in 
   "format": "pint",
   "test": "php artisan test"
   ```
-- [ ] Add GitHub Actions workflow (`.github/workflows/ci.yml`):
-  - `composer install`
+- [ ] Add GitHub Actions workflow `.github/workflows/ci.yml`:
+  - `composer install --no-interaction`
   - `php artisan test`
   - `pint --test`
-- [ ] Run Pint and commit formatting only (zero logic changes)
+- [ ] Run Pint and commit the formatting changes alone — no logic changes in this commit
 
 ---
 
-### Phase 3 — Create Domain Skeleton
-**No logic moved yet — just create the folder structure and providers.**
+### Phase 3 — Domain Skeleton + Providers
+**No business logic moved yet — create the structure and wire the providers.**
 
 - [ ] Create all `app/Domains/` folders with `.gitkeep`
-- [ ] Create `App\Providers\DomainsServiceProvider`
-  - Registers interface → implementation bindings
-- [ ] Create `App\Providers\DomainsEventServiceProvider`
-  - Declares all `$listen` mappings (no scattered `Event::listen()`)
+- [ ] Create `App\Providers\DomainsServiceProvider` (see Provider Wiring Rules above)
+- [ ] Create `App\Providers\DomainsEventServiceProvider` (see Provider Wiring Rules above)
 - [ ] Register both providers in `bootstrap/providers.php`
-- [ ] Add `Shared/` primitives:
+- [ ] Add `Shared/` primitives (logic copied, originals kept until replaced):
   - `Money` value object
-  - `Contact` value object (phone/email normalization — move from `ContactNormalizer`)
+  - `Contact` value object (normalizes phone and email — source: `ContactNormalizer`)
   - `PaymentStatus` enum
   - `EnrollmentStatus` enum
+  - `ContactType` enum
+  - `IdempotencyKey` support helper
+- [ ] Run full test suite — all tests must pass before proceeding
 
 ---
 
-### Phase 4 — Payments Domain (Highest Risk — Do Carefully)
-**Goal:** Payments domain owns ALL payment state transitions. Webhook is the single source of truth.**
+### Phase 4 — Payments Domain *(Highest risk — commit each sub-step separately)*
+**Goal:** `Payments` domain owns ALL payment state transitions. Webhook is the only confirmation source.
 
-- [ ] Create `Payments/Contracts/PaymentGatewayInterface`:
-  ```php
-  initiate(Payment $payment): InitiatePaymentDTO
-  verifyWebhook(array $payload, array $headers): VerifiedCallbackDTO
-  queryStatus(Payment $payment): GatewayStatusDTO
-  ```
+- [ ] Create `Payments/Contracts/PaymentGatewayInterface` (see contract above)
 - [ ] Create `Payments/Gateways/BmlGateway` implementing the interface
-  - Port logic from existing `BmlPaymentProvider` and `BmlConnectService`
-  - Keep same config keys (`config/bml.php`)
-  - Keep same return/webhook URLs
+  - Port logic from `BmlPaymentProvider` and `BmlConnectService`
+  - Keep same `config/bml.php` keys unchanged
+  - Keep same return URL and webhook URL unchanged
+  - Enforce amount/currency validation — mismatch logs and rejects
 - [ ] Create `Payments/Support/PaymentStateMachine`:
-  - `created → initiated → pending → confirmed`
-  - `initiated/pending → failed/expired/canceled`
-  - Idempotent: repeated transitions to same state are no-ops
+  - Valid transitions: `created → initiated → pending → confirmed`
+  - Failure paths: `initiated/pending → failed/expired/cancelled`
+  - Idempotent: repeated transition to same state is a no-op, not an exception
 - [ ] Create `Payments/Support/WebhookIdempotency`:
-  - Store payload hash + `signature_valid` + `external_reference` in a `webhook_logs` table
-  - Reject duplicate webhook calls
-- [ ] Create `PaymentConfirmed` event
-- [ ] Move webhook handling into `HandleBmlWebhookAction`
+  - Store `payload_hash`, `signature_valid`, `external_reference` in a `webhook_logs` table
+  - Return the same success response for duplicate webhook calls; do not re-process
+- [ ] Create `PaymentConfirmed` event (carries `Payment $payment`)
+- [ ] Create `HandleBmlWebhookAction` — moves all webhook logic here; controller calls action only
 - [ ] Bind `PaymentGatewayInterface` → `BmlGateway` in `DomainsServiceProvider`
-- [ ] Run existing tests to verify nothing broke
+- [ ] Run full test suite — all contract tests must pass
 
 ---
 
 ### Phase 5 — Enrollment Activation via Event
-**Goal:** Enrollment activation is triggered by `PaymentConfirmed` event, not directly in controllers.**
+**Goal:** Enrollment creation is triggered by `PaymentConfirmed` event, never called directly from payment code.
 
-- [ ] Create `Enrollment/Listeners/ActivateEnrollmentOnPaymentConfirmedListener`
-  - Reads `enrollment_pending_payload` from Payment
-  - Calls existing `EnrollmentService::createEnrollmentForConfirmedPayment()`
-  - Idempotent: checks if enrollment already exists before creating
-  - Runs `afterCommit`
+- [ ] Create `Enrollment/Listeners/ActivateEnrollmentOnPaymentConfirmedListener`:
+  - Reads `enrollment_pending_payload` from `Payment`
+  - Calls `EnrollmentService::createEnrollmentForConfirmedPayment()`
+  - Idempotent: checks for existing enrollment before creating; no duplicate records
+  - Marked `afterCommit`
 - [ ] Register listener in `DomainsEventServiceProvider`
-- [ ] Remove direct enrollment-creation calls from `PaymentService::applyVerifiedResult()` and `finalizeByReference()`
-  - Replace with `event(new PaymentConfirmed(...))`
-- [ ] Run idempotency test: fire `PaymentConfirmed` twice → enrollment created only once
+- [ ] Remove direct `EnrollmentService` calls from `PaymentService::applyVerifiedResult()` and `finalizeByReference()`; replace with `event(new PaymentConfirmed(...))`
+- [ ] Remove direct enrollment creation from `PaymentController` return handler; same replacement
+- [ ] Run idempotency test: fire `PaymentConfirmed` twice → exactly one `RegistrationStudent`, one `CourseEnrollment`
+- [ ] Run full test suite — all contract tests must pass
 
 ---
 
-### Phase 6 — Course Registration Untangling
-**Goal:** `CourseRegistrationController` becomes a thin wrapper.**
-**This is the most complex phase — take it slowly.**
+### Phase 6 — Course Registration into Domain Actions
+**Goal:** `CourseRegistrationController` becomes a thin orchestrator. This is the most complex phase — commit each action extraction separately.**
 
-Extract into Actions:
+**Auth domain actions:**
+- [ ] `RequestOtpAction` — extracted from `OtpService::send()` + `sendForNewRegistration()`
+- [ ] `VerifyOtpAction` — extracted from `OtpService::verify()` + `verifyForNewRegistration()`
+- [ ] `ResolveUserByContactAction` — extracted from `AccountResolverService`
 
-**Auth domain:**
-- [ ] `RequestOtpAction` — from `OtpService::send()` + `sendForNewRegistration()`
-- [ ] `VerifyOtpAction` — from `OtpService::verify()` + `verifyForNewRegistration()`
-- [ ] `ResolveUserByContactAction` — from `AccountResolverService`
-
-**Enrollment domain:**
-- [ ] `ValidateAgeRuleAction` — 18+ check for adult self-enrollment
+**Enrollment domain actions:**
+- [ ] `ValidateAgeRuleAction` — 18+ rule for adult self-enrollment
 - [ ] `StartRegistrationAction` — validates form, stores `reg_pending_data` in session
 - [ ] `SubmitRegistrationAction` — creates user account after OTP verified
-- [ ] `CreateEnrollmentPaymentAction` — creates deferred `Payment` with `enrollment_pending_payload`
-- [ ] `EnrollIfFreeAction` — immediate enrollment for zero-fee courses
+- [ ] `CreateEnrollmentPaymentAction` — creates deferred `Payment` with `enrollment_pending_payload`; no enrollment records yet
+- [ ] `EnrollIfFreeAction` — immediate `RegistrationStudent` + `CourseEnrollment` for zero-fee courses
 
-Controllers call actions only. One action per use-case.
+Each controller method calls at most one or two actions. No Eloquent queries or business logic remain in the controller.
 
----
-
-### Phase 7 — Public Site, Portal, Admin Cleanup
-**Goal:** No DB queries or business logic in route files or route closures.**
-
-- [ ] Move any remaining route closures to controllers
-- [ ] `PublicSite/Queries/` for news/events/gallery listing queries
-- [ ] Ensure locale is set via `SetLocale` middleware, not manually in controllers
-- [ ] Portal actions: `GetEnrollmentsQuery`, `GetPaymentHistoryQuery`
-- [ ] Admin actions: one Action per admin operation (approve enrollment, etc.)
+- [ ] Run full test suite — all contract tests must pass
 
 ---
 
-### Phase 8 — Notifications + SMS v2
-- [ ] Create `OtpSenderInterface` with SMS and Email implementations
-- [ ] `Messaging/Actions/SendSmsAction` wraps existing `SmsGatewayService`
-- [ ] Create channel contracts for FCM, database notifications
-- [ ] Keep SMS API v2 middleware behavior identical
+### Phase 7 — Public Site, CMS, Portal, Admin Cleanup
+**Goal:** No DB queries or business logic in route closures or controller methods.**
+
+- [ ] Move any remaining route closures to named controller methods
+- [ ] `PublicSite/Queries/` — news, events, gallery listing queries extracted from controllers
+- [ ] Locale set only via `SetLocale` middleware — no manual `App::setLocale()` in controllers
+- [ ] `Portal/Queries/` — `GetEnrollmentsQuery`, `GetPaymentHistoryQuery`, `GetCertificatesQuery`
+- [ ] `Admin/Actions/` — one action per admin operation (approve enrollment, generate report, etc.)
+- [ ] `Content/Queries/` — pages, articles queries extracted
+- [ ] Run full test suite — all contract tests must pass
 
 ---
 
-### Phase 9 — Final Cleanup + Docs
-- [ ] Update `README.md` with domain map, critical flows, env vars
-- [ ] Remove any dead code found during refactor
-- [ ] Run full test suite
-- [ ] Run Pint formatting pass
-- [ ] Tag a release: `v2.0.0-modular`
+### Phase 8 — Notifications + SMS API v2
+**Goal:** Notifications and messaging have clean contracts; SMS v2 middleware behaviour is unchanged.**
+
+- [ ] Create `OtpSenderInterface` with separate `SmsOtpSender` and `EmailOtpSender` implementations
+- [ ] Create `Messaging/Actions/SendSmsAction` wrapping existing `SmsGatewayService`
+- [ ] Create channel contracts for FCM, database, and email notifications
+- [ ] SMS API v2 endpoint path, API-key middleware, and response shape must remain identical
+- [ ] Run full test suite — all contract tests must pass
 
 ---
 
-## Key Rules to Remember
+### Phase 9 — Docs + Release
+**Goal:** The codebase is fully refactored and documented.**
+
+- [ ] Update `README.md` to include:
+  - Domain map (one line per domain, what it owns)
+  - Critical flows A–H (brief summary + entry point file for each)
+  - Full list of required env vars (keys only, no values)
+  - How to run tests: `php artisan test`
+  - How to run formatting: `vendor/bin/pint`
+- [ ] Remove dead code and unused services discovered during the refactor
+- [ ] Run final Pint pass and commit formatting only
+- [ ] Run full test suite — all tests green
+- [ ] Tag release: `git tag v2.0.0-modular`
+
+---
+
+## Key Rules Reference
 
 | Rule | Why |
 |------|-----|
-| Models stay in `App\Models` | Morph strings in DB reference class names |
-| Controllers call Actions only | Thin controllers, testable logic |
-| Cross-domain = Events or Contracts | No direct service-to-service coupling |
-| Webhook is source of truth | Return URL never confirms payment |
-| One action = one use-case | Easy to test, easy to change |
-| Idempotency everywhere in payments | BML can fire webhooks multiple times |
+| Models stay in `App\Models` | Morph class names are stored in the DB — moving them breaks queries |
+| Controllers call Actions only | Thin controllers are easy to test and easy to replace |
+| Cross-domain = Events or Contracts | Prevents hidden coupling across domain boundaries |
+| Webhook is the only confirmation source | Return URL is a display page, not a confirmation |
+| State transitions are idempotent | BML can fire webhooks more than once |
+| One action = one use-case | Single-responsibility makes testing and changes straightforward |
+| Preserve route paths and payload shapes | Changing them silently breaks clients, emails, and bookmarks |
+| Safe commits | Every commit must leave the repo runnable and tests passing |
 
 ---
 
 ## Files That Will Change the Most
 
-- `app/Http/Controllers/CourseRegistrationController.php` — biggest, most complex
-- `app/Services/Payment/PaymentService.php` — split into domain actions
-- `app/Services/Enrollment/EnrollmentService.php` — split into domain actions
-- `app/Services/OtpService.php` — moves to Auth domain
-- `routes/web_public.php` + `routes/web_localized.php` — cleaned up
+- `app/Http/Controllers/CourseRegistrationController.php` — largest, extracted into 7+ actions
+- `app/Services/Payment/PaymentService.php` — replaced by domain actions
+- `app/Services/Enrollment/EnrollmentService.php` — split into domain actions + listener
+- `app/Services/OtpService.php` — replaced by Auth domain actions
+- `routes/web_public.php` + `routes/web_localized.php` — closures removed
 
-## Files That Must NOT Change Externally
+## URLs That Must Never Change
 
-- BML return URL: `GET /payments/bml/return`
-- BML webhook URL: `POST /webhooks/bml`
-- BML callback URL: `POST /payments/bml/callback`
-- All enrollment route paths (users have bookmarks/emails with these)
+| URL | Why |
+|-----|-----|
+| `GET /payments/bml/return` | Linked in BML portal config; users land here after payment |
+| `POST /webhooks/bml` | Registered in BML portal; source of payment confirmation |
+| `POST /payments/bml/callback` | Alternative callback path; may be registered externally |
+| All enrollment route paths | Referenced in confirmation emails sent to students |
+
+---
+
+## NOW START — Execution Checklist
+
+Work through these in order. Do not proceed to the next step until the current step is committed and tests pass.
+
+1. - [ ] Write `docs/ARCHITECTURE_AUDIT.md` (Phase 0)
+2. - [ ] Add baseline contract tests (Phase 1)
+3. - [ ] Set up Pint + CI (Phase 2)
+4. - [ ] Create `app/Domains/` skeleton + providers (Phase 3)
+5. - [ ] Refactor Payments domain with idempotent state machine and webhook guard (Phase 4)
+6. - [ ] Decouple enrollment activation via `PaymentConfirmed` event (Phase 5)
+7. - [ ] Refactor course registration flow into domain actions (Phase 6)
+8. - [ ] Refactor public site, CMS, portal, and admin into actions gradually (Phase 7)
+9. - [ ] Refactor notifications + SMS API v2 (Phase 8)
+10. - [ ] Update docs, ensure all tests pass, tag release (Phase 9)
