@@ -6,6 +6,7 @@
 
 {{-- ═══════════════════════════════════════════════════════════
   SECTION 1 — HERO CAROUSEL
+  CSS translateX slide technique (works in all browsers, no Alpine.js dependency)
 ═══════════════════════════════════════════════════════════ --}}
 @php
 $bannerList = $heroBanners->map(fn($b) => [
@@ -17,108 +18,65 @@ $bannerList = $heroBanners->map(fn($b) => [
 $bannerCount = count($bannerList);
 @endphp
 
-<section
-    x-data="{
-        active: 0,
-        total: {{ $bannerCount }},
-        paused: false,
-        timer: null,
-        touchX: 0,
-        touchY: 0,
-        init() {
-            this.$nextTick(() => {
-                this.startTimer();
-                document.addEventListener('visibilitychange', () => {
-                    document.hidden ? this.stopTimer() : this.startTimer();
-                });
-            });
-        },
-        startTimer() {
-            this.stopTimer();
-            this.timer = setInterval(() => { if (!this.paused) this.next(); }, 5500);
-        },
-        stopTimer() { if (this.timer) { clearInterval(this.timer); this.timer = null; } },
-        next() { this.active = (this.active + 1) % this.total; this.startTimer(); },
-        prev() { this.active = (this.active - 1 + this.total) % this.total; this.startTimer(); },
-        go(i)  { this.active = i; this.startTimer(); },
-        swipeStart(e) { this.touchX = e.touches[0].clientX; this.touchY = e.touches[0].clientY; },
-        swipeEnd(e) {
-            const dx = e.changedTouches[0].clientX - this.touchX;
-            const dy = e.changedTouches[0].clientY - this.touchY;
-            if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 45) { dx < 0 ? this.next() : this.prev(); }
-        }
-    }"
-    x-init="init()"
-    @mouseenter="paused=true" @mouseleave="paused=false"
-    @touchstart.passive="swipeStart($event)" @touchend.passive="swipeEnd($event)"
+<section id="akuru-hero"
     style="background:linear-gradient(135deg,#3D1219 0%,#7C2D37 55%,#5A1F28 100%);position:relative;overflow:hidden;padding-bottom:56px">
 
-  {{-- subtle pattern --}}
-  <div style="position:absolute;inset:0;opacity:.07;background-image:url(\"data:image/svg+xml,%3Csvg width='52' height='26' viewBox='0 0 52 26' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23C9A227' fill-opacity='1'%3E%3Cpath d='M10 10c0-2.21-1.79-4-4-4-3.314 0-6-2.686-6-6h2c0 2.21 1.79 4 4 4 3.314 0 6 2.686 6 6 0 2.21 1.79 4 4 4 3.314 0 6 2.686 6 6 0 2.21 1.79 4 4 4v2c-3.314 0-6-2.686-6-6 0-2.21-1.79-4-4-4-3.314 0-6-2.686-6-6zm25.464-1.95l8.486 8.486-1.414 1.414-8.486-8.486 1.414-1.414z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E\")"></div>
+  {{-- subtle pattern overlay --}}
+  <div style="position:absolute;inset:0;opacity:.07;pointer-events:none;background-image:url(\"data:image/svg+xml,%3Csvg width='52' height='26' viewBox='0 0 52 26' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23C9A227' fill-opacity='1'%3E%3Cpath d='M10 10c0-2.21-1.79-4-4-4-3.314 0-6-2.686-6-6h2c0 2.21 1.79 4 4 4 3.314 0 6 2.686 6 6 0 2.21 1.79 4 4 4 3.314 0 6 2.686 6 6 0 2.21 1.79 4 4 4v2c-3.314 0-6-2.686-6-6 0-2.21-1.79-4-4-4-3.314 0-6-2.686-6-6zm25.464-1.95l8.486 8.486-1.414 1.414-8.486-8.486 1.414-1.414z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E\")"></div>
 
-  {{-- Slide stage: fixed-height container so transitioning slides overlap instead of stacking --}}
-  <div style="position:relative;min-height:clamp(32rem,60vw,30rem);display:flex;align-items:center">
-  @foreach($bannerList as $i => $bn)
-  <div
-      x-show="active === {{ $i }}"
-      x-transition:enter="transition ease-out duration-700"
-      x-transition:enter-start="opacity-0 scale-95"
-      x-transition:enter-end="opacity-100 scale-100"
-      x-transition:leave="transition ease-in duration-300"
-      x-transition:leave-start="opacity-100 scale-100"
-      x-transition:leave-end="opacity-0 scale-95"
-      style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center">
-    <div class="container mx-auto px-4 text-center text-white" style="width:100%;padding-top:5rem;padding-bottom:{{ $bannerCount > 1 ? '3.5rem' : '5rem' }}">
-      <span style="display:inline-block;background:rgba(201,162,39,0.2);border:1px solid rgba(201,162,39,0.4);color:#E8BC3C;font-size:.75rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:.375rem 1rem;border-radius:9999px;margin-bottom:1.25rem">
-        🕌 Islamic Education in the Maldives
-      </span>
-      <h1 style="font-size:clamp(2rem,5vw,3.5rem);font-weight:800;line-height:1.15;margin-bottom:1.25rem;text-shadow:0 2px 16px rgba(0,0,0,.4)">
-        {{ $bn['title'] }}
-      </h1>
-      <p style="font-size:clamp(1rem,2vw,1.25rem);color:rgba(255,255,255,.8);max-width:40rem;margin:0 auto 2.5rem;line-height:1.7">
-        {{ $bn['subtitle'] }}
-      </p>
-      <div style="display:flex;flex-wrap:wrap;gap:.875rem;justify-content:center">
-        <a href="{{ $bn['cta_url'] ?? route('public.courses.index') }}"
-           style="display:inline-flex;align-items:center;gap:.5rem;background:#C9A227;color:#3D1219;font-weight:700;padding:.875rem 2rem;border-radius:.75rem;font-size:1.05rem;text-decoration:none;transition:opacity .2s,transform .2s"
-           onmouseover="this.style.opacity='.88';this.style.transform='scale(1.04)'" onmouseout="this.style.opacity='1';this.style.transform='scale(1)'">
-          {{ $bn['cta_text'] ?? 'Enroll Now' }}
-        </a>
-        <a href="viber://chat?number=%2B{{ $siteSettings['viber'] ?? '9607972434' }}&text={{ urlencode('Assalaamu alaikum, I want to know about Akuru Institute.') }}"
-           style="display:inline-flex;align-items:center;gap:.5rem;background:rgba(255,255,255,.12);color:white;border:2px solid rgba(255,255,255,.35);font-weight:600;padding:.875rem 2rem;border-radius:.75rem;font-size:1.05rem;text-decoration:none;transition:background .2s"
-           onmouseover="this.style.background='rgba(255,255,255,.2)'" onmouseout="this.style.background='rgba(255,255,255,.12)'">
-          <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M11.993 0C5.5 0 .527 4.972.527 11.473c0 3.107 1.2 5.943 3.17 8.053V23l2.953-1.628A11.03 11.03 0 0011.993 22.736c6.457 0 11.43-4.972 11.43-11.472C23.459 4.813 18.487 0 11.993 0z"/></svg>
-          Chat on Viber
-        </a>
+  {{-- Slide stage — overflow hidden, track slides horizontally --}}
+  <div style="position:relative;height:clamp(20rem,55vw,28rem);overflow:hidden">
+    <div id="akuru-track" style="display:flex;height:100%;transition:transform .7s cubic-bezier(.4,0,.2,1);will-change:transform">
+      @foreach($bannerList as $i => $bn)
+      <div style="min-width:100%;height:100%;display:flex;align-items:center;justify-content:center">
+        <div class="container mx-auto px-4 text-center text-white"
+             style="width:100%;padding-top:4.5rem;padding-bottom:{{ $bannerCount > 1 ? '3rem' : '4.5rem' }}">
+          <span style="display:inline-block;background:rgba(201,162,39,0.2);border:1px solid rgba(201,162,39,0.4);color:#E8BC3C;font-size:.75rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:.375rem 1rem;border-radius:9999px;margin-bottom:1.25rem">
+            🕌 Islamic Education in the Maldives
+          </span>
+          <h1 style="font-size:clamp(1.75rem,4.5vw,3.25rem);font-weight:800;line-height:1.15;margin-bottom:1.25rem;text-shadow:0 2px 16px rgba(0,0,0,.4)">
+            {{ $bn['title'] }}
+          </h1>
+          <p style="font-size:clamp(.95rem,2vw,1.2rem);color:rgba(255,255,255,.8);max-width:40rem;margin:0 auto 2.25rem;line-height:1.7">
+            {{ $bn['subtitle'] }}
+          </p>
+          <div style="display:flex;flex-wrap:wrap;gap:.875rem;justify-content:center">
+            <a href="{{ $bn['cta_url'] ?? route('public.courses.index') }}"
+               style="display:inline-flex;align-items:center;gap:.5rem;background:#C9A227;color:#3D1219;font-weight:700;padding:.875rem 2rem;border-radius:.75rem;font-size:1.05rem;text-decoration:none;transition:opacity .2s,transform .2s"
+               onmouseover="this.style.opacity='.88';this.style.transform='scale(1.04)'" onmouseout="this.style.opacity='1';this.style.transform='scale(1)'">
+              {{ $bn['cta_text'] ?? 'Enroll Now' }}
+            </a>
+            <a href="viber://chat?number=%2B{{ $siteSettings['viber'] ?? '9607972434' }}&text={{ urlencode('Assalaamu alaikum, I want to know about Akuru Institute.') }}"
+               style="display:inline-flex;align-items:center;gap:.5rem;background:rgba(255,255,255,.12);color:white;border:2px solid rgba(255,255,255,.35);font-weight:600;padding:.875rem 2rem;border-radius:.75rem;font-size:1.05rem;text-decoration:none;transition:background .2s"
+               onmouseover="this.style.background='rgba(255,255,255,.2)'" onmouseout="this.style.background='rgba(255,255,255,.12)'">
+              <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M11.993 0C5.5 0 .527 4.972.527 11.473c0 3.107 1.2 5.943 3.17 8.053V23l2.953-1.628A11.03 11.03 0 0011.993 22.736c6.457 0 11.43-4.972 11.43-11.472C23.459 4.813 18.487 0 11.993 0z"/></svg>
+              Chat on Viber
+            </a>
+          </div>
+        </div>
       </div>
+      @endforeach
     </div>
-  </div>
-  @endforeach
   </div>{{-- end slide stage --}}
 
-  {{-- Prev / Next arrows — hidden on mobile, visible on tablet+ --}}
   @if($bannerCount > 1)
-  <button @click="prev()" class="hero-arrow"
-      style="position:absolute;left:1rem;top:50%;transform:translateY(-50%);background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:white;width:2.5rem;height:2.5rem;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .2s;z-index:10"
-      onmouseover="this.style.background='rgba(255,255,255,.3)'" onmouseout="this.style.background='rgba(255,255,255,.15)'"
-      aria-label="Previous slide">
+  {{-- Prev / Next arrows — hidden on mobile --}}
+  <button id="akuru-prev" class="hero-arrow" aria-label="Previous slide"
+      style="position:absolute;left:1rem;top:50%;transform:translateY(-50%);background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:white;width:2.5rem;height:2.5rem;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .2s;z-index:10;padding:0"
+      onmouseover="this.style.background='rgba(255,255,255,.3)'" onmouseout="this.style.background='rgba(255,255,255,.15)'">
     <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
   </button>
-  <button @click="next()" class="hero-arrow"
-      style="position:absolute;right:1rem;top:50%;transform:translateY(-50%);background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:white;width:2.5rem;height:2.5rem;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .2s;z-index:10"
-      onmouseover="this.style.background='rgba(255,255,255,.3)'" onmouseout="this.style.background='rgba(255,255,255,.15)'"
-      aria-label="Next slide">
+  <button id="akuru-next" class="hero-arrow" aria-label="Next slide"
+      style="position:absolute;right:1rem;top:50%;transform:translateY(-50%);background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:white;width:2.5rem;height:2.5rem;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .2s;z-index:10;padding:0"
+      onmouseover="this.style.background='rgba(255,255,255,.3)'" onmouseout="this.style.background='rgba(255,255,255,.15)'">
     <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
   </button>
 
   {{-- Dot indicators --}}
   <div style="position:absolute;bottom:1rem;left:0;right:0;display:flex;justify-content:center;align-items:center;gap:6px;z-index:10">
     @foreach($bannerList as $i => $bn)
-    <span @click="go({{ $i }})"
-        :style="active === {{ $i }}
-            ? 'display:inline-block;width:20px;height:6px;background:#C9A227;border-radius:9999px;transition:all .35s;cursor:pointer;flex-shrink:0'
-            : 'display:inline-block;width:6px;height:6px;background:rgba(255,255,255,.5);border-radius:9999px;transition:all .35s;cursor:pointer;flex-shrink:0'"
-        aria-label="Slide {{ $i + 1 }}"></span>
+    <span class="akuru-dot" data-idx="{{ $i }}" aria-label="Slide {{ $i + 1 }}"
+          style="display:inline-block;border-radius:9999px;cursor:pointer;flex-shrink:0;transition:all .35s;{{ $i === 0 ? 'width:20px;height:6px;background:#C9A227' : 'width:6px;height:6px;background:rgba(255,255,255,.5)' }}"></span>
     @endforeach
   </div>
   @endif
@@ -131,6 +89,64 @@ $bannerCount = count($bannerList);
   <div style="position:absolute;bottom:0;left:0;right:0;line-height:0">
     <svg viewBox="0 0 1440 56" preserveAspectRatio="none" style="width:100%;height:56px;display:block"><path d="M0 56h1440V28C1080 56 720 0 360 28 180 42 0 28 0 28v28z" fill="white"/></svg>
   </div>
+
+  @if($bannerCount > 1)
+  <script>
+  (function () {
+    var track  = document.getElementById('akuru-track');
+    var dots   = document.querySelectorAll('.akuru-dot');
+    var prev   = document.getElementById('akuru-prev');
+    var next   = document.getElementById('akuru-next');
+    var total  = {{ $bannerCount }};
+    var active = 0;
+    var paused = false;
+    var timer  = null;
+
+    function go(i) {
+      active = ((i % total) + total) % total;
+      track.style.transform = 'translateX(-' + (active * 100) + '%)';
+      dots.forEach(function (d, j) {
+        if (j === active) {
+          d.style.width = '20px'; d.style.height = '6px'; d.style.background = '#C9A227';
+        } else {
+          d.style.width = '6px';  d.style.height = '6px'; d.style.background = 'rgba(255,255,255,.5)';
+        }
+      });
+      reset();
+    }
+
+    function reset() {
+      clearInterval(timer);
+      timer = setInterval(function () { if (!paused) go(active + 1); }, 5500);
+    }
+
+    if (prev) prev.addEventListener('click', function () { go(active - 1); });
+    if (next) next.addEventListener('click', function () { go(active + 1); });
+
+    dots.forEach(function (d) {
+      d.addEventListener('click', function () { go(parseInt(d.dataset.idx)); });
+    });
+
+    var section = document.getElementById('akuru-hero');
+    section.addEventListener('mouseenter', function () { paused = true; });
+    section.addEventListener('mouseleave', function () { paused = false; });
+
+    var tx = 0;
+    section.addEventListener('touchstart', function (e) { tx = e.touches[0].clientX; }, { passive: true });
+    section.addEventListener('touchend',   function (e) {
+      var dx = e.changedTouches[0].clientX - tx;
+      if (Math.abs(dx) > 45) { go(dx < 0 ? active + 1 : active - 1); }
+    }, { passive: true });
+
+    document.addEventListener('visibilitychange', function () {
+      document.hidden ? clearInterval(timer) : reset();
+    });
+
+    reset();
+  }());
+  </script>
+  @endif
+
 </section>
 
 {{-- ═══════════════════════════════════════════════════════════
