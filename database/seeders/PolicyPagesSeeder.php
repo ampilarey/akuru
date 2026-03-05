@@ -79,7 +79,10 @@ class PolicyPagesSeeder extends Seeder
 <h3>9. Governing Law</h3>
 <p>These terms are governed by the laws of the Republic of Maldives.</p>
 
-<h3>10. Contact</h3>
+<h3>10. Transaction Records</h3>
+<p>We strongly recommend that cardholders retain a copy of all transaction records, payment receipts, and enrollment confirmations for their personal records. We also recommend retaining a copy of these Terms and Conditions and our <a href="/en/pages/refund-policy">Refund &amp; Cancellation Policy</a> at the time of purchase. Transaction records and enrollment confirmations are available at any time from your account's enrollments page after logging in.</p>
+
+<h3>11. Contact</h3>
 <p>For questions about these terms, please contact us at <a href="mailto:info@akuru.edu.mv">info@akuru.edu.mv</a> or call <a href="tel:+9607972434">+960 797 2434</a>.</p>
 HTML;
     }
