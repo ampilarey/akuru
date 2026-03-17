@@ -724,3 +724,328 @@ Based on risk, coupling, and dependency graph:
 8. **Redesign public pages** (homepage, courses, admissions, contact, about, content pages)
 9. **SEO / accessibility / performance pass**
 10. **Documentation + full test suite update**
+
+---
+
+## I. Deep Audit — Security
+
+> Added: March 2026 deep-dive audit
+
+### CSRF Exemptions (`bootstrap/app.php:15-18`)
+
+Two POST endpoints are CSRF-exempt: `payments/bml/callback` and `webhooks/bml`. Both are webhook endpoints that **must** be CSRF-exempt. BML webhook signature validation is present in `BmlWebhookController`.
+
+### SMS API v2 Authentication (`app/Http/Controllers/Api/SmsApiController.php:103-118`)
+
+- **Good:** Uses `hash_equals()` for constant-time API key comparison.
+- **Good:** Supports `X-API-Key` header and `Authorization: Bearer` token.
+- **Issue:** SMS API endpoints (`routes/api.php:24-26`) have **no middleware authentication** — relies solely on the controller's `validateApiKey()` method.
+- **Issue:** No rate limiting configured on SMS API routes. A compromised or guessed API key enables unlimited SMS sends.
+
+### Rate Limiting
+
+| Scope | Limit | Location |
+|-------|-------|----------|
+| OTP sends | 5 per 60 min per contact | `OtpService.php:15-16` |
+| OTP verify attempts | 10 per 15 min per contact | `OtpService.php:18-19` |
+| OTP resend cooldown | 30 seconds | `OtpService.php:17` |
+| Login brute-force | 10 per 15 min | `CourseRegistrationController:71-76` |
+
+### Webhook Security (`app/Http/Controllers/BmlWebhookController.php`)
+
+- **Good:** IP allowlist check (line 28) and HMAC signature verification.
+- **Concern:** Returns HTTP 200 even on application errors (lines 45-47) — BML won't know about failures and cannot retry.
+
+### Session Stores Sensitive Data
+
+| Data | Location | Risk |
+|------|----------|------|
+| Password hash | `CourseRegistrationController:191` | Session hijack exposes hash |
+| Child password | `CourseRegistrationController:722-724, 888, 950` | Parent enrollment flow |
+| National ID, passport, DOB | Session `reg_pending_data` | PII exposure on session leak |
+
+Session is encrypted by default (`SESSION_ENCRYPT`), but storing passwords and PII in session remains a defense-in-depth concern.
+
+### National ID & Passport Encryption (`app/Models/RegistrationStudent.php:29-30`)
+
+- **Good:** `national_id` and `passport` use Laravel's `encrypted` cast.
+- **Missing:** No key rotation mechanism visible.
+
+---
+
+## J. Deep Audit — Database
+
+### Email Nullable + Unique Constraint
+
+`users` table: `email` is `unique()` but `nullable` (via `2026_02_16_000010_make_users_email_nullable_for_mobile_auth.php`). Multiple NULL values technically violate uniqueness semantics (MySQL allows this; PostgreSQL does not). Users registering via mobile-only OTP cannot have email validation.
+
+**Fix:** Remove unique constraint and add a partial unique index, or enforce email at the application level.
+
+### Raw MySQL-Specific SQL (`2026_02_16_000007_create_course_enrollments_table.php:25-26`)
+
+Generated column with `IFNULL()` and `STORED` keyword is MySQL-specific. Will fail on SQLite (used in tests) and PostgreSQL.
+
+**Fix:** Move `term_key` computation to application level or use database abstraction.
+
+### Missing Soft Deletes
+
+No soft delete migrations exist across the codebase. Hard deletes on `users`, `payments`, and `course_enrollments` destroy audit trail data.
+
+### Dangerous Cascade Deletes
+
+`payments.user_id → users (onDelete: cascade)` — deleting a user cascades to **all their payment records**. This is dangerous for financial data that may need to be retained.
+
+### Missing Indexes
+
+| Table | Column(s) | Used By | Impact |
+|-------|-----------|---------|--------|
+| `user_contacts` | `value` | Contact lookups (login, OTP) | Full table scan |
+| `user_contact_otps` | `(user_contact_id, purpose)` | `OtpService::verify()` | Slow OTP lookups |
+| `course_enrollments` | `(student_id, course_id, status)` | Status queries, duplicate checks | Full scan on enrollment checks |
+| `payments` | `(user_id, status)` | User payment history | Full scan for portal pages |
+
+### JSON Column Usage
+
+`Payment` model stores `callback_payload`, `webhook_payload`, `bml_status_raw`, and `enrollment_pending_payload` as JSON. Appropriate for varying BML response structures, but `enrollment_pending_payload` contains sensitive registration data — ensure it is cleared after enrollment creation (it is, in `EnrollmentService`).
+
+---
+
+## K. Deep Audit — Queue & Jobs
+
+### No Async Job Dispatch Found
+
+All work is performed synchronously in the request lifecycle.
+
+### Synchronous Mail
+
+`PaymentService::sendConfirmationEmail()` sends mail synchronously inside webhook/return handlers. A slow mail server blocks the response.
+
+**Fix:** Dispatch as queued job: `Mail::to($user)->queue(new EnrollmentConfirmedMail(...))`.
+
+### Synchronous SMS
+
+`OtpService::dispatchCode()` sends SMS synchronously. The HTTP timeout is 30 seconds (`SmsGatewayService`). A slow SMS provider blocks the OTP request for up to 30 seconds.
+
+**Fix:** Dispatch SMS sending to the queue with retry logic.
+
+### Queue Backend
+
+Database driver (`QUEUE_CONNECTION=database`). Database failure = queue failure. No external monitoring for failed jobs.
+
+**Consider:** Redis for queue + cache backends when scaling beyond a single server.
+
+### Scheduled Commands (`routes/console.php`)
+
+| Command | Schedule | Purpose |
+|---------|----------|---------|
+| `payments:reconcile --older-than=5 --not-updated-in=2` | Every 10 min | Fallback for missed BML webhooks |
+| `akuru:prune-expired` | Hourly | Remove expired OTPs and stale draft/pending enrollments |
+| `akuru:scheduler-heartbeat` | Every minute | Cron health check |
+
+No error logging visible in console routes.
+
+---
+
+## L. Deep Audit — Caching
+
+### Current Cache Usage
+
+- **Backend:** Database store (`CACHE_STORE=database`).
+- **Used in:** `SmsGatewayService` (rate limits), `OtpService` (rate limiting via `RateLimiter`), `PublicSite\HomeController`, `SchedulerHealthCheckCommand`, `ServerStatusCommand`, `AppServiceProvider`.
+
+### Missing Caching Opportunities
+
+| Data | Access Pattern | Recommendation |
+|------|---------------|----------------|
+| Course listings | Read-heavy, rarely changes | Cache with tag invalidation on admin update |
+| Course categories | Read-heavy, rarely changes | Cache indefinitely, invalidate on change |
+| Settings table | Read on every request (if used) | Cache on boot, invalidate on admin save |
+| Public page content | Read-heavy | Cache with 5-minute TTL |
+
+---
+
+## M. Deep Audit — Error Handling
+
+### No Central Exception Handler
+
+`bootstrap/app.php:38-40` has an empty exception handling section. No custom exception handlers, no custom error responses for API endpoints.
+
+### Silent Error Swallowing
+
+`BmlWebhookController` (lines 42-45) catches all exceptions from `handleCallback()`, logs them, but returns HTTP 200. BML receives success and will not retry.
+
+**Fix:** Return HTTP 500 for server errors; only return 200 for idempotent-processing or validation errors.
+
+### Try/Catch Coverage
+
+Found in registration validation, `EnrollmentService`, `PaymentService`, and `OtpService`. OTP service cleans up on failure (good). Other services log but may not surface errors to the user.
+
+---
+
+## N. Deep Audit — Config & Environment
+
+### Custom Config Files
+
+| File | Purpose | Notes |
+|------|---------|-------|
+| `config/bml.php` | BML payment gateway | Auth modes: raw, bearer_jwt, bearer_basic, auto. Timeout: 30s. |
+| `config/registration.php` | Registration defaults | Only `REGISTRATION_DEFAULT_COUNTRY_CODE` (960 for Maldives) |
+| `config/laravellocalization.php` | i18n | 30+ languages configured |
+| `config/permission.php` | Spatie RBAC | Multi-tenancy disabled |
+
+### Environment Variable Confusion
+
+- `SMS_USE_DHIRAAGU` vs `SMS_GATEWAY_ENABLED` — two flags for SMS behavior may conflict.
+- `SMS_GATEWAY_API_KEY` is referenced in `SmsApiController` but not documented in `.env.example`.
+- BML config spreads across many env vars: `APP_ID`, `API_KEY`, `MERCHANT_ID`, `WEBHOOK_SECRET`, etc.
+
+---
+
+## O. Deep Audit — Mail & Notifications
+
+### Mail Classes (`app/Mail/`)
+
+| Class | Trigger |
+|-------|---------|
+| `EnrollmentConfirmedMail` | Payment confirmed (paid courses) |
+| `FreeEnrollmentConfirmedMail` | Free course enrollment |
+| `EnrollmentStatusMail` | Admin activates/rejects enrollment |
+| `AdminNewEnrollmentMail` | New enrollment notification to admin |
+| `AdminFreeEnrollmentMail` | Free enrollment notification to admin |
+
+### Notification Classes (`app/Notifications/`)
+
+| Class | Channel |
+|-------|---------|
+| `NewAdmissionApplication` | Admin notification |
+| `NewContactMessage` | Admin notification |
+| `OtpEmailNotification` | Email OTP delivery |
+
+**Inconsistency:** 5 mail classes vs 3 notification classes. No notification fallback across channels (SMS + Email).
+
+---
+
+## P. Deep Audit — Session Usage
+
+### Scale of Session Usage
+
+**66 `session()` calls** in `CourseRegistrationController` alone.
+
+### Session Keys
+
+| Key | Content | Lifecycle |
+|-----|---------|-----------|
+| `pending_selected_course_ids` | Array of course IDs | Multi-step enrollment |
+| `pending_term_id` | Term selection | Multi-step enrollment |
+| `checkout_flow` | `adult` / `parent` / `guardian` | Flow type |
+| `reg_pending_data` | Full registration form (name, DOB, contact, password hash) | Until enrollment complete |
+| `enroll_pending_*` | Enrollment workflow state | Until OTP confirmed |
+| `enroll_otp_*` | OTP verification state | Until verified |
+
+### Concerns
+
+- Session payload could exceed typical limits for complex enrollments with many courses.
+- Cleanup only occurs in `clearEnrollPendingSession()` (line 1040-1042) — registration session data may persist if the user abandons mid-flow.
+- `RegistrationFlow` model was designed to replace session-based state, but its writer side is incomplete.
+
+---
+
+## Q. Deep Audit — File Upload & Storage
+
+### Upload Handling
+
+29 controllers handle file uploads: `TeacherController`, `StudentController`, `HeroBannerController`, `MediaItemController`, `GalleryController`, `PostController`, and others.
+
+### Storage Configuration (`config/filesystems.php`)
+
+| Disk | Path | Usage |
+|------|------|-------|
+| `local` | `storage/app/private` | Default |
+| `public` | `storage/app/public` → `/storage` | Public assets |
+| `s3` | Configured but not enabled | CDN-ready |
+
+### Concerns
+
+- No centralized file upload validation visible — each controller handles validation independently.
+- `intervention/image` v3.11 used for image processing — verify max upload size limits are configured.
+- Unclear which uploads go to which disk.
+
+---
+
+## R. Deep Audit — Dependencies
+
+### Key Package Versions (`composer.json`)
+
+| Package | Version | Notes |
+|---------|---------|-------|
+| `php` | ^8.2 | Modern, good |
+| `laravel/framework` | ^12.0 | Latest major |
+| `laravel/breeze` | ^2.3 | Auth scaffolding |
+| `spatie/laravel-permission` | ^6.21 | RBAC |
+| `laravel/socialite` | ^5.23 | OAuth (unused in routes?) |
+| `intervention/image` | ^3.11 | Image processing |
+| `laravel-notification-channels/fcm` | ^5.1 | Firebase Cloud Messaging |
+| `guzzlehttp/guzzle` | ^7.10 | HTTP client |
+| `mcamara/laravel-localization` | ^2.3 | i18n |
+| `alkoumi/laravel-hijri-date` | ^1.0 | Islamic calendar |
+| `phpunit/phpunit` | ^11.5.3 | Testing |
+| `laravel/pint` | ^1.24 | Code linting |
+
+No immediately outdated or risky dependencies. Run `composer outdated` regularly.
+
+---
+
+## S. Deep Audit — Hardcoded Values & Magic Numbers
+
+| Value | Meaning | Location | Recommendation |
+|-------|---------|----------|----------------|
+| 5 | Max OTP sends per hour | `OtpService.php:15` | Config |
+| 60 | OTP send window (minutes) | `OtpService.php:16` | Config |
+| 30 | Resend cooldown (seconds) | `OtpService.php:17` | Config |
+| 10 | Max verify attempts | `OtpService.php:18` | Config |
+| 15 | Verify window (minutes) | `OtpService.php:19` | Config |
+| 10 | Login attempts per 15 min | `CourseRegistrationController:72` | Config |
+| 5 | OTP expiry (minutes, short) | `Otp.php:68` | Config |
+| 15 | OTP expiry (minutes, long) | `Otp.php:69` | Config |
+| 18 | Minimum age for adult enrollment | Multiple locations | Config (`registration.php`) |
+| 30 | SMS HTTP timeout (seconds) | `SmsGatewayService` | Config (`services.php`) |
+
+**Fix:** Extract all timing/limit constants to `config/registration.php` or a new `config/limits.php`.
+
+---
+
+## T. Refactoring Priority Matrix (Updated)
+
+### Phase 1 — Critical (Security & Data Integrity)
+
+1. Remove sensitive data (passwords, PII) from session storage — use encrypted temporary DB records or `RegistrationFlow` model
+2. Add rate limiting middleware to SMS API endpoints
+3. Improve webhook error handling — return 5xx on server errors
+4. Add soft deletes to `users`, `payments`, `course_enrollments`, `registration_students`
+5. Fix email nullable + unique constraint
+6. Change `payments.user_id` cascade to `set null` (retain financial records)
+
+### Phase 2 — High (Performance & Reliability)
+
+1. Queue mail and SMS dispatch (implement `ShouldQueue` on mail classes)
+2. Add missing database indexes (see section J)
+3. Remove MySQL-specific raw SQL from migrations
+4. Implement caching for course listings, categories, settings
+5. Fix N+1 queries in dashboard and admin export
+
+### Phase 3 — Medium (Architecture & Maintainability)
+
+1. Consolidate 3 enrollment-finalization paths to 1
+2. Unify BML HTTP clients (`BmlConnectService` → `BmlPaymentProvider`)
+3. Extract magic numbers to config files
+4. Complete `RegistrationFlow` model (replace session-based wizard state)
+5. Add centralized exception handling in `bootstrap/app.php`
+6. Implement centralized file upload validation
+
+### Phase 4 — Low (Cleanup & Polish)
+
+1. Remove unused/legacy controllers (~25 controllers)
+2. Move event closure routes to `EventController`
+3. Document env vars consistently in `.env.example`
+4. Add unit tests for domain services
+5. Update `README.md` with project-specific documentation
