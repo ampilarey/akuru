@@ -260,13 +260,30 @@ php artisan db:seed --class=RoleSeeder --force
 cd /home/akuruedu/test.akuru.edu.mv && git pull origin main && php artisan db:seed --class=HifzDemoSeeder --force
 ```
 
-**If the seeder warns about missing teacher/headmaster**, check roles on server:
+**If the seeder warns about missing dean/teacher**, list users and roles on server:
 
 ```bash
-php artisan tinker --execute="echo 'admin: '.(\App\Models\User::role('admin')->count()).', teacher: '.(\App\Models\User::role('teacher')->count()).', headmaster: '.(\App\Models\User::role('headmaster')->count());"
+php artisan tinker --execute="\App\Models\User::query()->orderBy('id')->limit(15)->get(['id','name','email'])->each(fn(\$u) => print(\$u->id.' | '.\$u->email.' | '.\$u->getRoleNames()->implode(',').PHP_EOL));"
 ```
 
-Assign **teacher** and **headmaster** (or **admin**) in the admin panel, then run `HifzDemoSeeder` again.
+The seeder accepts:
+
+- **Dean:** `headmaster@akuru.edu.mv` or `admin@akuru.edu.mv` (by email), or any user with `headmaster` / `admin` / `super_admin` role
+- **Teacher:** `teacher@akuru.edu.mv`, any `teacher` role, or any active row in the `teachers` table linked to a user
+
+**Quick fix via tinker** (assign roles to existing accounts):
+
+```bash
+php artisan tinker --execute="
+\$admin = \App\Models\User::where('email', 'admin@akuru.edu.mv')->first();
+\$admin?->assignRole('admin');
+\$teacher = \App\Models\Teacher::where('status', 'active')->whereNotNull('user_id')->first();
+\$teacher?->user?->assignRole('teacher');
+echo 'done';
+"
+```
+
+Then run `HifzDemoSeeder` again.
 
 **Try Hifz:** https://test.akuru.edu.mv/hifz
 

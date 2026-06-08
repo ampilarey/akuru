@@ -32,15 +32,15 @@ class HifzDemoSeeder extends Seeder
 {
     public function run(): void
     {
-        $headmaster = $this->resolveUser('headmaster@akuru.edu.mv', ['headmaster', 'admin', 'super_admin']);
+        $headmaster = $this->resolveDean();
         $supervisor = $this->resolveUser('supervisor@akuru.edu.mv', ['supervisor']);
-        $teacherUser = $this->resolveUser('teacher@akuru.edu.mv', ['teacher']);
+        $teacherUser = $this->resolveTeacherUser();
         $school = \App\Models\School::first();
         $quranClass = ClassRoom::where('level', 'Quran')->first();
 
         if (! $teacherUser || ! $headmaster) {
             $this->command->warn(
-                'Need at least one headmaster/admin and one teacher user. Assign those roles in the admin panel, then run this seeder again.'
+                'Need a dean user (admin@ or headmaster@, or admin/headmaster role) and a teacher (teacher@, teacher role, or an active Teacher profile). See DEPLOYMENT.md §6.1.'
             );
 
             return;
@@ -227,6 +227,41 @@ class HifzDemoSeeder extends Seeder
                 $students->first()->id => ['relationship' => 'father', 'is_primary_contact' => true],
             ]);
         }
+    }
+
+    private function resolveDean(): ?User
+    {
+        foreach (['headmaster@akuru.edu.mv', 'admin@akuru.edu.mv'] as $email) {
+            if ($user = User::where('email', $email)->first()) {
+                return $user;
+            }
+        }
+
+        foreach (['headmaster', 'admin', 'super_admin'] as $role) {
+            if ($user = User::role($role)->first()) {
+                return $user;
+            }
+        }
+
+        return null;
+    }
+
+    private function resolveTeacherUser(): ?User
+    {
+        if ($user = User::where('email', 'teacher@akuru.edu.mv')->first()) {
+            return $user;
+        }
+
+        if ($user = User::role('teacher')->first()) {
+            return $user;
+        }
+
+        $teacher = Teacher::query()
+            ->whereNotNull('user_id')
+            ->where('status', 'active')
+            ->first();
+
+        return $teacher?->user;
     }
 
     /**
