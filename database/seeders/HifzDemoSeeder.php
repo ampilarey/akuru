@@ -235,6 +235,13 @@ class HifzDemoSeeder extends Seeder
                 $students->first()->id => ['relationship' => 'father', 'is_primary_contact' => true],
             ]);
         }
+
+        $this->command->info(sprintf(
+            'Hifz demo seeded: program "%s", %d enrollment(s), %d session(s). Log in as teacher@akuru.edu.mv or student@akuru.edu.mv (password: password).',
+            $program->name,
+            HifzEnrollment::where('hifz_program_id', $program->id)->count(),
+            HifzSession::where('hifz_program_id', $program->id)->count()
+        ));
     }
 
     private function resolveDean(): ?User
@@ -338,26 +345,24 @@ class HifzDemoSeeder extends Seeder
 
     private function ensureDemoStudentRecord(\App\Models\School $school, ClassRoom $quranClass): void
     {
-        $studentUser = User::where('email', 'student@akuru.edu.mv')->first()
-            ?? User::role('student')->first();
+        $this->command->info('Creating student@akuru.edu.mv for Hifz demo (password: password).');
 
-        if (! $studentUser) {
-            $studentUser = User::firstOrCreate(
-                ['email' => 'student@akuru.edu.mv'],
-                [
-                    'name' => 'Demo Student',
-                    'password' => bcrypt('password'),
-                    'phone' => '+960 123-4570',
-                    'is_active' => true,
-                ]
-            );
-            if (! $studentUser->hasRole('student')) {
-                $studentUser->assignRole('student');
-            }
+        $studentUser = User::firstOrCreate(
+            ['email' => 'student@akuru.edu.mv'],
+            [
+                'name' => 'Demo Student',
+                'password' => bcrypt('password'),
+                'phone' => '+960 123-4570',
+                'is_active' => true,
+            ]
+        );
+
+        if (! $studentUser->hasRole('student')) {
+            $studentUser->assignRole('student');
         }
 
         [$firstName, $lastName] = $this->splitName($studentUser->name ?: 'Demo Student');
-        Student::firstOrCreate(
+        $student = Student::firstOrCreate(
             ['user_id' => $studentUser->id],
             [
                 'school_id' => $school->id,
@@ -371,6 +376,12 @@ class HifzDemoSeeder extends Seeder
                 'status' => 'active',
             ]
         );
+
+        $student->update([
+            'school_id' => $school->id,
+            'class_id' => $quranClass->id,
+            'status' => 'active',
+        ]);
     }
 
     /**
