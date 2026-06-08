@@ -34,8 +34,8 @@ class HifzDemoSeeder extends Seeder
     {
         $headmaster = $this->resolveDean();
         $supervisor = $this->resolveUser('supervisor@akuru.edu.mv', ['supervisor']);
-        $school = \App\Models\School::first();
-        $quranClass = ClassRoom::where('level', 'Quran')->first();
+        $school = $this->ensureSchool();
+        $quranClass = $this->ensureQuranClass($school);
 
         if (! $headmaster) {
             $this->command->warn('Hifz demo seed skipped: no dean user (need admin@akuru.edu.mv or headmaster/admin/super_admin role).');
@@ -294,12 +294,50 @@ class HifzDemoSeeder extends Seeder
         return $user;
     }
 
-    private function ensureDemoStudentRecord(?\App\Models\School $school, ?ClassRoom $quranClass): void
+    private function ensureSchool(): \App\Models\School
     {
-        if (! $school || ! $quranClass) {
-            return;
+        $existing = \App\Models\School::first();
+        if ($existing) {
+            return $existing;
         }
 
+        $this->command->info('Creating demo school record for Hifz.');
+
+        return \App\Models\School::create([
+            'name' => 'Akuru Institute',
+            'description' => 'Islamic and Arabic Education Institute',
+            'address' => 'Malé, Maldives',
+            'phone' => '+960 123-4567',
+            'email' => 'info@akuru.edu.mv',
+            'website' => 'https://akuru.edu.mv',
+            'principal_name' => 'Dr. Ahmed Ibrahim',
+            'established_year' => '2010',
+            'is_active' => true,
+        ]);
+    }
+
+    private function ensureQuranClass(\App\Models\School $school): ClassRoom
+    {
+        $existing = ClassRoom::where('school_id', $school->id)->where('level', 'Quran')->first();
+        if ($existing) {
+            return $existing;
+        }
+
+        $this->command->info('Creating demo Quran class for Hifz.');
+
+        return ClassRoom::create([
+            'school_id' => $school->id,
+            'name' => 'Quran Class A',
+            'section' => 'A',
+            'level' => 'Quran',
+            'capacity' => 20,
+            'description' => 'Islamic education class',
+            'is_active' => true,
+        ]);
+    }
+
+    private function ensureDemoStudentRecord(\App\Models\School $school, ClassRoom $quranClass): void
+    {
         $studentUser = User::where('email', 'student@akuru.edu.mv')->first()
             ?? User::role('student')->first();
 
