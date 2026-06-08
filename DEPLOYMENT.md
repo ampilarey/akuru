@@ -201,44 +201,81 @@ machine, then pull on the server. There is no direct `git push` to the subdomain
 ### 6.1 Test server (`test.akuru.edu.mv`)
 
 **Server path:** `/home/akuruedu/test.akuru.edu.mv`  
+**Git remote on server:** `git@github.com:ampilarey/akuru.git`  
 **SSH host:** `akuru.edu.mv` (cPanel Terminal works the same)
 
-**Step 1 — on your Mac (after committing):**
+#### Who runs what
+
+| Where | Who | Action |
+|-------|-----|--------|
+| Mac (development) | Developer / Cursor | Commit changes, `git push origin main` |
+| Server (test) | You in cPanel Terminal | `git pull`, migrate, cache — **never push from server** |
+
+There is no `git push` to `test.akuru.edu.mv`. The subdomain pulls from GitHub.
+
+#### Routine deploy — Mac
+
+After changes are committed locally:
 
 ```bash
-cd /path/to/akuru-institute
+cd /Users/vigani/Website/Akuru/akuru-institute
 git push origin main
 ```
 
-**Step 2 — paste in cPanel Terminal:**
+#### Routine deploy — server (paste in cPanel Terminal)
 
 ```bash
 cd /home/akuruedu/test.akuru.edu.mv && git pull origin main && composer install --no-dev --optimize-autoloader --no-interaction && php artisan migrate --force && php artisan config:cache && php artisan route:clear
 ```
 
-**Verify:**
+**Verify on server:**
 
 ```bash
 git log -1 --oneline
 ```
 
-You should see the commit you just pushed on `main`.
+The hash should match the commit you just pushed on `main`.
 
-**Optional — Hifz demo data** (uses existing admin/teacher/student accounts if demo emails are not present):
+#### Hifz demo data — server only
+
+The test database already has real users (e.g. `admin@akuru.edu.mv`). **Do not run `UserSeeder`** — it will fail with a duplicate-email error.
+
+`HifzDemoSeeder` uses demo emails when present, otherwise falls back to existing users by role:
+
+- Dean: `headmaster@akuru.edu.mv` → `headmaster` → `admin` → `super_admin`
+- Teacher: `teacher@akuru.edu.mv` → `teacher`
+- Supervisor: `supervisor@akuru.edu.mv` → `supervisor`
+- Parent: `parent@akuru.edu.mv` → `parent`
+
+**First time only** (if Hifz permissions were never synced):
 
 ```bash
 cd /home/akuruedu/test.akuru.edu.mv
 php artisan db:seed --class=RoleSeeder --force
-php artisan db:seed --class=HifzDemoSeeder --force
 ```
 
-Do **not** run `UserSeeder` on test if `admin@akuru.edu.mv` already exists.
+**After pulling code that includes seeder changes:**
 
-**Notes:**
+```bash
+cd /home/akuruedu/test.akuru.edu.mv && git pull origin main && php artisan db:seed --class=HifzDemoSeeder --force
+```
+
+**If the seeder warns about missing teacher/headmaster**, check roles on server:
+
+```bash
+php artisan tinker --execute="echo 'admin: '.(\App\Models\User::role('admin')->count()).', teacher: '.(\App\Models\User::role('teacher')->count()).', headmaster: '.(\App\Models\User::role('headmaster')->count());"
+```
+
+Assign **teacher** and **headmaster** (or **admin**) in the admin panel, then run `HifzDemoSeeder` again.
+
+**Try Hifz:** https://test.akuru.edu.mv/hifz
+
+#### Notes
 
 - `route:cache` is intentionally **not** used on test; it breaks mcamara localized routes.
 - If `git status` says “up to date” but the site is old, run `git fetch origin` first, then pull again.
-- Equivalent helper script (if executable): `bash scripts/update-subdomain.sh`
+- If `./scripts/update-subdomain.sh` says “Permission denied”, use `bash scripts/update-subdomain.sh` or `chmod +x scripts/update-subdomain.sh`.
+- Equivalent to the deploy one-liner: `bash scripts/update-subdomain.sh`
 
 ### 6.2 Production (`akuru.edu.mv`)
 
