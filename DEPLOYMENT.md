@@ -260,6 +260,9 @@ php artisan db:seed --class=RoleSeeder --force
 cd /home/akuruedu/test.akuru.edu.mv && git pull origin main && php artisan db:seed --class=HifzDemoSeeder --force
 ```
 
+If no teacher exists, the seeder creates `teacher@akuru.edu.mv` (password: `password`) automatically.
+If no student record exists but school/class data is present, it creates `student@akuru.edu.mv` or uses an existing student-role user.
+
 **If the seeder warns about missing dean/teacher**, list users and roles on server:
 
 ```bash

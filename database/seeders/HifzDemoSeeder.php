@@ -34,16 +34,19 @@ class HifzDemoSeeder extends Seeder
     {
         $headmaster = $this->resolveDean();
         $supervisor = $this->resolveUser('supervisor@akuru.edu.mv', ['supervisor']);
-        $teacherUser = $this->resolveTeacherUser();
         $school = \App\Models\School::first();
         $quranClass = ClassRoom::where('level', 'Quran')->first();
 
-        if (! $teacherUser || ! $headmaster) {
-            $this->command->warn(
-                'Need a dean user (admin@ or headmaster@, or admin/headmaster role) and a teacher (teacher@, teacher role, or an active Teacher profile). See DEPLOYMENT.md §6.1.'
-            );
+        if (! $headmaster) {
+            $this->command->warn('Hifz demo seed skipped: no dean user (need admin@akuru.edu.mv or headmaster/admin/super_admin role).');
 
             return;
+        }
+
+        $teacherUser = $this->resolveTeacherUser();
+        if (! $teacherUser) {
+            $this->command->info('No teacher found — creating teacher@akuru.edu.mv for Hifz demo (password: password).');
+            $teacherUser = $this->ensureDemoTeacherUser();
         }
 
         $teacher = Teacher::where('user_id', $teacherUser->id)->first()
@@ -106,6 +109,11 @@ class HifzDemoSeeder extends Seeder
             ->get();
 
         if ($students->isEmpty()) {
+            $students = Student::where('status', 'active')->take(1)->get();
+        }
+
+        if ($students->isEmpty()) {
+            $this->ensureDemoStudentRecord($school, $quranClass);
             $students = Student::where('status', 'active')->take(1)->get();
         }
 
@@ -262,6 +270,69 @@ class HifzDemoSeeder extends Seeder
             ->first();
 
         return $teacher?->user;
+    }
+
+    private function ensureDemoTeacherUser(): User
+    {
+        $user = User::firstOrCreate(
+            ['email' => 'teacher@akuru.edu.mv'],
+            [
+                'name' => 'Demo Teacher',
+                'password' => bcrypt('password'),
+                'phone' => '+960 123-4569',
+                'address' => 'Malé',
+                'date_of_birth' => '1985-03-20',
+                'gender' => 'male',
+                'is_active' => true,
+            ]
+        );
+
+        if (! $user->hasRole('teacher')) {
+            $user->assignRole('teacher');
+        }
+
+        return $user;
+    }
+
+    private function ensureDemoStudentRecord(?\App\Models\School $school, ?ClassRoom $quranClass): void
+    {
+        if (! $school || ! $quranClass) {
+            return;
+        }
+
+        $studentUser = User::where('email', 'student@akuru.edu.mv')->first()
+            ?? User::role('student')->first();
+
+        if (! $studentUser) {
+            $studentUser = User::firstOrCreate(
+                ['email' => 'student@akuru.edu.mv'],
+                [
+                    'name' => 'Demo Student',
+                    'password' => bcrypt('password'),
+                    'phone' => '+960 123-4570',
+                    'is_active' => true,
+                ]
+            );
+            if (! $studentUser->hasRole('student')) {
+                $studentUser->assignRole('student');
+            }
+        }
+
+        [$firstName, $lastName] = $this->splitName($studentUser->name ?: 'Demo Student');
+        Student::firstOrCreate(
+            ['user_id' => $studentUser->id],
+            [
+                'school_id' => $school->id,
+                'class_id' => $quranClass->id,
+                'student_id' => 'S-HIFZ-DEMO',
+                'first_name' => $firstName,
+                'last_name' => $lastName,
+                'date_of_birth' => '2010-08-10',
+                'gender' => 'male',
+                'admission_date' => now()->subYear(),
+                'status' => 'active',
+            ]
+        );
     }
 
     /**
