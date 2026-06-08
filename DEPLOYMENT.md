@@ -195,6 +195,53 @@ nohup /opt/alt/php84/usr/bin/php artisan queue:work --sleep=3 --tries=3 --max-ti
 
 ## 6. Pulling Updates (Routine Deployment)
 
+The app is deployed via **GitHub** (`git@github.com:ampilarey/akuru.git`). Push from your
+machine, then pull on the server. There is no direct `git push` to the subdomain.
+
+### 6.1 Test server (`test.akuru.edu.mv`)
+
+**Server path:** `/home/akuruedu/test.akuru.edu.mv`  
+**SSH host:** `akuru.edu.mv` (cPanel Terminal works the same)
+
+**Step 1 — on your Mac (after committing):**
+
+```bash
+cd /path/to/akuru-institute
+git push origin main
+```
+
+**Step 2 — paste in cPanel Terminal:**
+
+```bash
+cd /home/akuruedu/test.akuru.edu.mv && git pull origin main && composer install --no-dev --optimize-autoloader --no-interaction && php artisan migrate --force && php artisan config:cache && php artisan route:clear
+```
+
+**Verify:**
+
+```bash
+git log -1 --oneline
+```
+
+You should see the commit you just pushed on `main`.
+
+**Optional — Hifz demo data** (uses existing admin/teacher/student accounts if demo emails are not present):
+
+```bash
+cd /home/akuruedu/test.akuru.edu.mv
+php artisan db:seed --class=RoleSeeder --force
+php artisan db:seed --class=HifzDemoSeeder --force
+```
+
+Do **not** run `UserSeeder` on test if `admin@akuru.edu.mv` already exists.
+
+**Notes:**
+
+- `route:cache` is intentionally **not** used on test; it breaks mcamara localized routes.
+- If `git status` says “up to date” but the site is old, run `git fetch origin` first, then pull again.
+- Equivalent helper script (if executable): `bash scripts/update-subdomain.sh`
+
+### 6.2 Production (`akuru.edu.mv`)
+
 ```bash
 cd ~/akuru.edu.mv
 git pull origin main

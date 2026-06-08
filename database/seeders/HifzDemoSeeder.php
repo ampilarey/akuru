@@ -32,36 +32,42 @@ class HifzDemoSeeder extends Seeder
 {
     public function run(): void
     {
-        $headmaster = User::where('email', 'headmaster@akuru.edu.mv')->first();
-        $supervisor = User::where('email', 'supervisor@akuru.edu.mv')->first();
-        $teacherUser = User::where('email', 'teacher@akuru.edu.mv')->first();
+        $headmaster = $this->resolveUser('headmaster@akuru.edu.mv', ['headmaster', 'admin', 'super_admin']);
+        $supervisor = $this->resolveUser('supervisor@akuru.edu.mv', ['supervisor']);
+        $teacherUser = $this->resolveUser('teacher@akuru.edu.mv', ['teacher']);
         $school = \App\Models\School::first();
         $quranClass = ClassRoom::where('level', 'Quran')->first();
 
         if (! $teacherUser || ! $headmaster) {
-            $this->command->warn('Run UserSeeder first.');
+            $this->command->warn(
+                'Need at least one headmaster/admin and one teacher user. Assign those roles in the admin panel, then run this seeder again.'
+            );
 
             return;
         }
 
-        $teacher = Teacher::firstOrCreate(
-            ['user_id' => $teacherUser->id],
-            [
+        $teacher = Teacher::where('user_id', $teacherUser->id)->first()
+            ?? Teacher::where('status', 'active')->first();
+
+        if (! $teacher) {
+            [$firstName, $lastName] = $this->splitName($teacherUser->name);
+            $teacher = Teacher::create([
+                'user_id' => $teacherUser->id,
                 'school_id' => $school?->id,
-                'teacher_id' => 'T-HIFZ-001',
-                'first_name' => 'Mohamed',
-                'last_name' => 'Ali',
-                'date_of_birth' => '1985-03-20',
-                'gender' => 'male',
-                'phone' => '+960 123-4569',
-                'email' => 'teacher@akuru.edu.mv',
-                'address' => 'Malé',
+                'teacher_id' => 'T-HIFZ-DEMO',
+                'first_name' => $firstName,
+                'last_name' => $lastName,
+                'date_of_birth' => $teacherUser->date_of_birth ?? '1985-03-20',
+                'gender' => $teacherUser->gender ?? 'male',
+                'phone' => $teacherUser->phone ?? '+960 123-4569',
+                'email' => $teacherUser->email,
+                'address' => $teacherUser->address ?? 'Malé',
                 'qualification' => 'Islamic Studies',
                 'specialization' => 'Quran Memorization',
                 'joining_date' => now()->subYears(2),
                 'status' => 'active',
-            ]
-        );
+            ]);
+        }
 
         $studentUser = User::where('email', 'student@akuru.edu.mv')->first();
         if ($studentUser) {
@@ -94,7 +100,23 @@ class HifzDemoSeeder extends Seeder
             ]
         );
 
-        $students = Student::when($school, fn ($q) => $q->where('school_id', $school->id))->take(1)->get();
+        $students = Student::when($school, fn ($q) => $q->where('school_id', $school->id))
+            ->where('status', 'active')
+            ->take(1)
+            ->get();
+
+        if ($students->isEmpty()) {
+            $students = Student::where('status', 'active')->take(1)->get();
+        }
+
+        if ($students->isEmpty()) {
+            $this->command->warn('No active students found; created program and mushaf only (no enrollments or sessions).');
+
+            $this->seedDemoMushaf($headmaster);
+
+            return;
+        }
+
         foreach ($students as $i => $student) {
             HifzEnrollment::firstOrCreate(
                 ['hifz_program_id' => $program->id, 'student_id' => $student->id],
@@ -167,23 +189,7 @@ class HifzDemoSeeder extends Seeder
             }
         }
 
-        $mushaf = QuranMushaf::firstOrCreate(
-            ['name' => 'Demo Madani Mushaf'],
-            ['source_type' => 'manual', 'page_count' => 604, 'is_active' => true, 'created_by' => $headmaster->id]
-        );
-
-        $ayah = QuranAyah::firstOrCreate(
-            ['quran_mushaf_id' => $mushaf->id, 'surah_number' => 1, 'ayah_number' => 1],
-            ['text_uthmani' => 'بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ', 'page_number' => 1]
-        );
-
-        $words = ['بِسْمِ', 'اللَّهِ', 'الرَّحْمَٰنِ', 'الرَّحِيمِ'];
-        foreach ($words as $i => $text) {
-            QuranWord::firstOrCreate(
-                ['quran_mushaf_id' => $mushaf->id, 'surah_number' => 1, 'ayah_number' => 1, 'word_number' => $i + 1],
-                ['quran_ayah_id' => $ayah->id, 'word_text' => $text, 'page_number' => 1]
-            );
-        }
+        $this->seedDemoMushaf($headmaster);
 
         HifzMilestone::firstOrCreate(
             [
@@ -203,15 +209,16 @@ class HifzDemoSeeder extends Seeder
             ]
         );
 
-        $parentUser = User::where('email', 'parent@akuru.edu.mv')->first();
+        $parentUser = $this->resolveUser('parent@akuru.edu.mv', ['parent']);
         if ($parentUser && $students->isNotEmpty()) {
+            [$parentFirst, $parentLast] = $this->splitName($parentUser->name);
             $guardian = ParentGuardian::firstOrCreate(
                 ['user_id' => $parentUser->id],
                 [
-                    'first_name' => 'Hassan',
-                    'last_name' => 'Ahmed',
-                    'phone' => '+960 123-4571',
-                    'email' => 'parent@akuru.edu.mv',
+                    'first_name' => $parentFirst,
+                    'last_name' => $parentLast,
+                    'phone' => $parentUser->phone ?? '+960 123-4571',
+                    'email' => $parentUser->email,
                     'address' => 'Malé',
                     'relationship' => 'father',
                 ]
@@ -219,6 +226,61 @@ class HifzDemoSeeder extends Seeder
             $guardian->students()->syncWithoutDetaching([
                 $students->first()->id => ['relationship' => 'father', 'is_primary_contact' => true],
             ]);
+        }
+    }
+
+    /**
+     * @param  list<string>  $roleFallback
+     */
+    private function resolveUser(string $email, array $roleFallback = []): ?User
+    {
+        $user = User::where('email', $email)->first();
+
+        if ($user) {
+            return $user;
+        }
+
+        foreach ($roleFallback as $role) {
+            $user = User::role($role)->first();
+            if ($user) {
+                return $user;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @return array{0: string, 1: string}
+     */
+    private function splitName(string $name): array
+    {
+        $parts = preg_split('/\s+/', trim($name), 2) ?: [];
+
+        return [
+            $parts[0] ?? 'Demo',
+            $parts[1] ?? 'User',
+        ];
+    }
+
+    private function seedDemoMushaf(User $headmaster): void
+    {
+        $mushaf = QuranMushaf::firstOrCreate(
+            ['name' => 'Demo Madani Mushaf'],
+            ['source_type' => 'manual', 'page_count' => 604, 'is_active' => true, 'created_by' => $headmaster->id]
+        );
+
+        $ayah = QuranAyah::firstOrCreate(
+            ['quran_mushaf_id' => $mushaf->id, 'surah_number' => 1, 'ayah_number' => 1],
+            ['text_uthmani' => 'بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ', 'page_number' => 1]
+        );
+
+        $words = ['بِسْمِ', 'اللَّهِ', 'الرَّحْمَٰنِ', 'الرَّحِيمِ'];
+        foreach ($words as $i => $text) {
+            QuranWord::firstOrCreate(
+                ['quran_mushaf_id' => $mushaf->id, 'surah_number' => 1, 'ayah_number' => 1, 'word_number' => $i + 1],
+                ['quran_ayah_id' => $ayah->id, 'word_text' => $text, 'page_number' => 1]
+            );
         }
     }
 }

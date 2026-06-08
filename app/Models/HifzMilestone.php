@@ -42,9 +42,4 @@ class HifzMilestone extends Model
     {
         return $this->belongsTo(Teacher::class);
     }
-
-    public function program(): BelongsTo
-    {
-        return $this->belongsTo(HifzProgram::class, 'hifz_program_id');
-    }
 }

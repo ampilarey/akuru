@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
-# Run this script on the server, inside the subdomain folder (test.akuru.edu.mv)
-# After you push changes: SSH in, cd to the subdomain folder, then ./scripts/update-subdomain.sh
+# Deploy latest main to test.akuru.edu.mv (same steps as DEPLOYMENT.md §6.1).
+# On the server: bash scripts/update-subdomain.sh
+# Or paste the one-liner from DEPLOYMENT.md into cPanel Terminal after git push.
 set -e
 
 cd "$(dirname "$0")/.."
