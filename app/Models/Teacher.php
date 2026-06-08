@@ -72,6 +72,16 @@ class Teacher extends Model
         return $this->hasMany(QuranProgress::class);
     }
 
+    public function hifzEnrollments()
+    {
+        return $this->hasMany(HifzEnrollment::class);
+    }
+
+    public function hifzSessions()
+    {
+        return $this->hasMany(HifzSession::class);
+    }
+
     public function grades()
     {
         return $this->hasMany(Grade::class);

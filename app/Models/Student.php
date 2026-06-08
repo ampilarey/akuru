@@ -76,6 +76,21 @@ class Student extends Model
         return $this->hasMany(QuranProgress::class);
     }
 
+    public function hifzEnrollments()
+    {
+        return $this->hasMany(HifzEnrollment::class);
+    }
+
+    public function hifzSessionRecords()
+    {
+        return $this->hasMany(HifzSessionRecord::class);
+    }
+
+    public function hifzMilestones()
+    {
+        return $this->hasMany(HifzMilestone::class);
+    }
+
     // Helper methods
     public function getFullNameAttribute()
     {

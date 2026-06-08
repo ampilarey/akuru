@@ -104,10 +104,34 @@ class RoleSeeder extends Seeder
             // Reports
             'view_reports',
             'generate_reports',
+
+            // Hifz Progress
+            'view_hifz_programs',
+            'manage_hifz_programs',
+            'assign_hifz_supervisors',
+            'create_hifz_sessions',
+            'update_hifz_sessions',
+            'review_hifz_sessions',
+            'lock_hifz_sessions',
+            'create_hifz_session_records',
+            'update_hifz_session_records',
+            'review_hifz_session_records',
+            'override_hifz_records',
+            'create_hifz_mistakes',
+            'view_hifz_mistakes',
+            'recommend_hifz_milestones',
+            'review_hifz_milestones',
+            'approve_hifz_milestones',
+            'manage_quran_mushaf',
+            'approve_quran_mushaf',
+            'review_quran_mapping',
+            'view_hifz_reports',
+            'export_hifz_reports',
+            'record_hifz_as_substitute',
         ];
 
         foreach ($permissions as $permission) {
-            Permission::create(['name' => $permission]);
+            Permission::firstOrCreate(['name' => $permission, 'guard_name' => 'web']);
         }
 
         // Assign permissions to roles
@@ -156,6 +180,13 @@ class RoleSeeder extends Seeder
             'edit_announcements',
             'view_reports',
             'generate_reports',
+            'view_hifz_programs', 'manage_hifz_programs', 'assign_hifz_supervisors',
+            'create_hifz_sessions', 'update_hifz_sessions', 'review_hifz_sessions', 'lock_hifz_sessions',
+            'create_hifz_session_records', 'update_hifz_session_records', 'review_hifz_session_records', 'override_hifz_records',
+            'create_hifz_mistakes', 'view_hifz_mistakes',
+            'recommend_hifz_milestones', 'review_hifz_milestones', 'approve_hifz_milestones',
+            'manage_quran_mushaf', 'approve_quran_mushaf', 'review_quran_mapping',
+            'view_hifz_reports', 'export_hifz_reports', 'record_hifz_as_substitute',
         ]);
 
         $supervisor = Role::findByName('supervisor');
@@ -172,6 +203,11 @@ class RoleSeeder extends Seeder
             'view_timetables',
             'view_announcements',
             'view_reports',
+            'view_hifz_programs',
+            'review_hifz_sessions', 'review_hifz_session_records',
+            'view_hifz_mistakes',
+            'recommend_hifz_milestones', 'review_hifz_milestones',
+            'view_hifz_reports', 'export_hifz_reports',
         ]);
 
         $teacher = Role::findByName('teacher');
@@ -192,6 +228,11 @@ class RoleSeeder extends Seeder
             'update_quran_progress',
             'view_timetables',
             'view_announcements',
+            'view_hifz_programs',
+            'create_hifz_sessions', 'update_hifz_sessions',
+            'create_hifz_session_records', 'update_hifz_session_records',
+            'create_hifz_mistakes', 'view_hifz_mistakes',
+            'recommend_hifz_milestones',
         ]);
 
         $student = Role::findByName('student');
@@ -202,6 +243,8 @@ class RoleSeeder extends Seeder
             'view_quran_progress',
             'view_timetables',
             'view_announcements',
+            'view_hifz_programs',
+            'view_hifz_mistakes',
         ]);
 
         $parent = Role::findByName('parent');
@@ -212,6 +255,8 @@ class RoleSeeder extends Seeder
             'view_quran_progress',
             'view_timetables',
             'view_announcements',
+            'view_hifz_programs',
+            'view_hifz_mistakes',
         ]);
     }
 }

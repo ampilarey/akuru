@@ -34,6 +34,8 @@ class DashboardController extends Controller
             return $this->superAdminDashboard();
         } elseif ($user->isAdmin() || $user->isHeadmaster()) {
             return $this->adminDashboard();
+        } elseif ($user->isSupervisor()) {
+            return $this->supervisorDashboard();
         } elseif ($user->isTeacher()) {
             return $this->teacherDashboard();
         } elseif ($user->isStudent()) {
@@ -189,6 +191,17 @@ class DashboardController extends Controller
             // Fallback to admin dashboard if there's an error
             return $this->adminDashboard();
         }
+    }
+
+    private function supervisorDashboard()
+    {
+        $stats = [
+            'total_students' => Student::count(),
+            'total_teachers' => Teacher::count(),
+            'quran_progress_today' => QuranProgress::whereDate('created_at', today())->count(),
+        ];
+
+        return view('dashboard.supervisor', compact('stats'));
     }
     
     private function studentDashboard()

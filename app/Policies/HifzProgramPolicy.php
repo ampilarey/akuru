@@ -1,0 +1,37 @@
+<?php
+
+namespace App\Policies;
+
+use App\Models\HifzProgram;
+use App\Models\User;
+use App\Services\Hifz\HifzScopeService;
+
+class HifzProgramPolicy
+{
+    public function __construct(protected HifzScopeService $scope) {}
+
+    public function viewAny(User $user): bool
+    {
+        return $user->can('view_hifz_programs');
+    }
+
+    public function view(User $user, HifzProgram $program): bool
+    {
+        return $user->can('view_hifz_programs') && $this->scope->canAccessProgram($user, $program);
+    }
+
+    public function create(User $user): bool
+    {
+        return $user->can('manage_hifz_programs');
+    }
+
+    public function update(User $user, HifzProgram $program): bool
+    {
+        return $user->can('manage_hifz_programs') && $this->scope->canAccessProgram($user, $program);
+    }
+
+    public function assignSupervisor(User $user): bool
+    {
+        return $user->can('assign_hifz_supervisors');
+    }
+}

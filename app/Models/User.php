@@ -159,6 +159,25 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasAnyRole(['super_admin', 'admin', 'headmaster']);
     }
 
+    public function isHifzDean(): bool
+    {
+        return $this->hasAnyRole(['super_admin', 'admin', 'headmaster']);
+    }
+
+    /**
+     * School children linked via ParentGuardian profile (LMS students, not course registrants).
+     */
+    public function schoolChildren()
+    {
+        $parent = $this->parentGuardian;
+
+        if (! $parent) {
+            return Student::query()->whereRaw('1 = 0');
+        }
+
+        return $parent->students();
+    }
+
     public function hasVerifiedContact(): bool
     {
         return $this->contacts()->whereNotNull('verified_at')->exists();

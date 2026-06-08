@@ -42,6 +42,9 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
     // Quran Progress routes
     Route::resource('quran-progress', QuranProgressController::class);
     Route::post('/quran-progress/{student}/update', [QuranProgressController::class, 'updateProgress'])->name('quran-progress.update-progress');
+
+    // Hifz Progress module
+    require __DIR__.'/hifz.php';
     
     // Announcement routes
     Route::resource('announcements', AnnouncementController::class);

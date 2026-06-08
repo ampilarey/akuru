@@ -48,6 +48,15 @@
                 </a>
                 @endif
 
+                {{-- Hifz Progress --}}
+                @can('view_hifz_programs')
+                <a href="{{ route('hifz.hub') }}"
+                   style="padding:.4rem .75rem;border-radius:.375rem;font-size:.8rem;font-weight:500;text-decoration:none;transition:background .15s;{{ request()->routeIs('hifz.*') ? 'background:rgba(255,255,255,.18);color:white' : 'color:rgba(255,255,255,.8)' }}"
+                   onmouseover="this.style.background='rgba(255,255,255,.12)'" onmouseout="this.style.background='{{ request()->routeIs('hifz.*') ? 'rgba(255,255,255,.18)' : 'transparent' }}'">
+                    Hifz
+                </a>
+                @endcan
+
                 {{-- Quran Progress --}}
                 @if(auth()->user()->hasAnyRole(['super_admin','admin','headmaster','teacher']))
                 <a href="{{ route('quran-progress.index') }}"

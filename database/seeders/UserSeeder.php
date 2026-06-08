@@ -78,5 +78,18 @@ class UserSeeder extends Seeder
             'is_active' => true,
         ]);
         $parent->assignRole('parent');
+
+        // Create Supervisor User
+        $supervisor = \App\Models\User::create([
+            'name' => 'Supervisor Ibrahim',
+            'email' => 'supervisor@akuru.edu.mv',
+            'password' => bcrypt('password'),
+            'phone' => '+960 123-4572',
+            'address' => 'Malé, Maldives',
+            'date_of_birth' => '1982-06-15',
+            'gender' => 'male',
+            'is_active' => true,
+        ]);
+        $supervisor->assignRole('supervisor');
     }
 }
