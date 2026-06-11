@@ -196,7 +196,64 @@ nohup /opt/alt/php84/usr/bin/php artisan queue:work --sleep=3 --tries=3 --max-ti
 ## 6. Pulling Updates (Routine Deployment)
 
 The app is deployed via **GitHub** (`git@github.com:ampilarey/akuru.git`). Push from your
-machine, then pull on the server. There is no direct `git push` to the subdomain.
+machine, then pull on the server. There is no direct `git push` to either domain.
+
+### Two environments (test first, then production)
+
+Both sites are **separate folders** on the same cPanel server. Each has its own `.env`
+(database, `APP_URL`, BML URLs). Both pull the **same branch** (`main`) from the **same
+GitHub repo** — code is shared; data and config are not.
+
+| | **Test** | **Production (main)** |
+|---|----------|------------------------|
+| URL | https://test.akuru.edu.mv | https://akuru.edu.mv |
+| Server path | `/home/akuruedu/test.akuru.edu.mv` | `/home/akuruedu/akuru.edu.mv` *(verify below)* |
+| Git remote | `git@github.com:ampilarey/akuru.git` | same |
+| Branch | `main` | `main` |
+| Purpose | Try changes, run migrations, demo seed | Live site |
+
+**Recommended workflow**
+
+```
+Mac: commit → git push origin main
+        ↓
+Test:  git pull → composer → migrate → cache → test on test.akuru.edu.mv
+        ↓ (when happy)
+Main:  git pull → composer → migrate → cache → queue:restart
+```
+
+**Mac (every release):**
+
+```bash
+cd /Users/vigani/Website/Akuru/akuru-institute
+git push origin main
+```
+
+**Check git on both sites** (paste in cPanel Terminal):
+
+```bash
+for dir in /home/akuruedu/test.akuru.edu.mv /home/akuruedu/akuru.edu.mv; do
+  echo "=== $dir ==="
+  if [ -d "$dir/.git" ]; then
+    cd "$dir" && git remote -v && git branch -vv && git log -1 --oneline
+  else
+    echo "Not a git repo (may be zip deploy or different path)"
+  fi
+  echo
+done
+```
+
+If production is not at `akuru.edu.mv`, find it in cPanel → **Domains** → document root for
+`akuru.edu.mv`, then use that folder in the production pull command below.
+
+**Production is behind test?** Compare commits:
+
+```bash
+cd /home/akuruedu/test.akuru.edu.mv && git log -1 --oneline
+cd /home/akuruedu/akuru.edu.mv && git log -1 --oneline
+```
+
+Both should show the same hash after you deploy to production.
 
 ### 6.1 Test server (`test.akuru.edu.mv`)
 
@@ -299,14 +356,33 @@ Then run `HifzDemoSeeder` again.
 
 ### 6.2 Production (`akuru.edu.mv`)
 
+**Only after testing on `test.akuru.edu.mv`.** Do not run `HifzDemoSeeder` or `UserSeeder` on
+production unless you intend to add demo accounts.
+
+**Paste in cPanel Terminal:**
+
 ```bash
-cd ~/akuru.edu.mv
+cd /home/akuruedu/akuru.edu.mv && git pull origin main && composer install --no-dev --optimize-autoloader --no-interaction && php artisan migrate --force && php artisan config:cache && php artisan route:clear && php artisan cache:clear && php artisan queue:restart
+```
+
+Or step by step:
+
+```bash
+cd /home/akuruedu/akuru.edu.mv
 git pull origin main
-/opt/alt/php84/usr/bin/php artisan migrate --force
-/opt/alt/php84/usr/bin/php artisan config:clear
-/opt/alt/php84/usr/bin/php artisan route:clear
-/opt/alt/php84/usr/bin/php artisan cache:clear
-/opt/alt/php84/usr/bin/php artisan queue:restart   # gracefully restart worker
+composer install --no-dev --optimize-autoloader --no-interaction
+php artisan migrate --force
+php artisan config:cache
+php artisan route:clear
+php artisan cache:clear
+php artisan queue:restart   # emails/SMS queue
+```
+
+**Verify:**
+
+```bash
+git log -1 --oneline
+php artisan akuru:status
 ```
 
 ---
