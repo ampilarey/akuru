@@ -207,7 +207,7 @@ GitHub repo** — code is shared; data and config are not.
 | | **Test** | **Production (main)** |
 |---|----------|------------------------|
 | URL | https://test.akuru.edu.mv | https://akuru.edu.mv |
-| Server path | `/home/akuruedu/test.akuru.edu.mv` | `/home/akuruedu/akuru.edu.mv` *(verify below)* |
+| Server path | `/home/akuruedu/test.akuru.edu.mv` | **Find on server** — see below *(not the same folder as test)* |
 | Git remote | `git@github.com:ampilarey/akuru.git` | same |
 | Branch | `main` | `main` |
 | Purpose | Try changes, run migrations, demo seed | Live site |
@@ -229,31 +229,64 @@ cd /Users/vigani/Website/Akuru/akuru-institute
 git push origin main
 ```
 
-**Check git on both sites** (paste in cPanel Terminal):
+**Find the production app folder** (main site is often *not* `/home/akuruedu/akuru.edu.mv`):
 
 ```bash
-for dir in /home/akuruedu/test.akuru.edu.mv /home/akuruedu/akuru.edu.mv; do
+# List likely Laravel / git folders
+ls -la /home/akuruedu/
+find /home/akuruedu -maxdepth 3 -name artisan -type f 2>/dev/null
+find /home/akuruedu -maxdepth 3 -name .git -type d 2>/dev/null
+```
+
+Typical cPanel layouts:
+
+| Path | Meaning |
+|------|---------|
+| `/home/akuruedu/public_html` | Default main domain docroot (may be Laravel `public/` or a symlink) |
+| `/home/akuruedu/akuru-institute` | Common clone name from setup docs |
+| `/home/akuruedu/test.akuru.edu.mv` | Test subdomain (confirmed) |
+
+In cPanel → **Domains** → **akuru.edu.mv** → note the **Document Root**. If it ends in
+`/public`, the Laravel root is the parent folder (e.g. docroot
+`/home/akuruedu/akuru-institute/public` → app path `/home/akuruedu/akuru-institute`).
+
+**Check git on test + production** (replace `PROD_PATH` after you find it):
+
+```bash
+PROD_PATH=/home/akuruedu/REPLACE_ME
+for dir in /home/akuruedu/test.akuru.edu.mv "$PROD_PATH"; do
   echo "=== $dir ==="
   if [ -d "$dir/.git" ]; then
     cd "$dir" && git remote -v && git branch -vv && git log -1 --oneline
   else
-    echo "Not a git repo (may be zip deploy or different path)"
+    echo "Not a git repo (zip deploy or wrong path)"
   fi
   echo
 done
 ```
 
-If production is not at `akuru.edu.mv`, find it in cPanel → **Domains** → document root for
-`akuru.edu.mv`, then use that folder in the production pull command below.
-
 **Production is behind test?** Compare commits:
 
 ```bash
 cd /home/akuruedu/test.akuru.edu.mv && git log -1 --oneline
-cd /home/akuruedu/akuru.edu.mv && git log -1 --oneline
+cd /home/akuruedu/PROD_PATH && git log -1 --oneline
 ```
 
 Both should show the same hash after you deploy to production.
+
+**If production has no `.git` folder**, it was likely uploaded by zip. Set up git once (same as
+test), then use pull for future deploys:
+
+```bash
+cd /home/akuruedu
+git clone git@github.com:ampilarey/akuru.git akuru-institute
+cd akuru-institute
+cp /path/to/existing/.env .env    # copy production .env from old install
+composer install --no-dev --optimize-autoloader --no-interaction
+php artisan migrate --force
+```
+
+Point the **akuru.edu.mv** document root to `.../akuru-institute/public` in cPanel → Domains.
 
 ### 6.1 Test server (`test.akuru.edu.mv`)
 
@@ -362,13 +395,15 @@ production unless you intend to add demo accounts.
 **Paste in cPanel Terminal:**
 
 ```bash
-cd /home/akuruedu/akuru.edu.mv && git pull origin main && composer install --no-dev --optimize-autoloader --no-interaction && php artisan migrate --force && php artisan config:cache && php artisan route:clear && php artisan cache:clear && php artisan queue:restart
+cd /home/akuruedu/PROD_PATH && git pull origin main && composer install --no-dev --optimize-autoloader --no-interaction && php artisan migrate --force && php artisan config:cache && php artisan route:clear && php artisan cache:clear && php artisan queue:restart
 ```
+
+Replace `PROD_PATH` with your real folder (e.g. `akuru-institute` or `public_html` parent).
 
 Or step by step:
 
 ```bash
-cd /home/akuruedu/akuru.edu.mv
+cd /home/akuruedu/PROD_PATH
 git pull origin main
 composer install --no-dev --optimize-autoloader --no-interaction
 php artisan migrate --force
