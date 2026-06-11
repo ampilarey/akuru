@@ -156,11 +156,9 @@ BML_WEBHOOK_SECRET=               # set in BML portal, copy here
 Add this to the server crontab (`crontab -e`):
 
 ```cron
-* * * * * cd /home/akuruedu/akuru.edu.mv && /opt/alt/php84/usr/bin/php artisan schedule:run >> /dev/null 2>&1
-*/5 * * * * /home/akuruedu/akuru.edu.mv/restart-worker.sh
+* * * * * cd /home/akuruedu/akuru-institute && /opt/alt/php84/usr/bin/php artisan schedule:run >> /dev/null 2>&1
+*/5 * * * * /home/akuruedu/akuru-institute/restart-worker.sh
 ```
-
-> **Note:** Replace `/home/akuruedu/akuru.edu.mv` with the actual app path on the new server.
 > The scheduler runs these tasks automatically:
 > - Every 10 min: reconcile pending BML payments (fallback if webhook missed)
 > - Every hour: prune expired OTPs and stale enrollments
@@ -173,13 +171,13 @@ Add this to the server crontab (`crontab -e`):
 Create the restart script once:
 
 ```bash
-cat > /home/akuruedu/akuru.edu.mv/restart-worker.sh << 'SCRIPT'
+cat > /home/akuruedu/akuru-institute/restart-worker.sh << 'SCRIPT'
 #!/bin/bash
-APP=/home/akuruedu/akuru.edu.mv
+APP=/home/akuruedu/akuru-institute
 PHP=/opt/alt/php84/usr/bin/php
 pgrep -f 'artisan queue:work' > /dev/null 2>&1 || nohup $PHP $APP/artisan queue:work --sleep=3 --tries=3 --max-time=3600 >> $APP/storage/logs/worker.log 2>&1 &
 SCRIPT
-chmod +x /home/akuruedu/akuru.edu.mv/restart-worker.sh
+chmod +x /home/akuruedu/akuru-institute/restart-worker.sh
 ```
 
 Start it immediately:
