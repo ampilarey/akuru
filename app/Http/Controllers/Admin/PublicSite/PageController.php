@@ -11,6 +11,7 @@ class PageController extends Controller
     public function index()
     {
         $pages = Page::orderBy('title')->paginate(15);
+
         return view('admin.public-site.pages.index', compact('pages'));
     }
 
@@ -37,7 +38,7 @@ class PageController extends Controller
         Page::create($validated);
 
         return redirect()->route('admin.pages.index')
-                        ->with('success', 'Page created successfully.');
+            ->with('success', 'Page created successfully.');
     }
 
     public function show(Page $page)
@@ -54,7 +55,7 @@ class PageController extends Controller
     {
         $validated = $request->validate([
             'title' => 'required|string|max:255',
-            'slug' => 'required|string|max:255|unique:pages,slug,' . $page->id,
+            'slug' => 'required|string|max:255|unique:pages,slug,'.$page->id,
             'excerpt' => 'nullable|string',
             'body' => 'required|string',
             'cover_image' => 'nullable|string|max:255',
@@ -68,7 +69,7 @@ class PageController extends Controller
         $page->update($validated);
 
         return redirect()->route('admin.pages.index')
-                        ->with('success', 'Page updated successfully.');
+            ->with('success', 'Page updated successfully.');
     }
 
     public function destroy(Page $page)
@@ -76,6 +77,6 @@ class PageController extends Controller
         $page->delete();
 
         return redirect()->route('admin.pages.index')
-                        ->with('success', 'Page deleted successfully.');
+            ->with('success', 'Page deleted successfully.');
     }
 }

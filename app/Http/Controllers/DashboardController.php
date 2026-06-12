@@ -2,18 +2,15 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use App\Models\Student;
-use App\Models\Teacher;
-use App\Models\QuranProgress;
 use App\Models\Announcement;
 use App\Models\Assignment;
 use App\Models\AssignmentSubmission;
-use App\Models\Timetable;
 use App\Models\Attendance;
+use App\Models\QuranProgress;
 use App\Models\RecitationPractice;
-use App\Models\Message;
-use App\Models\MediaGallery;
+use App\Models\Student;
+use App\Models\Teacher;
+use App\Models\Timetable;
 use App\Services\IslamicCalendarService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -23,12 +20,12 @@ class DashboardController extends Controller
     public function index()
     {
         $user = auth()->user();
-        
+
         // Check if user is authenticated
-        if (!$user) {
+        if (! $user) {
             return redirect()->route('login');
         }
-        
+
         // Get dashboard data based on user role
         if ($user->hasRole('super_admin')) {
             return $this->superAdminDashboard();
@@ -43,11 +40,11 @@ class DashboardController extends Controller
         } elseif ($user->isParent()) {
             return $this->parentDashboard();
         }
-        
+
         // Public users (registered via OTP for course enrollment)
         return $this->publicUserDashboard();
     }
-    
+
     private function publicUserDashboard()
     {
         $user = auth()->user();
@@ -57,11 +54,11 @@ class DashboardController extends Controller
             ->latest()
             ->get();
 
-        $activeEnrollments   = $enrollments->whereIn('status', ['active']);
-        $pendingEnrollments  = $enrollments->whereIn('status', ['pending', 'pending_payment']);
+        $activeEnrollments = $enrollments->whereIn('status', ['active']);
+        $pendingEnrollments = $enrollments->whereIn('status', ['pending', 'pending_payment']);
         $openCourses = \App\Models\Course::where('status', 'open')->latest()->take(4)->get();
 
-        $hasPassword = !empty($user->password);
+        $hasPassword = ! empty($user->password);
 
         return view('dashboard.public-user', compact(
             'user',
@@ -76,33 +73,33 @@ class DashboardController extends Controller
     private function superAdminDashboard()
     {
         $stats = [
-            'total_users'            => \App\Models\User::count(),
-            'total_students'         => Student::count(),
-            'total_teachers'         => Teacher::count(),
-            'active_quran_students'  => Student::whereHas('quranProgress')->count(),
-            'total_assignments'      => Assignment::count(),
-            'total_announcements'    => Announcement::count(),
-            'database_size'          => $this->getDatabaseSize(),
-            'sms_usage_today'        => $this->getSmsUsageToday(),
+            'total_users' => \App\Models\User::count(),
+            'total_students' => Student::count(),
+            'total_teachers' => Teacher::count(),
+            'active_quran_students' => Student::whereHas('quranProgress')->count(),
+            'total_assignments' => Assignment::count(),
+            'total_announcements' => Announcement::count(),
+            'database_size' => $this->getDatabaseSize(),
+            'sms_usage_today' => $this->getSmsUsageToday(),
             // Course & enrollment stats
-            'total_courses'          => \App\Models\Course::count(),
-            'open_courses'           => \App\Models\Course::where('status', 'open')->count(),
-            'total_enrollments'      => \App\Models\CourseEnrollment::count(),
-            'pending_enrollments'    => \App\Models\CourseEnrollment::whereIn('status', ['pending', 'pending_payment'])->count(),
-            'active_enrollments'     => \App\Models\CourseEnrollment::where('status', 'active')->count(),
-            'enrollments_today'      => \App\Models\CourseEnrollment::whereDate('created_at', today())->count(),
-            'revenue_total'          => \App\Models\Payment::where('status', 'paid')->sum('amount'),
-            'revenue_today'          => \App\Models\Payment::where('status', 'paid')->whereDate('created_at', today())->sum('amount'),
-            'new_users_today'        => \App\Models\User::whereDate('created_at', today())->count(),
-            'new_users_this_month'   => \App\Models\User::whereMonth('created_at', now()->month)->whereYear('created_at', now()->year)->count(),
+            'total_courses' => \App\Models\Course::count(),
+            'open_courses' => \App\Models\Course::where('status', 'open')->count(),
+            'total_enrollments' => \App\Models\CourseEnrollment::count(),
+            'pending_enrollments' => \App\Models\CourseEnrollment::whereIn('status', ['pending', 'pending_payment'])->count(),
+            'active_enrollments' => \App\Models\CourseEnrollment::where('status', 'active')->count(),
+            'enrollments_today' => \App\Models\CourseEnrollment::whereDate('created_at', today())->count(),
+            'revenue_total' => \App\Models\Payment::where('status', 'paid')->sum('amount'),
+            'revenue_today' => \App\Models\Payment::where('status', 'paid')->whereDate('created_at', today())->sum('amount'),
+            'new_users_today' => \App\Models\User::whereDate('created_at', today())->count(),
+            'new_users_this_month' => \App\Models\User::whereMonth('created_at', now()->month)->whereYear('created_at', now()->year)->count(),
         ];
 
         $metrics = [
-            'student_growth'    => $this->getStudentGrowthMetrics(),
+            'student_growth' => $this->getStudentGrowthMetrics(),
             'quran_progress_stats' => $this->getQuranProgressStats(),
-            'attendance_rate'   => $this->getOverallAttendanceRate(),
+            'attendance_rate' => $this->getOverallAttendanceRate(),
             'recent_activities' => $this->getRecentActivities(),
-            'system_health'     => $this->getSystemHealth(),
+            'system_health' => $this->getSystemHealth(),
             'sms_gateway_status' => $this->getSmsGatewayStatus(),
         ];
 
@@ -113,10 +110,10 @@ class DashboardController extends Controller
             ->get();
 
         // Islamic calendar
-        $islamicDate   = IslamicCalendarService::getCurrentIslamicDate();
-        $prayerTimes   = IslamicCalendarService::getPrayerTimes();
+        $islamicDate = IslamicCalendarService::getCurrentIslamicDate();
+        $prayerTimes = IslamicCalendarService::getPrayerTimes();
         $currentPrayer = IslamicCalendarService::getCurrentPrayerTime();
-        $specialDays   = IslamicCalendarService::getSpecialIslamicDays();
+        $specialDays = IslamicCalendarService::getSpecialIslamicDays();
 
         return view('dashboard.super-admin', compact(
             'stats', 'metrics',
@@ -124,7 +121,7 @@ class DashboardController extends Controller
             'islamicDate', 'prayerTimes', 'currentPrayer', 'specialDays'
         ));
     }
-    
+
     private function adminDashboard()
     {
         // Basic statistics
@@ -138,7 +135,7 @@ class DashboardController extends Controller
             'total_announcements' => Announcement::count(),
             'recent_announcements' => Announcement::latest()->take(5)->get(),
         ];
-        
+
         // Advanced metrics
         $metrics = [
             'student_growth' => $this->getStudentGrowthMetrics(),
@@ -148,25 +145,25 @@ class DashboardController extends Controller
             'recent_activities' => $this->getRecentActivities(),
             'upcoming_events' => $this->getUpcomingEvents(),
         ];
-        
+
         // Islamic calendar data
         $islamicDate = IslamicCalendarService::getCurrentIslamicDate();
         $prayerTimes = IslamicCalendarService::getPrayerTimes();
         $currentPrayer = IslamicCalendarService::getCurrentPrayerTime();
         $specialDays = IslamicCalendarService::getSpecialIslamicDays();
-        
+
         return view('dashboard.admin', compact('stats', 'metrics', 'islamicDate', 'prayerTimes', 'currentPrayer', 'specialDays'));
     }
-    
+
     private function teacherDashboard()
     {
         try {
             $teacher = auth()->user()->teacher;
-            
-            if (!$teacher) {
+
+            if (! $teacher) {
                 return $this->adminDashboard();
             }
-            
+
             // Basic statistics
             $stats = [
                 'my_students' => $teacher->students()->count(),
@@ -176,7 +173,7 @@ class DashboardController extends Controller
                 'total_assignments' => Assignment::where('teacher_id', $teacher->id)->count(),
                 'pending_submissions' => $this->getPendingSubmissions($teacher),
             ];
-            
+
             // Advanced metrics
             $metrics = [
                 'student_performance' => $this->getTeacherStudentPerformance($teacher),
@@ -185,7 +182,7 @@ class DashboardController extends Controller
                 'upcoming_deadlines' => $this->getUpcomingDeadlines($teacher),
                 'class_schedule' => $this->getTeacherClassSchedule($teacher),
             ];
-            
+
             return view('dashboard.teacher', compact('stats', 'metrics'));
         } catch (\Exception $e) {
             // Fallback to admin dashboard if there's an error
@@ -203,16 +200,16 @@ class DashboardController extends Controller
 
         return view('dashboard.supervisor', compact('stats'));
     }
-    
+
     private function studentDashboard()
     {
         try {
             $student = auth()->user()->student;
-            
-            if (!$student) {
+
+            if (! $student) {
                 return $this->adminDashboard();
             }
-            
+
             // Basic statistics
             $stats = [
                 'quran_progress' => $student->quranProgress()->latest()->take(5)->get(),
@@ -222,7 +219,7 @@ class DashboardController extends Controller
                 'completed_assignments' => $this->getStudentCompletedAssignments($student),
                 'pending_assignments' => $this->getStudentPendingAssignments($student),
             ];
-            
+
             // Advanced metrics
             $metrics = [
                 'quran_achievements' => $this->getStudentQuranAchievements($student),
@@ -232,25 +229,25 @@ class DashboardController extends Controller
                 'recent_activities' => $this->getStudentRecentActivities($student),
                 'class_schedule' => $this->getStudentClassSchedule($student),
             ];
-            
+
             return view('dashboard.student', compact('stats', 'metrics'));
         } catch (\Exception $e) {
             // Fallback to admin dashboard if there's an error
             return $this->adminDashboard();
         }
     }
-    
+
     private function parentDashboard()
     {
         try {
             $parent = auth()->user()->parentGuardian;
-            
-            if (!$parent) {
+
+            if (! $parent) {
                 return $this->adminDashboard();
             }
-            
+
             $children = $parent->students;
-            
+
             // Basic statistics
             $stats = [
                 'total_children' => $children->count(),
@@ -259,7 +256,7 @@ class DashboardController extends Controller
                 'pending_assignments' => $this->getChildrenPendingAssignments($children),
                 'recent_grades' => $this->getChildrenRecentGrades($children),
             ];
-            
+
             // Advanced metrics
             $metrics = [
                 'children_progress_summary' => $this->getChildrenProgressSummary($children),
@@ -268,21 +265,21 @@ class DashboardController extends Controller
                 'recent_activities' => $this->getChildrenRecentActivities($children),
                 'upcoming_events' => $this->getChildrenUpcomingEvents($children),
             ];
-            
+
             return view('dashboard.parent', compact('children', 'stats', 'metrics'));
         } catch (\Exception $e) {
             // Fallback to admin dashboard if there's an error
             return $this->adminDashboard();
         }
     }
-    
+
     // Helper methods for advanced metrics
-    
+
     private function getStudentGrowthMetrics()
     {
         $currentMonth = Carbon::now()->month;
         $lastMonth = Carbon::now()->subMonth()->month;
-        
+
         return [
             'current_month' => Student::whereMonth('created_at', $currentMonth)->count(),
             'last_month' => Student::whereMonth('created_at', $lastMonth)->count(),
@@ -292,7 +289,7 @@ class DashboardController extends Controller
             ),
         ];
     }
-    
+
     private function getQuranProgressStats()
     {
         return [
@@ -302,21 +299,21 @@ class DashboardController extends Controller
             'average_accuracy' => QuranProgress::avg('accuracy_percentage') ?? 0,
         ];
     }
-    
+
     private function getAssignmentCompletionRate()
     {
         $totalAssignments = Assignment::count();
         $completedAssignments = AssignmentSubmission::whereNotNull('marks_obtained')->count();
-        
+
         return $totalAssignments > 0 ? round(($completedAssignments / $totalAssignments) * 100, 2) : 0;
     }
-    
+
     private function getOverallAttendanceRate()
     {
         // This would need to be implemented based on your attendance system
         return 85.5; // Placeholder
     }
-    
+
     private function getRecentActivities()
     {
         return [
@@ -325,7 +322,7 @@ class DashboardController extends Controller
             'quran_progress_updates' => QuranProgress::where('updated_at', '>=', Carbon::now()->subDays(7))->count(),
         ];
     }
-    
+
     private function getUpcomingEvents()
     {
         return [
@@ -337,49 +334,49 @@ class DashboardController extends Controller
                 ->count(),
         ];
     }
-    
+
     // Teacher-specific helper methods
-    
+
     private function getTeacherPendingGrades($teacher)
     {
-        return AssignmentSubmission::whereHas('assignment', function($query) use ($teacher) {
+        return AssignmentSubmission::whereHas('assignment', function ($query) use ($teacher) {
             $query->where('teacher_id', $teacher->id);
         })->whereNull('marks_obtained')->count();
     }
-    
+
     private function getTeacherQuranUpdates($teacher)
     {
         return RecitationPractice::where('evaluated_by', $teacher->id)
             ->where('status', 'pending')
             ->count();
     }
-    
+
     private function getTodaysClasses($teacher)
     {
         return Timetable::where('teacher_id', $teacher->id)
             ->whereDate('start_date', Carbon::today())
             ->count();
     }
-    
+
     private function getPendingSubmissions($teacher)
     {
-        return AssignmentSubmission::whereHas('assignment', function($query) use ($teacher) {
+        return AssignmentSubmission::whereHas('assignment', function ($query) use ($teacher) {
             $query->where('teacher_id', $teacher->id);
         })->whereNull('marks_obtained')->count();
     }
-    
+
     private function getTeacherStudentPerformance($teacher)
     {
         return [
-            'average_grade' => AssignmentSubmission::whereHas('assignment', function($query) use ($teacher) {
+            'average_grade' => AssignmentSubmission::whereHas('assignment', function ($query) use ($teacher) {
                 $query->where('teacher_id', $teacher->id);
             })->avg('marks_obtained') ?? 0,
-            'total_submissions' => AssignmentSubmission::whereHas('assignment', function($query) use ($teacher) {
+            'total_submissions' => AssignmentSubmission::whereHas('assignment', function ($query) use ($teacher) {
                 $query->where('teacher_id', $teacher->id);
             })->count(),
         ];
     }
-    
+
     private function getTeacherQuranProgressSummary($teacher)
     {
         return [
@@ -390,14 +387,14 @@ class DashboardController extends Controller
                 ->avg('accuracy_score') ?? 0,
         ];
     }
-    
+
     private function getRecentSubmissions($teacher)
     {
-        return AssignmentSubmission::whereHas('assignment', function($query) use ($teacher) {
+        return AssignmentSubmission::whereHas('assignment', function ($query) use ($teacher) {
             $query->where('teacher_id', $teacher->id);
         })->latest()->take(5)->get();
     }
-    
+
     private function getUpcomingDeadlines($teacher)
     {
         return Assignment::where('teacher_id', $teacher->id)
@@ -407,7 +404,7 @@ class DashboardController extends Controller
             ->take(5)
             ->get();
     }
-    
+
     private function getTeacherClassSchedule($teacher)
     {
         return Timetable::where('teacher_id', $teacher->id)
@@ -417,9 +414,9 @@ class DashboardController extends Controller
             ->take(10)
             ->get();
     }
-    
+
     // Student-specific helper methods
-    
+
     private function getStudentRecentGrades($student)
     {
         return AssignmentSubmission::where('student_id', $student->id)
@@ -428,34 +425,35 @@ class DashboardController extends Controller
             ->take(5)
             ->get();
     }
-    
+
     private function getStudentAttendanceRate($student)
     {
         // This would need to be implemented based on your attendance system
         return 92.5; // Placeholder
     }
-    
+
     private function getStudentTotalAssignments($student)
     {
-        return Assignment::whereHas('classRoom', function($query) use ($student) {
+        return Assignment::whereHas('classRoom', function ($query) use ($student) {
             $query->where('id', $student->class_id);
         })->count();
     }
-    
+
     private function getStudentCompletedAssignments($student)
     {
         return AssignmentSubmission::where('student_id', $student->id)
             ->whereNotNull('marks_obtained')
             ->count();
     }
-    
+
     private function getStudentPendingAssignments($student)
     {
         $totalAssignments = $this->getStudentTotalAssignments($student);
         $completedAssignments = $this->getStudentCompletedAssignments($student);
+
         return $totalAssignments - $completedAssignments;
     }
-    
+
     private function getStudentQuranAchievements($student)
     {
         return [
@@ -466,7 +464,7 @@ class DashboardController extends Controller
                 ->avg('accuracy_percentage') ?? 0,
         ];
     }
-    
+
     private function getStudentGradeTrends($student)
     {
         return AssignmentSubmission::where('student_id', $student->id)
@@ -476,25 +474,25 @@ class DashboardController extends Controller
             ->get()
             ->pluck('marks_obtained');
     }
-    
+
     private function getStudentAttendanceTrends($student)
     {
         // This would need to be implemented based on your attendance system
         return [95, 92, 88, 94, 96, 90, 93]; // Placeholder data
     }
-    
+
     private function getStudentUpcomingDeadlines($student)
     {
-        return Assignment::whereHas('classRoom', function($query) use ($student) {
+        return Assignment::whereHas('classRoom', function ($query) use ($student) {
             $query->where('id', $student->class_id);
         })
-        ->where('due_date', '>=', now())
-        ->where('due_date', '<=', Carbon::now()->addDays(7))
-        ->latest('due_date')
-        ->take(5)
-        ->get();
+            ->where('due_date', '>=', now())
+            ->where('due_date', '<=', Carbon::now()->addDays(7))
+            ->latest('due_date')
+            ->take(5)
+            ->get();
     }
-    
+
     private function getStudentRecentActivities($student)
     {
         return [
@@ -504,45 +502,47 @@ class DashboardController extends Controller
                 ->latest()->take(3)->get(),
         ];
     }
-    
+
     private function getStudentClassSchedule($student)
     {
-        return Timetable::whereHas('classRoom', function($query) use ($student) {
+        return Timetable::whereHas('classRoom', function ($query) use ($student) {
             $query->where('id', $student->class_id);
         })
-        ->where('start_date', '>=', Carbon::today())
-        ->where('start_date', '<=', Carbon::now()->addDays(7))
-        ->orderBy('start_date')
-        ->take(10)
-        ->get();
+            ->where('start_date', '>=', Carbon::today())
+            ->where('start_date', '<=', Carbon::now()->addDays(7))
+            ->orderBy('start_date')
+            ->take(10)
+            ->get();
     }
-    
+
     // Parent-specific helper methods
-    
+
     private function getChildrenAttendanceRate($children)
     {
         // This would need to be implemented based on your attendance system
         return 89.2; // Placeholder
     }
-    
+
     private function getChildrenPendingAssignments($children)
     {
         $totalPending = 0;
         foreach ($children as $child) {
             $totalPending += $this->getStudentPendingAssignments($child);
         }
+
         return $totalPending;
     }
-    
+
     private function getChildrenRecentGrades($children)
     {
         $recentGrades = collect();
         foreach ($children as $child) {
             $recentGrades = $recentGrades->merge($this->getStudentRecentGrades($child));
         }
+
         return $recentGrades->sortByDesc('created_at')->take(5);
     }
-    
+
     private function getChildrenProgressSummary($children)
     {
         return [
@@ -551,24 +551,24 @@ class DashboardController extends Controller
             'average_attendance' => $this->getChildrenAttendanceRate($children),
         ];
     }
-    
+
     private function getChildrenQuranProgressOverview($children)
     {
         $totalProgress = 0;
         $completedSurahs = 0;
-        
+
         foreach ($children as $child) {
             $totalProgress += $child->quranProgress()->count();
             $completedSurahs += $child->quranProgress()->where('status', 'completed')->count();
         }
-        
+
         return [
             'total_progress_records' => $totalProgress,
             'completed_surahs' => $completedSurahs,
             'completion_rate' => $totalProgress > 0 ? round(($completedSurahs / $totalProgress) * 100, 2) : 0,
         ];
     }
-    
+
     private function getChildrenAttendanceOverview($children)
     {
         return [
@@ -576,53 +576,56 @@ class DashboardController extends Controller
             'children_count' => $children->count(),
         ];
     }
-    
+
     private function getChildrenRecentActivities($children)
     {
         $activities = collect();
         foreach ($children as $child) {
             $activities = $activities->merge($this->getStudentRecentActivities($child)['recent_submissions']);
         }
+
         return $activities->sortByDesc('created_at')->take(5);
     }
-    
+
     private function getChildrenUpcomingEvents($children)
     {
         $events = collect();
         foreach ($children as $child) {
             $events = $events->merge($this->getStudentUpcomingDeadlines($child));
         }
+
         return $events->sortBy('due_date')->take(5);
     }
-    
+
     // Utility methods
-    
+
     private function calculateGrowthRate($oldValue, $newValue)
     {
         if ($oldValue == 0) {
             return $newValue > 0 ? 100 : 0;
         }
+
         return round((($newValue - $oldValue) / $oldValue) * 100, 2);
     }
-    
+
     // Super Admin specific methods
-    
+
     private function getDatabaseSize()
     {
         try {
             $dbName = config('database.connections.mysql.database');
-            $size = DB::select("
+            $size = DB::select('
                 SELECT ROUND(SUM(data_length + index_length) / 1024 / 1024, 2) AS size_mb 
                 FROM information_schema.TABLES 
                 WHERE table_schema = ?
-            ", [$dbName]);
-            
+            ', [$dbName]);
+
             return $size[0]->size_mb ?? 0;
         } catch (\Exception $e) {
             return 0;
         }
     }
-    
+
     private function getSmsUsageToday()
     {
         try {
@@ -633,7 +636,7 @@ class DashboardController extends Controller
             return 0;
         }
     }
-    
+
     private function getSystemHealth()
     {
         return [
@@ -642,36 +645,39 @@ class DashboardController extends Controller
             'sms_gateway' => $this->getSmsGatewayStatus(),
         ];
     }
-    
+
     private function checkDatabaseHealth()
     {
         try {
             DB::connection()->getPdo();
+
             return 'healthy';
         } catch (\Exception $e) {
             return 'error';
         }
     }
-    
+
     private function checkStorageHealth()
     {
         $path = storage_path();
         $free = disk_free_space($path);
         $total = disk_total_space($path);
         $used_percentage = 100 - (($free / $total) * 100);
-        
+
         if ($used_percentage > 90) {
             return 'critical';
         } elseif ($used_percentage > 75) {
             return 'warning';
         }
+
         return 'healthy';
     }
-    
+
     private function getSmsGatewayStatus()
     {
         try {
             $smsService = app(\App\Services\SmsGatewayService::class);
+
             return $smsService->checkHealth() ? 'online' : 'offline';
         } catch (\Exception $e) {
             return 'offline';

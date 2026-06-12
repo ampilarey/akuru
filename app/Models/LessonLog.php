@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class LessonLog extends Model
@@ -110,8 +110,10 @@ class LessonLog extends Model
     public function getAttendancePercentageAttribute(): float
     {
         $total = $this->total_students;
-        if ($total === 0) return 0;
-        
+        if ($total === 0) {
+            return 0;
+        }
+
         return (($this->present_count ?? 0) / $total) * 100;
     }
 }

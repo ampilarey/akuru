@@ -23,7 +23,7 @@ return new class extends Migration
             $table->foreignId('author_id')->constrained('users');
             $table->json('meta')->nullable();
             $table->timestamps();
-            
+
             $table->index(['is_published', 'published_at']);
             $table->index('slug');
             $table->index('author_id');

@@ -8,7 +8,8 @@ use Illuminate\Support\Facades\DB;
 
 class EncryptStudentIdsCommand extends Command
 {
-    protected $signature   = 'students:encrypt-ids {--dry-run : Show what would be updated without saving}';
+    protected $signature = 'students:encrypt-ids {--dry-run : Show what would be updated without saving}';
+
     protected $description = 'Re-encrypt plaintext national_id and passport values in registration_students table';
 
     public function handle(): int
@@ -39,7 +40,7 @@ class EncryptStudentIdsCommand extends Command
                 continue;
             }
 
-            $this->line("Row {$row->id}: " . implode(', ', array_keys($updates)) . " will be encrypted");
+            $this->line("Row {$row->id}: ".implode(', ', array_keys($updates)).' will be encrypted');
 
             if (! $this->option('dry-run')) {
                 DB::table('registration_students')->where('id', $row->id)->update($updates);

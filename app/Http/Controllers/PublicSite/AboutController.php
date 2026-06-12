@@ -3,7 +3,11 @@
 namespace App\Http\Controllers\PublicSite;
 
 use App\Http\Controllers\Controller;
-use App\Models\{Course, CourseEnrollment, Instructor, Testimonial, Page};
+use App\Models\Course;
+use App\Models\CourseEnrollment;
+use App\Models\Instructor;
+use App\Models\Page;
+use App\Models\Testimonial;
 
 class AboutController extends Controller
 {
@@ -12,10 +16,10 @@ class AboutController extends Controller
         $page = Page::where('slug', 'about')->where('is_published', true)->first();
 
         $stats = [
-            'students'  => max(CourseEnrollment::count(), 500),
-            'courses'   => max(Course::where('status', '!=', 'draft')->count(), 12),
-            'teachers'  => max(Instructor::where('is_active', true)->count(), 8),
-            'years'     => 5,
+            'students' => max(CourseEnrollment::count(), 500),
+            'courses' => max(Course::where('status', '!=', 'draft')->count(), 12),
+            'teachers' => max(Instructor::where('is_active', true)->count(), 8),
+            'years' => 5,
         ];
 
         $instructors = Instructor::where('is_active', true)

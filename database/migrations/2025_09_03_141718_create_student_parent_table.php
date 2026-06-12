@@ -18,7 +18,7 @@ return new class extends Migration
             $table->enum('relationship', ['father', 'mother', 'guardian', 'grandfather', 'grandmother', 'uncle', 'aunt', 'other']);
             $table->boolean('is_primary_contact')->default(false);
             $table->timestamps();
-            
+
             $table->unique(['student_id', 'parent_guardian_id']);
         });
     }

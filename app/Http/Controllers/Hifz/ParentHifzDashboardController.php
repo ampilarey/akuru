@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Hifz;
 use App\Http\Controllers\Controller;
 use App\Models\HifzMilestone;
 use App\Models\HifzSessionRecord;
-use App\Models\Student;
 use App\Services\Hifz\HifzScopeService;
 use Illuminate\Http\Request;
 use Illuminate\View\View;

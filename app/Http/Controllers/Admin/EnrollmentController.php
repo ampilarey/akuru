@@ -34,16 +34,16 @@ class EnrollmentController extends Controller
             $query->where(function ($q) use ($search) {
                 $q->whereHas('student', function ($s) use ($search) {
                     $s->where('first_name', 'like', "%{$search}%")
-                      ->orWhere('last_name', 'like', "%{$search}%");
+                        ->orWhere('last_name', 'like', "%{$search}%");
                 })->orWhereHas('creator', function ($u) use ($search) {
                     $u->where('name', 'like', "%{$search}%")
-                      ->orWhereHas('contacts', fn ($c) => $c->where('value', 'like', "%{$search}%"));
+                        ->orWhereHas('contacts', fn ($c) => $c->where('value', 'like', "%{$search}%"));
                 });
             });
         }
 
         $enrollments = $query->paginate(20)->withQueryString();
-        $courses     = Course::orderBy('title')->get(['id', 'title']);
+        $courses = Course::orderBy('title')->get(['id', 'title']);
 
         return view('admin.enrollments.index', compact('enrollments', 'courses'));
     }
@@ -51,13 +51,14 @@ class EnrollmentController extends Controller
     public function show(CourseEnrollment $enrollment)
     {
         $enrollment->load(['student.guardians', 'course', 'payment.items.course', 'creator']);
+
         return view('admin.enrollments.show', compact('enrollment'));
     }
 
     public function activate(CourseEnrollment $enrollment)
     {
         $enrollment->update([
-            'status'      => 'active',
+            'status' => 'active',
             'enrolled_at' => $enrollment->enrolled_at ?? now(),
         ]);
 
@@ -92,20 +93,20 @@ class EnrollmentController extends Controller
             $query->where(function ($q) use ($search) {
                 $q->whereHas('student', function ($s) use ($search) {
                     $s->where('first_name', 'like', "%{$search}%")
-                      ->orWhere('last_name', 'like', "%{$search}%");
+                        ->orWhere('last_name', 'like', "%{$search}%");
                 })->orWhereHas('creator', function ($u) use ($search) {
                     $u->where('name', 'like', "%{$search}%")
-                      ->orWhereHas('contacts', fn ($c) => $c->where('value', 'like', "%{$search}%"));
+                        ->orWhereHas('contacts', fn ($c) => $c->where('value', 'like', "%{$search}%"));
                 });
             });
         }
 
         $enrollments = $query->get();
 
-        $filename = 'enrollments-' . now()->format('Ymd-His') . '.csv';
+        $filename = 'enrollments-'.now()->format('Ymd-His').'.csv';
 
         $headers = [
-            'Content-Type'        => 'text/csv',
+            'Content-Type' => 'text/csv',
             'Content-Disposition' => "attachment; filename=\"{$filename}\"",
         ];
 
@@ -119,9 +120,9 @@ class EnrollmentController extends Controller
             ]);
 
             foreach ($enrollments as $e) {
-                $user   = $e->creator;
+                $user = $e->creator;
                 $mobile = $user?->mobile ?? $user?->contacts()->where('type', 'mobile')->value('value') ?? '';
-                $email  = $user?->email  ?? $user?->contacts()->where('type', 'email')->value('value')  ?? '';
+                $email = $user?->email ?? $user?->contacts()->where('type', 'email')->value('value') ?? '';
                 $contact = $mobile ?: $email;
 
                 fputcsv($handle, [
@@ -148,7 +149,7 @@ class EnrollmentController extends Controller
     {
         $enrollment->loadMissing(['creator', 'course', 'student']);
 
-        $user  = $enrollment->creator;
+        $user = $enrollment->creator;
         $email = $user?->email ?? $user?->contacts()->where('type', 'email')->value('value');
 
         if ($email) {
@@ -161,22 +162,24 @@ class EnrollmentController extends Controller
         try {
             $enrollment->loadMissing(['creator', 'course', 'student']);
 
-            $user   = $enrollment->creator;
+            $user = $enrollment->creator;
             $mobile = $user?->contacts()->where('type', 'mobile')->whereNotNull('verified_at')->value('value');
 
-            if (! $mobile) return;
+            if (! $mobile) {
+                return;
+            }
 
             $studentName = $enrollment->student?->full_name ?? $user?->name ?? 'Student';
-            $courseName  = $enrollment->course?->title ?? 'the course';
-            $fee         = $enrollment->payment?->amount;
-            $feeText     = $fee ? ' Fee paid: MVR ' . number_format($fee, 2) . '.' : '';
+            $courseName = $enrollment->course?->title ?? 'the course';
+            $fee = $enrollment->payment?->amount;
+            $feeText = $fee ? ' Fee paid: MVR '.number_format($fee, 2).'.' : '';
 
-            $feeText = $fee ? ' MVR ' . number_format($fee, 2) . ' paid.' : '';
+            $feeText = $fee ? ' MVR '.number_format($fee, 2).' paid.' : '';
             $message = "Akuru: {$studentName} enrolled in {$courseName}.{$feeText} See you soon!";
 
             app(SmsGatewayService::class)->sendSms($mobile, $message);
         } catch (\Throwable $e) {
-            \Illuminate\Support\Facades\Log::error('Enrollment activation SMS failed: ' . $e->getMessage());
+            \Illuminate\Support\Facades\Log::error('Enrollment activation SMS failed: '.$e->getMessage());
         }
     }
 
@@ -185,19 +188,21 @@ class EnrollmentController extends Controller
         try {
             $enrollment->loadMissing(['creator', 'course', 'student']);
 
-            $user   = $enrollment->creator;
+            $user = $enrollment->creator;
             $mobile = $user?->contacts()->where('type', 'mobile')->whereNotNull('verified_at')->value('value');
 
-            if (! $mobile) return;
+            if (! $mobile) {
+                return;
+            }
 
             $studentName = $enrollment->student?->full_name ?? $user?->name ?? 'Student';
-            $courseName  = $enrollment->course?->title ?? 'the course';
+            $courseName = $enrollment->course?->title ?? 'the course';
 
             $message = "Akuru: Sorry, {$studentName}'s enrollment in {$courseName} was not approved. Contact us for details.";
 
             app(SmsGatewayService::class)->sendSms($mobile, $message);
         } catch (\Throwable $e) {
-            \Illuminate\Support\Facades\Log::error('Enrollment rejection SMS failed: ' . $e->getMessage());
+            \Illuminate\Support\Facades\Log::error('Enrollment rejection SMS failed: '.$e->getMessage());
         }
     }
 
@@ -213,15 +218,15 @@ class EnrollmentController extends Controller
         if ($search = $request->input('search')) {
             $query->where(function ($q) use ($search) {
                 $q->where('merchant_reference', 'like', "%{$search}%")
-                  ->orWhere('local_id', 'like', "%{$search}%")
-                  ->orWhereHas('user', function ($u) use ($search) {
-                      $u->where('name', 'like', "%{$search}%")
-                        ->orWhereHas('contacts', fn ($c) => $c->where('value', 'like', "%{$search}%"));
-                  })
-                  ->orWhereHas('student', function ($s) use ($search) {
-                      $s->where('first_name', 'like', "%{$search}%")
-                        ->orWhere('last_name', 'like', "%{$search}%");
-                  });
+                    ->orWhere('local_id', 'like', "%{$search}%")
+                    ->orWhereHas('user', function ($u) use ($search) {
+                        $u->where('name', 'like', "%{$search}%")
+                            ->orWhereHas('contacts', fn ($c) => $c->where('value', 'like', "%{$search}%"));
+                    })
+                    ->orWhereHas('student', function ($s) use ($search) {
+                        $s->where('first_name', 'like', "%{$search}%")
+                            ->orWhere('last_name', 'like', "%{$search}%");
+                    });
             });
         }
 

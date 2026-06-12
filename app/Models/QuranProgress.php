@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
 class QuranProgress extends Model
 {
@@ -66,6 +66,7 @@ class QuranProgress extends Model
         if ($this->to_ayah && $this->from_ayah) {
             return (($this->to_ayah - $this->from_ayah + 1) / $this->getSurahAyahCount()) * 100;
         }
+
         return 0;
     }
 
@@ -86,8 +87,9 @@ class QuranProgress extends Model
     public function getAyahRangeAttribute()
     {
         if ($this->from_ayah && $this->to_ayah) {
-            return $this->from_ayah . '-' . $this->to_ayah;
+            return $this->from_ayah.'-'.$this->to_ayah;
         }
+
         return 'Full Surah';
     }
 }

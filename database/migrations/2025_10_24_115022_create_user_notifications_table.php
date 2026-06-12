@@ -29,7 +29,7 @@ return new class extends Migration
             $table->integer('retry_count')->default(0);
             $table->timestamp('next_retry_at')->nullable();
             $table->timestamps();
-            
+
             $table->index(['user_id', 'status', 'created_at']);
             $table->index(['type', 'status', 'scheduled_at']);
             $table->index(['category', 'status']);

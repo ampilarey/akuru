@@ -23,7 +23,7 @@ return new class extends Migration
             $table->timestamp('last_seen_at')->nullable();
             $table->json('settings')->nullable(); // Notification preferences, etc.
             $table->timestamps();
-            
+
             $table->index(['user_id', 'is_active']);
             $table->index(['platform', 'is_active']);
         });

@@ -3,14 +3,14 @@
 namespace App\Http\Controllers\Substitutions;
 
 use App\Http\Controllers\Controller;
-use App\Models\SubstitutionRequest;
-use App\Models\SubstitutionAssignment;
-use App\Models\Teacher;
-use App\Models\Subject;
 use App\Models\ClassRoom;
 use App\Models\Period;
-use Illuminate\Http\Request;
+use App\Models\Subject;
+use App\Models\SubstitutionAssignment;
+use App\Models\SubstitutionRequest;
+use App\Models\Teacher;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class SubstitutionRequestController extends Controller
@@ -25,7 +25,7 @@ class SubstitutionRequestController extends Controller
             'subject',
             'classroom',
             'period',
-            'assignment.substituteTeacher.user'
+            'assignment.substituteTeacher.user',
         ]);
 
         // Filter by status
@@ -39,15 +39,15 @@ class SubstitutionRequestController extends Controller
         }
 
         // Filter by teacher (for teacher view)
-        if (auth()->user()->hasRole('teacher') && !auth()->user()->hasAnyRole(['admin', 'headmaster', 'supervisor'])) {
+        if (auth()->user()->hasRole('teacher') && ! auth()->user()->hasAnyRole(['admin', 'headmaster', 'supervisor'])) {
             // Teachers can only see requests they can substitute for or are assigned to
             $teacher = auth()->user()->teacher;
             if ($teacher) {
-                $query->where(function($q) use ($teacher) {
+                $query->where(function ($q) use ($teacher) {
                     $q->where('status', 'open')
-                      ->orWhereHas('assignment', function($subQuery) use ($teacher) {
-                          $subQuery->where('substitute_teacher_id', $teacher->id);
-                      });
+                        ->orWhereHas('assignment', function ($subQuery) use ($teacher) {
+                            $subQuery->where('substitute_teacher_id', $teacher->id);
+                        });
                 });
             }
         }
@@ -102,7 +102,7 @@ class SubstitutionRequestController extends Controller
             'classroom',
             'period',
             'assignment.substituteTeacher.user',
-            'assignment.assignedBy'
+            'assignment.assignedBy',
         ]);
 
         return view('substitutions.requests.show', compact('request'));
@@ -179,19 +179,19 @@ class SubstitutionRequestController extends Controller
     public function take(Request $request, SubstitutionRequest $substitutionRequest): RedirectResponse
     {
         // Check if user is a teacher
-        if (!auth()->user()->hasRole('teacher')) {
+        if (! auth()->user()->hasRole('teacher')) {
             abort(403, 'Only teachers can take substitution requests.');
         }
 
         // Check if request can be taken
-        if (!$substitutionRequest->canBeTaken()) {
+        if (! $substitutionRequest->canBeTaken()) {
             return redirect()
                 ->route('substitutions.requests.index')
                 ->with('error', 'This substitution request cannot be taken.');
         }
 
         $teacher = auth()->user()->teacher;
-        if (!$teacher) {
+        if (! $teacher) {
             return redirect()
                 ->route('substitutions.requests.index')
                 ->with('error', 'Teacher profile not found.');
@@ -217,7 +217,7 @@ class SubstitutionRequestController extends Controller
     public function assign(Request $request, SubstitutionRequest $substitutionRequest): RedirectResponse
     {
         // Check permissions
-        if (!auth()->user()->hasAnyRole(['admin', 'headmaster', 'supervisor'])) {
+        if (! auth()->user()->hasAnyRole(['admin', 'headmaster', 'supervisor'])) {
             abort(403, 'Insufficient permissions to assign substitutions.');
         }
 

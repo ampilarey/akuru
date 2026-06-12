@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Model;
 
 class SystemMetric extends Model
 {
@@ -51,7 +51,7 @@ class SystemMetric extends Model
         string $name,
         string $category,
         float $value,
-        string $unit = null,
+        ?string $unit = null,
         array $metadata = []
     ) {
         return static::create([

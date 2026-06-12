@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
@@ -83,8 +83,9 @@ class TeacherAbsence extends Model
     public function isActive(): bool
     {
         $now = now()->toDateString();
-        return $this->status === 'approved' 
-            && $this->from_date <= $now 
+
+        return $this->status === 'approved'
+            && $this->from_date <= $now
             && $this->to_date >= $now;
     }
 

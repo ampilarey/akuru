@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\PublicSite;
 
 use App\Http\Controllers\Controller;
-use App\Models\{Course, Post, Event};
+use App\Models\Course;
+use App\Models\Event;
+use App\Models\Post;
 use Illuminate\Http\Request;
 
 class SearchController extends Controller
@@ -13,15 +15,15 @@ class SearchController extends Controller
         $q = trim($request->get('q', ''));
 
         $courses = collect();
-        $posts   = collect();
-        $events  = collect();
+        $posts = collect();
+        $events = collect();
 
         if (strlen($q) >= 2) {
             $courses = Course::whereIn('status', ['open', 'upcoming'])
                 ->where(function ($query) use ($q) {
                     $query->where('title', 'like', "%{$q}%")
-                          ->orWhere('short_desc', 'like', "%{$q}%")
-                          ->orWhere('body', 'like', "%{$q}%");
+                        ->orWhere('short_desc', 'like', "%{$q}%")
+                        ->orWhere('body', 'like', "%{$q}%");
                 })
                 ->with('category')
                 ->orderBy('sort_order')
@@ -31,8 +33,8 @@ class SearchController extends Controller
             $posts = Post::published()
                 ->where(function ($query) use ($q) {
                     $query->where('title', 'like', "%{$q}%")
-                          ->orWhere('summary', 'like', "%{$q}%")
-                          ->orWhere('body', 'like', "%{$q}%");
+                        ->orWhere('summary', 'like', "%{$q}%")
+                        ->orWhere('body', 'like', "%{$q}%");
                 })
                 ->with('category')
                 ->latest('published_at')
@@ -42,8 +44,8 @@ class SearchController extends Controller
             $events = Event::published()->public()
                 ->where(function ($query) use ($q) {
                     $query->where('title', 'like', "%{$q}%")
-                          ->orWhere('short_description', 'like', "%{$q}%")
-                          ->orWhere('description', 'like', "%{$q}%");
+                        ->orWhere('short_description', 'like', "%{$q}%")
+                        ->orWhere('description', 'like', "%{$q}%");
                 })
                 ->orderBy('start_date')
                 ->take(10)

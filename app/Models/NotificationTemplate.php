@@ -58,10 +58,10 @@ class NotificationTemplate extends Model
     public static function getTemplate(string $name, string $type = 'email', string $language = 'en')
     {
         return static::where('name', $name)
-                    ->type($type)
-                    ->language($language)
-                    ->active()
-                    ->first();
+            ->type($type)
+            ->language($language)
+            ->active()
+            ->first();
     }
 
     // Process template with variables
@@ -71,7 +71,7 @@ class NotificationTemplate extends Model
         $body = $this->body;
 
         foreach ($variables as $key => $value) {
-            $placeholder = '{{' . $key . '}}';
+            $placeholder = '{{'.$key.'}}';
             $subject = str_replace($placeholder, $value, $subject);
             $body = str_replace($placeholder, $value, $body);
         }
@@ -89,7 +89,7 @@ class NotificationTemplate extends Model
         $missingVariables = [];
 
         foreach ($requiredVariables as $variable) {
-            if (!isset($variables[$variable])) {
+            if (! isset($variables[$variable])) {
                 $missingVariables[] = $variable;
             }
         }

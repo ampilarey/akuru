@@ -19,7 +19,7 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->bind(PaymentProviderInterface::class, function ($app) {
-            $driver = config('payments.providers.' . config('payments.default') . '.driver');
+            $driver = config('payments.providers.'.config('payments.default').'.driver');
 
             return $app->make($driver);
         });

@@ -2,10 +2,10 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Casts\Attribute;
-use Carbon\Carbon;
 
 class Event extends Model
 {
@@ -121,12 +121,12 @@ class Event extends Model
 
     public function scopeRegistrationOpen($query)
     {
-        return $query->where(function($q) {
+        return $query->where(function ($q) {
             $q->whereNull('registration_start')
-              ->orWhere('registration_start', '<=', now());
-        })->where(function($q) {
+                ->orWhere('registration_start', '<=', now());
+        })->where(function ($q) {
             $q->whereNull('registration_deadline')
-              ->orWhere('registration_deadline', '>', now());
+                ->orWhere('registration_deadline', '>', now());
         });
     }
 
@@ -155,76 +155,84 @@ class Event extends Model
 
     public function getIsRegistrationOpenAttribute()
     {
-        if ($this->registration_type === 'none') return false;
-        
+        if ($this->registration_type === 'none') {
+            return false;
+        }
+
         $now = now();
-        
+
         // Check if registration has started
         if ($this->registration_start && $this->registration_start > $now) {
             return false;
         }
-        
+
         // Check if registration deadline has passed
         if ($this->registration_deadline && $this->registration_deadline < $now) {
             return false;
         }
-        
+
         // Check if event is full
         if ($this->max_attendees && $this->current_attendees >= $this->max_attendees) {
             return false;
         }
-        
+
         return true;
     }
 
     public function getAvailableSpotsAttribute()
     {
-        if (!$this->max_attendees) return null;
-        
+        if (! $this->max_attendees) {
+            return null;
+        }
+
         return max(0, $this->max_attendees - $this->current_attendees);
     }
 
     public function getIsFullAttribute()
     {
-        if (!$this->max_attendees) return false;
-        
+        if (! $this->max_attendees) {
+            return false;
+        }
+
         return $this->current_attendees >= $this->max_attendees;
     }
 
     public function getFormattedFeeAttribute()
     {
-        if (!$this->registration_fee) return 'Free';
-        
-        return 'MVR ' . number_format($this->registration_fee, 2);
+        if (! $this->registration_fee) {
+            return 'Free';
+        }
+
+        return 'MVR '.number_format($this->registration_fee, 2);
     }
 
     public function getDurationAttribute()
     {
         $start = Carbon::parse($this->start_date);
         $end = Carbon::parse($this->end_date);
-        
+
         if ($start->isSameDay($end)) {
-            return $start->format('M j, Y') . ' (' . $start->format('g:i A') . ' - ' . $end->format('g:i A') . ')';
+            return $start->format('M j, Y').' ('.$start->format('g:i A').' - '.$end->format('g:i A').')';
         }
-        
-        return $start->format('M j, Y') . ' - ' . $end->format('M j, Y');
+
+        return $start->format('M j, Y').' - '.$end->format('M j, Y');
     }
 
     public function getShortDurationAttribute()
     {
         $start = Carbon::parse($this->start_date);
         $end = Carbon::parse($this->end_date);
-        
+
         if ($start->isSameDay($end)) {
             return $start->format('M j, Y');
         }
-        
-        return $start->format('M j') . ' - ' . $end->format('M j, Y');
+
+        return $start->format('M j').' - '.$end->format('M j, Y');
     }
 
     public function getStatusBadgeColorAttribute()
     {
-        return match($this->status) {
+        return match ($this->status) {
             'published' => 'green',
             'draft' => 'gray',
             'cancelled' => 'red',
@@ -235,7 +243,7 @@ class Event extends Model
 
     public function getTypeIconAttribute()
     {
-        return match($this->type) {
+        return match ($this->type) {
             'conference' => '🎤',
             'workshop' => '🔧',
             'seminar' => '📚',
@@ -264,7 +272,7 @@ class Event extends Model
         $confirmed = $this->confirmedRegistrations()->count();
         $pending = $this->pendingRegistrations()->count();
         $cancelled = $this->registrations()->where('status', 'cancelled')->count();
-        
+
         return [
             'total' => $total,
             'confirmed' => $confirmed,
@@ -277,21 +285,21 @@ class Event extends Model
     public function getUpcomingEvents($limit = 5)
     {
         return static::published()
-                    ->public()
-                    ->upcoming()
-                    ->orderBy('start_date')
-                    ->limit($limit)
-                    ->get();
+            ->public()
+            ->upcoming()
+            ->orderBy('start_date')
+            ->limit($limit)
+            ->get();
     }
 
     public function getFeaturedEvents($limit = 3)
     {
         return static::published()
-                    ->public()
-                    ->featured()
-                    ->upcoming()
-                    ->orderBy('start_date')
-                    ->limit($limit)
-                    ->get();
+            ->public()
+            ->featured()
+            ->upcoming()
+            ->orderBy('start_date')
+            ->limit($limit)
+            ->get();
     }
 }

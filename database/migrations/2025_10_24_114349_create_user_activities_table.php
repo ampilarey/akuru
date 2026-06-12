@@ -22,7 +22,7 @@ return new class extends Migration
             $table->json('metadata')->nullable(); // Additional context data
             $table->timestamp('performed_at');
             $table->timestamps();
-            
+
             $table->index(['user_id', 'activity_type', 'performed_at']);
             $table->index(['activity_type', 'performed_at']);
             $table->index('performed_at');

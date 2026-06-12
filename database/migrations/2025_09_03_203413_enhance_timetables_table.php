@@ -33,9 +33,9 @@ return new class extends Migration
         Schema::table('timetables', function (Blueprint $table) {
             $table->dropForeign(['period_id']);
             $table->dropColumn([
-                'period_id', 'start_date', 'end_date', 'frequency', 
+                'period_id', 'start_date', 'end_date', 'frequency',
                 'recurring_days', 'is_recurring', 'color', 'description',
-                'description_arabic', 'description_dhivehi'
+                'description_arabic', 'description_dhivehi',
             ]);
         });
     }

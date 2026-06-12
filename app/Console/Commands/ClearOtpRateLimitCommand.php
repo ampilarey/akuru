@@ -22,8 +22,8 @@ class ClearOtpRateLimitCommand extends Command
 
         $contacts = UserContact::query()
             ->where(function ($q) use ($input) {
-                $q->where('value', 'like', '%' . preg_replace('/\D/', '', $input) . '%')
-                    ->orWhere('value', 'like', '%' . $input . '%');
+                $q->where('value', 'like', '%'.preg_replace('/\D/', '', $input).'%')
+                    ->orWhere('value', 'like', '%'.$input.'%');
             })
             ->get();
 
@@ -37,8 +37,8 @@ class ClearOtpRateLimitCommand extends Command
 
         foreach ($contacts as $contact) {
             foreach ($purposes as $purpose) {
-                RateLimiter::clear('otp:send:' . $contact->id . ':' . $purpose);
-                RateLimiter::clear('otp:verify:' . $contact->id . ':' . $purpose);
+                RateLimiter::clear('otp:send:'.$contact->id.':'.$purpose);
+                RateLimiter::clear('otp:verify:'.$contact->id.':'.$purpose);
             }
             $this->info("Cleared OTP rate limit for contact #{$contact->id} ({$contact->type}: {$contact->value}).");
         }

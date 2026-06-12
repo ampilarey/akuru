@@ -10,7 +10,7 @@ return [
     'announcements' => 'އެންގުޅުން',
     'profile' => 'ޕްރޮފައިލް',
     'logout' => 'ބޭރުވުން',
-    
+
     // Common Actions
     'create' => 'ހުށަހަޅާ',
     'edit' => 'ބަދަލުކުރަން',
@@ -24,14 +24,14 @@ return [
     'filter' => 'ފިލްޓަރ',
     'export' => 'ބޭރުވުން',
     'import' => 'ހިމްނުން',
-    
+
     // Status
     'active' => 'ހުށަހަޅާ',
     'inactive' => 'ނުހުށަހަޅާ',
     'pending' => 'ކުރަން',
     'completed' => 'ފުރިހަމަ',
     'in_progress' => 'ކުރަން',
-    
+
     // User Roles
     'administrator' => 'އެޑްމިނިސްޓްރޭޓަރ',
     'headmaster' => 'މުދައްރިސް',
@@ -39,7 +39,7 @@ return [
     'teacher' => 'ތައްލިމުން',
     'student' => 'ތައްލިމް',
     'guardian' => 'ގާޑިއަން',
-    
+
     // Islamic Terms
     'quran' => 'ކުރާން',
     'surah' => 'ސޫރަތު',
@@ -47,7 +47,7 @@ return [
     'hijri_date' => 'ހިޖްރީ ތާރީޚް',
     'prayer_times' => 'ނަމާދު ވަގުތުތައް',
     'islamic_calendar' => 'އިސްލާމީ ކެލެންޑަރ',
-    
+
     // Time
     'today' => 'މިއަދު',
     'yesterday' => 'އެދުވަހު',
@@ -55,7 +55,7 @@ return [
     'this_week' => 'މި ހަފްތާ',
     'this_month' => 'މި މަހު',
     'this_year' => 'މި އަހަރު',
-    
+
     // Messages
     'success' => 'ފުރިހަމަ',
     'error' => 'ކުށް',
@@ -65,7 +65,7 @@ return [
     'item_created' => 'އެކަމެއް ހުށަހަޅާ ފުރިހަމަ',
     'item_updated' => 'އެކަމެއް ބަދަލުކުރާ ފުރިހަމަ',
     'item_deleted' => 'އެކަމެއް ހުށަހަޅާ ފުރިހަމަ',
-    
+
     // Dashboard specific
     'admin_dashboard' => 'އެޑްމިނިސްޓްރޭޓަރ ޑެޝްބޯޑް',
     'teacher_dashboard' => 'ތައްލިމުން ޑެޝްބޯޑް',
@@ -75,7 +75,7 @@ return [
     'teacher_overview' => 'ތިބެގެ ގްރޭޑުތަކާ ތައްލިމުން މެނޭޖް ކުރަން',
     'student_overview' => 'ތިބެގެ ފަސޭހަ އާ ވެއްޖެތަކުގެ ހުށަހަޅާ',
     'parent_overview' => 'ތިބެގެ ފިރިހެނުތަކުގެ ފަސޭހަ މޮނިޓަރ ކުރަން',
-    
+
     // Statistics
     'total_students' => 'ތައްލިމުން ގެ ތެރެ',
     'total_teachers' => 'ތައްލިމުން ގެ ތެރެ',
@@ -88,7 +88,7 @@ return [
     'recent_announcements' => 'އެންމެ ފަހުގެ އެންގުޅުން',
     'no_recent_announcements' => 'އެންގުޅުން ނެތް',
     'quick_actions' => 'ހަމަ ކުރިން',
-    
+
     // Student specific
     'student_information' => 'ތައްލިމް ގެ މައުލޫމާތު',
     'class' => 'ގްރޭޑު',
@@ -103,22 +103,22 @@ return [
     'attendance' => 'ހުށަހަޅާ',
     'attendance_rate' => 'ހުށަހަޅާ ރޭޓް',
     'accuracy' => 'ހަރުކާތް',
-    
+
     // Parent specific
     'no_children_registered' => 'ފިރިހެނުތައް ރެޖިސްޓަރ ނުވާ',
     'contact_administration' => 'ފިރިހެނުތައް ރެޖިސްޓަރ ކުރުމަށް އެޑްމިނިސްޓްރޭޝަން ގެ ގާތު ގައި ގުޅޭ',
-    
+
     // Common actions
     'view' => 'ހުށަހަޅާ',
     'calendar' => 'ކެލެންޑަރ',
     'contact_us' => 'ގުޅޭ',
-    
+
     // Add new items
     'add_new_student' => 'ތައްލިމް އާއި ހުށަހަޅާ',
     'add_new_teacher' => 'ތައްލިމުން އާއި ހުށަހަޅާ',
     'create_announcement' => 'އެންގުޅުން ހުށަހަޅާ',
     'view_quran_progress' => 'ކުރާން ތަފްސީލް ހުށަހަޅާ',
-    
+
     // Date formats
     'gregorian_date' => 'ގްރެގޯރިއަން ތާރީޚް',
 ];

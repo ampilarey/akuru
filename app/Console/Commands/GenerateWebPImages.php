@@ -62,6 +62,7 @@ class GenerateWebPImages extends Command
             if (! Storage::disk('public')->exists($path)) {
                 $skipped++;
                 $bar->advance();
+
                 continue;
             }
 

@@ -18,7 +18,7 @@ return new class extends Migration
             $table->smallInteger('order')->default(0);
             $table->boolean('is_public')->default(true);
             $table->timestamps();
-            
+
             $table->index(['is_public', 'order']);
         });
     }

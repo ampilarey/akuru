@@ -23,7 +23,7 @@ return new class extends Migration
             $table->json('tags')->nullable()->after('reading_time');
             $table->text('meta_description')->nullable()->after('tags');
             $table->text('meta_keywords')->nullable()->after('meta_description');
-            
+
             // Add indexes
             $table->index(['is_featured', 'is_published']);
             $table->index(['post_category_id', 'is_published']);
@@ -40,7 +40,7 @@ return new class extends Migration
             $table->dropIndex(['is_featured', 'is_published']);
             $table->dropIndex(['post_category_id', 'is_published']);
             $table->dropIndex('view_count');
-            
+
             $table->dropColumn([
                 'post_category_id',
                 'is_featured',

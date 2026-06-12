@@ -15,7 +15,6 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
-use App\Services\Payment\PaymentVerificationResult;
 
 class PaymentService
 {
@@ -24,13 +23,13 @@ class PaymentService
 
     public function __construct(
         protected PaymentProviderInterface $provider,
-        protected SmsGatewayService        $sms,
+        protected SmsGatewayService $sms,
     ) {}
 
     /**
      * Create consolidated payment for multiple enrollments.
      *
-     * @param array<int, array{enrollment: CourseEnrollment, course: Course, amount: float}> $feeEnrollments
+     * @param  array<int, array{enrollment: CourseEnrollment, course: Course, amount: float}>  $feeEnrollments
      */
     /**
      * Create a Payment record for a paid course enrollment WITHOUT creating any
@@ -38,24 +37,24 @@ class PaymentService
      * is stored in enrollment_pending_payload and is written to the DB only once
      * BML confirms the payment (see EnrollmentService::createEnrollmentForConfirmedPayment).
      *
-     * @param \Illuminate\Support\Collection $courses
+     * @param  \Illuminate\Support\Collection  $courses
      */
     public function createPaymentForPendingEnrollment(User $payer, array $enrollmentPayload, $courses): Payment
     {
         $totalAmount = collect($courses)->sum(fn ($c) => (float) ($c->registration_fee_amount ?? $c->fee ?? 0));
-        $totalLaar   = (int) round($totalAmount * 100);
+        $totalLaar = (int) round($totalAmount * 100);
         $firstCourse = collect($courses)->first();
 
         return Payment::create([
-            'user_id'                    => $payer->id,
-            'student_id'                 => null,
-            'course_id'                  => $firstCourse->id,
-            'amount'                     => $totalAmount,
-            'amount_laar'                => $totalLaar,
-            'currency'                   => config('bml.default_currency') ?: ($firstCourse->registration_fee_currency ?? 'MVR'),
-            'status'                     => 'initiated',
-            'provider'                   => 'bml',
-            'merchant_reference'         => 'AKURU-' . strtoupper(Str::uuid()->toString()),
+            'user_id' => $payer->id,
+            'student_id' => null,
+            'course_id' => $firstCourse->id,
+            'amount' => $totalAmount,
+            'amount_laar' => $totalLaar,
+            'currency' => config('bml.default_currency') ?: ($firstCourse->registration_fee_currency ?? 'MVR'),
+            'status' => 'initiated',
+            'provider' => 'bml',
+            'merchant_reference' => 'AKURU-'.strtoupper(Str::uuid()->toString()),
             'enrollment_pending_payload' => $enrollmentPayload,
         ]);
     }
@@ -63,30 +62,30 @@ class PaymentService
     public function createConsolidatedPayment(User $payer, RegistrationStudent $student, array $feeEnrollments): Payment
     {
         $totalAmount = array_sum(array_column($feeEnrollments, 'amount'));
-        $first       = $feeEnrollments[0];
+        $first = $feeEnrollments[0];
         $firstCourse = $first['course'];
 
         // Store total as laari (integer) AND legacy decimal for backward compat.
         $totalLaar = (int) round($totalAmount * 100);
 
         $payment = Payment::create([
-            'user_id'            => $payer->id,
-            'student_id'         => $student->id,
-            'course_id'          => $firstCourse->id,
-            'amount'             => $totalAmount,
-            'amount_laar'        => $totalLaar,
-            'currency'           => config('bml.default_currency') ?: ($firstCourse->registration_fee_currency ?? 'MVR'),
-            'status'             => 'initiated',
-            'provider'           => 'bml',
-            'merchant_reference' => 'AKURU-' . strtoupper(Str::uuid()->toString()),
+            'user_id' => $payer->id,
+            'student_id' => $student->id,
+            'course_id' => $firstCourse->id,
+            'amount' => $totalAmount,
+            'amount_laar' => $totalLaar,
+            'currency' => config('bml.default_currency') ?: ($firstCourse->registration_fee_currency ?? 'MVR'),
+            'status' => 'initiated',
+            'provider' => 'bml',
+            'merchant_reference' => 'AKURU-'.strtoupper(Str::uuid()->toString()),
         ]);
 
         foreach ($feeEnrollments as $fe) {
             PaymentItem::create([
-                'payment_id'   => $payment->id,
+                'payment_id' => $payment->id,
                 'enrollment_id' => $fe['enrollment']->id,
-                'course_id'    => $fe['course']->id,
-                'amount'       => $fe['amount'],
+                'course_id' => $fe['course']->id,
+                'amount' => $fe['amount'],
             ]);
         }
 
@@ -117,6 +116,7 @@ class PaymentService
 
             if (! $payment) {
                 Log::warning('PaymentService::finalizeByReference – payment not found', ['ref' => $ref]);
+
                 return null;
             }
 
@@ -134,6 +134,7 @@ class PaymentService
                 Log::info('PaymentService::finalizeByReference – provider query returned null', [
                     'ref' => $ref, 'payment_id' => $payment->id,
                 ]);
+
                 return $payment;
             }
 
@@ -142,10 +143,10 @@ class PaymentService
 
             if ($isSuccess) {
                 $payment->update([
-                    'status'             => 'confirmed',
+                    'status' => 'confirmed',
                     'provider_reference' => $result->providerReference ?? $payment->provider_reference,
-                    'confirmed_at'       => $payment->confirmed_at ?? now(),
-                    'paid_at'            => $payment->paid_at ?? now(),
+                    'confirmed_at' => $payment->confirmed_at ?? now(),
+                    'paid_at' => $payment->paid_at ?? now(),
                 ]);
 
                 // Deferred-enrollment flow
@@ -161,7 +162,7 @@ class PaymentService
                         $course = $enrollment->course;
                         if (! ($course->requires_admin_approval ?? false)) {
                             $enrollment->update([
-                                'status'      => 'active',
+                                'status' => 'active',
                                 'enrolled_at' => $enrollment->enrolled_at ?? now(),
                             ]);
                         }
@@ -172,7 +173,7 @@ class PaymentService
                 $this->notifyAdminsPaymentConfirmed($payment);
             } elseif (in_array($providerStatus, ['failed', 'cancelled', 'declined'], true)) {
                 $payment->update([
-                    'status'    => 'failed',
+                    'status' => 'failed',
                     'failed_at' => now(),
                 ]);
                 foreach ($payment->items as $item) {
@@ -228,11 +229,11 @@ class PaymentService
 
             if ($result->isPaymentSuccess()) {
                 $payment->update([
-                    'status'             => 'confirmed',
+                    'status' => 'confirmed',
                     'provider_reference' => $result->providerReference ?? $payment->provider_reference,
-                    'webhook_payload'    => $webhookPayload,
-                    'confirmed_at'       => $payment->confirmed_at ?? now(),
-                    'paid_at'            => $payment->paid_at ?? now(),
+                    'webhook_payload' => $webhookPayload,
+                    'confirmed_at' => $payment->confirmed_at ?? now(),
+                    'paid_at' => $payment->paid_at ?? now(),
                 ]);
 
                 // Deferred-enrollment flow: create student + enrollment records now
@@ -249,7 +250,7 @@ class PaymentService
                         $course = $enrollment->course;
                         if (! ($course->requires_admin_approval ?? false)) {
                             $enrollment->update([
-                                'status'      => 'active',
+                                'status' => 'active',
                                 'enrolled_at' => $enrollment->enrolled_at ?? now(),
                             ]);
                         }
@@ -281,7 +282,7 @@ class PaymentService
         } catch (\Throwable $e) {
             Log::error('PaymentService: deferred enrollment creation failed', [
                 'payment_id' => $payment->id,
-                'error'      => $e->getMessage(),
+                'error' => $e->getMessage(),
             ]);
         }
     }
@@ -312,7 +313,7 @@ class PaymentService
         } catch (\Throwable $e) {
             Log::warning('AdminNewEnrollmentMail: failed to queue', [
                 'payment_id' => $payment->id,
-                'error'      => $e->getMessage(),
+                'error' => $e->getMessage(),
             ]);
         }
     }
@@ -325,7 +326,7 @@ class PaymentService
                 return;
             }
             $emailContact = $user->contacts()->where('type', 'email')->whereNotNull('verified_at')->first();
-            $toAddress    = $emailContact?->value ?? $user->email ?? null;
+            $toAddress = $emailContact?->value ?? $user->email ?? null;
             // Also try unverified email contacts (user may not have verified yet)
             if (! $toAddress) {
                 $toAddress = $user->contacts()->where('type', 'email')->first()?->value;
@@ -337,7 +338,7 @@ class PaymentService
         } catch (\Throwable $e) {
             Log::warning('EnrollmentConfirmedMail: failed to send', [
                 'payment_id' => $payment->id,
-                'error'      => $e->getMessage(),
+                'error' => $e->getMessage(),
             ]);
         }
     }
@@ -354,10 +355,10 @@ class PaymentService
                 return;
             }
 
-            $student    = $payment->student;
+            $student = $payment->student;
             $studentName = $student?->first_name ?? $user->name ?? 'Student';
-            $courses    = $payment->items->map(fn ($i) => $i->course?->title)->filter()->implode(', ');
-            $ref        = $payment->local_id ?? $payment->merchant_reference;
+            $courses = $payment->items->map(fn ($i) => $i->course?->title)->filter()->implode(', ');
+            $ref = $payment->local_id ?? $payment->merchant_reference;
 
             $message = "Akuru: Payment received for {$studentName} – {$courses}. Pending admin approval.";
 
@@ -365,7 +366,7 @@ class PaymentService
         } catch (\Throwable $e) {
             Log::warning('EnrollmentConfirmedSms: failed to send', [
                 'payment_id' => $payment->id,
-                'error'      => $e->getMessage(),
+                'error' => $e->getMessage(),
             ]);
         }
     }
@@ -386,9 +387,9 @@ class PaymentService
                 }
                 $enrollment->loadMissing('course');
                 $courseName = $enrollment->course?->title ?? 'Unknown';
-                $amount     = number_format((float) ($payment->amount ?? 0), 2);
-                $currency   = $payment->currency ?? 'MVR';
-                $message    = "[Akuru] Payment confirmed: {$payerName} → {$courseName} ({$currency} {$amount})";
+                $amount = number_format((float) ($payment->amount ?? 0), 2);
+                $currency = $payment->currency ?? 'MVR';
+                $message = "[Akuru] Payment confirmed: {$payerName} → {$courseName} ({$currency} {$amount})";
 
                 foreach ($admins as $admin) {
                     $adminMobile = $admin->contacts()->where('type', 'mobile')->value('value')
@@ -402,7 +403,7 @@ class PaymentService
         } catch (\Throwable $e) {
             Log::warning('notifyAdminsPaymentConfirmed: failed', [
                 'payment_id' => $payment->id,
-                'error'      => $e->getMessage(),
+                'error' => $e->getMessage(),
             ]);
         }
     }
@@ -418,9 +419,9 @@ class PaymentService
         }
 
         return [
-            'status'             => $payment->status,
-            'confirmed'          => $payment->isConfirmed(),
-            'paid_at'            => $payment->paid_at?->toIso8601String(),
+            'status' => $payment->status,
+            'confirmed' => $payment->isConfirmed(),
+            'paid_at' => $payment->paid_at?->toIso8601String(),
             'merchant_reference' => $payment->local_id ?? $payment->merchant_reference,
         ];
     }

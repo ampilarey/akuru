@@ -23,7 +23,7 @@ return new class extends Migration
             $table->boolean('is_system')->default(false); // System templates can't be deleted
             $table->string('language')->default('en');
             $table->timestamps();
-            
+
             $table->index(['type', 'category', 'is_active']);
             $table->index(['language', 'is_active']);
         });

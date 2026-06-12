@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
 class ClassRoom extends Model
 {
@@ -47,8 +47,8 @@ class ClassRoom extends Model
     public function subjects()
     {
         return $this->belongsToMany(Subject::class, 'class_subject')
-                    ->withPivot('hours_per_week', 'is_compulsory')
-                    ->withTimestamps();
+            ->withPivot('hours_per_week', 'is_compulsory')
+            ->withTimestamps();
     }
 
     public function timetables()

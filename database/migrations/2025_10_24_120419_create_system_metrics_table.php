@@ -20,7 +20,7 @@ return new class extends Migration
             $table->json('metadata')->nullable(); // Additional context data
             $table->timestamp('recorded_at');
             $table->timestamps();
-            
+
             $table->index(['metric_name', 'recorded_at']);
             $table->index(['metric_category', 'recorded_at']);
             $table->index('recorded_at');

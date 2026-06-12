@@ -2,9 +2,11 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
-use App\Models\{Post, PostCategory, User};
+use App\Models\Post;
+use App\Models\PostCategory;
+use App\Models\User;
 use Carbon\Carbon;
+use Illuminate\Database\Seeder;
 
 class PostSeeder extends Seeder
 {
@@ -25,7 +27,7 @@ class PostSeeder extends Seeder
 
         // Get a user as author (create one if none exists)
         $author = User::first();
-        if (!$author) {
+        if (! $author) {
             $author = User::create([
                 'name' => 'Akuru Institute',
                 'email' => 'admin@akuru.edu.mv',

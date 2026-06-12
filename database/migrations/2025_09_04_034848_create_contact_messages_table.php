@@ -21,7 +21,7 @@ return new class extends Migration
             $table->text('user_agent')->nullable();
             $table->timestamp('handled_at')->nullable();
             $table->timestamps();
-            
+
             $table->index('handled_at');
             $table->index('created_at');
         });

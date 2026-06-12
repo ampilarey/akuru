@@ -12,11 +12,13 @@ use Illuminate\Support\Facades\Cache;
 class SchedulerHealthCheckCommand extends Command
 {
     protected $signature = 'akuru:scheduler-heartbeat';
+
     protected $description = 'Write scheduler heartbeat to cache (called every minute by scheduler)';
 
     public function handle(): int
     {
         Cache::put('scheduler_heartbeat', now()->toIso8601String(), now()->addMinutes(5));
+
         return 0;
     }
 }

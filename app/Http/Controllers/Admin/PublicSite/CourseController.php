@@ -3,7 +3,8 @@
 namespace App\Http\Controllers\Admin\PublicSite;
 
 use App\Http\Controllers\Controller;
-use App\Models\{Course, CourseCategory};
+use App\Models\Course;
+use App\Models\CourseCategory;
 use Illuminate\Http\Request;
 
 class CourseController extends Controller
@@ -11,12 +12,14 @@ class CourseController extends Controller
     public function index()
     {
         $courses = Course::with('category')->orderBy('title')->paginate(15);
+
         return view('admin.public-site.courses.index', compact('courses'));
     }
 
     public function create()
     {
         $categories = CourseCategory::ordered()->get();
+
         return view('admin.public-site.courses.create', compact('categories'));
     }
 
@@ -39,12 +42,13 @@ class CourseController extends Controller
         Course::create($validated);
 
         return redirect()->route('admin.courses.index')
-                        ->with('success', 'Course created successfully.');
+            ->with('success', 'Course created successfully.');
     }
 
     public function edit(Course $course)
     {
         $categories = CourseCategory::ordered()->get();
+
         return view('admin.public-site.courses.edit', compact('course', 'categories'));
     }
 
@@ -53,7 +57,7 @@ class CourseController extends Controller
         $validated = $request->validate([
             'course_category_id' => 'required|exists:course_categories,id',
             'title' => 'required|string|max:255',
-            'slug' => 'required|string|max:255|unique:courses,slug,' . $course->id,
+            'slug' => 'required|string|max:255|unique:courses,slug,'.$course->id,
             'short_desc' => 'required|string',
             'body' => 'required|string',
             'cover_image' => 'required|string|max:255',
@@ -67,7 +71,7 @@ class CourseController extends Controller
         $course->update($validated);
 
         return redirect()->route('admin.courses.index')
-                        ->with('success', 'Course updated successfully.');
+            ->with('success', 'Course updated successfully.');
     }
 
     public function destroy(Course $course)
@@ -75,6 +79,6 @@ class CourseController extends Controller
         $course->delete();
 
         return redirect()->route('admin.courses.index')
-                        ->with('success', 'Course deleted successfully.');
+            ->with('success', 'Course deleted successfully.');
     }
 }

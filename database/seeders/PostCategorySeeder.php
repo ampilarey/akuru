@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Models\PostCategory;
+use Illuminate\Database\Seeder;
 
 class PostCategorySeeder extends Seeder
 {

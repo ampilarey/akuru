@@ -2,25 +2,24 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-use Illuminate\Database\Seeder;
-use App\Models\TeacherAbsence;
-use App\Models\SubstitutionRequest;
-use App\Models\Quiz;
-use App\Models\QuizQuestion;
-use App\Models\QuizAttempt;
 use App\Models\AbsenceNote;
+use App\Models\AcademicYear;
+use App\Models\ClassRoom;
 use App\Models\FeeItem;
 use App\Models\Invoice;
 use App\Models\InvoiceLine;
-use App\Models\AcademicYear;
-use App\Models\Teacher;
+use App\Models\Period;
+use App\Models\Quiz;
+use App\Models\QuizAttempt;
+use App\Models\QuizQuestion;
 use App\Models\Student;
 use App\Models\Subject;
-use App\Models\ClassRoom;
-use App\Models\Period;
+use App\Models\SubstitutionRequest;
+use App\Models\Teacher;
+use App\Models\TeacherAbsence;
 use App\Models\User;
 use Carbon\Carbon;
+use Illuminate\Database\Seeder;
 
 class FeaturePackDemoSeeder extends Seeder
 {
@@ -59,6 +58,7 @@ class FeaturePackDemoSeeder extends Seeder
 
         if ($teachers->isEmpty() || $students->isEmpty()) {
             $this->command->info('Please run the main seeders first to create teachers and students.');
+
             return;
         }
 
@@ -191,7 +191,7 @@ class FeaturePackDemoSeeder extends Seeder
         $this->command->info('Creating invoices...');
         foreach ($students->take(3) as $student) {
             $invoice = Invoice::create([
-                'invoice_number' => 'INV-' . date('Y') . '-' . str_pad(rand(1, 999), 3, '0', STR_PAD_LEFT),
+                'invoice_number' => 'INV-'.date('Y').'-'.str_pad(rand(1, 999), 3, '0', STR_PAD_LEFT),
                 'student_id' => $student->id,
                 'issue_date' => Carbon::now()->subDays(rand(1, 30)),
                 'due_date' => Carbon::now()->addDays(rand(15, 45)),
@@ -214,13 +214,13 @@ class FeaturePackDemoSeeder extends Seeder
 
         $this->command->info('Feature pack demo data created successfully!');
         $this->command->info('Created:');
-        $this->command->info('- ' . TeacherAbsence::count() . ' teacher absences');
-        $this->command->info('- ' . SubstitutionRequest::count() . ' substitution requests');
-        $this->command->info('- ' . Quiz::count() . ' quizzes');
-        $this->command->info('- ' . QuizQuestion::count() . ' quiz questions');
-        $this->command->info('- ' . QuizAttempt::count() . ' quiz attempts');
-        $this->command->info('- ' . AbsenceNote::count() . ' absence notes');
-        $this->command->info('- ' . FeeItem::count() . ' fee items');
-        $this->command->info('- ' . Invoice::count() . ' invoices');
+        $this->command->info('- '.TeacherAbsence::count().' teacher absences');
+        $this->command->info('- '.SubstitutionRequest::count().' substitution requests');
+        $this->command->info('- '.Quiz::count().' quizzes');
+        $this->command->info('- '.QuizQuestion::count().' quiz questions');
+        $this->command->info('- '.QuizAttempt::count().' quiz attempts');
+        $this->command->info('- '.AbsenceNote::count().' absence notes');
+        $this->command->info('- '.FeeItem::count().' fee items');
+        $this->command->info('- '.Invoice::count().' invoices');
     }
 }

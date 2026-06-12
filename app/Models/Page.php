@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Model;
 
 class Page extends Model
 {
@@ -27,7 +27,7 @@ class Page extends Model
     public function scopePublished($query)
     {
         return $query->where('is_published', true)
-                    ->where('published_at', '<=', now());
+            ->where('published_at', '<=', now());
     }
 
     protected function slug(): Attribute

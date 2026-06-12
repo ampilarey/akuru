@@ -12,9 +12,13 @@ use Illuminate\Support\Facades\Log;
 class BmlConnectService
 {
     private const STATUS_PAID = ['completed', 'success', 'confirmed', 'true', 'approved', 'paid'];
+
     private const STATUS_FAILED = ['failed', 'declined', 'rejected', 'false'];
+
     private const STATUS_CANCELLED = ['cancelled', 'canceled', 'voided'];
+
     private const STATUS_EXPIRED = ['expired', 'timeout'];
+
     private const STATUS_REFUNDED = ['refunded'];
 
     public function __construct(
@@ -72,7 +76,7 @@ class BmlConnectService
             ]);
         }
 
-        $url = $baseUrl . $path;
+        $url = $baseUrl.$path;
         $this->log('info', 'BML createTransaction request', ['local_id' => $localId, 'amount_laar' => $amountLaar, 'correlation_id' => $localId]);
 
         try {
@@ -122,9 +126,10 @@ class BmlConnectService
     {
         $trimmed = trim($apiKey);
         if (str_starts_with($trimmed, 'eyJ')) {
-            return 'Bearer ' . $trimmed;
+            return 'Bearer '.$trimmed;
         }
-        return 'Bearer ' . base64_encode($apiKey . ':' . $appId);
+
+        return 'Bearer '.base64_encode($apiKey.':'.$appId);
     }
 
     /**
@@ -150,18 +155,21 @@ class BmlConnectService
             ])
                 ->timeout(15)
                 ->retry(2, 300)
-                ->get($baseUrl . $path);
+                ->get($baseUrl.$path);
 
             if (! $response->successful()) {
                 $this->log('warning', 'BML getTransactionStatus failed', ['reference' => $reference, 'status' => $response->status()]);
+
                 return null;
             }
 
             $data = $response->json();
             $this->log('info', 'BML getTransactionStatus', ['reference' => $reference, 'data' => $data]);
+
             return $data;
         } catch (\Throwable $e) {
             $this->log('warning', 'BML getTransactionStatus exception', ['reference' => $reference, 'error' => $e->getMessage()]);
+
             return null;
         }
     }
@@ -174,6 +182,7 @@ class BmlConnectService
         $secret = config('bml.webhook_secret');
         if (! $secret) {
             $this->log('warning', 'BML webhook: No webhook_secret configured');
+
             return false;
         }
 
@@ -181,6 +190,7 @@ class BmlConnectService
         $signature = $request->header($headerName) ?? $request->input('signature');
         if (! $signature) {
             $this->log('warning', 'BML webhook: Missing signature header', ['header' => $headerName]);
+
             return false;
         }
 
@@ -195,6 +205,7 @@ class BmlConnectService
         if (! $ok) {
             $this->log('warning', 'BML webhook: Signature mismatch');
         }
+
         return $ok;
     }
 
@@ -208,6 +219,7 @@ class BmlConnectService
             return true;
         }
         $ip = $request->ip();
+
         return in_array($ip, $allowlist, true);
     }
 
@@ -258,6 +270,7 @@ class BmlConnectService
         if (in_array($s, self::STATUS_EXPIRED, true)) {
             return 'expired';
         }
+
         return 'pending';
     }
 
@@ -268,7 +281,8 @@ class BmlConnectService
 
     private function returnUrlForPayment(Payment $payment): string
     {
-        $base = config('bml.return_url') ?: url('/payments/return/' . $payment->id);
+        $base = config('bml.return_url') ?: url('/payments/return/'.$payment->id);
+
         return $base;
     }
 
@@ -276,6 +290,7 @@ class BmlConnectService
     {
         $allowed = ['created', 'pending_redirect', 'pending_webhook', 'paid', 'failed', 'cancelled', 'expired', 'refunded',
             'initiated', 'pending', 'confirmed'];
+
         return in_array($status, $allowed, true) ? $status : 'created';
     }
 

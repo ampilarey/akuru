@@ -11,28 +11,28 @@ class PolicyPagesSeeder extends Seeder
     {
         $pages = [
             [
-                'slug'         => 'terms',
-                'title'        => 'Terms and Conditions',
-                'excerpt'      => 'Terms and conditions for enrolling in courses at Akuru Institute.',
+                'slug' => 'terms',
+                'title' => 'Terms and Conditions',
+                'excerpt' => 'Terms and conditions for enrolling in courses at Akuru Institute.',
                 'is_published' => true,
                 'published_at' => now(),
-                'body'         => $this->terms(),
+                'body' => $this->terms(),
             ],
             [
-                'slug'         => 'refund-policy',
-                'title'        => 'Refund & Cancellation Policy',
-                'excerpt'      => 'Our policy on refunds, cancellations and course changes.',
+                'slug' => 'refund-policy',
+                'title' => 'Refund & Cancellation Policy',
+                'excerpt' => 'Our policy on refunds, cancellations and course changes.',
                 'is_published' => true,
                 'published_at' => now(),
-                'body'         => $this->refundPolicy(),
+                'body' => $this->refundPolicy(),
             ],
             [
-                'slug'         => 'privacy-policy',
-                'title'        => 'Privacy Policy',
-                'excerpt'      => 'How Akuru Institute collects, uses and protects your personal information.',
+                'slug' => 'privacy-policy',
+                'title' => 'Privacy Policy',
+                'excerpt' => 'How Akuru Institute collects, uses and protects your personal information.',
                 'is_published' => true,
                 'published_at' => now(),
-                'body'         => $this->privacyPolicy(),
+                'body' => $this->privacyPolicy(),
             ],
         ];
 

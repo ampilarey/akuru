@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         // Add read_at column to messages table if it doesn't exist
-        if (Schema::hasTable('messages') && !Schema::hasColumn('messages', 'read_at')) {
+        if (Schema::hasTable('messages') && ! Schema::hasColumn('messages', 'read_at')) {
             Schema::table('messages', function (Blueprint $table) {
                 $table->timestamp('read_at')->nullable()->after('content');
                 $table->index(['read_at']);
@@ -29,19 +29,19 @@ return new class extends Migration
             $table->string('mime_type');
             $table->integer('size'); // in bytes
             $table->timestamps();
-            
+
             $table->index(['message_id']);
         });
 
         // Enhance existing tables if they exist
         if (Schema::hasTable('message_threads')) {
             Schema::table('message_threads', function (Blueprint $table) {
-                if (!Schema::hasColumn('message_threads', 'tags')) {
+                if (! Schema::hasColumn('message_threads', 'tags')) {
                     $table->json('tags')->nullable()->after('subject');
                 }
             });
         }
-        
+
         // Create notifications table for explicit notifications
         Schema::create('custom_notifications', function (Blueprint $table) {
             $table->id();
@@ -55,7 +55,7 @@ return new class extends Migration
             $table->timestamp('done_at')->nullable(); // For "mark as done" functionality
             $table->boolean('is_important')->default(false);
             $table->timestamps();
-            
+
             $table->index(['user_id', 'read_at']);
             $table->index(['user_id', 'done_at']);
             $table->index(['type', 'created_at']);
@@ -69,13 +69,13 @@ return new class extends Migration
     {
         Schema::dropIfExists('custom_notifications');
         Schema::dropIfExists('message_attachments');
-        
+
         if (Schema::hasTable('messages')) {
             Schema::table('messages', function (Blueprint $table) {
                 $table->dropColumn('read_at');
             });
         }
-        
+
         if (Schema::hasTable('message_threads')) {
             Schema::table('message_threads', function (Blueprint $table) {
                 if (Schema::hasColumn('message_threads', 'tags')) {

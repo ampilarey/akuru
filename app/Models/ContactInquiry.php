@@ -4,7 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Casts\Attribute;
 
 class ContactInquiry extends Model
 {
@@ -111,7 +110,7 @@ class ContactInquiry extends Model
     // Accessors
     public function getStatusBadgeColorAttribute()
     {
-        return match($this->status) {
+        return match ($this->status) {
             'new' => 'blue',
             'in_progress' => 'yellow',
             'resolved' => 'green',
@@ -122,7 +121,7 @@ class ContactInquiry extends Model
 
     public function getPriorityBadgeColorAttribute()
     {
-        return match($this->priority) {
+        return match ($this->priority) {
             'low' => 'green',
             'medium' => 'blue',
             'high' => 'orange',
@@ -143,11 +142,12 @@ class ContactInquiry extends Model
 
     public function getIsOverdueAttribute()
     {
-        if (!$this->inquiryType || !$this->inquiryType->response_time_hours) {
+        if (! $this->inquiryType || ! $this->inquiryType->response_time_hours) {
             return false;
         }
-        
+
         $expectedResponseTime = $this->created_at->addHours($this->inquiryType->response_time_hours);
+
         return now()->isAfter($expectedResponseTime) && $this->status === 'new';
     }
 
@@ -158,12 +158,12 @@ class ContactInquiry extends Model
 
     public function getIsAssignedAttribute()
     {
-        return !is_null($this->assigned_to);
+        return ! is_null($this->assigned_to);
     }
 
     public function getIsRespondedAttribute()
     {
-        return !is_null($this->responded_at);
+        return ! is_null($this->responded_at);
     }
 
     // Methods
@@ -213,7 +213,7 @@ class ContactInquiry extends Model
             'resolved' => static::resolved()->count(),
             'closed' => static::closed()->count(),
             'spam' => static::spam()->count(),
-            'overdue' => static::new()->whereHas('inquiryType', function($q) {
+            'overdue' => static::new()->whereHas('inquiryType', function ($q) {
                 $q->whereRaw('created_at + INTERVAL response_time_hours HOUR < NOW()');
             })->count(),
         ];
@@ -222,19 +222,19 @@ class ContactInquiry extends Model
     public function getRecentInquiries($limit = 10)
     {
         return static::notSpam()
-                    ->recent()
-                    ->with(['inquiryType', 'assignedUser'])
-                    ->limit($limit)
-                    ->get();
+            ->recent()
+            ->with(['inquiryType', 'assignedUser'])
+            ->limit($limit)
+            ->get();
     }
 
     public function getOverdueInquiries()
     {
         return static::new()
-                    ->whereHas('inquiryType', function($q) {
-                        $q->whereRaw('created_at + INTERVAL response_time_hours HOUR < NOW()');
-                    })
-                    ->with(['inquiryType', 'assignedUser'])
-                    ->get();
+            ->whereHas('inquiryType', function ($q) {
+                $q->whereRaw('created_at + INTERVAL response_time_hours HOUR < NOW()');
+            })
+            ->with(['inquiryType', 'assignedUser'])
+            ->get();
     }
 }

@@ -23,7 +23,7 @@ return new class extends Migration
             $table->text('assessment_notes')->nullable();
             $table->boolean('is_completed')->default(false);
             $table->timestamps();
-            
+
             $table->index(['course_plan_id', 'order']);
         });
     }

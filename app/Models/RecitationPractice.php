@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
 class RecitationPractice extends Model
 {
@@ -90,6 +90,7 @@ class RecitationPractice extends Model
         if ($this->ayah_from === $this->ayah_to) {
             return "Ayah {$this->ayah_from}";
         }
+
         return "Ayahs {$this->ayah_from}-{$this->ayah_to}";
     }
 

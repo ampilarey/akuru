@@ -2,9 +2,9 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Models\Period;
 use App\Models\School;
+use Illuminate\Database\Seeder;
 
 class PeriodSeeder extends Seeder
 {
@@ -14,9 +14,10 @@ class PeriodSeeder extends Seeder
     public function run(): void
     {
         $school = School::first();
-        
-        if (!$school) {
+
+        if (! $school) {
             $this->command->warn('No school found. Please run SchoolSeeder first.');
+
             return;
         }
 
@@ -135,7 +136,7 @@ class PeriodSeeder extends Seeder
             Period::updateOrCreate(
                 [
                     'school_id' => $school->id,
-                    'order' => $periodData['order']
+                    'order' => $periodData['order'],
                 ],
                 array_merge($periodData, ['school_id' => $school->id])
             );

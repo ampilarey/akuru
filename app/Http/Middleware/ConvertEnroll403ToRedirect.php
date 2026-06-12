@@ -32,12 +32,13 @@ class ConvertEnroll403ToRedirect
 
             return $response;
         } catch (\Throwable $e) {
-            if (!$isEnrollRoute) {
+            if (! $isEnrollRoute) {
                 throw $e;
             }
             if ($e instanceof \Illuminate\Validation\ValidationException) {
                 throw $e;
             }
+
             return redirect()->back()
                 ->withErrors(['_authorization' => self::MESSAGE])
                 ->withInput();

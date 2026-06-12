@@ -32,7 +32,7 @@ return new class extends Migration
             $table->boolean('is_public')->default(true);
             $table->json('meta')->nullable();
             $table->timestamps();
-            
+
             // Indexes
             $table->index(['gallery_album_id', 'is_public']);
             $table->index(['file_type', 'is_public']);

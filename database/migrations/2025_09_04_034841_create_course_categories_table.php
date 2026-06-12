@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('slug')->unique();
             $table->smallInteger('order')->default(0);
             $table->timestamps();
-            
+
             $table->index(['order', 'name']);
             $table->index('slug');
         });

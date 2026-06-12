@@ -13,11 +13,11 @@ return new class extends Migration
     {
         Schema::table('users', function (Blueprint $table) {
             // Add phone field if it doesn't exist
-            if (!Schema::hasColumn('users', 'phone')) {
+            if (! Schema::hasColumn('users', 'phone')) {
                 $table->string('phone', 20)->nullable()->after('email');
                 $table->index('phone');
             }
-            
+
             // OTP preferences
             $table->boolean('otp_enabled')->default(false)->after('remember_token');
             $table->boolean('two_factor_enabled')->default(false)->after('otp_enabled');
@@ -36,7 +36,7 @@ return new class extends Migration
                 'two_factor_enabled',
                 'phone_verified_at',
             ]);
-            
+
             // Only drop phone if it was added by this migration
             if (Schema::hasColumn('users', 'phone')) {
                 $table->dropIndex(['phone']);

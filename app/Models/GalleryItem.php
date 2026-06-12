@@ -81,45 +81,47 @@ class GalleryItem extends Model
     // Accessors
     public function getFileUrlAttribute()
     {
-        return asset('storage/' . $this->file_path);
+        return asset('storage/'.$this->file_path);
     }
 
     public function getThumbnailUrlAttribute()
     {
         if ($this->thumbnail_path) {
-            return asset('storage/' . $this->thumbnail_path);
+            return asset('storage/'.$this->thumbnail_path);
         }
-        
+
         // For images, return the file path as thumbnail
         if ($this->file_type === 'image') {
             return $this->file_url;
         }
-        
+
         // For videos, return a video thumbnail placeholder
         if ($this->file_type === 'video') {
             return asset('images/video-thumbnail.jpg');
         }
-        
+
         return asset('images/file-thumbnail.jpg');
     }
 
     public function getFormattedFileSizeAttribute()
     {
-        if (!$this->file_size) return 'Unknown';
-        
+        if (! $this->file_size) {
+            return 'Unknown';
+        }
+
         $bytes = $this->file_size;
         $units = ['B', 'KB', 'MB', 'GB'];
-        
+
         for ($i = 0; $bytes > 1024 && $i < count($units) - 1; $i++) {
             $bytes /= 1024;
         }
-        
-        return round($bytes, 2) . ' ' . $units[$i];
+
+        return round($bytes, 2).' '.$units[$i];
     }
 
     public function getFileTypeIconAttribute()
     {
-        return match($this->file_type) {
+        return match ($this->file_type) {
             'image' => '🖼️',
             'video' => '🎥',
             'document' => '📄',
@@ -145,19 +147,19 @@ class GalleryItem extends Model
 
     public function getAspectRatioAttribute()
     {
-        if (!$this->dimensions || !isset($this->dimensions['width']) || !isset($this->dimensions['height'])) {
+        if (! $this->dimensions || ! isset($this->dimensions['width']) || ! isset($this->dimensions['height'])) {
             return '16:9'; // Default aspect ratio
         }
-        
+
         $width = $this->dimensions['width'];
         $height = $this->dimensions['height'];
-        
+
         // Calculate aspect ratio
         $gcd = $this->gcd($width, $height);
         $ratioWidth = $width / $gcd;
         $ratioHeight = $height / $gcd;
-        
-        return $ratioWidth . ':' . $ratioHeight;
+
+        return $ratioWidth.':'.$ratioHeight;
     }
 
     // Methods
@@ -174,28 +176,28 @@ class GalleryItem extends Model
     public function getRelatedItems($limit = 4)
     {
         return static::public()
-                    ->where('gallery_album_id', $this->gallery_album_id)
-                    ->where('id', '!=', $this->id)
-                    ->ordered()
-                    ->limit($limit)
-                    ->get();
+            ->where('gallery_album_id', $this->gallery_album_id)
+            ->where('id', '!=', $this->id)
+            ->ordered()
+            ->limit($limit)
+            ->get();
     }
 
     public function getFeaturedItems($limit = 8)
     {
         return static::public()
-                    ->featured()
-                    ->ordered()
-                    ->limit($limit)
-                    ->get();
+            ->featured()
+            ->ordered()
+            ->limit($limit)
+            ->get();
     }
 
     public function getRecentItems($limit = 8)
     {
         return static::public()
-                    ->recent()
-                    ->limit($limit)
-                    ->get();
+            ->recent()
+            ->limit($limit)
+            ->get();
     }
 
     private function gcd($a, $b)

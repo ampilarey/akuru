@@ -47,7 +47,7 @@ return new class extends Migration
             $table->text('refund_policy')->nullable();
             $table->json('meta')->nullable(); // Additional metadata
             $table->timestamps();
-            
+
             // Indexes for better performance
             $table->index(['status', 'start_date']);
             $table->index(['type', 'status']);

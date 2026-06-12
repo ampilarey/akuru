@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class QuizAttempt extends Model
@@ -69,7 +69,7 @@ class QuizAttempt extends Model
      */
     public function getTimeSpentHumanAttribute(): string
     {
-        if (!$this->time_spent_seconds) {
+        if (! $this->time_spent_seconds) {
             return 'N/A';
         }
 
@@ -84,17 +84,32 @@ class QuizAttempt extends Model
      */
     public function getGradeLetterAttribute(): string
     {
-        if (!$this->score) {
+        if (! $this->score) {
             return 'N/A';
         }
 
-        if ($this->score >= 90) return 'A+';
-        if ($this->score >= 80) return 'A';
-        if ($this->score >= 70) return 'B+';
-        if ($this->score >= 60) return 'B';
-        if ($this->score >= 50) return 'C+';
-        if ($this->score >= 40) return 'C';
-        if ($this->score >= 30) return 'D';
+        if ($this->score >= 90) {
+            return 'A+';
+        }
+        if ($this->score >= 80) {
+            return 'A';
+        }
+        if ($this->score >= 70) {
+            return 'B+';
+        }
+        if ($this->score >= 60) {
+            return 'B';
+        }
+        if ($this->score >= 50) {
+            return 'C+';
+        }
+        if ($this->score >= 40) {
+            return 'C';
+        }
+        if ($this->score >= 30) {
+            return 'D';
+        }
+
         return 'F';
     }
 
@@ -103,7 +118,7 @@ class QuizAttempt extends Model
      */
     public function hasPassed(): bool
     {
-        if (!$this->quiz->passing_score || !$this->score) {
+        if (! $this->quiz->passing_score || ! $this->score) {
             return false;
         }
 

@@ -27,6 +27,7 @@ class ReconcilePaymentsCommand extends Command
         $payments = $query->get();
         if ($payments->isEmpty()) {
             $this->info('No pending payments to reconcile.');
+
             return self::SUCCESS;
         }
 
@@ -83,6 +84,7 @@ class ReconcilePaymentsCommand extends Command
         }
 
         $this->info("Updated {$updated} payment(s).");
+
         return self::SUCCESS;
     }
 }

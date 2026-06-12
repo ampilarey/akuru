@@ -7,7 +7,6 @@ use App\Http\Requests\Auth\ForgotPasswordOtpRequest;
 use App\Http\Requests\Auth\ResetPasswordRequest;
 use App\Http\Requests\Auth\VerifyResetOtpRequest;
 use App\Models\UserContact;
-use App\Services\AccountResolverService;
 use App\Services\ContactNormalizer;
 use App\Services\OtpService;
 use Illuminate\Http\RedirectResponse;
@@ -75,7 +74,7 @@ class PasswordOtpController extends Controller
                 session([
                     'password_reset_identifier' => $identifier,
                     'password_reset_contact_id' => $resetContact?->id,
-                    'password_reset_user_id'    => $targetUser->id,
+                    'password_reset_user_id' => $targetUser->id,
                 ]);
 
                 $msg = $isChild
@@ -87,12 +86,13 @@ class PasswordOtpController extends Controller
 
             // No user found — silent (security best practice)
             session(['password_reset_identifier' => $identifier, 'password_reset_contact_id' => null, 'password_reset_user_id' => null]);
+
             return redirect()->route('password.reset.verify')
                 ->with('status', 'If an account exists, we have sent a verification code.');
         }
 
         // ── Email or Mobile lookup via user_contacts ──────────────────────────
-        $type  = str_contains($identifier, '@') ? 'email' : 'mobile';
+        $type = str_contains($identifier, '@') ? 'email' : 'mobile';
         $value = $type === 'email'
             ? $this->normalizer->normalizeEmail($identifier)
             : $this->normalizer->normalizePhone($identifier);
@@ -110,8 +110,9 @@ class PasswordOtpController extends Controller
         session([
             'password_reset_identifier' => $identifier,
             'password_reset_contact_id' => $contact?->id,
-            'password_reset_user_id'    => null, // will be resolved from contact
+            'password_reset_user_id' => null, // will be resolved from contact
         ]);
+
         return redirect()->route('password.reset.verify')
             ->with('status', 'If an account exists with that contact, we have sent a verification code.');
     }
@@ -124,12 +125,12 @@ class PasswordOtpController extends Controller
     public function verifyOtp(VerifyResetOtpRequest $request): RedirectResponse
     {
         $contactId = session('password_reset_contact_id');
-        if (!$contactId) {
+        if (! $contactId) {
             return back()->withErrors(['code' => 'Invalid or expired verification code.']);
         }
 
         $contact = UserContact::find($contactId);
-        if (!$contact) {
+        if (! $contact) {
             return back()->withErrors(['code' => 'Invalid or expired verification code.']);
         }
 
@@ -140,22 +141,24 @@ class PasswordOtpController extends Controller
         }
 
         session(['password_reset_verified' => true]);
+
         return redirect()->route('password.reset');
     }
 
     public function showResetForm(): View|RedirectResponse
     {
-        if (!session('password_reset_verified') || !session('password_reset_contact_id')) {
+        if (! session('password_reset_verified') || ! session('password_reset_contact_id')) {
             return redirect()->route('password.request');
         }
+
         return view('auth.reset-password');
     }
 
     public function resetPassword(ResetPasswordRequest $request): RedirectResponse
     {
         $contactId = session('password_reset_contact_id');
-        $verified  = session('password_reset_verified');
-        $userId    = session('password_reset_user_id');
+        $verified = session('password_reset_verified');
+        $userId = session('password_reset_user_id');
 
         if (! $verified) {
             return redirect()->route('password.request')->withErrors(['identifier' => 'Session expired.']);

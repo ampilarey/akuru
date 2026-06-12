@@ -2,11 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\RecitationPractice;
-use App\Models\TajweedFeedback;
 use App\Models\Surah;
-use App\Models\Student;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
 class RecitationPracticeController extends Controller
@@ -17,7 +15,7 @@ class RecitationPracticeController extends Controller
     public function index()
     {
         $user = auth()->user();
-        
+
         if ($user->hasRole('teacher') || $user->hasRole('admin') || $user->hasRole('headmaster')) {
             // Teachers and admins can see all practices
             $practices = RecitationPractice::with(['student', 'surah', 'evaluator', 'tajweedFeedback'])
@@ -40,6 +38,7 @@ class RecitationPracticeController extends Controller
     public function create()
     {
         $surahs = Surah::active()->ordered()->get();
+
         return view('recitation-practices.create', compact('surahs'));
     }
 
@@ -56,7 +55,7 @@ class RecitationPracticeController extends Controller
         ]);
 
         $student = auth()->user()->student;
-        if (!$student) {
+        if (! $student) {
             return redirect()->back()->with('error', 'Student profile not found.');
         }
 
@@ -66,7 +65,7 @@ class RecitationPracticeController extends Controller
         // Handle audio file upload
         if ($request->hasFile('audio_file')) {
             $audioFile = $request->file('audio_file');
-            $filename = 'recitation_' . $student->id . '_' . time() . '.' . $audioFile->getClientOriginalExtension();
+            $filename = 'recitation_'.$student->id.'_'.time().'.'.$audioFile->getClientOriginalExtension();
             $path = $audioFile->storeAs('recitations', $filename, 'public');
             $data['audio_path'] = $path;
         }
@@ -83,7 +82,7 @@ class RecitationPracticeController extends Controller
     public function show(RecitationPractice $recitationPractice)
     {
         $recitationPractice->load(['student', 'surah', 'evaluator', 'tajweedFeedback']);
-        
+
         // Check if user can view this practice
         $user = auth()->user();
         if ($user->hasRole('student') && $recitationPractice->student_id !== $user->student->id) {
@@ -99,6 +98,7 @@ class RecitationPracticeController extends Controller
     public function edit(RecitationPractice $recitationPractice)
     {
         $surahs = Surah::active()->ordered()->get();
+
         return view('recitation-practices.edit', compact('recitationPractice', 'surahs'));
     }
 
@@ -124,7 +124,7 @@ class RecitationPracticeController extends Controller
             }
 
             $audioFile = $request->file('audio_file');
-            $filename = 'recitation_' . $recitationPractice->student_id . '_' . time() . '.' . $audioFile->getClientOriginalExtension();
+            $filename = 'recitation_'.$recitationPractice->student_id.'_'.time().'.'.$audioFile->getClientOriginalExtension();
             $path = $audioFile->storeAs('recitations', $filename, 'public');
             $data['audio_path'] = $path;
         }
@@ -165,8 +165,8 @@ class RecitationPracticeController extends Controller
         ]);
 
         $data = $request->only([
-            'accuracy_score', 'tajweed_score', 'fluency_score', 
-            'teacher_feedback', 'status'
+            'accuracy_score', 'tajweed_score', 'fluency_score',
+            'teacher_feedback', 'status',
         ]);
         $data['evaluated_by'] = auth()->id();
         $data['evaluated_at'] = now();

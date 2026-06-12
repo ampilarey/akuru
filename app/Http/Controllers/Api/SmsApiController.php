@@ -29,7 +29,7 @@ class SmsApiController extends Controller
     {
         $upstream = config('services.sms_gateway.upstream_url');
         $isHealthy = $upstream
-            ? Http::timeout(5)->get($upstream . '/health')->successful()
+            ? Http::timeout(5)->get($upstream.'/health')->successful()
             : true;
 
         return response()->json([
@@ -44,7 +44,7 @@ class SmsApiController extends Controller
      */
     public function send(Request $request): JsonResponse
     {
-        if (!$this->validateApiKey($request)) {
+        if (! $this->validateApiKey($request)) {
             return response()->json([
                 'success' => false,
                 'message' => 'Invalid API key',
@@ -62,8 +62,9 @@ class SmsApiController extends Controller
         $upstream = config('services.sms_gateway.upstream_url');
         $upstreamKey = config('services.sms_gateway.upstream_api_key');
 
-        if (!$upstream) {
+        if (! $upstream) {
             Log::warning('SMS upstream not configured - set SMS_UPSTREAM_URL in .env');
+
             return response()->json([
                 'success' => false,
                 'message' => 'SMS upstream not configured',
@@ -74,11 +75,11 @@ class SmsApiController extends Controller
         $response = Http::timeout(30)
             ->withHeaders([
                 'X-API-Key' => $upstreamKey ?: config('services.sms_gateway.api_key'),
-                'Authorization' => 'Bearer ' . ($upstreamKey ?: config('services.sms_gateway.api_key')),
+                'Authorization' => 'Bearer '.($upstreamKey ?: config('services.sms_gateway.api_key')),
                 'Accept' => 'application/json',
                 'Content-Type' => 'application/json',
             ])
-            ->post(rtrim($upstream, '/') . '/sms/send', [
+            ->post(rtrim($upstream, '/').'/sms/send', [
                 'to' => $validated['to'],
                 'message' => $validated['message'],
                 'sender_id' => $validated['sender_id'] ?? 'AKURU',
@@ -87,6 +88,7 @@ class SmsApiController extends Controller
 
         if ($response->successful()) {
             $result = $response->json();
+
             return response()->json($result, 200);
         }
 

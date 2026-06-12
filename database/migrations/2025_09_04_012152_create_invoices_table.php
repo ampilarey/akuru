@@ -30,7 +30,7 @@ return new class extends Migration
             $table->timestamp('paid_at')->nullable();
             $table->foreignId('created_by')->constrained('users')->onDelete('cascade');
             $table->timestamps();
-            
+
             $table->index(['student_id', 'status']);
             $table->index(['status', 'due_date']);
             $table->index(['issue_date', 'due_date']);

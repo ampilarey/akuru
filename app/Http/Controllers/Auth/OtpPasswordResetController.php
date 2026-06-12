@@ -33,8 +33,8 @@ class OtpPasswordResetController extends Controller
             'contact' => ['required', 'string', 'max:120'],
         ]);
 
-        $raw     = trim($request->input('contact'));
-        $type    = str_contains($raw, '@') ? 'email' : 'mobile';
+        $raw = trim($request->input('contact'));
+        $type = str_contains($raw, '@') ? 'email' : 'mobile';
         $normalized = $this->normalizer->normalize($type, $raw);
 
         // Intentionally do NOT reveal whether the account exists.
@@ -52,13 +52,13 @@ class OtpPasswordResetController extends Controller
 
         // Generic message always shown
         session([
-            'password_reset_contact_type'  => $type,
+            'password_reset_contact_type' => $type,
             'password_reset_contact_value' => $normalized,
-            'password_reset_contact_id'    => $contact?->id,
+            'password_reset_contact_id' => $contact?->id,
         ]);
 
         return redirect()->route('password.otp.verify.form')
-            ->with('success', "If that contact is registered, a verification code has been sent.");
+            ->with('success', 'If that contact is registered, a verification code has been sent.');
     }
 
     /** Step 2 – show OTP input form */
@@ -125,10 +125,11 @@ class OtpPasswordResetController extends Controller
         }
 
         $contact = UserContact::find(session('password_reset_contact_id'));
-        $user    = $contact?->user;
+        $user = $contact?->user;
 
         if (! $user) {
             session()->forget(['password_reset_otp_verified', 'password_reset_contact_id', 'password_reset_contact_value', 'password_reset_contact_type']);
+
             return redirect()->route('password.otp.request')
                 ->withErrors(['contact' => 'Account not found.']);
         }

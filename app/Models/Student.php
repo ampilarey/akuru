@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
 class Student extends Model
 {
@@ -57,8 +57,8 @@ class Student extends Model
     public function parentGuardians()
     {
         return $this->belongsToMany(ParentGuardian::class, 'student_parent')
-                    ->withPivot('relationship', 'is_primary_contact')
-                    ->withTimestamps();
+            ->withPivot('relationship', 'is_primary_contact')
+            ->withTimestamps();
     }
 
     public function grades()
@@ -94,16 +94,16 @@ class Student extends Model
     // Helper methods
     public function getFullNameAttribute()
     {
-        return $this->first_name . ' ' . $this->last_name;
+        return $this->first_name.' '.$this->last_name;
     }
 
     public function getFullNameArabicAttribute()
     {
-        return $this->first_name_arabic . ' ' . $this->last_name_arabic;
+        return $this->first_name_arabic.' '.$this->last_name_arabic;
     }
 
     public function getFullNameDhivehiAttribute()
     {
-        return $this->first_name_dhivehi . ' ' . $this->last_name_dhivehi;
+        return $this->first_name_dhivehi.' '.$this->last_name_dhivehi;
     }
 }

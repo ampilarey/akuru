@@ -2,9 +2,9 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Models\Event;
 use Carbon\Carbon;
+use Illuminate\Database\Seeder;
 
 class EventSeeder extends Seeder
 {
@@ -36,19 +36,19 @@ class EventSeeder extends Seeder
                     'Bring your own Quran',
                     'Dress in appropriate Islamic attire',
                     'Arrive 30 minutes before your scheduled time',
-                    'Prepare 3-5 Surahs for recitation'
+                    'Prepare 3-5 Surahs for recitation',
                 ],
                 'speakers' => [
                     [
                         'name' => 'Sheikh Ahmed Ibrahim',
                         'title' => 'Chief Judge',
-                        'bio' => 'Renowned Quran reciter and Islamic scholar'
+                        'bio' => 'Renowned Quran reciter and Islamic scholar',
                     ],
                     [
                         'name' => 'Dr. Aisha Mohamed',
                         'title' => 'Judge',
-                        'bio' => 'Expert in Tajweed and Quranic studies'
-                    ]
+                        'bio' => 'Expert in Tajweed and Quranic studies',
+                    ],
                 ],
                 'schedule' => [
                     '9:00 AM - Opening Ceremony',
@@ -56,12 +56,12 @@ class EventSeeder extends Seeder
                     '11:00 AM - Youth Category (Ages 13-18)',
                     '2:00 PM - Adult Category (Ages 19+)',
                     '4:00 PM - Award Ceremony',
-                    '5:00 PM - Closing Remarks'
+                    '5:00 PM - Closing Remarks',
                 ],
                 'contact_info' => [
                     'phone' => '+960 797 2434',
                     'email' => 'events@akuru.edu.mv',
-                    'person' => 'Event Coordinator'
+                    'person' => 'Event Coordinator',
                 ],
                 'is_featured' => true,
                 'is_public' => true,
@@ -89,25 +89,25 @@ class EventSeeder extends Seeder
                 'requirements' => [
                     'Basic Arabic knowledge preferred',
                     'Bring notebook and pen',
-                    'Laptop recommended for digital resources'
+                    'Laptop recommended for digital resources',
                 ],
                 'speakers' => [
                     [
                         'name' => 'Ustadh Hassan Ali',
                         'title' => 'Arabic Language Instructor',
-                        'bio' => 'Native Arabic speaker with 10+ years teaching experience'
-                    ]
+                        'bio' => 'Native Arabic speaker with 10+ years teaching experience',
+                    ],
                 ],
                 'schedule' => [
                     '2:00 PM - Welcome and Introduction',
                     '2:30 PM - Arabic Grammar Review',
                     '3:30 PM - Conversation Practice',
                     '4:30 PM - Vocabulary Building',
-                    '5:30 PM - Q&A Session'
+                    '5:30 PM - Q&A Session',
                 ],
                 'contact_info' => [
                     'phone' => '+960 797 2434',
-                    'email' => 'arabic@akuru.edu.mv'
+                    'email' => 'arabic@akuru.edu.mv',
                 ],
                 'is_featured' => false,
                 'is_public' => true,
@@ -133,25 +133,25 @@ class EventSeeder extends Seeder
                 'registration_start' => null,
                 'requirements' => [
                     'Open to all community members',
-                    'No prior knowledge required'
+                    'No prior knowledge required',
                 ],
                 'speakers' => [
                     [
                         'name' => 'Dr. Mohamed Shareef',
                         'title' => 'Islamic History Professor',
-                        'bio' => 'Expert in Islamic civilization and Middle Eastern history'
-                    ]
+                        'bio' => 'Expert in Islamic civilization and Middle Eastern history',
+                    ],
                 ],
                 'schedule' => [
                     '7:00 PM - Introduction to Islamic History',
                     '7:30 PM - The Golden Age of Islam',
                     '8:00 PM - Great Muslim Scholars and Scientists',
                     '8:30 PM - Islamic Art and Architecture',
-                    '9:00 PM - Q&A and Discussion'
+                    '9:00 PM - Q&A and Discussion',
                 ],
                 'contact_info' => [
                     'phone' => '+960 797 2434',
-                    'email' => 'info@akuru.edu.mv'
+                    'email' => 'info@akuru.edu.mv',
                 ],
                 'is_featured' => true,
                 'is_public' => true,
@@ -178,25 +178,25 @@ class EventSeeder extends Seeder
                 'requirements' => [
                     'Basic Quran reading ability',
                     'Bring your own Quran',
-                    'Commitment to practice at home'
+                    'Commitment to practice at home',
                 ],
                 'speakers' => [
                     [
                         'name' => 'Qari Ibrahim Hassan',
                         'title' => 'Tajweed Specialist',
-                        'bio' => 'Certified Tajweed instructor with Ijazah in Quran recitation'
-                    ]
+                        'bio' => 'Certified Tajweed instructor with Ijazah in Quran recitation',
+                    ],
                 ],
                 'schedule' => [
                     '4:00 PM - Introduction to Tajweed Rules',
                     '4:30 PM - Makharij (Articulation Points)',
                     '5:00 PM - Sifaat (Characteristics)',
                     '5:30 PM - Practical Recitation Practice',
-                    '6:00 PM - Individual Assessment'
+                    '6:00 PM - Individual Assessment',
                 ],
                 'contact_info' => [
                     'phone' => '+960 797 2434',
-                    'email' => 'quran@akuru.edu.mv'
+                    'email' => 'quran@akuru.edu.mv',
                 ],
                 'is_featured' => false,
                 'is_public' => true,
@@ -224,14 +224,14 @@ class EventSeeder extends Seeder
                 'requirements' => [
                     'Bring your family',
                     'Traditional dress encouraged',
-                    'Bring a dish to share (optional)'
+                    'Bring a dish to share (optional)',
                 ],
                 'speakers' => [
                     [
                         'name' => 'Imam Abdullah',
                         'title' => 'Eid Khutbah',
-                        'bio' => 'Community Imam and spiritual leader'
-                    ]
+                        'bio' => 'Community Imam and spiritual leader',
+                    ],
                 ],
                 'schedule' => [
                     '10:00 AM - Eid Prayer',
@@ -240,11 +240,11 @@ class EventSeeder extends Seeder
                     '12:00 PM - Children\'s Activities',
                     '2:00 PM - Traditional Games',
                     '3:00 PM - Cultural Performances',
-                    '4:00 PM - Closing Remarks'
+                    '4:00 PM - Closing Remarks',
                 ],
                 'contact_info' => [
                     'phone' => '+960 797 2434',
-                    'email' => 'community@akuru.edu.mv'
+                    'email' => 'community@akuru.edu.mv',
                 ],
                 'is_featured' => true,
                 'is_public' => true,
@@ -272,14 +272,14 @@ class EventSeeder extends Seeder
                 'requirements' => [
                     'Bring your child\'s recent work',
                     'Prepare questions about their progress',
-                    'Arrive 10 minutes early'
+                    'Arrive 10 minutes early',
                 ],
                 'speakers' => [
                     [
                         'name' => 'All Teachers',
                         'title' => 'Subject Teachers',
-                        'bio' => 'Dedicated educators committed to student success'
-                    ]
+                        'bio' => 'Dedicated educators committed to student success',
+                    ],
                 ],
                 'schedule' => [
                     '2:00 PM - Registration and Welcome',
@@ -287,11 +287,11 @@ class EventSeeder extends Seeder
                     '3:00 PM - Arabic Teachers Available',
                     '3:45 PM - Islamic Studies Teachers Available',
                     '4:30 PM - General Discussion',
-                    '5:30 PM - Closing'
+                    '5:30 PM - Closing',
                 ],
                 'contact_info' => [
                     'phone' => '+960 797 2434',
-                    'email' => 'parents@akuru.edu.mv'
+                    'email' => 'parents@akuru.edu.mv',
                 ],
                 'is_featured' => false,
                 'is_public' => true,

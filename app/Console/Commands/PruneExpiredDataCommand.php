@@ -2,10 +2,9 @@
 
 namespace App\Console\Commands;
 
-use App\Models\Otp;
 use App\Models\CourseEnrollment;
+use App\Models\Otp;
 use Illuminate\Console\Command;
-use Illuminate\Support\Carbon;
 
 class PruneExpiredDataCommand extends Command
 {
@@ -21,7 +20,7 @@ class PruneExpiredDataCommand extends Command
         // --- Expired OTPs (consumed, expired, or > 24 h old) ---
         $otpQuery = Otp::where(function ($q) {
             $q->whereNotNull('consumed_at')
-              ->orWhere('expires_at', '<', now());
+                ->orWhere('expires_at', '<', now());
         })->where('created_at', '<', now()->subDay());
 
         $otpCount = $otpQuery->count();
@@ -43,7 +42,7 @@ class PruneExpiredDataCommand extends Command
         // --- Stale pending-payment enrollments (older than 24 h, never paid) ---
         $pendingQuery = CourseEnrollment::where('status', 'pending')
             ->where('created_at', '<', now()->subHours(24))
-            ->whereDoesntHave('payments', fn($q) => $q->whereIn('status', ['paid', 'completed']));
+            ->whereDoesntHave('payments', fn ($q) => $q->whereIn('status', ['paid', 'completed']));
 
         $pendingCount = $pendingQuery->count();
         $this->line("Stale pending-payment enrollments to cancel: {$pendingCount}");

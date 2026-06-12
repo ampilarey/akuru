@@ -71,26 +71,26 @@ class InquiryType extends Model
     public function getAverageResponseTimeAttribute()
     {
         $respondedInquiries = $this->inquiries()
-                                 ->whereNotNull('responded_at')
-                                 ->get();
-        
+            ->whereNotNull('responded_at')
+            ->get();
+
         if ($respondedInquiries->isEmpty()) {
             return null;
         }
-        
-        $totalHours = $respondedInquiries->sum(function($inquiry) {
+
+        $totalHours = $respondedInquiries->sum(function ($inquiry) {
             return $inquiry->created_at->diffInHours($inquiry->responded_at);
         });
-        
+
         return round($totalHours / $respondedInquiries->count(), 1);
     }
 
     public function getCustomFieldsArrayAttribute()
     {
-        if (!$this->custom_fields) {
+        if (! $this->custom_fields) {
             return [];
         }
-        
+
         return is_array($this->custom_fields) ? $this->custom_fields : json_decode($this->custom_fields, true);
     }
 
@@ -98,8 +98,8 @@ class InquiryType extends Model
     public function getActiveTypes()
     {
         return static::active()
-                    ->ordered()
-                    ->get();
+            ->ordered()
+            ->get();
     }
 
     public function getInquiryStats()
@@ -176,12 +176,12 @@ class InquiryType extends Model
 
     public function getAutoResponseMessage($inquiry = null)
     {
-        if (!$this->auto_response_template) {
+        if (! $this->auto_response_template) {
             return null;
         }
 
         $message = $this->auto_response_template;
-        
+
         if ($inquiry) {
             $message = str_replace('{{name}}', $inquiry->name, $message);
             $message = str_replace('{{email}}', $inquiry->email, $message);

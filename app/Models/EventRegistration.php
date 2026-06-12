@@ -4,7 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Casts\Attribute;
 
 class EventRegistration extends Model
 {
@@ -84,7 +83,7 @@ class EventRegistration extends Model
     // Accessors
     public function getStatusBadgeColorAttribute()
     {
-        return match($this->status) {
+        return match ($this->status) {
             'confirmed' => 'green',
             'pending' => 'yellow',
             'cancelled' => 'red',
@@ -96,9 +95,11 @@ class EventRegistration extends Model
 
     public function getFormattedAmountPaidAttribute()
     {
-        if (!$this->amount_paid) return 'Free';
-        
-        return 'MVR ' . number_format($this->amount_paid, 2);
+        if (! $this->amount_paid) {
+            return 'Free';
+        }
+
+        return 'MVR '.number_format($this->amount_paid, 2);
     }
 
     public function getIsPaidAttribute()
@@ -108,13 +109,13 @@ class EventRegistration extends Model
 
     public function getIsCheckedInAttribute()
     {
-        return !is_null($this->checked_in_at);
+        return ! is_null($this->checked_in_at);
     }
 
     public function getHasSpecialRequirementsAttribute()
     {
-        return $this->dietary_requirements || 
-               $this->transportation_needed || 
+        return $this->dietary_requirements ||
+               $this->transportation_needed ||
                $this->accommodation_needed;
     }
 
@@ -125,7 +126,7 @@ class EventRegistration extends Model
             'status' => 'confirmed',
             'confirmed_at' => now(),
         ]);
-        
+
         // Update event attendee count
         $this->event->updateAttendeeCount();
     }
@@ -137,7 +138,7 @@ class EventRegistration extends Model
             'cancellation_reason' => $reason,
             'cancelled_at' => now(),
         ]);
-        
+
         // Update event attendee count
         $this->event->updateAttendeeCount();
     }
@@ -160,18 +161,18 @@ class EventRegistration extends Model
     public function generateQrCode()
     {
         // Generate a unique QR code for this registration
-        $this->qr_code = 'EVT-' . $this->event_id . '-' . $this->id . '-' . strtoupper(substr(md5($this->email . $this->created_at), 0, 8));
+        $this->qr_code = 'EVT-'.$this->event_id.'-'.$this->id.'-'.strtoupper(substr(md5($this->email.$this->created_at), 0, 8));
         $this->save();
-        
+
         return $this->qr_code;
     }
 
     public function getQrCodeUrl()
     {
-        if (!$this->qr_code) {
+        if (! $this->qr_code) {
             $this->generateQrCode();
         }
-        
+
         return route('public.events.qr', $this->qr_code);
     }
 

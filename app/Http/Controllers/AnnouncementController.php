@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\Announcement;
 use App\Models\School;
+use Illuminate\Http\Request;
 
 class AnnouncementController extends Controller
 {
@@ -13,21 +13,21 @@ class AnnouncementController extends Controller
         $announcements = Announcement::with('createdBy')
             ->where('is_published', true)
             ->where('publish_date', '<=', now())
-            ->where(function($query) {
+            ->where(function ($query) {
                 $query->whereNull('expiry_date')
-                      ->orWhere('expiry_date', '>=', now());
+                    ->orWhere('expiry_date', '>=', now());
             })
             ->latest()
             ->get();
-            
+
         return view('announcements.index', compact('announcements'));
     }
-    
+
     public function create()
     {
         return view('announcements.create');
     }
-    
+
     public function store(Request $request)
     {
         $request->validate([
@@ -44,7 +44,7 @@ class AnnouncementController extends Controller
             'publish_date' => 'required|date',
             'expiry_date' => 'nullable|date|after:publish_date',
         ]);
-        
+
         $announcement = Announcement::create([
             'school_id' => 1, // Assuming single school
             'created_by' => auth()->id(),
@@ -62,11 +62,11 @@ class AnnouncementController extends Controller
             'expiry_date' => $request->expiry_date,
             'is_published' => true,
         ]);
-        
+
         return redirect()->route('announcements.index')
             ->with('success', 'Announcement created successfully!');
     }
-    
+
     public function show(Announcement $announcement)
     {
         return view('announcements.show', compact('announcement'));

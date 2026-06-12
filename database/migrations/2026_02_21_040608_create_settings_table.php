@@ -2,8 +2,8 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
@@ -24,7 +24,7 @@ return new class extends Migration
             ['key' => 'phone',        'value' => '+960 797 2434',                       'group' => 'contact',  'label' => 'Phone number'],
             ['key' => 'viber',        'value' => '9607972434',                          'group' => 'contact',  'label' => 'Viber number (digits only, with country code)'],
             ['key' => 'email',        'value' => 'info@akuru.edu.mv',                   'group' => 'contact',  'label' => 'Contact email'],
-            ['key' => 'address',      'value' => "Malé, Republic of Maldives",          'group' => 'contact',  'label' => 'Office address'],
+            ['key' => 'address',      'value' => 'Malé, Republic of Maldives',          'group' => 'contact',  'label' => 'Office address'],
             ['key' => 'facebook',     'value' => '',                                    'group' => 'social',   'label' => 'Facebook URL'],
             ['key' => 'instagram',    'value' => '',                                    'group' => 'social',   'label' => 'Instagram URL'],
             ['key' => 'twitter',      'value' => '',                                    'group' => 'social',   'label' => 'X / Twitter URL'],
@@ -32,7 +32,7 @@ return new class extends Migration
             ['key' => 'site_name',    'value' => 'Akuru Institute',                     'group' => 'seo',      'label' => 'Site name'],
             ['key' => 'tagline',      'value' => 'Learn Quran, Arabic & Islamic Studies', 'group' => 'seo',    'label' => 'Site tagline'],
             ['key' => 'hero_title',   'value' => 'Welcome to Akuru Institute',          'group' => 'homepage', 'label' => 'Hero title'],
-            ['key' => 'hero_subtitle','value' => 'Learn Quran, Arabic, and Islamic Studies in the Maldives', 'group' => 'homepage', 'label' => 'Hero subtitle'],
+            ['key' => 'hero_subtitle', 'value' => 'Learn Quran, Arabic, and Islamic Studies in the Maldives', 'group' => 'homepage', 'label' => 'Hero subtitle'],
         ];
 
         foreach ($defaults as $row) {

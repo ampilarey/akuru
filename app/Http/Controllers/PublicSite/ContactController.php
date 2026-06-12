@@ -15,7 +15,7 @@ class ContactController extends Controller
     {
         return view('public.contact.create');
     }
-    
+
     public function store(Request $request)
     {
         // Honeypot check — bots fill the hidden "website" field, humans leave it empty
@@ -24,9 +24,10 @@ class ContactController extends Controller
         }
 
         // Rate limit: max 5 contact messages per IP per 10 minutes
-        $rateLimitKey = 'contact.' . $request->ip();
+        $rateLimitKey = 'contact.'.$request->ip();
         if (RateLimiter::tooManyAttempts($rateLimitKey, 5)) {
             $seconds = RateLimiter::availableIn($rateLimitKey);
+
             return back()->withErrors(['message' => "Too many messages. Please wait {$seconds} seconds before trying again."]);
         }
         RateLimiter::hit($rateLimitKey, 600);
@@ -37,18 +38,18 @@ class ContactController extends Controller
             'phone' => 'nullable|string|max:20',
             'message' => 'required|string|max:2000',
         ]);
-        
+
         $validated['ip'] = $request->ip();
         $validated['user_agent'] = $request->userAgent();
-        
+
         $contactMessage = ContactMessage::create($validated);
-        
+
         // Notify administrators
         $adminUsers = \App\Models\User::role('admin')->get();
         if ($adminUsers->count() > 0) {
             Notification::send($adminUsers, new NewContactMessage($contactMessage));
         }
-        
+
         return back()->with('success', __('public.contact_message_sent'));
     }
 }

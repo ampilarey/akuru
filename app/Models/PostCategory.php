@@ -57,7 +57,7 @@ class PostCategory extends Model
     // Methods
     public function getColorClassAttribute()
     {
-        return match($this->color) {
+        return match ($this->color) {
             'red' => 'bg-red-100 text-red-800',
             'blue' => 'bg-blue-100 text-blue-800',
             'green' => 'bg-green-100 text-green-800',
@@ -72,7 +72,7 @@ class PostCategory extends Model
 
     public function getIconHtmlAttribute()
     {
-        return match($this->icon) {
+        return match ($this->icon) {
             'news' => '📰',
             'announcement' => '📢',
             'event' => '📅',

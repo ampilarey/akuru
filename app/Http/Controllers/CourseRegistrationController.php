@@ -17,8 +17,8 @@ use App\Services\Payment\PaymentService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\View\View;
 
@@ -38,7 +38,7 @@ class CourseRegistrationController extends PublicRegistrationController
         if (! $course->is_enrollment_open) {
             return view('courses.register', [
                 'course' => $course,
-                'fee'    => $course->getRegistrationFeeAmount(),
+                'fee' => $course->getRegistrationFeeAmount(),
                 'closed' => true,
             ]);
         }
@@ -47,15 +47,16 @@ class CourseRegistrationController extends PublicRegistrationController
         if (auth()->check() && auth()->user()->hasVerifiedContact()) {
             session([
                 'pending_selected_course_ids' => [$course->id],
-                'pending_term_id'             => null,
-                'checkout_flow'               => 'adult',
+                'pending_term_id' => null,
+                'checkout_flow' => 'adult',
             ]);
+
             return redirect()->route('courses.register.continue');
         }
 
         return view('courses.checkout', [
             'course' => $course,
-            'fee'    => $course->getRegistrationFeeAmount(),
+            'fee' => $course->getRegistrationFeeAmount(),
         ]);
     }
 
@@ -64,21 +65,22 @@ class CourseRegistrationController extends PublicRegistrationController
     {
         $request->validate([
             'login_contact' => ['required', 'string'],
-            'password'      => ['required', 'string'],
+            'password' => ['required', 'string'],
         ]);
 
         // Brute-force protection: max 10 attempts per contact+IP per 15 minutes
-        $throttleKey = 'checkout-login:' . sha1($request->input('login_contact') . '|' . $request->ip());
+        $throttleKey = 'checkout-login:'.sha1($request->input('login_contact').'|'.$request->ip());
         if (RateLimiter::tooManyAttempts($throttleKey, 10)) {
             $seconds = RateLimiter::availableIn($throttleKey);
+
             return back()
                 ->withInput($request->only('login_contact'))
-                ->withErrors(['login_contact' => 'Too many login attempts. Please try again in ' . ceil($seconds / 60) . ' minutes, or use OTP login.']);
+                ->withErrors(['login_contact' => 'Too many login attempts. Please try again in '.ceil($seconds / 60).' minutes, or use OTP login.']);
         }
 
-        $raw        = trim($request->input('login_contact'));
-        $isEmail    = str_contains($raw, '@');
-        $type       = $isEmail ? 'email' : 'mobile';
+        $raw = trim($request->input('login_contact'));
+        $isEmail = str_contains($raw, '@');
+        $type = $isEmail ? 'email' : 'mobile';
         $normalized = $this->normalizer->normalize($type, $raw);
 
         // Find contact → user
@@ -89,12 +91,13 @@ class CourseRegistrationController extends PublicRegistrationController
         $user = $contact?->user;
 
         // Generic error — never reveal whether account exists
-        $fail = fn() => back()
+        $fail = fn () => back()
             ->withInput($request->only('login_contact'))
             ->withErrors(['login_contact' => 'Incorrect contact or password. Try OTP login instead.']);
 
         if (! $user || ! $user->password || ! Hash::check($request->input('password'), $user->password)) {
             RateLimiter::hit($throttleKey, 15 * 60);
+
             return $fail();
         }
 
@@ -103,9 +106,9 @@ class CourseRegistrationController extends PublicRegistrationController
 
         // Carry course into session for the continue form
         session([
-            'pending_course_id'          => $course->id,
+            'pending_course_id' => $course->id,
             'pending_selected_course_ids' => [$course->id],
-            'pending_term_id'            => null,
+            'pending_term_id' => null,
         ]);
 
         // Pre-select flow based on existing profile
@@ -122,14 +125,14 @@ class CourseRegistrationController extends PublicRegistrationController
     {
         return view('courses.register', [
             'course' => $course,
-            'fee'    => $course->getRegistrationFeeAmount(),
+            'fee' => $course->getRegistrationFeeAmount(),
         ]);
     }
 
     public function start(StartRegistrationRequest $request): RedirectResponse
     {
-        $type       = $request->input('contact_type');
-        $value      = $request->input('contact_value');
+        $type = $request->input('contact_type');
+        $value = $request->input('contact_value');
         $normalized = $this->normalizer->normalize($type, $value);
 
         // If this contact already exists + verified → ask the user to log in
@@ -140,6 +143,7 @@ class CourseRegistrationController extends PublicRegistrationController
 
         if ($existing) {
             $course = \App\Models\Course::find($request->input('course_id'));
+
             return redirect()
                 ->route('courses.checkout.show', $course ?? abort(404))
                 ->with('existing_account', $value)
@@ -149,15 +153,15 @@ class CourseRegistrationController extends PublicRegistrationController
         // ── NEW REGISTRATION path (form includes personal info + password) ──
         if ($request->filled('first_name')) {
             $request->validate([
-                'first_name'  => ['required', 'string', 'max:100'],
-                'last_name'   => ['required', 'string', 'max:100'],
-                'gender'      => ['required', 'in:male,female'],
-                'dob'         => ['required', 'date', 'before:today'],
-                'id_type'     => ['required', 'in:national_id,passport'],
+                'first_name' => ['required', 'string', 'max:100'],
+                'last_name' => ['required', 'string', 'max:100'],
+                'gender' => ['required', 'in:male,female'],
+                'dob' => ['required', 'date', 'before:today'],
+                'id_type' => ['required', 'in:national_id,passport'],
                 'national_id' => ['nullable', 'string', 'max:20'],
-                'passport'    => ['nullable', 'string', 'max:20'],
-                'email'       => ['nullable', 'email', 'max:255'],
-                'password'    => ['required', 'string', 'min:8', 'confirmed'],
+                'passport' => ['nullable', 'string', 'max:20'],
+                'email' => ['nullable', 'email', 'max:255'],
+                'password' => ['required', 'string', 'min:8', 'confirmed'],
             ]);
 
             if ($request->id_type === 'national_id' && empty(trim((string) $request->national_id))) {
@@ -180,28 +184,28 @@ class CourseRegistrationController extends PublicRegistrationController
                 'reg_pending_data' => [
                     'contact_type' => $type,
                     'contact_value' => $normalized,
-                    'first_name'  => trim($request->first_name),
-                    'last_name'   => trim($request->last_name),
-                    'gender'      => $request->gender,
-                    'dob'         => $request->dob,
-                    'id_type'     => $request->id_type,
+                    'first_name' => trim($request->first_name),
+                    'last_name' => trim($request->last_name),
+                    'gender' => $request->gender,
+                    'dob' => $request->dob,
+                    'id_type' => $request->id_type,
                     'national_id' => $request->id_type === 'national_id' ? strtoupper(trim($request->national_id ?? '')) : null,
-                    'passport'    => $request->id_type === 'passport'    ? strtoupper(trim($request->passport ?? ''))    : null,
-                    'email'       => $emailNorm,
+                    'passport' => $request->id_type === 'passport' ? strtoupper(trim($request->passport ?? '')) : null,
+                    'email' => $emailNorm,
                     'password_hash' => Hash::make($request->password),
-                    'flow_type'   => $flowType,
+                    'flow_type' => $flowType,
                 ],
-                'pending_course_id'           => $request->input('course_id'),
+                'pending_course_id' => $request->input('course_id'),
                 'pending_selected_course_ids' => $request->input('course_id') ? [(int) $request->input('course_id')] : [],
-                'pending_term_id'             => $request->input('term_id'),
-                'checkout_flow'               => $flowType,
+                'pending_term_id' => $request->input('term_id'),
+                'checkout_flow' => $flowType,
             ]);
 
             // Send OTP via cache — no UserContact created yet
             $this->otpService->sendForNewRegistration($type, $normalized);
 
             return redirect()->route('courses.register.otp')
-                ->with('success', 'Verification code sent to your ' . ($type === 'mobile' ? 'phone' : 'email') . '.');
+                ->with('success', 'Verification code sent to your '.($type === 'mobile' ? 'phone' : 'email').'.');
         }
 
         // ── RETURNING USER / OTP LOGIN path ──
@@ -210,16 +214,16 @@ class CourseRegistrationController extends PublicRegistrationController
         $this->otpService->send($contact, 'verify_contact');
 
         session([
-            'pending_contact_id'          => $contact->id,
-            'pending_user_id'             => $user->id,
-            'pending_course_id'           => $request->input('course_id'),
+            'pending_contact_id' => $contact->id,
+            'pending_user_id' => $user->id,
+            'pending_course_id' => $request->input('course_id'),
             'pending_selected_course_ids' => $request->input('course_id') ? [(int) $request->input('course_id')] : [],
-            'pending_term_id'             => $request->input('term_id'),
-            'checkout_flow'               => $request->input('flow_type'),
+            'pending_term_id' => $request->input('term_id'),
+            'checkout_flow' => $request->input('flow_type'),
         ]);
 
         return redirect()->route('courses.register.otp')
-            ->with('success', 'Verification code sent. Please check your ' . ($type === 'mobile' ? 'phone' : 'email') . '.');
+            ->with('success', 'Verification code sent. Please check your '.($type === 'mobile' ? 'phone' : 'email').'.');
     }
 
     public function otpForm(Request $request): View|RedirectResponse
@@ -228,10 +232,10 @@ class CourseRegistrationController extends PublicRegistrationController
 
         if ($pendingReg) {
             return view('courses.register-otp', [
-                'contact'        => null,
-                'contactType'    => $pendingReg['contact_type'],
+                'contact' => null,
+                'contactType' => $pendingReg['contact_type'],
                 'contactDisplay' => $this->maskContact($pendingReg['contact_type'], $pendingReg['contact_value']),
-                'isNewReg'       => true,
+                'isNewReg' => true,
             ]);
         }
 
@@ -245,10 +249,10 @@ class CourseRegistrationController extends PublicRegistrationController
         }
 
         return view('courses.register-otp', [
-            'contact'        => $contact,
-            'contactType'    => $contact->type,
+            'contact' => $contact,
+            'contactType' => $contact->type,
             'contactDisplay' => $this->maskContact($contact->type, $contact->value),
-            'isNewReg'       => false,
+            'isNewReg' => false,
         ]);
     }
 
@@ -258,25 +262,25 @@ class CourseRegistrationController extends PublicRegistrationController
 
         if ($pendingReg) {
             // ── New registration: verify cache OTP then create account ──
-            $type  = $pendingReg['contact_type'];
+            $type = $pendingReg['contact_type'];
             $value = $pendingReg['contact_value'];
 
             $this->otpService->verifyForNewRegistration($type, $value, $request->input('code'));
 
             $user = \App\Models\User::create([
-                'name'                 => trim($pendingReg['first_name'] . ' ' . $pendingReg['last_name']),
-                'gender'               => $pendingReg['gender'],
-                'date_of_birth'        => $pendingReg['dob'],
-                'national_id'          => $pendingReg['national_id'],
-                'passport'             => $pendingReg['passport'],
-                'password'             => $pendingReg['password_hash'],
+                'name' => trim($pendingReg['first_name'].' '.$pendingReg['last_name']),
+                'gender' => $pendingReg['gender'],
+                'date_of_birth' => $pendingReg['dob'],
+                'national_id' => $pendingReg['national_id'],
+                'passport' => $pendingReg['passport'],
+                'password' => $pendingReg['password_hash'],
                 'force_password_change' => false,
             ]);
 
             UserContact::create([
-                'user_id'    => $user->id,
-                'type'       => $type,
-                'value'      => $value,
+                'user_id' => $user->id,
+                'type' => $type,
+                'value' => $value,
                 'is_primary' => true,
                 'verified_at' => now(),
             ]);
@@ -315,6 +319,7 @@ class CourseRegistrationController extends PublicRegistrationController
         }
 
         Auth::login($user);
+
         return redirect()->route('courses.register.continue');
     }
 
@@ -333,17 +338,18 @@ class CourseRegistrationController extends PublicRegistrationController
     private function maskContact(string $type, string $value): string
     {
         if ($type === 'mobile') {
-            return '****' . substr($value, -4);
+            return '****'.substr($value, -4);
         }
-        $parts  = explode('@', $value);
-        $name   = $parts[0] ?? '';
+        $parts = explode('@', $value);
+        $name = $parts[0] ?? '';
         $domain = $parts[1] ?? '';
-        return substr($name, 0, 2) . str_repeat('*', max(2, strlen($name) - 2)) . '@' . $domain;
+
+        return substr($name, 0, 2).str_repeat('*', max(2, strlen($name) - 2)).'@'.$domain;
     }
 
     public function passwordForm(Request $request): View|RedirectResponse
     {
-        if (!session('pending_contact_id') || !session('pending_user_id')) {
+        if (! session('pending_contact_id') || ! session('pending_user_id')) {
             return redirect()->route('public.courses.index')->with('error', 'Session expired.');
         }
 
@@ -353,39 +359,39 @@ class CourseRegistrationController extends PublicRegistrationController
     public function setPassword(SetPasswordRequest $request): RedirectResponse
     {
         $userId = session('pending_user_id');
-        if (!$userId) {
+        if (! $userId) {
             return redirect()->route('public.courses.index')->with('error', 'Session expired.');
         }
 
         $request->validate([
-            'first_name'  => ['required', 'string', 'max:100'],
-            'last_name'   => ['required', 'string', 'max:100'],
-            'gender'      => ['required', 'in:male,female'],
-            'dob'         => ['required', 'date', 'before:today'],
-            'id_type'     => ['required', 'in:national_id,passport'],
+            'first_name' => ['required', 'string', 'max:100'],
+            'last_name' => ['required', 'string', 'max:100'],
+            'gender' => ['required', 'in:male,female'],
+            'dob' => ['required', 'date', 'before:today'],
+            'id_type' => ['required', 'in:national_id,passport'],
             'national_id' => ['nullable', 'string', 'max:20'],
-            'passport'    => ['nullable', 'string', 'max:20'],
-            'email'       => ['nullable', 'email', 'max:255'],
-            'password'    => ['required', 'string', 'min:8', 'confirmed'],
+            'passport' => ['nullable', 'string', 'max:20'],
+            'email' => ['nullable', 'email', 'max:255'],
+            'password' => ['required', 'string', 'min:8', 'confirmed'],
         ]);
 
         // Validate that the correct ID field is filled
-        if ($request->id_type === 'national_id' && empty(trim((string)$request->national_id))) {
+        if ($request->id_type === 'national_id' && empty(trim((string) $request->national_id))) {
             return back()->withErrors(['national_id' => 'Please enter your Maldivian ID card number.'])->withInput();
         }
-        if ($request->id_type === 'passport' && empty(trim((string)$request->passport))) {
+        if ($request->id_type === 'passport' && empty(trim((string) $request->passport))) {
             return back()->withErrors(['passport' => 'Please enter your passport number.'])->withInput();
         }
 
         $user = \App\Models\User::findOrFail($userId);
 
         $user->update([
-            'name'                  => trim($request->first_name . ' ' . $request->last_name),
-            'gender'                => $request->gender,
-            'date_of_birth'         => $request->dob,
-            'national_id'           => $request->id_type === 'national_id' ? strtoupper(trim($request->national_id)) : null,
-            'passport'              => $request->id_type === 'passport' ? strtoupper(trim($request->passport)) : null,
-            'password'              => Hash::make($request->password),
+            'name' => trim($request->first_name.' '.$request->last_name),
+            'gender' => $request->gender,
+            'date_of_birth' => $request->dob,
+            'national_id' => $request->id_type === 'national_id' ? strtoupper(trim($request->national_id)) : null,
+            'passport' => $request->id_type === 'passport' ? strtoupper(trim($request->passport)) : null,
+            'password' => Hash::make($request->password),
             'force_password_change' => false,
         ]);
 
@@ -393,11 +399,11 @@ class CourseRegistrationController extends PublicRegistrationController
         if ($request->filled('email')) {
             $emailNorm = $this->normalizer->normalizeEmail($request->email);
             $emailExists = $user->contacts()->where('type', 'email')->where('value', $emailNorm)->exists();
-            if (!$emailExists) {
+            if (! $emailExists) {
                 $user->contacts()->create([
-                    'type'        => 'email',
-                    'value'       => $emailNorm,
-                    'is_primary'  => false,
+                    'type' => 'email',
+                    'value' => $emailNorm,
+                    'is_primary' => false,
                     'verified_at' => null,
                 ]);
             }
@@ -412,12 +418,12 @@ class CourseRegistrationController extends PublicRegistrationController
         // all student data from the profile form — skip register-continue.
         // For parent/guardian flow the child's details are NOT on this form,
         // so we must always send them to register-continue to fill in the child's data.
-        $courseIds    = session('pending_selected_course_ids', []);
+        $courseIds = session('pending_selected_course_ids', []);
         // session('checkout_flow') is often "" (empty string) because the hidden input
         // is never populated on new-account checkout — treat falsy as 'adult'.
         $checkoutFlow = session('checkout_flow') ?: 'adult';
 
-        if (!empty($courseIds) && $checkoutFlow === 'adult') {
+        if (! empty($courseIds) && $checkoutFlow === 'adult') {
             // Age check — enrollAdultSelf requires 18+; catch early before OTP step
             if (\Carbon\Carbon::parse($request->dob)->age < 18) {
                 return back()->withInput()
@@ -425,18 +431,18 @@ class CourseRegistrationController extends PublicRegistrationController
             }
 
             $studentData = [
-                'first_name'  => trim($request->first_name),
-                'last_name'   => trim($request->last_name),
-                'dob'         => $request->dob,
-                'gender'      => $request->gender,
-                'id_type'     => $request->id_type,
+                'first_name' => trim($request->first_name),
+                'last_name' => trim($request->last_name),
+                'dob' => $request->dob,
+                'gender' => $request->gender,
+                'id_type' => $request->id_type,
                 'national_id' => $request->id_type === 'national_id' ? strtoupper(trim($request->national_id)) : null,
-                'passport'    => $request->id_type === 'passport'    ? strtoupper(trim($request->passport))    : null,
+                'passport' => $request->id_type === 'passport' ? strtoupper(trim($request->passport)) : null,
             ];
 
             // Duplicate check — same as enroll() adult path
-            $searchNid      = $request->id_type === 'national_id' ? strtoupper(trim($request->national_id ?? '')) : null;
-            $searchPassport = $request->id_type === 'passport'    ? strtoupper(trim($request->passport ?? ''))    : null;
+            $searchNid = $request->id_type === 'national_id' ? strtoupper(trim($request->national_id ?? '')) : null;
+            $searchPassport = $request->id_type === 'passport' ? strtoupper(trim($request->passport ?? '')) : null;
             foreach (\App\Models\RegistrationStudent::whereNotNull('user_id')->get() as $candidate) {
                 $idMatch = ($searchNid && $candidate->national_id === $searchNid)
                         || ($searchPassport && $candidate->passport === $searchPassport);
@@ -448,25 +454,27 @@ class CourseRegistrationController extends PublicRegistrationController
                     ->where('status', '!=', 'rejected')
                     ->with('course')
                     ->first();
-                $idLabel  = $searchNid ? "ID card {$searchNid}" : "Passport {$searchPassport}";
-                $realName = trim($candidate->first_name . ' ' . $candidate->last_name);
+                $idLabel = $searchNid ? "ID card {$searchNid}" : "Passport {$searchPassport}";
+                $realName = trim($candidate->first_name.' '.$candidate->last_name);
                 if ($existingEnrollment) {
-                    $title  = $existingEnrollment->course?->title
+                    $title = $existingEnrollment->course?->title
                               ?? \App\Models\Course::whereIn('id', $courseIds)->first()?->title ?? 'this course';
                     $status = $this->humanEnrollmentStatus($existingEnrollment);
+
                     return back()->withInput()
                         ->withErrors(['national_id' => "This {$idLabel} belongs to {$realName}, who is already enrolled in \"{$title}\" — {$status}."]);
                 }
+
                 return back()->withInput()
                     ->withErrors(['national_id' => "This {$idLabel} is already registered to {$realName}. Please log in to that account instead."]);
             }
 
             session([
-                'enroll_pending_data'         => $studentData,
-                'enroll_pending_flow'         => 'adult',
-                'enroll_pending_course_ids'   => $courseIds,
-                'enroll_pending_term_id'      => session('pending_term_id'),
-                'enroll_pending_email'        => $request->filled('email') ? $this->normalizer->normalizeEmail($request->email) : '',
+                'enroll_pending_data' => $studentData,
+                'enroll_pending_flow' => 'adult',
+                'enroll_pending_course_ids' => $courseIds,
+                'enroll_pending_term_id' => session('pending_term_id'),
+                'enroll_pending_email' => $request->filled('email') ? $this->normalizer->normalizeEmail($request->email) : '',
                 'enroll_pending_student_mode' => 'new',
             ]);
 
@@ -492,7 +500,7 @@ class CourseRegistrationController extends PublicRegistrationController
             $mobile = $user->contacts()->where('type', 'mobile')->value('value')
                 ?? $user->phone ?? 'N/A';
             $name = $user->name ?? 'Unknown';
-            $id   = $user->national_id ?? $user->passport ?? 'N/A';
+            $id = $user->national_id ?? $user->passport ?? 'N/A';
             $time = now()->format('d M Y, g:i A');
 
             $message = "[Akuru] New registration: {$name} ({$mobile})";
@@ -512,16 +520,16 @@ class CourseRegistrationController extends PublicRegistrationController
     public function continueForm(Request $request): View|RedirectResponse
     {
         $user = $request->user();
-        if (!$user) {
+        if (! $user) {
             $userId = session('pending_user_id');
-            if (!$userId) {
+            if (! $userId) {
                 return redirect()->route('public.courses.index')->with('error', 'Session expired.');
             }
             $user = \App\Models\User::findOrFail($userId);
             Auth::login($user);
         }
 
-        if (!$user->hasVerifiedContact()) {
+        if (! $user->hasVerifiedContact()) {
             return redirect()->route('public.courses.index')->with('error', 'Please verify your contact first.');
         }
 
@@ -545,60 +553,60 @@ class CourseRegistrationController extends PublicRegistrationController
 
         // Default flow: honour the choice made on checkout start, then fall back to profile
         $checkoutFlow = session('checkout_flow');
-        $defaultFlow  = $checkoutFlow
+        $defaultFlow = $checkoutFlow
             ?? ($existingProfile ? 'adult' : ($user->guardianStudents->isNotEmpty() ? 'parent' : 'adult'));
 
         // Pre-fill data from user profile (name, gender, DOB, ID) for new users
-        $nameParts   = explode(' ', $user->name ?? '', 2);
+        $nameParts = explode(' ', $user->name ?? '', 2);
         $hasNationalId = ! empty($existingProfile?->national_id ?? $user->national_id);
-        $hasPassport   = ! empty($existingProfile?->passport);
+        $hasPassport = ! empty($existingProfile?->passport);
         $prefill = [
-            'first_name'  => $existingProfile?->first_name  ?? $nameParts[0] ?? '',
-            'last_name'   => $existingProfile?->last_name   ?? $nameParts[1] ?? '',
-            'dob'         => $existingProfile?->dob?->format('Y-m-d') ?? $user->date_of_birth?->format('Y-m-d') ?? '',
-            'gender'      => $existingProfile?->gender      ?? $user->gender ?? '',
+            'first_name' => $existingProfile?->first_name ?? $nameParts[0] ?? '',
+            'last_name' => $existingProfile?->last_name ?? $nameParts[1] ?? '',
+            'dob' => $existingProfile?->dob?->format('Y-m-d') ?? $user->date_of_birth?->format('Y-m-d') ?? '',
+            'gender' => $existingProfile?->gender ?? $user->gender ?? '',
             'national_id' => $existingProfile?->national_id ?? $user->national_id ?? '',
-            'passport'    => $existingProfile?->passport    ?? '',
-            'id_type'     => $hasNationalId ? 'national_id' : ($hasPassport ? 'passport' : 'national_id'),
+            'passport' => $existingProfile?->passport ?? '',
+            'id_type' => $hasNationalId ? 'national_id' : ($hasPassport ? 'passport' : 'national_id'),
         ];
 
         return view('courses.register-continue', [
-            'user'            => $user,
-            'courses'         => $courses,
-            'courseIds'       => $courseIds,
-            'termId'          => session('pending_term_id'),
+            'user' => $user,
+            'courses' => $courses,
+            'courseIds' => $courseIds,
+            'termId' => session('pending_term_id'),
             'existingProfile' => $existingProfile,
-            'defaultFlow'     => $defaultFlow,
-            'prefill'         => $prefill,
+            'defaultFlow' => $defaultFlow,
+            'prefill' => $prefill,
         ]);
     }
 
     public function enroll(Request $request): RedirectResponse
     {
         $user = $request->user();
-        if (!$user) {
+        if (! $user) {
             $userId = session('pending_user_id');
-            if (!$userId) {
+            if (! $userId) {
                 return redirect()->route('public.courses.index')->with('error', 'Session expired. Please start again.');
             }
             $user = \App\Models\User::findOrFail($userId);
             Auth::login($user);
         }
-        if (!$user->hasVerifiedContact()) {
+        if (! $user->hasVerifiedContact()) {
             return redirect()->route('public.courses.index')->with('error', 'Please verify your contact first.');
         }
 
         $flow = $request->input('flow', 'adult');
 
         $courseValidator = Validator::make($request->all(), [
-            'course_ids'   => ['required', 'array', 'min:1'],
+            'course_ids' => ['required', 'array', 'min:1'],
             'course_ids.*' => ['integer', 'exists:courses,id'],
         ]);
         if ($courseValidator->fails()) {
             return back()->withErrors($courseValidator)->withInput();
         }
         $courseIds = $courseValidator->validated()['course_ids'];
-        $termId    = ($request->input('term_id') !== '' && $request->input('term_id') !== null)
+        $termId = ($request->input('term_id') !== '' && $request->input('term_id') !== null)
             ? (int) $request->input('term_id') : null;
 
         // ── Validate student data fields FIRST ───────────────────────────────
@@ -619,10 +627,11 @@ class CourseRegistrationController extends PublicRegistrationController
                     ->with('course')
                     ->first();
                 if ($existing) {
-                    $title  = $existing->course?->title
+                    $title = $existing->course?->title
                               ?? \App\Models\Course::whereIn('id', $courseIds)->first()?->title
                               ?? 'this course';
                     $status = $this->humanEnrollmentStatus($existing);
+
                     return back()->withInput()
                         ->withErrors(['course_ids' => "You are already enrolled in \"{$title}\" — {$status}."]);
                 }
@@ -630,19 +639,20 @@ class CourseRegistrationController extends PublicRegistrationController
         }
 
         // Parent enrolling existing child duplicate
-        if ($flow === 'parent' && $request->input('student_mode') === 'existing' && !empty($data['student_id'])) {
+        if ($flow === 'parent' && $request->input('student_mode') === 'existing' && ! empty($data['student_id'])) {
             $studentId = (int) $data['student_id'];
-            $existing  = \App\Models\CourseEnrollment::where('student_id', $studentId)
+            $existing = \App\Models\CourseEnrollment::where('student_id', $studentId)
                 ->whereIn('course_id', $courseIds)
                 ->where('status', '!=', 'rejected')
                 ->with('course')
                 ->first();
             if ($existing) {
-                $title       = $existing->course?->title
+                $title = $existing->course?->title
                                ?? \App\Models\Course::find($courseIds[0])?->title
                                ?? 'this course';
-                $status      = $this->humanEnrollmentStatus($existing);
+                $status = $this->humanEnrollmentStatus($existing);
                 $studentName = \App\Models\RegistrationStudent::find($studentId)?->full_name ?? 'This student';
+
                 return back()->withInput()
                     ->withErrors(['student_id' => "{$studentName} is already enrolled in \"{$title}\" — {$status}."]);
             }
@@ -650,7 +660,7 @@ class CourseRegistrationController extends PublicRegistrationController
 
         // Parent enrolling new child — match encrypted national_id / passport
         if ($flow === 'parent' && $request->input('student_mode') === 'new') {
-            $searchNid      = ($data['id_type'] ?? '') === 'national_id'
+            $searchNid = ($data['id_type'] ?? '') === 'national_id'
                               ? strtoupper(trim($data['national_id'] ?? '')) : null;
             $searchPassport = ($data['id_type'] ?? '') === 'passport'
                               ? strtoupper(trim($data['passport'] ?? '')) : null;
@@ -658,13 +668,25 @@ class CourseRegistrationController extends PublicRegistrationController
             $existingStudent = null;
             $user->loadMissing('guardianStudents');
             foreach ($user->guardianStudents as $gs) {
-                if ($searchNid && $gs->national_id === $searchNid)           { $existingStudent = $gs; break; }
-                if ($searchPassport && $gs->passport === $searchPassport)    { $existingStudent = $gs; break; }
+                if ($searchNid && $gs->national_id === $searchNid) {
+                    $existingStudent = $gs;
+                    break;
+                }
+                if ($searchPassport && $gs->passport === $searchPassport) {
+                    $existingStudent = $gs;
+                    break;
+                }
             }
             if (! $existingStudent) {
                 foreach (\App\Models\RegistrationStudent::whereNotNull('user_id')->get() as $c) {
-                    if ($searchNid && $c->national_id === $searchNid)        { $existingStudent = $c; break; }
-                    if ($searchPassport && $c->passport === $searchPassport) { $existingStudent = $c; break; }
+                    if ($searchNid && $c->national_id === $searchNid) {
+                        $existingStudent = $c;
+                        break;
+                    }
+                    if ($searchPassport && $c->passport === $searchPassport) {
+                        $existingStudent = $c;
+                        break;
+                    }
                 }
             }
             if ($existingStudent) {
@@ -675,14 +697,15 @@ class CourseRegistrationController extends PublicRegistrationController
                     ->first();
 
                 // The ID belongs to a known student — always report the real name
-                $realName = trim($existingStudent->first_name . ' ' . $existingStudent->last_name);
-                $idLabel  = $searchNid ? "ID card {$searchNid}" : "Passport {$searchPassport}";
+                $realName = trim($existingStudent->first_name.' '.$existingStudent->last_name);
+                $idLabel = $searchNid ? "ID card {$searchNid}" : "Passport {$searchPassport}";
 
                 if ($existing) {
-                    $title  = $existing->course?->title
+                    $title = $existing->course?->title
                               ?? \App\Models\Course::find($courseIds[0])?->title
                               ?? 'this course';
                     $status = $this->humanEnrollmentStatus($existing);
+
                     return back()->withInput()
                         ->withErrors(['national_id' => "This {$idLabel} belongs to {$realName}, who is already enrolled in \"{$title}\" — {$status}."]);
                 }
@@ -701,25 +724,27 @@ class CourseRegistrationController extends PublicRegistrationController
             ->get()
             ->first(function ($p) use ($courseIds) {
                 $payload = $p->enrollment_pending_payload ?? [];
+
                 return ! empty(array_intersect($payload['course_ids'] ?? [], $courseIds));
             });
 
         if ($existingPendingPayment) {
             session(['pending_payment_ref' => $existingPendingPayment->merchant_reference]);
             $this->clearEnrollPendingSession();
+
             return redirect()->route('courses.register.complete')
                 ->with('info', 'You already have a pending payment for this course. Please complete it below.');
         }
 
         // Store all form data in session
         session([
-            'enroll_pending_data'          => $data,
-            'enroll_pending_flow'          => $flow,
-            'enroll_pending_course_ids'    => $courseIds,
-            'enroll_pending_term_id'       => $termId,
-            'enroll_pending_email'         => trim((string) $request->input('email', '')),
-            'enroll_pending_student_mode'  => $request->input('student_mode'),
-            'enroll_pending_child_password'=> $flow === 'parent' && $request->input('student_mode') === 'new'
+            'enroll_pending_data' => $data,
+            'enroll_pending_flow' => $flow,
+            'enroll_pending_course_ids' => $courseIds,
+            'enroll_pending_term_id' => $termId,
+            'enroll_pending_email' => trim((string) $request->input('email', '')),
+            'enroll_pending_student_mode' => $request->input('student_mode'),
+            'enroll_pending_child_password' => $flow === 'parent' && $request->input('student_mode') === 'new'
                                                ? $request->input('child_password')
                                                : null,
         ]);
@@ -739,14 +764,14 @@ class CourseRegistrationController extends PublicRegistrationController
     /** Show enrollment consent OTP page */
     public function enrollOtpForm(Request $request): View|RedirectResponse
     {
-        if (!session('enroll_pending_course_ids')) {
+        if (! session('enroll_pending_course_ids')) {
             return redirect()->route('public.courses.index')->with('error', 'Session expired. Please start again.');
         }
 
-        $user      = $request->user();
+        $user = $request->user();
         $courseIds = session('enroll_pending_course_ids', []);
-        $courses   = Course::whereIn('id', $courseIds)->get();
-        $totalFee  = $courses->sum(fn($c) => $c->fee ?? 0);
+        $courses = Course::whereIn('id', $courseIds)->get();
+        $totalFee = $courses->sum(fn ($c) => $c->fee ?? 0);
 
         // All verified contacts the user can receive an OTP on
         $availableContacts = $user
@@ -772,8 +797,8 @@ class CourseRegistrationController extends PublicRegistrationController
 
         // Pre-compute masked values for all contacts so the view doesn't need controller methods
         $contactsForDisplay = $availableContacts->map(fn ($c) => (object) [
-            'id'     => $c->id,
-            'type'   => $c->type,
+            'id' => $c->id,
+            'type' => $c->type,
             'masked' => $this->maskContact($c->type, $c->value),
         ]);
 
@@ -789,24 +814,24 @@ class CourseRegistrationController extends PublicRegistrationController
     public function enrollConfirm(Request $request): RedirectResponse
     {
         $request->validate([
-            'otp_code'       => ['required', 'string', 'size:6'],
+            'otp_code' => ['required', 'string', 'size:6'],
             'terms_accepted' => ['accepted'],
         ], [
             'terms_accepted.accepted' => 'You must accept the Terms & Conditions to continue.',
         ]);
 
-        if (!session('enroll_pending_course_ids')) {
+        if (! session('enroll_pending_course_ids')) {
             return redirect()->route('public.courses.index')->with('error', 'Session expired. Please start again.');
         }
 
         // OTP verification is always required
         $contactId = session('enroll_otp_contact_id');
-        if (!$contactId) {
+        if (! $contactId) {
             return redirect()->route('public.courses.index')
                 ->with('error', 'Session expired. Please start the enrollment again.');
         }
         $contact = \App\Models\UserContact::find($contactId);
-        if (!$contact) {
+        if (! $contact) {
             return redirect()->route('public.courses.index')
                 ->with('error', 'Verification contact not found. Please start again.');
         }
@@ -817,7 +842,7 @@ class CourseRegistrationController extends PublicRegistrationController
         }
 
         $user = $request->user();
-        if (!$user) {
+        if (! $user) {
             return redirect()->route('public.courses.index')->with('error', 'Session expired.');
         }
 
@@ -837,7 +862,7 @@ class CourseRegistrationController extends PublicRegistrationController
             if ($chosen) {
                 session([
                     'enroll_otp_contact_id' => $chosen->id,
-                    'enroll_otp_sent'       => false,
+                    'enroll_otp_sent' => false,
                 ]);
                 session()->forget('enroll_otp_sent_before');
             }
@@ -846,14 +871,15 @@ class CourseRegistrationController extends PublicRegistrationController
         $contactId = session('enroll_otp_contact_id');
 
         // Session expired — redirect to enrollment form, not homepage
-        if (!$contactId) {
+        if (! $contactId) {
             return redirect()->route('courses.register.continue')
                 ->with('error', 'Your session expired. Please fill in the enrollment form again.');
         }
 
         $contact = \App\Models\UserContact::find($contactId);
-        if (!$contact) {
+        if (! $contact) {
             $this->clearEnrollPendingSession();
+
             return redirect()->route('courses.register.continue')
                 ->with('error', 'Could not find your verification contact. Please start the enrollment again.');
         }
@@ -879,12 +905,12 @@ class CourseRegistrationController extends PublicRegistrationController
     /** Process enrollment from session data (called after OTP consent) */
     protected function processEnrollmentFromSession(\App\Models\User $user): RedirectResponse
     {
-        $flow          = session('enroll_pending_flow', 'adult');
-        $data          = session('enroll_pending_data', []);
-        $courseIds     = session('enroll_pending_course_ids', []);
-        $termId        = session('enroll_pending_term_id');
-        $emailInput    = session('enroll_pending_email', '');
-        $studentMode   = session('enroll_pending_student_mode');
+        $flow = session('enroll_pending_flow', 'adult');
+        $data = session('enroll_pending_data', []);
+        $courseIds = session('enroll_pending_course_ids', []);
+        $termId = session('enroll_pending_term_id');
+        $emailInput = session('enroll_pending_email', '');
+        $studentMode = session('enroll_pending_student_mode');
         $childPassword = session('enroll_pending_child_password');
 
         // Save optional email contact
@@ -892,26 +918,26 @@ class CourseRegistrationController extends PublicRegistrationController
             $normalized = $this->normalizer->normalize('email', $emailInput);
             if (! $user->contacts()->where('type', 'email')->exists()) {
                 $user->contacts()->create([
-                    'type'        => 'email',
-                    'value'       => $normalized,
-                    'is_primary'  => false,
+                    'type' => 'email',
+                    'value' => $normalized,
+                    'is_primary' => false,
                     'verified_at' => null,
                 ]);
             }
         }
 
-        $courses   = \App\Models\Course::whereIn('id', $courseIds)->get();
-        $totalFee  = $courses->sum(fn ($c) => (float) ($c->registration_fee_amount ?? $c->fee ?? 0));
+        $courses = \App\Models\Course::whereIn('id', $courseIds)->get();
+        $totalFee = $courses->sum(fn ($c) => (float) ($c->registration_fee_amount ?? $c->fee ?? 0));
 
         // ── PAID COURSES: deferred enrollment — create only a Payment record now ──
         // RegistrationStudent + CourseEnrollment are created AFTER BML confirms payment.
         if ($totalFee > 0) {
             $enrollmentPayload = [
-                'user_id'      => $user->id,
-                'flow'         => $flow,
+                'user_id' => $user->id,
+                'flow' => $flow,
                 'student_data' => $data,
-                'course_ids'   => $courseIds,
-                'term_id'      => $termId,
+                'course_ids' => $courseIds,
+                'term_id' => $termId,
                 'student_mode' => $studentMode,
                 'child_password' => $childPassword,
             ];
@@ -919,19 +945,20 @@ class CourseRegistrationController extends PublicRegistrationController
             $payment = $this->paymentService->createPaymentForPendingEnrollment($user, $enrollmentPayload, $courses);
 
             $init = $this->paymentService->initiatePayment($payment, [
-                'return_url' => route('payments.bml.return') . '?ref=' . $payment->merchant_reference,
+                'return_url' => route('payments.bml.return').'?ref='.$payment->merchant_reference,
             ]);
 
             \Illuminate\Support\Facades\Log::info('BML deferred-enrollment initiation', [
-                'payment_id'       => $payment->id,
-                'success'          => $init->success,
+                'payment_id' => $payment->id,
+                'success' => $init->success,
                 'has_redirect_url' => ! empty($init->redirectUrl),
-                'error'            => $init->error ?? null,
+                'error' => $init->error ?? null,
             ]);
 
             if ($init->success && $init->redirectUrl) {
                 session(['pending_payment_ref' => $payment->merchant_reference]);
                 $this->clearEnrollPendingSession();
+
                 return redirect()->away($init->redirectUrl);
             }
 
@@ -939,6 +966,7 @@ class CourseRegistrationController extends PublicRegistrationController
             $this->clearEnrollPendingSession();
             $this->clearPendingSession();
             session(['pending_payment_ref' => $payment->merchant_reference]);
+
             return redirect()->route('courses.register.complete')
                 ->with('error', 'Your enrollment request was received but we could not connect to the payment gateway right now. Please use the "Proceed to payment" button below to complete your payment.');
         }
@@ -964,9 +992,11 @@ class CourseRegistrationController extends PublicRegistrationController
                     try {
                         $this->otpService->send($contact, 'login');
                         session(['enroll_otp_sent' => true]);
-                    } catch (\Throwable) {}
+                    } catch (\Throwable) {
+                    }
                 }
             }
+
             return redirect()->route('courses.register.enroll.otp')
                 ->withErrors($e->errors())
                 ->with('info', 'A new OTP has been sent to your mobile. Please enter it below.');
@@ -981,7 +1011,7 @@ class CourseRegistrationController extends PublicRegistrationController
                 $e = $result->existingEnrollments[0];
                 $e->loadMissing('course');
                 $courseTitle = $e->course?->title ?? '';
-                $status      = $this->humanEnrollmentStatus($e);
+                $status = $this->humanEnrollmentStatus($e);
                 $msg = $courseTitle
                     ? "You are already enrolled in \"{$courseTitle}\" — {$status}."
                     : "You are already enrolled — {$status}.";
@@ -997,6 +1027,7 @@ class CourseRegistrationController extends PublicRegistrationController
 
         $this->clearEnrollPendingSession();
         $this->clearPendingSession();
+
         return redirect()->route('courses.register.complete')->with('enrollments', $result->allEnrollments());
     }
 
@@ -1007,19 +1038,20 @@ class CourseRegistrationController extends PublicRegistrationController
             foreach (collect($enrollments)->filter() as $enrollment) {
                 $enrollment->loadMissing('course');
                 $courseName = $enrollment->course?->title ?? 'Unknown';
-                $fee        = $enrollment->course?->fee ?? 0;
-                $name       = $user->name ?? 'Unknown';
-                $mobile     = $user->contacts()->where('type','mobile')->value('value') ?? 'N/A';
-                $feeText = $fee > 0 ? " MVR {$fee}" : " Free";
+                $fee = $enrollment->course?->fee ?? 0;
+                $name = $user->name ?? 'Unknown';
+                $mobile = $user->contacts()->where('type', 'mobile')->value('value') ?? 'N/A';
+                $feeText = $fee > 0 ? " MVR {$fee}" : ' Free';
                 $message = "[Akuru] Enrollment: {$name} → {$courseName} ({$feeText})";
                 foreach ($admins as $admin) {
-                    $adminMobile = $admin->contacts()->where('type','mobile')->value('value') ?? $admin->phone ?? null;
+                    $adminMobile = $admin->contacts()->where('type', 'mobile')->value('value') ?? $admin->phone ?? null;
                     if ($adminMobile) {
                         app(\App\Services\SmsGatewayService::class)->sendSms($adminMobile, $message);
                     }
                 }
             }
-        } catch (\Throwable) {}
+        } catch (\Throwable) {
+        }
     }
 
     /** Return a human-readable enrollment status for user-facing messages. */
@@ -1032,14 +1064,16 @@ class CourseRegistrationController extends PublicRegistrationController
             if (in_array($enrollment->payment_status, ['pending', 'initiated'], true)) {
                 return 'payment pending';
             }
+
             return 'pending admin approval';
         }
+
         return ucfirst($enrollment->status);
     }
 
     protected function clearEnrollPendingSession(): void
     {
-        session()->forget(['enroll_pending_data','enroll_pending_flow','enroll_pending_course_ids','enroll_pending_term_id','enroll_pending_email','enroll_pending_student_mode','enroll_pending_child_password','enroll_otp_contact_id','enroll_otp_sent','enroll_otp_sent_before']);
+        session()->forget(['enroll_pending_data', 'enroll_pending_flow', 'enroll_pending_course_ids', 'enroll_pending_term_id', 'enroll_pending_email', 'enroll_pending_student_mode', 'enroll_pending_child_password', 'enroll_otp_contact_id', 'enroll_otp_sent', 'enroll_otp_sent_before']);
     }
 
     public function complete(Request $request): View|RedirectResponse
@@ -1047,7 +1081,7 @@ class CourseRegistrationController extends PublicRegistrationController
         $enrollments = session('enrollments');
         $paymentRef = session('pending_payment_ref');
 
-        if (!$enrollments && !$paymentRef) {
+        if (! $enrollments && ! $paymentRef) {
             return redirect()->route('public.courses.index')->with('error', 'No enrollment data found.');
         }
 
@@ -1089,27 +1123,27 @@ class CourseRegistrationController extends PublicRegistrationController
 
         if ($flow === 'parent') {
             if ($request->input('student_mode') === 'new') {
-                $rules['first_name']                  = ['required', 'string', 'max:100'];
-                $rules['last_name']                   = ['required', 'string', 'max:100'];
-                $rules['dob']                         = ['required', 'date', 'before:today'];
-                $rules['gender']                      = ['nullable', 'in:male,female'];
-                $rules['relationship']                = ['nullable', 'in:father,mother,guardian,other'];
-                $rules['id_type']                     = ['required', 'in:national_id,passport'];
-                $rules['national_id']                 = ['nullable', 'string', 'max:20', 'regex:/^[A-Za-z][0-9]{5,9}$/'];
-                $rules['passport']                    = ['nullable', 'string', 'max:20'];
-                $rules['child_password']              = ['required', 'string', 'min:8', 'confirmed'];
+                $rules['first_name'] = ['required', 'string', 'max:100'];
+                $rules['last_name'] = ['required', 'string', 'max:100'];
+                $rules['dob'] = ['required', 'date', 'before:today'];
+                $rules['gender'] = ['nullable', 'in:male,female'];
+                $rules['relationship'] = ['nullable', 'in:father,mother,guardian,other'];
+                $rules['id_type'] = ['required', 'in:national_id,passport'];
+                $rules['national_id'] = ['nullable', 'string', 'max:20', 'regex:/^[A-Za-z][0-9]{5,9}$/'];
+                $rules['passport'] = ['nullable', 'string', 'max:20'];
+                $rules['child_password'] = ['required', 'string', 'min:8', 'confirmed'];
                 $rules['child_password_confirmation'] = ['required', 'string'];
             } else {
                 $rules['student_id'] = ['required', 'exists:registration_students,id'];
             }
         } else {
-            $rules['first_name']  = ['required', 'string', 'max:100'];
-            $rules['last_name']   = ['required', 'string', 'max:100'];
-            $rules['dob']         = ['required', 'date', 'before:today'];
-            $rules['gender']      = ['nullable', 'in:male,female'];
-            $rules['id_type']     = ['required', 'in:national_id,passport'];
+            $rules['first_name'] = ['required', 'string', 'max:100'];
+            $rules['last_name'] = ['required', 'string', 'max:100'];
+            $rules['dob'] = ['required', 'date', 'before:today'];
+            $rules['gender'] = ['nullable', 'in:male,female'];
+            $rules['id_type'] = ['required', 'in:national_id,passport'];
             $rules['national_id'] = ['nullable', 'string', 'max:20', 'regex:/^[A-Za-z][0-9]{5,9}$/'];
-            $rules['passport']    = ['nullable', 'string', 'max:20'];
+            $rules['passport'] = ['nullable', 'string', 'max:20'];
         }
 
         $validator = Validator::make($request->all(), $rules);
@@ -1168,7 +1202,7 @@ class CourseRegistrationController extends PublicRegistrationController
         if (! empty($payload['course_ids'])) {
             session([
                 'pending_selected_course_ids' => $payload['course_ids'],
-                'pending_term_id'             => $payload['term_id'] ?? null,
+                'pending_term_id' => $payload['term_id'] ?? null,
             ]);
         }
 
@@ -1181,6 +1215,7 @@ class CourseRegistrationController extends PublicRegistrationController
 
         if (! $user || ! $user->hasVerifiedContact()) {
             session(['pending_contact_id' => $flow->contact_id, 'pending_user_id' => $flow->user_id]);
+
             return redirect()->route('courses.register.otp')
                 ->with('info', 'Please verify your contact to continue.');
         }
@@ -1232,15 +1267,17 @@ class CourseRegistrationController extends PublicRegistrationController
 
         // For failed/expired payments, try to re-initiate
         $init = $this->paymentService->initiatePayment($payment, [
-            'return_url' => route('payments.bml.return') . '?ref=' . $payment->merchant_reference,
+            'return_url' => route('payments.bml.return').'?ref='.$payment->merchant_reference,
         ]);
 
         if ($init->success && $init->redirectUrl) {
             session(['pending_payment_ref' => $payment->merchant_reference]);
+
             return redirect()->away($init->redirectUrl);
         }
 
         $error = $init->error ?? 'Payment initiation failed.';
+
         return redirect()->route('public.courses.index')->with('error', $error);
     }
 

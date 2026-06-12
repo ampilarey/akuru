@@ -2,9 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Models\Report;
+use App\Models\SystemMetric;
 use App\Services\AnalyticsService;
-use App\Models\{Report, SystemMetric};
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class AnalyticsController extends Controller
@@ -64,9 +65,9 @@ class AnalyticsController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'type' => 'required|string|in:' . implode(',', array_keys(Report::getAvailableTypes())),
-            'category' => 'required|string|in:' . implode(',', array_keys(Report::getAvailableCategories())),
-            'format' => 'required|string|in:' . implode(',', array_keys(Report::getAvailableFormats())),
+            'type' => 'required|string|in:'.implode(',', array_keys(Report::getAvailableTypes())),
+            'category' => 'required|string|in:'.implode(',', array_keys(Report::getAvailableCategories())),
+            'format' => 'required|string|in:'.implode(',', array_keys(Report::getAvailableFormats())),
             'parameters' => 'array',
         ]);
 
@@ -91,21 +92,21 @@ class AnalyticsController extends Controller
     {
         $report = Report::forUser(Auth::id())->findOrFail($id);
 
-        if ($report->status !== 'completed' || !$report->file_path) {
+        if ($report->status !== 'completed' || ! $report->file_path) {
             return response()->json([
                 'success' => false,
                 'message' => 'Report not ready for download',
             ], 400);
         }
 
-        if (!file_exists($report->file_path)) {
+        if (! file_exists($report->file_path)) {
             return response()->json([
                 'success' => false,
                 'message' => 'Report file not found',
             ], 404);
         }
 
-        return response()->download($report->file_path, $report->name . '.' . $report->format);
+        return response()->download($report->file_path, $report->name.'.'.$report->format);
     }
 
     /**
@@ -241,15 +242,58 @@ class AnalyticsController extends Controller
             ->get();
     }
 
-    private function getUserGrowthData($startDate, $endDate) { return []; }
-    private function getUserActivityData($startDate, $endDate) { return []; }
-    private function getRoleDistributionData() { return []; }
-    private function getEngagementMetrics($startDate, $endDate) { return []; }
-    private function getPostAnalytics($startDate, $endDate) { return []; }
-    private function getEventAnalytics($startDate, $endDate) { return []; }
-    private function getGalleryAnalytics($startDate, $endDate) { return []; }
-    private function getCourseAnalytics($startDate, $endDate) { return []; }
-    private function getRevenueSummary($startDate, $endDate) { return []; }
-    private function getPaymentAnalytics($startDate, $endDate) { return []; }
-    private function getFinancialTrends($startDate, $endDate) { return []; }
+    private function getUserGrowthData($startDate, $endDate)
+    {
+        return [];
+    }
+
+    private function getUserActivityData($startDate, $endDate)
+    {
+        return [];
+    }
+
+    private function getRoleDistributionData()
+    {
+        return [];
+    }
+
+    private function getEngagementMetrics($startDate, $endDate)
+    {
+        return [];
+    }
+
+    private function getPostAnalytics($startDate, $endDate)
+    {
+        return [];
+    }
+
+    private function getEventAnalytics($startDate, $endDate)
+    {
+        return [];
+    }
+
+    private function getGalleryAnalytics($startDate, $endDate)
+    {
+        return [];
+    }
+
+    private function getCourseAnalytics($startDate, $endDate)
+    {
+        return [];
+    }
+
+    private function getRevenueSummary($startDate, $endDate)
+    {
+        return [];
+    }
+
+    private function getPaymentAnalytics($startDate, $endDate)
+    {
+        return [];
+    }
+
+    private function getFinancialTrends($startDate, $endDate)
+    {
+        return [];
+    }
 }

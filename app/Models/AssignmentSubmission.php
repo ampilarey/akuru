@@ -2,9 +2,8 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Model;
 
 class AssignmentSubmission extends Model
 {
@@ -62,10 +61,10 @@ class AssignmentSubmission extends Model
      */
     public function getPercentageAttribute()
     {
-        if (!$this->marks_obtained || !$this->assignment->max_marks) {
+        if (! $this->marks_obtained || ! $this->assignment->max_marks) {
             return null;
         }
-        
+
         return round(($this->marks_obtained / $this->assignment->max_marks) * 100, 2);
     }
 
@@ -75,16 +74,33 @@ class AssignmentSubmission extends Model
     public function getLetterGradeAttribute()
     {
         $percentage = $this->percentage;
-        
-        if ($percentage === null) return null;
-        
-        if ($percentage >= 90) return 'A+';
-        if ($percentage >= 80) return 'A';
-        if ($percentage >= 70) return 'B+';
-        if ($percentage >= 60) return 'B';
-        if ($percentage >= 50) return 'C+';
-        if ($percentage >= 40) return 'C';
-        if ($percentage >= 30) return 'D';
+
+        if ($percentage === null) {
+            return null;
+        }
+
+        if ($percentage >= 90) {
+            return 'A+';
+        }
+        if ($percentage >= 80) {
+            return 'A';
+        }
+        if ($percentage >= 70) {
+            return 'B+';
+        }
+        if ($percentage >= 60) {
+            return 'B';
+        }
+        if ($percentage >= 50) {
+            return 'C+';
+        }
+        if ($percentage >= 40) {
+            return 'C';
+        }
+        if ($percentage >= 30) {
+            return 'D';
+        }
+
         return 'F';
     }
 
@@ -94,12 +110,21 @@ class AssignmentSubmission extends Model
     public function getGradeColorAttribute()
     {
         $percentage = $this->percentage;
-        
-        if ($percentage === null) return 'gray';
-        
-        if ($percentage >= 80) return 'green';
-        if ($percentage >= 60) return 'yellow';
-        if ($percentage >= 40) return 'orange';
+
+        if ($percentage === null) {
+            return 'gray';
+        }
+
+        if ($percentage >= 80) {
+            return 'green';
+        }
+        if ($percentage >= 60) {
+            return 'yellow';
+        }
+        if ($percentage >= 40) {
+            return 'orange';
+        }
+
         return 'red';
     }
 
@@ -108,7 +133,7 @@ class AssignmentSubmission extends Model
      */
     public function getIsOnTimeAttribute()
     {
-        return !$this->is_late;
+        return ! $this->is_late;
     }
 
     /**

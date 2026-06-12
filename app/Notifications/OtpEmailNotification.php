@@ -33,7 +33,7 @@ class OtpEmailNotification extends Notification implements ShouldQueue
             : 'Use the code below to verify your contact for Akuru Institute:';
 
         return (new MailMessage)
-            ->subject($subject . ' - Akuru Institute')
+            ->subject($subject.' - Akuru Institute')
             ->greeting('Hello!')
             ->line($intro)
             ->line("**{$this->otp}**")

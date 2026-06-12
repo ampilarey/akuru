@@ -17,16 +17,16 @@ return new class extends Migration
             $table->date('start_date')->nullable()->after('duration_weeks');
             $table->date('end_date')->nullable()->after('start_date');
             $table->date('enrollment_deadline')->nullable()->after('end_date');
-            
+
             // Course content and structure
             $table->json('prerequisites')->nullable()->after('enrollment_deadline');
             $table->json('learning_objectives')->nullable()->after('prerequisites');
             $table->text('instructor_notes')->nullable()->after('learning_objectives');
-            
+
             // Course display and ordering
             $table->boolean('is_featured')->default(false)->after('instructor_notes');
             $table->integer('sort_order')->default(0)->after('is_featured');
-            
+
             // Add indexes for better performance
             $table->index(['is_featured', 'status']);
             $table->index(['start_date', 'end_date']);
@@ -43,7 +43,7 @@ return new class extends Migration
             $table->dropIndex(['is_featured', 'status']);
             $table->dropIndex(['start_date', 'end_date']);
             $table->dropIndex('sort_order');
-            
+
             $table->dropColumn([
                 'duration_weeks',
                 'start_date',

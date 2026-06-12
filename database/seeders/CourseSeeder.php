@@ -2,8 +2,9 @@
 
 namespace Database\Seeders;
 
+use App\Models\Course;
+use App\Models\CourseCategory;
 use Illuminate\Database\Seeder;
-use App\Models\{Course, CourseCategory};
 
 class CourseSeeder extends Seeder
 {
@@ -17,7 +18,7 @@ class CourseSeeder extends Seeder
         $arabicCategory = CourseCategory::where('slug', 'arabic-language')->first();
         $islamicCategory = CourseCategory::where('slug', 'islamic-studies')->first();
         $quranStudiesCategory = CourseCategory::where('slug', 'quran-studies')->first();
-        
+
         // Create additional categories if they don't exist
         $tajweedCategory = CourseCategory::firstOrCreate(
             ['slug' => 'tajweed'],
@@ -47,7 +48,7 @@ class CourseSeeder extends Seeder
                 'title' => 'Complete Quran Memorization (Hifz)',
                 'slug' => 'complete-quran-memorization-hifz',
                 'short_desc' => 'Complete memorization of the Holy Quran with proper Tajweed and understanding.',
-                'body' => "This comprehensive program is designed for students who wish to memorize the entire Quran. The course includes:
+                'body' => 'This comprehensive program is designed for students who wish to memorize the entire Quran. The course includes:
 
 • Complete memorization of all 30 Juz (parts) of the Quran
 • Proper Tajweed rules and pronunciation
@@ -56,14 +57,14 @@ class CourseSeeder extends Seeder
 • Individual attention and guidance
 • Flexible timing for different age groups
 
-The program is structured over 2-3 years with regular assessments and progress tracking. Students will be assigned qualified Hafiz teachers who will guide them through each step of the memorization process.",
+The program is structured over 2-3 years with regular assessments and progress tracking. Students will be assigned qualified Hafiz teachers who will guide them through each step of the memorization process.',
                 'cover_image' => 'courses/quran-hifz.jpg',
                 'language' => 'mixed',
                 'level' => 'all',
                 'schedule' => [
                     'Monday to Friday: 6:00 PM - 8:00 PM',
                     'Saturday: 9:00 AM - 11:00 AM',
-                    'Sunday: 2:00 PM - 4:00 PM'
+                    'Sunday: 2:00 PM - 4:00 PM',
                 ],
                 'fee' => 500.00,
                 'registration_fee_amount' => 500.00,
@@ -76,7 +77,7 @@ The program is structured over 2-3 years with regular assessments and progress t
                 'title' => 'Selected Surahs Memorization',
                 'slug' => 'selected-surahs-memorization',
                 'short_desc' => 'Memorize important Surahs with their meanings and applications.',
-                'body' => "This course focuses on memorizing key Surahs that are commonly recited in prayers and special occasions:
+                'body' => 'This course focuses on memorizing key Surahs that are commonly recited in prayers and special occasions:
 
 • Surah Al-Fatiha and last 10 Surahs
 • Surah Al-Baqarah (selected verses)
@@ -86,13 +87,13 @@ The program is structured over 2-3 years with regular assessments and progress t
 • Understanding of meanings and context
 • Practical application in daily prayers
 
-Perfect for beginners and those who want to strengthen their prayer recitation.",
+Perfect for beginners and those who want to strengthen their prayer recitation.',
                 'cover_image' => 'courses/selected-surahs.jpg',
                 'language' => 'mixed',
                 'level' => 'all',
                 'schedule' => [
                     'Tuesday & Thursday: 7:00 PM - 8:30 PM',
-                    'Saturday: 10:00 AM - 11:30 AM'
+                    'Saturday: 10:00 AM - 11:30 AM',
                 ],
                 'fee' => 200.00,
                 'registration_fee_amount' => 200.00,
@@ -107,7 +108,7 @@ Perfect for beginners and those who want to strengthen their prayer recitation."
                 'title' => 'Arabic Language for Beginners',
                 'slug' => 'arabic-language-beginners',
                 'short_desc' => 'Learn Arabic from scratch with focus on reading, writing, and basic conversation.',
-                'body' => "A comprehensive Arabic language course designed for complete beginners:
+                'body' => 'A comprehensive Arabic language course designed for complete beginners:
 
 • Arabic alphabet and pronunciation
 • Basic grammar and sentence structure
@@ -117,13 +118,13 @@ Perfect for beginners and those who want to strengthen their prayer recitation."
 • Introduction to Arabic culture
 • Islamic terminology and phrases
 
-The course uses modern teaching methods with interactive activities and practical exercises.",
+The course uses modern teaching methods with interactive activities and practical exercises.',
                 'cover_image' => 'courses/arabic-beginners.jpg',
                 'language' => 'mixed',
                 'level' => 'all',
                 'schedule' => [
                     'Monday, Wednesday, Friday: 6:30 PM - 8:00 PM',
-                    'Saturday: 9:00 AM - 10:30 AM'
+                    'Saturday: 9:00 AM - 10:30 AM',
                 ],
                 'fee' => 300.00,
                 'registration_fee_amount' => 300.00,
@@ -136,7 +137,7 @@ The course uses modern teaching methods with interactive activities and practica
                 'title' => 'Advanced Arabic Grammar',
                 'slug' => 'advanced-arabic-grammar',
                 'short_desc' => 'Master advanced Arabic grammar and literature for deeper understanding of Islamic texts.',
-                'body' => "For students who have completed basic Arabic and want to advance further:
+                'body' => 'For students who have completed basic Arabic and want to advance further:
 
 • Advanced grammar rules and structures
 • Classical Arabic literature
@@ -146,13 +147,13 @@ The course uses modern teaching methods with interactive activities and practica
 • Translation skills
 • Research methodology
 
-This course prepares students for advanced Islamic studies and research.",
+This course prepares students for advanced Islamic studies and research.',
                 'cover_image' => 'courses/arabic-advanced.jpg',
                 'language' => 'mixed',
                 'level' => 'adult',
                 'schedule' => [
                     'Tuesday & Thursday: 7:30 PM - 9:00 PM',
-                    'Sunday: 10:00 AM - 12:00 PM'
+                    'Sunday: 10:00 AM - 12:00 PM',
                 ],
                 'fee' => 400.00,
                 'status' => 'open',
@@ -181,7 +182,7 @@ This course is suitable for new Muslims and those seeking to strengthen their Is
                 'level' => 'all',
                 'schedule' => [
                     'Monday & Wednesday: 7:00 PM - 8:30 PM',
-                    'Saturday: 2:00 PM - 3:30 PM'
+                    'Saturday: 2:00 PM - 3:30 PM',
                 ],
                 'fee' => 250.00,
                 'status' => 'open',
@@ -209,7 +210,7 @@ Students will gain a comprehensive understanding of Islamic civilization's role 
                 'level' => 'adult',
                 'schedule' => [
                     'Tuesday & Thursday: 6:00 PM - 7:30 PM',
-                    'Sunday: 11:00 AM - 12:30 PM'
+                    'Sunday: 11:00 AM - 12:30 PM',
                 ],
                 'fee' => 300.00,
                 'status' => 'open',
@@ -222,7 +223,7 @@ Students will gain a comprehensive understanding of Islamic civilization's role 
                 'title' => 'Tajweed for Beginners',
                 'slug' => 'tajweed-beginners',
                 'short_desc' => 'Learn proper Quran recitation with correct pronunciation and rules.',
-                'body' => "Master the art of beautiful Quran recitation:
+                'body' => 'Master the art of beautiful Quran recitation:
 
 • Basic Tajweed rules and principles
 • Correct pronunciation of Arabic letters
@@ -233,13 +234,13 @@ Students will gain a comprehensive understanding of Islamic civilization's role 
 • Practical recitation practice
 • Common mistakes and how to avoid them
 
-This course is essential for anyone who wants to recite the Quran properly.",
+This course is essential for anyone who wants to recite the Quran properly.',
                 'cover_image' => 'courses/tajweed-beginners.jpg',
                 'language' => 'mixed',
                 'level' => 'all',
                 'schedule' => [
                     'Monday, Wednesday, Friday: 6:00 PM - 7:00 PM',
-                    'Saturday: 9:00 AM - 10:00 AM'
+                    'Saturday: 9:00 AM - 10:00 AM',
                 ],
                 'fee' => 200.00,
                 'status' => 'open',
@@ -252,7 +253,7 @@ This course is essential for anyone who wants to recite the Quran properly.",
                 'title' => 'Islamic Education for Children (Ages 5-12)',
                 'slug' => 'islamic-education-children',
                 'short_desc' => 'Fun and interactive Islamic education designed specifically for children.',
-                'body' => "A specially designed program for young children to learn Islam in a fun and engaging way:
+                'body' => 'A specially designed program for young children to learn Islam in a fun and engaging way:
 
 • Basic Islamic beliefs and practices
 • Stories of Prophets and Companions
@@ -263,13 +264,13 @@ This course is essential for anyone who wants to recite the Quran properly.",
 • Arts and crafts with Islamic themes
 • Character building and moral values
 
-The program uses age-appropriate teaching methods with games, stories, and interactive activities.",
+The program uses age-appropriate teaching methods with games, stories, and interactive activities.',
                 'cover_image' => 'courses/children-islamic.jpg',
                 'language' => 'mixed',
                 'level' => 'kids',
                 'schedule' => [
                     'Saturday: 9:00 AM - 11:00 AM',
-                    'Sunday: 9:00 AM - 11:00 AM'
+                    'Sunday: 9:00 AM - 11:00 AM',
                 ],
                 'fee' => 150.00,
                 'status' => 'open',
@@ -282,7 +283,7 @@ The program uses age-appropriate teaching methods with games, stories, and inter
                 'title' => 'Islamic Studies for Adults',
                 'slug' => 'islamic-studies-adults',
                 'short_desc' => 'Comprehensive Islamic education program designed for working adults.',
-                'body' => "A flexible program designed for working adults who want to deepen their Islamic knowledge:
+                'body' => 'A flexible program designed for working adults who want to deepen their Islamic knowledge:
 
 • Flexible scheduling options
 • Evening and weekend classes
@@ -293,13 +294,13 @@ The program uses age-appropriate teaching methods with games, stories, and inter
 • Islamic finance and business ethics
 • Community leadership and service
 
-Perfect for professionals who want to balance work and religious education.",
+Perfect for professionals who want to balance work and religious education.',
                 'cover_image' => 'courses/adult-islamic.jpg',
                 'language' => 'mixed',
                 'level' => 'adult',
                 'schedule' => [
                     'Monday & Wednesday: 8:00 PM - 9:30 PM',
-                    'Saturday: 2:00 PM - 4:00 PM'
+                    'Saturday: 2:00 PM - 4:00 PM',
                 ],
                 'fee' => 350.00,
                 'status' => 'open',
@@ -312,7 +313,7 @@ Perfect for professionals who want to balance work and religious education.",
                 'title' => 'Hadith Studies and Interpretation',
                 'slug' => 'hadith-studies-interpretation',
                 'short_desc' => 'Deep dive into Hadith sciences, authentication, and interpretation.',
-                'body' => "Advanced course on Hadith studies for serious students:
+                'body' => 'Advanced course on Hadith studies for serious students:
 
 • Introduction to Hadith sciences
 • Major Hadith collections
@@ -322,12 +323,12 @@ Perfect for professionals who want to balance work and religious education.",
 • Contemporary Hadith issues
 • Research methodology
 
-This course will be available starting next semester.",
+This course will be available starting next semester.',
                 'cover_image' => 'courses/hadith-studies.jpg',
                 'language' => 'mixed',
                 'level' => 'adult',
                 'schedule' => [
-                    'To be announced'
+                    'To be announced',
                 ],
                 'fee' => 400.00,
                 'status' => 'upcoming',

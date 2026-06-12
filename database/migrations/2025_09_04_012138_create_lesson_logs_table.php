@@ -28,7 +28,7 @@ return new class extends Migration
             $table->text('notes')->nullable();
             $table->enum('lesson_quality', ['excellent', 'good', 'satisfactory', 'needs_improvement'])->nullable();
             $table->timestamps();
-            
+
             $table->index(['teacher_id', 'date']);
             $table->index(['classroom_id', 'date']);
             $table->unique(['teacher_id', 'subject_id', 'classroom_id', 'date', 'period_id'], 'lesson_unique_entry');

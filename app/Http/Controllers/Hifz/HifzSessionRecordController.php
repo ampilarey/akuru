@@ -7,8 +7,8 @@ use App\Http\Requests\Hifz\UpdateHifzSessionRecordRequest;
 use App\Models\HifzSessionRecord;
 use App\Models\QuranMushaf;
 use App\Models\Student;
-use App\Services\Hifz\HifzScoringService;
 use App\Services\Hifz\HifzScopeService;
+use App\Services\Hifz\HifzScoringService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 

@@ -2,9 +2,9 @@
 
 namespace App\Services;
 
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Cache;
 
 /**
  * SMS Gateway Service
@@ -15,7 +15,9 @@ use Illuminate\Support\Facades\Cache;
 class SmsGatewayService
 {
     protected string $apiUrl;
+
     protected string $apiKey;
+
     protected int $timeout = 30;
 
     public function __construct()
@@ -27,9 +29,9 @@ class SmsGatewayService
     /**
      * Send SMS to a single recipient
      *
-     * @param string $phoneNumber Phone number (e.g., "7972434" or "9607972434")
-     * @param string $message Message content
-     * @param array $options Additional options
+     * @param  string  $phoneNumber  Phone number (e.g., "7972434" or "9607972434")
+     * @param  string  $message  Message content
+     * @param  array  $options  Additional options
      * @return array Response with success status and message ID
      */
     public function sendSms(string $phoneNumber, string $message, array $options = []): array
@@ -37,6 +39,7 @@ class SmsGatewayService
         if ($this->useDhiraagu()) {
             return $this->sendViaDhiraagu($phoneNumber, $message, $options);
         }
+
         return $this->sendViaHttpGateway($phoneNumber, $message, $options);
     }
 
@@ -47,7 +50,7 @@ class SmsGatewayService
     {
         try {
             $phoneNumber = $this->formatPhoneNumber($phoneNumber);
-            if (!preg_match('/^960\d{7}$/', $phoneNumber)) {
+            if (! preg_match('/^960\d{7}$/', $phoneNumber)) {
                 return [
                     'success' => false,
                     'error' => 'Invalid phone number format for Maldives (e.g. 7820288 or 9607820288)',
@@ -59,17 +62,18 @@ class SmsGatewayService
             $password = config('services.dhiraagu.password');
             $apiUrl = config('services.dhiraagu.api_url', 'https://messaging.dhiraagu.com.mv/v1/api/sms');
 
-            if (!$username || !$password) {
+            if (! $username || ! $password) {
                 Log::info('SMS Demo Mode - Would send', ['to' => $phoneNumber]);
+
                 return [
                     'success' => true,
-                    'message_id' => 'demo_' . uniqid(),
+                    'message_id' => 'demo_'.uniqid(),
                     'status' => 'sent',
                     'cost' => 0,
                 ];
             }
 
-            $authorizationKey = base64_encode($username . ':' . $password);
+            $authorizationKey = base64_encode($username.':'.$password);
 
             $response = Http::timeout($this->timeout)
                 ->withHeaders(['Content-Type' => 'application/json'])
@@ -86,6 +90,7 @@ class SmsGatewayService
 
                 if ($success) {
                     Log::info('SMS sent via Dhiraagu', ['to' => $phoneNumber, 'message_id' => $messageId]);
+
                     return [
                         'success' => true,
                         'message_id' => $messageId,
@@ -102,6 +107,7 @@ class SmsGatewayService
             }
 
             Log::error('Dhiraagu API error', ['status' => $response->status(), 'body' => $response->body()]);
+
             return [
                 'success' => false,
                 'error' => $response->body(),
@@ -109,6 +115,7 @@ class SmsGatewayService
             ];
         } catch (\Exception $e) {
             Log::error('Dhiraagu SMS error', ['to' => $phoneNumber, 'error' => $e->getMessage()]);
+
             return [
                 'success' => false,
                 'error' => $e->getMessage(),
@@ -134,7 +141,7 @@ class SmsGatewayService
             $response = Http::timeout($this->timeout)
                 ->withHeaders([
                     'X-API-Key' => $this->apiKey,
-                    'Authorization' => 'Bearer ' . $this->apiKey,
+                    'Authorization' => 'Bearer '.$this->apiKey,
                     'Accept' => 'application/json',
                     'Content-Type' => 'application/json',
                 ])
@@ -147,6 +154,7 @@ class SmsGatewayService
 
             if ($response->successful()) {
                 $result = $response->json();
+
                 return [
                     'success' => true,
                     'message_id' => $result['data']['id'] ?? null,
@@ -156,6 +164,7 @@ class SmsGatewayService
             }
 
             $errorJson = $response->json();
+
             return [
                 'success' => false,
                 'error' => $errorJson['message'] ?? $response->body(),
@@ -163,6 +172,7 @@ class SmsGatewayService
             ];
         } catch (\Exception $e) {
             Log::error('SMS gateway error', ['to' => $phoneNumber, 'error' => $e->getMessage()]);
+
             return [
                 'success' => false,
                 'error' => $e->getMessage(),
@@ -174,9 +184,9 @@ class SmsGatewayService
     /**
      * Send bulk SMS to multiple recipients
      *
-     * @param array $recipients Array of phone numbers
-     * @param string $message Message content
-     * @param array $options Additional options
+     * @param  array  $recipients  Array of phone numbers
+     * @param  string  $message  Message content
+     * @param  array  $options  Additional options
      * @return array Response with success status and results
      */
     public function sendBulkSms(array $recipients, string $message, array $options = []): array
@@ -204,7 +214,7 @@ class SmsGatewayService
 
             if ($response->successful()) {
                 $result = $response->json();
-                
+
                 Log::info('Bulk SMS sent successfully', [
                     'recipient_count' => count($recipients),
                     'campaign_id' => $result['data']['campaign_id'] ?? null,
@@ -247,7 +257,7 @@ class SmsGatewayService
     /**
      * Get SMS status
      *
-     * @param string $messageId Message ID from send response
+     * @param  string  $messageId  Message ID from send response
      * @return array Status information
      */
     public function getSmsStatus(string $messageId): array
@@ -284,7 +294,7 @@ class SmsGatewayService
     /**
      * Get SMS usage statistics
      *
-     * @param string|null $period Period (today, week, month)
+     * @param  string|null  $period  Period (today, week, month)
      * @return array Usage statistics
      */
     public function getUsageStats(?string $period = 'month'): array
@@ -333,9 +343,11 @@ class SmsGatewayService
             }
 
             Cache::put($cacheKey, $isHealthy, now()->addMinutes(5));
+
             return $isHealthy;
         } catch (\Exception $e) {
             Log::warning('SMS gateway health check failed', ['error' => $e->getMessage()]);
+
             return false;
         }
     }
@@ -343,39 +355,39 @@ class SmsGatewayService
     /**
      * Format phone number to standard format
      *
-     * @param string $phoneNumber Phone number
+     * @param  string  $phoneNumber  Phone number
      * @return string Formatted phone number
      */
     protected function formatPhoneNumber(string $phoneNumber): string
     {
         // Remove all non-numeric characters except +
         $phoneNumber = preg_replace('/[^\d+]/', '', $phoneNumber);
-        
+
         // Remove + sign
         $phoneNumber = str_replace('+', '', $phoneNumber);
-        
+
         // If doesn't start with 960, add it (assuming Maldives)
-        if (!str_starts_with($phoneNumber, '960')) {
+        if (! str_starts_with($phoneNumber, '960')) {
             // If 7 digits, add 960
             if (strlen($phoneNumber) == 7) {
-                $phoneNumber = '960' . $phoneNumber;
+                $phoneNumber = '960'.$phoneNumber;
             }
         }
-        
+
         return $phoneNumber;
     }
 
     /**
      * Send OTP SMS
      *
-     * @param string $phoneNumber Phone number
-     * @param string $otp OTP code
+     * @param  string  $phoneNumber  Phone number
+     * @param  string  $otp  OTP code
      * @return array Response
      */
     public function sendOtp(string $phoneNumber, string $otp): array
     {
         $message = "Your Akuru Institute verification code is: {$otp}. Valid for 10 minutes. Do not share this code.";
-        
+
         return $this->sendSms($phoneNumber, $message, [
             'type' => 'otp',
             'sender_id' => 'AKURU',
@@ -385,16 +397,16 @@ class SmsGatewayService
     /**
      * Send attendance notification
      *
-     * @param string $phoneNumber Parent phone number
-     * @param string $studentName Student name
-     * @param string $status Attendance status (present, absent, late)
-     * @param string $date Date
+     * @param  string  $phoneNumber  Parent phone number
+     * @param  string  $studentName  Student name
+     * @param  string  $status  Attendance status (present, absent, late)
+     * @param  string  $date  Date
      * @return array Response
      */
     public function sendAttendanceNotification(string $phoneNumber, string $studentName, string $status, string $date): array
     {
         $message = "Akuru Institute: {$studentName} was marked {$status} on {$date}.";
-        
+
         return $this->sendSms($phoneNumber, $message, [
             'type' => 'attendance',
             'reference' => "attendance_{$date}_{$studentName}",
@@ -404,16 +416,16 @@ class SmsGatewayService
     /**
      * Send grade notification
      *
-     * @param string $phoneNumber Parent phone number
-     * @param string $studentName Student name
-     * @param string $subject Subject name
-     * @param string $grade Grade
+     * @param  string  $phoneNumber  Parent phone number
+     * @param  string  $studentName  Student name
+     * @param  string  $subject  Subject name
+     * @param  string  $grade  Grade
      * @return array Response
      */
     public function sendGradeNotification(string $phoneNumber, string $studentName, string $subject, string $grade): array
     {
         $message = "Akuru Institute: {$studentName} received grade {$grade} in {$subject}.";
-        
+
         return $this->sendSms($phoneNumber, $message, [
             'type' => 'grade',
             'reference' => "grade_{$subject}_{$studentName}",
@@ -423,18 +435,17 @@ class SmsGatewayService
     /**
      * Send announcement broadcast
      *
-     * @param array $recipients Array of phone numbers
-     * @param string $title Announcement title
-     * @param string $message Message content
+     * @param  array  $recipients  Array of phone numbers
+     * @param  string  $title  Announcement title
+     * @param  string  $message  Message content
      * @return array Response
      */
     public function sendAnnouncement(array $recipients, string $title, string $message): array
     {
         $fullMessage = "Akuru Institute - {$title}: {$message}";
-        
+
         return $this->sendBulkSms($recipients, $fullMessage, [
             'type' => 'announcement',
         ]);
     }
 }
-

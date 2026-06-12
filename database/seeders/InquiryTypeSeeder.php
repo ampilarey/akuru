@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Models\InquiryType;
+use Illuminate\Database\Seeder;
 
 class InquiryTypeSeeder extends Seeder
 {
@@ -62,8 +62,8 @@ Akuru Institute',
                             'Islamic Studies',
                             'Tajweed Classes',
                             'Adult Education',
-                            'Other'
-                        ]
+                            'Other',
+                        ],
                     ],
                     [
                         'name' => 'age_group',
@@ -74,16 +74,16 @@ Akuru Institute',
                         'options' => [
                             'Kids (6-12 years)',
                             'Youth (13-18 years)',
-                            'Adult (19+ years)'
-                        ]
+                            'Adult (19+ years)',
+                        ],
                     ],
                     [
                         'name' => 'previous_experience',
                         'type' => 'textarea',
                         'label' => 'Previous Islamic Education Experience',
                         'required' => false,
-                        'placeholder' => 'Please describe any previous Islamic education or Quran study experience'
-                    ]
+                        'placeholder' => 'Please describe any previous Islamic education or Quran study experience',
+                    ],
                 ],
                 'is_active' => true,
                 'sort_order' => 2,
@@ -111,7 +111,7 @@ Akuru Institute',
                         'type' => 'text',
                         'label' => 'Course Name',
                         'required' => true,
-                        'placeholder' => 'Enter the course name you\'re interested in'
+                        'placeholder' => 'Enter the course name you\'re interested in',
                     ],
                     [
                         'name' => 'preferred_schedule',
@@ -124,9 +124,9 @@ Akuru Institute',
                             'Afternoon (2:00 PM - 5:00 PM)',
                             'Evening (6:00 PM - 9:00 PM)',
                             'Weekend',
-                            'Flexible'
-                        ]
-                    ]
+                            'Flexible',
+                        ],
+                    ],
                 ],
                 'is_active' => true,
                 'sort_order' => 3,
@@ -154,15 +154,15 @@ Akuru Institute',
                         'type' => 'text',
                         'label' => 'Event Name',
                         'required' => false,
-                        'placeholder' => 'Enter the event name you\'re interested in'
+                        'placeholder' => 'Enter the event name you\'re interested in',
                     ],
                     [
                         'name' => 'registration_interest',
                         'type' => 'checkbox',
                         'label' => 'Interested in Registration',
                         'required' => false,
-                        'options' => ['Yes, I would like to register for this event']
-                    ]
+                        'options' => ['Yes, I would like to register for this event'],
+                    ],
                 ],
                 'is_active' => true,
                 'sort_order' => 4,
@@ -197,16 +197,16 @@ Akuru Institute',
                             'Online course access',
                             'Payment issues',
                             'Mobile app problems',
-                            'Other'
-                        ]
+                            'Other',
+                        ],
                     ],
                     [
                         'name' => 'browser_info',
                         'type' => 'text',
                         'label' => 'Browser and Device Information',
                         'required' => false,
-                        'placeholder' => 'e.g., Chrome on Windows 10, Safari on iPhone'
-                    ]
+                        'placeholder' => 'e.g., Chrome on Windows 10, Safari on iPhone',
+                    ],
                 ],
                 'is_active' => true,
                 'sort_order' => 5,
@@ -234,7 +234,7 @@ Akuru Institute',
                         'type' => 'text',
                         'label' => 'Organization Name',
                         'required' => true,
-                        'placeholder' => 'Enter your organization name'
+                        'placeholder' => 'Enter your organization name',
                     ],
                     [
                         'name' => 'partnership_type',
@@ -247,16 +247,16 @@ Akuru Institute',
                             'Community Outreach',
                             'Event Sponsorship',
                             'Resource Sharing',
-                            'Other'
-                        ]
+                            'Other',
+                        ],
                     ],
                     [
                         'name' => 'proposal_details',
                         'type' => 'textarea',
                         'label' => 'Partnership Proposal Details',
                         'required' => true,
-                        'placeholder' => 'Please provide details about your partnership proposal'
-                    ]
+                        'placeholder' => 'Please provide details about your partnership proposal',
+                    ],
                 ],
                 'is_active' => true,
                 'sort_order' => 6,
@@ -291,8 +291,8 @@ Akuru Institute Team',
                             'Administration',
                             'Events',
                             'Website/Online Services',
-                            'Other'
-                        ]
+                            'Other',
+                        ],
                     ],
                     [
                         'name' => 'rating',
@@ -305,9 +305,9 @@ Akuru Institute Team',
                             'Good',
                             'Average',
                             'Poor',
-                            'Very Poor'
-                        ]
-                    ]
+                            'Very Poor',
+                        ],
+                    ],
                 ],
                 'is_active' => true,
                 'sort_order' => 7,
@@ -344,23 +344,23 @@ Akuru Institute',
                             'Staff Behavior',
                             'Facility Issues',
                             'Safety Concerns',
-                            'Other'
-                        ]
+                            'Other',
+                        ],
                     ],
                     [
                         'name' => 'incident_date',
                         'type' => 'date',
                         'label' => 'Date of Incident',
                         'required' => false,
-                        'placeholder' => 'Select date if applicable'
+                        'placeholder' => 'Select date if applicable',
                     ],
                     [
                         'name' => 'witnesses',
                         'type' => 'text',
                         'label' => 'Witnesses (if any)',
                         'required' => false,
-                        'placeholder' => 'Names of any witnesses to the incident'
-                    ]
+                        'placeholder' => 'Names of any witnesses to the incident',
+                    ],
                 ],
                 'is_active' => true,
                 'sort_order' => 8,

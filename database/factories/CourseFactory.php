@@ -18,10 +18,11 @@ class CourseFactory extends Factory
             'slug' => 'general',
             'order' => 0,
         ]);
+
         return [
             'course_category_id' => $category->id,
             'title' => $title,
-            'slug' => \Illuminate\Support\Str::slug($title) . '-' . fake()->unique()->numberBetween(1, 9999),
+            'slug' => \Illuminate\Support\Str::slug($title).'-'.fake()->unique()->numberBetween(1, 9999),
             'short_desc' => fake()->paragraph(),
             'body' => fake()->paragraphs(3, true),
             'cover_image' => '',

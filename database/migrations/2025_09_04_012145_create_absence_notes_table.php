@@ -26,7 +26,7 @@ return new class extends Migration
             $table->string('attachment_path')->nullable(); // Medical certificate, etc.
             $table->boolean('affects_attendance')->default(true); // Whether this should excuse the absence
             $table->timestamps();
-            
+
             $table->index(['student_id', 'status']);
             $table->index(['date', 'status']);
             $table->index(['created_by', 'date']);

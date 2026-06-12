@@ -23,7 +23,7 @@ return new class extends Migration
             $table->boolean('is_active')->default(true);
             $table->json('applicable_grades')->nullable(); // Which grades this fee applies to
             $table->timestamps();
-            
+
             $table->index(['type', 'is_active']);
             $table->index(['frequency', 'is_active']);
         });

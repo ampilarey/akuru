@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
 class Assignment extends Model
 {
@@ -90,6 +90,7 @@ class Assignment extends Model
     public function pendingStudents()
     {
         $submittedStudentIds = $this->submissions()->pluck('student_id');
+
         return $this->classRoom->students()->whereNotIn('id', $submittedStudentIds);
     }
 
@@ -98,7 +99,8 @@ class Assignment extends Model
      */
     public function getIsOverdueAttribute()
     {
-        $dueDateTime = Carbon::parse($this->due_date . ' ' . $this->due_time);
+        $dueDateTime = Carbon::parse($this->due_date.' '.$this->due_time);
+
         return now()->isAfter($dueDateTime);
     }
 
@@ -107,7 +109,7 @@ class Assignment extends Model
      */
     public function getDueDateTimeAttribute()
     {
-        return Carbon::parse($this->due_date . ' ' . $this->due_time);
+        return Carbon::parse($this->due_date.' '.$this->due_time);
     }
 
     /**
@@ -119,6 +121,7 @@ class Assignment extends Model
         if (now()->isAfter($dueDateTime)) {
             return 'Overdue';
         }
+
         return now()->diffForHumans($dueDateTime, true);
     }
 
@@ -154,9 +157,11 @@ class Assignment extends Model
     {
         $totalStudents = $this->classRoom->students()->count();
         $submittedCount = $this->submissions()->count();
-        
-        if ($totalStudents === 0) return 0;
-        
+
+        if ($totalStudents === 0) {
+            return 0;
+        }
+
         return round(($submittedCount / $totalStudents) * 100, 2);
     }
 }

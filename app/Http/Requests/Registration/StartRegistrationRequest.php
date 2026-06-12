@@ -23,10 +23,10 @@ class StartRegistrationRequest extends FormRequest
     public function withValidator($validator): void
     {
         $validator->after(function ($validator) {
-            $type  = $this->input('contact_type');
+            $type = $this->input('contact_type');
             $value = $this->input('contact_value');
 
-            if (!empty($value)) {
+            if (! empty($value)) {
                 if ($type === 'mobile') {
                     $digits = preg_replace('/\D/', '', $value);
                     if (strlen($digits) < 7) {

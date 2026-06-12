@@ -3,7 +3,8 @@
 namespace App\Http\Controllers\Portal;
 
 use App\Http\Controllers\Controller;
-use App\Models\{CourseEnrollment, Payment};
+use App\Models\CourseEnrollment;
+use App\Models\Payment;
 use Illuminate\Http\Request;
 
 class PortalController extends Controller
@@ -25,7 +26,7 @@ class PortalController extends Controller
             ->take(5)
             ->get();
 
-        $activeEnrollments  = CourseEnrollment::where('created_by_user_id', $user->id)->where('status', 'active')->count();
+        $activeEnrollments = CourseEnrollment::where('created_by_user_id', $user->id)->where('status', 'active')->count();
         $pendingEnrollments = CourseEnrollment::where('created_by_user_id', $user->id)->whereIn('status', ['pending', 'pending_payment'])->count();
 
         return view('portal.dashboard', compact('user', 'enrollments', 'recentPayments', 'activeEnrollments', 'pendingEnrollments'));
@@ -73,6 +74,7 @@ class PortalController extends Controller
     {
         $user = $request->user();
         $contacts = $user->contacts()->get()->keyBy('type');
+
         return view('portal.profile', compact('user', 'contacts'));
     }
 
@@ -81,7 +83,7 @@ class PortalController extends Controller
         $user = $request->user();
 
         $request->validate([
-            'name'     => 'required|string|max:255',
+            'name' => 'required|string|max:255',
             'password' => 'nullable|string|min:8|confirmed',
         ]);
 

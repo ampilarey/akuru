@@ -26,7 +26,7 @@ return new class extends Migration
             $table->enum('status', ['in_progress', 'completed', 'submitted', 'graded'])->default('in_progress');
             $table->text('feedback')->nullable(); // Teacher feedback
             $table->timestamps();
-            
+
             $table->index(['quiz_id', 'student_id']);
             $table->index(['student_id', 'status']);
             $table->unique(['quiz_id', 'student_id', 'attempt_number']);

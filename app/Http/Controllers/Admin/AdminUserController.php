@@ -18,8 +18,8 @@ class AdminUserController extends Controller
         if ($search = $request->input('search')) {
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('national_id', 'like', "%{$search}%")
-                  ->orWhereHas('contacts', fn($c) => $c->where('value', 'like', "%{$search}%"));
+                    ->orWhere('national_id', 'like', "%{$search}%")
+                    ->orWhereHas('contacts', fn ($c) => $c->where('value', 'like', "%{$search}%"));
             });
         }
 

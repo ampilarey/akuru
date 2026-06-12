@@ -12,6 +12,7 @@ class InstructorController extends Controller
     public function index()
     {
         $instructors = Instructor::withCount('courses')->ordered()->paginate(20);
+
         return view('admin.instructors.index', compact('instructors'));
     }
 
@@ -23,15 +24,15 @@ class InstructorController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'name'           => 'required|string|max:255',
-            'bio'            => 'nullable|string',
-            'qualification'  => 'nullable|string|max:255',
+            'name' => 'required|string|max:255',
+            'bio' => 'nullable|string',
+            'qualification' => 'nullable|string|max:255',
             'specialization' => 'nullable|string|max:255',
-            'email'          => 'nullable|email|max:255',
-            'phone'          => 'nullable|string|max:30',
-            'is_active'      => 'boolean',
-            'sort_order'     => 'integer|min:0',
-            'photo'          => 'nullable|image|max:2048',
+            'email' => 'nullable|email|max:255',
+            'phone' => 'nullable|string|max:30',
+            'is_active' => 'boolean',
+            'sort_order' => 'integer|min:0',
+            'photo' => 'nullable|image|max:2048',
         ]);
 
         $data['slug'] = Str::slug($data['name']);
@@ -55,15 +56,15 @@ class InstructorController extends Controller
     public function update(Request $request, Instructor $instructor)
     {
         $data = $request->validate([
-            'name'           => 'required|string|max:255',
-            'bio'            => 'nullable|string',
-            'qualification'  => 'nullable|string|max:255',
+            'name' => 'required|string|max:255',
+            'bio' => 'nullable|string',
+            'qualification' => 'nullable|string|max:255',
             'specialization' => 'nullable|string|max:255',
-            'email'          => 'nullable|email|max:255',
-            'phone'          => 'nullable|string|max:30',
-            'is_active'      => 'boolean',
-            'sort_order'     => 'integer|min:0',
-            'photo'          => 'nullable|image|max:2048',
+            'email' => 'nullable|email|max:255',
+            'phone' => 'nullable|string|max:30',
+            'is_active' => 'boolean',
+            'sort_order' => 'integer|min:0',
+            'photo' => 'nullable|image|max:2048',
         ]);
 
         $data['is_active'] = $request->boolean('is_active', true);

@@ -2,9 +2,9 @@
 
 namespace Database\Seeders;
 
+use App\Models\GalleryAlbum;
+use App\Models\GalleryItem;
 use Illuminate\Database\Seeder;
-use App\Models\{GalleryAlbum, GalleryItem};
-use Carbon\Carbon;
 
 class GallerySeeder extends Seeder
 {

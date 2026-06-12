@@ -122,9 +122,11 @@ class CheckoutController extends Controller
         try {
             $returnUrl = route('payments.return', ['payment' => $payment->id], true);
             $paymentUrl = $this->bml->createTransaction($payment, ['redirect_url' => $returnUrl]);
+
             return redirect()->away($paymentUrl);
         } catch (\Throwable $e) {
             report($e);
+
             return redirect()->route('checkout.course.show', $course)
                 ->with('error', $e->getMessage() ?: 'Payment could not be started. Please try again.');
         }

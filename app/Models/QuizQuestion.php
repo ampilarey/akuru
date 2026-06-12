@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class QuizQuestion extends Model
@@ -46,15 +46,16 @@ class QuizQuestion extends Model
             // For text answers, do a simple comparison (could be enhanced with fuzzy matching)
             $correctAnswers = is_array($this->answer) ? $this->answer : [$this->answer];
             $studentAnswerLower = strtolower(trim($studentAnswer));
-            
+
             foreach ($correctAnswers as $correctAnswer) {
                 if (strtolower(trim($correctAnswer)) === $studentAnswerLower) {
                     return true;
                 }
             }
+
             return false;
         }
-        
+
         return false;
     }
 
@@ -71,6 +72,7 @@ class QuizQuestion extends Model
                     $answers[] = $this->options[$index];
                 }
             }
+
             return implode(', ', $answers);
         } elseif ($this->type === 'truefalse') {
             return $this->answer[0] === 0 ? 'True' : 'False';

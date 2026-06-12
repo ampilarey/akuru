@@ -39,6 +39,7 @@ class PolicyViewController extends Controller
         if (view()->exists($viewName)) {
             return view($viewName);
         }
+
         return view('policy.placeholder', ['slug' => $slug]);
     }
 }

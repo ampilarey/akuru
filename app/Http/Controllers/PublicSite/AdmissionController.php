@@ -3,7 +3,8 @@
 namespace App\Http\Controllers\PublicSite;
 
 use App\Http\Controllers\Controller;
-use App\Models\{AdmissionApplication, Course};
+use App\Models\AdmissionApplication;
+use App\Models\Course;
 use App\Notifications\NewAdmissionApplication;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Notification;
@@ -33,7 +34,7 @@ class AdmissionController extends Controller
 
         return view('public.admissions.create', compact('courses', 'selectedCourse'));
     }
-    
+
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -45,14 +46,14 @@ class AdmissionController extends Controller
             'message' => 'nullable|string|max:1000',
             'source' => 'in:web,social,viber,other',
         ]);
-        
+
         $validated['locale'] = app()->getLocale();
         $validated['ip'] = $request->ip();
         $validated['user_agent'] = $request->userAgent();
         $validated['source'] = $validated['source'] ?? 'web';
-        
+
         $application = AdmissionApplication::create($validated);
-        
+
         // Notify administrators
         $adminUsers = \App\Models\User::role('admin')->get();
         if ($adminUsers->count() > 0) {
@@ -61,9 +62,9 @@ class AdmissionController extends Controller
 
         // If a course was selected and it's open, redirect straight to the enrollment checkout
         // so both the Apply and Enroll flows converge at the same OTP → details → payment step.
-        if (!empty($validated['course_id'])) {
+        if (! empty($validated['course_id'])) {
             $course = Course::find($validated['course_id']);
-            if ($course && $course->status === 'open' && !$course->isFull()) {
+            if ($course && $course->status === 'open' && ! $course->isFull()) {
                 return redirect()
                     ->route('courses.checkout.show', $course)
                     ->with('info', 'Your enquiry has been saved. Complete your enrollment below.');
@@ -71,9 +72,9 @@ class AdmissionController extends Controller
         }
 
         return redirect()->route('public.admissions.thanks', app()->getLocale())
-                        ->with('success', __('public.admission_submitted'));
+            ->with('success', __('public.admission_submitted'));
     }
-    
+
     public function applyPage(Request $request)
     {
         $courses = Course::whereIn('status', ['open', 'upcoming'])

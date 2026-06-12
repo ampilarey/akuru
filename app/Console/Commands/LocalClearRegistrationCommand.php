@@ -174,7 +174,7 @@ class LocalClearRegistrationCommand extends Command
             RegistrationStudent::query()->delete();
         });
 
-        $this->info("Deleted all registration students and related data.");
+        $this->info('Deleted all registration students and related data.');
 
         return self::SUCCESS;
     }

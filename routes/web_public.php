@@ -1,136 +1,140 @@
 <?php
 
+use App\Http\Controllers\PublicSite\AdmissionController;
+use App\Http\Controllers\PublicSite\ContactController;
+use App\Http\Controllers\PublicSite\CourseController;
+use App\Http\Controllers\PublicSite\GalleryController;
+use App\Http\Controllers\PublicSite\HomeController;
+use App\Http\Controllers\PublicSite\PageController;
+use App\Http\Controllers\PublicSite\SitemapController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\PublicSite\{
-    HomeController,
-    CourseController,
-    AdmissionController,
-    GalleryController,
-    PageController,
-    ContactController,
-    SitemapController
-};
 
 // Dynamic homepage - DB-driven content
-Route::get("/", [HomeController::class, "index"])->name("public.home");
-Route::get("/en", function () {
-    app()->setLocale("en");
+Route::get('/', [HomeController::class, 'index'])->name('public.home');
+Route::get('/en', function () {
+    app()->setLocale('en');
+
     return app(HomeController::class)->index(request());
 });
-Route::get("/ar", function () {
-    app()->setLocale("ar");
+Route::get('/ar', function () {
+    app()->setLocale('ar');
+
     return app(HomeController::class)->index(request());
 });
-Route::get("/dv", function () {
-    app()->setLocale("dv");
+Route::get('/dv', function () {
+    app()->setLocale('dv');
+
     return app(HomeController::class)->index(request());
 });
 
 // Other routes
-Route::get("about", [\App\Http\Controllers\PublicSite\AboutController::class, 'index'])->name("public.about");
-Route::get("courses", [CourseController::class, "index"])->name("public.courses.index");
-Route::get("courses/{course}", [CourseController::class, "show"])->name("public.courses.show");
+Route::get('about', [\App\Http\Controllers\PublicSite\AboutController::class, 'index'])->name('public.about');
+Route::get('courses', [CourseController::class, 'index'])->name('public.courses.index');
+Route::get('courses/{course}', [CourseController::class, 'show'])->name('public.courses.show');
 // Search
-Route::get("search", [\App\Http\Controllers\PublicSite\SearchController::class, "index"])->name("public.search");
+Route::get('search', [\App\Http\Controllers\PublicSite\SearchController::class, 'index'])->name('public.search');
 
 // Articles (type=article posts)
-Route::get("articles", [\App\Http\Controllers\PublicSite\PostController::class, "articlesIndex"])->name("public.articles.index");
-Route::get("articles/{post:slug}", [\App\Http\Controllers\PublicSite\PostController::class, "show"])->name("public.articles.show");
+Route::get('articles', [\App\Http\Controllers\PublicSite\PostController::class, 'articlesIndex'])->name('public.articles.index');
+Route::get('articles/{post:slug}', [\App\Http\Controllers\PublicSite\PostController::class, 'show'])->name('public.articles.show');
 
 // Calendar .ics download for individual event
-Route::get("events/{event}/calendar.ics", [\App\Http\Controllers\PublicSite\EventController::class, "downloadCalendar"])->name("public.events.calendar");
+Route::get('events/{event}/calendar.ics', [\App\Http\Controllers\PublicSite\EventController::class, 'downloadCalendar'])->name('public.events.calendar');
 
-Route::get("news", [\App\Http\Controllers\PublicSite\PostController::class, "newsIndex"])->name("public.news.index");
-Route::get("news/{post:slug}", [\App\Http\Controllers\PublicSite\PostController::class, "show"])->name("public.news.show");
-Route::get("events", function() {
+Route::get('news', [\App\Http\Controllers\PublicSite\PostController::class, 'newsIndex'])->name('public.news.index');
+Route::get('news/{post:slug}', [\App\Http\Controllers\PublicSite\PostController::class, 'show'])->name('public.news.show');
+Route::get('events', function () {
     try {
         $events = \App\Models\Event::published()->public()->with('registrations')->paginate(12);
+
         return view('public.events.index', compact('events'));
     } catch (\Exception $e) {
-        return response('Events error: ' . $e->getMessage(), 500);
+        return response('Events error: '.$e->getMessage(), 500);
     }
-})->name("public.events.index");
-Route::get("events/{event}", function($id) {
+})->name('public.events.index');
+Route::get('events/{event}', function ($id) {
     try {
         $event = \App\Models\Event::published()->public()->with('registrations')->findOrFail($id);
+
         return view('public.events.show', compact('event'));
     } catch (\Exception $e) {
-        return response('Event detail error: ' . $e->getMessage(), 500);
+        return response('Event detail error: '.$e->getMessage(), 500);
     }
-})->name("public.events.show");
-Route::get("gallery", [GalleryController::class, "index"])->name("public.gallery.index");
-Route::get("gallery/{gallery}", [GalleryController::class, "show"])->name("public.gallery.show");
+})->name('public.events.show');
+Route::get('gallery', [GalleryController::class, 'index'])->name('public.gallery.index');
+Route::get('gallery/{gallery}', [GalleryController::class, 'show'])->name('public.gallery.show');
 // Public course registration flow (guest + auth)
-Route::get("courses/{course}/checkout", [\App\Http\Controllers\CourseRegistrationController::class, "checkout"])
-    ->name("courses.checkout.show");
-Route::post("courses/{course}/checkout/login", [\App\Http\Controllers\CourseRegistrationController::class, "checkoutLogin"])
-    ->name("courses.checkout.login")->middleware('throttle:10,1');
+Route::get('courses/{course}/checkout', [\App\Http\Controllers\CourseRegistrationController::class, 'checkout'])
+    ->name('courses.checkout.show');
+Route::post('courses/{course}/checkout/login', [\App\Http\Controllers\CourseRegistrationController::class, 'checkoutLogin'])
+    ->name('courses.checkout.login')->middleware('throttle:10,1');
 // Legacy register route kept for backward compatibility
-Route::get("courses/{course}/register", [\App\Http\Controllers\CourseRegistrationController::class, "show"])
-    ->name("courses.register.show");
-Route::post("courses/register/start", [\App\Http\Controllers\CourseRegistrationController::class, "start"])
-    ->name("courses.register.start")->middleware('throttle:10,1');
-Route::get("courses/register/otp", [\App\Http\Controllers\CourseRegistrationController::class, "otpForm"])
-    ->name("courses.register.otp");
-Route::post("courses/register/verify", [\App\Http\Controllers\CourseRegistrationController::class, "verify"])
-    ->name("courses.register.verify")->middleware('throttle:10,1');
-Route::post("courses/register/otp/resend-new", [\App\Http\Controllers\CourseRegistrationController::class, "resendNewRegistrationOtp"])
-    ->name("courses.register.otp.resend-new")->middleware('throttle:5,1');
-Route::get("courses/register/set-password", [\App\Http\Controllers\CourseRegistrationController::class, "passwordForm"])
-    ->name("courses.register.set-password");
-Route::post("courses/register/set-password", [\App\Http\Controllers\CourseRegistrationController::class, "setPassword"])
-    ->name("courses.register.set-password.store");
-Route::get("courses/register/continue", [\App\Http\Controllers\CourseRegistrationController::class, "continueForm"])
-    ->name("courses.register.continue");
-Route::post("courses/register/enroll", [\App\Http\Controllers\CourseRegistrationController::class, "enroll"])
-    ->name("courses.register.enroll")->middleware('throttle:10,1');
+Route::get('courses/{course}/register', [\App\Http\Controllers\CourseRegistrationController::class, 'show'])
+    ->name('courses.register.show');
+Route::post('courses/register/start', [\App\Http\Controllers\CourseRegistrationController::class, 'start'])
+    ->name('courses.register.start')->middleware('throttle:10,1');
+Route::get('courses/register/otp', [\App\Http\Controllers\CourseRegistrationController::class, 'otpForm'])
+    ->name('courses.register.otp');
+Route::post('courses/register/verify', [\App\Http\Controllers\CourseRegistrationController::class, 'verify'])
+    ->name('courses.register.verify')->middleware('throttle:10,1');
+Route::post('courses/register/otp/resend-new', [\App\Http\Controllers\CourseRegistrationController::class, 'resendNewRegistrationOtp'])
+    ->name('courses.register.otp.resend-new')->middleware('throttle:5,1');
+Route::get('courses/register/set-password', [\App\Http\Controllers\CourseRegistrationController::class, 'passwordForm'])
+    ->name('courses.register.set-password');
+Route::post('courses/register/set-password', [\App\Http\Controllers\CourseRegistrationController::class, 'setPassword'])
+    ->name('courses.register.set-password.store');
+Route::get('courses/register/continue', [\App\Http\Controllers\CourseRegistrationController::class, 'continueForm'])
+    ->name('courses.register.continue');
+Route::post('courses/register/enroll', [\App\Http\Controllers\CourseRegistrationController::class, 'enroll'])
+    ->name('courses.register.enroll')->middleware('throttle:10,1');
 // Graceful GET fallback — browser history / stale link navigation
-Route::get("courses/register/enroll", function () {
+Route::get('courses/register/enroll', function () {
     if (session('enroll_pending_course_ids')) {
         return redirect()->route('courses.register.enroll.otp');
     }
     if (session('pending_selected_course_ids') || session('pending_course_id')) {
         return redirect()->route('courses.register.continue');
     }
+
     return redirect()->route('public.courses.index')
         ->with('info', 'Please select a course to start enrollment.');
 });
-Route::get("courses/register/enroll/confirm", [\App\Http\Controllers\CourseRegistrationController::class, "enrollOtpForm"])
-    ->name("courses.register.enroll.otp");
-Route::post("courses/register/enroll/confirm", [\App\Http\Controllers\CourseRegistrationController::class, "enrollConfirm"])
-    ->name("courses.register.enroll.confirm")->middleware('throttle:10,1');
-Route::post("courses/register/enroll/resend", [\App\Http\Controllers\CourseRegistrationController::class, "enrollResendOtp"])
-    ->name("courses.register.enroll.resend")->middleware('throttle:5,1');
-Route::get("courses/register/complete", [\App\Http\Controllers\CourseRegistrationController::class, "complete"])
-    ->name("courses.register.complete");
-Route::get("courses/register/resume", [\App\Http\Controllers\CourseRegistrationController::class, "resume"])
-    ->name("courses.register.resume");
-Route::get("courses/register/payment/retry", [\App\Http\Controllers\CourseRegistrationController::class, "retryPayment"])
-    ->name("courses.register.payment.retry");
+Route::get('courses/register/enroll/confirm', [\App\Http\Controllers\CourseRegistrationController::class, 'enrollOtpForm'])
+    ->name('courses.register.enroll.otp');
+Route::post('courses/register/enroll/confirm', [\App\Http\Controllers\CourseRegistrationController::class, 'enrollConfirm'])
+    ->name('courses.register.enroll.confirm')->middleware('throttle:10,1');
+Route::post('courses/register/enroll/resend', [\App\Http\Controllers\CourseRegistrationController::class, 'enrollResendOtp'])
+    ->name('courses.register.enroll.resend')->middleware('throttle:5,1');
+Route::get('courses/register/complete', [\App\Http\Controllers\CourseRegistrationController::class, 'complete'])
+    ->name('courses.register.complete');
+Route::get('courses/register/resume', [\App\Http\Controllers\CourseRegistrationController::class, 'resume'])
+    ->name('courses.register.resume');
+Route::get('courses/register/payment/retry', [\App\Http\Controllers\CourseRegistrationController::class, 'retryPayment'])
+    ->name('courses.register.payment.retry');
 
 // Checkout (compliance checkbox required before payment; auth required)
-Route::get("checkout/course/{course}", [\App\Http\Controllers\CheckoutController::class, "show"])
-    ->name("checkout.course.show")->middleware('auth');
-Route::post("payments/course/{course}/start", [\App\Http\Controllers\CheckoutController::class, "start"])
-    ->name("payments.course.start")->middleware('auth');
+Route::get('checkout/course/{course}', [\App\Http\Controllers\CheckoutController::class, 'show'])
+    ->name('checkout.course.show')->middleware('auth');
+Route::post('payments/course/{course}/start', [\App\Http\Controllers\CheckoutController::class, 'start'])
+    ->name('payments.course.start')->middleware('auth');
 
 // Payment routes
-Route::get("payments/return/{payment}", [\App\Http\Controllers\PaymentController::class, "returnByPayment"])
-    ->name("payments.return");
-Route::get("payments/ref/{merchant_reference}/status", [\App\Http\Controllers\PaymentController::class, "status"])
-    ->name("payments.status");
-Route::post("payments/bml/initiate", [\App\Http\Controllers\PaymentController::class, "initiate"])
-    ->name("payments.bml.initiate");
+Route::get('payments/return/{payment}', [\App\Http\Controllers\PaymentController::class, 'returnByPayment'])
+    ->name('payments.return');
+Route::get('payments/ref/{merchant_reference}/status', [\App\Http\Controllers\PaymentController::class, 'status'])
+    ->name('payments.status');
+Route::post('payments/bml/initiate', [\App\Http\Controllers\PaymentController::class, 'initiate'])
+    ->name('payments.bml.initiate');
 
 // Portal (authenticated)
 Route::middleware('auth')->prefix('portal')->name('portal.')->group(function () {
     Route::redirect('/', 'portal/dashboard');
-    Route::get('/dashboard',    [\App\Http\Controllers\Portal\PortalController::class, 'dashboard'])->name('dashboard');
-    Route::get('/enrollments',  [\App\Http\Controllers\Portal\PortalController::class, 'enrollments'])->name('enrollments');
-    Route::get('/payments',     [\App\Http\Controllers\Portal\PortalController::class, 'payments'])->name('payments');
+    Route::get('/dashboard', [\App\Http\Controllers\Portal\PortalController::class, 'dashboard'])->name('dashboard');
+    Route::get('/enrollments', [\App\Http\Controllers\Portal\PortalController::class, 'enrollments'])->name('enrollments');
+    Route::get('/payments', [\App\Http\Controllers\Portal\PortalController::class, 'payments'])->name('payments');
     Route::get('/certificates', [\App\Http\Controllers\Portal\PortalController::class, 'certificates'])->name('certificates');
-    Route::get('/profile',      [\App\Http\Controllers\Portal\PortalController::class, 'profile'])->name('profile');
-    Route::post('/profile',     [\App\Http\Controllers\Portal\PortalController::class, 'updateProfile'])->name('profile.update');
+    Route::get('/profile', [\App\Http\Controllers\Portal\PortalController::class, 'profile'])->name('profile');
+    Route::post('/profile', [\App\Http\Controllers\Portal\PortalController::class, 'updateProfile'])->name('profile.update');
 });
 
 // Account management (auth required)
@@ -147,23 +151,23 @@ Route::middleware('auth')->group(function () {
         ->name('payment.receipt');
 });
 
-Route::get("admissions", [AdmissionController::class, "create"])->name("public.admissions.create");
-Route::post("admissions", [AdmissionController::class, "store"])->name("public.admissions.store");
-Route::get("admissions/thanks", [AdmissionController::class, "thanks"])->name("public.admissions.thanks");
+Route::get('admissions', [AdmissionController::class, 'create'])->name('public.admissions.create');
+Route::post('admissions', [AdmissionController::class, 'store'])->name('public.admissions.store');
+Route::get('admissions/thanks', [AdmissionController::class, 'thanks'])->name('public.admissions.thanks');
 // /apply is a friendly alias for the admissions form (shows a cleaner marketing-focused view)
-Route::get("apply", [AdmissionController::class, "applyPage"])->name("public.apply");
-Route::post("apply", [AdmissionController::class, "store"])->name("public.apply.store");
-Route::get("contact", [ContactController::class, "create"])->name("public.contact.create");
-Route::post("contact", [ContactController::class, "store"])->name("public.contact.store");
-Route::get("terms", [\App\Http\Controllers\PolicyViewController::class, "terms"])->name("public.terms");
-Route::get("privacy", [\App\Http\Controllers\PolicyViewController::class, "privacy"])->name("public.privacy");
-Route::get("refunds", [\App\Http\Controllers\PolicyViewController::class, "refunds"])->name("public.refunds");
-Route::get("services", [\App\Http\Controllers\PolicyViewController::class, "services"])->name("public.services");
-Route::get("page/{slug}", [PageController::class, "show"])->name("public.page.show");
+Route::get('apply', [AdmissionController::class, 'applyPage'])->name('public.apply');
+Route::post('apply', [AdmissionController::class, 'store'])->name('public.apply.store');
+Route::get('contact', [ContactController::class, 'create'])->name('public.contact.create');
+Route::post('contact', [ContactController::class, 'store'])->name('public.contact.store');
+Route::get('terms', [\App\Http\Controllers\PolicyViewController::class, 'terms'])->name('public.terms');
+Route::get('privacy', [\App\Http\Controllers\PolicyViewController::class, 'privacy'])->name('public.privacy');
+Route::get('refunds', [\App\Http\Controllers\PolicyViewController::class, 'refunds'])->name('public.refunds');
+Route::get('services', [\App\Http\Controllers\PolicyViewController::class, 'services'])->name('public.services');
+Route::get('page/{slug}', [PageController::class, 'show'])->name('public.page.show');
 
 // SEO routes
-Route::get("sitemap.xml", [SitemapController::class, "index"])->name("public.sitemap");
-Route::get("robots.txt", function() {
+Route::get('sitemap.xml', [SitemapController::class, 'index'])->name('public.sitemap');
+Route::get('robots.txt', function () {
     $content = "User-agent: *\n";
     $content .= "Allow: /\n";
     $content .= "Disallow: /admin/\n";
@@ -185,7 +189,7 @@ Route::get("robots.txt", function() {
     $content .= "Disallow: /otp-password/\n";
     $content .= "Disallow: /test\n";
     $content .= "Disallow: /lang-test\n\n";
-    $content .= "Sitemap: " . url("/sitemap.xml") . "\n";
-    
-    return response($content, 200, ["Content-Type" => "text/plain"]);
-})->name("public.robots");
+    $content .= 'Sitemap: '.url('/sitemap.xml')."\n";
+
+    return response($content, 200, ['Content-Type' => 'text/plain']);
+})->name('public.robots');

@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Models\NotificationTemplate;
+use Illuminate\Database\Seeder;
 
 class NotificationTemplateSeeder extends Seeder
 {

@@ -22,7 +22,7 @@ return new class extends Migration
             $table->json('objectives')->nullable(); // Learning objectives
             $table->enum('status', ['draft', 'active', 'archived'])->default('draft');
             $table->timestamps();
-            
+
             $table->index(['teacher_id', 'academic_year']);
             $table->index(['subject_id', 'classroom_id']);
         });

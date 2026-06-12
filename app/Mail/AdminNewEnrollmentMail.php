@@ -17,7 +17,7 @@ class AdminNewEnrollmentMail extends Mailable
 
     public function envelope(): Envelope
     {
-        $course  = $this->payment->items->first()?->course?->title ?? 'Unknown course';
+        $course = $this->payment->items->first()?->course?->title ?? 'Unknown course';
         $student = $this->payment->student?->full_name ?? $this->payment->user?->name ?? 'Unknown';
 
         return new Envelope(subject: "[New enrollment] {$student} — {$course}");

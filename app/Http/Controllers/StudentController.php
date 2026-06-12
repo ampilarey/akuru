@@ -2,27 +2,29 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use App\Models\Student;
-use App\Models\User;
 use App\Models\ClassRoom;
 use App\Models\ParentGuardian;
+use App\Models\Student;
+use App\Models\User;
+use Illuminate\Http\Request;
 
 class StudentController extends Controller
 {
     public function index()
     {
         $students = Student::with(['user', 'classRoom', 'parentGuardians'])->latest()->get();
+
         return view('students.index', compact('students'));
     }
-    
+
     public function create()
     {
         $classes = ClassRoom::all();
         $parents = ParentGuardian::with('user')->get();
+
         return view('students.create', compact('classes', 'parents'));
     }
-    
+
     public function store(Request $request)
     {
         $request->validate([
@@ -44,7 +46,7 @@ class StudentController extends Controller
             'first_name_dhivehi' => 'nullable|string',
             'last_name_dhivehi' => 'nullable|string',
         ]);
-        
+
         // Create user account
         $user = User::create([
             'name' => $request->name,
@@ -57,9 +59,9 @@ class StudentController extends Controller
             'national_id' => $request->national_id,
             'is_active' => true,
         ]);
-        
+
         $user->assignRole('student');
-        
+
         // Create student profile
         $student = Student::create([
             'user_id' => $user->id,
@@ -80,36 +82,38 @@ class StudentController extends Controller
             'admission_date' => $request->admission_date,
             'status' => 'active',
         ]);
-        
+
         return redirect()->route('students.index')
             ->with('success', 'Student created successfully!');
     }
-    
+
     public function show(Student $student)
     {
         $student->load(['user', 'classRoom', 'parentGuardians.user', 'quranProgress.teacher.user', 'grades.subject']);
+
         return view('students.show', compact('student'));
     }
-    
+
     public function edit(Student $student)
     {
         $classes = ClassRoom::all();
         $parents = ParentGuardian::with('user')->get();
         $student->load('user');
+
         return view('students.edit', compact('student', 'classes', 'parents'));
     }
-    
+
     public function update(Request $request, Student $student)
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users,email,' . $student->user_id,
+            'email' => 'required|string|email|max:255|unique:users,email,'.$student->user_id,
             'phone' => 'nullable|string',
             'address' => 'nullable|string',
             'date_of_birth' => 'required|date',
             'gender' => 'required|in:male,female',
             'national_id' => 'nullable|string',
-            'student_id' => 'required|string|unique:students,student_id,' . $student->id,
+            'student_id' => 'required|string|unique:students,student_id,'.$student->id,
             'class_id' => 'required|exists:classes,id',
             'admission_date' => 'required|date',
             'first_name' => 'required|string',
@@ -119,7 +123,7 @@ class StudentController extends Controller
             'first_name_dhivehi' => 'nullable|string',
             'last_name_dhivehi' => 'nullable|string',
         ]);
-        
+
         // Update user account
         $student->user->update([
             'name' => $request->name,
@@ -130,7 +134,7 @@ class StudentController extends Controller
             'gender' => $request->gender,
             'national_id' => $request->national_id,
         ]);
-        
+
         // Update student profile
         $student->update([
             'class_id' => $request->class_id,
@@ -148,21 +152,23 @@ class StudentController extends Controller
             'address' => $request->address,
             'admission_date' => $request->admission_date,
         ]);
-        
+
         return redirect()->route('students.index')
             ->with('success', 'Student updated successfully!');
     }
-    
+
     public function destroy(Student $student)
     {
         $student->user->delete(); // This will also delete the student due to cascade
+
         return redirect()->route('students.index')
             ->with('success', 'Student deleted successfully!');
     }
-    
+
     public function quranProgress(Student $student)
     {
         $progress = $student->quranProgress()->with('teacher.user')->latest()->get();
+
         return view('students.quran-progress', compact('student', 'progress'));
     }
 }

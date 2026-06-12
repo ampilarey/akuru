@@ -17,7 +17,7 @@ class AdmissionApplication extends Model
                 $model->application_number = "{$prefix}{$year}{$sequence}";
             }
             // Public form uses full_name; sync to student_name for legacy admin compatibility
-            if (empty($model->student_name) && !empty($model->full_name)) {
+            if (empty($model->student_name) && ! empty($model->full_name)) {
                 $model->student_name = $model->full_name;
             }
         });
@@ -169,7 +169,7 @@ class AdmissionApplication extends Model
     // Accessors
     public function getStatusBadgeColorAttribute()
     {
-        return match($this->status) {
+        return match ($this->status) {
             'new' => 'blue',
             'under_review' => 'yellow',
             'interview_scheduled' => 'purple',
@@ -183,7 +183,7 @@ class AdmissionApplication extends Model
 
     public function getPriorityBadgeColorAttribute()
     {
-        return match($this->priority) {
+        return match ($this->priority) {
             'low' => 'green',
             'medium' => 'blue',
             'high' => 'orange',
@@ -214,15 +214,17 @@ class AdmissionApplication extends Model
 
     public function getIsOverdueAttribute()
     {
-        $overdueDays = match($this->status) {
+        $overdueDays = match ($this->status) {
             'new' => 7,
             'under_review' => 14,
             'interview_scheduled' => 3,
             default => 0,
         };
-        
-        if ($overdueDays === 0) return false;
-        
+
+        if ($overdueDays === 0) {
+            return false;
+        }
+
         return $this->created_at->addDays($overdueDays)->isPast();
     }
 
@@ -233,7 +235,7 @@ class AdmissionApplication extends Model
 
     public function getIsAssignedAttribute()
     {
-        return !is_null($this->assigned_to);
+        return ! is_null($this->assigned_to);
     }
 
     public function getIsEnrolledAttribute()
@@ -254,14 +256,14 @@ class AdmissionApplication extends Model
     // Methods
     public function generateApplicationNumber()
     {
-        if (!$this->application_number) {
+        if (! $this->application_number) {
             $year = now()->year;
             $prefix = 'AKU';
             $sequence = str_pad(static::whereYear('created_at', $year)->count() + 1, 4, '0', STR_PAD_LEFT);
             $this->application_number = "{$prefix}{$year}{$sequence}";
             $this->save();
         }
-        
+
         return $this->application_number;
     }
 
@@ -312,7 +314,7 @@ class AdmissionApplication extends Model
     {
         $this->update([
             'status' => 'withdrawn',
-            'admin_notes' => $this->admin_notes . "\n\nWithdrawn: " . $notes,
+            'admin_notes' => $this->admin_notes."\n\nWithdrawn: ".$notes,
         ]);
     }
 
@@ -332,24 +334,24 @@ class AdmissionApplication extends Model
             'rejected' => static::rejected()->count(),
             'enrolled' => static::enrolled()->count(),
             'overdue' => static::whereIn('status', ['new', 'under_review', 'interview_scheduled'])
-                        ->whereRaw('created_at < DATE_SUB(NOW(), INTERVAL 7 DAY)')
-                        ->count(),
+                ->whereRaw('created_at < DATE_SUB(NOW(), INTERVAL 7 DAY)')
+                ->count(),
         ];
     }
 
     public function getRecentApplications($limit = 10)
     {
         return static::recent()
-                    ->with(['course', 'assignedUser'])
-                    ->limit($limit)
-                    ->get();
+            ->with(['course', 'assignedUser'])
+            ->limit($limit)
+            ->get();
     }
 
     public function getOverdueApplications()
     {
         return static::whereIn('status', ['new', 'under_review', 'interview_scheduled'])
-                    ->whereRaw('created_at < DATE_SUB(NOW(), INTERVAL 7 DAY)')
-                    ->with(['course', 'assignedUser'])
-                    ->get();
+            ->whereRaw('created_at < DATE_SUB(NOW(), INTERVAL 7 DAY)')
+            ->with(['course', 'assignedUser'])
+            ->get();
     }
 }

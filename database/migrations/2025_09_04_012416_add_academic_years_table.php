@@ -20,7 +20,7 @@ return new class extends Migration
             $table->text('description')->nullable();
             $table->json('terms')->nullable(); // Semester/term information
             $table->timestamps();
-            
+
             $table->index(['is_current']);
             $table->index(['start_date', 'end_date']);
         });

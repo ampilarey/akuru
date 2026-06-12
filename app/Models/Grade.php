@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
 class Grade extends Model
 {
@@ -57,17 +57,40 @@ class Grade extends Model
     // Helper methods
     public function getGradeAttribute()
     {
-        if ($this->percentage >= 90) return 'A+';
-        if ($this->percentage >= 85) return 'A';
-        if ($this->percentage >= 80) return 'A-';
-        if ($this->percentage >= 75) return 'B+';
-        if ($this->percentage >= 70) return 'B';
-        if ($this->percentage >= 65) return 'B-';
-        if ($this->percentage >= 60) return 'C+';
-        if ($this->percentage >= 55) return 'C';
-        if ($this->percentage >= 50) return 'C-';
-        if ($this->percentage >= 45) return 'D+';
-        if ($this->percentage >= 40) return 'D';
+        if ($this->percentage >= 90) {
+            return 'A+';
+        }
+        if ($this->percentage >= 85) {
+            return 'A';
+        }
+        if ($this->percentage >= 80) {
+            return 'A-';
+        }
+        if ($this->percentage >= 75) {
+            return 'B+';
+        }
+        if ($this->percentage >= 70) {
+            return 'B';
+        }
+        if ($this->percentage >= 65) {
+            return 'B-';
+        }
+        if ($this->percentage >= 60) {
+            return 'C+';
+        }
+        if ($this->percentage >= 55) {
+            return 'C';
+        }
+        if ($this->percentage >= 50) {
+            return 'C-';
+        }
+        if ($this->percentage >= 45) {
+            return 'D+';
+        }
+        if ($this->percentage >= 40) {
+            return 'D';
+        }
+
         return 'F';
     }
 }

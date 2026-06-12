@@ -4,7 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Carbon\Carbon;
 
 class UserActivity extends Model
 {
@@ -52,10 +51,10 @@ class UserActivity extends Model
         int $userId,
         string $activityType,
         string $activityName,
-        string $description = null,
+        ?string $description = null,
         array $metadata = [],
-        string $ipAddress = null,
-        string $userAgent = null
+        ?string $ipAddress = null,
+        ?string $userAgent = null
     ) {
         return static::create([
             'user_id' => $userId,
@@ -73,18 +72,18 @@ class UserActivity extends Model
     public static function getUserRecentActivities(int $userId, int $limit = 10)
     {
         return static::where('user_id', $userId)
-                    ->recent()
-                    ->orderBy('performed_at', 'desc')
-                    ->limit($limit)
-                    ->get();
+            ->recent()
+            ->orderBy('performed_at', 'desc')
+            ->limit($limit)
+            ->get();
     }
 
     // Get activity summary for dashboard
     public static function getActivitySummary(int $userId, int $days = 7)
     {
         $activities = static::where('user_id', $userId)
-                          ->where('performed_at', '>=', now()->subDays($days))
-                          ->get();
+            ->where('performed_at', '>=', now()->subDays($days))
+            ->get();
 
         return [
             'total_activities' => $activities->count(),
@@ -100,9 +99,9 @@ class UserActivity extends Model
     public static function getLoginActivities(int $userId, int $days = 30)
     {
         return static::where('user_id', $userId)
-                    ->activityType('login')
-                    ->where('performed_at', '>=', now()->subDays($days))
-                    ->orderBy('performed_at', 'desc')
-                    ->get();
+            ->activityType('login')
+            ->where('performed_at', '>=', now()->subDays($days))
+            ->orderBy('performed_at', 'desc')
+            ->get();
     }
 }

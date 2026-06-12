@@ -2,11 +2,11 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Quiz extends Model
 {
@@ -86,6 +86,7 @@ class Quiz extends Model
         if ($this->classroom_id) {
             return $this->classroom->students();
         }
+
         return $this->belongsToMany(Student::class, 'quiz_attempts');
     }
 
@@ -121,7 +122,7 @@ class Quiz extends Model
         }
 
         $now = now();
-        
+
         if ($this->starts_at && $now < $this->starts_at) {
             return false;
         }
@@ -155,9 +156,12 @@ class Quiz extends Model
     public function getCompletionRateAttribute(): float
     {
         $total = $this->attempts()->count();
-        if ($total === 0) return 0;
-        
+        if ($total === 0) {
+            return 0;
+        }
+
         $completed = $this->attempts()->where('status', 'completed')->count();
+
         return ($completed / $total) * 100;
     }
 }

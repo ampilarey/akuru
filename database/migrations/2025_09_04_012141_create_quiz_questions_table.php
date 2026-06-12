@@ -23,7 +23,7 @@ return new class extends Migration
             $table->smallInteger('points')->default(1);
             $table->string('image_path')->nullable(); // Optional question image
             $table->timestamps();
-            
+
             $table->index(['quiz_id', 'order']);
         });
     }

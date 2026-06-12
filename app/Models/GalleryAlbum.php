@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Casts\Attribute;
 
 class GalleryAlbum extends Model
 {
@@ -80,13 +80,14 @@ class GalleryAlbum extends Model
 
     public function getCoverImageUrlAttribute()
     {
-        if (!$this->cover_image) {
+        if (! $this->cover_image) {
             // Return first item's image as cover
             $firstItem = $this->items()->where('file_type', 'image')->first();
+
             return $firstItem ? $firstItem->file_path : asset('images/gallery-placeholder.jpg');
         }
-        
-        return asset('storage/' . $this->cover_image);
+
+        return asset('storage/'.$this->cover_image);
     }
 
     public function getItemCountAttribute()
@@ -96,7 +97,7 @@ class GalleryAlbum extends Model
 
     public function getTypeIconAttribute()
     {
-        return match($this->type) {
+        return match ($this->type) {
             'photos' => '📸',
             'videos' => '🎥',
             'mixed' => '📁',
@@ -106,7 +107,7 @@ class GalleryAlbum extends Model
 
     public function getStatusBadgeColorAttribute()
     {
-        return match($this->status) {
+        return match ($this->status) {
             'published' => 'green',
             'draft' => 'gray',
             'archived' => 'red',
@@ -124,29 +125,29 @@ class GalleryAlbum extends Model
     public function getFeaturedAlbums($limit = 6)
     {
         return static::published()
-                    ->public()
-                    ->featured()
-                    ->ordered()
-                    ->limit($limit)
-                    ->get();
+            ->public()
+            ->featured()
+            ->ordered()
+            ->limit($limit)
+            ->get();
     }
 
     public function getRecentAlbums($limit = 6)
     {
         return static::published()
-                    ->public()
-                    ->orderBy('created_at', 'desc')
-                    ->limit($limit)
-                    ->get();
+            ->public()
+            ->orderBy('created_at', 'desc')
+            ->limit($limit)
+            ->get();
     }
 
     public function getAlbumsByType($type, $limit = 12)
     {
         return static::published()
-                    ->public()
-                    ->byType($type)
-                    ->ordered()
-                    ->limit($limit)
-                    ->get();
+            ->public()
+            ->byType($type)
+            ->ordered()
+            ->limit($limit)
+            ->get();
     }
 }

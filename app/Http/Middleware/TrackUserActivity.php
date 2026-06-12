@@ -2,10 +2,10 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\DashboardAnalytics;
+use App\Models\UserActivity;
 use Closure;
 use Illuminate\Http\Request;
-use App\Models\UserActivity;
-use App\Models\DashboardAnalytics;
 use Symfony\Component\HttpFoundation\Response;
 
 class TrackUserActivity
@@ -29,8 +29,8 @@ class TrackUserActivity
     {
         $user = auth()->user();
         $route = $request->route();
-        
-        if (!$route) {
+
+        if (! $route) {
             return;
         }
 
@@ -45,7 +45,7 @@ class TrackUserActivity
 
         // Determine activity type and name
         $activityData = $this->getActivityData($routeName, $path, $method);
-        
+
         if ($activityData) {
             // Record user activity
             UserActivity::recordActivity(

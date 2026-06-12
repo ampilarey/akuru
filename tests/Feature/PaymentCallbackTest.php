@@ -8,7 +8,6 @@ use App\Models\Payment;
 use App\Models\PaymentItem;
 use App\Models\RegistrationStudent;
 use App\Models\User;
-use App\Models\UserContact;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 

@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
 class Teacher extends Model
 {
@@ -58,8 +58,8 @@ class Teacher extends Model
     public function subjects()
     {
         return $this->belongsToMany(Subject::class, 'teacher_subject')
-                    ->withPivot('is_primary_teacher')
-                    ->withTimestamps();
+            ->withPivot('is_primary_teacher')
+            ->withTimestamps();
     }
 
     public function classes()
@@ -95,17 +95,17 @@ class Teacher extends Model
     // Helper methods
     public function getFullNameAttribute()
     {
-        return $this->first_name . ' ' . $this->last_name;
+        return $this->first_name.' '.$this->last_name;
     }
 
     public function getFullNameArabicAttribute()
     {
-        return $this->first_name_arabic . ' ' . $this->last_name_arabic;
+        return $this->first_name_arabic.' '.$this->last_name_arabic;
     }
 
     public function getFullNameDhivehiAttribute()
     {
-        return $this->first_name_dhivehi . ' ' . $this->last_name_dhivehi;
+        return $this->first_name_dhivehi.' '.$this->last_name_dhivehi;
     }
 
     public function students()

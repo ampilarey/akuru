@@ -26,7 +26,7 @@ return new class extends Migration
             $table->integer('response_time_hours')->default(24); // Expected response time
             $table->json('meta')->nullable();
             $table->timestamps();
-            
+
             // Indexes
             $table->index(['is_active', 'sort_order']);
             $table->index('slug');

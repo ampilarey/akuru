@@ -63,7 +63,7 @@ class Payment extends Model
                 $payment->uuid = (string) Str::uuid();
             }
             if (empty($payment->local_id)) {
-                $payment->local_id = $payment->merchant_reference ?? 'AKURU-' . strtoupper(Str::uuid()->toString());
+                $payment->local_id = $payment->merchant_reference ?? 'AKURU-'.strtoupper(Str::uuid()->toString());
             }
             if (empty($payment->merchant_reference) && ! empty($payment->local_id)) {
                 $payment->merchant_reference = $payment->local_id;
@@ -139,6 +139,7 @@ class Payment extends Model
                 $q->orWhere('local_id', $localId);
             }
         });
+
         return $q->first();
     }
 }

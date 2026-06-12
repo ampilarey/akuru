@@ -2,23 +2,23 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
-use App\Models\User;
-use App\Models\Student;
-use App\Models\Teacher;
-use App\Models\ClassRoom;
-use App\Models\Subject;
-use App\Models\QuranProgress;
 use App\Models\Announcement;
 use App\Models\Assignment;
-use App\Models\Surah;
+use App\Models\ClassRoom;
+use App\Models\QuranProgress;
 use App\Models\School;
-use Spatie\Permission\Models\Role;
+use App\Models\Student;
+use App\Models\Subject;
+use App\Models\Surah;
+use App\Models\Teacher;
+use App\Models\User;
+use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Hash;
 
 class DemoDataCommand extends Command
 {
     protected $signature = 'demo:generate {--fresh : Fresh database with demo data}';
+
     protected $description = 'Generate demo data for Akuru LMS';
 
     public function handle()
@@ -77,7 +77,7 @@ class DemoDataCommand extends Command
                 'password' => Hash::make('password'),
             ]
         );
-        if (!$admin->hasRole('admin')) {
+        if (! $admin->hasRole('admin')) {
             $admin->assignRole('admin');
         }
 
@@ -89,7 +89,7 @@ class DemoDataCommand extends Command
                 'password' => Hash::make('password'),
             ]
         );
-        if (!$headmaster->hasRole('headmaster')) {
+        if (! $headmaster->hasRole('headmaster')) {
             $headmaster->assignRole('headmaster');
         }
 
@@ -101,7 +101,7 @@ class DemoDataCommand extends Command
                 'password' => Hash::make('password'),
             ]
         );
-        if (!$supervisor->hasRole('supervisor')) {
+        if (! $supervisor->hasRole('supervisor')) {
             $supervisor->assignRole('supervisor');
         }
     }
@@ -167,22 +167,22 @@ class DemoDataCommand extends Command
                     'password' => Hash::make('password'),
                 ]
             );
-            if (!$user->hasRole('student')) {
+            if (! $user->hasRole('student')) {
                 $user->assignRole('student');
             }
 
             $student = Student::firstOrCreate(
-                ['student_id' => "STU" . str_pad($i, 3, '0', STR_PAD_LEFT)],
+                ['student_id' => 'STU'.str_pad($i, 3, '0', STR_PAD_LEFT)],
                 [
                     'user_id' => $user->id,
                     'school_id' => $school->id,
-                    'first_name' => "Student",
+                    'first_name' => 'Student',
                     'last_name' => $i,
                     'full_name' => "Student $i",
                     'class_id' => $classes->random()->id,
                     'date_of_birth' => now()->subYears(rand(6, 18)),
                     'admission_date' => now()->subMonths(rand(1, 12)),
-                    'phone' => '+960' . rand(7000000, 7999999),
+                    'phone' => '+960'.rand(7000000, 7999999),
                     'address' => 'Malé, Maldives',
                 ]
             );
@@ -203,21 +203,21 @@ class DemoDataCommand extends Command
                     'password' => Hash::make('password'),
                 ]
             );
-            if (!$user->hasRole('teacher')) {
+            if (! $user->hasRole('teacher')) {
                 $user->assignRole('teacher');
             }
 
             Teacher::firstOrCreate(
-                ['teacher_id' => "TCH" . str_pad($i, 3, '0', STR_PAD_LEFT)],
+                ['teacher_id' => 'TCH'.str_pad($i, 3, '0', STR_PAD_LEFT)],
                 [
                     'user_id' => $user->id,
                     'school_id' => $school->id,
-                    'first_name' => "Teacher",
+                    'first_name' => 'Teacher',
                     'last_name' => $i,
                     'full_name' => "Teacher $i",
                     'email' => "teacher$i@akuru.edu",
                     'date_of_birth' => now()->subYears(rand(25, 50)),
-                    'phone' => '+960' . rand(7000000, 7999999),
+                    'phone' => '+960'.rand(7000000, 7999999),
                     'address' => 'Malé, Maldives',
                     'qualification' => 'Islamic Studies',
                     'specialization' => 'Quran Studies',
@@ -303,10 +303,10 @@ class DemoDataCommand extends Command
                 'title' => "Assignment $i",
                 'title_arabic' => "الواجب $i",
                 'title_dhivehi' => "ވެއްޖެ $i",
-                'description' => "This is a demo assignment for testing purposes.",
-                'description_arabic' => "هذا واجب تجريبي لأغراض الاختبار.",
-                'description_dhivehi' => "މި ވެއްޖެ ޓެސްޓް ކުރުމަށް ހުށަހަޅާ.",
-                'instructions' => "Please complete this assignment and submit by the due date.",
+                'description' => 'This is a demo assignment for testing purposes.',
+                'description_arabic' => 'هذا واجب تجريبي لأغراض الاختبار.',
+                'description_dhivehi' => 'މި ވެއްޖެ ޓެސްޓް ކުރުމަށް ހުށަހަޅާ.',
+                'instructions' => 'Please complete this assignment and submit by the due date.',
                 'class_id' => $classes->random()->id,
                 'subject_id' => $subjects->random()->id,
                 'teacher_id' => $teachers->random()->id,

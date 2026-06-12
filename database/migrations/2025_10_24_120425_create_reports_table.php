@@ -27,7 +27,7 @@ return new class extends Migration
             $table->timestamp('generated_at')->nullable();
             $table->timestamp('expires_at')->nullable(); // For auto-cleanup
             $table->timestamps();
-            
+
             $table->index(['type', 'status', 'created_at']);
             $table->index(['created_by', 'created_at']);
             $table->index('expires_at');

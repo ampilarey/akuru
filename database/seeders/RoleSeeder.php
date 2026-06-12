@@ -2,10 +2,9 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
 
 class RoleSeeder extends Seeder
 {
@@ -22,7 +21,7 @@ class RoleSeeder extends Seeder
             'supervisor',   // Academic monitoring
             'teacher',      // Teaching staff
             'student',      // Students
-            'parent'        // Parents/Guardians
+            'parent',        // Parents/Guardians
         ];
 
         foreach ($roles as $role) {
@@ -34,73 +33,73 @@ class RoleSeeder extends Seeder
             // School management
             'manage_school',
             'view_school',
-            
+
             // User management
             'manage_users',
             'view_users',
             'create_users',
             'edit_users',
             'delete_users',
-            
+
             // Student management
             'manage_students',
             'view_students',
             'create_students',
             'edit_students',
             'delete_students',
-            
+
             // Teacher management
             'manage_teachers',
             'view_teachers',
             'create_teachers',
             'edit_teachers',
             'delete_teachers',
-            
+
             // Class management
             'manage_classes',
             'view_classes',
             'create_classes',
             'edit_classes',
             'delete_classes',
-            
+
             // Subject management
             'manage_subjects',
             'view_subjects',
             'create_subjects',
             'edit_subjects',
             'delete_subjects',
-            
+
             // Grade management
             'manage_grades',
             'view_grades',
             'create_grades',
             'edit_grades',
             'delete_grades',
-            
+
             // Attendance management
             'manage_attendance',
             'view_attendance',
             'mark_attendance',
-            
+
             // Quran progress
             'manage_quran_progress',
             'view_quran_progress',
             'update_quran_progress',
-            
+
             // Timetable management
             'manage_timetables',
             'view_timetables',
             'create_timetables',
             'edit_timetables',
             'delete_timetables',
-            
+
             // Announcements
             'manage_announcements',
             'view_announcements',
             'create_announcements',
             'edit_announcements',
             'delete_announcements',
-            
+
             // Reports
             'view_reports',
             'generate_reports',
@@ -135,11 +134,11 @@ class RoleSeeder extends Seeder
         }
 
         // Assign permissions to roles
-        
+
         // Super Admin gets ALL permissions
         $superAdmin = Role::findByName('super_admin');
         $superAdmin->givePermissionTo(Permission::all());
-        
+
         // Admin gets most permissions (school operations, not system-level)
         $admin = Role::findByName('admin');
         $admin->givePermissionTo(Permission::all());

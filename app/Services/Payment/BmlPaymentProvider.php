@@ -12,11 +12,12 @@ class BmlPaymentProvider implements PaymentProviderInterface
     public function initiate(Payment $payment, array $context = []): PaymentInitiationResult
     {
         $baseUrl = rtrim(config('bml.base_url', ''), '/');
-        $apiKey  = config('bml.api_key');
-        $appId   = config('bml.app_id');
+        $apiKey = config('bml.api_key');
+        $appId = config('bml.app_id');
 
-        if (!$baseUrl || !$apiKey) {
+        if (! $baseUrl || ! $apiKey) {
             Log::warning('BML payment provider: Missing configuration');
+
             return new PaymentInitiationResult(false, null, null, 'Payment gateway not configured');
         }
 
@@ -27,9 +28,9 @@ class BmlPaymentProvider implements PaymentProviderInterface
             : (int) round((float) $payment->amount * 100);
         // BML requires alphanumeric localId (no hyphens). Strip them.
         $rawLocalId = $payment->local_id ?? $payment->merchant_reference;
-        $localId    = preg_replace('/[^A-Za-z0-9]/', '', $rawLocalId);
+        $localId = preg_replace('/[^A-Za-z0-9]/', '', $rawLocalId);
         // Ensure max 50 chars
-        $localId    = substr($localId, 0, 50);
+        $localId = substr($localId, 0, 50);
 
         // Build return URL: context (from controller) > BML_RETURN_URL > APP_URL.
         $baseReturnUrl = null;
@@ -38,19 +39,19 @@ class BmlPaymentProvider implements PaymentProviderInterface
         }
         if (! $baseReturnUrl) {
             $baseReturnUrl = config('bml.return_url')
-                ?: rtrim(config('app.url'), '/') . '/payments/bml/return';
+                ?: rtrim(config('app.url'), '/').'/payments/bml/return';
         }
         // Pass original ref (with hyphens) so our return controller can look up the payment.
-        $returnUrl = $baseReturnUrl . '?ref=' . urlencode($rawLocalId);
+        $returnUrl = $baseReturnUrl.'?ref='.urlencode($rawLocalId);
 
-        $path    = config('bml.paths.create_transaction', '/v2/transactions');
+        $path = config('bml.paths.create_transaction', '/v2/transactions');
         // Always use configured BML currency (UAT=USD, production=MVR) regardless of what's stored in the payment record
         $currency = config('bml.default_currency') ?: ($payment->currency ?? 'MVR');
 
         $payload = [
-            'amount'      => $amountLaar,
-            'currency'    => $currency,
-            'localId'     => $localId,
+            'amount' => $amountLaar,
+            'currency' => $currency,
+            'localId' => $localId,
             'redirectUrl' => $returnUrl,
         ];
 
@@ -58,8 +59,8 @@ class BmlPaymentProvider implements PaymentProviderInterface
         $portalExp = config('bml.payment_portal_experience', []);
         $payload['paymentPortalExperience'] = [
             'externalWebsiteTermsAccepted' => (bool) ($portalExp['external_website_terms_accepted'] ?? true),
-            'externalWebsiteTermsUrl'      => $portalExp['external_website_terms_url']
-                                                ?: rtrim(config('app.url'), '/') . '/terms',
+            'externalWebsiteTermsUrl' => $portalExp['external_website_terms_url']
+                                                ?: rtrim(config('app.url'), '/').'/terms',
         ];
 
         if ($provider = ($context['provider'] ?? config('bml.provider'))) {
@@ -73,34 +74,35 @@ class BmlPaymentProvider implements PaymentProviderInterface
             );
 
             Log::info('BML initiate request', [
-                'auth_mode'    => config('bml.auth_mode', 'auto'),
-                'url'          => $baseUrl . $path,
-                'amount_laar'  => $amountLaar,
-                'local_id'     => $localId,
+                'auth_mode' => config('bml.auth_mode', 'auto'),
+                'url' => $baseUrl.$path,
+                'amount_laar' => $amountLaar,
+                'local_id' => $localId,
                 'redirect_url' => $returnUrl,
-                'payload'      => $payload,
+                'payload' => $payload,
             ]);
 
             $response = Http::withHeaders($headers)
                 ->timeout(config('bml.timeout', 30))
-                ->post($baseUrl . $path, $payload);
+                ->post($baseUrl.$path, $payload);
 
             if ($response->successful()) {
                 $data = $response->json();
                 $url = $this->extractPaymentUrl($data);
                 if ($url) {
                     $payment->update([
-                        'local_id'           => $localId,
-                        'redirect_url'       => $url,
-                        'payment_url'        => $url,
+                        'local_id' => $localId,
+                        'redirect_url' => $url,
+                        'payment_url' => $url,
                         'bml_transaction_id' => $this->extractTransactionId($data),
-                        'status'             => 'pending',
+                        'status' => 'pending',
                     ]);
+
                     return new PaymentInitiationResult(true, $url, null);
                 }
                 Log::warning('BML initiate: 200 OK but no payment URL in response', [
                     'response_keys' => array_keys($data ?? []),
-                    'body'          => $response->body(),
+                    'body' => $response->body(),
                 ]);
             }
 
@@ -110,9 +112,11 @@ class BmlPaymentProvider implements PaymentProviderInterface
             Log::error('BML initiate failed', ['status' => $response->status(), 'code' => $code, 'body' => $body]);
 
             $error = $this->friendlyPaymentError($response->status(), (string) $raw, (string) $code);
+
             return new PaymentInitiationResult(false, null, null, $error);
         } catch (\Throwable $e) {
             Log::error('BML initiate exception', ['error' => $e->getMessage()]);
+
             return new PaymentInitiationResult(false, null, null, 'Payment gateway error');
         }
     }
@@ -139,6 +143,7 @@ class BmlPaymentProvider implements PaymentProviderInterface
                 }
             }
         }
+
         return null;
     }
 
@@ -157,8 +162,10 @@ class BmlPaymentProvider implements PaymentProviderInterface
         $nested = $data['data'] ?? null;
         if (is_array($nested)) {
             $id = $nested['id'] ?? $nested['transactionId'] ?? $nested['transaction_id'] ?? null;
+
             return $id !== null ? (string) $id : null;
         }
+
         return null;
     }
 
@@ -167,13 +174,14 @@ class BmlPaymentProvider implements PaymentProviderInterface
      */
     private function friendlyPaymentError(int $status, string $message, string $code): string
     {
-        $lower = strtolower($message . ' ' . $code);
+        $lower = strtolower($message.' '.$code);
         if ($status === 401 || str_contains($lower, 'unauthorized')) {
             return 'Payment service is not available right now. Your registration was saved. Please contact us to complete payment, or try again later.';
         }
         if (str_contains($lower, 'duplicate') || str_contains($lower, 'already exist') || str_contains($lower, 'pp-c-004')) {
             return 'This number or account may already be linked to a payment. Please use a different mobile number, or contact us to complete payment.';
         }
+
         return $message ?: 'Payment initiation failed. Your registration was saved. Please contact us or try again later.';
     }
 
@@ -187,16 +195,16 @@ class BmlPaymentProvider implements PaymentProviderInterface
      */
     private function authHeaders(string $apiKey, string $appId): array
     {
-        $mode    = config('bml.auth_mode', 'auto');
+        $mode = config('bml.auth_mode', 'auto');
         $trimmed = trim($apiKey);
 
         $headerValue = match ($mode) {
-            'raw'          => $trimmed,
-            'bearer_jwt'   => 'Bearer ' . $trimmed,
-            'bearer_basic' => 'Bearer ' . base64_encode($trimmed . ':' . $appId),
-            default        => str_starts_with($trimmed, 'eyJ')
-                                ? 'Bearer ' . $trimmed
-                                : 'Bearer ' . base64_encode($trimmed . ':' . $appId),
+            'raw' => $trimmed,
+            'bearer_jwt' => 'Bearer '.$trimmed,
+            'bearer_basic' => 'Bearer '.base64_encode($trimmed.':'.$appId),
+            default => str_starts_with($trimmed, 'eyJ')
+                                ? 'Bearer '.$trimmed
+                                : 'Bearer '.base64_encode($trimmed.':'.$appId),
         };
 
         return ['Authorization' => $headerValue];
@@ -212,22 +220,23 @@ class BmlPaymentProvider implements PaymentProviderInterface
     {
         // IMPORTANT: Use raw request body for signature verification before any JSON decoding.
         $rawBody = $request->getContent();
-        $secret  = config('bml.webhook_secret') ?? config('bml.callback_secret');
+        $secret = config('bml.webhook_secret') ?? config('bml.callback_secret');
 
         if ($secret) {
             $headerName = config('bml.webhook_signature_header', 'X-BML-Signature');
-            $signature  = $request->header($headerName) ?? $request->header('X-BML-Signature');
+            $signature = $request->header($headerName) ?? $request->header('X-BML-Signature');
             if ($signature && ! $this->verifyRawSignature($rawBody, $signature, $secret)) {
                 Log::warning('BML webhook: invalid signature');
+
                 return new PaymentVerificationResult(false, null, null, null, [], 'Invalid signature');
             }
         }
 
         // Only decode JSON after signature is validated
-        $payload     = json_decode($rawBody, true) ?? $request->all();
+        $payload = json_decode($rawBody, true) ?? $request->all();
         $merchantRef = $payload['localId'] ?? $payload['reference'] ?? $payload['merchantReference'] ?? $payload['merchant_reference'] ?? null;
         $providerRef = $payload['id'] ?? $payload['transactionId'] ?? $payload['transaction_id'] ?? null;
-        $status      = $payload['state'] ?? $payload['status'] ?? $payload['transactionStatus'] ?? null;
+        $status = $payload['state'] ?? $payload['status'] ?? $payload['transactionStatus'] ?? null;
 
         if (! $merchantRef) {
             return new PaymentVerificationResult(false, null, null, null, $payload, 'Missing reference');
@@ -241,28 +250,29 @@ class BmlPaymentProvider implements PaymentProviderInterface
     public function queryStatus(string $merchantReference): ?PaymentVerificationResult
     {
         $baseUrl = rtrim(config('bml.base_url', ''), '/');
-        $apiKey  = config('bml.api_key');
-        $appId   = config('bml.app_id');
+        $apiKey = config('bml.api_key');
+        $appId = config('bml.app_id');
 
-        if (!$baseUrl || !$apiKey) {
+        if (! $baseUrl || ! $apiKey) {
             return null;
         }
 
         try {
             $pathTemplate = config('bml.paths.get_transaction', '/v2/transactions/{reference}');
             $path = str_replace('{reference}', $merchantReference, $pathTemplate);
-            Log::info('BML queryStatus request', ['url' => $baseUrl . $path]);
+            Log::info('BML queryStatus request', ['url' => $baseUrl.$path]);
             $response = Http::withHeaders(array_merge(
                 $this->authHeaders($apiKey, $appId ?? ''),
                 ['Content-Type' => 'application/json'],
-            ))->timeout(config('bml.timeout', 30))->get($baseUrl . $path);
+            ))->timeout(config('bml.timeout', 30))->get($baseUrl.$path);
 
-            if (!$response->successful()) {
+            if (! $response->successful()) {
                 Log::warning('BML queryStatus: non-success response', [
-                    'ref'    => $merchantReference,
+                    'ref' => $merchantReference,
                     'status' => $response->status(),
-                    'body'   => $response->body(),
+                    'body' => $response->body(),
                 ]);
+
                 return null;
             }
 
@@ -275,6 +285,7 @@ class BmlPaymentProvider implements PaymentProviderInterface
             return new PaymentVerificationResult(true, $merchantReference, $providerRef, $status, $data, null, $isConfirmed);
         } catch (\Throwable $e) {
             Log::warning('BML queryStatus failed', ['ref' => $merchantReference, 'error' => $e->getMessage()]);
+
             return null;
         }
     }
@@ -285,8 +296,9 @@ class BmlPaymentProvider implements PaymentProviderInterface
      */
     protected function verifyRawSignature(string $rawBody, string $signature, string $secret): bool
     {
-        $algo     = config('bml.webhook_hmac_algo', 'sha256');
+        $algo = config('bml.webhook_hmac_algo', 'sha256');
         $expected = hash_hmac($algo, $rawBody, $secret);
+
         return hash_equals($expected, $signature);
     }
 

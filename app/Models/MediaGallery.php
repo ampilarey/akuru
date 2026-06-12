@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
 class MediaGallery extends Model
 {
@@ -97,12 +97,12 @@ class MediaGallery extends Model
     {
         $bytes = $this->total_size;
         $units = ['B', 'KB', 'MB', 'GB'];
-        
+
         for ($i = 0; $bytes > 1024 && $i < count($units) - 1; $i++) {
             $bytes /= 1024;
         }
-        
-        return round($bytes, 2) . ' ' . $units[$i];
+
+        return round($bytes, 2).' '.$units[$i];
     }
 
     /**
@@ -159,14 +159,14 @@ class MediaGallery extends Model
     public function getCoverImageUrlAttribute()
     {
         if ($this->cover_image) {
-            return asset('storage/' . $this->cover_image);
+            return asset('storage/'.$this->cover_image);
         }
-        
+
         $coverItem = $this->cover_item;
         if ($coverItem && $coverItem->media_type === 'image') {
-            return asset('storage/' . $coverItem->file_path);
+            return asset('storage/'.$coverItem->file_path);
         }
-        
+
         return asset('images/default-gallery-cover.jpg');
     }
 }

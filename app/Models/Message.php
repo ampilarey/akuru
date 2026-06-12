@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
 class Message extends Model
 {
@@ -132,7 +132,7 @@ class Message extends Model
      */
     public function getPriorityColorAttribute()
     {
-        return match($this->priority) {
+        return match ($this->priority) {
             'low' => 'gray',
             'normal' => 'blue',
             'high' => 'orange',
@@ -146,7 +146,7 @@ class Message extends Model
      */
     public function getPriorityIconAttribute()
     {
-        return match($this->priority) {
+        return match ($this->priority) {
             'low' => 'arrow-down',
             'normal' => 'minus',
             'high' => 'arrow-up',
@@ -168,6 +168,6 @@ class Message extends Model
      */
     public function getHasAttachmentsAttribute()
     {
-        return !empty($this->attachments);
+        return ! empty($this->attachments);
     }
 }

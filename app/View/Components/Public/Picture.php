@@ -28,12 +28,12 @@ class Picture extends Component
             return null;
         }
 
-        return asset('storage/' . $webpPath);
+        return asset('storage/'.$webpPath);
     }
 
     public function imgUrl(): string
     {
-        return asset('storage/' . $this->src);
+        return asset('storage/'.$this->src);
     }
 
     public function render()

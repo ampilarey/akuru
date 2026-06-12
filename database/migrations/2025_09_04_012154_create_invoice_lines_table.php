@@ -23,7 +23,7 @@ return new class extends Migration
             $table->decimal('discount_amount', 10, 2)->default(0);
             $table->text('notes')->nullable();
             $table->timestamps();
-            
+
             $table->index(['invoice_id']);
             $table->index(['fee_item_id']);
         });

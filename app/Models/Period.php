@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
 class Period extends Model
 {
@@ -83,6 +83,7 @@ class Period extends Model
     {
         $start = \Carbon\Carbon::parse($this->start_time);
         $end = \Carbon\Carbon::parse($this->end_time);
+
         return $start->diffInMinutes($end);
     }
 
@@ -91,6 +92,6 @@ class Period extends Model
      */
     public function getTimeRangeAttribute()
     {
-        return $this->start_time->format('H:i') . ' - ' . $this->end_time->format('H:i');
+        return $this->start_time->format('H:i').' - '.$this->end_time->format('H:i');
     }
 }

@@ -28,7 +28,7 @@ return new class extends Migration
             $table->enum('status', ['draft', 'published', 'closed', 'archived'])->default('draft');
             $table->json('settings')->nullable(); // Additional quiz settings
             $table->timestamps();
-            
+
             $table->index(['teacher_id', 'status']);
             $table->index(['subject_id', 'classroom_id']);
             $table->index(['starts_at', 'ends_at']);

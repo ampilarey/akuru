@@ -19,7 +19,7 @@ return [
     'Terms of Service' => 'Terms of Service',
     'Last updated' => 'Last updated',
     'All rights reserved' => 'All rights reserved',
-    
+
     // Error pages
     'Page Not Found' => 'Page Not Found',
     'The page you are looking for could not be found.' => 'The page you are looking for could not be found.',
@@ -36,7 +36,7 @@ return [
     'Email' => 'Email',
     'Phone' => 'Phone',
     'Language' => 'Language',
-    
+
     // Home page
     'Welcome to Akuru Institute' => 'Welcome to Akuru Institute',
     'Learn Quran, Arabic, and Islamic Studies' => 'Learn Quran, Arabic, and Islamic Studies with experienced teachers',
@@ -78,7 +78,7 @@ return [
     'Ready to Start Learning?' => 'Ready to Start Learning?',
     'Join thousands of students in their journey to learn Islam',
     'Get Started Today' => 'Get Started Today',
-    
+
     // Courses
     'All Categories' => 'All Categories',
     'All Levels' => 'All Levels',
@@ -96,14 +96,14 @@ return [
     'Course Schedule' => 'Course Schedule',
     'Related Courses' => 'Related Courses',
     'Apply for this Course' => 'Apply for this Course',
-    
+
     // Programs
     'Quran Memorization' => 'Quran Memorization',
     'Arabic Language' => 'Arabic Language',
     'Islamic Studies' => 'Islamic Studies',
     'Tajweed Classes' => 'Tajweed Classes',
     'Adult Education' => 'Adult Education',
-    
+
     // Admissions
     'Course Application' => 'Course Application',
     'Full Name' => 'Full Name',
@@ -117,7 +117,7 @@ return [
     'Application Submitted!' => 'Application Submitted!',
     'Thank you for your interest' => 'Thank you for your interest in Akuru Institute. We will contact you soon.',
     'admission_submitted' => 'Your application has been submitted successfully!',
-    
+
     // Contact
     'Contact Us' => 'Contact Us',
     'Get in Touch' => 'Get in Touch',
@@ -126,11 +126,11 @@ return [
     'Our Location' => 'Our Location',
     'Phone' => 'Phone',
     'Email' => 'Email',
-    
+
     // Footer
     'address' => 'M. Guldhastha Aage, Muniya Magu, Malé 20026, Maldives',
     'footer_description' => 'Akuru Institute is dedicated to providing quality Islamic education through Quran memorization, Arabic language, and Islamic studies programs for all ages.',
-    
+
     // General
     'Clear' => 'Clear',
     'Clear filters' => 'Clear filters',
@@ -152,25 +152,25 @@ return [
     'Reset' => 'Reset',
     'Loading...' => 'Loading...',
     'No results found' => 'No results found',
-    
+
     // Time/Date
     'Published on' => 'Published on',
     'Event Date' => 'Event Date',
     'Duration' => 'Duration',
     'Time' => 'Time',
     'Location' => 'Location',
-    
+
     // Status
     'New' => 'New',
     'Reviewed' => 'Reviewed',
     'Accepted' => 'Accepted',
     'Rejected' => 'Rejected',
-    
+
     // Validation messages
     'This field is required' => 'This field is required',
     'Please enter a valid email' => 'Please enter a valid email',
     'Please enter a valid phone number' => 'Please enter a valid phone number',
-    
+
     // Additional translations for new views
     'admission_description' => 'Join our comprehensive Islamic education programs. Apply now to start your journey of learning.',
     'Course of Interest' => 'Course of Interest',
@@ -195,7 +195,7 @@ return [
     'contact_us_for_questions' => 'If you have any questions about the admission process, please don\'t hesitate to contact us.',
     'Back to Home' => 'Back to Home',
     'View Courses' => 'View Courses',
-    
+
     // Contact page
     'contact_description' => 'Have questions about our programs? We\'d love to hear from you. Send us a message and we\'ll respond as soon as possible.',
     'Send us a Message' => 'Send us a Message',
@@ -218,7 +218,7 @@ return [
     'Or submit an inquiry' => 'Or submit an inquiry',
     'Submit an inquiry' => 'Submit an inquiry',
     'Latest News' => 'Latest News',
-    
+
     // Events
     'Event Details' => 'Event Details',
     'Date' => 'Date',
@@ -229,7 +229,7 @@ return [
     'Register Now' => 'Register Now',
     'Need More Information?' => 'Need More Information?',
     'contact_for_more_info' => 'If you need more information about this event, please contact us.',
-    
+
     // Articles
     'Educational Articles' => 'Educational Articles',
     'Insights and knowledge on Quran, Arabic language, and Islamic studies' => 'Insights and knowledge on Quran, Arabic language, and Islamic studies',
@@ -257,7 +257,7 @@ return [
     'No items in this gallery' => 'No items in this gallery',
     'gallery_empty_message' => 'This gallery is currently empty. Please check back later for new content.',
     'Check back later for photo galleries' => 'Check back later for photo galleries.',
-    
+
     // General
     'Thank you' => 'Thank you',
     'Address' => 'Address',
@@ -266,7 +266,7 @@ return [
     'Tuesday' => 'Tuesday',
     'Wednesday' => 'Wednesday',
     'Thursday' => 'Thursday',
-    
+
     // Homepage
     'Our Courses' => 'Our Courses',
     'Choose from our comprehensive range of Islamic education programs' => 'Choose from our comprehensive range of Islamic education programs',
@@ -278,7 +278,7 @@ return [
     'Ready to Start Your Journey?' => 'Ready to Start Your Journey?',
     'Join thousands of students who have chosen Akuru Institute for their Islamic education' => 'Join thousands of students who have chosen Akuru Institute for their Islamic education',
     'View Courses' => 'View Courses',
-    
+
     // Course Management
     'Search courses...' => 'Search courses...',
     'Search' => 'Search',

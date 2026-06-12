@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class PublicSiteDemoSeeder extends Seeder
@@ -62,7 +61,7 @@ class PublicSiteDemoSeeder extends Seeder
     private function createCourses(): void
     {
         $category = \App\Models\CourseCategory::first();
-        
+
         \App\Models\Course::create([
             'course_category_id' => $category->id,
             'title' => 'Quran Memorization',
@@ -102,7 +101,7 @@ class PublicSiteDemoSeeder extends Seeder
     private function createPosts(): void
     {
         $author = \App\Models\User::role('admin')->first();
-        
+
         if ($author) {
             \App\Models\Post::create([
                 'title' => 'Welcome to Our New Website',

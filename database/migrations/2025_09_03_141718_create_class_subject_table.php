@@ -18,7 +18,7 @@ return new class extends Migration
             $table->integer('hours_per_week')->default(1);
             $table->boolean('is_compulsory')->default(true);
             $table->timestamps();
-            
+
             $table->unique(['class_id', 'subject_id']);
         });
     }

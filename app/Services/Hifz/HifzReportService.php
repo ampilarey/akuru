@@ -2,14 +2,12 @@
 
 namespace App\Services\Hifz;
 
-use App\Enums\Hifz\HifzMistakeType;
 use App\Enums\Hifz\HifzOverallStatus;
 use App\Models\HifzEnrollment;
 use App\Models\HifzMilestone;
 use App\Models\HifzSession;
 use App\Models\HifzSessionRecord;
 use App\Models\Teacher;
-use Carbon\Carbon;
 use Illuminate\Support\Collection;
 
 class HifzReportService

@@ -12,11 +12,16 @@ use Illuminate\Validation\ValidationException;
 
 class OtpService
 {
-    protected const MAX_SEND_ATTEMPTS  = 5;
+    protected const MAX_SEND_ATTEMPTS = 5;
+
     protected const SEND_DECAY_MINUTES = 60;
+
     protected const RESEND_COOLDOWN_SECONDS = 30;
-    protected const MAX_VERIFY_ATTEMPTS  = 10;
+
+    protected const MAX_VERIFY_ATTEMPTS = 10;
+
     protected const VERIFY_DECAY_MINUTES = 15;
+
     protected const OTP_MAX_ATTEMPTS = 5;
 
     public function __construct(
@@ -27,14 +32,14 @@ class OtpService
     public function send(UserContact $contact, string $purpose): void
     {
         $this->validatePurpose($purpose);
-        $sendKey   = $this->sendRateLimitKey($contact, $purpose);
+        $sendKey = $this->sendRateLimitKey($contact, $purpose);
         $cooldownKey = $this->resendCooldownKey($contact, $purpose);
 
         // Hard per-contact throttle (5 sends / 60 min)
         if (RateLimiter::tooManyAttempts($sendKey, self::MAX_SEND_ATTEMPTS)) {
             $seconds = RateLimiter::availableIn($sendKey);
             throw ValidationException::withMessages([
-                'contact' => ['Too many OTP requests. Please try again in ' . ceil($seconds / 60) . ' minutes.'],
+                'contact' => ['Too many OTP requests. Please try again in '.ceil($seconds / 60).' minutes.'],
             ]);
         }
 
@@ -47,7 +52,7 @@ class OtpService
         }
 
         $code = $this->generateCode();
-        $otp  = Otp::createForContact($contact, $purpose, $code);
+        $otp = Otp::createForContact($contact, $purpose, $code);
 
         try {
             $this->dispatchCode($contact, $code, $purpose);
@@ -59,7 +64,7 @@ class OtpService
             ]);
         }
 
-        RateLimiter::hit($sendKey,    self::SEND_DECAY_MINUTES * 60);
+        RateLimiter::hit($sendKey, self::SEND_DECAY_MINUTES * 60);
         RateLimiter::hit($cooldownKey, self::RESEND_COOLDOWN_SECONDS);
     }
 
@@ -71,7 +76,7 @@ class OtpService
         if (RateLimiter::tooManyAttempts($key, self::MAX_VERIFY_ATTEMPTS)) {
             $seconds = RateLimiter::availableIn($key);
             throw ValidationException::withMessages([
-                'code' => ['Too many verification attempts. Please try again in ' . ceil($seconds / 60) . ' minutes.'],
+                'code' => ['Too many verification attempts. Please try again in '.ceil($seconds / 60).' minutes.'],
             ]);
         }
 
@@ -138,17 +143,17 @@ class OtpService
 
     protected function sendRateLimitKey(UserContact $contact, string $purpose): string
     {
-        return 'otp:send:' . $contact->id . ':' . $purpose;
+        return 'otp:send:'.$contact->id.':'.$purpose;
     }
 
     protected function resendCooldownKey(UserContact $contact, string $purpose): string
     {
-        return 'otp:cooldown:' . $contact->id . ':' . $purpose;
+        return 'otp:cooldown:'.$contact->id.':'.$purpose;
     }
 
     protected function verifyRateLimitKey(UserContact $contact, string $purpose): string
     {
-        return 'otp:verify:' . $contact->id . ':' . $purpose;
+        return 'otp:verify:'.$contact->id.':'.$purpose;
     }
 
     protected function validatePurpose(string $purpose): void
@@ -168,14 +173,14 @@ class OtpService
      */
     public function sendForNewRegistration(string $type, string $normalizedValue): void
     {
-        $cacheKey    = $this->newRegCacheKey($type, $normalizedValue);
-        $sendKey     = 'new_reg_otp_send:'    . md5($type . $normalizedValue);
-        $cooldownKey = 'new_reg_otp_cooldown:' . md5($type . $normalizedValue);
+        $cacheKey = $this->newRegCacheKey($type, $normalizedValue);
+        $sendKey = 'new_reg_otp_send:'.md5($type.$normalizedValue);
+        $cooldownKey = 'new_reg_otp_cooldown:'.md5($type.$normalizedValue);
 
         if (RateLimiter::tooManyAttempts($sendKey, 5)) {
             $seconds = RateLimiter::availableIn($sendKey);
             throw ValidationException::withMessages([
-                'contact_value' => ['Too many OTP requests. Please try again in ' . ceil($seconds / 60) . ' minutes.'],
+                'contact_value' => ['Too many OTP requests. Please try again in '.ceil($seconds / 60).' minutes.'],
             ]);
         }
         if (RateLimiter::tooManyAttempts($cooldownKey, 1)) {
@@ -187,13 +192,13 @@ class OtpService
 
         $code = $this->generateCode();
         \Illuminate\Support\Facades\Cache::put($cacheKey, [
-            'hash'     => Hash::make($code),
+            'hash' => Hash::make($code),
             'attempts' => 0,
         ], now()->addMinutes(10));
 
         try {
             if ($type === 'mobile') {
-                $phone  = str_starts_with($normalizedValue, '+')
+                $phone = str_starts_with($normalizedValue, '+')
                     ? $normalizedValue
                     : $this->normalizer->normalizePhone($normalizedValue);
                 $result = $this->smsGateway->sendOtp($phone, $code);
@@ -211,7 +216,7 @@ class OtpService
             ]);
         }
 
-        RateLimiter::hit($sendKey,     60 * 60);
+        RateLimiter::hit($sendKey, 60 * 60);
         RateLimiter::hit($cooldownKey, self::RESEND_COOLDOWN_SECONDS);
     }
 
@@ -221,13 +226,13 @@ class OtpService
      */
     public function verifyForNewRegistration(string $type, string $normalizedValue, string $code): void
     {
-        $cacheKey      = $this->newRegCacheKey($type, $normalizedValue);
-        $verifyKey     = 'new_reg_otp_verify:' . md5($type . $normalizedValue);
+        $cacheKey = $this->newRegCacheKey($type, $normalizedValue);
+        $verifyKey = 'new_reg_otp_verify:'.md5($type.$normalizedValue);
 
         if (RateLimiter::tooManyAttempts($verifyKey, self::MAX_VERIFY_ATTEMPTS)) {
             $seconds = RateLimiter::availableIn($verifyKey);
             throw ValidationException::withMessages([
-                'code' => ['Too many attempts. Please try again in ' . ceil($seconds / 60) . ' minutes.'],
+                'code' => ['Too many attempts. Please try again in '.ceil($seconds / 60).' minutes.'],
             ]);
         }
 
@@ -262,6 +267,6 @@ class OtpService
 
     private function newRegCacheKey(string $type, string $value): string
     {
-        return 'new_reg_otp:' . $type . ':' . md5($value);
+        return 'new_reg_otp:'.$type.':'.md5($value);
     }
 }

@@ -27,7 +27,7 @@ return new class extends Migration
             $table->integer('seats')->nullable();
             $table->json('meta')->nullable();
             $table->timestamps();
-            
+
             $table->index(['course_category_id', 'status']);
             $table->index(['status', 'language']);
             $table->index('slug');

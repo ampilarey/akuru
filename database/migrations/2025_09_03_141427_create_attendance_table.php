@@ -23,7 +23,7 @@ return new class extends Migration
             $table->text('notes')->nullable();
             $table->foreignId('marked_by')->constrained('users')->onDelete('cascade'); // Teacher who marked attendance
             $table->timestamps();
-            
+
             $table->unique(['student_id', 'class_id', 'date']); // Prevent duplicate attendance for same day
         });
     }

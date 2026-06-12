@@ -8,7 +8,8 @@ use Illuminate\Support\Facades\DB;
 
 class ClearNonAdminUsers extends Command
 {
-    protected $signature   = 'users:clear-non-admin {--force : Skip confirmation prompt}';
+    protected $signature = 'users:clear-non-admin {--force : Skip confirmation prompt}';
+
     protected $description = 'Delete all users except super_admin and admin roles (clears test data)';
 
     public function handle(): int
@@ -17,6 +18,7 @@ class ClearNonAdminUsers extends Command
 
         if ($keepIds->isEmpty()) {
             $this->error('No admin/super_admin users found. Aborting to prevent deleting everyone.');
+
             return self::FAILURE;
         }
 
@@ -24,6 +26,7 @@ class ClearNonAdminUsers extends Command
 
         if ($deleteCount === 0) {
             $this->info('Nothing to delete — only admin/super_admin users exist.');
+
             return self::SUCCESS;
         }
 
@@ -37,6 +40,7 @@ class ClearNonAdminUsers extends Command
 
         if (! $this->option('force') && ! $this->confirm('Are you sure?')) {
             $this->info('Cancelled.');
+
             return self::SUCCESS;
         }
 
@@ -58,7 +62,7 @@ class ClearNonAdminUsers extends Command
         User::whereNotIn('id', $keepIds)->delete();
         DB::statement('SET FOREIGN_KEY_CHECKS=1;');
 
-        $this->info("Done! Deleted {$deleteCount} user(s). Remaining: " . User::count());
+        $this->info("Done! Deleted {$deleteCount} user(s). Remaining: ".User::count());
 
         return self::SUCCESS;
     }

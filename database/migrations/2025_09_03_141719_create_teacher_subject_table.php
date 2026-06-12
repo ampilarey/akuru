@@ -17,7 +17,7 @@ return new class extends Migration
             $table->foreignId('subject_id')->constrained()->onDelete('cascade');
             $table->boolean('is_primary_teacher')->default(false);
             $table->timestamps();
-            
+
             $table->unique(['teacher_id', 'subject_id']);
         });
     }

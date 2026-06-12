@@ -2,10 +2,12 @@
 
 namespace App\Services;
 
-use App\Models\{User, UserNotification, NotificationTemplate};
-use App\Services\SmsGatewayService;
-use Illuminate\Support\Facades\{Mail, Log, Queue};
+use App\Models\NotificationTemplate;
+use App\Models\User;
+use App\Models\UserNotification;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 
 class NotificationService
 {
@@ -25,7 +27,7 @@ class NotificationService
         string $title,
         string $message,
         array $data = [],
-        Carbon $scheduledAt = null
+        ?Carbon $scheduledAt = null
     ) {
         $notification = UserNotification::create([
             'user_id' => $userId,
@@ -38,7 +40,7 @@ class NotificationService
             'scheduled_at' => $scheduledAt,
         ]);
 
-        if (!$scheduledAt || $scheduledAt <= now()) {
+        if (! $scheduledAt || $scheduledAt <= now()) {
             $this->processNotification($notification);
         }
 
@@ -53,7 +55,7 @@ class NotificationService
         string $templateName,
         array $variables = [],
         string $type = 'email',
-        Carbon $scheduledAt = null
+        ?Carbon $scheduledAt = null
     ) {
         try {
             $notification = UserNotification::createFromTemplate(
@@ -64,13 +66,14 @@ class NotificationService
                 $scheduledAt
             );
 
-            if (!$scheduledAt || $scheduledAt <= now()) {
+            if (! $scheduledAt || $scheduledAt <= now()) {
                 $this->processNotification($notification);
             }
 
             return $notification;
         } catch (\Exception $e) {
-            Log::error("Failed to send notification from template: " . $e->getMessage());
+            Log::error('Failed to send notification from template: '.$e->getMessage());
+
             return null;
         }
     }
@@ -84,7 +87,7 @@ class NotificationService
         string $title,
         string $message,
         array $data = [],
-        Carbon $scheduledAt = null
+        ?Carbon $scheduledAt = null
     ) {
         $notifications = [];
 
@@ -104,9 +107,10 @@ class NotificationService
         string $title,
         string $message,
         array $data = [],
-        Carbon $scheduledAt = null
+        ?Carbon $scheduledAt = null
     ) {
         $userIds = User::role($role)->pluck('id')->toArray();
+
         return $this->sendToUsers($userIds, $type, $title, $message, $data, $scheduledAt);
     }
 
@@ -134,13 +138,13 @@ class NotificationService
             }
 
             $notification->markAsSent();
-            Log::info("Notification sent successfully", ['notification_id' => $notification->id]);
+            Log::info('Notification sent successfully', ['notification_id' => $notification->id]);
 
         } catch (\Exception $e) {
             $notification->markAsFailed($e->getMessage());
-            Log::error("Failed to send notification", [
+            Log::error('Failed to send notification', [
                 'notification_id' => $notification->id,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
         }
     }
@@ -151,16 +155,16 @@ class NotificationService
     protected function sendEmailNotification(UserNotification $notification)
     {
         $user = $notification->user;
-        
-        if (!$user->email) {
-            throw new \Exception("User has no email address");
+
+        if (! $user->email) {
+            throw new \Exception('User has no email address');
         }
 
         // For now, we'll use a simple mail implementation
         // In production, you'd want to use proper Mailable classes
         Mail::raw($notification->message, function ($mail) use ($user, $notification) {
             $mail->to($user->email)
-                 ->subject($notification->title);
+                ->subject($notification->title);
         });
     }
 
@@ -170,9 +174,9 @@ class NotificationService
     protected function sendSmsNotification(UserNotification $notification)
     {
         $user = $notification->user;
-        
-        if (!$user->phone) {
-            throw new \Exception("User has no phone number");
+
+        if (! $user->phone) {
+            throw new \Exception('User has no phone number');
         }
 
         $result = $this->smsService->sendSms(
@@ -180,7 +184,7 @@ class NotificationService
             $notification->message
         );
 
-        if (!$result['success']) {
+        if (! $result['success']) {
             throw new \Exception($result['message'] ?? 'SMS sending failed');
         }
     }
@@ -192,10 +196,10 @@ class NotificationService
     {
         // This would integrate with Firebase Cloud Messaging or similar
         // For now, we'll just log it
-        Log::info("Push notification would be sent", [
+        Log::info('Push notification would be sent', [
             'user_id' => $notification->user_id,
             'title' => $notification->title,
-            'message' => $notification->message
+            'message' => $notification->message,
         ]);
     }
 
@@ -249,8 +253,8 @@ class NotificationService
         }
 
         return $query->orderBy('created_at', 'desc')
-                    ->limit($limit)
-                    ->get();
+            ->limit($limit)
+            ->get();
     }
 
     /**
@@ -259,11 +263,12 @@ class NotificationService
     public function markAsRead(int $notificationId, int $userId)
     {
         $notification = UserNotification::where('id', $notificationId)
-                                      ->where('user_id', $userId)
-                                      ->first();
+            ->where('user_id', $userId)
+            ->first();
 
         if ($notification) {
             $notification->markAsRead();
+
             return true;
         }
 
@@ -276,14 +281,14 @@ class NotificationService
     public function markAllAsRead(int $userId)
     {
         return UserNotification::forUser($userId)
-                              ->unread()
-                              ->update(['read_at' => now()]);
+            ->unread()
+            ->update(['read_at' => now()]);
     }
 
     /**
      * Get notification statistics
      */
-    public function getNotificationStats(int $userId = null, int $days = 30)
+    public function getNotificationStats(?int $userId = null, int $days = 30)
     {
         $query = UserNotification::query();
 
@@ -300,11 +305,11 @@ class NotificationService
             'failed' => $query->status('failed')->count(),
             'unread' => $query->unread()->count(),
             'by_type' => $query->selectRaw('type, count(*) as count')
-                              ->groupBy('type')
-                              ->pluck('count', 'type'),
+                ->groupBy('type')
+                ->pluck('count', 'type'),
             'by_category' => $query->selectRaw('category, count(*) as count')
-                                  ->groupBy('category')
-                                  ->pluck('count', 'category'),
+                ->groupBy('category')
+                ->pluck('count', 'category'),
         ];
     }
 

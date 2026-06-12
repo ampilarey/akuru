@@ -27,7 +27,7 @@ return new class extends Migration
             $table->timestamp('graded_at')->nullable();
             $table->boolean('is_late')->default(false);
             $table->timestamps();
-            
+
             // Ensure one submission per student per assignment
             $table->unique(['assignment_id', 'student_id']);
         });

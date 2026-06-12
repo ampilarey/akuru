@@ -22,8 +22,8 @@ class EnrollmentService
     /**
      * Enroll adult (18+) self. Creates/links student profile to user.
      *
-     * @param array{first_name: string, last_name: string, dob: string, gender?: string} $studentData
-     * @param int[] $courseIds
+     * @param  array{first_name: string, last_name: string, dob: string, gender?: string}  $studentData
+     * @param  int[]  $courseIds
      */
     public function enrollAdultSelf(User $user, array $studentData, array $courseIds, ?int $termId = null): EnrollmentResult
     {
@@ -39,20 +39,20 @@ class EnrollmentService
         $student = $user->registrationStudentProfile;
         $idFields = $this->extractIdFields($studentData);
 
-        if (!$student) {
+        if (! $student) {
             $student = RegistrationStudent::create(array_merge([
-                'user_id'    => $user->id,
+                'user_id' => $user->id,
                 'first_name' => $studentData['first_name'],
-                'last_name'  => $studentData['last_name'],
-                'dob'        => $dob,
-                'gender'     => $studentData['gender'] ?? null,
+                'last_name' => $studentData['last_name'],
+                'dob' => $dob,
+                'gender' => $studentData['gender'] ?? null,
             ], $idFields));
         } else {
             $student->update(array_merge([
                 'first_name' => $studentData['first_name'],
-                'last_name'  => $studentData['last_name'],
-                'dob'        => $dob,
-                'gender'     => $studentData['gender'] ?? null,
+                'last_name' => $studentData['last_name'],
+                'dob' => $dob,
+                'gender' => $studentData['gender'] ?? null,
             ], $idFields));
         }
 
@@ -60,7 +60,7 @@ class EnrollmentService
 
         // Auto-fix default "User" name after successful enrollment
         if ($user->name === 'User') {
-            $user->update(['name' => $studentData['first_name'] . ' ' . $studentData['last_name']]);
+            $user->update(['name' => $studentData['first_name'].' '.$studentData['last_name']]);
         }
 
         return $result;
@@ -69,8 +69,8 @@ class EnrollmentService
     /**
      * Enroll by parent. Creates or selects student, links guardian, enrolls.
      *
-     * @param array{first_name: string, last_name: string, dob: string, gender?: string}|int $studentDataOrExistingId
-     * @param array{relationship?: string} $guardianMeta
+     * @param  array{first_name: string, last_name: string, dob: string, gender?: string}|int  $studentDataOrExistingId
+     * @param  array{relationship?: string}  $guardianMeta
      */
     public function enrollByParent(
         User $parent,
@@ -89,7 +89,7 @@ class EnrollmentService
 
         // Auto-fix default "User" name after successful enrollment (parent flow)
         if ($parent->name === 'User' && is_array($studentDataOrExistingId)) {
-            $parent->update(['name' => $studentDataOrExistingId['first_name'] . ' ' . $studentDataOrExistingId['last_name']]);
+            $parent->update(['name' => $studentDataOrExistingId['first_name'].' '.$studentDataOrExistingId['last_name']]);
         }
 
         return $result;
@@ -104,32 +104,44 @@ class EnrollmentService
         // Search the parent's existing guardian students first (PHP comparison after decryption),
         // then fall back to scanning all registration_students with a user_id (smaller set).
         $student = null;
-        $searchNid      = $idFields['national_id'] ?? null;
-        $searchPassport = $idFields['passport']    ?? null;
+        $searchNid = $idFields['national_id'] ?? null;
+        $searchPassport = $idFields['passport'] ?? null;
 
         // 1. Check among parent's already-linked children (most common re-enrol case)
         $parent->loadMissing('guardianStudents');
         foreach ($parent->guardianStudents as $gs) {
-            if ($searchNid      && $gs->national_id === $searchNid)      { $student = $gs; break; }
-            if ($searchPassport && $gs->passport    === $searchPassport) { $student = $gs; break; }
+            if ($searchNid && $gs->national_id === $searchNid) {
+                $student = $gs;
+                break;
+            }
+            if ($searchPassport && $gs->passport === $searchPassport) {
+                $student = $gs;
+                break;
+            }
         }
 
         // 2. Broader scan: students that have a user_id (child accounts) — smaller table subset
         if (! $student) {
             $candidates = RegistrationStudent::whereNotNull('user_id')->get();
             foreach ($candidates as $c) {
-                if ($searchNid      && $c->national_id === $searchNid)      { $student = $c; break; }
-                if ($searchPassport && $c->passport    === $searchPassport) { $student = $c; break; }
+                if ($searchNid && $c->national_id === $searchNid) {
+                    $student = $c;
+                    break;
+                }
+                if ($searchPassport && $c->passport === $searchPassport) {
+                    $student = $c;
+                    break;
+                }
             }
         }
 
         if (! $student) {
             $student = RegistrationStudent::create(array_merge([
-                'user_id'    => null,
+                'user_id' => null,
                 'first_name' => $studentData['first_name'],
-                'last_name'  => $studentData['last_name'],
-                'dob'        => $dob,
-                'gender'     => $studentData['gender'] ?? null,
+                'last_name' => $studentData['last_name'],
+                'dob' => $dob,
+                'gender' => $studentData['gender'] ?? null,
             ], $idFields));
         }
 
@@ -137,7 +149,7 @@ class EnrollmentService
         if (! $parent->guardianStudents()->where('registration_students.id', $student->id)->exists()) {
             $parent->guardianStudents()->attach($student->id, [
                 'relationship' => $guardianMeta['relationship'] ?? 'guardian',
-                'is_primary'   => true,
+                'is_primary' => true,
             ]);
         }
 
@@ -159,13 +171,13 @@ class EnrollmentService
     {
         try {
             $childUser = User::create([
-                'name'          => $student->first_name . ' ' . $student->last_name,
-                'national_id'   => $student->national_id ?? $student->passport,
-                'passport'      => $student->passport,
+                'name' => $student->first_name.' '.$student->last_name,
+                'national_id' => $student->national_id ?? $student->passport,
+                'passport' => $student->passport,
                 'date_of_birth' => $student->dob,
-                'gender'        => $student->gender,
-                'password'      => Hash::make($plainPassword),
-                'is_active'     => true,
+                'gender' => $student->gender,
+                'password' => Hash::make($plainPassword),
+                'is_active' => true,
             ]);
 
             // Assign student role
@@ -191,7 +203,7 @@ class EnrollmentService
 
         } catch (\Throwable $e) {
             // Log but don't fail enrollment — child can still be enrolled without an account
-            \Illuminate\Support\Facades\Log::error('Failed to create child user account: ' . $e->getMessage());
+            \Illuminate\Support\Facades\Log::error('Failed to create child user account: '.$e->getMessage());
         }
     }
 
@@ -201,9 +213,10 @@ class EnrollmentService
     private function extractIdFields(array $studentData): array
     {
         $idType = $studentData['id_type'] ?? null;
+
         return [
             'national_id' => $idType === 'national_id' ? (strtoupper(trim($studentData['national_id'] ?? '')) ?: null) : null,
-            'passport'    => $idType === 'passport'    ? (strtoupper(trim($studentData['passport']    ?? '')) ?: null) : null,
+            'passport' => $idType === 'passport' ? (strtoupper(trim($studentData['passport'] ?? '')) ?: null) : null,
         ];
     }
 
@@ -214,7 +227,7 @@ class EnrollmentService
         $isGuardian = $parent->guardianStudents()->where('registration_students.id', $studentId)->exists();
         $isSelf = $student->user_id === $parent->id;
 
-        if (!$isGuardian && !$isSelf) {
+        if (! $isGuardian && ! $isSelf) {
             throw ValidationException::withMessages([
                 'student' => ['You are not authorized to enroll this student.'],
             ]);
@@ -230,7 +243,7 @@ class EnrollmentService
         User $createdBy,
         ?User $adultSelfUser
     ): EnrollmentResult {
-        $result = new EnrollmentResult();
+        $result = new EnrollmentResult;
         $courses = Course::whereIn('id', $courseIds)->get();
         $enrollmentsNeedingPayment = [];
 
@@ -262,7 +275,7 @@ class EnrollmentService
                             $existingPayment = Payment::find($existing->payment_id);
                             if ($existingPayment && in_array($existingPayment->status, ['initiated', 'pending'], true)) {
                                 $alreadyAdded = collect($result->paymentsInitiated)->contains('id', $existingPayment->id);
-                                if (!$alreadyAdded) {
+                                if (! $alreadyAdded) {
                                     $result->paymentsInitiated[] = $existingPayment;
                                     $addToFeeEnrollments = false;
                                 }
@@ -275,6 +288,7 @@ class EnrollmentService
                             $totalFee += $feeAmount;
                         }
                     }
+
                     continue;
                 }
 
@@ -335,42 +349,43 @@ class EnrollmentService
         // Already finalised by a previous call (webhook race-condition guard)
         if ($payment->items()->exists()) {
             $payment->update(['enrollment_pending_payload' => null]);
+
             return;
         }
 
-        $user        = User::findOrFail($payload['user_id']);
-        $flow        = $payload['flow'] ?? 'adult';
-        $data        = $payload['student_data'] ?? [];
-        $courseIds   = $payload['course_ids'] ?? [];
-        $termId      = $payload['term_id'] ?? null;
+        $user = User::findOrFail($payload['user_id']);
+        $flow = $payload['flow'] ?? 'adult';
+        $data = $payload['student_data'] ?? [];
+        $courseIds = $payload['course_ids'] ?? [];
+        $termId = $payload['term_id'] ?? null;
         $studentMode = $payload['student_mode'] ?? 'new';
-        $childPw     = $payload['child_password'] ?? null;
+        $childPw = $payload['child_password'] ?? null;
 
         DB::transaction(function () use ($user, $flow, $data, $courseIds, $termId, $studentMode, $childPw, $payment) {
 
             // ── Resolve / create student ──────────────────────────────────────
             if ($flow === 'adult') {
                 $idFields = $this->extractIdFields($data);
-                $student  = $user->registrationStudentProfile;
+                $student = $user->registrationStudentProfile;
                 if (! $student) {
                     $student = RegistrationStudent::create(array_merge([
-                        'user_id'    => $user->id,
+                        'user_id' => $user->id,
                         'first_name' => $data['first_name'],
-                        'last_name'  => $data['last_name'],
-                        'dob'        => \Carbon\Carbon::parse($data['dob']),
-                        'gender'     => $data['gender'] ?? null,
+                        'last_name' => $data['last_name'],
+                        'dob' => \Carbon\Carbon::parse($data['dob']),
+                        'gender' => $data['gender'] ?? null,
                     ], $idFields));
                 } else {
                     $student->update(array_merge([
                         'first_name' => $data['first_name'],
-                        'last_name'  => $data['last_name'],
-                        'dob'        => \Carbon\Carbon::parse($data['dob']),
-                        'gender'     => $data['gender'] ?? null,
+                        'last_name' => $data['last_name'],
+                        'dob' => \Carbon\Carbon::parse($data['dob']),
+                        'gender' => $data['gender'] ?? null,
                     ], $idFields));
                 }
 
                 if ($user->name === 'User') {
-                    $user->update(['name' => $data['first_name'] . ' ' . $data['last_name']]);
+                    $user->update(['name' => $data['first_name'].' '.$data['last_name']]);
                 }
             } else {
                 // parent flow
@@ -400,21 +415,21 @@ class EnrollmentService
                 $feeAmount = (float) ($course->registration_fee_amount ?? $course->fee ?? 0);
 
                 $enrollment = CourseEnrollment::create([
-                    'student_id'         => $student->id,
-                    'course_id'          => $course->id,
-                    'term_id'            => $termId,
-                    'status'             => $requiresApproval ? 'pending' : 'active',
-                    'enrolled_at'        => now(),
+                    'student_id' => $student->id,
+                    'course_id' => $course->id,
+                    'term_id' => $termId,
+                    'status' => $requiresApproval ? 'pending' : 'active',
+                    'enrolled_at' => now(),
                     'created_by_user_id' => $user->id,
-                    'payment_status'     => 'confirmed',
-                    'payment_id'         => $payment->id,
+                    'payment_status' => 'confirmed',
+                    'payment_id' => $payment->id,
                 ]);
 
                 PaymentItem::create([
-                    'payment_id'    => $payment->id,
+                    'payment_id' => $payment->id,
                     'enrollment_id' => $enrollment->id,
-                    'course_id'     => $course->id,
-                    'amount'        => $feeAmount,
+                    'course_id' => $course->id,
+                    'amount' => $feeAmount,
                 ]);
             }
 
@@ -425,7 +440,7 @@ class EnrollmentService
 
     protected function ensureUserHasVerifiedContact(User $user): void
     {
-        if (!$user->hasVerifiedContact()) {
+        if (! $user->hasVerifiedContact()) {
             throw ValidationException::withMessages([
                 'contact' => ['Please verify your contact before enrolling.'],
             ]);

@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Carbon\Carbon;
 
 class UserNotification extends Model
 {
@@ -79,19 +79,19 @@ class UserNotification extends Model
     public function scopeScheduled($query)
     {
         return $query->where('status', 'pending')
-                    ->whereNotNull('scheduled_at')
-                    ->where('scheduled_at', '<=', now());
+            ->whereNotNull('scheduled_at')
+            ->where('scheduled_at', '<=', now());
     }
 
     // Scope for failed notifications that can be retried
     public function scopeRetryable($query)
     {
         return $query->where('status', 'failed')
-                    ->where('retry_count', '<', 3)
-                    ->where(function ($q) {
-                        $q->whereNull('next_retry_at')
-                          ->orWhere('next_retry_at', '<=', now());
-                    });
+            ->where('retry_count', '<', 3)
+            ->where(function ($q) {
+                $q->whereNull('next_retry_at')
+                    ->orWhere('next_retry_at', '<=', now());
+            });
     }
 
     // Mark as read
@@ -121,7 +121,7 @@ class UserNotification extends Model
     }
 
     // Mark as failed
-    public function markAsFailed(string $errorMessage = null)
+    public function markAsFailed(?string $errorMessage = null)
     {
         $this->update([
             'status' => 'failed',
@@ -134,7 +134,7 @@ class UserNotification extends Model
     // Check if notification is read
     public function isRead()
     {
-        return !is_null($this->read_at);
+        return ! is_null($this->read_at);
     }
 
     // Check if notification is unread
@@ -155,18 +155,18 @@ class UserNotification extends Model
         string $templateName,
         array $variables = [],
         string $type = 'email',
-        Carbon $scheduledAt = null
+        ?Carbon $scheduledAt = null
     ) {
         $template = NotificationTemplate::getTemplate($templateName, $type);
-        
-        if (!$template) {
+
+        if (! $template) {
             throw new \Exception("Template '{$templateName}' not found for type '{$type}'");
         }
 
         // Validate variables
         $validation = $template->validateVariables($variables);
         if ($validation !== true) {
-            throw new \Exception("Missing required variables: " . implode(', ', $validation));
+            throw new \Exception('Missing required variables: '.implode(', ', $validation));
         }
 
         // Process template
@@ -195,8 +195,8 @@ class UserNotification extends Model
     public static function getRecentForUser(int $userId, int $limit = 10)
     {
         return static::forUser($userId)
-                    ->orderBy('created_at', 'desc')
-                    ->limit($limit)
-                    ->get();
+            ->orderBy('created_at', 'desc')
+            ->limit($limit)
+            ->get();
     }
 }

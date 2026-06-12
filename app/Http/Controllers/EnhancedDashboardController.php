@@ -2,25 +2,29 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AdmissionApplication;
+use App\Models\ContactInquiry;
+use App\Models\Course;
+use App\Models\Event;
+use App\Models\GalleryAlbum;
+use App\Models\Post;
+use App\Models\User;
+use App\Models\UserActivity;
 use Illuminate\Http\Request;
-use App\Models\{User, DashboardAnalytics, UserActivity, Course, Post, Event, GalleryAlbum};
-use App\Models\{AdmissionApplication, ContactInquiry};
-use Carbon\Carbon;
-use Illuminate\Support\Facades\DB;
 
 class EnhancedDashboardController extends Controller
 {
     public function index(Request $request)
     {
         $user = auth()->user();
-        
-        if (!$user) {
+
+        if (! $user) {
             return redirect()->route('login');
         }
 
         // Get role-specific dashboard data
         $dashboardData = $this->getRoleSpecificDashboard($user);
-        
+
         // Record dashboard visit
         UserActivity::recordActivity(
             $user->id,
@@ -36,7 +40,7 @@ class EnhancedDashboardController extends Controller
     private function getRoleSpecificDashboard(User $user)
     {
         $role = $user->getRoleNames()->first();
-        
+
         switch ($role) {
             case 'super_admin':
                 return $this->getSuperAdminDashboard($user);
@@ -133,7 +137,7 @@ class EnhancedDashboardController extends Controller
     private function getParentDashboard(User $user)
     {
         $children = $this->getParentChildren($user);
-        
+
         return [
             'title' => 'Parent Dashboard',
             'role' => 'parent',
@@ -213,27 +217,118 @@ class EnhancedDashboardController extends Controller
     }
 
     // Additional helper methods would be implemented here...
-    private function getTeacherStudents($user) { return 0; }
-    private function getUpcomingClasses($user) { return 0; }
-    private function getPendingGrades($user) { return 0; }
-    private function getRecentAnnouncements($user) { return 0; }
-    private function getTeachingSchedule($user) { return []; }
-    private function getStudentProgress($user) { return []; }
-    private function getEnrolledCourses($user) { return 0; }
-    private function getCompletedAssignments($user) { return 0; }
-    private function getUpcomingExams($user) { return 0; }
-    private function getQuranProgress($user) { return 0; }
-    private function getAttendanceRate($user) { return 0; }
-    private function getCourseProgress($user) { return []; }
-    private function getParentChildren($user) { return collect([]); }
-    private function getChildrenAttendance($children) { return 0; }
-    private function getChildrenProgress($children) { return []; }
-    private function getProfileCompletion($user) { return 100; }
-    private function getStorageUsage() { return '2.5 GB / 10 GB'; }
-    private function getSystemUptime() { return '99.9%'; }
-    private function getUserGrowth() { return '+15%'; }
-    private function getPendingApprovals() { return 0; }
-    private function getMonthlyRevenue() { return '$5,250'; }
-    private function getPendingPayments() { return 3; }
-    private function getRevenueGrowth() { return '+12%'; }
+    private function getTeacherStudents($user)
+    {
+        return 0;
+    }
+
+    private function getUpcomingClasses($user)
+    {
+        return 0;
+    }
+
+    private function getPendingGrades($user)
+    {
+        return 0;
+    }
+
+    private function getRecentAnnouncements($user)
+    {
+        return 0;
+    }
+
+    private function getTeachingSchedule($user)
+    {
+        return [];
+    }
+
+    private function getStudentProgress($user)
+    {
+        return [];
+    }
+
+    private function getEnrolledCourses($user)
+    {
+        return 0;
+    }
+
+    private function getCompletedAssignments($user)
+    {
+        return 0;
+    }
+
+    private function getUpcomingExams($user)
+    {
+        return 0;
+    }
+
+    private function getQuranProgress($user)
+    {
+        return 0;
+    }
+
+    private function getAttendanceRate($user)
+    {
+        return 0;
+    }
+
+    private function getCourseProgress($user)
+    {
+        return [];
+    }
+
+    private function getParentChildren($user)
+    {
+        return collect([]);
+    }
+
+    private function getChildrenAttendance($children)
+    {
+        return 0;
+    }
+
+    private function getChildrenProgress($children)
+    {
+        return [];
+    }
+
+    private function getProfileCompletion($user)
+    {
+        return 100;
+    }
+
+    private function getStorageUsage()
+    {
+        return '2.5 GB / 10 GB';
+    }
+
+    private function getSystemUptime()
+    {
+        return '99.9%';
+    }
+
+    private function getUserGrowth()
+    {
+        return '+15%';
+    }
+
+    private function getPendingApprovals()
+    {
+        return 0;
+    }
+
+    private function getMonthlyRevenue()
+    {
+        return '$5,250';
+    }
+
+    private function getPendingPayments()
+    {
+        return 3;
+    }
+
+    private function getRevenueGrowth()
+    {
+        return '+12%';
+    }
 }

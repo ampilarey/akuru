@@ -22,7 +22,7 @@ class WebPImageService
             return null;
         }
 
-        $webpPath = preg_replace('/\.' . preg_quote($extension, '/') . '$/i', '.webp', $storagePath);
+        $webpPath = preg_replace('/\.'.preg_quote($extension, '/').'$/i', '.webp', $storagePath);
 
         if (Storage::disk('public')->exists($webpPath)) {
             return $webpPath;
@@ -59,6 +59,7 @@ class WebPImageService
             return $webpPath;
         } catch (\Throwable $e) {
             report($e);
+
             return null;
         }
     }
@@ -69,6 +70,7 @@ class WebPImageService
     public function isConvertible(string $path): bool
     {
         $extension = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+
         return in_array($extension, $this->supportedFormats);
     }
 }

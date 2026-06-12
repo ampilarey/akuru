@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class ClassSeeder extends Seeder
@@ -13,7 +12,7 @@ class ClassSeeder extends Seeder
     public function run(): void
     {
         $school = \App\Models\School::first();
-        
+
         $classes = [
             [
                 'name' => 'Quran Class A',

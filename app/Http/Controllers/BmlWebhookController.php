@@ -12,7 +12,7 @@ class BmlWebhookController extends Controller
 {
     public function __construct(
         protected BmlConnectService $bml,
-        protected PaymentService    $paymentService,
+        protected PaymentService $paymentService,
     ) {}
 
     /**
@@ -27,11 +27,12 @@ class BmlWebhookController extends Controller
         // Optional IP allowlist check
         if (! $this->bml->isWebhookIpAllowed($request)) {
             $log('BML webhook: IP not allowed', ['ip' => $request->ip()]);
+
             return response('Forbidden', 403);
         }
 
         $log('BML webhook received', [
-            'ip'      => $request->ip(),
+            'ip' => $request->ip(),
             'payload' => $request->getContent(),
         ]);
 

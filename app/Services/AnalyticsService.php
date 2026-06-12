@@ -2,8 +2,16 @@
 
 namespace App\Services;
 
-use App\Models\{User, Course, Post, Event, GalleryAlbum, AdmissionApplication, ContactInquiry, UserActivity, DashboardAnalytics, SystemMetric, Report};
-use Illuminate\Support\Facades\DB;
+use App\Models\AdmissionApplication;
+use App\Models\ContactInquiry;
+use App\Models\Course;
+use App\Models\Event;
+use App\Models\GalleryAlbum;
+use App\Models\Post;
+use App\Models\Report;
+use App\Models\SystemMetric;
+use App\Models\User;
+use App\Models\UserActivity;
 use Carbon\Carbon;
 
 class AnalyticsService
@@ -166,7 +174,7 @@ class AnalyticsService
 
         // Generate report data based on type
         $data = $this->generateReportData($type, $parameters);
-        
+
         $report->update([
             'data' => $data,
             'status' => 'completed',
@@ -226,9 +234,10 @@ class AnalyticsService
     private function generateCoursePerformanceReport(array $parameters)
     {
         $courseId = $parameters['course_id'] ?? null;
-        
+
         if ($courseId) {
             $course = Course::with(['enrollments', 'assignments'])->find($courseId);
+
             return [
                 'course' => $course,
                 'enrollment_stats' => $course->enrollments->count(),
@@ -269,29 +278,128 @@ class AnalyticsService
     }
 
     // Helper methods for specific analytics
-    private function getLoginStats(Carbon $startDate, Carbon $endDate) { return []; }
-    private function getUserEngagement(Carbon $startDate, Carbon $endDate) { return []; }
-    private function getContentPerformance(Carbon $startDate, Carbon $endDate) { return []; }
-    private function getAttendanceStats(Carbon $startDate, Carbon $endDate) { return []; }
-    private function getAcademicProgress(Carbon $startDate, Carbon $endDate) { return []; }
-    private function getMonthlyRevenue(Carbon $startDate, Carbon $endDate) { return []; }
-    private function getPaymentMethodStats(Carbon $startDate, Carbon $endDate) { return []; }
-    private function getRevenueTrends(Carbon $startDate, Carbon $endDate) { return []; }
-    private function getReportName(string $type) { return ucwords(str_replace('_', ' ', $type)) . ' Report'; }
-    private function getReportCategory(string $type) { return 'analytics'; }
-    private function getUserGrowthData(Carbon $startDate, Carbon $endDate) { return []; }
-    private function getUserActivityData(Carbon $startDate, Carbon $endDate) { return []; }
-    private function getRoleDistributionData() { return []; }
-    private function getEngagementMetrics(Carbon $startDate, Carbon $endDate) { return []; }
-    private function getCourseCompletionRate(int $courseId) { return 0; }
-    private function getCourseFeedback(int $courseId) { return []; }
-    private function getCoursePerformanceSummary() { return []; }
-    private function getRevenueSummary(array $parameters) { return []; }
-    private function getPaymentAnalytics(array $parameters) { return []; }
-    private function getFinancialTrends(array $parameters) { return []; }
-    private function getSystemAlerts() { return []; }
-    private function generateAcademicProgressReport(array $parameters) { return []; }
-    private function generateAttendanceReport(array $parameters) { return []; }
-    private function generateEnrollmentReport(array $parameters) { return []; }
-    private function generateNotificationAnalyticsReport(array $parameters) { return []; }
+    private function getLoginStats(Carbon $startDate, Carbon $endDate)
+    {
+        return [];
+    }
+
+    private function getUserEngagement(Carbon $startDate, Carbon $endDate)
+    {
+        return [];
+    }
+
+    private function getContentPerformance(Carbon $startDate, Carbon $endDate)
+    {
+        return [];
+    }
+
+    private function getAttendanceStats(Carbon $startDate, Carbon $endDate)
+    {
+        return [];
+    }
+
+    private function getAcademicProgress(Carbon $startDate, Carbon $endDate)
+    {
+        return [];
+    }
+
+    private function getMonthlyRevenue(Carbon $startDate, Carbon $endDate)
+    {
+        return [];
+    }
+
+    private function getPaymentMethodStats(Carbon $startDate, Carbon $endDate)
+    {
+        return [];
+    }
+
+    private function getRevenueTrends(Carbon $startDate, Carbon $endDate)
+    {
+        return [];
+    }
+
+    private function getReportName(string $type)
+    {
+        return ucwords(str_replace('_', ' ', $type)).' Report';
+    }
+
+    private function getReportCategory(string $type)
+    {
+        return 'analytics';
+    }
+
+    private function getUserGrowthData(Carbon $startDate, Carbon $endDate)
+    {
+        return [];
+    }
+
+    private function getUserActivityData(Carbon $startDate, Carbon $endDate)
+    {
+        return [];
+    }
+
+    private function getRoleDistributionData()
+    {
+        return [];
+    }
+
+    private function getEngagementMetrics(Carbon $startDate, Carbon $endDate)
+    {
+        return [];
+    }
+
+    private function getCourseCompletionRate(int $courseId)
+    {
+        return 0;
+    }
+
+    private function getCourseFeedback(int $courseId)
+    {
+        return [];
+    }
+
+    private function getCoursePerformanceSummary()
+    {
+        return [];
+    }
+
+    private function getRevenueSummary(array $parameters)
+    {
+        return [];
+    }
+
+    private function getPaymentAnalytics(array $parameters)
+    {
+        return [];
+    }
+
+    private function getFinancialTrends(array $parameters)
+    {
+        return [];
+    }
+
+    private function getSystemAlerts()
+    {
+        return [];
+    }
+
+    private function generateAcademicProgressReport(array $parameters)
+    {
+        return [];
+    }
+
+    private function generateAttendanceReport(array $parameters)
+    {
+        return [];
+    }
+
+    private function generateEnrollmentReport(array $parameters)
+    {
+        return [];
+    }
+
+    private function generateNotificationAnalyticsReport(array $parameters)
+    {
+        return [];
+    }
 }

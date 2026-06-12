@@ -21,7 +21,7 @@ class RegistrationFlow extends Model
     protected function casts(): array
     {
         return [
-            'payload'    => 'array',
+            'payload' => 'array',
             'expires_at' => 'datetime',
         ];
     }

@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Casts\Attribute;
 
 class Post extends Model
 {
@@ -54,13 +54,13 @@ class Post extends Model
     public function scopePublished($query)
     {
         return $query->where('is_published', true)
-                    ->where('published_at', '<=', now());
+            ->where('published_at', '<=', now());
     }
 
     public function scopePublic($query)
     {
         return $query->where('is_published', true)
-                    ->where('published_at', '<=', now());
+            ->where('published_at', '<=', now());
     }
 
     public function scopeNews($query)
@@ -105,11 +105,11 @@ class Post extends Model
 
     public function scopeSearch($query, $term)
     {
-        return $query->where(function($q) use ($term) {
+        return $query->where(function ($q) use ($term) {
             $q->where('title', 'like', "%{$term}%")
-              ->orWhere('summary', 'like', "%{$term}%")
-              ->orWhere('body', 'like', "%{$term}%")
-              ->orWhere('meta_keywords', 'like', "%{$term}%");
+                ->orWhere('summary', 'like', "%{$term}%")
+                ->orWhere('body', 'like', "%{$term}%")
+                ->orWhere('meta_keywords', 'like', "%{$term}%");
         });
     }
 
@@ -131,11 +131,11 @@ class Post extends Model
         if ($this->reading_time) {
             return $this->reading_time;
         }
-        
+
         $wordCount = str_word_count(strip_tags($this->body));
         $minutes = ceil($wordCount / 200); // Average reading speed: 200 words per minute
-        
-        return $minutes . ' min read';
+
+        return $minutes.' min read';
     }
 
     public function getFormattedPublishedAtAttribute()
@@ -150,8 +150,13 @@ class Post extends Model
 
     public function getStatusBadgeColorAttribute()
     {
-        if (!$this->is_published) return 'gray';
-        if ($this->published_at > now()) return 'yellow';
+        if (! $this->is_published) {
+            return 'gray';
+        }
+        if ($this->published_at > now()) {
+            return 'yellow';
+        }
+
         return 'green';
     }
 
@@ -174,27 +179,27 @@ class Post extends Model
     public function getRelatedPosts($limit = 3)
     {
         return static::published()
-                    ->where('id', '!=', $this->id)
-                    ->where('post_category_id', $this->post_category_id)
-                    ->orderBy('published_at', 'desc')
-                    ->limit($limit)
-                    ->get();
+            ->where('id', '!=', $this->id)
+            ->where('post_category_id', $this->post_category_id)
+            ->orderBy('published_at', 'desc')
+            ->limit($limit)
+            ->get();
     }
 
     public function getFeaturedPosts($limit = 5)
     {
         return static::published()
-                    ->featured()
-                    ->orderBy('published_at', 'desc')
-                    ->limit($limit)
-                    ->get();
+            ->featured()
+            ->orderBy('published_at', 'desc')
+            ->limit($limit)
+            ->get();
     }
 
     public function getRecentPosts($limit = 5)
     {
         return static::published()
-                    ->orderBy('published_at', 'desc')
-                    ->limit($limit)
-                    ->get();
+            ->orderBy('published_at', 'desc')
+            ->limit($limit)
+            ->get();
     }
 }

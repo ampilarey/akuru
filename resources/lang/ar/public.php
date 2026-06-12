@@ -19,7 +19,7 @@ return [
     'Terms of Service' => 'شروط الخدمة',
     'Last updated' => 'آخر تحديث',
     'All rights reserved' => 'جميع الحقوق محفوظة',
-    
+
     // Home page
     'Welcome to Akuru Institute' => 'مرحباً بكم في معهد أكورو',
     'Learn Quran, Arabic, and Islamic Studies' => 'تعلم القرآن واللغة العربية والدراسات الإسلامية مع معلمين ذوي خبرة',
@@ -33,7 +33,7 @@ return [
     'Ready to Start Learning?' => 'هل أنت مستعد لبدء التعلم؟',
     'Join thousands of students in their journey to learn Islam' => 'انضم إلى آلاف الطلاب في رحلتهم لتعلم الإسلام',
     'Get Started Today' => 'ابدأ اليوم',
-    
+
     // Courses
     'All Categories' => 'جميع الفئات',
     'All Levels' => 'جميع المستويات',
@@ -51,14 +51,14 @@ return [
     'Course Schedule' => 'جدول الدورة',
     'Related Courses' => 'دورات ذات صلة',
     'Apply for this Course' => 'سجل في هذه الدورة',
-    
+
     // Programs
     'Quran Memorization' => 'حفظ القرآن',
     'Arabic Language' => 'اللغة العربية',
     'Islamic Studies' => 'الدراسات الإسلامية',
     'Tajweed Classes' => 'دروس التجويد',
     'Adult Education' => 'تعليم الكبار',
-    
+
     // Admissions
     'Course Application' => 'طلب التسجيل في الدورة',
     'Full Name' => 'الاسم الكامل',
@@ -72,7 +72,7 @@ return [
     'Application Submitted!' => 'تم إرسال الطلب!',
     'Thank you for your interest' => 'شكراً لك على اهتمامك بمعهد أكورو. سنتواصل معك قريباً.',
     'admission_submitted' => 'تم إرسال طلبك بنجاح!',
-    
+
     // Contact
     'Contact Us' => 'اتصل بنا',
     'Get in Touch' => 'تواصل معنا',
@@ -86,11 +86,11 @@ return [
     'Decline' => 'رفض',
     'Share this article' => 'مشاركة هذا المقال',
     'Share this event' => 'مشاركة هذا الحدث',
-    
+
     // Footer
     'address' => 'م. قولضاستا آگي، مونيا ماگو، ماليه 20026، المالديف',
     'footer_description' => 'معهد أكورو مكرس لتقديم التعليم الإسلامي الجيد من خلال برامج حفظ القرآن واللغة العربية والدراسات الإسلامية لجميع الأعمار.',
-    
+
     // General
     'Clear' => 'مسح',
     'Clear filters' => 'مسح الفلاتر',
@@ -112,20 +112,20 @@ return [
     'Reset' => 'إعادة تعيين',
     'Loading...' => 'جاري التحميل...',
     'No results found' => 'لم يتم العثور على نتائج',
-    
+
     // Time/Date
     'Published on' => 'نُشر في',
     'Event Date' => 'تاريخ الفعالية',
     'Duration' => 'المدة',
     'Time' => 'الوقت',
     'Location' => 'الموقع',
-    
+
     // Status
     'New' => 'جديد',
     'Reviewed' => 'تمت المراجعة',
     'Accepted' => 'مقبول',
     'Rejected' => 'مرفوض',
-    
+
     // Validation messages
     'This field is required' => 'هذا الحقل مطلوب',
     'Please enter a valid email' => 'يرجى إدخال بريد إلكتروني صحيح',

@@ -49,11 +49,13 @@ class Otp extends Model
         if ($this->isUsed() || $this->isExpired()) {
             return false;
         }
-        if (!Hash::check($code, $this->code_hash)) {
+        if (! Hash::check($code, $this->code_hash)) {
             $this->increment('attempts');
+
             return false;
         }
         $this->update(['used_at' => now()]);
+
         return true;
     }
 

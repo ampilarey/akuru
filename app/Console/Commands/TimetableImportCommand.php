@@ -2,13 +2,12 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
-use App\Models\Timetable;
-use App\Models\Teacher;
-use App\Models\Subject;
 use App\Models\ClassRoom;
 use App\Models\Period;
-use Illuminate\Support\Facades\Storage;
+use App\Models\Subject;
+use App\Models\Teacher;
+use App\Models\Timetable;
+use Illuminate\Console\Command;
 
 class TimetableImportCommand extends Command
 {
@@ -39,30 +38,33 @@ class TimetableImportCommand extends Command
         $createPeriods = $this->option('create-periods');
 
         // Check if file exists
-        if (!file_exists($filePath)) {
+        if (! file_exists($filePath)) {
             $this->error("File not found: {$filePath}");
+
             return 1;
         }
 
         $this->info("Starting timetable import from: {$filePath}");
         if ($dryRun) {
-            $this->warn("DRY RUN MODE - No changes will be made");
+            $this->warn('DRY RUN MODE - No changes will be made');
         }
 
         // Read CSV file
         $handle = fopen($filePath, 'r');
-        if (!$handle) {
+        if (! $handle) {
             $this->error("Could not open file: {$filePath}");
+
             return 1;
         }
 
         // Read header
         $header = fgetcsv($handle);
         $expectedHeaders = ['classroom', 'subject', 'teacher', 'day_of_week', 'period', 'start', 'end', 'room'];
-        
-        if (!$header || array_diff($expectedHeaders, $header)) {
-            $this->error("Invalid CSV format. Expected headers: " . implode(', ', $expectedHeaders));
+
+        if (! $header || array_diff($expectedHeaders, $header)) {
+            $this->error('Invalid CSV format. Expected headers: '.implode(', ', $expectedHeaders));
             fclose($handle);
+
             return 1;
         }
 
@@ -82,21 +84,21 @@ class TimetableImportCommand extends Command
                 $teacher = $this->findTeacher($data['teacher']);
                 $period = $this->findOrCreatePeriod($data['period'], $data['start'], $data['end'], $createPeriods);
 
-                if (!$classroom) {
+                if (! $classroom) {
                     throw new \Exception("Classroom not found: {$data['classroom']}");
                 }
-                if (!$subject) {
+                if (! $subject) {
                     throw new \Exception("Subject not found: {$data['subject']}");
                 }
-                if (!$teacher) {
+                if (! $teacher) {
                     throw new \Exception("Teacher not found: {$data['teacher']}");
                 }
-                if (!$period) {
+                if (! $period) {
                     throw new \Exception("Period not found: {$data['period']}");
                 }
 
                 // Create timetable entry
-                if (!$dryRun) {
+                if (! $dryRun) {
                     $timetableData = [
                         'class_id' => $classroom->id,
                         'subject_id' => $subject->id,
@@ -108,7 +110,7 @@ class TimetableImportCommand extends Command
 
                     // Check if entry already exists
                     $exists = Timetable::where($timetableData)->exists();
-                    if (!$exists) {
+                    if (! $exists) {
                         Timetable::create($timetableData);
                         $created++;
                     } else {
@@ -121,7 +123,7 @@ class TimetableImportCommand extends Command
 
             } catch (\Exception $e) {
                 $errors++;
-                $this->error("Error processing row {$processed}: " . $e->getMessage());
+                $this->error("Error processing row {$processed}: ".$e->getMessage());
             }
         }
 
@@ -134,9 +136,9 @@ class TimetableImportCommand extends Command
         $this->info("Errors: {$errors}");
 
         if ($dryRun) {
-            $this->warn("DRY RUN completed - no changes were made");
+            $this->warn('DRY RUN completed - no changes were made');
         } else {
-            $this->info("Import completed successfully!");
+            $this->info('Import completed successfully!');
         }
 
         return 0;
@@ -154,7 +156,7 @@ class TimetableImportCommand extends Command
 
     private function findTeacher(string $name): ?Teacher
     {
-        return Teacher::whereHas('user', function($query) use ($name) {
+        return Teacher::whereHas('user', function ($query) use ($name) {
             $query->where('name', 'LIKE', "%{$name}%");
         })->first();
     }
@@ -162,8 +164,8 @@ class TimetableImportCommand extends Command
     private function findOrCreatePeriod(string $name, string $start, string $end, bool $create): ?Period
     {
         $period = Period::where('name', $name)->first();
-        
-        if (!$period && $create) {
+
+        if (! $period && $create) {
             $period = Period::create([
                 'name' => $name,
                 'start_time' => $start,

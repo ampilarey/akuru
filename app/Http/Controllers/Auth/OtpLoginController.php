@@ -37,7 +37,7 @@ class OtpLoginController extends Controller
         ]);
 
         $identifier = trim($request->identifier);
-        $type  = str_contains($identifier, '@') ? 'email' : 'mobile';
+        $type = str_contains($identifier, '@') ? 'email' : 'mobile';
         $value = $type === 'email'
             ? $this->normalizer->normalizeEmail($identifier)
             : $this->normalizer->normalizePhone($identifier);
@@ -70,12 +70,12 @@ class OtpLoginController extends Controller
         }
 
         session([
-            'otp_login_contact_id'   => $contact->id,
-            'otp_login_identifier'   => $type === 'mobile' ? $identifier : $value,
+            'otp_login_contact_id' => $contact->id,
+            'otp_login_identifier' => $type === 'mobile' ? $identifier : $value,
         ]);
 
         return redirect()->route('otp.verify.form')
-            ->with('success', 'OTP sent to your ' . ($type === 'mobile' ? 'phone' : 'email') . '. Please enter the 6-digit code.');
+            ->with('success', 'OTP sent to your '.($type === 'mobile' ? 'phone' : 'email').'. Please enter the 6-digit code.');
     }
 
     /**

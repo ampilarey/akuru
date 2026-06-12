@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Models\Surah;
+use Illuminate\Database\Seeder;
 
 class SurahSeeder extends Seeder
 {

@@ -15,6 +15,7 @@ class AccountController extends Controller
         if (! $user) {
             return redirect()->route('login');
         }
+
         return view('account.set-password');
     }
 
@@ -26,12 +27,12 @@ class AccountController extends Controller
         }
 
         $request->validate([
-            'password'              => ['required', 'string', 'min:8', 'confirmed'],
+            'password' => ['required', 'string', 'min:8', 'confirmed'],
             'password_confirmation' => ['required', 'string'],
         ]);
 
         $user->update([
-            'password'              => Hash::make($request->input('password')),
+            'password' => Hash::make($request->input('password')),
             'force_password_change' => false,
         ]);
 

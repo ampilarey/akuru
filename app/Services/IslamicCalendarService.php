@@ -2,8 +2,8 @@
 
 namespace App\Services;
 
-use Carbon\Carbon;
 use Alkoumi\LaravelHijriDate\Hijri;
+use Carbon\Carbon;
 
 class IslamicCalendarService
 {
@@ -13,28 +13,28 @@ class IslamicCalendarService
     public static function gregorianToHijri($date = null)
     {
         try {
-            if (!$date) {
+            if (! $date) {
                 $date = Carbon::now();
             } elseif (is_string($date)) {
                 $date = Carbon::parse($date);
             }
-            
+
             // Use the Hijri package for accurate conversion
             $hijriDate = Hijri::Date('Y-m-d', $date);
             $hijriParts = explode('-', $hijriDate);
-            
+
             $year = (int) $hijriParts[0];
             $month = (int) $hijriParts[1];
             $day = (int) $hijriParts[2];
-            
+
             return [
                 'year' => $year,
                 'month' => $month,
                 'day' => $day,
                 'month_name' => self::getHijriMonthName($month),
                 'month_name_arabic' => self::getHijriMonthNameArabic($month),
-                'formatted' => $day . ' ' . self::getHijriMonthName($month) . ' ' . $year . ' AH',
-                'formatted_arabic' => $day . ' ' . self::getHijriMonthNameArabic($month) . ' ' . $year . ' هـ',
+                'formatted' => $day.' '.self::getHijriMonthName($month).' '.$year.' AH',
+                'formatted_arabic' => $day.' '.self::getHijriMonthNameArabic($month).' '.$year.' هـ',
                 'hijri_date' => $hijriDate,
             ];
         } catch (\Exception $e) {
@@ -42,7 +42,7 @@ class IslamicCalendarService
             return self::fallbackGregorianToHijri($date);
         }
     }
-    
+
     /**
      * Fallback method for Hijri conversion
      */
@@ -50,19 +50,19 @@ class IslamicCalendarService
     {
         $jd = self::gregorianToJulian($date->year, $date->month, $date->day);
         $hijri = self::julianToHijri($jd);
-        
+
         return [
             'year' => $hijri['year'],
             'month' => $hijri['month'],
             'day' => $hijri['day'],
             'month_name' => self::getHijriMonthName($hijri['month']),
             'month_name_arabic' => self::getHijriMonthNameArabic($hijri['month']),
-            'formatted' => $hijri['day'] . ' ' . self::getHijriMonthName($hijri['month']) . ' ' . $hijri['year'] . ' AH',
-            'formatted_arabic' => $hijri['day'] . ' ' . self::getHijriMonthNameArabic($hijri['month']) . ' ' . $hijri['year'] . ' هـ',
-            'hijri_date' => $hijri['year'] . '-' . $hijri['month'] . '-' . $hijri['day'],
+            'formatted' => $hijri['day'].' '.self::getHijriMonthName($hijri['month']).' '.$hijri['year'].' AH',
+            'formatted_arabic' => $hijri['day'].' '.self::getHijriMonthNameArabic($hijri['month']).' '.$hijri['year'].' هـ',
+            'hijri_date' => $hijri['year'].'-'.$hijri['month'].'-'.$hijri['day'],
         ];
     }
-    
+
     /**
      * Get current Islamic date
      */
@@ -70,7 +70,7 @@ class IslamicCalendarService
     {
         return self::gregorianToHijri();
     }
-    
+
     /**
      * Get Islamic months names
      */
@@ -90,10 +90,10 @@ class IslamicCalendarService
             11 => 'Dhu al-Qi\'dah',
             12 => 'Dhu al-Hijjah',
         ];
-        
+
         return $months[$month] ?? 'Unknown';
     }
-    
+
     /**
      * Get Islamic months names in Arabic
      */
@@ -113,10 +113,10 @@ class IslamicCalendarService
             11 => 'ذو القعدة',
             12 => 'ذو الحجة',
         ];
-        
+
         return $months[$month] ?? 'غير معروف';
     }
-    
+
     /**
      * Convert Gregorian to Julian day number
      */
@@ -126,13 +126,13 @@ class IslamicCalendarService
             $year -= 1;
             $month += 12;
         }
-        
+
         $a = intval($year / 100);
         $b = 2 - $a + intval($a / 4);
-        
+
         return intval(365.25 * ($year + 4716)) + intval(30.6001 * ($month + 1)) + $day + $b - 1524.5;
     }
-    
+
     /**
      * Convert Julian day number to Hijri date
      */
@@ -142,30 +142,30 @@ class IslamicCalendarService
         $year = intval((30 * $jd + 10646) / 10631);
         $month = intval((11 * $jd + 330) / 325);
         $day = $jd - intval((325 * $month - 320) / 11);
-        
+
         if ($month > 12) {
             $year += 1;
             $month -= 12;
         }
-        
+
         return [
             'year' => $year,
             'month' => $month,
             'day' => intval($day),
         ];
     }
-    
+
     /**
      * Get prayer times for a given date and location
      */
     public static function getPrayerTimes($date = null, $latitude = 4.1755, $longitude = 73.5093) // Malé coordinates
     {
-        if (!$date) {
+        if (! $date) {
             $date = Carbon::now();
         } elseif (is_string($date)) {
             $date = Carbon::parse($date);
         }
-        
+
         // This is a simplified calculation - for production, use a proper prayer times library
         $times = [
             'fajr' => $date->copy()->setTime(5, 30),
@@ -174,10 +174,10 @@ class IslamicCalendarService
             'maghrib' => $date->copy()->setTime(18, 15),
             'isha' => $date->copy()->setTime(19, 30),
         ];
-        
+
         return $times;
     }
-    
+
     /**
      * Check if current time is within prayer time
      */
@@ -185,7 +185,7 @@ class IslamicCalendarService
     {
         $now = Carbon::now();
         $prayerTimes = self::getPrayerTimes();
-        
+
         foreach ($prayerTimes as $prayer => $time) {
             if ($now->between($time, $time->copy()->addMinutes(30))) {
                 return [
@@ -195,14 +195,14 @@ class IslamicCalendarService
                 ];
             }
         }
-        
+
         return [
             'prayer' => null,
             'time' => null,
             'is_prayer_time' => false,
         ];
     }
-    
+
     /**
      * Convert Hijri date to Gregorian date
      */
@@ -214,7 +214,7 @@ class IslamicCalendarService
             return null;
         }
     }
-    
+
     /**
      * Get special Islamic days for current date
      */
@@ -223,9 +223,9 @@ class IslamicCalendarService
         $currentHijri = self::getCurrentIslamicDate();
         $currentMonth = $currentHijri['month_name'];
         $currentDay = $currentHijri['day'];
-        
+
         $specialDays = [];
-        
+
         // Check for special days in current month
         if ($currentMonth === 'Muharram' && $currentDay === 1) {
             $specialDays[] = 'Islamic New Year';
@@ -246,10 +246,10 @@ class IslamicCalendarService
         } elseif ($currentMonth === 'Dhu al-Hijjah' && $currentDay === 10) {
             $specialDays[] = 'Eid al-Adha';
         }
-        
+
         return $specialDays;
     }
-    
+
     /**
      * Get Islamic calendar months with their Arabic names
      */

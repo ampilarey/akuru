@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Queue;
 class ServerStatusCommand extends Command
 {
     protected $signature = 'akuru:status';
+
     protected $description = 'Check scheduler, queue worker, and database health';
 
     public function handle(): int

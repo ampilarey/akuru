@@ -2,9 +2,10 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
-use App\Models\{ContactInquiry, InquiryType};
+use App\Models\ContactInquiry;
+use App\Models\InquiryType;
 use Carbon\Carbon;
+use Illuminate\Database\Seeder;
 
 class ContactInquirySeeder extends Seeder
 {
@@ -34,7 +35,7 @@ class ContactInquirySeeder extends Seeder
                 'custom_fields' => [
                     'interested_program' => 'Quran Memorization (Hifz)',
                     'age_group' => 'Kids (6-12 years)',
-                    'previous_experience' => 'He has completed basic Arabic reading and knows a few short surahs by heart.'
+                    'previous_experience' => 'He has completed basic Arabic reading and knows a few short surahs by heart.',
                 ],
                 'ip_address' => '192.168.1.100',
                 'user_agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
@@ -52,7 +53,7 @@ class ContactInquirySeeder extends Seeder
                 'admin_notes' => 'Sent course catalog and schedule. Waiting for response about preferred level.',
                 'custom_fields' => [
                     'course_name' => 'Arabic Language',
-                    'preferred_schedule' => 'Evening (6:00 PM - 9:00 PM)'
+                    'preferred_schedule' => 'Evening (6:00 PM - 9:00 PM)',
                 ],
                 'ip_address' => '192.168.1.101',
                 'user_agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
@@ -72,7 +73,7 @@ class ContactInquirySeeder extends Seeder
                 'responded_at' => Carbon::now()->subDays(1),
                 'custom_fields' => [
                     'event_name' => 'Annual Quran Competition 2024',
-                    'registration_interest' => ['Yes, I would like to register for this event']
+                    'registration_interest' => ['Yes, I would like to register for this event'],
                 ],
                 'ip_address' => '192.168.1.102',
                 'user_agent' => 'Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X) AppleWebKit/605.1.15',
@@ -106,7 +107,7 @@ class ContactInquirySeeder extends Seeder
                 'admin_notes' => 'Password reset issue. Sent reset link via email. User should check spam folder.',
                 'custom_fields' => [
                     'issue_type' => 'Login problems',
-                    'browser_info' => 'Chrome on Windows 10'
+                    'browser_info' => 'Chrome on Windows 10',
                 ],
                 'ip_address' => '192.168.1.104',
                 'user_agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
@@ -126,7 +127,7 @@ class ContactInquirySeeder extends Seeder
                 'responded_at' => Carbon::now()->subDays(2),
                 'custom_fields' => [
                     'feedback_category' => 'Teaching Quality',
-                    'rating' => 'Excellent'
+                    'rating' => 'Excellent',
                 ],
                 'ip_address' => '192.168.1.105',
                 'user_agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
@@ -144,7 +145,7 @@ class ContactInquirySeeder extends Seeder
                 'custom_fields' => [
                     'interested_program' => 'Arabic Language',
                     'age_group' => 'Adult (19+ years)',
-                    'previous_experience' => 'No prior Arabic knowledge, but very motivated to learn.'
+                    'previous_experience' => 'No prior Arabic knowledge, but very motivated to learn.',
                 ],
                 'ip_address' => '192.168.1.106',
                 'user_agent' => 'Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X) AppleWebKit/605.1.15',
@@ -164,7 +165,7 @@ class ContactInquirySeeder extends Seeder
                 'responded_at' => Carbon::now()->subDays(1),
                 'custom_fields' => [
                     'course_name' => 'Tajweed Masterclass',
-                    'preferred_schedule' => 'Afternoon (2:00 PM - 5:00 PM)'
+                    'preferred_schedule' => 'Afternoon (2:00 PM - 5:00 PM)',
                 ],
                 'ip_address' => '192.168.1.107',
                 'user_agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
@@ -195,7 +196,7 @@ class ContactInquirySeeder extends Seeder
                 'admin_notes' => 'Android app crash issue. Investigating compatibility with latest Android version.',
                 'custom_fields' => [
                     'issue_type' => 'Mobile app problems',
-                    'browser_info' => 'Android 12, Samsung Galaxy S21'
+                    'browser_info' => 'Android 12, Samsung Galaxy S21',
                 ],
                 'ip_address' => '192.168.1.109',
                 'user_agent' => 'Mozilla/5.0 (Linux; Android 12; SM-G991B) AppleWebKit/537.36',

@@ -25,7 +25,7 @@ return new class extends Migration
             $table->integer('item_count')->default(0);
             $table->json('meta')->nullable();
             $table->timestamps();
-            
+
             // Indexes
             $table->index(['status', 'is_public']);
             $table->index(['is_featured', 'status']);

@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Carbon\Carbon;
 
 class DashboardAnalytics extends Model
 {
@@ -47,15 +47,15 @@ class DashboardAnalytics extends Model
     }
 
     // Get metrics for a specific user
-    public static function getUserMetrics(int $userId, string $metricType = null, int $days = 30)
+    public static function getUserMetrics(int $userId, ?string $metricType = null, int $days = 30)
     {
         $query = static::where('user_id', $userId)
-                      ->recent($days);
-        
+            ->recent($days);
+
         if ($metricType) {
             $query->metricType($metricType);
         }
-        
+
         return $query->get();
     }
 
@@ -80,7 +80,7 @@ class DashboardAnalytics extends Model
     public static function getDashboardSummary(int $userId, int $days = 30)
     {
         $metrics = static::getUserMetrics($userId, null, $days);
-        
+
         $summary = [];
         foreach ($metrics->groupBy('metric_type') as $type => $typeMetrics) {
             $summary[$type] = [
@@ -90,7 +90,7 @@ class DashboardAnalytics extends Model
                 'latest' => $typeMetrics->sortByDesc('recorded_date')->first(),
             ];
         }
-        
+
         return $summary;
     }
 }

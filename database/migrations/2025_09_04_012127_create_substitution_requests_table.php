@@ -22,7 +22,7 @@ return new class extends Migration
             $table->enum('status', ['open', 'assigned', 'cancelled', 'closed'])->default('open');
             $table->text('notes')->nullable();
             $table->timestamps();
-            
+
             $table->index(['status', 'date']);
             $table->index(['absent_teacher_id', 'date']);
         });

@@ -4,7 +4,6 @@ namespace App\Notifications;
 
 use App\Models\ContactMessage;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
@@ -33,12 +32,12 @@ class NewContactMessage extends Notification
             ->subject('New Contact Message Received')
             ->greeting('New Contact Message')
             ->line('A new contact message has been submitted through the website.')
-            ->line('**Name:** ' . $this->contactMessage->name)
-            ->when($this->contactMessage->email, fn($mail) => $mail->line('**Email:** ' . $this->contactMessage->email))
-            ->when($this->contactMessage->phone, fn($mail) => $mail->line('**Phone:** ' . $this->contactMessage->phone))
+            ->line('**Name:** '.$this->contactMessage->name)
+            ->when($this->contactMessage->email, fn ($mail) => $mail->line('**Email:** '.$this->contactMessage->email))
+            ->when($this->contactMessage->phone, fn ($mail) => $mail->line('**Phone:** '.$this->contactMessage->phone))
             ->line('**Message:**')
             ->line($this->contactMessage->message)
-            ->action('View Message', url('/admin/contacts/' . $this->contactMessage->id))
+            ->action('View Message', url('/admin/contacts/'.$this->contactMessage->id))
             ->line('Please respond to this inquiry promptly.');
     }
 
@@ -52,7 +51,7 @@ class NewContactMessage extends Notification
             'message_id' => $this->contactMessage->id,
             'sender_name' => $this->contactMessage->name,
             'sender_email' => $this->contactMessage->email,
-            'message' => 'New contact message from ' . $this->contactMessage->name,
+            'message' => 'New contact message from '.$this->contactMessage->name,
         ];
     }
 }

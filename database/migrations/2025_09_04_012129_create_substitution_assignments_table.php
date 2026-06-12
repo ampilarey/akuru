@@ -19,7 +19,7 @@ return new class extends Migration
             $table->timestamp('assigned_at');
             $table->text('notes')->nullable();
             $table->timestamps();
-            
+
             $table->unique(['substitution_request_id']); // One assignment per request
             $table->index(['substitute_teacher_id', 'assigned_at']);
         });

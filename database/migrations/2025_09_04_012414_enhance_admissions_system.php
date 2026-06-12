@@ -14,22 +14,22 @@ return new class extends Migration
         // Check if admission_applications table exists and enhance it
         if (Schema::hasTable('admission_applications')) {
             Schema::table('admission_applications', function (Blueprint $table) {
-                if (!Schema::hasColumn('admission_applications', 'timeline')) {
+                if (! Schema::hasColumn('admission_applications', 'timeline')) {
                     $table->json('timeline')->nullable()->after('status'); // History of status changes
                 }
-                if (!Schema::hasColumn('admission_applications', 'assigned_to')) {
+                if (! Schema::hasColumn('admission_applications', 'assigned_to')) {
                     $table->foreignId('assigned_to')->nullable()->constrained('users')->onDelete('set null')->after('timeline');
                 }
-                if (!Schema::hasColumn('admission_applications', 'expected_start')) {
+                if (! Schema::hasColumn('admission_applications', 'expected_start')) {
                     $table->date('expected_start')->nullable()->after('assigned_to');
                 }
-                if (!Schema::hasColumn('admission_applications', 'tags')) {
+                if (! Schema::hasColumn('admission_applications', 'tags')) {
                     $table->json('tags')->nullable()->after('expected_start');
                 }
-                if (!Schema::hasColumn('admission_applications', 'priority')) {
+                if (! Schema::hasColumn('admission_applications', 'priority')) {
                     $table->enum('priority', ['low', 'medium', 'high', 'urgent'])->default('medium')->after('tags');
                 }
-                if (!Schema::hasColumn('admission_applications', 'source')) {
+                if (! Schema::hasColumn('admission_applications', 'source')) {
                     $table->string('source')->nullable()->after('priority'); // website, referral, walk-in, etc.
                 }
             });
@@ -58,7 +58,7 @@ return new class extends Migration
                 $table->text('notes')->nullable();
                 $table->json('documents')->nullable(); // Uploaded documents
                 $table->timestamps();
-                
+
                 $table->index(['status', 'created_at']);
                 $table->index(['assigned_to', 'status']);
                 $table->index(['grade_applying_for', 'status']);

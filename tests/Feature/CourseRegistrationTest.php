@@ -8,7 +8,6 @@ use App\Models\RegistrationStudent;
 use App\Models\User;
 use App\Models\UserContact;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
 class CourseRegistrationTest extends TestCase
@@ -125,7 +124,7 @@ class CourseRegistrationTest extends TestCase
 
         $contact2 = UserContact::where('value', 'existing@example.com')->first();
         $this->assertEquals($contact->id, $contact2->id);
-        $this->assertEquals(1, User::whereHas('contacts', fn($q) => $q->where('value', 'existing@example.com'))->count());
+        $this->assertEquals(1, User::whereHas('contacts', fn ($q) => $q->where('value', 'existing@example.com'))->count());
     }
 
     public function test_under_18_cannot_self_enroll(): void

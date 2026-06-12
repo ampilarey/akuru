@@ -2,17 +2,13 @@
 
 namespace Tests\Feature\Hifz;
 
-use App\Models\HifzEnrollment;
 use App\Models\HifzProgram;
 use App\Models\HifzSession;
-use App\Models\HifzSessionRecord;
 use App\Models\Student;
-use App\Models\Teacher;
 use App\Models\User;
 use Database\Seeders\HifzDemoSeeder;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Spatie\Permission\Models\Permission;
 use Tests\TestCase;
 
 class HifzAuthorizationTest extends TestCase

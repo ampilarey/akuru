@@ -20,7 +20,7 @@ return new class extends Migration
             $table->json('metadata')->nullable(); // Additional data like page paths, course IDs, etc.
             $table->date('recorded_date');
             $table->timestamps();
-            
+
             $table->index(['user_id', 'metric_type', 'recorded_date']);
             $table->index(['metric_type', 'recorded_date']);
             $table->unique(['user_id', 'metric_type', 'recorded_date']);

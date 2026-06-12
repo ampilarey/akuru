@@ -6,7 +6,6 @@ use App\Models\QuranMushaf;
 use App\Models\QuranPage;
 use App\Models\User;
 use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\Storage;
 
 class QuranMushafImportService
 {

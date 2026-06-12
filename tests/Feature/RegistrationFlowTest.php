@@ -11,11 +11,9 @@ use App\Models\RegistrationStudent;
 use App\Models\User;
 use App\Models\UserContact;
 use App\Services\Payment\BmlPaymentProvider;
-use App\Services\Payment\PaymentInitiationResult;
 use App\Services\Payment\PaymentService;
 use App\Services\Payment\PaymentVerificationResult;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Hash;
 use Mockery;
 use Tests\TestCase;
 
@@ -35,7 +33,7 @@ class RegistrationFlowTest extends TestCase
         // contact_value is required by rules, so submitting empty would fail on 'required'
         // but NOT on the custom preg_replace/filter_var logic (which previously crashed on null).
         $response = $this->post(route('courses.register.start'), [
-            'contact_type'  => 'mobile',
+            'contact_type' => 'mobile',
             'contact_value' => '',
         ]);
 
@@ -47,7 +45,7 @@ class RegistrationFlowTest extends TestCase
     public function test_start_registration_does_not_error_on_null_contact_type(): void
     {
         $response = $this->post(route('courses.register.start'), [
-            'contact_type'  => '',
+            'contact_type' => '',
             'contact_value' => '',
         ]);
 
@@ -62,21 +60,21 @@ class RegistrationFlowTest extends TestCase
 
     public function test_otp_verify_marks_used_at_and_cannot_be_reused(): void
     {
-        $user    = User::factory()->create(['force_password_change' => false]);
+        $user = User::factory()->create(['force_password_change' => false]);
         $contact = UserContact::create([
-            'user_id'    => $user->id,
-            'type'       => 'mobile',
-            'value'      => '+9607820001',
+            'user_id' => $user->id,
+            'type' => 'mobile',
+            'value' => '+9607820001',
             'is_primary' => true,
         ]);
 
         $code = '123456';
-        $otp  = Otp::createForContact($contact, 'verify_contact', $code);
+        $otp = Otp::createForContact($contact, 'verify_contact', $code);
 
         // First verification succeeds
         $this->withSession([
             'pending_contact_id' => $contact->id,
-            'pending_user_id'    => $user->id,
+            'pending_user_id' => $user->id,
         ]);
 
         $response = $this->post(route('courses.register.verify'), ['code' => $code]);
@@ -88,7 +86,7 @@ class RegistrationFlowTest extends TestCase
         // Second attempt with same code should fail (OTP is now used)
         $this->withSession([
             'pending_contact_id' => $contact->id,
-            'pending_user_id'    => $user->id,
+            'pending_user_id' => $user->id,
         ]);
 
         $response2 = $this->post(route('courses.register.verify'), ['code' => $code]);
@@ -101,12 +99,12 @@ class RegistrationFlowTest extends TestCase
 
     public function test_enroll_requires_course_ids_from_request(): void
     {
-        $user    = User::factory()->create(['force_password_change' => false]);
+        $user = User::factory()->create(['force_password_change' => false]);
         $contact = UserContact::create([
-            'user_id'     => $user->id,
-            'type'        => 'mobile',
-            'value'       => '+9607820002',
-            'is_primary'  => true,
+            'user_id' => $user->id,
+            'type' => 'mobile',
+            'value' => '+9607820002',
+            'is_primary' => true,
             'verified_at' => now(),
         ]);
         $course = Course::factory()->create(['registration_fee_amount' => 0]);
@@ -116,10 +114,10 @@ class RegistrationFlowTest extends TestCase
             ->withSession(['pending_selected_course_ids' => [$course->id]]);
 
         $response = $this->post(route('courses.register.enroll'), [
-            'flow'       => 'adult',
+            'flow' => 'adult',
             'first_name' => 'Ali',
-            'last_name'  => 'Mohamed',
-            'dob'        => now()->subYears(20)->format('Y-m-d'),
+            'last_name' => 'Mohamed',
+            'dob' => now()->subYears(20)->format('Y-m-d'),
             // course_ids intentionally omitted
         ]);
 
@@ -129,12 +127,12 @@ class RegistrationFlowTest extends TestCase
 
     public function test_enroll_succeeds_when_course_ids_in_request(): void
     {
-        $user    = User::factory()->create(['force_password_change' => false]);
+        $user = User::factory()->create(['force_password_change' => false]);
         $contact = UserContact::create([
-            'user_id'     => $user->id,
-            'type'        => 'mobile',
-            'value'       => '+9607820003',
-            'is_primary'  => true,
+            'user_id' => $user->id,
+            'type' => 'mobile',
+            'value' => '+9607820003',
+            'is_primary' => true,
             'verified_at' => now(),
         ]);
         $course = Course::factory()->create([
@@ -143,20 +141,20 @@ class RegistrationFlowTest extends TestCase
         ]);
 
         $this->actingAs($user)->post(route('courses.register.enroll'), [
-            'flow'        => 'adult',
-            'course_ids'  => [$course->id],
-            'first_name'  => 'Ali',
-            'last_name'   => 'Mohamed',
-            'dob'         => now()->subYears(20)->format('Y-m-d'),
-            'gender'      => 'male',
-            'id_type'     => 'national_id',
+            'flow' => 'adult',
+            'course_ids' => [$course->id],
+            'first_name' => 'Ali',
+            'last_name' => 'Mohamed',
+            'dob' => now()->subYears(20)->format('Y-m-d'),
+            'gender' => 'male',
+            'id_type' => 'national_id',
             'national_id' => 'A123456',
         ])->assertRedirect(route('courses.register.enroll.otp'));
 
         Otp::createForContact($contact, 'login', '654321');
 
         $this->actingAs($user)->post(route('courses.register.enroll.confirm'), [
-            'otp_code'       => '654321',
+            'otp_code' => '654321',
             'terms_accepted' => '1',
         ])->assertRedirect(route('courses.register.complete'));
 
@@ -169,38 +167,38 @@ class RegistrationFlowTest extends TestCase
 
     public function test_return_endpoint_finalizes_payment_without_session(): void
     {
-        $user    = User::factory()->create();
+        $user = User::factory()->create();
         $student = RegistrationStudent::create([
-            'user_id'    => $user->id,
+            'user_id' => $user->id,
             'first_name' => 'Fathimath',
-            'last_name'  => 'Hassan',
-            'dob'        => now()->subYears(22),
+            'last_name' => 'Hassan',
+            'dob' => now()->subYears(22),
         ]);
-        $course  = Course::factory()->create(['registration_fee_amount' => 100, 'requires_admin_approval' => false]);
+        $course = Course::factory()->create(['registration_fee_amount' => 100, 'requires_admin_approval' => false]);
 
         $enrollment = CourseEnrollment::create([
-            'student_id'     => $student->id,
-            'course_id'      => $course->id,
-            'status'         => 'pending',
+            'student_id' => $student->id,
+            'course_id' => $course->id,
+            'status' => 'pending',
             'payment_status' => 'pending',
         ]);
 
         $payment = Payment::create([
-            'user_id'            => $user->id,
-            'student_id'         => $student->id,
-            'course_id'          => $course->id,
-            'amount'             => 100,
-            'currency'           => 'MVR',
-            'status'             => 'pending',
-            'provider'           => 'bml',
+            'user_id' => $user->id,
+            'student_id' => $student->id,
+            'course_id' => $course->id,
+            'amount' => 100,
+            'currency' => 'MVR',
+            'status' => 'pending',
+            'provider' => 'bml',
             'merchant_reference' => 'AKURU-RETURN-001',
         ]);
 
         PaymentItem::create([
-            'payment_id'    => $payment->id,
+            'payment_id' => $payment->id,
             'enrollment_id' => $enrollment->id,
-            'course_id'     => $course->id,
-            'amount'        => 100,
+            'course_id' => $course->id,
+            'amount' => 100,
         ]);
         $enrollment->update(['payment_id' => $payment->id]);
 
@@ -215,7 +213,7 @@ class RegistrationFlowTest extends TestCase
 
         // No session – just ?ref= in URL. Use withoutMiddleware to skip locale redirects in test env.
         $response = $this->withoutMiddleware()
-            ->get(route('payments.bml.return') . '?ref=AKURU-RETURN-001');
+            ->get(route('payments.bml.return').'?ref=AKURU-RETURN-001');
 
         $response->assertOk();
 
@@ -234,8 +232,8 @@ class RegistrationFlowTest extends TestCase
     {
         config(['bml.webhook_secret' => 'test-secret']);
 
-        $rawBody  = '{"localId":"AKURU-SIG-001","state":"completed"}';
-        $badSig   = 'badhash';
+        $rawBody = '{"localId":"AKURU-SIG-001","state":"completed"}';
+        $badSig = 'badhash';
 
         $response = $this->call(
             'POST',
@@ -252,44 +250,44 @@ class RegistrationFlowTest extends TestCase
 
     public function test_webhook_accepts_valid_raw_body_signature(): void
     {
-        $secret  = 'test-secret-valid';
+        $secret = 'test-secret-valid';
         $rawBody = '{"localId":"AKURU-RAWSIG-001","state":"completed"}';
-        $sig     = hash_hmac('sha256', $rawBody, $secret);
+        $sig = hash_hmac('sha256', $rawBody, $secret);
 
         config(['bml.webhook_secret' => $secret]);
 
-        $user    = User::factory()->create();
+        $user = User::factory()->create();
         $student = RegistrationStudent::create([
-            'user_id'    => $user->id,
+            'user_id' => $user->id,
             'first_name' => 'Test',
-            'last_name'  => 'User',
-            'dob'        => now()->subYears(22),
+            'last_name' => 'User',
+            'dob' => now()->subYears(22),
         ]);
         $course = Course::factory()->create(['requires_admin_approval' => false]);
 
         $enrollment = CourseEnrollment::create([
-            'student_id'     => $student->id,
-            'course_id'      => $course->id,
-            'status'         => 'pending',
+            'student_id' => $student->id,
+            'course_id' => $course->id,
+            'status' => 'pending',
             'payment_status' => 'pending',
         ]);
 
         $payment = Payment::create([
-            'user_id'            => $user->id,
-            'student_id'         => $student->id,
-            'course_id'          => $course->id,
-            'amount'             => 100,
-            'currency'           => 'MVR',
-            'status'             => 'pending',
-            'provider'           => 'bml',
+            'user_id' => $user->id,
+            'student_id' => $student->id,
+            'course_id' => $course->id,
+            'amount' => 100,
+            'currency' => 'MVR',
+            'status' => 'pending',
+            'provider' => 'bml',
             'merchant_reference' => 'AKURU-RAWSIG-001',
         ]);
 
         PaymentItem::create([
-            'payment_id'    => $payment->id,
+            'payment_id' => $payment->id,
             'enrollment_id' => $enrollment->id,
-            'course_id'     => $course->id,
-            'amount'        => 100,
+            'course_id' => $course->id,
+            'amount' => 100,
         ]);
         $enrollment->update(['payment_id' => $payment->id]);
 
@@ -302,13 +300,14 @@ class RegistrationFlowTest extends TestCase
         $mockProvider->shouldReceive('verifyCallback')
             ->andReturnUsing(function ($request) {
                 $rawBody = $request->getContent();
-                $secret  = config('bml.webhook_secret');
-                $sig     = $request->header('X-BML-Signature');
-                $valid   = hash_equals(hash_hmac('sha256', $rawBody, $secret), $sig);
+                $secret = config('bml.webhook_secret');
+                $sig = $request->header('X-BML-Signature');
+                $valid = hash_equals(hash_hmac('sha256', $rawBody, $secret), $sig);
                 if (! $valid) {
                     return new PaymentVerificationResult(false, null, null, null, [], 'Invalid signature');
                 }
                 $payload = json_decode($rawBody, true);
+
                 return new PaymentVerificationResult(true, $payload['localId'], null, $payload['state'], $payload, null, true);
             });
         $this->app->instance(\App\Services\Payment\PaymentProviderInterface::class, $mockProvider);
@@ -332,12 +331,12 @@ class RegistrationFlowTest extends TestCase
 
     public function test_enrollment_unique_prevents_duplicates(): void
     {
-        $user    = User::factory()->create(['force_password_change' => false]);
+        $user = User::factory()->create(['force_password_change' => false]);
         $contact = UserContact::create([
-            'user_id'     => $user->id,
-            'type'        => 'mobile',
-            'value'       => '+9607820099',
-            'is_primary'  => true,
+            'user_id' => $user->id,
+            'type' => 'mobile',
+            'value' => '+9607820099',
+            'is_primary' => true,
             'verified_at' => now(),
         ]);
         $course = Course::factory()->create([
@@ -346,13 +345,13 @@ class RegistrationFlowTest extends TestCase
         ]);
 
         $enrollData = [
-            'flow'        => 'adult',
-            'course_ids'  => [$course->id],
-            'first_name'  => 'Hussain',
-            'last_name'   => 'Rasheed',
-            'dob'         => now()->subYears(25)->format('Y-m-d'),
-            'gender'      => 'male',
-            'id_type'     => 'national_id',
+            'flow' => 'adult',
+            'course_ids' => [$course->id],
+            'first_name' => 'Hussain',
+            'last_name' => 'Rasheed',
+            'dob' => now()->subYears(25)->format('Y-m-d'),
+            'gender' => 'male',
+            'id_type' => 'national_id',
             'national_id' => 'B123456',
         ];
 
@@ -372,42 +371,42 @@ class RegistrationFlowTest extends TestCase
 
     public function test_finalize_by_reference_is_idempotent(): void
     {
-        $user    = User::factory()->create();
+        $user = User::factory()->create();
         $student = RegistrationStudent::create([
-            'user_id'    => $user->id,
+            'user_id' => $user->id,
             'first_name' => 'Ibrahim',
-            'last_name'  => 'Ali',
-            'dob'        => now()->subYears(30),
+            'last_name' => 'Ali',
+            'dob' => now()->subYears(30),
         ]);
         $course = Course::factory()->create(['requires_admin_approval' => false]);
 
         $enrollment = CourseEnrollment::create([
-            'student_id'     => $student->id,
-            'course_id'      => $course->id,
-            'status'         => 'active',
+            'student_id' => $student->id,
+            'course_id' => $course->id,
+            'status' => 'active',
             'payment_status' => 'confirmed',
-            'enrolled_at'    => now()->subMinutes(5),
+            'enrolled_at' => now()->subMinutes(5),
         ]);
 
         $confirmedAt = now()->subMinutes(5);
         $payment = Payment::create([
-            'user_id'            => $user->id,
-            'student_id'         => $student->id,
-            'course_id'          => $course->id,
-            'amount'             => 200,
-            'currency'           => 'MVR',
-            'status'             => 'confirmed',
-            'provider'           => 'bml',
+            'user_id' => $user->id,
+            'student_id' => $student->id,
+            'course_id' => $course->id,
+            'amount' => 200,
+            'currency' => 'MVR',
+            'status' => 'confirmed',
+            'provider' => 'bml',
             'merchant_reference' => 'AKURU-IDEM-FINAL-001',
-            'paid_at'            => $confirmedAt,
-            'confirmed_at'       => $confirmedAt,
+            'paid_at' => $confirmedAt,
+            'confirmed_at' => $confirmedAt,
         ]);
 
         PaymentItem::create([
-            'payment_id'    => $payment->id,
+            'payment_id' => $payment->id,
             'enrollment_id' => $enrollment->id,
-            'course_id'     => $course->id,
-            'amount'        => 200,
+            'course_id' => $course->id,
+            'amount' => 200,
         ]);
 
         $mockProvider = Mockery::mock(BmlPaymentProvider::class)->makePartial();

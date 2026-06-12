@@ -10,7 +10,7 @@ return [
     'announcements' => 'Announcements',
     'profile' => 'Profile',
     'logout' => 'Log Out',
-    
+
     // Common Actions
     'create' => 'Create',
     'edit' => 'Edit',
@@ -24,14 +24,14 @@ return [
     'filter' => 'Filter',
     'export' => 'Export',
     'import' => 'Import',
-    
+
     // Status
     'active' => 'Active',
     'inactive' => 'Inactive',
     'pending' => 'Pending',
     'completed' => 'Completed',
     'in_progress' => 'In Progress',
-    
+
     // User Roles
     'administrator' => 'Administrator',
     'headmaster' => 'Headmaster',
@@ -39,7 +39,7 @@ return [
     'teacher' => 'Teacher',
     'student' => 'Student',
     'guardian' => 'Guardian',
-    
+
     // Islamic Terms
     'quran' => 'Quran',
     'surah' => 'Surah',
@@ -47,7 +47,7 @@ return [
     'hijri_date' => 'Hijri Date',
     'prayer_times' => 'Prayer Times',
     'islamic_calendar' => 'Islamic Calendar',
-    
+
     // Time
     'today' => 'Today',
     'yesterday' => 'Yesterday',
@@ -55,7 +55,7 @@ return [
     'this_week' => 'This Week',
     'this_month' => 'This Month',
     'this_year' => 'This Year',
-    
+
     // Messages
     'success' => 'Success',
     'error' => 'Error',
@@ -65,7 +65,7 @@ return [
     'item_created' => 'Item created successfully',
     'item_updated' => 'Item updated successfully',
     'item_deleted' => 'Item deleted successfully',
-    
+
     // Dashboard specific
     'admin_dashboard' => 'Admin Dashboard',
     'teacher_dashboard' => 'Teacher Dashboard',
@@ -75,7 +75,7 @@ return [
     'teacher_overview' => 'Manage your classes and students',
     'student_overview' => 'Track your progress and assignments',
     'parent_overview' => 'Monitor your children\'s progress',
-    
+
     // Statistics
     'total_students' => 'Total Students',
     'total_teachers' => 'Total Teachers',
@@ -88,7 +88,7 @@ return [
     'recent_announcements' => 'Recent Announcements',
     'no_recent_announcements' => 'No recent announcements',
     'quick_actions' => 'Quick Actions',
-    
+
     // Student specific
     'student_information' => 'Student Information',
     'class' => 'Class',
@@ -103,25 +103,25 @@ return [
     'attendance' => 'Attendance',
     'attendance_rate' => 'Attendance Rate',
     'accuracy' => 'Accuracy',
-    
+
     // Parent specific
     'no_children_registered' => 'No children registered',
     'contact_administration' => 'Please contact the administration to register your children',
-    
+
     // Common actions
     'view' => 'View',
     'calendar' => 'Calendar',
     'contact_us' => 'Contact Us',
-    
+
     // Add new items
     'add_new_student' => 'Add New Student',
     'add_new_teacher' => 'Add New Teacher',
     'create_announcement' => 'Create Announcement',
     'view_quran_progress' => 'View Quran Progress',
-    
+
     // Date formats
     'gregorian_date' => 'Gregorian Date',
-    
+
     // Advanced metrics
     'from_last_month' => 'from last month',
     'avg_accuracy' => 'Avg Accuracy',

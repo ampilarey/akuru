@@ -23,7 +23,7 @@ return new class extends Migration
             $table->integer('attempts')->default(0);
             $table->boolean('is_used')->default(false);
             $table->timestamps();
-            
+
             // Indexes
             $table->index(['identifier', 'code', 'type']);
             $table->index('expires_at');

@@ -3,14 +3,11 @@
 namespace App\Http\Controllers\Hifz;
 
 use App\Http\Controllers\Controller;
-use App\Models\HifzEnrollment;
 use App\Models\HifzMilestone;
 use App\Models\HifzSession;
-use App\Models\HifzSessionRecord;
 use App\Services\Hifz\HifzReportService;
 use App\Services\Hifz\HifzScopeService;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 

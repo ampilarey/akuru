@@ -2,27 +2,29 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use App\Models\Teacher;
-use App\Models\User;
 use App\Models\School;
 use App\Models\Subject;
+use App\Models\Teacher;
+use App\Models\User;
+use Illuminate\Http\Request;
 
 class TeacherController extends Controller
 {
     public function index()
     {
         $teachers = Teacher::with(['user', 'school', 'subjects'])->latest()->get();
+
         return view('teachers.index', compact('teachers'));
     }
-    
+
     public function create()
     {
         $schools = School::all();
         $subjects = Subject::all();
+
         return view('teachers.create', compact('schools', 'subjects'));
     }
-    
+
     public function store(Request $request)
     {
         $request->validate([
@@ -53,7 +55,7 @@ class TeacherController extends Controller
             'subjects' => 'nullable|array',
             'subjects.*' => 'exists:subjects,id',
         ]);
-        
+
         // Create user account
         $user = User::create([
             'name' => $request->name,
@@ -66,9 +68,9 @@ class TeacherController extends Controller
             'national_id' => $request->national_id,
             'is_active' => true,
         ]);
-        
+
         $user->assignRole('teacher');
-        
+
         // Create teacher profile
         $teacher = Teacher::create([
             'user_id' => $user->id,
@@ -96,41 +98,43 @@ class TeacherController extends Controller
             'salary' => $request->salary,
             'status' => 'active',
         ]);
-        
+
         // Attach subjects if provided
         if ($request->subjects) {
             $teacher->subjects()->attach($request->subjects);
         }
-        
+
         return redirect()->route('teachers.index')
             ->with('success', 'Teacher created successfully!');
     }
-    
+
     public function show(Teacher $teacher)
     {
         $teacher->load(['user', 'school', 'subjects', 'classes', 'quranProgress.student.user', 'grades.student.user']);
+
         return view('teachers.show', compact('teacher'));
     }
-    
+
     public function edit(Teacher $teacher)
     {
         $schools = School::all();
         $subjects = Subject::all();
         $teacher->load('user');
+
         return view('teachers.edit', compact('teacher', 'schools', 'subjects'));
     }
-    
+
     public function update(Request $request, Teacher $teacher)
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users,email,' . $teacher->user_id,
+            'email' => 'required|string|email|max:255|unique:users,email,'.$teacher->user_id,
             'phone' => 'nullable|string',
             'address' => 'nullable|string',
             'date_of_birth' => 'required|date',
             'gender' => 'required|in:male,female',
             'national_id' => 'nullable|string',
-            'teacher_id' => 'required|string|unique:teachers,teacher_id,' . $teacher->id,
+            'teacher_id' => 'required|string|unique:teachers,teacher_id,'.$teacher->id,
             'school_id' => 'required|exists:schools,id',
             'joining_date' => 'required|date',
             'salary' => 'nullable|numeric|min:0',
@@ -149,7 +153,7 @@ class TeacherController extends Controller
             'subjects' => 'nullable|array',
             'subjects.*' => 'exists:subjects,id',
         ]);
-        
+
         // Update user account
         $teacher->user->update([
             'name' => $request->name,
@@ -160,7 +164,7 @@ class TeacherController extends Controller
             'gender' => $request->gender,
             'national_id' => $request->national_id,
         ]);
-        
+
         // Update teacher profile
         $teacher->update([
             'school_id' => $request->school_id,
@@ -186,21 +190,22 @@ class TeacherController extends Controller
             'joining_date' => $request->joining_date,
             'salary' => $request->salary,
         ]);
-        
+
         // Update subjects
         if ($request->subjects) {
             $teacher->subjects()->sync($request->subjects);
         } else {
             $teacher->subjects()->detach();
         }
-        
+
         return redirect()->route('teachers.index')
             ->with('success', 'Teacher updated successfully!');
     }
-    
+
     public function destroy(Teacher $teacher)
     {
         $teacher->user->delete(); // This will also delete the teacher due to cascade
+
         return redirect()->route('teachers.index')
             ->with('success', 'Teacher deleted successfully!');
     }

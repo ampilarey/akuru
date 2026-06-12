@@ -2,16 +2,17 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Casts\Attribute;
 
 class Course extends Model
 {
     use HasFactory;
+
     protected $fillable = [
         'course_category_id',
         'title',
@@ -90,6 +91,7 @@ class Course extends Model
         if ($amount <= 0 && (float) ($this->fee ?? 0) > 0) {
             return (float) $this->fee;
         }
+
         return $amount;
     }
 
@@ -121,16 +123,16 @@ class Course extends Model
     public function scopeAvailable($query)
     {
         return $query->where('status', 'open')
-                    ->where(function($q) {
-                        $q->whereNull('enrollment_deadline')
-                          ->orWhere('enrollment_deadline', '>=', now());
-                    });
+            ->where(function ($q) {
+                $q->whereNull('enrollment_deadline')
+                    ->orWhere('enrollment_deadline', '>=', now());
+            });
     }
 
     public function scopeUpcoming($query)
     {
         return $query->where('status', 'upcoming')
-                    ->where('start_date', '>', now());
+            ->where('start_date', '>', now());
     }
 
     public function getAvailableSeatsAttribute(): ?int
@@ -149,34 +151,48 @@ class Course extends Model
     public function isFull(): bool
     {
         $available = $this->available_seats;
+
         return $available !== null && $available <= 0;
     }
 
     public function getIsEnrollmentOpenAttribute()
     {
-        if ($this->status !== 'open') return false;
-        
-        if (!$this->enrollment_deadline) return true;
-        
+        if ($this->status !== 'open') {
+            return false;
+        }
+
+        if (! $this->enrollment_deadline) {
+            return true;
+        }
+
         return $this->enrollment_deadline >= now();
     }
 
     public function getFormattedFeeAttribute()
     {
-        if (!$this->fee) return 'Free';
-        
-        return 'MVR ' . number_format($this->fee, 2);
+        if (! $this->fee) {
+            return 'Free';
+        }
+
+        return 'MVR '.number_format($this->fee, 2);
     }
 
     public function getDurationTextAttribute()
     {
-        if (!$this->duration_weeks) return 'Ongoing';
-        
-        if ($this->duration_weeks == 1) return '1 week';
-        if ($this->duration_weeks < 4) return $this->duration_weeks . ' weeks';
-        
+        if (! $this->duration_weeks) {
+            return 'Ongoing';
+        }
+
+        if ($this->duration_weeks == 1) {
+            return '1 week';
+        }
+        if ($this->duration_weeks < 4) {
+            return $this->duration_weeks.' weeks';
+        }
+
         $months = round($this->duration_weeks / 4);
-        return $months . ' month' . ($months > 1 ? 's' : '');
+
+        return $months.' month'.($months > 1 ? 's' : '');
     }
 
     protected function slug(): Attribute

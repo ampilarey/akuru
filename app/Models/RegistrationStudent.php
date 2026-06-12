@@ -25,9 +25,9 @@ class RegistrationStudent extends Model
     protected function casts(): array
     {
         return [
-            'dob'         => 'date',
+            'dob' => 'date',
             'national_id' => 'encrypted',
-            'passport'    => 'encrypted',
+            'passport' => 'encrypted',
         ];
     }
 

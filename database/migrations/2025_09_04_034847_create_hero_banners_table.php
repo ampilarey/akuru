@@ -22,7 +22,7 @@ return new class extends Migration
             $table->smallInteger('order')->default(0);
             $table->char('locale', 2)->nullable();
             $table->timestamps();
-            
+
             $table->index(['is_active', 'order']);
             $table->index('locale');
         });

@@ -55,7 +55,7 @@ return new class extends Migration
         if (! Schema::hasColumn('payments', 'amount_laar')) {
             Schema::table('payments', function (Blueprint $table) {
                 $table->unsignedBigInteger('amount_laar')->default(0)->after('amount')
-                      ->comment('Amount in laari (MVR cents). 100 laari = 1 MVR.');
+                    ->comment('Amount in laari (MVR cents). 100 laari = 1 MVR.');
             });
         }
     }

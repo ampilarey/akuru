@@ -19,7 +19,7 @@ class FreeEnrollmentConfirmedMail extends Mailable implements ShouldQueue
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Enrollment confirmed — ' . ($this->enrollment->course?->title ?? 'Akuru Institute'),
+            subject: 'Enrollment confirmed — '.($this->enrollment->course?->title ?? 'Akuru Institute'),
         );
     }
 

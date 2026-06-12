@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class UserSeeder extends Seeder
@@ -13,7 +12,7 @@ class UserSeeder extends Seeder
     public function run(): void
     {
         $school = \App\Models\School::first();
-        
+
         // Create Admin User
         $admin = \App\Models\User::create([
             'name' => 'Admin User',
@@ -26,7 +25,7 @@ class UserSeeder extends Seeder
             'is_active' => true,
         ]);
         $admin->assignRole('admin');
-        
+
         // Create Headmaster User
         $headmaster = \App\Models\User::create([
             'name' => 'Dr. Ahmed Ibrahim',
@@ -39,7 +38,7 @@ class UserSeeder extends Seeder
             'is_active' => true,
         ]);
         $headmaster->assignRole('headmaster');
-        
+
         // Create Teacher User
         $teacher = \App\Models\User::create([
             'name' => 'Ustadh Mohamed Ali',
@@ -52,7 +51,7 @@ class UserSeeder extends Seeder
             'is_active' => true,
         ]);
         $teacher->assignRole('teacher');
-        
+
         // Create Student User
         $student = \App\Models\User::create([
             'name' => 'Ahmed Hassan',
@@ -65,7 +64,7 @@ class UserSeeder extends Seeder
             'is_active' => true,
         ]);
         $student->assignRole('student');
-        
+
         // Create Parent User
         $parent = \App\Models\User::create([
             'name' => 'Hassan Ahmed',

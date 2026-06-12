@@ -39,7 +39,7 @@ return new class extends Migration
             $table->string('qr_code')->nullable(); // For check-in purposes
             $table->json('meta')->nullable(); // Additional metadata
             $table->timestamps();
-            
+
             // Indexes for better performance
             $table->index(['event_id', 'status']);
             $table->index(['email', 'event_id']);

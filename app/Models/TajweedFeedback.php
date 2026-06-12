@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
 class TajweedFeedback extends Model
 {
@@ -52,7 +52,7 @@ class TajweedFeedback extends Model
      */
     public function getSeverityColorAttribute()
     {
-        return match($this->severity) {
+        return match ($this->severity) {
             'info' => 'blue',
             'warning' => 'yellow',
             'critical' => 'red',
@@ -65,7 +65,7 @@ class TajweedFeedback extends Model
      */
     public function getSeverityIconAttribute()
     {
-        return match($this->severity) {
+        return match ($this->severity) {
             'info' => 'info-circle',
             'warning' => 'exclamation-triangle',
             'critical' => 'times-circle',

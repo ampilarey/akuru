@@ -21,7 +21,7 @@ class AdminFreeEnrollmentMail extends Mailable
 
     public function envelope(): Envelope
     {
-        $course  = $this->enrollment->course?->title ?? 'Unknown course';
+        $course = $this->enrollment->course?->title ?? 'Unknown course';
         $student = $this->enrollment->student?->full_name ?? $this->user->name ?? 'Unknown';
 
         return new Envelope(subject: "[New free enrollment] {$student} — {$course}");

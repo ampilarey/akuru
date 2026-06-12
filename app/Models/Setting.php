@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\Cache;
 
 class Setting extends Model
 {
@@ -21,9 +20,9 @@ class Setting extends Model
         $setting = $all->get($key);
 
         return match ($setting->type) {
-            'json'    => json_decode($setting->value, true),
+            'json' => json_decode($setting->value, true),
             'boolean' => filter_var($setting->value, FILTER_VALIDATE_BOOLEAN),
-            default   => $setting->value,
+            default => $setting->value,
         };
     }
 

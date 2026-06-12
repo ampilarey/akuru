@@ -34,27 +34,29 @@ class PaymentController extends Controller
         if (! $data) {
             return response()->json(['error' => 'Payment not found'], 404);
         }
+
         return response()->json($data);
     }
 
     public function initiate(Request $request)
     {
         $ref = $request->input('merchant_reference') ?? session('pending_payment_ref');
-        if (!$ref) {
+        if (! $ref) {
             return redirect()->route('public.courses.index')->with('error', 'Invalid payment reference.');
         }
 
         $payment = \App\Models\Payment::where('merchant_reference', $ref)->first();
-        if (!$payment) {
+        if (! $payment) {
             return redirect()->route('public.courses.index')->with('error', 'Payment not found.');
         }
 
         $result = $this->paymentService->initiatePayment($payment, [
-            'return_url' => route('payments.bml.return') . '?ref=' . $ref,
+            'return_url' => route('payments.bml.return').'?ref='.$ref,
         ]);
 
         if ($result->success && $result->redirectUrl) {
             session(['pending_payment_ref' => $ref]);
+
             return redirect()->away($result->redirectUrl);
         }
 
@@ -151,7 +153,7 @@ class PaymentController extends Controller
                             $course = $enrollment->course;
                             if (! ($course->requires_admin_approval ?? false)) {
                                 $enrollment->update([
-                                    'status'      => 'active',
+                                    'status' => 'active',
                                     'enrolled_at' => $enrollment->enrolled_at ?? now(),
                                 ]);
                             }
@@ -170,6 +172,7 @@ class PaymentController extends Controller
     public function callback(Request $request)
     {
         $this->paymentService->handleCallback($request);
+
         return response('OK', 200);
     }
 }
