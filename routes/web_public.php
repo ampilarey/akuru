@@ -129,12 +129,12 @@ Route::post('payments/bml/initiate', [\App\Domains\Finance\Http\Controllers\Paym
 // Portal (authenticated)
 Route::middleware('auth')->prefix('portal')->name('portal.')->group(function () {
     Route::redirect('/', 'portal/dashboard');
-    Route::get('/dashboard', [\App\Http\Controllers\Portal\PortalController::class, 'dashboard'])->name('dashboard');
-    Route::get('/enrollments', [\App\Http\Controllers\Portal\PortalController::class, 'enrollments'])->name('enrollments');
-    Route::get('/payments', [\App\Http\Controllers\Portal\PortalController::class, 'payments'])->name('payments');
-    Route::get('/certificates', [\App\Http\Controllers\Portal\PortalController::class, 'certificates'])->name('certificates');
-    Route::get('/profile', [\App\Http\Controllers\Portal\PortalController::class, 'profile'])->name('profile');
-    Route::post('/profile', [\App\Http\Controllers\Portal\PortalController::class, 'updateProfile'])->name('profile.update');
+    Route::get('/dashboard', [\App\Domains\Portal\Http\Controllers\PortalController::class, 'dashboard'])->name('dashboard');
+    Route::get('/enrollments', [\App\Domains\Portal\Http\Controllers\PortalController::class, 'enrollments'])->name('enrollments');
+    Route::get('/payments', [\App\Domains\Portal\Http\Controllers\PortalController::class, 'payments'])->name('payments');
+    Route::get('/certificates', [\App\Domains\Portal\Http\Controllers\PortalController::class, 'certificates'])->name('certificates');
+    Route::get('/profile', [\App\Domains\Portal\Http\Controllers\PortalController::class, 'profile'])->name('profile');
+    Route::post('/profile', [\App\Domains\Portal\Http\Controllers\PortalController::class, 'updateProfile'])->name('profile.update');
 });
 
 // Account management (auth required)
