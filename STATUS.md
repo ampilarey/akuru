@@ -6,7 +6,7 @@
 
 ### 0.1 Install & tooling
 - Inertia + React, Pest, Larastan, ADR template, CI (`pint` + `pest` + architecture suite)
-- **CI:** must be green on `main` after push (MySQL 8 service + test `APP_KEY` in `phpunit.xml`)
+- **CI green on `main`:** [GitHub Actions run 27439531612](https://github.com/ampilarey/akuru/actions/runs/27439531612) (Pint + Pest 75 passed; PHPStan informational)
 
 ### 0.2 Domain skeleton
 - 19 domain providers + ADR-001 (single-institute, `school_id` retained)
