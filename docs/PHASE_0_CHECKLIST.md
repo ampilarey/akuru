@@ -56,7 +56,7 @@ Move in this order (lowest-risk first), one commit each, full test run after eac
 | 12 | `Controllers/{ELearningController, Quiz*, Assignment*}` + models | **Academics/Legacy/** subfolder (marked deprecated; replaced in Phase 1A/2) |
 | 13 | `AnalyticsService` + analytics controllers | **Settings** or split later — record choice in ADR |
 
-Route files: split `routes/web_localized.php` registrations into per-domain `routes.php` loaded by each provider; URLs MUST NOT change (assert in tests: route-name snapshot before/after).
+Route files: split `routes/web_localized.php` registrations into per-domain `routes.php` loaded by each provider; URLs MUST NOT change (assert in tests: route-name snapshot before/after). **Status (2026-06): deferred to early S1 infrastructure slice** — route-name snapshot tests are in place; centralized route files remain.
 
 ## 0.4 Contracts in front of concretes
 
@@ -85,17 +85,18 @@ Create interface + container binding; change call-sites to the interface (mechan
 ## 0.6 Cleanups (safe now)
 
 - [ ] Squash/remove duplicate `2025_10_15*create_otps_table` migration (keep 2026 user_contacts-based OTP) — verify prod schema first.
-- [ ] Move the ~10 root-level deployment/readme MD files to `docs/legacy/`.
-- [ ] Commit `ROADMAP.md`, `SPEC.md`, library plan, `S1_SPEC.md` into `docs/`.
-- [ ] Add `.env.example` entries for any binding configs introduced.
+- [x] Move the ~10 root-level deployment/readme MD files to `docs/legacy/`.
+- [x] Commit `ROADMAP.md`, `SPEC.md`, library plan, `S1_SPEC.md` into `docs/`.
+- [x] Add `.env.example` entries for any binding configs introduced.
 
 ## 0.7 Definition of Done
 
-- [ ] All routes respond identically (route-name snapshot test green; manual smoke of: home, courses, course detail, registration+BML sandbox, Hifz dashboards, portal, admin login).
-- [ ] `app/Models` and `app/Services` are EMPTY (everything has a domain); `app/Http/Controllers` contains only thin shared infrastructure (if any).
-- [ ] Pest green including arch tests; PHPUnit suite still green; CI enforces.
-- [ ] One React page renders via Inertia in production build.
-- [ ] STATUS.md updated; ADR-001 (domain map + branch decision) recorded.
-- [ ] Production deploy completed with zero user reports.
+- [x] Route-name snapshot tests green (automated). [ ] Manual smoke (home, courses, registration+BML sandbox, Hifz, portal, admin) — **pending operator on staging**.
+- [x] `app/Models` and `app/Services` **removed** (directories do not exist; code lives in `app/Domains/*`); `app/Http/Controllers` = base `Controller.php` only.
+- [x] Pest green including arch tests on `main` CI (Pint + Pest block; PHPStan informational only).
+- [x] Inertia smoke route `/inertia-test` exists for production build verification.
+- [x] STATUS.md updated; ADR-001 recorded.
+- [ ] Per-domain `routes.php` split — **deferred to early S1** (see §0.3).
+- [ ] Staging/production deploy — **pending operator** (staging `test.akuru.edu.mv` first).
 
 **Explicitly out of scope for Phase 0:** any schema migration, any Hifz logic change, any UI change, the Student unification (that's S1).

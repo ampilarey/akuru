@@ -23,6 +23,7 @@
     <php>
         <ini name="memory_limit" value="512M"/>
         <env name="APP_ENV" value="testing"/>
+        <env name="APP_KEY" value="base64:i8oMr3g3LXa5WBZKOOaMkHSgf0Nm2bIpnjIXCL7p/0w="/>
         <env name="APP_MAINTENANCE_DRIVER" value="file"/>
         <env name="BCRYPT_ROUNDS" value="4"/>
         <env name="CACHE_STORE" value="array"/>
