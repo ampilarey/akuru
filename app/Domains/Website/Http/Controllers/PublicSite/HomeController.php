@@ -8,7 +8,7 @@ use App\Domains\Website\Models\HeroBanner;
 use App\Domains\Website\Models\Post;
 use App\Domains\Website\Models\Testimonial;
 use App\Http\Controllers\Controller;
-use App\Models\AdmissionApplication;
+use App\Domains\Admissions\Models\AdmissionApplication;
 use App\Models\Course;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;

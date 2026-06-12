@@ -172,7 +172,7 @@ class CourseRegistrationTest extends TestCase
 
         $course = Course::factory()->create(['registration_fee_amount' => 0]);
 
-        $enrollmentService = app(\App\Services\Enrollment\EnrollmentService::class);
+        $enrollmentService = app(\App\Domains\Admissions\Services\Enrollment\EnrollmentService::class);
         $result1 = $enrollmentService->enrollAdultSelf($user, [
             'first_name' => 'John',
             'last_name' => 'Doe',

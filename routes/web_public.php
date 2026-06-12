@@ -64,28 +64,28 @@ Route::get('events/{event}', function ($id) {
 Route::get('gallery', [GalleryController::class, 'index'])->name('public.gallery.index');
 Route::get('gallery/{gallery}', [GalleryController::class, 'show'])->name('public.gallery.show');
 // Public course registration flow (guest + auth)
-Route::get('courses/{course}/checkout', [\App\Http\Controllers\CourseRegistrationController::class, 'checkout'])
+Route::get('courses/{course}/checkout', [\App\Domains\Admissions\Http\Controllers\CourseRegistrationController::class, 'checkout'])
     ->name('courses.checkout.show');
-Route::post('courses/{course}/checkout/login', [\App\Http\Controllers\CourseRegistrationController::class, 'checkoutLogin'])
+Route::post('courses/{course}/checkout/login', [\App\Domains\Admissions\Http\Controllers\CourseRegistrationController::class, 'checkoutLogin'])
     ->name('courses.checkout.login')->middleware('throttle:10,1');
 // Legacy register route kept for backward compatibility
-Route::get('courses/{course}/register', [\App\Http\Controllers\CourseRegistrationController::class, 'show'])
+Route::get('courses/{course}/register', [\App\Domains\Admissions\Http\Controllers\CourseRegistrationController::class, 'show'])
     ->name('courses.register.show');
-Route::post('courses/register/start', [\App\Http\Controllers\CourseRegistrationController::class, 'start'])
+Route::post('courses/register/start', [\App\Domains\Admissions\Http\Controllers\CourseRegistrationController::class, 'start'])
     ->name('courses.register.start')->middleware('throttle:10,1');
-Route::get('courses/register/otp', [\App\Http\Controllers\CourseRegistrationController::class, 'otpForm'])
+Route::get('courses/register/otp', [\App\Domains\Admissions\Http\Controllers\CourseRegistrationController::class, 'otpForm'])
     ->name('courses.register.otp');
-Route::post('courses/register/verify', [\App\Http\Controllers\CourseRegistrationController::class, 'verify'])
+Route::post('courses/register/verify', [\App\Domains\Admissions\Http\Controllers\CourseRegistrationController::class, 'verify'])
     ->name('courses.register.verify')->middleware('throttle:10,1');
-Route::post('courses/register/otp/resend-new', [\App\Http\Controllers\CourseRegistrationController::class, 'resendNewRegistrationOtp'])
+Route::post('courses/register/otp/resend-new', [\App\Domains\Admissions\Http\Controllers\CourseRegistrationController::class, 'resendNewRegistrationOtp'])
     ->name('courses.register.otp.resend-new')->middleware('throttle:5,1');
-Route::get('courses/register/set-password', [\App\Http\Controllers\CourseRegistrationController::class, 'passwordForm'])
+Route::get('courses/register/set-password', [\App\Domains\Admissions\Http\Controllers\CourseRegistrationController::class, 'passwordForm'])
     ->name('courses.register.set-password');
-Route::post('courses/register/set-password', [\App\Http\Controllers\CourseRegistrationController::class, 'setPassword'])
+Route::post('courses/register/set-password', [\App\Domains\Admissions\Http\Controllers\CourseRegistrationController::class, 'setPassword'])
     ->name('courses.register.set-password.store');
-Route::get('courses/register/continue', [\App\Http\Controllers\CourseRegistrationController::class, 'continueForm'])
+Route::get('courses/register/continue', [\App\Domains\Admissions\Http\Controllers\CourseRegistrationController::class, 'continueForm'])
     ->name('courses.register.continue');
-Route::post('courses/register/enroll', [\App\Http\Controllers\CourseRegistrationController::class, 'enroll'])
+Route::post('courses/register/enroll', [\App\Domains\Admissions\Http\Controllers\CourseRegistrationController::class, 'enroll'])
     ->name('courses.register.enroll')->middleware('throttle:10,1');
 // Graceful GET fallback — browser history / stale link navigation
 Route::get('courses/register/enroll', function () {
@@ -99,23 +99,23 @@ Route::get('courses/register/enroll', function () {
     return redirect()->route('public.courses.index')
         ->with('info', 'Please select a course to start enrollment.');
 });
-Route::get('courses/register/enroll/confirm', [\App\Http\Controllers\CourseRegistrationController::class, 'enrollOtpForm'])
+Route::get('courses/register/enroll/confirm', [\App\Domains\Admissions\Http\Controllers\CourseRegistrationController::class, 'enrollOtpForm'])
     ->name('courses.register.enroll.otp');
-Route::post('courses/register/enroll/confirm', [\App\Http\Controllers\CourseRegistrationController::class, 'enrollConfirm'])
+Route::post('courses/register/enroll/confirm', [\App\Domains\Admissions\Http\Controllers\CourseRegistrationController::class, 'enrollConfirm'])
     ->name('courses.register.enroll.confirm')->middleware('throttle:10,1');
-Route::post('courses/register/enroll/resend', [\App\Http\Controllers\CourseRegistrationController::class, 'enrollResendOtp'])
+Route::post('courses/register/enroll/resend', [\App\Domains\Admissions\Http\Controllers\CourseRegistrationController::class, 'enrollResendOtp'])
     ->name('courses.register.enroll.resend')->middleware('throttle:5,1');
-Route::get('courses/register/complete', [\App\Http\Controllers\CourseRegistrationController::class, 'complete'])
+Route::get('courses/register/complete', [\App\Domains\Admissions\Http\Controllers\CourseRegistrationController::class, 'complete'])
     ->name('courses.register.complete');
-Route::get('courses/register/resume', [\App\Http\Controllers\CourseRegistrationController::class, 'resume'])
+Route::get('courses/register/resume', [\App\Domains\Admissions\Http\Controllers\CourseRegistrationController::class, 'resume'])
     ->name('courses.register.resume');
-Route::get('courses/register/payment/retry', [\App\Http\Controllers\CourseRegistrationController::class, 'retryPayment'])
+Route::get('courses/register/payment/retry', [\App\Domains\Admissions\Http\Controllers\CourseRegistrationController::class, 'retryPayment'])
     ->name('courses.register.payment.retry');
 
 // Checkout (compliance checkbox required before payment; auth required)
-Route::get('checkout/course/{course}', [\App\Http\Controllers\CheckoutController::class, 'show'])
+Route::get('checkout/course/{course}', [\App\Domains\Admissions\Http\Controllers\CheckoutController::class, 'show'])
     ->name('checkout.course.show')->middleware('auth');
-Route::post('payments/course/{course}/start', [\App\Http\Controllers\CheckoutController::class, 'start'])
+Route::post('payments/course/{course}/start', [\App\Domains\Admissions\Http\Controllers\CheckoutController::class, 'start'])
     ->name('payments.course.start')->middleware('auth');
 
 // Payment routes
@@ -144,7 +144,7 @@ Route::middleware('auth')->group(function () {
     Route::post('account/set-password', [\App\Http\Controllers\AccountController::class, 'setPassword'])
         ->name('account.set-password.store');
 
-    Route::get('my-enrollments', [\App\Http\Controllers\MyEnrollmentsController::class, 'index'])
+    Route::get('my-enrollments', [\App\Domains\Admissions\Http\Controllers\MyEnrollmentsController::class, 'index'])
         ->name('my.enrollments');
 
     Route::get('payments/{payment}/receipt', [\App\Http\Controllers\PaymentReceiptController::class, 'show'])

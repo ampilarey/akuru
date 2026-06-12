@@ -1,6 +1,9 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Domains\Admissions\Http\Controllers;
+
+use App\Http\Controllers\Controller;
+
 
 use App\Models\CourseEnrollment;
 use Illuminate\Http\Request;

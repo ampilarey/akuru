@@ -277,7 +277,7 @@ class PaymentService
     private function finalizeDeferredEnrollment(Payment $payment): void
     {
         try {
-            app(\App\Services\Enrollment\EnrollmentService::class)
+            app(\App\Domains\Admissions\Services\Enrollment\EnrollmentService::class)
                 ->createEnrollmentForConfirmedPayment($payment);
         } catch (\Throwable $e) {
             Log::error('PaymentService: deferred enrollment creation failed', [

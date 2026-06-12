@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\AdmissionApplication;
+use App\Domains\Admissions\Models\AdmissionApplication;
 use App\Domains\Website\Models\ContactInquiry;
 use App\Models\Course;
 use App\Domains\Website\Models\Event;

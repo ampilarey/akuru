@@ -1,6 +1,9 @@
 <?php
 
-namespace App\Models;
+namespace App\Domains\Admissions\Models;
+
+use App\Models\Payment;
+use App\Models\User;
 
 use App\Domains\Identity\Models\UserContact;
 use Illuminate\Database\Eloquent\Model;

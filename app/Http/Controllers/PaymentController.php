@@ -143,7 +143,7 @@ class PaymentController extends Controller
 
                 // Deferred-enrollment flow
                 if ($payment->enrollment_pending_payload) {
-                    app(\App\Services\Enrollment\EnrollmentService::class)
+                    app(\App\Domains\Admissions\Services\Enrollment\EnrollmentService::class)
                         ->createEnrollmentForConfirmedPayment($payment->fresh());
                 } else {
                     foreach ($payment->items as $item) {
