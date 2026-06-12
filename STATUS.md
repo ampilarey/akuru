@@ -1,6 +1,6 @@
 # Status
 
-## Phase 0 — Foundation (complete)
+## Phase 0 — Foundation (code complete; closure audit applied)
 
 ### 0.1 Install & tooling
 - Inertia + React, Pest, Larastan, ADR template, CI (`pint` + `pest`)
@@ -9,21 +9,7 @@
 - 20 domain providers + ADR-001 (single-institute, `school_id` retained)
 
 ### 0.3 Move map (namespace/route only)
-1. **Website** — public CMS
-2. **Settings** — `Setting`, admin settings
-3. **Identity** — OTP, contacts, `Auth/*`, `User`
-4. **People** — students, teachers, guardians
-5. **Academics** — classes, timetable, attendance, substitutions
-6. **Hifz** — frozen namespace move + `routes.php`
-7. **Admissions** — enrollment, registration, applications
-8. **Finance** — payments, BML
-9. **Notifications** — SMS, in-app notifications
-10. **Media** — WebP, gallery models
-11. **Portal** — portal + dashboard controllers
-12. **Academics/Legacy** — deprecated e-learning stubs
-13. **Settings** — analytics (ADR-002)
-
-Also: **Courses**, **HR**, **Support** (`LocaleController`, `IslamicCalendarService`).
+All 13 checklist moves done under `app/Domains/*`. **Per-domain `routes.php` split is not done** — only Hifz loads `app/Domains/Hifz/routes.php`; `routes/web_localized.php` (136 lines) and `routes/web_public.php` (195 lines) remain central. **Deferred:** absorb route-file split into an early **S1 infrastructure slice** (before any URL-changing work); route-name snapshot tests now guard all major surfaces.
 
 ### 0.4 Contracts
 - `SmsSenderInterface`, `PushSenderInterface` (null stub)
@@ -31,8 +17,17 @@ Also: **Courses**, **HR**, **Support** (`LocaleController`, `IslamicCalendarServ
 - `PaymentProviderInterface` in Finance\Contracts
 - `DocumentRendererInterface` stub in Support
 
-### 0.5 Architecture tests
-- `tests/Architecture/DomainBoundariesTest.php` (CI-blocking via `pest`)
+### 0.5 Architecture tests (CI-blocking)
+| Rule | Enforcement |
+|------|-------------|
+| 1 — no cross-domain `Models\*` | Baseline **76 files** (`tests/Architecture/Baselines/cross_domain_models.php`) |
+| 2 — cross-domain only via Contracts/DTOs/Events/Actions | Baseline **184 entries** (`cross_domain_non_contract.php`) |
+| 3 — no concrete SMS/WebP/BML services cross-domain | Pest arch; `CheckoutController` BML concrete grandfathered until Finance contract |
+| 4 — no `DB::` in domain controllers | Baseline **4 controllers** |
+| 5 — Hifz only via Portal contracts | Baseline **3 files** (Portal dashboard + People Student/Teacher) |
+| 6 — Commerce wallet tables | **Todo/skipped** until L4 |
+
+Baselines may only **shrink** when violations are fixed; new violators fail CI. Regenerate after fixes: `python3 tests/Architecture/scripts/generate_baselines.py` (then remove fixed entries — never grow the list).
 
 ### 0.6 Cleanups
 - Root deployment/readme MDs → `docs/legacy/`
@@ -40,10 +35,15 @@ Also: **Courses**, **HR**, **Support** (`LocaleController`, `IslamicCalendarServ
 
 ### 0.7 Definition of done
 - `app/Models` and `app/Services` empty; `app/Http/Controllers` = `Controller.php` only
-- 64 Pest tests green (feature + architecture + route snapshots)
+- **68** Pest tests green (feature + architecture + route snapshots)
 - Inertia smoke route `/inertia-test` retained for production build verification
 - Production deploy: **pending operator**
+
+### Closure notes (no behavior change)
+- Fixed stale namespaces on unused Legacy `HomeController` / `CourseController` (blocked arch scanner).
+- Removed duplicate `Controller` import on `AdminUserController` (blocked route registration).
 
 ## Next (Phase S1)
 
 - Student unification and course engine per `docs/S1_SPEC.md`
+- Shrink architecture baselines as domains decouple; split centralized route files into per-domain `routes.php`
