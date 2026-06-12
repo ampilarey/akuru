@@ -2,13 +2,13 @@
 
 namespace App\Console\Commands;
 
-use App\Models\Announcement;
+use App\Domains\Academics\Models\Announcement;
 use App\Models\Assignment;
-use App\Models\ClassRoom;
+use App\Domains\Academics\Models\ClassRoom;
 use App\Models\QuranProgress;
 use App\Models\School;
 use App\Domains\People\Models\Student;
-use App\Models\Subject;
+use App\Domains\Academics\Models\Subject;
 use App\Models\Surah;
 use App\Domains\People\Models\Teacher;
 use App\Models\User;

@@ -6,7 +6,7 @@ use App\Domains\Website\Http\Controllers\Admin\PublicSite\PageController as Admi
 use App\Http\Controllers\Admin\EnrollmentController as AdminEnrollmentController;
 use App\Http\Controllers\Admin\InstructorController as AdminInstructorController;
 use App\Http\Controllers\AnalyticsController;
-use App\Http\Controllers\AnnouncementController;
+use App\Domains\Academics\Http\Controllers\AnnouncementController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ELearningController;
 use App\Http\Controllers\EnhancedDashboardController;
@@ -15,8 +15,8 @@ use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\QuranProgressController;
 use App\Domains\People\Http\Controllers\StudentController;
-use App\Http\Controllers\Substitutions\SubstitutionRequestController;
-use App\Http\Controllers\Substitutions\TeacherAbsenceController;
+use App\Domains\Academics\Http\Controllers\SubstitutionRequestController;
+use App\Domains\Academics\Http\Controllers\TeacherAbsenceController;
 use App\Domains\People\Http\Controllers\TeacherController;
 use Illuminate\Support\Facades\Route;
 

@@ -57,7 +57,7 @@ class ClassSeeder extends Seeder
         ];
 
         foreach ($classes as $class) {
-            \App\Models\ClassRoom::create(array_merge($class, [
+            \App\Domains\Academics\Models\ClassRoom::create(array_merge($class, [
                 'school_id' => $school->id,
                 'description' => 'Islamic education class',
                 'is_active' => true,

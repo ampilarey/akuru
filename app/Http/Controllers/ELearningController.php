@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Subject;
+use App\Domains\Academics\Models\Subject;
 
 class ELearningController extends Controller
 {

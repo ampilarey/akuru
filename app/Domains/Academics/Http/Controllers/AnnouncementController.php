@@ -1,8 +1,11 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Domains\Academics\Http\Controllers;
 
-use App\Models\Announcement;
+use App\Http\Controllers\Controller;
+
+
+use App\Domains\Academics\Models\Announcement;
 use App\Models\School;
 use Illuminate\Http\Request;
 

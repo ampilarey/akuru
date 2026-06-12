@@ -3,7 +3,7 @@
 namespace App\Domains\People\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Models\ClassRoom;
+use App\Domains\Academics\Models\ClassRoom;
 use App\Domains\People\Models\ParentGuardian;
 use App\Domains\People\Models\Student;
 use App\Models\User;

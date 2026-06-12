@@ -2,9 +2,9 @@
 
 namespace App\Domains\People\Models;
 
-use App\Models\Attendance;
-use App\Models\ClassRoom;
-use App\Models\Grade;
+use App\Domains\Academics\Models\Attendance;
+use App\Domains\Academics\Models\ClassRoom;
+use App\Domains\Academics\Models\Grade;
 use App\Models\HifzEnrollment;
 use App\Models\HifzMilestone;
 use App\Models\HifzSessionRecord;

@@ -95,7 +95,7 @@ class HifzAuthorizationTest extends TestCase
     {
         $parent = $this->verifiedUser('parent@akuru.edu.mv');
         $school = \App\Models\School::first();
-        $class = \App\Models\ClassRoom::first();
+        $class = \App\Domains\Academics\Models\ClassRoom::first();
         $otherStudent = Student::create([
             'school_id' => $school->id,
             'class_id' => $class->id,

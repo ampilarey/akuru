@@ -10,7 +10,7 @@ use App\Enums\Hifz\HifzMistakeSeverity;
 use App\Enums\Hifz\HifzMistakeType;
 use App\Enums\Hifz\HifzOverallStatus;
 use App\Enums\Hifz\HifzSessionStatus;
-use App\Models\ClassRoom;
+use App\Domains\Academics\Models\ClassRoom;
 use App\Models\HifzEnrollment;
 use App\Models\HifzMilestone;
 use App\Models\HifzMistake;

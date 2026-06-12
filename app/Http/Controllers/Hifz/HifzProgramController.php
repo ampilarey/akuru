@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Hifz;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Hifz\StoreHifzProgramRequest;
-use App\Models\AcademicYear;
-use App\Models\ClassRoom;
+use App\Domains\Academics\Models\AcademicYear;
+use App\Domains\Academics\Models\ClassRoom;
 use App\Models\HifzProgram;
 use App\Domains\People\Models\Teacher;
 use App\Models\User;

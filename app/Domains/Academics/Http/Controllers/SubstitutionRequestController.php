@@ -1,13 +1,13 @@
 <?php
 
-namespace App\Http\Controllers\Substitutions;
+namespace App\Domains\Academics\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Models\ClassRoom;
-use App\Models\Period;
-use App\Models\Subject;
-use App\Models\SubstitutionAssignment;
-use App\Models\SubstitutionRequest;
+use App\Domains\Academics\Models\ClassRoom;
+use App\Domains\Academics\Models\Period;
+use App\Domains\Academics\Models\Subject;
+use App\Domains\Academics\Models\SubstitutionAssignment;
+use App\Domains\Academics\Models\SubstitutionRequest;
 use App\Domains\People\Models\Teacher;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;

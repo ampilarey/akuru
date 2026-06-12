@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models;
+namespace App\Domains\Academics\Models;
 
 use App\Domains\People\Models\Student;
 

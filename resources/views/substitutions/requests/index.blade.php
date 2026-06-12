@@ -15,7 +15,7 @@
                     </p>
                 </div>
                 
-                @can('create', App\Models\SubstitutionRequest::class)
+                @can('create', App\Domains\Academics\Models\SubstitutionRequest::class)
                 <div class="flex space-x-3">
                     <a href="{{ route('substitutions.requests.create') }}" 
                        class="bg-brandBlue-500 hover:bg-brandBlue-600 text-white px-4 py-2 rounded-lg flex items-center">
@@ -187,7 +187,7 @@
                     </div>
                     <h3 class="text-lg font-medium text-gray-900 mb-2">{{ __('No substitution requests') }}</h3>
                     <p class="text-gray-500 mb-6">{{ __('There are no substitution requests matching your criteria.') }}</p>
-                    @can('create', App\Models\SubstitutionRequest::class)
+                    @can('create', App\Domains\Academics\Models\SubstitutionRequest::class)
                     <a href="{{ route('substitutions.requests.create') }}" 
                        class="bg-brandBlue-500 hover:bg-brandBlue-600 text-white px-4 py-2 rounded-lg">
                         <i class="fas fa-plus mr-2"></i>

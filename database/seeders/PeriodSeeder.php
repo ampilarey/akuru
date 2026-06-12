@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-use App\Models\Period;
+use App\Domains\Academics\Models\Period;
 use App\Models\School;
 use Illuminate\Database\Seeder;
 

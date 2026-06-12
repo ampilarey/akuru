@@ -65,7 +65,7 @@ class SubjectSeeder extends Seeder
         ];
 
         foreach ($subjects as $subject) {
-            \App\Models\Subject::create(array_merge($subject, [
+            \App\Domains\Academics\Models\Subject::create(array_merge($subject, [
                 'school_id' => $school->id,
                 'description' => 'Islamic education subject',
                 'description_arabic' => 'مادة تعليمية إسلامية',

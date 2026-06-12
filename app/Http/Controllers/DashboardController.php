@@ -2,15 +2,15 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Announcement;
+use App\Domains\Academics\Models\Announcement;
 use App\Models\Assignment;
 use App\Models\AssignmentSubmission;
-use App\Models\Attendance;
+use App\Domains\Academics\Models\Attendance;
 use App\Models\QuranProgress;
 use App\Models\RecitationPractice;
 use App\Domains\People\Models\Student;
 use App\Domains\People\Models\Teacher;
-use App\Models\Timetable;
+use App\Domains\Academics\Models\Timetable;
 use App\Services\IslamicCalendarService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;

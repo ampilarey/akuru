@@ -2,11 +2,11 @@
 
 namespace App\Console\Commands;
 
-use App\Models\ClassRoom;
-use App\Models\Period;
-use App\Models\Subject;
+use App\Domains\Academics\Models\ClassRoom;
+use App\Domains\Academics\Models\Period;
+use App\Domains\Academics\Models\Subject;
 use App\Domains\People\Models\Teacher;
-use App\Models\Timetable;
+use App\Domains\Academics\Models\Timetable;
 use Illuminate\Console\Command;
 
 class TimetableImportCommand extends Command
