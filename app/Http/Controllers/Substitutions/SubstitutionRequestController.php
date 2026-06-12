@@ -8,7 +8,7 @@ use App\Models\Period;
 use App\Models\Subject;
 use App\Models\SubstitutionAssignment;
 use App\Models\SubstitutionRequest;
-use App\Models\Teacher;
+use App\Domains\People\Models\Teacher;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;

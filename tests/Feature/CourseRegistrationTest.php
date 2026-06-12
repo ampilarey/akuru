@@ -4,7 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Course;
 use App\Domains\Identity\Models\Otp;
-use App\Models\RegistrationStudent;
+use App\Domains\People\Models\RegistrationStudent;
 use App\Models\User;
 use App\Domains\Identity\Models\UserContact;
 use Illuminate\Foundation\Testing\RefreshDatabase;

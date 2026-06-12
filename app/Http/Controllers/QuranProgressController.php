@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\QuranProgress;
-use App\Models\Student;
-use App\Models\Teacher;
+use App\Domains\People\Models\Student;
+use App\Domains\People\Models\Teacher;
 use Illuminate\Http\Request;
 
 class QuranProgressController extends Controller

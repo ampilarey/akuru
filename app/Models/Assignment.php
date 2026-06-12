@@ -2,6 +2,10 @@
 
 namespace App\Models;
 
+use App\Domains\People\Models\Teacher;
+
+use App\Domains\People\Models\Student;
+
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;

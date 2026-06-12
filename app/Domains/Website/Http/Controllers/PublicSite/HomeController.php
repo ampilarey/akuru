@@ -124,7 +124,7 @@ class HomeController extends Controller
         // Stats (use real counts or fallback for empty DB)
         $courseCount = Course::whereIn('status', ['open', 'upcoming'])->count();
         $studentCount = AdmissionApplication::whereIn('status', ['approved', 'pending'])->count();
-        $teacherCount = class_exists(\App\Models\Teacher::class) ? \App\Models\Teacher::count() : 0;
+        $teacherCount = class_exists(\App\Domains\People\Models\Teacher::class) ? \App\Domains\People\Models\Teacher::count() : 0;
         $stats = [
             'courses' => $courseCount ?: 12,
             'students' => $studentCount ?: 500,

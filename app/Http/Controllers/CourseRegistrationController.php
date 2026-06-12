@@ -443,7 +443,7 @@ class CourseRegistrationController extends PublicRegistrationController
             // Duplicate check — same as enroll() adult path
             $searchNid = $request->id_type === 'national_id' ? strtoupper(trim($request->national_id ?? '')) : null;
             $searchPassport = $request->id_type === 'passport' ? strtoupper(trim($request->passport ?? '')) : null;
-            foreach (\App\Models\RegistrationStudent::whereNotNull('user_id')->get() as $candidate) {
+            foreach (\App\Domains\People\Models\RegistrationStudent::whereNotNull('user_id')->get() as $candidate) {
                 $idMatch = ($searchNid && $candidate->national_id === $searchNid)
                         || ($searchPassport && $candidate->passport === $searchPassport);
                 if (! $idMatch) {
@@ -651,7 +651,7 @@ class CourseRegistrationController extends PublicRegistrationController
                                ?? \App\Models\Course::find($courseIds[0])?->title
                                ?? 'this course';
                 $status = $this->humanEnrollmentStatus($existing);
-                $studentName = \App\Models\RegistrationStudent::find($studentId)?->full_name ?? 'This student';
+                $studentName = \App\Domains\People\Models\RegistrationStudent::find($studentId)?->full_name ?? 'This student';
 
                 return back()->withInput()
                     ->withErrors(['student_id' => "{$studentName} is already enrolled in \"{$title}\" — {$status}."]);
@@ -678,7 +678,7 @@ class CourseRegistrationController extends PublicRegistrationController
                 }
             }
             if (! $existingStudent) {
-                foreach (\App\Models\RegistrationStudent::whereNotNull('user_id')->get() as $c) {
+                foreach (\App\Domains\People\Models\RegistrationStudent::whereNotNull('user_id')->get() as $c) {
                     if ($searchNid && $c->national_id === $searchNid) {
                         $existingStudent = $c;
                         break;

@@ -7,7 +7,7 @@ use App\Models\HifzEnrollment;
 use App\Models\HifzMilestone;
 use App\Models\HifzSession;
 use App\Models\HifzSessionRecord;
-use App\Models\Teacher;
+use App\Domains\People\Models\Teacher;
 use Illuminate\Support\Collection;
 
 class HifzReportService

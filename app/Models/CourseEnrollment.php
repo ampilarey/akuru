@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Domains\People\Models\RegistrationStudent;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 

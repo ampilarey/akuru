@@ -1,7 +1,10 @@
 <?php
 
-namespace App\Models;
+namespace App\Domains\People\Models;
 
+use App\Models\Course;
+use App\Models\CourseEnrollment;
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;

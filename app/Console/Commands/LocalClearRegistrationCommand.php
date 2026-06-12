@@ -4,7 +4,7 @@ namespace App\Console\Commands;
 
 use App\Models\CourseEnrollment;
 use App\Models\PaymentItem;
-use App\Models\RegistrationStudent;
+use App\Domains\People\Models\RegistrationStudent;
 use App\Models\User;
 use App\Domains\Identity\Models\UserContact;
 use Illuminate\Console\Command;

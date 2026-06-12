@@ -6,7 +6,7 @@ use App\Models\Course;
 use App\Models\CourseEnrollment;
 use App\Models\Payment;
 use App\Models\PaymentItem;
-use App\Models\RegistrationStudent;
+use App\Domains\People\Models\RegistrationStudent;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;

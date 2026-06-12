@@ -2,6 +2,10 @@
 
 namespace App\Models;
 
+use App\Domains\People\Models\Teacher;
+
+use App\Domains\People\Models\Student;
+
 use App\Enums\Hifz\HifzMilestoneStatus;
 use App\Enums\Hifz\HifzMilestoneType;
 use Illuminate\Database\Eloquent\Model;

@@ -4,7 +4,7 @@ namespace Tests\Feature\Hifz;
 
 use App\Models\HifzProgram;
 use App\Models\HifzSession;
-use App\Models\Student;
+use App\Domains\People\Models\Student;
 use App\Models\User;
 use Database\Seeders\HifzDemoSeeder;
 use Database\Seeders\RoleSeeder;

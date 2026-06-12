@@ -38,7 +38,7 @@ class PasswordOtpController extends Controller
 
             if ($targetUser) {
                 // Check if this user is a child (linked via registration_students guardian)
-                $studentProfile = \App\Models\RegistrationStudent::where('user_id', $targetUser->id)->first();
+                $studentProfile = \App\Domains\People\Models\RegistrationStudent::where('user_id', $targetUser->id)->first();
                 $isChild = false;
                 $resetContact = null;
 

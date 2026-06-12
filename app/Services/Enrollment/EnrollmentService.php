@@ -6,7 +6,7 @@ use App\Models\Course;
 use App\Models\CourseEnrollment;
 use App\Models\Payment;
 use App\Models\PaymentItem;
-use App\Models\RegistrationStudent;
+use App\Domains\People\Models\RegistrationStudent;
 use App\Models\User;
 use App\Domains\Identity\Models\UserContact;
 use Illuminate\Support\Facades\DB;

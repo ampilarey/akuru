@@ -14,10 +14,10 @@ use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\QuranProgressController;
-use App\Http\Controllers\StudentController;
+use App\Domains\People\Http\Controllers\StudentController;
 use App\Http\Controllers\Substitutions\SubstitutionRequestController;
 use App\Http\Controllers\Substitutions\TeacherAbsenceController;
-use App\Http\Controllers\TeacherController;
+use App\Domains\People\Http\Controllers\TeacherController;
 use Illuminate\Support\Facades\Route;
 
 // Authentication routes (using Breeze)

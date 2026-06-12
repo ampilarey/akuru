@@ -1,10 +1,11 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Domains\People\Http\Controllers;
 
+use App\Http\Controllers\Controller;
 use App\Models\School;
 use App\Models\Subject;
-use App\Models\Teacher;
+use App\Domains\People\Models\Teacher;
 use App\Models\User;
 use Illuminate\Http\Request;
 

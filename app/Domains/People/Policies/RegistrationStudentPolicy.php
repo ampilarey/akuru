@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Policies;
+namespace App\Domains\People\Policies;
 
-use App\Models\RegistrationStudent;
+use App\Domains\People\Models\RegistrationStudent;
 use App\Models\User;
 
 class RegistrationStudentPolicy

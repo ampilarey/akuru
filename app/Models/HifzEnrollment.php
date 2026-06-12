@@ -2,6 +2,10 @@
 
 namespace App\Models;
 
+use App\Domains\People\Models\Teacher;
+
+use App\Domains\People\Models\Student;
+
 use App\Enums\Hifz\HifzEnrollmentStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;

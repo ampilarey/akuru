@@ -5,7 +5,7 @@ namespace App\Console\Commands;
 use App\Models\ClassRoom;
 use App\Models\Period;
 use App\Models\Subject;
-use App\Models\Teacher;
+use App\Domains\People\Models\Teacher;
 use App\Models\Timetable;
 use Illuminate\Console\Command;
 

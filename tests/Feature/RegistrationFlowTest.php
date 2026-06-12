@@ -7,7 +7,7 @@ use App\Models\CourseEnrollment;
 use App\Domains\Identity\Models\Otp;
 use App\Models\Payment;
 use App\Models\PaymentItem;
-use App\Models\RegistrationStudent;
+use App\Domains\People\Models\RegistrationStudent;
 use App\Models\User;
 use App\Domains\Identity\Models\UserContact;
 use App\Services\Payment\BmlPaymentProvider;

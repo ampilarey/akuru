@@ -6,7 +6,7 @@ use App\Models\HifzEnrollment;
 use App\Models\HifzProgram;
 use App\Models\HifzSession;
 use App\Models\HifzSessionRecord;
-use App\Models\Student;
+use App\Domains\People\Models\Student;
 use App\Models\User;
 use Illuminate\Support\Collection;
 

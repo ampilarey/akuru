@@ -7,7 +7,7 @@ use App\Http\Requests\Hifz\StoreHifzProgramRequest;
 use App\Models\AcademicYear;
 use App\Models\ClassRoom;
 use App\Models\HifzProgram;
-use App\Models\Teacher;
+use App\Domains\People\Models\Teacher;
 use App\Models\User;
 use App\Services\Hifz\HifzScopeService;
 use Illuminate\Http\RedirectResponse;

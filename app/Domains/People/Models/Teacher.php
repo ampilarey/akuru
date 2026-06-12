@@ -1,7 +1,16 @@
 <?php
 
-namespace App\Models;
+namespace App\Domains\People\Models;
 
+use App\Models\ClassRoom;
+use App\Models\Grade;
+use App\Models\HifzEnrollment;
+use App\Models\HifzSession;
+use App\Models\QuranProgress;
+use App\Models\School;
+use App\Models\Subject;
+use App\Models\Timetable;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 

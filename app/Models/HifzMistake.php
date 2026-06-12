@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Domains\People\Models\Student;
+
 use App\Enums\Hifz\HifzMistakeSeverity;
 use App\Enums\Hifz\HifzMistakeType;
 use Illuminate\Database\Eloquent\Model;

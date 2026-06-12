@@ -2,6 +2,10 @@
 
 namespace App\Models;
 
+use App\Domains\People\Models\Teacher;
+
+use App\Domains\People\Models\Student;
+
 use App\Enums\Hifz\HifzAttendanceStatus;
 use App\Enums\Hifz\HifzLaneResult;
 use App\Enums\Hifz\HifzOverallStatus;

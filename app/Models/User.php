@@ -3,6 +3,10 @@
 namespace App\Models;
 
 use App\Domains\Identity\Models\UserContact;
+use App\Domains\People\Models\ParentGuardian;
+use App\Domains\People\Models\RegistrationStudent;
+use App\Domains\People\Models\Student;
+use App\Domains\People\Models\Teacher;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
