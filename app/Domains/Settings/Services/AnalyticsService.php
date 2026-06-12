@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services;
+namespace App\Domains\Settings\Services;
 
 use App\Domains\Admissions\Models\AdmissionApplication;
 use App\Domains\Website\Models\ContactInquiry;

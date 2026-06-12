@@ -1,10 +1,13 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Domains\Settings\Http\Controllers;
+
+use App\Http\Controllers\Controller;
+
 
 use App\Models\Report;
 use App\Models\SystemMetric;
-use App\Services\AnalyticsService;
+use App\Domains\Settings\Services\AnalyticsService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
