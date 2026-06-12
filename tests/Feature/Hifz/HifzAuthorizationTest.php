@@ -4,8 +4,8 @@ namespace Tests\Feature\Hifz;
 
 use App\Domains\Hifz\Models\HifzProgram;
 use App\Domains\Hifz\Models\HifzSession;
-use App\Domains\People\Models\Student;
 use App\Domains\Identity\Models\User;
+use App\Domains\People\Models\Student;
 use Database\Seeders\HifzDemoSeeder;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;

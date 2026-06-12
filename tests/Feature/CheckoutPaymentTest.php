@@ -3,8 +3,8 @@
 namespace Tests\Feature;
 
 use App\Domains\Courses\Models\Course;
-use App\Domains\Identity\Models\User;
 use App\Domains\Finance\Services\BmlConnectService;
+use App\Domains\Identity\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 

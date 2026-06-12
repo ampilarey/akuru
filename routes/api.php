@@ -1,7 +1,7 @@
 <?php
 
-use App\Domains\Notifications\Http\Controllers\SmsApiController;
 use App\Domains\Notifications\Http\Controllers\NotificationController;
+use App\Domains\Notifications\Http\Controllers\SmsApiController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 

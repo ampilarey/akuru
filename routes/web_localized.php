@@ -1,23 +1,23 @@
 <?php
 
-use App\Domains\Settings\Http\Controllers\Admin\SettingsController as AdminSettingsController;
-use App\Domains\Website\Http\Controllers\Admin\PublicSite\CourseController as AdminCourseController;
-use App\Domains\Website\Http\Controllers\Admin\PublicSite\PageController as AdminPageController;
-use App\Domains\Admissions\Http\Controllers\AdminEnrollmentController as AdminEnrollmentController;
-use App\Domains\HR\Http\Controllers\InstructorController as AdminInstructorController;
-use App\Domains\Settings\Http\Controllers\AnalyticsController;
 use App\Domains\Academics\Http\Controllers\AnnouncementController;
-use App\Domains\Portal\Http\Controllers\DashboardController;
-use App\Domains\Academics\Legacy\Http\Controllers\ELearningController;
-use App\Domains\Portal\Http\Controllers\EnhancedDashboardController;
-use App\Support\Http\Controllers\LocaleController;
-use App\Domains\Notifications\Http\Controllers\NotificationController;
-use App\Domains\Identity\Http\Controllers\ProfileController;
-use App\Domains\Hifz\Http\Controllers\QuranProgressController;
-use App\Domains\People\Http\Controllers\StudentController;
 use App\Domains\Academics\Http\Controllers\SubstitutionRequestController;
 use App\Domains\Academics\Http\Controllers\TeacherAbsenceController;
+use App\Domains\Academics\Legacy\Http\Controllers\ELearningController;
+use App\Domains\Admissions\Http\Controllers\AdminEnrollmentController;
+use App\Domains\Hifz\Http\Controllers\QuranProgressController;
+use App\Domains\HR\Http\Controllers\InstructorController as AdminInstructorController;
+use App\Domains\Identity\Http\Controllers\ProfileController;
+use App\Domains\Notifications\Http\Controllers\NotificationController;
+use App\Domains\People\Http\Controllers\StudentController;
 use App\Domains\People\Http\Controllers\TeacherController;
+use App\Domains\Portal\Http\Controllers\DashboardController;
+use App\Domains\Portal\Http\Controllers\EnhancedDashboardController;
+use App\Domains\Settings\Http\Controllers\Admin\SettingsController as AdminSettingsController;
+use App\Domains\Settings\Http\Controllers\AnalyticsController;
+use App\Domains\Website\Http\Controllers\Admin\PublicSite\CourseController as AdminCourseController;
+use App\Domains\Website\Http\Controllers\Admin\PublicSite\PageController as AdminPageController;
+use App\Support\Http\Controllers\LocaleController;
 use Illuminate\Support\Facades\Route;
 
 // Authentication routes (using Breeze)
