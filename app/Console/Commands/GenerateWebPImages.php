@@ -7,7 +7,7 @@ use App\Domains\Website\Models\Event;
 use App\Domains\Website\Models\GalleryItem;
 use App\Domains\Website\Models\Page;
 use App\Domains\Website\Models\Post;
-use App\Services\WebPImageService;
+use App\Domains\Media\Services\WebPImageService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Storage;
 

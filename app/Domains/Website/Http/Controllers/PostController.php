@@ -2,6 +2,9 @@
 
 namespace App\Domains\Website\Http\Controllers;
 
+use App\Http\Controllers\Controller;
+
+
 use App\Domains\Website\Models\Post;
 use Illuminate\Http\Request;
 

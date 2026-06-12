@@ -2,6 +2,9 @@
 
 namespace App\Domains\Website\Http\Controllers;
 
+use App\Http\Controllers\Controller;
+
+
 use App\Domains\Website\Models\Faq;
 use Illuminate\Http\Request;
 

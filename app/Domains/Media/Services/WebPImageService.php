@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services;
+namespace App\Domains\Media\Services;
 
 use Illuminate\Support\Facades\Storage;
 use Intervention\Image\ImageManager;

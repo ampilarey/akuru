@@ -2,7 +2,7 @@
 
 namespace App\View\Components\Public;
 
-use App\Services\WebPImageService;
+use App\Domains\Media\Services\WebPImageService;
 use Illuminate\View\Component;
 
 class Picture extends Component
