@@ -35,7 +35,7 @@ Baselines may only **shrink** when violations are fixed; new violators fail CI. 
 
 ### 0.7 Definition of done
 - `app/Models` and `app/Services` empty; `app/Http/Controllers` = `Controller.php` only
-- **68** Pest tests green (feature + architecture + route snapshots)
+- **75** Pest tests green (unit + feature + architecture + route snapshots; 1 arch todo for L4)
 - Inertia smoke route `/inertia-test` retained for production build verification
 - Production deploy: **pending operator**
 
