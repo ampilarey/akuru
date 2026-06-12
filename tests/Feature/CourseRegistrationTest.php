@@ -3,10 +3,10 @@
 namespace Tests\Feature;
 
 use App\Models\Course;
-use App\Models\Otp;
+use App\Domains\Identity\Models\Otp;
 use App\Models\RegistrationStudent;
 use App\Models\User;
-use App\Models\UserContact;
+use App\Domains\Identity\Models\UserContact;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 

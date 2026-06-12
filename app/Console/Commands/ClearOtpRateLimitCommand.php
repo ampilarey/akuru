@@ -2,7 +2,7 @@
 
 namespace App\Console\Commands;
 
-use App\Models\UserContact;
+use App\Domains\Identity\Models\UserContact;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\RateLimiter;
 

@@ -3,7 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\CourseEnrollment;
-use App\Models\Otp;
+use App\Domains\Identity\Models\Otp;
 use Illuminate\Console\Command;
 
 class PruneExpiredDataCommand extends Command

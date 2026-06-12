@@ -8,7 +8,7 @@ use App\Models\Payment;
 use App\Models\PaymentItem;
 use App\Models\RegistrationStudent;
 use App\Models\User;
-use App\Models\UserContact;
+use App\Domains\Identity\Models\UserContact;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;

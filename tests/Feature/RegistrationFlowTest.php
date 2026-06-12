@@ -4,12 +4,12 @@ namespace Tests\Feature;
 
 use App\Models\Course;
 use App\Models\CourseEnrollment;
-use App\Models\Otp;
+use App\Domains\Identity\Models\Otp;
 use App\Models\Payment;
 use App\Models\PaymentItem;
 use App\Models\RegistrationStudent;
 use App\Models\User;
-use App\Models\UserContact;
+use App\Domains\Identity\Models\UserContact;
 use App\Services\Payment\BmlPaymentProvider;
 use App\Services\Payment\PaymentService;
 use App\Services\Payment\PaymentVerificationResult;

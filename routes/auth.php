@@ -1,14 +1,14 @@
 <?php
 
-use App\Http\Controllers\Auth\AuthenticatedSessionController;
-use App\Http\Controllers\Auth\ConfirmablePasswordController;
-use App\Http\Controllers\Auth\EmailVerificationNotificationController;
-use App\Http\Controllers\Auth\EmailVerificationPromptController;
-use App\Http\Controllers\Auth\OtpLoginController;
-use App\Http\Controllers\Auth\OtpPasswordResetController;
-use App\Http\Controllers\Auth\PasswordController;
-use App\Http\Controllers\Auth\RegisteredUserController;
-use App\Http\Controllers\Auth\VerifyEmailController;
+use App\Domains\Identity\Http\Controllers\Auth\AuthenticatedSessionController;
+use App\Domains\Identity\Http\Controllers\Auth\ConfirmablePasswordController;
+use App\Domains\Identity\Http\Controllers\Auth\EmailVerificationNotificationController;
+use App\Domains\Identity\Http\Controllers\Auth\EmailVerificationPromptController;
+use App\Domains\Identity\Http\Controllers\Auth\OtpLoginController;
+use App\Domains\Identity\Http\Controllers\Auth\OtpPasswordResetController;
+use App\Domains\Identity\Http\Controllers\Auth\PasswordController;
+use App\Domains\Identity\Http\Controllers\Auth\RegisteredUserController;
+use App\Domains\Identity\Http\Controllers\Auth\VerifyEmailController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('guest')->group(function () {
@@ -22,22 +22,22 @@ Route::middleware('guest')->group(function () {
 
     Route::post('login', [AuthenticatedSessionController::class, 'store']);
 
-    Route::get('forgot-password', [\App\Http\Controllers\Auth\PasswordOtpController::class, 'showRequestForm'])
+    Route::get('forgot-password', [\App\Domains\Identity\Http\Controllers\Auth\PasswordOtpController::class, 'showRequestForm'])
         ->name('password.request');
 
-    Route::post('forgot-password', [\App\Http\Controllers\Auth\PasswordOtpController::class, 'sendOtp'])
+    Route::post('forgot-password', [\App\Domains\Identity\Http\Controllers\Auth\PasswordOtpController::class, 'sendOtp'])
         ->name('password.email');
 
-    Route::get('reset-password/verify', [\App\Http\Controllers\Auth\PasswordOtpController::class, 'showVerifyForm'])
+    Route::get('reset-password/verify', [\App\Domains\Identity\Http\Controllers\Auth\PasswordOtpController::class, 'showVerifyForm'])
         ->name('password.reset.verify');
 
-    Route::post('reset-password/verify', [\App\Http\Controllers\Auth\PasswordOtpController::class, 'verifyOtp'])
+    Route::post('reset-password/verify', [\App\Domains\Identity\Http\Controllers\Auth\PasswordOtpController::class, 'verifyOtp'])
         ->name('password.reset.verify.store');
 
-    Route::get('reset-password', [\App\Http\Controllers\Auth\PasswordOtpController::class, 'showResetForm'])
+    Route::get('reset-password', [\App\Domains\Identity\Http\Controllers\Auth\PasswordOtpController::class, 'showResetForm'])
         ->name('password.reset');
 
-    Route::post('reset-password', [\App\Http\Controllers\Auth\PasswordOtpController::class, 'resetPassword'])
+    Route::post('reset-password', [\App\Domains\Identity\Http\Controllers\Auth\PasswordOtpController::class, 'resetPassword'])
         ->name('password.store');
 
     // OTP Login Routes

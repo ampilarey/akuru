@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Http\Controllers\Auth;
+namespace App\Domains\Identity\Http\Controllers\Auth;
 
+use App\Domains\Identity\Models\UserContact;
+use App\Domains\Identity\Services\ContactNormalizer;
+use App\Domains\Identity\Services\OtpService;
 use App\Http\Controllers\Controller;
-use App\Models\UserContact;
-use App\Services\ContactNormalizer;
-use App\Services\OtpService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;

@@ -1,14 +1,14 @@
 <?php
 
-namespace App\Http\Controllers\Auth;
+namespace App\Domains\Identity\Http\Controllers\Auth;
 
+use App\Domains\Identity\Models\UserContact;
+use App\Domains\Identity\Services\ContactNormalizer;
+use App\Domains\Identity\Services\OtpService;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\ForgotPasswordOtpRequest;
 use App\Http\Requests\Auth\ResetPasswordRequest;
 use App\Http\Requests\Auth\VerifyResetOtpRequest;
-use App\Models\UserContact;
-use App\Services\ContactNormalizer;
-use App\Services\OtpService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\View\View;

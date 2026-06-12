@@ -8,11 +8,11 @@ use App\Http\Requests\Registration\VerifyOtpRequest;
 use App\Models\Course;
 use App\Models\Payment;
 use App\Models\RegistrationFlow;
-use App\Models\UserContact;
-use App\Services\AccountResolverService;
-use App\Services\ContactNormalizer;
+use App\Domains\Identity\Models\UserContact;
+use App\Domains\Identity\Services\AccountResolverService;
+use App\Domains\Identity\Services\ContactNormalizer;
 use App\Services\Enrollment\EnrollmentService;
-use App\Services\OtpService;
+use App\Domains\Identity\Services\OtpService;
 use App\Services\Payment\PaymentService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -84,7 +84,7 @@ class CourseRegistrationController extends PublicRegistrationController
         $normalized = $this->normalizer->normalize($type, $raw);
 
         // Find contact → user
-        $contact = \App\Models\UserContact::where('type', $type)
+        $contact = \App\Domains\Identity\Models\UserContact::where('type', $type)
             ->where('value', $normalized)
             ->first();
 
@@ -136,7 +136,7 @@ class CourseRegistrationController extends PublicRegistrationController
         $normalized = $this->normalizer->normalize($type, $value);
 
         // If this contact already exists + verified → ask the user to log in
-        $existing = \App\Models\UserContact::where('type', $type)
+        $existing = \App\Domains\Identity\Models\UserContact::where('type', $type)
             ->where('value', $normalized)
             ->whereNotNull('verified_at')
             ->first();
@@ -286,7 +286,7 @@ class CourseRegistrationController extends PublicRegistrationController
             ]);
 
             if (! empty($pendingReg['email'])) {
-                \App\Models\UserContact::firstOrCreate(
+                \App\Domains\Identity\Models\UserContact::firstOrCreate(
                     ['type' => 'email', 'value' => $pendingReg['email']],
                     ['user_id' => $user->id, 'is_primary' => false, 'verified_at' => null]
                 );
@@ -830,7 +830,7 @@ class CourseRegistrationController extends PublicRegistrationController
             return redirect()->route('public.courses.index')
                 ->with('error', 'Session expired. Please start the enrollment again.');
         }
-        $contact = \App\Models\UserContact::find($contactId);
+        $contact = \App\Domains\Identity\Models\UserContact::find($contactId);
         if (! $contact) {
             return redirect()->route('public.courses.index')
                 ->with('error', 'Verification contact not found. Please start again.');
@@ -876,7 +876,7 @@ class CourseRegistrationController extends PublicRegistrationController
                 ->with('error', 'Your session expired. Please fill in the enrollment form again.');
         }
 
-        $contact = \App\Models\UserContact::find($contactId);
+        $contact = \App\Domains\Identity\Models\UserContact::find($contactId);
         if (! $contact) {
             $this->clearEnrollPendingSession();
 
@@ -987,7 +987,7 @@ class CourseRegistrationController extends PublicRegistrationController
             session()->forget('enroll_otp_sent');
             $contactId = session('enroll_otp_contact_id');
             if ($contactId) {
-                $contact = \App\Models\UserContact::find($contactId);
+                $contact = \App\Domains\Identity\Models\UserContact::find($contactId);
                 if ($contact) {
                     try {
                         $this->otpService->send($contact, 'login');
