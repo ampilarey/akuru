@@ -142,15 +142,24 @@ class RegistrationFlowTest extends TestCase
             'requires_admin_approval' => false,
         ]);
 
-        $response = $this->actingAs($user)->post(route('courses.register.enroll'), [
-            'flow'       => 'adult',
-            'course_ids' => [$course->id],
-            'first_name' => 'Ali',
-            'last_name'  => 'Mohamed',
-            'dob'        => now()->subYears(20)->format('Y-m-d'),
-        ]);
+        $this->actingAs($user)->post(route('courses.register.enroll'), [
+            'flow'        => 'adult',
+            'course_ids'  => [$course->id],
+            'first_name'  => 'Ali',
+            'last_name'   => 'Mohamed',
+            'dob'         => now()->subYears(20)->format('Y-m-d'),
+            'gender'      => 'male',
+            'id_type'     => 'national_id',
+            'national_id' => 'A123456',
+        ])->assertRedirect(route('courses.register.enroll.otp'));
 
-        $response->assertRedirect(route('courses.register.complete'));
+        Otp::createForContact($contact, 'login', '654321');
+
+        $this->actingAs($user)->post(route('courses.register.enroll.confirm'), [
+            'otp_code'       => '654321',
+            'terms_accepted' => '1',
+        ])->assertRedirect(route('courses.register.complete'));
+
         $this->assertDatabaseHas('course_enrollments', ['course_id' => $course->id]);
     }
 
@@ -337,11 +346,14 @@ class RegistrationFlowTest extends TestCase
         ]);
 
         $enrollData = [
-            'flow'       => 'adult',
-            'course_ids' => [$course->id],
-            'first_name' => 'Hussain',
-            'last_name'  => 'Rasheed',
-            'dob'        => now()->subYears(25)->format('Y-m-d'),
+            'flow'        => 'adult',
+            'course_ids'  => [$course->id],
+            'first_name'  => 'Hussain',
+            'last_name'   => 'Rasheed',
+            'dob'         => now()->subYears(25)->format('Y-m-d'),
+            'gender'      => 'male',
+            'id_type'     => 'national_id',
+            'national_id' => 'B123456',
         ];
 
         // First enroll succeeds

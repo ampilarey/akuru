@@ -39,6 +39,8 @@ class BmlWebhookController extends Controller
             // PaymentService::handleCallback() verifies signature, finds payment,
             // updates status, activates enrollments, and sends confirmation email.
             $this->paymentService->handleCallback($request);
+        } catch (\Symfony\Component\HttpKernel\Exception\HttpException $e) {
+            return response($e->getMessage() ?: 'Error', $e->getStatusCode());
         } catch (\Throwable $e) {
             $log('BML webhook: handleCallback threw', ['error' => $e->getMessage()]);
             // Return 200 anyway so BML does not keep retrying on application errors

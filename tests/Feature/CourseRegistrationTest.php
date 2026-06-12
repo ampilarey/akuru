@@ -51,7 +51,20 @@ class CourseRegistrationTest extends TestCase
 
         Otp::createForContact($contact, 'verify_contact', '123456');
 
-        session(['pending_contact_id' => $contact->id, 'pending_user_id' => $user->id, 'pending_course_id' => $course->id]);
+        $mobileContact = UserContact::create([
+            'user_id' => $user->id,
+            'type' => 'mobile',
+            'value' => '+9607800001',
+            'is_primary' => false,
+            'verified_at' => now(),
+        ]);
+
+        session([
+            'pending_contact_id' => $contact->id,
+            'pending_user_id' => $user->id,
+            'pending_course_id' => $course->id,
+            'pending_selected_course_ids' => [$course->id],
+        ]);
 
         $this->post(route('courses.register.verify'), [
             'code' => '123456',
@@ -61,20 +74,25 @@ class CourseRegistrationTest extends TestCase
         $contact->refresh();
         $this->assertNotNull($contact->verified_at);
 
-        $this->post(route('courses.register.set-password'), [
+        $this->post(route('courses.register.set-password.store'), [
+            'first_name' => 'John',
+            'last_name' => 'Doe',
+            'gender' => 'male',
+            'dob' => now()->subYears(20)->format('Y-m-d'),
+            'id_type' => 'national_id',
+            'national_id' => 'A123456',
             'password' => 'Password1!',
             'password_confirmation' => 'Password1!',
             '_token' => csrf_token(),
-        ])->assertRedirect(route('courses.register.continue'));
+        ])->assertRedirect(route('courses.register.enroll.otp'));
 
-        $this->post(route('courses.register.enroll'), [
-            'flow' => 'adult',
-            'first_name' => 'John',
-            'last_name' => 'Doe',
-            'dob' => now()->subYears(20)->format('Y-m-d'),
-            'course_ids' => [$course->id],
+        Otp::createForContact($mobileContact, 'login', '654321');
+
+        $this->actingAs($user)->post(route('courses.register.enroll.confirm'), [
+            'otp_code' => '654321',
+            'terms_accepted' => '1',
             '_token' => csrf_token(),
-        ]);
+        ])->assertRedirect(route('courses.register.complete'));
 
         $this->assertDatabaseHas('course_enrollments', [
             'course_id' => $course->id,
