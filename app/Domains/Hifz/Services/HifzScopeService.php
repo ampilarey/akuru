@@ -6,8 +6,8 @@ use App\Domains\Hifz\Models\HifzEnrollment;
 use App\Domains\Hifz\Models\HifzProgram;
 use App\Domains\Hifz\Models\HifzSession;
 use App\Domains\Hifz\Models\HifzSessionRecord;
-use App\Domains\People\Models\Student;
 use App\Domains\Identity\Models\User;
+use App\Domains\People\Models\Student;
 use Illuminate\Support\Collection;
 
 class HifzScopeService

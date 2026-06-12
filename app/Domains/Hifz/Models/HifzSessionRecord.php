@@ -2,15 +2,8 @@
 
 namespace App\Domains\Hifz\Models;
 
-use App\Domains\Hifz\Models\HifzMistake;
-use App\Domains\Hifz\Models\HifzProgram;
-use App\Domains\Hifz\Models\HifzSession;
-use App\Domains\Hifz\Models\Surah;
-
-use App\Domains\People\Models\Teacher;
-
 use App\Domains\People\Models\Student;
-
+use App\Domains\People\Models\Teacher;
 use App\Enums\Hifz\HifzAttendanceStatus;
 use App\Enums\Hifz\HifzLaneResult;
 use App\Enums\Hifz\HifzOverallStatus;

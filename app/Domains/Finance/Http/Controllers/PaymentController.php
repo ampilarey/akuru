@@ -2,12 +2,10 @@
 
 namespace App\Domains\Finance\Http\Controllers;
 
-use App\Http\Controllers\Controller;
-
-
 use App\Domains\Finance\Models\Payment;
 use App\Domains\Finance\Services\BmlConnectService;
 use App\Domains\Finance\Services\Payment\PaymentService;
+use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;

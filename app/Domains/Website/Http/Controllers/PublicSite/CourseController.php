@@ -2,9 +2,9 @@
 
 namespace App\Domains\Website\Http\Controllers\PublicSite;
 
-use App\Http\Controllers\Controller;
 use App\Domains\Courses\Models\Course;
 use App\Domains\Courses\Models\CourseCategory;
+use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
 class CourseController extends Controller

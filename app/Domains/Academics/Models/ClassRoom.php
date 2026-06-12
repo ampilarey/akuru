@@ -3,7 +3,6 @@
 namespace App\Domains\Academics\Models;
 
 use App\Domains\People\Models\Student;
-
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 

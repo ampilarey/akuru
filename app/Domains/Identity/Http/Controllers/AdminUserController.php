@@ -2,10 +2,9 @@
 
 namespace App\Domains\Identity\Http\Controllers;
 
-use App\Http\Controllers\Controller;
-
-use App\Http\Controllers\Controller;
 use App\Domains\Identity\Models\User;
+use App\Http\Controllers\Controller;
+use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 

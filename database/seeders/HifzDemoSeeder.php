@@ -2,6 +2,21 @@
 
 namespace Database\Seeders;
 
+use App\Domains\Academics\Models\ClassRoom;
+use App\Domains\Hifz\Models\HifzEnrollment;
+use App\Domains\Hifz\Models\HifzMilestone;
+use App\Domains\Hifz\Models\HifzMistake;
+use App\Domains\Hifz\Models\HifzProgram;
+use App\Domains\Hifz\Models\HifzSession;
+use App\Domains\Hifz\Models\HifzSessionRecord;
+use App\Domains\Hifz\Models\QuranAyah;
+use App\Domains\Hifz\Models\QuranMushaf;
+use App\Domains\Hifz\Models\QuranWord;
+use App\Domains\Hifz\Models\Surah;
+use App\Domains\Identity\Models\User;
+use App\Domains\People\Models\ParentGuardian;
+use App\Domains\People\Models\Student;
+use App\Domains\People\Models\Teacher;
 use App\Enums\Hifz\HifzAttendanceStatus;
 use App\Enums\Hifz\HifzLaneResult;
 use App\Enums\Hifz\HifzMilestoneStatus;
@@ -10,21 +25,6 @@ use App\Enums\Hifz\HifzMistakeSeverity;
 use App\Enums\Hifz\HifzMistakeType;
 use App\Enums\Hifz\HifzOverallStatus;
 use App\Enums\Hifz\HifzSessionStatus;
-use App\Domains\Academics\Models\ClassRoom;
-use App\Domains\Hifz\Models\HifzEnrollment;
-use App\Domains\Hifz\Models\HifzMilestone;
-use App\Domains\Hifz\Models\HifzMistake;
-use App\Domains\Hifz\Models\HifzProgram;
-use App\Domains\Hifz\Models\HifzSession;
-use App\Domains\Hifz\Models\HifzSessionRecord;
-use App\Domains\People\Models\ParentGuardian;
-use App\Domains\Hifz\Models\QuranAyah;
-use App\Domains\Hifz\Models\QuranMushaf;
-use App\Domains\Hifz\Models\QuranWord;
-use App\Domains\People\Models\Student;
-use App\Domains\Hifz\Models\Surah;
-use App\Domains\People\Models\Teacher;
-use App\Domains\Identity\Models\User;
 use Carbon\Carbon;
 use Illuminate\Database\Seeder;
 

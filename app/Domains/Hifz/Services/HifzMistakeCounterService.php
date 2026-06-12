@@ -2,9 +2,9 @@
 
 namespace App\Domains\Hifz\Services;
 
-use App\Enums\Hifz\HifzMistakeType;
 use App\Domains\Hifz\Models\HifzMistake;
 use App\Domains\Hifz\Models\HifzSessionRecord;
+use App\Enums\Hifz\HifzMistakeType;
 
 class HifzMistakeCounterService
 {

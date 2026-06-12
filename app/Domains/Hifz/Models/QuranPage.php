@@ -2,10 +2,6 @@
 
 namespace App\Domains\Hifz\Models;
 
-use App\Domains\Hifz\Models\QuranAyah;
-use App\Domains\Hifz\Models\QuranMushaf;
-use App\Domains\Hifz\Models\QuranWordPosition;
-
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;

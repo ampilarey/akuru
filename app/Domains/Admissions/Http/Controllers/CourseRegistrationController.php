@@ -2,18 +2,18 @@
 
 namespace App\Domains\Admissions\Http\Controllers;
 
-use App\Http\Requests\Registration\SetPasswordRequest;
-use App\Http\Requests\Registration\StartRegistrationRequest;
-use App\Http\Requests\Registration\VerifyOtpRequest;
+use App\Domains\Admissions\Models\RegistrationFlow;
+use App\Domains\Admissions\Services\Enrollment\EnrollmentService;
 use App\Domains\Courses\Models\Course;
 use App\Domains\Finance\Models\Payment;
-use App\Domains\Admissions\Models\RegistrationFlow;
+use App\Domains\Finance\Services\Payment\PaymentService;
 use App\Domains\Identity\Models\UserContact;
 use App\Domains\Identity\Services\AccountResolverService;
 use App\Domains\Identity\Services\ContactNormalizer;
-use App\Domains\Admissions\Services\Enrollment\EnrollmentService;
 use App\Domains\Identity\Services\OtpService;
-use App\Domains\Finance\Services\Payment\PaymentService;
+use App\Http\Requests\Registration\SetPasswordRequest;
+use App\Http\Requests\Registration\StartRegistrationRequest;
+use App\Http\Requests\Registration\VerifyOtpRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;

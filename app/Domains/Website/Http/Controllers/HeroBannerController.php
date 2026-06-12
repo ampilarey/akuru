@@ -2,10 +2,8 @@
 
 namespace App\Domains\Website\Http\Controllers;
 
-use App\Http\Controllers\Controller;
-
-
 use App\Domains\Website\Models\HeroBanner;
+use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
 class HeroBannerController extends Controller

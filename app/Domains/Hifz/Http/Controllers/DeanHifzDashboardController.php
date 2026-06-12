@@ -2,14 +2,14 @@
 
 namespace App\Domains\Hifz\Http\Controllers;
 
-use App\Http\Controllers\Controller;
 use App\Domains\Hifz\Models\HifzEnrollment;
 use App\Domains\Hifz\Models\HifzMilestone;
 use App\Domains\Hifz\Models\HifzProgram;
 use App\Domains\Hifz\Models\HifzSession;
 use App\Domains\Hifz\Models\HifzSessionRecord;
-use App\Domains\Identity\Models\User;
 use App\Domains\Hifz\Services\HifzReportService;
+use App\Domains\Identity\Models\User;
+use App\Http\Controllers\Controller;
 use Illuminate\View\View;
 
 class DeanHifzDashboardController extends Controller

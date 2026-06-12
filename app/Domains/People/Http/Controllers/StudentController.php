@@ -2,11 +2,11 @@
 
 namespace App\Domains\People\Http\Controllers;
 
-use App\Http\Controllers\Controller;
 use App\Domains\Academics\Models\ClassRoom;
+use App\Domains\Identity\Models\User;
 use App\Domains\People\Models\ParentGuardian;
 use App\Domains\People\Models\Student;
-use App\Domains\Identity\Models\User;
+use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
 class StudentController extends Controller

@@ -2,11 +2,11 @@
 
 namespace App\Domains\Hifz\Http\Controllers;
 
+use App\Domains\Hifz\Models\HifzMilestone;
+use App\Domains\Hifz\Services\HifzScopeService;
 use App\Enums\Hifz\HifzMilestoneStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Hifz\StoreHifzMilestoneRequest;
-use App\Domains\Hifz\Models\HifzMilestone;
-use App\Domains\Hifz\Services\HifzScopeService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 

@@ -2,9 +2,9 @@
 
 namespace Database\Seeders;
 
+use App\Domains\Identity\Models\User;
 use App\Domains\Website\Models\Post;
 use App\Domains\Website\Models\PostCategory;
-use App\Domains\Identity\Models\User;
 use Carbon\Carbon;
 use Illuminate\Database\Seeder;
 

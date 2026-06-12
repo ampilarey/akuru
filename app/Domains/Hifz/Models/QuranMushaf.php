@@ -2,11 +2,7 @@
 
 namespace App\Domains\Hifz\Models;
 
-use App\Domains\Hifz\Models\QuranAyah;
-use App\Domains\Hifz\Models\QuranPage;
-use App\Domains\Hifz\Models\QuranWord;
 use App\Domains\Identity\Models\User;
-
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;

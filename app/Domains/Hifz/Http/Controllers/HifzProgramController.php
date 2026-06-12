@@ -2,14 +2,14 @@
 
 namespace App\Domains\Hifz\Http\Controllers;
 
-use App\Http\Controllers\Controller;
-use App\Http\Requests\Hifz\StoreHifzProgramRequest;
 use App\Domains\Academics\Models\AcademicYear;
 use App\Domains\Academics\Models\ClassRoom;
 use App\Domains\Hifz\Models\HifzProgram;
-use App\Domains\People\Models\Teacher;
-use App\Domains\Identity\Models\User;
 use App\Domains\Hifz\Services\HifzScopeService;
+use App\Domains\Identity\Models\User;
+use App\Domains\People\Models\Teacher;
+use App\Http\Controllers\Controller;
+use App\Http\Requests\Hifz\StoreHifzProgramRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;

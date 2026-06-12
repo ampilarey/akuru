@@ -4,8 +4,8 @@ namespace App\Domains\Identity\Services;
 
 use App\Domains\Identity\Models\Otp;
 use App\Domains\Identity\Models\UserContact;
-use App\Domains\Notifications\Notifications\OtpEmailNotification;
 use App\Domains\Notifications\Contracts\SmsSenderInterface;
+use App\Domains\Notifications\Notifications\OtpEmailNotification;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\RateLimiter;

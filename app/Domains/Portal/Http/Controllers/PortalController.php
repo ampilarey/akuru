@@ -2,9 +2,9 @@
 
 namespace App\Domains\Portal\Http\Controllers;
 
-use App\Http\Controllers\Controller;
 use App\Domains\Courses\Models\CourseEnrollment;
 use App\Domains\Finance\Models\Payment;
+use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
 class PortalController extends Controller

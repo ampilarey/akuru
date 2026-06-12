@@ -2,10 +2,8 @@
 
 namespace App\Domains\Admissions\Http\Controllers;
 
-use App\Http\Controllers\Controller;
-
-
 use App\Domains\Admissions\Models\AdmissionApplication;
+use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
 class AdmissionApplicationController extends Controller

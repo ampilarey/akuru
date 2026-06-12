@@ -4,7 +4,6 @@ namespace App\Domains\Admissions\Models;
 
 use App\Domains\Courses\Models\Course;
 use App\Domains\Identity\Models\User;
-
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 

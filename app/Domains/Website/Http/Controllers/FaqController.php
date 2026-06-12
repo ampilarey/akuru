@@ -2,10 +2,8 @@
 
 namespace App\Domains\Website\Http\Controllers;
 
-use App\Http\Controllers\Controller;
-
-
 use App\Domains\Website\Models\Faq;
+use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
 class FaqController extends Controller

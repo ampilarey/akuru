@@ -2,11 +2,9 @@
 
 namespace App\Domains\Notifications\Http\Controllers;
 
-use App\Http\Controllers\Controller;
-
-
 use App\Domains\Notifications\Models\UserNotification;
 use App\Domains\Notifications\Services\NotificationService;
+use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 

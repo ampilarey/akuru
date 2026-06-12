@@ -2,22 +2,22 @@
 
 namespace Database\Seeders;
 
-use App\Domains\Academics\Models\AbsenceNote;
-use App\Domains\Academics\Models\AcademicYear;
-use App\Domains\Academics\Models\ClassRoom;
-use App\Domains\Finance\Models\FeeItem;
-use App\Domains\Finance\Models\Invoice;
-use App\Domains\Finance\Models\InvoiceLine;
-use App\Domains\Academics\Models\Period;
 use App\Domains\Academics\Legacy\Models\Quiz;
 use App\Domains\Academics\Legacy\Models\QuizAttempt;
 use App\Domains\Academics\Legacy\Models\QuizQuestion;
-use App\Domains\People\Models\Student;
+use App\Domains\Academics\Models\AbsenceNote;
+use App\Domains\Academics\Models\AcademicYear;
+use App\Domains\Academics\Models\ClassRoom;
+use App\Domains\Academics\Models\Period;
 use App\Domains\Academics\Models\Subject;
 use App\Domains\Academics\Models\SubstitutionRequest;
-use App\Domains\People\Models\Teacher;
 use App\Domains\Academics\Models\TeacherAbsence;
+use App\Domains\Finance\Models\FeeItem;
+use App\Domains\Finance\Models\Invoice;
+use App\Domains\Finance\Models\InvoiceLine;
 use App\Domains\Identity\Models\User;
+use App\Domains\People\Models\Student;
+use App\Domains\People\Models\Teacher;
 use Carbon\Carbon;
 use Illuminate\Database\Seeder;
 

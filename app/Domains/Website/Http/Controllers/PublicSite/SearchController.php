@@ -2,10 +2,10 @@
 
 namespace App\Domains\Website\Http\Controllers\PublicSite;
 
+use App\Domains\Courses\Models\Course;
 use App\Domains\Website\Models\Event;
 use App\Domains\Website\Models\Post;
 use App\Http\Controllers\Controller;
-use App\Domains\Courses\Models\Course;
 use Illuminate\Http\Request;
 
 class SearchController extends Controller

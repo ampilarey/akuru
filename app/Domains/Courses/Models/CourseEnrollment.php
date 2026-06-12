@@ -2,10 +2,8 @@
 
 namespace App\Domains\Courses\Models;
 
-use App\Domains\Courses\Models\Course;
 use App\Domains\Finance\Models\Payment;
 use App\Domains\Identity\Models\User;
-
 use App\Domains\People\Models\RegistrationStudent;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;

@@ -2,10 +2,8 @@
 
 namespace App\Domains\Finance\Http\Controllers;
 
-use App\Http\Controllers\Controller;
-
-
 use App\Domains\Finance\Models\Payment;
+use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\View\View;

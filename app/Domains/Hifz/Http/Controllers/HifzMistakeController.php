@@ -2,12 +2,12 @@
 
 namespace App\Domains\Hifz\Http\Controllers;
 
-use App\Http\Controllers\Controller;
-use App\Http\Requests\Hifz\StoreHifzMistakeRequest;
 use App\Domains\Hifz\Models\HifzMistake;
 use App\Domains\Hifz\Models\HifzSessionRecord;
 use App\Domains\Hifz\Services\HifzMistakeCounterService;
 use App\Domains\Hifz\Services\HifzScopeService;
+use App\Http\Controllers\Controller;
+use App\Http\Requests\Hifz\StoreHifzMistakeRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 

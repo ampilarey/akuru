@@ -2,11 +2,9 @@
 
 namespace App\Domains\Hifz\Http\Controllers;
 
-use App\Http\Controllers\Controller;
-
-
 use App\Domains\Hifz\Models\RecitationPractice;
 use App\Domains\Hifz\Models\Surah;
+use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 

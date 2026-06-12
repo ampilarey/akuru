@@ -2,13 +2,13 @@
 
 namespace App\Domains\Hifz\Http\Controllers;
 
-use App\Enums\Hifz\HifzSessionStatus;
-use App\Http\Controllers\Controller;
 use App\Domains\Hifz\Models\HifzProgram;
 use App\Domains\Hifz\Models\HifzSession;
 use App\Domains\Hifz\Services\HifzScopeService;
 use App\Domains\Hifz\Services\HifzScoringService;
 use App\Domains\Hifz\Services\HifzSessionService;
+use App\Enums\Hifz\HifzSessionStatus;
+use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;

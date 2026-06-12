@@ -2,12 +2,12 @@
 
 namespace App\Domains\Admissions\Http\Controllers;
 
-use App\Http\Controllers\Controller;
-use App\Mail\EnrollmentStatusMail;
 use App\Domains\Courses\Models\Course;
 use App\Domains\Courses\Models\CourseEnrollment;
 use App\Domains\Finance\Models\Payment;
 use App\Domains\Notifications\Contracts\SmsSenderInterface;
+use App\Http\Controllers\Controller;
+use App\Mail\EnrollmentStatusMail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 

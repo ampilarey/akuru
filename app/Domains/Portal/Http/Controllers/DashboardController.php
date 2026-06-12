@@ -2,17 +2,16 @@
 
 namespace App\Domains\Portal\Http\Controllers;
 
-use App\Http\Controllers\Controller;
-
-use App\Domains\Academics\Models\Announcement;
 use App\Domains\Academics\Legacy\Models\Assignment;
 use App\Domains\Academics\Legacy\Models\AssignmentSubmission;
+use App\Domains\Academics\Models\Announcement;
 use App\Domains\Academics\Models\Attendance;
+use App\Domains\Academics\Models\Timetable;
 use App\Domains\Hifz\Models\QuranProgress;
 use App\Domains\Hifz\Models\RecitationPractice;
 use App\Domains\People\Models\Student;
 use App\Domains\People\Models\Teacher;
-use App\Domains\Academics\Models\Timetable;
+use App\Http\Controllers\Controller;
 use App\Support\Services\IslamicCalendarService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;

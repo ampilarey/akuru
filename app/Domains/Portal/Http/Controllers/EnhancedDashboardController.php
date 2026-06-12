@@ -2,16 +2,15 @@
 
 namespace App\Domains\Portal\Http\Controllers;
 
-use App\Http\Controllers\Controller;
-
 use App\Domains\Admissions\Models\AdmissionApplication;
-use App\Domains\Website\Models\ContactInquiry;
 use App\Domains\Courses\Models\Course;
+use App\Domains\Identity\Models\User;
+use App\Domains\Settings\Models\UserActivity;
+use App\Domains\Website\Models\ContactInquiry;
 use App\Domains\Website\Models\Event;
 use App\Domains\Website\Models\GalleryAlbum;
 use App\Domains\Website\Models\Post;
-use App\Domains\Identity\Models\User;
-use App\Domains\Settings\Models\UserActivity;
+use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
 class EnhancedDashboardController extends Controller

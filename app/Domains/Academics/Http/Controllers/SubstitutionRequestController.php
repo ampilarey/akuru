@@ -2,13 +2,13 @@
 
 namespace App\Domains\Academics\Http\Controllers;
 
-use App\Http\Controllers\Controller;
 use App\Domains\Academics\Models\ClassRoom;
 use App\Domains\Academics\Models\Period;
 use App\Domains\Academics\Models\Subject;
 use App\Domains\Academics\Models\SubstitutionAssignment;
 use App\Domains\Academics\Models\SubstitutionRequest;
 use App\Domains\People\Models\Teacher;
+use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;

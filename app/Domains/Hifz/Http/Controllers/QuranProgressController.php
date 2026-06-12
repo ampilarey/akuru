@@ -2,12 +2,10 @@
 
 namespace App\Domains\Hifz\Http\Controllers;
 
-use App\Http\Controllers\Controller;
-
-
 use App\Domains\Hifz\Models\QuranProgress;
 use App\Domains\People\Models\Student;
 use App\Domains\People\Models\Teacher;
+use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
 class QuranProgressController extends Controller

@@ -2,12 +2,12 @@
 
 namespace App\Domains\Website\Http\Controllers\PublicSite;
 
-use App\Domains\Website\Models\Page;
-use App\Domains\Website\Models\Testimonial;
-use App\Http\Controllers\Controller;
 use App\Domains\Courses\Models\Course;
 use App\Domains\Courses\Models\CourseEnrollment;
 use App\Domains\HR\Models\Instructor;
+use App\Domains\Website\Models\Page;
+use App\Domains\Website\Models\Testimonial;
+use App\Http\Controllers\Controller;
 
 class AboutController extends Controller
 {

@@ -2,11 +2,11 @@
 
 namespace App\Domains\Hifz\Http\Controllers;
 
-use App\Http\Controllers\Controller;
 use App\Domains\Hifz\Models\HifzMilestone;
 use App\Domains\Hifz\Models\HifzSession;
 use App\Domains\Hifz\Services\HifzReportService;
 use App\Domains\Hifz\Services\HifzScopeService;
+use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\StreamedResponse;

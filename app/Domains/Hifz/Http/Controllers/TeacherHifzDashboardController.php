@@ -2,11 +2,11 @@
 
 namespace App\Domains\Hifz\Http\Controllers;
 
-use App\Http\Controllers\Controller;
 use App\Domains\Hifz\Models\HifzEnrollment;
 use App\Domains\Hifz\Models\HifzProgram;
 use App\Domains\Hifz\Models\HifzSession;
 use App\Domains\Hifz\Services\HifzScopeService;
+use App\Http\Controllers\Controller;
 use Illuminate\View\View;
 
 class TeacherHifzDashboardController extends Controller

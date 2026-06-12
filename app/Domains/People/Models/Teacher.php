@@ -4,13 +4,13 @@ namespace App\Domains\People\Models;
 
 use App\Domains\Academics\Models\ClassRoom;
 use App\Domains\Academics\Models\Grade;
+use App\Domains\Academics\Models\Subject;
+use App\Domains\Academics\Models\Timetable;
 use App\Domains\Hifz\Models\HifzEnrollment;
 use App\Domains\Hifz\Models\HifzSession;
 use App\Domains\Hifz\Models\QuranProgress;
-use App\Domains\Settings\Models\School;
-use App\Domains\Academics\Models\Subject;
-use App\Domains\Academics\Models\Timetable;
 use App\Domains\Identity\Models\User;
+use App\Domains\Settings\Models\School;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 

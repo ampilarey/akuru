@@ -3,8 +3,6 @@
 namespace App\Domains\Identity\Models;
 
 use App\Domains\Finance\Models\Payment;
-
-use App\Domains\Identity\Models\UserContact;
 use App\Domains\People\Models\ParentGuardian;
 use App\Domains\People\Models\RegistrationStudent;
 use App\Domains\People\Models\Student;

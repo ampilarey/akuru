@@ -2,12 +2,8 @@
 
 namespace App\Domains\Hifz\Models;
 
-use App\Domains\Hifz\Models\Surah;
-use App\Domains\Hifz\Models\TajweedFeedback;
 use App\Domains\Identity\Models\User;
-
 use App\Domains\People\Models\Student;
-
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 

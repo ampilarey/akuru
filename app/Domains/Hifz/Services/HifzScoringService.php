@@ -2,10 +2,10 @@
 
 namespace App\Domains\Hifz\Services;
 
+use App\Domains\Hifz\Models\HifzSessionRecord;
 use App\Enums\Hifz\HifzAttendanceStatus;
 use App\Enums\Hifz\HifzLaneResult;
 use App\Enums\Hifz\HifzOverallStatus;
-use App\Domains\Hifz\Models\HifzSessionRecord;
 
 class HifzScoringService
 {

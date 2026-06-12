@@ -2,12 +2,8 @@
 
 namespace App\Domains\Hifz\Models;
 
-use App\Domains\Hifz\Models\HifzProgram;
-use App\Domains\Hifz\Models\HifzSessionRecord;
 use App\Domains\Identity\Models\User;
-
 use App\Domains\People\Models\Teacher;
-
 use App\Enums\Hifz\HifzSessionStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;

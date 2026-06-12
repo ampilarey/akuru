@@ -3,8 +3,8 @@
 namespace App\Policies;
 
 use App\Domains\Hifz\Models\HifzSessionRecord;
-use App\Domains\Identity\Models\User;
 use App\Domains\Hifz\Services\HifzScopeService;
+use App\Domains\Identity\Models\User;
 
 class HifzSessionRecordPolicy
 {

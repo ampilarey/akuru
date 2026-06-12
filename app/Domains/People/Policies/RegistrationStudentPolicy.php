@@ -2,8 +2,8 @@
 
 namespace App\Domains\People\Policies;
 
-use App\Domains\People\Models\RegistrationStudent;
 use App\Domains\Identity\Models\User;
+use App\Domains\People\Models\RegistrationStudent;
 
 class RegistrationStudentPolicy
 {

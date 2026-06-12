@@ -4,9 +4,9 @@ namespace App\Console\Commands;
 
 use App\Domains\Courses\Models\CourseEnrollment;
 use App\Domains\Finance\Models\PaymentItem;
-use App\Domains\People\Models\RegistrationStudent;
 use App\Domains\Identity\Models\User;
 use App\Domains\Identity\Models\UserContact;
+use App\Domains\People\Models\RegistrationStudent;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 

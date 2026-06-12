@@ -2,10 +2,8 @@
 
 namespace App\Domains\Settings\Models;
 
-use App\Domains\People\Models\Teacher;
-
 use App\Domains\People\Models\Student;
-
+use App\Domains\People\Models\Teacher;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 

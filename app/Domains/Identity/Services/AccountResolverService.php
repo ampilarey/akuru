@@ -2,8 +2,8 @@
 
 namespace App\Domains\Identity\Services;
 
-use App\Domains\Identity\Models\UserContact;
 use App\Domains\Identity\Models\User;
+use App\Domains\Identity\Models\UserContact;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;

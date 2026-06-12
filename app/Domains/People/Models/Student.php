@@ -9,8 +9,8 @@ use App\Domains\Hifz\Models\HifzEnrollment;
 use App\Domains\Hifz\Models\HifzMilestone;
 use App\Domains\Hifz\Models\HifzSessionRecord;
 use App\Domains\Hifz\Models\QuranProgress;
-use App\Domains\Settings\Models\School;
 use App\Domains\Identity\Models\User;
+use App\Domains\Settings\Models\School;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 

@@ -2,12 +2,10 @@
 
 namespace App\Domains\Settings\Http\Controllers;
 
-use App\Http\Controllers\Controller;
-
-
 use App\Domains\Settings\Models\Report;
 use App\Domains\Settings\Models\SystemMetric;
 use App\Domains\Settings\Services\AnalyticsService;
+use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 

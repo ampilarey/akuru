@@ -2,13 +2,13 @@
 
 namespace App\Domains\Hifz\Http\Controllers;
 
-use App\Http\Controllers\Controller;
-use App\Http\Requests\Hifz\UpdateHifzSessionRecordRequest;
 use App\Domains\Hifz\Models\HifzSessionRecord;
 use App\Domains\Hifz\Models\QuranMushaf;
-use App\Domains\People\Models\Student;
 use App\Domains\Hifz\Services\HifzScopeService;
 use App\Domains\Hifz\Services\HifzScoringService;
+use App\Domains\People\Models\Student;
+use App\Http\Controllers\Controller;
+use App\Http\Requests\Hifz\UpdateHifzSessionRecordRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 

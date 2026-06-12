@@ -2,10 +2,10 @@
 
 namespace App\Domains\Website\Http\Controllers\PublicSite;
 
-use App\Http\Controllers\Controller;
 use App\Domains\Admissions\Models\AdmissionApplication;
 use App\Domains\Courses\Models\Course;
 use App\Domains\Notifications\Notifications\NewAdmissionApplication;
+use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Notification;
 

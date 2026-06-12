@@ -2,8 +2,6 @@
 
 namespace App\Domains\Hifz\Models;
 
-use App\Domains\Hifz\Models\RecitationPractice;
-
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 

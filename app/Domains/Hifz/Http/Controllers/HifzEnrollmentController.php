@@ -2,12 +2,12 @@
 
 namespace App\Domains\Hifz\Http\Controllers;
 
-use App\Http\Controllers\Controller;
 use App\Domains\Hifz\Models\HifzEnrollment;
 use App\Domains\Hifz\Models\HifzProgram;
+use App\Domains\Hifz\Services\HifzScopeService;
 use App\Domains\People\Models\Student;
 use App\Domains\People\Models\Teacher;
-use App\Domains\Hifz\Services\HifzScopeService;
+use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;

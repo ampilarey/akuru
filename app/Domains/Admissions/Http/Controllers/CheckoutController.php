@@ -2,15 +2,13 @@
 
 namespace App\Domains\Admissions\Http\Controllers;
 
-use App\Http\Controllers\Controller;
-
-
 use App\Domains\Courses\Models\Course;
 use App\Domains\Courses\Models\CourseEnrollment;
 use App\Domains\Finance\Models\Payment;
 use App\Domains\Finance\Models\PaymentItem;
-use App\Domains\People\Models\RegistrationStudent;
 use App\Domains\Finance\Services\BmlConnectService;
+use App\Domains\People\Models\RegistrationStudent;
+use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;

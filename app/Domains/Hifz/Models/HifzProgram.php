@@ -4,14 +4,8 @@ namespace App\Domains\Hifz\Models;
 
 use App\Domains\Academics\Models\AcademicYear;
 use App\Domains\Academics\Models\ClassRoom;
-use App\Domains\Hifz\Models\HifzAssignment;
-use App\Domains\Hifz\Models\HifzEnrollment;
-use App\Domains\Hifz\Models\HifzMilestone;
-use App\Domains\Hifz\Models\HifzSession;
 use App\Domains\Identity\Models\User;
-
 use App\Domains\People\Models\Teacher;
-
 use App\Enums\Hifz\HifzProgramStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;

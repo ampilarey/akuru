@@ -2,13 +2,7 @@
 
 namespace App\Domains\Hifz\Models;
 
-use App\Domains\Hifz\Models\HifzSessionRecord;
-use App\Domains\Hifz\Models\QuranAyah;
-use App\Domains\Hifz\Models\QuranPage;
-use App\Domains\Hifz\Models\QuranWord;
-
 use App\Domains\People\Models\Student;
-
 use App\Enums\Hifz\HifzMistakeSeverity;
 use App\Enums\Hifz\HifzMistakeType;
 use Illuminate\Database\Eloquent\Model;
