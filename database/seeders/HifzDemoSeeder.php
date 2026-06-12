@@ -62,7 +62,7 @@ class HifzDemoSeeder extends Seeder
                 'last_name' => $lastName,
                 'date_of_birth' => $teacherUser->date_of_birth ?? '1985-03-20',
                 'gender' => $teacherUser->gender ?? 'male',
-                'phone' => $teacherUser->phone ?? '+960 123-4569',
+                'phone' => $teacherUser->phone ?? '+960 782 0288',
                 'email' => $teacherUser->email,
                 'address' => $teacherUser->address ?? 'Malé',
                 'qualification' => 'Islamic Studies',
@@ -225,7 +225,7 @@ class HifzDemoSeeder extends Seeder
                 [
                     'first_name' => $parentFirst,
                     'last_name' => $parentLast,
-                    'phone' => $parentUser->phone ?? '+960 123-4571',
+                    'phone' => $parentUser->phone ?? '+960 797 2434',
                     'email' => $parentUser->email,
                     'address' => 'Malé',
                     'relationship' => 'father',
@@ -286,7 +286,7 @@ class HifzDemoSeeder extends Seeder
             [
                 'name' => 'Demo Teacher',
                 'password' => bcrypt('password'),
-                'phone' => '+960 123-4569',
+                'phone' => '+960 782 0288',
                 'address' => 'Malé',
                 'date_of_birth' => '1985-03-20',
                 'gender' => 'male',
@@ -314,7 +314,7 @@ class HifzDemoSeeder extends Seeder
             'name' => 'Akuru Institute',
             'description' => 'Islamic and Arabic Education Institute',
             'address' => 'Malé, Maldives',
-            'phone' => '+960 123-4567',
+            'phone' => '+960 797 2434',
             'email' => 'info@akuru.edu.mv',
             'website' => 'https://akuru.edu.mv',
             'principal_name' => 'Dr. Ahmed Ibrahim',
@@ -352,7 +352,7 @@ class HifzDemoSeeder extends Seeder
             [
                 'name' => 'Demo Student',
                 'password' => bcrypt('password'),
-                'phone' => '+960 123-4570',
+                'phone' => '+960 782 0288',
                 'is_active' => true,
             ]
         );

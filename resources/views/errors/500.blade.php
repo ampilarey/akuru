@@ -40,7 +40,7 @@
             <h3 class="text-sm font-medium text-gray-900 mb-2">{{ __('public.Get Help') }}</h3>
             <div class="text-sm text-gray-600 space-y-1">
                 <p>{{ __('public.Email') }}: <a href="mailto:support@akuru.edu.mv" class="text-indigo-600 hover:text-indigo-500">support@akuru.edu.mv</a></p>
-                <p>{{ __('public.Phone') }}: <a href="tel:+9601234567" class="text-indigo-600 hover:text-indigo-500">+960 123-4567</a></p>
+                <p>{{ __('public.Phone') }}: <a href="tel:+9607972434" class="text-indigo-600 hover:text-indigo-500">+960 797 2434</a></p>
             </div>
         </div>
     </div>

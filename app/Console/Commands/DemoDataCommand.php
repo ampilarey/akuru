@@ -54,7 +54,7 @@ class DemoDataCommand extends Command
             'name_arabic' => 'معهد أكورو',
             'name_dhivehi' => 'އަކުރު އިންސްޓިޓުއުޓް',
             'address' => 'Malé, Maldives',
-            'phone' => '+960 123-4567',
+            'phone' => '+960 797 2434',
             'email' => 'info@akuru.edu',
             'website' => 'https://akuru.edu',
             'established_year' => 2020,
@@ -182,7 +182,7 @@ class DemoDataCommand extends Command
                     'class_id' => $classes->random()->id,
                     'date_of_birth' => now()->subYears(rand(6, 18)),
                     'admission_date' => now()->subMonths(rand(1, 12)),
-                    'phone' => '+960'.rand(7000000, 7999999),
+                    'phone' => $i % 2 === 0 ? '+9607820288' : '+9607972434',
                     'address' => 'Malé, Maldives',
                 ]
             );
@@ -217,7 +217,7 @@ class DemoDataCommand extends Command
                     'full_name' => "Teacher $i",
                     'email' => "teacher$i@akuru.edu",
                     'date_of_birth' => now()->subYears(rand(25, 50)),
-                    'phone' => '+960'.rand(7000000, 7999999),
+                    'phone' => $i % 2 === 0 ? '+9607820288' : '+9607972434',
                     'address' => 'Malé, Maldives',
                     'qualification' => 'Islamic Studies',
                     'specialization' => 'Quran Studies',

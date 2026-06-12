@@ -64,7 +64,7 @@ class RegistrationFlowTest extends TestCase
         $contact = UserContact::create([
             'user_id' => $user->id,
             'type' => 'mobile',
-            'value' => '+9607820001',
+            'value' => '7820288',
             'is_primary' => true,
         ]);
 
@@ -103,7 +103,7 @@ class RegistrationFlowTest extends TestCase
         $contact = UserContact::create([
             'user_id' => $user->id,
             'type' => 'mobile',
-            'value' => '+9607820002',
+            'value' => '7972434',
             'is_primary' => true,
             'verified_at' => now(),
         ]);
@@ -131,7 +131,7 @@ class RegistrationFlowTest extends TestCase
         $contact = UserContact::create([
             'user_id' => $user->id,
             'type' => 'mobile',
-            'value' => '+9607820003',
+            'value' => '7820288',
             'is_primary' => true,
             'verified_at' => now(),
         ]);
@@ -335,7 +335,7 @@ class RegistrationFlowTest extends TestCase
         $contact = UserContact::create([
             'user_id' => $user->id,
             'type' => 'mobile',
-            'value' => '+9607820099',
+            'value' => '7972434',
             'is_primary' => true,
             'verified_at' => now(),
         ]);

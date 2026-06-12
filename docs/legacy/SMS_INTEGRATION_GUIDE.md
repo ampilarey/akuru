@@ -80,7 +80,7 @@ if ($result['success']) {
 ### Send Bulk SMS
 
 ```php
-$recipients = ['7972434', '7912345', '7923456'];
+$recipients = ['7972434', '7820288'];
 
 $result = $smsService->sendBulkSms(
     $recipients,

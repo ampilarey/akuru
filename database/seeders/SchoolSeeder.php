@@ -19,7 +19,7 @@ class SchoolSeeder extends Seeder
             'description_arabic' => 'معهد التعليم الإسلامي والعربي',
             'description_dhivehi' => 'އިސްލާމް އަދި ޢަރަބި ތައުލީމް އިންސްޓިޓިއުޓް',
             'address' => 'Malé, Maldives',
-            'phone' => '+960 123-4567',
+            'phone' => '+960 797 2434',
             'email' => 'info@akuru.edu.mv',
             'website' => 'https://akuru.edu.mv',
             'principal_name' => 'Dr. Ahmed Ibrahim',

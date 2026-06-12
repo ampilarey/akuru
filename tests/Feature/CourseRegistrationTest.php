@@ -53,7 +53,7 @@ class CourseRegistrationTest extends TestCase
         $mobileContact = UserContact::create([
             'user_id' => $user->id,
             'type' => 'mobile',
-            'value' => '+9607800001',
+            'value' => '7820288',
             'is_primary' => false,
             'verified_at' => now(),
         ]);
