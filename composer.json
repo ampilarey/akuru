@@ -9,6 +9,7 @@
         "php": "^8.2",
         "alkoumi/laravel-hijri-date": "^1.0",
         "guzzlehttp/guzzle": "^7.10",
+        "inertiajs/inertia-laravel": "^3.1",
         "intervention/image": "^3.11",
         "laravel-notification-channels/fcm": "^5.1",
         "laravel/breeze": "^2.3",

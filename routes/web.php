@@ -3,6 +3,9 @@
 use Illuminate\Support\Facades\Route;
 use Mcamara\LaravelLocalization\Facades\LaravelLocalization;
 
+// Inertia smoke test (no locale prefix)
+Route::get('/inertia-test', fn () => inertia('InertiaTest'))->name('inertia.test');
+
 // Payment webhook (no locale - BML posts to fixed URL)
 Route::post('payments/bml/callback', [\App\Http\Controllers\PaymentController::class, 'callback'])
     ->name('payments.bml.callback');
