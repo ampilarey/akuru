@@ -5,7 +5,7 @@ namespace App\Domains\Identity\Services;
 use App\Domains\Identity\Models\Otp;
 use App\Domains\Identity\Models\UserContact;
 use App\Domains\Notifications\Notifications\OtpEmailNotification;
-use App\Domains\Notifications\Services\SmsGatewayService;
+use App\Domains\Notifications\Contracts\SmsSenderInterface;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\RateLimiter;
@@ -26,7 +26,7 @@ class OtpService
     protected const OTP_MAX_ATTEMPTS = 5;
 
     public function __construct(
-        protected SmsGatewayService $smsGateway,
+        protected SmsSenderInterface $smsGateway,
         protected ContactNormalizer $normalizer
     ) {}
 

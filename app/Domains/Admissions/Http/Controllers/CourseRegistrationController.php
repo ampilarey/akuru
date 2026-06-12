@@ -509,7 +509,7 @@ class CourseRegistrationController extends PublicRegistrationController
                 $adminMobile = $admin->contacts()->where('type', 'mobile')->value('value')
                     ?? $admin->phone ?? null;
                 if ($adminMobile) {
-                    app(\App\Domains\Notifications\Services\SmsGatewayService::class)->sendSms($adminMobile, $message);
+                    app(\App\Domains\Notifications\Contracts\SmsSenderInterface::class)->sendSms($adminMobile, $message);
                 }
             }
         } catch (\Throwable) {
@@ -1046,7 +1046,7 @@ class CourseRegistrationController extends PublicRegistrationController
                 foreach ($admins as $admin) {
                     $adminMobile = $admin->contacts()->where('type', 'mobile')->value('value') ?? $admin->phone ?? null;
                     if ($adminMobile) {
-                        app(\App\Domains\Notifications\Services\SmsGatewayService::class)->sendSms($adminMobile, $message);
+                        app(\App\Domains\Notifications\Contracts\SmsSenderInterface::class)->sendSms($adminMobile, $message);
                     }
                 }
             }
@@ -1314,7 +1314,7 @@ class CourseRegistrationController extends PublicRegistrationController
 
             if ($mobile) {
                 try {
-                    app(\App\Domains\Notifications\Services\SmsGatewayService::class)->sendSms(
+                    app(\App\Domains\Notifications\Contracts\SmsSenderInterface::class)->sendSms(
                         $mobile,
                         "Akuru: Enrollment received for {$enrollment->course?->title}. Pending approval."
                     );

@@ -2,6 +2,7 @@
 
 namespace App\Domains\Finance\Services\Payment;
 
+use App\Domains\Finance\Contracts\PaymentProviderInterface;
 use App\Mail\EnrollmentConfirmedMail;
 use App\Domains\Courses\Models\Course;
 use App\Domains\Courses\Models\CourseEnrollment;
@@ -9,7 +10,7 @@ use App\Domains\Finance\Models\Payment;
 use App\Domains\Finance\Models\PaymentItem;
 use App\Domains\People\Models\RegistrationStudent;
 use App\Domains\Identity\Models\User;
-use App\Domains\Notifications\Services\SmsGatewayService;
+use App\Domains\Notifications\Contracts\SmsSenderInterface;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -23,7 +24,7 @@ class PaymentService
 
     public function __construct(
         protected PaymentProviderInterface $provider,
-        protected SmsGatewayService $sms,
+        protected SmsSenderInterface $sms,
     ) {}
 
     /**

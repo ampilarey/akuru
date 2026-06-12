@@ -2,10 +2,11 @@
 
 namespace App\Domains\Media\Services;
 
+use App\Domains\Media\Contracts\ImageProcessorInterface;
 use Illuminate\Support\Facades\Storage;
 use Intervention\Image\ImageManager;
 
-class WebPImageService
+class WebPImageService implements ImageProcessorInterface
 {
     /** Supported source formats for WebP conversion */
     protected array $supportedFormats = ['jpg', 'jpeg', 'png'];

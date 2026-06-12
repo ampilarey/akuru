@@ -2,7 +2,7 @@
 
 namespace App\View\Components\Public;
 
-use App\Domains\Media\Services\WebPImageService;
+use App\Domains\Media\Contracts\ImageProcessorInterface;
 use Illuminate\View\Component;
 
 class Picture extends Component
@@ -21,7 +21,7 @@ class Picture extends Component
             return null;
         }
 
-        $service = app(WebPImageService::class);
+        $service = app(ImageProcessorInterface::class);
         $webpPath = $service->getWebPPath($this->src);
 
         if ($webpPath === null) {

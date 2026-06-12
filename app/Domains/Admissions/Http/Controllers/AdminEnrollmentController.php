@@ -1,17 +1,17 @@
 <?php
 
-namespace App\Http\Controllers\Admin;
+namespace App\Domains\Admissions\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Mail\EnrollmentStatusMail;
 use App\Domains\Courses\Models\Course;
 use App\Domains\Courses\Models\CourseEnrollment;
 use App\Domains\Finance\Models\Payment;
-use App\Domains\Notifications\Services\SmsGatewayService;
+use App\Domains\Notifications\Contracts\SmsSenderInterface;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 
-class EnrollmentController extends Controller
+class AdminEnrollmentController extends Controller
 {
     public function index(Request $request)
     {
@@ -177,7 +177,7 @@ class EnrollmentController extends Controller
             $feeText = $fee ? ' MVR '.number_format($fee, 2).' paid.' : '';
             $message = "Akuru: {$studentName} enrolled in {$courseName}.{$feeText} See you soon!";
 
-            app(SmsGatewayService::class)->sendSms($mobile, $message);
+            app(SmsSenderInterface::class)->sendSms($mobile, $message);
         } catch (\Throwable $e) {
             \Illuminate\Support\Facades\Log::error('Enrollment activation SMS failed: '.$e->getMessage());
         }
@@ -200,7 +200,7 @@ class EnrollmentController extends Controller
 
             $message = "Akuru: Sorry, {$studentName}'s enrollment in {$courseName} was not approved. Contact us for details.";
 
-            app(SmsGatewayService::class)->sendSms($mobile, $message);
+            app(SmsSenderInterface::class)->sendSms($mobile, $message);
         } catch (\Throwable $e) {
             \Illuminate\Support\Facades\Log::error('Enrollment rejection SMS failed: '.$e->getMessage());
         }

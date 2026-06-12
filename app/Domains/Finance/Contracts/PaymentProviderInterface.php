@@ -3,6 +3,8 @@
 namespace App\Domains\Finance\Contracts;
 
 use App\Domains\Finance\Models\Payment;
+use App\Domains\Finance\Services\Payment\PaymentInitiationResult;
+use App\Domains\Finance\Services\Payment\PaymentVerificationResult;
 use Illuminate\Http\Request;
 
 interface PaymentProviderInterface

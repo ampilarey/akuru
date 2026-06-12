@@ -2,6 +2,7 @@
 
 namespace App\Domains\Notifications\Services;
 
+use App\Domains\Notifications\Contracts\SmsSenderInterface;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -12,7 +13,7 @@ use Illuminate\Support\Facades\Log;
  * Uses Dhiraagu API directly (config from akurusms) when SMS_USE_DHIRAAGU=true.
  * Otherwise falls back to HTTP gateway at akuru.edu.mv.
  */
-class SmsGatewayService
+class SmsGatewayService implements SmsSenderInterface
 {
     protected string $apiUrl;
 

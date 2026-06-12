@@ -3,9 +3,8 @@
 namespace App\Providers;
 
 use App\Domains\Settings\Models\Setting;
-use App\Domains\Finance\Contracts\PaymentProviderInterface;
-use App\Domains\Finance\Services\Payment\PaymentService;
-use App\Domains\Notifications\Services\SmsGatewayService;
+use App\Support\Contracts\DocumentRendererInterface;
+use App\Support\Services\StubDocumentRenderer;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\View;
@@ -18,18 +17,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        $this->app->bind(PaymentProviderInterface::class, function ($app) {
-            $driver = config('payments.providers.'.config('payments.default').'.driver');
-
-            return $app->make($driver);
-        });
-
-        $this->app->singleton(PaymentService::class, function ($app) {
-            return new PaymentService(
-                $app->make(PaymentProviderInterface::class),
-                $app->make(SmsGatewayService::class),
-            );
-        });
+        $this->app->singleton(DocumentRendererInterface::class, StubDocumentRenderer::class);
     }
 
     /**

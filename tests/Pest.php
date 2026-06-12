@@ -16,3 +16,6 @@ pest()->extend(Tests\TestCase::class)
 
 pest()->extend(Tests\TestCase::class)
     ->in('Unit');
+
+pest()->extend(Tests\TestCase::class)
+    ->in('Architecture');
