@@ -4,7 +4,7 @@ namespace App\Domains\Website\Http\Controllers\PublicSite;
 
 use App\Domains\Website\Models\ContactMessage;
 use App\Http\Controllers\Controller;
-use App\Notifications\NewContactMessage;
+use App\Domains\Notifications\Notifications\NewContactMessage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\RateLimiter;

@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Http\Controllers\Api;
+namespace App\Domains\Notifications\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Services\SmsGatewayService;
+use App\Domains\Notifications\Services\SmsGatewayService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;

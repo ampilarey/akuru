@@ -5,7 +5,7 @@ namespace App\Providers;
 use App\Domains\Settings\Models\Setting;
 use App\Domains\Finance\Services\Payment\PaymentProviderInterface;
 use App\Domains\Finance\Services\Payment\PaymentService;
-use App\Services\SmsGatewayService;
+use App\Domains\Notifications\Services\SmsGatewayService;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\View;

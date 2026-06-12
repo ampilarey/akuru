@@ -676,7 +676,7 @@ class DashboardController extends Controller
     private function getSmsGatewayStatus()
     {
         try {
-            $smsService = app(\App\Services\SmsGatewayService::class);
+            $smsService = app(\App\Domains\Notifications\Services\SmsGatewayService::class);
 
             return $smsService->checkHealth() ? 'online' : 'offline';
         } catch (\Exception $e) {

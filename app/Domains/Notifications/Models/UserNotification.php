@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models;
+namespace App\Domains\Notifications\Models;
 
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;

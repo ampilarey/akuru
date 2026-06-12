@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Notifications;
+namespace App\Domains\Notifications\Notifications;
 
 use App\Domains\Website\Models\ContactMessage;
 use Illuminate\Bus\Queueable;

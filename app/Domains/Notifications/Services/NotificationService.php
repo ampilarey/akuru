@@ -1,10 +1,13 @@
 <?php
 
-namespace App\Services;
+namespace App\Domains\Notifications\Services;
 
-use App\Models\NotificationTemplate;
+use App\Domains\Notifications\Services\SmsGatewayService;
+
+
+use App\Domains\Notifications\Models\NotificationTemplate;
 use App\Models\User;
-use App\Models\UserNotification;
+use App\Domains\Notifications\Models\UserNotification;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;

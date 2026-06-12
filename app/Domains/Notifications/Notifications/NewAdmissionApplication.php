@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Notifications;
+namespace App\Domains\Notifications\Notifications;
 
 use App\Domains\Admissions\Models\AdmissionApplication;
 use Illuminate\Bus\Queueable;

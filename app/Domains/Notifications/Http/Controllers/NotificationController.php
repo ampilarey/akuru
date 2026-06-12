@@ -1,9 +1,12 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Domains\Notifications\Http\Controllers;
 
-use App\Models\UserNotification;
-use App\Services\NotificationService;
+use App\Http\Controllers\Controller;
+
+
+use App\Domains\Notifications\Models\UserNotification;
+use App\Domains\Notifications\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 

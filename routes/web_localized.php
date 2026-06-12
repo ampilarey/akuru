@@ -11,7 +11,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ELearningController;
 use App\Http\Controllers\EnhancedDashboardController;
 use App\Http\Controllers\LocaleController;
-use App\Http\Controllers\NotificationController;
+use App\Domains\Notifications\Http\Controllers\NotificationController;
 use App\Http\Controllers\ProfileController;
 use App\Domains\Hifz\Http\Controllers\QuranProgressController;
 use App\Domains\People\Http\Controllers\StudentController;

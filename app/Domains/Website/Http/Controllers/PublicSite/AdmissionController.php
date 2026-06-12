@@ -5,7 +5,7 @@ namespace App\Domains\Website\Http\Controllers\PublicSite;
 use App\Http\Controllers\Controller;
 use App\Domains\Admissions\Models\AdmissionApplication;
 use App\Models\Course;
-use App\Notifications\NewAdmissionApplication;
+use App\Domains\Notifications\Notifications\NewAdmissionApplication;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Notification;
 

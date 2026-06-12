@@ -7,7 +7,7 @@ use App\Mail\EnrollmentStatusMail;
 use App\Models\Course;
 use App\Models\CourseEnrollment;
 use App\Domains\Finance\Models\Payment;
-use App\Services\SmsGatewayService;
+use App\Domains\Notifications\Services\SmsGatewayService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 
