@@ -3,7 +3,7 @@
 namespace App\Domains\Admissions\Services\Enrollment;
 
 use App\Models\CourseEnrollment;
-use App\Models\Payment;
+use App\Domains\Finance\Models\Payment;
 
 class EnrollmentResult
 {

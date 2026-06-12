@@ -4,8 +4,8 @@ namespace Tests\Feature;
 
 use App\Models\Course;
 use App\Models\CourseEnrollment;
-use App\Models\Payment;
-use App\Models\PaymentItem;
+use App\Domains\Finance\Models\Payment;
+use App\Domains\Finance\Models\PaymentItem;
 use App\Domains\People\Models\RegistrationStudent;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;

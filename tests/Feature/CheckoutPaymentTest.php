@@ -4,7 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Course;
 use App\Models\User;
-use App\Services\BmlConnectService;
+use App\Domains\Finance\Services\BmlConnectService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 

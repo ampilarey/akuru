@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Services\Payment;
+namespace App\Domains\Finance\Services\Payment;
 
 use App\Mail\EnrollmentConfirmedMail;
 use App\Models\Course;
 use App\Models\CourseEnrollment;
-use App\Models\Payment;
-use App\Models\PaymentItem;
+use App\Domains\Finance\Models\Payment;
+use App\Domains\Finance\Models\PaymentItem;
 use App\Domains\People\Models\RegistrationStudent;
 use App\Models\User;
 use App\Services\SmsGatewayService;

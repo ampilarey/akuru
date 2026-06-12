@@ -2,7 +2,7 @@
 
 namespace App\Domains\Admissions\Models;
 
-use App\Models\Payment;
+use App\Domains\Finance\Models\Payment;
 use App\Models\User;
 
 use App\Domains\Identity\Models\UserContact;

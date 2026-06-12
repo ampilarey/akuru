@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services\Payment;
+namespace App\Domains\Finance\Services\Payment;
 
 class PaymentInitiationResult
 {

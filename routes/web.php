@@ -7,18 +7,18 @@ use Mcamara\LaravelLocalization\Facades\LaravelLocalization;
 Route::get('/inertia-test', fn () => inertia('InertiaTest'))->name('inertia.test');
 
 // Payment webhook (no locale - BML posts to fixed URL)
-Route::post('payments/bml/callback', [\App\Http\Controllers\PaymentController::class, 'callback'])
+Route::post('payments/bml/callback', [\App\Domains\Finance\Http\Controllers\PaymentController::class, 'callback'])
     ->name('payments.bml.callback');
 
 // BML webhook (PRIMARY method for payment confirmation; no locale)
-Route::post('webhooks/bml', \App\Http\Controllers\BmlWebhookController::class)
+Route::post('webhooks/bml', \App\Domains\Finance\Http\Controllers\BmlWebhookController::class)
     ->name('webhooks.bml')->middleware('throttle:120,1');
 
 // BML return URL and status poll - must be outside localized group so BML's
 // redirect lands here directly without a locale-prefix 302 redirect dropping query params.
-Route::get('payments/bml/return', [\App\Http\Controllers\PaymentController::class, 'return'])
+Route::get('payments/bml/return', [\App\Domains\Finance\Http\Controllers\PaymentController::class, 'return'])
     ->name('payments.bml.return');
-Route::get('payments/status/{payment}', [\App\Http\Controllers\PaymentController::class, 'statusByPayment'])
+Route::get('payments/status/{payment}', [\App\Domains\Finance\Http\Controllers\PaymentController::class, 'statusByPayment'])
     ->name('payments.status.by_id');
 
 // Localized routes

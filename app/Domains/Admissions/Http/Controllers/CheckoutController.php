@@ -7,10 +7,10 @@ use App\Http\Controllers\Controller;
 
 use App\Models\Course;
 use App\Models\CourseEnrollment;
-use App\Models\Payment;
-use App\Models\PaymentItem;
+use App\Domains\Finance\Models\Payment;
+use App\Domains\Finance\Models\PaymentItem;
 use App\Domains\People\Models\RegistrationStudent;
-use App\Services\BmlConnectService;
+use App\Domains\Finance\Services\BmlConnectService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;

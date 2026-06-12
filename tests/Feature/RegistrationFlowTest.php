@@ -5,14 +5,14 @@ namespace Tests\Feature;
 use App\Models\Course;
 use App\Models\CourseEnrollment;
 use App\Domains\Identity\Models\Otp;
-use App\Models\Payment;
-use App\Models\PaymentItem;
+use App\Domains\Finance\Models\Payment;
+use App\Domains\Finance\Models\PaymentItem;
 use App\Domains\People\Models\RegistrationStudent;
 use App\Models\User;
 use App\Domains\Identity\Models\UserContact;
-use App\Services\Payment\BmlPaymentProvider;
-use App\Services\Payment\PaymentService;
-use App\Services\Payment\PaymentVerificationResult;
+use App\Domains\Finance\Services\Payment\BmlPaymentProvider;
+use App\Domains\Finance\Services\Payment\PaymentService;
+use App\Domains\Finance\Services\Payment\PaymentVerificationResult;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Mockery;
 use Tests\TestCase;
@@ -209,7 +209,7 @@ class RegistrationFlowTest extends TestCase
             ->andReturn(new PaymentVerificationResult(
                 true, 'AKURU-RETURN-001', 'BML-TXN-RTN', 'completed', [], null, true
             ));
-        $this->app->instance(\App\Services\Payment\PaymentProviderInterface::class, $mockProvider);
+        $this->app->instance(\App\Domains\Finance\Services\Payment\PaymentProviderInterface::class, $mockProvider);
 
         // No session – just ?ref= in URL. Use withoutMiddleware to skip locale redirects in test env.
         $response = $this->withoutMiddleware()
@@ -310,7 +310,7 @@ class RegistrationFlowTest extends TestCase
 
                 return new PaymentVerificationResult(true, $payload['localId'], null, $payload['state'], $payload, null, true);
             });
-        $this->app->instance(\App\Services\Payment\PaymentProviderInterface::class, $mockProvider);
+        $this->app->instance(\App\Domains\Finance\Services\Payment\PaymentProviderInterface::class, $mockProvider);
 
         $response = $this->call(
             'POST',
@@ -411,7 +411,7 @@ class RegistrationFlowTest extends TestCase
 
         $mockProvider = Mockery::mock(BmlPaymentProvider::class)->makePartial();
         $mockProvider->shouldNotReceive('queryStatus'); // should short-circuit
-        $this->app->instance(\App\Services\Payment\PaymentProviderInterface::class, $mockProvider);
+        $this->app->instance(\App\Domains\Finance\Services\Payment\PaymentProviderInterface::class, $mockProvider);
 
         /** @var PaymentService $service */
         $service = $this->app->make(PaymentService::class);

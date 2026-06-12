@@ -6,14 +6,14 @@ use App\Http\Requests\Registration\SetPasswordRequest;
 use App\Http\Requests\Registration\StartRegistrationRequest;
 use App\Http\Requests\Registration\VerifyOtpRequest;
 use App\Models\Course;
-use App\Models\Payment;
+use App\Domains\Finance\Models\Payment;
 use App\Domains\Admissions\Models\RegistrationFlow;
 use App\Domains\Identity\Models\UserContact;
 use App\Domains\Identity\Services\AccountResolverService;
 use App\Domains\Identity\Services\ContactNormalizer;
 use App\Domains\Admissions\Services\Enrollment\EnrollmentService;
 use App\Domains\Identity\Services\OtpService;
-use App\Services\Payment\PaymentService;
+use App\Domains\Finance\Services\Payment\PaymentService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -718,7 +718,7 @@ class CourseRegistrationController extends PublicRegistrationController
 
         // Guard: check for an existing un-confirmed pending payment (deferred enrollment)
         // to prevent duplicate payment records for the same user + courses.
-        $existingPendingPayment = \App\Models\Payment::where('user_id', $user->id)
+        $existingPendingPayment = \App\Domains\Finance\Models\Payment::where('user_id', $user->id)
             ->whereNotNull('enrollment_pending_payload')
             ->whereIn('status', ['initiated', 'pending'])
             ->get()
@@ -1089,7 +1089,7 @@ class CourseRegistrationController extends PublicRegistrationController
         $paymentIdForStatus = null;
         $showProceedToPayment = false;
         if ($paymentRef) {
-            $payment = \App\Models\Payment::where('merchant_reference', $paymentRef)->first();
+            $payment = \App\Domains\Finance\Models\Payment::where('merchant_reference', $paymentRef)->first();
             if ($payment) {
                 $paymentIdForStatus = $payment->id;
                 $showProceedToPayment = ! in_array($payment->status ?? '', ['confirmed', 'paid'], true);

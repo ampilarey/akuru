@@ -2,7 +2,7 @@
 
 namespace App\Mail;
 
-use App\Models\Payment;
+use App\Domains\Finance\Models\Payment;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;

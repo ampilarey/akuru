@@ -3,7 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\CourseEnrollment;
-use App\Models\PaymentItem;
+use App\Domains\Finance\Models\PaymentItem;
 use App\Domains\People\Models\RegistrationStudent;
 use App\Models\User;
 use App\Domains\Identity\Models\UserContact;

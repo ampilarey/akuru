@@ -88,8 +88,8 @@ class DashboardController extends Controller
             'pending_enrollments' => \App\Models\CourseEnrollment::whereIn('status', ['pending', 'pending_payment'])->count(),
             'active_enrollments' => \App\Models\CourseEnrollment::where('status', 'active')->count(),
             'enrollments_today' => \App\Models\CourseEnrollment::whereDate('created_at', today())->count(),
-            'revenue_total' => \App\Models\Payment::where('status', 'paid')->sum('amount'),
-            'revenue_today' => \App\Models\Payment::where('status', 'paid')->whereDate('created_at', today())->sum('amount'),
+            'revenue_total' => \App\Domains\Finance\Models\Payment::where('status', 'paid')->sum('amount'),
+            'revenue_today' => \App\Domains\Finance\Models\Payment::where('status', 'paid')->whereDate('created_at', today())->sum('amount'),
             'new_users_today' => \App\Models\User::whereDate('created_at', today())->count(),
             'new_users_this_month' => \App\Models\User::whereMonth('created_at', now()->month)->whereYear('created_at', now()->year)->count(),
         ];

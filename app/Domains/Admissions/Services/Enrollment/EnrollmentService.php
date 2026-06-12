@@ -4,8 +4,8 @@ namespace App\Domains\Admissions\Services\Enrollment;
 
 use App\Models\Course;
 use App\Models\CourseEnrollment;
-use App\Models\Payment;
-use App\Models\PaymentItem;
+use App\Domains\Finance\Models\Payment;
+use App\Domains\Finance\Models\PaymentItem;
 use App\Domains\People\Models\RegistrationStudent;
 use App\Models\User;
 use App\Domains\Identity\Models\UserContact;
@@ -16,7 +16,7 @@ use Illuminate\Validation\ValidationException;
 class EnrollmentService
 {
     public function __construct(
-        protected \App\Services\Payment\PaymentService $paymentService
+        protected \App\Domains\Finance\Services\Payment\PaymentService $paymentService
     ) {}
 
     /**
@@ -339,7 +339,7 @@ class EnrollmentService
      *
      * Must be idempotent: if items already exist, skip silently.
      */
-    public function createEnrollmentForConfirmedPayment(\App\Models\Payment $payment): void
+    public function createEnrollmentForConfirmedPayment(\App\Domains\Finance\Models\Payment $payment): void
     {
         $payload = $payment->enrollment_pending_payload;
         if (! $payload) {

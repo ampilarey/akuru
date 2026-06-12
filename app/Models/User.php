@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Domains\Finance\Models\Payment;
+
 use App\Domains\Identity\Models\UserContact;
 use App\Domains\People\Models\ParentGuardian;
 use App\Domains\People\Models\RegistrationStudent;

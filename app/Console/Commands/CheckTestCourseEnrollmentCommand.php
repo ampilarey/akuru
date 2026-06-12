@@ -4,7 +4,7 @@ namespace App\Console\Commands;
 
 use App\Models\Course;
 use App\Models\CourseEnrollment;
-use App\Models\Payment;
+use App\Domains\Finance\Models\Payment;
 use Illuminate\Console\Command;
 
 class CheckTestCourseEnrollmentCommand extends Command

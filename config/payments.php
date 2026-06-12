@@ -5,7 +5,7 @@ return [
 
     'providers' => [
         'bml' => [
-            'driver' => \App\Services\Payment\BmlPaymentProvider::class,
+            'driver' => \App\Domains\Finance\Services\Payment\BmlPaymentProvider::class,
         ],
     ],
 ];

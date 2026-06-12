@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Services\Payment;
+namespace App\Domains\Finance\Services\Payment;
 
-use App\Models\Payment;
+use App\Domains\Finance\Models\Payment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;

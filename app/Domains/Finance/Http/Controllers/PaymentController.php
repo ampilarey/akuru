@@ -1,10 +1,13 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Domains\Finance\Http\Controllers;
 
-use App\Models\Payment;
-use App\Services\BmlConnectService;
-use App\Services\Payment\PaymentService;
+use App\Http\Controllers\Controller;
+
+
+use App\Domains\Finance\Models\Payment;
+use App\Domains\Finance\Services\BmlConnectService;
+use App\Domains\Finance\Services\Payment\PaymentService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -45,7 +48,7 @@ class PaymentController extends Controller
             return redirect()->route('public.courses.index')->with('error', 'Invalid payment reference.');
         }
 
-        $payment = \App\Models\Payment::where('merchant_reference', $ref)->first();
+        $payment = \App\Domains\Finance\Models\Payment::where('merchant_reference', $ref)->first();
         if (! $payment) {
             return redirect()->route('public.courses.index')->with('error', 'Payment not found.');
         }

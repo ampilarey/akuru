@@ -1,6 +1,11 @@
 <?php
 
-namespace App\Models;
+namespace App\Domains\Finance\Models;
+
+use App\Domains\Finance\Models\PaymentItem;
+use App\Models\Course;
+use App\Models\CourseEnrollment;
+use App\Models\User;
 
 use App\Domains\People\Models\RegistrationStudent;
 use Illuminate\Database\Eloquent\Model;

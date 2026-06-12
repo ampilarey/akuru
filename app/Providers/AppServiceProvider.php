@@ -3,8 +3,8 @@
 namespace App\Providers;
 
 use App\Domains\Settings\Models\Setting;
-use App\Services\Payment\PaymentProviderInterface;
-use App\Services\Payment\PaymentService;
+use App\Domains\Finance\Services\Payment\PaymentProviderInterface;
+use App\Domains\Finance\Services\Payment\PaymentService;
 use App\Services\SmsGatewayService;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Schema;

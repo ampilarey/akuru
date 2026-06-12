@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Portal;
 
 use App\Http\Controllers\Controller;
 use App\Models\CourseEnrollment;
-use App\Models\Payment;
+use App\Domains\Finance\Models\Payment;
 use Illuminate\Http\Request;
 
 class PortalController extends Controller

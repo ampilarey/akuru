@@ -119,11 +119,11 @@ Route::post('payments/course/{course}/start', [\App\Domains\Admissions\Http\Cont
     ->name('payments.course.start')->middleware('auth');
 
 // Payment routes
-Route::get('payments/return/{payment}', [\App\Http\Controllers\PaymentController::class, 'returnByPayment'])
+Route::get('payments/return/{payment}', [\App\Domains\Finance\Http\Controllers\PaymentController::class, 'returnByPayment'])
     ->name('payments.return');
-Route::get('payments/ref/{merchant_reference}/status', [\App\Http\Controllers\PaymentController::class, 'status'])
+Route::get('payments/ref/{merchant_reference}/status', [\App\Domains\Finance\Http\Controllers\PaymentController::class, 'status'])
     ->name('payments.status');
-Route::post('payments/bml/initiate', [\App\Http\Controllers\PaymentController::class, 'initiate'])
+Route::post('payments/bml/initiate', [\App\Domains\Finance\Http\Controllers\PaymentController::class, 'initiate'])
     ->name('payments.bml.initiate');
 
 // Portal (authenticated)
@@ -147,7 +147,7 @@ Route::middleware('auth')->group(function () {
     Route::get('my-enrollments', [\App\Domains\Admissions\Http\Controllers\MyEnrollmentsController::class, 'index'])
         ->name('my.enrollments');
 
-    Route::get('payments/{payment}/receipt', [\App\Http\Controllers\PaymentReceiptController::class, 'show'])
+    Route::get('payments/{payment}/receipt', [\App\Domains\Finance\Http\Controllers\PaymentReceiptController::class, 'show'])
         ->name('payment.receipt');
 });
 

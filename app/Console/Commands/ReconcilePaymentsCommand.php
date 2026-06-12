@@ -2,8 +2,8 @@
 
 namespace App\Console\Commands;
 
-use App\Models\Payment;
-use App\Services\BmlConnectService;
+use App\Domains\Finance\Models\Payment;
+use App\Domains\Finance\Services\BmlConnectService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 
