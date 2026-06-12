@@ -2,9 +2,9 @@
 
 namespace App\Policies;
 
-use App\Models\HifzSession;
+use App\Domains\Hifz\Models\HifzSession;
 use App\Models\User;
-use App\Services\Hifz\HifzScopeService;
+use App\Domains\Hifz\Services\HifzScopeService;
 
 class HifzSessionPolicy
 {

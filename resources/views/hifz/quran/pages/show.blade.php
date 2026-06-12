@@ -17,7 +17,7 @@
 }">
 <div class="max-w-5xl mx-auto px-4">
 <h1 class="text-2xl font-bold mb-4">{{ $mushaf->name }} — Page {{ $pageNumber }}</h1>
-@can('manage', App\Models\QuranMushaf::class)
+@can('manage', App\Domains\Hifz\Models\QuranMushaf::class)
 <button @click="mapping=!mapping" class="btn btn-secondary mb-4 text-sm" x-text="mapping ? 'Stop Mapping' : 'Map Word Positions'"></button>
 @endcan
 <div class="grid lg:grid-cols-2 gap-4">
@@ -30,7 +30,7 @@
 <div class="card p-4">
 <h3 class="font-semibold mb-2">Ayahs on page</h3>
 @foreach($ayahs as $ayah)<p class="text-right text-sm py-1 border-b" dir="rtl">{{ $ayah->surah_number }}:{{ $ayah->ayah_number }} {{ Str::limit($ayah->text_uthmani, 60) }}</p>@endforeach
-@can('manage', App\Models\QuranMushaf::class)
+@can('manage', App\Domains\Hifz\Models\QuranMushaf::class)
 <div x-show="mapping" class="mt-4 border-t pt-4">
 <p class="text-sm mb-2">Select word then adjust box % and save:</p>
 <select x-model="selectedWord" class="form-input w-full text-sm mb-2">

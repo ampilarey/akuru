@@ -4,9 +4,9 @@ namespace App\Domains\People\Models;
 
 use App\Domains\Academics\Models\ClassRoom;
 use App\Domains\Academics\Models\Grade;
-use App\Models\HifzEnrollment;
-use App\Models\HifzSession;
-use App\Models\QuranProgress;
+use App\Domains\Hifz\Models\HifzEnrollment;
+use App\Domains\Hifz\Models\HifzSession;
+use App\Domains\Hifz\Models\QuranProgress;
 use App\Models\School;
 use App\Domains\Academics\Models\Subject;
 use App\Domains\Academics\Models\Timetable;

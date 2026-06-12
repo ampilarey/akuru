@@ -2,9 +2,9 @@
 
 namespace App\Policies;
 
-use App\Models\HifzMistake;
+use App\Domains\Hifz\Models\HifzMistake;
 use App\Models\User;
-use App\Services\Hifz\HifzScopeService;
+use App\Domains\Hifz\Services\HifzScopeService;
 
 class HifzMistakePolicy
 {

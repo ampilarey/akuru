@@ -2,7 +2,7 @@
 
 namespace Tests\Feature\Hifz;
 
-use App\Models\QuranMushaf;
+use App\Domains\Hifz\Models\QuranMushaf;
 use App\Models\User;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;

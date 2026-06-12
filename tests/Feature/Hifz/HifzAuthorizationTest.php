@@ -2,8 +2,8 @@
 
 namespace Tests\Feature\Hifz;
 
-use App\Models\HifzProgram;
-use App\Models\HifzSession;
+use App\Domains\Hifz\Models\HifzProgram;
+use App\Domains\Hifz\Models\HifzSession;
 use App\Domains\People\Models\Student;
 use App\Models\User;
 use Database\Seeders\HifzDemoSeeder;

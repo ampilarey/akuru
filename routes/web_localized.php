@@ -13,7 +13,7 @@ use App\Http\Controllers\EnhancedDashboardController;
 use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\QuranProgressController;
+use App\Domains\Hifz\Http\Controllers\QuranProgressController;
 use App\Domains\People\Http\Controllers\StudentController;
 use App\Domains\Academics\Http\Controllers\SubstitutionRequestController;
 use App\Domains\Academics\Http\Controllers\TeacherAbsenceController;
@@ -43,7 +43,7 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
     Route::post('/quran-progress/{student}/update', [QuranProgressController::class, 'updateProgress'])->name('quran-progress.update-progress');
 
     // Hifz Progress module
-    require __DIR__.'/hifz.php';
+    require base_path('app/Domains/Hifz/routes.php');
 
     // Announcement routes
     Route::resource('announcements', AnnouncementController::class);

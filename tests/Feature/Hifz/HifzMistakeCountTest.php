@@ -3,10 +3,10 @@
 namespace Tests\Feature\Hifz;
 
 use App\Enums\Hifz\HifzMistakeType;
-use App\Models\HifzMistake;
-use App\Models\HifzSessionRecord;
+use App\Domains\Hifz\Models\HifzMistake;
+use App\Domains\Hifz\Models\HifzSessionRecord;
 use App\Models\User;
-use App\Services\Hifz\HifzMistakeCounterService;
+use App\Domains\Hifz\Services\HifzMistakeCounterService;
 use Database\Seeders\HifzDemoSeeder;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;

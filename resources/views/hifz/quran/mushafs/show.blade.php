@@ -10,7 +10,7 @@
 @can('lock', $mushaf)<form method="POST" action="{{ route('hifz.quran.mushafs.lock', $mushaf) }}">@csrf<button class="btn btn-secondary">Lock</button></form>@endcan
 <a href="{{ route('hifz.quran.pages.show', [$mushaf, 1]) }}" class="btn btn-secondary">Map Page 1</a>
 </div>
-@can('manage', App\Models\QuranMushaf::class)
+@can('manage', App\Domains\Hifz\Models\QuranMushaf::class)
 <div class="card p-4">
 <h3 class="font-semibold mb-3">Import Ayah / Words</h3>
 <form method="POST" action="{{ route('hifz.quran.mushafs.import-ayah', $mushaf) }}" class="space-y-3">@csrf
