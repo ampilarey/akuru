@@ -5,10 +5,10 @@ use App\Domains\Website\Http\Controllers\Admin\PublicSite\CourseController as Ad
 use App\Domains\Website\Http\Controllers\Admin\PublicSite\PageController as AdminPageController;
 use App\Domains\Admissions\Http\Controllers\AdminEnrollmentController as AdminEnrollmentController;
 use App\Http\Controllers\Admin\InstructorController as AdminInstructorController;
-use App\Http\Controllers\AnalyticsController;
+use App\Domains\Settings\Http\Controllers\AnalyticsController;
 use App\Domains\Academics\Http\Controllers\AnnouncementController;
 use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\ELearningController;
+use App\Domains\Academics\Legacy\Http\Controllers\ELearningController;
 use App\Http\Controllers\EnhancedDashboardController;
 use App\Http\Controllers\LocaleController;
 use App\Domains\Notifications\Http\Controllers\NotificationController;

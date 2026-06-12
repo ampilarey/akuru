@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Domains\Academics\Models\Announcement;
-use App\Models\Assignment;
-use App\Models\AssignmentSubmission;
+use App\Domains\Academics\Legacy\Models\Assignment;
+use App\Domains\Academics\Legacy\Models\AssignmentSubmission;
 use App\Domains\Academics\Models\Attendance;
 use App\Domains\Hifz\Models\QuranProgress;
 use App\Domains\Hifz\Models\RecitationPractice;

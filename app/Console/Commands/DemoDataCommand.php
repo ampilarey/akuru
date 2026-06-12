@@ -3,7 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Domains\Academics\Models\Announcement;
-use App\Models\Assignment;
+use App\Domains\Academics\Legacy\Models\Assignment;
 use App\Domains\Academics\Models\ClassRoom;
 use App\Domains\Hifz\Models\QuranProgress;
 use App\Models\School;

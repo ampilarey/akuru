@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\ELearning;
+namespace App\Domains\Academics\Legacy\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
