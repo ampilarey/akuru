@@ -4,15 +4,15 @@ use App\Domains\Settings\Http\Controllers\Admin\SettingsController as AdminSetti
 use App\Domains\Website\Http\Controllers\Admin\PublicSite\CourseController as AdminCourseController;
 use App\Domains\Website\Http\Controllers\Admin\PublicSite\PageController as AdminPageController;
 use App\Domains\Admissions\Http\Controllers\AdminEnrollmentController as AdminEnrollmentController;
-use App\Http\Controllers\Admin\InstructorController as AdminInstructorController;
+use App\Domains\HR\Http\Controllers\InstructorController as AdminInstructorController;
 use App\Domains\Settings\Http\Controllers\AnalyticsController;
 use App\Domains\Academics\Http\Controllers\AnnouncementController;
-use App\Http\Controllers\DashboardController;
+use App\Domains\Portal\Http\Controllers\DashboardController;
 use App\Domains\Academics\Legacy\Http\Controllers\ELearningController;
-use App\Http\Controllers\EnhancedDashboardController;
-use App\Http\Controllers\LocaleController;
+use App\Domains\Portal\Http\Controllers\EnhancedDashboardController;
+use App\Support\Http\Controllers\LocaleController;
 use App\Domains\Notifications\Http\Controllers\NotificationController;
-use App\Http\Controllers\ProfileController;
+use App\Domains\Identity\Http\Controllers\ProfileController;
 use App\Domains\Hifz\Http\Controllers\QuranProgressController;
 use App\Domains\People\Http\Controllers\StudentController;
 use App\Domains\Academics\Http\Controllers\SubstitutionRequestController;
@@ -82,8 +82,8 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
 
     // Admin user management (super_admin only)
     Route::prefix('admin/users')->middleware(['role:super_admin'])->group(function () {
-        Route::get('/', [\App\Http\Controllers\Admin\AdminUserController::class, 'index'])->name('admin.users.index');
-        Route::delete('/{user}', [\App\Http\Controllers\Admin\AdminUserController::class, 'destroy'])->name('admin.users.destroy');
+        Route::get('/', [\App\Domains\Identity\Http\Controllers\AdminUserController::class, 'index'])->name('admin.users.index');
+        Route::delete('/{user}', [\App\Domains\Identity\Http\Controllers\AdminUserController::class, 'destroy'])->name('admin.users.destroy');
     });
 
     // Admin enrollment management

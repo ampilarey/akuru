@@ -2,7 +2,7 @@
 
 namespace App\Console\Commands;
 
-use App\Models\CourseEnrollment;
+use App\Domains\Courses\Models\CourseEnrollment;
 use App\Domains\Identity\Models\Otp;
 use Illuminate\Console\Command;
 

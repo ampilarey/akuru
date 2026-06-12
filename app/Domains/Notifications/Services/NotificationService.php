@@ -6,7 +6,7 @@ use App\Domains\Notifications\Services\SmsGatewayService;
 
 
 use App\Domains\Notifications\Models\NotificationTemplate;
-use App\Models\User;
+use App\Domains\Identity\Models\User;
 use App\Domains\Notifications\Models\UserNotification;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;

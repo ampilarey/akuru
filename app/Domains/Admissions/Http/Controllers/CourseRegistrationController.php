@@ -5,7 +5,7 @@ namespace App\Domains\Admissions\Http\Controllers;
 use App\Http\Requests\Registration\SetPasswordRequest;
 use App\Http\Requests\Registration\StartRegistrationRequest;
 use App\Http\Requests\Registration\VerifyOtpRequest;
-use App\Models\Course;
+use App\Domains\Courses\Models\Course;
 use App\Domains\Finance\Models\Payment;
 use App\Domains\Admissions\Models\RegistrationFlow;
 use App\Domains\Identity\Models\UserContact;
@@ -142,7 +142,7 @@ class CourseRegistrationController extends PublicRegistrationController
             ->first();
 
         if ($existing) {
-            $course = \App\Models\Course::find($request->input('course_id'));
+            $course = \App\Domains\Courses\Models\Course::find($request->input('course_id'));
 
             return redirect()
                 ->route('courses.checkout.show', $course ?? abort(404))
@@ -267,7 +267,7 @@ class CourseRegistrationController extends PublicRegistrationController
 
             $this->otpService->verifyForNewRegistration($type, $value, $request->input('code'));
 
-            $user = \App\Models\User::create([
+            $user = \App\Domains\Identity\Models\User::create([
                 'name' => trim($pendingReg['first_name'].' '.$pendingReg['last_name']),
                 'gender' => $pendingReg['gender'],
                 'date_of_birth' => $pendingReg['dob'],
@@ -383,7 +383,7 @@ class CourseRegistrationController extends PublicRegistrationController
             return back()->withErrors(['passport' => 'Please enter your passport number.'])->withInput();
         }
 
-        $user = \App\Models\User::findOrFail($userId);
+        $user = \App\Domains\Identity\Models\User::findOrFail($userId);
 
         $user->update([
             'name' => trim($request->first_name.' '.$request->last_name),
@@ -449,7 +449,7 @@ class CourseRegistrationController extends PublicRegistrationController
                 if (! $idMatch) {
                     continue;
                 }
-                $existingEnrollment = \App\Models\CourseEnrollment::where('student_id', $candidate->id)
+                $existingEnrollment = \App\Domains\Courses\Models\CourseEnrollment::where('student_id', $candidate->id)
                     ->whereIn('course_id', $courseIds)
                     ->where('status', '!=', 'rejected')
                     ->with('course')
@@ -458,7 +458,7 @@ class CourseRegistrationController extends PublicRegistrationController
                 $realName = trim($candidate->first_name.' '.$candidate->last_name);
                 if ($existingEnrollment) {
                     $title = $existingEnrollment->course?->title
-                              ?? \App\Models\Course::whereIn('id', $courseIds)->first()?->title ?? 'this course';
+                              ?? \App\Domains\Courses\Models\Course::whereIn('id', $courseIds)->first()?->title ?? 'this course';
                     $status = $this->humanEnrollmentStatus($existingEnrollment);
 
                     return back()->withInput()
@@ -493,10 +493,10 @@ class CourseRegistrationController extends PublicRegistrationController
         return redirect()->route('courses.register.continue');
     }
 
-    protected function notifyAdminNewRegistration(\App\Models\User $user): void
+    protected function notifyAdminNewRegistration(\App\Domains\Identity\Models\User $user): void
     {
         try {
-            $admins = \App\Models\User::role(['super_admin', 'admin'])->get();
+            $admins = \App\Domains\Identity\Models\User::role(['super_admin', 'admin'])->get();
             $mobile = $user->contacts()->where('type', 'mobile')->value('value')
                 ?? $user->phone ?? 'N/A';
             $name = $user->name ?? 'Unknown';
@@ -525,7 +525,7 @@ class CourseRegistrationController extends PublicRegistrationController
             if (! $userId) {
                 return redirect()->route('public.courses.index')->with('error', 'Session expired.');
             }
-            $user = \App\Models\User::findOrFail($userId);
+            $user = \App\Domains\Identity\Models\User::findOrFail($userId);
             Auth::login($user);
         }
 
@@ -589,7 +589,7 @@ class CourseRegistrationController extends PublicRegistrationController
             if (! $userId) {
                 return redirect()->route('public.courses.index')->with('error', 'Session expired. Please start again.');
             }
-            $user = \App\Models\User::findOrFail($userId);
+            $user = \App\Domains\Identity\Models\User::findOrFail($userId);
             Auth::login($user);
         }
         if (! $user->hasVerifiedContact()) {
@@ -621,14 +621,14 @@ class CourseRegistrationController extends PublicRegistrationController
         if ($flow === 'adult') {
             $studentProfile = $user->registrationStudentProfile;
             if ($studentProfile) {
-                $existing = \App\Models\CourseEnrollment::where('student_id', $studentProfile->id)
+                $existing = \App\Domains\Courses\Models\CourseEnrollment::where('student_id', $studentProfile->id)
                     ->whereIn('course_id', $courseIds)
                     ->where('status', '!=', 'rejected')
                     ->with('course')
                     ->first();
                 if ($existing) {
                     $title = $existing->course?->title
-                              ?? \App\Models\Course::whereIn('id', $courseIds)->first()?->title
+                              ?? \App\Domains\Courses\Models\Course::whereIn('id', $courseIds)->first()?->title
                               ?? 'this course';
                     $status = $this->humanEnrollmentStatus($existing);
 
@@ -641,14 +641,14 @@ class CourseRegistrationController extends PublicRegistrationController
         // Parent enrolling existing child duplicate
         if ($flow === 'parent' && $request->input('student_mode') === 'existing' && ! empty($data['student_id'])) {
             $studentId = (int) $data['student_id'];
-            $existing = \App\Models\CourseEnrollment::where('student_id', $studentId)
+            $existing = \App\Domains\Courses\Models\CourseEnrollment::where('student_id', $studentId)
                 ->whereIn('course_id', $courseIds)
                 ->where('status', '!=', 'rejected')
                 ->with('course')
                 ->first();
             if ($existing) {
                 $title = $existing->course?->title
-                               ?? \App\Models\Course::find($courseIds[0])?->title
+                               ?? \App\Domains\Courses\Models\Course::find($courseIds[0])?->title
                                ?? 'this course';
                 $status = $this->humanEnrollmentStatus($existing);
                 $studentName = \App\Domains\People\Models\RegistrationStudent::find($studentId)?->full_name ?? 'This student';
@@ -690,7 +690,7 @@ class CourseRegistrationController extends PublicRegistrationController
                 }
             }
             if ($existingStudent) {
-                $existing = \App\Models\CourseEnrollment::where('student_id', $existingStudent->id)
+                $existing = \App\Domains\Courses\Models\CourseEnrollment::where('student_id', $existingStudent->id)
                     ->whereIn('course_id', $courseIds)
                     ->where('status', '!=', 'rejected')
                     ->with('course')
@@ -702,7 +702,7 @@ class CourseRegistrationController extends PublicRegistrationController
 
                 if ($existing) {
                     $title = $existing->course?->title
-                              ?? \App\Models\Course::find($courseIds[0])?->title
+                              ?? \App\Domains\Courses\Models\Course::find($courseIds[0])?->title
                               ?? 'this course';
                     $status = $this->humanEnrollmentStatus($existing);
 
@@ -903,7 +903,7 @@ class CourseRegistrationController extends PublicRegistrationController
     }
 
     /** Process enrollment from session data (called after OTP consent) */
-    protected function processEnrollmentFromSession(\App\Models\User $user): RedirectResponse
+    protected function processEnrollmentFromSession(\App\Domains\Identity\Models\User $user): RedirectResponse
     {
         $flow = session('enroll_pending_flow', 'adult');
         $data = session('enroll_pending_data', []);
@@ -926,7 +926,7 @@ class CourseRegistrationController extends PublicRegistrationController
             }
         }
 
-        $courses = \App\Models\Course::whereIn('id', $courseIds)->get();
+        $courses = \App\Domains\Courses\Models\Course::whereIn('id', $courseIds)->get();
         $totalFee = $courses->sum(fn ($c) => (float) ($c->registration_fee_amount ?? $c->fee ?? 0));
 
         // ── PAID COURSES: deferred enrollment — create only a Payment record now ──
@@ -1031,10 +1031,10 @@ class CourseRegistrationController extends PublicRegistrationController
         return redirect()->route('courses.register.complete')->with('enrollments', $result->allEnrollments());
     }
 
-    protected function notifyAdminNewEnrollment(\App\Models\User $user, $enrollments): void
+    protected function notifyAdminNewEnrollment(\App\Domains\Identity\Models\User $user, $enrollments): void
     {
         try {
-            $admins = \App\Models\User::role(['super_admin', 'admin'])->get();
+            $admins = \App\Domains\Identity\Models\User::role(['super_admin', 'admin'])->get();
             foreach (collect($enrollments)->filter() as $enrollment) {
                 $enrollment->loadMissing('course');
                 $courseName = $enrollment->course?->title ?? 'Unknown';
@@ -1055,7 +1055,7 @@ class CourseRegistrationController extends PublicRegistrationController
     }
 
     /** Return a human-readable enrollment status for user-facing messages. */
-    private function humanEnrollmentStatus(\App\Models\CourseEnrollment $enrollment): string
+    private function humanEnrollmentStatus(\App\Domains\Courses\Models\CourseEnrollment $enrollment): string
     {
         if ($enrollment->status === 'active') {
             return 'enrollment confirmed';
@@ -1207,7 +1207,7 @@ class CourseRegistrationController extends PublicRegistrationController
         }
 
         if ($flow->user_id && ! $user) {
-            $user = \App\Models\User::find($flow->user_id);
+            $user = \App\Domains\Identity\Models\User::find($flow->user_id);
             if ($user) {
                 Auth::login($user);
             }
@@ -1290,7 +1290,7 @@ class CourseRegistrationController extends PublicRegistrationController
         ]);
     }
 
-    protected function sendFreeEnrollmentStudentNotifications(\App\Models\User $user, $enrollments): void
+    protected function sendFreeEnrollmentStudentNotifications(\App\Domains\Identity\Models\User $user, $enrollments): void
     {
         foreach (collect($enrollments)->filter() as $enrollment) {
             $enrollment->loadMissing(['course', 'student']);
@@ -1325,7 +1325,7 @@ class CourseRegistrationController extends PublicRegistrationController
         }
     }
 
-    protected function notifyAdminFreeEnrollment(\App\Models\User $user, $enrollments): void
+    protected function notifyAdminFreeEnrollment(\App\Domains\Identity\Models\User $user, $enrollments): void
     {
         $adminEmail = config('mail.admin_notification_address')
             ?? config('mail.from.address');

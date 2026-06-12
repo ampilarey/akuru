@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Domains\Academics\Models\ClassRoom;
 use App\Domains\People\Models\ParentGuardian;
 use App\Domains\People\Models\Student;
-use App\Models\User;
+use App\Domains\Identity\Models\User;
 use Illuminate\Http\Request;
 
 class StudentController extends Controller

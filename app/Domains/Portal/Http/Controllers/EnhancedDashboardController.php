@@ -1,15 +1,17 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Domains\Portal\Http\Controllers;
+
+use App\Http\Controllers\Controller;
 
 use App\Domains\Admissions\Models\AdmissionApplication;
 use App\Domains\Website\Models\ContactInquiry;
-use App\Models\Course;
+use App\Domains\Courses\Models\Course;
 use App\Domains\Website\Models\Event;
 use App\Domains\Website\Models\GalleryAlbum;
 use App\Domains\Website\Models\Post;
-use App\Models\User;
-use App\Models\UserActivity;
+use App\Domains\Identity\Models\User;
+use App\Domains\Settings\Models\UserActivity;
 use Illuminate\Http\Request;
 
 class EnhancedDashboardController extends Controller

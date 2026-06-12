@@ -3,7 +3,7 @@
 namespace Database\Seeders;
 
 use App\Domains\Academics\Models\Period;
-use App\Models\School;
+use App\Domains\Settings\Models\School;
 use Illuminate\Database\Seeder;
 
 class PeriodSeeder extends Seeder

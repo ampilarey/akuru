@@ -45,7 +45,7 @@ class ContactController extends Controller
         $contactMessage = ContactMessage::create($validated);
 
         // Notify administrators
-        $adminUsers = \App\Models\User::role('admin')->get();
+        $adminUsers = \App\Domains\Identity\Models\User::role('admin')->get();
         if ($adminUsers->count() > 0) {
             Notification::send($adminUsers, new NewContactMessage($contactMessage));
         }

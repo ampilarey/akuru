@@ -3,7 +3,7 @@
 namespace App\Policies;
 
 use App\Domains\Hifz\Models\QuranMushaf;
-use App\Models\User;
+use App\Domains\Identity\Models\User;
 
 class QuranMushafPolicy
 {

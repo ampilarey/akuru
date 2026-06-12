@@ -3,7 +3,7 @@
 namespace App\Domains\Portal\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Models\CourseEnrollment;
+use App\Domains\Courses\Models\CourseEnrollment;
 use App\Domains\Finance\Models\Payment;
 use Illuminate\Http\Request;
 

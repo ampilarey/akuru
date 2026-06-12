@@ -2,8 +2,8 @@
 
 namespace App\Console\Commands;
 
-use App\Models\Course;
-use App\Models\CourseEnrollment;
+use App\Domains\Courses\Models\Course;
+use App\Domains\Courses\Models\CourseEnrollment;
 use App\Domains\Finance\Models\Payment;
 use Illuminate\Console\Command;
 

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services;
+namespace App\Support\Services;
 
 use Alkoumi\LaravelHijriDate\Hijri;
 use Carbon\Carbon;

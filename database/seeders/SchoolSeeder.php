@@ -11,7 +11,7 @@ class SchoolSeeder extends Seeder
      */
     public function run(): void
     {
-        \App\Models\School::create([
+        \App\Domains\Settings\Models\School::create([
             'name' => 'Akuru Institute',
             'name_arabic' => 'معهد أكورو',
             'name_dhivehi' => 'އަކުރު އިންސްޓިޓިއުޓް',

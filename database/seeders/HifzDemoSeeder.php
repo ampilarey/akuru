@@ -24,7 +24,7 @@ use App\Domains\Hifz\Models\QuranWord;
 use App\Domains\People\Models\Student;
 use App\Domains\Hifz\Models\Surah;
 use App\Domains\People\Models\Teacher;
-use App\Models\User;
+use App\Domains\Identity\Models\User;
 use Carbon\Carbon;
 use Illuminate\Database\Seeder;
 
@@ -301,16 +301,16 @@ class HifzDemoSeeder extends Seeder
         return $user;
     }
 
-    private function ensureSchool(): \App\Models\School
+    private function ensureSchool(): \App\Domains\Settings\Models\School
     {
-        $existing = \App\Models\School::first();
+        $existing = \App\Domains\Settings\Models\School::first();
         if ($existing) {
             return $existing;
         }
 
         $this->command->info('Creating demo school record for Hifz.');
 
-        return \App\Models\School::create([
+        return \App\Domains\Settings\Models\School::create([
             'name' => 'Akuru Institute',
             'description' => 'Islamic and Arabic Education Institute',
             'address' => 'Malé, Maldives',
@@ -323,7 +323,7 @@ class HifzDemoSeeder extends Seeder
         ]);
     }
 
-    private function ensureQuranClass(\App\Models\School $school): ClassRoom
+    private function ensureQuranClass(\App\Domains\Settings\Models\School $school): ClassRoom
     {
         $existing = ClassRoom::where('school_id', $school->id)->where('level', 'Quran')->first();
         if ($existing) {
@@ -343,7 +343,7 @@ class HifzDemoSeeder extends Seeder
         ]);
     }
 
-    private function ensureDemoStudentRecord(\App\Models\School $school, ClassRoom $quranClass): void
+    private function ensureDemoStudentRecord(\App\Domains\Settings\Models\School $school, ClassRoom $quranClass): void
     {
         $this->command->info('Creating student@akuru.edu.mv for Hifz demo (password: password).');
 

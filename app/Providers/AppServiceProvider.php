@@ -3,7 +3,7 @@
 namespace App\Providers;
 
 use App\Domains\Settings\Models\Setting;
-use App\Domains\Finance\Services\Payment\PaymentProviderInterface;
+use App\Domains\Finance\Contracts\PaymentProviderInterface;
 use App\Domains\Finance\Services\Payment\PaymentService;
 use App\Domains\Notifications\Services\SmsGatewayService;
 use Illuminate\Support\Facades\Cache;

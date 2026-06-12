@@ -3,12 +3,12 @@
 namespace App\Domains\Finance\Services\Payment;
 
 use App\Mail\EnrollmentConfirmedMail;
-use App\Models\Course;
-use App\Models\CourseEnrollment;
+use App\Domains\Courses\Models\Course;
+use App\Domains\Courses\Models\CourseEnrollment;
 use App\Domains\Finance\Models\Payment;
 use App\Domains\Finance\Models\PaymentItem;
 use App\Domains\People\Models\RegistrationStudent;
-use App\Models\User;
+use App\Domains\Identity\Models\User;
 use App\Domains\Notifications\Services\SmsGatewayService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -378,7 +378,7 @@ class PaymentService
             $payer = $payment->user;
             $payerName = $payer?->name ?? 'Unknown';
 
-            $admins = \App\Models\User::role(['super_admin', 'admin'])->get();
+            $admins = \App\Domains\Identity\Models\User::role(['super_admin', 'admin'])->get();
 
             foreach ($payment->items as $item) {
                 $enrollment = $item->enrollment;

@@ -5,9 +5,9 @@ namespace App\Domains\Website\Http\Controllers\PublicSite;
 use App\Domains\Website\Models\Page;
 use App\Domains\Website\Models\Testimonial;
 use App\Http\Controllers\Controller;
-use App\Models\Course;
-use App\Models\CourseEnrollment;
-use App\Models\Instructor;
+use App\Domains\Courses\Models\Course;
+use App\Domains\Courses\Models\CourseEnrollment;
+use App\Domains\HR\Models\Instructor;
 
 class AboutController extends Controller
 {

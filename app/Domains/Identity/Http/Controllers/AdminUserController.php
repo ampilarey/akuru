@@ -1,9 +1,11 @@
 <?php
 
-namespace App\Http\Controllers\Admin;
+namespace App\Domains\Identity\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
+
+use App\Http\Controllers\Controller;
+use App\Domains\Identity\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 

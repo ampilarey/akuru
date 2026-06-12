@@ -3,10 +3,10 @@
 namespace App\Domains\People\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Models\School;
+use App\Domains\Settings\Models\School;
 use App\Domains\Academics\Models\Subject;
 use App\Domains\People\Models\Teacher;
-use App\Models\User;
+use App\Domains\Identity\Models\User;
 use Illuminate\Http\Request;
 
 class TeacherController extends Controller

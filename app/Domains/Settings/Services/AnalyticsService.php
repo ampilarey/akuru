@@ -4,14 +4,14 @@ namespace App\Domains\Settings\Services;
 
 use App\Domains\Admissions\Models\AdmissionApplication;
 use App\Domains\Website\Models\ContactInquiry;
-use App\Models\Course;
+use App\Domains\Courses\Models\Course;
 use App\Domains\Website\Models\Event;
 use App\Domains\Website\Models\GalleryAlbum;
 use App\Domains\Website\Models\Post;
-use App\Models\Report;
-use App\Models\SystemMetric;
-use App\Models\User;
-use App\Models\UserActivity;
+use App\Domains\Settings\Models\Report;
+use App\Domains\Settings\Models\SystemMetric;
+use App\Domains\Identity\Models\User;
+use App\Domains\Settings\Models\UserActivity;
 use Carbon\Carbon;
 
 class AnalyticsService

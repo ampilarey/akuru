@@ -11,10 +11,10 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
-        $school = \App\Models\School::first();
+        $school = \App\Domains\Settings\Models\School::first();
 
         // Create Admin User
-        $admin = \App\Models\User::create([
+        $admin = \App\Domains\Identity\Models\User::create([
             'name' => 'Admin User',
             'email' => 'admin@akuru.edu.mv',
             'password' => bcrypt('password'),
@@ -27,7 +27,7 @@ class UserSeeder extends Seeder
         $admin->assignRole('admin');
 
         // Create Headmaster User
-        $headmaster = \App\Models\User::create([
+        $headmaster = \App\Domains\Identity\Models\User::create([
             'name' => 'Dr. Ahmed Ibrahim',
             'email' => 'headmaster@akuru.edu.mv',
             'password' => bcrypt('password'),
@@ -40,7 +40,7 @@ class UserSeeder extends Seeder
         $headmaster->assignRole('headmaster');
 
         // Create Teacher User
-        $teacher = \App\Models\User::create([
+        $teacher = \App\Domains\Identity\Models\User::create([
             'name' => 'Ustadh Mohamed Ali',
             'email' => 'teacher@akuru.edu.mv',
             'password' => bcrypt('password'),
@@ -53,7 +53,7 @@ class UserSeeder extends Seeder
         $teacher->assignRole('teacher');
 
         // Create Student User
-        $student = \App\Models\User::create([
+        $student = \App\Domains\Identity\Models\User::create([
             'name' => 'Ahmed Hassan',
             'email' => 'student@akuru.edu.mv',
             'password' => bcrypt('password'),
@@ -66,7 +66,7 @@ class UserSeeder extends Seeder
         $student->assignRole('student');
 
         // Create Parent User
-        $parent = \App\Models\User::create([
+        $parent = \App\Domains\Identity\Models\User::create([
             'name' => 'Hassan Ahmed',
             'email' => 'parent@akuru.edu.mv',
             'password' => bcrypt('password'),
@@ -79,7 +79,7 @@ class UserSeeder extends Seeder
         $parent->assignRole('parent');
 
         // Create Supervisor User
-        $supervisor = \App\Models\User::create([
+        $supervisor = \App\Domains\Identity\Models\User::create([
             'name' => 'Supervisor Ibrahim',
             'email' => 'supervisor@akuru.edu.mv',
             'password' => bcrypt('password'),

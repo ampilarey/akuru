@@ -2,8 +2,8 @@
 
 namespace App\Http\Middleware;
 
-use App\Models\DashboardAnalytics;
-use App\Models\UserActivity;
+use App\Domains\Settings\Models\DashboardAnalytics;
+use App\Domains\Settings\Models\UserActivity;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;

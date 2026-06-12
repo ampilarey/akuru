@@ -41,7 +41,7 @@
                         <button type="submit" class="text-brandMaroon-600 hover:underline">Resend code</button>
                     </form>
                 @else
-                    @php $pendingCourse = session('pending_course_id') ? \App\Models\Course::find(session('pending_course_id')) : null; @endphp
+                    @php $pendingCourse = session('pending_course_id') ? \App\Domains\Courses\Models\Course::find(session('pending_course_id')) : null; @endphp
                     @if($pendingCourse)
                         <a href="{{ route('courses.register.show', $pendingCourse) }}" class="text-brandMaroon-600 hover:underline">Start over</a>
                     @else
@@ -54,7 +54,7 @@
             @if(!empty($isNewReg))
             <p class="mt-3 text-xs text-gray-400 text-center">
                 Entered wrong details?
-                @php $pendingCourse = session('pending_course_id') ? \App\Models\Course::find(session('pending_course_id')) : null; @endphp
+                @php $pendingCourse = session('pending_course_id') ? \App\Domains\Courses\Models\Course::find(session('pending_course_id')) : null; @endphp
                 @if($pendingCourse)
                     <a href="{{ route('courses.checkout.show', $pendingCourse) }}" class="text-brandMaroon-600 hover:underline">Go back</a>
                 @else

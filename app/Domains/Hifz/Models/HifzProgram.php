@@ -8,7 +8,7 @@ use App\Domains\Hifz\Models\HifzAssignment;
 use App\Domains\Hifz\Models\HifzEnrollment;
 use App\Domains\Hifz\Models\HifzMilestone;
 use App\Domains\Hifz\Models\HifzSession;
-use App\Models\User;
+use App\Domains\Identity\Models\User;
 
 use App\Domains\People\Models\Teacher;
 

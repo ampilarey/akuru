@@ -11,7 +11,7 @@ class ClassSeeder extends Seeder
      */
     public function run(): void
     {
-        $school = \App\Models\School::first();
+        $school = \App\Domains\Settings\Models\School::first();
 
         $classes = [
             [

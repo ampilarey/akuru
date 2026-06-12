@@ -4,7 +4,7 @@ namespace App\Domains\Hifz\Models;
 
 use App\Domains\Hifz\Models\HifzProgram;
 use App\Domains\Hifz\Models\Surah;
-use App\Models\User;
+use App\Domains\Identity\Models\User;
 
 use App\Domains\People\Models\Teacher;
 

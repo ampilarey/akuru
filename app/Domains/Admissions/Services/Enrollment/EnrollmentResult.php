@@ -2,7 +2,7 @@
 
 namespace App\Domains\Admissions\Services\Enrollment;
 
-use App\Models\CourseEnrollment;
+use App\Domains\Courses\Models\CourseEnrollment;
 use App\Domains\Finance\Models\Payment;
 
 class EnrollmentResult

@@ -33,8 +33,8 @@ class PasswordOtpController extends Controller
 
         // ── National ID / Passport → child or adult account lookup ───────────
         if (! str_contains($identifier, '@') && ! preg_match('/^\+?[\d\s\-]+$/', $identifier)) {
-            $targetUser = \App\Models\User::whereRaw('LOWER(national_id) = ?', [strtolower($identifier)])->first()
-                       ?? \App\Models\User::whereRaw('LOWER(passport) = ?', [strtolower($identifier)])->first();
+            $targetUser = \App\Domains\Identity\Models\User::whereRaw('LOWER(national_id) = ?', [strtolower($identifier)])->first()
+                       ?? \App\Domains\Identity\Models\User::whereRaw('LOWER(passport) = ?', [strtolower($identifier)])->first();
 
             if ($targetUser) {
                 // Check if this user is a child (linked via registration_students guardian)
@@ -167,7 +167,7 @@ class PasswordOtpController extends Controller
         // Resolve which user's password to reset
         if ($userId) {
             // Child account: reset the child's password directly
-            $user = \App\Models\User::find($userId);
+            $user = \App\Domains\Identity\Models\User::find($userId);
         } elseif ($contactId) {
             // Normal account: resolve via contact
             $contact = UserContact::find($contactId);

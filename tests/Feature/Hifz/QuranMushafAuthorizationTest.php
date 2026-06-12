@@ -3,7 +3,7 @@
 namespace Tests\Feature\Hifz;
 
 use App\Domains\Hifz\Models\QuranMushaf;
-use App\Models\User;
+use App\Domains\Identity\Models\User;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;

@@ -72,7 +72,7 @@ class LoginRequest extends FormRequest
 
         } else {
             // ── National ID login directly on users table ──────────────────
-            $user = \App\Models\User::whereRaw('LOWER(national_id) = ?', [strtolower($identifier)])->first();
+            $user = \App\Domains\Identity\Models\User::whereRaw('LOWER(national_id) = ?', [strtolower($identifier)])->first();
         }
 
         if (! $user || ! \Illuminate\Support\Facades\Hash::check($password, $user->password)) {

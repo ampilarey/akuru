@@ -93,7 +93,7 @@
                     @try
                         <div class="text-center p-4 border rounded-lg">
                             <h3 class="font-semibold text-brandGray-900 mb-2">Courses</h3>
-                            <p class="text-2xl font-bold text-brandMaroon-600">{{ \App\Models\Course::count() }}</p>
+                            <p class="text-2xl font-bold text-brandMaroon-600">{{ \App\Domains\Courses\Models\Course::count() }}</p>
                             <p class="text-sm text-brandGray-600">Total Courses</p>
                         </div>
                     @catch(Exception $e)

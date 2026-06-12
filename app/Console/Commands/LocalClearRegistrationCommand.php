@@ -2,10 +2,10 @@
 
 namespace App\Console\Commands;
 
-use App\Models\CourseEnrollment;
+use App\Domains\Courses\Models\CourseEnrollment;
 use App\Domains\Finance\Models\PaymentItem;
 use App\Domains\People\Models\RegistrationStudent;
-use App\Models\User;
+use App\Domains\Identity\Models\User;
 use App\Domains\Identity\Models\UserContact;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;

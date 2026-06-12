@@ -4,7 +4,7 @@ namespace App\Domains\Website\Http\Controllers\PublicSite;
 
 use App\Http\Controllers\Controller;
 use App\Domains\Admissions\Models\AdmissionApplication;
-use App\Models\Course;
+use App\Domains\Courses\Models\Course;
 use App\Domains\Notifications\Notifications\NewAdmissionApplication;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Notification;
@@ -55,7 +55,7 @@ class AdmissionController extends Controller
         $application = AdmissionApplication::create($validated);
 
         // Notify administrators
-        $adminUsers = \App\Models\User::role('admin')->get();
+        $adminUsers = \App\Domains\Identity\Models\User::role('admin')->get();
         if ($adminUsers->count() > 0) {
             Notification::send($adminUsers, new NewAdmissionApplication($application));
         }

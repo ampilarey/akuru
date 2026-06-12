@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 
 
 use App\Domains\Academics\Models\Announcement;
-use App\Models\School;
+use App\Domains\Settings\Models\School;
 use Illuminate\Http\Request;
 
 class AnnouncementController extends Controller

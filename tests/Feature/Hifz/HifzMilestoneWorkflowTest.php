@@ -5,7 +5,7 @@ namespace Tests\Feature\Hifz;
 use App\Domains\Hifz\Models\HifzMilestone;
 use App\Domains\Hifz\Models\HifzProgram;
 use App\Domains\People\Models\Student;
-use App\Models\User;
+use App\Domains\Identity\Models\User;
 use Database\Seeders\HifzDemoSeeder;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;

@@ -8,7 +8,7 @@ use App\Domains\Hifz\Models\HifzMilestone;
 use App\Domains\Hifz\Models\HifzProgram;
 use App\Domains\Hifz\Models\HifzSession;
 use App\Domains\Hifz\Models\HifzSessionRecord;
-use App\Models\User;
+use App\Domains\Identity\Models\User;
 use App\Domains\Hifz\Services\HifzReportService;
 use Illuminate\View\View;
 

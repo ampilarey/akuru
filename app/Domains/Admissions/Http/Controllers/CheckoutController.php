@@ -5,8 +5,8 @@ namespace App\Domains\Admissions\Http\Controllers;
 use App\Http\Controllers\Controller;
 
 
-use App\Models\Course;
-use App\Models\CourseEnrollment;
+use App\Domains\Courses\Models\Course;
+use App\Domains\Courses\Models\CourseEnrollment;
 use App\Domains\Finance\Models\Payment;
 use App\Domains\Finance\Models\PaymentItem;
 use App\Domains\People\Models\RegistrationStudent;

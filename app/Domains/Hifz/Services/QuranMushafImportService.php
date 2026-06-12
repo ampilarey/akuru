@@ -4,7 +4,7 @@ namespace App\Domains\Hifz\Services;
 
 use App\Domains\Hifz\Models\QuranMushaf;
 use App\Domains\Hifz\Models\QuranPage;
-use App\Models\User;
+use App\Domains\Identity\Models\User;
 use Illuminate\Http\UploadedFile;
 
 class QuranMushafImportService

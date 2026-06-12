@@ -2,7 +2,7 @@
 
 namespace App\Console\Commands;
 
-use App\Models\Course;
+use App\Domains\Courses\Models\Course;
 use App\Domains\Website\Models\Event;
 use App\Domains\Website\Models\GalleryItem;
 use App\Domains\Website\Models\Page;

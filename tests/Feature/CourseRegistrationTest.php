@@ -2,10 +2,10 @@
 
 namespace Tests\Feature;
 
-use App\Models\Course;
+use App\Domains\Courses\Models\Course;
 use App\Domains\Identity\Models\Otp;
 use App\Domains\People\Models\RegistrationStudent;
-use App\Models\User;
+use App\Domains\Identity\Models\User;
 use App\Domains\Identity\Models\UserContact;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -185,7 +185,7 @@ class CourseRegistrationTest extends TestCase
             'dob' => now()->subYears(25)->format('Y-m-d'),
         ], [$course->id], null);
 
-        $count = \App\Models\CourseEnrollment::where('student_id', $student->id)
+        $count = \App\Domains\Courses\Models\CourseEnrollment::where('student_id', $student->id)
             ->where('course_id', $course->id)
             ->count();
         $this->assertEquals(1, $count);

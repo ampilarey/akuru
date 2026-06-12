@@ -17,7 +17,7 @@ use App\Domains\Academics\Models\Subject;
 use App\Domains\Academics\Models\SubstitutionRequest;
 use App\Domains\People\Models\Teacher;
 use App\Domains\Academics\Models\TeacherAbsence;
-use App\Models\User;
+use App\Domains\Identity\Models\User;
 use Carbon\Carbon;
 use Illuminate\Database\Seeder;
 

@@ -2,12 +2,12 @@
 
 namespace App\Domains\Admissions\Services\Enrollment;
 
-use App\Models\Course;
-use App\Models\CourseEnrollment;
+use App\Domains\Courses\Models\Course;
+use App\Domains\Courses\Models\CourseEnrollment;
 use App\Domains\Finance\Models\Payment;
 use App\Domains\Finance\Models\PaymentItem;
 use App\Domains\People\Models\RegistrationStudent;
-use App\Models\User;
+use App\Domains\Identity\Models\User;
 use App\Domains\Identity\Models\UserContact;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;

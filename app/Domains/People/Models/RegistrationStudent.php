@@ -2,9 +2,9 @@
 
 namespace App\Domains\People\Models;
 
-use App\Models\Course;
-use App\Models\CourseEnrollment;
-use App\Models\User;
+use App\Domains\Courses\Models\Course;
+use App\Domains\Courses\Models\CourseEnrollment;
+use App\Domains\Identity\Models\User;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;

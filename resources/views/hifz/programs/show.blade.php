@@ -11,7 +11,7 @@
 </div>
 @can('assignSupervisor', App\Domains\Hifz\Models\HifzProgram::class)
 <form method="POST" action="{{ route('hifz.programs.assign-supervisor', $program) }}" class="card p-4 mb-6 flex gap-2 items-end">@csrf
-<select name="supervisor_id" class="form-input">@foreach(\App\Models\User::role('supervisor')->get() as $s)<option value="{{ $s->id }}" @selected($program->supervisor_id==$s->id)>{{ $s->name }}</option>@endforeach</select>
+<select name="supervisor_id" class="form-input">@foreach(\App\Domains\Identity\Models\User::role('supervisor')->get() as $s)<option value="{{ $s->id }}" @selected($program->supervisor_id==$s->id)>{{ $s->name }}</option>@endforeach</select>
 <button class="btn btn-secondary">Assign Supervisor</button>
 </form>
 @endcan

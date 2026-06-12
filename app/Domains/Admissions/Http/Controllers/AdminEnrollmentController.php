@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Mail\EnrollmentStatusMail;
-use App\Models\Course;
-use App\Models\CourseEnrollment;
+use App\Domains\Courses\Models\Course;
+use App\Domains\Courses\Models\CourseEnrollment;
 use App\Domains\Finance\Models\Payment;
 use App\Domains\Notifications\Services\SmsGatewayService;
 use Illuminate\Http\Request;

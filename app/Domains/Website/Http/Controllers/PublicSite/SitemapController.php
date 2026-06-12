@@ -6,7 +6,7 @@ use App\Domains\Website\Models\Event;
 use App\Domains\Website\Models\GalleryAlbum;
 use App\Domains\Website\Models\Post;
 use App\Http\Controllers\Controller;
-use App\Models\Course;
+use App\Domains\Courses\Models\Course;
 
 class SitemapController extends Controller
 {

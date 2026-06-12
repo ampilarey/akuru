@@ -139,9 +139,9 @@ Route::middleware('auth')->prefix('portal')->name('portal.')->group(function () 
 
 // Account management (auth required)
 Route::middleware('auth')->group(function () {
-    Route::get('account/set-password', [\App\Http\Controllers\AccountController::class, 'setPasswordForm'])
+    Route::get('account/set-password', [\App\Domains\Identity\Http\Controllers\AccountController::class, 'setPasswordForm'])
         ->name('account.set-password');
-    Route::post('account/set-password', [\App\Http\Controllers\AccountController::class, 'setPassword'])
+    Route::post('account/set-password', [\App\Domains\Identity\Http\Controllers\AccountController::class, 'setPassword'])
         ->name('account.set-password.store');
 
     Route::get('my-enrollments', [\App\Domains\Admissions\Http\Controllers\MyEnrollmentsController::class, 'index'])

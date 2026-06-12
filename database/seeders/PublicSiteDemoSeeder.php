@@ -54,15 +54,15 @@ class PublicSiteDemoSeeder extends Seeder
         ];
 
         foreach ($categories as $category) {
-            \App\Models\CourseCategory::create($category);
+            \App\Domains\Courses\Models\CourseCategory::create($category);
         }
     }
 
     private function createCourses(): void
     {
-        $category = \App\Models\CourseCategory::first();
+        $category = \App\Domains\Courses\Models\CourseCategory::first();
 
-        \App\Models\Course::create([
+        \App\Domains\Courses\Models\Course::create([
             'course_category_id' => $category->id,
             'title' => 'Quran Memorization',
             'slug' => 'quran-memorization',
@@ -100,7 +100,7 @@ class PublicSiteDemoSeeder extends Seeder
 
     private function createPosts(): void
     {
-        $author = \App\Models\User::role('admin')->first();
+        $author = \App\Domains\Identity\Models\User::role('admin')->first();
 
         if ($author) {
             \App\Domains\Website\Models\Post::create([

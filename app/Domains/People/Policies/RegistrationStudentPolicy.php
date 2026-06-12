@@ -3,7 +3,7 @@
 namespace App\Domains\People\Policies;
 
 use App\Domains\People\Models\RegistrationStudent;
-use App\Models\User;
+use App\Domains\Identity\Models\User;
 
 class RegistrationStudentPolicy
 {

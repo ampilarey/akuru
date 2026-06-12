@@ -5,8 +5,8 @@ namespace App\Domains\Settings\Http\Controllers;
 use App\Http\Controllers\Controller;
 
 
-use App\Models\Report;
-use App\Models\SystemMetric;
+use App\Domains\Settings\Models\Report;
+use App\Domains\Settings\Models\SystemMetric;
 use App\Domains\Settings\Services\AnalyticsService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -239,7 +239,7 @@ class AnalyticsController extends Controller
     // Helper methods
     private function getRecentActivities()
     {
-        return \App\Models\UserActivity::recent(24)
+        return \App\Domains\Settings\Models\UserActivity::recent(24)
             ->orderBy('performed_at', 'desc')
             ->limit(10)
             ->get();

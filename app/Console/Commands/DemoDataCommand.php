@@ -6,12 +6,12 @@ use App\Domains\Academics\Models\Announcement;
 use App\Domains\Academics\Legacy\Models\Assignment;
 use App\Domains\Academics\Models\ClassRoom;
 use App\Domains\Hifz\Models\QuranProgress;
-use App\Models\School;
+use App\Domains\Settings\Models\School;
 use App\Domains\People\Models\Student;
 use App\Domains\Academics\Models\Subject;
 use App\Domains\Hifz\Models\Surah;
 use App\Domains\People\Models\Teacher;
-use App\Models\User;
+use App\Domains\Identity\Models\User;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Hash;
 

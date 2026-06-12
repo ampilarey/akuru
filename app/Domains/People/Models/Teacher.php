@@ -7,10 +7,10 @@ use App\Domains\Academics\Models\Grade;
 use App\Domains\Hifz\Models\HifzEnrollment;
 use App\Domains\Hifz\Models\HifzSession;
 use App\Domains\Hifz\Models\QuranProgress;
-use App\Models\School;
+use App\Domains\Settings\Models\School;
 use App\Domains\Academics\Models\Subject;
 use App\Domains\Academics\Models\Timetable;
-use App\Models\User;
+use App\Domains\Identity\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 

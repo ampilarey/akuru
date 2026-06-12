@@ -5,7 +5,7 @@ namespace Tests\Feature\Hifz;
 use App\Domains\Hifz\Models\HifzProgram;
 use App\Domains\Hifz\Models\HifzSession;
 use App\Domains\People\Models\Student;
-use App\Models\User;
+use App\Domains\Identity\Models\User;
 use Database\Seeders\HifzDemoSeeder;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -94,7 +94,7 @@ class HifzAuthorizationTest extends TestCase
     public function test_parent_cannot_view_other_student(): void
     {
         $parent = $this->verifiedUser('parent@akuru.edu.mv');
-        $school = \App\Models\School::first();
+        $school = \App\Domains\Settings\Models\School::first();
         $class = \App\Domains\Academics\Models\ClassRoom::first();
         $otherStudent = Student::create([
             'school_id' => $school->id,

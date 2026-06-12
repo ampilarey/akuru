@@ -4,7 +4,7 @@ namespace Database\Seeders;
 
 use App\Domains\Website\Models\Post;
 use App\Domains\Website\Models\PostCategory;
-use App\Models\User;
+use App\Domains\Identity\Models\User;
 use Carbon\Carbon;
 use Illuminate\Database\Seeder;
 

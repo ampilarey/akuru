@@ -5,7 +5,7 @@ namespace App\Domains\Admissions\Http\Controllers;
 use App\Http\Controllers\Controller;
 
 
-use App\Models\CourseEnrollment;
+use App\Domains\Courses\Models\CourseEnrollment;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 

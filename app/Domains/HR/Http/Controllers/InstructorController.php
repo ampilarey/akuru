@@ -1,9 +1,11 @@
 <?php
 
-namespace App\Http\Controllers\Admin;
+namespace App\Domains\HR\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Models\Instructor;
+
+use App\Http\Controllers\Controller;
+use App\Domains\HR\Models\Instructor;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
