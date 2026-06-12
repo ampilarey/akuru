@@ -67,7 +67,7 @@
                     @try
                         <div class="text-center p-4 border rounded-lg">
                             <h3 class="font-semibold text-brandGray-900 mb-2">Pages</h3>
-                            <p class="text-2xl font-bold text-brandMaroon-600">{{ \App\Models\Page::count() }}</p>
+                            <p class="text-2xl font-bold text-brandMaroon-600">{{ \App\Domains\Website\Models\Page::count() }}</p>
                             <p class="text-sm text-brandGray-600">Total Pages</p>
                         </div>
                     @catch(Exception $e)
@@ -80,7 +80,7 @@
                     @try
                         <div class="text-center p-4 border rounded-lg">
                             <h3 class="font-semibold text-brandGray-900 mb-2">Posts</h3>
-                            <p class="text-2xl font-bold text-brandMaroon-600">{{ \App\Models\Post::count() }}</p>
+                            <p class="text-2xl font-bold text-brandMaroon-600">{{ \App\Domains\Website\Models\Post::count() }}</p>
                             <p class="text-sm text-brandGray-600">Total Posts</p>
                         </div>
                     @catch(Exception $e)

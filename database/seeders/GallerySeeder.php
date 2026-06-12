@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use App\Models\GalleryAlbum;
-use App\Models\GalleryItem;
+use App\Domains\Website\Models\GalleryAlbum;
+use App\Domains\Website\Models\GalleryItem;
 use Illuminate\Database\Seeder;
 
 class GallerySeeder extends Seeder

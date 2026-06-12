@@ -2,7 +2,7 @@
 
 namespace App\Notifications;
 
-use App\Models\ContactMessage;
+use App\Domains\Website\Models\ContactMessage;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;

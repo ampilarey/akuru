@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use App\Models\ContactInquiry;
-use App\Models\InquiryType;
+use App\Domains\Website\Models\ContactInquiry;
+use App\Domains\Website\Models\InquiryType;
 use Carbon\Carbon;
 use Illuminate\Database\Seeder;
 

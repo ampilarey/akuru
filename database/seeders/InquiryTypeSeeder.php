@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-use App\Models\InquiryType;
+use App\Domains\Website\Models\InquiryType;
 use Illuminate\Database\Seeder;
 
 class InquiryTypeSeeder extends Seeder

@@ -22,7 +22,7 @@ class PublicSiteDemoSeeder extends Seeder
 
     private function createPages(): void
     {
-        \App\Models\Page::create([
+        \App\Domains\Website\Models\Page::create([
             'title' => 'About Akuru Institute',
             'slug' => 'about',
             'excerpt' => 'Learn about our mission and commitment to Islamic education.',
@@ -34,7 +34,7 @@ class PublicSiteDemoSeeder extends Seeder
 
     private function createHeroBanners(): void
     {
-        \App\Models\HeroBanner::create([
+        \App\Domains\Website\Models\HeroBanner::create([
             'title' => 'Welcome to Akuru Institute',
             'subtitle' => 'Comprehensive Islamic Education for All Ages',
             'image_path' => 'banners/hero-1.jpg',
@@ -79,7 +79,7 @@ class PublicSiteDemoSeeder extends Seeder
 
     private function createTestimonials(): void
     {
-        \App\Models\Testimonial::create([
+        \App\Domains\Website\Models\Testimonial::create([
             'name' => 'Fatima Ahmed',
             'role' => 'Parent',
             'quote' => 'Excellent Islamic education for my children.',
@@ -90,7 +90,7 @@ class PublicSiteDemoSeeder extends Seeder
 
     private function createFaqs(): void
     {
-        \App\Models\Faq::create([
+        \App\Domains\Website\Models\Faq::create([
             'question' => 'What age groups do you cater to?',
             'answer' => 'We offer programs for all ages, from children to adults.',
             'order' => 1,
@@ -103,7 +103,7 @@ class PublicSiteDemoSeeder extends Seeder
         $author = \App\Models\User::role('admin')->first();
 
         if ($author) {
-            \App\Models\Post::create([
+            \App\Domains\Website\Models\Post::create([
                 'title' => 'Welcome to Our New Website',
                 'slug' => 'welcome-new-website',
                 'summary' => 'We are excited to launch our new website.',

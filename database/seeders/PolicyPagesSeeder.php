@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-use App\Models\Page;
+use App\Domains\Website\Models\Page;
 use Illuminate\Database\Seeder;
 
 class PolicyPagesSeeder extends Seeder

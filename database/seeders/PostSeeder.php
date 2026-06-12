@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use App\Models\Post;
-use App\Models\PostCategory;
+use App\Domains\Website\Models\Post;
+use App\Domains\Website\Models\PostCategory;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Database\Seeder;

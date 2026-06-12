@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-use App\Models\Event;
+use App\Domains\Website\Models\Event;
 use Carbon\Carbon;
 use Illuminate\Database\Seeder;
 

@@ -3,11 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\AdmissionApplication;
-use App\Models\ContactInquiry;
+use App\Domains\Website\Models\ContactInquiry;
 use App\Models\Course;
-use App\Models\Event;
-use App\Models\GalleryAlbum;
-use App\Models\Post;
+use App\Domains\Website\Models\Event;
+use App\Domains\Website\Models\GalleryAlbum;
+use App\Domains\Website\Models\Post;
 use App\Models\User;
 use App\Models\UserActivity;
 use Illuminate\Http\Request;

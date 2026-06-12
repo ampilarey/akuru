@@ -3,10 +3,10 @@
 namespace App\Console\Commands;
 
 use App\Models\Course;
-use App\Models\Event;
-use App\Models\GalleryItem;
-use App\Models\Page;
-use App\Models\Post;
+use App\Domains\Website\Models\Event;
+use App\Domains\Website\Models\GalleryItem;
+use App\Domains\Website\Models\Page;
+use App\Domains\Website\Models\Post;
 use App\Services\WebPImageService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Storage;
@@ -40,7 +40,7 @@ class GenerateWebPImages extends Command
         Page::whereNotNull('cover_image')->pluck('cover_image')->each(fn ($p) => $paths->push($p));
 
         // Gallery albums cover
-        \App\Models\GalleryAlbum::whereNotNull('cover_image')->pluck('cover_image')->each(fn ($p) => $paths->push($p));
+        \App\Domains\Website\Models\GalleryAlbum::whereNotNull('cover_image')->pluck('cover_image')->each(fn ($p) => $paths->push($p));
 
         $paths = $paths->unique()->filter(fn ($p) => $service->isConvertible($p));
 

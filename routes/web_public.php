@@ -1,12 +1,12 @@
 <?php
 
-use App\Http\Controllers\PublicSite\AdmissionController;
-use App\Http\Controllers\PublicSite\ContactController;
-use App\Http\Controllers\PublicSite\CourseController;
-use App\Http\Controllers\PublicSite\GalleryController;
-use App\Http\Controllers\PublicSite\HomeController;
-use App\Http\Controllers\PublicSite\PageController;
-use App\Http\Controllers\PublicSite\SitemapController;
+use App\Domains\Website\Http\Controllers\PublicSite\AdmissionController;
+use App\Domains\Website\Http\Controllers\PublicSite\ContactController;
+use App\Domains\Website\Http\Controllers\PublicSite\CourseController;
+use App\Domains\Website\Http\Controllers\PublicSite\GalleryController;
+use App\Domains\Website\Http\Controllers\PublicSite\HomeController;
+use App\Domains\Website\Http\Controllers\PublicSite\PageController;
+use App\Domains\Website\Http\Controllers\PublicSite\SitemapController;
 use Illuminate\Support\Facades\Route;
 
 // Dynamic homepage - DB-driven content
@@ -28,24 +28,24 @@ Route::get('/dv', function () {
 });
 
 // Other routes
-Route::get('about', [\App\Http\Controllers\PublicSite\AboutController::class, 'index'])->name('public.about');
+Route::get('about', [\App\Domains\Website\Http\Controllers\PublicSite\AboutController::class, 'index'])->name('public.about');
 Route::get('courses', [CourseController::class, 'index'])->name('public.courses.index');
 Route::get('courses/{course}', [CourseController::class, 'show'])->name('public.courses.show');
 // Search
-Route::get('search', [\App\Http\Controllers\PublicSite\SearchController::class, 'index'])->name('public.search');
+Route::get('search', [\App\Domains\Website\Http\Controllers\PublicSite\SearchController::class, 'index'])->name('public.search');
 
 // Articles (type=article posts)
-Route::get('articles', [\App\Http\Controllers\PublicSite\PostController::class, 'articlesIndex'])->name('public.articles.index');
-Route::get('articles/{post:slug}', [\App\Http\Controllers\PublicSite\PostController::class, 'show'])->name('public.articles.show');
+Route::get('articles', [\App\Domains\Website\Http\Controllers\PublicSite\PostController::class, 'articlesIndex'])->name('public.articles.index');
+Route::get('articles/{post:slug}', [\App\Domains\Website\Http\Controllers\PublicSite\PostController::class, 'show'])->name('public.articles.show');
 
 // Calendar .ics download for individual event
-Route::get('events/{event}/calendar.ics', [\App\Http\Controllers\PublicSite\EventController::class, 'downloadCalendar'])->name('public.events.calendar');
+Route::get('events/{event}/calendar.ics', [\App\Domains\Website\Http\Controllers\PublicSite\EventController::class, 'downloadCalendar'])->name('public.events.calendar');
 
-Route::get('news', [\App\Http\Controllers\PublicSite\PostController::class, 'newsIndex'])->name('public.news.index');
-Route::get('news/{post:slug}', [\App\Http\Controllers\PublicSite\PostController::class, 'show'])->name('public.news.show');
+Route::get('news', [\App\Domains\Website\Http\Controllers\PublicSite\PostController::class, 'newsIndex'])->name('public.news.index');
+Route::get('news/{post:slug}', [\App\Domains\Website\Http\Controllers\PublicSite\PostController::class, 'show'])->name('public.news.show');
 Route::get('events', function () {
     try {
-        $events = \App\Models\Event::published()->public()->with('registrations')->paginate(12);
+        $events = \App\Domains\Website\Models\Event::published()->public()->with('registrations')->paginate(12);
 
         return view('public.events.index', compact('events'));
     } catch (\Exception $e) {
@@ -54,7 +54,7 @@ Route::get('events', function () {
 })->name('public.events.index');
 Route::get('events/{event}', function ($id) {
     try {
-        $event = \App\Models\Event::published()->public()->with('registrations')->findOrFail($id);
+        $event = \App\Domains\Website\Models\Event::published()->public()->with('registrations')->findOrFail($id);
 
         return view('public.events.show', compact('event'));
     } catch (\Exception $e) {
@@ -159,10 +159,10 @@ Route::get('apply', [AdmissionController::class, 'applyPage'])->name('public.app
 Route::post('apply', [AdmissionController::class, 'store'])->name('public.apply.store');
 Route::get('contact', [ContactController::class, 'create'])->name('public.contact.create');
 Route::post('contact', [ContactController::class, 'store'])->name('public.contact.store');
-Route::get('terms', [\App\Http\Controllers\PolicyViewController::class, 'terms'])->name('public.terms');
-Route::get('privacy', [\App\Http\Controllers\PolicyViewController::class, 'privacy'])->name('public.privacy');
-Route::get('refunds', [\App\Http\Controllers\PolicyViewController::class, 'refunds'])->name('public.refunds');
-Route::get('services', [\App\Http\Controllers\PolicyViewController::class, 'services'])->name('public.services');
+Route::get('terms', [\App\Domains\Website\Http\Controllers\PolicyViewController::class, 'terms'])->name('public.terms');
+Route::get('privacy', [\App\Domains\Website\Http\Controllers\PolicyViewController::class, 'privacy'])->name('public.privacy');
+Route::get('refunds', [\App\Domains\Website\Http\Controllers\PolicyViewController::class, 'refunds'])->name('public.refunds');
+Route::get('services', [\App\Domains\Website\Http\Controllers\PolicyViewController::class, 'services'])->name('public.services');
 Route::get('page/{slug}', [PageController::class, 'show'])->name('public.page.show');
 
 // SEO routes
