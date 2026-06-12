@@ -22,6 +22,8 @@ class PublicRouteNamesTest extends TestCase
             'public.page.show',
             'public.sitemap',
             'admin.pages.index',
+            'admin.settings.index',
+            'admin.settings.clear-cache',
         ];
 
         foreach ($names as $name) {
