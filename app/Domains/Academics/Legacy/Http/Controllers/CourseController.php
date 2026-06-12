@@ -1,8 +1,9 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Domains\Academics\Legacy\Http\Controllers;
 
 use App\Domains\Courses\Models\Course;
+use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
 class CourseController extends Controller
