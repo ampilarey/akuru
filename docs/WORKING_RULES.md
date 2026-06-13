@@ -11,6 +11,7 @@ This file governs every AI-assisted coding session in this repo. It encodes the 
 | `docs/LIBRARY_PLAN.md` | Knowledge Library (L-track) requirements |
 | `docs/PHASE_0_CHECKLIST.md`, `docs/S1_SPEC.md`, `docs/S2_SPEC.md`, `docs/S3_SPEC.md`, `docs/W1_SPEC.md` | per-phase build specs |
 | `STATUS.md` | what is done, in progress, next — UPDATE AFTER EVERY SLICE |
+| `docs/STAGING.md` | staging server paths, deploy one-liners, Phase 0 verify state — READ BEFORE SERVER GIT |
 | `docs/adr/` | architecture decision records |
 
 ## The 12 rules

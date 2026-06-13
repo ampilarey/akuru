@@ -10,7 +10,7 @@
 |------|--------|
 | Target URL | https://test.akuru.edu.mv |
 | Server path | `~/test.akuru.edu.mv` (`/home/akuruedu/test.akuru.edu.mv`) |
-| Deployed commit | **`9e8e8f6`** (`git reset --hard origin/main` after divergent server commits) |
+| Deployed commit | **`f8b8a56`** (2026-06-13; see `docs/STAGING.md`) |
 | Phase 0 code commit | **`e84c657`** (included in `9e8e8f6`) |
 | `.env` backup | Done on server |
 | DB backup | `storage/backups/staging-akuruedu_test.akuru.edu.mv-20260613-082231.sql.gz` |

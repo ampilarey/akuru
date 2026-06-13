@@ -1,0 +1,136 @@
+# Staging server — `test.akuru.edu.mv`
+
+**Read this before any staging deploy or server git command.**  
+Canonical deploy details also live in `docs/legacy/DEPLOYMENT.md` §6.1.
+
+## Paths (cPanel account `akuruedu`)
+
+| What | Path |
+|------|------|
+| cPanel username | `akuruedu` (shell prompt: `[akuruedu@sg-s2 …]`) |
+| Home directory | `/home/akuruedu/` (same as `~`) |
+| **Staging app (git repo)** | `~/test.akuru.edu.mv` |
+| Production app (git repo) | `~/akuru-institute` |
+| Staging URL | https://test.akuru.edu.mv |
+
+**`akuruedu` is not a file in the Git repo** — it is the hosting account name.  
+**`~` is not a git repository.** Always `cd` into the project folder before `git`, `composer`, or `php artisan`.
+
+Wrong (fails with “not a git repository”):
+
+```bash
+cd ~
+git pull origin main
+```
+
+Right:
+
+```bash
+cd ~/test.akuru.edu.mv && git pull origin main
+```
+
+## Current staging state (update after each deploy)
+
+| Item | Value |
+|------|--------|
+| Last verified deploy | **2026-06-13** |
+| Deployed commit | **`f8b8a56`** (`docs(status): record Phase 0 staging deploy at 9e8e8f6`) |
+| Phase 0 application code | Included via **`e84c657`** in history |
+| Verdict | **PHASE 0 STAGING PASSED** (deploy + public smoke) |
+| Production | **Not deployed** — do not touch `~/akuru-institute` unless explicitly requested |
+
+## Rules
+
+1. **Mac pushes, server pulls** — never `git commit` or `git push` from staging.
+2. **Test before production** — all changes go to `test.akuru.edu.mv` first.
+3. **`route:clear`, not `route:cache`** — mcamara localized routes break with route cache.
+4. **SMS on staging** — test numbers only: **`7820288`** and **`7972434`**. Do not SMS real customers.
+5. **BML** — staging uses sandbox/UAT credentials only (`BML_ENVIRONMENT=sandbox` in `.env`).
+6. **`npm`** — often **not** in server PATH; if assets change, run `npm run build` on Mac and upload `public/build/`, or enable Node in cPanel.
+
+## Routine deploy (after `git push origin main` on Mac)
+
+```bash
+cd ~/test.akuru.edu.mv && git pull origin main && composer install --no-dev --optimize-autoloader --no-interaction && php artisan migrate --force && php artisan config:cache && php artisan route:clear && php artisan view:cache && php artisan queue:restart
+```
+
+Shorter (no view cache / queue):
+
+```bash
+cd ~/test.akuru.edu.mv && bash scripts/update-subdomain.sh
+```
+
+Full Phase 0-style deploy (backups + migrate status + optional npm):
+
+```bash
+cd ~/test.akuru.edu.mv && bash scripts/deploy-staging-phase0.sh
+```
+
+## Verify deploy
+
+```bash
+cd ~/test.akuru.edu.mv && git log -1 --oneline && git rev-parse HEAD && ls scripts/
+```
+
+Hash should match `origin/main` on GitHub.
+
+Quick HTTP smoke:
+
+```bash
+curl -sI https://test.akuru.edu.mv/en | head -3
+curl -sI https://test.akuru.edu.mv/inertia-test | head -3
+```
+
+## Pre-deploy backup (recommended)
+
+```bash
+cd ~/test.akuru.edu.mv
+cp -a .env ".env.backup.$(date +%Y%m%d-%H%M%S)"
+mkdir -p storage/backups
+DB_NAME=$(grep '^DB_DATABASE=' .env | cut -d= -f2- | tr -d '"')
+DB_USER=$(grep '^DB_USERNAME=' .env | cut -d= -f2- | tr -d '"')
+mysqldump -u "$DB_USER" -p "$DB_NAME" | gzip > "storage/backups/staging-${DB_NAME}-$(date +%Y%m%d-%H%M%S).sql.gz"
+```
+
+## If `git pull` fails (divergent branches)
+
+Staging had this on **2026-06-13**: five server-only commits duplicated GitHub work (CI fixes made directly on the server). GitHub had squashed the same changes as `6fceabd`.
+
+**Before reset:** confirm server-only commits are redundant (compare with `git log --oneline origin/main..HEAD`).
+
+**Align to GitHub (staging only):**
+
+```bash
+cd ~/test.akuru.edu.mv
+git fetch origin
+git log --oneline origin/main..HEAD
+git reset --hard origin/main
+git log -1 --oneline
+composer install --no-dev --optimize-autoloader --no-interaction
+php artisan optimize:clear
+php artisan config:cache
+php artisan route:clear
+php artisan view:cache
+php artisan queue:restart || true
+```
+
+Untracked junk in the app root (`error_log`, accidental tinker paste filenames) does **not** block `git pull` or `reset --hard`; clean up when convenient.
+
+## Phase 0 staging verification (2026-06-13)
+
+| Step | Result |
+|------|--------|
+| `.env` backup | Done |
+| DB backup | `storage/backups/staging-akuruedu_test.akuru.edu.mv-20260613-082231.sql.gz` |
+| Migrations | All ran; nothing pending |
+| `npm run build` | Skipped (npm not on PATH; no frontend diff in deploy) |
+| Public routes | `/up`, `/en`, `/dv`, `/ar`, courses, contact, gallery, news, `/inertia-test` — 200 |
+| Login / BML / portal / admin / Hifz | Operator spot-check with credentials — not automated |
+
+## Production (reference only)
+
+```bash
+cd ~/akuru-institute && git log -1 --oneline && git rev-parse HEAD
+```
+
+Do **not** run production deploy unless explicitly requested.

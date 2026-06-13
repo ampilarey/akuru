@@ -205,7 +205,7 @@ GitHub repo** — code is shared; data and config are not.
 | | **Test** | **Production (main)** |
 |---|----------|------------------------|
 | URL | https://test.akuru.edu.mv | https://akuru.edu.mv |
-| Server path | `/home/akuruedu/test.akuru.edu.mv` | `/home/akuruedu/akuru-institute` |
+| Server path | `~/test.akuru.edu.mv` | `~/akuru-institute` |
 | Web root | `test.akuru.edu.mv/public` | `public_html` → `akuru-institute/public` |
 | Git remote | `git@github.com:ampilarey/akuru.git` | same |
 | Branch | `main` | `main` |
@@ -256,9 +256,13 @@ Both should show the same hash after you deploy to production.
 
 ### 6.1 Test server (`test.akuru.edu.mv`)
 
-**Server path:** `/home/akuruedu/test.akuru.edu.mv`  
+> **Operator + AI:** Full staging cheat sheet — paths, one-liners, divergent-git fix, Phase 0 state — in **`docs/STAGING.md`**.
+
+**Server path:** `/home/akuruedu/test.akuru.edu.mv` (shortcut: `~/test.akuru.edu.mv`)  
 **Git remote on server:** `git@github.com:ampilarey/akuru.git`  
 **SSH host:** `akuru.edu.mv` (cPanel Terminal works the same)
+
+**Important:** `~` (home) is **not** a git repo. Every server command must start with `cd ~/test.akuru.edu.mv && …`.
 
 #### Who runs what
 
@@ -281,13 +285,13 @@ git push origin main
 #### Routine deploy — server (paste in cPanel Terminal)
 
 ```bash
-cd /home/akuruedu/test.akuru.edu.mv && git pull origin main && composer install --no-dev --optimize-autoloader --no-interaction && php artisan migrate --force && php artisan config:cache && php artisan route:clear
+cd ~/test.akuru.edu.mv && git pull origin main && composer install --no-dev --optimize-autoloader --no-interaction && php artisan migrate --force && php artisan config:cache && php artisan route:clear && php artisan view:cache && php artisan queue:restart
 ```
 
 **Verify on server:**
 
 ```bash
-git log -1 --oneline
+cd ~/test.akuru.edu.mv && git log -1 --oneline && git rev-parse HEAD
 ```
 
 The hash should match the commit you just pushed on `main`.
