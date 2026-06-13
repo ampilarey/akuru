@@ -15,11 +15,17 @@ class ProfileTest extends TestCase
         $user = User::factory()->create();
 
         $response = $this
+            ->withoutMiddleware([
+                \Mcamara\LaravelLocalization\Middleware\LocaleSessionRedirect::class,
+                \Mcamara\LaravelLocalization\Middleware\LaravelLocalizationRedirectFilter::class,
+            ])
             ->actingAs($user)
-            ->followingRedirects()
-            ->get(route('profile.edit'));
+            ->get('/profile');
 
-        $response->assertOk();
+        $response
+            ->assertOk()
+            ->assertSee('Profile Information', false)
+            ->assertSee('Update Password', false);
     }
 
     public function test_profile_information_can_be_updated(): void
