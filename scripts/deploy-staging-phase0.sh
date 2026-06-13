@@ -1,17 +1,20 @@
 #!/usr/bin/env bash
 # Phase 0 staging deploy for test.akuru.edu.mv
-# Run on server: cd /home/akuruedu/test.akuru.edu.mv && bash scripts/deploy-staging-phase0.sh
 #
+# Run from the app root on the server (wherever the git checkout lives), e.g.:
+#   cd ~/test.akuru.edu.mv && bash scripts/deploy-staging-phase0.sh
+#
+# "akuruedu" in docs is the cPanel account name (/home/akuruedu/...), not a repo path.
 # Expected commit after pull: e84c657 (or newer approved main)
 # Do NOT use route:cache — breaks mcamara localized routes (see DEPLOYMENT.md §6.1).
 
 set -euo pipefail
 
-APP_DIR="${APP_DIR:-/home/akuruedu/test.akuru.edu.mv}"
 EXPECTED_COMMIT="${EXPECTED_COMMIT:-e84c657}"
 PHP="${PHP:-php}"
 
-cd "$APP_DIR"
+cd "$(dirname "$0")/.."
+APP_DIR="$(pwd)"
 
 echo "==> Pre-flight"
 hostname

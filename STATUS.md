@@ -1,31 +1,37 @@
 # Status
 
-## Phase 0 — Foundation (closure: code + CI on `main`; staging deploy **blocked**)
+## Phase 0 — Foundation (closure: code + CI on `main`; staging deploy **done**)
 
-**Honest summary:** Domain moves, contracts, architecture baselines, and CI are done on `main` at **`e84c657`**. Staging deploy and full smoke on `test.akuru.edu.mv` are **not complete** — agent has no SSH to cPanel; operator must run server deploy (see `scripts/deploy-staging-phase0.sh`).
+**Honest summary:** Domain moves, contracts, architecture baselines, and CI are done on `main`. Staging at **`9e8e8f6`** (includes Phase 0 code at `e84c657`) deployed 2026-06-13 on `test.akuru.edu.mv`. Public smoke passes; auth/BML/portal/admin/Hifz need credential-based spot-check by operator.
 
 ### Staging verification (2026-06-13)
 
 | Item | Result |
 |------|--------|
 | Target URL | https://test.akuru.edu.mv |
-| Expected commit | `e84c657` |
-| Deployed commit on server | **Unknown** — not pulled by agent (no SSH) |
-| `.env` / DB backup on server | **Not run** by agent |
-| Server `git pull` + migrate + build | **Pending operator** |
+| Server path | `~/test.akuru.edu.mv` (`/home/akuruedu/test.akuru.edu.mv`) |
+| Deployed commit | **`9e8e8f6`** (`git reset --hard origin/main` after divergent server commits) |
+| Phase 0 code commit | **`e84c657`** (included in `9e8e8f6`) |
+| `.env` backup | Done on server |
+| DB backup | `storage/backups/staging-akuruedu_test.akuru.edu.mv-20260613-082231.sql.gz` |
+| Migrations | All ran; `migrate --force` → nothing pending |
+| `npm run build` on server | **Skipped** — `npm` not in PATH; no frontend file changes between prior checkout and `9e8e8f6` |
+| Divergent server commits | 5 duplicate CI commits dropped via `reset --hard` (same content as GitHub `6fceabd`) |
 
-**Pre-deploy browser smoke (current live site, commit unverified):**
+**Post-deploy browser smoke:**
 
 | Area | Result |
 |------|--------|
 | `/up` health | 200 OK |
 | Public EN/DV/AR | 200 OK |
 | Courses, contact, gallery, news | 200 OK |
-| `/inertia-test` | 200 — “Inertia + React works” |
-| Login page | Loads |
-| BML / enrollment / portal / admin / Hifz | **Not tested** (needs credentials + post-deploy commit) |
+| `/inertia-test` | 200 OK |
+| `/login` | 302 → login flow |
+| BML sandbox checkout | **Not tested** — needs operator + sandbox credentials |
+| Enrollment / OTP | **Not tested** — use `7820288` / `7972434` only |
+| Portal / admin / Hifz | **Not tested** — needs staging credentials |
 
-**Local automated (repo at `e84c657`, not server):**
+**Automated (CI / local Mac at `9e8e8f6`, not run on server):**
 
 | Check | Result |
 |-------|--------|
@@ -34,7 +40,7 @@
 | PHPStan | ~410 errors (informational) |
 | GitHub Actions `main` | Green — [run 27439531612](https://github.com/ampilarey/akuru/actions/runs/27439531612) |
 
-**Verdict:** `PHASE 0 STAGING BLOCKED` — deploy `e84c657` on server, then re-run smoke + server-side tests.
+**Verdict:** `PHASE 0 STAGING PASSED` (deploy + public smoke). Credential-based flows (login, BML, enrollment SMS, portal, admin, Hifz) remain **operator spot-check** before production deploy.
 
 ### 0.1 Install & tooling
 - Inertia + React, Pest, Larastan, ADR template, CI (`pint` + `pest` + architecture suite)
@@ -79,7 +85,7 @@ Baselines may only **shrink**; never grow.
 | `app/Models` / `app/Services` gone | **Done** (directories removed) |
 | Pest + arch in CI | **Done** on `main` after closure push |
 | Per-domain `routes.php` | **Deferred** → S1 |
-| Manual smoke + production deploy | **Blocked** — staging pull pending (operator); production not started |
+| Manual smoke + production deploy | Staging deploy **done** (`9e8e8f6`); credential smoke pending; production **not started** |
 | PHPStan blocking CI | **No** (informational only) |
 
 ### Closure slice (no behavior change)
