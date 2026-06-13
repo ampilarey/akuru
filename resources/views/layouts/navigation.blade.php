@@ -1,5 +1,5 @@
-<nav x-data="{ open: false, adminOpen: false, cmsOpen: false }"
-     style="background:linear-gradient(135deg,#3D1219 0%,#7C2D37 100%);box-shadow:0 2px 12px rgba(0,0,0,.25);position:sticky;top:0;z-index:50">
+<nav x-data="{ open: false, adminOpen: false, userMenuOpen: false }"
+     style="background:linear-gradient(135deg,#3D1219 0%,#7C2D37 100%);box-shadow:0 2px 12px rgba(0,0,0,.25);position:sticky;top:0;z-index:50;overflow:visible">
 
     <div style="max-width:80rem;margin:0 auto;padding:0 1.25rem">
         <div style="display:flex;justify-content:space-between;align-items:center;height:3.75rem">
@@ -75,8 +75,8 @@
                         More
                         <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
                     </button>
-                    <div x-show="adminOpen" x-transition
-                         style="position:absolute;top:calc(100% + .5rem);left:0;min-width:180px;background:white;border-radius:.625rem;box-shadow:0 8px 30px rgba(0,0,0,.15);border:1px solid #E5E7EB;padding:.375rem;z-index:100">
+                    <div x-show="adminOpen" x-transition x-cloak
+                         style="position:absolute;top:calc(100% + .5rem);left:0;min-width:180px;background:white;border-radius:.625rem;box-shadow:0 8px 30px rgba(0,0,0,.15);border:1px solid #E5E7EB;padding:.375rem;z-index:200">
                         @if(auth()->user()->hasAnyRole(['super_admin','admin','headmaster','supervisor','teacher']))
                         <a href="{{ route('announcements.index') }}" style="display:block;padding:.5rem .75rem;border-radius:.375rem;font-size:.8rem;color:#374151;text-decoration:none" onmouseover="this.style.background='#F9FAFB'" onmouseout="this.style.background='transparent'">📢 Announcements</a>
                         @endif
@@ -114,31 +114,32 @@
             <div class="hidden sm:flex" style="align-items:center;gap:.75rem">
 
                 @auth
-                {{-- Role badge --}}
-                @php $role = auth()->user()->getRoleNames()->first(); @endphp
-                @if($role)
-                <span style="font-size:.65rem;font-weight:700;padding:.2rem .55rem;border-radius:9999px;background:rgba(255,255,255,.15);color:rgba(255,255,255,.85);letter-spacing:.05em;text-transform:uppercase">
-                    {{ str_replace('_',' ',$role) }}
-                </span>
-                @endif
+                @php $navUser = auth()->user(); @endphp
 
-                {{-- User dropdown --}}
-                <div style="position:relative" @click.away="cmsOpen=false">
-                    <button @click="cmsOpen=!cmsOpen"
+                {{-- User dropdown (role badge removed — shown once inside menu) --}}
+                <div style="position:relative" @click.away="userMenuOpen=false">
+                    <button type="button" @click="userMenuOpen=!userMenuOpen"
+                            aria-expanded="false" :aria-expanded="userMenuOpen"
                             style="display:flex;align-items:center;gap:.5rem;padding:.375rem .75rem;border-radius:.5rem;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);cursor:pointer;transition:background .15s"
                             onmouseover="this.style.background='rgba(255,255,255,.2)'" onmouseout="this.style.background='rgba(255,255,255,.12)'">
                         <div style="width:1.75rem;height:1.75rem;border-radius:50%;background:rgba(255,255,255,.25);display:flex;align-items:center;justify-content:center;flex-shrink:0">
-                            <span style="font-size:.75rem;font-weight:700;color:white">{{ strtoupper(substr(Auth::user()?->name ?? 'U', 0, 1)) }}</span>
+                            <span style="font-size:.75rem;font-weight:700;color:white">{{ strtoupper(substr($navUser->navLabel(), 0, 1)) }}</span>
                         </div>
-                        <span style="font-size:.8rem;font-weight:500;color:white;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ Auth::user()?->name ?? 'User' }}</span>
+                        <span style="font-size:.8rem;font-weight:500;color:white;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ $navUser->navLabel() }}</span>
                         <svg width="12" height="12" fill="none" stroke="white" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
                     </button>
 
-                    <div x-show="cmsOpen" x-transition
-                         style="position:absolute;top:calc(100% + .5rem);right:0;min-width:180px;background:white;border-radius:.625rem;box-shadow:0 8px 30px rgba(0,0,0,.15);border:1px solid #E5E7EB;padding:.375rem;z-index:100">
+                    <div x-show="userMenuOpen" x-transition x-cloak
+                         style="position:absolute;top:calc(100% + .5rem);right:0;min-width:200px;background:white;border-radius:.625rem;box-shadow:0 8px 30px rgba(0,0,0,.15);border:1px solid #E5E7EB;padding:.375rem;z-index:200">
                         <div style="padding:.5rem .75rem;border-bottom:1px solid #F3F4F6;margin-bottom:.25rem">
-                            <p style="font-size:.75rem;font-weight:600;color:#111827;margin:0">{{ Auth::user()?->name }}</p>
-                            <p style="font-size:.7rem;color:#6B7280;margin:.1rem 0 0">{{ ucwords(str_replace('_',' ', $role ?? '')) }}</p>
+                            @if($navUser->nameDuplicatesPrimaryRole())
+                            <p style="font-size:.75rem;font-weight:600;color:#111827;margin:0">{{ $navUser->email ?: $navUser->phone }}</p>
+                            @else
+                            <p style="font-size:.75rem;font-weight:600;color:#111827;margin:0">{{ $navUser->name }}</p>
+                            @endif
+                            @if($navUser->primaryRoleLabel())
+                            <p style="font-size:.7rem;color:#6B7280;margin:.1rem 0 0">{{ $navUser->primaryRoleLabel() }}</p>
+                            @endif
                         </div>
                         <a href="{{ route('profile.edit') }}" style="display:block;padding:.5rem .75rem;border-radius:.375rem;font-size:.8rem;color:#374151;text-decoration:none" onmouseover="this.style.background='#F9FAFB'" onmouseout="this.style.background='transparent'">👤 My Profile</a>
                         <div style="height:1px;background:#F3F4F6;margin:.25rem 0"></div>

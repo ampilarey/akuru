@@ -3,7 +3,7 @@
 
 @section('portal-content')
 <div class="mb-6">
-    <h1 class="text-2xl font-bold text-brandMaroon-900">Welcome back, {{ $user->name }}</h1>
+    <h1 class="text-2xl font-bold text-brandMaroon-900">Welcome back, {{ $user->navLabel() }}</h1>
     <p class="text-gray-500 text-sm mt-1">Here's an overview of your activity.</p>
 </div>
 

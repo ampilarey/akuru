@@ -192,4 +192,28 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return $this->contacts()->whereNotNull('verified_at')->exists();
     }
+
+    public function primaryRoleLabel(): ?string
+    {
+        $role = $this->getRoleNames()->first();
+
+        return $role ? ucwords(str_replace('_', ' ', $role)) : null;
+    }
+
+    public function nameDuplicatesPrimaryRole(): bool
+    {
+        $roleLabel = $this->primaryRoleLabel();
+
+        return $roleLabel && $this->name && strcasecmp(trim($this->name), $roleLabel) === 0;
+    }
+
+    /** Short label for nav buttons when account name matches role title (e.g. "Super Admin"). */
+    public function navLabel(): string
+    {
+        if ($this->nameDuplicatesPrimaryRole()) {
+            return $this->email ?: $this->phone ?: $this->name;
+        }
+
+        return $this->name ?: $this->email ?: $this->phone ?: 'User';
+    }
 }

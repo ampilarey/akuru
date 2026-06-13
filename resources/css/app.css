@@ -4,6 +4,10 @@
 @tailwind components;
 @tailwind utilities;
 
+[x-cloak] {
+  display: none !important;
+}
+
 /* Brand Color Variables */
 :root {
   --brand-primary: #7C2D37;
