@@ -113,7 +113,7 @@
                                                 @endif
                                                 <div>
                                                     <div class="fw-bold">{{ $teacher->full_name }}</div>
-                                                    <small class="text-muted">{{ $teacher->user->email }}</small>
+                                                    <small class="text-muted">{{ $teacher->user?->email ?? $teacher->email ?? '—' }}</small>
                                                 </div>
                                             </div>
                                         </td>

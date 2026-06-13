@@ -104,7 +104,7 @@
                                                 @endif
                                                 <div>
                                                     <div class="fw-bold">{{ $student->full_name }}</div>
-                                                    <small class="text-muted">{{ $student->user->email }}</small>
+                                                    <small class="text-muted">{{ $student->user?->email ?? $student->phone ?? '—' }}</small>
                                                 </div>
                                             </div>
                                         </td>

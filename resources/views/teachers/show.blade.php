@@ -35,7 +35,7 @@
             <div class="card-body">
                 <div class="row">
                     <div class="col-md-6">
-                        <p><strong>Email:</strong> {{ $teacher->user->email }}</p>
+                        <p><strong>Email:</strong> {{ $teacher->user?->email ?? $teacher->email ?? '—' }}</p>
                         <p><strong>Phone:</strong> {{ $teacher->phone ?? 'N/A' }}</p>
                         <p><strong>Date of Birth:</strong> {{ $teacher->date_of_birth->format('M d, Y') }}</p>
                         <p><strong>Gender:</strong> {{ ucfirst($teacher->gender) }}</p>

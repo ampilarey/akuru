@@ -108,7 +108,7 @@ class StudentController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users,email,'.$student->user_id,
+            'email' => 'required|string|email|max:255|unique:users,email,'.($student->user_id ?? 'NULL'),
             'phone' => 'nullable|string',
             'address' => 'nullable|string',
             'date_of_birth' => 'required|date',
@@ -125,16 +125,18 @@ class StudentController extends Controller
             'last_name_dhivehi' => 'nullable|string',
         ]);
 
-        // Update user account
-        $student->user->update([
-            'name' => $request->name,
-            'email' => $request->email,
-            'phone' => $request->phone,
-            'address' => $request->address,
-            'date_of_birth' => $request->date_of_birth,
-            'gender' => $request->gender,
-            'national_id' => $request->national_id,
-        ]);
+        // Update user account when linked
+        if ($student->user) {
+            $student->user->update([
+                'name' => $request->name,
+                'email' => $request->email,
+                'phone' => $request->phone,
+                'address' => $request->address,
+                'date_of_birth' => $request->date_of_birth,
+                'gender' => $request->gender,
+                'national_id' => $request->national_id,
+            ]);
+        }
 
         // Update student profile
         $student->update([
@@ -160,7 +162,11 @@ class StudentController extends Controller
 
     public function destroy(Student $student)
     {
-        $student->user->delete(); // This will also delete the student due to cascade
+        if ($student->user) {
+            $student->user->delete();
+        } else {
+            $student->delete();
+        }
 
         return redirect()->route('students.index')
             ->with('success', 'Student deleted successfully!');

@@ -159,4 +159,17 @@ class AdminResourcePagesSmokeTest extends TestCase
 
         $this->assertRouteLoads('substitutions.requests.show', $substitutionRequest);
     }
+
+    public function test_students_index_tolerates_missing_user_account(): void
+    {
+        $student = Student::first();
+        $this->assertNotNull($student?->user_id);
+
+        $userId = $student->user_id;
+        \Illuminate\Support\Facades\DB::statement('SET FOREIGN_KEY_CHECKS=0');
+        User::where('id', $userId)->delete();
+        \Illuminate\Support\Facades\DB::statement('SET FOREIGN_KEY_CHECKS=1');
+
+        $this->assertRouteLoads('students.index');
+    }
 }

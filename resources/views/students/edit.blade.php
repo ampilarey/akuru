@@ -51,7 +51,7 @@
                                     @endif
                                 </label>
                                 <input type="text" class="form-control @error('name') is-invalid @enderror" 
-                                       id="name" name="name" value="{{ old('name', $student->user->name) }}" required>
+                                       id="name" name="name" value="{{ old('name', $student->user?->name ?? $student->full_name) }}" required>
                                 @error('name')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
@@ -61,7 +61,7 @@
                             <div class="mb-3">
                                 <label for="email" class="form-label">Email</label>
                                 <input type="email" class="form-control @error('email') is-invalid @enderror" 
-                                       id="email" name="email" value="{{ old('email', $student->user->email) }}" required>
+                                       id="email" name="email" value="{{ old('email', $student->user?->email ?? '') }}" required>
                                 @error('email')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
