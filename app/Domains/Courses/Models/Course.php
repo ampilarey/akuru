@@ -72,7 +72,7 @@ class Course extends Model
 
     public function admissionApplications(): HasMany
     {
-        return $this->hasMany(AdmissionApplication::class);
+        return $this->hasMany(config('domain-models.admission_application'));
     }
 
     public function enrollments(): HasMany
@@ -82,7 +82,7 @@ class Course extends Model
 
     public function instructors(): BelongsToMany
     {
-        return $this->belongsToMany(Instructor::class);
+        return $this->belongsToMany(config('domain-models.instructor'));
     }
 
     public function hasRegistrationFee(): bool
