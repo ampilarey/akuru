@@ -31,20 +31,20 @@
 | Enrollment / OTP | **Not tested** — use `7820288` / `7972434` only |
 | Portal / admin / Hifz | **Not tested** — needs staging credentials |
 
-**Automated (CI / local Mac at `9e8e8f6`, not run on server):**
+**Automated (CI / local at HEAD `bb81562`, not run on server):**
 
 | Check | Result |
 |-------|--------|
-| Pest | 75 passed, 1 todo |
-| Pint | PASS (468 files) |
+| Pest | 122 passed, 1 todo |
+| Pint | PASS (472 files) |
 | PHPStan | ~410 errors (informational) |
-| GitHub Actions `main` | Green — [run 27439531612](https://github.com/ampilarey/akuru/actions/runs/27439531612) |
+| GitHub Actions `main` | Green — [run 27475486703](https://github.com/ampilarey/akuru/actions/runs/27475486703) |
 
 **Verdict:** `PHASE 0 STAGING PASSED` (deploy + public smoke). Credential-based flows (login, BML, enrollment SMS, portal, admin, Hifz) remain **operator spot-check** before production deploy.
 
 ### 0.1 Install & tooling
 - Inertia + React, Pest, Larastan, ADR template, CI (`pint` + `pest` + architecture suite)
-- **CI green on `main`:** [GitHub Actions run 27439531612](https://github.com/ampilarey/akuru/actions/runs/27439531612) (Pint + Pest 75 passed; PHPStan informational)
+- **CI green on `main`:** [GitHub Actions run 27475486703](https://github.com/ampilarey/akuru/actions/runs/27475486703) (Pint + Pest 122 passed, 1 todo; PHPStan informational)
 
 ### 0.2 Domain skeleton
 - 19 domain providers + ADR-001 (single-institute, `school_id` retained)
@@ -81,7 +81,7 @@ Baselines may only **shrink**; never grow.
 ### 0.7 Definition of done (checklist vs reality)
 | Criterion | Status |
 |-----------|--------|
-| Route-name snapshots green | **Done** (75 Pest tests, 1 arch todo) |
+| Route-name snapshots green | **Done** (122 Pest tests, 1 arch todo) |
 | `app/Models` / `app/Services` gone | **Done** (directories removed) |
 | Pest + arch in CI | **Done** on `main` after closure push |
 | Per-domain `routes.php` | **Deferred** → S1 |
