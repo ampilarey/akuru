@@ -44,7 +44,7 @@ class SubstitutionAssignment extends Model
      */
     public function assignedBy(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'assigned_by');
+        return $this->belongsTo(config('domain-models.user'), 'assigned_by');
     }
 
     /**

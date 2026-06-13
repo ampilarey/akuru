@@ -39,11 +39,11 @@ class Announcement extends Model
     // Relationships
     public function school()
     {
-        return $this->belongsTo(School::class);
+        return $this->belongsTo(config('domain-models.school'));
     }
 
     public function createdBy()
     {
-        return $this->belongsTo(User::class, 'created_by');
+        return $this->belongsTo(config('domain-models.user'), 'created_by');
     }
 }

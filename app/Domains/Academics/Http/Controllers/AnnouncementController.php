@@ -47,7 +47,7 @@ class AnnouncementController extends Controller
         ]);
 
         $announcement = Announcement::create([
-            'school_id' => 1, // Assuming single school
+            'school_id' => School::first()?->id ?? 1,
             'created_by' => auth()->id(),
             'title' => $request->title,
             'title_arabic' => $request->title_arabic,
@@ -70,6 +70,8 @@ class AnnouncementController extends Controller
 
     public function show(Announcement $announcement)
     {
+        $announcement->load('createdBy');
+
         return view('announcements.show', compact('announcement'));
     }
 }

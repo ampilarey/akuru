@@ -7,6 +7,7 @@ use App\Domains\Academics\Models\Period;
 use App\Domains\Academics\Models\Subject;
 use App\Domains\Academics\Models\SubstitutionAssignment;
 use App\Domains\Academics\Models\SubstitutionRequest;
+use App\Domains\Academics\Models\TeacherAbsence;
 use App\Domains\People\Models\Teacher;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
@@ -245,5 +246,76 @@ class SubstitutionRequestController extends Controller
         return redirect()
             ->route('substitutions.requests.index')
             ->with('success', 'Substitution request assigned successfully.');
+    }
+
+    public function absencesIndex(): View
+    {
+        $absences = TeacherAbsence::with(['teacher.user', 'creator'])
+            ->latest()
+            ->paginate(15);
+
+        return view('substitutions.absences.index', compact('absences'));
+    }
+
+    public function absencesCreate(): View
+    {
+        $teachers = Teacher::with('user')->orderBy('first_name')->get();
+
+        return view('substitutions.absences.create', compact('teachers'));
+    }
+
+    public function absencesStore(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'teacher_id' => 'required|exists:teachers,id',
+            'from_date' => 'required|date',
+            'to_date' => 'required|date|after_or_equal:from_date',
+            'reason' => 'required|string|max:1000',
+            'note' => 'nullable|string|max:1000',
+        ]);
+
+        TeacherAbsence::create([
+            ...$validated,
+            'status' => 'pending',
+            'created_by' => auth()->id(),
+        ]);
+
+        return redirect()
+            ->route('absences.index')
+            ->with('success', 'Teacher absence recorded.');
+    }
+
+    public function absencesEdit(TeacherAbsence $absence): View
+    {
+        $teachers = Teacher::with('user')->orderBy('first_name')->get();
+
+        return view('substitutions.absences.edit', compact('absence', 'teachers'));
+    }
+
+    public function absencesUpdate(Request $request, TeacherAbsence $absence): RedirectResponse
+    {
+        $validated = $request->validate([
+            'teacher_id' => 'required|exists:teachers,id',
+            'from_date' => 'required|date',
+            'to_date' => 'required|date|after_or_equal:from_date',
+            'reason' => 'required|string|max:1000',
+            'note' => 'nullable|string|max:1000',
+            'status' => 'required|in:pending,approved,rejected',
+        ]);
+
+        $absence->update($validated);
+
+        return redirect()
+            ->route('absences.index')
+            ->with('success', 'Teacher absence updated.');
+    }
+
+    public function absencesDestroy(TeacherAbsence $absence): RedirectResponse
+    {
+        $absence->delete();
+
+        return redirect()
+            ->route('absences.index')
+            ->with('success', 'Teacher absence removed.');
     }
 }

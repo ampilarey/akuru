@@ -15,12 +15,16 @@ class QuranProgressController extends Controller
         $user = auth()->user();
 
         if ($user->isStudent()) {
-            $progress = $user->student->quranProgress()->with('teacher')->latest()->get();
+            $progress = $user->student
+                ? $user->student->quranProgress()->with('teacher')->latest()->get()
+                : collect();
         } elseif ($user->isTeacher()) {
-            $progress = QuranProgress::where('teacher_id', $user->teacher->id)
-                ->with('student')
-                ->latest()
-                ->get();
+            $progress = $user->teacher
+                ? QuranProgress::where('teacher_id', $user->teacher->id)
+                    ->with('student')
+                    ->latest()
+                    ->get()
+                : collect();
         } else {
             $progress = QuranProgress::with(['student', 'teacher'])->latest()->get();
         }
@@ -120,9 +124,14 @@ class QuranProgressController extends Controller
             'teacher_notes_arabic' => 'nullable|string',
         ]);
 
+        $teacher = auth()->user()->teacher;
+        if (! $teacher) {
+            return redirect()->back()->withErrors(['teacher' => 'Teacher profile required to record progress.']);
+        }
+
         $request->merge([
             'student_id' => $student->id,
-            'teacher_id' => auth()->user()->teacher->id,
+            'teacher_id' => $teacher->id,
         ]);
 
         QuranProgress::create($request->all());

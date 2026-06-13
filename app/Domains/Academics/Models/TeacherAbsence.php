@@ -43,7 +43,7 @@ class TeacherAbsence extends Model
      */
     public function creator(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'created_by');
+        return $this->belongsTo(config('domain-models.user'), 'created_by');
     }
 
     /**
@@ -51,7 +51,7 @@ class TeacherAbsence extends Model
      */
     public function approver(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'approved_by');
+        return $this->belongsTo(config('domain-models.user'), 'approved_by');
     }
 
     /**

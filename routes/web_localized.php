@@ -2,7 +2,6 @@
 
 use App\Domains\Academics\Http\Controllers\AnnouncementController;
 use App\Domains\Academics\Http\Controllers\SubstitutionRequestController;
-use App\Domains\Academics\Http\Controllers\TeacherAbsenceController;
 use App\Domains\Academics\Legacy\Http\Controllers\ELearningController;
 use App\Domains\Admissions\Http\Controllers\AdminEnrollmentController;
 use App\Domains\Hifz\Http\Controllers\QuranProgressController;
@@ -74,7 +73,12 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
 
     // Substitution routes
     Route::middleware(['role:super_admin|admin|headmaster|supervisor|teacher'])->group(function () {
-        Route::resource('substitutions/absences', TeacherAbsenceController::class)->except(['show']);
+        Route::get('substitutions/absences', [SubstitutionRequestController::class, 'absencesIndex'])->name('absences.index');
+        Route::get('substitutions/absences/create', [SubstitutionRequestController::class, 'absencesCreate'])->name('absences.create');
+        Route::post('substitutions/absences', [SubstitutionRequestController::class, 'absencesStore'])->name('absences.store');
+        Route::get('substitutions/absences/{absence}/edit', [SubstitutionRequestController::class, 'absencesEdit'])->name('absences.edit');
+        Route::put('substitutions/absences/{absence}', [SubstitutionRequestController::class, 'absencesUpdate'])->name('absences.update');
+        Route::delete('substitutions/absences/{absence}', [SubstitutionRequestController::class, 'absencesDestroy'])->name('absences.destroy');
         Route::resource('substitutions/requests', SubstitutionRequestController::class)->names('substitutions.requests');
         Route::post('substitutions/requests/{request}/take', [SubstitutionRequestController::class, 'take'])->name('substitutions.requests.take');
         Route::post('substitutions/requests/{request}/assign', [SubstitutionRequestController::class, 'assign'])->name('substitutions.requests.assign');
