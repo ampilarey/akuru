@@ -18,7 +18,7 @@
     {{-- Generate Report Form --}}
     <div style="background:white;border-radius:.875rem;border:1px solid #E5E7EB;padding:1.25rem;margin-bottom:1.25rem">
         <h3 style="font-size:.95rem;font-weight:700;color:#111827;margin:0 0 1rem">Generate New Report</h3>
-        <form method="POST" action="{{ route('analytics.generate') }}">
+        <form method="POST" action="{{ route('analytics.reports.generate') }}">
             @csrf
             <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:.75rem;margin-bottom:.75rem">
                 <div>

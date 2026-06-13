@@ -15,10 +15,7 @@ class ProfileTest extends TestCase
         $user = User::factory()->create();
 
         $response = $this
-            ->withoutMiddleware([
-                \Mcamara\LaravelLocalization\Middleware\LocaleSessionRedirect::class,
-                \Mcamara\LaravelLocalization\Middleware\LaravelLocalizationRedirectFilter::class,
-            ])
+            ->withoutLocalizationMiddleware()
             ->actingAs($user)
             ->get('/profile');
 

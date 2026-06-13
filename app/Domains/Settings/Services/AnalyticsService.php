@@ -8,7 +8,7 @@ use App\Domains\Identity\Models\User;
 use App\Domains\Settings\Models\Report;
 use App\Domains\Settings\Models\SystemMetric;
 use App\Domains\Settings\Models\UserActivity;
-use App\Domains\Website\Models\ContactInquiry;
+use App\Domains\Website\Models\ContactMessage;
 use App\Domains\Website\Models\Event;
 use App\Domains\Website\Models\GalleryAlbum;
 use App\Domains\Website\Models\Post;
@@ -54,8 +54,8 @@ class AnalyticsService
             'total_galleries' => GalleryAlbum::count(),
             'total_applications' => AdmissionApplication::count(),
             'pending_applications' => AdmissionApplication::whereIn('status', ['new', 'under_review'])->count(),
-            'total_inquiries' => ContactInquiry::count(),
-            'unread_inquiries' => ContactInquiry::where('is_read', false)->count(),
+            'total_inquiries' => ContactMessage::count(),
+            'unread_inquiries' => ContactMessage::whereNull('handled_at')->count(),
         ];
     }
 

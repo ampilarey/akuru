@@ -6,7 +6,7 @@ use App\Domains\Admissions\Models\AdmissionApplication;
 use App\Domains\Courses\Models\Course;
 use App\Domains\Identity\Models\User;
 use App\Domains\Settings\Models\UserActivity;
-use App\Domains\Website\Models\ContactInquiry;
+use App\Domains\Website\Models\ContactMessage;
 use App\Domains\Website\Models\Event;
 use App\Domains\Website\Models\GalleryAlbum;
 use App\Domains\Website\Models\Post;
@@ -70,7 +70,7 @@ class EnhancedDashboardController extends Controller
                 'total_events' => Event::count(),
                 'total_galleries' => GalleryAlbum::count(),
                 'total_applications' => AdmissionApplication::count(),
-                'total_inquiries' => ContactInquiry::count(),
+                'total_inquiries' => ContactMessage::count(),
             ],
             'recent_activities' => UserActivity::recent(7)->orderBy('performed_at', 'desc')->limit(10)->get(),
             'system_health' => $this->getSystemHealth(),
@@ -89,7 +89,7 @@ class EnhancedDashboardController extends Controller
                 'total_teachers' => User::role('teacher')->count(),
                 'active_courses' => Course::where('status', 'open')->count(),
                 'pending_applications' => AdmissionApplication::whereIn('status', ['new', 'under_review'])->count(),
-                'recent_inquiries' => ContactInquiry::recent(7)->count(),
+                'recent_inquiries' => ContactMessage::where('created_at', '>=', now()->subDays(7))->count(),
                 'upcoming_events' => Event::where('start_date', '>=', now())->count(),
             ],
             'recent_activities' => UserActivity::recent(7)->orderBy('performed_at', 'desc')->limit(10)->get(),
@@ -203,7 +203,7 @@ class EnhancedDashboardController extends Controller
     {
         return [
             'pending_applications' => AdmissionApplication::whereIn('status', ['new', 'under_review'])->count(),
-            'unread_inquiries' => ContactInquiry::where('is_read', false)->count(),
+            'unread_inquiries' => ContactMessage::whereNull('handled_at')->count(),
             'pending_approvals' => $this->getPendingApprovals(),
         ];
     }

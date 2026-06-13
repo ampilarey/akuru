@@ -7,4 +7,5 @@
 return [
     'admission_application' => \App\Domains\Admissions\Models\AdmissionApplication::class,
     'instructor' => \App\Domains\HR\Models\Instructor::class,
+    'course' => \App\Domains\Courses\Models\Course::class,
 ];
