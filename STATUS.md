@@ -1,8 +1,40 @@
 # Status
 
-## Phase 0 — Foundation (closure: code + CI; deploy pending)
+## Phase 0 — Foundation (closure: code + CI on `main`; staging deploy **blocked**)
 
-**Honest summary:** Domain moves, contracts, architecture baselines, and CI are done on `main`. Per-domain route-file split, OTP migration squash, staging/production deploy, and manual smoke are **not** done. PHPStan is informational in CI (does not block merge).
+**Honest summary:** Domain moves, contracts, architecture baselines, and CI are done on `main` at **`e84c657`**. Staging deploy and full smoke on `test.akuru.edu.mv` are **not complete** — agent has no SSH to cPanel; operator must run server deploy (see `scripts/deploy-staging-phase0.sh`).
+
+### Staging verification (2026-06-13)
+
+| Item | Result |
+|------|--------|
+| Target URL | https://test.akuru.edu.mv |
+| Expected commit | `e84c657` |
+| Deployed commit on server | **Unknown** — not pulled by agent (no SSH) |
+| `.env` / DB backup on server | **Not run** by agent |
+| Server `git pull` + migrate + build | **Pending operator** |
+
+**Pre-deploy browser smoke (current live site, commit unverified):**
+
+| Area | Result |
+|------|--------|
+| `/up` health | 200 OK |
+| Public EN/DV/AR | 200 OK |
+| Courses, contact, gallery, news | 200 OK |
+| `/inertia-test` | 200 — “Inertia + React works” |
+| Login page | Loads |
+| BML / enrollment / portal / admin / Hifz | **Not tested** (needs credentials + post-deploy commit) |
+
+**Local automated (repo at `e84c657`, not server):**
+
+| Check | Result |
+|-------|--------|
+| Pest | 75 passed, 1 todo |
+| Pint | PASS (468 files) |
+| PHPStan | ~410 errors (informational) |
+| GitHub Actions `main` | Green — [run 27439531612](https://github.com/ampilarey/akuru/actions/runs/27439531612) |
+
+**Verdict:** `PHASE 0 STAGING BLOCKED` — deploy `e84c657` on server, then re-run smoke + server-side tests.
 
 ### 0.1 Install & tooling
 - Inertia + React, Pest, Larastan, ADR template, CI (`pint` + `pest` + architecture suite)
@@ -47,7 +79,7 @@ Baselines may only **shrink**; never grow.
 | `app/Models` / `app/Services` gone | **Done** (directories removed) |
 | Pest + arch in CI | **Done** on `main` after closure push |
 | Per-domain `routes.php` | **Deferred** → S1 |
-| Manual smoke + production deploy | **Pending operator** (staging `test.akuru.edu.mv` first) |
+| Manual smoke + production deploy | **Blocked** — staging pull pending (operator); production not started |
 | PHPStan blocking CI | **No** (informational only) |
 
 ### Closure slice (no behavior change)
