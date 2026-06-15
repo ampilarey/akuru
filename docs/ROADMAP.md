@@ -105,12 +105,16 @@ app/
                      directly — always via contract.
     Media/           media library, storage interface, WebP/processing
     Notifications/   notification channels (in-app, SMS, email, push), templates
+    PrayerTimes/     Maldives prayer timetable engine (salat.db import, island
+                     resolver, versioned cache, public contract) + prayer-time
+                     SMS broadcast orchestration (sends via Notifications
+                     SmsSenderInterface only)
     Portal/          parent/student portal composition (reads other domains'
                      public interfaces only)
     Website/         public CMS: pages, posts, banners, FAQs, testimonials,
                      gallery, contact; conversion layer + Islamic Daily
                      Content engine (ayah/hadith/sayings/reminders),
-                     research & publications, prayer times (§8.6)
+                     research & publications; consumes PrayerTimes for widgets
     Settings/        system settings
   Support/           shared base classes, DTO base, helpers
 ```
@@ -261,6 +265,7 @@ Provider notes: Zoom = first implementation candidate (paid plan needed for clou
 | Academics | `class_attendance` (replaces stub `attendance`; student, class, date, status, marked_by, term), `timetables` + `periods` (exist — add conflict constraints), keep `teacher_absences`, `substitution_*` |
 | ExamsGrades | `exams` (type, term, class, subject, max marks, weight), `exam_marks` (replaces stub `grades` usage), `report_cards`, `grade_scales` |
 | Finance | `fee_structures` (class/year/optional items), `invoices` + `invoice_lines` (generate from structures), link to existing `payments`. Reuse `PaymentService` + `PaymentProviderInterface`. |
+| PrayerTimes | `prayer_categories`, `prayer_islands`, `prayer_times`, `prayer_recipient_groups`, `prayer_broadcasts`, `prayer_broadcast_recipients` — see `docs/W3_SPEC.md` (PLANNED; operational logs, no `academic_year_id`) |
 
 ### 3.4 Course platform split (per spec §10–11, §28, §43)
 
@@ -505,9 +510,13 @@ One curated engine, not separate features: `daily_content` (type: **ayah / hadit
 - Homepage daily widget + archive pages + share cards (image generation for social/WhatsApp sharing)
 - **Daily reminders subscription:** opt-in delivery via existing notification channels (SMS/email) + PWA push (Phase 1B service worker); per-user channel + content-type preferences
 - **Research & publications:** extend existing articles/posts with categories, authors (link to instructor profiles), and PDF attachments via Media domain
-- **Prayer times (Maldives) + Hijri date** widget — small, expected, locally valued
+- **Prayer times + Hijri date widget** — consumes `PrayerTimeProviderInterface` from **Phase W3** (not owned by Website)
 
-Timing: W1 anytime (highest ROI now, while courses are promoted manually); W2 after Phase 0 (uses domain structure + notification contracts); curriculum-preview sections on course pages arrive automatically with Phase 1A's public course outline.
+Timing: W1 anytime (highest ROI now, while courses are promoted manually); W2 after Phase 0 (uses domain structure + notification contracts); **W3 after Phase 0** (like W2 — prayer data engine + SMS broadcast; broadcast needs S1 `consents` + People/Identity contacts + `SmsSenderInterface`); curriculum-preview sections on course pages arrive automatically with Phase 1A's public course outline.
+
+#### Phase W3 — Prayer times engine + prayer-time SMS broadcast (PrayerTimes domain)
+
+Per `docs/W3_SPEC.md` — replicate Bake&Grill model (`salat.db` import, 366-day categories, leap-year resolver, island offsets, versioned cache, Haversine nearest-island). Public page + JSON API + admin dashboard via `PrayerTimeProviderInterface`; deprecate `IslamicCalendarService::getPrayerTimes()`. Optional **prayer-time SMS broadcast** (daily / date-range / change-only) with mandatory preview, full audit, consent gating (`prayer_reminders`), fake SMS sender + `Http::preventStrayRequests()` in tests. Engine stays subject-ignorant; taxonomy unrelated — W3 is independent of course engine phases.
 
 ---
 
