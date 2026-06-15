@@ -575,10 +575,11 @@ Complete database schema documentation for the Akuru Institute Learning Manageme
 - created_at, updated_at (timestamps)
 ```
 
-#### `courses` - Course Information
+#### `courses` - Course Information *(current DB)*
+
 ```sql
 - id (bigint, primary key)
-- course_category_id (bigint, foreign key → course_categories.id)
+- course_category_id (bigint, foreign key → course_categories.id)  -- legacy; see planned taxonomy below
 - name (varchar)
 - name_arabic (varchar, nullable)
 - name_dhivehi (varchar, nullable)
@@ -592,7 +593,10 @@ Complete database schema documentation for the Akuru Institute Learning Manageme
 - created_at, updated_at (timestamps)
 ```
 
-#### `course_categories` - Course Categories
+#### `course_categories` - Course Categories *(current DB — legacy)*
+
+Flat category list on today's schema. **Planned replacement:** hierarchical `course_subjects` + flat `audiences` + `course_levels` (spec §10.4–10.6, ADR-003). Not yet migrated.
+
 ```sql
 - id (bigint, primary key)
 - name (varchar)
@@ -603,6 +607,75 @@ Complete database schema documentation for the Akuru Institute Learning Manageme
 - is_active (boolean, default: true)
 - created_at, updated_at (timestamps)
 ```
+
+### Course engine taxonomy *(planned — spec §10, ADR-003; not yet migrated)*
+
+Distinct from Academics school **`subjects`** (class timetables, teacher assignment). Course taxonomy tables live in the Courses domain when Phase 1A ships.
+
+#### `course_subjects` - Hierarchical browse axis
+
+```sql
+- id (bigint, primary key)
+- parent_id (bigint, nullable, foreign key → course_subjects.id)  -- null = root
+- name_en (varchar)
+- name_dv (varchar, nullable)
+- name_ar (varchar, nullable)
+- slug (varchar, unique)
+- sort_order (integer, default: 0)
+- active (boolean, default: true)
+- created_at, updated_at (timestamps)
+```
+
+Seed examples (admin-editable): Quran → Hifz, Tajweed, …; Arabic → Nahw, Sarf, …; Islamic Studies → Fiqh, Aqeedah, …; Dhivehi; English.
+
+#### `audiences` - Who an offering is for
+
+```sql
+- id (bigint, primary key)
+- name_en (varchar)
+- name_dv (varchar, nullable)
+- name_ar (varchar, nullable)
+- slug (varchar, unique)
+- sort_order (integer, default: 0)
+- active (boolean, default: true)
+- created_at, updated_at (timestamps)
+```
+
+Seed examples (admin-editable): Kids, School children, Adults, All.
+
+#### `course_levels` - Proficiency / stage
+
+```sql
+- id (bigint, primary key)
+- name_en (varchar)
+- name_dv (varchar, nullable)
+- name_ar (varchar, nullable)
+- slug (varchar, unique)
+- sort_order (integer, default: 0)
+- active (boolean, default: true)
+- created_at, updated_at (timestamps)
+```
+
+Seed examples (admin-editable): Foundation, Beginner, Intermediate, Advanced, Level 1, Level 2, A1, A2, B1.
+
+#### Planned FK columns (course engine split, spec §11)
+
+**`courses` (template):**
+
+```sql
+- subject_id (bigint, foreign key → course_subjects.id)  -- leaf preferred; non-leaf if admin allows
+```
+
+**`course_offerings` (batch / delivery instance):**
+
+```sql
+- course_id (bigint, foreign key → courses.id)
+- audience_id (bigint, foreign key → audiences.id)
+- level_id (bigint, foreign key → course_levels.id)
+-- … plus delivery mode, schedule, seats, etc. (spec §11.3)
+```
+
+Same course template + different `audience_id` / `level_id` per offering — no duplicate course rows.
 
 ### Media & File Management
 

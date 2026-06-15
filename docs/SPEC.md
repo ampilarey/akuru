@@ -652,9 +652,7 @@ Each course should include:
 - Description
 - Short description
 - Cover image
-- Subject
-- Category
-- Level
+- **Subject** (hierarchical — leaf or, if admin allows, non-leaf node; see §10.4)
 - Course language
 - Course type
 - Default access type
@@ -673,6 +671,8 @@ Each course should include:
 - Timestamps
 - Soft deletes
 
+**Audience** and **Level** (§10.5–10.6) are **not** duplicated on every course row when the same template is offered to different groups. The reusable **course** holds content; each **`course_offering`** (§11) carries its own `audience_id` and `level_id` — e.g. one *Arabic Nahw* course with offerings *Level 1 / Kids* and *Level 2 / Adults* without creating two course records.
+
 ### 10.3 Course Slugs
 
 Course slugs must be unique platform-wide.
@@ -685,45 +685,46 @@ food-safety-training
 umrah-guide-course
 ```
 
-### 10.4 Course Categories
+### 10.4 Subjects (hierarchical)
 
-Categories must be admin-managed.
+> **Merge note:** Earlier drafts split **Categories** (§10.4) and **Subjects** (§10.5) as two flat admin lists. That overlap is removed. **Subject** is now the single hierarchical browse axis (parent/child tree). **Audience** (§10.5) is a separate flat dimension. **Level** (§10.6) stays flat and attaches to **offerings**, not to duplicate courses.
 
-Examples:
+Subjects must be **admin-managed**, **trilingual** (`name_en`, `name_dv`, `name_ar`), with `slug`, nullable `parent_id` (self-referencing tree), `sort_order`, and `active`. A course attaches to a **leaf** subject by default; admins may allow attachment to a non-leaf node.
 
-- Language
-- Islamic Studies
-- School Subjects
-- Professional Training
-- Staff Training
-- Umrah Training
-- Exam Preparation
-- Short Courses
-- Kids Courses
-- Adult Courses
+**Example tree** (seed examples only — admin-editable, never hardcoded):
 
-These must not be hardcoded.
+```text
+Quran
+  ├── Hifz
+  ├── Tajweed
+  ├── Qira'ah
+  └── Tafseer
+Arabic
+  ├── Nahw
+  ├── Sarf
+  ├── Balagha
+  └── Conversation
+Islamic Studies
+  ├── Fiqh
+  ├── Aqeedah
+  ├── Seerah
+  └── Hadith
+Dhivehi
+English
+```
 
-### 10.5 Subjects
+### 10.5 Audience
 
-Subjects must be admin-managed.
+Audience is a **flat**, admin-managed dimension — separate from the subject tree. Trilingual (`name_en`, `name_dv`, `name_ar`), `slug`, `sort_order`, `active`.
 
-Examples:
+**Example values** (seed examples only — admin-editable, never hardcoded):
 
-- Arabic
-- Dhivehi
-- English
-- Qur’an Understanding
-- Fiqh
-- Seerah
-- Mathematics
-- Science
-- Business
-- Customer Service
-- Food Safety
-- Staff Training
+- Kids
+- School children
+- Adults
+- All
 
-These must not be hardcoded.
+Audience is stored on **`course_offerings`** (§11), so the same course template can run for different audiences without duplicating content.
 
 ### 10.6 Course Levels
 
@@ -742,6 +743,8 @@ Examples:
 - B1
 
 These must not be hardcoded.
+
+**Offerings:** `level_id` on `course_offerings` combines with `audience_id` (§10.5) to describe *who* and *how advanced* a batch is — e.g. Nahw Level 1 for Kids vs Nahw Level 2 for Adults on the same course template.
 
 ### 10.7 Course Status Workflow
 
@@ -863,6 +866,8 @@ Fields:
 
 - ID
 - Course ID
+- Audience ID (§10.5)
+- Level ID (§10.6)
 - Title
 - Slug
 - Delivery mode
@@ -2350,8 +2355,8 @@ The admin dashboard must use Inertia + React.
 ### Course Management
 
 - Course CRUD
-- Subject CRUD
-- Category CRUD
+- Subject CRUD (hierarchical)
+- Audience CRUD
 - Level CRUD
 - Course publishing workflow
 - Course preview
@@ -2627,8 +2632,8 @@ QuranRecitationAi
 For Phase 1A, keep these inside the Courses domain:
 
 - Courses
-- Categories
-- Subjects
+- Subjects (hierarchical taxonomy)
+- Audiences
 - Levels
 - Modules
 - Lessons
@@ -2777,8 +2782,8 @@ The goal is to allow future replacement of:
 
 ### Courses
 
-- subjects
-- course_categories
+- course_subjects (hierarchical taxonomy; distinct from Academics school `subjects`)
+- audiences
 - course_levels
 - courses
 - course_modules
@@ -2884,8 +2889,8 @@ Even though Phase 1 uses Inertia pages, JSON endpoints or service-ready actions 
 Future `/api/v1` endpoints should be easy to add for:
 
 - Course CRUD
-- Subject CRUD
-- Category CRUD
+- Subject CRUD (hierarchical)
+- Audience CRUD
 - Level CRUD
 - Module CRUD
 - Lesson CRUD
@@ -2955,8 +2960,8 @@ Phase 1A includes:
 6. User management
 7. Parent-child relationship model
 8. System settings foundation
-9. Subject management
-10. Category management
+9. Subject management (hierarchical)
+10. Audience management
 11. Level management
 12. Course CRUD
 13. Course status workflow
@@ -2990,7 +2995,7 @@ Phase 1A is complete only when:
 
 - Laravel 12, Inertia, React, and Vite are working cleanly.
 - Auth, roles, users, rate limiting, and parent-child relationship model exist.
-- Subjects, categories, and levels are admin-managed.
+- Subjects, audiences, and levels are admin-managed.
 - A course creator can create a course, modules, lessons, and Phase 1A content blocks from the dashboard.
 - Content blocks are stored dynamically in the database.
 - No course content is hardcoded.
@@ -5061,7 +5066,7 @@ Do not start Phase 1B until Phase 1A is stable.
 - Users
 - Parent-child relationship model
 - Settings foundation
-- Subjects/categories/levels
+- Subjects/audiences/levels
 - Courses domain
 - Course CRUD
 - Course status workflow
@@ -5202,12 +5207,12 @@ Build:
 - Rate limiting
 - Basic layout/authenticated shell
 
-#### Slice 2: Subjects, Categories, Levels, Course CRUD, Status Workflow
+#### Slice 2: Taxonomy (Subjects, Audiences, Levels), Course CRUD, Status Workflow
 
 Build:
 
-- Subject CRUD
-- Category CRUD
+- Subject CRUD (hierarchical `parent_id`)
+- Audience CRUD
 - Level CRUD
 - Course CRUD
 - Course status workflow

@@ -83,9 +83,11 @@ app/
                      course materials), protected reader, reading progress,
                      writer portal, editorial + peer-review workflow, writer
                      sales/payouts (§9; L-track)
-    Courses/         ENGINE CORE — course templates, categories, subjects(course),
-                     levels, modules, lessons, lesson revisions, content blocks,
-                     component registry + contracts. Knows NO specific subject.
+    Courses/         ENGINE CORE — course templates, hierarchical subjects + audiences
+                     + levels (taxonomy), modules, lessons, lesson revisions,
+                     content blocks, component registry + contracts. Knows NO
+                     specific subject. Taxonomy = admin-managed seed data only
+                     (ADR-003); engine stays subject-ignorant.
     Courses/Components/   Moodle-style pluggable course components (§2a):
       Core/          spec block types, generic activities, assessments,
                      question bank (Phases 1A–2)
@@ -264,12 +266,12 @@ Provider notes: Zoom = first implementation candidate (paid plan needed for clou
 
 | Current `courses` columns | Destination |
 |---|---|
-| title, slug, descriptions, cover, language, level, category, prerequisites, objectives | stays on `courses` (template) |
-| `fee`, `registration_fee_*`, `seats`, `schedule`, `start_date`, `end_date`, `enrollment_deadline`, `requires_admin_approval` | move to new `course_offerings` |
+| title, slug, descriptions, cover, language, `subject_id`, prerequisites, objectives | stays on `courses` (template) |
+| `fee`, `registration_fee_*`, `seats`, `schedule`, `start_date`, `end_date`, `enrollment_deadline`, `requires_admin_approval`, **`audience_id`**, **`level_id`** | move to new `course_offerings` (audience + level per offering — ADR-003) |
 
 Data migration: every existing course → course + **one auto-created offering** (mode = face-to-face or as appropriate); `course_enrollments` gain `course_offering_id` and are repointed.
 
-New tables (spec §43): `subjects` (course taxonomy — separate from school subjects), `course_levels`, `course_modules`, `lessons`, `lesson_revisions`, `content_blocks`, `course_offerings`, `course_offering_sessions` (incl. meeting link/provider fields for §2d live classes), `attendance_records` (offering attendance — separate table from class attendance; shared reporting contract in Portal), `activities`, `activity_attempts`, `student_submissions`, `teacher_feedback`, `assessments`, `assessment_questions`, `assessment_attempts`, `questions`, `glossary_items`, `lesson_glossary_items`, `student_lesson_progress`, `certificate_templates`, `issued_certificates`.
+New tables (spec §43): `course_subjects` (hierarchical course taxonomy — separate from school `subjects`), `audiences`, `course_levels`, `course_modules`, `lessons`, `lesson_revisions`, `content_blocks`, `course_offerings` (`audience_id`, `level_id`), `course_offering_sessions` (incl. meeting link/provider fields for §2d live classes), `attendance_records` (offering attendance — separate table from class attendance; shared reporting contract in Portal), `activities`, `activity_attempts`, `student_submissions`, `teacher_feedback`, `assessments`, `assessment_questions`, `assessment_attempts`, `questions`, `glossary_items`, `lesson_glossary_items`, `student_lesson_progress`, `certificate_templates`, `issued_certificates`.
 
 Additionally (for §2a): `courses.course_type` (default `general`; `hifz` etc. binds extension domains), and JSON strategy config columns — `courses.completion_config`, `lessons.unlock_config` / offering-level overrides — storing which evaluator strategy + settings apply.
 
@@ -340,7 +342,7 @@ Fee structures per class/year → invoice generation (term billing) → **paymen
 
 ### Phase 1A — Course engine core *(can run in parallel with S2–S4 after S1)*
 
-Per spec §46.1 and the **§57 Build Strategy slice order** (Slices 1–7: foundation → course CRUD → modules/lessons/revisions → text blocks → media pipeline → enrollment/progress → parent links + arch tests). Built on the §2a component registry and strategy interfaces from day one: courses/categories/subjects/levels CRUD, modules, lessons, **lesson revisions**, dynamic content blocks (Text, Rich Text, Image, Audio, Video, PDF, Instruction), React block builder + lesson player, media pipeline, self-learning enrollment, basic progress, thin controllers + actions, Phase 1A tests.
+Per spec §46.1 and the **§57 Build Strategy slice order** (Slices 1–7: foundation → course CRUD → modules/lessons/revisions → text blocks → media pipeline → enrollment/progress → parent links + arch tests). Built on the §2a component registry and strategy interfaces from day one: taxonomy CRUD (hierarchical subjects, audiences, levels — ADR-003), modules, lessons, **lesson revisions**, dynamic content blocks (Text, Rich Text, Image, Audio, Video, PDF, Instruction), React block builder + lesson player, media pipeline, self-learning enrollment, basic progress, thin controllers + actions, Phase 1A tests.
 
 ### Phase 1B — Offerings + modes
 
