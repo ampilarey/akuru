@@ -145,6 +145,10 @@
     </style>
 </head>
 <body class="min-h-screen bg-gray-50 text-gray-800 font-sans antialiased">
+    {{-- TEMP auto-deploy demo banner — remove after verification. Inline styles so it renders without an asset rebuild. --}}
+    <div style="background:#dc2626;color:#ffffff;text-align:center;padding:10px 16px;font-weight:700;font-size:14px;letter-spacing:.02em;">
+        🚀 Auto-deploy is live — this red banner was deployed automatically via GitHub Actions.
+    </div>
     <x-public.nav />
     
     <main class="min-h-[70vh]">
