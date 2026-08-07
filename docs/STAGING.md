@@ -3,7 +3,7 @@
 **Read this before any staging deploy or server git command.**  
 Canonical deploy details also live in `docs/legacy/DEPLOYMENT.md` §6.1.
 
-<!-- Auto-deploy smoke: verifying webhook pipeline (2026-08-07). -->
+<!-- Auto-deploy smoke: verifying webhook pipeline (2026-08-07, run 2). -->
 
 
 ## Paths (cPanel account `akuruedu`)
