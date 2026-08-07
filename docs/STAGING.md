@@ -48,29 +48,43 @@ cd ~/test.akuru.edu.mv && git pull origin main
 5. **BML** — staging uses sandbox/UAT credentials only (`BML_ENVIRONMENT=sandbox` in `.env`).
 6. **`npm`** — often **not** in server PATH; if assets change, run `npm run build` on Mac and upload `public/build/`, or enable Node in cPanel.
 
-## Automated deploy (GitHub Actions)
+## Automated deploy (GitHub Actions webhook)
 
-`.github/workflows/deploy-staging.yml` auto-deploys staging on every push to `main`
-(and can be run manually via **Actions → Deploy to Staging → Run workflow**). It keeps
-the **"Mac pushes, server pulls"** model — the workflow just triggers the server pull
-over SSH and runs the same commands as the manual routine below. Front-end assets are
-built on the runner (npm is often not on the server PATH) and `rsync`-ed to the server.
+`.github/workflows/deploy-test-immediate.yml` auto-deploys staging on every push to
+`main` (and via **Actions → Deploy TEST (immediate) → Run workflow**). It uses the same
+**webhook self-pull** model as the bake-and-grill project — it keeps the "server pulls"
+rule: the Action does not SSH in, it just POSTs to a deploy endpoint on the server and
+the server pulls itself.
 
-**Required GitHub repository secrets** (Settings → Secrets and variables → Actions):
+Flow:
 
-| Secret | Required | Purpose |
-|--------|----------|---------|
-| `STAGING_SSH_HOST` | yes | Server hostname/IP |
-| `STAGING_SSH_USER` | yes | cPanel account (e.g. `akuruedu`) |
-| `STAGING_SSH_KEY` | yes | Private SSH key (PEM) authorized on the server |
-| `STAGING_SSH_PORT` | no (default `22`) | SSH port (many cPanel hosts use `21098`) |
-| `STAGING_APP_DIR` | no (default `~/test.akuru.edu.mv`) | App path on server |
+1. Action `POST https://test.akuru.edu.mv/api/deploy/test-pull` with
+   `Authorization: Bearer <secret>` and `{"sha": "<commit>"}` (retries until HTTP 202).
+2. `App\Http\Controllers\Api\TestDeployWebhookController` checks the secret + that it is
+   running on an allowed test host, then `App\Support\Services\TestDeployTrigger` spawns
+   `scripts/pull-deploy-test.sh` in the background (nohup).
+3. `scripts/pull-deploy-test.sh` fast-forwards to the pushed SHA, then runs
+   `composer install --no-dev` (only if `composer.lock` changed) → `migrate --force` →
+   `config:cache` → `route:clear` (never `route:cache`) → `view:cache` → `queue:restart`.
+   Progress is logged to `~/self-update-test.log`.
+4. The Action smoke-checks `/up` and `/en`.
 
-The workflow runs, in order: server `git pull origin main` → `composer install --no-dev`
-→ `migrate --force` → upload built assets → `config:cache` → `route:clear` (never
-`route:cache`) → `view:cache` → `queue:restart` → HTTP smoke check of `/up`.
+**Required secret** — set the SAME value in two places:
 
-To disable auto-deploy temporarily, disable the workflow in the Actions tab.
+| Location | Key | Notes |
+|----------|-----|-------|
+| Server `.env` (test) | `TEST_DEPLOY_WEBHOOK_SECRET` | >= 16 chars; empty = endpoint disabled (404) |
+| GitHub (repo or `test` environment) | `TEST_DEPLOY_WEBHOOK_SECRET` | Settings → Secrets and variables → Actions |
+
+Related server `.env` keys (defaults are fine): `TEST_DEPLOY_ALLOWED_HOSTS=test.akuru.edu.mv`,
+`TEST_DEPLOY_HOME=/home/akuruedu`.
+
+**One-time server setup:** `chmod +x scripts/pull-deploy-test.sh` and ensure the web PHP
+user can run `git`/`composer`/`php` (the script prepends the cPanel ea-php84 path).
+
+The endpoint returns `404` on non-test hosts / when disabled, `401` on a bad secret, and
+`202` once the background deploy is spawned — so production (`~/akuru-institute`) never
+auto-deploys even if the workflow secret leaks.
 
 ## Routine deploy (after `git push origin main` on Mac)
 
