@@ -1,0 +1,67 @@
+name: Deploy TEST (immediate)
+
+# Fires as soon as main is pushed — does NOT wait for CI (pint/pest).
+# This is the fast path for test.akuru.edu.mv auto-pull, mirroring the
+# webhook deploy used on the bake-and-grill project.
+#
+# The server exposes POST /api/deploy/test-pull (see routes/api.php +
+# App\Http\Controllers\Api\TestDeployWebhookController). It authenticates the
+# bearer secret, confirms it is running on the test host, then spawns
+# scripts/pull-deploy-test.sh in the background to git-pull and rebuild.
+#
+# Required secret (repo or GitHub Environment "test"):
+#   TEST_DEPLOY_WEBHOOK_SECRET  - same value as the server .env
+#                                 (must be >= 16 chars)
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-test-immediate
+  cancel-in-progress: false
+
+jobs:
+  pull-test-now:
+    name: Webhook pull (test.akuru.edu.mv)
+    runs-on: ubuntu-latest
+    environment: test
+    steps:
+      - name: Trigger TEST deploy webhook
+        id: webhook
+        env:
+          DEPLOY_SECRET: ${{ secrets.TEST_DEPLOY_WEBHOOK_SECRET }}
+        run: |
+          if [ -z "${DEPLOY_SECRET}" ]; then
+            echo "::error::TEST_DEPLOY_WEBHOOK_SECRET missing (set it on the repo or the 'test' GitHub environment)"
+            exit 1
+          fi
+
+          # GitHub may need a moment to expose the new tip to git fetch on the server.
+          for attempt in 1 2 3 4 5 6; do
+            code=$(curl -sS -o /tmp/deploy-webhook.json -w "%{http_code}" \
+              -X POST "https://test.akuru.edu.mv/api/deploy/test-pull" \
+              -H "Authorization: Bearer ${DEPLOY_SECRET}" \
+              -H "Content-Type: application/json" \
+              -H "Accept: application/json" \
+              -d "{\"sha\":\"${GITHUB_SHA}\"}")
+            echo "Attempt ${attempt}: HTTP ${code}"
+            cat /tmp/deploy-webhook.json || true
+            echo ""
+            if [ "$code" = "202" ]; then
+              echo "TEST deploy triggered for ${GITHUB_SHA}"
+              exit 0
+            fi
+            sleep 5
+          done
+
+          echo "::error::Webhook deploy failed after retries"
+          exit 1
+
+      - name: Brief smoke (health + localized home)
+        run: |
+          # Webhook returns 202 before the pull finishes — short wait, then check.
+          sleep 25
+          curl -fsS -o /dev/null -w "health %{http_code}\n" https://test.akuru.edu.mv/up
+          curl -fsSL -o /dev/null -w "home %{http_code}\n" https://test.akuru.edu.mv/en
