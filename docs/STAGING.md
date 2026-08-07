@@ -48,6 +48,30 @@ cd ~/test.akuru.edu.mv && git pull origin main
 5. **BML** — staging uses sandbox/UAT credentials only (`BML_ENVIRONMENT=sandbox` in `.env`).
 6. **`npm`** — often **not** in server PATH; if assets change, run `npm run build` on Mac and upload `public/build/`, or enable Node in cPanel.
 
+## Automated deploy (GitHub Actions)
+
+`.github/workflows/deploy-staging.yml` auto-deploys staging on every push to `main`
+(and can be run manually via **Actions → Deploy to Staging → Run workflow**). It keeps
+the **"Mac pushes, server pulls"** model — the workflow just triggers the server pull
+over SSH and runs the same commands as the manual routine below. Front-end assets are
+built on the runner (npm is often not on the server PATH) and `rsync`-ed to the server.
+
+**Required GitHub repository secrets** (Settings → Secrets and variables → Actions):
+
+| Secret | Required | Purpose |
+|--------|----------|---------|
+| `STAGING_SSH_HOST` | yes | Server hostname/IP |
+| `STAGING_SSH_USER` | yes | cPanel account (e.g. `akuruedu`) |
+| `STAGING_SSH_KEY` | yes | Private SSH key (PEM) authorized on the server |
+| `STAGING_SSH_PORT` | no (default `22`) | SSH port (many cPanel hosts use `21098`) |
+| `STAGING_APP_DIR` | no (default `~/test.akuru.edu.mv`) | App path on server |
+
+The workflow runs, in order: server `git pull origin main` → `composer install --no-dev`
+→ `migrate --force` → upload built assets → `config:cache` → `route:clear` (never
+`route:cache`) → `view:cache` → `queue:restart` → HTTP smoke check of `/up`.
+
+To disable auto-deploy temporarily, disable the workflow in the Actions tab.
+
 ## Routine deploy (after `git push origin main` on Mac)
 
 ```bash
