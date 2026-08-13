@@ -93,7 +93,40 @@ Baselines may only **shrink**; never grow.
 - Removed 6 unreferenced Laravel UI auth stubs; **`VerifyEmailController` kept** (routed)
 - Fixed duplicate `Controller` imports (`AdminUserController`, `InstructorController`)
 
-## Next (Phase S1 — do not start until staging smoke passes)
+## Morph-map hotfix (blocks production + S1) — branch `claude/polymorphic-morph-map-hotfix-z01v98`
+
+Phase 0 moved models into domains but left polymorphic / class-name columns on old
+`App\Models\*` / `App\Notifications\*` FQCNs. Fix (ADR-005):
+
+- `config/morph-map.php` — alias → current FQCN for all 80 domain models (reuses
+  `domain-models.php` aliases); **non-enforcing** `Relation::morphMap()` via
+  `App\Providers\MorphMapServiceProvider` (first in `bootstrap/providers.php`).
+- `App\Support\MorphMap::backfill()` — legacy FQCN → alias for morph columns;
+  `notifications.type` is FQCN → FQCN only (not aliased). Thin central migration
+  calls this; `down()` is a no-op.
+- Gate: `php artisan morph-map:verify` (fails on remaining legacy values).
+- Call sites fixed to `(new User)->getMorphClass()`: `AdminUserController`,
+  `ClearNonAdminUsers`.
+
+### Staging / production deploy runbook (atomic cutover)
+
+1. **Drain the queue and stop workers** — serialized jobs/notifications embed old FQCNs.
+2. **`php artisan down`** — between code live and migration finish, role lookups use
+   aliases while the DB still holds FQCNs (admin-lockout window). Maintenance mode
+   closes it; deploy ordering alone does not.
+3. Deploy code → `php artisan migrate --force`.
+4. Run `php artisan morph-map:verify`. Non-zero → investigate before proceeding.
+5. `php artisan permission:cache-reset`; clear config/route cache; `queue:restart`.
+6. `php artisan up`, then confirm an admin can log in and sees admin nav.
+
+**Run on STAGING FIRST** — staging is already in the broken state (Phase 0 deployed,
+rows never rewritten). That also covers part of the credential smoke still listed
+as outstanding above.
+
+**Follow-up (not this slice):** flip to `Relation::enforceMorphMap()` after
+production verification. S1.1a ADR for guardian/enum becomes **ADR-006**.
+
+## Next (Phase S1 — do not start until morph-map hotfix is on staging + credential smoke passes)
 
 - Student unification and course engine per `docs/S1_SPEC.md`
 - Per-domain `routes.php` split (early S1 infra)

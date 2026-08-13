@@ -51,8 +51,9 @@ class ClearNonAdminUsers extends Command
 
         DB::statement('SET FOREIGN_KEY_CHECKS=0;');
         DB::table('user_contacts')->whereNotIn('user_id', $keepIds)->delete();
-        DB::table('model_has_roles')->whereNotIn('model_id', $keepIds)->where('model_type', \App\Domains\Identity\Models\User::class)->delete();
-        DB::table('model_has_permissions')->whereNotIn('model_id', $keepIds)->where('model_type', \App\Domains\Identity\Models\User::class)->delete();
+        $userMorph = (new User)->getMorphClass();
+        DB::table('model_has_roles')->whereNotIn('model_id', $keepIds)->where('model_type', $userMorph)->delete();
+        DB::table('model_has_permissions')->whereNotIn('model_id', $keepIds)->where('model_type', $userMorph)->delete();
         DB::table('otps')->truncate();
         if ($deleteStudentIds->isNotEmpty()) {
             DB::table('course_enrollments')->whereIn('student_id', $deleteStudentIds)->delete();

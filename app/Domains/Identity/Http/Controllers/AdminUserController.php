@@ -52,8 +52,9 @@ class AdminUserController extends Controller
 
         DB::statement('SET FOREIGN_KEY_CHECKS=0;');
         DB::table('user_contacts')->where('user_id', $user->id)->delete();
-        DB::table('model_has_roles')->where('model_id', $user->id)->where('model_type', User::class)->delete();
-        DB::table('model_has_permissions')->where('model_id', $user->id)->where('model_type', User::class)->delete();
+        $userMorph = (new User)->getMorphClass();
+        DB::table('model_has_roles')->where('model_id', $user->id)->where('model_type', $userMorph)->delete();
+        DB::table('model_has_permissions')->where('model_id', $user->id)->where('model_type', $userMorph)->delete();
         if ($studentIds->isNotEmpty()) {
             DB::table('course_enrollments')->whereIn('student_id', $studentIds)->delete();
         }
