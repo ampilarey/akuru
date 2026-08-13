@@ -126,6 +126,19 @@ as outstanding above.
 **Follow-up (not this slice):** flip to `Relation::enforceMorphMap()` after
 production verification. S1.1a ADR for guardian/enum becomes **ADR-006**.
 
+### Staging auto-deploy gate (`scripts/pull-deploy-test.sh`)
+
+Staging webhook deploys now self-gate: after `migrate --force` they run
+`permission:cache-reset` (warn if missing) and, after the cache chain,
+`php artisan morph-map:verify` (full output + collapse counts in
+`~/self-update-test.log`; `GATE FAILED` → deploy exit 1). Missing
+`morph-map:verify` on older commits warns and does not fail.
+
+**Takes effect from the second deploy onward** (bash keeps executing the pre-pull
+script after `git merge`). The morph-map hotfix deploy itself is still ungated by
+automation — use the manual `morph-map:verify && permission:cache-reset` in the
+runbook above. See `docs/STAGING.md` (re-exec-after-pull rejected: blast radius).
+
 ## Next (Phase S1 — do not start until morph-map hotfix is on staging + credential smoke passes)
 
 - Student unification and course engine per `docs/S1_SPEC.md`

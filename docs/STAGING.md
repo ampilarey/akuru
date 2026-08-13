@@ -66,9 +66,45 @@ Flow:
    `scripts/pull-deploy-test.sh` in the background (nohup).
 3. `scripts/pull-deploy-test.sh` fast-forwards to the pushed SHA, then runs
    `composer install --no-dev` (only if `composer.lock` changed) → `migrate --force` →
-   `config:cache` → `route:clear` (never `route:cache`) → `view:cache` → `queue:restart`.
+   `permission:cache-reset` (warn + continue if the command is missing) →
+   `config:cache` → `route:clear` (never `route:cache`) → `view:cache` → `queue:restart`,
+   then **`php artisan morph-map:verify`** as a post-chain gate (see below).
    Progress is logged to `~/self-update-test.log`.
 4. The Action smoke-checks `/up` and `/en`.
+
+### Morph-map deploy gate (auto-deploy log)
+
+After the Laravel chain, the pull script runs `php artisan morph-map:verify` and
+writes its **full output** into `~/self-update-test.log` (collapse counts and
+kept/dropped pivot rows are the staging go/no-go evidence).
+
+| Outcome | What you see in `~/self-update-test.log` | Deploy result |
+|---------|------------------------------------------|---------------|
+| **Green** | Verify body (optional collapse report) + `morph-map:verify OK` + `deploy complete: <sha>` | exit 0 |
+| **Gate failed** | Verify body listing remaining FQCNs + a `======== MORPH-MAP GATE FAILED ========` block | exit 1 |
+| **Command missing** | `WARN: morph-map:verify not available — skipping gate (older commit)` | exit 0 (script must work on pre-hotfix commits) |
+
+Collapse counts appear in the verify output **only on the first deploy that
+performs a rewrite** (or a later deploy that still finds duplicates). A clean
+re-deploy after a successful rewrite typically prints “no composite-key duplicates
+were merged” and then OK.
+
+**First-deploy caveat (do not re-litigate):** bash keeps running the *pre-pull*
+script after `git merge --ff-only`. The deploy that *introduces* this gate still
+runs the old ungated script; the gate takes effect from the **second** auto-deploy
+onward. Re-exec-after-pull was considered and rejected: a bad script on `main`
+could abort after merge but before `migrate --force`, leaving staging on new code
+against an un-migrated DB. If re-exec is revived later it must `bash -n` the pulled
+script and fall through to the in-process path on parse failure.
+
+**Consequence for the morph-map hotfix deploy:** the automated gate does **not**
+cover that first cutover. After the hotfix lands on staging, run manually:
+
+```bash
+cd ~/test.akuru.edu.mv \
+  && php artisan morph-map:verify \
+  && php artisan permission:cache-reset
+```
 
 **Required secret** — set the SAME value in two places:
 

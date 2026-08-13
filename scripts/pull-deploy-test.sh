@@ -80,11 +80,49 @@ php artisan storage:link --force 2>/dev/null \
   || echo "$(date '+%F %T') WARN: storage:link failed — is public/storage a real directory?"
 
 # route:clear (NOT route:cache) — route cache breaks mcamara localized routes.
+# permission:cache-reset is guarded: missing command (older Spatie / absent package)
+# must not abort the deploy.
+run_permission_cache_reset() {
+  if php artisan list --raw 2>/dev/null | grep -qE '^permission:cache-reset([[:space:]]|$)'; then
+    php artisan permission:cache-reset
+  else
+    echo "$(date '+%F %T') WARN: permission:cache-reset not available — skipping"
+    return 0
+  fi
+}
+
 php artisan migrate --force \
+  && run_permission_cache_reset \
   && php artisan config:cache \
   && php artisan route:clear \
   && php artisan view:cache \
   && php artisan queue:restart \
   || { echo "$(date '+%F %T') Laravel deploy steps failed"; exit 1; }
+
+# Morph-map gate runs AFTER the chain so a failed verify still leaves caches rebuilt.
+# Aborting mid-chain would skip cache rebuilds without undoing migrate — worse state.
+# NOTE: bash keeps executing the pre-pull script body after `git merge` above, so the
+# first deploy that *introduces* this gate still runs the old ungated script. The gate
+# takes effect from the second deploy onward. The morph-map hotfix deploy therefore
+# still needs the manual post-deploy:
+#   php artisan morph-map:verify && php artisan permission:cache-reset
+# Re-exec-after-pull was considered and rejected (blast radius: bad script on main
+# could abort after merge but before migrate). See docs/STAGING.md.
+if php artisan list --raw 2>/dev/null | grep -qE '^morph-map:verify([[:space:]]|$)'; then
+  VERIFY_OUT="$(php artisan morph-map:verify 2>&1)" || VERIFY_RC=$?
+  VERIFY_RC="${VERIFY_RC:-0}"
+  # Full verify output (collapse counts / kept-dropped rows) into the deploy log.
+  printf '%s\n' "$VERIFY_OUT"
+  if [[ "$VERIFY_RC" -ne 0 ]]; then
+    echo "======== MORPH-MAP GATE FAILED ========"
+    echo "$(date '+%F %T') morph-map:verify exited ${VERIFY_RC} — staging deploy FAILED"
+    echo "Inspect collapse/FQCN report above. Do not treat this deploy as green."
+    echo "======================================"
+    exit 1
+  fi
+  echo "$(date '+%F %T') morph-map:verify OK"
+else
+  echo "$(date '+%F %T') WARN: morph-map:verify not available — skipping gate (older commit)"
+fi
 
 echo "$(date '+%F %T') deploy complete: ${REMOTE:0:8}"
