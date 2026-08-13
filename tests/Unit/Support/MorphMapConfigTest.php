@@ -74,6 +74,23 @@ it('legacy morph rewrites cover every App\\Models basename and point at register
     }
 });
 
+it('morphRewrites includes domain FQCNs via array_flip of config/morph-map', function () {
+    $map = config('morph-map');
+    $rewrites = \App\Support\MorphMap::morphRewrites();
+
+    foreach ($map as $alias => $class) {
+        expect($rewrites)->toHaveKey($class)
+            ->and($rewrites[$class])->toBe($alias)
+            ->and($rewrites)->toHaveKey('App\\Models\\'.class_basename($class))
+            ->and($rewrites['App\\Models\\'.class_basename($class)])->toBe($alias);
+    }
+
+    // Derived from config — flipping the registered map, not a hand list.
+    expect($rewrites)->toEqual(
+        \App\Support\MorphMap::legacyMorphRewrites() + array_flip($map)
+    );
+});
+
 it('legacy notification rewrites are FQCN to FQCN and stay out of the morph map', function () {
     $rewrites = \App\Support\MorphMap::legacyNotificationRewrites();
     $map = config('morph-map');

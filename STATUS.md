@@ -95,16 +95,25 @@ Baselines may only **shrink**; never grow.
 
 ## Morph-map hotfix (blocks production + S1) — branch `claude/polymorphic-morph-map-hotfix-z01v98`
 
-Phase 0 moved models into domains but left polymorphic / class-name columns on old
-`App\Models\*` / `App\Notifications\*` FQCNs. Fix (ADR-005):
+Phase 0 moved models into domains but left polymorphic / class-name columns holding
+FQCNs from **two eras** (ADR-005):
+
+- Pre-Phase-0: `App\Models\*` / `App\Notifications\*`
+- Post-Phase-0 on staging (since 2026-06-13, no morph map): `App\Domains\*\Models\*`
+
+Fix:
 
 - `config/morph-map.php` — alias → current FQCN for all 80 domain models (reuses
   `domain-models.php` aliases); **non-enforcing** `Relation::morphMap()` via
   `App\Providers\MorphMapServiceProvider` (first in `bootstrap/providers.php`).
-- `App\Support\MorphMap::backfill()` — legacy FQCN → alias for morph columns;
-  `notifications.type` is FQCN → FQCN only (not aliased). Thin central migration
-  calls this; `down()` is a no-op.
-- Gate: `php artisan morph-map:verify` (fails on remaining legacy values).
+- `App\Support\MorphMap::backfill()` — rewrites **both** `App\Models\*` and
+  `App\Domains\*` morph FQCNs → alias (`array_flip` of the config); collapses
+  duplicate `model_has_roles` / `model_has_permissions` rows that would PK-collide;
+  `notifications.type` is FQCN → FQCN only (not aliased). Thin central migrations
+  call this; `down()` is a no-op. `000002` re-runs backfill for DBs that already
+  applied the Models-only `000001`.
+- Gate: `php artisan morph-map:verify` — morph columns must contain **no backslash**
+  (any FQCN is wrong); prints collapse counts from the backfill report.
 - Call sites fixed to `(new User)->getMorphClass()`: `AdminUserController`,
   `ClearNonAdminUsers`.
 
@@ -116,12 +125,15 @@ Phase 0 moved models into domains but left polymorphic / class-name columns on o
    closes it; deploy ordering alone does not.
 3. Deploy code → `php artisan migrate --force`.
 4. Run `php artisan morph-map:verify`. Non-zero → investigate before proceeding.
+   Record **collapse counts** from the verify output (staging mixed-era evidence).
 5. `php artisan permission:cache-reset`; clear config/route cache; `queue:restart`.
 6. `php artisan up`, then confirm an admin can log in and sees admin nav.
 
-**Run on STAGING FIRST** — staging is already in the broken state (Phase 0 deployed,
-rows never rewritten). That also covers part of the credential smoke still listed
-as outstanding above.
+**Run on STAGING FIRST** — staging carries a **mixed-era dataset** (pre-June
+`App\Models\*` + post-June `App\Domains\*` rows). It is a real test of both rewrite
+directions and of composite-key collapse, and also covers part of the credential
+smoke still listed as outstanding above. Collapse counts from that staging run are
+the go/no-go evidence (not available from this agent VM — capture on server).
 
 **Follow-up (not this slice):** flip to `Relation::enforceMorphMap()` after
 production verification. S1.1a ADR for guardian/enum becomes **ADR-006**.

@@ -10,13 +10,19 @@ use Illuminate\Support\Facades\Schema;
  *
  * Two distinct tables:
  * - config/morph-map.php — alias → current FQCN (registered with Eloquent)
- * - legacyMorphRewrites() — old App\Models\* FQCN → alias (backfill only)
+ * - morphRewrites() — App\Models\* AND App\Domains\*\Models\* FQCN → alias
+ *   (backfill only; domain side is array_flip of the config so they cannot drift)
  * - legacyNotificationRewrites() — old App\Notifications\* → new FQCN
  *   (notifications.type is NOT a morph column; Laravel stores the class name)
+ *
+ * Staging has a mixed-era dataset: pre-Phase-0 rows hold App\Models\*, post-Phase-0
+ * rows (written with no morph map) hold App\Domains\* FQCNs. Both must rewrite.
  */
 class MorphMap
 {
     public const CHUNK_SIZE = 500;
+
+    public const REPORT_PATH = 'morph-map-backfill-report.json';
 
     /**
      * @return array<string, string> old App\Models\* FQCN => morph alias
@@ -108,6 +114,17 @@ class MorphMap
     }
 
     /**
+     * Full morph rewrite map: App\Models\* and App\Domains\*\Models\* → alias.
+     * Domain side is derived from config/morph-map.php so it cannot drift.
+     *
+     * @return array<string, string>
+     */
+    public static function morphRewrites(): array
+    {
+        return self::legacyMorphRewrites() + array_flip(config('morph-map', []));
+    }
+
+    /**
      * notifications.type stores a notification class name, not a morph alias.
      *
      * @return array<string, string> old FQCN => new FQCN
@@ -122,66 +139,181 @@ class MorphMap
     }
 
     /**
+     * Known-good notifications.type values after backfill.
+     *
+     * @return list<string>
+     */
+    public static function knownGoodNotificationTypes(): array
+    {
+        return array_values(self::legacyNotificationRewrites());
+    }
+
+    /**
      * All string rewrites applied by backfill() (morph aliases + notification FQCNs).
      *
      * @return array<string, string>
      */
     public static function allLegacyRewrites(): array
     {
-        return self::legacyMorphRewrites() + self::legacyNotificationRewrites();
+        return self::morphRewrites() + self::legacyNotificationRewrites();
     }
 
     /**
-     * Rewrite legacy FQCNs in polymorphic / class-name columns.
-     * Idempotent; NULL/empty-safe; table-guarded; chunked.
+     * Collapse duplicate permission pivots, then rewrite FQCNs.
+     * Idempotent; NULL/empty-safe; table-guarded; chunked; transactional.
      *
-     * @return array<string, int> column key => rows updated
+     * @return array{
+     *     updated: array<string, int>,
+     *     collapses: list<array<string, mixed>>,
+     *     collapse_counts: array<string, int>
+     * }
      */
     public static function backfill(int $chunkSize = self::CHUNK_SIZE): array
     {
-        $updated = [
-            'model_has_roles.model_type' => 0,
-            'model_has_permissions.model_type' => 0,
-            'payments.payable_type' => 0,
-            'notifications.notifiable_type' => 0,
-            'notifications.type' => 0,
-        ];
+        return DB::transaction(function () use ($chunkSize) {
+            $collapses = [];
+            $collapses = array_merge(
+                $collapses,
+                self::collapseCompositeMorphPivots('model_has_roles', 'role_id')
+            );
+            $collapses = array_merge(
+                $collapses,
+                self::collapseCompositeMorphPivots('model_has_permissions', 'permission_id')
+            );
 
-        $morph = self::legacyMorphRewrites();
+            $morph = self::morphRewrites();
 
-        $updated['model_has_roles.model_type'] = self::rewriteColumn('model_has_roles', 'model_type', $morph, $chunkSize, pk: null);
-        $updated['model_has_permissions.model_type'] = self::rewriteColumn('model_has_permissions', 'model_type', $morph, $chunkSize, pk: null);
-        $updated['payments.payable_type'] = self::rewriteColumn('payments', 'payable_type', $morph, $chunkSize, pk: 'id');
-        $updated['notifications.notifiable_type'] = self::rewriteColumn('notifications', 'notifiable_type', $morph, $chunkSize, pk: 'id');
-        $updated['notifications.type'] = self::rewriteColumn('notifications', 'type', self::legacyNotificationRewrites(), $chunkSize, pk: 'id');
+            $updated = [
+                'model_has_roles.model_type' => self::rewriteColumn('model_has_roles', 'model_type', $morph, $chunkSize, pk: null),
+                'model_has_permissions.model_type' => self::rewriteColumn('model_has_permissions', 'model_type', $morph, $chunkSize, pk: null),
+                'payments.payable_type' => self::rewriteColumn('payments', 'payable_type', $morph, $chunkSize, pk: 'id'),
+                'notifications.notifiable_type' => self::rewriteColumn('notifications', 'notifiable_type', $morph, $chunkSize, pk: 'id'),
+                'notifications.type' => self::rewriteColumn('notifications', 'type', self::legacyNotificationRewrites(), $chunkSize, pk: 'id'),
+            ];
 
-        return $updated;
+            $collapseCounts = [];
+            foreach ($collapses as $collapse) {
+                $table = $collapse['table'];
+                $collapseCounts[$table] = ($collapseCounts[$table] ?? 0) + 1;
+            }
+
+            $report = [
+                'updated' => $updated,
+                'collapses' => $collapses,
+                'collapse_counts' => $collapseCounts,
+            ];
+
+            self::writeReport($report);
+
+            return $report;
+        });
     }
 
     /**
-     * Count rows still holding legacy App\Models\* or App\Notifications\* values.
+     * Remaining bad values after backfill.
+     *
+     * Morph columns: any value containing a backslash is wrong (no-FQCN invariant).
+     * notifications.type: old App\Notifications\* or unexpected App\Domains\* notification classes.
      *
      * @return array<string, array{count: int, values: list<string>}>
      */
     public static function remainingLegacy(): array
     {
-        $targets = [
-            'model_has_roles' => ['column' => 'model_type', 'patterns' => ['App\\\\Models\\\\%']],
-            'model_has_permissions' => ['column' => 'model_type', 'patterns' => ['App\\\\Models\\\\%']],
-            'payments' => ['column' => 'payable_type', 'patterns' => ['App\\\\Models\\\\%']],
-            'notifications' => ['column' => 'notifiable_type', 'patterns' => ['App\\\\Models\\\\%']],
-        ];
-
         $report = [];
 
-        foreach ($targets as $table => $meta) {
-            $key = "{$table}.{$meta['column']}";
-            $report[$key] = self::legacyValueReport($table, $meta['column'], $meta['patterns']);
+        foreach ([
+            'model_has_roles.model_type' => ['model_has_roles', 'model_type'],
+            'model_has_permissions.model_type' => ['model_has_permissions', 'model_type'],
+            'payments.payable_type' => ['payments', 'payable_type'],
+            'notifications.notifiable_type' => ['notifications', 'notifiable_type'],
+        ] as $key => [$table, $column]) {
+            $report[$key] = self::backslashValueReport($table, $column);
         }
 
-        $report['notifications.type'] = self::legacyValueReport('notifications', 'type', ['App\\\\Notifications\\\\%']);
+        $report['notifications.type'] = self::badNotificationTypeReport();
 
         return $report;
+    }
+
+    /**
+     * @return array{updated: array<string, int>, collapses: list<array<string, mixed>>, collapse_counts: array<string, int>}|null
+     */
+    public static function lastReport(): ?array
+    {
+        $path = storage_path('app/'.self::REPORT_PATH);
+        if (! is_file($path)) {
+            return null;
+        }
+
+        /** @var array{updated: array<string, int>, collapses: list<array<string, mixed>>, collapse_counts: array<string, int>}|null $decoded */
+        $decoded = json_decode((string) file_get_contents($path), true);
+
+        return is_array($decoded) ? $decoded : null;
+    }
+
+    /**
+     * Collapse rows that would violate the composite PK after model_type normalization.
+     *
+     * @return list<array<string, mixed>>
+     */
+    private static function collapseCompositeMorphPivots(string $table, string $pivotKey): array
+    {
+        if (! Schema::hasTable($table)) {
+            return [];
+        }
+
+        $rewrites = self::morphRewrites();
+        $collapses = [];
+
+        $rows = DB::table($table)
+            ->orderBy($pivotKey)
+            ->orderBy('model_id')
+            ->orderBy('model_type')
+            ->get([$pivotKey, 'model_id', 'model_type']);
+
+        /** @var array<string, list<object>> $groups */
+        $groups = [];
+        foreach ($rows as $row) {
+            $target = $rewrites[$row->model_type] ?? $row->model_type;
+            $groupKey = $row->{$pivotKey}.'|'.$row->model_id.'|'.$target;
+            $groups[$groupKey][] = $row;
+        }
+
+        foreach ($groups as $groupKey => $group) {
+            if (count($group) < 2) {
+                continue;
+            }
+
+            $target = explode('|', $groupKey)[2];
+
+            usort($group, function ($a, $b) use ($target) {
+                return ((int) ($b->model_type === $target)) <=> ((int) ($a->model_type === $target));
+            });
+
+            $keep = array_shift($group);
+            $dropped = [];
+
+            foreach ($group as $duplicate) {
+                DB::table($table)
+                    ->where($pivotKey, $duplicate->{$pivotKey})
+                    ->where('model_id', $duplicate->model_id)
+                    ->where('model_type', $duplicate->model_type)
+                    ->delete();
+
+                $dropped[] = $duplicate->model_type;
+            }
+
+            $collapses[] = [
+                'table' => $table,
+                $pivotKey => $keep->{$pivotKey},
+                'model_id' => $keep->model_id,
+                'target_alias' => $target,
+                'kept_model_type' => $keep->model_type,
+                'dropped_model_types' => $dropped,
+            ];
+        }
+
+        return $collapses;
     }
 
     /**
@@ -241,24 +373,20 @@ class MorphMap
     }
 
     /**
-     * @param  list<string>  $patterns
+     * Morph-column invariant: any value containing "\" is a raw FQCN and is wrong.
+     *
      * @return array{count: int, values: list<string>}
      */
-    private static function legacyValueReport(string $table, string $column, array $patterns): array
+    private static function backslashValueReport(string $table, string $column): array
     {
         if (! Schema::hasTable($table)) {
             return ['count' => 0, 'values' => []];
         }
 
-        $query = DB::table($table)->where(function ($q) use ($column, $patterns) {
-            foreach ($patterns as $i => $pattern) {
-                if ($i === 0) {
-                    $q->where($column, 'like', $pattern);
-                } else {
-                    $q->orWhere($column, 'like', $pattern);
-                }
-            }
-        })->whereNotNull($column)->where($column, '!=', '');
+        $query = DB::table($table)
+            ->whereNotNull($column)
+            ->where($column, '!=', '')
+            ->whereRaw('LOCATE(?, '.$column.') > 0', ['\\']);
 
         $values = (clone $query)->distinct()->orderBy($column)->pluck($column)->all();
 
@@ -266,5 +394,64 @@ class MorphMap
             'count' => (int) $query->count(),
             'values' => array_values($values),
         ];
+    }
+
+    /**
+     * @return array{count: int, values: list<string>}
+     */
+    private static function badNotificationTypeReport(): array
+    {
+        if (! Schema::hasTable('notifications')) {
+            return ['count' => 0, 'values' => []];
+        }
+
+        $knownGood = self::knownGoodNotificationTypes();
+
+        $values = DB::table('notifications')
+            ->whereNotNull('type')
+            ->where('type', '!=', '')
+            ->distinct()
+            ->orderBy('type')
+            ->pluck('type')
+            ->filter(function (string $type) use ($knownGood) {
+                if (str_starts_with($type, 'App\\Notifications\\')) {
+                    return true;
+                }
+
+                if (str_contains($type, '\\Notifications\\') && str_starts_with($type, 'App\\Domains\\')) {
+                    return ! in_array($type, $knownGood, true);
+                }
+
+                return false;
+            })
+            ->values()
+            ->all();
+
+        if ($values === []) {
+            return ['count' => 0, 'values' => []];
+        }
+
+        $count = (int) DB::table('notifications')->whereIn('type', $values)->count();
+
+        return [
+            'count' => $count,
+            'values' => $values,
+        ];
+    }
+
+    /**
+     * @param  array{updated: array<string, int>, collapses: list<array<string, mixed>>, collapse_counts: array<string, int>}  $report
+     */
+    private static function writeReport(array $report): void
+    {
+        $dir = storage_path('app');
+        if (! is_dir($dir)) {
+            mkdir($dir, 0755, true);
+        }
+
+        file_put_contents(
+            $dir.'/'.self::REPORT_PATH,
+            json_encode($report, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)."\n"
+        );
     }
 }
