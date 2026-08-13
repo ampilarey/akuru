@@ -132,8 +132,36 @@ Fix:
 **Run on STAGING FIRST** — staging carries a **mixed-era dataset** (pre-June
 `App\Models\*` + post-June `App\Domains\*` rows). It is a real test of both rewrite
 directions and of composite-key collapse, and also covers part of the credential
-smoke still listed as outstanding above. Collapse counts from that staging run are
-the go/no-go evidence (not available from this agent VM — capture on server).
+smoke still listed as outstanding above.
+
+### Staging remediation (2026-08-16) — `05b8cca` on `main`
+
+| Item | Result |
+|------|--------|
+| Merged to `main` | `05b8cca` (mixed-era rewrite + composite-key collapse) |
+| Auto-deploy | Webhook HTTP 202 ([Actions run 31728779585](https://github.com/ampilarey/akuru/actions/runs/31728779585)); `~/self-update-test.log` shows `deploy complete: 05b8ccaa` after migrate/cache/queue restart |
+| Migration `000002` | Applied by **auto-deploy** `migrate --force` (not a manual migrate) — remediation path for DBs that already ran Models-only `000001` |
+| Manual post-deploy | `php artisan morph-map:verify` then `php artisan permission:cache-reset` (deploy-gate slice not on `main`; first gated deploy would still be ungated anyway) |
+
+**Verbatim `php artisan morph-map:verify` (staging):**
+
+```text
+Collapse report (duplicate pivots merged before rewrite):
+  • model_has_roles: 1 group(s) collapsed
+    - model_has_roles role_id=1 model_id=1 kept=user dropped=[App\Domains\Identity\Models\User] → user
+
+morph-map:verify OK — morph columns have no FQCNs; notifications.type is clean.
+```
+
+**Collapse interpretation:** 1 group collapsed is the **expected** mixed-era outcome (role granted both pre- and post-domain-move). Kept already-aliased `user`; dropped post-Phase-0 `App\Domains\Identity\Models\User`. Zero collapses would have been surprising.
+
+**Verbatim `php artisan permission:cache-reset`:**
+
+```text
+Permission cache flushed.
+```
+
+**Gate:** GREEN. Credential smoke (admin login + nav, portal, Hifz, enrollment OTP `7820288`/`7972434`, BML sandbox) is now unblocked and still **pending operator**.
 
 **Follow-up (not this slice):** flip to `Relation::enforceMorphMap()` after
 production verification. S1.1a ADR for guardian/enum becomes **ADR-006**.
