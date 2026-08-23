@@ -2,7 +2,7 @@
 
 namespace App\Domains\People\Support;
 
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\File;
 
 final class StudentUnificationReport
 {
@@ -57,14 +57,19 @@ final class StudentUnificationReport
         return new self;
     }
 
+    public static function path(): string
+    {
+        return storage_path('app/'.self::FILENAME);
+    }
+
     public static function load(): self
     {
-        if (! Storage::disk('local')->exists(self::FILENAME)) {
+        if (! File::exists(self::path())) {
             return self::empty();
         }
 
         /** @var array<string, mixed> $payload */
-        $payload = json_decode(Storage::disk('local')->get(self::FILENAME) ?: '{}', true) ?: [];
+        $payload = json_decode(File::get(self::path()) ?: '{}', true) ?: [];
 
         return self::fromArray($payload);
     }
@@ -112,10 +117,11 @@ final class StudentUnificationReport
     public function write(): string
     {
         $this->generatedAt = now()->toIso8601String();
-        $this->path = Storage::disk('local')->path(self::FILENAME);
+        $this->path = self::path();
 
-        Storage::disk('local')->put(
-            self::FILENAME,
+        File::ensureDirectoryExists(dirname($this->path));
+        File::put(
+            $this->path,
             json_encode($this->toArray(), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)."\n"
         );
 
