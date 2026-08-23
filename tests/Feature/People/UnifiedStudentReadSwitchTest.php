@@ -74,7 +74,7 @@ it('dual-writes guardian_student when a parent enrolls a child', function () {
         ->and($student->guardians)->toHaveCount(1)
         ->and($student->guardians->first()->name)->toBe($parent->name)
         ->and($student->guardians->first()->pivot->relationship)->toBe('mother')
-        ->and($student->guardians->first()->pivot->is_primary)->toBeTrue();
+        ->and((bool) $student->guardians->first()->pivot->is_primary)->toBeTrue();
 });
 
 it('marks RegistrationStudent as deprecated', function () {
