@@ -141,7 +141,7 @@ smoke still listed as outstanding above.
 | Merged to `main` | `05b8cca` (mixed-era rewrite + composite-key collapse) |
 | Auto-deploy | Webhook HTTP 202 ([Actions run 31728779585](https://github.com/ampilarey/akuru/actions/runs/31728779585)); `~/self-update-test.log` shows `deploy complete: 05b8ccaa` after migrate/cache/queue restart |
 | Migration `000002` | Applied by **auto-deploy** `migrate --force` (not a manual migrate) — remediation path for DBs that already ran Models-only `000001` |
-| Manual post-deploy | `php artisan morph-map:verify` then `php artisan permission:cache-reset` (deploy-gate slice not on `main`; first gated deploy would still be ungated anyway) |
+| Manual post-deploy | `php artisan morph-map:verify` then `php artisan permission:cache-reset` (deploy-gate was not yet on `main` at remediation time) |
 
 **Verbatim `php artisan morph-map:verify` (staging):**
 
@@ -203,7 +203,7 @@ identifier=admin@akuru.edu.mv password=password
 **Follow-up (not this slice):** flip to `Relation::enforceMorphMap()` after
 production verification. S1.1a ADR for guardian/enum becomes **ADR-006**.
 
-### Staging auto-deploy gate (`scripts/pull-deploy-test.sh`)
+### Staging auto-deploy gate (`scripts/pull-deploy-test.sh`) — merged `acad852`
 
 Staging webhook deploys now self-gate: after `migrate --force` they run
 `permission:cache-reset` (warn if missing) and, after the cache chain,
@@ -211,10 +211,20 @@ Staging webhook deploys now self-gate: after `migrate --force` they run
 `~/self-update-test.log`; `GATE FAILED` → deploy exit 1). Missing
 `morph-map:verify` on older commits warns and does not fail.
 
-**Takes effect from the second deploy onward** (bash keeps executing the pre-pull
-script after `git merge`). The morph-map hotfix deploy itself is still ungated by
-automation — use the manual `morph-map:verify && permission:cache-reset` in the
-runbook above. See `docs/STAGING.md` (re-exec-after-pull rejected: blast radius).
+**On `main` as of merge `acad852`.** Takes effect from the **second** auto-deploy
+after that merge (bash keeps executing the pre-pull script after `git merge`).
+See `docs/STAGING.md` (re-exec-after-pull rejected: blast radius).
+
+### Agent vs operator (remaining)
+
+| Owner | Item | Status |
+|-------|------|--------|
+| Agent | Morph-map hotfix + mixed-era remediation on `main` | **Done** (`05b8cca`, gate green) |
+| Agent | Staging verify capture in `STATUS.md` | **Done** |
+| Agent | Deploy-gate (`morph-map:verify` + `permission:cache-reset` in pull script) | **Done** (merged) |
+| Agent | Credential smoke without staging passwords/SSH | **Blocked** — seed logins rejected |
+| Operator | Credential smoke steps 1–7 (esp. 1–3 for S1.1a) | **Pending** — need passwords/OTP or SSH |
+| Agent | S1.1a schema slice | **Blocked** on operator smoke 1–3 |
 
 ## Next (Phase S1 — do not start until morph-map hotfix is on staging + credential smoke passes)
 
