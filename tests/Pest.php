@@ -19,3 +19,5 @@ pest()->extend(Tests\TestCase::class)
 
 pest()->extend(Tests\TestCase::class)
     ->in('Architecture');
+
+require_once __DIR__.'/Support/PeopleTestHelpers.php';

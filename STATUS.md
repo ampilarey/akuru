@@ -223,7 +223,8 @@ See `docs/STAGING.md` (re-exec-after-pull rejected: blast radius).
 | Agent | Deploy-gate (`morph-map:verify` + `permission:cache-reset` in pull script) | **Done** (merged) |
 | Agent | Credential smoke without staging passwords/SSH | **Blocked** — seed logins rejected |
 | Operator | Credential smoke steps 1–7 (esp. 1–3 for S1.1a) | **Pending** — need passwords/OTP or SSH |
-| Agent | S1.1a schema slice | **In progress** — operator authorized skip of remaining smoke |
+| Agent | S1.1a schema slice | **Done** (`ff42e9d`) |
+| Agent | S1.1b unification backfill + verify command | **Done** (PR) |
 
 ## S1.1a — Unified Student schema (Deploy 1 additive, no backfill)
 
@@ -237,9 +238,28 @@ See `docs/STAGING.md` (re-exec-after-pull rejected: blast radius).
   still unwired).
 - **Not in this slice:** S1.1b matching/backfill, React screens, Hifz.
 
+## S1.1b — Unified Student backfill (Deploy 1, no read switch)
+
+- Additive: `students.user_id` nullable (child need not have a login); unique
+  `legacy_registration_student_id`. ADR-007.
+- `UnifyStudentsAction`: match RS → student by user_id / national_id (decrypt) /
+  exact name+dob; fill empty passport/national_id; no-match creates
+  prospective (or active if any active enrollment); migrate
+  `student_guardians` → find/create `parent_guardians` + `guardian_student`;
+  backfill `course_enrollments.unified_student_id`.
+- Ambiguous (`>1` candidate) and collisions (two RS → one student) are listed,
+  not guessed. First RS wins the legacy slot.
+- Gate: `php artisan students:verify-unification` (`--backfill` re-runs the
+  idempotent job). Report: `storage/app/s11b-student-unification-report.json`.
+  Zero unresolved = Deploy 2 gate. Not wired into auto-deploy.
+- People action uses `DB::table` for users/enrollments (no Courses/Identity
+  model imports). Hifz / RegistrationStudent reads untouched.
+
 ## Next
 
-- S1.1b — registration_students → students backfill + verification script
+- Run `students:verify-unification` on a staging/production-data copy; resolve
+  ambiguous/colliding rows (Deploy 2 gate)
+- S1.1 Deploy 2 — switch reads to `students` + `unified_student_id`
 - Resume deferred staging credential smoke before production
 - Per-domain `routes.php` / domain migrations (infra)
 - Shrink architecture baselines as domains decouple
