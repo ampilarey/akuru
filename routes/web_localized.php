@@ -9,11 +9,13 @@ use App\Domains\HR\Http\Controllers\InstructorController as AdminInstructorContr
 use App\Domains\Identity\Http\Controllers\ProfileController;
 use App\Domains\Notifications\Http\Controllers\NotificationController;
 use App\Domains\People\Http\Controllers\CustomFieldDefinitionController;
+use App\Domains\People\Http\Controllers\StudentConsentController;
 use App\Domains\People\Http\Controllers\StudentController;
 use App\Domains\People\Http\Controllers\StudentDirectoryController;
 use App\Domains\People\Http\Controllers\TeacherController;
 use App\Domains\Portal\Http\Controllers\DashboardController;
 use App\Domains\Portal\Http\Controllers\EnhancedDashboardController;
+use App\Domains\Portal\Http\Controllers\GuardianChildrenController;
 use App\Domains\Settings\Http\Controllers\Admin\SettingsController as AdminSettingsController;
 use App\Domains\Settings\Http\Controllers\AnalyticsController;
 use App\Domains\Website\Http\Controllers\Admin\PublicSite\CourseController as AdminCourseController;
@@ -31,6 +33,7 @@ Route::get('/locale/{locale}', [LocaleController::class, 'setLocale'])->name('lo
 Route::middleware(['auth', 'trackActivity'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/enhanced-dashboard', [EnhancedDashboardController::class, 'index'])->name('enhanced.dashboard');
+    Route::get('/portal/children', [GuardianChildrenController::class, 'index'])->name('portal.children');
 
     // Student routes
     Route::resource('students', StudentController::class);
@@ -147,6 +150,7 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::put('students/{student}/custom-fields', [StudentDirectoryController::class, 'updateCustomFields'])->name('people.students.custom-fields.update');
         Route::post('students/{student}/guardians', [StudentDirectoryController::class, 'attachGuardian'])->name('people.students.guardians.attach');
         Route::delete('students/{student}/guardians/{guardian}', [StudentDirectoryController::class, 'detachGuardian'])->name('people.students.guardians.detach');
+        Route::post('students/{student}/consents', [StudentConsentController::class, 'store'])->name('people.students.consents.store');
 
         Route::get('custom-fields/admission-preview', [CustomFieldDefinitionController::class, 'admissionPreview'])->name('people.custom-fields.admission-preview');
         Route::get('custom-fields', [CustomFieldDefinitionController::class, 'index'])->name('people.custom-fields.index');

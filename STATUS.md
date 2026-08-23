@@ -285,9 +285,20 @@ See `docs/STAGING.md` (re-exec-after-pull rejected: blast radius).
 - Inertia page-finder path set to `resources/js/Pages` (`config/inertia.php`).
 - Hifz / dual-write / Deploy 3 untouched.
 
+## S1.3 — Consent & privacy
+
+- `consents` ledger: person (student|guardian), type
+  (`photo_media_use`, `ai_training_samples`, `data_processing`,
+  `marketing_messages`), granted, granted_by, granted_at, revoked_at, source.
+- `RecordConsentAction` inserts a new row on change; never updates `granted`
+  in place. Same-value writes are no-ops.
+- Student profile Consents tab + portal children list (`portal.children`)
+  scoped to the signed-in guardian.
+- ADR-009 retention (ADR-002 was already analytics). Hifz untouched.
+
 ## Next
 
-- S1.3 — consent & privacy + retention ADR
+- S1.4 — staff profiles
 - S1.1 Deploy 3 — drop dual-write after ≥2 weeks stable (not now)
 - Run `students:verify-unification` on a staging/production-data copy
 - Resume deferred staging credential smoke before production

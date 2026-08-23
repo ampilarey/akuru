@@ -22,6 +22,7 @@ export default function Show({
     relationships,
     statusHistory,
     consents,
+    consentTypes = [],
     documents,
 }) {
     const initialValues = useMemo(() => {
@@ -202,9 +203,52 @@ export default function Show({
             )}
 
             {tab === 'consents' && (
-                <p className="rounded border bg-white p-4 text-sm text-gray-500">
-                    {consents.length === 0 ? 'No consent records yet.' : `${consents.length} consent record(s).`}
-                </p>
+                <section className="grid gap-4">
+                    <form
+                        onSubmit={(e) => {
+                            e.preventDefault();
+                            const form = e.currentTarget;
+                            router.post(`/people/students/${student.id}/consents`, {
+                                consent_type: form.consent_type.value,
+                                granted: form.granted.value === '1',
+                            });
+                        }}
+                        className="flex flex-wrap gap-3 rounded-lg border bg-white p-4"
+                    >
+                        <select name="consent_type" className="form-input">
+                            {consentTypes.map((type) => (
+                                <option key={type} value={type}>{type}</option>
+                            ))}
+                        </select>
+                        <select name="granted" className="form-input">
+                            <option value="1">Grant</option>
+                            <option value="0">Revoke</option>
+                        </select>
+                        <button type="submit" className="btn-primary">Record</button>
+                    </form>
+                    <div className="overflow-x-auto rounded-lg border bg-white">
+                        <table className="min-w-full text-sm">
+                            <thead className="bg-[#F3EBE0] text-left">
+                                <tr>
+                                    <th className="px-3 py-2">Type</th>
+                                    <th className="px-3 py-2">Granted</th>
+                                    <th className="px-3 py-2">Source</th>
+                                    <th className="px-3 py-2">At</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {consents.map((row) => (
+                                    <tr key={row.id} className="border-t">
+                                        <td className="px-3 py-2">{row.consent_type}</td>
+                                        <td className="px-3 py-2">{row.granted ? 'yes' : 'revoked'}</td>
+                                        <td className="px-3 py-2">{row.source}</td>
+                                        <td className="px-3 py-2">{row.granted_at}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
             )}
         </AppShell>
     );

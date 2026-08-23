@@ -6,9 +6,12 @@ use App\Domains\People\Actions\AttachGuardianAction;
 use App\Domains\People\Actions\DetachGuardianAction;
 use App\Domains\People\Actions\ListStudentsAction;
 use App\Domains\People\Actions\SaveCustomFieldValuesAction;
+use App\Domains\People\Enums\ConsentPersonType;
+use App\Domains\People\Enums\ConsentType;
 use App\Domains\People\Enums\CustomFieldEntityType;
 use App\Domains\People\Enums\GuardianRelationship;
 use App\Domains\People\Enums\StudentStatus;
+use App\Domains\People\Models\Consent;
 use App\Domains\People\Models\CustomFieldDefinition;
 use App\Domains\People\Models\CustomFieldValue;
 use App\Domains\People\Models\ParentGuardian;
@@ -140,7 +143,20 @@ class StudentDirectoryController extends Controller
                 'reason' => $row->reason,
                 'effective_date' => $row->effective_date?->toDateString(),
             ]),
-            'consents' => [],
+            'consentTypes' => array_map(fn (ConsentType $type) => $type->value, ConsentType::cases()),
+            'consents' => Consent::query()
+                ->where('person_type', ConsentPersonType::Student->value)
+                ->where('person_id', $student->id)
+                ->orderByDesc('id')
+                ->get()
+                ->map(fn (Consent $consent) => [
+                    'id' => $consent->id,
+                    'consent_type' => $consent->consent_type->value,
+                    'granted' => $consent->granted,
+                    'granted_at' => $consent->granted_at?->toDateTimeString(),
+                    'revoked_at' => $consent->revoked_at?->toDateTimeString(),
+                    'source' => $consent->source->value,
+                ]),
             'documents' => [],
         ]);
     }

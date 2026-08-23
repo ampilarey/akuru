@@ -17,6 +17,7 @@ return [
     'assignment_submission' => \App\Domains\Academics\Legacy\Models\AssignmentSubmission::class,
     'attendance' => \App\Domains\Academics\Models\Attendance::class,
     'class_room' => \App\Domains\Academics\Models\ClassRoom::class,
+    'consent' => \App\Domains\People\Models\Consent::class,
     'contact_inquiry' => \App\Domains\Website\Models\ContactInquiry::class,
     'contact_message' => \App\Domains\Website\Models\ContactMessage::class,
     'custom_field_definition' => \App\Domains\People\Models\CustomFieldDefinition::class,
