@@ -37,16 +37,14 @@ class PasswordOtpController extends Controller
                        ?? \App\Domains\Identity\Models\User::whereRaw('LOWER(passport) = ?', [strtolower($identifier)])->first();
 
             if ($targetUser) {
-                // Check if this user is a child (linked via registration_students guardian)
-                $studentProfile = \App\Domains\People\Models\RegistrationStudent::where('user_id', $targetUser->id)->first();
+                $studentProfile = $targetUser->student;
                 $isChild = false;
                 $resetContact = null;
 
                 if ($studentProfile) {
-                    // Try to find the primary guardian's mobile contact
-                    $guardian = $studentProfile->guardians()->first();
-                    if ($guardian) {
-                        $resetContact = $guardian->contacts()
+                    $guardianUser = $studentProfile->guardians()->first()?->user;
+                    if ($guardianUser) {
+                        $resetContact = $guardianUser->contacts()
                             ->where('type', 'mobile')
                             ->whereNotNull('verified_at')
                             ->first();

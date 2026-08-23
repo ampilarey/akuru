@@ -11,6 +11,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+/**
+ * @deprecated S1.1c Deploy 2 — reads use {@see Student}. Dual-write still
+ * creates/updates this row until Deploy 3 cleanup.
+ */
 class RegistrationStudent extends Model
 {
     protected $table = 'registration_students';

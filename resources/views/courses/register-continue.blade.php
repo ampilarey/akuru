@@ -57,7 +57,7 @@
                             <label class="block text-sm font-medium text-gray-700 mb-2">Student mode</label>
                             <div class="flex gap-4 mb-4">
                                 <label><input type="radio" name="student_mode" value="new" x-model="studentMode"> Add new child</label>
-                                @if($user->guardianStudents->isNotEmpty())
+                                @if($children->isNotEmpty())
                                     <label><input type="radio" name="student_mode" value="existing" x-model="studentMode"> Select existing</label>
                                 @endif
                             </div>
@@ -66,8 +66,8 @@
                             <label class="block text-sm font-medium text-gray-700 mb-2">Select child</label>
                             <select name="student_id" class="w-full rounded-md border-gray-300" :disabled="flow !== 'parent' || studentMode !== 'existing'" required>
                                 <option value="">Select a child</option>
-                                @foreach($user->guardianStudents as $s)
-                                    <option value="{{ $s->id }}">{{ $s->full_name }} ({{ $s->age() }} years)</option>
+                                @foreach($children as $s)
+                                    <option value="{{ $s->legacy_registration_student_id ?? $s->id }}">{{ $s->full_name }} ({{ $s->age() }} years)</option>
                                 @endforeach
                             </select>
                         </div>
@@ -244,7 +244,7 @@
 function enrollFlow() {
     @php
         $restoredFlow        = old('flow', $defaultFlow);
-        $restoredStudentMode = old('student_mode', $user->guardianStudents->isNotEmpty() ? 'existing' : 'new');
+        $restoredStudentMode = old('student_mode', $children->isNotEmpty() ? 'existing' : 'new');
         $restoredIdType      = old('id_type', 'national_id');
         $adultIdTypeDefault  = $prefill['id_type'] ?: 'national_id';
     @endphp

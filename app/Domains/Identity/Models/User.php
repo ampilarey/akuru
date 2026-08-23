@@ -188,6 +188,18 @@ class User extends Authenticatable implements MustVerifyEmail
         return $parent->students();
     }
 
+    /** Course / unified children via guardian_student (Deploy 2 reads). */
+    public function courseStudents()
+    {
+        return Student::query()
+            ->whereIn('id', function ($query) {
+                $query->select('guardian_student.student_id')
+                    ->from('guardian_student')
+                    ->join('parent_guardians', 'parent_guardians.id', '=', 'guardian_student.guardian_id')
+                    ->where('parent_guardians.user_id', $this->id);
+            });
+    }
+
     public function hasVerifiedContact(): bool
     {
         return $this->contacts()->whereNotNull('verified_at')->exists();

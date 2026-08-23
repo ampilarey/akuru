@@ -12,6 +12,7 @@ use App\Domains\Hifz\Models\QuranProgress;
 use App\Domains\Identity\Models\User;
 use App\Domains\People\Enums\StudentStatus;
 use App\Domains\Settings\Models\School;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -138,6 +139,17 @@ class Student extends Model
     public function getFullNameAttribute()
     {
         return $this->first_name.' '.$this->last_name;
+    }
+
+    /** Deploy 2 read compatibility: views used RegistrationStudent.dob. */
+    public function getDobAttribute(): mixed
+    {
+        return $this->date_of_birth;
+    }
+
+    public function age(): int
+    {
+        return Carbon::parse($this->date_of_birth)->age;
     }
 
     public function getFullNameArabicAttribute()

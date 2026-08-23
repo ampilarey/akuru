@@ -112,7 +112,7 @@ class CourseRegistrationController extends PublicRegistrationController
         ]);
 
         // Pre-select flow based on existing profile
-        $flow = $user->registrationStudentProfile ? 'adult' : ($user->guardianStudents()->exists() ? 'parent' : null);
+        $flow = $user->student ? 'adult' : ($user->courseStudents()->exists() || $user->guardianStudents()->exists() ? 'parent' : null);
         if ($flow) {
             session(['checkout_flow' => $flow]);
         }
@@ -547,14 +547,18 @@ class CourseRegistrationController extends PublicRegistrationController
             return redirect()->route('public.courses.index')->with('error', 'No course selected. Please start registration from a course page.');
         }
 
-        // Pre-fill existing student profile for returning users
-        $existingProfile = $user->registrationStudentProfile;
-        $user->loadMissing('guardianStudents');
+        // Pre-fill existing student profile for returning users (unified Student first)
+        $existingProfile = $user->student ?? $user->registrationStudentProfile;
+        $children = $user->courseStudents()->orderBy('first_name')->get();
+        if ($children->isEmpty()) {
+            $user->loadMissing('guardianStudents');
+            $children = $user->guardianStudents;
+        }
 
         // Default flow: honour the choice made on checkout start, then fall back to profile
         $checkoutFlow = session('checkout_flow');
         $defaultFlow = $checkoutFlow
-            ?? ($existingProfile ? 'adult' : ($user->guardianStudents->isNotEmpty() ? 'parent' : 'adult'));
+            ?? ($existingProfile ? 'adult' : ($children->isNotEmpty() ? 'parent' : 'adult'));
 
         // Pre-fill data from user profile (name, gender, DOB, ID) for new users
         $nameParts = explode(' ', $user->name ?? '', 2);
@@ -576,6 +580,7 @@ class CourseRegistrationController extends PublicRegistrationController
             'courseIds' => $courseIds,
             'termId' => session('pending_term_id'),
             'existingProfile' => $existingProfile,
+            'children' => $children,
             'defaultFlow' => $defaultFlow,
             'prefill' => $prefill,
         ]);
@@ -619,9 +624,10 @@ class CourseRegistrationController extends PublicRegistrationController
 
         // Adult self-enrollment duplicate
         if ($flow === 'adult') {
-            $studentProfile = $user->registrationStudentProfile;
-            if ($studentProfile) {
-                $existing = \App\Domains\Courses\Models\CourseEnrollment::where('student_id', $studentProfile->id)
+            $legacyStudentId = $user->student?->legacy_registration_student_id
+                ?? $user->registrationStudentProfile?->id;
+            if ($legacyStudentId) {
+                $existing = \App\Domains\Courses\Models\CourseEnrollment::where('student_id', $legacyStudentId)
                     ->whereIn('course_id', $courseIds)
                     ->where('status', '!=', 'rejected')
                     ->with('course')
