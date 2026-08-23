@@ -4,6 +4,8 @@ namespace App\Domains\People\Http\Controllers;
 
 use App\Domains\Academics\Models\ClassRoom;
 use App\Domains\Identity\Models\User;
+use App\Domains\People\Actions\ChangeStudentStatusAction;
+use App\Domains\People\Enums\StudentStatus;
 use App\Domains\People\Models\ParentGuardian;
 use App\Domains\People\Models\Student;
 use App\Http\Controllers\Controller;
@@ -81,8 +83,13 @@ class StudentController extends Controller
             'phone' => $request->phone,
             'address' => $request->address,
             'admission_date' => $request->admission_date,
-            'status' => 'active',
         ]);
+
+        app(ChangeStudentStatusAction::class)->execute(
+            $student,
+            StudentStatus::Active,
+            auth()->id(),
+        );
 
         return redirect()->route('students.index')
             ->with('success', 'Student created successfully!');

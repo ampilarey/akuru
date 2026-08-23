@@ -10,9 +10,12 @@ use App\Domains\Hifz\Models\HifzMilestone;
 use App\Domains\Hifz\Models\HifzSessionRecord;
 use App\Domains\Hifz\Models\QuranProgress;
 use App\Domains\Identity\Models\User;
+use App\Domains\People\Enums\StudentStatus;
 use App\Domains\Settings\Models\School;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Student extends Model
 {
@@ -32,19 +35,33 @@ class Student extends Model
         'date_of_birth',
         'gender',
         'national_id',
+        'passport',
+        'email',
+        'nationality',
+        'place_of_birth',
         'phone',
         'address',
         'emergency_contact_name',
         'emergency_contact_phone',
         'photo',
         'admission_date',
-        'status',
         'notes',
+        'medical_conditions',
+        'allergies',
+        'doctor_name',
+        'doctor_phone',
+        'legacy_registration_student_id',
+    ];
+
+    protected $attributes = [
+        'status' => 'active',
+        'nationality' => 'MV',
     ];
 
     protected $casts = [
         'date_of_birth' => 'date',
         'admission_date' => 'date',
+        'status' => StudentStatus::class,
     ];
 
     // Relationships
@@ -68,6 +85,23 @@ class Student extends Model
         return $this->belongsToMany(ParentGuardian::class, 'student_parent')
             ->withPivot('relationship', 'is_primary_contact')
             ->withTimestamps();
+    }
+
+    public function guardians(): BelongsToMany
+    {
+        return $this->belongsToMany(ParentGuardian::class, 'guardian_student', 'student_id', 'guardian_id')
+            ->withPivot('relationship', 'is_primary', 'can_pickup', 'financial_responsible')
+            ->withTimestamps();
+    }
+
+    public function emergencyContacts(): HasMany
+    {
+        return $this->hasMany(EmergencyContact::class);
+    }
+
+    public function statusHistory(): HasMany
+    {
+        return $this->hasMany(StudentStatusHistory::class);
     }
 
     public function grades()

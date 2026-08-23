@@ -194,11 +194,10 @@ identifier=admin@akuru.edu.mv password=password
 
 **Stop reason:** Step 1 (role resolution) could not be executed without operator-supplied staging credentials for (a) a pre-2026-06-13 admin, (b) a post-move / pre-hotfix admin, and (c) user id 1. Per smoke protocol, later steps were not continued.
 
-**S1.1a gate (items 1–3):** **NOT MET** — pending operator credential smoke.
-
-**Operator handoff — provide any of:**
-1. Staging passwords (or OTP path) for user id 1 + one pre-move admin + one post-move admin, and a guardian portal account; or
-2. SSH to `akuruedu@…` so the agent can confirm eras from the DB (`users.created_at`, `model_has_roles`) and then continue browser smoke with those accounts.
+**S1.1a gate (items 1–3):** **DEFERRED BY OPERATOR (2026-08-23)** — remaining
+credential smoke (portal / Hifz / payments / notifications / OTP / BML, plus
+era-specific admin accounts) skipped to continue coding. Resume those checks
+before production. Admin login itself was confirmed by the operator.
 
 **Follow-up (not this slice):** flip to `Relation::enforceMorphMap()` after
 production verification. S1.1a ADR for guardian/enum becomes **ADR-006**.
@@ -224,10 +223,23 @@ See `docs/STAGING.md` (re-exec-after-pull rejected: blast radius).
 | Agent | Deploy-gate (`morph-map:verify` + `permission:cache-reset` in pull script) | **Done** (merged) |
 | Agent | Credential smoke without staging passwords/SSH | **Blocked** — seed logins rejected |
 | Operator | Credential smoke steps 1–7 (esp. 1–3 for S1.1a) | **Pending** — need passwords/OTP or SSH |
-| Agent | S1.1a schema slice | **Blocked** on operator smoke 1–3 |
+| Agent | S1.1a schema slice | **In progress** — operator authorized skip of remaining smoke |
 
-## Next (Phase S1 — do not start until morph-map hotfix is on staging + credential smoke passes)
+## S1.1a — Unified Student schema (Deploy 1 additive, no backfill)
 
-- Student unification and course engine per `docs/S1_SPEC.md`
-- Per-domain `routes.php` split (early S1 infra)
+- Students: school fields nullable; passport/email/nationality/medical/legacy key;
+  `status` widened to string + `People\Enums\StudentStatus` (not mass-assignable).
+- Tables: `emergency_contacts`, `student_status_history`, `guardian_student`,
+  Media `documents`; Courses `course_enrollments.unified_student_id` (old
+  `student_id` untouched).
+- `ChangeStudentStatusAction` writes history in a transaction.
+- Morph alias `document` registered. ADR-006. Central migrations (domain folders
+  still unwired).
+- **Not in this slice:** S1.1b matching/backfill, React screens, Hifz.
+
+## Next
+
+- S1.1b — registration_students → students backfill + verification script
+- Resume deferred staging credential smoke before production
+- Per-domain `routes.php` / domain migrations (infra)
 - Shrink architecture baselines as domains decouple

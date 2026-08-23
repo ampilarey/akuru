@@ -111,8 +111,8 @@
                                         <td>{{ $student->student_id }}</td>
                                         <td>{{ $student->classRoom->name ?? 'N/A' }}</td>
                                         <td>
-                                            <span class="badge bg-{{ $student->status === 'active' ? 'success' : 'secondary' }}">
-                                                {{ ucfirst($student->status) }}
+                                            <span class="badge bg-{{ $student->status?->value === 'active' ? 'success' : 'secondary' }}">
+                                                {{ ucfirst($student->status?->value ?? '') }}
                                             </span>
                                         </td>
                                         <td>

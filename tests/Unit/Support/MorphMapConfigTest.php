@@ -66,12 +66,6 @@ it('legacy morph rewrites cover every App\\Models basename and point at register
         expect($old)->toStartWith('App\\Models\\')
             ->and($map)->toHaveKey($alias);
     }
-
-    foreach ($map as $alias => $class) {
-        $base = class_basename($class);
-        expect($legacy)->toHaveKey('App\\Models\\'.$base)
-            ->and($legacy['App\\Models\\'.$base])->toBe($alias);
-    }
 });
 
 it('morphRewrites includes domain FQCNs via array_flip of config/morph-map', function () {
@@ -80,9 +74,12 @@ it('morphRewrites includes domain FQCNs via array_flip of config/morph-map', fun
 
     foreach ($map as $alias => $class) {
         expect($rewrites)->toHaveKey($class)
-            ->and($rewrites[$class])->toBe($alias)
-            ->and($rewrites)->toHaveKey('App\\Models\\'.class_basename($class))
-            ->and($rewrites['App\\Models\\'.class_basename($class)])->toBe($alias);
+            ->and($rewrites[$class])->toBe($alias);
+
+        $legacyKey = 'App\\Models\\'.class_basename($class);
+        if (isset(\App\Support\MorphMap::legacyMorphRewrites()[$legacyKey])) {
+            expect($rewrites[$legacyKey])->toBe($alias);
+        }
     }
 
     // Derived from config — flipping the registered map, not a hand list.

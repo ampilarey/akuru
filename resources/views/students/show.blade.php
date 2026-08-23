@@ -21,8 +21,8 @@
                 @endif
                 <h4>{{ $student->full_name }}</h4>
                 <p class="text-muted">{{ $student->student_id }}</p>
-                <span class="badge bg-{{ $student->status === 'active' ? 'success' : 'secondary' }}">
-                    {{ ucfirst($student->status) }}
+                <span class="badge bg-{{ $student->status?->value === 'active' ? 'success' : 'secondary' }}">
+                    {{ ucfirst($student->status?->value ?? '') }}
                 </span>
             </div>
         </div>
