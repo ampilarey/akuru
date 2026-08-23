@@ -21,6 +21,8 @@ class ClassRoom extends Model
         'level',
         'capacity',
         'class_teacher_id',
+        'class_teacher_staff_profile_id',
+        'academic_year_id',
         'description',
         'is_active',
     ];
@@ -40,9 +42,19 @@ class ClassRoom extends Model
         return $this->belongsTo(User::class, 'class_teacher_id');
     }
 
+    public function academicYear()
+    {
+        return $this->belongsTo(AcademicYear::class);
+    }
+
     public function students()
     {
         return $this->hasMany(Student::class, 'class_id');
+    }
+
+    public function roster()
+    {
+        return $this->hasMany(ClassStudent::class, 'class_id');
     }
 
     public function subjects()

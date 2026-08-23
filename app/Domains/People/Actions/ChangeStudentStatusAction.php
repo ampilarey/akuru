@@ -10,6 +10,22 @@ use InvalidArgumentException;
 
 class ChangeStudentStatusAction
 {
+    public function executeById(
+        int $studentId,
+        string $to,
+        int $changedBy,
+        ?string $reason = null,
+        mixed $effectiveDate = null,
+    ): void {
+        $this->execute(
+            Student::query()->findOrFail($studentId),
+            StudentStatus::from($to),
+            $changedBy,
+            $reason,
+            $effectiveDate,
+        );
+    }
+
     public function execute(
         Student $student,
         StudentStatus $to,

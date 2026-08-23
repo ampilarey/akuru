@@ -127,6 +127,9 @@ class RoleSeeder extends Seeder
             'view_hifz_reports',
             'export_hifz_reports',
             'record_hifz_as_substitute',
+
+            'custom_fields.manage',
+            'students.view-sensitive',
         ];
 
         foreach ($permissions as $permission) {

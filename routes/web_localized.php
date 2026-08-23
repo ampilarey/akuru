@@ -1,6 +1,9 @@
 <?php
 
+use App\Domains\Academics\Http\Controllers\AcademicYearController;
 use App\Domains\Academics\Http\Controllers\AnnouncementController;
+use App\Domains\Academics\Http\Controllers\ClassDirectoryController;
+use App\Domains\Academics\Http\Controllers\PromotionController;
 use App\Domains\Academics\Http\Controllers\SubstitutionRequestController;
 use App\Domains\Academics\Legacy\Http\Controllers\ELearningController;
 use App\Domains\Admissions\Http\Controllers\AdminEnrollmentController;
@@ -8,10 +11,15 @@ use App\Domains\Hifz\Http\Controllers\QuranProgressController;
 use App\Domains\HR\Http\Controllers\InstructorController as AdminInstructorController;
 use App\Domains\Identity\Http\Controllers\ProfileController;
 use App\Domains\Notifications\Http\Controllers\NotificationController;
+use App\Domains\People\Http\Controllers\CustomFieldDefinitionController;
+use App\Domains\People\Http\Controllers\StaffDirectoryController;
+use App\Domains\People\Http\Controllers\StudentConsentController;
 use App\Domains\People\Http\Controllers\StudentController;
+use App\Domains\People\Http\Controllers\StudentDirectoryController;
 use App\Domains\People\Http\Controllers\TeacherController;
 use App\Domains\Portal\Http\Controllers\DashboardController;
 use App\Domains\Portal\Http\Controllers\EnhancedDashboardController;
+use App\Domains\Portal\Http\Controllers\GuardianChildrenController;
 use App\Domains\Settings\Http\Controllers\Admin\SettingsController as AdminSettingsController;
 use App\Domains\Settings\Http\Controllers\AnalyticsController;
 use App\Domains\Website\Http\Controllers\Admin\PublicSite\CourseController as AdminCourseController;
@@ -29,6 +37,7 @@ Route::get('/locale/{locale}', [LocaleController::class, 'setLocale'])->name('lo
 Route::middleware(['auth', 'trackActivity'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/enhanced-dashboard', [EnhancedDashboardController::class, 'index'])->name('enhanced.dashboard');
+    Route::get('/portal/children', [GuardianChildrenController::class, 'index'])->name('portal.children');
 
     // Student routes
     Route::resource('students', StudentController::class);
@@ -136,5 +145,46 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
             'update' => 'admin.courses.update',
             'destroy' => 'admin.courses.destroy',
         ]);
+    });
+
+    Route::prefix('people')->middleware(['role:super_admin|admin|headmaster|supervisor'])->group(function () {
+        Route::get('students/export', [StudentDirectoryController::class, 'export'])->name('people.students.export');
+        Route::get('students', [StudentDirectoryController::class, 'index'])->name('people.students.index');
+        Route::get('students/{student}', [StudentDirectoryController::class, 'show'])->name('people.students.show');
+        Route::put('students/{student}/custom-fields', [StudentDirectoryController::class, 'updateCustomFields'])->name('people.students.custom-fields.update');
+        Route::post('students/{student}/guardians', [StudentDirectoryController::class, 'attachGuardian'])->name('people.students.guardians.attach');
+        Route::delete('students/{student}/guardians/{guardian}', [StudentDirectoryController::class, 'detachGuardian'])->name('people.students.guardians.detach');
+        Route::post('students/{student}/consents', [StudentConsentController::class, 'store'])->name('people.students.consents.store');
+
+        Route::get('staff', [StaffDirectoryController::class, 'index'])->name('people.staff.index');
+        Route::post('staff', [StaffDirectoryController::class, 'store'])->name('people.staff.store');
+        Route::get('staff/{staffProfile}', [StaffDirectoryController::class, 'show'])->name('people.staff.show');
+        Route::put('staff/{staffProfile}', [StaffDirectoryController::class, 'update'])->name('people.staff.update');
+        Route::post('staff/{staffProfile}/qualifications', [StaffDirectoryController::class, 'storeQualification'])->name('people.staff.qualifications.store');
+        Route::delete('staff/{staffProfile}/qualifications/{qualification}', [StaffDirectoryController::class, 'destroyQualification'])->name('people.staff.qualifications.destroy');
+
+        Route::get('custom-fields/admission-preview', [CustomFieldDefinitionController::class, 'admissionPreview'])->name('people.custom-fields.admission-preview');
+        Route::get('custom-fields', [CustomFieldDefinitionController::class, 'index'])->name('people.custom-fields.index');
+        Route::post('custom-fields', [CustomFieldDefinitionController::class, 'store'])->name('people.custom-fields.store');
+        Route::put('custom-fields/{definition}', [CustomFieldDefinitionController::class, 'update'])->name('people.custom-fields.update');
+        Route::delete('custom-fields/{definition}', [CustomFieldDefinitionController::class, 'destroy'])->name('people.custom-fields.destroy');
+    });
+
+    Route::prefix('academics')->middleware(['role:super_admin|admin|headmaster|supervisor'])->group(function () {
+        Route::get('years', [AcademicYearController::class, 'index'])->name('academics.years.index');
+        Route::post('years', [AcademicYearController::class, 'store'])->name('academics.years.store');
+        Route::post('years/{academicYear}/terms', [AcademicYearController::class, 'storeTerm'])->name('academics.years.terms.store');
+        Route::post('years/{academicYear}/terms/{term}/close', [AcademicYearController::class, 'closeTerm'])->name('academics.years.terms.close');
+        Route::post('years/{academicYear}/activate', [AcademicYearController::class, 'activate'])->name('academics.years.activate');
+        Route::post('years/{academicYear}/close', [AcademicYearController::class, 'close'])->name('academics.years.close');
+
+        Route::get('classes', [ClassDirectoryController::class, 'index'])->name('academics.classes.index');
+        Route::post('classes', [ClassDirectoryController::class, 'store'])->name('academics.classes.store');
+        Route::get('classes/{classRoom}', [ClassDirectoryController::class, 'show'])->name('academics.classes.show');
+        Route::post('classes/{classRoom}/assign', [ClassDirectoryController::class, 'assign'])->name('academics.classes.assign');
+
+        Route::get('promotion', [PromotionController::class, 'create'])->name('academics.promotion.create');
+        Route::post('promotion/dry-run', [PromotionController::class, 'dryRun'])->name('academics.promotion.dry-run');
+        Route::post('promotion', [PromotionController::class, 'commit'])->name('academics.promotion.commit');
     });
 });

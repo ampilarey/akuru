@@ -1,9 +1,14 @@
 <?php
 
 use App\Domains\Identity\Models\User;
+use App\Domains\People\Enums\CustomFieldEntityType;
+use App\Domains\People\Enums\CustomFieldType;
+use App\Domains\People\Models\CustomFieldDefinition;
 use App\Domains\People\Models\ParentGuardian;
 use App\Domains\People\Models\RegistrationStudent;
 use App\Domains\People\Models\Student;
+use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
 
 function makeStudent(array $overrides = []): Student
 {
@@ -44,5 +49,41 @@ function makeRegistrationStudent(array $overrides = []): RegistrationStudent
         'last_name' => 'Ali',
         'dob' => '2012-03-01',
         'gender' => 'female',
+    ], $overrides));
+}
+
+function actingPeopleAdmin(array $permissions = ['custom_fields.manage', 'students.view-sensitive']): User
+{
+    Role::findOrCreate('admin', 'web');
+
+    foreach ($permissions as $permission) {
+        Permission::findOrCreate($permission, 'web');
+    }
+
+    $user = User::factory()->create();
+    $user->assignRole('admin');
+    $user->givePermissionTo($permissions);
+
+    return $user;
+}
+
+function makeCustomFieldDefinition(array $overrides = []): CustomFieldDefinition
+{
+    return CustomFieldDefinition::query()->create(array_merge([
+        'entity_type' => CustomFieldEntityType::Students->value,
+        'key' => 'blood_group',
+        'label_en' => 'Blood group',
+        'label_dv' => 'ލޭގެ ގްރޫޕް',
+        'label_ar' => 'فصيلة الدم',
+        'field_type' => CustomFieldType::Select->value,
+        'options' => [
+            ['value' => 'A+', 'label' => 'A+'],
+            ['value' => 'O+', 'label' => 'O+'],
+        ],
+        'required' => false,
+        'show_in_profile' => true,
+        'show_in_admission_form' => false,
+        'sort_order' => 0,
+        'active' => true,
     ], $overrides));
 }

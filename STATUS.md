@@ -270,12 +270,61 @@ See `docs/STAGING.md` (re-exec-after-pull rejected: blast radius).
 - Architecture baselines shrunk (Password OTP off rule 1; four rule-2
   RegistrationStudent imports removed). Hifz untouched.
 
+## S1.2 — Custom fields engine
+
+- Tables: `custom_field_definitions` (soft-deletes, unique key per entity,
+  trilingual labels, types `text|textarea|number|date|select|multiselect|boolean`)
+  and `custom_field_values` (json, unique definition+entity).
+- `SaveCustomFieldValuesAction` validates type + required; reused by student
+  profile and admission preview.
+- Admin CRUD + admission-form preview at `people.custom-fields.*`.
+- React `<CustomFields>` plus student directory/profile (`people.students.*`)
+  with CSV export, guardian attach/detach, medical gated by
+  `students.view-sensitive`. Legacy Blade `students.*` unchanged.
+- Permissions: `custom_fields.manage`, `students.view-sensitive`.
+- Inertia page-finder path set to `resources/js/Pages` (`config/inertia.php`).
+- Hifz / dual-write / Deploy 3 untouched.
+
+## S1.3 — Consent & privacy
+
+- `consents` ledger: person (student|guardian), type
+  (`photo_media_use`, `ai_training_samples`, `data_processing`,
+  `marketing_messages`), granted, granted_by, granted_at, revoked_at, source.
+- `RecordConsentAction` inserts a new row on change; never updates `granted`
+  in place. Same-value writes are no-ops.
+- Student profile Consents tab + portal children list (`portal.children`)
+  scoped to the signed-in guardian.
+- ADR-009 retention (ADR-002 was already analytics). Hifz untouched.
+
+## S1.4 — Staff profiles
+
+- `staff_profiles` + `staff_qualifications` (optional `document_id` → Media
+  `documents`). Teacher rows unchanged except additive nullable
+  `teachers.staff_profile_id`. No contracts/leave/payroll (S5).
+- Inertia staff index/profile at `people.staff.*`. Hifz Teacher behavior frozen.
+
+## S1.5 — Academic year / term backbone
+
+- `academic_years.status` (`upcoming|active|closed`); `is_current=true` →
+  `active`. `terms` json **kept**. New `terms` table backfilled.
+- `course_enrollments.unified_term_id` FK to `terms` (legacy `term_id` /
+  generated `term_key` untouched; orphans → Legacy term).
+- `classes.academic_year_id` + optional `class_teacher_staff_profile_id`
+  (`class_teacher_id` still → users). Unique `(name, section, academic_year_id)`.
+- `class_student` pivot; dual-write `students.class_id`.
+- Actions: `ActivateAcademicYearAction` (fails if another year is active;
+  does not close it), `CloseAcademicYearAction` (all terms closed),
+  `PromoteStudentsAction` (dry-run required; promote/repeat/leave/graduate
+  via `ChangeStudentStatusAction::executeById`).
+- Inertia: years/terms, classes/roster, promotion wizard.
+- ADR-010 promotion semantics. Hifz AcademicYear usage unchanged (additive
+  fillable/status only).
+
 ## Next
 
-- Run `students:verify-unification` on a staging/production-data copy; resolve
-  ambiguous/colliding rows
 - S1.1 Deploy 3 — drop dual-write after ≥2 weeks stable (not now)
-- S1.2 — custom fields engine
+- Run `students:verify-unification` on a staging/production-data copy
 - Resume deferred staging credential smoke before production
 - Per-domain `routes.php` / domain migrations (infra)
 - Shrink architecture baselines as domains decouple
+- S2 — attendance / timetable keyed on class_student + terms
