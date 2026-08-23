@@ -270,12 +270,26 @@ See `docs/STAGING.md` (re-exec-after-pull rejected: blast radius).
 - Architecture baselines shrunk (Password OTP off rule 1; four rule-2
   RegistrationStudent imports removed). Hifz untouched.
 
+## S1.2 — Custom fields engine
+
+- Tables: `custom_field_definitions` (soft-deletes, unique key per entity,
+  trilingual labels, types `text|textarea|number|date|select|multiselect|boolean`)
+  and `custom_field_values` (json, unique definition+entity).
+- `SaveCustomFieldValuesAction` validates type + required; reused by student
+  profile and admission preview.
+- Admin CRUD + admission-form preview at `people.custom-fields.*`.
+- React `<CustomFields>` plus student directory/profile (`people.students.*`)
+  with CSV export, guardian attach/detach, medical gated by
+  `students.view-sensitive`. Legacy Blade `students.*` unchanged.
+- Permissions: `custom_fields.manage`, `students.view-sensitive`.
+- Inertia page-finder path set to `resources/js/Pages` (`config/inertia.php`).
+- Hifz / dual-write / Deploy 3 untouched.
+
 ## Next
 
-- Run `students:verify-unification` on a staging/production-data copy; resolve
-  ambiguous/colliding rows
+- S1.3 — consent & privacy + retention ADR
 - S1.1 Deploy 3 — drop dual-write after ≥2 weeks stable (not now)
-- S1.2 — custom fields engine
+- Run `students:verify-unification` on a staging/production-data copy
 - Resume deferred staging credential smoke before production
 - Per-domain `routes.php` / domain migrations (infra)
 - Shrink architecture baselines as domains decouple

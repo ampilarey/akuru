@@ -8,7 +8,9 @@ use App\Domains\Hifz\Http\Controllers\QuranProgressController;
 use App\Domains\HR\Http\Controllers\InstructorController as AdminInstructorController;
 use App\Domains\Identity\Http\Controllers\ProfileController;
 use App\Domains\Notifications\Http\Controllers\NotificationController;
+use App\Domains\People\Http\Controllers\CustomFieldDefinitionController;
 use App\Domains\People\Http\Controllers\StudentController;
+use App\Domains\People\Http\Controllers\StudentDirectoryController;
 use App\Domains\People\Http\Controllers\TeacherController;
 use App\Domains\Portal\Http\Controllers\DashboardController;
 use App\Domains\Portal\Http\Controllers\EnhancedDashboardController;
@@ -136,5 +138,20 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
             'update' => 'admin.courses.update',
             'destroy' => 'admin.courses.destroy',
         ]);
+    });
+
+    Route::prefix('people')->middleware(['role:super_admin|admin|headmaster|supervisor'])->group(function () {
+        Route::get('students/export', [StudentDirectoryController::class, 'export'])->name('people.students.export');
+        Route::get('students', [StudentDirectoryController::class, 'index'])->name('people.students.index');
+        Route::get('students/{student}', [StudentDirectoryController::class, 'show'])->name('people.students.show');
+        Route::put('students/{student}/custom-fields', [StudentDirectoryController::class, 'updateCustomFields'])->name('people.students.custom-fields.update');
+        Route::post('students/{student}/guardians', [StudentDirectoryController::class, 'attachGuardian'])->name('people.students.guardians.attach');
+        Route::delete('students/{student}/guardians/{guardian}', [StudentDirectoryController::class, 'detachGuardian'])->name('people.students.guardians.detach');
+
+        Route::get('custom-fields/admission-preview', [CustomFieldDefinitionController::class, 'admissionPreview'])->name('people.custom-fields.admission-preview');
+        Route::get('custom-fields', [CustomFieldDefinitionController::class, 'index'])->name('people.custom-fields.index');
+        Route::post('custom-fields', [CustomFieldDefinitionController::class, 'store'])->name('people.custom-fields.store');
+        Route::put('custom-fields/{definition}', [CustomFieldDefinitionController::class, 'update'])->name('people.custom-fields.update');
+        Route::delete('custom-fields/{definition}', [CustomFieldDefinitionController::class, 'destroy'])->name('people.custom-fields.destroy');
     });
 });

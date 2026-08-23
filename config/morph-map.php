@@ -19,6 +19,8 @@ return [
     'class_room' => \App\Domains\Academics\Models\ClassRoom::class,
     'contact_inquiry' => \App\Domains\Website\Models\ContactInquiry::class,
     'contact_message' => \App\Domains\Website\Models\ContactMessage::class,
+    'custom_field_definition' => \App\Domains\People\Models\CustomFieldDefinition::class,
+    'custom_field_value' => \App\Domains\People\Models\CustomFieldValue::class,
     'course' => \App\Domains\Courses\Models\Course::class,
     'course_category' => \App\Domains\Courses\Models\CourseCategory::class,
     'course_enrollment' => \App\Domains\Courses\Models\CourseEnrollment::class,
