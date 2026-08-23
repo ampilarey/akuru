@@ -2,6 +2,7 @@
 
 namespace App\Domains\People\Providers;
 
+use App\Domains\People\Console\VerifyStudentUnificationCommand;
 use App\Domains\People\Models\RegistrationStudent;
 use App\Domains\People\Policies\RegistrationStudentPolicy;
 use Illuminate\Support\Facades\Gate;
@@ -17,5 +18,11 @@ class PeopleServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Gate::policy(RegistrationStudent::class, RegistrationStudentPolicy::class);
+
+        if ($this->app->runningInConsole()) {
+            $this->commands([
+                VerifyStudentUnificationCommand::class,
+            ]);
+        }
     }
 }

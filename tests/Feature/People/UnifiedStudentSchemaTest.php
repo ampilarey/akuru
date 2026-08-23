@@ -6,7 +6,6 @@ use App\Domains\Media\Models\Document;
 use App\Domains\People\Actions\ChangeStudentStatusAction;
 use App\Domains\People\Enums\GuardianRelationship;
 use App\Domains\People\Enums\StudentStatus;
-use App\Domains\People\Models\ParentGuardian;
 use App\Domains\People\Models\Student;
 use App\Domains\People\Models\StudentStatusHistory;
 use Illuminate\Database\QueryException;
@@ -15,34 +14,6 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 uses(RefreshDatabase::class);
-
-function makeStudent(array $overrides = []): Student
-{
-    $user = User::factory()->create();
-
-    return Student::query()->create(array_merge([
-        'user_id' => $user->id,
-        'first_name' => 'Aisha',
-        'last_name' => 'Ali',
-        'date_of_birth' => '2012-03-01',
-        'gender' => 'female',
-    ], $overrides));
-}
-
-function makeGuardian(): ParentGuardian
-{
-    $user = User::factory()->create();
-
-    return ParentGuardian::query()->create([
-        'user_id' => $user->id,
-        'first_name' => 'Hassan',
-        'last_name' => 'Ali',
-        'phone' => '7820288',
-        'email' => $user->email ?? 'guardian@example.com',
-        'address' => 'Malé',
-        'relationship' => 'father',
-    ]);
-}
 
 it('changes status only via ChangeStudentStatusAction and writes history', function () {
     $actor = User::factory()->create();
