@@ -161,7 +161,44 @@ morph-map:verify OK — morph columns have no FQCNs; notifications.type is clean
 Permission cache flushed.
 ```
 
-**Gate:** GREEN. Credential smoke (admin login + nav, portal, Hifz, enrollment OTP `7820288`/`7972434`, BML sandbox) is now unblocked and still **pending operator**.
+**Gate:** GREEN. Credential smoke (admin login + nav, portal, Hifz, enrollment OTP `7820288`/`7972434`, BML sandbox) is now unblocked — see section below.
+
+### Staging credential smoke (2026-08-23) — post morph-map `048974b`
+
+Target: https://test.akuru.edu.mv · HEAD expected `048974b` / morph remediation. Checks chosen to exercise rewritten roles, payables, and notification classes (not generic page-load smoke).
+
+| # | Check | Result |
+|---|--------|--------|
+| 1a | Role resolution — admin created **before** 2026-06-13 | **Not tested** — no pre-move admin credentials available to this agent |
+| 1b | Role resolution — admin created **after** 2026-06-13 (post-move, pre-hotfix) | **Not tested** — no post-move admin credentials available to this agent |
+| 1c | Role resolution — **user id 1** (collapse: `role_id=1 model_id=1`) | **Not tested** — no credentials for user id 1 |
+| 2 | Portal — guardian/student views; guardian sees own children only | **Not tested** — blocked on step 1 (no authenticated session) |
+| 3 | Hifz — dashboards load and show data (regression only) | **Not tested** — blocked on step 1 |
+| 4 | Payments — old pre-move payment `payable` resolves in admin | **Not tested** — blocked on step 1 |
+| 5 | Notifications — stored notification renders (rewritten `type`) | **Not tested** — blocked on step 1 |
+| 6 | Enrollment OTP — `7820288` / `7972434` only | **Not tested** — blocked on step 1; SMS path also needs live gateway confirmation |
+| 7 | BML sandbox — initiate checkout, redirect/return (no faked webhook) | **Not tested** — blocked on step 1; sandbox operator credentials not available |
+
+**Login probe (seed accounts — expected to fail on real staging data):**
+
+Attempted password login at `/en/login` with identifier/password pairs from local seed docs (`admin@akuru.edu.mv` / `password`, `teacher@akuru.edu.mv` / `password`, and phone identifiers `7820288` / `7972434` with `password`). Every attempt returned **HTTP 302 → `/en/login`** (no session established). Staging does not use the local seeder password set for these checks.
+
+**Verbatim curl outcome (representative):**
+
+```text
+POST https://test.akuru.edu.mv/en/login
+identifier=admin@akuru.edu.mv password=password
+→ HTTP 302 Location: https://test.akuru.edu.mv/en/login
+(same for teacher@akuru.edu.mv, 7820288, 7972434)
+```
+
+**Stop reason:** Step 1 (role resolution) could not be executed without operator-supplied staging credentials for (a) a pre-2026-06-13 admin, (b) a post-move / pre-hotfix admin, and (c) user id 1. Per smoke protocol, later steps were not continued.
+
+**S1.1a gate (items 1–3):** **NOT MET** — pending operator credential smoke.
+
+**Operator handoff — provide any of:**
+1. Staging passwords (or OTP path) for user id 1 + one pre-move admin + one post-move admin, and a guardian portal account; or
+2. SSH to `akuruedu@…` so the agent can confirm eras from the DB (`users.created_at`, `model_has_roles`) and then continue browser smoke with those accounts.
 
 **Follow-up (not this slice):** flip to `Relation::enforceMorphMap()` after
 production verification. S1.1a ADR for guardian/enum becomes **ADR-006**.
