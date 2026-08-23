@@ -8,6 +8,8 @@ use App\Domains\Finance\Models\Payment;
 use App\Domains\Finance\Models\PaymentItem;
 use App\Domains\Identity\Models\User;
 use App\Domains\Identity\Models\UserContact;
+use App\Domains\People\Actions\DualWriteCourseStudentAction;
+use App\Domains\People\Actions\LinkGuardianDualWriteAction;
 use App\Domains\People\Models\RegistrationStudent;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -55,6 +57,8 @@ class EnrollmentService
                 'gender' => $studentData['gender'] ?? null,
             ], $idFields));
         }
+
+        app(DualWriteCourseStudentAction::class)->sync($student);
 
         $result = $this->enrollStudentInCourses($student, $courseIds, $termId, $user, $user);
 
@@ -145,13 +149,14 @@ class EnrollmentService
             ], $idFields));
         }
 
-        // Ensure this parent is linked as a guardian (avoid duplicate pivot rows)
-        if (! $parent->guardianStudents()->where('registration_students.id', $student->id)->exists()) {
-            $parent->guardianStudents()->attach($student->id, [
-                'relationship' => $guardianMeta['relationship'] ?? 'guardian',
-                'is_primary' => true,
-            ]);
-        }
+        app(DualWriteCourseStudentAction::class)->sync($student);
+
+        app(LinkGuardianDualWriteAction::class)->execute(
+            $parent->id,
+            $student,
+            $guardianMeta['relationship'] ?? 'guardian',
+            true,
+        );
 
         // Create a login account for the child if they don't have one yet
         $childPassword = $guardianMeta['child_password'] ?? null;
@@ -200,6 +205,7 @@ class EnrollmentService
 
             // Link the user account to the student profile
             $student->update(['user_id' => $childUser->id]);
+            app(DualWriteCourseStudentAction::class)->sync($student);
 
         } catch (\Throwable $e) {
             // Log but don't fail enrollment — child can still be enrolled without an account
@@ -243,6 +249,8 @@ class EnrollmentService
         User $createdBy,
         ?User $adultSelfUser
     ): EnrollmentResult {
+        app(DualWriteCourseStudentAction::class)->sync($student);
+
         $result = new EnrollmentResult;
         $courses = Course::whereIn('id', $courseIds)->get();
         $enrollmentsNeedingPayment = [];
@@ -319,7 +327,7 @@ class EnrollmentService
 
             if (count($feeEnrollments) > 0 && $totalFee > 0) {
                 $payer = $adultSelfUser ?? $createdBy;
-                $payment = $this->paymentService->createConsolidatedPayment($payer, $student, $feeEnrollments);
+                $payment = $this->paymentService->createConsolidatedPayment($payer, $student->id, $feeEnrollments);
 
                 foreach ($feeEnrollments as $fe) {
                     $fe['enrollment']->update(['payment_id' => $payment->id]);
@@ -383,6 +391,8 @@ class EnrollmentService
                         'gender' => $data['gender'] ?? null,
                     ], $idFields));
                 }
+
+                app(DualWriteCourseStudentAction::class)->sync($student);
 
                 if ($user->name === 'User') {
                     $user->update(['name' => $data['first_name'].' '.$data['last_name']]);

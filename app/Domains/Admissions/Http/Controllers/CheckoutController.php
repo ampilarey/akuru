@@ -7,7 +7,6 @@ use App\Domains\Courses\Models\CourseEnrollment;
 use App\Domains\Finance\Models\Payment;
 use App\Domains\Finance\Models\PaymentItem;
 use App\Domains\Finance\Services\BmlConnectService;
-use App\Domains\People\Models\RegistrationStudent;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -79,11 +78,12 @@ class CheckoutController extends Controller
                 );
             }
             if (! $enrollment) {
-                $student = RegistrationStudent::where('user_id', $user?->id)->first();
-                if ($student) {
+                $student = $user?->student;
+                $legacyId = $student?->legacy_registration_student_id;
+                if ($legacyId) {
                     $enrollment = CourseEnrollment::firstOrCreate(
                         [
-                            'student_id' => $student->id,
+                            'student_id' => $legacyId,
                             'course_id' => $course->id,
                         ],
                         [

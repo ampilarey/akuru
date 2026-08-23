@@ -9,7 +9,6 @@ use App\Domains\Finance\Models\Payment;
 use App\Domains\Finance\Models\PaymentItem;
 use App\Domains\Identity\Models\User;
 use App\Domains\Notifications\Contracts\SmsSenderInterface;
-use App\Domains\People\Models\RegistrationStudent;
 use App\Mail\EnrollmentConfirmedMail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -60,7 +59,7 @@ class PaymentService
         ]);
     }
 
-    public function createConsolidatedPayment(User $payer, RegistrationStudent $student, array $feeEnrollments): Payment
+    public function createConsolidatedPayment(User $payer, int $registrationStudentId, array $feeEnrollments): Payment
     {
         $totalAmount = array_sum(array_column($feeEnrollments, 'amount'));
         $first = $feeEnrollments[0];
@@ -71,7 +70,7 @@ class PaymentService
 
         $payment = Payment::create([
             'user_id' => $payer->id,
-            'student_id' => $student->id,
+            'student_id' => $registrationStudentId,
             'course_id' => $firstCourse->id,
             'amount' => $totalAmount,
             'amount_laar' => $totalLaar,

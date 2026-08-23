@@ -2,7 +2,7 @@
 
 // PHASE_0_CHECKLIST §0.5 rule 2: cross-domain non-contract references.
 // Baseline may only shrink when violations are fixed — never grow.
-// Baseline count: 184
+// Baseline count: 180
 
 return [
     'app/Domains/Academics/Http/Controllers/AnnouncementController.php -> App\Domains\Settings\Models\School',
@@ -31,7 +31,6 @@ return [
     'app/Domains/Admissions/Http/Controllers/CheckoutController.php -> App\Domains\Finance\Models\Payment',
     'app/Domains/Admissions/Http/Controllers/CheckoutController.php -> App\Domains\Finance\Models\PaymentItem',
     'app/Domains/Admissions/Http/Controllers/CheckoutController.php -> App\Domains\Finance\Services\BmlConnectService',
-    'app/Domains/Admissions/Http/Controllers/CheckoutController.php -> App\Domains\People\Models\RegistrationStudent',
     'app/Domains/Admissions/Http/Controllers/CourseRegistrationController.php -> App\Domains\Courses\Models\Course',
     'app/Domains/Admissions/Http/Controllers/CourseRegistrationController.php -> App\Domains\Finance\Models\Payment',
     'app/Domains/Admissions/Http/Controllers/CourseRegistrationController.php -> App\Domains\Finance\Services\Payment\PaymentService',
@@ -56,17 +55,14 @@ return [
     'app/Domains/Admissions/Services/Enrollment/EnrollmentService.php -> App\Domains\People\Models\RegistrationStudent',
     'app/Domains/Courses/Models/CourseEnrollment.php -> App\Domains\Finance\Models\Payment',
     'app/Domains/Courses/Models/CourseEnrollment.php -> App\Domains\Identity\Models\User',
-    'app/Domains/Courses/Models/CourseEnrollment.php -> App\Domains\People\Models\RegistrationStudent',
     'app/Domains/Finance/Models/Payment.php -> App\Domains\Courses\Models\Course',
     'app/Domains/Finance/Models/Payment.php -> App\Domains\Courses\Models\CourseEnrollment',
     'app/Domains/Finance/Models/Payment.php -> App\Domains\Identity\Models\User',
-    'app/Domains/Finance/Models/Payment.php -> App\Domains\People\Models\RegistrationStudent',
     'app/Domains/Finance/Models/PaymentItem.php -> App\Domains\Courses\Models\Course',
     'app/Domains/Finance/Models/PaymentItem.php -> App\Domains\Courses\Models\CourseEnrollment',
     'app/Domains/Finance/Services/Payment/PaymentService.php -> App\Domains\Courses\Models\Course',
     'app/Domains/Finance/Services/Payment/PaymentService.php -> App\Domains\Courses\Models\CourseEnrollment',
     'app/Domains/Finance/Services/Payment/PaymentService.php -> App\Domains\Identity\Models\User',
-    'app/Domains/Finance/Services/Payment/PaymentService.php -> App\Domains\People\Models\RegistrationStudent',
     'app/Domains/Hifz/Http/Controllers/DeanHifzDashboardController.php -> App\Domains\Identity\Models\User',
     'app/Domains/Hifz/Http/Controllers/HifzEnrollmentController.php -> App\Domains\People\Models\Student',
     'app/Domains/Hifz/Http/Controllers/HifzEnrollmentController.php -> App\Domains\People\Models\Teacher',

@@ -5,11 +5,11 @@ namespace App\Domains\Finance\Models;
 use App\Domains\Courses\Models\Course;
 use App\Domains\Courses\Models\CourseEnrollment;
 use App\Domains\Identity\Models\User;
-use App\Domains\People\Models\RegistrationStudent;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class Payment extends Model
@@ -17,6 +17,7 @@ class Payment extends Model
     protected $fillable = [
         'user_id',
         'student_id',
+        'unified_student_id',
         'course_id',
         'amount',
         'currency',
@@ -62,6 +63,17 @@ class Payment extends Model
 
     protected static function booted(): void
     {
+        static::saving(function (Payment $payment) {
+            if ($payment->unified_student_id === null && $payment->student_id) {
+                $unifiedId = DB::table('students')
+                    ->where('legacy_registration_student_id', $payment->student_id)
+                    ->value('id');
+                if ($unifiedId !== null) {
+                    $payment->unified_student_id = $unifiedId;
+                }
+            }
+        });
+
         static::creating(function (Payment $payment) {
             if (empty($payment->uuid)) {
                 $payment->uuid = (string) Str::uuid();
@@ -86,9 +98,16 @@ class Payment extends Model
         return $this->belongsTo(User::class);
     }
 
+    /** Canonical student (Deploy 2). */
     public function student(): BelongsTo
     {
-        return $this->belongsTo(RegistrationStudent::class, 'student_id');
+        return $this->belongsTo(config('domain-models.student'), 'unified_student_id');
+    }
+
+    /** @deprecated Dual-write FK to registration_students. */
+    public function legacyStudent(): BelongsTo
+    {
+        return $this->belongsTo(config('domain-models.registration_student'), 'student_id');
     }
 
     public function course(): BelongsTo

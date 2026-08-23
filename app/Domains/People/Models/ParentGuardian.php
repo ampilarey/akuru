@@ -49,4 +49,10 @@ class ParentGuardian extends Model
     {
         return trim("{$this->first_name} {$this->last_name}");
     }
+
+    /** Deploy 2 read compatibility: enrollment views used User.name on RS guardians. */
+    public function getNameAttribute(): string
+    {
+        return $this->full_name;
+    }
 }

@@ -224,7 +224,8 @@ See `docs/STAGING.md` (re-exec-after-pull rejected: blast radius).
 | Agent | Credential smoke without staging passwords/SSH | **Blocked** — seed logins rejected |
 | Operator | Credential smoke steps 1–7 (esp. 1–3 for S1.1a) | **Pending** — need passwords/OTP or SSH |
 | Agent | S1.1a schema slice | **Done** (`ff42e9d`) |
-| Agent | S1.1b unification backfill + verify command | **Done** (PR) |
+| Agent | S1.1b unification backfill + verify command | **Done** (`5c91c93`) |
+| Agent | S1.1c Deploy 2 switch reads | **Done** (PR) |
 
 ## S1.1a — Unified Student schema (Deploy 1 additive, no backfill)
 
@@ -255,11 +256,26 @@ See `docs/STAGING.md` (re-exec-after-pull rejected: blast radius).
 - People action uses `DB::table` for users/enrollments (no Courses/Identity
   model imports). Hifz / RegistrationStudent reads untouched.
 
+## S1.1c — Switch reads to unified students (Deploy 2, dual-write ON)
+
+- `CourseEnrollment::student()` / `Payment::student()` read `students` via
+  `unified_student_id` (config morph, no new People model imports).
+- Additive `payments.unified_student_id` + backfill. Save observers fill the
+  unified id from the legacy mapping.
+- Dual-write: `DualWriteCourseStudentAction` + `LinkGuardianDualWriteAction`.
+  `EnrollmentService` still writes `registration_students` / `student_guardians`.
+- `RegistrationStudent` marked `@deprecated`. Student `dob`/`age` and
+  ParentGuardian `name` keep existing Blade/mail working.
+- Posted enrollment `student_id` is still the legacy RS id. ADR-008.
+- Architecture baselines shrunk (Password OTP off rule 1; four rule-2
+  RegistrationStudent imports removed). Hifz untouched.
+
 ## Next
 
 - Run `students:verify-unification` on a staging/production-data copy; resolve
-  ambiguous/colliding rows (Deploy 2 gate)
-- S1.1 Deploy 2 — switch reads to `students` + `unified_student_id`
+  ambiguous/colliding rows
+- S1.1 Deploy 3 — drop dual-write after ≥2 weeks stable (not now)
+- S1.2 — custom fields engine
 - Resume deferred staging credential smoke before production
 - Per-domain `routes.php` / domain migrations (infra)
 - Shrink architecture baselines as domains decouple
