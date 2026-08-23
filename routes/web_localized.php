@@ -9,6 +9,7 @@ use App\Domains\HR\Http\Controllers\InstructorController as AdminInstructorContr
 use App\Domains\Identity\Http\Controllers\ProfileController;
 use App\Domains\Notifications\Http\Controllers\NotificationController;
 use App\Domains\People\Http\Controllers\CustomFieldDefinitionController;
+use App\Domains\People\Http\Controllers\StaffDirectoryController;
 use App\Domains\People\Http\Controllers\StudentConsentController;
 use App\Domains\People\Http\Controllers\StudentController;
 use App\Domains\People\Http\Controllers\StudentDirectoryController;
@@ -151,6 +152,13 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::post('students/{student}/guardians', [StudentDirectoryController::class, 'attachGuardian'])->name('people.students.guardians.attach');
         Route::delete('students/{student}/guardians/{guardian}', [StudentDirectoryController::class, 'detachGuardian'])->name('people.students.guardians.detach');
         Route::post('students/{student}/consents', [StudentConsentController::class, 'store'])->name('people.students.consents.store');
+
+        Route::get('staff', [StaffDirectoryController::class, 'index'])->name('people.staff.index');
+        Route::post('staff', [StaffDirectoryController::class, 'store'])->name('people.staff.store');
+        Route::get('staff/{staffProfile}', [StaffDirectoryController::class, 'show'])->name('people.staff.show');
+        Route::put('staff/{staffProfile}', [StaffDirectoryController::class, 'update'])->name('people.staff.update');
+        Route::post('staff/{staffProfile}/qualifications', [StaffDirectoryController::class, 'storeQualification'])->name('people.staff.qualifications.store');
+        Route::delete('staff/{staffProfile}/qualifications/{qualification}', [StaffDirectoryController::class, 'destroyQualification'])->name('people.staff.qualifications.destroy');
 
         Route::get('custom-fields/admission-preview', [CustomFieldDefinitionController::class, 'admissionPreview'])->name('people.custom-fields.admission-preview');
         Route::get('custom-fields', [CustomFieldDefinitionController::class, 'index'])->name('people.custom-fields.index');

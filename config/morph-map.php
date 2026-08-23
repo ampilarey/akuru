@@ -79,6 +79,8 @@ return [
     'report' => \App\Domains\Settings\Models\Report::class,
     'school' => \App\Domains\Settings\Models\School::class,
     'setting' => \App\Domains\Settings\Models\Setting::class,
+    'staff_profile' => \App\Domains\People\Models\StaffProfile::class,
+    'staff_qualification' => \App\Domains\People\Models\StaffQualification::class,
     'student' => \App\Domains\People\Models\Student::class,
     'student_status_history' => \App\Domains\People\Models\StudentStatusHistory::class,
     'subject' => \App\Domains\Academics\Models\Subject::class,

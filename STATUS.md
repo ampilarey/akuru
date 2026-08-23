@@ -296,9 +296,16 @@ See `docs/STAGING.md` (re-exec-after-pull rejected: blast radius).
   scoped to the signed-in guardian.
 - ADR-009 retention (ADR-002 was already analytics). Hifz untouched.
 
+## S1.4 — Staff profiles
+
+- `staff_profiles` + `staff_qualifications` (optional `document_id` → Media
+  `documents`). Teacher rows unchanged except additive nullable
+  `teachers.staff_profile_id`. No contracts/leave/payroll (S5).
+- Inertia staff index/profile at `people.staff.*`. Hifz Teacher behavior frozen.
+
 ## Next
 
-- S1.4 — staff profiles
+- S1.5 — academic year / term backbone + promotion
 - S1.1 Deploy 3 — drop dual-write after ≥2 weeks stable (not now)
 - Run `students:verify-unification` on a staging/production-data copy
 - Resume deferred staging credential smoke before production
