@@ -224,7 +224,7 @@ See `docs/STAGING.md` (re-exec-after-pull rejected: blast radius).
 | Agent | Credential smoke without staging passwords/SSH | **Blocked** — seed logins rejected |
 | Operator | Credential smoke steps 1–7 (esp. 1–3 for S1.1a) | **Pending** — need passwords/OTP or SSH |
 | Agent | S1.1a schema slice | **Done** (`ff42e9d`) |
-| Agent | S1.1b unification backfill + verify command | **In progress** |
+| Agent | S1.1b unification backfill + verify command | **Done** (PR) |
 
 ## S1.1a — Unified Student schema (Deploy 1 additive, no backfill)
 
