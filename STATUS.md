@@ -225,7 +225,13 @@ See `docs/STAGING.md` (re-exec-after-pull rejected: blast radius).
 | Operator | Credential smoke steps 1–7 (esp. 1–3 for S1.1a) | **Pending** — need passwords/OTP or SSH |
 | Agent | S1.1a schema slice | **Done** (`ff42e9d`) |
 | Agent | S1.1b unification backfill + verify command | **Done** (`5c91c93`) |
-| Agent | S1.1c Deploy 2 switch reads | **Done** (PR) |
+| Agent | S1.1c Deploy 2 switch reads | **Done** (`2f8a90b`) |
+| Agent | S1.2–S1.5 | **Done** (`8f1ecb8`) |
+| Agent | Docs §5.1 audience-surface (`#13`) | **Done** (`5690034`) |
+| Agent | Staging `students:verify-unification` | **Blocked** — no SSH / no server console |
+| Agent | Branch protection on `main` | **Blocked** — `403 Resource not accessible by integration` |
+| Operator | `students:verify-unification` on staging + archive report | **Pending** — S2 blocked until green |
+| Operator | Branch protection (required `quality`, no direct push, no self-merge) | **Pending** — apply in repo settings |
 
 ## S1.1a — Unified Student schema (Deploy 1 additive, no backfill)
 
@@ -342,13 +348,103 @@ Post-S1 review of the plan folded into `docs/ROADMAP.md` + `CLAUDE.md`:
   public site); separate per-audience apps rejected; a separate SPA client is justified
   only by device/offline constraints (Bakeandgrill pattern), never by audience.
 
+## Pre-S2 readiness (2026-08-24) — gates, not S2 code
+
+### 1. Docs branch `claude/polymorphic-morph-map-hotfix-z01v98`
+
+**Merged.** One docs-only commit is on `main` as
+`5690034` (`docs(roadmap): §5.1 one backend, audience-specific surfaces (#13)`).
+Remote branch deleted after squash-merge. CI on PR #13 was green
+([Actions run 32790086588](https://github.com/ampilarey/akuru/actions/runs/32790086588)).
+
+Do **not** reopen that branch or file a second PR for the same commit
+(`df1a150` is already in `5690034`).
+
+### 2. Staging `php artisan students:verify-unification` — **NOT RUN**
+
+This agent has **no staging server access**. Per the readiness brief, the
+command was **not simulated** against local `akuru_institute` / `akuru_test`.
+
+| Probe | Result |
+|-------|--------|
+| SSH keys / `~/.ssh/config` | None (only `known_hosts`) |
+| `ssh akuruedu@test.akuru.edu.mv` | `Network is unreachable` (port 22) |
+| `ssh akuruedu@akuru.edu.mv` | `Permission denied (publickey,password)` |
+| Staging deploy path | Webhook → `scripts/pull-deploy-test.sh` only (`docs/STAGING.md`). That script does **not** run `students:verify-unification`. |
+
+**Verdict:** no counts. No `storage/app/s11b-student-unification-report.json`
+from staging. Nothing archived under `docs/migrations/`. Deploy 2
+verify-unification gate is **not** retroactively satisfied.
+
+**Operator (SSH or console on `test.akuru.edu.mv`):**
+
+```bash
+cd ~/test.akuru.edu.mv
+php artisan students:verify-unification
+```
+
+Paste the full stdout here and copy
+`storage/app/s11b-student-unification-report.json` into
+`docs/migrations/` (S1 DoD line 158). Record the verbatim summary in this
+file in the same format as the morph-map capture above.
+
+- Zero unresolved → mark the Deploy 2 gate retroactively satisfied.
+- Nonzero → list affected students/enrollments, assess whether any current
+  enrollment/payment read resolves to a mismatched student, **report and
+  stop** (do not start S2).
+
+### 3. Branch protection on `main` — **BLOCKED** (permissions, not plan tier)
+
+Repo is **public**. `GET /repos/ampilarey/akuru/rulesets` → `[]` (no rulesets).
+This agent's GitHub token **cannot write** protection. Repo API permissions
+for this integration: `admin=false`, `maintain=false`, `push=false`.
+
+```text
+POST /repos/ampilarey/akuru/rulesets
+→ HTTP 403 Resource not accessible by integration
+
+PUT /repos/ampilarey/akuru/branches/main/protection
+→ HTTP 403 Resource not accessible by integration
+
+GET /repos/ampilarey/akuru/branches/main/protection
+→ HTTP 403 Resource not accessible by integration
+```
+
+No workaround applied (no status-check-only hack, no Actions-side merge
+block). **Leave for the operator** (repo admin).
+
+Intended settings (classic protection or a ruleset):
+
+- Required status check: workflow job name **`quality`** (workflow `CI`,
+  `.github/workflows/ci.yml`) — require branches to be up to date.
+- Require a pull request before merging (blocks direct pushes to `main`).
+- Require at least 1 approving review **and**
+  `require_last_push_approval: true` (GitHub-native: the author / last
+  pusher cannot satisfy the review — covers bot self-merge).
+- No bypass actors (or empty bypass list); consider `enforce_admins`.
+
+Settings UI: `https://github.com/ampilarey/akuru/settings/branches`
+
 ## Next
 
-- **Apply branch protection on `main`** (required CI check, no direct pushes, no
-  bot self-merge) — ROADMAP §4 now mandates it; not yet configured on GitHub
-- S1.1 Deploy 3 — drop dual-write after ≥2 weeks stable (not now)
-- Run `students:verify-unification` on a staging/production-data copy
-- Resume deferred staging credential smoke before production
-- Per-domain `routes.php` / domain migrations (infra)
-- Shrink architecture baselines as domains decouple
-- S2 — attendance / timetable keyed on class_student + terms
+**S2 is blocked.** Do not start S2 feature code, S1.1 Deploy 3, or Hifz
+until **both** of the following are recorded in this file:
+
+1. `php artisan students:verify-unification` on **staging** is green
+   (zero unresolved) — verbatim output + archived JSON under
+   `docs/migrations/`.
+2. Operator credential smoke (portal / Hifz / payments / notifications /
+   OTP `7820288`/`7972434` / BML sandbox) is recorded.
+
+Also still open (not S2):
+
+- **Branch protection on `main`** — operator; 403 for this agent (see
+  Pre-S2 readiness §3).
+- **S1.1 Deploy 3** stays **≥2 weeks after Deploy 2** (`2f8a90b`,
+  2026-08-24). Dual-write and `student_guardians` /
+  `registration_students` stay until then (`docs/S1_SPEC.md` Deploy 3).
+- Blade `students.*` / `teachers.*` still live (S1.2–S1.5 added Inertia
+  alongside; S1 DoD wanted those routes gone).
+- Infra: `Relation::enforceMorphMap()` after production verification;
+  S1.1a items 1–3 remain operator-deferred; per-domain `routes.php` /
+  domain migrations; shrink architecture baselines as domains decouple.
