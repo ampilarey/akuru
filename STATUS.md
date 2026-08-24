@@ -320,8 +320,28 @@ See `docs/STAGING.md` (re-exec-after-pull rejected: blast radius).
 - ADR-010 promotion semantics. Hifz AcademicYear usage unchanged (additive
   fillable/status only).
 
+## Roadmap review (2026-08-24) — docs only, no behavior change
+
+Post-S1 review of the plan folded into `docs/ROADMAP.md` + `CLAUDE.md`:
+
+- **§4 / CLAUDE.md conventions:** merge gates become mechanism (branch protection,
+  one slice per PR, CI pre-merge, no bot self-merge; verification-script output in
+  STATUS.md **before** the deploy it gates) — direct lesson of the S1 rollout, where
+  Deploy 2 shipped before `students:verify-unification` ran and PR #11 self-merged
+  pre-CI. Branch protection itself still needs to be **applied on GitHub** (operator
+  or separate slice) — the docs now require it; the repo does not yet enforce it.
+- **§7 risk notes:** dual payment path named a standing risk until spec Phase 4;
+  morph-alias discipline (ADR-005) made a standing rule for every new
+  (pseudo-)polymorphic column; community/engagement given a concrete revisit trigger.
+- **§2d:** live-classes Level 2 gets an explicit pull-forward decision trigger if
+  online cohorts become primary before Phase 2.
+- **§9.3:** L-track hold sharpened — hold at L1–L2 until S2 register loop + Phase 1B
+  are live; MMA stored-value ADR required before L3 implementation starts.
+
 ## Next
 
+- **Apply branch protection on `main`** (required CI check, no direct pushes, no
+  bot self-merge) — ROADMAP §4 now mandates it; not yet configured on GitHub
 - S1.1 Deploy 3 — drop dual-write after ≥2 weeks stable (not now)
 - Run `students:verify-unification` on a staging/production-data copy
 - Resume deferred staging credential smoke before production

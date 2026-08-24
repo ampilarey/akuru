@@ -237,6 +237,8 @@ Two levels, both behind a `VideoConferencingInterface` in Offerings (createMeeti
 
 Provider notes: Zoom = first implementation candidate (paid plan needed for cloud recording APIs, per-host licensing); **BigBlueButton** (education-focused, self-hosted, whiteboard/breakout rooms, the Moodle-ecosystem standard) and **Jitsi** (free, self-hosted) are swap-in alternatives — the interface makes the choice reversible. Engine and attendance must function fully in Level 1 mode if no provider is configured.
 
+**Pull-forward trigger (decision point, record an ADR if taken):** Level 2 is scheduled post-Phase 2 on the assumption that face-to-face/hybrid stays the primary delivery. If online cohorts become the main business before Phase 2 completes, the session → auto-attendance → recording loop becomes the daily heartbeat of the institute and Level 2 should be pulled forward ahead of other Phase 2 work. `VideoConferencingInterface` exists precisely so this reordering costs no rework — but the *decision* must be taken consciously, not discovered under load.
+
 ---
 
 ## 3. Table-by-Table Changes
@@ -296,6 +298,8 @@ Additionally (for §2a): `courses.course_type` (default `general`; `hifz` etc. b
 ## 4. Build Order
 
 **Build discipline (spec §57, applies to every phase):** vertical slices with tests included in each slice; update `STATUS.md` after every slice; record ADRs for major decisions (e.g. the multi-branch call); architecture tests run from Phase 0; **no future-phase implementation "while you're there"**; **no AI code anywhere in Phase 1A/1B**; teacher review precedes any AI; AI ships only after dataset → labeling → training → measured accuracy. Standing rule: every major listing screen ships with CSV/Excel export (§8.5).
+
+**Gates are mechanism, not prose (lesson of 2026-08):** the S1 rollout showed that gates written as instructions get skipped under momentum — a four-slice PR self-merged in two minutes with CI running only post-merge, and Deploy 2 shipped before its mandatory verification script ever ran. Therefore: `main` carries branch protection (required CI check pre-merge, no direct pushes, no bot self-merge); one slice per PR; and any spec-mandated verification script (`morph-map:verify`, `students:verify-unification`, and successors) must have its **captured output recorded in STATUS.md before the deploy it gates**, not after. A gate whose evidence isn't in STATUS.md has not run.
 
 ### Phase 0 — Foundation (no user-visible change)
 
@@ -409,6 +413,9 @@ After each phase, surface it in the Portal domain: one parent/student login show
 - **Never duplicate Quran source tables:** spec §52.16–52.17 must be implemented against the repo's existing `surahs`/`quran_ayahs`/`quran_words`/mushaf tables.
 - **AI is swappable infrastructure:** all pronunciation AI behind `Pronunciation` contracts + feature flags; engine and components must work fully with AI disabled (spec local/offline policy).
 - **Don't over-split domains early** (spec §41): start with the map above; split further only when a real boundary appears.
+- **Dual payment path is a standing risk until spec Phase 4.** The legacy BML checkout keeps taking real money while the engine matures alongside it — a long window in which enrollment/payment code has two read paths. Treat it like the Hifz-frozen rule: any slice touching enrollment or payment reads must verify **both** paths, and dual-written columns are switched by the 3-deploy rule only. The 2026-08 incidents (morph-map FQCN drift; Deploy 2 shipped before `students:verify-unification` ran) were both this class of bug — divergence between a legacy path and a new path that nothing was checking.
+- **Polymorphic columns store aliases, never FQCNs (ADR-005).** Every new morph column (e.g. `documents.documentable_type`) registers its aliases in `config/morph-map.php` **in the same slice** that creates it, and the map-completeness test must stay green. Pseudo-polymorphic string columns (`custom_field_values.entity_type`, `consents.person_type`, Commerce's future `purchasable_type`) reuse the same alias vocabulary — never a second naming scheme. `morph-map:verify` is a deploy gate. The `enforceMorphMap()` flip lands after production runs clean on the non-enforcing map.
+- **Community/engagement has a revisit trigger, not just a backlog slot:** when the first fully-online cohort completes (post-Phase 2), review forums/Q&A and light engagement mechanics against actual retention data. For online programs an interaction surface tends to matter sooner than institutes expect; the backlog placement (§8.3) is a deferral, not a dismissal.
 
 ---
 
@@ -447,7 +454,7 @@ Timetable + substitutions (exists), admissions + online application (exists), pa
 
 ### 8.3 Deferred backlog (no schema pain — bolt on later)
 
-Discussion forums / per-course Q&A; gamification & badges; bank-statement import & auto-matching; interactive in-class presentations (students answer live from phones); material sharing library between teachers (Phase 2 question bank partially covers this); student progress comparison analytics (class/subject/time); library module.
+Discussion forums / per-course Q&A and gamification & badges (**revisit trigger in §7 risk notes** — review when the first fully-online cohort completes); bank-statement import & auto-matching; interactive in-class presentations (students answer live from phones); material sharing library between teachers (Phase 2 question bank partially covers this); student progress comparison analytics (class/subject/time); library module.
 
 ### 8.4 Optional / likely skip for an institute (decide explicitly)
 
@@ -555,6 +562,8 @@ A reading, publishing, and digital-sales platform inside the same monolith, per 
 | **L7 — Research workflow** | reviewer role, review assignment, peer-review loop, citations; (DOI, journals, subscriptions, bundles, audiobooks = post-L7 backlog per plan §38) | L5 |
 
 Launch strategy per the plan: Akuru-owned content first → paid → invite trusted writers → gift cards/discounts → public writer applications → research. MVP = plan §46.
+
+**Hold rule (sharpens the pause-L-first principle):** the L-track holds at **L1–L2** (catalog + protected reader — real value, low risk, no financial liabilities) until **both** the S2 class-register loop and Phase 1B are live. L3+ introduces money; L4+ introduces stored-value liabilities and payout obligations (§9.4). Everything in S1–S5 and the engine serves the institute that exists today; L4–L6 serve a marketplace that might exist — they must earn their build slot with L1–L2 usage data, and L3 additionally requires the MMA stored-value ADR (§9.4) resolved **before** implementation starts, not before launch.
 
 ### 9.4 L-track risk notes
 
