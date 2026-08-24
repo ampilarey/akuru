@@ -391,6 +391,14 @@ After each phase, surface it in the Portal domain: one parent/student login show
 - Shared React layout shell with RTL/LTR switching (English, Dhivehi/Thaana, Arabic) — reuse existing mcamara localization.
 - PWA-ready from Phase 1B; keep platform abstraction (storage, recorder) per spec §6.4 for the later Capacitor wrap.
 
+### 5.1 One backend, audience-specific surfaces (decision)
+
+The platform presents **distinct experiences per audience** — public website (Website domain: promotion/info), student learning surface (Portal + course player, PWA), staff surfaces (teacher / supervisor / dean role dashboards — the pattern Hifz already ships), and short-course participants (same unified student record, lighter Portal view) — all as **role-scoped UIs of the one application**. Distinct entry subdomains or per-role PWA manifests are allowed cosmetic variations of the same app.
+
+**Separate codebases or backends per audience are rejected.** The same human crosses audiences constantly (a teacher who is a parent; an instructor who writes; a student who joins a short course), the platform's value is the shared loop (attendance → parent notification → dean dashboard → invoice), and a separate "participants" system would resurrect the exact `Student`/`RegistrationStudent` split S1 unified. Reversing this reverses ADR-001's single-platform premise and requires an ADR.
+
+**Reference:** `ampilarey/Bakeandgrill` demonstrates the same one-backend principle with separate SPA clients (`apps/pos-web`, `kds-web`, `delivery-web`, … against one Laravel `backend/` with the same Domains pattern). Its client split is driven by **hardware/runtime contexts** — an offline-capable till, an always-on kitchen screen, a driver's phone — not by audience org chart. Akuru adopts a B&G-style separate SPA client **only if a surface acquires device/offline constraints** (e.g. a classroom attendance kiosk, an offline-heavy mobile player beyond the 1B PWA), never per audience; the Portal-reads-contracts rule keeps that door open at no ongoing cost. The one partial exception is the public website frontend, which may diverge in stack/cadence while still reading course/seat data from the same backend.
+
 ## 6. Testing Gates (CI-blocking)
 
 | Gate | From |
@@ -415,6 +423,7 @@ After each phase, surface it in the Portal domain: one parent/student login show
 - **Don't over-split domains early** (spec §41): start with the map above; split further only when a real boundary appears.
 - **Dual payment path is a standing risk until spec Phase 4.** The legacy BML checkout keeps taking real money while the engine matures alongside it — a long window in which enrollment/payment code has two read paths. Treat it like the Hifz-frozen rule: any slice touching enrollment or payment reads must verify **both** paths, and dual-written columns are switched by the 3-deploy rule only. The 2026-08 incidents (morph-map FQCN drift; Deploy 2 shipped before `students:verify-unification` ran) were both this class of bug — divergence between a legacy path and a new path that nothing was checking.
 - **Polymorphic columns store aliases, never FQCNs (ADR-005).** Every new morph column (e.g. `documents.documentable_type`) registers its aliases in `config/morph-map.php` **in the same slice** that creates it, and the map-completeness test must stay green. Pseudo-polymorphic string columns (`custom_field_values.entity_type`, `consents.person_type`, Commerce's future `purchasable_type`) reuse the same alias vocabulary — never a second naming scheme. `morph-map:verify` is a deploy gate. The `enforceMorphMap()` flip lands after production runs clean on the non-enforcing map.
+- **No per-audience apps (§5.1):** audience separation is delivered as role-scoped surfaces of the one app; a separate client is justified only by device/offline constraints, and a separate backend never is. Proposals for "a student app" or "a teacher app" translate to Portal surfaces (or, at most, a §5.1 SPA client) — an actual split is ADR-level and reverses ADR-001.
 - **Community/engagement has a revisit trigger, not just a backlog slot:** when the first fully-online cohort completes (post-Phase 2), review forums/Q&A and light engagement mechanics against actual retention data. For online programs an interaction surface tends to matter sooner than institutes expect; the backlog placement (§8.3) is a deferral, not a dismissal.
 
 ---

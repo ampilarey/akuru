@@ -337,6 +337,10 @@ Post-S1 review of the plan folded into `docs/ROADMAP.md` + `CLAUDE.md`:
   online cohorts become primary before Phase 2.
 - **§9.3:** L-track hold sharpened — hold at L1–L2 until S2 register loop + Phase 1B
   are live; MMA stored-value ADR required before L3 implementation starts.
+- **§5.1 (2026-08-24 follow-up):** audience-surface decision recorded — one backend,
+  role-scoped surfaces per audience (student / teacher–supervisor–dean / participant /
+  public site); separate per-audience apps rejected; a separate SPA client is justified
+  only by device/offline constraints (Bakeandgrill pattern), never by audience.
 
 ## Next
 
