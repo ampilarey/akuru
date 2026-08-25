@@ -24,10 +24,12 @@ review. Range metadata (`surah_id`, ayah start/end) is validated
 through the A.1 reader. The learner player shows the passage. No new
 scoring engine. No Hifz UI change.
 
-## Slice A.3 — Offering / session mapping (planned)
+## Slice A.3 — Offering / session mapping (done)
 
 Map halaqa onto Offerings sessions without redesigning Hifz
-dashboards. Dual-write / switch / cleanup stays later.
+dashboards. `offering_halaqa_links` / `offering_halaqa_session_links`
+store integer Hifz ids (no FK, no dual-write). Labels come from
+`HalaqaReferenceReader`. See ADR-019.
 
 ## Slice A.4 — Dual-write / switch / cleanup (not started)
 

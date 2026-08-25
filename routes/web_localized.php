@@ -409,6 +409,8 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::get('offerings/{offering}/sessions/{session}/attendance', [OfferingSessionController::class, 'attendance'])->name('catalog.offerings.sessions.attendance')->whereNumber('offering')->whereNumber('session');
         Route::post('offerings/{offering}/sessions/{session}/attendance', [OfferingSessionController::class, 'mark'])->name('catalog.offerings.sessions.attendance.mark')->whereNumber('offering')->whereNumber('session');
         Route::post('offerings/{offering}/sessions/{session}/attendance/bulk', [OfferingSessionController::class, 'bulk'])->name('catalog.offerings.sessions.attendance.bulk')->whereNumber('offering')->whereNumber('session');
+        Route::post('offerings/{offering}/halaqa', [OfferingSessionController::class, 'storeHalaqa'])->name('catalog.offerings.halaqa.store')->whereNumber('offering');
+        Route::post('offerings/{offering}/sessions/{session}/halaqa', [OfferingSessionController::class, 'storeHalaqaSession'])->name('catalog.offerings.sessions.halaqa.store')->whereNumber('offering')->whereNumber('session');
         Route::get('quran/export', [CatalogQuranReferenceController::class, 'export'])->name('catalog.quran.export');
         Route::get('quran', [CatalogQuranReferenceController::class, 'index'])->name('catalog.quran.index');
         Route::get('arabic/reports', [CatalogArabicReportController::class, 'index'])->name('catalog.arabic.reports');
