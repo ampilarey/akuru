@@ -64,6 +64,8 @@ it('drops students.user_id foreign keys by live name and is a no-op when absent'
         $table->unsignedBigInteger('user_id')->nullable()->change();
     });
 
+    ForeignKeys::nullOrphans('students', 'user_id', 'users', 'id');
+
     if (! ForeignKeys::existsOnColumn('students', 'user_id')) {
         Schema::table('students', function (Blueprint $table) {
             $table->foreign('user_id')->references('id')->on('users')->nullOnDelete();
@@ -74,6 +76,27 @@ it('drops students.user_id foreign keys by live name and is a no-op when absent'
 
     expect($column['nullable'] ?? null)->toBeTrue()
         ->and(ForeignKeys::existsOnColumn('students', 'user_id'))->toBeTrue();
+});
+
+it('nulls orphan students.user_id values so the users FK can be added', function () {
+    $kept = makeStudent();
+    $orphan = makeStudent();
+
+    ForeignKeys::dropOnColumn('students', 'user_id');
+
+    DB::table('students')->where('id', $orphan->id)->update(['user_id' => 9_999_999]);
+
+    $cleared = ForeignKeys::nullOrphans('students', 'user_id', 'users', 'id');
+
+    expect($cleared)->toBe(1)
+        ->and(DB::table('students')->where('id', $orphan->id)->value('user_id'))->toBeNull()
+        ->and((int) DB::table('students')->where('id', $kept->id)->value('user_id'))->toBe((int) $kept->user_id);
+
+    Schema::table('students', function (Blueprint $table) {
+        $table->foreign('user_id')->references('id')->on('users')->nullOnDelete();
+    });
+
+    expect(ForeignKeys::existsOnColumn('students', 'user_id'))->toBeTrue();
 });
 
 it('matches a registration student by user_id and fills an empty passport', function () {

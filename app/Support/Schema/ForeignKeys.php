@@ -3,6 +3,7 @@
 namespace App\Support\Schema;
 
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 /**
@@ -33,6 +34,19 @@ final class ForeignKeys
     public static function existsOnColumn(string $table, string $column): bool
     {
         return self::namesOnColumn($table, $column) !== [];
+    }
+
+    /**
+     * Set $column to NULL where it does not match a parent row.
+     * Required before adding an FK on a live table that already has orphans
+     * (staging 2026-08-25: 1452 on students.user_id → users.id).
+     */
+    public static function nullOrphans(string $table, string $column, string $parentTable, string $parentColumn): int
+    {
+        return (int) DB::table($table)
+            ->whereNotNull($column)
+            ->whereNotIn($column, DB::table($parentTable)->select($parentColumn))
+            ->update([$column => null]);
     }
 
     /**

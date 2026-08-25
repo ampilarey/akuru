@@ -11,9 +11,11 @@ use Illuminate\Support\Facades\Schema;
  *
  * Central database/migrations/ — domain folders are still unwired. See ADR-007.
  *
- * Staging (test.akuru.edu.mv, 2026-08-25) has no `students_user_id_foreign`
- * even though school_id/class_id FKs exist — drop-by-conventional-name 1091s
- * and blocks every later migrate, including the 000003 backfill.
+ * Staging (test.akuru.edu.mv, 2026-08-25):
+ * - no `students_user_id_foreign` (drop-by-name 1091)
+ * - orphan `students.user_id` values (1452 when re-adding the FK)
+ * Both block 000003 backfill. Null orphans (S1.1b: a student may have no
+ * user), then add `nullOnDelete`.
  */
 return new class extends Migration
 {
@@ -24,6 +26,8 @@ return new class extends Migration
         Schema::table('students', function (Blueprint $table) {
             $table->unsignedBigInteger('user_id')->nullable()->change();
         });
+
+        ForeignKeys::nullOrphans('students', 'user_id', 'users', 'id');
 
         if (! ForeignKeys::existsOnColumn('students', 'user_id')) {
             Schema::table('students', function (Blueprint $table) {
