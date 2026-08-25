@@ -17,6 +17,7 @@ final class StudentUnificationReport
      * @param  array<string, mixed>  $guardians
      * @param  array<string, mixed>  $enrollments
      * @param  array{ok: bool, failures: list<string>}  $verification
+     * @param  array{national_id_unusable_skips: int, national_id_contradiction_fallthroughs: int}  $matcher
      */
     public function __construct(
         public array $mapped = [
@@ -47,6 +48,10 @@ final class StudentUnificationReport
         public array $verification = [
             'ok' => false,
             'failures' => [],
+        ],
+        public array $matcher = [
+            'national_id_unusable_skips' => 0,
+            'national_id_contradiction_fallthroughs' => 0,
         ],
         public ?string $generatedAt = null,
         public ?string $path = null,
@@ -90,6 +95,7 @@ final class StudentUnificationReport
             guardians: $payload['guardians'] ?? $empty->guardians,
             enrollments: $payload['enrollments'] ?? $empty->enrollments,
             verification: $payload['verification'] ?? $empty->verification,
+            matcher: $payload['matcher'] ?? $empty->matcher,
             generatedAt: $payload['generated_at'] ?? null,
             path: $payload['path'] ?? null,
         );
@@ -111,6 +117,7 @@ final class StudentUnificationReport
             'guardians' => $this->guardians,
             'enrollments' => $this->enrollments,
             'verification' => $this->verification,
+            'matcher' => $this->matcher,
         ];
     }
 
