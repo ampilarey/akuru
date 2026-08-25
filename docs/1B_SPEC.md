@@ -29,7 +29,12 @@ marked only for enrollments on that offering. Learner dashboard and
 course page list upcoming sessions. Distinct from Academics class
 attendance.
 
-## Slice 1B.4 — Remaining block types
+## Slice 1B.4 — Remaining block types (done)
+
+`glossary`/`term`, `dialogue`, `flashcard`, `download`, `quiz_embed`,
+and `assignment_embed`. Glossary is not Arabic-only. Download reuses
+private `media_id`. Quiz/assignment embeds store an id and/or https
+URL only — no quiz or assignment engines in this slice.
 
 ## Slice 1B.5 — Unlock + completion evaluators
 

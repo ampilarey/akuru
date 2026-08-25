@@ -56,7 +56,7 @@ it('accepts text, rich text, and instruction blocks and rejects unknown types', 
 
     expect(fn () => app(SaveContentBlockAction::class)->execute([
         'lesson_id' => $lesson->id,
-        'type' => 'flashcard',
+        'type' => 'rtl_text',
         'data' => ['body' => 'nope'],
     ]))->toThrow(ValidationException::class);
 

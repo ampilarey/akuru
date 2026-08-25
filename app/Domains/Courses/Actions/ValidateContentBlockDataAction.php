@@ -41,8 +41,15 @@ class ValidateContentBlockDataAction
             ],
             ContentBlockType::Image,
             ContentBlockType::Audio,
-            ContentBlockType::Pdf => $this->mediaPayload($blockType, $data),
+            ContentBlockType::Pdf,
+            ContentBlockType::Download => $this->mediaPayload($blockType, $data),
             ContentBlockType::Video => $this->videoPayload($data),
+            ContentBlockType::Glossary,
+            ContentBlockType::Term => $this->glossaryPayload($data),
+            ContentBlockType::Dialogue => $this->dialoguePayload($data),
+            ContentBlockType::Flashcard => $this->flashcardPayload($data),
+            ContentBlockType::QuizEmbed => $this->embedPayload($data, 'quiz_id'),
+            ContentBlockType::AssignmentEmbed => $this->embedPayload($data, 'assignment_id'),
         };
 
         if (in_array($blockType, [ContentBlockType::Text, ContentBlockType::RichText], true)
@@ -67,6 +74,131 @@ class ValidateContentBlockDataAction
             'data' => $clean,
             'settings' => ['direction' => $direction],
         ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     * @return array{entries: list<array{term: string, definition: string}>}
+     */
+    private function glossaryPayload(array $data): array
+    {
+        $entries = [];
+        $raw = $data['entries'] ?? null;
+        if (is_array($raw)) {
+            foreach ($raw as $row) {
+                if (! is_array($row)) {
+                    continue;
+                }
+                $term = trim((string) ($row['term'] ?? ''));
+                $definition = trim((string) ($row['definition'] ?? ''));
+                if ($term !== '' && $definition !== '') {
+                    $entries[] = ['term' => $term, 'definition' => $definition];
+                }
+            }
+        }
+
+        $term = trim((string) ($data['term'] ?? ''));
+        $definition = trim((string) ($data['definition'] ?? ''));
+        if ($term !== '' && $definition !== '') {
+            $entries[] = ['term' => $term, 'definition' => $definition];
+        }
+
+        if ($entries === []) {
+            throw ValidationException::withMessages([
+                'data' => 'Glossary and term blocks need at least one term and definition.',
+            ]);
+        }
+
+        return ['entries' => $entries];
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     * @return array{lines: list<array{speaker: string, text: string}>}
+     */
+    private function dialoguePayload(array $data): array
+    {
+        $lines = [];
+        foreach (is_array($data['lines'] ?? null) ? $data['lines'] : [] as $row) {
+            if (! is_array($row)) {
+                continue;
+            }
+            $speaker = trim((string) ($row['speaker'] ?? ''));
+            $text = trim((string) ($row['text'] ?? ''));
+            if ($speaker !== '' && $text !== '') {
+                $lines[] = ['speaker' => $speaker, 'text' => $text];
+            }
+        }
+        if ($lines === []) {
+            throw ValidationException::withMessages([
+                'data' => 'Dialogue blocks need at least one speaker line.',
+            ]);
+        }
+
+        return ['lines' => $lines];
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     * @return array{cards: list<array{front: string, back: string}>}
+     */
+    private function flashcardPayload(array $data): array
+    {
+        $cards = [];
+        foreach (is_array($data['cards'] ?? null) ? $data['cards'] : [] as $row) {
+            if (! is_array($row)) {
+                continue;
+            }
+            $front = trim((string) ($row['front'] ?? ''));
+            $back = trim((string) ($row['back'] ?? ''));
+            if ($front !== '' && $back !== '') {
+                $cards[] = ['front' => $front, 'back' => $back];
+            }
+        }
+        if ($cards === []) {
+            throw ValidationException::withMessages([
+                'data' => 'Flashcard blocks need at least one front and back.',
+            ]);
+        }
+
+        return ['cards' => $cards];
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     * @return array<string, mixed>
+     */
+    private function embedPayload(array $data, string $idKey): array
+    {
+        $id = isset($data[$idKey]) && $data[$idKey] !== '' ? (int) $data[$idKey] : 0;
+        $url = trim((string) ($data['url'] ?? $data['embed_url'] ?? ''));
+        $title = trim((string) ($data['title'] ?? ''));
+        if ($id < 1 && $url === '') {
+            throw ValidationException::withMessages([
+                'data' => 'Embed blocks need an id or a URL. Quiz and assignment engines are not built in this slice.',
+            ]);
+        }
+        if ($url !== '') {
+            $parts = parse_url($url);
+            if (($parts['scheme'] ?? '') !== 'https') {
+                throw ValidationException::withMessages([
+                    'data' => 'Embed URLs must use https.',
+                ]);
+            }
+        }
+
+        $payload = [];
+        if ($id > 0) {
+            $payload[$idKey] = $id;
+        }
+        if ($url !== '') {
+            $payload['url'] = $url;
+        }
+        if ($title !== '') {
+            $payload['title'] = $title;
+        }
+
+        return $payload;
     }
 
     /**

@@ -949,9 +949,16 @@ rate limiting, and the Inertia shell. No new 1A.1 code.
   enrollments. Learner dashboard/course page show upcoming sessions.
 - Offerings call Courses Actions for the roster (no model imports).
 
+## 1B.4 — Remaining block types (done)
+
+- `glossary` / `term`, `dialogue`, `flashcard`, `download`,
+  `quiz_embed`, `assignment_embed` on the engine outline and player.
+- Glossary is not Arabic-only. Download uses private media ids.
+- Quiz/assignment embeds are id/URL pointers only.
+
 ## Next
 
-1. 1B.4 — remaining block types.
+1. 1B.5 — unlock + completion evaluators.
 2. Operator: unify-verify / smoke / production (unchanged).
 3. Dual-write stays.
 4. S5 DoD remaining: month-in-the-life on real data, two parallel
