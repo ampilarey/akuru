@@ -47,7 +47,8 @@ export default function Index({ yearId, years, rooms, periods, bookings }) {
                         ...data,
                         start_time: data.period_id ? '' : data.start_time,
                         end_time: data.period_id ? '' : data.end_time,
-                    })).post('/academics/bookings', { preserveScroll: true });
+                    }));
+                    form.post('/academics/bookings', { preserveScroll: true });
                 }}
                 className="mb-4 grid gap-3 rounded-lg border bg-white p-4 md:grid-cols-4"
             >
