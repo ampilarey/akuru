@@ -8,6 +8,7 @@ use App\Domains\People\Models\ParentGuardian;
 use App\Domains\People\Models\RegistrationStudent;
 use App\Domains\People\Models\StaffProfile;
 use App\Domains\People\Models\Student;
+use Illuminate\Support\Facades\DB;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 
@@ -66,6 +67,18 @@ function makeRegistrationStudent(array $overrides = []): RegistrationStudent
         'dob' => '2012-03-01',
         'gender' => 'female',
     ], $overrides));
+}
+
+function attachLegacyGuardian(int $registrationStudentId, int $guardianUserId, array $pivot = []): int
+{
+    return DB::table('student_guardians')->insertGetId(array_merge([
+        'student_id' => $registrationStudentId,
+        'guardian_user_id' => $guardianUserId,
+        'relationship' => 'father',
+        'is_primary' => true,
+        'created_at' => now(),
+        'updated_at' => now(),
+    ], $pivot));
 }
 
 function actingPeopleAdmin(array $permissions = ['custom_fields.manage', 'students.view-sensitive']): User
