@@ -16,7 +16,10 @@ class CourseEnrollment extends Model
         'course_id',
         'term_id',
         'status',
+        'enrollment_type',
+        'progress_percentage',
         'enrolled_at',
+        'completed_at',
         'created_by_user_id',
         'payment_status',
         'payment_id',
@@ -26,6 +29,8 @@ class CourseEnrollment extends Model
     {
         return [
             'enrolled_at' => 'datetime',
+            'completed_at' => 'datetime',
+            'progress_percentage' => 'integer',
         ];
     }
 

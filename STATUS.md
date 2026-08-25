@@ -906,9 +906,17 @@ rate limiting, and the Inertia shell. No new 1A.1 code.
 - Video also accepts YouTube/Vimeo embeds. Authorized
   `GET /catalog/media/{id}` serves bytes. Player renders all four types.
 
+## 1A.6 — Self-learning enrollment + progress (done)
+
+- Free enroll on published courses via `/learn` (existing `course_enrollments`).
+- Progress domain owns `student_lesson_progress` with `lesson_revision_id`.
+- Access: staff, preview, or active enrollment. Next required lesson locks
+  until the previous is completed. Course % is required-lesson based.
+- Enrolled students can stream private media via `/learn/media/{id}`.
+
 ## Next
 
-1. 1A.6 — self-learning enrollment, student dashboard, progress.
+1. 1A.7 — parent-child polish + architecture tests.
 2. Operator: unify-verify / smoke / production (unchanged).
 3. Dual-write stays.
 4. S5 DoD remaining: month-in-the-life on real data, two parallel
