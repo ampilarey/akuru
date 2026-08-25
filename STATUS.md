@@ -767,7 +767,7 @@ anyway (same as S2.6–S2.10). S3.1 has **no student-keyed rows**.
   untouched. No exam_marks yet (S3.2+).
 - Pest: `GradingFoundationsTest` + morph + routes + architecture green.
 
-## S3.2 — Exams (this slice)
+## S3.2 — Exams (done)
 
 - `exams` + `exam_status_audits`. Calendar holiday/closure warn-block,
   same-class same-day cap (`exams_max_per_class_per_day`, default 1),
@@ -780,12 +780,24 @@ anyway (same as S2.6–S2.10). S3.1 has **no student-keyed rows**.
 - Portal `portal.exams` lists published exams for a guardian's children.
 - No `exam_marks` yet (S3.3). Hifz / Deploy 3 untouched.
 
+## S3.3 — Marks entry (done)
+
+- `exam_marks` unique per exam/student. Roster is `class_student` as of
+  `exam_date` (left-before excluded).
+- Marks ≤ max; absent/exempt mutually exclusive with a numeric mark.
+- ADR-013: absent counts as 0 unless `exams_exclude_absent` is on.
+- Permission: subject teacher (timetable class+subject) or
+  `exams.enter-any` / `exams.manage`. Entry only in marks_entry/review.
+- Grid + CSV import/export. Portal shows published marks.
+- Student-keyed writes coded; staging still blocked until unify-verify
+  is green.
+
 ## Next
 
-1. **S3.3 — Marks entry** (student-keyed `exam_marks`).
+1. **S3.4 — Term grades** (weighted gradebook + competencies).
 2. Operator: unify-verify / smoke / production (unchanged).
-3. Dual-write stays. S3.3+ writes `exam_marks` — still blocked on
-   staging until verify is green; coding continues.
+3. Dual-write stays. Staging student-keyed writes stay blocked until
+   verify is green; coding continues.
 
 **Operator (their side, unchanged):**
 

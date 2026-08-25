@@ -137,6 +137,10 @@ class LocalizedRouteNamesTest extends TestCase
             'exams.transition',
             'exams.export',
             'portal.exams',
+            'exams.marks.show',
+            'exams.marks.update',
+            'exams.marks.import',
+            'exams.marks.export',
         ];
 
         foreach ($names as $name) {

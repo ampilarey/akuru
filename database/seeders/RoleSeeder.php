@@ -140,6 +140,7 @@ class RoleSeeder extends Seeder
             'requests.submit',
             'requests.review',
             'exams.manage',
+            'exams.enter-any',
         ];
 
         foreach ($permissions as $permission) {
@@ -196,6 +197,7 @@ class RoleSeeder extends Seeder
             'requests.submit',
             'requests.review',
             'exams.manage',
+            'exams.enter-any',
             'manage_announcements',
             'view_announcements',
             'create_announcements',
@@ -230,6 +232,7 @@ class RoleSeeder extends Seeder
             'requests.submit',
             'requests.review',
             'exams.manage',
+            'exams.enter-any',
             'view_announcements',
             'view_reports',
             'view_hifz_programs',

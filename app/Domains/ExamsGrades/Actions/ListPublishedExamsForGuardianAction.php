@@ -42,18 +42,36 @@ class ListPublishedExamsForGuardianAction
             $query->select('subject_id')->from('exams')->whereIn('class_id', $classIds);
         })->pluck('name', 'id');
 
-        return Exam::query()
+        $exams = Exam::query()
             ->whereIn('class_id', $classIds)
             ->where('status', ExamStatus::Published)
             ->orderBy('exam_date')
-            ->get()
-            ->map(fn (Exam $exam) => [
+            ->get();
+
+        $markStudentId = $studentId ?? ($ids[0] ?? null);
+        $marks = $markStudentId === null
+            ? collect()
+            : DB::table('exam_marks')
+                ->whereIn('exam_id', $exams->pluck('id'))
+                ->where('student_id', $markStudentId)
+                ->get()
+                ->keyBy('exam_id');
+
+        return $exams->map(function (Exam $exam) use ($subjects, $marks) {
+            $mark = $marks[$exam->id] ?? null;
+
+            return [
                 'id' => $exam->id,
                 'name' => $exam->name,
                 'exam_date' => $exam->exam_date?->toDateString(),
                 'subject' => $subjects[$exam->subject_id] ?? null,
                 'max_marks' => $exam->max_marks,
                 'published_at' => $exam->published_at?->toDateTimeString(),
-            ]);
+                'marks' => $mark?->marks,
+                'is_absent' => (bool) ($mark?->is_absent ?? false),
+                'is_exempt' => (bool) ($mark?->is_exempt ?? false),
+                'remarks' => $mark?->remarks,
+            ];
+        });
     }
 }

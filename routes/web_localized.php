@@ -20,6 +20,7 @@ use App\Domains\Academics\Http\Controllers\TimetableBuilderController;
 use App\Domains\Academics\Legacy\Http\Controllers\ELearningController;
 use App\Domains\Admissions\Http\Controllers\AdminEnrollmentController;
 use App\Domains\ExamsGrades\Http\Controllers\ExamController;
+use App\Domains\ExamsGrades\Http\Controllers\ExamMarkController;
 use App\Domains\ExamsGrades\Http\Controllers\ExamTypeController;
 use App\Domains\ExamsGrades\Http\Controllers\GradeScaleController;
 use App\Domains\ExamsGrades\Http\Controllers\WeightSchemeController;
@@ -65,6 +66,11 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
     Route::get('/portal/absence-notes', [PortalAbsenceNoteController::class, 'index'])->name('portal.absence-notes');
     Route::post('/portal/absence-notes', [PortalAbsenceNoteController::class, 'store'])->name('portal.absence-notes.store');
     Route::get('/portal/exams', [PortalExamController::class, 'index'])->name('portal.exams');
+
+    Route::get('exams/{exam}/marks/export', [ExamMarkController::class, 'export'])->name('exams.marks.export');
+    Route::get('exams/{exam}/marks', [ExamMarkController::class, 'show'])->name('exams.marks.show');
+    Route::put('exams/{exam}/marks', [ExamMarkController::class, 'update'])->name('exams.marks.update');
+    Route::post('exams/{exam}/marks/import', [ExamMarkController::class, 'import'])->name('exams.marks.import');
 
     Route::get('academics/registers/today', [TeacherRegisterController::class, 'today'])->name('academics.registers.today');
     Route::get('academics/registers/export', [RegisterReportController::class, 'export'])->name('academics.registers.export');

@@ -172,6 +172,7 @@ function ExamRow({ exam, statuses }) {
                     {form.data.status !== exam.status && exam.status === 'locked' && (
                         <input className="form-input" placeholder="Unlock reason" value={form.data.reason} onChange={(e) => form.setData('reason', e.target.value)} />
                     )}
+                    <a className="btn-secondary" href={`/exams/${exam.id}/marks`}>Marks</a>
                     <button
                         type="button"
                         className="btn-secondary"
