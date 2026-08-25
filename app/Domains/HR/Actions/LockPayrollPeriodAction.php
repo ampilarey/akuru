@@ -10,6 +10,8 @@ class LockPayrollPeriodAction
 {
     public function execute(int $periodId): PayrollPeriod
     {
+        app(ResolvePayrollSettingsAction::class)->assertEnabled();
+
         $period = PayrollPeriod::query()->findOrFail($periodId);
 
         if (! in_array($period->status, [PayrollPeriodStatus::Approved, PayrollPeriodStatus::Paid], true)) {

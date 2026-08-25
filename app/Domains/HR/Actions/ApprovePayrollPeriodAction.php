@@ -13,6 +13,8 @@ class ApprovePayrollPeriodAction
 {
     public function execute(int $periodId, int $approvedBy): PayrollPeriod
     {
+        app(ResolvePayrollSettingsAction::class)->assertEnabled();
+
         $period = PayrollPeriod::query()->findOrFail($periodId);
 
         if ($period->status !== PayrollPeriodStatus::Review) {

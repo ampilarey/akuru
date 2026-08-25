@@ -1156,6 +1156,24 @@ rate limiting, and the Inertia shell. No new 1A.1 code.
 - Pest: `tests/Feature/People/ClearNonAdminUsersTest.php` (no leftover
   pivot rows). Merged #72.
 
+### A2 — UnifyStudentsAction national_id matcher (done)
+
+- **Defect:** staging RS 22 matched the wrong `students` row by `national_id`
+  while name+dob identified the right one. ADR-007 previously let the first
+  method with any candidates win.
+- `national_id` is now **unusable** (fall through to name+dob) when blank,
+  duplicated across `registration_students` or `students`, or in
+  `config/unification.php` placeholders (extend via
+  `UNIFICATION_NATIONAL_ID_PLACEHOLDERS`).
+- Unique `national_id` + name+dob **contradiction**: do not attach the ID
+  hit; fall through to name+dob. RS-22-shaped rows match the name+dob
+  student. If name+dob is not unique, record ambiguous and do not create.
+- Orphan `student_guardians` (missing `guardian_user_id`) are reported,
+  never invented as `parent_guardians`.
+- ADR-007 amended; supersedes `docs/S1_SPEC.md` line 49 match order.
+- Pest cases in `UnifiedStudentBackfillTest`. Dual-write matcher untouched.
+  Merged #73.
+
 ### A3 — Production-copy verify procedure (docs shipped; gate **not** green)
 
 - S1_SPEC line 147 requires `students:verify-unification` on a
@@ -1172,16 +1190,26 @@ rate limiting, and the Inertia shell. No new 1A.1 code.
   verbatim stdout in STATUS. **TRACK B stays blocked.** No dump is
   obtainable in this environment.
 
+### A5 — Real `config/payroll.php` feature flag (done)
+
+- Flag was only a `settings` row (`payroll.enabled` = `'0'`).
+  `config/payroll.php` did not exist.
+- `PAYROLL_ENABLED` (default **false**) AND the settings row must both be
+  true. `ResolvePayrollSettingsAction` implements the AND.
+  `assertEnabled()` gates **every write path**: run, approve, pay, lock.
+- Pest: `enablePayroll()` sets both; write actions are inert when off.
+- Payroll stays off until two parallel cycles match (operator). Merged #76.
+
 ## Next
 
-**TRACK A remaining:** A2 matcher (#73), A4 branch protection on `main`
-(operator; bot 403), A5 payroll flag (#76). A3 procedure is written; the
-verify **gate** is not green (no production dump). **Do not start TRACK B.**
-No `--backfill` on production. No Hifz cutover.
+**TRACK A remaining:** A4 branch protection on `main` (operator; bot 403).
+A3 procedure is written; the verify **gate** is not green (no production
+dump). **Do not start TRACK B.** No `--backfill` on production. No Hifz
+cutover.
 
 **Operator:** provide a production mysqldump and run
 `docs/migrations/restore-production-copy.md`. Apply branch protection.
-`unify-verify` still red on staging.
+`unify-verify` still red on staging. `PAYROLL_ENABLED` / settings stay off.
 
 **Qur'an A.4b (later):** switch offering-session reads to `offering_halaqa_session_links` after operators confirm dual-write. Then Hifz cleanup (deploy 3). Keep `QURAN_HALAQA_DUAL_WRITE` off until verified.
 
