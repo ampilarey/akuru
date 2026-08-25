@@ -2,10 +2,12 @@
 
 namespace App\Domains\Academics\Models;
 
+use App\Domains\Academics\Enums\LessonLogStatus;
 use App\Domains\People\Models\Teacher;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class LessonLog extends Model
 {
@@ -15,6 +17,13 @@ class LessonLog extends Model
         'teacher_id',
         'subject_id',
         'classroom_id',
+        'academic_year_id',
+        'term_id',
+        'timetable_id',
+        'status',
+        'submitted_at',
+        'locked_at',
+        'unlocked_until',
         'date',
         'period_id',
         'plan_topic_id',
@@ -31,6 +40,10 @@ class LessonLog extends Model
     protected $casts = [
         'date' => 'date',
         'materials' => 'array',
+        'status' => LessonLogStatus::class,
+        'submitted_at' => 'datetime',
+        'locked_at' => 'datetime',
+        'unlocked_until' => 'datetime',
     ];
 
     /**
@@ -71,6 +84,26 @@ class LessonLog extends Model
     public function planTopic(): BelongsTo
     {
         return $this->belongsTo(PlanTopic::class);
+    }
+
+    public function academicYear(): BelongsTo
+    {
+        return $this->belongsTo(AcademicYear::class);
+    }
+
+    public function term(): BelongsTo
+    {
+        return $this->belongsTo(Term::class);
+    }
+
+    public function timetable(): BelongsTo
+    {
+        return $this->belongsTo(Timetable::class);
+    }
+
+    public function unlocks(): HasMany
+    {
+        return $this->hasMany(RegisterUnlock::class);
     }
 
     /**

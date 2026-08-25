@@ -514,37 +514,29 @@ conflict engine is **S2.2**.
 - **No** `GenerateExpectedRegistersAction`. No student-keyed writes.
 - Morph alias `calendar_day`. Hifz / Deploy 3 untouched.
 
+## S2.6 — Class register loop (coding; staging verify still operator-side)
+
+Operator still owns staging `students:verify-unification` paste + JSON
+under `docs/migrations/`, branch protection, credential smoke, and
+production. Coding continues without waiting on that evidence.
+
+- Additive `course_plans.academic_year_id` / `term_id` (legacy year string
+  kept; backfill by name). `CopyPlanAction` resets `is_completed`.
+- Additive `lesson_logs` year/term/`timetable_id`/status
+  (`expected|draft|submitted|locked`) + lock timestamps.
+  `taught_summary` nullable so expected rows can exist empty.
+- `GenerateExpectedRegistersAction` (nightly + on-demand): timetable slots
+  on school days; skips `calendar_days.affects_timetable`; idempotent.
+- Teacher Today + mobile-first register entry (topic or free text). **No**
+  attendance grid (S2.7). Admin unfilled report + fill rate + plan
+  adherence + CSV. Lock after `register_lock_days` (default 7); admin
+  unlock writes `register_unlocks`.
+- Permissions `registers.fill` / `registers.manage`. Morph `register_unlock`.
+- Hifz / Deploy 3 / dual-write untouched.
+
 ## Next
 
-<<<<<<< HEAD
-1. S2.6–S2.10 stay **blocked** until `students:verify-unification` is green
-   on staging (register loop, attendance, absence notes, behavior, requests).
-2. **S2.0–S2.5** PRs still open — merge when CI is green; then **S2.0b** so
-   staging runs the unification gate.
-3. Every S2 PR: wait for CI green; **do not self-merge**. Production: nothing
-   until credential smoke is recorded.
+1. Operator: paste staging `students:verify-unification` log + JSON.
+2. **S2.7** class attendance writer + SMS. Then S2.8–S2.10.
+3. Production: nothing until credential smoke is recorded.
 4. **S1.1 Deploy 3** still ≥2 weeks after `2f8a90b`. Dual-write stays.
-=======
-<<<<<<< HEAD
-1. **S2.5** — `calendar_days` CRUD + portal/public holiday read (safe).
-2. **S2.0 / S2.1 / S2.2 / S2.3** PRs still open — merge when CI is green; then
-=======
-<<<<<<< HEAD
-1. **S2.4** — `room_bookings` + clash vs timetable (safe under deferral).
-2. **S2.0 / S2.1 / S2.2** PRs still open — merge when CI is green; then
->>>>>>> origin/main
-   **S2.0b** so staging runs `students:verify-unification`.
-=======
-<<<<<<< HEAD
-1. **S2.3** — React timetable builder (safe under deferral).
-2. **S2.0 / S2.1** PRs still open — merge when CI is green; then **S2.0b**
-   so staging runs `students:verify-unification`.
-=======
-1. **S2.2** — timetable v2 + `TimetableConflictChecker` (safe under deferral).
-2. **S2.0b** trivial docs so staging actually runs `students:verify-unification`.
->>>>>>> origin/main
->>>>>>> origin/main
-3. S2.6–S2.10 stay **blocked** until verify is green on staging.
-4. Production: nothing until credential smoke is recorded.
-5. **S1.1 Deploy 3** still ≥2 weeks after `2f8a90b`. Dual-write stays.
->>>>>>> origin/main

@@ -4,10 +4,13 @@ use App\Domains\Academics\Http\Controllers\AcademicYearController;
 use App\Domains\Academics\Http\Controllers\AnnouncementController;
 use App\Domains\Academics\Http\Controllers\CalendarDayController;
 use App\Domains\Academics\Http\Controllers\ClassDirectoryController;
+use App\Domains\Academics\Http\Controllers\CoursePlanController;
 use App\Domains\Academics\Http\Controllers\PromotionController;
+use App\Domains\Academics\Http\Controllers\RegisterReportController;
 use App\Domains\Academics\Http\Controllers\RoomBookingController;
 use App\Domains\Academics\Http\Controllers\RoomDirectoryController;
 use App\Domains\Academics\Http\Controllers\SubstitutionRequestController;
+use App\Domains\Academics\Http\Controllers\TeacherRegisterController;
 use App\Domains\Academics\Http\Controllers\TimetableBuilderController;
 use App\Domains\Academics\Legacy\Http\Controllers\ELearningController;
 use App\Domains\Admissions\Http\Controllers\AdminEnrollmentController;
@@ -44,6 +47,19 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
     Route::get('/enhanced-dashboard', [EnhancedDashboardController::class, 'index'])->name('enhanced.dashboard');
     Route::get('/portal/children', [GuardianChildrenController::class, 'index'])->name('portal.children');
     Route::get('/portal/holidays', [PortalHolidayController::class, 'index'])->name('portal.holidays');
+
+    Route::get('academics/registers/today', [TeacherRegisterController::class, 'today'])->name('academics.registers.today');
+    Route::get('academics/registers/export', [RegisterReportController::class, 'export'])->name('academics.registers.export');
+    Route::post('academics/registers/generate', [RegisterReportController::class, 'generate'])->name('academics.registers.generate');
+    Route::get('academics/registers', [RegisterReportController::class, 'index'])->name('academics.registers.index');
+    Route::get('academics/registers/{lessonLog}', [TeacherRegisterController::class, 'show'])->name('academics.registers.show');
+    Route::put('academics/registers/{lessonLog}', [TeacherRegisterController::class, 'update'])->name('academics.registers.update');
+    Route::post('academics/registers/{lessonLog}/unlock', [RegisterReportController::class, 'unlock'])->name('academics.registers.unlock');
+
+    Route::get('academics/plans', [CoursePlanController::class, 'index'])->name('academics.plans.index');
+    Route::post('academics/plans', [CoursePlanController::class, 'store'])->name('academics.plans.store');
+    Route::post('academics/plans/{coursePlan}/topics', [CoursePlanController::class, 'storeTopic'])->name('academics.plans.topics.store');
+    Route::post('academics/plans/{coursePlan}/copy', [CoursePlanController::class, 'copy'])->name('academics.plans.copy');
 
     // Student routes
     Route::resource('students', StudentController::class);

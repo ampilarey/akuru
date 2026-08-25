@@ -76,6 +76,7 @@ return [
     'quran_word' => \App\Domains\Hifz\Models\QuranWord::class,
     'quran_word_position' => \App\Domains\Hifz\Models\QuranWordPosition::class,
     'recitation_practice' => \App\Domains\Hifz\Models\RecitationPractice::class,
+    'register_unlock' => \App\Domains\Academics\Models\RegisterUnlock::class,
     'registration_flow' => \App\Domains\Admissions\Models\RegistrationFlow::class,
     'registration_student' => \App\Domains\People\Models\RegistrationStudent::class,
     'report' => \App\Domains\Settings\Models\Report::class,

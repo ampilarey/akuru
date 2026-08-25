@@ -16,3 +16,6 @@ Schedule::command('akuru:prune-expired')->hourly();
 
 // Scheduler heartbeat — used to verify cron is running
 Schedule::command('akuru:scheduler-heartbeat')->everyMinute();
+
+Schedule::command('registers:generate-expected')->dailyAt('01:15');
+Schedule::command('registers:lock-overdue')->dailyAt('01:30');
