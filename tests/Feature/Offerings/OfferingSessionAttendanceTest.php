@@ -148,7 +148,7 @@ it('renders session and attendance screens and exports csv', function () {
         ])
         ->assertRedirect(route('catalog.offerings.sessions.attendance', [$offering, $session]));
 
-    expect(AttendanceRecord::query()->value('status'))->toBe(AttendanceStatus::Late->value);
+    expect(AttendanceRecord::query()->first()?->status)->toBe(AttendanceStatus::Late);
 
     $csv = $this->withoutLocalizationMiddleware()
         ->actingAs($admin)
