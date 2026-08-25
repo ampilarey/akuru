@@ -33,10 +33,28 @@ column has a single slot.
    `ChangeStudentStatusAction` / history row). Orphan nulling is not
    reversible (`down()` cannot restore deleted user ids).
 
-2. **Match order (no extra heuristics):** (a) `user_id`, else (b) decrypted
-   `national_id`, else (c) exact first + last + dob. Empty keys are skipped.
-   The first method that yields candidates wins. `>1` candidate → ambiguous,
-   listed, not linked, no fallthrough.
+2. **Match order** (supersedes `docs/S1_SPEC.md` Deploy 1 step 1 / line 49):
+   (a) `user_id`, else (b) decrypted `national_id`, else (c) exact first + last
+   + dob. Empty keys are skipped. The first method that yields **usable**
+   candidates wins. `>1` candidate → ambiguous, listed, not linked, no
+   fallthrough.
+
+   **`national_id` is unusable** (treated as empty; fall through to name+dob)
+   when it is blank/whitespace, a **placeholder** from
+   `config/unification.php` (`national_id_placeholders`, case-insensitive;
+   operators may append via `UNIFICATION_NATIONAL_ID_PLACEHOLDERS`), or the
+   same normalized value appears on **more than one** `registration_students`
+   row or **more than one** `students` row. Duplicate IDs are test-data and
+   live-data noise; they must not win over name+dob.
+
+   **Contradiction falls through to name+dob, then stops:** if a *usable*
+   `national_id` matches exactly one student but that student's first+last+dob
+   does **not** match the RS (complete name+dob key), **do not** link the ID
+   hit. Continue to name+dob. A unique name+dob candidate is the match
+   (staging RS 22: ID pointed at student 8, name+dob at student 5 — attach 5).
+   If name+dob is empty or ambiguous after that skip, record **ambiguous**
+   (`reason: name_dob_contradiction`) and do **not** create a new student.
+   Corroboration beats any single field. Collisions stay unguessed.
 
 3. **Collision:** first RS to claim a student wins `legacy_registration_student_id`.
    A later RS that matches the same student is unresolved. The column is
