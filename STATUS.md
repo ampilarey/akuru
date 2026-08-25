@@ -914,9 +914,18 @@ rate limiting, and the Inertia shell. No new 1A.1 code.
   until the previous is completed. Course % is required-lesson based.
 - Enrolled students can stream private media via `/learn/media/{id}`.
 
+## 1A.7 — Parent-child polish + architecture tests (done)
+
+- ADR-018: People answers guardian access via Actions, not model imports.
+- Additive `guardian_student` consent/verification fields.
+- `/portal/learning` is read-only child progress. Player stays
+  staff/student/preview.
+- `learn` lang files (EN/DV/AR). Admin i18n preview. Logical CSS on 1A
+  listings. Phase 1A boundary architecture tests.
+
 ## Next
 
-1. 1A.7 — parent-child polish + architecture tests.
+1. Phase 1B — offerings, delivery modes, remaining blocks, PWA/i18n.
 2. Operator: unify-verify / smoke / production (unchanged).
 3. Dual-write stays.
 4. S5 DoD remaining: month-in-the-life on real data, two parallel

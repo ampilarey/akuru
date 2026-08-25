@@ -46,6 +46,13 @@ Progress (`student_lesson_progress`) and always stores `lesson_revision_id`.
 Player access: staff, preview, or active enrollment. Sequential unlock for
 required published lessons. Course % = completed required / total required.
 
-## Slice 1A.7 — Parent-child polish + architecture tests
+## Slice 1A.7 — Parent-child polish + architecture tests (done)
+
+People owns access (`GuardianCanAccessStudentAction`, ADR-018). Additive
+consent/verification columns on `guardian_student`. Guardians see
+read-only child progress at `/portal/learning` and cannot complete
+lessons as the child. Learn strings are localized (EN complete; DV/AR
+scaffolded). Admin `/catalog/i18n-preview` checks LTR/RTL samples.
+Architecture tests lock Courses/Progress model imports.
 
 **Out of scope until later slices/phases:** offerings, delivery modes, remaining block types, certificates, payments, Arabic, Hifz, AI.

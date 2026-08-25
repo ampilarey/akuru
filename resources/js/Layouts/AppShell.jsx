@@ -1,7 +1,7 @@
 import { Link, usePage } from '@inertiajs/react';
 
 export default function AppShell({ title, children }) {
-    const { locale, rtl, auth, flash } = usePage().props;
+    const { locale, rtl, auth, flash, i18n } = usePage().props;
     const user = auth?.user;
 
     return (
@@ -14,7 +14,10 @@ export default function AppShell({ title, children }) {
                     </div>
                     <nav className="flex flex-wrap items-center gap-3 text-sm">
                         <Link href="/learn" className="text-[#7C2D37] hover:underline">
-                            Learn
+                            {i18n?.learn?.nav || 'Learn'}
+                        </Link>
+                        <Link href="/portal/learning" className="text-[#7C2D37] hover:underline">
+                            {i18n?.learn?.children_learning || 'Children'}
                         </Link>
                         <Link href="/catalog/courses" className="text-[#7C2D37] hover:underline">
                             Catalog
