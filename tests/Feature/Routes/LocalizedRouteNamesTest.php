@@ -251,6 +251,8 @@ class LocalizedRouteNamesTest extends TestCase
             'catalog.courses.activities.export',
             'catalog.arabic.reports',
             'learn.arabic-report',
+            'catalog.quran.index',
+            'catalog.quran.export',
             'catalog.arabic.index',
             'catalog.arabic.export',
             'catalog.arabic.letters.store',
