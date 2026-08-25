@@ -6,6 +6,8 @@ use App\Domains\Offerings\Actions\BulkMarkOfferingAttendanceAction;
 use App\Domains\Offerings\Actions\ListOfferingSessionsAction;
 use App\Domains\Offerings\Actions\ListSessionAttendanceAction;
 use App\Domains\Offerings\Actions\RecordOfferingAttendanceAction;
+use App\Domains\Offerings\Actions\SaveOfferingHalaqaLinkAction;
+use App\Domains\Offerings\Actions\SaveOfferingHalaqaSessionLinkAction;
 use App\Domains\Offerings\Actions\SaveOfferingSessionAction;
 use App\Domains\Offerings\Models\CourseOfferingSession;
 use App\Http\Controllers\Controller;
@@ -64,6 +66,35 @@ class OfferingSessionController extends Controller
         ], $model);
 
         return redirect()->route('catalog.offerings.sessions.index', $offering)->with('success', 'Session updated.');
+    }
+
+    public function storeHalaqa(Request $request, int $offering): RedirectResponse
+    {
+        abort_unless($request->user()?->can('courses.manage'), 403);
+        $data = $request->validate([
+            'hifz_program_id' => ['required', 'integer'],
+        ]);
+        app(SaveOfferingHalaqaLinkAction::class)->execute($data + [
+            'course_offering_id' => $offering,
+        ]);
+
+        return redirect()->route('catalog.offerings.sessions.index', $offering)
+            ->with('success', 'Halaqa program linked.');
+    }
+
+    public function storeHalaqaSession(Request $request, int $offering, int $session): RedirectResponse
+    {
+        abort_unless($request->user()?->can('courses.manage'), 403);
+        CourseOfferingSession::query()->where('course_offering_id', $offering)->findOrFail($session);
+        $data = $request->validate([
+            'hifz_session_id' => ['required', 'integer'],
+        ]);
+        app(SaveOfferingHalaqaSessionLinkAction::class)->execute($data + [
+            'course_offering_session_id' => $session,
+        ]);
+
+        return redirect()->route('catalog.offerings.sessions.index', $offering)
+            ->with('success', 'Halaqa session linked.');
     }
 
     public function attendance(Request $request, int $offering, int $session): Response

@@ -1054,9 +1054,16 @@ rate limiting, and the Inertia shell. No new 1A.1 code.
 - Learner player shows the passage. 2.4 review still scores it.
 - No Hifz dashboard, assignment table, or scoring change.
 
+## Qur’an A.3 — Offering / session mapping (done)
+
+- Offerings mapping tables with integer Hifz ids (no FK).
+- Catalog session screen can link a program and map sessions.
+- Hifz dashboards, scoring, and tables are not written.
+- ADR-019. Dual-write / switch stays later.
+
 ## Next
 
-1. Qur’an A.3 — offering/session mapping for halaqa (no dashboard redesign).
+1. Qur’an A.4 — dual-write / switch / cleanup only after mapping is agreed.
 2. Operator: unify-verify / smoke / production (unchanged).
 3. Dual-write stays.
 4. S5 DoD remaining: month-in-the-life on real data, two parallel

@@ -288,6 +288,8 @@ class LocalizedRouteNamesTest extends TestCase
             'catalog.offerings.sessions.attendance',
             'catalog.offerings.sessions.attendance.mark',
             'catalog.offerings.sessions.attendance.bulk',
+            'catalog.offerings.halaqa.store',
+            'catalog.offerings.sessions.halaqa.store',
         ];
 
         foreach ($names as $name) {
