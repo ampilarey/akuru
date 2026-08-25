@@ -230,6 +230,7 @@ class LocalizedRouteNamesTest extends TestCase
             'catalog.courses.blocks.destroy',
             'catalog.courses.lessons.publish',
             'catalog.player.show',
+            'catalog.media.show',
         ];
 
         foreach ($names as $name) {

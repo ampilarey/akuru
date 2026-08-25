@@ -72,6 +72,7 @@ return [
     'lesson_revision' => \App\Domains\Courses\Models\LessonRevision::class,
     'lesson_log' => \App\Domains\Academics\Models\LessonLog::class,
     'lesson_observation' => \App\Domains\HR\Models\LessonObservation::class,
+    'media_file' => \App\Domains\Media\Models\MediaFile::class,
     'media_gallery' => \App\Domains\Media\Models\MediaGallery::class,
     'media_item' => \App\Domains\Media\Models\MediaItem::class,
     'message' => \App\Domains\Notifications\Models\Message::class,

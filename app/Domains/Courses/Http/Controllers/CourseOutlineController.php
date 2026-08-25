@@ -9,6 +9,8 @@ use App\Domains\Courses\Actions\ReorderContentBlocksAction;
 use App\Domains\Courses\Actions\SaveContentBlockAction;
 use App\Domains\Courses\Actions\SaveCourseModuleAction;
 use App\Domains\Courses\Actions\SaveLessonAction;
+use App\Domains\Courses\Actions\StoreMediaContentBlockAction;
+use App\Domains\Courses\Enums\ContentBlockType;
 use App\Domains\Courses\Models\ContentBlock;
 use App\Domains\Courses\Models\Course;
 use App\Domains\Courses\Models\Lesson;
@@ -61,18 +63,32 @@ class CourseOutlineController extends Controller
             'html' => ['nullable', 'string'],
             'tone' => ['nullable', 'string'],
             'direction' => ['nullable', 'string', 'in:ltr,rtl,auto'],
+            'embed_url' => ['nullable', 'string', 'max:500'],
+            'file' => ['nullable', 'file', 'max:51200'],
         ]);
-        app(SaveContentBlockAction::class)->execute([
-            'lesson_id' => $data['lesson_id'],
-            'type' => $data['type'],
-            'data' => [
-                'body' => $data['body'] ?? '',
-                'html' => $data['html'] ?? $data['body'] ?? '',
-                'tone' => $data['tone'] ?? 'note',
-            ],
-            'settings' => ['direction' => $data['direction'] ?? 'auto'],
-            'created_by' => $request->user()?->id,
-        ]);
+        $blockType = ContentBlockType::tryFrom($data['type']);
+        if ($blockType?->isMedia()) {
+            app(StoreMediaContentBlockAction::class)->execute([
+                'lesson_id' => $data['lesson_id'],
+                'type' => $data['type'],
+                'file' => $request->file('file'),
+                'embed_url' => $data['embed_url'] ?? null,
+                'settings' => ['direction' => $data['direction'] ?? 'auto'],
+                'created_by' => $request->user()?->id,
+            ]);
+        } else {
+            app(SaveContentBlockAction::class)->execute([
+                'lesson_id' => $data['lesson_id'],
+                'type' => $data['type'],
+                'data' => [
+                    'body' => $data['body'] ?? '',
+                    'html' => $data['html'] ?? $data['body'] ?? '',
+                    'tone' => $data['tone'] ?? 'note',
+                ],
+                'settings' => ['direction' => $data['direction'] ?? 'auto'],
+                'created_by' => $request->user()?->id,
+            ]);
+        }
 
         return redirect()->route('catalog.courses.outline', $course)->with('success', 'Block saved.');
     }

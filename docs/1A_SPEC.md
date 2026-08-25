@@ -30,7 +30,13 @@ Validated `text`, `rich_text`, and `instruction` only. Direction is a
 block setting (`ltr`/`rtl`/`auto`), not a block type. Media types are
 rejected until 1A.5. Player renders the published snapshot.
 
-## Slice 1A.5 — Media pipeline + image/audio/video/PDF blocks
+## Slice 1A.5 — Media pipeline + image/audio/video/PDF blocks (done)
+
+Private `media_files` on the local disk. Uploads go through Media
+`StorePrivateMediaAction` + queued `ProcessMediaFileJob`. Block data
+is `{media_id, mime, original_name}` (or a YouTube/Vimeo `embed_url`
+for video). Files are served only via authorized `/catalog/media/{id}`.
+No public `storage/` URLs.
 
 ## Slice 1A.6 — Self-learning enrollment, student dashboard, progress
 

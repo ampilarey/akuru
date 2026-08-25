@@ -18,6 +18,7 @@ class LessonPlayerController extends Controller
 
         return Inertia::render('Courses/Player/Show', [
             'snapshot' => $snapshot,
+            'mediaShowUrl' => '/catalog/media',
         ]);
     }
 }
