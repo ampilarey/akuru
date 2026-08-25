@@ -8,6 +8,7 @@ use App\Domains\ExamsGrades\Enums\ReportCardCommentType;
 use App\Domains\ExamsGrades\Models\CompetencyAssessment;
 use App\Domains\ExamsGrades\Models\ReportCard;
 use App\Domains\ExamsGrades\Models\ReportCardTemplate;
+use App\Domains\ExamsGrades\Models\StudentAward;
 use App\Domains\ExamsGrades\Models\TermGrade;
 use Illuminate\Support\Facades\DB;
 
@@ -109,7 +110,20 @@ class AssembleReportCardDataAction
                 'class_teacher' => $this->commentText($comments[ReportCardCommentType::ClassTeacher->value] ?? null, $locale),
                 'head' => $this->commentText($comments[ReportCardCommentType::Head->value] ?? null, $locale),
             ],
-            'awards' => [],
+            'awards' => StudentAward::query()
+                ->with('award')
+                ->where('student_id', $card->student_id)
+                ->where('academic_year_id', $year->id ?? 0)
+                ->when($card->term_id, fn ($query) => $query->where(function ($inner) use ($card): void {
+                    $inner->whereNull('term_id')->orWhere('term_id', $card->term_id);
+                }))
+                ->get()
+                ->map(fn (StudentAward $row) => [
+                    'title' => $row->award?->title,
+                    'date' => $row->awarded_date?->toDateString(),
+                ])
+                ->values()
+                ->all(),
         ];
     }
 

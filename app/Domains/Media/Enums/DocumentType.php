@@ -10,5 +10,8 @@ enum DocumentType: string
     case Photo = 'photo';
     case ReportCard = 'report_card';
     case Transcript = 'transcript';
+    case AwardCertificate = 'award_certificate';
+    case IdCard = 'id_card';
+    case TransferCertificate = 'transfer_certificate';
     case Other = 'other';
 }

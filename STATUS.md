@@ -824,12 +824,24 @@ anyway (same as S2.6–S2.10). S3.1 has **no student-keyed rows**.
   optional GPA). Regeneration until published.
 - Admin unpublished list + CSV. Hifz / Deploy 3 untouched.
 
+## S3.7 — Awards & documents (done)
+
+- `awards` (class/school) and `student_awards` (year + optional term).
+- Batch issue generates certificates through the same renderer.
+- ID cards include student number + QR SVG. Transfer/leaving certs
+  pull `student_status_history`.
+- Public `/achievements` lists school awards; photos only when the
+  latest `photo_media_use` consent is granted.
+- Portal awards list. Report-card awards section now reads issued
+  awards. Hifz / Deploy 3 untouched.
+
 ## Next
 
-1. **S3.7 — Awards & documents**.
-2. Operator: unify-verify / smoke / production (unchanged).
-3. Dual-write stays. Staging student-keyed writes stay blocked until
-   verify is green; coding continues.
+1. Operator: unify-verify / smoke / production (unchanged).
+2. Dual-write stays. Staging student-keyed writes stay blocked until
+   verify is green.
+3. S3 coding slices S3.1–S3.7 are complete. Phase S3 DoD on real
+   staging data remains operator-owned.
 
 **Operator (their side, unchanged):**
 
