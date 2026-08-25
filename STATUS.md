@@ -228,10 +228,12 @@ See `docs/STAGING.md` (re-exec-after-pull rejected: blast radius).
 | Agent | S1.1c Deploy 2 switch reads | **Done** (`2f8a90b`) |
 | Agent | S1.2–S1.5 | **Done** (`8f1ecb8`) |
 | Agent | Docs §5.1 audience-surface (`#13`) | **Done** (`5690034`) |
-| Agent | Staging `students:verify-unification` | **Blocked** — no SSH / no server console |
+| Agent | Staging `students:verify-unification` (manual SSH) | **Blocked** — no SSH; S2.0 automates via deploy log |
 | Agent | Branch protection on `main` | **Blocked** — `403 Resource not accessible by integration` |
-| Operator | `students:verify-unification` on staging + archive report | **Pending** — S2 blocked until green |
-| Operator | Branch protection (required `quality`, no direct push, no self-merge) | **Pending** — apply in repo settings |
+| Agent | S2.0 unify-verify deploy gate | **This slice** |
+| Operator | Copy verify output from `~/self-update-test.log` + archive JSON | **Pending** — after S2.0 + follow-up merge |
+| Operator | Branch protection (required `quality`, no direct push, no self-merge) | **Deferred** (operator-approved 2026-08-25) |
+| Operator | Credential smoke steps 1–7 | **Deferred** (operator-approved 2026-08-25); **production receives nothing** until recorded |
 
 ## S1.1a — Unified Student schema (Deploy 1 additive, no backfill)
 
@@ -258,7 +260,9 @@ See `docs/STAGING.md` (re-exec-after-pull rejected: blast radius).
   not guessed. First RS wins the legacy slot.
 - Gate: `php artisan students:verify-unification` (`--backfill` re-runs the
   idempotent job). Report: `storage/app/s11b-student-unification-report.json`.
-  Zero unresolved = Deploy 2 gate. Not wired into auto-deploy.
+  Zero unresolved = Deploy 2 gate. Wired into auto-deploy as of S2.0
+  (read-only; never `--backfill`). First-deploy caveat: evidence from the
+  **second** merge after S2.0.
 - People action uses `DB::table` for users/enrollments (no Courses/Identity
   model imports). Hifz / RegistrationStudent reads untouched.
 
@@ -370,7 +374,7 @@ command was **not simulated** against local `akuru_institute` / `akuru_test`.
 | SSH keys / `~/.ssh/config` | None (only `known_hosts`) |
 | `ssh akuruedu@test.akuru.edu.mv` | `Network is unreachable` (port 22) |
 | `ssh akuruedu@akuru.edu.mv` | `Permission denied (publickey,password)` |
-| Staging deploy path | Webhook → `scripts/pull-deploy-test.sh` only (`docs/STAGING.md`). That script does **not** run `students:verify-unification`. |
+| Staging deploy path | Webhook → `scripts/pull-deploy-test.sh` only (`docs/STAGING.md`). S2.0 adds the read-only verify gate; evidence starts on the **second** deploy after that merge. |
 
 **Verdict:** no counts. No `storage/app/s11b-student-unification-report.json`
 from staging. Nothing archived under `docs/migrations/`. Deploy 2
@@ -425,26 +429,67 @@ Intended settings (classic protection or a ruleset):
 
 Settings UI: `https://github.com/ampilarey/akuru/settings/branches`
 
+## S2 kickoff — deferred gates (operator-approved 2026-08-25)
+
+Branch protection, staging `students:verify-unification` evidence, and
+credential smoke are **deferred**. Consequences accepted:
+
+- **(a)** Until protection exists, **every PR in this phase waits for CI
+  green and is NOT self-merged** (state that in each PR body).
+- **(b)** Production receives **nothing** until credential smoke is recorded.
+- **(c)** Any S2 slice that **writes student-keyed rows** (attendance,
+  register entries, absence notes, behavior) is **BLOCKED** until
+  `students:verify-unification` is green on staging (deploy-log evidence
+  copied here + JSON under `docs/migrations/`).
+
+### S2.0 — Unify-verify deploy gate (this slice)
+
+`scripts/pull-deploy-test.sh` runs `php artisan students:verify-unification`
+(read-only, never `--backfill`) after `morph-map:verify`. Warn-don't-fail if
+the command is missing; `STUDENT-UNIFICATION GATE FAILED` + exit 1 on
+nonzero. `docs/STAGING.md` updated.
+
+**First-deploy caveat (known):** this merge still runs the pre-pull script.
+Evidence appears from the **second** auto-deploy. Next after this PR:
+trivial docs merge (S2.0b) to trigger that run. Operator then pastes the
+verbatim block from `~/self-update-test.log` here (morph-map format) and
+archives the JSON.
+
+### S2 slice plan (planning only — confirm before S2.1+)
+
+**Not a pre-slice:** per-domain `routes.php` and domain-folder migrations.
+S1 shipped via `routes/web_localized.php` + central `database/migrations`;
+S2 does the same. Flag only — do not block S2 on that infra.
+
+**S2 CI gates (ROADMAP §6):** timetable conflict tests + attendance tests
+(attendance tests ship with the first student-write slice).
+
+| # | Slice | Behind verify? | Scope / tables | Tests | Deps |
+|---|-------|----------------|----------------|-------|------|
+| S2.1 | Rooms | no | New `rooms`; migrate matching `timetables.room` strings; keep string cols; admin CRUD + CSV | CRUD + idempotent string→room backfill | — |
+| S2.2 | Timetable v2 + conflicts | no | Alter `timetables` (`academic_year_id`, `term_id`, `room_id`, `valid_from`/`valid_until`; `period_id` exists); `TimetableConflictChecker` + `SaveTimetableEntryAction` | Conflict matrix teacher/room/class × period/time × validity (**CI gate**) | S2.1 |
+| S2.3 | Timetable builder | no | React week grid, drag-drop, live badges, teacher/room views, copy-week, print | Inertia builder + live conflict warning | S2.2 |
+| S2.4 | Room booking | no | New `room_bookings` (`academic_year_id`); clash vs timetable | Booking vs timetable/period clash | S2.1–2 |
+| S2.5 | Calendar CRUD | no | New `calendar_days` (`academic_year_id`); admin + portal/public holiday read. **No** register generation | Unique `(date, academic_year_id)`; `affects_timetable` | — |
+| S2.6 | Register loop | **yes** | Alter `course_plans`/`lesson_logs` (year/term FKs, status, `timetable_id`); `GenerateExpectedRegistersAction` (calendar-aware); teacher Today + register screen | Gen skips holidays; idempotent; lock + admin unlock audit | S2.2, S2.5 |
+| S2.7 | Class attendance | **yes** | New `class_attendance` (year + term); `AttendanceWriterInterface`; `StudentMarkedAbsent` → `SmsSenderInterface` only | Uniqueness + modes; writer arch; SMS throttle (**CI gate**) | S2.6 |
+| S2.8 | Absence notes | **yes** | Existing `absence_notes`; approve → excused flip | Excused flip + `absence_note_id` link | S2.7 |
+| S2.9 | Behavior | **yes** | New `behavior_records` (year + term) | Permission + parent_visible / own-children | — |
+| S2.10 | Requests | **yes** | New `requests`; `teacher_leave` → `teacher_absences` + timetable overlay | Leave approval creates absences + overlay | S2.3 |
+| S2.0b | Docs follow-up | — | Trivial STATUS/docs commit after S2.0 merges — fires the second deploy | — | S2.0 on `main` |
+
+Event/elective seat limits stay **out of S2** (S2_SPEC: reuse Offerings post-1B).
+No Hifz, no Deploy 3, no S3+.
+
 ## Next
 
-**S2 is blocked.** Do not start S2 feature code, S1.1 Deploy 3, or Hifz
-until **both** of the following are recorded in this file:
-
-1. `php artisan students:verify-unification` on **staging** is green
-   (zero unresolved) — verbatim output + archived JSON under
-   `docs/migrations/`.
-2. Operator credential smoke (portal / Hifz / payments / notifications /
-   OTP `7820288`/`7972434` / BML sandbox) is recorded.
-
-Also still open (not S2):
-
-- **Branch protection on `main`** — operator; 403 for this agent (see
-  Pre-S2 readiness §3).
-- **S1.1 Deploy 3** stays **≥2 weeks after Deploy 2** (`2f8a90b`,
-  2026-08-24). Dual-write and `student_guardians` /
-  `registration_students` stay until then (`docs/S1_SPEC.md` Deploy 3).
-- Blade `students.*` / `teachers.*` still live (S1.2–S1.5 added Inertia
-  alongside; S1 DoD wanted those routes gone).
-- Infra: `Relation::enforceMorphMap()` after production verification;
-  S1.1a items 1–3 remain operator-deferred; per-domain `routes.php` /
-  domain migrations; shrink architecture baselines as domains decouple.
+1. **Confirm the S2 slice plan above** — do not implement S2.1+ until confirmed.
+2. After S2.0 is on `main`: **S2.0b** trivial docs merge so staging actually
+   runs `students:verify-unification`. Operator copies log + JSON here.
+3. Safe slices S2.1–S2.5 may proceed under the deferral (no student-keyed
+   writes). S2.6–S2.10 stay blocked until verify is green on staging.
+4. Every S2 PR: wait for CI green; **do not self-merge**. Production: nothing
+   until credential smoke is recorded.
+5. **S1.1 Deploy 3** still ≥2 weeks after `2f8a90b`. Dual-write stays.
+6. Infra leftovers (not S2): branch protection; per-domain routes; domain
+   migrations; `enforceMorphMap()`; Blade `students.*`/`teachers.*`.
