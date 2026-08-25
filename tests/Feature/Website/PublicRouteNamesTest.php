@@ -12,6 +12,7 @@ class PublicRouteNamesTest extends TestCase
         $names = [
             'public.home',
             'public.about',
+            'public.careers',
             'public.courses.index',
             'public.courses.show',
             'public.contact.create',

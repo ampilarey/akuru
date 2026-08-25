@@ -49,7 +49,7 @@ function makeClass(AcademicYear $year, string $name = 'Grade 1', string $section
     ]);
 }
 
-function makeTerm(\App\Domains\Academics\Models\AcademicYear $year, string $name = 'Term 1'): Term
+function makeTerm(AcademicYear $year, string $name = 'Term 1'): Term
 {
     return Term::query()->create([
         'academic_year_id' => $year->id,

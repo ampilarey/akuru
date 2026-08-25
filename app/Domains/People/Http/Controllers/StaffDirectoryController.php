@@ -110,6 +110,8 @@ class StaffDirectoryController extends Controller
             'joined_date' => ['nullable', 'date'],
             'employment_type' => ['required', 'in:'.implode(',', array_column(EmploymentType::cases(), 'value'))],
             'status' => ['required', 'in:'.implode(',', array_column(StaffStatus::cases(), 'value'))],
+            'department' => ['nullable', 'string', 'max:255'],
+            'designation' => ['nullable', 'string', 'max:255'],
         ]);
     }
 
@@ -134,6 +136,8 @@ class StaffDirectoryController extends Controller
             'phone' => $profile->phone,
             'employment_type' => $profile->employment_type?->value,
             'status' => $profile->status?->value,
+            'department' => $profile->department,
+            'designation' => $profile->designation,
             'joined_date' => $profile->joined_date?->toDateString(),
         ];
 
