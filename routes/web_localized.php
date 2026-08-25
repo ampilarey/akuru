@@ -60,6 +60,7 @@ use App\Domains\HR\Http\Controllers\StaffAttendanceReportController;
 use App\Domains\HR\Http\Controllers\StaffContractController;
 use App\Domains\Identity\Http\Controllers\ProfileController;
 use App\Domains\Notifications\Http\Controllers\NotificationController;
+use App\Domains\Offerings\Http\Controllers\CourseOfferingController;
 use App\Domains\People\Http\Controllers\CustomFieldDefinitionController;
 use App\Domains\People\Http\Controllers\StaffDirectoryController;
 use App\Domains\People\Http\Controllers\StudentConsentController;
@@ -374,6 +375,10 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::post('levels', [CourseLevelController::class, 'store'])->name('catalog.levels.store');
         Route::put('levels/{level}', [CourseLevelController::class, 'update'])->name('catalog.levels.update');
         Route::get('i18n-preview', [I18nPreviewController::class, 'show'])->name('catalog.i18n.preview');
+        Route::get('offerings/export', [CourseOfferingController::class, 'export'])->name('catalog.offerings.export');
+        Route::get('offerings', [CourseOfferingController::class, 'index'])->name('catalog.offerings.index');
+        Route::post('offerings', [CourseOfferingController::class, 'store'])->name('catalog.offerings.store');
+        Route::put('offerings/{offering}', [CourseOfferingController::class, 'update'])->name('catalog.offerings.update')->whereNumber('offering');
         Route::get('courses/export', [EngineCourseController::class, 'export'])->name('catalog.courses.export');
         Route::get('courses', [EngineCourseController::class, 'index'])->name('catalog.courses.index');
         Route::post('courses', [EngineCourseController::class, 'store'])->name('catalog.courses.store');

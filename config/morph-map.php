@@ -36,6 +36,7 @@ return [
     'course_category' => \App\Domains\Courses\Models\CourseCategory::class,
     'course_level' => \App\Domains\Courses\Models\CourseLevel::class,
     'course_module' => \App\Domains\Courses\Models\CourseModule::class,
+    'course_offering' => \App\Domains\Offerings\Models\CourseOffering::class,
     'course_subject' => \App\Domains\Courses\Models\CourseSubject::class,
     'course_enrollment' => \App\Domains\Courses\Models\CourseEnrollment::class,
     'course_plan' => \App\Domains\Academics\Models\CoursePlan::class,

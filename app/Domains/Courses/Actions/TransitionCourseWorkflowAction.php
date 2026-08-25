@@ -4,6 +4,7 @@ namespace App\Domains\Courses\Actions;
 
 use App\Domains\Courses\Enums\CourseWorkflowStatus;
 use App\Domains\Courses\Models\Course;
+use App\Domains\Offerings\Actions\EnsureSelfLearningOfferingAction;
 use Illuminate\Validation\ValidationException;
 
 class TransitionCourseWorkflowAction
@@ -32,6 +33,13 @@ class TransitionCourseWorkflowAction
 
         $course->workflow_status = $to;
         $course->save();
+
+        if ($to === CourseWorkflowStatus::Published) {
+            app(EnsureSelfLearningOfferingAction::class)->execute([
+                'id' => $course->id,
+                'title' => $course->title,
+            ]);
+        }
 
         return $course->refresh();
     }

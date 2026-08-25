@@ -923,9 +923,17 @@ rate limiting, and the Inertia shell. No new 1A.1 code.
 - `learn` lang files (EN/DV/AR). Admin i18n preview. Logical CSS on 1A
   listings. Phase 1A boundary architecture tests.
 
+## 1B.1 — Offerings + delivery modes (done)
+
+- `course_offerings` in the Offerings domain. Modes: self_learning,
+  face_to_face, live_online, blended, hybrid.
+- Publishing a course creates a default open self-learning offering
+  (`pin_mode=latest`). Catalog CRUD + CSV at `/catalog/offerings`.
+- Offerings call Courses Actions only (no Courses model imports).
+
 ## Next
 
-1. Phase 1B — offerings, delivery modes, remaining blocks, PWA/i18n.
+1. 1B.2 — pinning, offering enrollment, seat limits.
 2. Operator: unify-verify / smoke / production (unchanged).
 3. Dual-write stays.
 4. S5 DoD remaining: month-in-the-life on real data, two parallel
