@@ -42,7 +42,10 @@ class ListOfferingSessionsAction
             'halaqa' => $halaqa ? [
                 'hifz_program_id' => (int) $halaqa->hifz_program_id,
                 'program' => $reader->findProgram((int) $halaqa->hifz_program_id),
+                'dual_write' => (bool) $halaqa->dual_write,
+                'last_synced_at' => $halaqa->last_synced_at?->toIso8601String(),
             ] : null,
+            'dual_write_enabled' => (bool) config('quran.halaqa_dual_write'),
             'halaqa_sessions' => $halaqa ? $reader->listSessions((int) $halaqa->hifz_program_id) : [],
             'sessions' => CourseOfferingSession::query()
                 ->where('course_offering_id', $offeringId)

@@ -1,7 +1,7 @@
 import { router, useForm, usePage } from '@inertiajs/react';
 import AppShell from '../../../Layouts/AppShell';
 
-export default function Sessions({ offering, types, sessions, programs = [], halaqa = null, halaqa_sessions = [] }) {
+export default function Sessions({ offering, types, sessions, programs = [], halaqa = null, halaqa_sessions = [], dual_write_enabled = false }) {
     const t = usePage().props.i18n?.learn || {};
     const halaqaForm = useForm({
         hifz_program_id: halaqa?.hifz_program_id || programs[0]?.id || '',
@@ -56,6 +56,21 @@ export default function Sessions({ offering, types, sessions, programs = [], hal
                     {halaqa?.program?.name ? `Linked: ${halaqa.program.name}` : 'Mapping only — Hifz dashboards stay unchanged.'}
                 </p>
                 <button type="submit" className="btn-secondary" disabled={halaqaForm.processing || programs.length === 0}>Save halaqa link</button>
+                {halaqa && dual_write_enabled && (
+                    <button
+                        type="button"
+                        className="btn-primary"
+                        onClick={() => router.post(`/catalog/offerings/${offering.id}/halaqa/sync`, {}, { preserveScroll: true })}
+                    >
+                        Sync dual-write
+                    </button>
+                )}
+                {halaqa && !dual_write_enabled && (
+                    <p className="text-sm text-gray-600 md:col-span-3">Dual-write is off (`QURAN_HALAQA_DUAL_WRITE`). Switch/cleanup stay later.</p>
+                )}
+                {halaqa?.last_synced_at && (
+                    <p className="text-sm text-gray-600">Last sync: {halaqa.last_synced_at}</p>
+                )}
             </form>
             <div className="overflow-x-auto rounded-lg border bg-white">
                 <table className="min-w-full text-sm">

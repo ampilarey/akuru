@@ -41,6 +41,8 @@ class ListHifzSessionsAction
             'hifz_program_id' => (int) $session->hifz_program_id,
             'title' => $session->title,
             'session_date' => $session->session_date?->toDateString(),
+            'start_time' => $session->start_time,
+            'end_time' => $session->end_time,
             'status' => $session->status?->value ?? $session->status,
         ];
     }

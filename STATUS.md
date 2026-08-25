@@ -1061,9 +1061,16 @@ rate limiting, and the Inertia shell. No new 1A.1 code.
 - Hifz dashboards, scoring, and tables are not written.
 - ADR-019. Dual-write / switch stays later.
 
+## Qur’an A.4 — Dual-write only (done)
+
+- `QURAN_HALAQA_DUAL_WRITE` defaults false.
+- Catalog sync mirrors unmapped Hifz sessions + active enrollments.
+- Flag-on Hifz session create also mirrors; failures never block Hifz.
+- No read switch. No Hifz table cleanup. ADR-020.
+
 ## Next
 
-1. Qur’an A.4 — dual-write / switch / cleanup only after mapping is agreed.
+1. Qur’an A.4b — switch reads (deploy 2) only after dual-write is verified.
 2. Operator: unify-verify / smoke / production (unchanged).
 3. Dual-write stays.
 4. S5 DoD remaining: month-in-the-life on real data, two parallel

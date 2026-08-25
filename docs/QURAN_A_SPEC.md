@@ -31,9 +31,13 @@ dashboards. `offering_halaqa_links` / `offering_halaqa_session_links`
 store integer Hifz ids (no FK, no dual-write). Labels come from
 `HalaqaReferenceReader`. See ADR-019.
 
-## Slice A.4 — Dual-write / switch / cleanup (not started)
+## Slice A.4 — Dual-write only (done; switch/cleanup later)
 
-Only after mapping is agreed and verified. 3-deploy rule.
+Deploy 1 of 3. `QURAN_HALAQA_DUAL_WRITE` defaults false. Catalog
+`/catalog/offerings/{id}/halaqa/sync` mirrors unmapped Hifz sessions
+and active enrollments onto the linked offering. New Hifz sessions
+mirror only when the flag is on; failures never block Hifz. See
+ADR-020. Switch reads and Hifz table cleanup are not in this slice.
 
 ## Out of scope until Module B
 
