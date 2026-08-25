@@ -13,6 +13,7 @@ use App\Domains\Academics\Http\Controllers\PromotionController;
 use App\Domains\Academics\Http\Controllers\RegisterReportController;
 use App\Domains\Academics\Http\Controllers\RoomBookingController;
 use App\Domains\Academics\Http\Controllers\RoomDirectoryController;
+use App\Domains\Academics\Http\Controllers\SchoolRequestController;
 use App\Domains\Academics\Http\Controllers\SubstitutionRequestController;
 use App\Domains\Academics\Http\Controllers\TeacherRegisterController;
 use App\Domains\Academics\Http\Controllers\TimetableBuilderController;
@@ -87,6 +88,11 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
     Route::post('academics/behavior', [BehaviorRecordController::class, 'store'])->name('academics.behavior.store');
     Route::put('academics/behavior/{behaviorRecord}', [BehaviorRecordController::class, 'update'])->name('academics.behavior.update');
     Route::delete('academics/behavior/{behaviorRecord}', [BehaviorRecordController::class, 'destroy'])->name('academics.behavior.destroy');
+
+    Route::get('academics/requests/export', [SchoolRequestController::class, 'export'])->name('academics.requests.export');
+    Route::get('academics/requests', [SchoolRequestController::class, 'index'])->name('academics.requests.index');
+    Route::post('academics/requests', [SchoolRequestController::class, 'store'])->name('academics.requests.store');
+    Route::post('academics/requests/{schoolRequest}/review', [SchoolRequestController::class, 'review'])->name('academics.requests.review');
 
     // Student routes
     Route::resource('students', StudentController::class);
