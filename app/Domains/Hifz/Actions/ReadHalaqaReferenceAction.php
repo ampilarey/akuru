@@ -9,6 +9,7 @@ class ReadHalaqaReferenceAction implements HalaqaReferenceReader
     public function __construct(
         private readonly ListHifzProgramsAction $programs,
         private readonly ListHifzSessionsAction $sessions,
+        private readonly ListHifzEnrollmentsAction $enrollments,
     ) {}
 
     public function listPrograms(): array
@@ -29,5 +30,10 @@ class ReadHalaqaReferenceAction implements HalaqaReferenceReader
     public function findSession(int $id): ?array
     {
         return $this->sessions->find($id);
+    }
+
+    public function listEnrollments(int $programId): array
+    {
+        return $this->enrollments->execute($programId);
     }
 }

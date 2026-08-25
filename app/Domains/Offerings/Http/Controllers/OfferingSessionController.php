@@ -9,6 +9,7 @@ use App\Domains\Offerings\Actions\RecordOfferingAttendanceAction;
 use App\Domains\Offerings\Actions\SaveOfferingHalaqaLinkAction;
 use App\Domains\Offerings\Actions\SaveOfferingHalaqaSessionLinkAction;
 use App\Domains\Offerings\Actions\SaveOfferingSessionAction;
+use App\Domains\Offerings\Actions\SyncHalaqaDualWriteAction;
 use App\Domains\Offerings\Models\CourseOfferingSession;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
@@ -95,6 +96,15 @@ class OfferingSessionController extends Controller
 
         return redirect()->route('catalog.offerings.sessions.index', $offering)
             ->with('success', 'Halaqa session linked.');
+    }
+
+    public function syncHalaqa(Request $request, int $offering): RedirectResponse
+    {
+        abort_unless($request->user()?->can('courses.manage'), 403);
+        $result = app(SyncHalaqaDualWriteAction::class)->execute($offering);
+
+        return redirect()->route('catalog.offerings.sessions.index', $offering)
+            ->with('success', 'Dual-write synced '.$result['sessions_created'].' sessions and '.$result['enrollments_mirrored'].' enrollments.');
     }
 
     public function attendance(Request $request, int $offering, int $session): Response

@@ -23,4 +23,9 @@ interface HalaqaReferenceReader
      * @return array<string, mixed>|null
      */
     public function findSession(int $id): ?array;
+
+    /**
+     * @return list<array<string, mixed>>
+     */
+    public function listEnrollments(int $programId): array;
 }
