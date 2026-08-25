@@ -11,6 +11,8 @@
 return [
     'absence_note' => \App\Domains\Academics\Models\AbsenceNote::class,
     'academic_year' => \App\Domains\Academics\Models\AcademicYear::class,
+    'activity' => \App\Domains\Courses\Models\Activity::class,
+    'activity_attempt' => \App\Domains\Progress\Models\ActivityAttempt::class,
     'admission_application' => \App\Domains\Admissions\Models\AdmissionApplication::class,
     'announcement' => \App\Domains\Academics\Models\Announcement::class,
     'appraisal' => \App\Domains\HR\Models\Appraisal::class,

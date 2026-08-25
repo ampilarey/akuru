@@ -47,7 +47,11 @@ export default function Outline({ course, modules }) {
 
     return (
         <AppShell title={`Outline — ${course.title}`}>
-            <p className="mb-4 text-sm text-gray-600">Workflow: {course.workflow_status}</p>
+            <p className="mb-4 text-sm text-gray-600">
+                Workflow: {course.workflow_status}
+                {' · '}
+                <a className="text-[#7C2D37] hover:underline" href={`/catalog/courses/${course.id}/activities`}>Activities</a>
+            </p>
             <div className="mb-4 grid gap-3 md:grid-cols-3">
                 <form
                     onSubmit={(e) => {
