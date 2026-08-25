@@ -1038,15 +1038,17 @@ rate limiting, and the Inertia shell. No new 1A.1 code.
 - Built from skill-tagged activities + Progress attempt Actions.
 - No parallel LMS. No AI.
 
+## Qur’an A.1 — Read Actions over existing tables (done)
+
+- Hifz `ListSurahsAction` / `ListAyahsAction` read `surahs` and
+  `quran_ayahs`. Bound as `QuranReferenceReader`.
+- Catalog `/catalog/quran` (+ CSV). Courses uses the Support contract
+  only — no Hifz namespace import, no dashboard/scoring change.
+- No parallel Quran tables.
+
 ## Next
 
-1. Qur’an module A (human-first, after engine is stable). Rule 7 still
-   freezes Hifz behavior until the §2b migration phase.
-3. Operator: unify-verify / smoke / production (unchanged).
-4. Dual-write stays.
-5. S5 DoD remaining: month-in-the-life on real data, two parallel
-   payroll cycles before `payroll.enabled` goes on.
-6. S4 DoD on real BML sandbox / Thaana receipt proof is operator-owned.
+1. Qur’an A.2 — recitation as teacher-marked 2.1/2.4 activities.
 2. Operator: unify-verify / smoke / production (unchanged).
 3. Dual-write stays.
 4. S5 DoD remaining: month-in-the-life on real data, two parallel

@@ -26,6 +26,7 @@ use App\Domains\Courses\Http\Controllers\CatalogArabicReportController;
 use App\Domains\Courses\Http\Controllers\CatalogAssessmentController;
 use App\Domains\Courses\Http\Controllers\CatalogMediaController;
 use App\Domains\Courses\Http\Controllers\CatalogQuestionController;
+use App\Domains\Courses\Http\Controllers\CatalogQuranReferenceController;
 use App\Domains\Courses\Http\Controllers\CatalogReviewController;
 use App\Domains\Courses\Http\Controllers\CourseLevelController;
 use App\Domains\Courses\Http\Controllers\CourseOutlineController;
@@ -408,6 +409,8 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::get('offerings/{offering}/sessions/{session}/attendance', [OfferingSessionController::class, 'attendance'])->name('catalog.offerings.sessions.attendance')->whereNumber('offering')->whereNumber('session');
         Route::post('offerings/{offering}/sessions/{session}/attendance', [OfferingSessionController::class, 'mark'])->name('catalog.offerings.sessions.attendance.mark')->whereNumber('offering')->whereNumber('session');
         Route::post('offerings/{offering}/sessions/{session}/attendance/bulk', [OfferingSessionController::class, 'bulk'])->name('catalog.offerings.sessions.attendance.bulk')->whereNumber('offering')->whereNumber('session');
+        Route::get('quran/export', [CatalogQuranReferenceController::class, 'export'])->name('catalog.quran.export');
+        Route::get('quran', [CatalogQuranReferenceController::class, 'index'])->name('catalog.quran.index');
         Route::get('arabic/reports', [CatalogArabicReportController::class, 'index'])->name('catalog.arabic.reports');
         Route::get('arabic/export', [CatalogArabicReferenceController::class, 'export'])->name('catalog.arabic.export');
         Route::get('arabic', [CatalogArabicReferenceController::class, 'index'])->name('catalog.arabic.index');
