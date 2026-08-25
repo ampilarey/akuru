@@ -1141,9 +1141,24 @@ rate limiting, and the Inertia shell. No new 1A.1 code.
 - Portal awards list. Report-card awards section now reads issued
   awards. Hifz / Deploy 3 untouched.
 
+## TRACK A — Unblock (S1 verify blockers)
+
+### A4 — Branch protection on `main` (**not applied**)
+
+- Agent GET/PUT `.../branches/main/protection` → HTTP **403**
+  `Resource not accessible by integration`. Settings were not changed.
+- Operator checklist: `docs/BRANCH_PROTECTION.md` (require PR, CI job
+  `quality`, no force-push). A4 is green only after an admin confirms.
+
 ## Next
 
-**Operator (not in this slice):** `unify-verify` still red (4 RS collisions + guardian pivot). Student dual-write stays until staging is green. `payroll.enabled` off until credentials. BML sandbox / Thaana receipts / credential smoke / production. S3.1–S3.7 coding is on `main`; staging student-keyed writes stay blocked until verify is green.
+**TRACK A remaining:** A1 wipe (#72), A2 matcher (#73), A3 production-copy
+verify (#74, procedure shipped, gate **not** green — no dump), A5 payroll
+flag. **Do not start TRACK B until A3 is green on a production-data copy.**
+No `--backfill` on production. No Hifz cutover.
+
+**Operator:** apply branch protection; provide a production mysqldump for
+A3. `unify-verify` still red on staging.
 
 **Qur'an A.4b (later):** switch offering-session reads to `offering_halaqa_session_links` after operators confirm dual-write. Then Hifz cleanup (deploy 3). Keep `QURAN_HALAQA_DUAL_WRITE` off until verified.
 
