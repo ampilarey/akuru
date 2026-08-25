@@ -1143,6 +1143,19 @@ rate limiting, and the Inertia shell. No new 1A.1 code.
 
 ## TRACK A — Unblock (S1 verify blockers)
 
+### A1 — `users:clear-non-admin` deletes `student_guardians` (done)
+
+- Staging verify’s “12/13 `guardian_user_id` missing from `users`” came from
+  this wipe: `FOREIGN_KEY_CHECKS=0` deleted users / `registration_students`
+  / payments and never touched `student_guardians`.
+  `UnifyStudentsAction::createParentFromUserId()` cannot invent those users.
+- Command now deletes `student_guardians` and `guardian_student` for wiped
+  users/profiles. `whereNotIn` does **not** match NULL — guardian-only
+  `registration_students` (`user_id IS NULL`) are listed explicitly and
+  included in the wipe so they cannot survive their guardian users.
+- Pest: `tests/Feature/People/ClearNonAdminUsersTest.php` (no leftover
+  pivot rows). Merged #72.
+
 ### A5 — Real `config/payroll.php` feature flag (done)
 
 - Flag was only a `settings` row (`payroll.enabled` = `'0'`).
@@ -1155,10 +1168,10 @@ rate limiting, and the Inertia shell. No new 1A.1 code.
 
 ## Next
 
-**TRACK A remaining:** A1–A4 PRs (#72–#75). A3 procedure shipped; verify
-**not** green (no production dump). **Do not start TRACK B until A3 is
-green on a production-data copy.** No `--backfill` on production. No Hifz
-cutover.
+**TRACK A remaining:** A2 matcher (#73), A3 production-copy verify (read-only,
+no dump yet), A4 branch protection on `main` (operator; bot 403). **Do not
+start TRACK B until A3 is green on a production-data copy.** No `--backfill`
+on production. No Hifz cutover.
 
 **Operator:** apply branch protection; provide a production mysqldump for
 A3. `unify-verify` still red on staging. `PAYROLL_ENABLED` / settings
