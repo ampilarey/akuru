@@ -72,7 +72,7 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
     Route::post('/portal/absence-notes', [PortalAbsenceNoteController::class, 'store'])->name('portal.absence-notes.store');
     Route::get('/portal/invoices', [PortalInvoiceController::class, 'index'])->name('portal.invoices');
     Route::post('/portal/invoices/{invoice}/pay', [PortalInvoiceController::class, 'pay'])->name('portal.invoices.pay');
-    Route::get('/finance/receipts/{receipt}', [ReceiptDocumentController::class, 'show'])->name('finance.receipts.show');
+    Route::get('/finance/receipts/{receipt}/document', [ReceiptDocumentController::class, 'show'])->name('finance.receipts.show')->whereNumber('receipt');
 
     Route::get('academics/registers/today', [TeacherRegisterController::class, 'today'])->name('academics.registers.today');
     Route::get('academics/registers/export', [RegisterReportController::class, 'export'])->name('academics.registers.export');

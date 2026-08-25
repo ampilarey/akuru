@@ -37,7 +37,7 @@ export default function Invoices({ children, studentId, invoices }) {
                                         </form>
                                     )}
                                     {row.receipts.map((receipt) => (
-                                        <a key={receipt.id} className="ml-2 text-[#7C2D37] underline" href={`/finance/receipts/${receipt.id}`}>Receipt</a>
+                                        <a key={receipt.id} className="ml-2 text-[#7C2D37] underline" href={`/finance/receipts/${receipt.id}/document`}>Receipt</a>
                                     ))}
                                 </td>
                             </tr>
