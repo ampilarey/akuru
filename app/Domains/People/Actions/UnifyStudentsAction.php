@@ -99,6 +99,13 @@ class UnifyStudentsAction
             'national_id' => fn () => $this->candidatesByNationalId($rs),
             'name_dob' => fn () => $this->candidatesByNameDob($rs),
         ] as $method => $finder) {
+            if ($method === 'national_id') {
+                $nationalId = $this->plain($rs->national_id);
+                if ($nationalId === null || $this->isUnusableNationalId($nationalId)) {
+                    $report->matcher['national_id_unusable_skips']++;
+                }
+            }
+
             $candidates = $finder();
             if ($candidates->isEmpty()) {
                 continue;
@@ -114,6 +121,7 @@ class UnifyStudentsAction
             if ($method === 'national_id' && $this->nameDobContradicts($rs, $candidate)) {
                 // Corroboration beats the ID field. Do not attach enrollments
                 // to the ID hit; fall through to name+dob (RS 22).
+                $report->matcher['national_id_contradiction_fallthroughs']++;
                 $contradictedNationalIdHit = $candidate;
 
                 continue;

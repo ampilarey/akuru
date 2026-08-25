@@ -1,0 +1,83 @@
+<?php
+
+use App\Domains\People\Actions\UnifyStudentsAction;
+use App\Domains\People\Support\RepresentativeUnificationGate;
+use Database\Seeders\UnificationRepresentativeSeeder;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
+
+uses(RefreshDatabase::class);
+
+it('maps the representative dataset with A2 unusable and contradiction counts and does not attach the wrong student', function () {
+    $this->seed(UnificationRepresentativeSeeder::class);
+
+    $report = app(UnifyStudentsAction::class)->execute();
+    RepresentativeUnificationGate::fillPaymentUnifiedIds();
+    $manifest = RepresentativeUnificationGate::requireManifest();
+    $gate = RepresentativeUnificationGate::evaluate($report, $manifest);
+    $paymentFailures = RepresentativeUnificationGate::paymentWrongStudentFailures($manifest);
+
+    expect($report->matcher['national_id_unusable_skips'])->toBeGreaterThanOrEqual(8)
+        ->and($report->matcher['national_id_contradiction_fallthroughs'])->toBe(1)
+        ->and($report->mapped['national_id'])->toBeGreaterThanOrEqual(3)
+        ->and($report->mapped['name_dob'])->toBeGreaterThanOrEqual(6)
+        ->and($gate['ok'])->toBeTrue()
+        ->and($gate['failures'])->toBeEmpty()
+        ->and($paymentFailures)->toBeEmpty();
+
+    RepresentativeUnificationGate::applyManifestVerdict($report, $manifest, $gate['failures']);
+    expect($report->verification['verdict'])->toBe('OK_AGAINST_MANIFEST')
+        ->and($report->verification['raw_ok'])->toBeFalse()
+        ->and($report->verification['unexpected_failures'])->toBeEmpty()
+        ->and($report->verification['expected_unresolved'])->toEqual(
+            collect($manifest['expected_unresolved_registration_student_ids'])->map(fn ($id) => (int) $id)->sort()->values()->all()
+        );
+
+    $fatima = $manifest['scenarios']['duplicate_nid_fatima'];
+    $hussain = $manifest['scenarios']['duplicate_nid_hussain'];
+    expect((int) DB::table('students')->where('legacy_registration_student_id', $fatima['registration_student_id'])->value('id'))
+        ->toBe((int) $fatima['student_id'])
+        ->and((int) DB::table('students')->where('legacy_registration_student_id', $hussain['registration_student_id'])->value('id'))
+        ->toBe((int) $hussain['student_id'])
+        ->and((int) $fatima['student_id'])->not->toBe((int) $hussain['student_id']);
+
+    $older = $manifest['scenarios']['same_name_older'];
+    $younger = $manifest['scenarios']['same_name_younger'];
+    expect((int) DB::table('students')->where('legacy_registration_student_id', $older['registration_student_id'])->value('id'))
+        ->toBe((int) $older['student_id'])
+        ->and((int) DB::table('students')->where('legacy_registration_student_id', $younger['registration_student_id'])->value('id'))
+        ->toBe((int) $younger['student_id']);
+
+    $wrongId = (int) $manifest['scenarios']['nid_contradiction_wrong_student_id'];
+    expect(DB::table('students')->where('id', $wrongId)->value('legacy_registration_student_id'))->toBeNull();
+
+    foreach ($manifest['expected_unresolved_registration_student_ids'] as $rsId) {
+        expect(DB::table('students')->where('legacy_registration_student_id', $rsId)->count())->toBe(0)
+            ->and(DB::table('course_enrollments')->where('student_id', $rsId)->value('unified_student_id'))->toBeNull()
+            ->and(DB::table('payments')->where('student_id', $rsId)->value('unified_student_id'))->toBeNull();
+    }
+});
+
+it('passes students:verify-unification --representative on the seeded dataset', function () {
+    $this->artisan('students:verify-unification', ['--representative' => true])
+        ->expectsOutputToContain('A2 matcher national_id_unusable_skips=')
+        ->expectsOutputToContain('A2 matcher national_id_contradiction_fallthroughs=')
+        ->expectsOutputToContain('verification verdict=OK_AGAINST_MANIFEST')
+        ->expectsOutputToContain('students:verify-unification OK — representative dataset')
+        ->assertSuccessful();
+
+    $payload = json_decode(
+        (string) file_get_contents(storage_path('app/s11b-student-unification-report.json')),
+        true
+    );
+    $manifest = RepresentativeUnificationGate::requireManifest();
+    $expectedUnresolved = array_values(array_map('intval', $manifest['expected_unresolved_registration_student_ids']));
+    sort($expectedUnresolved);
+
+    expect($payload['verification']['raw_ok'])->toBeFalse()
+        ->and($payload['verification']['expected_unresolved'])->toBe($expectedUnresolved)
+        ->and($payload['verification']['unexpected_failures'])->toBe([])
+        ->and($payload['verification']['verdict'])->toBe('OK_AGAINST_MANIFEST')
+        ->and($payload['matcher']['national_id_unusable_skips'])->toBe(8)
+        ->and($payload['matcher']['national_id_contradiction_fallthroughs'])->toBe(1);
+});

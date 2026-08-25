@@ -11,9 +11,11 @@ Deploy 2 switches **reads** to `students` while dual-write stays on
 and guardian `name`. Architecture baselines may only shrink: Courses/Finance
 must not gain new People `Models\*` imports.
 
-Staging/production-data verify (`students:verify-unification`) is still the
-operator gate for messy rows. Dual-write plus a save-time observer covers new
-enrollments even if some legacy rows were unresolved.
+The unification gate until first real use is the seeded representative
+dataset (`students:verify-unification --representative`, ADR-021). Dual-write
+plus a save-time observer covers new enrollments even if some legacy rows
+were unresolved. The production-copy procedure reactivates when real data
+exists.
 
 ## Decision
 

@@ -1174,21 +1174,19 @@ rate limiting, and the Inertia shell. No new 1A.1 code.
 - Pest cases in `UnifiedStudentBackfillTest`. Dual-write matcher untouched.
   Merged #73.
 
-### A3 — Production-copy verify procedure (docs shipped; gate **not** green)
+### A3 — Unification verify gate (ADR-021; representative seed **green**)
 
-- S1_SPEC line 147 requires `students:verify-unification` on a
-  **production-data copy**. Staging synthetics (`a a` / `b b`) cannot
-  validate Deploy 2. This VM has **no production dump** (only
-  `akuru_test` / `akuru_institute`).
-- Procedure: `docs/migrations/restore-production-copy.md` — restore dump
-  → migrate → **`students:verify-unification` with no `--backfill`**.
-- `--backfill` is never run against production itself (command refuses
-  `APP_ENV=production`) and is **not** part of this verification
-  procedure.
-- **A3 is not green** until an operator restores a dump and archives
-  `docs/migrations/s11b-student-unification-report-prod-copy.json` with
-  verbatim stdout in STATUS. **TRACK B stays blocked.** No dump is
-  obtainable in this environment. Merged #74.
+- Operator confirmed **2026-08-25:** there is **no production system**.
+  Nothing is live. `test.akuru.edu.mv` is synthetic-only. The old
+  “production-data copy” gate (S1_SPEC line 147 / #74 procedure) is
+  **unsatisfiable** until first real use; it is dormant, not deleted
+  (`docs/migrations/restore-production-copy.md`).
+- Current gate: `UnificationRepresentativeSeeder` +
+  `php artisan students:verify-unification --representative` (refuses
+  `APP_ENV=production`). Pest:
+  `tests/Feature/People/UnificationRepresentativeSeederTest.php`.
+- Report: `docs/migrations/s11b-student-unification-report-representative.json`.
+  **TRACK B is unblocked.** Not started in this slice.
 
 ### A4 — Branch protection on `main` (**not applied**)
 
@@ -1207,16 +1205,67 @@ rate limiting, and the Inertia shell. No new 1A.1 code.
 - Pest: `enablePayroll()` sets both; write actions are inert when off.
 - Payroll stays off until two parallel cycles match (operator). Merged #76.
 
+## ADR-021 — No live data yet (2026-08-25)
+
+Operator-confirmed: no production, no real students/payments/Hifz users.
+`test.akuru.edu.mv` is the only deployment and is synthetic.
+
+- ADR: `docs/adr/ADR-021-no-live-data-yet.md` (brief asked for “ADR-011”;
+  that number is already attendance modes).
+- Rule 7 freeze kept as **scope discipline**, not production-safety.
+- Rule 9 3-deploy: additive migrations still the default; dual-write
+  windows and “≥2 weeks stable” optional until **first real use**.
+  Production-copy verify reactivates that same day.
+- S1 Deploy 3 cleanup is **proposed, not executed**:
+  `docs/migrations/s11-deploy-3-cleanup-proposal.md`.
+
+### `php artisan students:verify-unification --representative` (verbatim)
+
+Fresh `akuru_test` (`migrate:fresh` then `--representative`), 2026-08-26:
+
+```text
+   INFO  Seeding database.
+
+S1.1b unification report: /workspace/storage/app/s11b-student-unification-report.json
+  mapped: user_id=0 national_id=3 name_dob=7 already=0
+  created: active=0 prospective=0
+  A2 matcher national_id_unusable_skips=8
+  A2 matcher national_id_contradiction_fallthroughs=1
+  guardians: source=3 migrated=2 profiles_created=2 skipped=0 unmapped=1
+  enrollments: filled=10 already_set=0 missing=2
+  ambiguous: 2 (listed in report file)
+  verification verdict=OK_AGAINST_MANIFEST raw_ok=false unexpected_failures=0
+students:verify-unification OK — representative dataset: resolvable rows mapped; expected unguessable rows listed; no enrollment/payment resolved to the wrong student.
+```
+
+**A2 matcher on this dataset:** **8** `national_id` keys skipped as
+unusable (duplicate ID across two different people; blank; placeholders
+`N/A`, `0`, `-`; plus two genuine-duplicate blanks). **1** unique
+`national_id` hit **downgraded** by contradicting name+dob and mapped
+via name+dob instead (wrong-hit student left unlinked). Artifact
+`verification.verdict` is `OK_AGAINST_MANIFEST` with
+`unexpected_failures: []`. `raw_ok` is false on purpose: RS 11 and 12
+are the seeded genuine name+dob duplicate (candidates 12/13); ADR-007
+does not guess. `guardians.unmapped: [2]` is the seeded orphan guardian
+pivot. Missing enrollments 11/12 follow from those unresolved RS rows
+(null, not a wrong student). Do not “fix” these.
+
+JSON archived:
+`docs/migrations/s11b-student-unification-report-representative.json`.
+
+**Gate:** GREEN (ADR-021 representative). TRACK B unblocked; not started.
+
 ## Next
 
-TRACK A code/docs slices A1–A5 are on `main`. **A3 verify gate is not
-green** (no production dump). **A4 protection is not applied** (bot 403).
-**Do not start TRACK B.** No `--backfill` on production. No Hifz cutover.
+TRACK A code/docs A1–A5 plus ADR-021 representative gate are the current
+unification story. **A4 protection is not applied** (bot 403; re-tried
+2026-08-25). **TRACK B is unblocked; do not start it in this slice.**
+S1 Deploy 3 cleanup is a proposal only — wait for confirmation.
+`--backfill` still refused on `APP_ENV=production`. No Hifz behavior
+change. `PAYROLL_ENABLED` / settings stay off.
 
-**Operator:** apply branch protection (`docs/BRANCH_PROTECTION.md`);
-provide a production mysqldump and run
-`docs/migrations/restore-production-copy.md`. `unify-verify` still red on
-staging. `PAYROLL_ENABLED` / settings stay off.
+**Operator:** apply branch protection (`docs/BRANCH_PROTECTION.md`).
+Confirm or reject `docs/migrations/s11-deploy-3-cleanup-proposal.md`.
 
 **Qur'an A.4b (later):** switch offering-session reads to `offering_halaqa_session_links` after operators confirm dual-write. Then Hifz cleanup (deploy 3). Keep `QURAN_HALAQA_DUAL_WRITE` off until verified.
 

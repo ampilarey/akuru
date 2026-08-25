@@ -1,0 +1,81 @@
+{
+    "generated_at": "2026-08-26T02:50:01+05:00",
+    "path": "\/workspace\/storage\/app\/s11b-student-unification-report.json",
+    "mapped": {
+        "user_id": 0,
+        "national_id": 3,
+        "name_dob": 7,
+        "already_mapped": 0
+    },
+    "created": {
+        "active": 0,
+        "prospective": 0
+    },
+    "ambiguous": [
+        {
+            "registration_student_id": 11,
+            "method": "name_dob",
+            "candidate_student_ids": [
+                12,
+                13
+            ]
+        },
+        {
+            "registration_student_id": 12,
+            "method": "name_dob",
+            "candidate_student_ids": [
+                12,
+                13
+            ]
+        }
+    ],
+    "collisions": [],
+    "unresolved": [
+        {
+            "registration_student_id": 11,
+            "reason": "ambiguous",
+            "method": "name_dob"
+        },
+        {
+            "registration_student_id": 12,
+            "reason": "ambiguous",
+            "method": "name_dob"
+        }
+    ],
+    "guardians": {
+        "source": 3,
+        "migrated": 2,
+        "created_profiles": 2,
+        "skipped_existing": 0,
+        "unmapped": [
+            2
+        ]
+    },
+    "enrollments": {
+        "filled": 10,
+        "already_set": 0,
+        "missing": [
+            11,
+            12
+        ]
+    },
+    "verification": {
+        "raw_ok": false,
+        "raw_failures": [
+            "registration_students.id=11 maps to 0 student(s)",
+            "registration_students.id=12 maps to 0 student(s)",
+            "2 course_enrollments missing unified_student_id",
+            "guardian pivot count mismatch: student_guardians=3 migrated guardian_student=2"
+        ],
+        "expected_unresolved": [
+            11,
+            12
+        ],
+        "unexpected_failures": [],
+        "verdict": "OK_AGAINST_MANIFEST"
+    },
+    "matcher": {
+        "national_id_unusable_skips": 8,
+        "national_id_contradiction_fallthroughs": 1
+    }
+}
