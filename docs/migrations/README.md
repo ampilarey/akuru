@@ -31,5 +31,7 @@ there.
 
 Full procedure: [`restore-production-copy.md`](restore-production-copy.md).
 
-**Never** run `--backfill` against production. The artisan command refuses
-that flag when `APP_ENV=production`.
+That procedure is **read-only**: `php artisan students:verify-unification`
+with **no** `--backfill`. `--backfill` is never run against production
+itself (the command refuses it when `APP_ENV=production`) and is not
+part of this verification procedure.

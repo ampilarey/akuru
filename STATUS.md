@@ -1149,12 +1149,15 @@ rate limiting, and the Inertia shell. No new 1A.1 code.
   **production-data copy**. Staging synthetics (`a a` / `b b`) cannot
   validate Deploy 2. This VM has **no production dump** (only
   `akuru_test` / `akuru_institute`).
-- Procedure: `docs/migrations/restore-production-copy.md`.
-- `students:verify-unification --backfill` now **refuses** when
-  `APP_ENV=production`. Never run `--backfill` on production itself.
+- Procedure: `docs/migrations/restore-production-copy.md` — restore dump
+  → migrate → **`students:verify-unification` with no `--backfill`**.
+- `--backfill` is never run against production itself (command refuses
+  `APP_ENV=production`) and is **not** part of this verification
+  procedure.
 - **A3 is not green** until an operator restores a dump and archives
   `docs/migrations/s11b-student-unification-report-prod-copy.json` with
-  verbatim stdout in STATUS. **TRACK B stays blocked.**
+  verbatim stdout in STATUS. **TRACK B stays blocked.** No dump is
+  obtainable in this environment.
 
 ## Next
 

@@ -2,30 +2,30 @@
 
 S1_SPEC tests item 1 / line 147: `students:verify-unification` must run
 **green on a production-data copy** before Deploy 2. Staging’s synthetic
-`a a` / `b b` rows cannot validate that gate.
+`a a` / `b b` / `v v` rows (DOB `2000-01-01`, mangled by
+`users:clear-non-admin`) cannot validate that gate.
 
-This procedure is the only supported way to do that. It is an operator
-task: this environment has no production dump.
+This procedure is **read-only verify**. It never runs `--backfill`.
 
 ## Hard rules
 
-1. **Never** run `php artisan students:verify-unification --backfill` against
-   production. The command refuses `--backfill` when `APP_ENV=production`.
-   Do not work around that by setting `APP_ENV=local` on the production
-   host.
-2. **Never** point the production app `.env` at the scratch database, and
+1. **`--backfill` is never run against production itself.** The artisan
+   command refuses that flag when `APP_ENV=production`. Do not work
+   around it by setting `APP_ENV=local` on the production host.
+2. **This procedure does not pass `--backfill` on the scratch copy
+   either.** The gate answers “is this dump already unified?”, not “can
+   we make it unified by writing?”. Writing belongs to a Deploy 1
+   backfill job, not to verification.
+3. **Never** point the production app `.env` at the scratch database, and
    **never** point a scratch `.env` at the production database name/host.
-3. Do **not** run `users:clear-non-admin`, `migrate:fresh`, `db:wipe`, or
-   `local:clear-registration` on the copy. Those destroy the rows we are
-   validating.
-4. Encrypted `registration_students.national_id` / `passport` only decrypt
+4. Do **not** run `users:clear-non-admin`, `migrate:fresh`, `db:wipe`, or
+   `local:clear-registration` on the copy.
+5. Encrypted `registration_students.national_id` / `passport` only decrypt
    with the **production `APP_KEY`**. Copy that key into the scratch `.env`.
-   A different key will make every national_id match look blank.
 
 ## 1. Dump production (read-only)
 
-On the production host, from the app directory (see `docs/STAGING.md`
-production path `~/akuru-institute`):
+On the production host (`~/akuru-institute` — see `docs/STAGING.md`):
 
 ```bash
 cd ~/akuru-institute
@@ -38,24 +38,20 @@ mysqldump -u "$DB_USER" -p \
   | gzip > "storage/backups/production-${DB_NAME}-$(date +%Y%m%d-%H%M%S).sql.gz"
 ```
 
-Copy the gzip **off the production host** (scp/rsync) to the machine that
-will run verify. Do not leave the only copy on production.
+Copy the gzip **off the production host**. Record in `STATUS.md`: dump
+filename, byte size, `sha256sum`, and production `git rev-parse HEAD`.
 
-Record in `STATUS.md`: dump filename, byte size, `sha256sum`, and the
-production `git rev-parse HEAD` at dump time.
+## 2. Scratch database
 
-## 2. Create a scratch database
-
-On a **non-production** MySQL (local VM, operator laptop, or a dedicated
-scratch instance — not the production server):
+On **non-production** MySQL only:
 
 ```bash
 mysql -u root -e "CREATE DATABASE IF NOT EXISTS akuru_unify_scratch CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
 ```
 
-Do not reuse `akuru_test` (Pest) or the live `akuru_institute` schema.
+Do not reuse `akuru_test` or the live `akuru_institute` schema.
 
-## 3. Restore the dump
+## 3. Restore
 
 ```bash
 gunzip -c production-*.sql.gz | mysql -u root akuru_unify_scratch
@@ -79,67 +75,52 @@ mysql -u root -N -e "
 If names look like `a a` / `b b` with DOB `2000-01-01`, this is **staging
 synthetic data**, not a production copy. Stop.
 
-## 4. Scratch app `.env`
+## 4. Scratch app + pending migrations
 
-Use a **copy** of the production `.env`, then change **only**:
-
-```dotenv
-APP_ENV=local
-APP_DEBUG=true
-DB_CONNECTION=mysql
-DB_HOST=127.0.0.1
-DB_PORT=3306
-DB_DATABASE=akuru_unify_scratch
-DB_USERNAME=root
-# scratch credentials — never production user/password
-```
-
-Keep `APP_KEY` **identical** to production. Keep `APP_URL` unused (do not
-serve this copy publicly).
+Use a **copy** of the production `.env`, then change **only** host/name
+credentials so they point at `akuru_unify_scratch`. Keep `APP_KEY`
+identical to production. Set `APP_ENV=local` on the scratch app (this is
+not production).
 
 ```bash
 php artisan config:clear
-php artisan students:verify-unification
+php artisan migrate --force
 ```
 
-Do **not** pass `--backfill` on this first run. The report is
-`storage/app/s11b-student-unification-report.json`.
+Migrate is additive schema only (rule 9). It must **not** invoke
+`students:verify-unification --backfill`.
 
-## 5. Interpret the first verify
-
-| Result | Meaning | Next |
-|---|---|---|
-| OK, mapped/created all zero, every RS already has a student | Deploy 1 backfill already applied on the dump | Archive JSON; Deploy 2 gate is this green report |
-| FAILED, every RS maps to 0 students, mapped/created = 0 | Backfill never ran on this data | On **scratch only**: `--backfill`, then verify again |
-| FAILED with collisions / ambiguous / guardian_user_id missing | Real data issues (A1 wipe leftovers, A2 matcher, duplicates) | Fix in code or operator resolution; re-run on a **fresh** restore |
-
-## 6. Backfill on scratch only (if step 5 says so)
+## 5. Read-only verify (never `--backfill`)
 
 ```bash
-# Confirm DB_DATABASE is akuru_unify_scratch and APP_ENV is not production:
 php artisan tinker --execute="echo config('database.connections.mysql.database').PHP_EOL.config('app.env');"
+# Must print akuru_unify_scratch and not production.
 
-php artisan students:verify-unification --backfill
 php artisan students:verify-unification
 ```
 
-Copy the JSON to `docs/migrations/s11b-student-unification-report-prod-copy.json`
+Do **not** add `--backfill`. Report file:
+`storage/app/s11b-student-unification-report.json`.
+
+Copy it to `docs/migrations/s11b-student-unification-report-prod-copy.json`
 and paste **verbatim stdout** into `STATUS.md`.
 
-Zero unresolved = A3 green = Deploy 2 / student-keyed-write / TRACK B
-unblocked.
+| Result | Meaning |
+|---|---|
+| OK, zero unresolved | A3 green. Deploy 2 / student-keyed-write gate satisfied. |
+| FAILED, every RS maps to 0 students, mapped/created = 0 | Deploy 1 backfill never ran on this dump. Gate stays red. Do not `--backfill` here. |
+| FAILED with collisions / ambiguous / guardian pivots | Real data issues. Fix in code (A1/A2) or operator resolution; restore a **fresh** dump and verify again. |
 
-## 7. Destroy the scratch database when finished
+Zero unresolved = A3 green = TRACK B unblocked.
+
+## 6. Destroy the scratch database
 
 ```bash
 mysql -u root -e "DROP DATABASE IF EXISTS akuru_unify_scratch;"
 ```
 
-Do not keep a writable copy of production PII on a laptop longer than the
-verify run.
-
-## What this cloud agent cannot do
+## What this environment cannot do
 
 No production dump is present on the Cursor Cloud VM (`akuru_test` /
-`akuru_institute` only). Until an operator provides a dump and the
-commands above go green, **A3 is not green** and TRACK B must not start.
+`akuru_institute` only). Until an operator provides a dump and step 5 is
+green, **A3 is not green** and TRACK B must not start.
