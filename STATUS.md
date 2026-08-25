@@ -809,11 +809,26 @@ S3). S4.1 has **no new student-keyed writes** beyond existing
 - Parent portal: invoices, balance, plan progress, pay-now, receipt
   HTML. Admin collections + reconciliation CSVs.
 
+## S5.1 — Staff attendance (done)
+
+- `staff_attendance` unique `(staff_profile_id, date)` plus `academic_year_id`
+  (rule 10). `StaffAttendanceWriterInterface` is the only writer
+  (`manual`, `self`, `external`, `import`). Precedence: `on_leave` >
+  holiday > present/absent/late.
+- Holiday auto-fill from `calendar_days` (holiday + closure) skips
+  existing leave. Monthly summary action is ready for S5.6 payroll.
+- Nullable `department` + `designation` on `staff_profiles`. Admin
+  Inertia + CSV import/export + late/absence reports. Portal self
+  check-in behind `hr.staff_self_checkin` (off by default) logs IP.
+- Permission `hr.manage`. People actions only — HR does not import
+  People models.
+
 ## Next
 
 1. Operator: unify-verify / smoke / production (unchanged).
-2. Dual-write stays. S5 is not started.
-3. S4 DoD on real BML sandbox / Thaana receipt proof is operator-owned.
+2. Dual-write stays.
+3. S5.2 leave management is next (stacked on S5.1).
+4. S4 DoD on real BML sandbox / Thaana receipt proof is operator-owned.
 
 **Operator (their side, unchanged):**
 

@@ -95,6 +95,7 @@ return [
     'room_booking' => \App\Domains\Academics\Models\RoomBooking::class,
     'school' => \App\Domains\Settings\Models\School::class,
     'setting' => \App\Domains\Settings\Models\Setting::class,
+    'staff_attendance' => \App\Domains\HR\Models\StaffAttendance::class,
     'staff_profile' => \App\Domains\People\Models\StaffProfile::class,
     'staff_qualification' => \App\Domains\People\Models\StaffQualification::class,
     'student' => \App\Domains\People\Models\Student::class,

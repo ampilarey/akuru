@@ -30,6 +30,8 @@ class StaffProfile extends Model
         'joined_date',
         'employment_type',
         'status',
+        'department',
+        'designation',
     ];
 
     protected $attributes = [
