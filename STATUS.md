@@ -751,8 +751,28 @@ All 13 `student_guardians` rows are `unmapped`. 12/13 `guardian_user_id`s are **
 **Agent (this side): stop.** S2.1–S2.10 coding is on `main`. Staging
 schema is at `a9d5677` (S1.1b–S2.10 migrated). Unify-verify is red;
 ADR-007 forbids guessing the four collisions or inventing guardian
-users. No S3, no Hifz migration, no Deploy 3, no student-keyed write
-follow-up until the operator marks verify green.
+users. No Hifz migration, no Deploy 3, no student-keyed write
+follow-up until the operator marks verify green. Operator asked to
+complete S4 coding one slice at a time anyway (S4 is independent of
+S3). S4.1 has **no new student-keyed writes** beyond existing
+`invoices.student_id` (already FK to `students`).
+
+## S4.1 — Schema scoping & gaps (done)
+
+- `invoices` add `academic_year_id`, nullable `term_id`, `invoice_type`
+  (`school_fees` / `course_fee` / `other`), nullable `payment_plan_id`
+  (no FK until S4.4). Existing `student_id` already FKs `students`.
+- `fee_items` add trilingual names; `applicable_grades` kept.
+- New `receipts` (number unique, method enum, optional payment +
+  document). Permission `finance.record-manual-payment` +
+  `finance.manage`. Fee-item catalog + CSV.
+- Hifz / Deploy 3 / S3 untouched.
+
+## Next
+
+1. **S4.2 — Fee structures**.
+2. Operator: unify-verify / smoke / production (unchanged).
+3. Dual-write stays.
 
 **Operator (their side, unchanged):**
 

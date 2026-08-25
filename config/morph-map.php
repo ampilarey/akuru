@@ -70,6 +70,7 @@ return [
     'post' => \App\Domains\Website\Models\Post::class,
     'post_category' => \App\Domains\Website\Models\PostCategory::class,
     'quiz' => \App\Domains\Academics\Legacy\Models\Quiz::class,
+    'receipt' => \App\Domains\Finance\Models\Receipt::class,
     'quiz_attempt' => \App\Domains\Academics\Legacy\Models\QuizAttempt::class,
     'quiz_question' => \App\Domains\Academics\Legacy\Models\QuizQuestion::class,
     'quran_ayah' => \App\Domains\Hifz\Models\QuranAyah::class,

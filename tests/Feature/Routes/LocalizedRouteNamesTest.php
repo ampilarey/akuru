@@ -118,6 +118,10 @@ class LocalizedRouteNamesTest extends TestCase
             'academics.requests.store',
             'academics.requests.review',
             'academics.requests.export',
+            'finance.fee-items.index',
+            'finance.fee-items.store',
+            'finance.fee-items.update',
+            'finance.fee-items.export',
         ];
 
         foreach ($names as $name) {
