@@ -5,14 +5,20 @@ namespace App\Domains\Academics\Actions;
 use App\Domains\Academics\Exceptions\TimetableConflictException;
 use App\Domains\Academics\Models\Period;
 use App\Domains\Academics\Models\Room;
+use App\Domains\Academics\Models\RoomBooking;
 use App\Domains\Academics\Models\Timetable;
+use App\Domains\Academics\Services\RoomBookingClashChecker;
 use App\Domains\Academics\Services\TimetableConflictChecker;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 
 class SaveTimetableEntryAction
 {
-    public function __construct(private TimetableConflictChecker $checker) {}
+    public function __construct(
+        private TimetableConflictChecker $checker,
+        private RoomBookingClashChecker $bookingChecker,
+    ) {}
 
     /**
      * @param  array<string, mixed>  $data
@@ -21,11 +27,20 @@ class SaveTimetableEntryAction
     {
         $payload = $this->normalized($data, $entry);
 
+        $checkEntry = $this->toCheckEntry($payload, $entry?->id);
         $conflicts = $this->checker->check(
-            $this->toCheckEntry($payload, $entry?->id),
+            $checkEntry,
             $this->existingCandidates((int) $payload['academic_year_id'], (string) $payload['day_of_week']),
             $this->periodTimes(),
         );
+
+        foreach ($this->bookingChecker->checkTimetable(
+            $checkEntry,
+            $this->existingBookings((int) $payload['academic_year_id'], $payload['room_id'] ?? null, (string) $payload['day_of_week']),
+            $this->periodTimes(),
+        ) as $bookingConflict) {
+            $conflicts[] = ['type' => 'booking', 'timetable_id' => $bookingConflict['id']];
+        }
 
         if ($conflicts !== []) {
             $allow = (bool) ($data['allow_conflict'] ?? false);
@@ -176,6 +191,34 @@ class SaveTimetableEntryAction
                 'valid_until' => $row->valid_until?->toDateString(),
                 'is_active' => $row->is_active,
             ])
+            ->all();
+    }
+
+    /**
+     * @return list<array<string, mixed>>
+     */
+    private function existingBookings(int $yearId, mixed $roomId, string $day): array
+    {
+        if ($roomId === null || $roomId === '') {
+            return [];
+        }
+
+        return RoomBooking::query()
+            ->where('academic_year_id', $yearId)
+            ->where('room_id', (int) $roomId)
+            ->get()
+            ->map(fn (RoomBooking $row) => [
+                'id' => $row->id,
+                'room_id' => $row->room_id,
+                'academic_year_id' => $row->academic_year_id,
+                'date' => $row->date?->toDateString(),
+                'day_of_week' => strtolower(Carbon::parse($row->date)->englishDayOfWeek),
+                'period_id' => $row->period_id,
+                'start_time' => $row->start_time?->format('H:i:s'),
+                'end_time' => $row->end_time?->format('H:i:s'),
+            ])
+            ->filter(fn (array $row) => $row['day_of_week'] === strtolower($day))
+            ->values()
             ->all();
     }
 

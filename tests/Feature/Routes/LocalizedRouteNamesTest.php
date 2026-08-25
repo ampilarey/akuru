@@ -75,6 +75,11 @@ class LocalizedRouteNamesTest extends TestCase
             'academics.timetable.update',
             'academics.timetable.destroy',
             'academics.timetable.export',
+            'academics.bookings.index',
+            'academics.bookings.store',
+            'academics.bookings.update',
+            'academics.bookings.destroy',
+            'academics.bookings.export',
         ];
 
         foreach ($names as $name) {

@@ -491,11 +491,27 @@ conflict engine is **S2.2**.
 - Permission `manage_timetables`. No student-keyed writes. Hifz / Deploy 3
   untouched.
 
+## S2.4 — Room bookings + clash vs timetable (no student writes)
+
+- New `room_bookings`: `academic_year_id`, optional `term_id`, `room_id`,
+  trilingual title, date, period XOR start+end, notes, `booked_by`.
+- `RoomBookingClashChecker` (pure): booking↔booking and booking↔timetable
+  (same room, day, overlapping time, validity includes the booking date).
+- `SaveRoomBookingAction` hard-blocks clashes; rejects inactive/non-bookable
+  rooms. `SaveTimetableEntryAction` also blocks a slot over an existing booking.
+- Admin Inertia CRUD + CSV at `academics.bookings.*`. Permission `rooms.manage`.
+- Morph alias `room_booking`. Hifz / Deploy 3 / student-keyed writes untouched.
+
 ## Next
 
 <<<<<<< HEAD
+1. **S2.5** — `calendar_days` CRUD + portal/public holiday read (safe).
+2. **S2.0 / S2.1 / S2.2 / S2.3** PRs still open — merge when CI is green; then
+=======
+<<<<<<< HEAD
 1. **S2.4** — `room_bookings` + clash vs timetable (safe under deferral).
 2. **S2.0 / S2.1 / S2.2** PRs still open — merge when CI is green; then
+>>>>>>> origin/main
    **S2.0b** so staging runs `students:verify-unification`.
 =======
 <<<<<<< HEAD

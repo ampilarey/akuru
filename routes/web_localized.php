@@ -4,6 +4,7 @@ use App\Domains\Academics\Http\Controllers\AcademicYearController;
 use App\Domains\Academics\Http\Controllers\AnnouncementController;
 use App\Domains\Academics\Http\Controllers\ClassDirectoryController;
 use App\Domains\Academics\Http\Controllers\PromotionController;
+use App\Domains\Academics\Http\Controllers\RoomBookingController;
 use App\Domains\Academics\Http\Controllers\RoomDirectoryController;
 use App\Domains\Academics\Http\Controllers\SubstitutionRequestController;
 use App\Domains\Academics\Http\Controllers\TimetableBuilderController;
@@ -189,6 +190,12 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::get('rooms', [RoomDirectoryController::class, 'index'])->name('academics.rooms.index');
         Route::post('rooms', [RoomDirectoryController::class, 'store'])->name('academics.rooms.store');
         Route::put('rooms/{room}', [RoomDirectoryController::class, 'update'])->name('academics.rooms.update');
+
+        Route::get('bookings/export', [RoomBookingController::class, 'export'])->name('academics.bookings.export');
+        Route::get('bookings', [RoomBookingController::class, 'index'])->name('academics.bookings.index');
+        Route::post('bookings', [RoomBookingController::class, 'store'])->name('academics.bookings.store');
+        Route::put('bookings/{roomBooking}', [RoomBookingController::class, 'update'])->name('academics.bookings.update');
+        Route::delete('bookings/{roomBooking}', [RoomBookingController::class, 'destroy'])->name('academics.bookings.destroy');
 
         Route::get('timetable/export', [TimetableBuilderController::class, 'export'])->name('academics.timetable.export');
         Route::get('timetable', [TimetableBuilderController::class, 'index'])->name('academics.timetable.index');
