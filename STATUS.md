@@ -823,11 +823,23 @@ S3). S4.1 has **no new student-keyed writes** beyond existing
 - Permission `hr.manage`. People actions only — HR does not import
   People models.
 
+## S5.2 — Leave management (done)
+
+- `leave_types`, `leave_entitlements` (academic year — ADR-015),
+  append-only `leave_ledger`. Balance is always the ledger sum.
+- S2.10 `requests` gains `staff_leave`. Approval checks balance
+  (unpaid bypasses), writes `staff_attendance` `on_leave`, decrements
+  the ledger, and still creates `teacher_absences` + substitutions when
+  the staff member teaches. All-or-nothing transaction.
+- `teacher_leave` without a leave type keeps the S2.10 path.
+- Carry-over caps at `carry_over_max`. Admin types/balances + CSV.
+  Portal shows own balances only.
+
 ## Next
 
 1. Operator: unify-verify / smoke / production (unchanged).
 2. Dual-write stays.
-3. S5.2 leave management is next (stacked on S5.1).
+3. S5.3 contracts & compliance is next (stacked on S5.2).
 4. S4 DoD on real BML sandbox / Thaana receipt proof is operator-owned.
 
 **Operator (their side, unchanged):**
