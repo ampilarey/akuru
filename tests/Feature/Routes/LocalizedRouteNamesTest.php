@@ -67,6 +67,14 @@ class LocalizedRouteNamesTest extends TestCase
             'substitutions.requests.destroy',
             'substitutions.requests.take',
             'substitutions.requests.assign',
+            'academics.timetable.index',
+            'academics.timetable.store',
+            'academics.timetable.preview',
+            'academics.timetable.copy-from-class',
+            'academics.timetable.copy-week',
+            'academics.timetable.update',
+            'academics.timetable.destroy',
+            'academics.timetable.export',
         ];
 
         foreach ($names as $name) {
