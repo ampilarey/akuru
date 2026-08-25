@@ -141,6 +141,13 @@ class RoleSeeder extends Seeder
             'requests.review',
             'exams.manage',
             'exams.enter-any',
+            'finance.manage',
+            'finance.record-manual-payment',
+            'hr.manage',
+            'payroll.run',
+            'payroll.approve',
+            'courses.manage',
+            'courses.publish',
         ];
 
         foreach ($permissions as $permission) {
@@ -198,6 +205,11 @@ class RoleSeeder extends Seeder
             'requests.review',
             'exams.manage',
             'exams.enter-any',
+            'finance.manage',
+            'finance.record-manual-payment',
+            'hr.manage',
+            'payroll.run',
+            'courses.manage',
             'manage_announcements',
             'view_announcements',
             'create_announcements',

@@ -13,6 +13,7 @@ class RequestHandlerRegistry
      */
     private array $handlers = [
         'teacher_leave' => HandleTeacherLeaveApprovalAction::class,
+        'staff_leave' => HandleStaffLeaveApprovalAction::class,
     ];
 
     public function handlerFor(SchoolRequest $request): ?RequestTypeHandler

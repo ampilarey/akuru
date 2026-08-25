@@ -29,6 +29,7 @@ Route::get('/dv', function () {
 
 // Other routes
 Route::get('about', [\App\Domains\Website\Http\Controllers\PublicSite\AboutController::class, 'index'])->name('public.about');
+Route::get('careers', [\App\Domains\Website\Http\Controllers\PublicSite\CareersController::class, 'index'])->name('public.careers');
 Route::get('courses', [CourseController::class, 'index'])->name('public.courses.index');
 Route::get('courses/{course}', [CourseController::class, 'show'])->name('public.courses.show');
 // Search

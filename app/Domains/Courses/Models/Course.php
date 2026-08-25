@@ -20,7 +20,10 @@ class Course extends Model
 
     protected $fillable = [
         'course_category_id',
+        'subject_id',
         'title',
+        'title_dv',
+        'title_ar',
         'slug',
         'short_desc',
         'body',
@@ -33,6 +36,9 @@ class Course extends Model
         'registration_fee_currency',
         'requires_admin_approval',
         'status',
+        'workflow_status',
+        'course_type',
+        'created_by',
         'seats',
         'meta',
         'duration_weeks',
@@ -58,7 +64,13 @@ class Course extends Model
         'enrollment_deadline' => 'date',
         'start_date' => 'date',
         'end_date' => 'date',
+        'workflow_status' => \App\Domains\Courses\Enums\CourseWorkflowStatus::class,
     ];
+
+    public function subject(): BelongsTo
+    {
+        return $this->belongsTo(CourseSubject::class, 'subject_id');
+    }
 
     public function getRouteKeyName(): string
     {

@@ -1,13 +1,15 @@
 import { useForm } from '@inertiajs/react';
 import AppShell from '../../../Layouts/AppShell';
 
-export default function Index({ requests, types, canReview, teacherId }) {
+export default function Index({ requests, types, canReview, teacherId, leaveTypes = [] }) {
     const form = useForm({
         type: 'teacher_leave',
         reason: '',
         teacher_id: teacherId || '',
+        leave_type_id: leaveTypes[0]?.id || '',
         from_date: '',
         to_date: '',
+        half_day: false,
     });
 
     return (
@@ -35,6 +37,16 @@ export default function Index({ requests, types, canReview, teacherId }) {
                 <label className="block text-sm">
                     <span className="mb-1 block text-gray-600">To</span>
                     <input className="form-input w-full" type="date" value={form.data.to_date} onChange={(e) => form.setData('to_date', e.target.value)} />
+                </label>
+                <label className="block text-sm">
+                    <span className="mb-1 block text-gray-600">Leave type</span>
+                    <select className="form-input w-full" value={form.data.leave_type_id} onChange={(e) => form.setData('leave_type_id', e.target.value)}>
+                        {leaveTypes.map((type) => <option key={type.id} value={type.id}>{type.name}</option>)}
+                    </select>
+                </label>
+                <label className="flex items-center gap-2 text-sm">
+                    <input type="checkbox" checked={form.data.half_day} onChange={(e) => form.setData('half_day', e.target.checked)} />
+                    Half day
                 </label>
                 <label className="block text-sm md:col-span-3">
                     <span className="mb-1 block text-gray-600">Reason</span>

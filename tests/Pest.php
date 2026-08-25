@@ -22,3 +22,4 @@ pest()->extend(Tests\TestCase::class)
 
 require_once __DIR__.'/Support/PeopleTestHelpers.php';
 require_once __DIR__.'/Support/AcademicsTestHelpers.php';
+require_once __DIR__.'/Support/FinanceTestHelpers.php';
