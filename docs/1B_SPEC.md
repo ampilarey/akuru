@@ -18,7 +18,16 @@ reads the pinned revision when the enrollment has an offering. Enrollments
 gain `course_offering_id`. Seat limits use `lockForUpdate` on the offering
 row plus a locked enrollment count. Cancelled/rejected seats do not count.
 
-## Slice 1B.3 — Sessions + attendance foundation
+## Slice 1B.3 — Sessions + attendance foundation (done)
+
+`course_offering_sessions` and `attendance_records` live in Offerings.
+Session types: face_to_face, live_online, hybrid, workshop, exam,
+review_class, orientation. Attendance statuses: present, absent, late,
+excused, pending. Modes: physical, online, not_applicable. Catalog
+CRUD + CSV at `/catalog/offerings/{id}/sessions`. Attendance may be
+marked only for enrollments on that offering. Learner dashboard and
+course page list upcoming sessions. Distinct from Academics class
+attendance.
 
 ## Slice 1B.4 — Remaining block types
 

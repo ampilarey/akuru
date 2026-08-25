@@ -23,4 +23,5 @@ return [
     'children_learning' => 'تعلّم الأبناء',
     'no_children' => 'لا يوجد أبناء مرتبطون.',
     'i18n_preview' => 'معاينة اللغات',
+    'upcoming_sessions' => 'الجلسات القادمة',
 ];

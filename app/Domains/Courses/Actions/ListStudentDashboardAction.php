@@ -5,6 +5,7 @@ namespace App\Domains\Courses\Actions;
 use App\Domains\Courses\Models\Course;
 use App\Domains\Courses\Models\CourseEnrollment;
 use App\Domains\Courses\Models\Lesson;
+use App\Domains\Offerings\Actions\ListUpcomingSessionsForOfferingsAction;
 use App\Domains\People\Actions\ResolveStudentForUserAction;
 use App\Domains\Progress\Actions\ListLessonProgressAction;
 
@@ -21,6 +22,7 @@ class ListStudentDashboardAction
             return [
                 'student' => null,
                 'enrollments' => [],
+                'upcoming_sessions' => [],
             ];
         }
 
@@ -32,6 +34,9 @@ class ListStudentDashboardAction
 
         return [
             'student' => $student,
+            'upcoming_sessions' => app(ListUpcomingSessionsForOfferingsAction::class)->execute(
+                $enrollments->pluck('course_offering_id')->filter()->all(),
+            ),
             'enrollments' => $enrollments->map(function (CourseEnrollment $enrollment) {
                 $course = Course::query()->find($enrollment->course_id);
                 $progress = app(ListLessonProgressAction::class)->execute($enrollment->id);

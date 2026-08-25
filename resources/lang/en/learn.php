@@ -23,4 +23,5 @@ return [
     'children_learning' => 'Children learning',
     'no_children' => 'No linked children.',
     'i18n_preview' => 'i18n preview',
+    'upcoming_sessions' => 'Upcoming sessions',
 ];

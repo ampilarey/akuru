@@ -939,9 +939,19 @@ rate limiting, and the Inertia shell. No new 1A.1 code.
   enroll attaches the default self-learning offering.
 - Seat limits: `lockForUpdate` on the offering + enrollment count.
 
+## 1B.3 — Sessions + attendance foundation (done)
+
+- `course_offering_sessions` + `attendance_records` in Offerings
+  (not Academics `attendance` / `class_attendance`).
+- Time-scoped columns: `academic_year_id` / `term_id` on sessions;
+  `academic_year_id` on attendance.
+- Catalog session CRUD + CSV; attendance only for that offering's
+  enrollments. Learner dashboard/course page show upcoming sessions.
+- Offerings call Courses Actions for the roster (no model imports).
+
 ## Next
 
-1. 1B.3 — sessions + attendance foundation.
+1. 1B.4 — remaining block types.
 2. Operator: unify-verify / smoke / production (unchanged).
 3. Dual-write stays.
 4. S5 DoD remaining: month-in-the-life on real data, two parallel

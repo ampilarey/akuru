@@ -23,4 +23,5 @@ return [
     'children_learning' => 'ތައްލިމް',
     'no_children' => 'ތައްލިމް',
     'i18n_preview' => 'ޕްރޮފައިލް',
+    'upcoming_sessions' => 'ކުރިއަށް އޮތް ކްލާސް',
 ];
