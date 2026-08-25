@@ -425,26 +425,26 @@ Intended settings (classic protection or a ruleset):
 
 Settings UI: `https://github.com/ampilarey/akuru/settings/branches`
 
+## S2.1 — Rooms (first-class, no student writes)
+
+Plan confirmed (operator “Next”). Rooms only — timetable `room_id` / year /
+conflict engine is **S2.2**.
+
+- New `rooms`: name + AR/DV, building, capacity, `RoomType`
+  (`classroom|lab|hall|online|other`), bookable, active. Unique `name`.
+- `SyncRoomsFromTimetableStringsAction` creates rooms from distinct
+  `timetables.room` strings (fills empty translations). Idempotent.
+  Legacy `room` / `room_arabic` / `room_dhivehi` columns **kept**.
+  No `timetables.room_id` yet.
+- Admin Inertia CRUD + CSV at `academics.rooms.*`. Permission `rooms.manage`.
+- Morph alias `room`. Hifz / dual-write / Deploy 3 untouched.
+
 ## Next
 
-**S2 is blocked.** Do not start S2 feature code, S1.1 Deploy 3, or Hifz
-until **both** of the following are recorded in this file:
-
-1. `php artisan students:verify-unification` on **staging** is green
-   (zero unresolved) — verbatim output + archived JSON under
-   `docs/migrations/`.
-2. Operator credential smoke (portal / Hifz / payments / notifications /
-   OTP `7820288`/`7972434` / BML sandbox) is recorded.
-
-Also still open (not S2):
-
-- **Branch protection on `main`** — operator; 403 for this agent (see
-  Pre-S2 readiness §3).
-- **S1.1 Deploy 3** stays **≥2 weeks after Deploy 2** (`2f8a90b`,
-  2026-08-24). Dual-write and `student_guardians` /
-  `registration_students` stay until then (`docs/S1_SPEC.md` Deploy 3).
-- Blade `students.*` / `teachers.*` still live (S1.2–S1.5 added Inertia
-  alongside; S1 DoD wanted those routes gone).
-- Infra: `Relation::enforceMorphMap()` after production verification;
-  S1.1a items 1–3 remain operator-deferred; per-domain `routes.php` /
-  domain migrations; shrink architecture baselines as domains decouple.
+1. **S2.2** — timetable v2 + `TimetableConflictChecker` (safe under deferral).
+2. **S2.0** deploy gate PR still open — merge when CI is green; then **S2.0b**
+   trivial docs so staging actually runs `students:verify-unification`.
+3. S2.6–S2.10 stay **blocked** until verify is green on staging.
+4. Every S2 PR: wait for CI green; **do not self-merge**. Production: nothing
+   until credential smoke is recorded.
+5. **S1.1 Deploy 3** still ≥2 weeks after `2f8a90b`. Dual-write stays.

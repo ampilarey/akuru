@@ -4,6 +4,7 @@ use App\Domains\Academics\Http\Controllers\AcademicYearController;
 use App\Domains\Academics\Http\Controllers\AnnouncementController;
 use App\Domains\Academics\Http\Controllers\ClassDirectoryController;
 use App\Domains\Academics\Http\Controllers\PromotionController;
+use App\Domains\Academics\Http\Controllers\RoomDirectoryController;
 use App\Domains\Academics\Http\Controllers\SubstitutionRequestController;
 use App\Domains\Academics\Legacy\Http\Controllers\ELearningController;
 use App\Domains\Admissions\Http\Controllers\AdminEnrollmentController;
@@ -182,6 +183,11 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::post('classes', [ClassDirectoryController::class, 'store'])->name('academics.classes.store');
         Route::get('classes/{classRoom}', [ClassDirectoryController::class, 'show'])->name('academics.classes.show');
         Route::post('classes/{classRoom}/assign', [ClassDirectoryController::class, 'assign'])->name('academics.classes.assign');
+
+        Route::get('rooms/export', [RoomDirectoryController::class, 'export'])->name('academics.rooms.export');
+        Route::get('rooms', [RoomDirectoryController::class, 'index'])->name('academics.rooms.index');
+        Route::post('rooms', [RoomDirectoryController::class, 'store'])->name('academics.rooms.store');
+        Route::put('rooms/{room}', [RoomDirectoryController::class, 'update'])->name('academics.rooms.update');
 
         Route::get('promotion', [PromotionController::class, 'create'])->name('academics.promotion.create');
         Route::post('promotion/dry-run', [PromotionController::class, 'dryRun'])->name('academics.promotion.dry-run');

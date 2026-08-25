@@ -130,6 +130,7 @@ class RoleSeeder extends Seeder
 
             'custom_fields.manage',
             'students.view-sensitive',
+            'rooms.manage',
         ];
 
         foreach ($permissions as $permission) {
@@ -176,6 +177,7 @@ class RoleSeeder extends Seeder
             'view_timetables',
             'create_timetables',
             'edit_timetables',
+            'rooms.manage',
             'manage_announcements',
             'view_announcements',
             'create_announcements',
@@ -203,6 +205,7 @@ class RoleSeeder extends Seeder
             'view_attendance',
             'view_quran_progress',
             'view_timetables',
+            'rooms.manage',
             'view_announcements',
             'view_reports',
             'view_hifz_programs',

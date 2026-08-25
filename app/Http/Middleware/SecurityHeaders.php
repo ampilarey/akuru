@@ -17,12 +17,14 @@ class SecurityHeaders
     {
         $response = $next($request);
 
-        return $response
-            ->header('X-Frame-Options', 'SAMEORIGIN')
-            ->header('X-Content-Type-Options', 'nosniff')
-            ->header('Referrer-Policy', 'strict-origin-when-cross-origin')
-            ->header('Permissions-Policy', 'geolocation=(), camera=(), microphone=()')
-            ->header('X-XSS-Protection', '1; mode=block')
-            ->header('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+        // StreamedResponse (CSV exports) has no header() helper — set on the bag.
+        $response->headers->set('X-Frame-Options', 'SAMEORIGIN');
+        $response->headers->set('X-Content-Type-Options', 'nosniff');
+        $response->headers->set('Referrer-Policy', 'strict-origin-when-cross-origin');
+        $response->headers->set('Permissions-Policy', 'geolocation=(), camera=(), microphone=()');
+        $response->headers->set('X-XSS-Protection', '1; mode=block');
+        $response->headers->set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+
+        return $response;
     }
 }
