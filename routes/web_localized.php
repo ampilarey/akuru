@@ -49,6 +49,7 @@ use App\Domains\ExamsGrades\Http\Controllers\ExamMarkController;
 use App\Domains\ExamsGrades\Http\Controllers\ExamTypeController;
 use App\Domains\ExamsGrades\Http\Controllers\GradebookController;
 use App\Domains\ExamsGrades\Http\Controllers\GradeScaleController;
+use App\Domains\ExamsGrades\Http\Controllers\StandardController;
 use App\Domains\ExamsGrades\Http\Controllers\WeightSchemeController;
 use App\Domains\Finance\Http\Controllers\ArrearsController;
 use App\Domains\Finance\Http\Controllers\CollectionsController;
@@ -398,6 +399,11 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::get('competencies/export', [CompetencyController::class, 'export'])->name('exams.competencies.export');
         Route::get('competencies', [CompetencyController::class, 'index'])->name('exams.competencies.index');
         Route::post('competencies', [CompetencyController::class, 'store'])->name('exams.competencies.store');
+
+        Route::get('standards/export', [StandardController::class, 'export'])->name('exams.standards.export');
+        Route::get('standards', [StandardController::class, 'index'])->name('exams.standards.index');
+        Route::post('standards', [StandardController::class, 'store'])->name('exams.standards.store');
+        Route::post('standards/tag', [StandardController::class, 'tag'])->name('exams.standards.tag');
     });
 
     Route::prefix('finance')->middleware(['role:super_admin|admin|headmaster'])->group(function () {

@@ -72,26 +72,40 @@ it('does not mutate a stored snapshot when the live question is edited', functio
 });
 
 it('tags questions through the ExamsGrades contract without importing its models', function () {
-    Schema::create('standard_taggables', function ($table) {
-        $table->id();
-        $table->unsignedBigInteger('standard_id');
-        $table->string('taggable_type');
-        $table->unsignedBigInteger('taggable_id');
-        $table->timestamps();
-    });
+    if (! Schema::hasTable('standard_taggables')) {
+        Schema::create('standard_taggables', function ($table) {
+            $table->id();
+            $table->unsignedBigInteger('standard_id');
+            $table->string('taggable_type');
+            $table->unsignedBigInteger('taggable_id');
+            $table->timestamps();
+        });
+        $ids = [7, 9];
+    } else {
+        $ids = [
+            \App\Domains\ExamsGrades\Models\Standard::query()->create([
+                'code' => 'QB.1',
+                'title' => 'Question bank tag A',
+            ])->id,
+            \App\Domains\ExamsGrades\Models\Standard::query()->create([
+                'code' => 'QB.2',
+                'title' => 'Question bank tag B',
+            ])->id,
+        ];
+    }
 
     $question = app(SaveQuestionAction::class)->execute([
         'question_type' => 'true_false',
         'question_text' => 'Arabic is a language',
         'options' => [['id' => 'true', 'label' => 'True'], ['id' => 'false', 'label' => 'False']],
         'correct_answer' => ['true'],
-        'standard_ids' => [7, 9],
+        'standard_ids' => $ids,
     ]);
 
-    expect(app(ListStandardTagsAction::class)->execute('question', $question->id)->all())->toBe([7, 9]);
+    expect(app(ListStandardTagsAction::class)->execute('question', $question->id)->all())->toBe($ids);
 
-    app(SyncStandardTagsAction::class)->execute('question', $question->id, [9]);
-    expect(app(ListStandardTagsAction::class)->execute('question', $question->id)->all())->toBe([9]);
+    app(SyncStandardTagsAction::class)->execute('question', $question->id, [$ids[1]]);
+    expect(app(ListStandardTagsAction::class)->execute('question', $question->id)->all())->toBe([$ids[1]]);
 
     $source = file_get_contents(app_path('Domains/Courses/Actions/SaveQuestionAction.php'));
     expect($source)->not->toContain('App\\Domains\\ExamsGrades\\Models\\')

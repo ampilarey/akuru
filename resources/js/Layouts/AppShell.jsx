@@ -131,6 +131,9 @@ export default function AppShell({ title, children }) {
                         <Link href="/exams/competencies" className="text-[#7C2D37] hover:underline">
                             Competencies
                         </Link>
+                        <Link href="/exams/standards" className="text-[#7C2D37] hover:underline">
+                            Standards
+                        </Link>
                         <Link href="/portal/exams" className="text-[#7C2D37] hover:underline">
                             Results
                         </Link>

@@ -1108,11 +1108,19 @@ rate limiting, and the Inertia shell. No new 1A.1 code.
 - Competencies + assessments (subject-level). Gradebook matrix + CSV.
 - Hifz / Deploy 3 untouched.
 
+## S3.5 — Curriculum standards (done)
+
+- `standards` (optional subject, hierarchy via `parent_id`) and
+  polymorphic `standard_taggables` for exams and plan topics.
+- Coverage report + CSV: tagged exams/topics per standard (optional
+  term filter). No per-student analytics (Phase 2).
+- Hifz / Deploy 3 untouched.
+
 ## Next
 
 **Operator (not in this slice):** `unify-verify` still red (4 RS collisions + guardian pivot). Student dual-write stays until staging is green. `payroll.enabled` off until credentials. BML sandbox / Thaana receipts / credential smoke / production. S3.3+ writes student-keyed `exam_marks` — coding continues; staging writes stay blocked until verify is green.
 
-**S3.5+ (stacked, not yet merged onto main):** standards → report cards → awards.
+**S3.6+ (stacked, not yet merged onto main):** report cards → awards.
 
 **Qur'an A.4b (later):** switch offering-session reads to `offering_halaqa_session_links` after operators confirm dual-write. Then Hifz cleanup (deploy 3). Keep `QURAN_HALAQA_DUAL_WRITE` off until verified.
 
