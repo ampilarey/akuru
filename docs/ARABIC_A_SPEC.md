@@ -10,11 +10,12 @@ Admin-managed `arabic_letters` and `arabic_harakas`. Seeded. Catalog
 CRUD + CSV. Listed through Actions so activities can attach letter/haraka
 ids as metadata without a new engine.
 
-## Slice A.2 — Skill activities on the four patterns
+## Slice A.2 — Skill activities on the four patterns (done)
 
-Listening/speaking/reading/writing activity types as configuration of
-the 2.1 patterns + letter/haraka metadata. Teacher-marked speaking and
-canvas submissions reuse 2.4 review.
+Listening/speaking/reading/writing are `settings.skill` on the four 2.1
+patterns. Optional `letter_id` / `harakah_id` must exist in the A.1
+reference tables. Teacher-marked speaking/reading reuse 2.4 review.
+No new scoring engine.
 
 ## Slice A.3 — Skill reports
 

@@ -163,6 +163,11 @@ class SaveActivityAction
             'show_explanation' => (bool) ($settings['show_explanation'] ?? false),
             'teacher_review_required' => (bool) ($settings['teacher_review_required'] ?? false),
             'lock_next_lesson' => (bool) ($settings['lock_next_lesson'] ?? false),
+            'skill' => in_array($settings['skill'] ?? null, ['listening', 'speaking', 'reading', 'writing'], true)
+                ? $settings['skill']
+                : null,
+            'letter_id' => $this->optionalReferenceId($settings['letter_id'] ?? null, 'letter'),
+            'harakah_id' => $this->optionalReferenceId($settings['harakah_id'] ?? null, 'harakah'),
             'normalize' => [
                 'trim' => (bool) ($settings['normalize']['trim'] ?? true),
                 'collapse_space' => (bool) ($settings['normalize']['collapse_space'] ?? true),
@@ -175,5 +180,26 @@ class SaveActivityAction
                 'taa_marbuta' => (bool) ($settings['normalize']['taa_marbuta'] ?? false),
             ],
         ];
+    }
+
+    private function optionalReferenceId(mixed $value, string $kind): ?int
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+
+        $id = (int) $value;
+        $payload = app(ListArabicReferenceAction::class)->execute(activeOnly: true);
+        $exists = $kind === 'letter'
+            ? $payload['letters']->contains(fn (array $row): bool => $row['id'] === $id)
+            : $payload['harakas']->contains(fn (array $row): bool => $row['id'] === $id);
+
+        if (! $exists) {
+            throw ValidationException::withMessages([
+                'settings' => ['Unknown Arabic '.$kind.' reference.'],
+            ]);
+        }
+
+        return $id;
     }
 }

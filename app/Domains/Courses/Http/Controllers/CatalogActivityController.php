@@ -2,6 +2,7 @@
 
 namespace App\Domains\Courses\Http\Controllers;
 
+use App\Domains\Courses\Actions\ListArabicReferenceAction;
 use App\Domains\Courses\Actions\ListCourseActivitiesAction;
 use App\Domains\Courses\Actions\SaveActivityAction;
 use App\Domains\Courses\Models\Activity;
@@ -27,6 +28,8 @@ class CatalogActivityController extends Controller
             ],
             'activities' => app(ListCourseActivitiesAction::class)->execute($courseModel)->values(),
             'patterns' => ['selection', 'text_input', 'arrange', 'teacher_marked'],
+            'skills' => ['listening', 'speaking', 'reading', 'writing'],
+            ...app(ListArabicReferenceAction::class)->execute(activeOnly: true),
         ]);
     }
 
@@ -100,6 +103,14 @@ class CatalogActivityController extends Controller
         $settings = $request->input('settings');
         if (is_string($settings)) {
             $settings = json_decode($settings, true) ?: [];
+        }
+        if (! is_array($settings)) {
+            $settings = [];
+        }
+        foreach (['skill', 'letter_id', 'harakah_id'] as $key) {
+            if ($request->filled($key)) {
+                $settings[$key] = $request->input($key);
+            }
         }
 
         return [
