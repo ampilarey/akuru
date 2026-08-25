@@ -746,9 +746,14 @@ All 13 `student_guardians` rows are `unmapped`. 12/13 `guardian_user_id`s are **
 
 **Stop:** no S3, no Hifz, no Deploy 3. Student-keyed S2 writes stay blocked.
 
-## Next
+## S3.1 — Grading foundations (2026-08-25)
 
-**Agent (this side): stop.** S2.1–S2.10 coding is on `main`. Staging
+- **Done.** Additive `grade_scales` / `grade_scale_bands` / `weight_schemes` / `weight_scheme_items` with `academic_year_id` (rule 10). Seeded 4-point / 5-point / A–F / 0–100 scales and default scheme (attendance 5, classwork 15, homework 10, quizzes 20, exams 50).
+- Spatie `exams.manage`; `Grading/ExamTypeController` + `/exams/scales|types|weights` + CSV. Engine-agnostic — no course_type branches.
+- Merged onto current `main` after S4–Qur’an A (S3 was a parallel stack from older `main`). Permissions and nav unioned with finance/HR/courses.
+- Pest: `S3/GradingFoundationsTest`, `S3/GradingFoundationsArchitectureTest`.
+
+**Historical note (S4 landed first):** S2.1–S2.10 coding is on `main`. Staging
 schema is at `a9d5677` (S1.1b–S2.10 migrated). Unify-verify is red;
 ADR-007 forbids guessing the four collisions or inventing guardian
 users. No Hifz migration, no Deploy 3, no student-keyed write
@@ -1070,17 +1075,10 @@ rate limiting, and the Inertia shell. No new 1A.1 code.
 
 ## Next
 
-1. Qur’an A.4b — switch reads (deploy 2) only after dual-write is verified.
-2. Operator: unify-verify / smoke / production (unchanged).
-3. Dual-write stays.
-4. S5 DoD remaining: month-in-the-life on real data, two parallel
-   payroll cycles before `payroll.enabled` goes on.
-5. S4 DoD on real BML sandbox / Thaana receipt proof is operator-owned.
+**Operator (not in this slice):** `unify-verify` still red (4 RS collisions + guardian pivot). Student dual-write stays until staging is green. `payroll.enabled` off until credentials. BML sandbox / Thaana receipts / credential smoke / production.
 
-**Operator (their side, unchanged):**
+**S3.2+ (stacked, not yet merged onto main):** exams → marks → term grades → standards → report cards → awards. Merge S3.1 first, then retarget later S3 PRs onto `main`.
 
-1. Collision / guardian / RS-29 1:1 decision (see table above).
-2. Paste any later verify stdout; keep
-   `docs/migrations/s11b-student-unification-report.json` current.
-3. Branch protection. Credential smoke. Production: nothing until
-   smoke is recorded. Dual-write stays.
+**Qur'an A.4b (later):** switch offering-session reads to `offering_halaqa_session_links` after operators confirm dual-write. Then Hifz cleanup (deploy 3). Keep `QURAN_HALAQA_DUAL_WRITE` off until verified.
+
+**Arabic B / Qur'an B / later:** pronunciation AI, Capacitor, W1–W3, L-track.
