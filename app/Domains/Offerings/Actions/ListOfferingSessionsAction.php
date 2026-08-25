@@ -39,6 +39,7 @@ class ListOfferingSessionsAction
                     'timezone' => $session->timezone,
                     'location_name' => $session->location_name,
                     'online_meeting_url' => $session->online_meeting_url,
+                    'teacher_user_id' => $session->teacher_user_id,
                     'is_required' => $session->is_required,
                 ])
                 ->values()

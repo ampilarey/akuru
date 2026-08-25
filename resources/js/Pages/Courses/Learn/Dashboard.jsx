@@ -8,8 +8,9 @@ export default function Dashboard({ student, enrollments, upcoming_sessions = []
         <AppShell title={t.dashboard_title || 'My learning'}>
             {!student && <p className="text-sm text-gray-600">{t.no_profile || 'No student profile is linked to this account.'}</p>}
             {student && enrollments.length === 0 && <p className="text-sm text-gray-600">{t.not_enrolled || 'You are not enrolled yet. Browse the learn catalog.'}</p>}
-            <div className="mb-4">
+            <div className="mb-4 flex flex-wrap gap-3">
                 <a className="text-sm text-[#7C2D37] hover:underline" href="/learn/catalog">{t.browse || 'Browse courses'}</a>
+                <a className="text-sm text-[#7C2D37] hover:underline" href="/learn/schedule">{t.schedule || 'Schedule'}</a>
             </div>
             {upcoming_sessions.length > 0 && (
                 <section className="mb-4 rounded-lg border bg-white p-4">
