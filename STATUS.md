@@ -1154,13 +1154,29 @@ rate limiting, and the Inertia shell. No new 1A.1 code.
   `registration_students` (`user_id IS NULL`) are listed explicitly and
   included in the wipe so they cannot survive their guardian users.
 - Pest: `tests/Feature/People/ClearNonAdminUsersTest.php` (no leftover
-  pivot rows).
+  pivot rows). Merged #72.
+
+### A2 — UnifyStudentsAction national_id matcher (done)
+
+- **Defect:** staging RS 22 matched the wrong `students` row by `national_id`
+  while name+dob identified the right one. ADR-007 previously let the first
+  method with any candidates win.
+- `national_id` is now **unusable** (fall through to name+dob) when blank,
+  duplicated across `registration_students` or `students`, or in
+  `config/unification.php` placeholders (extend via
+  `UNIFICATION_NATIONAL_ID_PLACEHOLDERS`).
+- Unique `national_id` + name+dob **contradiction**: do not attach the ID
+  hit; fall through to name+dob. RS-22-shaped rows match the name+dob
+  student. If name+dob is not unique, record ambiguous and do not create.
+- Orphan `student_guardians` (missing `guardian_user_id`) are reported,
+  never invented as `parent_guardians`.
+- ADR-007 amended; supersedes `docs/S1_SPEC.md` line 49 match order.
+- Pest cases in `UnifiedStudentBackfillTest`. Dual-write matcher untouched.
 
 ## Next
 
-**TRACK A remaining:** A2 matcher hardening (RS 22 false `national_id`
-match), A3 verify on a **production-data copy** (not staging synthetics),
-A4 branch protection on `main` (operator; bot 403), A5 real
+**TRACK A remaining:** A3 verify on a **production-data copy** (not staging
+synthetics), A4 branch protection on `main` (operator; bot 403), A5 real
 `config/payroll.php` flag. **Do not start TRACK B until A3 is green.**
 No `--backfill` on production. No Hifz cutover.
 
