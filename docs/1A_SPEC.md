@@ -38,7 +38,13 @@ is `{media_id, mime, original_name}` (or a YouTube/Vimeo `embed_url`
 for video). Files are served only via authorized `/catalog/media/{id}`.
 No public `storage/` URLs.
 
-## Slice 1A.6 — Self-learning enrollment, student dashboard, progress
+## Slice 1A.6 — Self-learning enrollment, student dashboard, progress (done)
+
+Free enrollment against existing `course_enrollments` (no 1B offerings).
+`/learn` dashboard, catalog, course outline, and player. Progress lives in
+Progress (`student_lesson_progress`) and always stores `lesson_revision_id`.
+Player access: staff, preview, or active enrollment. Sequential unlock for
+required published lessons. Course % = completed required / total required.
 
 ## Slice 1A.7 — Parent-child polish + architecture tests
 

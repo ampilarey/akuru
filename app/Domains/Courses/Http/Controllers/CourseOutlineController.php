@@ -121,4 +121,19 @@ class CourseOutlineController extends Controller
 
         return redirect()->route('catalog.courses.outline', $course)->with('success', 'Lesson published.');
     }
+
+    public function togglePreview(Request $request, int $course, Lesson $lesson): RedirectResponse
+    {
+        abort_unless($request->user()?->can('courses.manage'), 403);
+        app(SaveLessonAction::class)->execute([
+            'course_module_id' => $lesson->course_module_id,
+            'title' => $lesson->title,
+            'slug' => $lesson->slug,
+            'description' => $lesson->description,
+            'position' => $lesson->position,
+            'is_preview' => ! $lesson->is_preview,
+        ], $lesson);
+
+        return redirect()->route('catalog.courses.outline', $course)->with('success', 'Preview flag updated.');
+    }
 }

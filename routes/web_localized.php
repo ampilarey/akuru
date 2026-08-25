@@ -25,6 +25,11 @@ use App\Domains\Courses\Http\Controllers\CourseLevelController;
 use App\Domains\Courses\Http\Controllers\CourseOutlineController;
 use App\Domains\Courses\Http\Controllers\CourseSubjectController;
 use App\Domains\Courses\Http\Controllers\EngineCourseController;
+use App\Domains\Courses\Http\Controllers\LearnCatalogController;
+use App\Domains\Courses\Http\Controllers\LearnCourseController;
+use App\Domains\Courses\Http\Controllers\LearnDashboardController;
+use App\Domains\Courses\Http\Controllers\LearnLessonController;
+use App\Domains\Courses\Http\Controllers\LearnMediaController;
 use App\Domains\Courses\Http\Controllers\LessonPlayerController;
 use App\Domains\Finance\Http\Controllers\ArrearsController;
 use App\Domains\Finance\Http\Controllers\CollectionsController;
@@ -103,6 +108,13 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
     Route::get('/portal/appraisals', [PortalAppraisalController::class, 'index'])->name('portal.appraisals');
     Route::post('/portal/appraisals/{appraisal}/acknowledge', [PortalAppraisalController::class, 'acknowledge'])->name('portal.appraisals.acknowledge');
     Route::get('/portal/payslips', [PortalPayslipController::class, 'index'])->name('portal.payslips');
+    Route::get('/learn', [LearnDashboardController::class, 'index'])->name('learn.dashboard');
+    Route::get('/learn/catalog', [LearnCatalogController::class, 'index'])->name('learn.catalog');
+    Route::post('/learn/courses/{course}/enroll', [LearnCatalogController::class, 'enroll'])->name('learn.courses.enroll')->whereNumber('course');
+    Route::get('/learn/courses/{course}', [LearnCourseController::class, 'show'])->name('learn.courses.show')->whereNumber('course');
+    Route::get('/learn/lessons/{lesson}', [LearnLessonController::class, 'show'])->name('learn.lessons.show')->whereNumber('lesson');
+    Route::post('/learn/lessons/{lesson}/complete', [LearnLessonController::class, 'complete'])->name('learn.lessons.complete')->whereNumber('lesson');
+    Route::get('/learn/media/{media}', [LearnMediaController::class, 'show'])->name('learn.media.show')->whereNumber('media');
     Route::get('/hr/payslips/{payslip}/document', [PayslipDocumentController::class, 'show'])->name('hr.payslips.document')->whereNumber('payslip');
     Route::get('/finance/receipts/{receipt}/document', [ReceiptDocumentController::class, 'show'])->name('finance.receipts.show')->whereNumber('receipt');
 
@@ -370,6 +382,7 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::post('courses/{course}/blocks/reorder', [CourseOutlineController::class, 'reorderBlocks'])->name('catalog.courses.blocks.reorder')->whereNumber('course');
         Route::delete('courses/{course}/blocks/{block}', [CourseOutlineController::class, 'destroyBlock'])->name('catalog.courses.blocks.destroy')->whereNumber('course');
         Route::post('courses/{course}/lessons/{lesson}/publish', [CourseOutlineController::class, 'publishLesson'])->name('catalog.courses.lessons.publish')->whereNumber('course');
+        Route::post('courses/{course}/lessons/{lesson}/preview', [CourseOutlineController::class, 'togglePreview'])->name('catalog.courses.lessons.preview')->whereNumber('course');
         Route::get('player/{lesson}', [LessonPlayerController::class, 'show'])->name('catalog.player.show')->whereNumber('lesson');
         Route::get('media/{media}', [CatalogMediaController::class, 'show'])->name('catalog.media.show')->whereNumber('media');
     });

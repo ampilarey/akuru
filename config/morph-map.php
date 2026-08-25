@@ -122,6 +122,7 @@ return [
     'staff_profile' => \App\Domains\People\Models\StaffProfile::class,
     'staff_qualification' => \App\Domains\People\Models\StaffQualification::class,
     'student' => \App\Domains\People\Models\Student::class,
+    'student_lesson_progress' => \App\Domains\Progress\Models\StudentLessonProgress::class,
     'student_status_history' => \App\Domains\People\Models\StudentStatusHistory::class,
     'subject' => \App\Domains\Academics\Models\Subject::class,
     'substitution_assignment' => \App\Domains\Academics\Models\SubstitutionAssignment::class,

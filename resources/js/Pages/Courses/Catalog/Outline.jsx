@@ -125,7 +125,8 @@ export default function Outline({ course, modules }) {
                             <div key={lesson.id} className="mb-3 border-t pt-3">
                                 <div className="mb-2 flex flex-wrap items-center gap-3">
                                     <p className="font-medium">{lesson.title}</p>
-                                    <span className="text-xs uppercase text-gray-500">{lesson.status}{lesson.revision_number ? ` r${lesson.revision_number}` : ''}</span>
+                                    <span className="text-xs uppercase text-gray-500">{lesson.status}{lesson.revision_number ? ` r${lesson.revision_number}` : ''}{lesson.is_preview ? ' preview' : ''}</span>
+                                    <button type="button" className="btn-secondary" onClick={() => router.post(`/catalog/courses/${course.id}/lessons/${lesson.id}/preview`)}>{lesson.is_preview ? 'Unmark preview' : 'Mark preview'}</button>
                                     <button type="button" className="btn-secondary" onClick={() => router.post(`/catalog/courses/${course.id}/lessons/${lesson.id}/publish`)}>Publish</button>
                                     {lesson.current_revision_id && (
                                         <a className="text-sm text-[#7C2D37] hover:underline" href={`/catalog/player/${lesson.id}`}>Open player</a>

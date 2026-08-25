@@ -35,6 +35,7 @@ class ListCourseOutlineAction
                     'slug' => $lesson->slug,
                     'status' => $lesson->status?->value ?? $lesson->status,
                     'current_revision_id' => $lesson->current_revision_id,
+                    'is_preview' => (bool) $lesson->is_preview,
                     'revision_number' => $lesson->currentRevision?->revision_number,
                     'blocks' => $lesson->blocks->map(fn ($block) => [
                         'id' => $block->id,
