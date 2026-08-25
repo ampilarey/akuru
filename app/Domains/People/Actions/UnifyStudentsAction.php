@@ -20,9 +20,18 @@ use Illuminate\Support\Facades\DB;
  */
 class UnifyStudentsAction
 {
+    /**
+     * Normalized national_id values that must not be used as a match key
+     * (blank is handled separately). Built once per execute().
+     *
+     * @var array<string, true>
+     */
+    private array $unusableNationalIds = [];
+
     public function execute(): StudentUnificationReport
     {
         $report = StudentUnificationReport::empty();
+        $this->unusableNationalIds = $this->discoverUnusableNationalIds();
 
         DB::transaction(function () use ($report): void {
             $this->mapRegistrationStudents($report);
@@ -94,21 +103,19 @@ class UnifyStudentsAction
             }
 
             if ($candidates->count() > 1) {
-                $report->ambiguous[] = [
-                    'registration_student_id' => $rs->id,
-                    'method' => $method,
-                    'candidate_student_ids' => $candidates->pluck('id')->all(),
-                ];
-                $report->unresolved[] = [
-                    'registration_student_id' => $rs->id,
-                    'reason' => 'ambiguous',
-                    'method' => $method,
-                ];
+                $this->recordAmbiguous($rs, $method, $candidates, $report);
 
                 return;
             }
 
-            $this->link($rs, $candidates->first(), $method, $report);
+            $candidate = $candidates->first();
+            if ($method === 'national_id' && $this->nameDobContradicts($rs, $candidate)) {
+                $this->recordAmbiguous($rs, $method, $candidates, $report, 'name_dob_contradiction');
+
+                return;
+            }
+
+            $this->link($rs, $candidate, $method, $report);
 
             return;
         }
@@ -134,7 +141,7 @@ class UnifyStudentsAction
     private function candidatesByNationalId(RegistrationStudent $rs): Collection
     {
         $nationalId = $this->plain($rs->national_id);
-        if ($nationalId === null) {
+        if ($nationalId === null || $this->isUnusableNationalId($nationalId)) {
             return collect();
         }
 
@@ -160,6 +167,114 @@ class UnifyStudentsAction
             ->whereDate('date_of_birth', $dob)
             ->orderBy('id')
             ->get();
+    }
+
+    /**
+     * True when the RS has a complete name+dob key that does not include this
+     * national_id candidate. Incomplete keys cannot contradict (no fallthrough
+     * signal). A contradiction is ambiguous — do not fall through to name_dob.
+     */
+    private function nameDobContradicts(RegistrationStudent $rs, Student $candidate): bool
+    {
+        $first = trim((string) $rs->first_name);
+        $last = trim((string) $rs->last_name);
+        $dob = $rs->dob?->toDateString();
+
+        if ($first === '' || $last === '' || $dob === null) {
+            return false;
+        }
+
+        return ! $this->candidatesByNameDob($rs)->contains(
+            fn (Student $student): bool => $student->id === $candidate->id
+        );
+    }
+
+    /**
+     * @param  Collection<int, Student>  $candidates
+     */
+    private function recordAmbiguous(
+        RegistrationStudent $rs,
+        string $method,
+        Collection $candidates,
+        StudentUnificationReport $report,
+        ?string $reason = null,
+    ): void {
+        $row = [
+            'registration_student_id' => $rs->id,
+            'method' => $method,
+            'candidate_student_ids' => $candidates->pluck('id')->all(),
+        ];
+        if ($reason !== null) {
+            $row['reason'] = $reason;
+        }
+
+        $report->ambiguous[] = $row;
+        $report->unresolved[] = [
+            'registration_student_id' => $rs->id,
+            'reason' => 'ambiguous',
+            'method' => $method,
+        ];
+    }
+
+    /**
+     * @return array<string, true>
+     */
+    private function discoverUnusableNationalIds(): array
+    {
+        $unusable = [];
+
+        foreach (config('unification.national_id_placeholders', []) as $placeholder) {
+            $normalized = $this->normalizedNationalId((string) $placeholder);
+            if ($normalized !== null) {
+                $unusable[$normalized] = true;
+            }
+        }
+
+        $rsCounts = [];
+        foreach (RegistrationStudent::query()->orderBy('id')->get() as $rs) {
+            $normalized = $this->normalizedNationalId($this->plain($rs->national_id));
+            if ($normalized === null) {
+                continue;
+            }
+            $rsCounts[$normalized] = ($rsCounts[$normalized] ?? 0) + 1;
+        }
+
+        $studentCounts = [];
+        foreach (Student::query()->orderBy('id')->get(['id', 'national_id']) as $student) {
+            $normalized = $this->normalizedNationalId($this->plain($student->national_id));
+            if ($normalized === null) {
+                continue;
+            }
+            $studentCounts[$normalized] = ($studentCounts[$normalized] ?? 0) + 1;
+        }
+
+        foreach ([$rsCounts, $studentCounts] as $counts) {
+            foreach ($counts as $nationalId => $count) {
+                if ($count > 1) {
+                    $unusable[$nationalId] = true;
+                }
+            }
+        }
+
+        return $unusable;
+    }
+
+    private function isUnusableNationalId(string $nationalId): bool
+    {
+        $normalized = $this->normalizedNationalId($nationalId);
+
+        return $normalized === null || isset($this->unusableNationalIds[$normalized]);
+    }
+
+    private function normalizedNationalId(?string $value): ?string
+    {
+        if ($value === null) {
+            return null;
+        }
+
+        $normalized = mb_strtolower(trim($value));
+
+        return $normalized === '' ? null : $normalized;
     }
 
     private function link(

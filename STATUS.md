@@ -1141,7 +1141,29 @@ rate limiting, and the Inertia shell. No new 1A.1 code.
 - Portal awards list. Report-card awards section now reads issued
   awards. Hifz / Deploy 3 untouched.
 
+## TRACK A — Unblock (S1 verify blockers)
+
+### A2 — UnifyStudentsAction national_id matcher (done)
+
+- **Defect:** staging RS 22 matched the wrong `students` row by `national_id`
+  while name+dob identified the right one. ADR-007 previously let the first
+  method with any candidates win.
+- `national_id` is now **unusable** (fall through to name+dob) when blank,
+  duplicated across `registration_students` or `students`, or in
+  `config/unification.php` placeholders (extend via
+  `UNIFICATION_NATIONAL_ID_PLACEHOLDERS`).
+- Unique `national_id` + name+dob **contradiction** → ambiguous
+  (`name_dob_contradiction`), no link, no fallthrough.
+- ADR-007 amended; supersedes `docs/S1_SPEC.md` line 49 match order.
+- Pest cases in `UnifiedStudentBackfillTest`. Dual-write matcher untouched.
+
 ## Next
+
+**TRACK A remaining:** A1 `student_guardians` wipe (#72), A3 verify on a
+**production-data copy** (not staging synthetics), A4 branch protection on
+`main` (operator; bot 403), A5 real `config/payroll.php` flag. **Do not
+start TRACK B until A3 is green.** No `--backfill` on production. No Hifz
+cutover.
 
 **Operator (not in this slice):** `unify-verify` still red (4 RS collisions + guardian pivot). Student dual-write stays until staging is green. `payroll.enabled` off until credentials. BML sandbox / Thaana receipts / credential smoke / production. S3.1–S3.7 coding is on `main`; staging student-keyed writes stay blocked until verify is green.
 

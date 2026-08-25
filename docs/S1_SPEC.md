@@ -47,6 +47,7 @@ Written automatically by a `ChangeStudentStatusAction` — never raw status upda
 
 **Deploy 1 — additive:** new columns + tables; backfill job:
 1. For each `registration_students` row, match to `students` by (a) `user_id`, else (b) `national_id`, else (c) exact name + dob. Log match method.
+   **Superseded by ADR-007 (A2):** skip `national_id` when blank, duplicated across RS or `students` rows, or in `config/unification.php` placeholders; a unique `national_id` hit whose name+dob contradicts the candidate is **ambiguous** (no fallthrough). See `docs/adr/ADR-007-s11b-unification-backfill.md`.
 2. Match found → set `legacy_registration_student_id`, fill missing fields (passport etc.).
 3. No match → create new `students` row (status by enrollment state: active if any active course_enrollment, else prospective), nullable school fields.
 4. Migrate `student_guardians` → create/find `parent_guardians` by guardian user, insert `guardian_student` rows.
