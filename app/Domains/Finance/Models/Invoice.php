@@ -5,6 +5,7 @@ namespace App\Domains\Finance\Models;
 use App\Domains\Finance\Enums\InvoiceStatus;
 use App\Domains\Finance\Enums\InvoiceType;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Invoice extends Model
@@ -58,5 +59,10 @@ class Invoice extends Model
     public function receipts(): HasMany
     {
         return $this->hasMany(Receipt::class);
+    }
+
+    public function paymentPlan(): BelongsTo
+    {
+        return $this->belongsTo(PaymentPlan::class, 'payment_plan_id');
     }
 }

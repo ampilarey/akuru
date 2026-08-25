@@ -133,6 +133,9 @@ class LocalizedRouteNamesTest extends TestCase
             'finance.invoices.export',
             'finance.arrears.index',
             'finance.arrears.export',
+            'finance.payment-plans.index',
+            'finance.payment-plans.store',
+            'finance.payment-plans.export',
         ];
 
         foreach ($names as $name) {

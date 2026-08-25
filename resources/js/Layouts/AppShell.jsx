@@ -82,6 +82,9 @@ export default function AppShell({ title, children }) {
                         <Link href="/finance/arrears" className="text-[#7C2D37] hover:underline">
                             Arrears
                         </Link>
+                        <Link href="/finance/payment-plans" className="text-[#7C2D37] hover:underline">
+                            Payment plans
+                        </Link>
                         <span className="text-gray-500">{user?.name}</span>
                         <span className="rounded bg-[#F3EBE0] px-2 py-0.5 text-xs uppercase">{locale}</span>
                     </nav>
