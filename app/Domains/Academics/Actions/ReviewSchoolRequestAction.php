@@ -4,6 +4,7 @@ namespace App\Domains\Academics\Actions;
 
 use App\Domains\Academics\Enums\SchoolRequestStatus;
 use App\Domains\Academics\Models\SchoolRequest;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class ReviewSchoolRequestAction
@@ -24,16 +25,18 @@ class ReviewSchoolRequestAction
             ]);
         }
 
-        $request->status = $status;
-        $request->reviewed_by = $reviewerId;
-        $request->reviewed_at = now();
-        $request->review_notes = $notes;
-        $request->save();
+        return DB::transaction(function () use ($request, $status, $reviewerId, $notes): SchoolRequest {
+            $request->status = $status;
+            $request->reviewed_by = $reviewerId;
+            $request->reviewed_at = now();
+            $request->review_notes = $notes;
+            $request->save();
 
-        if ($status === SchoolRequestStatus::Approved) {
-            $this->registry->handlerFor($request)?->onApproved($request->fresh());
-        }
+            if ($status === SchoolRequestStatus::Approved) {
+                $this->registry->handlerFor($request)?->onApproved($request->fresh());
+            }
 
-        return $request->refresh();
+            return $request->refresh();
+        });
     }
 }

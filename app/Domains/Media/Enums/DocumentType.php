@@ -13,5 +13,6 @@ enum DocumentType: string
     case AwardCertificate = 'award_certificate';
     case IdCard = 'id_card';
     case TransferCertificate = 'transfer_certificate';
+    case Receipt = 'receipt';
     case Other = 'other';
 }
