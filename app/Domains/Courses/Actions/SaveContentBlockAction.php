@@ -13,6 +13,11 @@ class SaveContentBlockAction
     public function execute(array $data, ?ContentBlock $block = null): ContentBlock
     {
         $lesson = Lesson::query()->findOrFail((int) $data['lesson_id']);
+        $validated = app(ValidateContentBlockDataAction::class)->execute(
+            (string) $data['type'],
+            is_array($data['data'] ?? null) ? $data['data'] : [],
+            is_array($data['settings'] ?? null) ? $data['settings'] : [],
+        );
 
         $payload = [
             'lesson_id' => $lesson->id,
@@ -21,8 +26,8 @@ class SaveContentBlockAction
             'type' => $data['type'],
             'position' => (int) ($data['position'] ?? (($lesson->blocks()->max('position') ?? -1) + 1)),
             'title' => $data['title'] ?? null,
-            'data' => $data['data'] ?? [],
-            'settings' => $data['settings'] ?? [],
+            'data' => $validated['data'],
+            'settings' => $validated['settings'],
             'is_required' => (bool) ($data['is_required'] ?? false),
             'created_by' => $data['created_by'] ?? null,
         ];

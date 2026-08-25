@@ -58,11 +58,19 @@ class CourseOutlineController extends Controller
             'lesson_id' => ['required', 'integer', 'exists:lessons,id'],
             'type' => ['required', 'string', 'max:40'],
             'body' => ['nullable', 'string'],
+            'html' => ['nullable', 'string'],
+            'tone' => ['nullable', 'string'],
+            'direction' => ['nullable', 'string', 'in:ltr,rtl,auto'],
         ]);
         app(SaveContentBlockAction::class)->execute([
             'lesson_id' => $data['lesson_id'],
             'type' => $data['type'],
-            'data' => ['body' => $data['body'] ?? ''],
+            'data' => [
+                'body' => $data['body'] ?? '',
+                'html' => $data['html'] ?? $data['body'] ?? '',
+                'tone' => $data['tone'] ?? 'note',
+            ],
+            'settings' => ['direction' => $data['direction'] ?? 'auto'],
             'created_by' => $request->user()?->id,
         ]);
 

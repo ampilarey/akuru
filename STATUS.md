@@ -893,9 +893,14 @@ rate limiting, and the Inertia shell. No new 1A.1 code.
   reads the current published revision only.
 - Draft block edits, deletes, and reorders do not mutate history.
 
+## 1A.4 — Core text blocks (done)
+
+- Validated `text`, `rich_text`, `instruction`. Direction is a setting.
+- Media block types rejected. Player renders published snapshots.
+
 ## Next
 
-1. 1A.4 — Text / Rich Text / Instruction blocks + builder/player.
+1. 1A.5 — media pipeline + image/audio/video/PDF blocks.
 2. Operator: unify-verify / smoke / production (unchanged).
 3. Dual-write stays.
 4. S5 DoD remaining: month-in-the-life on real data, two parallel

@@ -42,6 +42,7 @@ class ListCourseOutlineAction
                         'position' => $block->position,
                         'title' => $block->title,
                         'data' => $block->data,
+                        'settings' => $block->settings,
                     ])->values(),
                 ])->values(),
             ])->values(),
