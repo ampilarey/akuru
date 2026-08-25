@@ -1018,9 +1018,17 @@ rate limiting, and the Inertia shell. No new 1A.1 code.
 - Student schedule `/learn/schedule`. Teacher schedule `/teach/schedule`.
 - Offerings still owns sessions/attendance; no Academics imports.
 
+## Arabic A.1 — Letters + harakas (done)
+
+- Admin-managed `arabic_letters` (28 seeded) and `arabic_harakas`
+  (fatha/kasra/damma/sukoon). Catalog `/catalog/arabic` + CSV.
+- Listed through `ListArabicReferenceAction` so later skill activities
+  can attach ids as metadata. No engine `course_type` branches. No AI.
+
 ## Next
 
-1. Arabic module A (non-AI skills on the general activity system).
+1. Arabic A.2–A.3 — skill activities on the four patterns, then reports
+   (`docs/ARABIC_A_SPEC.md`).
 2. Qur’an module A (human-first, after engine is stable).
 3. Operator: unify-verify / smoke / production (unchanged).
 4. Dual-write stays.

@@ -14,6 +14,8 @@ return [
     'assessment' => \App\Domains\Courses\Models\Assessment::class,
     'assessment_attempt' => \App\Domains\Progress\Models\AssessmentAttempt::class,
     'assessment_question' => \App\Domains\Courses\Models\AssessmentQuestion::class,
+    'arabic_harakah' => \App\Domains\Courses\Models\ArabicHarakah::class,
+    'arabic_letter' => \App\Domains\Courses\Models\ArabicLetter::class,
     'activity' => \App\Domains\Courses\Models\Activity::class,
     'activity_attempt' => \App\Domains\Progress\Models\ActivityAttempt::class,
     'admission_application' => \App\Domains\Admissions\Models\AdmissionApplication::class,
