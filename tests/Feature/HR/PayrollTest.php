@@ -11,11 +11,13 @@ use App\Domains\HR\Actions\RunPayrollAction;
 use App\Domains\HR\Actions\SaveStaffContractAction;
 use App\Domains\HR\Contracts\StaffAttendanceWriterInterface;
 use App\Domains\HR\DTOs\StaffAttendanceDTO;
+use App\Domains\HR\Enums\PayrollPeriodStatus;
 use App\Domains\HR\Enums\PayslipStatus;
 use App\Domains\HR\Enums\StaffAttendanceSource;
 use App\Domains\HR\Enums\StaffAttendanceStatus;
 use App\Domains\HR\Enums\StaffContractType;
 use App\Domains\HR\Models\LeaveType;
+use App\Domains\HR\Models\PayrollPeriod;
 use App\Domains\HR\Models\Payslip;
 use App\Domains\Identity\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -192,6 +194,32 @@ it('stays off when only PAYROLL_ENABLED config is on', function () {
     config()->set('payroll.enabled', true);
 
     expect(app(ResolvePayrollSettingsAction::class)->execute()['enabled'])->toBeFalse();
+});
+
+it('keeps every payroll write action inert when the flag is off', function () {
+    config()->set('payroll.enabled', false);
+    DB::table('settings')->where('key', 'payroll.enabled')->update(['value' => '0']);
+
+    $runner = actingPeopleAdmin(['payroll.run', 'payroll.approve']);
+    $period = PayrollPeriod::query()->create([
+        'year' => 2026,
+        'month' => 8,
+        'status' => PayrollPeriodStatus::Review,
+        'processed_by' => $runner->id,
+    ]);
+
+    expect(fn () => app(RunPayrollAction::class)->execute(2026, 9, $runner->id))
+        ->toThrow(ValidationException::class);
+    expect(fn () => app(ApprovePayrollPeriodAction::class)->execute($period->id, $runner->id))
+        ->toThrow(ValidationException::class);
+    expect(fn () => app(MarkPayrollPaidAction::class)->execute($period->id))
+        ->toThrow(ValidationException::class);
+    expect(fn () => app(LockPayrollPeriodAction::class)->execute($period->id))
+        ->toThrow(ValidationException::class);
+
+    expect(PayrollPeriod::query()->count())->toBe(1)
+        ->and(Payslip::query()->count())->toBe(0)
+        ->and($period->fresh()->status)->toBe(PayrollPeriodStatus::Review);
 });
 
 it('applies updated rates only to the next period', function () {

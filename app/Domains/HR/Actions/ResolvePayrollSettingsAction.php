@@ -3,6 +3,7 @@
 namespace App\Domains\HR\Actions;
 
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 class ResolvePayrollSettingsAction
 {
@@ -35,5 +36,18 @@ class ResolvePayrollSettingsAction
                 && filter_var($rows['payroll.enabled'] ?? false, FILTER_VALIDATE_BOOLEAN),
             'rules' => $rules,
         ];
+    }
+
+    /**
+     * @return array{enabled: bool, rules: array<string, mixed>}
+     */
+    public function assertEnabled(): array
+    {
+        $settings = $this->execute();
+        if (! $settings['enabled']) {
+            throw ValidationException::withMessages(['payroll' => 'Payroll is disabled.']);
+        }
+
+        return $settings;
     }
 }

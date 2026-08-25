@@ -1149,7 +1149,8 @@ rate limiting, and the Inertia shell. No new 1A.1 code.
   `config/payroll.php` did not exist.
 - `PAYROLL_ENABLED` (default **false**) AND the settings row must both be
   true. `ResolvePayrollSettingsAction` implements the AND.
-- `enablePayroll()` in Pest sets both. ADR-016 amended.
+  `assertEnabled()` gates **every write path**: run, approve, pay, lock.
+- Pest: `enablePayroll()` sets both; write actions are inert when off.
 - Payroll stays off until two parallel cycles match (operator).
 
 ## Next
