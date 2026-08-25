@@ -18,10 +18,7 @@ class RunPayrollAction
 
     public function execute(int $year, int $month, int $processedBy): PayrollPeriod
     {
-        $settings = app(ResolvePayrollSettingsAction::class)->execute();
-        if (! $settings['enabled']) {
-            throw ValidationException::withMessages(['payroll' => 'Payroll is disabled.']);
-        }
+        $settings = app(ResolvePayrollSettingsAction::class)->assertEnabled();
 
         $rules = $settings['rules'];
         $start = Carbon::create($year, $month, 1, 0, 0, 0, 'Indian/Maldives');

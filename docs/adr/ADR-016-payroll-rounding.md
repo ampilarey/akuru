@@ -20,8 +20,11 @@ never hardcoded.
    `staff_attendance` writes and leave approvals that touch a locked
    month are rejected. They must be handled as a next-period
    adjustment.
-4. **`payroll.enabled` stays off** until two parallel cycles match the
-   current manual process (DoD; recorded in STATUS.md by the operator).
+4. **Payroll stays off until two parallel cycles match** the current
+   manual process (DoD; recorded in STATUS.md by the operator). Enabled
+   is **AND** of `config('payroll.enabled')` (`PAYROLL_ENABLED`, default
+   false) and the `settings.payroll.enabled` row. Either off → payroll
+   is off. There is no `config/payroll.php`-less path.
 
 ## Consequences
 

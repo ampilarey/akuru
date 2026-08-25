@@ -1143,6 +1143,53 @@ rate limiting, and the Inertia shell. No new 1A.1 code.
 
 ## TRACK A — Unblock (S1 verify blockers)
 
+### A1 — `users:clear-non-admin` deletes `student_guardians` (done)
+
+- Staging verify’s “12/13 `guardian_user_id` missing from `users`” came from
+  this wipe: `FOREIGN_KEY_CHECKS=0` deleted users / `registration_students`
+  / payments and never touched `student_guardians`.
+  `UnifyStudentsAction::createParentFromUserId()` cannot invent those users.
+- Command now deletes `student_guardians` and `guardian_student` for wiped
+  users/profiles. `whereNotIn` does **not** match NULL — guardian-only
+  `registration_students` (`user_id IS NULL`) are listed explicitly and
+  included in the wipe so they cannot survive their guardian users.
+- Pest: `tests/Feature/People/ClearNonAdminUsersTest.php` (no leftover
+  pivot rows). Merged #72.
+
+### A2 — UnifyStudentsAction national_id matcher (done)
+
+- **Defect:** staging RS 22 matched the wrong `students` row by `national_id`
+  while name+dob identified the right one. ADR-007 previously let the first
+  method with any candidates win.
+- `national_id` is now **unusable** (fall through to name+dob) when blank,
+  duplicated across `registration_students` or `students`, or in
+  `config/unification.php` placeholders (extend via
+  `UNIFICATION_NATIONAL_ID_PLACEHOLDERS`).
+- Unique `national_id` + name+dob **contradiction**: do not attach the ID
+  hit; fall through to name+dob. RS-22-shaped rows match the name+dob
+  student. If name+dob is not unique, record ambiguous and do not create.
+- Orphan `student_guardians` (missing `guardian_user_id`) are reported,
+  never invented as `parent_guardians`.
+- ADR-007 amended; supersedes `docs/S1_SPEC.md` line 49 match order.
+- Pest cases in `UnifiedStudentBackfillTest`. Dual-write matcher untouched.
+  Merged #73.
+
+### A3 — Production-copy verify procedure (docs shipped; gate **not** green)
+
+- S1_SPEC line 147 requires `students:verify-unification` on a
+  **production-data copy**. Staging synthetics (`a a` / `b b`) cannot
+  validate Deploy 2. This VM has **no production dump** (only
+  `akuru_test` / `akuru_institute`).
+- Procedure: `docs/migrations/restore-production-copy.md` — restore dump
+  → migrate → **`students:verify-unification` with no `--backfill`**.
+- `--backfill` is never run against production itself (command refuses
+  `APP_ENV=production`) and is **not** part of this verification
+  procedure.
+- **A3 is not green** until an operator restores a dump and archives
+  `docs/migrations/s11b-student-unification-report-prod-copy.json` with
+  verbatim stdout in STATUS. **TRACK B stays blocked.** No dump is
+  obtainable in this environment. Merged #74.
+
 ### A4 — Branch protection on `main` (**not applied**)
 
 - Agent GET/PUT `.../branches/main/protection` → HTTP **403**
@@ -1150,15 +1197,26 @@ rate limiting, and the Inertia shell. No new 1A.1 code.
 - Operator checklist: `docs/BRANCH_PROTECTION.md` (require PR, CI job
   `quality`, no force-push). A4 is green only after an admin confirms.
 
+### A5 — Real `config/payroll.php` feature flag (done)
+
+- Flag was only a `settings` row (`payroll.enabled` = `'0'`).
+  `config/payroll.php` did not exist.
+- `PAYROLL_ENABLED` (default **false**) AND the settings row must both be
+  true. `ResolvePayrollSettingsAction` implements the AND.
+  `assertEnabled()` gates **every write path**: run, approve, pay, lock.
+- Pest: `enablePayroll()` sets both; write actions are inert when off.
+- Payroll stays off until two parallel cycles match (operator). Merged #76.
+
 ## Next
 
-**TRACK A remaining:** A1 wipe (#72), A2 matcher (#73), A3 production-copy
-verify (#74, procedure shipped, gate **not** green — no dump), A5 payroll
-flag. **Do not start TRACK B until A3 is green on a production-data copy.**
-No `--backfill` on production. No Hifz cutover.
+TRACK A code/docs slices A1–A5 are on `main`. **A3 verify gate is not
+green** (no production dump). **A4 protection is not applied** (bot 403).
+**Do not start TRACK B.** No `--backfill` on production. No Hifz cutover.
 
-**Operator:** apply branch protection; provide a production mysqldump for
-A3. `unify-verify` still red on staging.
+**Operator:** apply branch protection (`docs/BRANCH_PROTECTION.md`);
+provide a production mysqldump and run
+`docs/migrations/restore-production-copy.md`. `unify-verify` still red on
+staging. `PAYROLL_ENABLED` / settings stay off.
 
 **Qur'an A.4b (later):** switch offering-session reads to `offering_halaqa_session_links` after operators confirm dual-write. Then Hifz cleanup (deploy 3). Keep `QURAN_HALAQA_DUAL_WRITE` off until verified.
 

@@ -30,18 +30,6 @@ function makeCourseEnrollment(int $registrationStudentId, array $overrides = [])
     ], $overrides));
 }
 
-function attachLegacyGuardian(int $registrationStudentId, int $guardianUserId, array $pivot = []): int
-{
-    return DB::table('student_guardians')->insertGetId(array_merge([
-        'student_id' => $registrationStudentId,
-        'guardian_user_id' => $guardianUserId,
-        'relationship' => 'father',
-        'is_primary' => true,
-        'created_at' => now(),
-        'updated_at' => now(),
-    ], $pivot));
-}
-
 it('makes students.user_id nullable and unique on the legacy key', function () {
     expect(Schema::getColumns('students'))->not->toBeEmpty();
 
@@ -133,8 +121,8 @@ it('matches by decrypted national_id when user_id does not match', function () {
     ]);
     $rs = makeRegistrationStudent([
         'national_id' => 'A123456',
-        'first_name' => 'Course',
-        'last_name' => 'Kid',
+        'first_name' => 'School',
+        'last_name' => 'Record',
         'dob' => '2008-05-05',
     ]);
 
@@ -388,4 +376,223 @@ it('passes the verify command when every registration student is mapped', functi
 
     $this->artisan('students:verify-unification', ['--backfill' => true])
         ->assertSuccessful();
+});
+
+it('skips a blank national_id and matches by name and dob', function () {
+    $student = makeStudent([
+        'first_name' => 'Blank',
+        'last_name' => 'Id',
+        'date_of_birth' => '2012-04-04',
+        'national_id' => 'REAL-BLANK-1',
+    ]);
+    $rs = makeRegistrationStudent([
+        'first_name' => 'Blank',
+        'last_name' => 'Id',
+        'dob' => '2012-04-04',
+        'national_id' => '   ',
+    ]);
+
+    $report = app(UnifyStudentsAction::class)->execute();
+
+    expect($report->mapped['name_dob'])->toBe(1)
+        ->and($report->mapped['national_id'])->toBe(0)
+        ->and($student->fresh()->legacy_registration_student_id)->toBe($rs->id)
+        ->and($report->passed())->toBeTrue();
+});
+
+it('treats a national_id duplicated across registration students as unusable and falls through to name_dob', function () {
+    $wrong = makeStudent([
+        'first_name' => 'Wrong',
+        'last_name' => 'Hit',
+        'date_of_birth' => '2000-01-01',
+        'national_id' => 'SHARED-ID',
+    ]);
+    $right = makeStudent([
+        'first_name' => 'Right',
+        'last_name' => 'Kid',
+        'date_of_birth' => '2011-02-02',
+        'national_id' => null,
+    ]);
+    $rsWrong = makeRegistrationStudent([
+        'first_name' => 'Wrong',
+        'last_name' => 'Hit',
+        'dob' => '2000-01-01',
+        'national_id' => 'SHARED-ID',
+    ]);
+    $rsRight = makeRegistrationStudent([
+        'first_name' => 'Right',
+        'last_name' => 'Kid',
+        'dob' => '2011-02-02',
+        'national_id' => 'SHARED-ID',
+    ]);
+
+    $report = app(UnifyStudentsAction::class)->execute();
+
+    expect($report->mapped['national_id'])->toBe(0)
+        ->and($report->mapped['name_dob'])->toBe(2)
+        ->and($wrong->fresh()->legacy_registration_student_id)->toBe($rsWrong->id)
+        ->and($right->fresh()->legacy_registration_student_id)->toBe($rsRight->id)
+        ->and($report->passed())->toBeTrue();
+});
+
+it('treats a national_id duplicated across students as unusable and falls through to name_dob', function () {
+    $first = makeStudent([
+        'first_name' => 'Alpha',
+        'last_name' => 'One',
+        'date_of_birth' => '2010-01-01',
+        'national_id' => 'DUP-STU',
+    ]);
+    makeStudent([
+        'first_name' => 'Beta',
+        'last_name' => 'Two',
+        'date_of_birth' => '2010-02-02',
+        'national_id' => 'DUP-STU',
+    ]);
+    $rs = makeRegistrationStudent([
+        'first_name' => 'Alpha',
+        'last_name' => 'One',
+        'dob' => '2010-01-01',
+        'national_id' => 'DUP-STU',
+    ]);
+
+    $report = app(UnifyStudentsAction::class)->execute();
+
+    expect($report->mapped['national_id'])->toBe(0)
+        ->and($report->mapped['name_dob'])->toBe(1)
+        ->and($first->fresh()->legacy_registration_student_id)->toBe($rs->id)
+        ->and($report->ambiguous)->toBeEmpty()
+        ->and($report->passed())->toBeTrue();
+});
+
+it('treats a config placeholder national_id as unusable and falls through to name_dob', function () {
+    $wrong = makeStudent([
+        'first_name' => 'Placeholder',
+        'last_name' => 'Owner',
+        'date_of_birth' => '1999-01-01',
+        'national_id' => 'N/A',
+    ]);
+    $right = makeStudent([
+        'first_name' => 'Real',
+        'last_name' => 'Child',
+        'date_of_birth' => '2014-06-06',
+        'national_id' => null,
+    ]);
+    $rs = makeRegistrationStudent([
+        'first_name' => 'Real',
+        'last_name' => 'Child',
+        'dob' => '2014-06-06',
+        'national_id' => 'n/a',
+    ]);
+
+    $report = app(UnifyStudentsAction::class)->execute();
+
+    expect($report->mapped['national_id'])->toBe(0)
+        ->and($report->mapped['name_dob'])->toBe(1)
+        ->and($right->fresh()->legacy_registration_student_id)->toBe($rs->id)
+        ->and($wrong->fresh()->legacy_registration_student_id)->toBeNull()
+        ->and($report->passed())->toBeTrue();
+});
+
+it('treats operator-configured placeholder national_ids as unusable', function () {
+    config()->set('unification.national_id_placeholders', ['xx-operator']);
+
+    $wrong = makeStudent([
+        'first_name' => 'Op',
+        'last_name' => 'Wrong',
+        'date_of_birth' => '1990-01-01',
+        'national_id' => 'XX-OPERATOR',
+    ]);
+    $right = makeStudent([
+        'first_name' => 'Op',
+        'last_name' => 'Right',
+        'date_of_birth' => '2015-03-03',
+        'national_id' => null,
+    ]);
+    $rs = makeRegistrationStudent([
+        'first_name' => 'Op',
+        'last_name' => 'Right',
+        'dob' => '2015-03-03',
+        'national_id' => 'xx-operator',
+    ]);
+
+    $report = app(UnifyStudentsAction::class)->execute();
+
+    expect($report->mapped['national_id'])->toBe(0)
+        ->and($report->mapped['name_dob'])->toBe(1)
+        ->and($right->fresh()->legacy_registration_student_id)->toBe($rs->id)
+        ->and($wrong->fresh()->legacy_registration_student_id)->toBeNull()
+        ->and($report->passed())->toBeTrue();
+});
+
+it('resolves an RS-22-shaped national_id contradiction to the name_dob student', function () {
+    $wrongById = makeStudent([
+        'first_name' => 'a',
+        'last_name' => 'a',
+        'date_of_birth' => '2000-01-01',
+        'national_id' => 'A000222',
+    ]);
+    $rightByName = makeStudent([
+        'first_name' => 'a',
+        'last_name' => 'a',
+        'date_of_birth' => '1987-10-02',
+        'national_id' => null,
+    ]);
+    $rs = makeRegistrationStudent([
+        'first_name' => 'a',
+        'last_name' => 'a',
+        'dob' => '1987-10-02',
+        'national_id' => 'A000222',
+    ]);
+
+    $report = app(UnifyStudentsAction::class)->execute();
+
+    expect($report->mapped['national_id'])->toBe(0)
+        ->and($report->mapped['name_dob'])->toBe(1)
+        ->and($report->ambiguous)->toBeEmpty()
+        ->and($wrongById->fresh()->legacy_registration_student_id)->toBeNull()
+        ->and($rightByName->fresh()->legacy_registration_student_id)->toBe($rs->id)
+        ->and($report->passed())->toBeTrue();
+});
+
+it('records ambiguous when a contradicting national_id has no unique name_dob candidate', function () {
+    $wrongById = makeStudent([
+        'first_name' => 'Other',
+        'last_name' => 'Child',
+        'date_of_birth' => '2000-01-01',
+        'national_id' => 'A000333',
+    ]);
+    $rs = makeRegistrationStudent([
+        'first_name' => 'Unseen',
+        'last_name' => 'Name',
+        'dob' => '1987-10-02',
+        'national_id' => 'A000333',
+    ]);
+
+    $report = app(UnifyStudentsAction::class)->execute();
+
+    expect($report->ambiguous)->toHaveCount(1)
+        ->and($report->ambiguous[0]['method'])->toBe('national_id')
+        ->and($report->ambiguous[0]['reason'])->toBe('name_dob_contradiction')
+        ->and($report->ambiguous[0]['candidate_student_ids'])->toBe([$wrongById->id])
+        ->and($wrongById->fresh()->legacy_registration_student_id)->toBeNull()
+        ->and(Student::query()->where('legacy_registration_student_id', $rs->id)->count())->toBe(0)
+        ->and($report->passed())->toBeFalse();
+});
+
+it('reports orphan student_guardians and never invents missing guardian users', function () {
+    $rs = makeRegistrationStudent(['user_id' => null]);
+    $guardian = User::factory()->create(['name' => 'Gone Parent']);
+    $pivotId = attachLegacyGuardian($rs->id, $guardian->id);
+
+    DB::statement('SET FOREIGN_KEY_CHECKS=0');
+    DB::table('users')->where('id', $guardian->id)->delete();
+    DB::statement('SET FOREIGN_KEY_CHECKS=1');
+
+    $before = ParentGuardian::query()->count();
+    $report = app(UnifyStudentsAction::class)->execute();
+
+    expect($report->guardians['unmapped'])->toContain($pivotId)
+        ->and(ParentGuardian::query()->count())->toBe($before)
+        ->and(ParentGuardian::query()->where('user_id', $guardian->id)->exists())->toBeFalse()
+        ->and(Student::query()->where('legacy_registration_student_id', $rs->id)->exists())->toBeTrue();
 });
