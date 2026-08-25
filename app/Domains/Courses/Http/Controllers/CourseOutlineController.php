@@ -64,6 +64,14 @@ class CourseOutlineController extends Controller
             'tone' => ['nullable', 'string'],
             'direction' => ['nullable', 'string', 'in:ltr,rtl,auto'],
             'embed_url' => ['nullable', 'string', 'max:500'],
+            'term' => ['nullable', 'string'],
+            'definition' => ['nullable', 'string'],
+            'entries_text' => ['nullable', 'string'],
+            'lines_text' => ['nullable', 'string'],
+            'cards_text' => ['nullable', 'string'],
+            'quiz_id' => ['nullable', 'integer'],
+            'assignment_id' => ['nullable', 'integer'],
+            'title' => ['nullable', 'string', 'max:255'],
             'file' => ['nullable', 'file', 'max:51200'],
         ]);
         $blockType = ContentBlockType::tryFrom($data['type']);
@@ -80,11 +88,7 @@ class CourseOutlineController extends Controller
             app(SaveContentBlockAction::class)->execute([
                 'lesson_id' => $data['lesson_id'],
                 'type' => $data['type'],
-                'data' => [
-                    'body' => $data['body'] ?? '',
-                    'html' => $data['html'] ?? $data['body'] ?? '',
-                    'tone' => $data['tone'] ?? 'note',
-                ],
+                'data' => $this->blockDataFromRequest($data),
                 'settings' => ['direction' => $data['direction'] ?? 'auto'],
                 'created_by' => $request->user()?->id,
             ]);
@@ -135,5 +139,61 @@ class CourseOutlineController extends Controller
         ], $lesson);
 
         return redirect()->route('catalog.courses.outline', $course)->with('success', 'Preview flag updated.');
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     * @return array<string, mixed>
+     */
+    private function blockDataFromRequest(array $data): array
+    {
+        return match ($data['type']) {
+            'glossary', 'term' => [
+                'term' => $data['term'] ?? '',
+                'definition' => $data['definition'] ?? '',
+                'entries' => $this->pairLines($data['entries_text'] ?? null, 'term', 'definition'),
+            ],
+            'dialogue' => [
+                'lines' => $this->pairLines($data['lines_text'] ?? $data['body'] ?? null, 'speaker', 'text'),
+            ],
+            'flashcard' => [
+                'cards' => $this->pairLines($data['cards_text'] ?? $data['body'] ?? null, 'front', 'back'),
+            ],
+            'quiz_embed' => [
+                'quiz_id' => $data['quiz_id'] ?? null,
+                'url' => $data['embed_url'] ?? '',
+                'title' => $data['title'] ?? '',
+            ],
+            'assignment_embed' => [
+                'assignment_id' => $data['assignment_id'] ?? null,
+                'url' => $data['embed_url'] ?? '',
+                'title' => $data['title'] ?? '',
+            ],
+            default => [
+                'body' => $data['body'] ?? '',
+                'html' => $data['html'] ?? $data['body'] ?? '',
+                'tone' => $data['tone'] ?? 'note',
+            ],
+        };
+    }
+
+    /**
+     * @return list<array<string, string>>
+     */
+    private function pairLines(?string $text, string $left, string $right): array
+    {
+        $rows = [];
+        foreach (preg_split('/\r\n|\r|\n/', (string) $text) ?: [] as $line) {
+            $line = trim($line);
+            if ($line === '') {
+                continue;
+            }
+            $parts = array_map('trim', explode('|', $line, 2));
+            if (count($parts) === 2 && $parts[0] !== '' && $parts[1] !== '') {
+                $rows[] = [$left => $parts[0], $right => $parts[1]];
+            }
+        }
+
+        return $rows;
     }
 }

@@ -1,11 +1,18 @@
 import { router, useForm } from '@inertiajs/react';
 import AppShell from '../../../Layouts/AppShell';
 
-const MEDIA_TYPES = ['image', 'audio', 'video', 'pdf'];
+const MEDIA_TYPES = ['image', 'audio', 'video', 'pdf', 'download'];
+const PAIR_TYPES = ['glossary', 'term', 'dialogue', 'flashcard'];
+const EMBED_TYPES = ['quiz_embed', 'assignment_embed'];
 
 function blockLabel(block) {
     return block.data?.body
+        || block.data?.entries?.[0]?.term
+        || block.data?.lines?.[0]?.text
+        || block.data?.cards?.[0]?.front
+        || block.data?.title
         || block.data?.original_name
+        || block.data?.url
         || block.data?.embed_url
         || block.title
         || '—';
@@ -24,9 +31,19 @@ export default function Outline({ course, modules }) {
         tone: 'note',
         direction: 'auto',
         embed_url: '',
+        term: '',
+        definition: '',
+        entries_text: '',
+        lines_text: '',
+        cards_text: '',
+        quiz_id: '',
+        assignment_id: '',
+        title: '',
         file: null,
     });
     const isMedia = MEDIA_TYPES.includes(blockForm.data.type);
+    const isPair = PAIR_TYPES.includes(blockForm.data.type);
+    const isEmbed = EMBED_TYPES.includes(blockForm.data.type);
 
     return (
         <AppShell title={`Outline — ${course.title}`}>
@@ -79,6 +96,13 @@ export default function Outline({ course, modules }) {
                         <option value="audio">Audio</option>
                         <option value="video">Video</option>
                         <option value="pdf">PDF</option>
+                        <option value="glossary">Glossary</option>
+                        <option value="term">Term</option>
+                        <option value="dialogue">Dialogue</option>
+                        <option value="flashcard">Flashcard</option>
+                        <option value="download">Download</option>
+                        <option value="quiz_embed">Quiz embed</option>
+                        <option value="assignment_embed">Assignment embed</option>
                     </select>
                     <select className="form-input mb-2" value={blockForm.data.direction} onChange={(e) => blockForm.setData('direction', e.target.value)}>
                         <option value="auto">Direction auto</option>
@@ -95,6 +119,31 @@ export default function Outline({ course, modules }) {
                     {blockForm.data.type === 'video' && (
                         <input className="form-input mb-2" placeholder="YouTube or Vimeo URL (optional)" value={blockForm.data.embed_url} onChange={(e) => blockForm.setData('embed_url', e.target.value)} />
                     )}
+                    {(blockForm.data.type === 'glossary' || blockForm.data.type === 'term') && (
+                        <>
+                            <input className="form-input mb-2" placeholder="Term" value={blockForm.data.term} onChange={(e) => blockForm.setData('term', e.target.value)} />
+                            <textarea className="form-input mb-2" placeholder="Definition" value={blockForm.data.definition} onChange={(e) => blockForm.setData('definition', e.target.value)} />
+                            <textarea className="form-input mb-2" placeholder="More entries: term | definition" value={blockForm.data.entries_text} onChange={(e) => blockForm.setData('entries_text', e.target.value)} />
+                        </>
+                    )}
+                    {blockForm.data.type === 'dialogue' && (
+                        <textarea className="form-input mb-2" placeholder="speaker | line" value={blockForm.data.lines_text} onChange={(e) => blockForm.setData('lines_text', e.target.value)} />
+                    )}
+                    {blockForm.data.type === 'flashcard' && (
+                        <textarea className="form-input mb-2" placeholder="front | back" value={blockForm.data.cards_text} onChange={(e) => blockForm.setData('cards_text', e.target.value)} />
+                    )}
+                    {isEmbed && (
+                        <>
+                            <input className="form-input mb-2" placeholder="Title (optional)" value={blockForm.data.title} onChange={(e) => blockForm.setData('title', e.target.value)} />
+                            <input
+                                className="form-input mb-2"
+                                placeholder={blockForm.data.type === 'quiz_embed' ? 'Quiz id (optional)' : 'Assignment id (optional)'}
+                                value={blockForm.data.type === 'quiz_embed' ? blockForm.data.quiz_id : blockForm.data.assignment_id}
+                                onChange={(e) => blockForm.setData(blockForm.data.type === 'quiz_embed' ? 'quiz_id' : 'assignment_id', e.target.value)}
+                            />
+                            <input className="form-input mb-2" placeholder="https://… (optional)" value={blockForm.data.embed_url} onChange={(e) => blockForm.setData('embed_url', e.target.value)} />
+                        </>
+                    )}
                     {isMedia ? (
                         <input
                             className="form-input mb-2"
@@ -103,13 +152,14 @@ export default function Outline({ course, modules }) {
                                 blockForm.data.type === 'image' ? 'image/*'
                                     : blockForm.data.type === 'audio' ? 'audio/*'
                                         : blockForm.data.type === 'video' ? 'video/*'
-                                            : 'application/pdf'
+                                            : blockForm.data.type === 'download' ? '.pdf,.zip,.txt,.doc,.docx,application/pdf,application/zip,text/plain'
+                                                : 'application/pdf'
                             }
                             onChange={(e) => blockForm.setData('file', e.target.files?.[0] || null)}
                         />
-                    ) : (
+                    ) : !isPair && !isEmbed ? (
                         <textarea className="form-input mb-2" placeholder="Block content" value={blockForm.data.body} onChange={(e) => blockForm.setData('body', e.target.value)} />
-                    )}
+                    ) : null}
                     <button type="submit" className="btn-primary" disabled={blockForm.processing}>Save block</button>
                     {blockForm.errors.data && <p className="mt-1 text-xs text-red-600">{blockForm.errors.data}</p>}
                     {blockForm.errors.type && <p className="mt-1 text-xs text-red-600">{blockForm.errors.type}</p>}
