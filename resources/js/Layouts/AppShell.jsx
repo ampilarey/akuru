@@ -118,6 +118,12 @@ export default function AppShell({ title, children }) {
                         <Link href="/portal/leave" className="text-[#7C2D37] hover:underline">
                             My leave
                         </Link>
+                        <Link href="/hr/contracts" className="text-[#7C2D37] hover:underline">
+                            Contracts
+                        </Link>
+                        <Link href="/hr/compliance" className="text-[#7C2D37] hover:underline">
+                            Compliance
+                        </Link>
                         <span className="text-gray-500">{user?.name}</span>
                         <span className="rounded bg-[#F3EBE0] px-2 py-0.5 text-xs uppercase">{locale}</span>
                     </nav>

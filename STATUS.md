@@ -835,11 +835,19 @@ S3). S4.1 has **no new student-keyed writes** beyond existing
 - Carry-over caps at `carry_over_max`. Admin types/balances + CSV.
   Portal shows own balances only.
 
+## S5.3 — Contracts & compliance (done)
+
+- `staff_contracts`: one active per staff; a new active contract
+  supersedes the previous (history kept).
+- Shared `documents.expires_at` plus `document_expiry_notices`.
+  `hr:notify-expiring-documents` fires 90/60/30 once each to
+  `hr.manage` users and the staff member. Not expat-hardcoded.
+
 ## Next
 
 1. Operator: unify-verify / smoke / production (unchanged).
 2. Dual-write stays.
-3. S5.3 contracts & compliance is next (stacked on S5.2).
+3. S5.4 recruitment & onboarding is next (stacked on S5.3).
 4. S4 DoD on real BML sandbox / Thaana receipt proof is operator-owned.
 
 **Operator (their side, unchanged):**
