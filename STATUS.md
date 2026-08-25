@@ -698,14 +698,57 @@ a child row: a foreign key constraint fails (`akuruedu_test.akuru.edu.mv`.
 Verify stdout unchanged (still pre-`000003`). This slice nulls those
 orphans (S1.1b: student may have no user) then adds the FK.
 
+### Deploy `a9d5677` (2026-08-25 13:34) — migrate green, unify-verify FAILED
+
+Staging HEAD **`a9d5677`**. `000002`–`000008` (S1.1b through S2.10) all
+**DONE**. `morph-map:verify OK`. Deploy script then failed the
+student-unification gate (exit 1). Code + schema **are** applied; do
+not treat the deploy as green.
+
+**Backfill ran:** created active=6 prospective=2; enrollments filled=7;
+mapped by user/national_id/name_dob = 0 (no match onto pre-existing
+`students` — new rows only). collisions=4.
+
+```text
+students:verify-unification FAILED — unresolved unification rows:
+  • registration_students.id=13 maps to 0 student(s)
+  • registration_students.id=22 maps to 0 student(s)
+  • registration_students.id=25 maps to 0 student(s)
+  • registration_students.id=29 maps to 0 student(s)
+  • 4 course_enrollments missing unified_student_id
+  • guardian pivot count mismatch: student_guardians=13 migrated guardian_student=0
+```
+
+**Interpretation:** the four RS are **collisions** (first RS already
+holds `legacy_registration_student_id` on the matched student). ADR-007
+does not guess a second RS onto that student. Those four enrollments
+therefore have `unified_student_id` null. Deploy 2 reads
+`CourseEnrollment::student()` / `Payment::student()` via
+`unified_student_id` — those four enrollment (and any matching payment)
+reads resolve to **no student**, not a wrong student.
+
+**Guardians:** source=13, migrated=0, profiles_created=0. Pivots were
+not copied. Likely all `student_guardians` rows sit on the four
+colliding RS ids and/or `guardian_user_id` is missing from `users`
+(`createParentFromUserId` returns null). JSON
+`guardians.unmapped` + `collisions` not yet copied into
+`docs/migrations/`.
+
+**Stop:** no S3, no Hifz migration, no Deploy 3. Student-keyed S2
+writes stay blocked until verify is green. Do not `--backfill` again
+until the four collisions are resolved by an operator decision.
+
 ## Next
 
-1. Merge the orphan-`user_id` hotfix after CI `quality` is green.
-2. Operator after that deploy: paste a **new** `students:verify-unification`
-   stdout + copy the JSON into `docs/migrations/`. Zero unresolved →
-   student-write gate satisfied. Nonzero → list remaining rows and stop.
-3. Then smoke the S2 URLs above. Branch protection. Credential smoke
-   (portal / Hifz / payments / OTP / BML).
-4. Production: nothing until credential smoke is recorded.
-5. **S1.1 Deploy 3** still ≥2 weeks after `2f8a90b`. Dual-write stays.
-6. S3 / Hifz migration are not started.
+1. Operator: paste
+   `storage/app/s11b-student-unification-report.json` (or
+   `python3 -m json.tool` that file) and the SQL below.
+2. Decide for RS 13/22/25/29: attach to the winning student (manual
+   `legacy_registration_student_id` / enrollment fill) **or** leave as
+   unused duplicate profiles. Do not auto-guess.
+3. Re-run `php artisan students:verify-unification` (no `--backfill`
+   unless we agree a new code path). Zero unresolved → gate satisfied,
+   then smoke S2 URLs.
+4. Branch protection. Credential smoke. Production: nothing until
+   smoke is recorded.
+5. Dual-write stays. S3 / Hifz / Deploy 3 not started.
