@@ -1188,7 +1188,14 @@ rate limiting, and the Inertia shell. No new 1A.1 code.
 - **A3 is not green** until an operator restores a dump and archives
   `docs/migrations/s11b-student-unification-report-prod-copy.json` with
   verbatim stdout in STATUS. **TRACK B stays blocked.** No dump is
-  obtainable in this environment.
+  obtainable in this environment. Merged #74.
+
+### A4 — Branch protection on `main` (**not applied**)
+
+- Agent GET/PUT `.../branches/main/protection` → HTTP **403**
+  `Resource not accessible by integration`. Settings were not changed.
+- Operator checklist: `docs/BRANCH_PROTECTION.md` (require PR, CI job
+  `quality`, no force-push). A4 is green only after an admin confirms.
 
 ### A5 — Real `config/payroll.php` feature flag (done)
 
@@ -1202,14 +1209,14 @@ rate limiting, and the Inertia shell. No new 1A.1 code.
 
 ## Next
 
-**TRACK A remaining:** A4 branch protection on `main` (operator; bot 403).
-A3 procedure is written; the verify **gate** is not green (no production
-dump). **Do not start TRACK B.** No `--backfill` on production. No Hifz
-cutover.
+TRACK A code/docs slices A1–A5 are on `main`. **A3 verify gate is not
+green** (no production dump). **A4 protection is not applied** (bot 403).
+**Do not start TRACK B.** No `--backfill` on production. No Hifz cutover.
 
-**Operator:** provide a production mysqldump and run
-`docs/migrations/restore-production-copy.md`. Apply branch protection.
-`unify-verify` still red on staging. `PAYROLL_ENABLED` / settings stay off.
+**Operator:** apply branch protection (`docs/BRANCH_PROTECTION.md`);
+provide a production mysqldump and run
+`docs/migrations/restore-production-copy.md`. `unify-verify` still red on
+staging. `PAYROLL_ENABLED` / settings stay off.
 
 **Qur'an A.4b (later):** switch offering-session reads to `offering_halaqa_session_links` after operators confirm dual-write. Then Hifz cleanup (deploy 3). Keep `QURAN_HALAQA_DUAL_WRITE` off until verified.
 
