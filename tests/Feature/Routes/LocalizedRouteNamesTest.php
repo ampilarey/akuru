@@ -222,6 +222,14 @@ class LocalizedRouteNamesTest extends TestCase
             'catalog.courses.update',
             'catalog.courses.transition',
             'catalog.courses.export',
+            'catalog.courses.outline',
+            'catalog.courses.modules.store',
+            'catalog.courses.lessons.store',
+            'catalog.courses.blocks.store',
+            'catalog.courses.blocks.reorder',
+            'catalog.courses.blocks.destroy',
+            'catalog.courses.lessons.publish',
+            'catalog.player.show',
         ];
 
         foreach ($names as $name) {

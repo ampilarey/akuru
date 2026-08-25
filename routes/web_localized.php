@@ -21,8 +21,10 @@ use App\Domains\Academics\Legacy\Http\Controllers\ELearningController;
 use App\Domains\Admissions\Http\Controllers\AdminEnrollmentController;
 use App\Domains\Courses\Http\Controllers\AudienceController;
 use App\Domains\Courses\Http\Controllers\CourseLevelController;
+use App\Domains\Courses\Http\Controllers\CourseOutlineController;
 use App\Domains\Courses\Http\Controllers\CourseSubjectController;
 use App\Domains\Courses\Http\Controllers\EngineCourseController;
+use App\Domains\Courses\Http\Controllers\LessonPlayerController;
 use App\Domains\Finance\Http\Controllers\ArrearsController;
 use App\Domains\Finance\Http\Controllers\CollectionsController;
 use App\Domains\Finance\Http\Controllers\FeeAdjustmentController;
@@ -360,6 +362,14 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::post('courses', [EngineCourseController::class, 'store'])->name('catalog.courses.store');
         Route::put('courses/{course}', [EngineCourseController::class, 'update'])->name('catalog.courses.update')->whereNumber('course');
         Route::post('courses/{course}/transition', [EngineCourseController::class, 'transition'])->name('catalog.courses.transition')->whereNumber('course');
+        Route::get('courses/{course}/outline', [CourseOutlineController::class, 'show'])->name('catalog.courses.outline')->whereNumber('course');
+        Route::post('courses/{course}/modules', [CourseOutlineController::class, 'storeModule'])->name('catalog.courses.modules.store')->whereNumber('course');
+        Route::post('courses/{course}/lessons', [CourseOutlineController::class, 'storeLesson'])->name('catalog.courses.lessons.store')->whereNumber('course');
+        Route::post('courses/{course}/blocks', [CourseOutlineController::class, 'storeBlock'])->name('catalog.courses.blocks.store')->whereNumber('course');
+        Route::post('courses/{course}/blocks/reorder', [CourseOutlineController::class, 'reorderBlocks'])->name('catalog.courses.blocks.reorder')->whereNumber('course');
+        Route::delete('courses/{course}/blocks/{block}', [CourseOutlineController::class, 'destroyBlock'])->name('catalog.courses.blocks.destroy')->whereNumber('course');
+        Route::post('courses/{course}/lessons/{lesson}/publish', [CourseOutlineController::class, 'publishLesson'])->name('catalog.courses.lessons.publish')->whereNumber('course');
+        Route::get('player/{lesson}', [LessonPlayerController::class, 'show'])->name('catalog.player.show')->whereNumber('lesson');
     });
 
     Route::prefix('hr')->middleware(['role:super_admin|admin|headmaster'])->group(function () {
