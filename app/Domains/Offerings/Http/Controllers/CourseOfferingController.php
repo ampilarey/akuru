@@ -3,6 +3,7 @@
 namespace App\Domains\Offerings\Http\Controllers;
 
 use App\Domains\Offerings\Actions\ListCourseOfferingsAction;
+use App\Domains\Offerings\Actions\PinOfferingContentAction;
 use App\Domains\Offerings\Actions\SaveCourseOfferingAction;
 use App\Domains\Offerings\Models\CourseOffering;
 use App\Http\Controllers\Controller;
@@ -40,6 +41,14 @@ class CourseOfferingController extends Controller
         );
 
         return redirect()->route('catalog.offerings.index')->with('success', 'Offering updated.');
+    }
+
+    public function pin(Request $request, int $offering): RedirectResponse
+    {
+        abort_unless($request->user()?->can('courses.manage'), 403);
+        app(PinOfferingContentAction::class)->execute($offering, $request->user()?->id);
+
+        return redirect()->route('catalog.offerings.index')->with('success', 'Offering pinned to current revisions.');
     }
 
     public function export(Request $request): StreamedResponse

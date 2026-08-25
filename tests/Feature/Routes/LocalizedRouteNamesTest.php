@@ -245,6 +245,7 @@ class LocalizedRouteNamesTest extends TestCase
             'catalog.offerings.store',
             'catalog.offerings.update',
             'catalog.offerings.export',
+            'catalog.offerings.pin',
         ];
 
         foreach ($names as $name) {

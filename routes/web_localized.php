@@ -379,6 +379,7 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::get('offerings', [CourseOfferingController::class, 'index'])->name('catalog.offerings.index');
         Route::post('offerings', [CourseOfferingController::class, 'store'])->name('catalog.offerings.store');
         Route::put('offerings/{offering}', [CourseOfferingController::class, 'update'])->name('catalog.offerings.update')->whereNumber('offering');
+        Route::post('offerings/{offering}/pin', [CourseOfferingController::class, 'pin'])->name('catalog.offerings.pin')->whereNumber('offering');
         Route::get('courses/export', [EngineCourseController::class, 'export'])->name('catalog.courses.export');
         Route::get('courses', [EngineCourseController::class, 'index'])->name('catalog.courses.index');
         Route::post('courses', [EngineCourseController::class, 'store'])->name('catalog.courses.store');

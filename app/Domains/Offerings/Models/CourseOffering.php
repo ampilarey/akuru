@@ -20,6 +20,9 @@ class CourseOffering extends Model
         'delivery_mode',
         'status',
         'pin_mode',
+        'pinned_revision_json',
+        'pinned_at',
+        'pinned_by',
         'seat_limit',
         'academic_year_id',
         'term_id',
@@ -35,6 +38,8 @@ class CourseOffering extends Model
             'status' => OfferingStatus::class,
             'starts_at' => 'datetime',
             'ends_at' => 'datetime',
+            'pinned_at' => 'datetime',
+            'pinned_revision_json' => 'array',
             'seat_limit' => 'integer',
         ];
     }

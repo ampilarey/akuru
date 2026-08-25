@@ -28,6 +28,7 @@ class ListCourseOfferingsAction
                     'delivery_mode' => $offering->delivery_mode?->value ?? $offering->delivery_mode,
                     'status' => $offering->status?->value ?? $offering->status,
                     'pin_mode' => $offering->pin_mode,
+                    'pinned_at' => $offering->pinned_at?->toIso8601String(),
                     'seat_limit' => $offering->seat_limit,
                 ])
                 ->values()
