@@ -26,10 +26,12 @@ column has a single slot.
 
 1. **Nullable `students.user_id`** (additive): drop any live FK on
    `user_id` (do not assume `students_user_id_foreign` — staging 2026-08-25
-   had none), then `nullable()->change()` and re-add `nullOnDelete` if
+   had none), `nullable()->change()`, **null orphan `user_id`s** that do
+   not exist in `users` (1452 otherwise), then re-add `nullOnDelete` if
    missing. Unmatched RS without a user create a student with `user_id`
    null. Not a user-status *change* — create uses `forceFill` (no
-   `ChangeStudentStatusAction` / history row).
+   `ChangeStudentStatusAction` / history row). Orphan nulling is not
+   reversible (`down()` cannot restore deleted user ids).
 
 2. **Match order (no extra heuristics):** (a) `user_id`, else (b) decrypted
    `national_id`, else (c) exact first + last + dob. Empty keys are skipped.

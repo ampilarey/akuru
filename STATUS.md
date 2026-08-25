@@ -642,8 +642,8 @@ S1.1a (`000001`) already ran (this was the next batch). Staging `students`
 has `school_id` / `class_id` FKs but **no** `user_id` FK under the Laravel
 default name. `000003` (UnifyStudentsAction) never ran.
 
-This PR changes `000002` to drop whatever live FK sits on `user_id` (no-op
-if none), then nullable + re-add `nullOnDelete`.
+`2a8ccde` (#26) fixed the 1091. Next deploy reached `2a8ccde` (hotfix
+present) then failed adding the FK.
 
 ### `php artisan students:verify-unification` (verbatim)
 
@@ -679,11 +679,28 @@ copied into `docs/migrations/` yet.
 
 S3 / Hifz / Deploy 3 are **not** started.
 
+### Deploy failure after #26 (`2a8ccde`, 2026-08-25 13:23)
+
+Code on staging is the hotfix (`dropOnColumn` present). `000002` ran
+185ms then 1452 — orphan `students.user_id` values that are not in
+`users.id`. DDL before the add (nullable change) likely committed;
+the migration row is **not** recorded.
+
+```text
+2026_08_23_000002_s11b_nullable_student_user_id .............. 185.42ms FAIL
+
+SQLSTATE[23000]: Integrity constraint violation: 1452 Cannot add or update
+a child row: a foreign key constraint fails (`akuruedu_test.akuru.edu.mv`.
+`#sql-alter-2173bb-6927b`, CONSTRAINT `students_user_id_foreign` FOREIGN KEY
+(`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL)
+```
+
+Verify stdout unchanged (still pre-`000003`). This slice nulls those
+orphans (S1.1b: student may have no user) then adds the FK.
+
 ## Next
 
-1. Merge this PR after CI `quality` is green (do **not** self-merge). That
-   unblocks `000002` so staging can migrate through `000003` (backfill) and
-   the queued S1.1c–S2.10 migrations in one deploy.
+1. Merge the orphan-`user_id` hotfix after CI `quality` is green.
 2. Operator after that deploy: paste a **new** `students:verify-unification`
    stdout + copy the JSON into `docs/migrations/`. Zero unresolved →
    student-write gate satisfied. Nonzero → list remaining rows and stop.
