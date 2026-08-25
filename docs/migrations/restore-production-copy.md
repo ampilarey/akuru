@@ -1,9 +1,13 @@
 # Restore a production dump onto a scratch database
 
-S1_SPEC tests item 1 / line 147: `students:verify-unification` must run
-**green on a production-data copy** before Deploy 2. Staging’s synthetic
-`a a` / `b b` / `v v` rows (DOB `2000-01-01`, mangled by
-`users:clear-non-admin`) cannot validate that gate.
+**Status (ADR-021, 2026-08-25):** this procedure is **dormant**. There is
+no production system. The current Deploy 2 / S1_SPEC tests item 1 gate is
+the seeded representative dataset
+(`php artisan students:verify-unification --representative`).
+
+**Reactivates the day real data exists** (first real student, payment, or
+Hifz user). Staging’s synthetic `a a` / `b b` / `v v` rows still cannot
+satisfy this procedure; they are not a production copy.
 
 This procedure is **read-only verify**. It never runs `--backfill`.
 
@@ -107,11 +111,11 @@ and paste **verbatim stdout** into `STATUS.md`.
 
 | Result | Meaning |
 |---|---|
-| OK, zero unresolved | A3 green. Deploy 2 / student-keyed-write gate satisfied. |
-| FAILED, every RS maps to 0 students, mapped/created = 0 | Deploy 1 backfill never ran on this dump. Gate stays red. Do not `--backfill` here. |
-| FAILED with collisions / ambiguous / guardian pivots | Real data issues. Fix in code (A1/A2) or operator resolution; restore a **fresh** dump and verify again. |
+| OK, zero unresolved | Production-copy gate green (after first real use). |
+| FAILED, every RS maps to 0 students, mapped/created = 0 | Deploy 1 backfill never ran on this dump. Do not `--backfill` here. |
+| FAILED with collisions / ambiguous / guardian pivots | Real data issues. Fix in code or operator resolution (ADR-007: do not guess); restore a **fresh** dump and verify again. |
 
-Zero unresolved = A3 green = TRACK B unblocked.
+Until first real use, **do not** treat a missing dump as a TRACK B blocker (ADR-021).
 
 ## 6. Destroy the scratch database
 
@@ -122,5 +126,5 @@ mysql -u root -e "DROP DATABASE IF EXISTS akuru_unify_scratch;"
 ## What this environment cannot do
 
 No production dump is present on the Cursor Cloud VM (`akuru_test` /
-`akuru_institute` only). Until an operator provides a dump and step 5 is
-green, **A3 is not green** and TRACK B must not start.
+`akuru_institute` only). That is expected: there is no production system
+(ADR-021). The current gate is `--representative`, not this procedure.

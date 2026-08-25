@@ -1,37 +1,32 @@
 # Migration / verify archives
 
 Operator copies live-data verification artifacts here. Do not invent
-counts or JSON from local `akuru_institute` / `akuru_test`.
+counts or JSON from local `akuru_institute` / `akuru_test` **except**
+the ADR-021 representative unification gate, which is seeded on purpose.
 
 ## Student unification (S1.1b / S2.0 gate)
 
-After a gated staging deploy (`scripts/pull-deploy-test.sh`), copy:
+**Until first real use (ADR-021):** run
 
 ```text
-~/test.akuru.edu.mv/storage/app/s11b-student-unification-report.json
+php artisan students:verify-unification --representative
 ```
 
-to:
+Archive the report as
+`docs/migrations/s11b-student-unification-report-representative.json`
+and paste verbatim stdout into `STATUS.md`.
 
-```text
-docs/migrations/s11b-student-unification-report.json
-```
+Expected unguessable rows (genuine name+dob duplicates, orphan guardian
+pivots) are listed, not guessed (ADR-007). The gate is green when every
+*resolvable* RS maps 1:1, no enrollment/payment points at the **wrong**
+student, and matcher skip/contradiction counts are recorded.
 
-Also paste the verbatim `php artisan students:verify-unification`
-stdout into `STATUS.md` (same format as the morph-map capture).
+Staging synthetics (`a a` / `b b`) are **not** this dataset. The older
+staging capture remains `docs/migrations/s11b-student-unification-report.json`
+(historical).
 
-Zero unresolved = Deploy 2 / student-keyed-write gate satisfied.
-Nonzero = list affected rows and stop (do not start S3).
+## Production-data copy (reactivates at first real use)
 
-## Production-data copy (A3 / S1_SPEC line 147)
-
-Staging synthetics cannot validate Deploy 2. Restore a **production**
-mysqldump onto a scratch schema and run `students:verify-unification`
-there.
-
-Full procedure: [`restore-production-copy.md`](restore-production-copy.md).
-
-That procedure is **read-only**: `php artisan students:verify-unification`
-with **no** `--backfill`. `--backfill` is never run against production
-itself (the command refuses it when `APP_ENV=production`) and is not
-part of this verification procedure.
+`docs/migrations/restore-production-copy.md` is the procedure for the
+day a real production dump exists. It is **not** the current Deploy 2
+gate. `--backfill` is never run against production itself.

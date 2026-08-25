@@ -55,7 +55,7 @@ Written automatically by a `ChangeStudentStatusAction` — never raw status upda
 
 **Deploy 2 — switch reads:** all code paths read `students` (+ `unified_student_id`); `RegistrationStudent` model marked deprecated; dual-write kept ON.
 
-**Deploy 3 — cleanup (≥2 weeks stable):** drop dual-write, drop `student_guardians`, drop old emergency columns. `registration_students` table is renamed `_archived_registration_students`, not dropped.
+**Deploy 3 — cleanup (≥2 weeks stable once real data exists — ADR-021):** drop dual-write, drop `student_guardians`, drop old emergency columns. `registration_students` table is renamed `_archived_registration_students`, not dropped. Until first real use, the stability wait is optional; cleanup is still a separate confirmed slice (see `docs/migrations/s11-deploy-3-cleanup-proposal.md`).
 
 **Verification script (required, run after deploy 1 & 2):** counts match (every registration_student maps to exactly one student); every course_enrollment has unified_student_id; no guardian links lost (old pivot count == new pivot count); ambiguous matches (>1 candidate) listed for manual resolution — script outputs a report file; zero unresolved = gate for deploy 2.
 
@@ -145,7 +145,7 @@ All screens trilingual-ready (labels via existing localization), RTL-safe.
 
 ## Tests (CI gates for S1)
 
-1. Migration verification script green on a production-data copy (mandatory before deploy 2).
+1. Migration verification script green on a **seeded representative dataset** (ADR-021; `UnificationRepresentativeSeeder` + `php artisan students:verify-unification --representative`). Staging `a a`/`b b` synthetics are not this dataset. **The day real data exists**, this item additionally requires a production-data copy (`docs/migrations/restore-production-copy.md`) before Deploy 2 — that requirement is dormant until first real use, not deleted.
 2. Unification edge cases: match by user_id / national_id / name+dob; no-match creates prospective; ambiguous goes to report.
 3. Guardian migration: counts preserved; primary flags preserved.
 4. `PromoteStudentsAction`: feature test covering promote/repeat/graduate/leave in one run + dry-run produces no writes.

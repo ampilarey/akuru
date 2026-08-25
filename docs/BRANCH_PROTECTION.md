@@ -5,9 +5,10 @@ gets HTTP 403 `Resource not accessible by integration` on both GET and
 PUT `/repos/ampilarey/akuru/branches/main/protection`). An org owner or
 repo admin must set it in the GitHub UI.
 
-Attempted 2026-08-25 from this agent; both calls returned 403. Protection
-was **not** applied. Do not assume `main` is protected until an operator
-confirms the screenshot / API GET succeeds.
+Attempted 2026-08-25 from this agent (twice, including after ADR-021);
+GET and PUT both returned 403. Protection was **not** applied. Do not
+assume `main` is protected until an operator confirms the screenshot /
+API GET succeeds. This is unrelated to live-data premises (ADR-021).
 
 ## Apply (GitHub UI)
 

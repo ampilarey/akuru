@@ -87,8 +87,7 @@ column has a single slot.
 
 ## Consequences
 
-- Deploy 2 (switch reads) is blocked until verify is green on a production-data
-  copy. Ambiguous/colliding RS stay on `RegistrationStudent` until resolved.
+- Deploy 2 (switch reads) is gated on the **seeded representative dataset** until first real use (ADR-021). The production-data copy requirement reactivates the day real students/payments/Hifz users exist. Ambiguous/colliding RS stay unguessed until resolved.
 - Architecture baselines must not grow: no `CourseEnrollment` / `User` imports
   in the People action.
 - RegistrationStudent read/create paths stay dual-write until Deploy 2.
