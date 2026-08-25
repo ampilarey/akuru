@@ -44,6 +44,7 @@ use App\Domains\Courses\Http\Controllers\LearnMediaController;
 use App\Domains\Courses\Http\Controllers\LearnScheduleController;
 use App\Domains\Courses\Http\Controllers\LessonPlayerController;
 use App\Domains\ExamsGrades\Http\Controllers\ExamController;
+use App\Domains\ExamsGrades\Http\Controllers\ExamMarkController;
 use App\Domains\ExamsGrades\Http\Controllers\ExamTypeController;
 use App\Domains\ExamsGrades\Http\Controllers\GradeScaleController;
 use App\Domains\ExamsGrades\Http\Controllers\WeightSchemeController;
@@ -149,6 +150,11 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
     Route::post('/learn/assessments/{assessment}/submit', [LearnAssessmentController::class, 'submit'])->name('learn.assessments.submit')->whereNumber('assessment');
     Route::get('/hr/payslips/{payslip}/document', [PayslipDocumentController::class, 'show'])->name('hr.payslips.document')->whereNumber('payslip');
     Route::get('/finance/receipts/{receipt}/document', [ReceiptDocumentController::class, 'show'])->name('finance.receipts.show')->whereNumber('receipt');
+
+    Route::get('exams/{exam}/marks/export', [ExamMarkController::class, 'export'])->name('exams.marks.export');
+    Route::get('exams/{exam}/marks', [ExamMarkController::class, 'show'])->name('exams.marks.show');
+    Route::put('exams/{exam}/marks', [ExamMarkController::class, 'update'])->name('exams.marks.update');
+    Route::post('exams/{exam}/marks/import', [ExamMarkController::class, 'import'])->name('exams.marks.import');
 
     Route::get('academics/registers/today', [TeacherRegisterController::class, 'today'])->name('academics.registers.today');
     Route::get('academics/registers/export', [RegisterReportController::class, 'export'])->name('academics.registers.export');

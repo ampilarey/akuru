@@ -20,18 +20,22 @@ export default function Exams({ children, studentId, exams }) {
                             <th className="px-3 py-2">Exam</th>
                             <th className="px-3 py-2">Subject</th>
                             <th className="px-3 py-2">Date</th>
+                            <th className="px-3 py-2">Mark</th>
                             <th className="px-3 py-2">Max</th>
                         </tr>
                     </thead>
                     <tbody>
                         {exams.length === 0 && (
-                            <tr><td className="px-3 py-4 text-gray-500" colSpan={4}>No published results yet.</td></tr>
+                            <tr><td className="px-3 py-4 text-gray-500" colSpan={5}>No published results yet.</td></tr>
                         )}
                         {exams.map((exam) => (
                             <tr key={exam.id} className="border-t">
                                 <td className="px-3 py-2">{exam.name}</td>
                                 <td className="px-3 py-2">{exam.subject}</td>
                                 <td className="px-3 py-2">{exam.exam_date || '—'}</td>
+                                <td className="px-3 py-2">
+                                    {exam.is_absent ? 'Absent' : exam.is_exempt ? 'Exempt' : (exam.marks ?? '—')}
+                                </td>
                                 <td className="px-3 py-2">{exam.max_marks}</td>
                             </tr>
                         ))}
