@@ -127,6 +127,12 @@ class LocalizedRouteNamesTest extends TestCase
             'finance.fee-structures.update',
             'finance.fee-structures.copy-last-year',
             'finance.fee-structures.export',
+            'finance.invoices.index',
+            'finance.invoices.generate',
+            'finance.invoices.issue',
+            'finance.invoices.export',
+            'finance.arrears.index',
+            'finance.arrears.export',
         ];
 
         foreach ($names as $name) {

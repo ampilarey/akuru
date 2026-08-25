@@ -776,9 +776,19 @@ S3). S4.1 has **no new student-keyed writes** beyond existing
 - Academics list/resolve year actions used so Finance does not import
   Academics models.
 
+## S4.3 — Invoice generation (done)
+
+- `invoice_generation_logs` unique(student, structure, period_key).
+- `GenerateInvoicesAction`: roster from class_student, monthly per-month
+  or consolidated (qty × term months), optional-item toggles,
+  adjustments hook (empty until S4.5).
+- Issue → sent + SMS/in-app to financially-responsible guardians.
+- `invoices:mark-overdue` + `invoices:send-reminders` (7-day throttle).
+- Arrears listing by class/guardian with 30/60/90 buckets + CSV.
+
 ## Next
 
-1. **S4.3 — Invoice generation**.
+1. **S4.4 — Payment plans**.
 2. Operator: unify-verify / smoke / production (unchanged).
 3. Dual-write stays.
 
