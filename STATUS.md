@@ -442,54 +442,34 @@ credential smoke are **deferred**. Consequences accepted:
   `students:verify-unification` is green on staging (deploy-log evidence
   copied here + JSON under `docs/migrations/`).
 
-### S2.0 — Unify-verify deploy gate (this slice)
+### S2.0 — Unify-verify deploy gate (merged #15)
 
 `scripts/pull-deploy-test.sh` runs `php artisan students:verify-unification`
 (read-only, never `--backfill`) after `morph-map:verify`. Warn-don't-fail if
 the command is missing; `STUDENT-UNIFICATION GATE FAILED` + exit 1 on
 nonzero. `docs/STAGING.md` updated.
 
-**First-deploy caveat (known):** this merge still runs the pre-pull script.
-Evidence appears from the **second** auto-deploy. Next after this PR:
-trivial docs merge (S2.0b) to trigger that run. Operator then pastes the
-verbatim block from `~/self-update-test.log` here (morph-map format) and
-archives the JSON.
+**First-deploy caveat (known):** the #15 merge still runs the pre-pull script.
+Evidence appears from the **second** auto-deploy (S2.0b).
 
-### S2 slice plan (planning only — confirm before S2.1+)
+## S2.1 — Rooms (first-class, no student writes)
 
-**Not a pre-slice:** per-domain `routes.php` and domain-folder migrations.
-S1 shipped via `routes/web_localized.php` + central `database/migrations`;
-S2 does the same. Flag only — do not block S2 on that infra.
+Plan confirmed (operator “Next”). Rooms only — timetable `room_id` / year /
+conflict engine is **S2.2**.
 
-**S2 CI gates (ROADMAP §6):** timetable conflict tests + attendance tests
-(attendance tests ship with the first student-write slice).
-
-| # | Slice | Behind verify? | Scope / tables | Tests | Deps |
-|---|-------|----------------|----------------|-------|------|
-| S2.1 | Rooms | no | New `rooms`; migrate matching `timetables.room` strings; keep string cols; admin CRUD + CSV | CRUD + idempotent string→room backfill | — |
-| S2.2 | Timetable v2 + conflicts | no | Alter `timetables` (`academic_year_id`, `term_id`, `room_id`, `valid_from`/`valid_until`; `period_id` exists); `TimetableConflictChecker` + `SaveTimetableEntryAction` | Conflict matrix teacher/room/class × period/time × validity (**CI gate**) | S2.1 |
-| S2.3 | Timetable builder | no | React week grid, drag-drop, live badges, teacher/room views, copy-week, print | Inertia builder + live conflict warning | S2.2 |
-| S2.4 | Room booking | no | New `room_bookings` (`academic_year_id`); clash vs timetable | Booking vs timetable/period clash | S2.1–2 |
-| S2.5 | Calendar CRUD | no | New `calendar_days` (`academic_year_id`); admin + portal/public holiday read. **No** register generation | Unique `(date, academic_year_id)`; `affects_timetable` | — |
-| S2.6 | Register loop | **yes** | Alter `course_plans`/`lesson_logs` (year/term FKs, status, `timetable_id`); `GenerateExpectedRegistersAction` (calendar-aware); teacher Today + register screen | Gen skips holidays; idempotent; lock + admin unlock audit | S2.2, S2.5 |
-| S2.7 | Class attendance | **yes** | New `class_attendance` (year + term); `AttendanceWriterInterface`; `StudentMarkedAbsent` → `SmsSenderInterface` only | Uniqueness + modes; writer arch; SMS throttle (**CI gate**) | S2.6 |
-| S2.8 | Absence notes | **yes** | Existing `absence_notes`; approve → excused flip | Excused flip + `absence_note_id` link | S2.7 |
-| S2.9 | Behavior | **yes** | New `behavior_records` (year + term) | Permission + parent_visible / own-children | — |
-| S2.10 | Requests | **yes** | New `requests`; `teacher_leave` → `teacher_absences` + timetable overlay | Leave approval creates absences + overlay | S2.3 |
-| S2.0b | Docs follow-up | — | Trivial STATUS/docs commit after S2.0 merges — fires the second deploy | — | S2.0 on `main` |
-
-Event/elective seat limits stay **out of S2** (S2_SPEC: reuse Offerings post-1B).
-No Hifz, no Deploy 3, no S3+.
+- New `rooms`: name + AR/DV, building, capacity, `RoomType`
+  (`classroom|lab|hall|online|other`), bookable, active. Unique `name`.
+- `SyncRoomsFromTimetableStringsAction` creates rooms from distinct
+  `timetables.room` strings (fills empty translations). Idempotent.
+  Legacy `room` / `room_arabic` / `room_dhivehi` columns **kept**.
+  No `timetables.room_id` yet.
+- Admin Inertia CRUD + CSV at `academics.rooms.*`. Permission `rooms.manage`.
+- Morph alias `room`. Hifz / dual-write / Deploy 3 untouched.
 
 ## Next
 
-1. **Confirm the S2 slice plan above** — do not implement S2.1+ until confirmed.
-2. After S2.0 is on `main`: **S2.0b** trivial docs merge so staging actually
-   runs `students:verify-unification`. Operator copies log + JSON here.
-3. Safe slices S2.1–S2.5 may proceed under the deferral (no student-keyed
-   writes). S2.6–S2.10 stay blocked until verify is green on staging.
-4. Every S2 PR: wait for CI green; **do not self-merge**. Production: nothing
-   until credential smoke is recorded.
+1. **S2.2** — timetable v2 + `TimetableConflictChecker` (safe under deferral).
+2. **S2.0b** trivial docs so staging actually runs `students:verify-unification`.
+3. S2.6–S2.10 stay **blocked** until verify is green on staging.
+4. Production: nothing until credential smoke is recorded.
 5. **S1.1 Deploy 3** still ≥2 weeks after `2f8a90b`. Dual-write stays.
-6. Infra leftovers (not S2): branch protection; per-domain routes; domain
-   migrations; `enforceMorphMap()`; Blade `students.*`/`teachers.*`.
