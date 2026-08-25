@@ -4,7 +4,7 @@ namespace App\Providers;
 
 use App\Domains\Settings\Models\Setting;
 use App\Support\Contracts\DocumentRendererInterface;
-use App\Support\Services\StubDocumentRenderer;
+use App\Support\Services\HtmlDocumentRenderer;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\View;
@@ -17,7 +17,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        $this->app->singleton(DocumentRendererInterface::class, StubDocumentRenderer::class);
+        $this->app->singleton(DocumentRendererInterface::class, HtmlDocumentRenderer::class);
     }
 
     /**

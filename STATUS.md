@@ -800,11 +800,20 @@ S3). S4.1 has **no new student-keyed writes** beyond existing
 - Applied at generation as transparent discount lines. Sibling suggestion
   via shared financially-responsible guardian. Not Commerce codes (L4).
 
+## S4.6 — Payment + portal (done)
+
+- Webhook confirmation (Rule 12) creates a receipt and allocates;
+  a second delivery is a no-op. Manual cash/transfer is gated by
+  `finance.record-manual-payment`. Receipts render through
+  `DocumentRendererInterface` (`HtmlDocumentRenderer`).
+- Parent portal: invoices, balance, plan progress, pay-now, receipt
+  HTML. Admin collections + reconciliation CSVs.
+
 ## Next
 
-1. **S4.6 — Payment + portal**.
-2. Operator: unify-verify / smoke / production (unchanged).
-3. Dual-write stays.
+1. Operator: unify-verify / smoke / production (unchanged).
+2. Dual-write stays. S5 is not started.
+3. S4 DoD on real BML sandbox / Thaana receipt proof is operator-owned.
 
 **Operator (their side, unchanged):**
 
