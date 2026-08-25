@@ -20,6 +20,7 @@ use App\Domains\Academics\Http\Controllers\TimetableBuilderController;
 use App\Domains\Academics\Legacy\Http\Controllers\ELearningController;
 use App\Domains\Admissions\Http\Controllers\AdminEnrollmentController;
 use App\Domains\Finance\Http\Controllers\ArrearsController;
+use App\Domains\Finance\Http\Controllers\FeeAdjustmentController;
 use App\Domains\Finance\Http\Controllers\FeeItemController;
 use App\Domains\Finance\Http\Controllers\FeeStructureController;
 use App\Domains\Finance\Http\Controllers\InvoiceController;
@@ -293,5 +294,8 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::get('payment-plans/export', [PaymentPlanController::class, 'export'])->name('finance.payment-plans.export');
         Route::get('payment-plans', [PaymentPlanController::class, 'index'])->name('finance.payment-plans.index');
         Route::post('payment-plans', [PaymentPlanController::class, 'store'])->name('finance.payment-plans.store');
+        Route::get('adjustments/export', [FeeAdjustmentController::class, 'export'])->name('finance.adjustments.export');
+        Route::get('adjustments', [FeeAdjustmentController::class, 'index'])->name('finance.adjustments.index');
+        Route::post('adjustments', [FeeAdjustmentController::class, 'store'])->name('finance.adjustments.store');
     });
 });
