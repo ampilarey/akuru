@@ -6,6 +6,7 @@ use App\Domains\Academics\Http\Controllers\ClassDirectoryController;
 use App\Domains\Academics\Http\Controllers\PromotionController;
 use App\Domains\Academics\Http\Controllers\RoomDirectoryController;
 use App\Domains\Academics\Http\Controllers\SubstitutionRequestController;
+use App\Domains\Academics\Http\Controllers\TimetableBuilderController;
 use App\Domains\Academics\Legacy\Http\Controllers\ELearningController;
 use App\Domains\Admissions\Http\Controllers\AdminEnrollmentController;
 use App\Domains\Hifz\Http\Controllers\QuranProgressController;
@@ -188,6 +189,15 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::get('rooms', [RoomDirectoryController::class, 'index'])->name('academics.rooms.index');
         Route::post('rooms', [RoomDirectoryController::class, 'store'])->name('academics.rooms.store');
         Route::put('rooms/{room}', [RoomDirectoryController::class, 'update'])->name('academics.rooms.update');
+
+        Route::get('timetable/export', [TimetableBuilderController::class, 'export'])->name('academics.timetable.export');
+        Route::get('timetable', [TimetableBuilderController::class, 'index'])->name('academics.timetable.index');
+        Route::post('timetable', [TimetableBuilderController::class, 'store'])->name('academics.timetable.store');
+        Route::post('timetable/preview', [TimetableBuilderController::class, 'preview'])->name('academics.timetable.preview');
+        Route::post('timetable/copy-from-class', [TimetableBuilderController::class, 'copyFromClass'])->name('academics.timetable.copy-from-class');
+        Route::post('timetable/copy-week', [TimetableBuilderController::class, 'copyWeek'])->name('academics.timetable.copy-week');
+        Route::put('timetable/{timetable}', [TimetableBuilderController::class, 'update'])->name('academics.timetable.update');
+        Route::delete('timetable/{timetable}', [TimetableBuilderController::class, 'destroy'])->name('academics.timetable.destroy');
 
         Route::get('promotion', [PromotionController::class, 'create'])->name('academics.promotion.create');
         Route::post('promotion/dry-run', [PromotionController::class, 'dryRun'])->name('academics.promotion.dry-run');

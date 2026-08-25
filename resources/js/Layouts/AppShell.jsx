@@ -28,6 +28,9 @@ export default function AppShell({ title, children }) {
                         <Link href="/academics/rooms" className="text-[#7C2D37] hover:underline">
                             Rooms
                         </Link>
+                        <Link href="/academics/timetable" className="text-[#7C2D37] hover:underline">
+                            Timetable
+                        </Link>
                         <span className="text-gray-500">{user?.name}</span>
                         <span className="rounded bg-[#F3EBE0] px-2 py-0.5 text-xs uppercase">{locale}</span>
                     </nav>
@@ -37,6 +40,11 @@ export default function AppShell({ title, children }) {
                 {flash?.success && (
                     <div className="mb-4 rounded border border-green-200 bg-green-50 px-4 py-2 text-sm text-green-800">
                         {flash.success}
+                    </div>
+                )}
+                {flash?.error && (
+                    <div className="mb-4 rounded border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-800">
+                        {flash.error}
                     </div>
                 )}
                 {children}

@@ -452,11 +452,23 @@ conflict engine is **S2.2**.
   (logged). Dual-writes room name from `room_id`.
 - No builder UI (S2.3). No student-keyed writes. Hifz / Deploy 3 untouched.
 
+## S2.3 — React timetable builder (no student writes)
+
+- Week grid per class; drag or click a subject onto a period×day cell.
+- Teacher-view and room-view tabs; live conflict badges (server-computed).
+- Copy-from-class (template copy logs `timetable.conflict_override` when the
+  same teacher/room is reused); copy-week bounds unbounded rows to the
+  selected week then clones with +7 day validity.
+- Print + CSV export. Substitution overlay: approved `teacher_absences` +
+  assigned substitute on the affected slot.
+- Permission `manage_timetables`. No student-keyed writes. Hifz / Deploy 3
+  untouched.
+
 ## Next
 
-1. **S2.3** — React timetable builder (safe under deferral).
-2. **S2.0 / S2.1** PRs still open — merge when CI is green; then **S2.0b**
-   so staging runs `students:verify-unification`.
+1. **S2.4** — `room_bookings` + clash vs timetable (safe under deferral).
+2. **S2.0 / S2.1 / S2.2** PRs still open — merge when CI is green; then
+   **S2.0b** so staging runs `students:verify-unification`.
 3. S2.6–S2.10 stay **blocked** until verify is green on staging.
 4. Every S2 PR: wait for CI green; **do not self-merge**. Production: nothing
    until credential smoke is recorded.
