@@ -5,7 +5,7 @@ export default function Children({ children }) {
         <AppShell title="My children">
             <div className="overflow-x-auto rounded-lg border bg-white">
                 <table className="min-w-full text-sm">
-                    <thead className="bg-[#F3EBE0] text-left">
+                    <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">Name</th>
                             <th className="px-3 py-2">Number</th>

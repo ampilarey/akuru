@@ -13,6 +13,8 @@ export default function Show({ staff }) {
             <section className="mb-6 rounded-lg border bg-white p-4 text-sm">
                 <p><strong>Number:</strong> {staff.staff_number || '—'}</p>
                 <p><strong>Employment:</strong> {staff.employment_type}</p>
+                <p><strong>Department:</strong> {staff.department || '—'}</p>
+                <p><strong>Designation:</strong> {staff.designation || '—'}</p>
                 <p><strong>Status:</strong> {staff.status}</p>
                 <p><strong>Joined:</strong> {staff.joined_date || '—'}</p>
             </section>
