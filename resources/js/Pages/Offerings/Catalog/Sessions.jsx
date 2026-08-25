@@ -10,6 +10,7 @@ export default function Sessions({ offering, types, sessions }) {
         ends_at: '',
         location_name: '',
         online_meeting_url: '',
+        teacher_user_id: '',
         is_required: true,
     });
 
@@ -34,6 +35,7 @@ export default function Sessions({ offering, types, sessions }) {
                 <input className="form-input" type="datetime-local" value={form.data.ends_at} onChange={(e) => form.setData('ends_at', e.target.value)} />
                 <input className="form-input" placeholder="Location" value={form.data.location_name} onChange={(e) => form.setData('location_name', e.target.value)} />
                 <input className="form-input" placeholder="Meeting URL" value={form.data.online_meeting_url} onChange={(e) => form.setData('online_meeting_url', e.target.value)} />
+                <input className="form-input" placeholder="Teacher user id" value={form.data.teacher_user_id} onChange={(e) => form.setData('teacher_user_id', e.target.value)} />
                 <button type="submit" className="btn-primary" disabled={form.processing}>Save session</button>
             </form>
             <div className="overflow-x-auto rounded-lg border bg-white">

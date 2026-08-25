@@ -233,6 +233,8 @@ class LocalizedRouteNamesTest extends TestCase
             'catalog.media.show',
             'catalog.courses.lessons.preview',
             'learn.dashboard',
+            'learn.schedule',
+            'teach.schedule',
             'learn.catalog',
             'learn.courses.enroll',
             'learn.courses.show',
@@ -271,9 +273,11 @@ class LocalizedRouteNamesTest extends TestCase
             'catalog.offerings.pin',
             'catalog.offerings.sessions.index',
             'catalog.offerings.sessions.store',
+            'catalog.offerings.sessions.update',
             'catalog.offerings.sessions.export',
             'catalog.offerings.sessions.attendance',
             'catalog.offerings.sessions.attendance.mark',
+            'catalog.offerings.sessions.attendance.bulk',
         ];
 
         foreach ($names as $name) {

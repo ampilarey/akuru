@@ -38,10 +38,12 @@ Teacher review dashboard at `/catalog/reviews`. Reviewers score submitted
 activity and assessment attempts and leave feedback. Students see that
 feedback on the player. Teacher-marked 2.1/2.3 attempts become `scored`.
 
-## Slice 2.5 — Session + attendance UI polish
+## Slice 2.5 — Session + attendance UI polish (done)
 
-Fuller session management, attendance marking UI, student schedule,
-teacher schedule. Builds on 1B.3 foundation; still Offerings-owned.
+Fuller session management (update + teacher assignment), attendance
+roster with student names and bulk mark, student schedule at
+`/learn/schedule`, teacher schedule at `/teach/schedule`. Still
+Offerings-owned.
 
 ## Out of scope
 

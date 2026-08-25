@@ -1011,9 +1011,22 @@ rate limiting, and the Inertia shell. No new 1A.1 code.
   status to `scored` and stores feedback.
 - Learners see feedback on the activity and assessment players.
 
+## 2.5 — Session + attendance UI polish (done)
+
+- Session update + `teacher_user_id` assignment.
+- Attendance roster shows student names (People Actions) and can bulk-mark.
+- Student schedule `/learn/schedule`. Teacher schedule `/teach/schedule`.
+- Offerings still owns sessions/attendance; no Academics imports.
+
 ## Next
 
-1. Phase 2 remaining — 2.5 session UI polish (`docs/2_SPEC.md`).
+1. Arabic module A (non-AI skills on the general activity system).
+2. Qur’an module A (human-first, after engine is stable).
+3. Operator: unify-verify / smoke / production (unchanged).
+4. Dual-write stays.
+5. S5 DoD remaining: month-in-the-life on real data, two parallel
+   payroll cycles before `payroll.enabled` goes on.
+6. S4 DoD on real BML sandbox / Thaana receipt proof is operator-owned.
 2. Operator: unify-verify / smoke / production (unchanged).
 3. Dual-write stays.
 4. S5 DoD remaining: month-in-the-life on real data, two parallel
