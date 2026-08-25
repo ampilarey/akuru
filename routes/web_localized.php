@@ -20,12 +20,14 @@ use App\Domains\Academics\Http\Controllers\TimetableBuilderController;
 use App\Domains\Academics\Legacy\Http\Controllers\ELearningController;
 use App\Domains\Admissions\Http\Controllers\AdminEnrollmentController;
 use App\Domains\Courses\Http\Controllers\AudienceController;
+use App\Domains\Courses\Http\Controllers\CatalogActivityController;
 use App\Domains\Courses\Http\Controllers\CatalogMediaController;
 use App\Domains\Courses\Http\Controllers\CourseLevelController;
 use App\Domains\Courses\Http\Controllers\CourseOutlineController;
 use App\Domains\Courses\Http\Controllers\CourseSubjectController;
 use App\Domains\Courses\Http\Controllers\EngineCourseController;
 use App\Domains\Courses\Http\Controllers\I18nPreviewController;
+use App\Domains\Courses\Http\Controllers\LearnActivityController;
 use App\Domains\Courses\Http\Controllers\LearnCatalogController;
 use App\Domains\Courses\Http\Controllers\LearnCourseController;
 use App\Domains\Courses\Http\Controllers\LearnDashboardController;
@@ -120,6 +122,9 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
     Route::get('/learn/lessons/{lesson}', [LearnLessonController::class, 'show'])->name('learn.lessons.show')->whereNumber('lesson');
     Route::post('/learn/lessons/{lesson}/complete', [LearnLessonController::class, 'complete'])->name('learn.lessons.complete')->whereNumber('lesson');
     Route::get('/learn/media/{media}', [LearnMediaController::class, 'show'])->name('learn.media.show')->whereNumber('media');
+    Route::get('/learn/activities/{activity}', [LearnActivityController::class, 'show'])->name('learn.activities.show')->whereNumber('activity');
+    Route::post('/learn/activities/{activity}/autosave', [LearnActivityController::class, 'autosave'])->name('learn.activities.autosave')->whereNumber('activity');
+    Route::post('/learn/activities/{activity}/submit', [LearnActivityController::class, 'submit'])->name('learn.activities.submit')->whereNumber('activity');
     Route::get('/hr/payslips/{payslip}/document', [PayslipDocumentController::class, 'show'])->name('hr.payslips.document')->whereNumber('payslip');
     Route::get('/finance/receipts/{receipt}/document', [ReceiptDocumentController::class, 'show'])->name('finance.receipts.show')->whereNumber('receipt');
 
@@ -391,6 +396,11 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::post('courses', [EngineCourseController::class, 'store'])->name('catalog.courses.store');
         Route::put('courses/{course}', [EngineCourseController::class, 'update'])->name('catalog.courses.update')->whereNumber('course');
         Route::post('courses/{course}/transition', [EngineCourseController::class, 'transition'])->name('catalog.courses.transition')->whereNumber('course');
+        Route::get('courses/{course}/activities/export', [CatalogActivityController::class, 'export'])->name('catalog.courses.activities.export')->whereNumber('course');
+        Route::get('courses/{course}/activities', [CatalogActivityController::class, 'index'])->name('catalog.courses.activities.index')->whereNumber('course');
+        Route::post('courses/{course}/activities', [CatalogActivityController::class, 'store'])->name('catalog.courses.activities.store')->whereNumber('course');
+        Route::put('courses/{course}/activities/{activity}', [CatalogActivityController::class, 'update'])->name('catalog.courses.activities.update')->whereNumber('course')->whereNumber('activity');
+        Route::delete('courses/{course}/activities/{activity}', [CatalogActivityController::class, 'destroy'])->name('catalog.courses.activities.destroy')->whereNumber('course')->whereNumber('activity');
         Route::get('courses/{course}/outline', [CourseOutlineController::class, 'show'])->name('catalog.courses.outline')->whereNumber('course');
         Route::post('courses/{course}/modules', [CourseOutlineController::class, 'storeModule'])->name('catalog.courses.modules.store')->whereNumber('course');
         Route::post('courses/{course}/lessons', [CourseOutlineController::class, 'storeLesson'])->name('catalog.courses.lessons.store')->whereNumber('course');

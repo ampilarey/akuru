@@ -52,6 +52,7 @@ class ListCourseLearningAction
             'upcoming_sessions' => $enrollment?->course_offering_id
                 ? app(ListUpcomingSessionsForOfferingsAction::class)->execute([(int) $enrollment->course_offering_id])
                 : [],
+            'activities' => app(ListCourseActivitiesAction::class)->execute($course, includeAnswerKeys: false)->values(),
             'modules' => $modules->map(fn (CourseModule $module) => [
                 'id' => $module->id,
                 'title' => $module->title,

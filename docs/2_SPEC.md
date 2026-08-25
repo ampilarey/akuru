@@ -7,11 +7,14 @@ No Arabic/Hifz/AI/payments/certificates/Capacitor.
 
 Do not start this phase until 1B tests are green.
 
-## Slice 2.1 — Activity patterns + builder
+## Slice 2.1 — Activity patterns + builder (done)
 
 Four base activity patterns (selection, text input, arrange, teacher-marked).
 Admin can create activities without code changes. Autosave in-progress
 answers. Auto-mark selection and text-input (normalization settings).
+Arabic normalization flags apply only when configured. Teacher-marked
+attempts stay `submitted` until 2.4 review. Answer keys are hidden from
+students unless the attempt is scored and `show_correct_answer` is on.
 
 ## Slice 2.2 — Question bank
 

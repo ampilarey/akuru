@@ -973,10 +973,21 @@ rate limiting, and the Inertia shell. No new 1A.1 code.
   for Arabic. Learn keys aligned across locales.
 - Admin i18n preview asserts thaana/arabic font classes.
 
+## 2.1 — Activity patterns + builder (done)
+
+- Four patterns: `selection`, `text_input`, `arrange`, `teacher_marked`.
+- Courses owns `activities`; Progress owns `activity_attempts`.
+- Catalog CRUD + CSV at `/catalog/courses/{id}/activities`.
+- Learner player at `/learn/activities/{id}` with autosave and submit.
+- Auto-mark selection / text / arrange. Text normalization is per-activity
+  (Arabic flags off unless configured). Teacher-marked stays submitted.
+- Students do not see answer keys until scored + `show_correct_answer`.
+- Unlock formula is unchanged (`lock_next_lesson` is stored only).
+
 ## Next
 
-1. Phase 2 — activities, assessments, fuller scheduled-course UI
-   (`docs/2_SPEC.md`, source `docs/SPEC.md` §47).
+1. Phase 2 remaining — 2.2 question bank, 2.3 assessments, 2.4 teacher
+   review, 2.5 session UI polish (`docs/2_SPEC.md`).
 2. Operator: unify-verify / smoke / production (unchanged).
 3. Dual-write stays.
 4. S5 DoD remaining: month-in-the-life on real data, two parallel
