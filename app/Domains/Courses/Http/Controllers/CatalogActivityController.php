@@ -4,6 +4,7 @@ namespace App\Domains\Courses\Http\Controllers;
 
 use App\Domains\Courses\Actions\ListArabicReferenceAction;
 use App\Domains\Courses\Actions\ListCourseActivitiesAction;
+use App\Domains\Courses\Actions\ListQuranReferenceAction;
 use App\Domains\Courses\Actions\SaveActivityAction;
 use App\Domains\Courses\Models\Activity;
 use App\Domains\Courses\Models\Course;
@@ -30,6 +31,7 @@ class CatalogActivityController extends Controller
             'patterns' => ['selection', 'text_input', 'arrange', 'teacher_marked'],
             'skills' => ['listening', 'speaking', 'reading', 'writing'],
             ...app(ListArabicReferenceAction::class)->execute(activeOnly: true),
+            'surahs' => app(ListQuranReferenceAction::class)->execute()['surahs'],
         ]);
     }
 
@@ -107,7 +109,7 @@ class CatalogActivityController extends Controller
         if (! is_array($settings)) {
             $settings = [];
         }
-        foreach (['skill', 'letter_id', 'harakah_id'] as $key) {
+        foreach (['skill', 'letter_id', 'harakah_id', 'surah_id', 'ayah_start', 'ayah_end'] as $key) {
             if ($request->filled($key)) {
                 $settings[$key] = $request->input($key);
             }

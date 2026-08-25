@@ -23,7 +23,7 @@ const SAMPLE_DATA = {
     }, null, 2),
 };
 
-export default function Activities({ course, activities, patterns, skills = [], letters = [], harakas = [] }) {
+export default function Activities({ course, activities, patterns, skills = [], letters = [], harakas = [], surahs = [] }) {
     const form = useForm({
         title: '',
         pattern: 'selection',
@@ -31,6 +31,9 @@ export default function Activities({ course, activities, patterns, skills = [], 
         skill: '',
         letter_id: '',
         harakah_id: '',
+        surah_id: '',
+        ayah_start: '',
+        ayah_end: '',
         max_score: 1,
         passing_score: '',
         is_required: false,
@@ -84,6 +87,12 @@ export default function Activities({ course, activities, patterns, skills = [], 
                     <option value="">Any harakah</option>
                     {harakas.map((row) => <option key={row.id} value={row.id}>{row.symbol} {row.display_name}</option>)}
                 </select>
+                <select className="form-input" value={form.data.surah_id} onChange={(e) => form.setData('surah_id', e.target.value)}>
+                    <option value="">No recitation range</option>
+                    {surahs.map((row) => <option key={row.id} value={row.id}>{row.index}. {row.english_name}</option>)}
+                </select>
+                <input className="form-input" type="number" min="1" placeholder="Ayah start" value={form.data.ayah_start} onChange={(e) => form.setData('ayah_start', e.target.value)} />
+                <input className="form-input" type="number" min="1" placeholder="Ayah end" value={form.data.ayah_end} onChange={(e) => form.setData('ayah_end', e.target.value)} />
                 <input className="form-input" type="number" min="1" placeholder="Max score" value={form.data.max_score} onChange={(e) => form.setData('max_score', e.target.value)} />
                 <textarea className="form-input md:col-span-2 min-h-32 font-mono text-xs" value={form.data.data} onChange={(e) => form.setData('data', e.target.value)} />
                 <textarea className="form-input md:col-span-2 min-h-24 font-mono text-xs" value={form.data.settings} onChange={(e) => form.setData('settings', e.target.value)} />

@@ -58,6 +58,18 @@ export default function Activity({ activity, enrollment, attempt }) {
                 {attempt?.status ? ` · ${attempt.status}` : ''}
                 {attempt?.score != null ? ` · ${attempt.score}/${attempt.max_score}` : ''}
             </p>
+            {activity.quran && (
+                <div className="mb-4 rounded-lg border bg-white p-4">
+                    <p className="mb-2 text-sm text-gray-600">
+                        {activity.quran.surah.english_name} {activity.quran.ayah_start}–{activity.quran.ayah_end}
+                    </p>
+                    <div className="space-y-2 text-lg" dir="rtl">
+                        {(activity.quran.ayahs || []).map((ayah) => (
+                            <p key={ayah.id}>{ayah.text_uthmani}</p>
+                        ))}
+                    </div>
+                </div>
+            )}
             <p className="mb-4">{activity.data.prompt}</p>
             {activity.pattern === 'selection' && (
                 <ul className="mb-4 space-y-2">
