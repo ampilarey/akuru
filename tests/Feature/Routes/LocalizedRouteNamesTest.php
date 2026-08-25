@@ -141,6 +141,13 @@ class LocalizedRouteNamesTest extends TestCase
             'exams.marks.update',
             'exams.marks.import',
             'exams.marks.export',
+            'exams.gradebook.index',
+            'exams.gradebook.compute',
+            'exams.gradebook.export',
+            'exams.competencies.index',
+            'exams.competencies.store',
+            'exams.competencies.assess',
+            'exams.competencies.export',
         ];
 
         foreach ($names as $name) {

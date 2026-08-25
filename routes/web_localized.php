@@ -19,9 +19,11 @@ use App\Domains\Academics\Http\Controllers\TeacherRegisterController;
 use App\Domains\Academics\Http\Controllers\TimetableBuilderController;
 use App\Domains\Academics\Legacy\Http\Controllers\ELearningController;
 use App\Domains\Admissions\Http\Controllers\AdminEnrollmentController;
+use App\Domains\ExamsGrades\Http\Controllers\CompetencyController;
 use App\Domains\ExamsGrades\Http\Controllers\ExamController;
 use App\Domains\ExamsGrades\Http\Controllers\ExamMarkController;
 use App\Domains\ExamsGrades\Http\Controllers\ExamTypeController;
+use App\Domains\ExamsGrades\Http\Controllers\GradebookController;
 use App\Domains\ExamsGrades\Http\Controllers\GradeScaleController;
 use App\Domains\ExamsGrades\Http\Controllers\WeightSchemeController;
 use App\Domains\Hifz\Http\Controllers\QuranProgressController;
@@ -71,6 +73,11 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
     Route::get('exams/{exam}/marks', [ExamMarkController::class, 'show'])->name('exams.marks.show');
     Route::put('exams/{exam}/marks', [ExamMarkController::class, 'update'])->name('exams.marks.update');
     Route::post('exams/{exam}/marks/import', [ExamMarkController::class, 'import'])->name('exams.marks.import');
+
+    Route::get('exams/gradebook/export', [GradebookController::class, 'export'])->name('exams.gradebook.export');
+    Route::get('exams/gradebook', [GradebookController::class, 'index'])->name('exams.gradebook.index');
+    Route::post('exams/gradebook/compute', [GradebookController::class, 'compute'])->name('exams.gradebook.compute');
+    Route::post('exams/competencies/assess', [CompetencyController::class, 'assess'])->name('exams.competencies.assess');
 
     Route::get('academics/registers/today', [TeacherRegisterController::class, 'today'])->name('academics.registers.today');
     Route::get('academics/registers/export', [RegisterReportController::class, 'export'])->name('academics.registers.export');
@@ -303,5 +310,9 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::post('schedule/bulk', [ExamController::class, 'bulk'])->name('exams.bulk');
         Route::put('schedule/{exam}', [ExamController::class, 'update'])->name('exams.update');
         Route::post('schedule/{exam}/transition', [ExamController::class, 'transition'])->name('exams.transition');
+
+        Route::get('competencies/export', [CompetencyController::class, 'export'])->name('exams.competencies.export');
+        Route::get('competencies', [CompetencyController::class, 'index'])->name('exams.competencies.index');
+        Route::post('competencies', [CompetencyController::class, 'store'])->name('exams.competencies.store');
     });
 });

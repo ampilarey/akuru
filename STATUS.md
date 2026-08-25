@@ -792,9 +792,19 @@ anyway (same as S2.6–S2.10). S3.1 has **no student-keyed rows**.
 - Student-keyed writes coded; staging still blocked until unify-verify
   is green.
 
+## S3.4 — Term grades (done)
+
+- `term_grades` computed cache: weight scheme → published exams →
+  percent / letter / point / rank. Multiple exams of one type share
+  that type's weight equally unless `weight_override`.
+- Idempotent recompute; also runs on `ExamResultsPublished`.
+- ADR-013 absent/exempt applied. Ties share rank.
+- Competencies + assessments (subject-level). Gradebook matrix + CSV.
+- Hifz / Deploy 3 untouched.
+
 ## Next
 
-1. **S3.4 — Term grades** (weighted gradebook + competencies).
+1. **S3.5 — Curriculum standards** (definitions + tagging).
 2. Operator: unify-verify / smoke / production (unchanged).
 3. Dual-write stays. Staging student-keyed writes stay blocked until
    verify is green; coding continues.
