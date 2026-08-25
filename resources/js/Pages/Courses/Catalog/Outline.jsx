@@ -1,6 +1,16 @@
 import { router, useForm } from '@inertiajs/react';
 import AppShell from '../../../Layouts/AppShell';
 
+const MEDIA_TYPES = ['image', 'audio', 'video', 'pdf'];
+
+function blockLabel(block) {
+    return block.data?.body
+        || block.data?.original_name
+        || block.data?.embed_url
+        || block.title
+        || '—';
+}
+
 export default function Outline({ course, modules }) {
     const moduleForm = useForm({ title: '' });
     const lessonForm = useForm({
@@ -13,7 +23,10 @@ export default function Outline({ course, modules }) {
         body: '',
         tone: 'note',
         direction: 'auto',
+        embed_url: '',
+        file: null,
     });
+    const isMedia = MEDIA_TYPES.includes(blockForm.data.type);
 
     return (
         <AppShell title={`Outline — ${course.title}`}>
@@ -50,7 +63,7 @@ export default function Outline({ course, modules }) {
                         blockForm.transform((data) => ({
                             ...data,
                             lesson_id: data.lesson_id || modules.flatMap((module) => module.lessons)[0]?.id || '',
-                        })).post(`/catalog/courses/${course.id}/blocks`, { preserveScroll: true });
+                        })).post(`/catalog/courses/${course.id}/blocks`, { preserveScroll: true, forceFormData: true });
                     }}
                     className="rounded-lg border bg-white p-4"
                 >
@@ -62,6 +75,10 @@ export default function Outline({ course, modules }) {
                         <option value="text">Text</option>
                         <option value="rich_text">Rich text</option>
                         <option value="instruction">Instruction</option>
+                        <option value="image">Image</option>
+                        <option value="audio">Audio</option>
+                        <option value="video">Video</option>
+                        <option value="pdf">PDF</option>
                     </select>
                     <select className="form-input mb-2" value={blockForm.data.direction} onChange={(e) => blockForm.setData('direction', e.target.value)}>
                         <option value="auto">Direction auto</option>
@@ -75,10 +92,28 @@ export default function Outline({ course, modules }) {
                             <option value="warning">Warning</option>
                         </select>
                     )}
-                    <textarea className="form-input mb-2" placeholder="Block content" value={blockForm.data.body} onChange={(e) => blockForm.setData('body', e.target.value)} />
+                    {blockForm.data.type === 'video' && (
+                        <input className="form-input mb-2" placeholder="YouTube or Vimeo URL (optional)" value={blockForm.data.embed_url} onChange={(e) => blockForm.setData('embed_url', e.target.value)} />
+                    )}
+                    {isMedia ? (
+                        <input
+                            className="form-input mb-2"
+                            type="file"
+                            accept={
+                                blockForm.data.type === 'image' ? 'image/*'
+                                    : blockForm.data.type === 'audio' ? 'audio/*'
+                                        : blockForm.data.type === 'video' ? 'video/*'
+                                            : 'application/pdf'
+                            }
+                            onChange={(e) => blockForm.setData('file', e.target.files?.[0] || null)}
+                        />
+                    ) : (
+                        <textarea className="form-input mb-2" placeholder="Block content" value={blockForm.data.body} onChange={(e) => blockForm.setData('body', e.target.value)} />
+                    )}
                     <button type="submit" className="btn-primary" disabled={blockForm.processing}>Save block</button>
                     {blockForm.errors.data && <p className="mt-1 text-xs text-red-600">{blockForm.errors.data}</p>}
                     {blockForm.errors.type && <p className="mt-1 text-xs text-red-600">{blockForm.errors.type}</p>}
+                    {blockForm.errors.file && <p className="mt-1 text-xs text-red-600">{blockForm.errors.file}</p>}
                 </form>
             </div>
             <div className="space-y-4">
@@ -99,7 +134,7 @@ export default function Outline({ course, modules }) {
                                 <ul className="text-sm text-gray-700">
                                     {lesson.blocks.map((block) => (
                                         <li key={block.id} className="flex justify-between gap-3">
-                                            <span>{block.type}: {block.data?.body || block.title || '—'}</span>
+                                            <span>{block.type}: {blockLabel(block)}</span>
                                             <button type="button" className="text-xs text-red-700" onClick={() => router.delete(`/catalog/courses/${course.id}/blocks/${block.id}`)}>Delete draft</button>
                                         </li>
                                     ))}

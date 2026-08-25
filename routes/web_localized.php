@@ -20,6 +20,7 @@ use App\Domains\Academics\Http\Controllers\TimetableBuilderController;
 use App\Domains\Academics\Legacy\Http\Controllers\ELearningController;
 use App\Domains\Admissions\Http\Controllers\AdminEnrollmentController;
 use App\Domains\Courses\Http\Controllers\AudienceController;
+use App\Domains\Courses\Http\Controllers\CatalogMediaController;
 use App\Domains\Courses\Http\Controllers\CourseLevelController;
 use App\Domains\Courses\Http\Controllers\CourseOutlineController;
 use App\Domains\Courses\Http\Controllers\CourseSubjectController;
@@ -370,6 +371,7 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::delete('courses/{course}/blocks/{block}', [CourseOutlineController::class, 'destroyBlock'])->name('catalog.courses.blocks.destroy')->whereNumber('course');
         Route::post('courses/{course}/lessons/{lesson}/publish', [CourseOutlineController::class, 'publishLesson'])->name('catalog.courses.lessons.publish')->whereNumber('course');
         Route::get('player/{lesson}', [LessonPlayerController::class, 'show'])->name('catalog.player.show')->whereNumber('lesson');
+        Route::get('media/{media}', [CatalogMediaController::class, 'show'])->name('catalog.media.show')->whereNumber('media');
     });
 
     Route::prefix('hr')->middleware(['role:super_admin|admin|headmaster'])->group(function () {

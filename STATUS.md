@@ -898,9 +898,17 @@ rate limiting, and the Inertia shell. No new 1A.1 code.
 - Validated `text`, `rich_text`, `instruction`. Direction is a setting.
 - Media block types rejected. Player renders published snapshots.
 
+## 1A.5 — Media pipeline + media blocks (done)
+
+- `media_files` (private, local disk). Courses calls Media Actions only.
+- Queued `ProcessMediaFileJob` marks processed; no inline thumbnails.
+- Image / audio / video / PDF blocks store `media_id` (no public URL).
+- Video also accepts YouTube/Vimeo embeds. Authorized
+  `GET /catalog/media/{id}` serves bytes. Player renders all four types.
+
 ## Next
 
-1. 1A.5 — media pipeline + image/audio/video/PDF blocks.
+1. 1A.6 — self-learning enrollment, student dashboard, progress.
 2. Operator: unify-verify / smoke / production (unchanged).
 3. Dual-write stays.
 4. S5 DoD remaining: month-in-the-life on real data, two parallel

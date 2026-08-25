@@ -34,7 +34,7 @@ function makeBlankLesson(): array
     return compact('admin', 'course', 'lesson');
 }
 
-it('accepts text, rich text, and instruction blocks and rejects media types', function () {
+it('accepts text, rich text, and instruction blocks and rejects unknown types', function () {
     ['lesson' => $lesson, 'admin' => $admin] = makeBlankLesson();
 
     app(SaveContentBlockAction::class)->execute([
@@ -53,6 +53,12 @@ it('accepts text, rich text, and instruction blocks and rejects media types', fu
         'type' => 'instruction',
         'data' => ['body' => 'Read aloud', 'tone' => 'tip'],
     ]);
+
+    expect(fn () => app(SaveContentBlockAction::class)->execute([
+        'lesson_id' => $lesson->id,
+        'type' => 'flashcard',
+        'data' => ['body' => 'nope'],
+    ]))->toThrow(ValidationException::class);
 
     expect(fn () => app(SaveContentBlockAction::class)->execute([
         'lesson_id' => $lesson->id,
