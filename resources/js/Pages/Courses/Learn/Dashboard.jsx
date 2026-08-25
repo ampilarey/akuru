@@ -11,6 +11,7 @@ export default function Dashboard({ student, enrollments, upcoming_sessions = []
             <div className="mb-4 flex flex-wrap gap-3">
                 <a className="text-sm text-[#7C2D37] hover:underline" href="/learn/catalog">{t.browse || 'Browse courses'}</a>
                 <a className="text-sm text-[#7C2D37] hover:underline" href="/learn/schedule">{t.schedule || 'Schedule'}</a>
+                <a className="text-sm text-[#7C2D37] hover:underline" href="/learn/arabic-report">{t.arabic_report || 'Arabic skills'}</a>
             </div>
             {upcoming_sessions.length > 0 && (
                 <section className="mb-4 rounded-lg border bg-white p-4">

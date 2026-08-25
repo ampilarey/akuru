@@ -1031,10 +1031,17 @@ rate limiting, and the Inertia shell. No new 1A.1 code.
 - Optional `letter_id` / `harakah_id` validated through the A.1 list Action.
 - Still the four 2.1 patterns. No Arabic exercise engine. No AI.
 
+## Arabic A.3 — Skill reports (done)
+
+- Catalog `/catalog/arabic/reports` (+ CSV) and learner
+  `/learn/arabic-report`.
+- Built from skill-tagged activities + Progress attempt Actions.
+- No parallel LMS. No AI.
+
 ## Next
 
-1. Arabic A.3 — skill reports (`docs/ARABIC_A_SPEC.md`).
-2. Qur’an module A (human-first, after engine is stable).
+1. Qur’an module A (human-first, after engine is stable). Rule 7 still
+   freezes Hifz behavior until the §2b migration phase.
 3. Operator: unify-verify / smoke / production (unchanged).
 4. Dual-write stays.
 5. S5 DoD remaining: month-in-the-life on real data, two parallel
