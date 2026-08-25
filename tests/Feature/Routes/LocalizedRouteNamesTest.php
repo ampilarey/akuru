@@ -157,6 +157,16 @@ class LocalizedRouteNamesTest extends TestCase
             'hr.attendance.reports.export',
             'portal.staff-check-in',
             'portal.staff-check-in.store',
+            'hr.leave-types.index',
+            'hr.leave-types.store',
+            'hr.leave-types.update',
+            'hr.leave-types.export',
+            'hr.leave-balances.index',
+            'hr.leave-balances.store',
+            'hr.leave-balances.adjust',
+            'hr.leave-balances.carry-over',
+            'hr.leave-balances.export',
+            'portal.leave',
         ];
 
         foreach ($names as $name) {
