@@ -135,6 +135,8 @@ class RoleSeeder extends Seeder
             'calendar.manage',
             'registers.fill',
             'registers.manage',
+            'behavior.record',
+            'behavior.manage',
         ];
 
         foreach ($permissions as $permission) {
@@ -186,6 +188,8 @@ class RoleSeeder extends Seeder
             'calendar.manage',
             'registers.fill',
             'registers.manage',
+            'behavior.record',
+            'behavior.manage',
             'manage_announcements',
             'view_announcements',
             'create_announcements',
@@ -244,6 +248,7 @@ class RoleSeeder extends Seeder
             'update_quran_progress',
             'view_timetables',
             'registers.fill',
+            'behavior.record',
             'view_announcements',
             'view_hifz_programs',
             'create_hifz_sessions', 'update_hifz_sessions',

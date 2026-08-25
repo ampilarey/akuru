@@ -61,6 +61,12 @@ export default function AppShell({ title, children }) {
                         <Link href="/academics/absence-notes" className="text-[#7C2D37] hover:underline">
                             Review notes
                         </Link>
+                        <Link href="/academics/behavior" className="text-[#7C2D37] hover:underline">
+                            Behavior
+                        </Link>
+                        <Link href="/portal/behavior" className="text-[#7C2D37] hover:underline">
+                            My behavior
+                        </Link>
                         <span className="text-gray-500">{user?.name}</span>
                         <span className="rounded bg-[#F3EBE0] px-2 py-0.5 text-xs uppercase">{locale}</span>
                     </nav>
