@@ -1141,9 +1141,32 @@ rate limiting, and the Inertia shell. No new 1A.1 code.
 - Portal awards list. Report-card awards section now reads issued
   awards. Hifz / Deploy 3 untouched.
 
+## TRACK A — Unblock (S1 verify blockers)
+
+### A3 — Production-copy verify procedure (docs shipped; gate **not** green)
+
+- S1_SPEC line 147 requires `students:verify-unification` on a
+  **production-data copy**. Staging synthetics (`a a` / `b b`) cannot
+  validate Deploy 2. This VM has **no production dump** (only
+  `akuru_test` / `akuru_institute`).
+- Procedure: `docs/migrations/restore-production-copy.md`.
+- `students:verify-unification --backfill` now **refuses** when
+  `APP_ENV=production`. Never run `--backfill` on production itself.
+- **A3 is not green** until an operator restores a dump and archives
+  `docs/migrations/s11b-student-unification-report-prod-copy.json` with
+  verbatim stdout in STATUS. **TRACK B stays blocked.**
+
 ## Next
 
-**Operator (not in this slice):** `unify-verify` still red (4 RS collisions + guardian pivot). Student dual-write stays until staging is green. `payroll.enabled` off until credentials. BML sandbox / Thaana receipts / credential smoke / production. S3.1–S3.7 coding is on `main`; staging student-keyed writes stay blocked until verify is green.
+**TRACK A remaining:** A1 wipe (#72), A2 matcher (#73), A4 branch
+protection on `main` (operator; bot 403), A5 real `config/payroll.php`.
+**Do not start TRACK B until A3 is green on a production-data copy.**
+No `--backfill` on production. No Hifz cutover.
+
+**Operator (not in this slice):** provide a production mysqldump and run
+`docs/migrations/restore-production-copy.md`. `unify-verify` still red on
+staging. Student dual-write stays until that copy is green.
+`payroll.enabled` off until credentials.
 
 **Qur'an A.4b (later):** switch offering-session reads to `offering_halaqa_session_links` after operators confirm dual-write. Then Hifz cleanup (deploy 3). Keep `QURAN_HALAQA_DUAL_WRITE` off until verified.
 

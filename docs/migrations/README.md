@@ -22,3 +22,14 @@ stdout into `STATUS.md` (same format as the morph-map capture).
 
 Zero unresolved = Deploy 2 / student-keyed-write gate satisfied.
 Nonzero = list affected rows and stop (do not start S3).
+
+## Production-data copy (A3 / S1_SPEC line 147)
+
+Staging synthetics cannot validate Deploy 2. Restore a **production**
+mysqldump onto a scratch schema and run `students:verify-unification`
+there.
+
+Full procedure: [`restore-production-copy.md`](restore-production-copy.md).
+
+**Never** run `--backfill` against production. The artisan command refuses
+that flag when `APP_ENV=production`.
