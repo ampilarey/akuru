@@ -36,6 +36,7 @@ return [
     'document' => \App\Domains\Media\Models\Document::class,
     'emergency_contact' => \App\Domains\People\Models\EmergencyContact::class,
     'event' => \App\Domains\Website\Models\Event::class,
+    'fee_adjustment' => \App\Domains\Finance\Models\FeeAdjustment::class,
     'event_registration' => \App\Domains\Website\Models\EventRegistration::class,
     'faq' => \App\Domains\Website\Models\Faq::class,
     'fee_item' => \App\Domains\Finance\Models\FeeItem::class,

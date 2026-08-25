@@ -794,9 +794,15 @@ S3). S4.1 has **no new student-keyed writes** beyond existing
   overpayment rejected, `lockForUpdate`). ADR-014: defaulted = follow-up
   flag, never a school lockout (spec’s “ADR-006” was already used).
 
+## S4.5 — Discounts, scholarships, waivers (done)
+
+- `fee_adjustments` (percent then fixed, validity window, approved only).
+- Applied at generation as transparent discount lines. Sibling suggestion
+  via shared financially-responsible guardian. Not Commerce codes (L4).
+
 ## Next
 
-1. **S4.5 — Discounts, scholarships, waivers**.
+1. **S4.6 — Payment + portal**.
 2. Operator: unify-verify / smoke / production (unchanged).
 3. Dual-write stays.
 
