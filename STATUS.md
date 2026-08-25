@@ -1141,7 +1141,26 @@ rate limiting, and the Inertia shell. No new 1A.1 code.
 - Portal awards list. Report-card awards section now reads issued
   awards. Hifz / Deploy 3 untouched.
 
+## TRACK A — Unblock (S1 verify blockers)
+
+### A1 — `users:clear-non-admin` deletes `student_guardians` (done)
+
+- Staging verify’s “12/13 `guardian_user_id` missing from `users`” came from
+  this wipe: `FOREIGN_KEY_CHECKS=0` deleted users / `registration_students`
+  / payments and never touched `student_guardians`.
+  `UnifyStudentsAction::createParentFromUserId()` cannot invent those users.
+- Command now deletes pivot rows whose `guardian_user_id` is being wiped
+  **or** whose `student_id` is a `registration_students` row being wiped.
+  Admin-linked pivots stay.
+- Pest: `tests/Feature/People/ClearNonAdminUsersTest.php`.
+
 ## Next
+
+**TRACK A remaining:** A2 matcher hardening (RS 22 false `national_id`
+match), A3 verify on a **production-data copy** (not staging synthetics),
+A4 branch protection on `main` (operator; bot 403), A5 real
+`config/payroll.php` flag. **Do not start TRACK B until A3 is green.**
+No `--backfill` on production. No Hifz cutover.
 
 **Operator (not in this slice):** `unify-verify` still red (4 RS collisions + guardian pivot). Student dual-write stays until staging is green. `payroll.enabled` off until credentials. BML sandbox / Thaana receipts / credential smoke / production. S3.1–S3.7 coding is on `main`; staging student-keyed writes stay blocked until verify is green.
 

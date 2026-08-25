@@ -14,7 +14,9 @@ class ClearNonAdminUsers extends Command
 
     public function handle(): int
     {
-        $keepIds = User::role(['super_admin', 'admin'])->pluck('id');
+        $keepIds = User::query()
+            ->whereHas('roles', fn ($query) => $query->whereIn('name', ['super_admin', 'admin']))
+            ->pluck('id');
 
         if ($keepIds->isEmpty()) {
             $this->error('No admin/super_admin users found. Aborting to prevent deleting everyone.');
@@ -55,6 +57,17 @@ class ClearNonAdminUsers extends Command
         DB::table('model_has_roles')->whereNotIn('model_id', $keepIds)->where('model_type', $userMorph)->delete();
         DB::table('model_has_permissions')->whereNotIn('model_id', $keepIds)->where('model_type', $userMorph)->delete();
         DB::table('otps')->truncate();
+        // student_guardians FKs both users and registration_students. FOREIGN_KEY_CHECKS=0
+        // lets those parent rows vanish while the pivot stays — verify then reports
+        // "guardian_user_id missing from users". Delete the pivot first.
+        DB::table('student_guardians')
+            ->where(function ($query) use ($keepIds, $deleteStudentIds): void {
+                $query->whereNotIn('guardian_user_id', $keepIds);
+                if ($deleteStudentIds->isNotEmpty()) {
+                    $query->orWhereIn('student_id', $deleteStudentIds);
+                }
+            })
+            ->delete();
         if ($deleteStudentIds->isNotEmpty()) {
             DB::table('course_enrollments')->whereIn('student_id', $deleteStudentIds)->delete();
         }
