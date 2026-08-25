@@ -767,12 +767,25 @@ anyway (same as S2.6–S2.10). S3.1 has **no student-keyed rows**.
   untouched. No exam_marks yet (S3.2+).
 - Pest: `GradingFoundationsTest` + morph + routes + architecture green.
 
+## S3.2 — Exams (this slice)
+
+- `exams` + `exam_status_audits`. Calendar holiday/closure warn-block,
+  same-class same-day cap (`exams_max_per_class_per_day`, default 1),
+  room clash vs other exams / bookings / timetable (via Academics
+  `CheckRoomSlotConflictAction`).
+- Status: scheduled → marks_entry → review → published → locked.
+  Publish fires `ExamResultsPublished` → portal notification.
+  Locked rejects edits; unlock requires a reason and is audited.
+- Bulk scheduler: one exam per subject. Admin Inertia + CSV.
+- Portal `portal.exams` lists published exams for a guardian's children.
+- No `exam_marks` yet (S3.3). Hifz / Deploy 3 untouched.
+
 ## Next
 
-1. **S3.2 — Exams** (scheduling, calendar-aware, status flow).
+1. **S3.3 — Marks entry** (student-keyed `exam_marks`).
 2. Operator: unify-verify / smoke / production (unchanged).
-3. Dual-write stays. S3.3+ writes `exam_marks` (student-keyed) — still
-   blocked on staging until verify is green; coding continues.
+3. Dual-write stays. S3.3+ writes `exam_marks` — still blocked on
+   staging until verify is green; coding continues.
 
 **Operator (their side, unchanged):**
 

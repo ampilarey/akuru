@@ -19,6 +19,7 @@ use App\Domains\Academics\Http\Controllers\TeacherRegisterController;
 use App\Domains\Academics\Http\Controllers\TimetableBuilderController;
 use App\Domains\Academics\Legacy\Http\Controllers\ELearningController;
 use App\Domains\Admissions\Http\Controllers\AdminEnrollmentController;
+use App\Domains\ExamsGrades\Http\Controllers\ExamController;
 use App\Domains\ExamsGrades\Http\Controllers\ExamTypeController;
 use App\Domains\ExamsGrades\Http\Controllers\GradeScaleController;
 use App\Domains\ExamsGrades\Http\Controllers\WeightSchemeController;
@@ -38,6 +39,7 @@ use App\Domains\Portal\Http\Controllers\GuardianChildrenController;
 use App\Domains\Portal\Http\Controllers\PortalAbsenceNoteController;
 use App\Domains\Portal\Http\Controllers\PortalAttendanceController;
 use App\Domains\Portal\Http\Controllers\PortalBehaviorController;
+use App\Domains\Portal\Http\Controllers\PortalExamController;
 use App\Domains\Portal\Http\Controllers\PortalHolidayController;
 use App\Domains\Settings\Http\Controllers\Admin\SettingsController as AdminSettingsController;
 use App\Domains\Settings\Http\Controllers\AnalyticsController;
@@ -62,6 +64,7 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
     Route::get('/portal/behavior', [PortalBehaviorController::class, 'index'])->name('portal.behavior');
     Route::get('/portal/absence-notes', [PortalAbsenceNoteController::class, 'index'])->name('portal.absence-notes');
     Route::post('/portal/absence-notes', [PortalAbsenceNoteController::class, 'store'])->name('portal.absence-notes.store');
+    Route::get('/portal/exams', [PortalExamController::class, 'index'])->name('portal.exams');
 
     Route::get('academics/registers/today', [TeacherRegisterController::class, 'today'])->name('academics.registers.today');
     Route::get('academics/registers/export', [RegisterReportController::class, 'export'])->name('academics.registers.export');
@@ -287,5 +290,12 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::get('weights', [WeightSchemeController::class, 'index'])->name('exams.weights.index');
         Route::post('weights', [WeightSchemeController::class, 'store'])->name('exams.weights.store');
         Route::put('weights/{weightScheme}', [WeightSchemeController::class, 'update'])->name('exams.weights.update');
+
+        Route::get('schedule/export', [ExamController::class, 'export'])->name('exams.export');
+        Route::get('schedule', [ExamController::class, 'index'])->name('exams.index');
+        Route::post('schedule', [ExamController::class, 'store'])->name('exams.store');
+        Route::post('schedule/bulk', [ExamController::class, 'bulk'])->name('exams.bulk');
+        Route::put('schedule/{exam}', [ExamController::class, 'update'])->name('exams.update');
+        Route::post('schedule/{exam}/transition', [ExamController::class, 'transition'])->name('exams.transition');
     });
 });
