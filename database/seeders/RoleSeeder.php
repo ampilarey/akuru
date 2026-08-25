@@ -137,6 +137,8 @@ class RoleSeeder extends Seeder
             'registers.manage',
             'behavior.record',
             'behavior.manage',
+            'requests.submit',
+            'requests.review',
         ];
 
         foreach ($permissions as $permission) {
@@ -190,6 +192,8 @@ class RoleSeeder extends Seeder
             'registers.manage',
             'behavior.record',
             'behavior.manage',
+            'requests.submit',
+            'requests.review',
             'manage_announcements',
             'view_announcements',
             'create_announcements',
@@ -221,6 +225,8 @@ class RoleSeeder extends Seeder
             'calendar.manage',
             'registers.fill',
             'registers.manage',
+            'requests.submit',
+            'requests.review',
             'view_announcements',
             'view_reports',
             'view_hifz_programs',
@@ -249,6 +255,7 @@ class RoleSeeder extends Seeder
             'view_timetables',
             'registers.fill',
             'behavior.record',
+            'requests.submit',
             'view_announcements',
             'view_hifz_programs',
             'create_hifz_sessions', 'update_hifz_sessions',
@@ -279,6 +286,7 @@ class RoleSeeder extends Seeder
             'view_announcements',
             'view_hifz_programs',
             'view_hifz_mistakes',
+            'requests.submit',
         ]);
     }
 }

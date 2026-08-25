@@ -83,6 +83,7 @@ return [
     'registration_flow' => \App\Domains\Admissions\Models\RegistrationFlow::class,
     'registration_student' => \App\Domains\People\Models\RegistrationStudent::class,
     'report' => \App\Domains\Settings\Models\Report::class,
+    'school_request' => \App\Domains\Academics\Models\SchoolRequest::class,
     'room' => \App\Domains\Academics\Models\Room::class,
     'room_booking' => \App\Domains\Academics\Models\RoomBooking::class,
     'school' => \App\Domains\Settings\Models\School::class,

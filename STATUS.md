@@ -560,9 +560,19 @@ production. Coding continues without waiting on that evidence.
 - Morph aliases `behavior_record`, `behavior_record_audit`.
   Hifz / Deploy 3 untouched.
 
+## S2.10 — Requests & teacher leave (coding; verify still operator-side)
+
+- New `requests` with type handlers. `teacher_leave` approval creates
+  `teacher_absences` and open `substitution_requests` for matching
+  timetable slots (overlay includes open + assigned). Parent absence
+  notes stay in their own table. Permissions `requests.submit` /
+  `requests.review`. Morph `school_request`.
+- Hifz / Deploy 3 untouched.
+
 ## Next
 
-1. Operator: paste staging `students:verify-unification` log + JSON.
-2. **S2.10** requests / teacher leave.
-3. Production: nothing until credential smoke is recorded.
-4. **S1.1 Deploy 3** still ≥2 weeks after `2f8a90b`. Dual-write stays.
+1. Operator: paste staging `students:verify-unification` log + JSON
+   under `docs/migrations/`. Branch protection. Credential smoke.
+2. Production: nothing until credential smoke is recorded.
+3. **S1.1 Deploy 3** still ≥2 weeks after `2f8a90b`. Dual-write stays.
+4. S3 / Hifz migration are not started.

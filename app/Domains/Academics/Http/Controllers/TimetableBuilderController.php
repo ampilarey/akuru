@@ -298,7 +298,7 @@ class TimetableBuilderController extends Controller
         return SubstitutionRequest::query()
             ->with('assignment')
             ->whereIn('timetable_entry_id', $entryIds)
-            ->where('status', 'assigned')
+            ->whereIn('status', ['open', 'assigned'])
             ->get()
             ->map(fn (SubstitutionRequest $request) => [
                 'timetable_id' => $request->timetable_entry_id,

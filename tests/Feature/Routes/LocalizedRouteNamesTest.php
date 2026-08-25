@@ -114,6 +114,10 @@ class LocalizedRouteNamesTest extends TestCase
             'academics.behavior.destroy',
             'academics.behavior.export',
             'portal.behavior',
+            'academics.requests.index',
+            'academics.requests.store',
+            'academics.requests.review',
+            'academics.requests.export',
         ];
 
         foreach ($names as $name) {
