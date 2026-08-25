@@ -39,6 +39,15 @@ class ApproveStaffLeaveAction
             throw ValidationException::withMessages(['from_date' => 'No academic year covers this leave.']);
         }
 
+        $lock = app(IsPayrollMonthLockedAction::class);
+        for ($cursor = Carbon::parse($from, 'Indian/Maldives')->startOfDay(); $cursor->lte(Carbon::parse($to, 'Indian/Maldives')->startOfDay()); $cursor->addDay()) {
+            if ($lock->execute($cursor->toDateString())) {
+                throw ValidationException::withMessages([
+                    'from_date' => 'Payroll for '.$cursor->format('Y-m').' is locked. Record the change next period.',
+                ]);
+            }
+        }
+
         return DB::transaction(function () use ($data, $type, $from, $to, $halfDay, $days, $year): array {
             $entitlement = app(EnsureLeaveEntitlementAction::class)->execute(
                 (int) $data['staff_profile_id'],
@@ -72,7 +81,9 @@ class ApproveStaffLeaveAction
                     status: StaffAttendanceStatus::OnLeave,
                     source: StaffAttendanceSource::Manual,
                     markedBy: isset($data['marked_by']) ? (int) $data['marked_by'] : null,
-                    remarks: $halfDay ? 'Half-day leave' : 'Approved leave',
+                    remarks: $type->paid
+                        ? ($halfDay ? 'Half-day leave' : 'Approved leave')
+                        : ($halfDay ? 'Half-day unpaid leave' : 'Approved unpaid leave'),
                 ));
             }
 

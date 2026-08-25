@@ -142,6 +142,8 @@ class RoleSeeder extends Seeder
             'finance.manage',
             'finance.record-manual-payment',
             'hr.manage',
+            'payroll.run',
+            'payroll.approve',
         ];
 
         foreach ($permissions as $permission) {
@@ -200,6 +202,7 @@ class RoleSeeder extends Seeder
             'finance.manage',
             'finance.record-manual-payment',
             'hr.manage',
+            'payroll.run',
             'manage_announcements',
             'view_announcements',
             'create_announcements',

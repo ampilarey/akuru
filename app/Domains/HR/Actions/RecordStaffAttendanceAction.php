@@ -7,6 +7,7 @@ use App\Domains\HR\Contracts\StaffAttendanceWriterInterface;
 use App\Domains\HR\DTOs\StaffAttendanceDTO;
 use App\Domains\HR\Enums\StaffAttendanceStatus;
 use App\Domains\HR\Models\StaffAttendance;
+use Illuminate\Validation\ValidationException;
 
 class RecordStaffAttendanceAction implements StaffAttendanceWriterInterface
 {
@@ -15,6 +16,12 @@ class RecordStaffAttendanceAction implements StaffAttendanceWriterInterface
 
     public function record(StaffAttendanceDTO $dto): StaffAttendance
     {
+        if (app(IsPayrollMonthLockedAction::class)->execute($dto->date)) {
+            throw ValidationException::withMessages([
+                'date' => 'Payroll for this month is locked. Record the change next period.',
+            ]);
+        }
+
         $existing = StaffAttendance::query()
             ->where('staff_profile_id', $dto->staffProfileId)
             ->whereDate('date', $dto->date)
