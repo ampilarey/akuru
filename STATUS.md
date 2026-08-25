@@ -1174,6 +1174,22 @@ rate limiting, and the Inertia shell. No new 1A.1 code.
 - Pest cases in `UnifiedStudentBackfillTest`. Dual-write matcher untouched.
   Merged #73.
 
+### A3 — Production-copy verify procedure (docs shipped; gate **not** green)
+
+- S1_SPEC line 147 requires `students:verify-unification` on a
+  **production-data copy**. Staging synthetics (`a a` / `b b`) cannot
+  validate Deploy 2. This VM has **no production dump** (only
+  `akuru_test` / `akuru_institute`).
+- Procedure: `docs/migrations/restore-production-copy.md` — restore dump
+  → migrate → **`students:verify-unification` with no `--backfill`**.
+- `--backfill` is never run against production itself (command refuses
+  `APP_ENV=production`) and is **not** part of this verification
+  procedure.
+- **A3 is not green** until an operator restores a dump and archives
+  `docs/migrations/s11b-student-unification-report-prod-copy.json` with
+  verbatim stdout in STATUS. **TRACK B stays blocked.** No dump is
+  obtainable in this environment.
+
 ### A5 — Real `config/payroll.php` feature flag (done)
 
 - Flag was only a `settings` row (`payroll.enabled` = `'0'`).
@@ -1182,18 +1198,18 @@ rate limiting, and the Inertia shell. No new 1A.1 code.
   true. `ResolvePayrollSettingsAction` implements the AND.
   `assertEnabled()` gates **every write path**: run, approve, pay, lock.
 - Pest: `enablePayroll()` sets both; write actions are inert when off.
-- Payroll stays off until two parallel cycles match (operator).
+- Payroll stays off until two parallel cycles match (operator). Merged #76.
 
 ## Next
 
-**TRACK A remaining:** A3 production-copy verify (read-only, no dump yet),
-A4 branch protection on `main` (operator; bot 403). **Do not start TRACK B
-until A3 is green on a production-data copy.** No `--backfill` on
-production. No Hifz cutover.
+**TRACK A remaining:** A4 branch protection on `main` (operator; bot 403).
+A3 procedure is written; the verify **gate** is not green (no production
+dump). **Do not start TRACK B.** No `--backfill` on production. No Hifz
+cutover.
 
-**Operator:** apply branch protection; provide a production mysqldump for
-A3. `unify-verify` still red on staging. `PAYROLL_ENABLED` / settings
-stay off.
+**Operator:** provide a production mysqldump and run
+`docs/migrations/restore-production-copy.md`. Apply branch protection.
+`unify-verify` still red on staging. `PAYROLL_ENABLED` / settings stay off.
 
 **Qur'an A.4b (later):** switch offering-session reads to `offering_halaqa_session_links` after operators confirm dual-write. Then Hifz cleanup (deploy 3). Keep `QURAN_HALAQA_DUAL_WRITE` off until verified.
 

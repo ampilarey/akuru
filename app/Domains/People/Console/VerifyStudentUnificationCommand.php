@@ -19,6 +19,12 @@ class VerifyStudentUnificationCommand extends Command
 
     public function handle(UnifyStudentsAction $action): int
     {
+        if ($this->option('backfill') && $this->laravel->isProduction()) {
+            $this->error('Refusing --backfill on production. Restore a dump to a scratch database and run students:verify-unification without --backfill (docs/migrations/restore-production-copy.md).');
+
+            return self::FAILURE;
+        }
+
         $report = $this->option('backfill')
             ? $action->execute()
             : $action->verify();
