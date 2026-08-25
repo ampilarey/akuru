@@ -5,6 +5,7 @@ namespace App\Domains\Courses\Actions;
 use App\Domains\Courses\Enums\ActivityPattern;
 use App\Domains\Courses\Models\Activity;
 use App\Domains\Courses\Models\Course;
+use App\Support\Contracts\QuranReferenceReader;
 use Illuminate\Validation\ValidationException;
 
 class SaveActivityAction
@@ -168,6 +169,7 @@ class SaveActivityAction
                 : null,
             'letter_id' => $this->optionalReferenceId($settings['letter_id'] ?? null, 'letter'),
             'harakah_id' => $this->optionalReferenceId($settings['harakah_id'] ?? null, 'harakah'),
+            ...$this->validatedRecitationSettings($settings),
             'normalize' => [
                 'trim' => (bool) ($settings['normalize']['trim'] ?? true),
                 'collapse_space' => (bool) ($settings['normalize']['collapse_space'] ?? true),
@@ -197,6 +199,65 @@ class SaveActivityAction
         if (! $exists) {
             throw ValidationException::withMessages([
                 'settings' => ['Unknown Arabic '.$kind.' reference.'],
+            ]);
+        }
+
+        return $id;
+    }
+
+    /**
+     * @param  array<string, mixed>  $settings
+     * @return array{surah_id: int|null, ayah_start: int|null, ayah_end: int|null}
+     */
+    private function validatedRecitationSettings(array $settings): array
+    {
+        $surahId = $this->optionalSurahId($settings['surah_id'] ?? null);
+        $startRaw = $settings['ayah_start'] ?? null;
+        $endRaw = $settings['ayah_end'] ?? null;
+        $hasRange = ($startRaw !== null && $startRaw !== '') || ($endRaw !== null && $endRaw !== '');
+
+        if ($surahId === null && ! $hasRange) {
+            return [
+                'surah_id' => null,
+                'ayah_start' => null,
+                'ayah_end' => null,
+            ];
+        }
+
+        if ($surahId === null) {
+            throw ValidationException::withMessages([
+                'settings' => ['A surah is required for a recitation range.'],
+            ]);
+        }
+
+        $surah = app(QuranReferenceReader::class)->findSurah($surahId);
+        $ayahCount = (int) ($surah['ayah_count'] ?? 0);
+        $start = $startRaw === null || $startRaw === '' ? 1 : (int) $startRaw;
+        $end = $endRaw === null || $endRaw === '' ? $ayahCount : (int) $endRaw;
+
+        if ($ayahCount < 1 || $start < 1 || $end < $start || $end > $ayahCount) {
+            throw ValidationException::withMessages([
+                'settings' => ['Ayah range is outside the surah.'],
+            ]);
+        }
+
+        return [
+            'surah_id' => $surahId,
+            'ayah_start' => $start,
+            'ayah_end' => $end,
+        ];
+    }
+
+    private function optionalSurahId(mixed $value): ?int
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+
+        $id = (int) $value;
+        if (app(QuranReferenceReader::class)->findSurah($id) === null) {
+            throw ValidationException::withMessages([
+                'settings' => ['Unknown Quran surah reference.'],
             ]);
         }
 

@@ -17,11 +17,12 @@ over the existing tables. Courses catalog `/catalog/quran` (+ CSV)
 consumes the Support contract only. No Hifz dashboard, scoring, or
 route behavior change.
 
-## Slice A.2 — Recitation as teacher-marked activities (planned)
+## Slice A.2 — Recitation as teacher-marked activities (done)
 
 Recitation submissions reuse the 2.1 `teacher_marked` pattern and 2.4
 review. Range metadata (`surah_id`, ayah start/end) is validated
-through the A.1 reader. No new scoring engine. No Hifz UI change.
+through the A.1 reader. The learner player shows the passage. No new
+scoring engine. No Hifz UI change.
 
 ## Slice A.3 — Offering / session mapping (planned)
 

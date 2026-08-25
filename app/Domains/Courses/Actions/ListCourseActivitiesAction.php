@@ -30,6 +30,8 @@ class ListCourseActivitiesAction
             unset($data['correct_ids'], $data['acceptable'], $data['correct_order']);
         }
 
+        $settings = $activity->settings ?? [];
+
         return [
             'id' => $activity->id,
             'course_id' => $activity->course_id,
@@ -40,7 +42,12 @@ class ListCourseActivitiesAction
             'pattern' => $activity->pattern->value,
             'activity_type' => $activity->activity_type,
             'data' => $data,
-            'settings' => $activity->settings,
+            'settings' => $settings,
+            'quran' => app(ResolveQuranPassageAction::class)->execute(
+                isset($settings['surah_id']) ? (int) $settings['surah_id'] : null,
+                isset($settings['ayah_start']) ? (int) $settings['ayah_start'] : null,
+                isset($settings['ayah_end']) ? (int) $settings['ayah_end'] : null,
+            ),
             'max_score' => (int) $activity->max_score,
             'passing_score' => $activity->passing_score !== null ? (int) $activity->passing_score : null,
             'is_required' => (bool) $activity->is_required,

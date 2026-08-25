@@ -1046,9 +1046,17 @@ rate limiting, and the Inertia shell. No new 1A.1 code.
   only — no Hifz namespace import, no dashboard/scoring change.
 - No parallel Quran tables.
 
+## Qur’an A.2 — Recitation as teacher-marked activities (done)
+
+- `settings.surah_id` / `ayah_start` / `ayah_end` on the four 2.1
+  patterns (intended for `teacher_marked` recitation). Validated
+  through `QuranReferenceReader`.
+- Learner player shows the passage. 2.4 review still scores it.
+- No Hifz dashboard, assignment table, or scoring change.
+
 ## Next
 
-1. Qur’an A.2 — recitation as teacher-marked 2.1/2.4 activities.
+1. Qur’an A.3 — offering/session mapping for halaqa (no dashboard redesign).
 2. Operator: unify-verify / smoke / production (unchanged).
 3. Dual-write stays.
 4. S5 DoD remaining: month-in-the-life on real data, two parallel
