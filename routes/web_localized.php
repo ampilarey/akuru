@@ -19,6 +19,9 @@ use App\Domains\Academics\Http\Controllers\TeacherRegisterController;
 use App\Domains\Academics\Http\Controllers\TimetableBuilderController;
 use App\Domains\Academics\Legacy\Http\Controllers\ELearningController;
 use App\Domains\Admissions\Http\Controllers\AdminEnrollmentController;
+use App\Domains\ExamsGrades\Http\Controllers\ExamTypeController;
+use App\Domains\ExamsGrades\Http\Controllers\GradeScaleController;
+use App\Domains\ExamsGrades\Http\Controllers\WeightSchemeController;
 use App\Domains\Hifz\Http\Controllers\QuranProgressController;
 use App\Domains\HR\Http\Controllers\InstructorController as AdminInstructorController;
 use App\Domains\Identity\Http\Controllers\ProfileController;
@@ -267,5 +270,22 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::get('promotion', [PromotionController::class, 'create'])->name('academics.promotion.create');
         Route::post('promotion/dry-run', [PromotionController::class, 'dryRun'])->name('academics.promotion.dry-run');
         Route::post('promotion', [PromotionController::class, 'commit'])->name('academics.promotion.commit');
+    });
+
+    Route::prefix('exams')->middleware(['role:super_admin|admin|headmaster|supervisor'])->group(function () {
+        Route::get('scales/export', [GradeScaleController::class, 'export'])->name('exams.scales.export');
+        Route::get('scales', [GradeScaleController::class, 'index'])->name('exams.scales.index');
+        Route::post('scales', [GradeScaleController::class, 'store'])->name('exams.scales.store');
+        Route::put('scales/{gradeScale}', [GradeScaleController::class, 'update'])->name('exams.scales.update');
+
+        Route::get('types/export', [ExamTypeController::class, 'export'])->name('exams.types.export');
+        Route::get('types', [ExamTypeController::class, 'index'])->name('exams.types.index');
+        Route::post('types', [ExamTypeController::class, 'store'])->name('exams.types.store');
+        Route::put('types/{examType}', [ExamTypeController::class, 'update'])->name('exams.types.update');
+
+        Route::get('weights/export', [WeightSchemeController::class, 'export'])->name('exams.weights.export');
+        Route::get('weights', [WeightSchemeController::class, 'index'])->name('exams.weights.index');
+        Route::post('weights', [WeightSchemeController::class, 'store'])->name('exams.weights.store');
+        Route::put('weights/{weightScheme}', [WeightSchemeController::class, 'update'])->name('exams.weights.update');
     });
 });

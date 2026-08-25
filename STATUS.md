@@ -748,11 +748,31 @@ All 13 `student_guardians` rows are `unmapped`. 12/13 `guardian_user_id`s are **
 
 ## Next
 
-**Agent (this side): stop.** S2.1–S2.10 coding is on `main`. Staging
-schema is at `a9d5677` (S1.1b–S2.10 migrated). Unify-verify is red;
-ADR-007 forbids guessing the four collisions or inventing guardian
-users. No S3, no Hifz migration, no Deploy 3, no student-keyed write
-follow-up until the operator marks verify green.
+**Operator still owns** unify-verify collisions, guardians, smoke,
+production. Operator asked to complete S3 coding one slice at a time
+anyway (same as S2.6–S2.10). S3.1 has **no student-keyed rows**.
+
+## S3.1 — Grading foundations (done)
+
+- `grade_scales` (percentage / letter / competency bands, one default).
+- `exam_types` (midterm, final, quiz, assignment, practical, oral).
+- `assessment_weight_schemes` (year / class / subject). Weights must
+  sum to 100. Resolve: subject → class → year.
+- Admin Inertia + CSV at `exams.scales.*`, `exams.types.*`,
+  `exams.weights.*`. Permission `exams.manage`.
+- ADR-012 (document renderer: Browsershot in S3.6; stub until then).
+  Spec's "ADR-005" number was already the morph map.
+- Morph aliases `grade_scale`, `exam_type`, `assessment_weight_scheme`.
+- Legacy `Academics\Models\Grade` / quizzes untouched. Hifz / Deploy 3
+  untouched. No exam_marks yet (S3.2+).
+- Pest: `GradingFoundationsTest` + morph + routes + architecture green.
+
+## Next
+
+1. **S3.2 — Exams** (scheduling, calendar-aware, status flow).
+2. Operator: unify-verify / smoke / production (unchanged).
+3. Dual-write stays. S3.3+ writes `exam_marks` (student-keyed) — still
+   blocked on staging until verify is green; coding continues.
 
 **Operator (their side, unchanged):**
 

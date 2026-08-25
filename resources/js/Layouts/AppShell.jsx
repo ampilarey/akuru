@@ -70,6 +70,15 @@ export default function AppShell({ title, children }) {
                         <Link href="/academics/requests" className="text-[#7C2D37] hover:underline">
                             Requests
                         </Link>
+                        <Link href="/exams/scales" className="text-[#7C2D37] hover:underline">
+                            Scales
+                        </Link>
+                        <Link href="/exams/types" className="text-[#7C2D37] hover:underline">
+                            Exam types
+                        </Link>
+                        <Link href="/exams/weights" className="text-[#7C2D37] hover:underline">
+                            Weights
+                        </Link>
                         <span className="text-gray-500">{user?.name}</span>
                         <span className="rounded bg-[#F3EBE0] px-2 py-0.5 text-xs uppercase">{locale}</span>
                     </nav>
