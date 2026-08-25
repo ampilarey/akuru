@@ -100,6 +100,15 @@ export default function AppShell({ title, children }) {
                         <Link href="/portal/invoices" className="text-[#7C2D37] hover:underline">
                             Fees
                         </Link>
+                        <Link href="/hr/attendance" className="text-[#7C2D37] hover:underline">
+                            Staff attendance
+                        </Link>
+                        <Link href="/hr/attendance/reports" className="text-[#7C2D37] hover:underline">
+                            Staff reports
+                        </Link>
+                        <Link href="/portal/staff-check-in" className="text-[#7C2D37] hover:underline">
+                            Check in
+                        </Link>
                         <span className="text-gray-500">{user?.name}</span>
                         <span className="rounded bg-[#F3EBE0] px-2 py-0.5 text-xs uppercase">{locale}</span>
                     </nav>

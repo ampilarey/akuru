@@ -148,6 +148,15 @@ class LocalizedRouteNamesTest extends TestCase
             'finance.reconciliation.export',
             'portal.invoices',
             'portal.invoices.pay',
+            'hr.attendance.index',
+            'hr.attendance.store',
+            'hr.attendance.export',
+            'hr.attendance.import',
+            'hr.attendance.holidays',
+            'hr.attendance.reports',
+            'hr.attendance.reports.export',
+            'portal.staff-check-in',
+            'portal.staff-check-in.store',
         ];
 
         foreach ($names as $name) {

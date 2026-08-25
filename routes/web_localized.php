@@ -31,6 +31,8 @@ use App\Domains\Finance\Http\Controllers\ReceiptDocumentController;
 use App\Domains\Finance\Http\Controllers\ReconciliationController;
 use App\Domains\Hifz\Http\Controllers\QuranProgressController;
 use App\Domains\HR\Http\Controllers\InstructorController as AdminInstructorController;
+use App\Domains\HR\Http\Controllers\StaffAttendanceController;
+use App\Domains\HR\Http\Controllers\StaffAttendanceReportController;
 use App\Domains\Identity\Http\Controllers\ProfileController;
 use App\Domains\Notifications\Http\Controllers\NotificationController;
 use App\Domains\People\Http\Controllers\CustomFieldDefinitionController;
@@ -47,6 +49,7 @@ use App\Domains\Portal\Http\Controllers\PortalAttendanceController;
 use App\Domains\Portal\Http\Controllers\PortalBehaviorController;
 use App\Domains\Portal\Http\Controllers\PortalHolidayController;
 use App\Domains\Portal\Http\Controllers\PortalInvoiceController;
+use App\Domains\Portal\Http\Controllers\PortalStaffCheckInController;
 use App\Domains\Settings\Http\Controllers\Admin\SettingsController as AdminSettingsController;
 use App\Domains\Settings\Http\Controllers\AnalyticsController;
 use App\Domains\Website\Http\Controllers\Admin\PublicSite\CourseController as AdminCourseController;
@@ -72,6 +75,8 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
     Route::post('/portal/absence-notes', [PortalAbsenceNoteController::class, 'store'])->name('portal.absence-notes.store');
     Route::get('/portal/invoices', [PortalInvoiceController::class, 'index'])->name('portal.invoices');
     Route::post('/portal/invoices/{invoice}/pay', [PortalInvoiceController::class, 'pay'])->name('portal.invoices.pay');
+    Route::get('/portal/staff-check-in', [PortalStaffCheckInController::class, 'index'])->name('portal.staff-check-in');
+    Route::post('/portal/staff-check-in', [PortalStaffCheckInController::class, 'store'])->name('portal.staff-check-in.store');
     Route::get('/finance/receipts/{receipt}/document', [ReceiptDocumentController::class, 'show'])->name('finance.receipts.show')->whereNumber('receipt');
 
     Route::get('academics/registers/today', [TeacherRegisterController::class, 'today'])->name('academics.registers.today');
@@ -311,5 +316,15 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::get('collections', [CollectionsController::class, 'index'])->name('finance.collections.index');
         Route::get('reconciliation/export', [ReconciliationController::class, 'export'])->name('finance.reconciliation.export');
         Route::get('reconciliation', [ReconciliationController::class, 'index'])->name('finance.reconciliation.index');
+    });
+
+    Route::prefix('hr')->middleware(['role:super_admin|admin|headmaster'])->group(function () {
+        Route::get('attendance/export', [StaffAttendanceController::class, 'export'])->name('hr.attendance.export');
+        Route::post('attendance/import', [StaffAttendanceController::class, 'import'])->name('hr.attendance.import');
+        Route::post('attendance/holidays', [StaffAttendanceController::class, 'fillHolidays'])->name('hr.attendance.holidays');
+        Route::get('attendance/reports/export', [StaffAttendanceReportController::class, 'export'])->name('hr.attendance.reports.export');
+        Route::get('attendance/reports', [StaffAttendanceReportController::class, 'index'])->name('hr.attendance.reports');
+        Route::get('attendance', [StaffAttendanceController::class, 'index'])->name('hr.attendance.index');
+        Route::post('attendance', [StaffAttendanceController::class, 'store'])->name('hr.attendance.store');
     });
 });
