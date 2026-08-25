@@ -466,10 +466,29 @@ conflict engine is **S2.2**.
 - Admin Inertia CRUD + CSV at `academics.rooms.*`. Permission `rooms.manage`.
 - Morph alias `room`. Hifz / dual-write / Deploy 3 untouched.
 
+## S2.2 — Timetable v2 + conflict engine (no student writes)
+
+- Additive `timetables.academic_year_id`, `term_id`, `room_id`, `valid_from` /
+  `valid_until`. Legacy `room*` strings and `start_date`/`end_date` kept.
+- `BackfillTimetableYearAndRoomsAction` stamps the active year, copies
+  validity from start/end dates, matches `room` strings → `rooms`.
+- `TimetableConflictChecker` (pure): teacher / room / class × period- or
+  time-based × validity window + year. Adjacent times do not overlap.
+- `SaveTimetableEntryAction`: XOR period vs start+end; hard-block on
+  conflict unless `allow_conflict` + `timetables.allow_conflict` + reason
+  (logged). Dual-writes room name from `room_id`.
+- No builder UI (S2.3). No student-keyed writes. Hifz / Deploy 3 untouched.
+
 ## Next
 
+<<<<<<< HEAD
+1. **S2.3** — React timetable builder (safe under deferral).
+2. **S2.0 / S2.1** PRs still open — merge when CI is green; then **S2.0b**
+   so staging runs `students:verify-unification`.
+=======
 1. **S2.2** — timetable v2 + `TimetableConflictChecker` (safe under deferral).
 2. **S2.0b** trivial docs so staging actually runs `students:verify-unification`.
+>>>>>>> origin/main
 3. S2.6–S2.10 stay **blocked** until verify is green on staging.
 4. Production: nothing until credential smoke is recorded.
 5. **S1.1 Deploy 3** still ≥2 weeks after `2f8a90b`. Dual-write stays.

@@ -14,7 +14,10 @@ class Timetable extends Model
         'class_id',
         'subject_id',
         'teacher_id',
+        'academic_year_id',
+        'term_id',
         'period_id',
+        'room_id',
         'day_of_week',
         'start_time',
         'end_time',
@@ -23,6 +26,8 @@ class Timetable extends Model
         'room_dhivehi',
         'start_date',
         'end_date',
+        'valid_from',
+        'valid_until',
         'frequency',
         'recurring_days',
         'is_recurring',
@@ -39,6 +44,8 @@ class Timetable extends Model
         'end_time' => 'datetime:H:i',
         'start_date' => 'date',
         'end_date' => 'date',
+        'valid_from' => 'date',
+        'valid_until' => 'date',
         'recurring_days' => 'array',
         'is_recurring' => 'boolean',
         'is_active' => 'boolean',
@@ -63,6 +70,21 @@ class Timetable extends Model
     public function period()
     {
         return $this->belongsTo(Period::class);
+    }
+
+    public function academicYear()
+    {
+        return $this->belongsTo(AcademicYear::class);
+    }
+
+    public function term()
+    {
+        return $this->belongsTo(Term::class);
+    }
+
+    public function roomRecord()
+    {
+        return $this->belongsTo(Room::class, 'room_id');
     }
 
     // Helper methods

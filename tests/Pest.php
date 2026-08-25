@@ -21,3 +21,4 @@ pest()->extend(Tests\TestCase::class)
     ->in('Architecture');
 
 require_once __DIR__.'/Support/PeopleTestHelpers.php';
+require_once __DIR__.'/Support/AcademicsTestHelpers.php';
