@@ -843,11 +843,19 @@ S3). S4.1 has **no new student-keyed writes** beyond existing
   `hr:notify-expiring-documents` fires 90/60/30 once each to
   `hr.manage` users and the staff member. Not expat-hardcoded.
 
+## S5.4 — Recruitment & onboarding (done)
+
+- `job_postings` + `job_applications` (Admissions-like stages).
+- `HireApplicantAction` creates a user, staff profile, and onboarding
+  checklist from Settings templates. Offboarding is the mirror list.
+- Public `/careers` lists published public postings only (no W-track
+  restyle).
+
 ## Next
 
 1. Operator: unify-verify / smoke / production (unchanged).
 2. Dual-write stays.
-3. S5.4 recruitment & onboarding is next (stacked on S5.3).
+3. S5.5 performance & CPD is next (stacked on S5.4).
 4. S4 DoD on real BML sandbox / Thaana receipt proof is operator-owned.
 
 **Operator (their side, unchanged):**
