@@ -55,6 +55,7 @@ return [
     'inquiry_type' => \App\Domains\Website\Models\InquiryType::class,
     'instructor' => \App\Domains\HR\Models\Instructor::class,
     'invoice' => \App\Domains\Finance\Models\Invoice::class,
+    'invoice_generation_log' => \App\Domains\Finance\Models\InvoiceGenerationLog::class,
     'invoice_line' => \App\Domains\Finance\Models\InvoiceLine::class,
     'lesson_log' => \App\Domains\Academics\Models\LessonLog::class,
     'media_gallery' => \App\Domains\Media\Models\MediaGallery::class,
