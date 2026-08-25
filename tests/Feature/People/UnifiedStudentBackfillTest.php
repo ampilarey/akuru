@@ -536,7 +536,7 @@ it('treats operator-configured placeholder national_ids as unusable', function (
         ->and($report->passed())->toBeTrue();
 });
 
-it('records ambiguous when a unique national_id matches but name and dob contradict', function () {
+it('resolves an RS-22-shaped national_id contradiction to the name_dob student', function () {
     $wrongById = makeStudent([
         'first_name' => 'a',
         'last_name' => 'a',
@@ -558,12 +558,53 @@ it('records ambiguous when a unique national_id matches but name and dob contrad
 
     $report = app(UnifyStudentsAction::class)->execute();
 
+    expect($report->mapped['national_id'])->toBe(0)
+        ->and($report->mapped['name_dob'])->toBe(1)
+        ->and($report->ambiguous)->toBeEmpty()
+        ->and($wrongById->fresh()->legacy_registration_student_id)->toBeNull()
+        ->and($rightByName->fresh()->legacy_registration_student_id)->toBe($rs->id)
+        ->and($report->passed())->toBeTrue();
+});
+
+it('records ambiguous when a contradicting national_id has no unique name_dob candidate', function () {
+    $wrongById = makeStudent([
+        'first_name' => 'Other',
+        'last_name' => 'Child',
+        'date_of_birth' => '2000-01-01',
+        'national_id' => 'A000333',
+    ]);
+    $rs = makeRegistrationStudent([
+        'first_name' => 'Unseen',
+        'last_name' => 'Name',
+        'dob' => '1987-10-02',
+        'national_id' => 'A000333',
+    ]);
+
+    $report = app(UnifyStudentsAction::class)->execute();
+
     expect($report->ambiguous)->toHaveCount(1)
         ->and($report->ambiguous[0]['method'])->toBe('national_id')
         ->and($report->ambiguous[0]['reason'])->toBe('name_dob_contradiction')
         ->and($report->ambiguous[0]['candidate_student_ids'])->toBe([$wrongById->id])
         ->and($wrongById->fresh()->legacy_registration_student_id)->toBeNull()
-        ->and($rightByName->fresh()->legacy_registration_student_id)->toBeNull()
         ->and(Student::query()->where('legacy_registration_student_id', $rs->id)->count())->toBe(0)
         ->and($report->passed())->toBeFalse();
+});
+
+it('reports orphan student_guardians and never invents missing guardian users', function () {
+    $rs = makeRegistrationStudent(['user_id' => null]);
+    $guardian = User::factory()->create(['name' => 'Gone Parent']);
+    $pivotId = attachLegacyGuardian($rs->id, $guardian->id);
+
+    DB::statement('SET FOREIGN_KEY_CHECKS=0');
+    DB::table('users')->where('id', $guardian->id)->delete();
+    DB::statement('SET FOREIGN_KEY_CHECKS=1');
+
+    $before = ParentGuardian::query()->count();
+    $report = app(UnifyStudentsAction::class)->execute();
+
+    expect($report->guardians['unmapped'])->toContain($pivotId)
+        ->and(ParentGuardian::query()->count())->toBe($before)
+        ->and(ParentGuardian::query()->where('user_id', $guardian->id)->exists())->toBeFalse()
+        ->and(Student::query()->where('legacy_registration_student_id', $rs->id)->exists())->toBeTrue();
 });

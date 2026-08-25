@@ -47,14 +47,14 @@ column has a single slot.
    row or **more than one** `students` row. Duplicate IDs are test-data and
    live-data noise; they must not win over name+dob.
 
-   **Contradiction is not a fallthrough:** if a *usable* `national_id` matches
-   exactly one student but that student's first+last+dob does **not** match
-   the RS (and the RS has a complete name+dob key), record **ambiguous**
-   (`reason: name_dob_contradiction`) and stop. Do not link the ID hit and do
-   not fall through to name+dob even if name+dob would identify someone else.
-   Staging RS 22 (`a a` / 1987-10-02) matched the wrong student by
-   `national_id` while name+dob identified the right one — guessing either
-   side is worse than leaving the row for the operator.
+   **Contradiction falls through to name+dob, then stops:** if a *usable*
+   `national_id` matches exactly one student but that student's first+last+dob
+   does **not** match the RS (complete name+dob key), **do not** link the ID
+   hit. Continue to name+dob. A unique name+dob candidate is the match
+   (staging RS 22: ID pointed at student 8, name+dob at student 5 — attach 5).
+   If name+dob is empty or ambiguous after that skip, record **ambiguous**
+   (`reason: name_dob_contradiction`) and do **not** create a new student.
+   Corroboration beats any single field. Collisions stay unguessed.
 
 3. **Collision:** first RS to claim a student wins `legacy_registration_student_id`.
    A later RS that matches the same student is unresolved. The column is

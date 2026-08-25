@@ -92,6 +92,8 @@ class UnifyStudentsAction
             return;
         }
 
+        $contradictedNationalIdHit = null;
+
         foreach ([
             'user_id' => fn () => $this->candidatesByUserId($rs),
             'national_id' => fn () => $this->candidatesByNationalId($rs),
@@ -110,12 +112,26 @@ class UnifyStudentsAction
 
             $candidate = $candidates->first();
             if ($method === 'national_id' && $this->nameDobContradicts($rs, $candidate)) {
-                $this->recordAmbiguous($rs, $method, $candidates, $report, 'name_dob_contradiction');
+                // Corroboration beats the ID field. Do not attach enrollments
+                // to the ID hit; fall through to name+dob (RS 22).
+                $contradictedNationalIdHit = $candidate;
 
-                return;
+                continue;
             }
 
             $this->link($rs, $candidate, $method, $report);
+
+            return;
+        }
+
+        if ($contradictedNationalIdHit !== null) {
+            $this->recordAmbiguous(
+                $rs,
+                'national_id',
+                collect([$contradictedNationalIdHit]),
+                $report,
+                'name_dob_contradiction',
+            );
 
             return;
         }
@@ -171,8 +187,8 @@ class UnifyStudentsAction
 
     /**
      * True when the RS has a complete name+dob key that does not include this
-     * national_id candidate. Incomplete keys cannot contradict (no fallthrough
-     * signal). A contradiction is ambiguous — do not fall through to name_dob.
+     * national_id candidate. Incomplete keys cannot contradict. A contradiction
+     * skips the ID hit and continues to name+dob (RS 22).
      */
     private function nameDobContradicts(RegistrationStudent $rs, Student $candidate): bool
     {

@@ -1152,8 +1152,11 @@ rate limiting, and the Inertia shell. No new 1A.1 code.
   duplicated across `registration_students` or `students`, or in
   `config/unification.php` placeholders (extend via
   `UNIFICATION_NATIONAL_ID_PLACEHOLDERS`).
-- Unique `national_id` + name+dob **contradiction** → ambiguous
-  (`name_dob_contradiction`), no link, no fallthrough.
+- Unique `national_id` + name+dob **contradiction**: do not attach the ID
+  hit; fall through to name+dob. RS-22-shaped rows match the name+dob
+  student. If name+dob is not unique, record ambiguous and do not create.
+- Orphan `student_guardians` (missing `guardian_user_id`) are reported,
+  never invented as `parent_guardians`.
 - ADR-007 amended; supersedes `docs/S1_SPEC.md` line 49 match order.
 - Pest cases in `UnifiedStudentBackfillTest`. Dual-write matcher untouched.
 
