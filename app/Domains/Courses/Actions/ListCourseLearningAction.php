@@ -2,6 +2,8 @@
 
 namespace App\Domains\Courses\Actions;
 
+use App\Domains\Courses\Enums\AssessmentStatus;
+use App\Domains\Courses\Models\Assessment;
 use App\Domains\Courses\Models\Course;
 use App\Domains\Courses\Models\CourseEnrollment;
 use App\Domains\Courses\Models\CourseModule;
@@ -53,6 +55,17 @@ class ListCourseLearningAction
                 ? app(ListUpcomingSessionsForOfferingsAction::class)->execute([(int) $enrollment->course_offering_id])
                 : [],
             'activities' => app(ListCourseActivitiesAction::class)->execute($course, includeAnswerKeys: false)->values(),
+            'assessments' => Assessment::query()
+                ->where('course_id', $courseId)
+                ->where('status', AssessmentStatus::Published)
+                ->orderBy('id')
+                ->get()
+                ->map(fn (Assessment $assessment): array => [
+                    'id' => $assessment->id,
+                    'title' => $assessment->title,
+                    'assessment_type' => $assessment->assessment_type,
+                ])
+                ->values(),
             'modules' => $modules->map(fn (CourseModule $module) => [
                 'id' => $module->id,
                 'title' => $module->title,

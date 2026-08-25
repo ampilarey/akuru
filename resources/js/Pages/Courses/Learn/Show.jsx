@@ -1,7 +1,7 @@
 import { router, usePage } from '@inertiajs/react';
 import AppShell from '../../../Layouts/AppShell';
 
-export default function Show({ course, enrollment, modules, upcoming_sessions = [], activities = [] }) {
+export default function Show({ course, enrollment, modules, upcoming_sessions = [], activities = [], assessments = [] }) {
     const t = usePage().props.i18n?.learn || {};
 
     return (
@@ -20,6 +20,23 @@ export default function Show({ course, enrollment, modules, upcoming_sessions = 
                     <ul className="space-y-1 text-sm">
                         {upcoming_sessions.map((row) => (
                             <li key={row.id}>{row.title} · {row.starts_at}{row.location_name ? ` · ${row.location_name}` : ''}</li>
+                        ))}
+                    </ul>
+                </section>
+            )}
+            {assessments.length > 0 && (
+                <section className="mb-4 rounded-lg border bg-white p-4">
+                    <h2 className="mb-2 font-medium">{t.assessments || 'Assessments'}</h2>
+                    <ul className="space-y-2 text-sm">
+                        {assessments.map((row) => (
+                            <li key={row.id} className="flex flex-wrap items-center justify-between gap-2 border-t pt-2 first:border-t-0 first:pt-0">
+                                <span>{row.title} <span className="text-xs uppercase text-gray-500">{row.assessment_type}</span></span>
+                                {enrollment ? (
+                                    <a className="text-[#7C2D37] hover:underline" href={`/learn/assessments/${row.id}`}>{t.open || 'Open'}</a>
+                                ) : (
+                                    <span className="text-xs text-gray-400">{t.enroll || 'Enroll'}</span>
+                                )}
+                            </li>
                         ))}
                     </ul>
                 </section>

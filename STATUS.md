@@ -994,10 +994,19 @@ rate limiting, and the Inertia shell. No new 1A.1 code.
 - `SnapshotQuestionAction` freezes question content so later edits
   cannot change an existing snapshot.
 
+## 2.3 — Assessment builder + player (done)
+
+- `assessments` + `assessment_questions` in Courses; attempts in Progress.
+- Catalog builder attaches bank questions, CSV export, publish/draft.
+- Learner player snapshots questions on first open, autosaves, scores
+  from the snapshot. Editing the bank cannot change an in-flight attempt.
+- Retake limit and show-correct-answers apply. Teacher-marked items stay
+  submitted until 2.4.
+
 ## Next
 
-1. Phase 2 remaining — 2.3 assessments, 2.4 teacher review, 2.5 session
-   UI polish (`docs/2_SPEC.md`).
+1. Phase 2 remaining — 2.4 teacher review, 2.5 session UI polish
+   (`docs/2_SPEC.md`).
 2. Operator: unify-verify / smoke / production (unchanged).
 3. Dual-write stays.
 4. S5 DoD remaining: month-in-the-life on real data, two parallel
