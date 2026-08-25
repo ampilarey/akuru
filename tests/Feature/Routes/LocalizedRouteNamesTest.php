@@ -197,6 +197,14 @@ class LocalizedRouteNamesTest extends TestCase
             'hr.cpd.export',
             'portal.appraisals',
             'portal.appraisals.acknowledge',
+            'hr.payroll.index',
+            'hr.payroll.run',
+            'hr.payroll.approve',
+            'hr.payroll.pay',
+            'hr.payroll.lock',
+            'hr.payroll.export',
+            'hr.payslips.document',
+            'portal.payslips',
         ];
 
         foreach ($names as $name) {

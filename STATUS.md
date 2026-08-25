@@ -857,11 +857,26 @@ S3). S4.1 has **no new student-keyed writes** beyond existing
 - `lesson_observations` store S2 class/subject IDs read-only.
 - `cpd_records` + per-staff summary on the portal.
 
+## S5.6 — Payroll (done; flagged off)
+
+- `payroll_periods` + `payslips`. `PayrollCalculatorInterface` /
+  `MaldivesPayrollCalculator`. Rates live in `payroll.rules` (ADR-016
+  half-up 2dp). Unpaid days come from `on_leave` attendance marked
+  unpaid. Mid-month join/exit prorates.
+- `RunPayrollAction` is idempotent for drafts. Approve finalizes and
+  locks the month (blocks retro attendance/leave). Mark paid writes a
+  Finance `payroll_postings` receipt, bank CSV, and HTML payslip via
+  `DocumentRendererInterface`.
+- Permissions: `payroll.run` vs `payroll.approve`. Staff see own
+  payslips only. `payroll.enabled` stays **off**.
+
 ## Next
 
 1. Operator: unify-verify / smoke / production (unchanged).
 2. Dual-write stays.
-3. S5.6 payroll (flagged) is next (stacked on S5.5).
+3. S5 coding is complete on the stacked PRs. DoD remaining:
+   month-in-the-life on real data, and two parallel payroll cycles
+   before `payroll.enabled` goes on.
 4. S4 DoD on real BML sandbox / Thaana receipt proof is operator-owned.
 
 **Operator (their side, unchanged):**

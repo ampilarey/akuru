@@ -40,6 +40,8 @@ use App\Domains\HR\Http\Controllers\LeaveBalanceController;
 use App\Domains\HR\Http\Controllers\LeaveTypeController;
 use App\Domains\HR\Http\Controllers\LessonObservationController;
 use App\Domains\HR\Http\Controllers\OnboardingController;
+use App\Domains\HR\Http\Controllers\PayrollPeriodController;
+use App\Domains\HR\Http\Controllers\PayslipDocumentController;
 use App\Domains\HR\Http\Controllers\StaffAttendanceController;
 use App\Domains\HR\Http\Controllers\StaffAttendanceReportController;
 use App\Domains\HR\Http\Controllers\StaffContractController;
@@ -61,6 +63,7 @@ use App\Domains\Portal\Http\Controllers\PortalBehaviorController;
 use App\Domains\Portal\Http\Controllers\PortalHolidayController;
 use App\Domains\Portal\Http\Controllers\PortalInvoiceController;
 use App\Domains\Portal\Http\Controllers\PortalLeaveBalanceController;
+use App\Domains\Portal\Http\Controllers\PortalPayslipController;
 use App\Domains\Portal\Http\Controllers\PortalStaffCheckInController;
 use App\Domains\Settings\Http\Controllers\Admin\SettingsController as AdminSettingsController;
 use App\Domains\Settings\Http\Controllers\AnalyticsController;
@@ -92,6 +95,8 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
     Route::get('/portal/leave', [PortalLeaveBalanceController::class, 'index'])->name('portal.leave');
     Route::get('/portal/appraisals', [PortalAppraisalController::class, 'index'])->name('portal.appraisals');
     Route::post('/portal/appraisals/{appraisal}/acknowledge', [PortalAppraisalController::class, 'acknowledge'])->name('portal.appraisals.acknowledge');
+    Route::get('/portal/payslips', [PortalPayslipController::class, 'index'])->name('portal.payslips');
+    Route::get('/hr/payslips/{payslip}/document', [PayslipDocumentController::class, 'show'])->name('hr.payslips.document')->whereNumber('payslip');
     Route::get('/finance/receipts/{receipt}/document', [ReceiptDocumentController::class, 'show'])->name('finance.receipts.show')->whereNumber('receipt');
 
     Route::get('academics/registers/today', [TeacherRegisterController::class, 'today'])->name('academics.registers.today');
@@ -378,5 +383,11 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::get('cpd/export', [CpdRecordController::class, 'export'])->name('hr.cpd.export');
         Route::get('cpd', [CpdRecordController::class, 'index'])->name('hr.cpd.index');
         Route::post('cpd', [CpdRecordController::class, 'store'])->name('hr.cpd.store');
+        Route::get('payroll/export/{payrollPeriod}', [PayrollPeriodController::class, 'export'])->name('hr.payroll.export');
+        Route::post('payroll/run', [PayrollPeriodController::class, 'run'])->name('hr.payroll.run');
+        Route::post('payroll/{payrollPeriod}/approve', [PayrollPeriodController::class, 'approve'])->name('hr.payroll.approve');
+        Route::post('payroll/{payrollPeriod}/pay', [PayrollPeriodController::class, 'pay'])->name('hr.payroll.pay');
+        Route::post('payroll/{payrollPeriod}/lock', [PayrollPeriodController::class, 'lock'])->name('hr.payroll.lock');
+        Route::get('payroll', [PayrollPeriodController::class, 'index'])->name('hr.payroll.index');
     });
 });

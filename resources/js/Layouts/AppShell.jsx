@@ -145,6 +145,12 @@ export default function AppShell({ title, children }) {
                         <Link href="/portal/appraisals" className="text-[#7C2D37] hover:underline">
                             My performance
                         </Link>
+                        <Link href="/hr/payroll" className="text-[#7C2D37] hover:underline">
+                            Payroll
+                        </Link>
+                        <Link href="/portal/payslips" className="text-[#7C2D37] hover:underline">
+                            Payslips
+                        </Link>
                         <span className="text-gray-500">{user?.name}</span>
                         <span className="rounded bg-[#F3EBE0] px-2 py-0.5 text-xs uppercase">{locale}</span>
                     </nav>
