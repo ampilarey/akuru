@@ -125,4 +125,28 @@ else
   echo "$(date '+%F %T') WARN: morph-map:verify not available — skipping gate (older commit)"
 fi
 
+# Student-unification gate (S2.0). READ-ONLY — never pass --backfill
+# (that writes mappings). Same first-deploy caveat as morph-map: this
+# block takes effect from the *second* deploy after it lands on main.
+# Evidence: full stdout in ~/self-update-test.log plus
+# storage/app/s11b-student-unification-report.json (operator copies both
+# into STATUS.md + docs/migrations/).
+if php artisan list --raw 2>/dev/null | grep -qE '^students:verify-unification([[:space:]]|$)'; then
+  UNIFY_OUT="$(php artisan students:verify-unification 2>&1)" || UNIFY_RC=$?
+  UNIFY_RC="${UNIFY_RC:-0}"
+  printf '%s\n' "$UNIFY_OUT"
+  if [[ "$UNIFY_RC" -ne 0 ]]; then
+    echo "======== STUDENT-UNIFICATION GATE FAILED ========"
+    echo "$(date '+%F %T') students:verify-unification exited ${UNIFY_RC} — staging deploy FAILED"
+    echo "Nonzero unresolved (or other verify failure). Do not treat this deploy as green."
+    echo "Copy the report above and storage/app/s11b-student-unification-report.json"
+    echo "into STATUS.md + docs/migrations/. Student-keyed S2 writes stay blocked."
+    echo "================================================"
+    exit 1
+  fi
+  echo "$(date '+%F %T') students:verify-unification OK"
+else
+  echo "$(date '+%F %T') WARN: students:verify-unification not available — skipping gate (older commit)"
+fi
+
 echo "$(date '+%F %T') deploy complete: ${REMOTE:0:8}"

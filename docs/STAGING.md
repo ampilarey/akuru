@@ -68,7 +68,9 @@ Flow:
    `composer install --no-dev` (only if `composer.lock` changed) → `migrate --force` →
    `permission:cache-reset` (warn + continue if the command is missing) →
    `config:cache` → `route:clear` (never `route:cache`) → `view:cache` → `queue:restart`,
-   then **`php artisan morph-map:verify`** as a post-chain gate (see below).
+   then **`php artisan morph-map:verify`** and
+   **`php artisan students:verify-unification`** (read-only — never `--backfill`)
+   as post-chain gates (see below).
    Progress is logged to `~/self-update-test.log`.
 4. The Action smoke-checks `/up` and `/en`.
 
@@ -96,6 +98,33 @@ onward. Re-exec-after-pull was considered and rejected: a bad script on `main`
 could abort after merge but before `migrate --force`, leaving staging on new code
 against an un-migrated DB. If re-exec is revived later it must `bash -n` the pulled
 script and fall through to the in-process path on parse failure.
+
+### Student-unification deploy gate (S2.0)
+
+After the morph-map gate, the pull script runs
+`php artisan students:verify-unification` with **no `--backfill` flag**
+(read-only verify; `--backfill` writes mappings and must never run from
+auto-deploy) and writes its **full output** into `~/self-update-test.log`.
+The command also refreshes `storage/app/s11b-student-unification-report.json`
+on the server.
+
+| Outcome | What you see in `~/self-update-test.log` | Deploy result |
+|---------|------------------------------------------|---------------|
+| **Green** | Mapped/created/guardian/enrollment counts + `students:verify-unification OK` + `deploy complete: <sha>` | exit 0 |
+| **Gate failed** | Failure bullets + a `======== STUDENT-UNIFICATION GATE FAILED ========` block | exit 1 |
+| **Command missing** | `WARN: students:verify-unification not available — skipping gate (older commit)` | exit 0 (script must work on pre-S1.1b commits) |
+
+**Operator after a green (or failed) run:** copy the verbatim verify block
+from `~/self-update-test.log` into `STATUS.md` (same format as the
+morph-map capture) and archive
+`~/test.akuru.edu.mv/storage/app/s11b-student-unification-report.json`
+under `docs/migrations/` (S1 DoD line 158).
+
+**Same first-deploy caveat as morph-map:** the deploy that *introduces*
+this gate still runs the pre-pull script. Evidence appears from the
+**second** auto-deploy onward. After S2.0 merges, land a trivial docs
+commit on `main` to trigger that second run. Do not re-exec-after-pull
+(same blast-radius rejection as above).
 
 **Consequence for the morph-map hotfix deploy:** the automated gate does **not**
 cover that first cutover. After the hotfix lands on staging, run manually:
