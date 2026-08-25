@@ -11,6 +11,8 @@ export default function Outline({ course, modules }) {
         lesson_id: modules[0]?.lessons?.[0]?.id || '',
         type: 'text',
         body: '',
+        tone: 'note',
+        direction: 'auto',
     });
 
     return (
@@ -56,8 +58,27 @@ export default function Outline({ course, modules }) {
                     <select className="form-input mb-2" value={blockForm.data.lesson_id || modules.flatMap((module) => module.lessons)[0]?.id || ''} onChange={(e) => blockForm.setData('lesson_id', e.target.value)}>
                         {modules.flatMap((module) => module.lessons).map((lesson) => <option key={lesson.id} value={lesson.id}>{lesson.title}</option>)}
                     </select>
-                    <input className="form-input mb-2" placeholder="Block text" value={blockForm.data.body} onChange={(e) => blockForm.setData('body', e.target.value)} />
+                    <select className="form-input mb-2" value={blockForm.data.type} onChange={(e) => blockForm.setData('type', e.target.value)}>
+                        <option value="text">Text</option>
+                        <option value="rich_text">Rich text</option>
+                        <option value="instruction">Instruction</option>
+                    </select>
+                    <select className="form-input mb-2" value={blockForm.data.direction} onChange={(e) => blockForm.setData('direction', e.target.value)}>
+                        <option value="auto">Direction auto</option>
+                        <option value="ltr">LTR</option>
+                        <option value="rtl">RTL</option>
+                    </select>
+                    {blockForm.data.type === 'instruction' && (
+                        <select className="form-input mb-2" value={blockForm.data.tone} onChange={(e) => blockForm.setData('tone', e.target.value)}>
+                            <option value="note">Note</option>
+                            <option value="tip">Tip</option>
+                            <option value="warning">Warning</option>
+                        </select>
+                    )}
+                    <textarea className="form-input mb-2" placeholder="Block content" value={blockForm.data.body} onChange={(e) => blockForm.setData('body', e.target.value)} />
                     <button type="submit" className="btn-primary" disabled={blockForm.processing}>Save block</button>
+                    {blockForm.errors.data && <p className="mt-1 text-xs text-red-600">{blockForm.errors.data}</p>}
+                    {blockForm.errors.type && <p className="mt-1 text-xs text-red-600">{blockForm.errors.type}</p>}
                 </form>
             </div>
             <div className="space-y-4">

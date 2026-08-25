@@ -24,7 +24,11 @@ Publish copies an ordered JSON snapshot (ADR-017). The player reads
 `current_revision_id` only. Draft edit/delete/reorder must not mutate
 a published snapshot. 1B offering pinning will reuse revision ids.
 
-## Slice 1A.4 — Text / Rich Text / Instruction blocks + builder/player
+## Slice 1A.4 — Text / Rich Text / Instruction blocks + builder/player (done)
+
+Validated `text`, `rich_text`, and `instruction` only. Direction is a
+block setting (`ltr`/`rtl`/`auto`), not a block type. Media types are
+rejected until 1A.5. Player renders the published snapshot.
 
 ## Slice 1A.5 — Media pipeline + image/audio/video/PDF blocks
 
