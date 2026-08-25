@@ -870,14 +870,30 @@ S3). S4.1 has **no new student-keyed writes** beyond existing
 - Permissions: `payroll.run` vs `payroll.approve`. Staff see own
   payslips only. `payroll.enabled` stays **off**.
 
+## 1A.1 — Auth / roles / settings (already satisfied)
+
+Phase 0 + S1 already shipped auth, Spatie roles, users, Settings,
+rate limiting, and the Inertia shell. No new 1A.1 code.
+
+## 1A.2 — Taxonomy + engine course CRUD (done)
+
+- `course_subjects` (hierarchical, ADR-003), `audiences`, `course_levels`
+  — admin-managed, trilingual, seed examples only.
+- Additive on `courses`: `subject_id`, `workflow_status`, `course_type`,
+  `created_by`, `title_dv`/`title_ar`. Marketing `status` is untouched.
+- Workflow: draft → in_review → published → archived. Invalid hops
+  rejected. `courses.publish` is required to publish.
+- Inertia catalog under `/catalog/*` + CSV export. Website Blade
+  courses stay as they are.
+
 ## Next
 
-1. Operator: unify-verify / smoke / production (unchanged).
-2. Dual-write stays.
-3. S5 coding is complete on the stacked PRs. DoD remaining:
-   month-in-the-life on real data, and two parallel payroll cycles
-   before `payroll.enabled` goes on.
-4. S4 DoD on real BML sandbox / Thaana receipt proof is operator-owned.
+1. 1A.3 — modules, lessons, immutable revisions (SPEC §57.3).
+2. Operator: unify-verify / smoke / production (unchanged).
+3. Dual-write stays.
+4. S5 DoD remaining: month-in-the-life on real data, two parallel
+   payroll cycles before `payroll.enabled` goes on.
+5. S4 DoD on real BML sandbox / Thaana receipt proof is operator-owned.
 
 **Operator (their side, unchanged):**
 
