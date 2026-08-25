@@ -9,6 +9,11 @@ class AuthorizeExamEntryAction
 {
     public function execute(Exam $exam, ?int $userId, bool $enterAny, bool $manage): bool
     {
+        return $this->forClassSubject($exam->class_id, $exam->subject_id, $userId, $enterAny, $manage);
+    }
+
+    public function forClassSubject(int $classId, int $subjectId, ?int $userId, bool $enterAny, bool $manage): bool
+    {
         if ($manage || $enterAny) {
             return true;
         }
@@ -23,8 +28,8 @@ class AuthorizeExamEntryAction
         }
 
         return DB::table('timetables')
-            ->where('class_id', $exam->class_id)
-            ->where('subject_id', $exam->subject_id)
+            ->where('class_id', $classId)
+            ->where('subject_id', $subjectId)
             ->where('teacher_id', $teacherId)
             ->where('is_active', true)
             ->exists();

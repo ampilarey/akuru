@@ -1098,11 +1098,21 @@ rate limiting, and the Inertia shell. No new 1A.1 code.
 - Student-keyed writes coded; staging still blocked until unify-verify
   is green.
 
+## S3.4 — Term grades (done)
+
+- `term_grades` computed cache: weight scheme → published exams →
+  percent / letter / point / rank. Multiple exams of one type share
+  that type's weight equally unless `weight_override`.
+- Idempotent recompute; also runs on `ExamResultsPublished`.
+- ADR-013 absent/exempt applied. Ties share rank.
+- Competencies + assessments (subject-level). Gradebook matrix + CSV.
+- Hifz / Deploy 3 untouched.
+
 ## Next
 
 **Operator (not in this slice):** `unify-verify` still red (4 RS collisions + guardian pivot). Student dual-write stays until staging is green. `payroll.enabled` off until credentials. BML sandbox / Thaana receipts / credential smoke / production. S3.3+ writes student-keyed `exam_marks` — coding continues; staging writes stay blocked until verify is green.
 
-**S3.4+ (stacked, not yet merged onto main):** term grades → standards → report cards → awards.
+**S3.5+ (stacked, not yet merged onto main):** standards → report cards → awards.
 
 **Qur'an A.4b (later):** switch offering-session reads to `offering_halaqa_session_links` after operators confirm dual-write. Then Hifz cleanup (deploy 3). Keep `QURAN_HALAQA_DUAL_WRITE` off until verified.
 
