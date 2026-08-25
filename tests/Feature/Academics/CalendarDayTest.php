@@ -122,6 +122,7 @@ it('lists only holidays and closures for portal and public readers', function ()
         ->assertOk()
         ->assertSee('Independence Day')
         ->assertSee('Storm closure')
+        ->assertSee('Holidays')
         ->assertDontSee('Term exams');
 });
 

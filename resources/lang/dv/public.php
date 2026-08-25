@@ -27,6 +27,7 @@ return [
     'Featured Courses' => 'ޚާއްސަ ކޯސްތައް',
     'Latest News' => 'އެންމެ ފަހުގެ ޚަބަރު',
     'Upcoming Events' => 'އައިންދެ ހަރަކާތްތައް',
+    'Holidays' => 'ހުކުރު ދުވަސްތައް',
     'Our Gallery' => 'އަޅުގަނޑުމެންގެ ގެލެރީ',
     'What Our Students Say' => 'އަޅުގަނޑުމެންގެ ދަރިވަރުން ބުނާ ކަން',
     'Frequently Asked Questions' => 'ގިނަ ފަހަރަށް އެދޭ ސުވާލުތައް',
