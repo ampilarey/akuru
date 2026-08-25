@@ -22,6 +22,10 @@ class AssessmentAttempt extends Model
         'started_at',
         'last_saved_at',
         'submitted_at',
+        'feedback',
+        'item_scores',
+        'reviewed_by',
+        'reviewed_at',
     ];
 
     protected function casts(): array
@@ -30,9 +34,11 @@ class AssessmentAttempt extends Model
             'status' => AssessmentAttemptStatus::class,
             'answers' => 'array',
             'snapshots' => 'array',
+            'item_scores' => 'array',
             'started_at' => 'datetime',
             'last_saved_at' => 'datetime',
             'submitted_at' => 'datetime',
+            'reviewed_at' => 'datetime',
         ];
     }
 }

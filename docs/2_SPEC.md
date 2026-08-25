@@ -32,10 +32,11 @@ attempt snapshots taken at start, retake/passing rules. Scoring reads
 the snapshot, not the live question bank. Teacher-marked items leave
 the attempt `submitted` until 2.4.
 
-## Slice 2.4 — Teacher review
+## Slice 2.4 — Teacher review (done)
 
-Teacher review dashboard, scores, feedback. Students see feedback.
-Teacher-marked submissions work.
+Teacher review dashboard at `/catalog/reviews`. Reviewers score submitted
+activity and assessment attempts and leave feedback. Students see that
+feedback on the player. Teacher-marked 2.1/2.3 attempts become `scored`.
 
 ## Slice 2.5 — Session + attendance UI polish
 

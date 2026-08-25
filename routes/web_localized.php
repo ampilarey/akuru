@@ -24,6 +24,7 @@ use App\Domains\Courses\Http\Controllers\CatalogActivityController;
 use App\Domains\Courses\Http\Controllers\CatalogAssessmentController;
 use App\Domains\Courses\Http\Controllers\CatalogMediaController;
 use App\Domains\Courses\Http\Controllers\CatalogQuestionController;
+use App\Domains\Courses\Http\Controllers\CatalogReviewController;
 use App\Domains\Courses\Http\Controllers\CourseLevelController;
 use App\Domains\Courses\Http\Controllers\CourseOutlineController;
 use App\Domains\Courses\Http\Controllers\CourseSubjectController;
@@ -397,6 +398,8 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::post('offerings/{offering}/sessions', [OfferingSessionController::class, 'store'])->name('catalog.offerings.sessions.store')->whereNumber('offering');
         Route::get('offerings/{offering}/sessions/{session}/attendance', [OfferingSessionController::class, 'attendance'])->name('catalog.offerings.sessions.attendance')->whereNumber('offering')->whereNumber('session');
         Route::post('offerings/{offering}/sessions/{session}/attendance', [OfferingSessionController::class, 'mark'])->name('catalog.offerings.sessions.attendance.mark')->whereNumber('offering')->whereNumber('session');
+        Route::get('reviews', [CatalogReviewController::class, 'index'])->name('catalog.reviews.index');
+        Route::post('reviews', [CatalogReviewController::class, 'store'])->name('catalog.reviews.store');
         Route::get('questions/export', [CatalogQuestionController::class, 'export'])->name('catalog.questions.export');
         Route::get('questions', [CatalogQuestionController::class, 'index'])->name('catalog.questions.index');
         Route::post('questions', [CatalogQuestionController::class, 'store'])->name('catalog.questions.store');

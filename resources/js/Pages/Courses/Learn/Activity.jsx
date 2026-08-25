@@ -117,6 +117,9 @@ export default function Activity({ activity, enrollment, attempt }) {
             {activity.data.correct_order && (
                 <p className="mb-3 text-sm text-green-700">Order: {(activity.data.correct_order || []).join(', ')}</p>
             )}
+            {attempt?.feedback && (
+                <p className="mb-3 rounded-lg border bg-white p-3 text-sm">Teacher feedback: {attempt.feedback}</p>
+            )}
             <div className="flex flex-wrap gap-3">
                 <button
                     type="button"
