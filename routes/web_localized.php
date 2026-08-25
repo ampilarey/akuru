@@ -1,5 +1,6 @@
 <?php
 
+use App\Domains\Academics\Http\Controllers\AbsenceNoteReviewController;
 use App\Domains\Academics\Http\Controllers\AcademicYearController;
 use App\Domains\Academics\Http\Controllers\AnnouncementController;
 use App\Domains\Academics\Http\Controllers\AttendanceReportController;
@@ -29,6 +30,7 @@ use App\Domains\People\Http\Controllers\TeacherController;
 use App\Domains\Portal\Http\Controllers\DashboardController;
 use App\Domains\Portal\Http\Controllers\EnhancedDashboardController;
 use App\Domains\Portal\Http\Controllers\GuardianChildrenController;
+use App\Domains\Portal\Http\Controllers\PortalAbsenceNoteController;
 use App\Domains\Portal\Http\Controllers\PortalAttendanceController;
 use App\Domains\Portal\Http\Controllers\PortalHolidayController;
 use App\Domains\Settings\Http\Controllers\Admin\SettingsController as AdminSettingsController;
@@ -51,6 +53,8 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
     Route::get('/portal/children', [GuardianChildrenController::class, 'index'])->name('portal.children');
     Route::get('/portal/holidays', [PortalHolidayController::class, 'index'])->name('portal.holidays');
     Route::get('/portal/attendance', [PortalAttendanceController::class, 'index'])->name('portal.attendance');
+    Route::get('/portal/absence-notes', [PortalAbsenceNoteController::class, 'index'])->name('portal.absence-notes');
+    Route::post('/portal/absence-notes', [PortalAbsenceNoteController::class, 'store'])->name('portal.absence-notes.store');
 
     Route::get('academics/registers/today', [TeacherRegisterController::class, 'today'])->name('academics.registers.today');
     Route::get('academics/registers/export', [RegisterReportController::class, 'export'])->name('academics.registers.export');
@@ -69,6 +73,11 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
     Route::get('academics/attendance/daily', [DailyAttendanceController::class, 'index'])->name('academics.attendance.daily');
     Route::post('academics/attendance/daily', [DailyAttendanceController::class, 'store'])->name('academics.attendance.daily.store');
     Route::get('academics/attendance', [AttendanceReportController::class, 'index'])->name('academics.attendance.index');
+
+    Route::get('academics/absence-notes/export', [AbsenceNoteReviewController::class, 'export'])->name('academics.absence-notes.export');
+    Route::get('academics/absence-notes', [AbsenceNoteReviewController::class, 'index'])->name('academics.absence-notes.index');
+    Route::post('academics/absence-notes/{absenceNote}/approve', [AbsenceNoteReviewController::class, 'approve'])->name('academics.absence-notes.approve');
+    Route::post('academics/absence-notes/{absenceNote}/reject', [AbsenceNoteReviewController::class, 'reject'])->name('academics.absence-notes.reject');
 
     // Student routes
     Route::resource('students', StudentController::class);

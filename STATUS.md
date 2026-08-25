@@ -545,9 +545,16 @@ production. Coding continues without waiting on that evidence.
   one SMS per student per day. Setting `attendance_notify`.
 - ADR-011. Morph `class_attendance`. Hifz / Deploy 3 untouched.
 
+## S2.8 — Absence notes excused flip (coding; verify still operator-side)
+
+- Parent Portal submit (own children only). Admin review + CSV.
+- Approving a note with `affects_attendance=true` flips matching
+  `class_attendance` absent rows → excused via the writer and sets
+  `absence_note_id`. Hifz / Deploy 3 untouched.
+
 ## Next
 
 1. Operator: paste staging `students:verify-unification` log + JSON.
-2. **S2.8** absence-note excused flip. Then S2.9–S2.10.
+2. **S2.9** behavior records. Then S2.10 requests.
 3. Production: nothing until credential smoke is recorded.
 4. **S1.1 Deploy 3** still ≥2 weeks after `2f8a90b`. Dual-write stays.
