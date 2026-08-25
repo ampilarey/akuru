@@ -2,6 +2,7 @@
 
 use App\Domains\Academics\Http\Controllers\AcademicYearController;
 use App\Domains\Academics\Http\Controllers\AnnouncementController;
+use App\Domains\Academics\Http\Controllers\CalendarDayController;
 use App\Domains\Academics\Http\Controllers\ClassDirectoryController;
 use App\Domains\Academics\Http\Controllers\PromotionController;
 use App\Domains\Academics\Http\Controllers\RoomBookingController;
@@ -23,6 +24,7 @@ use App\Domains\People\Http\Controllers\TeacherController;
 use App\Domains\Portal\Http\Controllers\DashboardController;
 use App\Domains\Portal\Http\Controllers\EnhancedDashboardController;
 use App\Domains\Portal\Http\Controllers\GuardianChildrenController;
+use App\Domains\Portal\Http\Controllers\PortalHolidayController;
 use App\Domains\Settings\Http\Controllers\Admin\SettingsController as AdminSettingsController;
 use App\Domains\Settings\Http\Controllers\AnalyticsController;
 use App\Domains\Website\Http\Controllers\Admin\PublicSite\CourseController as AdminCourseController;
@@ -41,6 +43,7 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/enhanced-dashboard', [EnhancedDashboardController::class, 'index'])->name('enhanced.dashboard');
     Route::get('/portal/children', [GuardianChildrenController::class, 'index'])->name('portal.children');
+    Route::get('/portal/holidays', [PortalHolidayController::class, 'index'])->name('portal.holidays');
 
     // Student routes
     Route::resource('students', StudentController::class);
@@ -196,6 +199,12 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::post('bookings', [RoomBookingController::class, 'store'])->name('academics.bookings.store');
         Route::put('bookings/{roomBooking}', [RoomBookingController::class, 'update'])->name('academics.bookings.update');
         Route::delete('bookings/{roomBooking}', [RoomBookingController::class, 'destroy'])->name('academics.bookings.destroy');
+
+        Route::get('calendar/export', [CalendarDayController::class, 'export'])->name('academics.calendar.export');
+        Route::get('calendar', [CalendarDayController::class, 'index'])->name('academics.calendar.index');
+        Route::post('calendar', [CalendarDayController::class, 'store'])->name('academics.calendar.store');
+        Route::put('calendar/{calendarDay}', [CalendarDayController::class, 'update'])->name('academics.calendar.update');
+        Route::delete('calendar/{calendarDay}', [CalendarDayController::class, 'destroy'])->name('academics.calendar.destroy');
 
         Route::get('timetable/export', [TimetableBuilderController::class, 'export'])->name('academics.timetable.export');
         Route::get('timetable', [TimetableBuilderController::class, 'index'])->name('academics.timetable.index');

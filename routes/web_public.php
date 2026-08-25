@@ -46,8 +46,9 @@ Route::get('news/{post:slug}', [\App\Domains\Website\Http\Controllers\PublicSite
 Route::get('events', function () {
     try {
         $events = \App\Domains\Website\Models\Event::published()->public()->with('registrations')->paginate(12);
+        $holidays = app(\App\Domains\Academics\Actions\ListCalendarHolidaysAction::class)->execute();
 
-        return view('public.events.index', compact('events'));
+        return view('public.events.index', compact('events', 'holidays'));
     } catch (\Exception $e) {
         return response('Events error: '.$e->getMessage(), 500);
     }

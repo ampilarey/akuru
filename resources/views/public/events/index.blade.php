@@ -7,6 +7,21 @@
         <p class="text-brandGray-600">{{ __('public.Join us for our upcoming events and activities') }}</p>
     </div>
 
+    @if(isset($holidays) && $holidays->count() > 0)
+        <div class="mb-8 rounded-lg border bg-white p-6">
+            <h2 class="text-xl font-semibold text-brandMaroon-600 mb-3">{{ __('public.Holidays') }}</h2>
+            <ul class="space-y-2">
+                @foreach($holidays as $holiday)
+                    <li class="flex flex-wrap items-baseline gap-3 text-sm">
+                        <span class="font-medium text-brandMaroon-600">{{ \Carbon\Carbon::parse($holiday['date'])->format('d M Y') }}</span>
+                        <span class="uppercase text-xs text-brandGray-500">{{ $holiday['type'] }}</span>
+                        <span class="text-brandGray-700">{{ $holiday['title'] }}</span>
+                    </li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
     @if($events->count() > 0)
         <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
             @foreach($events as $event)

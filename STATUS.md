@@ -475,12 +475,24 @@ conflict engine is **S2.2**.
 - Admin Inertia CRUD + CSV at `academics.bookings.*`. Permission `rooms.manage`.
 - Morph alias `room_booking`. Hifz / Deploy 3 / student-keyed writes untouched.
 
+## S2.5 — School calendar days (no register generation)
+
+- New `calendar_days`: `academic_year_id`, unique `(date, academic_year_id)`,
+  type `holiday|event|exam_day|closure|special_schedule`, trilingual title,
+  `affects_timetable` default true, optional `event_id`, notes.
+- Admin year-at-a-glance Inertia screen + CSV at `academics.calendar.*`.
+  Permission `calendar.manage`.
+- Portal read at `portal.holidays` and public events page list holidays +
+  closures via `ListCalendarHolidaysAction` (no Website/Portal model imports).
+- **No** `GenerateExpectedRegistersAction`. No student-keyed writes.
+- Morph alias `calendar_day`. Hifz / Deploy 3 untouched.
+
 ## Next
 
-1. **S2.5** — `calendar_days` CRUD + portal/public holiday read (safe).
-2. **S2.0 / S2.1 / S2.2 / S2.3** PRs still open — merge when CI is green; then
-   **S2.0b** so staging runs `students:verify-unification`.
-3. S2.6–S2.10 stay **blocked** until verify is green on staging.
-4. Every S2 PR: wait for CI green; **do not self-merge**. Production: nothing
+1. S2.6–S2.10 stay **blocked** until `students:verify-unification` is green
+   on staging (register loop, attendance, absence notes, behavior, requests).
+2. **S2.0–S2.5** PRs still open — merge when CI is green; then **S2.0b** so
+   staging runs the unification gate.
+3. Every S2 PR: wait for CI green; **do not self-merge**. Production: nothing
    until credential smoke is recorded.
-5. **S1.1 Deploy 3** still ≥2 weeks after `2f8a90b`. Dual-write stays.
+4. **S1.1 Deploy 3** still ≥2 weeks after `2f8a90b`. Dual-write stays.
