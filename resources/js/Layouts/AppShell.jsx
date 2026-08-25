@@ -91,8 +91,17 @@ export default function AppShell({ title, children }) {
                         <Link href="/exams/standards" className="text-[#7C2D37] hover:underline">
                             Standards
                         </Link>
+                        <Link href="/exams/report-templates" className="text-[#7C2D37] hover:underline">
+                            Report templates
+                        </Link>
+                        <Link href="/exams/report-cards" className="text-[#7C2D37] hover:underline">
+                            Report cards
+                        </Link>
                         <Link href="/portal/exams" className="text-[#7C2D37] hover:underline">
                             Results
+                        </Link>
+                        <Link href="/portal/report-cards" className="text-[#7C2D37] hover:underline">
+                            Report cards
                         </Link>
                         <span className="text-gray-500">{user?.name}</span>
                         <span className="rounded bg-[#F3EBE0] px-2 py-0.5 text-xs uppercase">{locale}</span>

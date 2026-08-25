@@ -25,6 +25,8 @@ use App\Domains\ExamsGrades\Http\Controllers\ExamMarkController;
 use App\Domains\ExamsGrades\Http\Controllers\ExamTypeController;
 use App\Domains\ExamsGrades\Http\Controllers\GradebookController;
 use App\Domains\ExamsGrades\Http\Controllers\GradeScaleController;
+use App\Domains\ExamsGrades\Http\Controllers\ReportCardController;
+use App\Domains\ExamsGrades\Http\Controllers\ReportCardTemplateController;
 use App\Domains\ExamsGrades\Http\Controllers\StandardController;
 use App\Domains\ExamsGrades\Http\Controllers\WeightSchemeController;
 use App\Domains\Hifz\Http\Controllers\QuranProgressController;
@@ -45,6 +47,7 @@ use App\Domains\Portal\Http\Controllers\PortalAttendanceController;
 use App\Domains\Portal\Http\Controllers\PortalBehaviorController;
 use App\Domains\Portal\Http\Controllers\PortalExamController;
 use App\Domains\Portal\Http\Controllers\PortalHolidayController;
+use App\Domains\Portal\Http\Controllers\PortalReportCardController;
 use App\Domains\Settings\Http\Controllers\Admin\SettingsController as AdminSettingsController;
 use App\Domains\Settings\Http\Controllers\AnalyticsController;
 use App\Domains\Website\Http\Controllers\Admin\PublicSite\CourseController as AdminCourseController;
@@ -69,6 +72,9 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
     Route::get('/portal/absence-notes', [PortalAbsenceNoteController::class, 'index'])->name('portal.absence-notes');
     Route::post('/portal/absence-notes', [PortalAbsenceNoteController::class, 'store'])->name('portal.absence-notes.store');
     Route::get('/portal/exams', [PortalExamController::class, 'index'])->name('portal.exams');
+    Route::get('/portal/report-cards', [PortalReportCardController::class, 'index'])->name('portal.report-cards');
+    Route::get('/portal/report-cards/{reportCard}/download', [PortalReportCardController::class, 'download'])->name('portal.report-cards.download');
+    Route::get('/portal/transcript', [PortalReportCardController::class, 'transcript'])->name('portal.transcript');
 
     Route::get('exams/{exam}/marks/export', [ExamMarkController::class, 'export'])->name('exams.marks.export');
     Route::get('exams/{exam}/marks', [ExamMarkController::class, 'show'])->name('exams.marks.show');
@@ -320,5 +326,18 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::get('standards', [StandardController::class, 'index'])->name('exams.standards.index');
         Route::post('standards', [StandardController::class, 'store'])->name('exams.standards.store');
         Route::post('standards/tag', [StandardController::class, 'tag'])->name('exams.standards.tag');
+
+        Route::get('report-templates/export', [ReportCardTemplateController::class, 'export'])->name('exams.report-templates.export');
+        Route::get('report-templates', [ReportCardTemplateController::class, 'index'])->name('exams.report-templates.index');
+        Route::post('report-templates', [ReportCardTemplateController::class, 'store'])->name('exams.report-templates.store');
+        Route::put('report-templates/{reportCardTemplate}', [ReportCardTemplateController::class, 'update'])->name('exams.report-templates.update');
+
+        Route::get('report-cards/export', [ReportCardController::class, 'export'])->name('exams.report-cards.export');
+        Route::get('report-cards', [ReportCardController::class, 'index'])->name('exams.report-cards.index');
+        Route::post('report-cards/generate', [ReportCardController::class, 'generate'])->name('exams.report-cards.generate');
+        Route::post('report-cards/publish', [ReportCardController::class, 'publish'])->name('exams.report-cards.publish');
+        Route::post('report-cards/comment', [ReportCardController::class, 'comment'])->name('exams.report-cards.comment');
+        Route::get('report-cards/{reportCard}/download', [ReportCardController::class, 'download'])->name('exams.report-cards.download');
+        Route::get('transcript', [ReportCardController::class, 'transcript'])->name('exams.transcript');
     });
 });

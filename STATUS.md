@@ -810,9 +810,23 @@ anyway (same as S2.6–S2.10). S3.1 has **no student-keyed rows**.
   term filter). No per-student analytics (Phase 2).
 - Hifz / Deploy 3 untouched.
 
+## S3.6 — Report cards (done)
+
+- `report_card_templates`, `report_cards` (unique student+term),
+  `report_card_comments` (class teacher / head, trilingual).
+- `GenerateReportCardsAction` pulls term grades, S2 attendance %,
+  parent-visible behavior, comments; queued per-student render.
+- Production `HtmlDocumentRenderer` bound to
+  `DocumentRendererInterface` (ADR-012). Blade EN + DV RTL snapshots.
+  Bytes stored via Media `StoreGeneratedDocumentAction` (private disk).
+  Chrome/Browsershot can replace the binding later; no `if` in domain.
+- Publish + portal download + transcript (`GenerateTranscriptAction`,
+  optional GPA). Regeneration until published.
+- Admin unpublished list + CSV. Hifz / Deploy 3 untouched.
+
 ## Next
 
-1. **S3.6 — Report cards** (templates + DocumentRenderer production).
+1. **S3.7 — Awards & documents**.
 2. Operator: unify-verify / smoke / production (unchanged).
 3. Dual-write stays. Staging student-keyed writes stay blocked until
    verify is green; coding continues.
