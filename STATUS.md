@@ -802,9 +802,17 @@ anyway (same as S2.6–S2.10). S3.1 has **no student-keyed rows**.
 - Competencies + assessments (subject-level). Gradebook matrix + CSV.
 - Hifz / Deploy 3 untouched.
 
+## S3.5 — Curriculum standards (done)
+
+- `standards` (optional subject, hierarchy via `parent_id`) and
+  polymorphic `standard_taggables` for exams and plan topics.
+- Coverage report + CSV: tagged exams/topics per standard (optional
+  term filter). No per-student analytics (Phase 2).
+- Hifz / Deploy 3 untouched.
+
 ## Next
 
-1. **S3.5 — Curriculum standards** (definitions + tagging).
+1. **S3.6 — Report cards** (templates + DocumentRenderer production).
 2. Operator: unify-verify / smoke / production (unchanged).
 3. Dual-write stays. Staging student-keyed writes stay blocked until
    verify is green; coding continues.

@@ -97,6 +97,8 @@ return [
     'school' => \App\Domains\Settings\Models\School::class,
     'setting' => \App\Domains\Settings\Models\Setting::class,
     'staff_profile' => \App\Domains\People\Models\StaffProfile::class,
+    'standard' => \App\Domains\ExamsGrades\Models\Standard::class,
+    'standard_taggable' => \App\Domains\ExamsGrades\Models\StandardTaggable::class,
     'staff_qualification' => \App\Domains\People\Models\StaffQualification::class,
     'student' => \App\Domains\People\Models\Student::class,
     'student_status_history' => \App\Domains\People\Models\StudentStatusHistory::class,

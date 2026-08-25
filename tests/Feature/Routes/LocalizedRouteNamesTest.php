@@ -148,6 +148,10 @@ class LocalizedRouteNamesTest extends TestCase
             'exams.competencies.store',
             'exams.competencies.assess',
             'exams.competencies.export',
+            'exams.standards.index',
+            'exams.standards.store',
+            'exams.standards.tag',
+            'exams.standards.export',
         ];
 
         foreach ($names as $name) {
