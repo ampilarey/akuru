@@ -9,4 +9,6 @@ interface MediaStorageInterface
     public function path(string $disk, string $path): string;
 
     public function put(string $disk, string $path, string $contents): bool;
+
+    public function get(string $disk, string $path): string;
 }

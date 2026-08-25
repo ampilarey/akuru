@@ -6,6 +6,7 @@ use App\Domains\People\Enums\CustomFieldType;
 use App\Domains\People\Models\CustomFieldDefinition;
 use App\Domains\People\Models\ParentGuardian;
 use App\Domains\People\Models\RegistrationStudent;
+use App\Domains\People\Models\StaffProfile;
 use App\Domains\People\Models\Student;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
@@ -20,6 +21,21 @@ function makeStudent(array $overrides = []): Student
         'last_name' => 'Ali',
         'date_of_birth' => '2012-03-01',
         'gender' => 'female',
+    ], $overrides));
+}
+
+function makeStaffProfile(array $overrides = []): StaffProfile
+{
+    if (! array_key_exists('user_id', $overrides)) {
+        $overrides['user_id'] = User::factory()->create()->id;
+    }
+
+    return StaffProfile::query()->create(array_merge([
+        'first_name' => 'Mariyam',
+        'last_name' => 'Didi',
+        'employment_type' => 'full_time',
+        'status' => 'active',
+        'staff_number' => 'STF-'.fake()->unique()->numerify('###'),
     ], $overrides));
 }
 
