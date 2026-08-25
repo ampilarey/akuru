@@ -965,9 +965,18 @@ rate limiting, and the Inertia shell. No new 1A.1 code.
   via `ListRequiredSessionProgressAction`.
 - Unit tests cover the formula (including 2/3 = 66).
 
+## 1B.6 — PWA + i18n/RTL polish (done)
+
+- `manifest.webmanifest`, `sw.js`, `/offline.html`. Layouts register
+  the service worker (no longer unregister).
+- AppShell locale switcher (EN/DV/AR). Faruma for Thaana, Cairo/Amiri
+  for Arabic. Learn keys aligned across locales.
+- Admin i18n preview asserts thaana/arabic font classes.
+
 ## Next
 
-1. 1B.6 — PWA + full i18n/RTL polish.
+1. Phase 2 — activities, assessments, fuller scheduled-course UI
+   (`docs/2_SPEC.md`, source `docs/SPEC.md` §47).
 2. Operator: unify-verify / smoke / production (unchanged).
 3. Dual-write stays.
 4. S5 DoD remaining: month-in-the-life on real data, two parallel

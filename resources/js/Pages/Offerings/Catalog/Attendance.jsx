@@ -1,7 +1,8 @@
-import { useForm } from '@inertiajs/react';
+import { useForm, usePage } from '@inertiajs/react';
 import AppShell from '../../../Layouts/AppShell';
 
 export default function Attendance({ session, roster, statuses, modes }) {
+    const t = usePage().props.i18n?.learn || {};
     const form = useForm({
         enrollment_id: roster[0]?.enrollment_id || '',
         status: 'present',

@@ -43,4 +43,9 @@ loads lesson ids, then calls Progress. Required offering sessions
 (present/late/excused) can count toward completion. No subject
 branches and no Progress model imports of Courses/Offerings.
 
-## Slice 1B.6 — PWA + full i18n/RTL polish
+## Slice 1B.6 — PWA + full i18n/RTL polish (done)
+
+Web manifest + service worker + offline page. Inertia/Blade register
+the worker instead of unregistering it. Locale switcher on AppShell.
+Faruma (Thaana) and Cairo/Amiri (Arabic) on RTL locales. Learn
+strings stay aligned EN/DV/AR. Admin i18n preview checks font classes.
