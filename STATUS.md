@@ -1073,11 +1073,24 @@ rate limiting, and the Inertia shell. No new 1A.1 code.
 - Flag-on Hifz session create also mirrors; failures never block Hifz.
 - No read switch. No Hifz table cleanup. ADR-020.
 
+## S3.2 — Exams (this slice)
+
+- `exams` + `exam_status_audits`. Calendar holiday/closure warn-block,
+  same-class same-day cap (`exams_max_per_class_per_day`, default 1),
+  room clash vs other exams / bookings / timetable (via Academics
+  `CheckRoomSlotConflictAction`).
+- Status: scheduled → marks_entry → review → published → locked.
+  Publish fires `ExamResultsPublished` → portal notification.
+  Locked rejects edits; unlock requires a reason and is audited.
+- Bulk scheduler: one exam per subject. Admin Inertia + CSV.
+- Portal `portal.exams` lists published exams for a guardian's children.
+- No `exam_marks` yet (S3.3). Hifz / Deploy 3 untouched.
+
 ## Next
 
-**Operator (not in this slice):** `unify-verify` still red (4 RS collisions + guardian pivot). Student dual-write stays until staging is green. `payroll.enabled` off until credentials. BML sandbox / Thaana receipts / credential smoke / production.
+**Operator (not in this slice):** `unify-verify` still red (4 RS collisions + guardian pivot). Student dual-write stays until staging is green. `payroll.enabled` off until credentials. BML sandbox / Thaana receipts / credential smoke / production. S3.3+ writes student-keyed `exam_marks` — coding continues; staging writes stay blocked until verify is green.
 
-**S3.2+ (stacked, not yet merged onto main):** exams → marks → term grades → standards → report cards → awards. Merge S3.1 first, then retarget later S3 PRs onto `main`.
+**S3.3+ (stacked, not yet merged onto main):** marks → term grades → standards → report cards → awards.
 
 **Qur'an A.4b (later):** switch offering-session reads to `offering_halaqa_session_links` after operators confirm dual-write. Then Hifz cleanup (deploy 3). Keep `QURAN_HALAQA_DUAL_WRITE` off until verified.
 

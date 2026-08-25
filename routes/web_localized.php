@@ -43,6 +43,7 @@ use App\Domains\Courses\Http\Controllers\LearnLessonController;
 use App\Domains\Courses\Http\Controllers\LearnMediaController;
 use App\Domains\Courses\Http\Controllers\LearnScheduleController;
 use App\Domains\Courses\Http\Controllers\LessonPlayerController;
+use App\Domains\ExamsGrades\Http\Controllers\ExamController;
 use App\Domains\ExamsGrades\Http\Controllers\ExamTypeController;
 use App\Domains\ExamsGrades\Http\Controllers\GradeScaleController;
 use App\Domains\ExamsGrades\Http\Controllers\WeightSchemeController;
@@ -90,6 +91,7 @@ use App\Domains\Portal\Http\Controllers\PortalAbsenceNoteController;
 use App\Domains\Portal\Http\Controllers\PortalAppraisalController;
 use App\Domains\Portal\Http\Controllers\PortalAttendanceController;
 use App\Domains\Portal\Http\Controllers\PortalBehaviorController;
+use App\Domains\Portal\Http\Controllers\PortalExamController;
 use App\Domains\Portal\Http\Controllers\PortalHolidayController;
 use App\Domains\Portal\Http\Controllers\PortalInvoiceController;
 use App\Domains\Portal\Http\Controllers\PortalLearningController;
@@ -119,6 +121,7 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
     Route::get('/portal/behavior', [PortalBehaviorController::class, 'index'])->name('portal.behavior');
     Route::get('/portal/absence-notes', [PortalAbsenceNoteController::class, 'index'])->name('portal.absence-notes');
     Route::post('/portal/absence-notes', [PortalAbsenceNoteController::class, 'store'])->name('portal.absence-notes.store');
+    Route::get('/portal/exams', [PortalExamController::class, 'index'])->name('portal.exams');
     Route::get('/portal/invoices', [PortalInvoiceController::class, 'index'])->name('portal.invoices');
     Route::post('/portal/invoices/{invoice}/pay', [PortalInvoiceController::class, 'pay'])->name('portal.invoices.pay');
     Route::get('/portal/staff-check-in', [PortalStaffCheckInController::class, 'index'])->name('portal.staff-check-in');
@@ -371,6 +374,13 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::get('weights', [WeightSchemeController::class, 'index'])->name('exams.weights.index');
         Route::post('weights', [WeightSchemeController::class, 'store'])->name('exams.weights.store');
         Route::put('weights/{weightScheme}', [WeightSchemeController::class, 'update'])->name('exams.weights.update');
+
+        Route::get('schedule/export', [ExamController::class, 'export'])->name('exams.export');
+        Route::get('schedule', [ExamController::class, 'index'])->name('exams.index');
+        Route::post('schedule', [ExamController::class, 'store'])->name('exams.store');
+        Route::post('schedule/bulk', [ExamController::class, 'bulk'])->name('exams.bulk');
+        Route::put('schedule/{exam}', [ExamController::class, 'update'])->name('exams.update');
+        Route::post('schedule/{exam}/transition', [ExamController::class, 'transition'])->name('exams.transition');
     });
 
     Route::prefix('finance')->middleware(['role:super_admin|admin|headmaster'])->group(function () {

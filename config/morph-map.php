@@ -56,6 +56,8 @@ return [
     'device' => \App\Domains\Notifications\Models\Device::class,
     'document' => \App\Domains\Media\Models\Document::class,
     'emergency_contact' => \App\Domains\People\Models\EmergencyContact::class,
+    'exam' => \App\Domains\ExamsGrades\Models\Exam::class,
+    'exam_status_audit' => \App\Domains\ExamsGrades\Models\ExamStatusAudit::class,
     'exam_type' => \App\Domains\ExamsGrades\Models\ExamType::class,
     'event' => \App\Domains\Website\Models\Event::class,
     'fee_adjustment' => \App\Domains\Finance\Models\FeeAdjustment::class,
