@@ -534,9 +534,20 @@ production. Coding continues without waiting on that evidence.
 - Permissions `registers.fill` / `registers.manage`. Morph `register_unlock`.
 - Hifz / Deploy 3 / dual-write untouched.
 
+## S2.7 — Class attendance writer (coding; verify still operator-side)
+
+- New `class_attendance` (year + term; unique student+date+`period_key`
+  so null period = daily). `AttendanceWriterInterface::record` is the
+  only writer (arch test). Modes `per_lesson` / `daily`.
+- Register grid writes per-lesson rows; daily homeroom screen for daily
+  mode. Reports + chronic/unexcused CSV. Portal: own children only.
+- `StudentMarkedAbsent` → Notifications SMS via `SmsSenderInterface`;
+  one SMS per student per day. Setting `attendance_notify`.
+- ADR-011. Morph `class_attendance`. Hifz / Deploy 3 untouched.
+
 ## Next
 
 1. Operator: paste staging `students:verify-unification` log + JSON.
-2. **S2.7** class attendance writer + SMS. Then S2.8–S2.10.
+2. **S2.8** absence-note excused flip. Then S2.9–S2.10.
 3. Production: nothing until credential smoke is recorded.
 4. **S1.1 Deploy 3** still ≥2 weeks after `2f8a90b`. Dual-write stays.

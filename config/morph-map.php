@@ -17,6 +17,7 @@ return [
     'assignment_submission' => \App\Domains\Academics\Legacy\Models\AssignmentSubmission::class,
     'attendance' => \App\Domains\Academics\Models\Attendance::class,
     'calendar_day' => \App\Domains\Academics\Models\CalendarDay::class,
+    'class_attendance' => \App\Domains\Academics\Models\ClassAttendance::class,
     'class_room' => \App\Domains\Academics\Models\ClassRoom::class,
     'class_student' => \App\Domains\Academics\Models\ClassStudent::class,
     'consent' => \App\Domains\People\Models\Consent::class,
