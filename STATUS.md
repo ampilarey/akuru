@@ -727,28 +727,31 @@ therefore have `unified_student_id` null. Deploy 2 reads
 `unified_student_id` — those four enrollment (and any matching payment)
 reads resolve to **no student**, not a wrong student.
 
-**Guardians:** source=13, migrated=0, profiles_created=0. Pivots were
-not copied. Likely all `student_guardians` rows sit on the four
-colliding RS ids and/or `guardian_user_id` is missing from `users`
-(`createParentFromUserId` returns null). JSON
-`guardians.unmapped` + `collisions` not yet copied into
-`docs/migrations/`.
+JSON archived: `docs/migrations/s11b-student-unification-report.json`.
 
-**Stop:** no S3, no Hifz migration, no Deploy 3. Student-keyed S2
-writes stay blocked until verify is green. Do not `--backfill` again
-until the four collisions are resolved by an operator decision.
+### Collision table (operator paste + tinker)
+
+| RS | Name / DOB | Collision | Winning student | Same person? |
+|----|------------|-----------|-----------------|--------------|
+| 13 | b b / 2000-01-01 | `national_id` → student 2 (legacy RS 2) | 2 Nur Asif / 2025-01-01 | **No** — false ID match |
+| 22 | a a / 1987-10-02 | `national_id` → student 8 (legacy RS 12) | 8 a a / 2000-01-01 | **No** — name/DOB differ; RS 22 actually matches **student 5** (a a / 1987-10-02) if `name_dob` ran first |
+| 25 | v v / 1987-01-01 | `national_id` → student 8 | 8 a a / 2000-01-01 | **No** — false ID match |
+| 29 | a a / 2000-01-01 | `national_id` → student 8 | 8 a a / 2000-01-01 | **Yes** — same name + DOB as RS 12; duplicate course profile |
+
+Unfilled enrollments (all `course_id=1`): id 13/22/25 **active**, 29 **pending**. Deploy 2 `student()` reads are null for these four.
+
+### Guardians (second blocker — even after collisions)
+
+All 13 `student_guardians` rows are `unmapped`. 12/13 `guardian_user_id`s are **missing from `users`** (ids 3, 8, 18, 34, 37, 40). Only pivot 13 (`RS 29` → user 43) has a live user, and that RS has no student yet so the copy skipped. `createParentFromUserId` cannot invent users. Re-running `--backfill` will not turn the gate green.
+
+**Stop:** no S3, no Hifz, no Deploy 3. Student-keyed S2 writes stay blocked.
 
 ## Next
 
-1. Operator: paste
-   `storage/app/s11b-student-unification-report.json` (or
-   `python3 -m json.tool` that file) and the SQL below.
-2. Decide for RS 13/22/25/29: attach to the winning student (manual
-   `legacy_registration_student_id` / enrollment fill) **or** leave as
-   unused duplicate profiles. Do not auto-guess.
-3. Re-run `php artisan students:verify-unification` (no `--backfill`
-   unless we agree a new code path). Zero unresolved → gate satisfied,
-   then smoke S2 URLs.
-4. Branch protection. Credential smoke. Production: nothing until
-   smoke is recorded.
-5. Dual-write stays. S3 / Hifz / Deploy 3 not started.
+Need an operator decision (ADR-007: do not guess):
+
+1. **RS 13, 22, 25** — recommended: treat as false `national_id` matches and **create their own students** (then fill those three enrollments).
+2. **RS 29** — recommended: treat as duplicate of student 8; point enrollment 29 at student 8. The 1:1 legacy gate still needs a choice: delete/archive RS 29, or change the gate to allow N RS → 1 student.
+3. **Guardians** — recommended: verify should count only pivots whose `guardian_user_id` still exists (or drop orphan pivots). Otherwise the gate stays red forever on this DB.
+
+Reply with those three choices (or a different call). No `--backfill` and no S3 until then. Dual-write stays. Production: nothing until credential smoke.

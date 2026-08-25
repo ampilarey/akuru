@@ -1,0 +1,90 @@
+{
+    "generated_at": "2026-08-25T10:36:06+05:00",
+    "path": "/home/akuruedu/test.akuru.edu.mv/storage/app/s11b-student-unification-report.json",
+    "mapped": {
+        "user_id": 0,
+        "national_id": 0,
+        "name_dob": 0,
+        "already_mapped": 0
+    },
+    "created": {
+        "active": 6,
+        "prospective": 2
+    },
+    "ambiguous": [],
+    "collisions": [
+        {
+            "registration_student_id": 13,
+            "student_id": 2,
+            "existing_legacy_registration_student_id": 2,
+            "method": "national_id"
+        },
+        {
+            "registration_student_id": 22,
+            "student_id": 8,
+            "existing_legacy_registration_student_id": 12,
+            "method": "national_id"
+        },
+        {
+            "registration_student_id": 25,
+            "student_id": 8,
+            "existing_legacy_registration_student_id": 12,
+            "method": "national_id"
+        },
+        {
+            "registration_student_id": 29,
+            "student_id": 8,
+            "existing_legacy_registration_student_id": 12,
+            "method": "national_id"
+        }
+    ],
+    "unresolved": [
+        {
+            "registration_student_id": 13,
+            "reason": "collision",
+            "method": "national_id",
+            "student_id": 2
+        },
+        {
+            "registration_student_id": 22,
+            "reason": "collision",
+            "method": "national_id",
+            "student_id": 8
+        },
+        {
+            "registration_student_id": 25,
+            "reason": "collision",
+            "method": "national_id",
+            "student_id": 8
+        },
+        {
+            "registration_student_id": 29,
+            "reason": "collision",
+            "method": "national_id",
+            "student_id": 8
+        }
+    ],
+    "guardians": {
+        "source": 13,
+        "migrated": 0,
+        "created_profiles": 0,
+        "skipped_existing": 0,
+        "unmapped": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
+    },
+    "enrollments": {
+        "filled": 7,
+        "already_set": 0,
+        "missing": [13, 22, 25, 29]
+    },
+    "verification": {
+        "ok": false,
+        "failures": [
+            "registration_students.id=13 maps to 0 student(s)",
+            "registration_students.id=22 maps to 0 student(s)",
+            "registration_students.id=25 maps to 0 student(s)",
+            "registration_students.id=29 maps to 0 student(s)",
+            "4 course_enrollments missing unified_student_id",
+            "guardian pivot count mismatch: student_guardians=13 migrated guardian_student=0"
+        ]
+    }
+}
