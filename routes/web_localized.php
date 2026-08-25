@@ -43,6 +43,7 @@ use App\Domains\Courses\Http\Controllers\LearnLessonController;
 use App\Domains\Courses\Http\Controllers\LearnMediaController;
 use App\Domains\Courses\Http\Controllers\LearnScheduleController;
 use App\Domains\Courses\Http\Controllers\LessonPlayerController;
+use App\Domains\ExamsGrades\Http\Controllers\AwardController;
 use App\Domains\ExamsGrades\Http\Controllers\CompetencyController;
 use App\Domains\ExamsGrades\Http\Controllers\ExamController;
 use App\Domains\ExamsGrades\Http\Controllers\ExamMarkController;
@@ -96,6 +97,7 @@ use App\Domains\Portal\Http\Controllers\GuardianChildrenController;
 use App\Domains\Portal\Http\Controllers\PortalAbsenceNoteController;
 use App\Domains\Portal\Http\Controllers\PortalAppraisalController;
 use App\Domains\Portal\Http\Controllers\PortalAttendanceController;
+use App\Domains\Portal\Http\Controllers\PortalAwardController;
 use App\Domains\Portal\Http\Controllers\PortalBehaviorController;
 use App\Domains\Portal\Http\Controllers\PortalExamController;
 use App\Domains\Portal\Http\Controllers\PortalHolidayController;
@@ -132,6 +134,7 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
     Route::get('/portal/report-cards', [PortalReportCardController::class, 'index'])->name('portal.report-cards');
     Route::get('/portal/report-cards/{reportCard}/download', [PortalReportCardController::class, 'download'])->name('portal.report-cards.download');
     Route::get('/portal/transcript', [PortalReportCardController::class, 'transcript'])->name('portal.transcript');
+    Route::get('/portal/awards', [PortalAwardController::class, 'index'])->name('portal.awards');
     Route::get('/portal/invoices', [PortalInvoiceController::class, 'index'])->name('portal.invoices');
     Route::post('/portal/invoices/{invoice}/pay', [PortalInvoiceController::class, 'pay'])->name('portal.invoices.pay');
     Route::get('/portal/staff-check-in', [PortalStaffCheckInController::class, 'index'])->name('portal.staff-check-in');
@@ -423,6 +426,14 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::post('report-cards/comment', [ReportCardController::class, 'comment'])->name('exams.report-cards.comment');
         Route::get('report-cards/{reportCard}/download', [ReportCardController::class, 'download'])->name('exams.report-cards.download');
         Route::get('transcript', [ReportCardController::class, 'transcript'])->name('exams.transcript');
+
+        Route::get('awards/export', [AwardController::class, 'export'])->name('exams.awards.export');
+        Route::get('awards', [AwardController::class, 'index'])->name('exams.awards.index');
+        Route::post('awards', [AwardController::class, 'store'])->name('exams.awards.store');
+        Route::post('awards/issue', [AwardController::class, 'issue'])->name('exams.awards.issue');
+        Route::get('awards/id-card', [AwardController::class, 'idCard'])->name('exams.awards.id-card');
+        Route::get('awards/transfer', [AwardController::class, 'transfer'])->name('exams.awards.transfer');
+        Route::get('awards/{award}/download', [AwardController::class, 'download'])->name('exams.awards.download');
     });
 
     Route::prefix('finance')->middleware(['role:super_admin|admin|headmaster'])->group(function () {

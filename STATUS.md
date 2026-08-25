@@ -1130,11 +1130,20 @@ rate limiting, and the Inertia shell. No new 1A.1 code.
   optional GPA). Regeneration until published.
 - Admin unpublished list + CSV. Hifz / Deploy 3 untouched.
 
+## S3.7 — Awards & documents (done)
+
+- `awards` (class/school) and `student_awards` (year + optional term).
+- Batch issue generates certificates through the same renderer.
+- ID cards include student number + QR SVG. Transfer/leaving certs
+  pull `student_status_history`.
+- Public `/achievements` lists school awards; photos only when the
+  latest `photo_media_use` consent is granted.
+- Portal awards list. Report-card awards section now reads issued
+  awards. Hifz / Deploy 3 untouched.
+
 ## Next
 
-**Operator (not in this slice):** `unify-verify` still red (4 RS collisions + guardian pivot). Student dual-write stays until staging is green. `payroll.enabled` off until credentials. BML sandbox / Thaana receipts / credential smoke / production. S3.3+ writes student-keyed `exam_marks` — coding continues; staging writes stay blocked until verify is green.
-
-**S3.7 (stacked, not yet merged onto main):** awards, ID cards, and transfer certificates.
+**Operator (not in this slice):** `unify-verify` still red (4 RS collisions + guardian pivot). Student dual-write stays until staging is green. `payroll.enabled` off until credentials. BML sandbox / Thaana receipts / credential smoke / production. S3.1–S3.7 coding is on `main`; staging student-keyed writes stay blocked until verify is green.
 
 **Qur'an A.4b (later):** switch offering-session reads to `offering_halaqa_session_links` after operators confirm dual-write. Then Hifz cleanup (deploy 3). Keep `QURAN_HALAQA_DUAL_WRITE` off until verified.
 

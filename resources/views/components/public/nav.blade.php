@@ -30,6 +30,10 @@
          class="text-brandGray-600 hover:text-brandMaroon-600 transition-colors duration-200">
         {{ __('public.Gallery') }}
       </a>
+      <a href="{{ route('public.achievements') }}" 
+         class="text-brandGray-600 hover:text-brandMaroon-600 transition-colors duration-200">
+        Achievements
+      </a>
       <a href="{{ route('public.contact.create') }}" 
          class="text-brandGray-600 hover:text-brandMaroon-600 transition-colors duration-200">
         {{ __('public.Contact') }}
@@ -184,6 +188,10 @@
       <a href="{{ route('public.gallery.index') }}" 
          class="block py-3 px-4 text-brandGray-600 hover:text-brandMaroon-600 hover:bg-brandBeige-100 rounded-lg transition-colors duration-200">
         {{ __('public.Gallery') }}
+      </a>
+      <a href="{{ route('public.achievements') }}" 
+         class="block py-3 px-4 text-brandGray-600 hover:text-brandMaroon-600 hover:bg-brandBeige-100 rounded-lg transition-colors duration-200">
+        Achievements
       </a>
       <a href="{{ route('public.contact.create') }}" 
          class="block py-3 px-4 text-brandGray-600 hover:text-brandMaroon-600 hover:bg-brandBeige-100 rounded-lg transition-colors duration-200">

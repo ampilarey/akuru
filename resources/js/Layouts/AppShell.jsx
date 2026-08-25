@@ -140,11 +140,17 @@ export default function AppShell({ title, children }) {
                         <Link href="/exams/report-cards" className="text-[#7C2D37] hover:underline">
                             Report cards
                         </Link>
+                        <Link href="/exams/awards" className="text-[#7C2D37] hover:underline">
+                            Awards
+                        </Link>
                         <Link href="/portal/exams" className="text-[#7C2D37] hover:underline">
                             Results
                         </Link>
                         <Link href="/portal/report-cards" className="text-[#7C2D37] hover:underline">
                             Report cards
+                        </Link>
+                        <Link href="/portal/awards" className="text-[#7C2D37] hover:underline">
+                            Awards
                         </Link>
                         <Link href="/finance/fee-items" className="text-[#7C2D37] hover:underline">
                             Fee items

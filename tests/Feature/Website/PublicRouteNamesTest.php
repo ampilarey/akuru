@@ -20,6 +20,7 @@ class PublicRouteNamesTest extends TestCase
             'public.news.index',
             'public.events.index',
             'public.gallery.index',
+            'public.achievements',
             'public.page.show',
             'public.sitemap',
             'admin.pages.index',

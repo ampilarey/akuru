@@ -63,6 +63,7 @@ Route::get('events/{event}', function ($id) {
         return response('Event detail error: '.$e->getMessage(), 500);
     }
 })->name('public.events.show');
+Route::get('achievements', [\App\Domains\Website\Http\Controllers\PublicSite\AchievementController::class, 'index'])->name('public.achievements');
 Route::get('gallery', [GalleryController::class, 'index'])->name('public.gallery.index');
 Route::get('gallery/{gallery}', [GalleryController::class, 'show'])->name('public.gallery.show');
 // Public course registration flow (guest + auth)
