@@ -1116,11 +1116,25 @@ rate limiting, and the Inertia shell. No new 1A.1 code.
   term filter). No per-student analytics (Phase 2).
 - Hifz / Deploy 3 untouched.
 
+## S3.6 — Report cards (done)
+
+- `report_card_templates`, `report_cards` (unique student+term),
+  `report_card_comments` (class teacher / head, trilingual).
+- `GenerateReportCardsAction` pulls term grades, S2 attendance %,
+  parent-visible behavior, comments; queued per-student render.
+- Production `HtmlDocumentRenderer` bound to
+  `DocumentRendererInterface` (ADR-012). Blade EN + DV RTL snapshots.
+  Bytes stored via Media `StoreGeneratedDocumentAction` (private disk).
+  Chrome/Browsershot can replace the binding later; no `if` in domain.
+- Publish + portal download + transcript (`GenerateTranscriptAction`,
+  optional GPA). Regeneration until published.
+- Admin unpublished list + CSV. Hifz / Deploy 3 untouched.
+
 ## Next
 
 **Operator (not in this slice):** `unify-verify` still red (4 RS collisions + guardian pivot). Student dual-write stays until staging is green. `payroll.enabled` off until credentials. BML sandbox / Thaana receipts / credential smoke / production. S3.3+ writes student-keyed `exam_marks` — coding continues; staging writes stay blocked until verify is green.
 
-**S3.6+ (stacked, not yet merged onto main):** report cards → awards.
+**S3.7 (stacked, not yet merged onto main):** awards, ID cards, and transfer certificates.
 
 **Qur'an A.4b (later):** switch offering-session reads to `offering_halaqa_session_links` after operators confirm dual-write. Then Hifz cleanup (deploy 3). Keep `QURAN_HALAQA_DUAL_WRITE` off until verified.
 

@@ -3,6 +3,7 @@
 namespace App\Support\Services;
 
 use App\Support\Contracts\DocumentRendererInterface;
+use Illuminate\Support\Facades\View;
 
 class HtmlDocumentRenderer implements DocumentRendererInterface
 {
@@ -11,6 +12,11 @@ class HtmlDocumentRenderer implements DocumentRendererInterface
      */
     public function render(string $template, array $data): string
     {
+        $view = 'documents.'.$template;
+        if (View::exists($view)) {
+            return View::make($view, $data)->render();
+        }
+
         $title = e((string) ($data['title'] ?? $template));
         $body = '';
         foreach ($data as $key => $value) {
