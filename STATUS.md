@@ -851,11 +851,17 @@ S3). S4.1 has **no new student-keyed writes** beyond existing
 - Public `/careers` lists published public postings only (no W-track
   restyle).
 
+## S5.5 — Performance & CPD (done)
+
+- `appraisal_cycles` + `appraisals` (staff acknowledge + comment).
+- `lesson_observations` store S2 class/subject IDs read-only.
+- `cpd_records` + per-staff summary on the portal.
+
 ## Next
 
 1. Operator: unify-verify / smoke / production (unchanged).
 2. Dual-write stays.
-3. S5.5 performance & CPD is next (stacked on S5.4).
+3. S5.6 payroll (flagged) is next (stacked on S5.5).
 4. S4 DoD on real BML sandbox / Thaana receipt proof is operator-owned.
 
 **Operator (their side, unchanged):**
