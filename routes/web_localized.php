@@ -22,6 +22,7 @@ use App\Domains\Admissions\Http\Controllers\AdminEnrollmentController;
 use App\Domains\Courses\Http\Controllers\AudienceController;
 use App\Domains\Courses\Http\Controllers\CatalogActivityController;
 use App\Domains\Courses\Http\Controllers\CatalogMediaController;
+use App\Domains\Courses\Http\Controllers\CatalogQuestionController;
 use App\Domains\Courses\Http\Controllers\CourseLevelController;
 use App\Domains\Courses\Http\Controllers\CourseOutlineController;
 use App\Domains\Courses\Http\Controllers\CourseSubjectController;
@@ -391,6 +392,10 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::post('offerings/{offering}/sessions', [OfferingSessionController::class, 'store'])->name('catalog.offerings.sessions.store')->whereNumber('offering');
         Route::get('offerings/{offering}/sessions/{session}/attendance', [OfferingSessionController::class, 'attendance'])->name('catalog.offerings.sessions.attendance')->whereNumber('offering')->whereNumber('session');
         Route::post('offerings/{offering}/sessions/{session}/attendance', [OfferingSessionController::class, 'mark'])->name('catalog.offerings.sessions.attendance.mark')->whereNumber('offering')->whereNumber('session');
+        Route::get('questions/export', [CatalogQuestionController::class, 'export'])->name('catalog.questions.export');
+        Route::get('questions', [CatalogQuestionController::class, 'index'])->name('catalog.questions.index');
+        Route::post('questions', [CatalogQuestionController::class, 'store'])->name('catalog.questions.store');
+        Route::put('questions/{question}', [CatalogQuestionController::class, 'update'])->name('catalog.questions.update')->whereNumber('question');
         Route::get('courses/export', [EngineCourseController::class, 'export'])->name('catalog.courses.export');
         Route::get('courses', [EngineCourseController::class, 'index'])->name('catalog.courses.index');
         Route::post('courses', [EngineCourseController::class, 'store'])->name('catalog.courses.store');

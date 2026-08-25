@@ -101,6 +101,7 @@ return [
     'receipt' => \App\Domains\Finance\Models\Receipt::class,
     'quiz_attempt' => \App\Domains\Academics\Legacy\Models\QuizAttempt::class,
     'quiz_question' => \App\Domains\Academics\Legacy\Models\QuizQuestion::class,
+    'question' => \App\Domains\Courses\Models\Question::class,
     'quran_ayah' => \App\Domains\Hifz\Models\QuranAyah::class,
     'quran_mushaf' => \App\Domains\Hifz\Models\QuranMushaf::class,
     'quran_page' => \App\Domains\Hifz\Models\QuranPage::class,

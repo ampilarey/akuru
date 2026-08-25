@@ -16,11 +16,14 @@ Arabic normalization flags apply only when configured. Teacher-marked
 attempts stay `submitted` until 2.4 review. Answer keys are hidden from
 students unless the attempt is scored and `show_correct_answer` is on.
 
-## Slice 2.2 — Question bank
+## Slice 2.2 — Question bank (done)
 
-Subject-agnostic question bank. Tag via ExamsGrades standards contract
-(no ExamsGrades model imports). Editing a question must not mutate
-existing attempt snapshots.
+Subject-agnostic question bank. Each question type maps to one of the
+four activity patterns. Tag via ExamsGrades `*Standard*` Actions
+(no ExamsGrades model imports; no-op when S3.5 tables are absent).
+`SnapshotQuestionAction` returns a frozen copy — editing the live
+question does not mutate a previously taken snapshot. Attachments go
+through Media Actions.
 
 ## Slice 2.3 — Assessment builder + player
 
