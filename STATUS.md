@@ -1141,9 +1141,27 @@ rate limiting, and the Inertia shell. No new 1A.1 code.
 - Portal awards list. Report-card awards section now reads issued
   awards. Hifz / Deploy 3 untouched.
 
+## TRACK A — Unblock (S1 verify blockers)
+
+### A5 — Real `config/payroll.php` feature flag (done)
+
+- Flag was only a `settings` row (`payroll.enabled` = `'0'`).
+  `config/payroll.php` did not exist.
+- `PAYROLL_ENABLED` (default **false**) AND the settings row must both be
+  true. `ResolvePayrollSettingsAction` implements the AND.
+- `enablePayroll()` in Pest sets both. ADR-016 amended.
+- Payroll stays off until two parallel cycles match (operator).
+
 ## Next
 
-**Operator (not in this slice):** `unify-verify` still red (4 RS collisions + guardian pivot). Student dual-write stays until staging is green. `payroll.enabled` off until credentials. BML sandbox / Thaana receipts / credential smoke / production. S3.1–S3.7 coding is on `main`; staging student-keyed writes stay blocked until verify is green.
+**TRACK A remaining:** A1–A4 PRs (#72–#75). A3 procedure shipped; verify
+**not** green (no production dump). **Do not start TRACK B until A3 is
+green on a production-data copy.** No `--backfill` on production. No Hifz
+cutover.
+
+**Operator:** apply branch protection; provide a production mysqldump for
+A3. `unify-verify` still red on staging. `PAYROLL_ENABLED` / settings
+stay off.
 
 **Qur'an A.4b (later):** switch offering-session reads to `offering_halaqa_session_links` after operators confirm dual-write. Then Hifz cleanup (deploy 3). Keep `QURAN_HALAQA_DUAL_WRITE` off until verified.
 

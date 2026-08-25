@@ -31,7 +31,8 @@ class ResolvePayrollSettingsAction
         }
 
         return [
-            'enabled' => filter_var($rows['payroll.enabled'] ?? false, FILTER_VALIDATE_BOOLEAN),
+            'enabled' => (bool) config('payroll.enabled')
+                && filter_var($rows['payroll.enabled'] ?? false, FILTER_VALIDATE_BOOLEAN),
             'rules' => $rules,
         ];
     }

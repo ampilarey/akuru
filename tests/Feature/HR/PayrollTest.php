@@ -6,6 +6,7 @@ use App\Domains\HR\Actions\ApproveStaffLeaveAction;
 use App\Domains\HR\Actions\LockPayrollPeriodAction;
 use App\Domains\HR\Actions\MaldivesPayrollCalculator;
 use App\Domains\HR\Actions\MarkPayrollPaidAction;
+use App\Domains\HR\Actions\ResolvePayrollSettingsAction;
 use App\Domains\HR\Actions\RunPayrollAction;
 use App\Domains\HR\Actions\SaveStaffContractAction;
 use App\Domains\HR\Contracts\StaffAttendanceWriterInterface;
@@ -26,6 +27,7 @@ uses(RefreshDatabase::class);
 
 function enablePayroll(): void
 {
+    config()->set('payroll.enabled', true);
     DB::table('settings')->where('key', 'payroll.enabled')->update(['value' => '1']);
 }
 
@@ -171,6 +173,25 @@ it('keeps payroll screens off when the feature flag is down', function () {
         ->actingAs($admin)
         ->get(route('hr.payroll.index'))
         ->assertForbidden();
+});
+
+it('stays off when only the settings row is enabled', function () {
+    DB::table('settings')->where('key', 'payroll.enabled')->update(['value' => '1']);
+    config()->set('payroll.enabled', false);
+
+    expect(app(ResolvePayrollSettingsAction::class)->execute()['enabled'])->toBeFalse();
+
+    $admin = actingPeopleAdmin(['payroll.run']);
+    $this->withoutLocalizationMiddleware()
+        ->actingAs($admin)
+        ->get(route('hr.payroll.index'))
+        ->assertForbidden();
+});
+
+it('stays off when only PAYROLL_ENABLED config is on', function () {
+    config()->set('payroll.enabled', true);
+
+    expect(app(ResolvePayrollSettingsAction::class)->execute()['enabled'])->toBeFalse();
 });
 
 it('applies updated rates only to the next period', function () {
