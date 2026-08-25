@@ -17,10 +17,11 @@ patterns. Optional `letter_id` / `harakah_id` must exist in the A.1
 reference tables. Teacher-marked speaking/reading reuse 2.4 review.
 No new scoring engine.
 
-## Slice A.3 — Skill reports
+## Slice A.3 — Skill reports (done)
 
-Read-only Arabic skill reports from Progress Actions (attempts/scores).
-No parallel LMS.
+Read-only Arabic skill reports from Progress attempt Actions. Catalog
+`/catalog/arabic/reports` + CSV. Learner `/learn/arabic-report`.
+No parallel LMS and no AI.
 
 ## Out of scope
 
