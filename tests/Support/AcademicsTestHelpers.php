@@ -103,3 +103,51 @@ function makeRoomRow(?string $name = null): Room
         'active' => true,
     ]);
 }
+
+function makeCoursePlan(array $overrides = []): \App\Domains\Academics\Models\CoursePlan
+{
+    $year = $overrides['year'] ?? makeYear(['name' => '2026-2027', 'is_current' => true, 'status' => 'active']);
+    unset($overrides['year']);
+
+    $defaults = [
+        'academic_year' => $year->name,
+        'academic_year_id' => $year->id,
+        'title' => 'Term plan',
+        'status' => 'active',
+    ];
+    if (! array_key_exists('teacher_id', $overrides)) {
+        $defaults['teacher_id'] = makeTeacherRow()->id;
+    }
+    if (! array_key_exists('subject_id', $overrides)) {
+        $defaults['subject_id'] = makeSubject()->id;
+    }
+    if (! array_key_exists('classroom_id', $overrides)) {
+        $defaults['classroom_id'] = makeClass($year)->id;
+    }
+
+    return \App\Domains\Academics\Models\CoursePlan::query()->create(array_merge($defaults, $overrides));
+}
+
+function makeLessonLog(array $overrides = []): \App\Domains\Academics\Models\LessonLog
+{
+    $year = $overrides['year'] ?? makeYear(['name' => '2026-2027', 'is_current' => true, 'status' => 'active']);
+    unset($overrides['year']);
+
+    $defaults = [
+        'academic_year_id' => $year->id,
+        'date' => '2026-08-24',
+        'status' => 'expected',
+        'taught_summary' => null,
+    ];
+    if (! array_key_exists('teacher_id', $overrides)) {
+        $defaults['teacher_id'] = makeTeacherRow()->id;
+    }
+    if (! array_key_exists('subject_id', $overrides)) {
+        $defaults['subject_id'] = makeSubject()->id;
+    }
+    if (! array_key_exists('classroom_id', $overrides)) {
+        $defaults['classroom_id'] = makeClass($year)->id;
+    }
+
+    return \App\Domains\Academics\Models\LessonLog::query()->create(array_merge($defaults, $overrides));
+}

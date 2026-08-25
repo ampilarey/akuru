@@ -133,6 +133,8 @@ class RoleSeeder extends Seeder
             'rooms.manage',
             'timetables.allow_conflict',
             'calendar.manage',
+            'registers.fill',
+            'registers.manage',
         ];
 
         foreach ($permissions as $permission) {
@@ -182,6 +184,8 @@ class RoleSeeder extends Seeder
             'rooms.manage',
             'timetables.allow_conflict',
             'calendar.manage',
+            'registers.fill',
+            'registers.manage',
             'manage_announcements',
             'view_announcements',
             'create_announcements',
@@ -211,6 +215,8 @@ class RoleSeeder extends Seeder
             'view_timetables',
             'rooms.manage',
             'calendar.manage',
+            'registers.fill',
+            'registers.manage',
             'view_announcements',
             'view_reports',
             'view_hifz_programs',
@@ -237,6 +243,7 @@ class RoleSeeder extends Seeder
             'view_quran_progress',
             'update_quran_progress',
             'view_timetables',
+            'registers.fill',
             'view_announcements',
             'view_hifz_programs',
             'create_hifz_sessions', 'update_hifz_sessions',
