@@ -142,6 +142,16 @@ it('prorates a mid-month join and separates payroll.run from payroll.approve', f
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page->component('HR/Payroll/Index')->has('rows', 1));
 
+    $approver = actingPeopleAdmin(['payroll.approve']);
+    app(ApprovePayrollPeriodAction::class)->execute($period->id, $approver->id);
+
+    $export = $this->withoutLocalizationMiddleware()
+        ->actingAs($runner)
+        ->get(route('hr.payroll.export', $period));
+    $export->assertOk();
+    expect($export->streamedContent())->toContain('net_pay')
+        ->and($export->streamedContent())->toContain((string) $staff->id);
+
     $staffUser = User::query()->findOrFail($staff->user_id);
     $this->withoutLocalizationMiddleware()
         ->actingAs($staffUser)

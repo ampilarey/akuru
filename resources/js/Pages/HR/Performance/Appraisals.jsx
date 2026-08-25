@@ -39,11 +39,17 @@ export default function Appraisals({ years, staff, cycles, rows, statuses }) {
             <form
                 onSubmit={(e) => {
                     e.preventDefault();
-                    form.post('/hr/appraisals', { preserveScroll: true });
+                    form
+                        .transform((data) => ({
+                            ...data,
+                            cycle_id: data.cycle_id || cycles[0]?.id || '',
+                            staff_profile_id: data.staff_profile_id || staff[0]?.id || '',
+                        }))
+                        .post('/hr/appraisals', { preserveScroll: true });
                 }}
                 className="mb-4 grid gap-3 rounded-lg border bg-white p-4 md:grid-cols-4"
             >
-                <select className="form-input" value={form.data.cycle_id} onChange={(e) => form.setData('cycle_id', e.target.value)}>
+                <select className="form-input" value={form.data.cycle_id || cycles[0]?.id || ''} onChange={(e) => form.setData('cycle_id', e.target.value)}>
                     {cycles.map((cycle) => <option key={cycle.id} value={cycle.id}>{cycle.name}</option>)}
                 </select>
                 <select className="form-input" value={form.data.staff_profile_id} onChange={(e) => form.setData('staff_profile_id', e.target.value)}>
@@ -51,7 +57,8 @@ export default function Appraisals({ years, staff, cycles, rows, statuses }) {
                 </select>
                 <input className="form-input" placeholder="Strengths" value={form.data.strengths} onChange={(e) => form.setData('strengths', e.target.value)} />
                 <input className="form-input" placeholder="Development areas" value={form.data.development_areas} onChange={(e) => form.setData('development_areas', e.target.value)} />
-                <button type="submit" className="btn-primary" disabled={form.processing}>Save appraisal</button>
+                <button type="submit" className="btn-primary" disabled={form.processing || cycles.length === 0}>Save appraisal</button>
+                {form.errors.cycle_id && <span className="text-xs text-red-600">{form.errors.cycle_id}</span>}
             </form>
             <div className="overflow-x-auto rounded-lg border bg-white">
                 <table className="min-w-full text-sm">

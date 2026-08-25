@@ -383,7 +383,7 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::get('cpd/export', [CpdRecordController::class, 'export'])->name('hr.cpd.export');
         Route::get('cpd', [CpdRecordController::class, 'index'])->name('hr.cpd.index');
         Route::post('cpd', [CpdRecordController::class, 'store'])->name('hr.cpd.store');
-        Route::get('payroll/export/{payrollPeriod}', [PayrollPeriodController::class, 'export'])->name('hr.payroll.export');
+        Route::get('payroll/{payrollPeriod}/export', [PayrollPeriodController::class, 'export'])->name('hr.payroll.export');
         Route::post('payroll/run', [PayrollPeriodController::class, 'run'])->name('hr.payroll.run');
         Route::post('payroll/{payrollPeriod}/approve', [PayrollPeriodController::class, 'approve'])->name('hr.payroll.approve');
         Route::post('payroll/{payrollPeriod}/pay', [PayrollPeriodController::class, 'pay'])->name('hr.payroll.pay');
