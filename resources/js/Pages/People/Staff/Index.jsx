@@ -9,6 +9,8 @@ export default function Index({ staff }) {
         employment_type: 'full_time',
         status: 'active',
         staff_number: '',
+        department: '',
+        designation: '',
     });
 
     return (
@@ -24,6 +26,8 @@ export default function Index({ staff }) {
                 <input className="form-input" placeholder="First name" value={form.data.first_name} onChange={(e) => form.setData('first_name', e.target.value)} />
                 <input className="form-input" placeholder="Last name" value={form.data.last_name} onChange={(e) => form.setData('last_name', e.target.value)} />
                 <input className="form-input" placeholder="Staff number" value={form.data.staff_number} onChange={(e) => form.setData('staff_number', e.target.value)} />
+                <input className="form-input" placeholder="Department" value={form.data.department || ''} onChange={(e) => form.setData('department', e.target.value)} />
+                <input className="form-input" placeholder="Designation" value={form.data.designation || ''} onChange={(e) => form.setData('designation', e.target.value)} />
                 <button type="submit" className="btn-primary">Create profile</button>
             </form>
             <div className="overflow-x-auto rounded-lg border bg-white">
@@ -32,6 +36,7 @@ export default function Index({ staff }) {
                         <tr>
                             <th className="px-3 py-2">Name</th>
                             <th className="px-3 py-2">Number</th>
+                            <th className="px-3 py-2">Department</th>
                             <th className="px-3 py-2">Type</th>
                             <th className="px-3 py-2">Status</th>
                         </tr>
@@ -45,6 +50,7 @@ export default function Index({ staff }) {
                                     </Link>
                                 </td>
                                 <td className="px-3 py-2">{row.staff_number}</td>
+                                <td className="px-3 py-2">{row.department || '—'}</td>
                                 <td className="px-3 py-2">{row.employment_type}</td>
                                 <td className="px-3 py-2">{row.status}</td>
                             </tr>

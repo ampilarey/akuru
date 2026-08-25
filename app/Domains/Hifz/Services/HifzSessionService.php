@@ -7,9 +7,11 @@ use App\Domains\Hifz\Models\HifzProgram;
 use App\Domains\Hifz\Models\HifzSession;
 use App\Domains\Hifz\Models\HifzSessionRecord;
 use App\Domains\Identity\Models\User;
+use App\Domains\Offerings\Actions\MirrorHalaqaSessionAction;
 use App\Domains\People\Models\Teacher;
 use App\Enums\Hifz\HifzSessionStatus;
 use Carbon\Carbon;
+use Throwable;
 
 class HifzSessionService
 {
@@ -46,6 +48,14 @@ class HifzSessionService
                     'created_by' => $creator->id,
                 ]
             );
+        }
+
+        if (config('quran.halaqa_dual_write')) {
+            try {
+                app(MirrorHalaqaSessionAction::class)->execute($session->id);
+            } catch (Throwable $exception) {
+                report($exception);
+            }
         }
 
         return $session->load('records.student.user');

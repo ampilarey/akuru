@@ -1,8 +1,9 @@
 import { Link, usePage } from '@inertiajs/react';
 
 export default function AppShell({ title, children }) {
-    const { locale, rtl, auth, flash } = usePage().props;
+    const { locale, locales = ['en', 'dv', 'ar'], locale_urls = {}, rtl, auth, flash, i18n } = usePage().props;
     const user = auth?.user;
+    const t = i18n?.learn || {};
 
     return (
         <div dir={rtl ? 'rtl' : 'ltr'} className="min-h-screen bg-[#F9F4EE] text-gray-900">
@@ -13,6 +14,48 @@ export default function AppShell({ title, children }) {
                         <h1 className="text-xl font-semibold">{title}</h1>
                     </div>
                     <nav className="flex flex-wrap items-center gap-3 text-sm">
+                        <Link href="/learn" className="text-[#7C2D37] hover:underline">
+                            {i18n?.learn?.nav || 'Learn'}
+                        </Link>
+                        <Link href="/learn/schedule" className="text-[#7C2D37] hover:underline">
+                            {i18n?.learn?.schedule || 'Schedule'}
+                        </Link>
+                        <Link href="/teach/schedule" className="text-[#7C2D37] hover:underline">
+                            Teach
+                        </Link>
+                        <Link href="/portal/learning" className="text-[#7C2D37] hover:underline">
+                            {i18n?.learn?.children_learning || 'Children'}
+                        </Link>
+                        <Link href="/catalog/courses" className="text-[#7C2D37] hover:underline">
+                            Catalog
+                        </Link>
+                        <Link href="/catalog/offerings" className="text-[#7C2D37] hover:underline">
+                            Offerings
+                        </Link>
+                        <Link href="/catalog/questions" className="text-[#7C2D37] hover:underline">
+                            Questions
+                        </Link>
+                        <Link href="/catalog/reviews" className="text-[#7C2D37] hover:underline">
+                            Reviews
+                        </Link>
+                        <Link href="/catalog/arabic" className="text-[#7C2D37] hover:underline">
+                            Arabic
+                        </Link>
+                        <Link href="/catalog/arabic/reports" className="text-[#7C2D37] hover:underline">
+                            Arabic report
+                        </Link>
+                        <Link href="/catalog/quran" className="text-[#7C2D37] hover:underline">
+                            Qur’an
+                        </Link>
+                        <Link href="/catalog/subjects" className="text-[#7C2D37] hover:underline">
+                            Subjects
+                        </Link>
+                        <Link href="/catalog/audiences" className="text-[#7C2D37] hover:underline">
+                            Audiences
+                        </Link>
+                        <Link href="/catalog/levels" className="text-[#7C2D37] hover:underline">
+                            Levels
+                        </Link>
                         <Link href="/people/students" className="text-[#7C2D37] hover:underline">
                             Students
                         </Link>
@@ -79,8 +122,100 @@ export default function AppShell({ title, children }) {
                         <Link href="/exams/weights" className="text-[#7C2D37] hover:underline">
                             Weights
                         </Link>
+                        <Link href="/finance/fee-items" className="text-[#7C2D37] hover:underline">
+                            Fee items
+                        </Link>
+                        <Link href="/finance/fee-structures" className="text-[#7C2D37] hover:underline">
+                            Fee structures
+                        </Link>
+                        <Link href="/finance/invoices" className="text-[#7C2D37] hover:underline">
+                            Invoices
+                        </Link>
+                        <Link href="/finance/arrears" className="text-[#7C2D37] hover:underline">
+                            Arrears
+                        </Link>
+                        <Link href="/finance/payment-plans" className="text-[#7C2D37] hover:underline">
+                            Payment plans
+                        </Link>
+                        <Link href="/finance/adjustments" className="text-[#7C2D37] hover:underline">
+                            Adjustments
+                        </Link>
+                        <Link href="/finance/receipts/manual" className="text-[#7C2D37] hover:underline">
+                            Manual receipt
+                        </Link>
+                        <Link href="/finance/collections" className="text-[#7C2D37] hover:underline">
+                            Collections
+                        </Link>
+                        <Link href="/finance/reconciliation" className="text-[#7C2D37] hover:underline">
+                            Reconciliation
+                        </Link>
+                        <Link href="/portal/invoices" className="text-[#7C2D37] hover:underline">
+                            Fees
+                        </Link>
+                        <Link href="/hr/attendance" className="text-[#7C2D37] hover:underline">
+                            Staff attendance
+                        </Link>
+                        <Link href="/hr/attendance/reports" className="text-[#7C2D37] hover:underline">
+                            Staff reports
+                        </Link>
+                        <Link href="/portal/staff-check-in" className="text-[#7C2D37] hover:underline">
+                            Check in
+                        </Link>
+                        <Link href="/hr/leave-types" className="text-[#7C2D37] hover:underline">
+                            Leave types
+                        </Link>
+                        <Link href="/hr/leave-balances" className="text-[#7C2D37] hover:underline">
+                            Leave balances
+                        </Link>
+                        <Link href="/portal/leave" className="text-[#7C2D37] hover:underline">
+                            My leave
+                        </Link>
+                        <Link href="/hr/contracts" className="text-[#7C2D37] hover:underline">
+                            Contracts
+                        </Link>
+                        <Link href="/hr/compliance" className="text-[#7C2D37] hover:underline">
+                            Compliance
+                        </Link>
+                        <Link href="/hr/postings" className="text-[#7C2D37] hover:underline">
+                            Jobs
+                        </Link>
+                        <Link href="/hr/applications" className="text-[#7C2D37] hover:underline">
+                            Applications
+                        </Link>
+                        <Link href="/hr/onboarding" className="text-[#7C2D37] hover:underline">
+                            Onboarding
+                        </Link>
+                        <Link href="/hr/appraisals" className="text-[#7C2D37] hover:underline">
+                            Appraisals
+                        </Link>
+                        <Link href="/hr/observations" className="text-[#7C2D37] hover:underline">
+                            Observations
+                        </Link>
+                        <Link href="/hr/cpd" className="text-[#7C2D37] hover:underline">
+                            CPD
+                        </Link>
+                        <Link href="/portal/appraisals" className="text-[#7C2D37] hover:underline">
+                            My performance
+                        </Link>
+                        <Link href="/hr/payroll" className="text-[#7C2D37] hover:underline">
+                            Payroll
+                        </Link>
+                        <Link href="/portal/payslips" className="text-[#7C2D37] hover:underline">
+                            Payslips
+                        </Link>
                         <span className="text-gray-500">{user?.name}</span>
-                        <span className="rounded bg-[#F3EBE0] px-2 py-0.5 text-xs uppercase">{locale}</span>
+                        <span className="flex items-center gap-1 rounded bg-[#F3EBE0] px-2 py-0.5 text-xs uppercase">
+                            {locales.map((code) => (
+                                <a
+                                    key={code}
+                                    href={locale_urls[code] || `/${code}`}
+                                    className={code === locale ? 'font-semibold text-[#7C2D37]' : 'text-gray-600 hover:underline'}
+                                    hrefLang={code}
+                                >
+                                    {t[`locale_${code}`] || code}
+                                </a>
+                            ))}
+                        </span>
                     </nav>
                 </div>
             </header>
