@@ -21,6 +21,7 @@ use App\Domains\Academics\Legacy\Http\Controllers\ELearningController;
 use App\Domains\Admissions\Http\Controllers\AdminEnrollmentController;
 use App\Domains\Courses\Http\Controllers\AudienceController;
 use App\Domains\Courses\Http\Controllers\CatalogActivityController;
+use App\Domains\Courses\Http\Controllers\CatalogAssessmentController;
 use App\Domains\Courses\Http\Controllers\CatalogMediaController;
 use App\Domains\Courses\Http\Controllers\CatalogQuestionController;
 use App\Domains\Courses\Http\Controllers\CourseLevelController;
@@ -29,6 +30,7 @@ use App\Domains\Courses\Http\Controllers\CourseSubjectController;
 use App\Domains\Courses\Http\Controllers\EngineCourseController;
 use App\Domains\Courses\Http\Controllers\I18nPreviewController;
 use App\Domains\Courses\Http\Controllers\LearnActivityController;
+use App\Domains\Courses\Http\Controllers\LearnAssessmentController;
 use App\Domains\Courses\Http\Controllers\LearnCatalogController;
 use App\Domains\Courses\Http\Controllers\LearnCourseController;
 use App\Domains\Courses\Http\Controllers\LearnDashboardController;
@@ -126,6 +128,9 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
     Route::get('/learn/activities/{activity}', [LearnActivityController::class, 'show'])->name('learn.activities.show')->whereNumber('activity');
     Route::post('/learn/activities/{activity}/autosave', [LearnActivityController::class, 'autosave'])->name('learn.activities.autosave')->whereNumber('activity');
     Route::post('/learn/activities/{activity}/submit', [LearnActivityController::class, 'submit'])->name('learn.activities.submit')->whereNumber('activity');
+    Route::get('/learn/assessments/{assessment}', [LearnAssessmentController::class, 'show'])->name('learn.assessments.show')->whereNumber('assessment');
+    Route::post('/learn/assessments/{assessment}/autosave', [LearnAssessmentController::class, 'autosave'])->name('learn.assessments.autosave')->whereNumber('assessment');
+    Route::post('/learn/assessments/{assessment}/submit', [LearnAssessmentController::class, 'submit'])->name('learn.assessments.submit')->whereNumber('assessment');
     Route::get('/hr/payslips/{payslip}/document', [PayslipDocumentController::class, 'show'])->name('hr.payslips.document')->whereNumber('payslip');
     Route::get('/finance/receipts/{receipt}/document', [ReceiptDocumentController::class, 'show'])->name('finance.receipts.show')->whereNumber('receipt');
 
@@ -401,6 +406,12 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::post('courses', [EngineCourseController::class, 'store'])->name('catalog.courses.store');
         Route::put('courses/{course}', [EngineCourseController::class, 'update'])->name('catalog.courses.update')->whereNumber('course');
         Route::post('courses/{course}/transition', [EngineCourseController::class, 'transition'])->name('catalog.courses.transition')->whereNumber('course');
+        Route::get('courses/{course}/assessments/export', [CatalogAssessmentController::class, 'export'])->name('catalog.courses.assessments.export')->whereNumber('course');
+        Route::get('courses/{course}/assessments', [CatalogAssessmentController::class, 'index'])->name('catalog.courses.assessments.index')->whereNumber('course');
+        Route::post('courses/{course}/assessments', [CatalogAssessmentController::class, 'store'])->name('catalog.courses.assessments.store')->whereNumber('course');
+        Route::put('courses/{course}/assessments/{assessment}', [CatalogAssessmentController::class, 'update'])->name('catalog.courses.assessments.update')->whereNumber('course')->whereNumber('assessment');
+        Route::post('courses/{course}/assessments/{assessment}/questions', [CatalogAssessmentController::class, 'attach'])->name('catalog.courses.assessments.questions.attach')->whereNumber('course')->whereNumber('assessment');
+        Route::delete('courses/{course}/assessments/{assessment}/questions/{question}', [CatalogAssessmentController::class, 'detach'])->name('catalog.courses.assessments.questions.detach')->whereNumber('course')->whereNumber('assessment')->whereNumber('question');
         Route::get('courses/{course}/activities/export', [CatalogActivityController::class, 'export'])->name('catalog.courses.activities.export')->whereNumber('course');
         Route::get('courses/{course}/activities', [CatalogActivityController::class, 'index'])->name('catalog.courses.activities.index')->whereNumber('course');
         Route::post('courses/{course}/activities', [CatalogActivityController::class, 'store'])->name('catalog.courses.activities.store')->whereNumber('course');

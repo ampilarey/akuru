@@ -51,6 +51,8 @@ export default function Outline({ course, modules }) {
                 Workflow: {course.workflow_status}
                 {' · '}
                 <a className="text-[#7C2D37] hover:underline" href={`/catalog/courses/${course.id}/activities`}>Activities</a>
+                {' · '}
+                <a className="text-[#7C2D37] hover:underline" href={`/catalog/courses/${course.id}/assessments`}>Assessments</a>
             </p>
             <div className="mb-4 grid gap-3 md:grid-cols-3">
                 <form

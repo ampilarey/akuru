@@ -25,10 +25,12 @@ four activity patterns. Tag via ExamsGrades `*Standard*` Actions
 question does not mutate a previously taken snapshot. Attachments go
 through Media Actions.
 
-## Slice 2.3 — Assessment builder + player
+## Slice 2.3 — Assessment builder + player (done)
 
 Assessments attach to lesson, module, or course. React player, autosave,
-attempt snapshots, retake/passing rules.
+attempt snapshots taken at start, retake/passing rules. Scoring reads
+the snapshot, not the live question bank. Teacher-marked items leave
+the attempt `submitted` until 2.4.
 
 ## Slice 2.4 — Teacher review
 
