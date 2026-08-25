@@ -956,9 +956,18 @@ rate limiting, and the Inertia shell. No new 1A.1 code.
 - Glossary is not Arabic-only. Download uses private media ids.
 - Quiz/assignment embeds are id/URL pointers only.
 
+## 1B.5 — Unlock + completion evaluators (done)
+
+- Progress owns `EvaluateLessonUnlockAction` (sequential required
+  lessons) and `EvaluateCourseCompletionAction` (required lessons +
+  optional required sessions).
+- Courses calls those Actions; Offerings reports session attendance
+  via `ListRequiredSessionProgressAction`.
+- Unit tests cover the formula (including 2/3 = 66).
+
 ## Next
 
-1. 1B.5 — unlock + completion evaluators.
+1. 1B.6 — PWA + full i18n/RTL polish.
 2. Operator: unify-verify / smoke / production (unchanged).
 3. Dual-write stays.
 4. S5 DoD remaining: month-in-the-life on real data, two parallel

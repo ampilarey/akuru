@@ -36,6 +36,11 @@ and `assignment_embed`. Glossary is not Arabic-only. Download reuses
 private `media_id`. Quiz/assignment embeds store an id and/or https
 URL only — no quiz or assignment engines in this slice.
 
-## Slice 1B.5 — Unlock + completion evaluators
+## Slice 1B.5 — Unlock + completion evaluators (done)
+
+Sequential unlock and course % live in Progress Actions. Courses
+loads lesson ids, then calls Progress. Required offering sessions
+(present/late/excused) can count toward completion. No subject
+branches and no Progress model imports of Courses/Offerings.
 
 ## Slice 1B.6 — PWA + full i18n/RTL polish

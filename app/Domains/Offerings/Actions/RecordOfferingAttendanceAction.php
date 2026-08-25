@@ -3,6 +3,7 @@
 namespace App\Domains\Offerings\Actions;
 
 use App\Domains\Courses\Actions\ListEnrollmentsForOfferingAction;
+use App\Domains\Courses\Actions\SyncEnrollmentProgressByIdAction;
 use App\Domains\Offerings\Enums\AttendanceMode;
 use App\Domains\Offerings\Enums\AttendanceStatus;
 use App\Domains\Offerings\Models\AttendanceRecord;
@@ -51,6 +52,7 @@ class RecordOfferingAttendanceAction
             'notes' => $data['notes'] ?? null,
         ]);
         $row->save();
+        app(SyncEnrollmentProgressByIdAction::class)->execute($enrollmentId);
 
         return $row->refresh();
     }
