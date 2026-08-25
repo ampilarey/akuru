@@ -931,9 +931,17 @@ rate limiting, and the Inertia shell. No new 1A.1 code.
   (`pin_mode=latest`). Catalog CRUD + CSV at `/catalog/offerings`.
 - Offerings call Courses Actions only (no Courses model imports).
 
+## 1B.2 — Pinning, offering enrollment, seat limits (done)
+
+- Offerings can pin current lesson revision ids. Player uses the pin
+  when the enrollment is linked to that offering.
+- `course_enrollments.course_offering_id` is additive. Self-learning
+  enroll attaches the default self-learning offering.
+- Seat limits: `lockForUpdate` on the offering + enrollment count.
+
 ## Next
 
-1. 1B.2 — pinning, offering enrollment, seat limits.
+1. 1B.3 — sessions + attendance foundation.
 2. Operator: unify-verify / smoke / production (unchanged).
 3. Dual-write stays.
 4. S5 DoD remaining: month-in-the-life on real data, two parallel

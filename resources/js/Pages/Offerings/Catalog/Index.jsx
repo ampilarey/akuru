@@ -1,4 +1,4 @@
-import { useForm } from '@inertiajs/react';
+import { router, useForm } from '@inertiajs/react';
 import AppShell from '../../../Layouts/AppShell';
 
 export default function Index({ rows, courses, modes }) {
@@ -47,11 +47,12 @@ export default function Index({ rows, courses, modes }) {
                             <th className="px-3 py-2">Course</th>
                             <th className="px-3 py-2">Mode</th>
                             <th className="px-3 py-2">Status</th>
+                            <th className="px-3 py-2">Pin</th>
                         </tr>
                     </thead>
                     <tbody>
                         {rows.length === 0 && (
-                            <tr><td className="px-3 py-4 text-gray-500" colSpan={4}>No offerings yet.</td></tr>
+                            <tr><td className="px-3 py-4 text-gray-500" colSpan={5}>No offerings yet.</td></tr>
                         )}
                         {rows.map((row) => (
                             <tr key={row.id} className="border-t">
@@ -59,6 +60,10 @@ export default function Index({ rows, courses, modes }) {
                                 <td className="px-3 py-2">{row.course_title}</td>
                                 <td className="px-3 py-2">{row.delivery_mode}</td>
                                 <td className="px-3 py-2">{row.status}</td>
+                                <td className="px-3 py-2">
+                                    <span className="me-2">{row.pin_mode}</span>
+                                    <button type="button" className="btn-secondary" onClick={() => router.post(`/catalog/offerings/${row.id}/pin`)}>Pin now</button>
+                                </td>
                             </tr>
                         ))}
                     </tbody>

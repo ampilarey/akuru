@@ -5,6 +5,7 @@ namespace App\Domains\Courses\Http\Controllers;
 use App\Domains\Courses\Actions\AuthorizeLessonAccessAction;
 use App\Domains\Courses\Actions\ResolvePublishedLessonAction;
 use App\Domains\Courses\Actions\StartOrCompleteLessonProgressAction;
+use App\Domains\Offerings\Actions\ResolveOfferingPinAction;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -16,7 +17,13 @@ class LearnLessonController extends Controller
     public function show(Request $request, int $lesson): Response
     {
         $access = app(AuthorizeLessonAccessAction::class)->execute($lesson, $request->user());
-        $snapshot = app(ResolvePublishedLessonAction::class)->execute($lesson);
+        $pinnedRevision = $access['enrollment']?->course_offering_id
+            ? app(ResolveOfferingPinAction::class)->revisionIdForLesson(
+                (int) $access['enrollment']->course_offering_id,
+                $lesson,
+            )
+            : null;
+        $snapshot = app(ResolvePublishedLessonAction::class)->execute($lesson, $pinnedRevision);
         abort_unless($snapshot !== null, 404, 'This lesson has no published revision.');
 
         if ($access['enrollment'] !== null) {

@@ -14,6 +14,7 @@ class CourseEnrollment extends Model
         'student_id',
         'unified_student_id',
         'course_id',
+        'course_offering_id',
         'term_id',
         'status',
         'enrollment_type',
