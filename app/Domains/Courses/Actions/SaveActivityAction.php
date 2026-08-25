@@ -32,7 +32,7 @@ class SaveActivityAction
             'title' => $title,
             'description' => $data['description'] ?? null,
             'pattern' => $pattern,
-            'activity_type' => (string) ($data['activity_type'] ?: $pattern->value),
+            'activity_type' => (string) (($data['activity_type'] ?? '') ?: $pattern->value),
             'data' => $this->validatedData($pattern, is_array($data['data'] ?? null) ? $data['data'] : []),
             'settings' => $this->validatedSettings(is_array($data['settings'] ?? null) ? $data['settings'] : []),
             'max_score' => max(1, (int) ($data['max_score'] ?? 1)),
