@@ -1,7 +1,7 @@
 import { router, usePage } from '@inertiajs/react';
 import AppShell from '../../../Layouts/AppShell';
 
-export default function Show({ course, enrollment, modules }) {
+export default function Show({ course, enrollment, modules, upcoming_sessions = [] }) {
     const t = usePage().props.i18n?.learn || {};
 
     return (
@@ -13,6 +13,16 @@ export default function Show({ course, enrollment, modules }) {
                 <div className="mb-4">
                     <button type="button" className="btn-primary" onClick={() => router.post(`/learn/courses/${course.id}/enroll`)}>{t.enroll || 'Enroll'}</button>
                 </div>
+            )}
+            {upcoming_sessions.length > 0 && (
+                <section className="mb-4 rounded-lg border bg-white p-4">
+                    <h2 className="mb-2 font-medium">{t.upcoming_sessions || 'Upcoming sessions'}</h2>
+                    <ul className="space-y-1 text-sm">
+                        {upcoming_sessions.map((row) => (
+                            <li key={row.id}>{row.title} · {row.starts_at}{row.location_name ? ` · ${row.location_name}` : ''}</li>
+                        ))}
+                    </ul>
+                </section>
             )}
             <div className="space-y-4">
                 {modules.map((module) => (

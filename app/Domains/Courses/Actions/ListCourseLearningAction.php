@@ -6,6 +6,7 @@ use App\Domains\Courses\Models\Course;
 use App\Domains\Courses\Models\CourseEnrollment;
 use App\Domains\Courses\Models\CourseModule;
 use App\Domains\Courses\Models\Lesson;
+use App\Domains\Offerings\Actions\ListUpcomingSessionsForOfferingsAction;
 use App\Domains\People\Actions\ResolveStudentForUserAction;
 use App\Domains\Progress\Actions\ListLessonProgressAction;
 
@@ -48,6 +49,9 @@ class ListCourseLearningAction
                 'progress_percentage' => (int) $enrollment->progress_percentage,
                 'status' => $enrollment->status,
             ] : null,
+            'upcoming_sessions' => $enrollment?->course_offering_id
+                ? app(ListUpcomingSessionsForOfferingsAction::class)->execute([(int) $enrollment->course_offering_id])
+                : [],
             'modules' => $modules->map(fn (CourseModule $module) => [
                 'id' => $module->id,
                 'title' => $module->title,
