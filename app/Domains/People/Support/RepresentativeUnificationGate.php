@@ -122,6 +122,46 @@ final class RepresentativeUnificationGate
         ];
     }
 
+    /**
+     * Rewrite verification so the archived JSON cannot be read as both
+     * FAIL (raw 1:1) and OK (representative). Gate is green only when
+     * unexpected_failures is empty.
+     *
+     * @param  array<string, mixed>  $manifest
+     * @param  list<string>  $unexpectedFailures
+     */
+    public static function applyManifestVerdict(
+        StudentUnificationReport $report,
+        array $manifest,
+        array $unexpectedFailures,
+    ): void {
+        $expectedUnresolved = array_values(array_map(
+            'intval',
+            $manifest['expected_unresolved_registration_student_ids'] ?? []
+        ));
+        sort($expectedUnresolved);
+
+        $rawFailures = [];
+        if (isset($report->verification['failures']) && is_array($report->verification['failures'])) {
+            $rawFailures = array_values($report->verification['failures']);
+        } elseif (isset($report->verification['raw_failures']) && is_array($report->verification['raw_failures'])) {
+            $rawFailures = array_values($report->verification['raw_failures']);
+        }
+
+        $rawOk = array_key_exists('ok', $report->verification)
+            ? (bool) $report->verification['ok']
+            : (bool) ($report->verification['raw_ok'] ?? false);
+
+        $report->verification = [
+            'raw_ok' => $rawOk,
+            'raw_failures' => $rawFailures,
+            'expected_unresolved' => $expectedUnresolved,
+            'unexpected_failures' => array_values($unexpectedFailures),
+            'verdict' => $unexpectedFailures === [] ? 'OK_AGAINST_MANIFEST' : 'FAILED_UNEXPECTED',
+        ];
+        $report->write();
+    }
+
     public static function fillPaymentUnifiedIds(): int
     {
         $updated = 0;

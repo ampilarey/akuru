@@ -1,5 +1,5 @@
 {
-    "generated_at": "2026-08-26T01:58:54+05:00",
+    "generated_at": "2026-08-26T02:50:01+05:00",
     "path": "\/workspace\/storage\/app\/s11b-student-unification-report.json",
     "mapped": {
         "user_id": 0,
@@ -60,13 +60,19 @@
         ]
     },
     "verification": {
-        "ok": false,
-        "failures": [
+        "raw_ok": false,
+        "raw_failures": [
             "registration_students.id=11 maps to 0 student(s)",
             "registration_students.id=12 maps to 0 student(s)",
             "2 course_enrollments missing unified_student_id",
             "guardian pivot count mismatch: student_guardians=3 migrated guardian_student=2"
-        ]
+        ],
+        "expected_unresolved": [
+            11,
+            12
+        ],
+        "unexpected_failures": [],
+        "verdict": "OK_AGAINST_MANIFEST"
     },
     "matcher": {
         "national_id_unusable_skips": 8,

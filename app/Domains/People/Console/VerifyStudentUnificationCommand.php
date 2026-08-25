@@ -61,8 +61,11 @@ class VerifyStudentUnificationCommand extends Command
             $report->created['prospective'],
         ));
         $this->line(sprintf(
-            '  matcher: national_id_unusable_skips=%d national_id_contradiction_fallthroughs=%d',
+            '  A2 matcher national_id_unusable_skips=%d',
             $report->matcher['national_id_unusable_skips'],
+        ));
+        $this->line(sprintf(
+            '  A2 matcher national_id_contradiction_fallthroughs=%d',
             $report->matcher['national_id_contradiction_fallthroughs'],
         ));
         $this->line(sprintf(
@@ -93,15 +96,23 @@ class VerifyStudentUnificationCommand extends Command
             $paymentFailures = RepresentativeUnificationGate::paymentWrongStudentFailures($manifest);
             $gate['failures'] = array_merge($gate['failures'], $paymentFailures);
             $gate['ok'] = $gate['failures'] === [];
+            RepresentativeUnificationGate::applyManifestVerdict($report, $manifest, $gate['failures']);
 
-            if ($gate['ok']) {
+            $this->line(sprintf(
+                '  verification verdict=%s raw_ok=%s unexpected_failures=%d',
+                $report->verification['verdict'],
+                $report->verification['raw_ok'] ? 'true' : 'false',
+                count($report->verification['unexpected_failures']),
+            ));
+
+            if ($report->verification['unexpected_failures'] === []) {
                 $this->info('students:verify-unification OK — representative dataset: resolvable rows mapped; expected unguessable rows listed; no enrollment/payment resolved to the wrong student.');
 
                 return self::SUCCESS;
             }
 
-            $this->error('students:verify-unification FAILED — representative gate:');
-            foreach ($gate['failures'] as $failure) {
+            $this->error('students:verify-unification FAILED — unexpected unification rows (not in seeder manifest):');
+            foreach ($report->verification['unexpected_failures'] as $failure) {
                 $this->error('  • '.$failure);
             }
 

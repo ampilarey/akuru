@@ -25,6 +25,14 @@ it('maps the representative dataset with A2 unusable and contradiction counts an
         ->and($gate['failures'])->toBeEmpty()
         ->and($paymentFailures)->toBeEmpty();
 
+    RepresentativeUnificationGate::applyManifestVerdict($report, $manifest, $gate['failures']);
+    expect($report->verification['verdict'])->toBe('OK_AGAINST_MANIFEST')
+        ->and($report->verification['raw_ok'])->toBeFalse()
+        ->and($report->verification['unexpected_failures'])->toBeEmpty()
+        ->and($report->verification['expected_unresolved'])->toEqual(
+            collect($manifest['expected_unresolved_registration_student_ids'])->map(fn ($id) => (int) $id)->sort()->values()->all()
+        );
+
     $fatima = $manifest['scenarios']['duplicate_nid_fatima'];
     $hussain = $manifest['scenarios']['duplicate_nid_hussain'];
     expect((int) DB::table('students')->where('legacy_registration_student_id', $fatima['registration_student_id'])->value('id'))
@@ -52,7 +60,24 @@ it('maps the representative dataset with A2 unusable and contradiction counts an
 
 it('passes students:verify-unification --representative on the seeded dataset', function () {
     $this->artisan('students:verify-unification', ['--representative' => true])
-        ->expectsOutputToContain('matcher: national_id_unusable_skips=')
+        ->expectsOutputToContain('A2 matcher national_id_unusable_skips=')
+        ->expectsOutputToContain('A2 matcher national_id_contradiction_fallthroughs=')
+        ->expectsOutputToContain('verification verdict=OK_AGAINST_MANIFEST')
         ->expectsOutputToContain('students:verify-unification OK — representative dataset')
         ->assertSuccessful();
+
+    $payload = json_decode(
+        (string) file_get_contents(storage_path('app/s11b-student-unification-report.json')),
+        true
+    );
+    $manifest = RepresentativeUnificationGate::requireManifest();
+    $expectedUnresolved = array_values(array_map('intval', $manifest['expected_unresolved_registration_student_ids']));
+    sort($expectedUnresolved);
+
+    expect($payload['verification']['raw_ok'])->toBeFalse()
+        ->and($payload['verification']['expected_unresolved'])->toBe($expectedUnresolved)
+        ->and($payload['verification']['unexpected_failures'])->toBe([])
+        ->and($payload['verification']['verdict'])->toBe('OK_AGAINST_MANIFEST')
+        ->and($payload['matcher']['national_id_unusable_skips'])->toBe(8)
+        ->and($payload['matcher']['national_id_contradiction_fallthroughs'])->toBe(1);
 });

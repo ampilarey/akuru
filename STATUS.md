@@ -1229,10 +1229,12 @@ Fresh `akuru_test` (`migrate:fresh` then `--representative`), 2026-08-26:
 S1.1b unification report: /workspace/storage/app/s11b-student-unification-report.json
   mapped: user_id=0 national_id=3 name_dob=7 already=0
   created: active=0 prospective=0
-  matcher: national_id_unusable_skips=8 national_id_contradiction_fallthroughs=1
+  A2 matcher national_id_unusable_skips=8
+  A2 matcher national_id_contradiction_fallthroughs=1
   guardians: source=3 migrated=2 profiles_created=2 skipped=0 unmapped=1
   enrollments: filled=10 already_set=0 missing=2
   ambiguous: 2 (listed in report file)
+  verification verdict=OK_AGAINST_MANIFEST raw_ok=false unexpected_failures=0
 students:verify-unification OK — representative dataset: resolvable rows mapped; expected unguessable rows listed; no enrollment/payment resolved to the wrong student.
 ```
 
@@ -1240,12 +1242,13 @@ students:verify-unification OK — representative dataset: resolvable rows mappe
 unusable (duplicate ID across two different people; blank; placeholders
 `N/A`, `0`, `-`; plus two genuine-duplicate blanks). **1** unique
 `national_id` hit **downgraded** by contradicting name+dob and mapped
-via name+dob instead (wrong-hit student left unlinked). Strict
-`verification.ok` is false on purpose: two genuine name+dob duplicate
-RS rows stay **ambiguous** (ADR-007, do not guess) and one orphan
-guardian pivot stays unmapped. Those enrollments/payments resolve to
-**null**, not a wrong student. Resolvable enrollments/payments resolve
-to the intended student.
+via name+dob instead (wrong-hit student left unlinked). Artifact
+`verification.verdict` is `OK_AGAINST_MANIFEST` with
+`unexpected_failures: []`. `raw_ok` is false on purpose: RS 11 and 12
+are the seeded genuine name+dob duplicate (candidates 12/13); ADR-007
+does not guess. `guardians.unmapped: [2]` is the seeded orphan guardian
+pivot. Missing enrollments 11/12 follow from those unresolved RS rows
+(null, not a wrong student). Do not “fix” these.
 
 JSON archived:
 `docs/migrations/s11b-student-unification-report-representative.json`.

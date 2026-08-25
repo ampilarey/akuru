@@ -16,10 +16,23 @@ Archive the report as
 `docs/migrations/s11b-student-unification-report-representative.json`
 and paste verbatim stdout into `STATUS.md`.
 
-Expected unguessable rows (genuine name+dob duplicates, orphan guardian
-pivots) are listed, not guessed (ADR-007). The gate is green when every
-*resolvable* RS maps 1:1, no enrollment/payment points at the **wrong**
-student, and matcher skip/contradiction counts are recorded.
+Expected unguessable rows are listed, not guessed (ADR-007). The archived
+JSON carries **both** the raw 1:1 check and the manifest verdict:
+
+- `verification.raw_ok` — strict “every RS maps to exactly one student”.
+- `verification.expected_unresolved` — RS ids the seeder planted as
+  unguessable.
+- `verification.unexpected_failures` — anything unresolved that is **not**
+  in that manifest. **The gate is green only when this array is empty.**
+- `verification.verdict` — `OK_AGAINST_MANIFEST` or `FAILED_UNEXPECTED`.
+
+Do **not** “fix” these seeded outcomes (fresh `akuru_test` ids):
+
+| Artifact | Meaning |
+|---|---|
+| unresolved RS **11** and **12** | Genuine-duplicate case: two `Ahmed Naseem` / `2009-04-04` rows. Name+dob yields students **12** and **13**. ADR-007 forbids guessing; both stay ambiguous. |
+| `guardians.unmapped: [2]` | Seeded guardian pivot whose user account was deleted (no user to invent a `parent_guardians` row). |
+| `enrollments.missing: [11, 12]` | Follows from RS 11/12 staying unresolved — those enrollments have `unified_student_id` null on purpose, not a wrong student. |
 
 Staging synthetics (`a a` / `b b`) are **not** this dataset. The older
 staging capture remains `docs/migrations/s11b-student-unification-report.json`

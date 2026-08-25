@@ -16,7 +16,7 @@ final class StudentUnificationReport
      * @param  list<array<string, mixed>>  $unresolved
      * @param  array<string, mixed>  $guardians
      * @param  array<string, mixed>  $enrollments
-     * @param  array{ok: bool, failures: list<string>}  $verification
+     * @param  array<string, mixed>  $verification
      * @param  array{national_id_unusable_skips: int, national_id_contradiction_fallthroughs: int}  $matcher
      */
     public function __construct(
@@ -137,6 +137,10 @@ final class StudentUnificationReport
 
     public function passed(): bool
     {
-        return $this->verification['ok'] === true;
+        if (array_key_exists('verdict', $this->verification)) {
+            return ($this->verification['unexpected_failures'] ?? ['missing']) === [];
+        }
+
+        return ($this->verification['ok'] ?? false) === true;
     }
 }
