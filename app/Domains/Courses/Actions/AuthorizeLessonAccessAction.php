@@ -5,6 +5,7 @@ namespace App\Domains\Courses\Actions;
 use App\Domains\Courses\Models\CourseEnrollment;
 use App\Domains\Courses\Models\Lesson;
 use App\Domains\People\Actions\ResolveStudentForUserAction;
+use App\Domains\Progress\Actions\EvaluateLessonUnlockAction;
 use App\Domains\Progress\Actions\ListLessonProgressAction;
 use Illuminate\Contracts\Auth\Authenticatable;
 
@@ -45,25 +46,22 @@ class AuthorizeLessonAccessAction
 
     public function isUnlocked(Lesson $lesson, int $enrollmentId): bool
     {
-        if ($lesson->is_preview) {
-            return $lesson->current_revision_id !== null;
-        }
-
         $completed = collect(app(ListLessonProgressAction::class)->execute($enrollmentId))
             ->where('status', 'completed')
             ->pluck('lesson_id')
             ->all();
 
-        foreach ($this->requiredLessons($lesson->course_id) as $item) {
-            if ($item->id === $lesson->id) {
-                return true;
-            }
-            if (! in_array($item->id, $completed, true)) {
-                return false;
-            }
-        }
+        $requiredIds = array_map(
+            fn (Lesson $item) => $item->id,
+            $this->requiredLessons($lesson->course_id),
+        );
 
-        return false;
+        return app(EvaluateLessonUnlockAction::class)->execute(
+            $lesson->id,
+            $requiredIds,
+            $completed,
+            $lesson->is_preview && $lesson->current_revision_id !== null,
+        );
     }
 
     /**
