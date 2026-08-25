@@ -4,6 +4,7 @@ namespace App\Domains\Finance\Services\Payment;
 
 use App\Domains\Courses\Models\Course;
 use App\Domains\Courses\Models\CourseEnrollment;
+use App\Domains\Finance\Actions\RecordInvoiceReceiptAction;
 use App\Domains\Finance\Contracts\PaymentProviderInterface;
 use App\Domains\Finance\Models\Payment;
 use App\Domains\Finance\Models\PaymentItem;
@@ -171,6 +172,7 @@ class PaymentService
 
                 $this->sendConfirmationEmail($payment->fresh());
                 $this->notifyAdminsPaymentConfirmed($payment);
+                app(RecordInvoiceReceiptAction::class)->fromConfirmedPayment($payment->fresh());
             } elseif (in_array($providerStatus, ['failed', 'cancelled', 'declined'], true)) {
                 $payment->update([
                     'status' => 'failed',
@@ -259,6 +261,7 @@ class PaymentService
 
                 $this->sendConfirmationEmail($payment->fresh());
                 $this->notifyAdminsPaymentConfirmed($payment);
+                app(RecordInvoiceReceiptAction::class)->fromConfirmedPayment($payment->fresh());
             } else {
                 $providerStatus = strtolower((string) ($result->status ?? ''));
                 if (in_array($providerStatus, ['failed', 'cancelled', 'declined'], true)) {
