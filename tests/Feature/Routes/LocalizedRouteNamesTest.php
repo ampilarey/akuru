@@ -122,6 +122,11 @@ class LocalizedRouteNamesTest extends TestCase
             'finance.fee-items.store',
             'finance.fee-items.update',
             'finance.fee-items.export',
+            'finance.fee-structures.index',
+            'finance.fee-structures.store',
+            'finance.fee-structures.update',
+            'finance.fee-structures.copy-last-year',
+            'finance.fee-structures.export',
         ];
 
         foreach ($names as $name) {

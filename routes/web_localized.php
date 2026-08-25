@@ -20,6 +20,7 @@ use App\Domains\Academics\Http\Controllers\TimetableBuilderController;
 use App\Domains\Academics\Legacy\Http\Controllers\ELearningController;
 use App\Domains\Admissions\Http\Controllers\AdminEnrollmentController;
 use App\Domains\Finance\Http\Controllers\FeeItemController;
+use App\Domains\Finance\Http\Controllers\FeeStructureController;
 use App\Domains\Hifz\Http\Controllers\QuranProgressController;
 use App\Domains\HR\Http\Controllers\InstructorController as AdminInstructorController;
 use App\Domains\Identity\Http\Controllers\ProfileController;
@@ -275,5 +276,10 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::get('fee-items', [FeeItemController::class, 'index'])->name('finance.fee-items.index');
         Route::post('fee-items', [FeeItemController::class, 'store'])->name('finance.fee-items.store');
         Route::put('fee-items/{feeItem}', [FeeItemController::class, 'update'])->name('finance.fee-items.update');
+        Route::get('fee-structures/export', [FeeStructureController::class, 'export'])->name('finance.fee-structures.export');
+        Route::post('fee-structures/copy-last-year', [FeeStructureController::class, 'copyLastYear'])->name('finance.fee-structures.copy-last-year');
+        Route::get('fee-structures', [FeeStructureController::class, 'index'])->name('finance.fee-structures.index');
+        Route::post('fee-structures', [FeeStructureController::class, 'store'])->name('finance.fee-structures.store');
+        Route::put('fee-structures/{feeStructure}', [FeeStructureController::class, 'update'])->name('finance.fee-structures.update');
     });
 });
