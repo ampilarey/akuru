@@ -230,8 +230,10 @@ See `docs/STAGING.md` (re-exec-after-pull rejected: blast radius).
 | Agent | Docs §5.1 audience-surface (`#13`) | **Done** (`5690034`) |
 | Agent | Staging `students:verify-unification` (manual SSH) | **Blocked** — no SSH; S2.0 automates via deploy log |
 | Agent | Branch protection on `main` | **Blocked** — `403 Resource not accessible by integration` |
-| Agent | S2.0 unify-verify deploy gate | **This slice** |
-| Operator | Copy verify output from `~/self-update-test.log` + archive JSON | **Pending** — after S2.0 + follow-up merge |
+| Agent | S2.0 unify-verify deploy gate | **Done** (merged #15) |
+| Agent | S2.1–S2.10 coding on `main` | **Done** (merged #16–#25) |
+| Agent | S2.0b staging-test PR (this slice) | **This slice** — second-deploy trigger + smoke list |
+| Operator | Copy verify output from `~/self-update-test.log` + archive JSON | **Pending** — after this PR merges and staging deploys |
 | Operator | Branch protection (required `quality`, no direct push, no self-merge) | **Deferred** (operator-approved 2026-08-25) |
 | Operator | Credential smoke steps 1–7 | **Deferred** (operator-approved 2026-08-25); **production receives nothing** until recorded |
 
@@ -449,8 +451,11 @@ credential smoke are **deferred**. Consequences accepted:
 the command is missing; `STUDENT-UNIFICATION GATE FAILED` + exit 1 on
 nonzero. `docs/STAGING.md` updated.
 
-**First-deploy caveat (known):** the #15 merge still runs the pre-pull script.
-Evidence appears from the **second** auto-deploy (S2.0b).
+**First-deploy caveat (known):** the #15 merge still ran the pre-pull script.
+S2.1–S2.10 merges already pushed `main` after that, so later deploys
+should have executed the gated script. **S2.0b** is the operator test
+PR: another gated deploy plus the paste/archive checklist. Evidence is
+still **not** recorded here until the operator pastes the log.
 
 ## S2.1 — Rooms (first-class, no student writes)
 
@@ -514,7 +519,7 @@ conflict engine is **S2.2**.
 - **No** `GenerateExpectedRegistersAction`. No student-keyed writes.
 - Morph alias `calendar_day`. Hifz / Deploy 3 untouched.
 
-## S2.6 — Class register loop (coding; staging verify still operator-side)
+## S2.6 — Class register loop (merged #21 `eb2227b`)
 
 Operator still owns staging `students:verify-unification` paste + JSON
 under `docs/migrations/`, branch protection, credential smoke, and
@@ -534,7 +539,7 @@ production. Coding continues without waiting on that evidence.
 - Permissions `registers.fill` / `registers.manage`. Morph `register_unlock`.
 - Hifz / Deploy 3 / dual-write untouched.
 
-## S2.7 — Class attendance writer (coding; verify still operator-side)
+## S2.7 — Class attendance writer (merged #22 `435e08a`)
 
 - New `class_attendance` (year + term; unique student+date+`period_key`
   so null period = daily). `AttendanceWriterInterface::record` is the
@@ -545,14 +550,14 @@ production. Coding continues without waiting on that evidence.
   one SMS per student per day. Setting `attendance_notify`.
 - ADR-011. Morph `class_attendance`. Hifz / Deploy 3 untouched.
 
-## S2.8 — Absence notes excused flip (coding; verify still operator-side)
+## S2.8 — Absence notes excused flip (merged #23 `8298a28`)
 
 - Parent Portal submit (own children only). Admin review + CSV.
 - Approving a note with `affects_attendance=true` flips matching
   `class_attendance` absent rows → excused via the writer and sets
   `absence_note_id`. Hifz / Deploy 3 untouched.
 
-## S2.9 — Behavior records (coding; verify still operator-side)
+## S2.9 — Behavior records (merged #24 `c60535c`)
 
 - New `behavior_records` + audited edits/deletes. Permissions
   `behavior.record` / `behavior.manage`. Student profile tab. Portal
@@ -560,7 +565,7 @@ production. Coding continues without waiting on that evidence.
 - Morph aliases `behavior_record`, `behavior_record_audit`.
   Hifz / Deploy 3 untouched.
 
-## S2.10 — Requests & teacher leave (coding; verify still operator-side)
+## S2.10 — Requests & teacher leave (merged #25 `a89febd`)
 
 - New `requests` with type handlers. `teacher_leave` approval creates
   `teacher_absences` and open `substitution_requests` for matching
@@ -569,10 +574,54 @@ production. Coding continues without waiting on that evidence.
   `requests.review`. Morph `school_request`.
 - Hifz / Deploy 3 untouched.
 
+## S2.0b — Staging test PR (this slice)
+
+Docs only. No feature code. Merging this branch to `main` triggers
+another staging webhook deploy so `scripts/pull-deploy-test.sh` runs
+the **current** (post-S2.0) gates: `morph-map:verify` then
+`students:verify-unification` (read-only).
+
+### Operator after merge + auto-deploy
+
+On `test.akuru.edu.mv`:
+
+```bash
+cd ~/test.akuru.edu.mv
+tail -n 80 ~/self-update-test.log
+php artisan students:verify-unification
+```
+
+1. Paste the full verify stdout into this file (same format as the
+   morph-map capture).
+2. Copy `storage/app/s11b-student-unification-report.json` into
+   `docs/migrations/` (see that folder's README).
+3. Zero unresolved → mark the Deploy 2 / student-write gate satisfied.
+   Nonzero → list affected rows, **report and stop** (do not start S3).
+
+### Staging smoke URLs (after deploy; needs credentials)
+
+| Surface | EN URL |
+|---------|--------|
+| Teacher Today | https://test.akuru.edu.mv/en/academics/registers/today |
+| Unfilled registers | https://test.akuru.edu.mv/en/academics/registers |
+| Course plans | https://test.akuru.edu.mv/en/academics/plans |
+| Attendance reports | https://test.akuru.edu.mv/en/academics/attendance |
+| Daily attendance | https://test.akuru.edu.mv/en/academics/attendance/daily |
+| Absence notes (admin) | https://test.akuru.edu.mv/en/academics/absence-notes |
+| Behavior | https://test.akuru.edu.mv/en/academics/behavior |
+| Requests / leave | https://test.akuru.edu.mv/en/academics/requests |
+| Portal attendance | https://test.akuru.edu.mv/en/portal/attendance |
+| Portal absence notes | https://test.akuru.edu.mv/en/portal/absence-notes |
+| Portal behavior | https://test.akuru.edu.mv/en/portal/behavior |
+
+Seed logins will not work on real staging. Use operator credentials.
+
 ## Next
 
-1. Operator: paste staging `students:verify-unification` log + JSON
-   under `docs/migrations/`. Branch protection. Credential smoke.
-2. Production: nothing until credential smoke is recorded.
-3. **S1.1 Deploy 3** still ≥2 weeks after `2f8a90b`. Dual-write stays.
-4. S3 / Hifz migration are not started.
+1. Merge this S2.0b PR after CI `quality` is green (do **not** self-merge).
+2. Operator: paste staging `students:verify-unification` log + JSON
+   under `docs/migrations/`. Smoke the URLs above. Branch protection.
+   Credential smoke (portal / Hifz / payments / OTP / BML).
+3. Production: nothing until credential smoke is recorded.
+4. **S1.1 Deploy 3** still ≥2 weeks after `2f8a90b`. Dual-write stays.
+5. S3 / Hifz migration are not started.

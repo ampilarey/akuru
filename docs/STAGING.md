@@ -122,9 +122,11 @@ under `docs/migrations/` (S1 DoD line 158).
 
 **Same first-deploy caveat as morph-map:** the deploy that *introduces*
 this gate still runs the pre-pull script. Evidence appears from the
-**second** auto-deploy onward. After S2.0 merges, land a trivial docs
-commit on `main` to trigger that second run. Do not re-exec-after-pull
-(same blast-radius rejection as above).
+**second** auto-deploy onward. S2.1–S2.10 already landed on `main`
+after S2.0 (#15), so later deploys should have run the gated script.
+**S2.0b** is the operator test merge: a docs-only commit that triggers
+another gated deploy plus the paste/archive checklist in `STATUS.md`.
+Do not re-exec-after-pull (same blast-radius rejection as above).
 
 **Consequence for the morph-map hotfix deploy:** the automated gate does **not**
 cover that first cutover. After the hotfix lands on staging, run manually:
