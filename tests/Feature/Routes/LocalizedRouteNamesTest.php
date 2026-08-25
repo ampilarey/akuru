@@ -102,6 +102,12 @@ class LocalizedRouteNamesTest extends TestCase
             'academics.attendance.daily',
             'academics.attendance.daily.store',
             'portal.attendance',
+            'portal.absence-notes',
+            'portal.absence-notes.store',
+            'academics.absence-notes.index',
+            'academics.absence-notes.export',
+            'academics.absence-notes.approve',
+            'academics.absence-notes.reject',
         ];
 
         foreach ($names as $name) {
