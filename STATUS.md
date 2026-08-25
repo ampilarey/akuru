@@ -1172,15 +1172,28 @@ rate limiting, and the Inertia shell. No new 1A.1 code.
   never invented as `parent_guardians`.
 - ADR-007 amended; supersedes `docs/S1_SPEC.md` line 49 match order.
 - Pest cases in `UnifiedStudentBackfillTest`. Dual-write matcher untouched.
+  Merged #73.
+
+### A5 — Real `config/payroll.php` feature flag (done)
+
+- Flag was only a `settings` row (`payroll.enabled` = `'0'`).
+  `config/payroll.php` did not exist.
+- `PAYROLL_ENABLED` (default **false**) AND the settings row must both be
+  true. `ResolvePayrollSettingsAction` implements the AND.
+  `assertEnabled()` gates **every write path**: run, approve, pay, lock.
+- Pest: `enablePayroll()` sets both; write actions are inert when off.
+- Payroll stays off until two parallel cycles match (operator).
 
 ## Next
 
-**TRACK A remaining:** A3 verify on a **production-data copy** (not staging
-synthetics), A4 branch protection on `main` (operator; bot 403), A5 real
-`config/payroll.php` flag. **Do not start TRACK B until A3 is green.**
-No `--backfill` on production. No Hifz cutover.
+**TRACK A remaining:** A3 production-copy verify (read-only, no dump yet),
+A4 branch protection on `main` (operator; bot 403). **Do not start TRACK B
+until A3 is green on a production-data copy.** No `--backfill` on
+production. No Hifz cutover.
 
-**Operator (not in this slice):** `unify-verify` still red (4 RS collisions + guardian pivot). Student dual-write stays until staging is green. `payroll.enabled` off until credentials. BML sandbox / Thaana receipts / credential smoke / production. S3.1–S3.7 coding is on `main`; staging student-keyed writes stay blocked until verify is green.
+**Operator:** apply branch protection; provide a production mysqldump for
+A3. `unify-verify` still red on staging. `PAYROLL_ENABLED` / settings
+stay off.
 
 **Qur'an A.4b (later):** switch offering-session reads to `offering_halaqa_session_links` after operators confirm dual-write. Then Hifz cleanup (deploy 3). Keep `QURAN_HALAQA_DUAL_WRITE` off until verified.
 
