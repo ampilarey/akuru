@@ -748,10 +748,16 @@ All 13 `student_guardians` rows are `unmapped`. 12/13 `guardian_user_id`s are **
 
 ## Next
 
-Need an operator decision (ADR-007: do not guess):
+**Agent (this side): stop.** S2.1–S2.10 coding is on `main`. Staging
+schema is at `a9d5677` (S1.1b–S2.10 migrated). Unify-verify is red;
+ADR-007 forbids guessing the four collisions or inventing guardian
+users. No S3, no Hifz migration, no Deploy 3, no student-keyed write
+follow-up until the operator marks verify green.
 
-1. **RS 13, 22, 25** — recommended: treat as false `national_id` matches and **create their own students** (then fill those three enrollments).
-2. **RS 29** — recommended: treat as duplicate of student 8; point enrollment 29 at student 8. The 1:1 legacy gate still needs a choice: delete/archive RS 29, or change the gate to allow N RS → 1 student.
-3. **Guardians** — recommended: verify should count only pivots whose `guardian_user_id` still exists (or drop orphan pivots). Otherwise the gate stays red forever on this DB.
+**Operator (their side, unchanged):**
 
-Reply with those three choices (or a different call). No `--backfill` and no S3 until then. Dual-write stays. Production: nothing until credential smoke.
+1. Collision / guardian / RS-29 1:1 decision (see table above).
+2. Paste any later verify stdout; keep
+   `docs/migrations/s11b-student-unification-report.json` current.
+3. Branch protection. Credential smoke. Production: nothing until
+   smoke is recorded. Dual-write stays.
