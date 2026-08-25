@@ -173,6 +173,18 @@ class LocalizedRouteNamesTest extends TestCase
             'hr.compliance.index',
             'hr.compliance.export',
             'hr.compliance.notify',
+            'hr.postings.index',
+            'hr.postings.store',
+            'hr.postings.update',
+            'hr.postings.export',
+            'hr.applications.index',
+            'hr.applications.store',
+            'hr.applications.hire',
+            'hr.applications.export',
+            'hr.onboarding.index',
+            'hr.onboarding.seed',
+            'hr.onboarding.toggle',
+            'hr.onboarding.export',
         ];
 
         foreach ($names as $name) {
