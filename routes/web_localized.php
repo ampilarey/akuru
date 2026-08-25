@@ -19,6 +19,10 @@ use App\Domains\Academics\Http\Controllers\TeacherRegisterController;
 use App\Domains\Academics\Http\Controllers\TimetableBuilderController;
 use App\Domains\Academics\Legacy\Http\Controllers\ELearningController;
 use App\Domains\Admissions\Http\Controllers\AdminEnrollmentController;
+use App\Domains\Courses\Http\Controllers\AudienceController;
+use App\Domains\Courses\Http\Controllers\CourseLevelController;
+use App\Domains\Courses\Http\Controllers\CourseSubjectController;
+use App\Domains\Courses\Http\Controllers\EngineCourseController;
 use App\Domains\Finance\Http\Controllers\ArrearsController;
 use App\Domains\Finance\Http\Controllers\CollectionsController;
 use App\Domains\Finance\Http\Controllers\FeeAdjustmentController;
@@ -336,6 +340,26 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::get('collections', [CollectionsController::class, 'index'])->name('finance.collections.index');
         Route::get('reconciliation/export', [ReconciliationController::class, 'export'])->name('finance.reconciliation.export');
         Route::get('reconciliation', [ReconciliationController::class, 'index'])->name('finance.reconciliation.index');
+    });
+
+    Route::prefix('catalog')->middleware(['role:super_admin|admin|headmaster'])->group(function () {
+        Route::get('subjects/export', [CourseSubjectController::class, 'export'])->name('catalog.subjects.export');
+        Route::get('subjects', [CourseSubjectController::class, 'index'])->name('catalog.subjects.index');
+        Route::post('subjects', [CourseSubjectController::class, 'store'])->name('catalog.subjects.store');
+        Route::put('subjects/{subject}', [CourseSubjectController::class, 'update'])->name('catalog.subjects.update');
+        Route::get('audiences/export', [AudienceController::class, 'export'])->name('catalog.audiences.export');
+        Route::get('audiences', [AudienceController::class, 'index'])->name('catalog.audiences.index');
+        Route::post('audiences', [AudienceController::class, 'store'])->name('catalog.audiences.store');
+        Route::put('audiences/{audience}', [AudienceController::class, 'update'])->name('catalog.audiences.update');
+        Route::get('levels/export', [CourseLevelController::class, 'export'])->name('catalog.levels.export');
+        Route::get('levels', [CourseLevelController::class, 'index'])->name('catalog.levels.index');
+        Route::post('levels', [CourseLevelController::class, 'store'])->name('catalog.levels.store');
+        Route::put('levels/{level}', [CourseLevelController::class, 'update'])->name('catalog.levels.update');
+        Route::get('courses/export', [EngineCourseController::class, 'export'])->name('catalog.courses.export');
+        Route::get('courses', [EngineCourseController::class, 'index'])->name('catalog.courses.index');
+        Route::post('courses', [EngineCourseController::class, 'store'])->name('catalog.courses.store');
+        Route::put('courses/{course}', [EngineCourseController::class, 'update'])->name('catalog.courses.update')->whereNumber('course');
+        Route::post('courses/{course}/transition', [EngineCourseController::class, 'transition'])->name('catalog.courses.transition')->whereNumber('course');
     });
 
     Route::prefix('hr')->middleware(['role:super_admin|admin|headmaster'])->group(function () {

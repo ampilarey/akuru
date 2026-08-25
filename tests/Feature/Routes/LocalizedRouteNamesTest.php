@@ -205,6 +205,23 @@ class LocalizedRouteNamesTest extends TestCase
             'hr.payroll.export',
             'hr.payslips.document',
             'portal.payslips',
+            'catalog.subjects.index',
+            'catalog.subjects.store',
+            'catalog.subjects.update',
+            'catalog.subjects.export',
+            'catalog.audiences.index',
+            'catalog.audiences.store',
+            'catalog.audiences.update',
+            'catalog.audiences.export',
+            'catalog.levels.index',
+            'catalog.levels.store',
+            'catalog.levels.update',
+            'catalog.levels.export',
+            'catalog.courses.index',
+            'catalog.courses.store',
+            'catalog.courses.update',
+            'catalog.courses.transition',
+            'catalog.courses.export',
         ];
 
         foreach ($names as $name) {
