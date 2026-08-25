@@ -984,10 +984,20 @@ rate limiting, and the Inertia shell. No new 1A.1 code.
 - Students do not see answer keys until scored + `show_correct_answer`.
 - Unlock formula is unchanged (`lock_next_lesson` is stored only).
 
+## 2.2 — Question bank (done)
+
+- `questions` in Courses. Types map onto the four 2.1 patterns.
+- Catalog CRUD + CSV at `/catalog/questions`. Optional private media
+  attachments via Media Actions.
+- Standards tagging goes through ExamsGrades Actions only. S3.5 tables
+  are not required; tagging is a no-op until they exist.
+- `SnapshotQuestionAction` freezes question content so later edits
+  cannot change an existing snapshot.
+
 ## Next
 
-1. Phase 2 remaining — 2.2 question bank, 2.3 assessments, 2.4 teacher
-   review, 2.5 session UI polish (`docs/2_SPEC.md`).
+1. Phase 2 remaining — 2.3 assessments, 2.4 teacher review, 2.5 session
+   UI polish (`docs/2_SPEC.md`).
 2. Operator: unify-verify / smoke / production (unchanged).
 3. Dual-write stays.
 4. S5 DoD remaining: month-in-the-life on real data, two parallel
