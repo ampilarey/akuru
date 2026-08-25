@@ -1,4 +1,4 @@
-import { router, useForm } from '@inertiajs/react';
+import { router, useForm, usePage } from '@inertiajs/react';
 import AppShell from '../../../Layouts/AppShell';
 
 const DAYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
@@ -29,6 +29,7 @@ export default function Builder({
     substitutions,
     canOverride,
 }) {
+    const pageErrors = usePage().props.errors || {};
     const form = useForm({
         academic_year_id: yearId || '',
         class_id: classId || '',
@@ -149,8 +150,12 @@ export default function Builder({
                         <input className="form-input" placeholder="Override reason" value={form.data.conflict_reason} onChange={(e) => form.setData('conflict_reason', e.target.value)} />
                     </>
                 )}
-                {form.errors.conflicts && <p className="md:col-span-4 text-sm text-red-600">{form.errors.conflicts}</p>}
-                {form.errors.period_id && <p className="md:col-span-4 text-sm text-red-600">{form.errors.period_id}</p>}
+                {(form.errors.conflicts || pageErrors.conflicts) && (
+                    <p className="md:col-span-4 text-sm text-red-600">{form.errors.conflicts || pageErrors.conflicts}</p>
+                )}
+                {(form.errors.period_id || pageErrors.period_id) && (
+                    <p className="md:col-span-4 text-sm text-red-600">{form.errors.period_id || pageErrors.period_id}</p>
+                )}
             </div>
 
             <div className="no-print mb-4">
@@ -210,6 +215,9 @@ export default function Builder({
                                                         <div className="font-medium">{subjectName(entry.subject_id)}</div>
                                                         <div>{teacherName(entry.teacher_id)}</div>
                                                         {entry.room_id && <div>{roomName(entry.room_id)}</div>}
+                                                        {(entry.valid_from || entry.valid_until) && (
+                                                            <div className="text-gray-500">{entry.valid_from || '…'}–{entry.valid_until || '…'}</div>
+                                                        )}
                                                         {entry.conflicts?.length > 0 && (
                                                             <div className="text-red-700">Conflict: {entry.conflicts.map((item) => item.type).join(', ')}</div>
                                                         )}
