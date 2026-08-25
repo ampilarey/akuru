@@ -79,6 +79,7 @@ return [
     'registration_student' => \App\Domains\People\Models\RegistrationStudent::class,
     'report' => \App\Domains\Settings\Models\Report::class,
     'room' => \App\Domains\Academics\Models\Room::class,
+    'room_booking' => \App\Domains\Academics\Models\RoomBooking::class,
     'school' => \App\Domains\Settings\Models\School::class,
     'setting' => \App\Domains\Settings\Models\Setting::class,
     'staff_profile' => \App\Domains\People\Models\StaffProfile::class,
