@@ -1025,10 +1025,15 @@ rate limiting, and the Inertia shell. No new 1A.1 code.
 - Listed through `ListArabicReferenceAction` so later skill activities
   can attach ids as metadata. No engine `course_type` branches. No AI.
 
+## Arabic A.2 — Skill activities on the four patterns (done)
+
+- `settings.skill` is `listening|speaking|reading|writing`.
+- Optional `letter_id` / `harakah_id` validated through the A.1 list Action.
+- Still the four 2.1 patterns. No Arabic exercise engine. No AI.
+
 ## Next
 
-1. Arabic A.2–A.3 — skill activities on the four patterns, then reports
-   (`docs/ARABIC_A_SPEC.md`).
+1. Arabic A.3 — skill reports (`docs/ARABIC_A_SPEC.md`).
 2. Qur’an module A (human-first, after engine is stable).
 3. Operator: unify-verify / smoke / production (unchanged).
 4. Dual-write stays.

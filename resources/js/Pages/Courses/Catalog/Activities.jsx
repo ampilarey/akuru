@@ -23,11 +23,14 @@ const SAMPLE_DATA = {
     }, null, 2),
 };
 
-export default function Activities({ course, activities, patterns }) {
+export default function Activities({ course, activities, patterns, skills = [], letters = [], harakas = [] }) {
     const form = useForm({
         title: '',
         pattern: 'selection',
         activity_type: 'multiple_choice',
+        skill: '',
+        letter_id: '',
+        harakah_id: '',
         max_score: 1,
         passing_score: '',
         is_required: false,
@@ -69,6 +72,18 @@ export default function Activities({ course, activities, patterns }) {
                     {patterns.map((pattern) => <option key={pattern} value={pattern}>{pattern}</option>)}
                 </select>
                 <input className="form-input" placeholder="Activity type label" value={form.data.activity_type} onChange={(e) => form.setData('activity_type', e.target.value)} />
+                <select className="form-input" value={form.data.skill} onChange={(e) => form.setData('skill', e.target.value)}>
+                    <option value="">No skill tag</option>
+                    {skills.map((skill) => <option key={skill} value={skill}>{skill}</option>)}
+                </select>
+                <select className="form-input" value={form.data.letter_id} onChange={(e) => form.setData('letter_id', e.target.value)}>
+                    <option value="">Any letter</option>
+                    {letters.map((letter) => <option key={letter.id} value={letter.id}>{letter.arabic_character} {letter.display_name}</option>)}
+                </select>
+                <select className="form-input" value={form.data.harakah_id} onChange={(e) => form.setData('harakah_id', e.target.value)}>
+                    <option value="">Any harakah</option>
+                    {harakas.map((row) => <option key={row.id} value={row.id}>{row.symbol} {row.display_name}</option>)}
+                </select>
                 <input className="form-input" type="number" min="1" placeholder="Max score" value={form.data.max_score} onChange={(e) => form.setData('max_score', e.target.value)} />
                 <textarea className="form-input md:col-span-2 min-h-32 font-mono text-xs" value={form.data.data} onChange={(e) => form.setData('data', e.target.value)} />
                 <textarea className="form-input md:col-span-2 min-h-24 font-mono text-xs" value={form.data.settings} onChange={(e) => form.setData('settings', e.target.value)} />
