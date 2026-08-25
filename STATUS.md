@@ -786,9 +786,17 @@ S3). S4.1 has **no new student-keyed writes** beyond existing
 - `invoices:mark-overdue` + `invoices:send-reminders` (7-day throttle).
 - Arrears listing by class/guardian with 30/60/90 buckets + CSV.
 
+## S4.4 — Payment plans (done)
+
+- `payment_plans` + `payment_plan_installments`. Installments must sum to
+  the invoice balance. `invoices.payment_plan_id` now has an FK.
+- `AllocatePaymentAction` is the only allocator (oldest unpaid first,
+  overpayment rejected, `lockForUpdate`). ADR-014: defaulted = follow-up
+  flag, never a school lockout (spec’s “ADR-006” was already used).
+
 ## Next
 
-1. **S4.4 — Payment plans**.
+1. **S4.5 — Discounts, scholarships, waivers**.
 2. Operator: unify-verify / smoke / production (unchanged).
 3. Dual-write stays.
 

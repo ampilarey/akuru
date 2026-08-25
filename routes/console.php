@@ -21,3 +21,4 @@ Schedule::command('registers:generate-expected')->dailyAt('01:15');
 Schedule::command('registers:lock-overdue')->dailyAt('01:30');
 Schedule::command('invoices:mark-overdue')->dailyAt('01:45');
 Schedule::command('invoices:send-reminders')->dailyAt('02:00');
+Schedule::command('invoices:mark-defaulted-plans')->dailyAt('02:15');

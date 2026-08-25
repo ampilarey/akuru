@@ -23,6 +23,7 @@ use App\Domains\Finance\Http\Controllers\ArrearsController;
 use App\Domains\Finance\Http\Controllers\FeeItemController;
 use App\Domains\Finance\Http\Controllers\FeeStructureController;
 use App\Domains\Finance\Http\Controllers\InvoiceController;
+use App\Domains\Finance\Http\Controllers\PaymentPlanController;
 use App\Domains\Hifz\Http\Controllers\QuranProgressController;
 use App\Domains\HR\Http\Controllers\InstructorController as AdminInstructorController;
 use App\Domains\Identity\Http\Controllers\ProfileController;
@@ -289,5 +290,8 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::get('invoices', [InvoiceController::class, 'index'])->name('finance.invoices.index');
         Route::get('arrears/export', [ArrearsController::class, 'export'])->name('finance.arrears.export');
         Route::get('arrears', [ArrearsController::class, 'index'])->name('finance.arrears.index');
+        Route::get('payment-plans/export', [PaymentPlanController::class, 'export'])->name('finance.payment-plans.export');
+        Route::get('payment-plans', [PaymentPlanController::class, 'index'])->name('finance.payment-plans.index');
+        Route::post('payment-plans', [PaymentPlanController::class, 'store'])->name('finance.payment-plans.store');
     });
 });

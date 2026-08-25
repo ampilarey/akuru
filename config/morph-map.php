@@ -67,6 +67,8 @@ return [
     'page' => \App\Domains\Website\Models\Page::class,
     'parent_guardian' => \App\Domains\People\Models\ParentGuardian::class,
     'payment' => \App\Domains\Finance\Models\Payment::class,
+    'payment_plan' => \App\Domains\Finance\Models\PaymentPlan::class,
+    'payment_plan_installment' => \App\Domains\Finance\Models\PaymentPlanInstallment::class,
     'payment_item' => \App\Domains\Finance\Models\PaymentItem::class,
     'period' => \App\Domains\Academics\Models\Period::class,
     'plan_topic' => \App\Domains\Academics\Models\PlanTopic::class,
