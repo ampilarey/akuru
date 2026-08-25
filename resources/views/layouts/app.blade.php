@@ -13,23 +13,7 @@
 
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
-        
-        <!-- Unregister any existing service workers from other projects -->
-        <script>
-            if ('serviceWorker' in navigator) {
-                navigator.serviceWorker.getRegistrations().then(function(registrations) {
-                    for(let registration of registrations) {
-                        registration.unregister();
-                    }
-                });
-                // Clear all caches
-                if ('caches' in window) {
-                    caches.keys().then(function(names) {
-                        for (let name of names) caches.delete(name);
-                    });
-                }
-            }
-        </script>
+        @include('partials.pwa')
     </head>
     <body class="font-sans antialiased">
         <div class="min-h-screen bg-gray-100">

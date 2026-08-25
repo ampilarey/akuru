@@ -8,5 +8,6 @@ enum DocumentType: string
     case NationalId = 'national_id';
     case Passport = 'passport';
     case Photo = 'photo';
+    case Receipt = 'receipt';
     case Other = 'other';
 }

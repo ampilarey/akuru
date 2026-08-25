@@ -8,6 +8,8 @@ use App\Domains\Academics\Actions\SubmitSchoolRequestAction;
 use App\Domains\Academics\Enums\SchoolRequestStatus;
 use App\Domains\Academics\Enums\SchoolRequestType;
 use App\Domains\Academics\Models\SchoolRequest;
+use App\Domains\HR\Actions\ListLeaveTypesAction;
+use App\Domains\People\Actions\ResolveStaffProfileForUserAction;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -36,6 +38,7 @@ class SchoolRequestController extends Controller
             'types' => array_map(fn (SchoolRequestType $type) => $type->value, SchoolRequestType::cases()),
             'canReview' => $canReview,
             'teacherId' => $teacherId,
+            'leaveTypes' => app(ListLeaveTypesAction::class)->execute(true)->values(),
         ]);
     }
 
@@ -47,8 +50,11 @@ class SchoolRequestController extends Controller
             'type' => ['required', Rule::enum(SchoolRequestType::class)],
             'reason' => ['required', 'string', 'max:2000'],
             'teacher_id' => ['nullable', 'integer', 'exists:teachers,id'],
+            'leave_type_id' => ['nullable', 'integer', 'exists:leave_types,id'],
             'from_date' => ['nullable', 'date'],
             'to_date' => ['nullable', 'date'],
+            'half_day' => ['sometimes', 'boolean'],
+            'document_id' => ['nullable', 'integer', 'exists:documents,id'],
         ]);
 
         $type = SchoolRequestType::from($data['type']);
@@ -68,6 +74,22 @@ class SchoolRequestController extends Controller
             ];
             $regardingType = 'teacher';
             $regardingId = $teacherId;
+        }
+
+        if ($type === SchoolRequestType::StaffLeave) {
+            $profile = app(ResolveStaffProfileForUserAction::class)->execute((int) $request->user()->id);
+            abort_unless($profile !== null, 422, 'A staff profile is required for leave.');
+            abort_unless(! empty($data['leave_type_id']), 422, 'A leave type is required.');
+            $payload = [
+                'staff_profile_id' => (int) $profile['id'],
+                'leave_type_id' => (int) $data['leave_type_id'],
+                'from_date' => $data['from_date'] ?? now()->toDateString(),
+                'to_date' => $data['to_date'] ?? ($data['from_date'] ?? now()->toDateString()),
+                'half_day' => (bool) ($data['half_day'] ?? false),
+                'document_id' => $data['document_id'] ?? null,
+            ];
+            $regardingType = 'staff_profile';
+            $regardingId = (int) $profile['id'];
         }
 
         app(SubmitSchoolRequestAction::class)->execute([

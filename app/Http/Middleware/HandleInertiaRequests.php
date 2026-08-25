@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use Illuminate\Http\Request;
 use Inertia\Middleware;
+use Mcamara\LaravelLocalization\Facades\LaravelLocalization;
 
 class HandleInertiaRequests extends Middleware
 {
@@ -41,6 +42,9 @@ class HandleInertiaRequests extends Middleware
             ...parent::share($request),
             'locale' => $locale,
             'locales' => ['en', 'dv', 'ar'],
+            'locale_urls' => collect(['en', 'dv', 'ar'])->mapWithKeys(
+                fn (string $code) => [$code => LaravelLocalization::getLocalizedURL($code) ?: '/'.$code],
+            )->all(),
             'rtl' => in_array($locale, ['ar', 'dv'], true),
             'auth' => [
                 'user' => $request->user()?->only(['id', 'name', 'email']),
@@ -48,6 +52,9 @@ class HandleInertiaRequests extends Middleware
             'flash' => [
                 'success' => $request->session()->get('success'),
                 'error' => $request->session()->get('error'),
+            ],
+            'i18n' => [
+                'learn' => trans('learn'),
             ],
         ];
     }

@@ -746,26 +746,332 @@ All 13 `student_guardians` rows are `unmapped`. 12/13 `guardian_user_id`s are **
 
 **Stop:** no S3, no Hifz, no Deploy 3. Student-keyed S2 writes stay blocked.
 
-## Next
+## S3.1 — Grading foundations (2026-08-25)
 
-**Operator still owns** unify-verify collisions, guardians, smoke,
-production. Operator asked to complete S3 coding one slice at a time
-anyway (same as S2.6–S2.10). S3.1 has **no student-keyed rows**.
+- **Done.** Additive `grade_scales` / `grade_scale_bands` / `weight_schemes` / `weight_scheme_items` with `academic_year_id` (rule 10). Seeded 4-point / 5-point / A–F / 0–100 scales and default scheme (attendance 5, classwork 15, homework 10, quizzes 20, exams 50).
+- Spatie `exams.manage`; `Grading/ExamTypeController` + `/exams/scales|types|weights` + CSV. Engine-agnostic — no course_type branches.
+- Merged onto current `main` after S4–Qur’an A (S3 was a parallel stack from older `main`). Permissions and nav unioned with finance/HR/courses.
+- Pest: `S3/GradingFoundationsTest`, `S3/GradingFoundationsArchitectureTest`.
 
-## S3.1 — Grading foundations (done)
+**Historical note (S4 landed first):** S2.1–S2.10 coding is on `main`. Staging
+schema is at `a9d5677` (S1.1b–S2.10 migrated). Unify-verify is red;
+ADR-007 forbids guessing the four collisions or inventing guardian
+users. No Hifz migration, no Deploy 3, no student-keyed write
+follow-up until the operator marks verify green. Operator asked to
+complete S4 coding one slice at a time anyway (S4 is independent of
+S3). S4.1 has **no new student-keyed writes** beyond existing
+`invoices.student_id` (already FK to `students`).
 
-- `grade_scales` (percentage / letter / competency bands, one default).
-- `exam_types` (midterm, final, quiz, assignment, practical, oral).
-- `assessment_weight_schemes` (year / class / subject). Weights must
-  sum to 100. Resolve: subject → class → year.
-- Admin Inertia + CSV at `exams.scales.*`, `exams.types.*`,
-  `exams.weights.*`. Permission `exams.manage`.
-- ADR-012 (document renderer: Browsershot in S3.6; stub until then).
-  Spec's "ADR-005" number was already the morph map.
-- Morph aliases `grade_scale`, `exam_type`, `assessment_weight_scheme`.
-- Legacy `Academics\Models\Grade` / quizzes untouched. Hifz / Deploy 3
-  untouched. No exam_marks yet (S3.2+).
-- Pest: `GradingFoundationsTest` + morph + routes + architecture green.
+## S4.1 — Schema scoping & gaps (done)
+
+- `invoices` add `academic_year_id`, nullable `term_id`, `invoice_type`
+  (`school_fees` / `course_fee` / `other`), nullable `payment_plan_id`
+  (no FK until S4.4). Existing `student_id` already FKs `students`.
+- `fee_items` add trilingual names; `applicable_grades` kept.
+- New `receipts` (number unique, method enum, optional payment +
+  document). Permission `finance.record-manual-payment` +
+  `finance.manage`. Fee-item catalog + CSV.
+- Hifz / Deploy 3 / S3 untouched.
+
+## S4.2 — Fee structures (done)
+
+- `fee_structures` + `fee_structure_items`. One active structure per
+  class per year. Copy-from-last-year remaps classes by name+section
+  and lands drafts. Admin builder + CSV.
+- Academics list/resolve year actions used so Finance does not import
+  Academics models.
+
+## S4.3 — Invoice generation (done)
+
+- `invoice_generation_logs` unique(student, structure, period_key).
+- `GenerateInvoicesAction`: roster from class_student, monthly per-month
+  or consolidated (qty × term months), optional-item toggles,
+  adjustments hook (empty until S4.5).
+- Issue → sent + SMS/in-app to financially-responsible guardians.
+- `invoices:mark-overdue` + `invoices:send-reminders` (7-day throttle).
+- Arrears listing by class/guardian with 30/60/90 buckets + CSV.
+
+## S4.4 — Payment plans (done)
+
+- `payment_plans` + `payment_plan_installments`. Installments must sum to
+  the invoice balance. `invoices.payment_plan_id` now has an FK.
+- `AllocatePaymentAction` is the only allocator (oldest unpaid first,
+  overpayment rejected, `lockForUpdate`). ADR-014: defaulted = follow-up
+  flag, never a school lockout (spec’s “ADR-006” was already used).
+
+## S4.5 — Discounts, scholarships, waivers (done)
+
+- `fee_adjustments` (percent then fixed, validity window, approved only).
+- Applied at generation as transparent discount lines. Sibling suggestion
+  via shared financially-responsible guardian. Not Commerce codes (L4).
+
+## S4.6 — Payment + portal (done)
+
+- Webhook confirmation (Rule 12) creates a receipt and allocates;
+  a second delivery is a no-op. Manual cash/transfer is gated by
+  `finance.record-manual-payment`. Receipts render through
+  `DocumentRendererInterface` (`HtmlDocumentRenderer`).
+- Parent portal: invoices, balance, plan progress, pay-now, receipt
+  HTML. Admin collections + reconciliation CSVs.
+
+## S5.1 — Staff attendance (done)
+
+- `staff_attendance` unique `(staff_profile_id, date)` plus `academic_year_id`
+  (rule 10). `StaffAttendanceWriterInterface` is the only writer
+  (`manual`, `self`, `external`, `import`). Precedence: `on_leave` >
+  holiday > present/absent/late.
+- Holiday auto-fill from `calendar_days` (holiday + closure) skips
+  existing leave. Monthly summary action is ready for S5.6 payroll.
+- Nullable `department` + `designation` on `staff_profiles`. Admin
+  Inertia + CSV import/export + late/absence reports. Portal self
+  check-in behind `hr.staff_self_checkin` (off by default) logs IP.
+- Permission `hr.manage`. People actions only — HR does not import
+  People models.
+
+## S5.2 — Leave management (done)
+
+- `leave_types`, `leave_entitlements` (academic year — ADR-015),
+  append-only `leave_ledger`. Balance is always the ledger sum.
+- S2.10 `requests` gains `staff_leave`. Approval checks balance
+  (unpaid bypasses), writes `staff_attendance` `on_leave`, decrements
+  the ledger, and still creates `teacher_absences` + substitutions when
+  the staff member teaches. All-or-nothing transaction.
+- `teacher_leave` without a leave type keeps the S2.10 path.
+- Carry-over caps at `carry_over_max`. Admin types/balances + CSV.
+  Portal shows own balances only.
+
+## S5.3 — Contracts & compliance (done)
+
+- `staff_contracts`: one active per staff; a new active contract
+  supersedes the previous (history kept).
+- Shared `documents.expires_at` plus `document_expiry_notices`.
+  `hr:notify-expiring-documents` fires 90/60/30 once each to
+  `hr.manage` users and the staff member. Not expat-hardcoded.
+
+## S5.4 — Recruitment & onboarding (done)
+
+- `job_postings` + `job_applications` (Admissions-like stages).
+- `HireApplicantAction` creates a user, staff profile, and onboarding
+  checklist from Settings templates. Offboarding is the mirror list.
+- Public `/careers` lists published public postings only (no W-track
+  restyle).
+
+## S5.5 — Performance & CPD (done)
+
+- `appraisal_cycles` + `appraisals` (staff acknowledge + comment).
+- `lesson_observations` store S2 class/subject IDs read-only.
+- `cpd_records` + per-staff summary on the portal.
+
+## S5.6 — Payroll (done; flagged off)
+
+- `payroll_periods` + `payslips`. `PayrollCalculatorInterface` /
+  `MaldivesPayrollCalculator`. Rates live in `payroll.rules` (ADR-016
+  half-up 2dp). Unpaid days come from `on_leave` attendance marked
+  unpaid. Mid-month join/exit prorates.
+- `RunPayrollAction` is idempotent for drafts. Approve finalizes and
+  locks the month (blocks retro attendance/leave). Mark paid writes a
+  Finance `payroll_postings` receipt, bank CSV, and HTML payslip via
+  `DocumentRendererInterface`.
+- Permissions: `payroll.run` vs `payroll.approve`. Staff see own
+  payslips only. `payroll.enabled` stays **off**.
+
+## 1A.1 — Auth / roles / settings (already satisfied)
+
+Phase 0 + S1 already shipped auth, Spatie roles, users, Settings,
+rate limiting, and the Inertia shell. No new 1A.1 code.
+
+## 1A.2 — Taxonomy + engine course CRUD (done)
+
+- `course_subjects` (hierarchical, ADR-003), `audiences`, `course_levels`
+  — admin-managed, trilingual, seed examples only.
+- Additive on `courses`: `subject_id`, `workflow_status`, `course_type`,
+  `created_by`, `title_dv`/`title_ar`. Marketing `status` is untouched.
+- Workflow: draft → in_review → published → archived. Invalid hops
+  rejected. `courses.publish` is required to publish.
+- Inertia catalog under `/catalog/*` + CSV export. Website Blade
+  courses stay as they are.
+
+## 1A.3 — Modules, lessons, revisions (done)
+
+- Outline CRUD under `/catalog/courses/{id}/outline`.
+- Publish writes `lesson_revisions.snapshot_json` (ADR-017). Player
+  reads the current published revision only.
+- Draft block edits, deletes, and reorders do not mutate history.
+
+## 1A.4 — Core text blocks (done)
+
+- Validated `text`, `rich_text`, `instruction`. Direction is a setting.
+- Media block types rejected. Player renders published snapshots.
+
+## 1A.5 — Media pipeline + media blocks (done)
+
+- `media_files` (private, local disk). Courses calls Media Actions only.
+- Queued `ProcessMediaFileJob` marks processed; no inline thumbnails.
+- Image / audio / video / PDF blocks store `media_id` (no public URL).
+- Video also accepts YouTube/Vimeo embeds. Authorized
+  `GET /catalog/media/{id}` serves bytes. Player renders all four types.
+
+## 1A.6 — Self-learning enrollment + progress (done)
+
+- Free enroll on published courses via `/learn` (existing `course_enrollments`).
+- Progress domain owns `student_lesson_progress` with `lesson_revision_id`.
+- Access: staff, preview, or active enrollment. Next required lesson locks
+  until the previous is completed. Course % is required-lesson based.
+- Enrolled students can stream private media via `/learn/media/{id}`.
+
+## 1A.7 — Parent-child polish + architecture tests (done)
+
+- ADR-018: People answers guardian access via Actions, not model imports.
+- Additive `guardian_student` consent/verification fields.
+- `/portal/learning` is read-only child progress. Player stays
+  staff/student/preview.
+- `learn` lang files (EN/DV/AR). Admin i18n preview. Logical CSS on 1A
+  listings. Phase 1A boundary architecture tests.
+
+## 1B.1 — Offerings + delivery modes (done)
+
+- `course_offerings` in the Offerings domain. Modes: self_learning,
+  face_to_face, live_online, blended, hybrid.
+- Publishing a course creates a default open self-learning offering
+  (`pin_mode=latest`). Catalog CRUD + CSV at `/catalog/offerings`.
+- Offerings call Courses Actions only (no Courses model imports).
+
+## 1B.2 — Pinning, offering enrollment, seat limits (done)
+
+- Offerings can pin current lesson revision ids. Player uses the pin
+  when the enrollment is linked to that offering.
+- `course_enrollments.course_offering_id` is additive. Self-learning
+  enroll attaches the default self-learning offering.
+- Seat limits: `lockForUpdate` on the offering + enrollment count.
+
+## 1B.3 — Sessions + attendance foundation (done)
+
+- `course_offering_sessions` + `attendance_records` in Offerings
+  (not Academics `attendance` / `class_attendance`).
+- Time-scoped columns: `academic_year_id` / `term_id` on sessions;
+  `academic_year_id` on attendance.
+- Catalog session CRUD + CSV; attendance only for that offering's
+  enrollments. Learner dashboard/course page show upcoming sessions.
+- Offerings call Courses Actions for the roster (no model imports).
+
+## 1B.4 — Remaining block types (done)
+
+- `glossary` / `term`, `dialogue`, `flashcard`, `download`,
+  `quiz_embed`, `assignment_embed` on the engine outline and player.
+- Glossary is not Arabic-only. Download uses private media ids.
+- Quiz/assignment embeds are id/URL pointers only.
+
+## 1B.5 — Unlock + completion evaluators (done)
+
+- Progress owns `EvaluateLessonUnlockAction` (sequential required
+  lessons) and `EvaluateCourseCompletionAction` (required lessons +
+  optional required sessions).
+- Courses calls those Actions; Offerings reports session attendance
+  via `ListRequiredSessionProgressAction`.
+- Unit tests cover the formula (including 2/3 = 66).
+
+## 1B.6 — PWA + i18n/RTL polish (done)
+
+- `manifest.webmanifest`, `sw.js`, `/offline.html`. Layouts register
+  the service worker (no longer unregister).
+- AppShell locale switcher (EN/DV/AR). Faruma for Thaana, Cairo/Amiri
+  for Arabic. Learn keys aligned across locales.
+- Admin i18n preview asserts thaana/arabic font classes.
+
+## 2.1 — Activity patterns + builder (done)
+
+- Four patterns: `selection`, `text_input`, `arrange`, `teacher_marked`.
+- Courses owns `activities`; Progress owns `activity_attempts`.
+- Catalog CRUD + CSV at `/catalog/courses/{id}/activities`.
+- Learner player at `/learn/activities/{id}` with autosave and submit.
+- Auto-mark selection / text / arrange. Text normalization is per-activity
+  (Arabic flags off unless configured). Teacher-marked stays submitted.
+- Students do not see answer keys until scored + `show_correct_answer`.
+- Unlock formula is unchanged (`lock_next_lesson` is stored only).
+
+## 2.2 — Question bank (done)
+
+- `questions` in Courses. Types map onto the four 2.1 patterns.
+- Catalog CRUD + CSV at `/catalog/questions`. Optional private media
+  attachments via Media Actions.
+- Standards tagging goes through ExamsGrades Actions only. S3.5 tables
+  are not required; tagging is a no-op until they exist.
+- `SnapshotQuestionAction` freezes question content so later edits
+  cannot change an existing snapshot.
+
+## 2.3 — Assessment builder + player (done)
+
+- `assessments` + `assessment_questions` in Courses; attempts in Progress.
+- Catalog builder attaches bank questions, CSV export, publish/draft.
+- Learner player snapshots questions on first open, autosaves, scores
+  from the snapshot. Editing the bank cannot change an in-flight attempt.
+- Retake limit and show-correct-answers apply. Teacher-marked items stay
+  submitted until 2.4.
+
+## 2.4 — Teacher review (done)
+
+- Additive `feedback` / `reviewed_by` / `reviewed_at` on activity and
+  assessment attempts. Assessment attempts also store `item_scores`.
+- Catalog queue at `/catalog/reviews` (courses.manage). Scoring sets
+  status to `scored` and stores feedback.
+- Learners see feedback on the activity and assessment players.
+
+## 2.5 — Session + attendance UI polish (done)
+
+- Session update + `teacher_user_id` assignment.
+- Attendance roster shows student names (People Actions) and can bulk-mark.
+- Student schedule `/learn/schedule`. Teacher schedule `/teach/schedule`.
+- Offerings still owns sessions/attendance; no Academics imports.
+
+## Arabic A.1 — Letters + harakas (done)
+
+- Admin-managed `arabic_letters` (28 seeded) and `arabic_harakas`
+  (fatha/kasra/damma/sukoon). Catalog `/catalog/arabic` + CSV.
+- Listed through `ListArabicReferenceAction` so later skill activities
+  can attach ids as metadata. No engine `course_type` branches. No AI.
+
+## Arabic A.2 — Skill activities on the four patterns (done)
+
+- `settings.skill` is `listening|speaking|reading|writing`.
+- Optional `letter_id` / `harakah_id` validated through the A.1 list Action.
+- Still the four 2.1 patterns. No Arabic exercise engine. No AI.
+
+## Arabic A.3 — Skill reports (done)
+
+- Catalog `/catalog/arabic/reports` (+ CSV) and learner
+  `/learn/arabic-report`.
+- Built from skill-tagged activities + Progress attempt Actions.
+- No parallel LMS. No AI.
+
+## Qur’an A.1 — Read Actions over existing tables (done)
+
+- Hifz `ListSurahsAction` / `ListAyahsAction` read `surahs` and
+  `quran_ayahs`. Bound as `QuranReferenceReader`.
+- Catalog `/catalog/quran` (+ CSV). Courses uses the Support contract
+  only — no Hifz namespace import, no dashboard/scoring change.
+- No parallel Quran tables.
+
+## Qur’an A.2 — Recitation as teacher-marked activities (done)
+
+- `settings.surah_id` / `ayah_start` / `ayah_end` on the four 2.1
+  patterns (intended for `teacher_marked` recitation). Validated
+  through `QuranReferenceReader`.
+- Learner player shows the passage. 2.4 review still scores it.
+- No Hifz dashboard, assignment table, or scoring change.
+
+## Qur’an A.3 — Offering / session mapping (done)
+
+- Offerings mapping tables with integer Hifz ids (no FK).
+- Catalog session screen can link a program and map sessions.
+- Hifz dashboards, scoring, and tables are not written.
+- ADR-019. Dual-write / switch stays later.
+
+## Qur’an A.4 — Dual-write only (done)
+
+- `QURAN_HALAQA_DUAL_WRITE` defaults false.
+- Catalog sync mirrors unmapped Hifz sessions + active enrollments.
+- Flag-on Hifz session create also mirrors; failures never block Hifz.
+- No read switch. No Hifz table cleanup. ADR-020.
 
 ## S3.2 — Exams (done)
 
@@ -804,15 +1110,10 @@ anyway (same as S2.6–S2.10). S3.1 has **no student-keyed rows**.
 
 ## Next
 
-1. **S3.5 — Curriculum standards** (definitions + tagging).
-2. Operator: unify-verify / smoke / production (unchanged).
-3. Dual-write stays. Staging student-keyed writes stay blocked until
-   verify is green; coding continues.
+**Operator (not in this slice):** `unify-verify` still red (4 RS collisions + guardian pivot). Student dual-write stays until staging is green. `payroll.enabled` off until credentials. BML sandbox / Thaana receipts / credential smoke / production. S3.3+ writes student-keyed `exam_marks` — coding continues; staging writes stay blocked until verify is green.
 
-**Operator (their side, unchanged):**
+**S3.5+ (stacked, not yet merged onto main):** standards → report cards → awards.
 
-1. Collision / guardian / RS-29 1:1 decision (see table above).
-2. Paste any later verify stdout; keep
-   `docs/migrations/s11b-student-unification-report.json` current.
-3. Branch protection. Credential smoke. Production: nothing until
-   smoke is recorded. Dual-write stays.
+**Qur'an A.4b (later):** switch offering-session reads to `offering_halaqa_session_links` after operators confirm dual-write. Then Hifz cleanup (deploy 3). Keep `QURAN_HALAQA_DUAL_WRITE` off until verified.
+
+**Arabic B / Qur'an B / later:** pronunciation AI, Capacitor, W1–W3, L-track.
