@@ -83,6 +83,9 @@ class StartAssessmentAttemptAction
             'started_at' => optional($attempt->started_at)?->toIso8601String(),
             'last_saved_at' => optional($attempt->last_saved_at)?->toIso8601String(),
             'submitted_at' => optional($attempt->submitted_at)?->toIso8601String(),
+            'feedback' => $attempt->feedback,
+            'item_scores' => $attempt->item_scores,
+            'reviewed_at' => optional($attempt->reviewed_at)?->toIso8601String(),
         ];
     }
 

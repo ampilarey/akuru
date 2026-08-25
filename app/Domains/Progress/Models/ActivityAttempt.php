@@ -21,6 +21,9 @@ class ActivityAttempt extends Model
         'started_at',
         'last_saved_at',
         'submitted_at',
+        'feedback',
+        'reviewed_by',
+        'reviewed_at',
     ];
 
     protected function casts(): array
@@ -31,6 +34,7 @@ class ActivityAttempt extends Model
             'started_at' => 'datetime',
             'last_saved_at' => 'datetime',
             'submitted_at' => 'datetime',
+            'reviewed_at' => 'datetime',
         ];
     }
 }

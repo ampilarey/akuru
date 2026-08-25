@@ -29,6 +29,9 @@ export default function AppShell({ title, children }) {
                         <Link href="/catalog/questions" className="text-[#7C2D37] hover:underline">
                             Questions
                         </Link>
+                        <Link href="/catalog/reviews" className="text-[#7C2D37] hover:underline">
+                            Reviews
+                        </Link>
                         <Link href="/catalog/subjects" className="text-[#7C2D37] hover:underline">
                             Subjects
                         </Link>

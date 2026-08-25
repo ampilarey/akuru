@@ -247,6 +247,8 @@ class LocalizedRouteNamesTest extends TestCase
             'catalog.courses.activities.update',
             'catalog.courses.activities.destroy',
             'catalog.courses.activities.export',
+            'catalog.reviews.index',
+            'catalog.reviews.store',
             'catalog.questions.index',
             'catalog.questions.store',
             'catalog.questions.update',

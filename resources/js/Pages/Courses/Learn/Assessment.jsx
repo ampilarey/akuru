@@ -35,6 +35,9 @@ export default function Assessment({ assessment, enrollment, attempt }) {
                 {attempt?.status ? ` · ${attempt.status}` : ''}
                 {attempt?.score != null ? ` · ${attempt.score}/${attempt.max_score}` : ''}
             </p>
+            {attempt?.feedback && (
+                <p className="mb-4 rounded-lg border bg-white p-3 text-sm">Teacher feedback: {attempt.feedback}</p>
+            )}
             <div className="space-y-4">
                 {(attempt?.snapshots || []).map((snapshot, index) => {
                     const current = answers[snapshot.question_id] || {};
