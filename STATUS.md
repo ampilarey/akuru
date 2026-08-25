@@ -228,10 +228,12 @@ See `docs/STAGING.md` (re-exec-after-pull rejected: blast radius).
 | Agent | S1.1c Deploy 2 switch reads | **Done** (`2f8a90b`) |
 | Agent | S1.2–S1.5 | **Done** (`8f1ecb8`) |
 | Agent | Docs §5.1 audience-surface (`#13`) | **Done** (`5690034`) |
-| Agent | Staging `students:verify-unification` | **Blocked** — no SSH / no server console |
+| Agent | Staging `students:verify-unification` (manual SSH) | **Blocked** — no SSH; S2.0 automates via deploy log |
 | Agent | Branch protection on `main` | **Blocked** — `403 Resource not accessible by integration` |
-| Operator | `students:verify-unification` on staging + archive report | **Pending** — S2 blocked until green |
-| Operator | Branch protection (required `quality`, no direct push, no self-merge) | **Pending** — apply in repo settings |
+| Agent | S2.0 unify-verify deploy gate | **This slice** |
+| Operator | Copy verify output from `~/self-update-test.log` + archive JSON | **Pending** — after S2.0 + follow-up merge |
+| Operator | Branch protection (required `quality`, no direct push, no self-merge) | **Deferred** (operator-approved 2026-08-25) |
+| Operator | Credential smoke steps 1–7 | **Deferred** (operator-approved 2026-08-25); **production receives nothing** until recorded |
 
 ## S1.1a — Unified Student schema (Deploy 1 additive, no backfill)
 
@@ -258,7 +260,9 @@ See `docs/STAGING.md` (re-exec-after-pull rejected: blast radius).
   not guessed. First RS wins the legacy slot.
 - Gate: `php artisan students:verify-unification` (`--backfill` re-runs the
   idempotent job). Report: `storage/app/s11b-student-unification-report.json`.
-  Zero unresolved = Deploy 2 gate. Not wired into auto-deploy.
+  Zero unresolved = Deploy 2 gate. Wired into auto-deploy as of S2.0
+  (read-only; never `--backfill`). First-deploy caveat: evidence from the
+  **second** merge after S2.0.
 - People action uses `DB::table` for users/enrollments (no Courses/Identity
   model imports). Hifz / RegistrationStudent reads untouched.
 
@@ -370,7 +374,7 @@ command was **not simulated** against local `akuru_institute` / `akuru_test`.
 | SSH keys / `~/.ssh/config` | None (only `known_hosts`) |
 | `ssh akuruedu@test.akuru.edu.mv` | `Network is unreachable` (port 22) |
 | `ssh akuruedu@akuru.edu.mv` | `Permission denied (publickey,password)` |
-| Staging deploy path | Webhook → `scripts/pull-deploy-test.sh` only (`docs/STAGING.md`). That script does **not** run `students:verify-unification`. |
+| Staging deploy path | Webhook → `scripts/pull-deploy-test.sh` only (`docs/STAGING.md`). S2.0 adds the read-only verify gate; evidence starts on the **second** deploy after that merge. |
 
 **Verdict:** no counts. No `storage/app/s11b-student-unification-report.json`
 from staging. Nothing archived under `docs/migrations/`. Deploy 2
@@ -425,6 +429,29 @@ Intended settings (classic protection or a ruleset):
 
 Settings UI: `https://github.com/ampilarey/akuru/settings/branches`
 
+## S2 kickoff — deferred gates (operator-approved 2026-08-25)
+
+Branch protection, staging `students:verify-unification` evidence, and
+credential smoke are **deferred**. Consequences accepted:
+
+- **(a)** Until protection exists, **every PR in this phase waits for CI
+  green and is NOT self-merged** (state that in each PR body).
+- **(b)** Production receives **nothing** until credential smoke is recorded.
+- **(c)** Any S2 slice that **writes student-keyed rows** (attendance,
+  register entries, absence notes, behavior) is **BLOCKED** until
+  `students:verify-unification` is green on staging (deploy-log evidence
+  copied here + JSON under `docs/migrations/`).
+
+### S2.0 — Unify-verify deploy gate (merged #15)
+
+`scripts/pull-deploy-test.sh` runs `php artisan students:verify-unification`
+(read-only, never `--backfill`) after `morph-map:verify`. Warn-don't-fail if
+the command is missing; `STUDENT-UNIFICATION GATE FAILED` + exit 1 on
+nonzero. `docs/STAGING.md` updated.
+
+**First-deploy caveat (known):** the #15 merge still runs the pre-pull script.
+Evidence appears from the **second** auto-deploy (S2.0b).
+
 ## S2.1 — Rooms (first-class, no student writes)
 
 Plan confirmed (operator “Next”). Rooms only — timetable `room_id` / year /
@@ -454,10 +481,14 @@ conflict engine is **S2.2**.
 
 ## Next
 
+<<<<<<< HEAD
 1. **S2.3** — React timetable builder (safe under deferral).
 2. **S2.0 / S2.1** PRs still open — merge when CI is green; then **S2.0b**
    so staging runs `students:verify-unification`.
+=======
+1. **S2.2** — timetable v2 + `TimetableConflictChecker` (safe under deferral).
+2. **S2.0b** trivial docs so staging actually runs `students:verify-unification`.
+>>>>>>> origin/main
 3. S2.6–S2.10 stay **blocked** until verify is green on staging.
-4. Every S2 PR: wait for CI green; **do not self-merge**. Production: nothing
-   until credential smoke is recorded.
+4. Production: nothing until credential smoke is recorded.
 5. **S1.1 Deploy 3** still ≥2 weeks after `2f8a90b`. Dual-write stays.
