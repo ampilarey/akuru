@@ -19,6 +19,7 @@ use App\Domains\Academics\Http\Controllers\TeacherRegisterController;
 use App\Domains\Academics\Http\Controllers\TimetableBuilderController;
 use App\Domains\Academics\Legacy\Http\Controllers\ELearningController;
 use App\Domains\Admissions\Http\Controllers\AdminEnrollmentController;
+use App\Domains\Finance\Http\Controllers\FeeItemController;
 use App\Domains\Hifz\Http\Controllers\QuranProgressController;
 use App\Domains\HR\Http\Controllers\InstructorController as AdminInstructorController;
 use App\Domains\Identity\Http\Controllers\ProfileController;
@@ -267,5 +268,12 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::get('promotion', [PromotionController::class, 'create'])->name('academics.promotion.create');
         Route::post('promotion/dry-run', [PromotionController::class, 'dryRun'])->name('academics.promotion.dry-run');
         Route::post('promotion', [PromotionController::class, 'commit'])->name('academics.promotion.commit');
+    });
+
+    Route::prefix('finance')->middleware(['role:super_admin|admin|headmaster'])->group(function () {
+        Route::get('fee-items/export', [FeeItemController::class, 'export'])->name('finance.fee-items.export');
+        Route::get('fee-items', [FeeItemController::class, 'index'])->name('finance.fee-items.index');
+        Route::post('fee-items', [FeeItemController::class, 'store'])->name('finance.fee-items.store');
+        Route::put('fee-items/{feeItem}', [FeeItemController::class, 'update'])->name('finance.fee-items.update');
     });
 });

@@ -7,6 +7,7 @@ use App\Domains\Academics\Models\ClassRoom;
 use App\Domains\Academics\Models\Period;
 use App\Domains\Academics\Models\Room;
 use App\Domains\Academics\Models\Subject;
+use App\Domains\Academics\Models\Term;
 use App\Domains\Identity\Models\User;
 use App\Domains\People\Models\Teacher;
 use App\Domains\Settings\Models\School;
@@ -45,6 +46,18 @@ function makeClass(AcademicYear $year, string $name = 'Grade 1', string $section
         'level' => 'Primary',
         'capacity' => 20,
         'is_active' => true,
+    ]);
+}
+
+function makeTerm(AcademicYear $year, string $name = 'Term 1'): Term
+{
+    return Term::query()->create([
+        'academic_year_id' => $year->id,
+        'name' => $name,
+        'start_date' => $year->start_date?->toDateString() ?? '2026-01-01',
+        'end_date' => $year->end_date?->toDateString() ?? '2026-06-30',
+        'status' => 'active',
+        'sort_order' => 1,
     ]);
 }
 

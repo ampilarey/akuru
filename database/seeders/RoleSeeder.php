@@ -139,6 +139,8 @@ class RoleSeeder extends Seeder
             'behavior.manage',
             'requests.submit',
             'requests.review',
+            'finance.manage',
+            'finance.record-manual-payment',
         ];
 
         foreach ($permissions as $permission) {
@@ -194,6 +196,8 @@ class RoleSeeder extends Seeder
             'behavior.manage',
             'requests.submit',
             'requests.review',
+            'finance.manage',
+            'finance.record-manual-payment',
             'manage_announcements',
             'view_announcements',
             'create_announcements',
