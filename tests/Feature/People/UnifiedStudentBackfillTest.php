@@ -8,6 +8,8 @@ use App\Domains\People\Enums\StudentStatus;
 use App\Domains\People\Models\ParentGuardian;
 use App\Domains\People\Models\Student;
 use App\Domains\People\Support\StudentUnificationReport;
+use App\Support\Schema\ForeignKeys;
+use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -47,6 +49,31 @@ it('makes students.user_id nullable and unique on the legacy key', function () {
 
     expect($column['nullable'] ?? null)->toBeTrue()
         ->and(Schema::hasColumn('students', 'legacy_registration_student_id'))->toBeTrue();
+});
+
+it('drops students.user_id foreign keys by live name and is a no-op when absent', function () {
+    expect(ForeignKeys::existsOnColumn('students', 'user_id'))->toBeTrue();
+
+    $dropped = ForeignKeys::dropOnColumn('students', 'user_id');
+
+    expect($dropped)->not->toBeEmpty()
+        ->and(ForeignKeys::existsOnColumn('students', 'user_id'))->toBeFalse()
+        ->and(ForeignKeys::dropOnColumn('students', 'user_id'))->toBe([]);
+
+    Schema::table('students', function (Blueprint $table) {
+        $table->unsignedBigInteger('user_id')->nullable()->change();
+    });
+
+    if (! ForeignKeys::existsOnColumn('students', 'user_id')) {
+        Schema::table('students', function (Blueprint $table) {
+            $table->foreign('user_id')->references('id')->on('users')->nullOnDelete();
+        });
+    }
+
+    $column = collect(Schema::getColumns('students'))->firstWhere('name', 'user_id');
+
+    expect($column['nullable'] ?? null)->toBeTrue()
+        ->and(ForeignKeys::existsOnColumn('students', 'user_id'))->toBeTrue();
 });
 
 it('matches a registration student by user_id and fills an empty passport', function () {
