@@ -24,8 +24,10 @@ column has a single slot.
 
 ## Decision
 
-1. **Nullable `students.user_id`** (additive): drop the required FK, re-add
-   `nullOnDelete`. Unmatched RS without a user create a student with `user_id`
+1. **Nullable `students.user_id`** (additive): drop any live FK on
+   `user_id` (do not assume `students_user_id_foreign` — staging 2026-08-25
+   had none), then `nullable()->change()` and re-add `nullOnDelete` if
+   missing. Unmatched RS without a user create a student with `user_id`
    null. Not a user-status *change* — create uses `forceFill` (no
    `ChangeStudentStatusAction` / history row).
 
