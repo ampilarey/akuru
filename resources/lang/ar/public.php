@@ -27,6 +27,7 @@ return [
     'Featured Courses' => 'الدورات المميزة',
     'Latest News' => 'آخر الأخبار',
     'Upcoming Events' => 'الفعاليات القادمة',
+    'Holidays' => 'العطل',
     'Our Gallery' => 'معرض الصور',
     'What Our Students Say' => 'ماذا يقول طلابنا',
     'Frequently Asked Questions' => 'الأسئلة الشائعة',

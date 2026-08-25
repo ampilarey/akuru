@@ -72,6 +72,7 @@ return [
     'Featured Courses' => 'Featured Courses',
     'Latest News' => 'Latest News',
     'Upcoming Events' => 'Upcoming Events',
+    'Holidays' => 'Holidays',
     'Our Gallery' => 'Our Gallery',
     'What Our Students Say' => 'What Our Students Say',
     'Frequently Asked Questions' => 'Frequently Asked Questions',
