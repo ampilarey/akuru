@@ -1,0 +1,100 @@
+<?php
+
+namespace App\Domains\Courses\Http\Controllers;
+
+use App\Domains\Courses\Actions\DeleteContentBlockAction;
+use App\Domains\Courses\Actions\ListCourseOutlineAction;
+use App\Domains\Courses\Actions\PublishLessonAction;
+use App\Domains\Courses\Actions\ReorderContentBlocksAction;
+use App\Domains\Courses\Actions\SaveContentBlockAction;
+use App\Domains\Courses\Actions\SaveCourseModuleAction;
+use App\Domains\Courses\Actions\SaveLessonAction;
+use App\Domains\Courses\Models\ContentBlock;
+use App\Domains\Courses\Models\Course;
+use App\Domains\Courses\Models\Lesson;
+use App\Http\Controllers\Controller;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Inertia\Inertia;
+use Inertia\Response;
+
+class CourseOutlineController extends Controller
+{
+    public function show(Request $request, int $course): Response
+    {
+        abort_unless($request->user()?->can('courses.manage'), 403);
+
+        return Inertia::render('Courses/Catalog/Outline', app(ListCourseOutlineAction::class)->execute($course));
+    }
+
+    public function storeModule(Request $request, int $course): RedirectResponse
+    {
+        abort_unless($request->user()?->can('courses.manage'), 403);
+        Course::query()->findOrFail($course);
+        app(SaveCourseModuleAction::class)->execute($request->validate([
+            'title' => ['required', 'string', 'max:255'],
+            'description' => ['nullable', 'string'],
+        ]) + ['course_id' => $course, 'created_by' => $request->user()?->id]);
+
+        return redirect()->route('catalog.courses.outline', $course)->with('success', 'Module saved.');
+    }
+
+    public function storeLesson(Request $request, int $course): RedirectResponse
+    {
+        abort_unless($request->user()?->can('courses.manage'), 403);
+        app(SaveLessonAction::class)->execute($request->validate([
+            'course_module_id' => ['required', 'integer', 'exists:course_modules,id'],
+            'title' => ['required', 'string', 'max:255'],
+            'description' => ['nullable', 'string'],
+        ]) + ['created_by' => $request->user()?->id]);
+
+        return redirect()->route('catalog.courses.outline', $course)->with('success', 'Lesson saved.');
+    }
+
+    public function storeBlock(Request $request, int $course): RedirectResponse
+    {
+        abort_unless($request->user()?->can('courses.manage'), 403);
+        $data = $request->validate([
+            'lesson_id' => ['required', 'integer', 'exists:lessons,id'],
+            'type' => ['required', 'string', 'max:40'],
+            'body' => ['nullable', 'string'],
+        ]);
+        app(SaveContentBlockAction::class)->execute([
+            'lesson_id' => $data['lesson_id'],
+            'type' => $data['type'],
+            'data' => ['body' => $data['body'] ?? ''],
+            'created_by' => $request->user()?->id,
+        ]);
+
+        return redirect()->route('catalog.courses.outline', $course)->with('success', 'Block saved.');
+    }
+
+    public function destroyBlock(Request $request, int $course, ContentBlock $block): RedirectResponse
+    {
+        abort_unless($request->user()?->can('courses.manage'), 403);
+        app(DeleteContentBlockAction::class)->execute($block);
+
+        return redirect()->route('catalog.courses.outline', $course)->with('success', 'Block deleted.');
+    }
+
+    public function reorderBlocks(Request $request, int $course): RedirectResponse
+    {
+        abort_unless($request->user()?->can('courses.manage'), 403);
+        $data = $request->validate([
+            'lesson_id' => ['required', 'integer', 'exists:lessons,id'],
+            'block_ids' => ['required', 'array'],
+            'block_ids.*' => ['integer'],
+        ]);
+        app(ReorderContentBlocksAction::class)->execute((int) $data['lesson_id'], $data['block_ids']);
+
+        return redirect()->route('catalog.courses.outline', $course)->with('success', 'Blocks reordered.');
+    }
+
+    public function publishLesson(Request $request, int $course, Lesson $lesson): RedirectResponse
+    {
+        abort_unless($request->user()?->can('courses.manage'), 403);
+        app(PublishLessonAction::class)->execute($lesson, $request->user()?->id);
+
+        return redirect()->route('catalog.courses.outline', $course)->with('success', 'Lesson published.');
+    }
+}

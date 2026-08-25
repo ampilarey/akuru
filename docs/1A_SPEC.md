@@ -17,7 +17,12 @@ Phase 0 + S1 already shipped authentication, Spatie roles, user management, Sett
 
 Invalid workflow transitions rejected. `courses.publish` is required for In Review → Published. Engine admin is Inertia under `/catalog/*`.
 
-## Slice 1A.3 — Modules, lessons, immutable revisions
+## Slice 1A.3 — Modules, lessons, immutable revisions (done)
+
+`course_modules`, `lessons`, `content_blocks` (draft), `lesson_revisions`.
+Publish copies an ordered JSON snapshot (ADR-017). The player reads
+`current_revision_id` only. Draft edit/delete/reorder must not mutate
+a published snapshot. 1B offering pinning will reuse revision ids.
 
 ## Slice 1A.4 — Text / Rich Text / Instruction blocks + builder/player
 

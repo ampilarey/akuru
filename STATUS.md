@@ -886,9 +886,16 @@ rate limiting, and the Inertia shell. No new 1A.1 code.
 - Inertia catalog under `/catalog/*` + CSV export. Website Blade
   courses stay as they are.
 
+## 1A.3 — Modules, lessons, revisions (done)
+
+- Outline CRUD under `/catalog/courses/{id}/outline`.
+- Publish writes `lesson_revisions.snapshot_json` (ADR-017). Player
+  reads the current published revision only.
+- Draft block edits, deletes, and reorders do not mutate history.
+
 ## Next
 
-1. 1A.3 — modules, lessons, immutable revisions (SPEC §57.3).
+1. 1A.4 — Text / Rich Text / Instruction blocks + builder/player.
 2. Operator: unify-verify / smoke / production (unchanged).
 3. Dual-write stays.
 4. S5 DoD remaining: month-in-the-life on real data, two parallel

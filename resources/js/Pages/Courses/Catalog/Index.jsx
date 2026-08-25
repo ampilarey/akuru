@@ -51,7 +51,9 @@ export default function Index({ rows, subjects, canPublish }) {
                         )}
                         {rows.map((row) => (
                             <tr key={row.id} className="border-t">
-                                <td className="px-3 py-2">{row.title}</td>
+                                <td className="px-3 py-2">
+                                    <a className="text-[#7C2D37] hover:underline" href={`/catalog/courses/${row.id}/outline`}>{row.title}</a>
+                                </td>
                                 <td className="px-3 py-2">{row.subject_name || '—'}</td>
                                 <td className="px-3 py-2">{row.workflow_status}</td>
                                 <td className="px-3 py-2">
