@@ -2,6 +2,7 @@
 
 namespace App\Domains\People\Http\Controllers;
 
+use App\Domains\Academics\Actions\ListBehaviorRecordsAction;
 use App\Domains\People\Actions\AttachGuardianAction;
 use App\Domains\People\Actions\DetachGuardianAction;
 use App\Domains\People\Actions\ListStudentsAction;
@@ -158,6 +159,7 @@ class StudentDirectoryController extends Controller
                     'source' => $consent->source->value,
                 ]),
             'documents' => [],
+            'behaviorRecords' => app(ListBehaviorRecordsAction::class)->execute(['student_id' => $student->id]),
         ]);
     }
 

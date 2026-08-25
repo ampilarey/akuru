@@ -4,6 +4,7 @@ use App\Domains\Academics\Http\Controllers\AbsenceNoteReviewController;
 use App\Domains\Academics\Http\Controllers\AcademicYearController;
 use App\Domains\Academics\Http\Controllers\AnnouncementController;
 use App\Domains\Academics\Http\Controllers\AttendanceReportController;
+use App\Domains\Academics\Http\Controllers\BehaviorRecordController;
 use App\Domains\Academics\Http\Controllers\CalendarDayController;
 use App\Domains\Academics\Http\Controllers\ClassDirectoryController;
 use App\Domains\Academics\Http\Controllers\CoursePlanController;
@@ -32,6 +33,7 @@ use App\Domains\Portal\Http\Controllers\EnhancedDashboardController;
 use App\Domains\Portal\Http\Controllers\GuardianChildrenController;
 use App\Domains\Portal\Http\Controllers\PortalAbsenceNoteController;
 use App\Domains\Portal\Http\Controllers\PortalAttendanceController;
+use App\Domains\Portal\Http\Controllers\PortalBehaviorController;
 use App\Domains\Portal\Http\Controllers\PortalHolidayController;
 use App\Domains\Settings\Http\Controllers\Admin\SettingsController as AdminSettingsController;
 use App\Domains\Settings\Http\Controllers\AnalyticsController;
@@ -53,6 +55,7 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
     Route::get('/portal/children', [GuardianChildrenController::class, 'index'])->name('portal.children');
     Route::get('/portal/holidays', [PortalHolidayController::class, 'index'])->name('portal.holidays');
     Route::get('/portal/attendance', [PortalAttendanceController::class, 'index'])->name('portal.attendance');
+    Route::get('/portal/behavior', [PortalBehaviorController::class, 'index'])->name('portal.behavior');
     Route::get('/portal/absence-notes', [PortalAbsenceNoteController::class, 'index'])->name('portal.absence-notes');
     Route::post('/portal/absence-notes', [PortalAbsenceNoteController::class, 'store'])->name('portal.absence-notes.store');
 
@@ -78,6 +81,12 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
     Route::get('academics/absence-notes', [AbsenceNoteReviewController::class, 'index'])->name('academics.absence-notes.index');
     Route::post('academics/absence-notes/{absenceNote}/approve', [AbsenceNoteReviewController::class, 'approve'])->name('academics.absence-notes.approve');
     Route::post('academics/absence-notes/{absenceNote}/reject', [AbsenceNoteReviewController::class, 'reject'])->name('academics.absence-notes.reject');
+
+    Route::get('academics/behavior/export', [BehaviorRecordController::class, 'export'])->name('academics.behavior.export');
+    Route::get('academics/behavior', [BehaviorRecordController::class, 'index'])->name('academics.behavior.index');
+    Route::post('academics/behavior', [BehaviorRecordController::class, 'store'])->name('academics.behavior.store');
+    Route::put('academics/behavior/{behaviorRecord}', [BehaviorRecordController::class, 'update'])->name('academics.behavior.update');
+    Route::delete('academics/behavior/{behaviorRecord}', [BehaviorRecordController::class, 'destroy'])->name('academics.behavior.destroy');
 
     // Student routes
     Route::resource('students', StudentController::class);

@@ -10,6 +10,7 @@ const tabs = [
     { id: 'medical', label: 'Medical' },
     { id: 'history', label: 'Status history' },
     { id: 'consents', label: 'Consents' },
+    { id: 'behavior', label: 'Behavior' },
 ];
 
 export default function Show({
@@ -24,6 +25,7 @@ export default function Show({
     consents,
     consentTypes = [],
     documents,
+    behaviorRecords = [],
 }) {
     const initialValues = useMemo(() => {
         const next = {};
@@ -200,6 +202,34 @@ export default function Show({
                         </tbody>
                     </table>
                 </div>
+            )}
+
+            {tab === 'behavior' && (
+                <section className="overflow-x-auto rounded-lg border bg-white">
+                    <table className="min-w-full text-sm">
+                        <thead className="bg-[#F3EBE0] text-left">
+                            <tr>
+                                <th className="px-3 py-2">Date</th>
+                                <th className="px-3 py-2">Type</th>
+                                <th className="px-3 py-2">Category</th>
+                                <th className="px-3 py-2">Description</th>
+                                <th className="px-3 py-2">Visible</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {behaviorRecords.map((row) => (
+                                <tr key={row.id} className="border-t">
+                                    <td className="px-3 py-2">{row.date}</td>
+                                    <td className="px-3 py-2">{row.type}</td>
+                                    <td className="px-3 py-2">{row.category}</td>
+                                    <td className="px-3 py-2">{row.description}</td>
+                                    <td className="px-3 py-2">{row.parent_visible ? 'yes' : 'no'}</td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                    {behaviorRecords.length === 0 && <p className="p-4 text-sm text-gray-600">No behavior records.</p>}
+                </section>
             )}
 
             {tab === 'consents' && (

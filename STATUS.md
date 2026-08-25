@@ -552,9 +552,17 @@ production. Coding continues without waiting on that evidence.
   `class_attendance` absent rows → excused via the writer and sets
   `absence_note_id`. Hifz / Deploy 3 untouched.
 
+## S2.9 — Behavior records (coding; verify still operator-side)
+
+- New `behavior_records` + audited edits/deletes. Permissions
+  `behavior.record` / `behavior.manage`. Student profile tab. Portal
+  shows `parent_visible` only for own children. CSV on the listing.
+- Morph aliases `behavior_record`, `behavior_record_audit`.
+  Hifz / Deploy 3 untouched.
+
 ## Next
 
 1. Operator: paste staging `students:verify-unification` log + JSON.
-2. **S2.9** behavior records. Then S2.10 requests.
+2. **S2.10** requests / teacher leave.
 3. Production: nothing until credential smoke is recorded.
 4. **S1.1 Deploy 3** still ≥2 weeks after `2f8a90b`. Dual-write stays.

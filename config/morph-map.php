@@ -16,6 +16,8 @@ return [
     'assignment' => \App\Domains\Academics\Legacy\Models\Assignment::class,
     'assignment_submission' => \App\Domains\Academics\Legacy\Models\AssignmentSubmission::class,
     'attendance' => \App\Domains\Academics\Models\Attendance::class,
+    'behavior_record' => \App\Domains\Academics\Models\BehaviorRecord::class,
+    'behavior_record_audit' => \App\Domains\Academics\Models\BehaviorRecordAudit::class,
     'calendar_day' => \App\Domains\Academics\Models\CalendarDay::class,
     'class_attendance' => \App\Domains\Academics\Models\ClassAttendance::class,
     'class_room' => \App\Domains\Academics\Models\ClassRoom::class,
