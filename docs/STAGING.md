@@ -124,8 +124,9 @@ under `docs/migrations/` (S1 DoD line 158).
 this gate still runs the pre-pull script. Evidence appears from the
 **second** auto-deploy onward. S2.1–S2.10 already landed on `main`
 after S2.0 (#15), so later deploys should have run the gated script.
-**S2.0b** is the operator test merge: a docs-only commit that triggers
-another gated deploy plus the paste/archive checklist in `STATUS.md`.
+**S2.0b** is the operator test merge (plus the S1.1b FK hotfix after the
+2026-08-25 paste). Staging is stuck at `c25c385`: `000002` 1091s on a
+missing `students_user_id_foreign`, so `000003` backfill never ran.
 Do not re-exec-after-pull (same blast-radius rejection as above).
 
 **Consequence for the morph-map hotfix deploy:** the automated gate does **not**

@@ -232,8 +232,8 @@ See `docs/STAGING.md` (re-exec-after-pull rejected: blast radius).
 | Agent | Branch protection on `main` | **Blocked** — `403 Resource not accessible by integration` |
 | Agent | S2.0 unify-verify deploy gate | **Done** (merged #15) |
 | Agent | S2.1–S2.10 coding on `main` | **Done** (merged #16–#25) |
-| Agent | S2.0b staging-test PR (this slice) | **This slice** — second-deploy trigger + smoke list |
-| Operator | Copy verify output from `~/self-update-test.log` + archive JSON | **Pending** — after this PR merges and staging deploys |
+| Agent | S2.0b staging-test PR (this slice) | **This slice** — now also the S1.1b FK hotfix |
+| Operator | Copy verify output from `~/self-update-test.log` + archive JSON | **Received 2026-08-25** — stdout recorded; JSON still on server |
 | Operator | Branch protection (required `quality`, no direct push, no self-merge) | **Deferred** (operator-approved 2026-08-25) |
 | Operator | Credential smoke steps 1–7 | **Deferred** (operator-approved 2026-08-25); **production receives nothing** until recorded |
 
@@ -576,9 +576,11 @@ production. Coding continues without waiting on that evidence.
 
 ## S2.0b — Staging test PR (this slice)
 
-Docs only. No feature code. Merging this branch to `main` triggers
-another staging webhook deploy so `scripts/pull-deploy-test.sh` runs
-the **current** (post-S2.0) gates: `morph-map:verify` then
+Originally docs. **Now also the S1.1b FK hotfix** — staging cannot
+migrate until `000002` stops assuming `students_user_id_foreign` exists.
+Merging this branch to `main` triggers a staging webhook deploy so
+`scripts/pull-deploy-test.sh` runs migrate (through the queued S1.1b–S2.10
+batch) then the **current** gates: `morph-map:verify` then
 `students:verify-unification` (read-only).
 
 ### Operator after merge + auto-deploy
@@ -616,12 +618,77 @@ php artisan students:verify-unification
 
 Seed logins will not work on real staging. Use operator credentials.
 
+## Staging 2026-08-25 — migrate blocked; verify is pre-backfill
+
+Operator paste from `test.akuru.edu.mv`. Git on the server fast-forwarded
+to **`c25c385`** (S2.5) then died in `migrate --force`. Later S2.6–S2.10
+webhook attempts aborted (SHA wait / lock). **S2.6+ code and the S1.1b
+backfill have not applied.**
+
+### Deploy failure (verbatim)
+
+```text
+2026_08_23_000002_s11b_nullable_student_user_id ................ 1.74ms FAIL
+
+SQLSTATE[42000]: Syntax error or access violation: 1091 Can't DROP FOREIGN
+KEY `students_user_id_foreign`; check that it exists (Connection: mysql,
+Host: 127.0.0.1, Port: 3306, Database: akuruedu_test.akuru.edu.mv, SQL: alter
+table `students` drop foreign key `students_user_id_foreign`)
+
+2026-08-25 11:57:03 Laravel deploy steps failed
+```
+
+S1.1a (`000001`) already ran (this was the next batch). Staging `students`
+has `school_id` / `class_id` FKs but **no** `user_id` FK under the Laravel
+default name. `000003` (UnifyStudentsAction) never ran.
+
+This PR changes `000002` to drop whatever live FK sits on `user_id` (no-op
+if none), then nullable + re-add `nullOnDelete`.
+
+### `php artisan students:verify-unification` (verbatim)
+
+```text
+S1.1b unification report: /home/akuruedu/test.akuru.edu.mv/storage/app/s11b-student-unification-report.json
+  mapped: user_id=0 national_id=0 name_dob=0 already=0
+  created: active=0 prospective=0
+  guardians: source=0 migrated=0 profiles_created=0 skipped=0
+  enrollments: filled=0 already_set=0 missing=0
+students:verify-unification FAILED — unresolved unification rows:
+  • registration_students.id=2 maps to 0 student(s)
+  • registration_students.id=3 maps to 0 student(s)
+  • registration_students.id=4 maps to 0 student(s)
+  • registration_students.id=5 maps to 0 student(s)
+  • registration_students.id=6 maps to 0 student(s)
+  • registration_students.id=7 maps to 0 student(s)
+  • registration_students.id=12 maps to 0 student(s)
+  • registration_students.id=13 maps to 0 student(s)
+  • registration_students.id=22 maps to 0 student(s)
+  • registration_students.id=25 maps to 0 student(s)
+  • registration_students.id=28 maps to 0 student(s)
+  • registration_students.id=29 maps to 0 student(s)
+  • 11 course_enrollments missing unified_student_id
+  • guardian pivot count mismatch: student_guardians=13 migrated guardian_student=0
+Resolve ambiguous/colliding rows before Deploy 2 (switch reads).
+```
+
+**Interpretation (not a guess of identities):** every map/create count is
+zero. This is **backfill never executed**, not ambiguous/colliding matches.
+The 12 RS → 0 students, 11 enrollments, and 13 vs 0 guardian pivots are
+the expected pre-`000003` state. JSON still lives on the server; not
+copied into `docs/migrations/` yet.
+
+S3 / Hifz / Deploy 3 are **not** started.
+
 ## Next
 
-1. Merge this S2.0b PR after CI `quality` is green (do **not** self-merge).
-2. Operator: paste staging `students:verify-unification` log + JSON
-   under `docs/migrations/`. Smoke the URLs above. Branch protection.
-   Credential smoke (portal / Hifz / payments / OTP / BML).
-3. Production: nothing until credential smoke is recorded.
-4. **S1.1 Deploy 3** still ≥2 weeks after `2f8a90b`. Dual-write stays.
-5. S3 / Hifz migration are not started.
+1. Merge this PR after CI `quality` is green (do **not** self-merge). That
+   unblocks `000002` so staging can migrate through `000003` (backfill) and
+   the queued S1.1c–S2.10 migrations in one deploy.
+2. Operator after that deploy: paste a **new** `students:verify-unification`
+   stdout + copy the JSON into `docs/migrations/`. Zero unresolved →
+   student-write gate satisfied. Nonzero → list remaining rows and stop.
+3. Then smoke the S2 URLs above. Branch protection. Credential smoke
+   (portal / Hifz / payments / OTP / BML).
+4. Production: nothing until credential smoke is recorded.
+5. **S1.1 Deploy 3** still ≥2 weeks after `2f8a90b`. Dual-write stays.
+6. S3 / Hifz migration are not started.
