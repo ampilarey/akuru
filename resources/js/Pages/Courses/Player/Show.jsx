@@ -1,4 +1,4 @@
-import { router } from '@inertiajs/react';
+import { router, usePage } from '@inertiajs/react';
 import AppShell from '../../../Layouts/AppShell';
 
 function mediaSrc(mediaShowUrl, mediaId) {
@@ -84,12 +84,14 @@ function BlockView({ block, mediaShowUrl }) {
 }
 
 export default function Show({ snapshot, mediaShowUrl = '/catalog/media', canComplete = false, completeUrl = null }) {
+    const t = usePage().props.i18n?.learn || {};
+
     return (
         <AppShell title={snapshot.title || 'Lesson'}>
             <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
                 <p className="text-sm text-gray-600">Published revision {snapshot.revision_number}</p>
                 {canComplete && completeUrl && (
-                    <button type="button" className="btn-primary" onClick={() => router.post(completeUrl)}>Mark complete</button>
+                    <button type="button" className="btn-primary" onClick={() => router.post(completeUrl)}>{t.mark_complete || 'Mark complete'}</button>
                 )}
             </div>
             {snapshot.description && <p className="mb-4">{snapshot.description}</p>}
