@@ -39,6 +39,8 @@ return [
     'event_registration' => \App\Domains\Website\Models\EventRegistration::class,
     'faq' => \App\Domains\Website\Models\Faq::class,
     'fee_item' => \App\Domains\Finance\Models\FeeItem::class,
+    'fee_structure' => \App\Domains\Finance\Models\FeeStructure::class,
+    'fee_structure_item' => \App\Domains\Finance\Models\FeeStructureItem::class,
     'gallery_album' => \App\Domains\Website\Models\GalleryAlbum::class,
     'gallery_item' => \App\Domains\Website\Models\GalleryItem::class,
     'grade' => \App\Domains\Academics\Models\Grade::class,

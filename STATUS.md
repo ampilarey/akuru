@@ -768,9 +768,17 @@ S3). S4.1 has **no new student-keyed writes** beyond existing
   `finance.manage`. Fee-item catalog + CSV.
 - Hifz / Deploy 3 / S3 untouched.
 
+## S4.2 — Fee structures (done)
+
+- `fee_structures` + `fee_structure_items`. One active structure per
+  class per year. Copy-from-last-year remaps classes by name+section
+  and lands drafts. Admin builder + CSV.
+- Academics list/resolve year actions used so Finance does not import
+  Academics models.
+
 ## Next
 
-1. **S4.2 — Fee structures**.
+1. **S4.3 — Invoice generation**.
 2. Operator: unify-verify / smoke / production (unchanged).
 3. Dual-write stays.
 
