@@ -30,18 +30,6 @@ function makeCourseEnrollment(int $registrationStudentId, array $overrides = [])
     ], $overrides));
 }
 
-function attachLegacyGuardian(int $registrationStudentId, int $guardianUserId, array $pivot = []): int
-{
-    return DB::table('student_guardians')->insertGetId(array_merge([
-        'student_id' => $registrationStudentId,
-        'guardian_user_id' => $guardianUserId,
-        'relationship' => 'father',
-        'is_primary' => true,
-        'created_at' => now(),
-        'updated_at' => now(),
-    ], $pivot));
-}
-
 it('makes students.user_id nullable and unique on the legacy key', function () {
     expect(Schema::getColumns('students'))->not->toBeEmpty();
 

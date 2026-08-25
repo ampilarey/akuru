@@ -1143,6 +1143,19 @@ rate limiting, and the Inertia shell. No new 1A.1 code.
 
 ## TRACK A — Unblock (S1 verify blockers)
 
+### A1 — `users:clear-non-admin` deletes `student_guardians` (done)
+
+- Staging verify’s “12/13 `guardian_user_id` missing from `users`” came from
+  this wipe: `FOREIGN_KEY_CHECKS=0` deleted users / `registration_students`
+  / payments and never touched `student_guardians`.
+  `UnifyStudentsAction::createParentFromUserId()` cannot invent those users.
+- Command now deletes `student_guardians` and `guardian_student` for wiped
+  users/profiles. `whereNotIn` does **not** match NULL — guardian-only
+  `registration_students` (`user_id IS NULL`) are listed explicitly and
+  included in the wipe so they cannot survive their guardian users.
+- Pest: `tests/Feature/People/ClearNonAdminUsersTest.php` (no leftover
+  pivot rows). Merged #72.
+
 ### A3 — Production-copy verify procedure (docs shipped; gate **not** green)
 
 - S1_SPEC line 147 requires `students:verify-unification` on a
@@ -1161,15 +1174,14 @@ rate limiting, and the Inertia shell. No new 1A.1 code.
 
 ## Next
 
-**TRACK A remaining:** A1 wipe (#72), A2 matcher (#73), A4 branch
-protection on `main` (operator; bot 403), A5 real `config/payroll.php`.
-**Do not start TRACK B until A3 is green on a production-data copy.**
+**TRACK A remaining:** A2 matcher (#73), A4 branch protection on `main`
+(operator; bot 403), A5 payroll flag (#76). A3 procedure is written; the
+verify **gate** is not green (no production dump). **Do not start TRACK B.**
 No `--backfill` on production. No Hifz cutover.
 
-**Operator (not in this slice):** provide a production mysqldump and run
-`docs/migrations/restore-production-copy.md`. `unify-verify` still red on
-staging. Student dual-write stays until that copy is green.
-`payroll.enabled` off until credentials.
+**Operator:** provide a production mysqldump and run
+`docs/migrations/restore-production-copy.md`. Apply branch protection.
+`unify-verify` still red on staging.
 
 **Qur'an A.4b (later):** switch offering-session reads to `offering_halaqa_session_links` after operators confirm dual-write. Then Hifz cleanup (deploy 3). Keep `QURAN_HALAQA_DUAL_WRITE` off until verified.
 
