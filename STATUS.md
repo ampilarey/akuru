@@ -1149,10 +1149,12 @@ rate limiting, and the Inertia shell. No new 1A.1 code.
   this wipe: `FOREIGN_KEY_CHECKS=0` deleted users / `registration_students`
   / payments and never touched `student_guardians`.
   `UnifyStudentsAction::createParentFromUserId()` cannot invent those users.
-- Command now deletes pivot rows whose `guardian_user_id` is being wiped
-  **or** whose `student_id` is a `registration_students` row being wiped.
-  Admin-linked pivots stay.
-- Pest: `tests/Feature/People/ClearNonAdminUsersTest.php`.
+- Command now deletes `student_guardians` and `guardian_student` for wiped
+  users/profiles. `whereNotIn` does **not** match NULL — guardian-only
+  `registration_students` (`user_id IS NULL`) are listed explicitly and
+  included in the wipe so they cannot survive their guardian users.
+- Pest: `tests/Feature/People/ClearNonAdminUsersTest.php` (no leftover
+  pivot rows).
 
 ## Next
 
