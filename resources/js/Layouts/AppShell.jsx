@@ -1,8 +1,9 @@
 import { Link, usePage } from '@inertiajs/react';
 
 export default function AppShell({ title, children }) {
-    const { locale, rtl, auth, flash, i18n } = usePage().props;
+    const { locale, locales = ['en', 'dv', 'ar'], locale_urls = {}, rtl, auth, flash, i18n } = usePage().props;
     const user = auth?.user;
+    const t = i18n?.learn || {};
 
     return (
         <div dir={rtl ? 'rtl' : 'ltr'} className="min-h-screen bg-[#F9F4EE] text-gray-900">
@@ -173,7 +174,18 @@ export default function AppShell({ title, children }) {
                             Payslips
                         </Link>
                         <span className="text-gray-500">{user?.name}</span>
-                        <span className="rounded bg-[#F3EBE0] px-2 py-0.5 text-xs uppercase">{locale}</span>
+                        <span className="flex items-center gap-1 rounded bg-[#F3EBE0] px-2 py-0.5 text-xs uppercase">
+                            {locales.map((code) => (
+                                <a
+                                    key={code}
+                                    href={locale_urls[code] || `/${code}`}
+                                    className={code === locale ? 'font-semibold text-[#7C2D37]' : 'text-gray-600 hover:underline'}
+                                    hrefLang={code}
+                                >
+                                    {t[`locale_${code}`] || code}
+                                </a>
+                            ))}
+                        </span>
                     </nav>
                 </div>
             </header>

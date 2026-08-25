@@ -6,6 +6,23 @@ use Mcamara\LaravelLocalization\Facades\LaravelLocalization;
 // Inertia smoke test (no locale prefix)
 Route::get('/inertia-test', fn () => inertia('InertiaTest'))->name('inertia.test');
 
+Route::get('/manifest.webmanifest', function () {
+    return response()->file(public_path('manifest.webmanifest'), [
+        'Content-Type' => 'application/manifest+json',
+    ]);
+})->name('pwa.manifest');
+
+Route::get('/sw.js', function () {
+    return response()->file(public_path('sw.js'), [
+        'Content-Type' => 'application/javascript',
+        'Service-Worker-Allowed' => '/',
+    ]);
+})->name('pwa.service-worker');
+
+Route::get('/offline.html', function () {
+    return response()->file(public_path('offline.html'));
+})->name('pwa.offline');
+
 // Payment webhook (no locale - BML posts to fixed URL)
 Route::post('payments/bml/callback', [\App\Domains\Finance\Http\Controllers\PaymentController::class, 'callback'])
     ->name('payments.bml.callback');

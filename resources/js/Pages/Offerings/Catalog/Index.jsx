@@ -1,7 +1,8 @@
-import { router, useForm } from '@inertiajs/react';
+import { router, useForm, usePage } from '@inertiajs/react';
 import AppShell from '../../../Layouts/AppShell';
 
 export default function Index({ rows, courses, modes }) {
+    const t = usePage().props.i18n?.learn || {};
     const form = useForm({
         course_id: courses[0]?.id || '',
         title: '',
@@ -12,9 +13,9 @@ export default function Index({ rows, courses, modes }) {
     });
 
     return (
-        <AppShell title="Offerings">
+        <AppShell title={t.offerings || 'Offerings'}>
             <div className="mb-4 flex justify-end">
-                <a className="btn-secondary" href="/catalog/offerings/export">Export CSV</a>
+                <a className="btn-secondary" href="/catalog/offerings/export">{t.export_csv || 'Export CSV'}</a>
             </div>
             <form
                 onSubmit={(e) => {
@@ -66,7 +67,7 @@ export default function Index({ rows, courses, modes }) {
                                     <button type="button" className="btn-secondary" onClick={() => router.post(`/catalog/offerings/${row.id}/pin`)}>Pin now</button>
                                 </td>
                                 <td className="px-3 py-2">
-                                    <a className="text-[#7C2D37] hover:underline" href={`/catalog/offerings/${row.id}/sessions`}>Sessions</a>
+                                    <a className="text-[#7C2D37] hover:underline" href={`/catalog/offerings/${row.id}/sessions`}>{t.sessions || 'Sessions'}</a>
                                 </td>
                             </tr>
                         ))}

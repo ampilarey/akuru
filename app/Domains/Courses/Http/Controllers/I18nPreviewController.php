@@ -18,20 +18,23 @@ class I18nPreviewController extends Controller
                 [
                     'locale' => 'en',
                     'dir' => 'ltr',
+                    'font' => 'latin',
                     'heading' => 'English sample',
                     'body' => 'The lesson player must stay readable in English.',
                 ],
                 [
                     'locale' => 'dv',
                     'dir' => 'rtl',
-                    'heading' => 'ތައްލިމް',
-                    'body' => 'އެލެކްޓްރޮނިކް ތައްލީމް',
+                    'font' => 'thaana',
+                    'heading' => trans('learn.dashboard_title', [], 'dv'),
+                    'body' => trans('learn.catalog_intro', [], 'dv'),
                 ],
                 [
                     'locale' => 'ar',
                     'dir' => 'rtl',
-                    'heading' => 'عينة عربية',
-                    'body' => 'يجب أن يبقى مشغّل الدرس واضحاً في العربية.',
+                    'font' => 'arabic',
+                    'heading' => trans('learn.dashboard_title', [], 'ar'),
+                    'body' => trans('learn.catalog_intro', [], 'ar'),
                 ],
             ],
         ]);

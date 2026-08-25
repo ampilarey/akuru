@@ -24,4 +24,13 @@ return [
     'no_children' => 'لا يوجد أبناء مرتبطون.',
     'i18n_preview' => 'معاينة اللغات',
     'upcoming_sessions' => 'الجلسات القادمة',
+    'sessions' => 'الجلسات',
+    'offerings' => 'العروض',
+    'attendance' => 'الحضور',
+    'export_csv' => 'تصدير CSV',
+    'required' => 'مطلوب',
+    'locale_en' => 'English',
+    'locale_dv' => 'الديهيفية',
+    'locale_ar' => 'العربية',
+    'offline' => 'أنت غير متصل. أعد الاتصال لمتابعة التعلّم.',
 ];

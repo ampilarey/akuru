@@ -10,7 +10,12 @@ export default function I18nPreview({ samples }) {
             </div>
             <div className="space-y-4">
                 {samples.map((sample) => (
-                    <article key={sample.locale} className="rounded-lg border bg-white p-4" dir={sample.dir} lang={sample.locale}>
+                    <article
+                        key={sample.locale}
+                        className={`rounded-lg border bg-white p-4 ${sample.font === 'thaana' ? 'thaana-text' : ''} ${sample.font === 'arabic' ? 'arabic-text' : ''}`}
+                        dir={sample.dir}
+                        lang={sample.locale}
+                    >
                         <p className="mb-1 text-xs uppercase tracking-wide text-gray-500">{sample.locale} · {sample.dir}</p>
                         <h2 className="mb-2 text-lg font-semibold">{sample.heading}</h2>
                         <p className="text-sm font-normal">{sample.body}</p>

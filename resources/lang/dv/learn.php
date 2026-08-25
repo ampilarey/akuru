@@ -24,4 +24,13 @@ return [
     'no_children' => 'ތައްލިމް',
     'i18n_preview' => 'ޕްރޮފައިލް',
     'upcoming_sessions' => 'ކުރިއަށް އޮތް ކްލާސް',
+    'sessions' => 'ކްލާސް',
+    'offerings' => 'ކޯސް',
+    'attendance' => 'ހާޒިރު',
+    'export_csv' => 'CSV',
+    'required' => 'ލަނޑު',
+    'locale_en' => 'English',
+    'locale_dv' => 'ދިވެހި',
+    'locale_ar' => 'العربية',
+    'offline' => 'އޮފްލައިން',
 ];

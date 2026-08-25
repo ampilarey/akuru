@@ -1,7 +1,8 @@
-import { router, useForm } from '@inertiajs/react';
+import { router, useForm, usePage } from '@inertiajs/react';
 import AppShell from '../../../Layouts/AppShell';
 
 export default function Sessions({ offering, types, sessions }) {
+    const t = usePage().props.i18n?.learn || {};
     const form = useForm({
         title: '',
         session_type: types[0] || 'face_to_face',
@@ -16,7 +17,7 @@ export default function Sessions({ offering, types, sessions }) {
         <AppShell title={`Sessions — ${offering.title}`}>
             <p className="mb-4 text-sm text-gray-600">{offering.course_title} · {offering.delivery_mode}</p>
             <div className="mb-4 flex justify-end">
-                <a className="btn-secondary" href={`/catalog/offerings/${offering.id}/sessions/export`}>Export CSV</a>
+                <a className="btn-secondary" href={`/catalog/offerings/${offering.id}/sessions/export`}>{t.export_csv || 'Export CSV'}</a>
             </div>
             <form
                 onSubmit={(e) => {

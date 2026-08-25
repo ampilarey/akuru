@@ -24,4 +24,13 @@ return [
     'no_children' => 'No linked children.',
     'i18n_preview' => 'i18n preview',
     'upcoming_sessions' => 'Upcoming sessions',
+    'sessions' => 'Sessions',
+    'offerings' => 'Offerings',
+    'attendance' => 'Attendance',
+    'export_csv' => 'Export CSV',
+    'required' => 'required',
+    'locale_en' => 'English',
+    'locale_dv' => 'Dhivehi',
+    'locale_ar' => 'Arabic',
+    'offline' => 'You are offline. Reconnect to continue learning.',
 ];
