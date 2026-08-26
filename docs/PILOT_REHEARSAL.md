@@ -19,10 +19,10 @@ php artisan db:seed --class=PilotRehearsalSeeder
 ## How this walk was done
 
 1. Staging HTTP: `/en` and `/up` return 200. Seed login `admin@akuru.edu.mv` / `password` POSTs to `/en/login` and **302s back to `/en/login`**. No SSH from this environment (`docs/STAGING.md`: webhook pull only). The seeder was **not** run on staging.
-2. Local: `PilotRehearsalSeeder` on `akuru_institute`. Browser walk of login + academic years. Domain actions for register → attendance → absence note → exam → report card → invoices against the seeded Grade 5 A class.
-3. ADR-021 identity mess is in the seeder (duplicate NID `A999001`, blank/`N/A`/`0`/`-`, two Mariyam Ali, two Ahmed Naseem 2009-04-04, Hussain Shareef with no guardian).
+2. Local: `PilotRehearsalSeeder` on `akuru_institute`. **Browser (Chrome):** Step 1 only, ~33 clicks, `http://127.0.0.1:8000`. Click-by-click notes: `/opt/cursor/artifacts/pilot-rehearsal/walk-notes.md`. **Domain actions** (tinker) for register → attendance → absence note → exam → report card → invoices against the seeded Grade 5 A class, because the browser could not switch users.
+3. ADR-021 identity mess is in the seeder (duplicate NID `A999001`, blank/`N/A`/`0`/`-`, two Mariyam Ali, two Ahmed Naseem 2009-04-04, Hussain Shareef with no guardian). This local DB also already had `UnificationRepresentativeSeeder` Fatima/Hussain rows (same names and NID, **no** `student_id` number).
 
-Logins after the seeder (password `password`): `admin@akuru.edu.mv`, `teacher@akuru.edu.mv`, `parent@akuru.edu.mv` (Fatima Yoosuf / PIL-01).
+Logins after the seeder (password `password`): `admin@akuru.edu.mv`, `teacher@akuru.edu.mv`, `parent@akuru.edu.mv` (Fatima Yoosuf / **PIL-01**, `students.id` **14** — not `1`).
 
 ---
 
@@ -62,9 +62,9 @@ Shared `users.phone` `+960 782 0288` on admin, teacher, and parent would also ma
 
 ## Step 1 — Admin creates year / term / class and assigns class teacher
 
-**Worked?** Partial for year/term/class. **Class teacher assignment cannot be completed in the UI.**
+**Worked?** Partial for year/term/class. **Class teacher assignment cannot be completed in the UI.** Browser walk stopped here: **cannot switch to teacher/parent from AppShell.**
 
-**Clicks / screens (browser):** login → Blade dashboard → somehow reach `/en/academics/years` (not in the Blade top nav) → create year → add term → Activate (blocked) → `/en/academics/classes` (not walked to completion in the browser; form inspected in code).
+**Clicks / screens (browser, ~33):** login → Blade dashboard → paste `/en/academics/years` → create `2026-2027 Extra` → Add term “Term 2” → Activate (blocked) → `/en/academics/classes` → create Grade 5 B → add Student ID `1` → open Grade 5 A → type `GET /logout` (405).
 
 After password login the admin lands on the **Blade** dashboard (`/en/dashboard`), not Inertia `AppShell`. Blade nav is Dashboard / Enrollments / Students / Teachers / Hifz / Quran / More. The new Years / Classes / Today / Exams / Finance links live on Inertia `AppShell` only. A teacher next week who follows “what I see after login” never reaches the class-register loop.
 
@@ -78,21 +78,40 @@ Blade dashboard on first paint (before the institute seed finished) showed **13 
 
 - Header is a wrapping wall of 50+ links (Learn, Teach, Years, Today, Exams, Payroll, …). Duplicate labels (“Report cards”, “Awards”).
 - Create-year form has name + two unlabelled date inputs. `useForm` includes `description` but there is **no description field**.
-- Add-term form on every card defaults to **“Term 1”** even when Term 1 already exists. Dates are unlabelled `mm/dd/yyyy`.
-- Year names are not unique: after this walk the database has two rows named `2026-2027 Extra`.
-- Activate on a second year shows: *“Another academic year is already active. Close it before activating this one.”* That is correct, but Close + Activate is two trips and easy to miss.
+- One shared `termForm` is rendered on **every** year card. Typing “Term 2” + dates on Extra filled the same inputs on closed `2026-2027` and on Pilot. Submit posts to whichever card’s button you click, with that shared state.
+- Add-term form defaults to **“Term 1”** even when Term 1 already exists. Dates are unlabelled `mm/dd/yyyy`. Term **status** is not in the form (backend default `upcoming`).
+- Year names are not unique: this walk created **two** rows named `2026-2027 Extra` (ids 3 and 4). Classes later showed **two Extra tabs**.
+- Activate on Extra shows: *“Another academic year is already active. Close it before activating this one.”* That is correct, but Close + Activate is two trips and easy to miss. Extra stayed `upcoming`, so Grade 5 B was created on the still-active Pilot year.
 
 <img src="/opt/cursor/artifacts/pilot-rehearsal/02-years-page-nav-overflow.png" alt="Inertia Academic years: overflowing AppShell nav, closed 2026-2027 plus active Pilot" />
 
-<img src="/opt/cursor/artifacts/pilot-rehearsal/04-term-created-shared-state.png" alt="Success flash Term created; Add term still prefills Term 1/Term 2 across every year card" />
+<img src="/opt/cursor/artifacts/pilot-rehearsal/03-year-created-extra.png" alt="2026-2027 Extra created upcoming; closed 2026-2027 and active Pilot still on the page" />
+
+<img src="/opt/cursor/artifacts/pilot-rehearsal/04-term-created-shared-state.png" alt="Term created flash; Add term still shows Term 2 dates on every year card" />
 
 <img src="/opt/cursor/artifacts/pilot-rehearsal/05-activate-year-error.png" alt="Cannot activate Extra while Pilot is already active" />
 
-**Classes UI** (`Academics/Classes/Index.jsx`): create fields are name, section, level, capacity. Backend `ClassDirectoryController@store` accepts `class_teacher_id`; the form **does not send it**. The listing table is Name / Section / Capacity — no teacher column. Show page is a raw **“Student ID”** number box, not a name picker.
+**Classes UI** (`Academics/Classes/Index.jsx`): create fields are name, section, level, capacity. Backend `ClassDirectoryController@store` accepts `class_teacher_id`; the form **does not send it**. Listing is Name / Section / Capacity — no teacher column. Grade 5 B was created with `class_teacher_id` null.
+
+<img src="/opt/cursor/artifacts/pilot-rehearsal/06-classes-no-teacher-field.png" alt="Create class: name, section, level, capacity only; two Extra year tabs; no class teacher field" />
+
+**Roster add** is a raw **“Student ID”** box (`Classes/Show.jsx`). Entering `1` flashed “Student assigned.” The row is **Fatima Yoosuf with a blank Number**. That is `students.id` **1** (leftover `UnificationRepresentativeSeeder` Fatima, NID `A999001`, DOB 2010-03-12, `student_id` null) — **not** rehearsal PIL-01 (`students.id` **14**, still only on Grade 5 A). Same legal name, same NID, same DOB; the admin cannot tell them apart in the picker because there is no picker.
+
+<img src="/opt/cursor/artifacts/pilot-rehearsal/07-class-show-raw-id-field.png" alt="Grade 5 B empty roster: Student ID text box and Add to roster" />
+
+<img src="/opt/cursor/artifacts/pilot-rehearsal/08-student-added-by-id.png" alt="Grade 5 B after adding id 1: Fatima Yoosuf, Number blank, not PIL-01" />
+
+Grade 5 A show **does** list PIL-01…PIL-15 in the Number column, including two Mariyam Ali (PIL-07/08) and two Ahmed Naseem (PIL-09/10). **No class teacher name anywhere.** Distinguishing numbers exist here; they are **absent on the teacher register fill grid** (Step 2).
+
+<img src="/opt/cursor/artifacts/pilot-rehearsal/09-class-a-no-teacher-shown.png" alt="Grade 5 A roster of 15 with PIL numbers; duplicate names; no class teacher" />
+
+**Logout (browser cutoff).** `AppShell` prints `auth.user.name` as text (`Admin User`) and has **no logout control**. Blade `super-admin` Quick Actions **does** POST to `logout` — only if you go back to `/en/dashboard`. Typing `/logout` in the address bar is GET → Ignition `MethodNotAllowedHttpException`: *“The GET method is not supported for route logout. Supported methods: POST.”* Steps 2–6 were not walked in the browser.
+
+<img src="/opt/cursor/artifacts/pilot-rehearsal/10-logout-method-error.png" alt="GET /logout MethodNotAllowedHttpException; logout is POST only" />
 
 **Periods:** no Inertia/Blade admin screen. Timetable builder options come from `periods`. Empty unless `PeriodSeeder` (or SQL) has run. Teacher cannot create periods.
 
-**Double entry:** year name `2026-2027` is typed on the year and again mentally against the seeded `2026-2027 Pilot`. Term dates are re-entered on every card because one shared `termForm` instance is reused for all years.
+**Double entry:** year name `2026-2027 Extra` is still sitting in the create-year form after success, so a second Extra is one extra click. Term dates are re-entered on every card because one shared `termForm` instance is reused for all years. Student “id 1” is not the same as PIL-01.
 
 ---
 
@@ -100,7 +119,7 @@ Blade dashboard on first paint (before the institute seed finished) showed **13 
 
 **Worked?** **Not as a teacher-only user, from a cold start.** The write path works if an admin generates registers first and the login has a `teachers` row.
 
-**Clicks / screens if unblocked:** Today → Fill register → pick topic → grid → Submit (~4 screens). Cold start is more.
+**Clicks / screens if unblocked:** logout/switch user (blocked in AppShell) → Today → Fill register → pick topic → grid → Submit (~4 screens). Cold start is more. **Not executed in the browser** after Step 1 logout failure.
 
 **What broke**
 
@@ -147,7 +166,7 @@ Blade dashboard on first paint (before the institute seed finished) showed **13 
 
 **Worked?** **Yes, at the action layer.** Portal and review screens exist; parent needs a `parent_guardians.user_id` link (`ListGuardianChildrenAction`). Default `parent@akuru.edu.mv` has no such row until the seeder.
 
-**Clicks / screens:** portal Absence notes (submit) → logout → teacher Review notes → Approve (~4–5 screens). No deep link from the SMS (there is no SMS UI).
+**Clicks / screens:** portal Absence notes (submit) → logout → teacher Review notes → Approve (~4–5 screens). No deep link from the SMS (there is no SMS UI). **Not executed in the browser** (logout).
 
 **UI** (`Portal/AbsenceNotes.jsx`): child, date, type, reason. Backend accepts `attachment` and `period_id`; the form has **neither**. `affects_attendance` is hardcoded true in the form payload.
 
@@ -203,14 +222,15 @@ Blade dashboard on first paint (before the institute seed finished) showed **13 
 4. **Registers for today do not exist** until someone with `registers.manage` generates them. The teacher cannot do that. Today does not explain why the list is empty.
 5. **No periods in default seed, and no periods UI** → timetable cannot be built → generate creates nothing.
 6. **After login, Blade dashboard hides the loop.** Years / Today / Plans / Review notes are Inertia `AppShell` only, and that nav is unusable on a laptop screen.
-7. **Class teacher cannot be assigned in the class UI.** Backend field exists; form omits it. Seeder/tinker only.
-8. **Roster add is a numeric student id.** Fifteen children cannot be enrolled from the class screen without looking up ids elsewhere (Blade student create is another app).
-9. **Duplicate names on the register** (two Mariyam Ali, two Ahmed Naseem) with no number/DOB — wrong child is a real risk.
-10. **Absence SMS is not a fake** on staging/local; demo-mode log is unreachable with current Dhiraagu config; no in-app “parent notified” signal.
-11. **Term grades stay blank** unless Weights are set for the year. Report cards then print empty %/grade/rank.
-12. **“PDF” is HTML**, queued. Without a worker and a template, generate fails or never becomes downloadable.
+7. **AppShell has no logout.** Name is plain text. `GET /logout` 405s. Blade dashboard Quick Actions can POST logout if you know to leave Inertia. A shared staff PC cannot switch admin → teacher → parent from the academic screens.
+8. **Class teacher cannot be assigned in the class UI.** Backend field exists; form omits it. Seeder/tinker only.
+9. **Roster add is a numeric primary key.** Typing `1` enrolled leftover unification Fatima (blank number), not PIL-01 (`students.id` 14). Year names are not unique (two `2026-2027 Extra` tabs).
+10. **Duplicate names on the register** (two Mariyam Ali, two Ahmed Naseem) with no number/DOB — wrong child is a real risk. Class show *does* show PIL numbers; the fill grid does not.
+11. **Absence SMS is not a fake** on staging/local; demo-mode log is unreachable with current Dhiraagu config; no in-app “parent notified” signal.
+12. **Term grades stay blank** unless Weights are set for the year. Report cards then print empty %/grade/rank.
+13. **“PDF” is HTML**, queued. Without a worker and a template, generate fails or never becomes downloadable.
 
-Items 1–6 stop the teacher before attendance is saved. Items 7–9 make the first week error-prone even after an operator seeds. Items 10–12 break parent comms and reports.
+Items 1–6 stop the teacher before attendance is saved. Item 7 stops a multi-role rehearsal on one browser. Items 8–10 make the first week error-prone even after an operator seeds. Items 11–13 break parent comms and reports.
 
 ---
 

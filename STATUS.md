@@ -1265,8 +1265,10 @@ students, 3 teachers, timetable, fee structure).
 Findings: `docs/PILOT_REHEARSAL.md`. Ranked teacher blockers start at staging
 login, verified `user_contacts`, missing `teachers` rows, teacher cannot
 generate registers, no periods UI, Blade dashboard hiding the Inertia loop,
-no class-teacher picker, indistinguishable duplicate names, SMS not actually
-faked, term grades blank without weights, report “PDF” is HTML.
+AppShell with no logout (`GET /logout` 405), no class-teacher picker, roster
+add by numeric PK (id `1` ≠ PIL-01), indistinguishable duplicate names on the
+register grid, SMS not actually faked, term grades blank without weights,
+report “PDF” is HTML. Browser walk completed Step 1 only (~33 clicks).
 
 Hifz untouched. Deploy 3 not executed. Track B not started.
 
