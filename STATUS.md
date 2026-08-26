@@ -1272,6 +1272,11 @@ report “PDF” is HTML. Browser walk completed Step 1 only (~33 clicks).
 
 Hifz untouched. Deploy 3 not executed. Track B not started.
 
+## Pilot blocker 4 — class teacher field (2026-08-26)
+
+Create-class form sends `class_teacher_id` (users.id of a `teachers` row).
+Listing and show display the name. Findings doc is unchanged in this slice.
+
 ## Next
 
 TRACK A code/docs A1–A5 plus ADR-021 representative gate are the current

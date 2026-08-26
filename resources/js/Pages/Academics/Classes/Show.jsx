@@ -6,6 +6,7 @@ export default function Show({ classRoom, roster }) {
 
     return (
         <AppShell title={`${classRoom.name} ${classRoom.section || ''}`}>
+            <p className="mb-3 text-sm text-gray-700">Class teacher: {classRoom.class_teacher_name || 'None'}</p>
             <form
                 onSubmit={(e) => {
                     e.preventDefault();
