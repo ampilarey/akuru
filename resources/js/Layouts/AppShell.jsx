@@ -26,11 +26,17 @@ export default function AppShell({ title, children }) {
                         <Link href="/portal/learning" className="text-[#7C2D37] hover:underline">
                             {i18n?.learn?.children_learning || 'Children'}
                         </Link>
+                        <Link href="/portal/performance" className="text-[#7C2D37] hover:underline">
+                            Performance
+                        </Link>
                         <Link href="/catalog/courses" className="text-[#7C2D37] hover:underline">
                             Catalog
                         </Link>
                         <Link href="/catalog/certificates" className="text-[#7C2D37] hover:underline">
                             Certificates
+                        </Link>
+                        <Link href="/catalog/reports/completions" className="text-[#7C2D37] hover:underline">
+                            Completions
                         </Link>
                         <Link href="/catalog/offerings" className="text-[#7C2D37] hover:underline">
                             Offerings
