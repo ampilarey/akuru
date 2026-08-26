@@ -1343,7 +1343,12 @@ generate/year/class/invoice validation, DoD docs.
 
 - **Done:** `DatabaseSeeder` calls `PilotRehearsalSeeder`. Role `teacher` also
   gets a `teachers` row (`EnsureTeacherRowAction` in `UserSeeder`).
-- **Tests:** `tests/Feature/People/SeededSchoolTest.php`.
+  `UserSeeder` calls `SchoolSeeder` when no school exists (tests that seed
+  users alone). The action takes `userId`/`schoolId` primitives and reads
+  the user via `DB::table('users')` so People does not import Identity or
+  Settings models (architecture rules 1–2).
+- **Tests:** `tests/Feature/People/SeededSchoolTest.php` (including UserSeeder
+  without SchoolSeeder first).
 
 **Operator:** apply branch protection (`docs/BRANCH_PROTECTION.md`).
 Confirm or reject `docs/migrations/s11-deploy-3-cleanup-proposal.md`.
