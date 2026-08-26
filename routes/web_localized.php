@@ -354,6 +354,7 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::get('classes', [ClassDirectoryController::class, 'index'])->name('academics.classes.index');
         Route::post('classes', [ClassDirectoryController::class, 'store'])->name('academics.classes.store');
         Route::get('classes/{classRoom}', [ClassDirectoryController::class, 'show'])->name('academics.classes.show');
+        Route::put('classes/{classRoom}', [ClassDirectoryController::class, 'update'])->name('academics.classes.update');
         Route::post('classes/{classRoom}/assign', [ClassDirectoryController::class, 'assign'])->name('academics.classes.assign');
 
         Route::get('rooms/export', [RoomDirectoryController::class, 'export'])->name('academics.rooms.export');

@@ -29,13 +29,15 @@ class FeaturePackDemoSeeder extends Seeder
     public function run(): void
     {
         // Create academic year
-        $academicYear = AcademicYear::create([
-            'name' => '2024-2025',
-            'start_date' => '2024-09-01',
-            'end_date' => '2025-06-30',
-            'is_current' => true,
-            'description' => 'Academic Year 2024-2025',
-        ]);
+        $academicYear = AcademicYear::query()->firstOrCreate(
+            ['name' => '2024-2025'],
+            [
+                'start_date' => '2024-09-01',
+                'end_date' => '2025-06-30',
+                'is_current' => true,
+                'description' => 'Academic Year 2024-2025',
+            ],
+        );
 
         // Create fee items
         $feeItems = [

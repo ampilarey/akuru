@@ -11,9 +11,9 @@ Re-checked 2026-08-26 against merged `main` and Round 3 (`docs/PILOT_REHEARSAL.m
 
 1. **Staging staff login** — seed passwords 302 back to login; no SSH from this environment. Blocks any judgement that `test.akuru.edu.mv` is a school.
 2. **AppShell nav IA** — **proposed, awaiting decision.** 74 wrapping `<Link href=` in `AppShell.jsx`. Proposal in `docs/APPSHELL_NAV_IA.md` (PR #98): grouped by role and frequency. **Do not implement** until Accept / Accept with edits / Reject. The wrap is still live.
-3. **Grade 5 B class teacher is still None** / seeder still inserts duplicate Extra year names (UI uniqueness is #91).
-4. **Parent notified column shows — on excused rows** — column exists (#86); SMS body is not in the portal.
-5. **Shared Add-term form on every year card** — one `termForm` instance; typing on Extra fills other cards.
+3. **Parent notified column shows — on excused rows** — column exists (#86); SMS body is not in the portal.
+4. **Shared Add-term form on every year card** — one `termForm` instance; typing on Extra fills other cards.
+5. **Exam schedule form defaults wander** — Extra / Term 2 / Arabic Beginners vs Pilot Grade 5 A (Round 2 step 5).
 
 ---
 
@@ -59,9 +59,7 @@ Re-checked 2026-08-26 against merged `main` and Round 3 (`docs/PILOT_REHEARSAL.m
 
 ### 7. Class teacher assignment did not stick on Grade 5 B
 
-**Severity:** blocked task for “admin assigns class teacher in the UI.” Field exists (#82); Grade 5 A shows Fatimat Ali (seeder). Grade 5 B = **None** in Round 2 and Round 3.
-
-**Evidence:** Round 3 ranked #7.
+**Fixed** — existing classes can PUT `class_teacher_id` from the class show page. Create-without-teacher then assign is covered. See **Fixed on main**.
 
 ### 8. Report card generate needs a template + queue worker
 
@@ -85,7 +83,7 @@ Re-checked 2026-08-26 against merged `main` and Round 3 (`docs/PILOT_REHEARSAL.m
 
 ### 12. Seeder still inserts duplicate Extra year names
 
-**Severity:** confusion. UI create is `unique:academic_years,name` (#91) and the form shows `errors.name`. Seed bypasses validation (Round 3 ranked #3).
+**Fixed** — year-creating seeders `firstOrCreate` by `name` (same uniqueness the UI already validates). Re-seed cannot insert a second Extra / Pilot / 2024-2025 row. See **Fixed on main**.
 
 ### 13. Shared Add-term form on every year card
 
@@ -163,5 +161,7 @@ These were open at the status audit (`c21630a`) and in Round 1/2 ranked lists. R
 | Generate “Created 0”; duplicate year/class 500; invoice drafts-only + hardcoded dates | **#91** flash copy; unique year/class + form `errors.name`; list all statuses; term period action | `YearClassUniquenessTest`, `InvoiceGenerationTest`; Round 3 steps 1 and 6 |
 | DoD = tests only | **#92** “walked in a browser” in `CLAUDE.md` / `.cursorrules` | docs |
 | `/academics/gradebook` 404 | **#100** redirect to `exams.gradebook.index`; Inertia static GET href scan | `HardcodedInertiaPathsTest`; browser: `/en/academics/gradebook` lands on Gradebook |
+| Grade 5 B class teacher stayed None; no update path | **#101** `AssignClassTeacherAction` + PUT on class show | `ClassTeacherAssignmentTest`; browser: Grade 5 B save teacher, reload |
+| Seeder duplicate Extra year names | **#101** `firstOrCreate` by year name in seeders | `AcademicYearSeederIdempotencyTest` |
 
 Round 1 vs Round 2 “still on the list after Round 2” for SMS, seeder, landings, fill-grid, generate/year/class/invoices is **obsolete** for those items. Round 3 remaining ranked list (`docs/PILOT_REHEARSAL.md`) is the current teacher-blocking set, minus uniqueness-as-500 (fixed) plus the form-visibility/seeder-dupe nuance.

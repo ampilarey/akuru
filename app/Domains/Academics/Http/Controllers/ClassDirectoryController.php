@@ -2,6 +2,7 @@
 
 namespace App\Domains\Academics\Http\Controllers;
 
+use App\Domains\Academics\Actions\AssignClassTeacherAction;
 use App\Domains\Academics\Actions\AssignStudentToClassAction;
 use App\Domains\Academics\Actions\ListClassRosterAction;
 use App\Domains\Academics\Actions\ResolveDefaultSchoolIdAction;
@@ -85,11 +86,32 @@ class ClassDirectoryController extends Controller
             ->with('success', 'Class created.');
     }
 
+    public function update(Request $request, ClassRoom $classRoom): RedirectResponse
+    {
+        if ($request->input('class_teacher_id') === '') {
+            $request->merge(['class_teacher_id' => null]);
+        }
+
+        $data = $request->validate([
+            'class_teacher_id' => ['nullable', 'exists:users,id'],
+        ]);
+
+        app(AssignClassTeacherAction::class)->execute(
+            $classRoom,
+            $data['class_teacher_id'] !== null ? (int) $data['class_teacher_id'] : null,
+        );
+
+        return redirect()
+            ->route('academics.classes.show', $classRoom)
+            ->with('success', 'Class teacher updated.');
+    }
+
     public function show(Request $request, ClassRoom $classRoom): Response
     {
         $query = trim($request->string('q')->toString());
+        $teachers = app(ListClassTeacherOptionsAction::class)->execute();
         $teacher = $classRoom->class_teacher_id
-            ? app(ListClassTeacherOptionsAction::class)->execute()->firstWhere('id', $classRoom->class_teacher_id)
+            ? $teachers->firstWhere('id', $classRoom->class_teacher_id)
             : null;
 
         return Inertia::render('Academics/Classes/Show', [
@@ -102,6 +124,7 @@ class ClassDirectoryController extends Controller
                 'class_teacher_id' => $classRoom->class_teacher_id,
                 'class_teacher_name' => is_array($teacher) ? ($teacher['name'] ?? null) : null,
             ],
+            'teachers' => $teachers->all(),
             'roster' => app(ListClassRosterAction::class)->execute($classRoom->id),
             'q' => $query,
             'candidates' => app(SearchRosterCandidatesAction::class)->execute($query),
