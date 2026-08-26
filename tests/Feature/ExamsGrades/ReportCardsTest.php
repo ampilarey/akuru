@@ -206,7 +206,9 @@ it('publishes report cards to the portal and refuses regeneration after publish'
         ->actingAs($guardianUser)
         ->get(route('portal.report-cards.download', $card))
         ->assertOk();
-    expect($download->getContent())->toContain('Aisha Ali')->toContain('Excellent term.');
+    expect($download->headers->get('Content-Type'))->toContain('text/html')
+        ->and($download->getContent())->toContain('Aisha Ali')->toContain('Excellent term.')
+        ->and($download->getContent())->not->toContain('%PDF');
 
     $this->withoutLocalizationMiddleware()
         ->actingAs($ctx['admin'])

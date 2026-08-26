@@ -1,7 +1,7 @@
 import { router } from '@inertiajs/react';
 import AppShell from '../../../Layouts/AppShell';
 
-export default function Index({ years, terms, classes, subjects, exams, competencies, rows, classId, subjectId, termId }) {
+export default function Index({ years, terms, classes, subjects, exams, competencies, rows, classId, subjectId, termId, missing_weights = false }) {
     return (
         <AppShell title="Gradebook">
             <form
@@ -48,6 +48,16 @@ export default function Index({ years, terms, classes, subjects, exams, competen
                     )}
                 </div>
             </form>
+
+            {classId && subjectId && termId && missing_weights && (
+                <p className="mb-4 rounded border border-amber-200 bg-amber-50 px-4 py-2 text-sm text-amber-900">
+                    Term % / grade / rank stay blank until a weight scheme is saved for this year (and optionally this class or subject).
+                    {' '}
+                    <a className="underline" href="/exams/weights">Open Weights</a>
+                    {' '}
+                    and set type shares that add to 100, then Recompute.
+                </p>
+            )}
 
             <div className="overflow-x-auto rounded-lg border bg-white">
                 <table className="min-w-full text-sm">

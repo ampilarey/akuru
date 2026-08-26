@@ -25,6 +25,12 @@ class ListGradebookAction
             ->get();
 
         $term = DB::table('terms')->where('id', $termId)->first();
+        $yearId = (int) ($term->academic_year_id ?? 0);
+        $scheme = $yearId
+            ? app(ResolveWeightSchemeAction::class)->execute($yearId, $classId, $subjectId)
+            : null;
+        $hasWeights = $scheme !== null && collect($scheme->weights ?? [])
+            ->contains(fn ($weight) => (float) $weight > 0);
         $asOf = $term->end_date ?? now()->toDateString();
         $studentIds = DB::table('class_student')
             ->where('class_id', $classId)
@@ -99,6 +105,7 @@ class ListGradebookAction
                 'name' => $competency->name,
             ])->values(),
             'rows' => $rows->values(),
+            'missing_weights' => ! $hasWeights,
         ];
     }
 }
