@@ -31,7 +31,11 @@ export default function Assessment({ assessment, enrollment, attempt }) {
     return (
         <AppShell title={assessment.title}>
             <p className="mb-4 text-sm text-gray-600">
-                <a className="text-[#7C2D37] hover:underline" href={`/learn/courses/${enrollment.course_id}`}>{t.course || 'Course'}</a>
+                {enrollment?.course_id ? (
+                    <a className="text-[#7C2D37] hover:underline" href={`/learn/courses/${enrollment.course_id}`}>{t.course || 'Course'}</a>
+                ) : (
+                    <span>Class assessment</span>
+                )}
                 {attempt?.status ? ` · ${attempt.status}` : ''}
                 {attempt?.score != null ? ` · ${attempt.score}/${attempt.max_score}` : ''}
             </p>

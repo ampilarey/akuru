@@ -27,6 +27,8 @@ class Question extends Model
         'attachments',
         'settings',
         'created_by',
+        'legacy_quiz_question_id',
+        'legacy_assignment_id',
     ];
 
     protected function casts(): array

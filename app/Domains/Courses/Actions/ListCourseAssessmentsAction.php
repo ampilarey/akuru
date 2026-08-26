@@ -50,6 +50,9 @@ class ListCourseAssessmentsAction
         return [
             'id' => $assessment->id,
             'course_id' => $assessment->course_id,
+            'classroom_id' => $assessment->classroom_id,
+            'academic_year_id' => $assessment->academic_year_id,
+            'term_id' => $assessment->term_id,
             'course_module_id' => $assessment->course_module_id,
             'lesson_id' => $assessment->lesson_id,
             'title' => $assessment->title,
@@ -64,6 +67,8 @@ class ListCourseAssessmentsAction
             'show_results' => (bool) $assessment->show_results,
             'show_correct_answers' => (bool) $assessment->show_correct_answers,
             'requires_teacher_marking' => (bool) $assessment->requires_teacher_marking,
+            'legacy_quiz_id' => $assessment->legacy_quiz_id,
+            'legacy_assignment_id' => $assessment->legacy_assignment_id,
             'questions' => $questions,
         ];
     }

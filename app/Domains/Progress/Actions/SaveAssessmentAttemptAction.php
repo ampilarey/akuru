@@ -3,7 +3,6 @@
 namespace App\Domains\Progress\Actions;
 
 use App\Domains\Progress\Enums\AssessmentAttemptStatus;
-use App\Domains\Progress\Models\AssessmentAttempt;
 use Illuminate\Validation\ValidationException;
 
 class SaveAssessmentAttemptAction
@@ -12,11 +11,10 @@ class SaveAssessmentAttemptAction
      * @param  array<string, mixed>  $answers
      * @return array<string, mixed>
      */
-    public function execute(int $assessmentId, int $enrollmentId, array $answers): array
+    public function execute(int $assessmentId, ?int $enrollmentId, array $answers, ?int $studentId = null): array
     {
-        $attempt = AssessmentAttempt::query()
-            ->where('enrollment_id', $enrollmentId)
-            ->where('assessment_id', $assessmentId)
+        $attempt = app(StartAssessmentAttemptAction::class)
+            ->scopedQuery($assessmentId, $enrollmentId, $studentId)
             ->where('status', AssessmentAttemptStatus::InProgress)
             ->orderByDesc('attempt_number')
             ->first();

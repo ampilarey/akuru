@@ -30,6 +30,13 @@ class SaveQuestionAction
             ]);
         }
 
+        if ($question === null && ! empty($data['legacy_quiz_question_id'])) {
+            $question = Question::query()->where('legacy_quiz_question_id', (int) $data['legacy_quiz_question_id'])->first();
+        }
+        if ($question === null && ! empty($data['legacy_assignment_id'])) {
+            $question = Question::query()->where('legacy_assignment_id', (int) $data['legacy_assignment_id'])->first();
+        }
+
         $attachments = is_array($data['attachments'] ?? null) ? $data['attachments'] : [];
         $file = $data['file'] ?? null;
         if ($file instanceof UploadedFile) {
@@ -67,6 +74,12 @@ class SaveQuestionAction
             'attachments' => $attachments,
             'settings' => is_array($data['settings'] ?? null) ? $data['settings'] : [],
             'created_by' => $data['created_by'] ?? $question?->created_by,
+            'legacy_quiz_question_id' => isset($data['legacy_quiz_question_id'])
+                ? (int) $data['legacy_quiz_question_id']
+                : $question?->legacy_quiz_question_id,
+            'legacy_assignment_id' => isset($data['legacy_assignment_id'])
+                ? (int) $data['legacy_assignment_id']
+                : $question?->legacy_assignment_id,
         ];
 
         if ($question === null) {
