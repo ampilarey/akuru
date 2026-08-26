@@ -1272,11 +1272,17 @@ report “PDF” is HTML. Browser walk completed Step 1 only (~33 clicks).
 
 Hifz untouched. Deploy 3 not executed. Track B not started.
 
+<<<<<<< HEAD
 ## Pilot blocker 1 — roster picker (2026-08-26)
 
 Class show searches by name / student number / national ID (not `students.id`)
 and lists name, number, DOB, national ID, current class. Identical identity
 rows are flagged; assign still requires an explicit chosen id. Findings doc
+=======
+## Pilot blocker 2 — AppShell logout (2026-08-26)
+
+Inertia `AppShell` posts `/logout`. `GET /logout` remains 405. Findings doc
+>>>>>>> origin/cursor/appshell-logout-063c
 is unchanged in this slice.
 
 ## Next
