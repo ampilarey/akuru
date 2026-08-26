@@ -45,9 +45,10 @@ return [
     |
     */
     /*
-    | Live SMS HTTP is allowed only when APP_ENV=production AND SMS_LIVE=true.
-    | Local, staging, and testing bind LogSmsSender and must not call Dhiraagu
-    | or the HTTP gateway. Seed phones (7820288, 7972434) are real numbers.
+    | Live SMS HTTP is allowed only when APP_ENV=production AND SMS_LIVE=true
+    | (string "true" or "1"). Missing, "false", or unknown values fail closed.
+    | Local, staging, and testing bind LogSmsSender. Seed phones 7820288 and
+    | 7972434 are real numbers.
     */
     'sms' => [
         'live' => env('SMS_LIVE', false),

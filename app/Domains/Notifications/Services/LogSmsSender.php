@@ -2,13 +2,14 @@
 
 namespace App\Domains\Notifications\Services;
 
+use App\Domains\Notifications\Actions\RecordSmsReceiptAction;
 use App\Domains\Notifications\Contracts\SmsSenderInterface;
 use Illuminate\Support\Facades\Log;
 
 class LogSmsSender implements SmsSenderInterface
 {
     /**
-     * @var list<array{phone: string, message: string, options: array<string, mixed>}>
+     * @var list<array{channel: string, phone: string, body: string, timestamp: string, options: array<string, mixed>}>
      */
     public array $sent = [];
 
@@ -18,17 +19,35 @@ class LogSmsSender implements SmsSenderInterface
      */
     public function sendSms(string $phoneNumber, string $message, array $options = []): array
     {
-        $this->sent[] = [
+        $sentAt = now();
+        $record = [
+            'channel' => 'sms',
             'phone' => $phoneNumber,
-            'message' => $message,
+            'body' => $message,
+            'timestamp' => $sentAt->toIso8601String(),
             'options' => $options,
         ];
+        $this->sent[] = $record;
 
         Log::info('SMS log sender — not delivered', [
+            'channel' => 'sms',
             'to' => $phoneNumber,
+            'body' => $message,
+            'timestamp' => $record['timestamp'],
             'type' => $options['type'] ?? null,
             'reference' => $options['reference'] ?? null,
             'env' => app()->environment(),
+        ]);
+
+        app(RecordSmsReceiptAction::class)->execute([
+            'channel' => 'sms',
+            'type' => $options['type'] ?? 'notification',
+            'reference' => $options['reference'] ?? null,
+            'phone' => $phoneNumber,
+            'body' => $message,
+            'driver' => 'log',
+            'success' => true,
+            'sent_at' => $sentAt,
         ]);
 
         return [

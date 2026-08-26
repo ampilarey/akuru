@@ -34,11 +34,17 @@ class SendAbsenceSms
                 'reference' => $reference,
             ]);
 
+            if (($result['driver'] ?? null) === 'log') {
+                continue;
+            }
+
             app(RecordSmsReceiptAction::class)->execute([
+                'channel' => 'sms',
                 'type' => 'attendance',
                 'reference' => $reference,
                 'phone' => $phone,
-                'driver' => $result['driver'] ?? (array_key_exists('message_id', $result) ? 'gateway' : 'log'),
+                'body' => $message,
+                'driver' => $result['driver'] ?? 'gateway',
                 'success' => (bool) ($result['success'] ?? false),
             ]);
         }

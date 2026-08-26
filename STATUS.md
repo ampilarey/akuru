@@ -1325,10 +1325,18 @@ fill-grid identity, generate/year/class/invoice validation, DoD docs.
 
 ## Round-2 fix 1 — SMS safety (2026-08-26)
 
-- **Done:** `SmsSenderInterface` binds `LogSmsSender` unless `APP_ENV=production`
-  **and** `SMS_LIVE=true`. `SmsGatewayService` refuses HTTP otherwise.
-  Tests call `Http::preventStrayRequests()`. Absence SMS writes `sms_receipts`;
-  portal attendance shows **Parent notified**.
+- **Until this slice:** `NotificationsServiceProvider` bound `SmsSenderInterface`
+  to `SmsGatewayService` in **every** environment (local, staging, testing,
+  production). Marking a student absent dispatched `StudentMarkedAbsent` →
+  `SendAbsenceSms` → live Dhiraagu/HTTP. Seeded phones (`7820288`, `7972434`)
+  are real numbers named in this file; **any earlier local or
+  `test.akuru.edu.mv` absence-marking may have sent real messages.**
+- **Done:** bind `LogSmsSender` unless `APP_ENV=production` **and**
+  `services.sms.live` (`SMS_LIVE`) is an explicit true. Missing or unknown
+  values fail closed. The fake logs and writes `sms_receipts` (channel, number,
+  body, timestamp). `SmsGatewayService` also refuses HTTP when live SMS is
+  not allowed. Tests call `Http::preventStrayRequests()`. Portal attendance
+  shows **Parent notified**.
 - **Tests:** `tests/Feature/Notifications/SmsSafetyTest.php`.
 
 **Operator:** apply branch protection (`docs/BRANCH_PROTECTION.md`).
