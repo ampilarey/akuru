@@ -63,7 +63,7 @@ Legend — **CODE:** implementation in repo (models/migrations/actions/routes/pa
 | S5.5 performance/CPD | Yes. | `PerformanceTest`. | UNVERIFIED. | |
 | S5.6 payroll | Yes. **Flagged off** (`PAYROLL_ENABLED` + `payroll.enabled`). | `PayrollTest` (turns the flag on). | UNVERIFIED; default **off** is by design. | |
 | 1A.1 auth/roles | Yes (Phase 0 + S1). | Auth tests, `RoleLandingTest`. | Walked login **ok locally** (R2/R3). Teacher `/dashboard` → Today (#88). Parent **Parent Dashboard** (#88). Admin still Blade dashboard (R3: allowed). Staging login **fail**. | |
-| 1A.2–1A.7 course engine | Yes. Catalog, outline, text/media blocks, `/learn`, portal learning. | Matching `tests/Feature/Courses/*`, `LessonProgressTest`, `GuardianAccessPolicyTest`. | UNVERIFIED. | |
+| 1A.2–1A.7 course engine | Yes. Catalog, outline, text/media blocks, glossary term bank + lesson attach, `/learn`, portal learning. | Matching `tests/Feature/Courses/*` including `GlossaryTest`. | Glossary walked in this PR (admin CRUD, attach, player inline defs). Rest of 1A still UNVERIFIED. | `glossary_items` / `lesson_glossary_items` (SPEC §22). |
 | 1B.1–1B.6 offerings/PWA | Yes. Offerings, pin/seats, sessions, extra blocks, unlock/completion, PWA/i18n. | Matching Offerings/Progress/Pwa tests. | UNVERIFIED. | 1B.5 tests the 2/3 = 66 formula. |
 | 2.1–2.5 activities | Yes. Four patterns, bank, assessment player, review, session polish. | Matching Courses/Progress tests. | UNVERIFIED. | |
 | Arabic A.1–A.3 | Yes. Letters/harakas, skill tag, reports. | `ArabicReferenceTest`, `ArabicSkillActivityTest`, `ArabicSkillReportTest`. | UNVERIFIED. | No AI (rule 8). |
@@ -112,7 +112,7 @@ Legend — **CODE:** implementation in repo (models/migrations/actions/routes/pa
 | S3.4 “Term grades (done)” | Computes when a weight scheme exists. Banner when missing (#89). Weights UI now persists a scheme (#96). |
 | S3.6 “Report cards (done)” | Queued **HTML**; labelled HTML (#89). %/grade fill when a scheme exists (#96). Not PDF. |
 | S3.1 weights implied ready | Scales/types seed; Weights UI now posts numeric percents summing to 100 (#96). |
-| 1A / 1B / 2 / Arabic A / Qur’an A “done” | Code + Pest exist. **USABLE UNVERIFIED**. |
+| 1A / 1B / 2 / Arabic A / Qur’an A “done” | Code + Pest exist. **1A glossary** tables/CRUD/player added this slice. Other 1A/1B/2 still **USABLE UNVERIFIED**. |
 | S5.1–S5.5 “done” | Code + Pest. **UNVERIFIED**. S5.6 is honestly “done; flagged off”. |
 | S2.3 builder “done” | Page exists. R2 extra-period drag did not persist. |
 

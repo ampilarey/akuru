@@ -33,6 +33,7 @@ use App\Domains\Courses\Http\Controllers\CourseLevelController;
 use App\Domains\Courses\Http\Controllers\CourseOutlineController;
 use App\Domains\Courses\Http\Controllers\CourseSubjectController;
 use App\Domains\Courses\Http\Controllers\EngineCourseController;
+use App\Domains\Courses\Http\Controllers\GlossaryController;
 use App\Domains\Courses\Http\Controllers\I18nPreviewController;
 use App\Domains\Courses\Http\Controllers\LearnActivityController;
 use App\Domains\Courses\Http\Controllers\LearnArabicReportController;
@@ -478,6 +479,11 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
     });
 
     Route::prefix('catalog')->middleware(['role:super_admin|admin|headmaster'])->group(function () {
+        Route::get('glossary/export', [GlossaryController::class, 'export'])->name('catalog.glossary.export');
+        Route::get('glossary', [GlossaryController::class, 'index'])->name('catalog.glossary.index');
+        Route::post('glossary', [GlossaryController::class, 'store'])->name('catalog.glossary.store');
+        Route::put('glossary/{glossaryItem}', [GlossaryController::class, 'update'])->name('catalog.glossary.update')->whereNumber('glossaryItem');
+        Route::delete('glossary/{glossaryItem}', [GlossaryController::class, 'destroy'])->name('catalog.glossary.destroy')->whereNumber('glossaryItem');
         Route::get('subjects/export', [CourseSubjectController::class, 'export'])->name('catalog.subjects.export');
         Route::get('subjects', [CourseSubjectController::class, 'index'])->name('catalog.subjects.index');
         Route::post('subjects', [CourseSubjectController::class, 'store'])->name('catalog.subjects.store');
@@ -545,6 +551,8 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::delete('courses/{course}/blocks/{block}', [CourseOutlineController::class, 'destroyBlock'])->name('catalog.courses.blocks.destroy')->whereNumber('course');
         Route::post('courses/{course}/lessons/{lesson}/publish', [CourseOutlineController::class, 'publishLesson'])->name('catalog.courses.lessons.publish')->whereNumber('course');
         Route::post('courses/{course}/lessons/{lesson}/preview', [CourseOutlineController::class, 'togglePreview'])->name('catalog.courses.lessons.preview')->whereNumber('course');
+        Route::post('courses/{course}/lessons/{lesson}/glossary', [CourseOutlineController::class, 'attachGlossary'])->name('catalog.courses.lessons.glossary.attach')->whereNumber('course');
+        Route::delete('courses/{course}/lessons/{lesson}/glossary/{glossaryItem}', [CourseOutlineController::class, 'detachGlossary'])->name('catalog.courses.lessons.glossary.detach')->whereNumber('course')->whereNumber('glossaryItem');
         Route::get('player/{lesson}', [LessonPlayerController::class, 'show'])->name('catalog.player.show')->whereNumber('lesson');
         Route::get('media/{media}', [CatalogMediaController::class, 'show'])->name('catalog.media.show')->whereNumber('media');
     });

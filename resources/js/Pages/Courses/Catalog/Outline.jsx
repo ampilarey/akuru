@@ -18,7 +18,70 @@ function blockLabel(block) {
         || '—';
 }
 
-export default function Outline({ course, modules }) {
+function LessonGlossaryForm({ courseId, lesson, glossaryItems }) {
+    const form = useForm({
+        glossary_item_id: glossaryItems[0]?.id || '',
+        is_required: false,
+    });
+    const attachedIds = new Set((lesson.glossary || []).map((row) => row.id));
+    const available = glossaryItems.filter((item) => !attachedIds.has(item.id));
+
+    return (
+        <div className="mt-3 rounded border bg-[#F9F4EE] p-3">
+            <p className="mb-2 text-xs font-medium uppercase tracking-wide text-gray-600">Lesson glossary</p>
+            {(lesson.glossary || []).length === 0 && <p className="mb-2 text-xs text-gray-500">No terms attached. Add a term in Glossary first.</p>}
+            <ul className="mb-2 space-y-1 text-sm">
+                {(lesson.glossary || []).map((item) => (
+                    <li key={item.id} className="flex flex-wrap items-center justify-between gap-2">
+                        <span>
+                            <span dir="auto">{item.term}</span>
+                            {item.term_ar && <span className="ms-2" dir="rtl">{item.term_ar}</span>}
+                            {item.is_required && <span className="ms-2 text-xs uppercase text-amber-800">required</span>}
+                        </span>
+                        <button
+                            type="button"
+                            className="text-xs text-red-700"
+                            onClick={() => router.delete(`/catalog/courses/${courseId}/lessons/${lesson.id}/glossary/${item.id}`)}
+                        >
+                            Remove
+                        </button>
+                    </li>
+                ))}
+            </ul>
+            {available.length > 0 && (
+                <form
+                    onSubmit={(e) => {
+                        e.preventDefault();
+                        form.post(`/catalog/courses/${courseId}/lessons/${lesson.id}/glossary`, { preserveScroll: true });
+                    }}
+                    className="flex flex-wrap items-end gap-2"
+                >
+                    <select
+                        className="form-input"
+                        value={form.data.glossary_item_id}
+                        onChange={(e) => form.setData('glossary_item_id', e.target.value)}
+                    >
+                        {available.map((item) => (
+                            <option key={item.id} value={item.id}>{item.term}{item.term_ar ? ` / ${item.term_ar}` : ''}</option>
+                        ))}
+                    </select>
+                    <label className="flex items-center gap-1 text-xs">
+                        <input
+                            type="checkbox"
+                            checked={!!form.data.is_required}
+                            onChange={(e) => form.setData('is_required', e.target.checked)}
+                        />
+                        Required
+                    </label>
+                    <button type="submit" className="btn-secondary" disabled={form.processing}>Attach term</button>
+                    {form.errors.glossary_item_id && <span className="text-xs text-red-600">{form.errors.glossary_item_id}</span>}
+                </form>
+            )}
+        </div>
+    );
+}
+
+export default function Outline({ course, modules, glossaryItems = [] }) {
     const moduleForm = useForm({ title: '' });
     const lessonForm = useForm({
         course_module_id: modules[0]?.id || '',
@@ -53,6 +116,8 @@ export default function Outline({ course, modules }) {
                 <a className="text-[#7C2D37] hover:underline" href={`/catalog/courses/${course.id}/activities`}>Activities</a>
                 {' · '}
                 <a className="text-[#7C2D37] hover:underline" href={`/catalog/courses/${course.id}/assessments`}>Assessments</a>
+                {' · '}
+                <a className="text-[#7C2D37] hover:underline" href="/catalog/glossary">Glossary</a>
             </p>
             <div className="mb-4 grid gap-3 md:grid-cols-3">
                 <form
@@ -196,6 +261,7 @@ export default function Outline({ course, modules }) {
                                         </li>
                                     ))}
                                 </ul>
+                                <LessonGlossaryForm courseId={course.id} lesson={lesson} glossaryItems={glossaryItems} />
                             </div>
                         ))}
                     </section>

@@ -27,6 +27,7 @@ class PublishLessonAction
                     'data' => $block->data,
                     'settings' => $block->settings,
                 ])->values()->all(),
+                'glossary' => app(ListLessonGlossaryAction::class)->execute($lesson->id),
             ];
 
             $revision = LessonRevision::query()->create([
