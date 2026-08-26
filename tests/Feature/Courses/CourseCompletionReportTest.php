@@ -150,6 +150,25 @@ it('lets a parent and the student read performance with csv', function () {
         );
 });
 
+it('includes course-only enrollments in course completion summaries', function () {
+    $ctx = publishCompletionReportCourse();
+    \App\Domains\Courses\Models\CourseEnrollment::query()
+        ->whereKey($ctx['enrollment']->id)
+        ->update(['course_offering_id' => null]);
+
+    $this->withoutLocalizationMiddleware()
+        ->actingAs($ctx['admin'])
+        ->get(route('catalog.reports.completions'))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->has('offering_summaries', 0)
+            ->has('course_summaries', 1)
+            ->where('course_summaries.0.enrolled', 1)
+            ->where('rows.0.student_name', 'Nadira Didi')
+            ->where('rows.0.offering_title', '')
+        );
+});
+
 it('forbids completion reports without courses.manage', function () {
     $other = actingPeopleAdmin(['hr.manage']);
 

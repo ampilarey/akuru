@@ -17,23 +17,21 @@ class ListOfferingCompletionReportAction
         $offeringId = $this->positiveInt($filters['offering_id'] ?? null);
         $courseId = $this->positiveInt($filters['course_id'] ?? null);
 
-        $offeringQuery = DB::table('course_offerings')->whereNull('deleted_at');
+        $offeringIdsForYear = [];
         if ($yearId) {
-            $offeringQuery->where('academic_year_id', $yearId);
+            $offeringIdsForYear = DB::table('course_offerings')
+                ->whereNull('deleted_at')
+                ->where('academic_year_id', $yearId)
+                ->pluck('id')
+                ->map(fn ($id): int => (int) $id)
+                ->all();
         }
-        if ($offeringId) {
-            $offeringQuery->where('id', $offeringId);
-        }
-        if ($courseId) {
-            $offeringQuery->where('course_id', $courseId);
-        }
-        $offeringIds = $offeringQuery->pluck('id')->map(fn ($id): int => (int) $id)->all();
 
         $enrollments = CourseEnrollment::query()
-            ->whereNotNull('course_offering_id')
             ->whereNotIn('status', ['rejected', 'cancelled'])
-            ->when($offeringIds !== [], fn ($query) => $query->whereIn('course_offering_id', $offeringIds))
-            ->when($offeringIds === [] && ($yearId || $offeringId || $courseId), fn ($query) => $query->whereRaw('0 = 1'))
+            ->when($offeringId, fn ($query) => $query->where('course_offering_id', $offeringId))
+            ->when($courseId, fn ($query) => $query->where('course_id', $courseId))
+            ->when($yearId, fn ($query) => $query->whereIn('course_offering_id', $offeringIdsForYear ?: [0]))
             ->orderByDesc('id')
             ->get();
 
