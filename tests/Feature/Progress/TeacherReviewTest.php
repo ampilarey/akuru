@@ -76,6 +76,7 @@ it('lets a teacher score a submitted activity and shows feedback to the student'
             ->component('Courses/Catalog/Reviews')
             ->has('rows', 1)
             ->where('rows.0.kind', 'activity')
+            ->where('rows.0.student_name', 'Layla Ali')
         );
 
     $attemptId = ActivityAttempt::query()->value('id');

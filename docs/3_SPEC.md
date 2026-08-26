@@ -4,7 +4,7 @@ Course-engine Phase 3 (`docs/SPEC.md` §39 / §48). Parent/student **composed da
 
 Engine core stays subject-ignorant. No `if (course_type === …)`. Hifz frozen until Phase F.
 
-## C1 — Course certificates (this slice)
+## C1 — Course certificates (done, #106)
 
 **Tables**
 
@@ -25,15 +25,22 @@ Engine core stays subject-ignorant. No `if (course_type === …)`. Hifz frozen u
 
 **Morph-map (same slice):** `certificate_template`, `issued_certificate`.
 
-## C2 — Completion and performance reports (this slice)
+## C2 — Completion and performance reports (done, #107)
 
 Staff `/catalog/reports/completions` (`courses.manage`): offering completion summaries, course completion summaries, roster with progress / attendance / lessons, CSV.
 
 Student and parent `/portal/performance`: own enrollments (`relationship: self`) and/or linked children via `ListGuardianChildrenAction`. CSV. Portal controller calls Courses actions only (no cross-domain Models).
 
-## C3 — Teacher review reports (next)
+## C3 — Teacher review reports (this slice)
 
-Pending-review / weakness / revision reports. Extend `/catalog/reviews` without subject branches in the engine.
+Pending-review / weakness / revision on `/catalog/reviews` (`courses.manage`). Engine stays subject-ignorant (no `course_type` branch).
+
+- **Pending:** submitted activity/assessment attempts waiting for a teacher score. Cards show student name, course, wait time; scoring form unchanged. CSV section `pending_review`.
+- **Weakness:** latest **scored** attempt per student + item. Weak if `score < passing_score`, or if no passing score is set and percent is below the page threshold (default 50).
+- **Revision:** same weak rows with a recommendation — retry when retakes remain, otherwise teacher review. Derived from activity `settings.retake_limit` / assessment `retake_limit`.
+- Filters: academic year (via enrollment offering, or `attempts.academic_year_id`), course, threshold. CSV export of all three sections.
+
+No new tables. Progress owns attempt reads (`ListPendingReviewsAction`, `ListScoredAttemptsAction`); Courses enriches titles and passing/retake rules. Arabic/Qur’an specialty reports stay on their own pages.
 
 ## Out of scope here
 

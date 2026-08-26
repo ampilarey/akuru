@@ -340,6 +340,7 @@ class LocalizedRouteNamesTest extends TestCase
             'catalog.arabic.harakas.update',
             'catalog.reviews.index',
             'catalog.reviews.store',
+            'catalog.reviews.export',
             'catalog.questions.index',
             'catalog.questions.store',
             'catalog.questions.update',
