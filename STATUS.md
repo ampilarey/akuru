@@ -1255,6 +1255,21 @@ JSON archived:
 
 **Gate:** GREEN (ADR-021 representative). TRACK B unblocked; not started.
 
+## Pilot rehearsal (findings only, 2026-08-26)
+
+No product features. Staging `test.akuru.edu.mv` could not be seeded (no SSH)
+or logged into with seed passwords. Walk was local `akuru_institute` plus
+`php artisan db:seed --class=PilotRehearsalSeeder` (ADR-021 messy IDs, 15
+students, 3 teachers, timetable, fee structure).
+
+Findings: `docs/PILOT_REHEARSAL.md`. Ranked teacher blockers start at staging
+login, verified `user_contacts`, missing `teachers` rows, teacher cannot
+generate registers, no periods UI, Blade dashboard hiding the Inertia loop,
+no class-teacher picker, indistinguishable duplicate names, SMS not actually
+faked, term grades blank without weights, report “PDF” is HTML.
+
+Hifz untouched. Deploy 3 not executed. Track B not started.
+
 ## Next
 
 TRACK A code/docs A1–A5 plus ADR-021 representative gate are the current
@@ -1263,6 +1278,8 @@ unification story. **A4 protection is not applied** (bot 403; re-tried
 S1 Deploy 3 cleanup is a proposal only — wait for confirmation.
 `--backfill` still refused on `APP_ENV=production`. No Hifz behavior
 change. `PAYROLL_ENABLED` / settings stay off.
+Pilot rehearsal findings are in `docs/PILOT_REHEARSAL.md` — fix pass is a
+later slice.
 
 **Operator:** apply branch protection (`docs/BRANCH_PROTECTION.md`).
 Confirm or reject `docs/migrations/s11-deploy-3-cleanup-proposal.md`.
