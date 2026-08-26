@@ -172,6 +172,7 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
     Route::get('exams/gradebook/export', [GradebookController::class, 'export'])->name('exams.gradebook.export');
     Route::get('exams/gradebook', [GradebookController::class, 'index'])->name('exams.gradebook.index');
     Route::post('exams/gradebook/compute', [GradebookController::class, 'compute'])->name('exams.gradebook.compute');
+    Route::get('academics/gradebook', [GradebookController::class, 'redirectFromAcademics'])->name('academics.gradebook.redirect');
     Route::post('exams/competencies/assess', [CompetencyController::class, 'assess'])->name('exams.competencies.assess');
 
     Route::get('academics/registers/today', [TeacherRegisterController::class, 'today'])->name('academics.registers.today');

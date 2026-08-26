@@ -88,6 +88,11 @@ class GradebookController extends Controller
         }, 'gradebook.csv', ['Content-Type' => 'text/csv; charset=UTF-8']);
     }
 
+    public function redirectFromAcademics(Request $request): RedirectResponse
+    {
+        return redirect()->route('exams.gradebook.index', $request->query());
+    }
+
     private function authorizeClassSubject(Request $request, int $classId, int $subjectId): void
     {
         $user = $request->user();

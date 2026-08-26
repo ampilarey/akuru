@@ -148,6 +148,7 @@ class LocalizedRouteNamesTest extends TestCase
             'exams.gradebook.index',
             'exams.gradebook.compute',
             'exams.gradebook.export',
+            'academics.gradebook.redirect',
             'exams.competencies.index',
             'exams.competencies.store',
             'exams.competencies.assess',

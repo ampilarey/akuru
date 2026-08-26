@@ -13,7 +13,7 @@ What **runs for a person** is still narrower than the code. Staging `test.akuru.
 
 Local `migrate:fresh --seed` now includes `PilotRehearsalSeeder` (#87). Round 3 Chrome (stacked #86–#92, now on `main`) walked: teacher **Today** landing, fill grid **number + DOB**, **Parent Dashboard** + **Parent notified** column, absence-note approve, missing-weights **banner** + honest **HTML** (not PDF) labels, invoice **sent** rows on the Pilot year. SMS binds `LogSmsSender` unless `APP_ENV=production` **and** `SMS_LIVE` is an explicit true (#86).
 
-Still blocking a real teacher: staging access, AppShell nav IA (**proposed**, `docs/APPSHELL_NAV_IA.md`, awaiting owner decision — wrap still live), seeder still inserts duplicate Extra year names, `/academics/gradebook` 404 vs `/exams/gradebook`, Grade 5 B class teacher **None**. People → Students can create a child (#95). Weights can persist a year scheme (#96). Documents are HTML by decision (ADR-012 / #97). Roster picker flags PIL-01 vs blank as one identity. Most catalog/HR/course-engine slices remain **UNVERIFIED**.
+Still blocking a real teacher: staging access, AppShell nav IA (**proposed**, `docs/APPSHELL_NAV_IA.md`, awaiting owner decision — wrap still live), seeder still inserts duplicate Extra year names, Grade 5 B class teacher **None**. People → Students can create a child (#95). Weights can persist a year scheme (#96). Documents are HTML by decision (ADR-012 / #97). Roster picker flags PIL-01 vs blank as one identity (#99). `/academics/gradebook` redirects to `/exams/gradebook`. Most catalog/HR/course-engine slices remain **UNVERIFIED**.
 
 Hifz untouched. Deploy 3 not executed. Track B not started.
 
@@ -46,7 +46,7 @@ Legend — **CODE:** implementation in repo (models/migrations/actions/routes/pa
 | S3.1 grading foundations | Yes. Scales, types, weights UI. | `GradingFoundationsTest` including HTTP store. | Weights form now saves a year scheme (#96): numeric defaults summing to 100. | Previously walked **fail** (R2/R3 JSON zeros). |
 | S3.2 exams | Yes. Status machine, schedule. | `ExamSchedulingTest`. | Walked **ok** (R2 S5) schedule → published. Easy to schedule the wrong class (form defaults). | |
 | S3.3 marks | Yes. Grid + CSV. | `ExamMarksTest`. | Walked **ok** (R2 S5) 15/15. PIL numbers **on this grid**. | |
-| S3.4 term grades | Yes. `ComputeTermGradesAction`, gradebook. | `TermGradesTest` happy path **and** missing-weights (#89); `WeightSchemePersistTest`. | Walked **explained fail** until this PR: scheme from Weights then Recompute fills Term % / Grade / Rank. `/academics/gradebook` is **404**; real path `/exams/gradebook`. | |
+| S3.4 term grades | Yes. `ComputeTermGradesAction`, gradebook. | `TermGradesTest` happy path **and** missing-weights (#89); `WeightSchemePersistTest`. | Walked **explained fail** until this PR: scheme from Weights then Recompute fills Term % / Grade / Rank. `/academics/gradebook` redirects to `/exams/gradebook`. | |
 | S3.5 standards | Yes. | `StandardsTest`. | UNVERIFIED. | |
 | S3.6 report cards | Yes. Templates, queued HTML via `HtmlDocumentRenderer`. | `ReportCardsTest` Content-Type HTML; ADR-012 HTML decision. | Walked **honest HTML** (R3 S5) plus ADR-012 citation (#97). Queue worker required. | HTML is the supported output (ADR-012 amended). |
 | S3.7 awards / docs | Yes. HTML certificates/ID cards. | `AwardsDocumentsTest`. | UNVERIFIED. | Also HTML, not PDF (`AwardController`). |
@@ -78,10 +78,9 @@ Legend — **CODE:** implementation in repo (models/migrations/actions/routes/pa
 ### Agent-doable (remaining after #86–#93)
 
 1. **AppShell nav IA** — 50+ wrapping links, duplicate labels. **Proposed, awaiting decision** in `docs/APPSHELL_NAV_IA.md` (PR #98). Do not implement until Accept / Accept with edits / Reject. The wrap is still live.
-2. **Wrong-URL 404** — `/academics/gradebook` vs `/exams/gradebook` (Round 3 ranked #6).
-3. **Seeder still inserts duplicate Extra year names** — UI uniqueness is validated (#91); seed bypasses it.
-4. **Class teacher on Grade 5 B is None** — field exists; this seed/UI walk did not stick (Round 3 ranked #7).
-5. **Parent notified shows — on excused** — column exists (#86); SMS body is not visible in the portal; log-only outside production.
+2. **Seeder still inserts duplicate Extra year names** — UI uniqueness is validated (#91); seed bypasses it.
+3. **Class teacher on Grade 5 B is None** — field exists; this seed/UI walk did not stick (Round 3 ranked #7).
+4. **Parent notified shows — on excused** — column exists (#86); SMS body is not visible in the portal; log-only outside production.
 
 ### Operator-only
 
@@ -111,7 +110,7 @@ Legend — **CODE:** implementation in repo (models/migrations/actions/routes/pa
 
 | Claim that was too strong | Wording that matched the evidence (post #86–#93) |
 |---|---|
-| STATUS “Remaining blockers: none” | Remaining: staging login, AppShell nav, Extra-year seeder dupes, gradebook URL, Grade 5 B class teacher. Student create (#95), weights persist (#96), HTML-as-output (#97), and roster number-twins closed. |
+| STATUS “Remaining blockers: none” | Remaining: staging login, AppShell nav, Extra-year seeder dupes, Grade 5 B class teacher. Student create (#95), weights persist (#96), HTML-as-output (#97), roster number-twins (#99), and gradebook URL closed. |
 | S3.4 “Term grades (done)” | Computes when a weight scheme exists. Banner when missing (#89). Weights UI now persists a scheme (#96). |
 | S3.6 “Report cards (done)” | Queued **HTML**; labelled HTML (#89). %/grade fill when a scheme exists (#96). Not PDF. |
 | S3.1 weights implied ready | Scales/types seed; Weights UI now posts numeric percents summing to 100 (#96). |
