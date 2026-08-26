@@ -39,4 +39,9 @@ class LogSmsSender implements SmsSenderInterface
             'driver' => 'log',
         ];
     }
+
+    public function checkHealth(): bool
+    {
+        return true;
+    }
 }
