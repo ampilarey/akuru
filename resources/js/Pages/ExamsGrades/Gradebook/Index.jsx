@@ -1,7 +1,29 @@
 import { router } from '@inertiajs/react';
 import AppShell from '../../../Layouts/AppShell';
 
-export default function Index({ years, terms, classes, subjects, exams, competencies, rows, classId, subjectId, termId, missing_weights = false }) {
+function gradeCell(result) {
+    if (!result) {
+        return '—';
+    }
+    if (result.is_absent) {
+        return 'Abs';
+    }
+    if (result.is_exempt) {
+        return 'Ex';
+    }
+    if (result.status === 'submitted') {
+        return 'Pending';
+    }
+    if (result.score === null || result.score === undefined) {
+        return '—';
+    }
+    return result.score;
+}
+
+export default function Index({ years, terms, classes, subjects, exams, competencies, rows, classId, subjectId, termId, missing_weights = false, grade_items = [] }) {
+    const extraItems = grade_items.filter((item) => item.source !== 'exam');
+    const emptyColSpan = 4 + exams.length + extraItems.length + competencies.length;
+
     return (
         <AppShell title="Gradebook">
             <form
@@ -65,6 +87,7 @@ export default function Index({ years, terms, classes, subjects, exams, competen
                         <tr>
                             <th className="px-3 py-2">Student</th>
                             {exams.map((exam) => <th key={exam.id} className="px-3 py-2">{exam.name}</th>)}
+                            {extraItems.map((item) => <th key={item.key} className="px-3 py-2">{item.label}</th>)}
                             <th className="px-3 py-2">Term %</th>
                             <th className="px-3 py-2">Grade</th>
                             <th className="px-3 py-2">Rank</th>
@@ -73,7 +96,7 @@ export default function Index({ years, terms, classes, subjects, exams, competen
                     </thead>
                     <tbody>
                         {rows.length === 0 && (
-                            <tr><td className="px-3 py-4 text-gray-500" colSpan={5}>Select a class, subject, and term.</td></tr>
+                            <tr><td className="px-3 py-4 text-gray-500" colSpan={emptyColSpan}>Select a class, subject, and term.</td></tr>
                         )}
                         {rows.map((row) => (
                             <tr key={row.student_id} className="border-t">
@@ -86,6 +109,11 @@ export default function Index({ years, terms, classes, subjects, exams, competen
                                         </td>
                                     );
                                 })}
+                                {extraItems.map((item) => (
+                                    <td key={`${row.student_id}-${item.key}`} className="px-3 py-2">
+                                        {gradeCell(row.items?.[item.key])}
+                                    </td>
+                                ))}
                                 <td className="px-3 py-2">{row.term?.weighted_percent ?? '—'}</td>
                                 <td className="px-3 py-2">{row.term?.grade ?? '—'}</td>
                                 <td className="px-3 py-2">{row.term?.rank ?? '—'}</td>

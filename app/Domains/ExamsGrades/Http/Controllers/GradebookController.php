@@ -29,7 +29,7 @@ class GradebookController extends Controller
 
         $book = ($classId && $subjectId && $termId)
             ? app(ListGradebookAction::class)->execute($classId, $subjectId, $termId)
-            : ['exams' => [], 'competencies' => [], 'rows' => []];
+            : ['exams' => [], 'grade_items' => [], 'competencies' => [], 'rows' => [], 'missing_weights' => false];
 
         return Inertia::render('ExamsGrades/Gradebook/Index', [
             ...app(ListExamCatalogAction::class)->execute(),
@@ -70,19 +70,34 @@ class GradebookController extends Controller
         $this->authorizeClassSubject($request, $classId, $subjectId);
 
         $book = app(ListGradebookAction::class)->execute($classId, $subjectId, $termId);
+        $items = $book['grade_items'] ?? [];
 
-        return response()->streamDownload(function () use ($book): void {
+        return response()->streamDownload(function () use ($book, $items): void {
             $out = fopen('php://output', 'w');
-            fputcsv($out, ['student_id', 'name', 'percent', 'grade', 'point', 'rank']);
+            fputcsv($out, array_merge(
+                ['student_id', 'name'],
+                array_map(fn (array $item): string => $item['label'], $items),
+                ['percent', 'grade', 'point', 'rank'],
+            ));
             foreach ($book['rows'] as $row) {
-                fputcsv($out, [
-                    $row['student_id'],
-                    $row['name'],
-                    $row['term']['weighted_percent'] ?? '',
-                    $row['term']['grade'] ?? '',
-                    $row['term']['grade_point'] ?? '',
-                    $row['term']['rank'] ?? '',
-                ]);
+                $scores = [];
+                foreach ($items as $item) {
+                    $cell = $row['items'][$item['key']] ?? null;
+                    $scores[] = $this->csvCell($cell);
+                }
+                fputcsv($out, array_merge(
+                    [
+                        $row['student_id'],
+                        $row['name'],
+                    ],
+                    $scores,
+                    [
+                        $row['term']['weighted_percent'] ?? '',
+                        $row['term']['grade'] ?? '',
+                        $row['term']['grade_point'] ?? '',
+                        $row['term']['rank'] ?? '',
+                    ],
+                ));
             }
             fclose($out);
         }, 'gradebook.csv', ['Content-Type' => 'text/csv; charset=UTF-8']);
@@ -91,6 +106,30 @@ class GradebookController extends Controller
     public function redirectFromAcademics(Request $request): RedirectResponse
     {
         return redirect()->route('exams.gradebook.index', $request->query());
+    }
+
+    /**
+     * @param  array{score?: float|null, status?: string|null, is_absent?: bool, is_exempt?: bool}|null  $cell
+     */
+    private function csvCell(?array $cell): string
+    {
+        if ($cell === null) {
+            return '';
+        }
+        if ($cell['is_absent'] ?? false) {
+            return 'Abs';
+        }
+        if ($cell['is_exempt'] ?? false) {
+            return 'Ex';
+        }
+        if (($cell['status'] ?? null) === 'submitted') {
+            return 'Pending';
+        }
+        if (! array_key_exists('score', $cell) || $cell['score'] === null) {
+            return '';
+        }
+
+        return (string) $cell['score'];
     }
 
     private function authorizeClassSubject(Request $request, int $classId, int $subjectId): void

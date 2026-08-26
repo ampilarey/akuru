@@ -45,13 +45,22 @@ roster with student names and bulk mark, student schedule at
 `/learn/schedule`, teacher schedule at `/teach/schedule`. Still
 Offerings-owned.
 
-## Slice 2 leftover — class quiz/assignment → engine (this slice)
+## Slice 2 leftover — class quiz/assignment → engine (done)
 
 Migrate ClassRoom-bound `Quiz` / `Assignment` rows onto engine `assessments`
 (attachable to a **class** or a **course**, never both). Additive columns +
 idempotent backfill; legacy tables stay until a later cleanup deploy (ROADMAP
 §3.5 / rule 9). Gate: `php artisan assessments:verify-legacy-migration`.
 Maps onto the four activity patterns only — no second quiz engine.
+
+## Slice 2 leftover — unified gradebook via GradeItemContract (this slice)
+
+School exam marks and engine class-assessment scores in **one** gradebook.
+`ExamsGrades\Contracts\GradeItemContract` + `GradeItemProvider` registry
+(Moodle grade-API pattern). Exam provider lives in ExamsGrades; classroom
+assessments register from Courses (scores via Progress
+`ListAssessmentScoresAction`). No `course_type` / Hifz / Arabic branch in
+the gradebook core. Term % still uses published exams + weight scheme only.
 
 ## Out of scope
 
