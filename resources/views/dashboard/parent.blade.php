@@ -135,24 +135,17 @@
             </div>
             <div class="p-6">
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <a href="{{ route('announcements.index') }}" class="flex items-center justify-center px-4 py-3 bg-brandBlue-600 text-white rounded-lg hover:bg-brandBlue-700 transition-colors">
-                        <i class="fas fa-bullhorn mr-3"></i>
+                    <a href="{{ route('portal.attendance') }}" class="flex items-center justify-center px-4 py-3 bg-brandBlue-600 text-white rounded-lg hover:bg-brandBlue-700 transition-colors">
+                        Attendance
+                    </a>
+                    <a href="{{ route('portal.absence-notes') }}" class="flex items-center justify-center px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
+                        Absence notes
+                    </a>
+                    <a href="{{ route('portal.invoices') }}" class="flex items-center justify-center px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                        Fees
+                    </a>
+                    <a href="{{ route('announcements.index') }}" class="flex items-center justify-center px-4 py-3 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors">
                         {{ __('common.announcements') }}
-                    </a>
-                    
-                    <a href="{{ route('e-learning.index') }}" class="flex items-center justify-center px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
-                        <i class="fas fa-laptop mr-3"></i>
-                        {{ __('common.e_learning') }}
-                    </a>
-                    
-                    <a href="#" class="flex items-center justify-center px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-                        <i class="fas fa-calendar mr-3"></i>
-                        {{ __('common.calendar') }}
-                    </a>
-                    
-                    <a href="#" class="flex items-center justify-center px-4 py-3 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors">
-                        <i class="fas fa-phone mr-3"></i>
-                        {{ __('common.contact_us') }}
                     </a>
                 </div>
             </div>

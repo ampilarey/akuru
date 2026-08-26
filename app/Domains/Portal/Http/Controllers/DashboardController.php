@@ -158,37 +158,7 @@ class DashboardController extends Controller
 
     private function teacherDashboard()
     {
-        try {
-            $teacher = auth()->user()->teacher;
-
-            if (! $teacher) {
-                return $this->adminDashboard();
-            }
-
-            // Basic statistics
-            $stats = [
-                'my_students' => $teacher->students()->count(),
-                'pending_grades' => $this->getTeacherPendingGrades($teacher),
-                'quran_progress_updates' => $this->getTeacherQuranUpdates($teacher),
-                'todays_classes' => $this->getTodaysClasses($teacher),
-                'total_assignments' => Assignment::where('teacher_id', $teacher->id)->count(),
-                'pending_submissions' => $this->getPendingSubmissions($teacher),
-            ];
-
-            // Advanced metrics
-            $metrics = [
-                'student_performance' => $this->getTeacherStudentPerformance($teacher),
-                'quran_progress_summary' => $this->getTeacherQuranProgressSummary($teacher),
-                'recent_submissions' => $this->getRecentSubmissions($teacher),
-                'upcoming_deadlines' => $this->getUpcomingDeadlines($teacher),
-                'class_schedule' => $this->getTeacherClassSchedule($teacher),
-            ];
-
-            return view('dashboard.teacher', compact('stats', 'metrics'));
-        } catch (\Exception $e) {
-            // Fallback to admin dashboard if there's an error
-            return $this->adminDashboard();
-        }
+        return redirect()->route('academics.registers.today');
     }
 
     private function supervisorDashboard()
@@ -240,38 +210,10 @@ class DashboardController extends Controller
 
     private function parentDashboard()
     {
-        try {
-            $parent = auth()->user()->parentGuardian;
+        $parent = auth()->user()->parentGuardian;
+        $children = $parent?->students ?? collect();
 
-            if (! $parent) {
-                return $this->adminDashboard();
-            }
-
-            $children = $parent->students;
-
-            // Basic statistics
-            $stats = [
-                'total_children' => $children->count(),
-                'children_with_quran_progress' => $children->whereHas('quranProgress')->count(),
-                'children_attendance_rate' => $this->getChildrenAttendanceRate($children),
-                'pending_assignments' => $this->getChildrenPendingAssignments($children),
-                'recent_grades' => $this->getChildrenRecentGrades($children),
-            ];
-
-            // Advanced metrics
-            $metrics = [
-                'children_progress_summary' => $this->getChildrenProgressSummary($children),
-                'quran_progress_overview' => $this->getChildrenQuranProgressOverview($children),
-                'attendance_overview' => $this->getChildrenAttendanceOverview($children),
-                'recent_activities' => $this->getChildrenRecentActivities($children),
-                'upcoming_events' => $this->getChildrenUpcomingEvents($children),
-            ];
-
-            return view('dashboard.parent', compact('children', 'stats', 'metrics'));
-        } catch (\Exception $e) {
-            // Fallback to admin dashboard if there's an error
-            return $this->adminDashboard();
-        }
+        return view('dashboard.parent', compact('children'));
     }
 
     // Helper methods for advanced metrics

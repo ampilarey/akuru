@@ -14,10 +14,24 @@
             <div class="hidden sm:flex" style="align-items:center;gap:.125rem;flex:1;justify-content:center">
 
                 {{-- Dashboard --}}
-                <a href="{{ route('dashboard') }}"
-                   style="padding:.4rem .75rem;border-radius:.375rem;font-size:.8rem;font-weight:500;text-decoration:none;transition:background .15s;{{ request()->routeIs('dashboard') ? 'background:rgba(255,255,255,.18);color:white' : 'color:rgba(255,255,255,.8)' }}"
-                   onmouseover="this.style.background='rgba(255,255,255,.12)'" onmouseout="this.style.background='{{ request()->routeIs('dashboard') ? 'rgba(255,255,255,.18)' : 'transparent' }}'">
-                    Dashboard
+                @php
+                    $homeHref = auth()->user()?->isTeacher()
+                        ? route('academics.registers.today')
+                        : route('dashboard');
+                    $homeActive = auth()->user()?->isTeacher()
+                        ? request()->routeIs('academics.registers.today')
+                        : request()->routeIs('dashboard');
+                @endphp
+                <a href="{{ $homeHref }}"
+                   style="padding:.4rem .75rem;border-radius:.375rem;font-size:.8rem;font-weight:500;text-decoration:none;transition:background .15s;{{ $homeActive ? 'background:rgba(255,255,255,.18);color:white' : 'color:rgba(255,255,255,.8)' }}"
+                   onmouseover="this.style.background='rgba(255,255,255,.12)'" onmouseout="this.style.background='{{ $homeActive ? 'rgba(255,255,255,.18)' : 'transparent' }}'">
+                    @if(auth()->user()?->isParent())
+                        Parent dashboard
+                    @elseif(auth()->user()?->isTeacher())
+                        Today
+                    @else
+                        Dashboard
+                    @endif
                 </a>
 
                 @auth

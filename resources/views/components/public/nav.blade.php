@@ -121,6 +121,20 @@
                 Admin Dashboard
               </a>
               <div class="border-t border-gray-100 my-1"></div>
+              @elseif(auth()->user()->isTeacher())
+              <a href="{{ route('academics.registers.today') }}"
+                 class="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-white rounded-lg mx-1 mb-1"
+                 style="background:linear-gradient(135deg,#7C2D37,#5A1F28)">
+                Today
+              </a>
+              <div class="border-t border-gray-100 my-1"></div>
+              @elseif(auth()->user()->isParent())
+              <a href="{{ route('dashboard') }}"
+                 class="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-white rounded-lg mx-1 mb-1"
+                 style="background:linear-gradient(135deg,#7C2D37,#5A1F28)">
+                Parent dashboard
+              </a>
+              <div class="border-t border-gray-100 my-1"></div>
               @endif
               <a href="{{ route('portal.dashboard') }}"
                  class="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-brandBeige-50 hover:text-brandMaroon-700">
@@ -207,6 +221,18 @@
              class="block py-3 px-4 font-semibold text-white rounded-lg mb-1"
              style="background:linear-gradient(135deg,#7C2D37,#5A1F28)">
             ⚙️ Admin Dashboard
+          </a>
+          @elseif(auth()->user()->isTeacher())
+          <a href="{{ route('academics.registers.today') }}"
+             class="block py-3 px-4 font-semibold text-white rounded-lg mb-1"
+             style="background:linear-gradient(135deg,#7C2D37,#5A1F28)">
+            Today
+          </a>
+          @elseif(auth()->user()->isParent())
+          <a href="{{ route('dashboard') }}"
+             class="block py-3 px-4 font-semibold text-white rounded-lg mb-1"
+             style="background:linear-gradient(135deg,#7C2D37,#5A1F28)">
+            Parent dashboard
           </a>
           @endif
           <a href="{{ route('portal.dashboard') }}"
