@@ -3,6 +3,7 @@
 namespace App\Domains\Finance\Http\Controllers;
 
 use App\Domains\Academics\Actions\ListAcademicYearsAction;
+use App\Domains\Academics\Models\Term;
 use App\Domains\Finance\Actions\GenerateInvoicesAction;
 use App\Domains\Finance\Actions\IssueInvoicesAction;
 use App\Domains\Finance\Actions\ListDraftInvoicesAction;
@@ -23,13 +24,22 @@ class InvoiceController extends Controller
         $years = app(ListAcademicYearsAction::class)->execute();
         $yearId = $request->integer('academic_year_id') ?: (int) ($years->firstWhere('is_current', true)['id'] ?? $years->first()['id'] ?? 0);
         $structureId = $request->integer('fee_structure_id') ?: null;
+        $term = $yearId
+            ? Term::query()
+                ->where('academic_year_id', $yearId)
+                ->orderByRaw("case when status = 'active' then 0 else 1 end")
+                ->orderBy('sort_order')
+                ->first()
+            : null;
 
         return Inertia::render('Finance/Invoices/Index', [
             'years' => $years->values(),
             'yearId' => $yearId,
             'structures' => $yearId ? app(ListFeeStructuresAction::class)->execute($yearId)->values() : [],
             'structureId' => $structureId,
-            'invoices' => app(ListDraftInvoicesAction::class)->execute($yearId ?: null, $structureId)->values(),
+            'invoices' => app(ListDraftInvoicesAction::class)->execute($yearId ?: null, $structureId, false)->values(),
+            'period_start' => $term?->start_date?->toDateString(),
+            'period_end' => $term?->end_date?->toDateString(),
         ]);
     }
 

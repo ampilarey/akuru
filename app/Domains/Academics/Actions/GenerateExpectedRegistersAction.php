@@ -28,7 +28,7 @@ class GenerateExpectedRegistersAction
     ): array {
         $year = $this->year($academicYearId);
         if ($year === null) {
-            return ['created' => 0, 'skipped' => 0];
+            return $this->outcome(0, 0, 'Created 0 expected registers (no academic year).');
         }
 
         $fromDate = Carbon::parse($from ?? now()->toDateString(), config('app.timezone'))->startOfDay();
@@ -41,7 +41,7 @@ class GenerateExpectedRegistersAction
             $toDate = $year->end_date->copy()->startOfDay();
         }
         if ($fromDate->gt($toDate)) {
-            return ['created' => 0, 'skipped' => 0];
+            return $this->outcome(0, 0, 'Created 0 expected registers (date range is outside the academic year).');
         }
 
         $blocked = CalendarDay::query()
@@ -116,7 +116,31 @@ class GenerateExpectedRegistersAction
             }
         }
 
-        return ['created' => $created, 'skipped' => $skipped];
+        return $this->outcome($created, $skipped);
+    }
+
+    /**
+     * @return array{created: int, skipped: int, message: string}
+     */
+    private function outcome(int $created, int $skipped, ?string $message = null): array
+    {
+        if ($message === null) {
+            if ($created === 0 && $skipped > 0) {
+                $message = "Created 0 expected registers ({$skipped} already exist).";
+            } elseif ($created === 0) {
+                $message = 'Created 0 expected registers (no matching timetable slots on school days in this range).';
+            } elseif ($skipped > 0) {
+                $message = "Created {$created} expected registers ({$skipped} already exist).";
+            } else {
+                $message = "Created {$created} expected registers.";
+            }
+        }
+
+        return [
+            'created' => $created,
+            'skipped' => $skipped,
+            'message' => $message,
+        ];
     }
 
     private function year(?int $academicYearId): ?AcademicYear

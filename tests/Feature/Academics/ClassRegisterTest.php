@@ -293,9 +293,16 @@ it('explains empty today and lets a teacher generate their own day', function ()
     $this->withoutLocalizationMiddleware()
         ->actingAs($teacherUser)
         ->post(route('academics.registers.today.generate'), ['date' => '2026-08-24'])
-        ->assertRedirect();
+        ->assertRedirect()
+        ->assertSessionHas('success', 'Created 1 expected registers.');
 
     expect(LessonLog::query()->count())->toBe(1);
+
+    $this->withoutLocalizationMiddleware()
+        ->actingAs($teacherUser)
+        ->post(route('academics.registers.today.generate'), ['date' => '2026-08-24'])
+        ->assertRedirect()
+        ->assertSessionHas('success', 'Created 0 expected registers (1 already exist).');
 
     $this->withoutLocalizationMiddleware()
         ->actingAs($teacherUser)

@@ -75,7 +75,7 @@ class TeacherRegisterController extends Controller
 
         return redirect()
             ->route('academics.registers.today', ['date' => $date])
-            ->with('success', "Created {$result['created']} expected registers for {$date}.");
+            ->with('success', $result['message']);
     }
 
     public function show(Request $request, LessonLog $lessonLog): Response
