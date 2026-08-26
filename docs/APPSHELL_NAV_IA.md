@@ -67,3 +67,7 @@ Reply with one of:
 3. **Reject** — keep the flat wrap; close this proposal.
 
 Until that reply, **do not edit** `AppShell.jsx` for IA.
+
+## DoD walk (this PR)
+
+2026-08-26 local Chrome as `admin@akuru.edu.mv` on `/en/people/students`: the shell is still one wrapping strip (74 `<Link href=`). Clicked **Today** → `/en/academics/registers/today`, **Years** → `/en/academics/years`, **Exams** → `/en/exams/schedule`. Duplicate **Report cards** / **Awards** still appear twice. This walk documents the problem; it does not implement the map.
