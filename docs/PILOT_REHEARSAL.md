@@ -11,7 +11,7 @@ Two passes are recorded, then a third after Round-2 product PRs:
 
 - **Round 1** (`cursor/pilot-rehearsal-063c`, merged as #78): Chrome for Step 1 only; Steps 2–6 were domain actions / tinker. Original ranked list is unchanged.
 - **Round 2** (this file, after blocker PRs #79–#84 on `main`): Chrome as admin → teacher → parent → teacher → admin → parent. Fresh `migrate:fresh --seed` then `PilotRehearsalSeeder`. Screenshots: `/opt/cursor/artifacts/pilot-round2/`.
-- **Round 3** (this file, after Round-2 fix PRs **#86–#92**, walked on a local merge of those branches; `main` may still be behind until they merge): Chrome steps 1–6. Screenshots: `/opt/cursor/artifacts/pilot-round3/`. Round 1 and Round 2 text is unchanged.
+- **Round 3** (this file, after Round-2 fix PRs **#86–#92**, walked on a local merge of those branches; **#86–#93 are now on `main`**): Chrome steps 1–6. Screenshots: `/opt/cursor/artifacts/pilot-round3/`. Round 1 and Round 2 text is unchanged. Re-checked remaining items in `docs/KNOWN_ISSUES.md` after merge.
 
 Operator seed (after `DatabaseSeeder`):
 
