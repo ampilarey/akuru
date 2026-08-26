@@ -2,11 +2,13 @@
 
 namespace App\Domains\Website\Http\Controllers\PublicSite;
 
+use App\Domains\Website\Actions\RegisterForEventAction;
 use App\Domains\Website\Models\Event;
 use App\Domains\Website\Models\EventRegistration;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\ValidationException;
 
 class EventController extends Controller
 {
@@ -144,7 +146,7 @@ class EventController extends Controller
     public function register(Request $request, Event $event)
     {
         // Validate event can accept registrations
-        if (! $event->canRegister()) {
+        if ($event->status !== 'published' || ! $event->is_public) {
             return back()->with('error', 'Registration is not available for this event.');
         }
 
@@ -167,52 +169,20 @@ class EventController extends Controller
             return back()->withErrors($validator)->withInput();
         }
 
-        // Check if email already registered for this event
-        $existingRegistration = EventRegistration::where('event_id', $event->id)
-            ->where('email', $request->email)
-            ->whereIn('status', ['pending', 'confirmed'])
-            ->first();
-
-        if ($existingRegistration) {
-            return back()->with('error', 'You are already registered for this event.');
+        try {
+            app(RegisterForEventAction::class)->execute([
+                ...$validator->validated(),
+                'event_id' => $event->id,
+                'registration_source' => 'website',
+                'dietary_requirements' => $request->boolean('dietary_requirements'),
+                'transportation_needed' => $request->boolean('transportation_needed'),
+                'accommodation_needed' => $request->boolean('accommodation_needed'),
+            ]);
+        } catch (ValidationException $e) {
+            return back()->withErrors($e->errors())->withInput();
         }
 
-        // Check if event is full
-        if ($event->is_full) {
-            return back()->with('error', 'This event is full. Please try another event.');
-        }
-
-        // Create registration
-        $registration = EventRegistration::create([
-            'event_id' => $event->id,
-            'name' => $request->name,
-            'email' => $request->email,
-            'phone' => $request->phone,
-            'organization' => $request->organization,
-            'notes' => $request->notes,
-            'dietary_requirements' => $request->boolean('dietary_requirements'),
-            'dietary_notes' => $request->dietary_notes,
-            'transportation_needed' => $request->boolean('transportation_needed'),
-            'transportation_notes' => $request->transportation_notes,
-            'accommodation_needed' => $request->boolean('accommodation_needed'),
-            'accommodation_notes' => $request->accommodation_notes,
-            'registration_source' => 'website',
-            'status' => $event->registration_type === 'required' ? 'pending' : 'confirmed',
-            'amount_paid' => $event->registration_fee ?? 0,
-        ]);
-
-        // Auto-confirm if registration is optional
-        if ($event->registration_type === 'optional') {
-            $registration->confirm();
-        }
-
-        // Generate QR code
-        $registration->generateQrCode();
-
-        // Update event attendee count
-        $event->updateAttendeeCount();
-
-        return redirect()->route('public.events.registration.success', $registration->id)
+        return redirect()->route('public.events.show', $event)
             ->with('success', 'Registration submitted successfully!');
     }
 

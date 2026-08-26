@@ -19,6 +19,7 @@ class PublicRouteNamesTest extends TestCase
             'public.contact.store',
             'public.news.index',
             'public.events.index',
+            'public.events.register',
             'public.gallery.index',
             'public.achievements',
             'public.page.show',

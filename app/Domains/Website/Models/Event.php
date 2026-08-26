@@ -2,6 +2,7 @@
 
 namespace App\Domains\Website\Models;
 
+use App\Domains\Website\Actions\RegisterForEventAction;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
@@ -11,6 +12,8 @@ class Event extends Model
 {
     protected $fillable = [
         'title',
+        'title_dv',
+        'title_ar',
         'slug',
         'description',
         'short_description',
@@ -27,6 +30,12 @@ class Event extends Model
         'status',
         'registration_type',
         'max_attendees',
+        'min_attendees',
+        'waitlist_enabled',
+        'requires_parent_confirmation',
+        'second_round_opens_at',
+        'is_elective',
+        'academic_year_id',
         'current_attendees',
         'registration_fee',
         'registration_deadline',
@@ -52,6 +61,10 @@ class Event extends Model
         'end_time' => 'datetime:H:i',
         'registration_deadline' => 'datetime',
         'registration_start' => 'datetime',
+        'second_round_opens_at' => 'datetime',
+        'waitlist_enabled' => 'boolean',
+        'requires_parent_confirmation' => 'boolean',
+        'is_elective' => 'boolean',
         'requirements' => 'array',
         'speakers' => 'array',
         'schedule' => 'array',
@@ -166,13 +179,13 @@ class Event extends Model
             return false;
         }
 
-        // Check if registration deadline has passed
-        if ($this->registration_deadline && $this->registration_deadline < $now) {
+        $secondRoundOpen = $this->second_round_opens_at && $this->second_round_opens_at <= $now;
+        if (! $secondRoundOpen && $this->registration_deadline && $this->registration_deadline < $now) {
             return false;
         }
 
-        // Check if event is full
-        if ($this->max_attendees && $this->current_attendees >= $this->max_attendees) {
+        // Check if event is full (waitlist keeps registration open)
+        if ($this->max_attendees && $this->current_attendees >= $this->max_attendees && ! $this->waitlist_enabled) {
             return false;
         }
 
@@ -262,7 +275,9 @@ class Event extends Model
 
     public function updateAttendeeCount()
     {
-        $this->current_attendees = $this->confirmedRegistrations()->count();
+        $this->current_attendees = $this->registrations()
+            ->whereIn('status', RegisterForEventAction::OCCUPYING_STATUSES)
+            ->count();
         $this->save();
     }
 
