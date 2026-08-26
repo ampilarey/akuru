@@ -1,6 +1,6 @@
 # Status
 
-**Verified against:** `main` after PRs **#86–#93** (`3db7a08`, 2026-08-26).  
+**Verified against:** `main` after PRs **#86–#101** (`af6d17e`, 2026-08-26). This slice adds 1A glossary.  
 **USABLE column** cites `docs/PILOT_REHEARSAL.md` (Rounds 1–3) and staging notes in the [archive](docs/STATUS_ARCHIVE.md). It is **not** inferred from code or tests.  
 **History:** per-slice append log (including Round-2 fixes 1–7) → [`docs/STATUS_ARCHIVE.md`](docs/STATUS_ARCHIVE.md).  
 **Defects:** [`docs/KNOWN_ISSUES.md`](docs/KNOWN_ISSUES.md).
