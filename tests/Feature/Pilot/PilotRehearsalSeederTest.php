@@ -4,6 +4,7 @@ use App\Domains\Academics\Models\AcademicYear;
 use App\Domains\Academics\Models\ClassRoom;
 use App\Domains\Academics\Models\Timetable;
 use App\Domains\Finance\Models\FeeStructure;
+use App\Domains\Identity\Models\UserContact;
 use App\Domains\People\Models\Student;
 use App\Domains\People\Models\Teacher;
 use Database\Seeders\ClassSeeder;
@@ -56,5 +57,10 @@ it('seeds a messy single-class pilot rehearsal scenario', function () {
         ->and(Timetable::query()->where('class_id', $class->id)->count())->toBe(15)
         ->and(FeeStructure::query()->where('name', 'Pilot Grade 5 fees')->where('status', 'active')->exists())->toBeTrue()
         ->and($students->firstWhere('student_id', 'PIL-01')?->guardians()->count())->toBeGreaterThan(0)
-        ->and($students->firstWhere('student_id', 'PIL-02')?->guardians()->count())->toBe(0);
+        ->and($students->firstWhere('student_id', 'PIL-02')?->guardians()->count())->toBe(0)
+        ->and(UserContact::query()->where('type', 'email')->whereNotNull('verified_at')->whereIn('value', [
+            'teacher@akuru.edu.mv',
+            'parent@akuru.edu.mv',
+            'teacher.quran@akuru.edu.mv',
+        ])->count())->toBe(3);
 });

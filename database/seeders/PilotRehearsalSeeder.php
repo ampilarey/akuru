@@ -25,6 +25,7 @@ use App\Domains\Finance\Enums\FeeStructureStatus;
 use App\Domains\Finance\Models\FeeItem;
 use App\Domains\Finance\Models\FeeStructure;
 use App\Domains\Identity\Models\User;
+use App\Domains\Identity\Models\UserContact;
 use App\Domains\People\Actions\AttachGuardianAction;
 use App\Domains\People\Models\ParentGuardian;
 use App\Domains\People\Models\Student;
@@ -247,6 +248,27 @@ class PilotRehearsalSeeder extends Seeder
     }
 
     /**
+     * Password login looks up verified user_contacts, not users.email.
+     * DatabaseSeeder does not create those rows, so seed logins fail until this runs.
+     */
+    private function verifiedEmail(User $user): void
+    {
+        $email = strtolower(trim((string) $user->email));
+        if ($email === '') {
+            return;
+        }
+
+        UserContact::query()->firstOrCreate(
+            ['type' => 'email', 'value' => $email],
+            [
+                'user_id' => $user->id,
+                'is_primary' => true,
+                'verified_at' => now(),
+            ],
+        );
+    }
+
+    /**
      * @return list<Student>
      */
     private function students(int $schoolId): array
@@ -302,6 +324,7 @@ class PilotRehearsalSeeder extends Seeder
 
         $parentUser = User::query()->where('email', self::PARENT_EMAIL)->first();
         if ($parentUser !== null) {
+            $this->verifiedEmail($parentUser);
             $fatimaGuardian = ParentGuardian::query()->firstOrCreate(
                 ['user_id' => $parentUser->id],
                 [
@@ -353,6 +376,7 @@ class PilotRehearsalSeeder extends Seeder
         if (! $user->hasRole('parent')) {
             $user->assignRole('parent');
         }
+        $this->verifiedEmail($user);
 
         return ParentGuardian::query()->firstOrCreate(
             ['user_id' => $user->id],
@@ -388,6 +412,7 @@ class PilotRehearsalSeeder extends Seeder
         if (! $user->hasRole('teacher')) {
             $user->assignRole('teacher');
         }
+        $this->verifiedEmail($user);
 
         return Teacher::query()->firstOrCreate(
             ['user_id' => $user->id],
