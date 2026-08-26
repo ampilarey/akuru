@@ -27,6 +27,7 @@ export default function Index({ years }) {
                 <input className="form-input" type="date" value={yearForm.data.start_date} onChange={(e) => yearForm.setData('start_date', e.target.value)} />
                 <input className="form-input" type="date" value={yearForm.data.end_date} onChange={(e) => yearForm.setData('end_date', e.target.value)} />
                 <button type="submit" className="btn-primary">Create year</button>
+                {yearForm.errors.name && <p className="md:col-span-4 text-sm text-red-600">{yearForm.errors.name}</p>}
             </form>
 
             {years.map((year) => (

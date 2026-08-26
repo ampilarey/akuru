@@ -50,7 +50,7 @@ class RegisterReportController extends Controller
 
         return redirect()
             ->route('academics.registers.index', $request->only(['academic_year_id']))
-            ->with('success', "Created {$result['created']} expected registers.");
+            ->with('success', $result['message']);
     }
 
     public function unlock(Request $request, LessonLog $lessonLog): RedirectResponse

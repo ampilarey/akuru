@@ -163,7 +163,12 @@ it('generates invoices idempotently, expands monthly items, and notifies the fin
         ->actingAs($admin)
         ->get(route('finance.invoices.index', ['academic_year_id' => $year->id]))
         ->assertOk()
-        ->assertInertia(fn (Assert $page) => $page->component('Finance/Invoices/Index'));
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('Finance/Invoices/Index')
+            ->where('period_start', $term->start_date->toDateString())
+            ->where('period_end', $term->end_date->toDateString())
+            ->has('invoices', 9)
+        );
 
     $csv = $this->withoutLocalizationMiddleware()
         ->actingAs($admin)

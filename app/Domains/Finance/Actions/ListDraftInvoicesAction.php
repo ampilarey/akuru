@@ -12,9 +12,12 @@ class ListDraftInvoicesAction
     /**
      * @return Collection<int, array<string, mixed>>
      */
-    public function execute(?int $yearId = null, ?int $structureId = null): Collection
+    public function execute(?int $yearId = null, ?int $structureId = null, bool $draftsOnly = true): Collection
     {
-        $query = Invoice::query()->with('lines')->where('status', InvoiceStatus::Draft->value)->orderBy('invoice_number');
+        $query = Invoice::query()->with('lines')->orderBy('invoice_number');
+        if ($draftsOnly) {
+            $query->where('status', InvoiceStatus::Draft->value);
+        }
         if ($yearId) {
             $query->where('academic_year_id', $yearId);
         }

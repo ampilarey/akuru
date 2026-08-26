@@ -1326,7 +1326,7 @@ S1 Deploy 3 cleanup is a proposal only — wait for confirmation.
 `--backfill` still refused on `APP_ENV=production`. No Hifz behavior
 change. `PAYROLL_ENABLED` / settings stay off.
 Pilot rehearsal findings are in `docs/PILOT_REHEARSAL.md`. Round-2
-fix remaining: generate/year/class/invoice validation, DoD docs.
+fix remaining: DoD docs.
 
 ## Round-2 fix 1 — SMS safety (2026-08-26)
 
@@ -1377,6 +1377,16 @@ fix remaining: generate/year/class/invoice validation, DoD docs.
   and DOB. Picker indistinguishable flag ignores class.
 - **Tests:** `ClassRosterPickerTest` (class-only twins),
   `ClassRegisterTest` roster identity.
+
+## Round-2 fix 6 — generate why-0, year/class uniqueness, invoices (2026-08-26)
+
+- **Done:** Generate flash names already-existing registers. Duplicate
+  year names and class name+section return validation errors. Invoice
+  admin lists issued invoices for the year; generate dates default to
+  the selected year's term via `ResolveDefaultTermPeriodAction` (Finance
+  does not import Academics `Term`).
+- **Tests:** `YearClassUniquenessTest`, generate flash in
+  `ClassRegisterTest`, invoice index props in `InvoiceGenerationTest`.
 
 **Operator:** apply branch protection (`docs/BRANCH_PROTECTION.md`).
 Confirm or reject `docs/migrations/s11-deploy-3-cleanup-proposal.md`.

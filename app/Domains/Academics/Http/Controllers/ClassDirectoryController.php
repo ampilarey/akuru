@@ -12,6 +12,7 @@ use App\Domains\People\Actions\SearchRosterCandidatesAction;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -58,11 +59,20 @@ class ClassDirectoryController extends Controller
 
         $data = $request->validate([
             'academic_year_id' => ['required', 'exists:academic_years,id'],
-            'name' => ['required', 'string', 'max:255'],
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('classes')->where(fn ($query) => $query
+                    ->where('academic_year_id', $request->integer('academic_year_id'))
+                    ->where('section', $request->input('section') ?? '')),
+            ],
             'section' => ['nullable', 'string', 'max:64'],
             'level' => ['required', 'string', 'max:64'],
             'capacity' => ['nullable', 'integer', 'min:1'],
             'class_teacher_id' => ['nullable', 'exists:users,id'],
+        ], [
+            'name.unique' => 'A class with this name and section already exists for this year.',
         ]);
 
         $data['school_id'] = app(ResolveDefaultSchoolIdAction::class)->execute();

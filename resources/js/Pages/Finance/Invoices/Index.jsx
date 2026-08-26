@@ -1,19 +1,21 @@
 import { router, useForm } from '@inertiajs/react';
 import AppShell from '../../../Layouts/AppShell';
 
-export default function Index({ years, yearId, structures, structureId, invoices }) {
+export default function Index({ years, yearId, structures, structureId, invoices, period_start = '', period_end = '' }) {
     const form = useForm({
         academic_year_id: yearId || '',
         fee_structure_id: structureId || structures[0]?.id || '',
-        period_start: '2026-01-01',
-        period_end: '2026-03-31',
+        period_start: period_start || '',
+        period_end: period_end || '',
         monthly_mode: 'per_month',
         include_optional: false,
     });
 
+    const drafts = invoices.filter((row) => row.status === 'draft');
+
     const issueAll = () => {
         router.post('/finance/invoices/issue', {
-            invoice_ids: invoices.map((row) => row.id),
+            invoice_ids: drafts.map((row) => row.id),
             academic_year_id: yearId,
             fee_structure_id: structureId || form.data.fee_structure_id,
         });
@@ -35,7 +37,7 @@ export default function Index({ years, yearId, structures, structureId, invoices
                     ))}
                 </div>
                 <div className="flex gap-2">
-                    <button type="button" className="btn-secondary" onClick={issueAll} disabled={invoices.length === 0}>Issue drafts</button>
+                    <button type="button" className="btn-secondary" onClick={issueAll} disabled={drafts.length === 0}>Issue drafts</button>
                     <a className="btn-secondary" href={`/finance/invoices/export?academic_year_id=${yearId || ''}&fee_structure_id=${structureId || ''}`}>Export CSV</a>
                 </div>
             </div>
@@ -74,11 +76,12 @@ export default function Index({ years, yearId, structures, structureId, invoices
                             <th className="px-3 py-2">Period</th>
                             <th className="px-3 py-2">Due</th>
                             <th className="px-3 py-2">Total</th>
+                            <th className="px-3 py-2">Status</th>
                         </tr>
                     </thead>
                     <tbody>
                         {invoices.length === 0 && (
-                            <tr><td className="px-3 py-4 text-gray-500" colSpan={5}>No draft invoices.</td></tr>
+                            <tr><td className="px-3 py-4 text-gray-500" colSpan={6}>No invoices for this year.</td></tr>
                         )}
                         {invoices.map((row) => (
                             <tr key={row.id} className="border-t">
@@ -87,6 +90,7 @@ export default function Index({ years, yearId, structures, structureId, invoices
                                 <td className="px-3 py-2">{row.period_key}</td>
                                 <td className="px-3 py-2">{row.due_date}</td>
                                 <td className="px-3 py-2">{row.total_amount}</td>
+                                <td className="px-3 py-2">{row.status}</td>
                             </tr>
                         ))}
                     </tbody>
