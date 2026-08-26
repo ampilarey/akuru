@@ -1300,6 +1300,13 @@ Listing and show display the name. Findings doc is unchanged in this slice.
 `/academics/periods` (`manage_timetables`). Findings doc is unchanged
 in this slice.
 
+## Pilot blocker 6 — teacher can generate today's registers (2026-08-26)
+
+Today empty state names the gap (no teacher row / no periods / no
+timetable / not generated). Class teachers and subject teachers with
+`registers.fill` can generate their own date. Findings doc is unchanged
+in this slice.
+
 ## Next
 
 TRACK A code/docs A1–A5 plus ADR-021 representative gate are the current
@@ -1309,7 +1316,7 @@ S1 Deploy 3 cleanup is a proposal only — wait for confirmation.
 `--backfill` still refused on `APP_ENV=production`. No Hifz behavior
 change. `PAYROLL_ENABLED` / settings stay off.
 Pilot rehearsal findings are in `docs/PILOT_REHEARSAL.md`. Remaining
-blockers: register generate empty state.
+blockers: none.
 
 **Operator:** apply branch protection (`docs/BRANCH_PROTECTION.md`).
 Confirm or reject `docs/migrations/s11-deploy-3-cleanup-proposal.md`.

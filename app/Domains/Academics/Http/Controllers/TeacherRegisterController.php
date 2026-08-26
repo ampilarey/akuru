@@ -2,6 +2,8 @@
 
 namespace App\Domains\Academics\Http\Controllers;
 
+use App\Domains\Academics\Actions\ExplainEmptyTodayRegistersAction;
+use App\Domains\Academics\Actions\GenerateExpectedRegistersAction;
 use App\Domains\Academics\Actions\ListClassAttendanceAction;
 use App\Domains\Academics\Actions\ListClassRosterAction;
 use App\Domains\Academics\Actions\ListPlanTopicsForRegisterAction;
@@ -32,11 +34,48 @@ class TeacherRegisterController extends Controller
             ? app(ListTeacherTodayRegistersAction::class)->execute($teacherId, $date)
             : collect();
 
+        $empty = null;
+        if ($registers->isEmpty()) {
+            $empty = app(ExplainEmptyTodayRegistersAction::class)->execute(
+                $teacherId,
+                $request->user()?->id,
+                $date,
+            );
+        }
+
         return Inertia::render('Academics/Registers/Today', [
             'date' => $date,
             'teacherId' => $teacherId,
             'registers' => $registers,
+            'empty' => $empty,
         ]);
+    }
+
+    public function generateToday(Request $request): RedirectResponse
+    {
+        abort_unless($request->user()?->can('registers.fill') || $request->user()?->can('registers.manage'), 403);
+
+        $date = $request->string('date')->toString() ?: now()->timezone(config('app.timezone'))->toDateString();
+        $teacherId = app(ResolveTeacherIdForUserAction::class)->execute($request->user()?->id);
+
+        $scopeTeacher = $request->user()?->can('registers.manage') ? null : $teacherId;
+        $scopeClassTeacher = $request->user()?->can('registers.manage') ? null : $request->user()?->id;
+
+        if ($scopeTeacher === null && ! $request->user()?->can('registers.manage')) {
+            abort(403, 'No teacher profile is linked to this login.');
+        }
+
+        $result = app(GenerateExpectedRegistersAction::class)->execute(
+            null,
+            $date,
+            $date,
+            $scopeTeacher,
+            $scopeClassTeacher,
+        );
+
+        return redirect()
+            ->route('academics.registers.today', ['date' => $date])
+            ->with('success', "Created {$result['created']} expected registers for {$date}.");
     }
 
     public function show(Request $request, LessonLog $lessonLog): Response
