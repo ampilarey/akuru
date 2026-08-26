@@ -10,7 +10,7 @@ Re-checked 2026-08-26 against merged `main` and Round 3 (`docs/PILOT_REHEARSAL.m
 ## Top five (remaining)
 
 1. **Staging staff login** — seed passwords 302 back to login; no SSH from this environment. Blocks any judgement that `test.akuru.edu.mv` is a school.
-2. **AppShell nav IA** — 50+ wrapping links. Logout exists; finding Today/Years/Exams still fails if you hunt the overflow. Not in #86–#92.
+2. **AppShell nav IA** — **proposed, awaiting decision.** 74 wrapping `<Link href=` in `AppShell.jsx`. Proposal in `docs/APPSHELL_NAV_IA.md` (PR #98): grouped by role and frequency. **Do not implement** until Accept / Accept with edits / Reject. The wrap is still live.
 3. **Roster picker can still show two rows for the same identity** — numbers differ (PIL-01 vs blank), so they are not the class-only-twins case (#90).
 4. **`/academics/gradebook` is 404** — real path `/en/exams/gradebook`.
 5. **Grade 5 B class teacher is still None** / seeder still inserts duplicate Extra year names (UI uniqueness is #91).
@@ -83,7 +83,7 @@ Re-checked 2026-08-26 against merged `main` and Round 3 (`docs/PILOT_REHEARSAL.m
 
 ### 11. AppShell nav is unusable as navigation
 
-**Severity:** confusion / blocked. 50+ wrapping links, duplicate “Report cards” / “Awards”. Logout **is** present (POST next to the name). `GET /logout` remains 405. Round 3 ranked #2. **Not fixed** by #86–#92.
+**Severity:** confusion / blocked. 50+ wrapping links, duplicate “Report cards” / “Awards”. Logout **is** present (POST next to the name). `GET /logout` remains 405. Round 3 ranked #2. **Proposed, awaiting decision** — `docs/APPSHELL_NAV_IA.md` (PR #98). Shell unchanged until the owner confirms.
 
 ### 12. Seeder still inserts duplicate Extra year names
 
@@ -143,6 +143,7 @@ Re-checked 2026-08-26 against merged `main` and Round 3 (`docs/PILOT_REHEARSAL.m
 - **BML Pay now untested** — sandbox, not a product lie by itself; Rule 12 still requires webhook confirmation.
 - **UNVERIFIED slices** (S2.1 rooms, S2.4–S2.5, S2.9–S2.10, S3.5, S3.7, S4.4–S4.5, S5.*, 1A.2–2.5, Arabic A, Qur’an A) — absence of a walk is not a recorded functional bug.
 - **SMS log-bind outside production** — intended (#86). Live HTTP only if `APP_ENV=production` **and** `SMS_LIVE` is explicit true.
+- **`cursor/pilot-rewalk-063c`** — not merged; superseded by #79–#84 on `main` plus Round 3 notes **#93**. No open PR. Product overlap of picker / logout / seed contacts / class-teacher / periods / generate-today.
 
 ---
 
