@@ -24,8 +24,8 @@ use App\Domains\Finance\Enums\FeeStructureAppliesTo;
 use App\Domains\Finance\Enums\FeeStructureStatus;
 use App\Domains\Finance\Models\FeeItem;
 use App\Domains\Finance\Models\FeeStructure;
+use App\Domains\Identity\Actions\EnsureVerifiedEmailContactAction;
 use App\Domains\Identity\Models\User;
-use App\Domains\Identity\Models\UserContact;
 use App\Domains\People\Actions\AttachGuardianAction;
 use App\Domains\People\Models\ParentGuardian;
 use App\Domains\People\Models\Student;
@@ -249,23 +249,10 @@ class PilotRehearsalSeeder extends Seeder
 
     /**
      * Password login looks up verified user_contacts, not users.email.
-     * DatabaseSeeder does not create those rows, so seed logins fail until this runs.
      */
     private function verifiedEmail(User $user): void
     {
-        $email = strtolower(trim((string) $user->email));
-        if ($email === '') {
-            return;
-        }
-
-        UserContact::query()->firstOrCreate(
-            ['type' => 'email', 'value' => $email],
-            [
-                'user_id' => $user->id,
-                'is_primary' => true,
-                'verified_at' => now(),
-            ],
-        );
+        app(EnsureVerifiedEmailContactAction::class)->execute($user);
     }
 
     /**
