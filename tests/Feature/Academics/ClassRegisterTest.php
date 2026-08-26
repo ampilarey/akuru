@@ -258,3 +258,65 @@ it('forbids today without registers.fill', function () {
         ->get(route('academics.registers.today'))
         ->assertForbidden();
 });
+
+it('explains empty today and lets a teacher generate their own day', function () {
+    $year = makeYear(['name' => '2026-2027', 'is_current' => true, 'status' => 'active']);
+    $teacher = makeTeacherRow();
+    $class = makeClass($year);
+    $class->forceFill(['class_teacher_id' => $teacher->user_id])->save();
+    $subject = makeSubject();
+    $period = makePeriodRow();
+    app(SaveTimetableEntryAction::class)->execute(mondaySlot([
+        'year' => $year,
+        'class' => $class,
+        'period' => $period,
+        'subject_id' => $subject->id,
+        'teacher_id' => $teacher->id,
+    ]));
+
+    $teacherUser = User::query()->findOrFail($teacher->user_id);
+    \Spatie\Permission\Models\Permission::findOrCreate('registers.fill', 'web');
+    $teacherUser->givePermissionTo('registers.fill');
+
+    $this->withoutLocalizationMiddleware()
+        ->actingAs($teacherUser)
+        ->get(route('academics.registers.today', ['date' => '2026-08-24']))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('Academics/Registers/Today')
+            ->has('registers', 0)
+            ->where('empty.code', 'not_generated')
+            ->where('empty.can_generate', true)
+        );
+
+    $this->withoutLocalizationMiddleware()
+        ->actingAs($teacherUser)
+        ->post(route('academics.registers.today.generate'), ['date' => '2026-08-24'])
+        ->assertRedirect();
+
+    expect(LessonLog::query()->count())->toBe(1);
+
+    $this->withoutLocalizationMiddleware()
+        ->actingAs($teacherUser)
+        ->get(route('academics.registers.today', ['date' => '2026-08-24']))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('Academics/Registers/Today')
+            ->has('registers', 1)
+            ->where('empty', null)
+        );
+});
+
+it('tells a login without a teachers row why today is empty', function () {
+    $user = actingPeopleAdmin(['registers.fill']);
+
+    $this->withoutLocalizationMiddleware()
+        ->actingAs($user)
+        ->get(route('academics.registers.today', ['date' => '2026-08-24']))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('Academics/Registers/Today')
+            ->where('empty.code', 'no_teacher')
+            ->where('empty.can_generate', false)
+        );
+});

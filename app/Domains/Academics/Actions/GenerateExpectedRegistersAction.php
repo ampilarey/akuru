@@ -6,6 +6,7 @@ use App\Domains\Academics\Enums\AcademicYearStatus;
 use App\Domains\Academics\Enums\LessonLogStatus;
 use App\Domains\Academics\Models\AcademicYear;
 use App\Domains\Academics\Models\CalendarDay;
+use App\Domains\Academics\Models\ClassRoom;
 use App\Domains\Academics\Models\LessonLog;
 use App\Domains\Academics\Models\Timetable;
 use Carbon\Carbon;
@@ -18,8 +19,13 @@ class GenerateExpectedRegistersAction
      *
      * @return array{created: int, skipped: int}
      */
-    public function execute(?int $academicYearId = null, ?string $from = null, ?string $to = null): array
-    {
+    public function execute(
+        ?int $academicYearId = null,
+        ?string $from = null,
+        ?string $to = null,
+        ?int $teacherId = null,
+        ?int $classTeacherUserId = null,
+    ): array {
         $year = $this->year($academicYearId);
         if ($year === null) {
             return ['created' => 0, 'skipped' => 0];
@@ -47,9 +53,27 @@ class GenerateExpectedRegistersAction
             ->map(fn ($date) => Carbon::parse($date)->toDateString())
             ->all();
 
+        $classIds = [];
+        if ($classTeacherUserId) {
+            $classIds = ClassRoom::query()
+                ->where('class_teacher_id', $classTeacherUserId)
+                ->pluck('id')
+                ->all();
+        }
+
         $entries = Timetable::query()
             ->where('academic_year_id', $year->id)
             ->where('is_active', true)
+            ->when($teacherId || $classIds !== [], function ($query) use ($teacherId, $classIds) {
+                $query->where(function ($inner) use ($teacherId, $classIds) {
+                    if ($teacherId) {
+                        $inner->where('teacher_id', $teacherId);
+                    }
+                    if ($classIds !== []) {
+                        $inner->orWhereIn('class_id', $classIds);
+                    }
+                });
+            })
             ->get();
 
         $created = 0;
