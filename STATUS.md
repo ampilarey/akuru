@@ -1284,6 +1284,11 @@ is unchanged in this slice.
 Inertia `AppShell` posts `/logout`. `GET /logout` remains 405. Findings doc
 is unchanged in this slice.
 
+## Pilot blocker 3 — seed login contacts (2026-08-26)
+
+`UserSeeder` writes verified email `user_contacts`. Password login rule is in
+`docs/AUTHENTICATION_GUIDE.md`. Findings doc is unchanged in this slice.
+
 ## Pilot blocker 6 — teacher can generate today's registers (2026-08-26)
 
 Today empty state names the gap (no teacher row / no periods / no
@@ -1300,7 +1305,7 @@ S1 Deploy 3 cleanup is a proposal only — wait for confirmation.
 `--backfill` still refused on `APP_ENV=production`. No Hifz behavior
 change. `PAYROLL_ENABLED` / settings stay off.
 Pilot rehearsal findings are in `docs/PILOT_REHEARSAL.md`. Remaining
-blockers: seed `user_contacts`, class teacher field, periods UI/seed.
+blockers: class teacher field, periods UI/seed.
 
 **Operator:** apply branch protection (`docs/BRANCH_PROTECTION.md`).
 Confirm or reject `docs/migrations/s11-deploy-3-cleanup-proposal.md`.
