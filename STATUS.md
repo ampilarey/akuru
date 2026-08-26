@@ -1258,17 +1258,21 @@ JSON archived:
 ## Pilot rehearsal (findings only, 2026-08-26)
 
 No product features. Staging `test.akuru.edu.mv` could not be seeded (no SSH)
-or logged into with seed passwords. Walk was local `akuru_institute` plus
-`php artisan db:seed --class=PilotRehearsalSeeder` (ADR-021 messy IDs, 15
-students, 3 teachers, timetable, fee structure).
+or logged into with seed passwords. Walks were local `akuru_institute`.
 
-Findings: `docs/PILOT_REHEARSAL.md`. Ranked teacher blockers start at staging
-login, verified `user_contacts`, missing `teachers` rows, teacher cannot
-generate registers, no periods UI, Blade dashboard hiding the Inertia loop,
-AppShell with no logout (`GET /logout` 405), no class-teacher picker, roster
-add by numeric PK (id `1` ≠ PIL-01), indistinguishable duplicate names on the
-register grid, SMS not actually faked, term grades blank without weights,
-report “PDF” is HTML. Browser walk completed Step 1 only (~33 clicks).
+**Round 1:** Chrome Step 1 only; Steps 2–6 tinker. Ranked list in
+`docs/PILOT_REHEARSAL.md` is unchanged.
+
+**Round 2 (browser, after #79–#84):** `migrate:fresh --seed` +
+`PilotRehearsalSeeder`. Chrome as admin / teacher / parent with AppShell
+POST logout. Per-step results replaced in `docs/PILOT_REHEARSAL.md`; Round 1
+kept. Still blocking: staging login, Blade dashboard hiding Inertia (parent
+lands on “Admin Dashboard”), seed without `teachers`/students/years, AppShell
+nav overflow, duplicate year + class 500, fill-grid duplicate names without
+numbers, generate-0 / Today scoped to one teacher, SMS not faked, term grades
+blank without weights, HTML “PDF”, invoice year-tab empty table. Picker,
+logout, seeded contacts, periods CRUD, class-teacher *field*, and
+teacher-owned generate exist and were used in Chrome.
 
 Hifz untouched. Deploy 3 not executed. Track B not started.
 
