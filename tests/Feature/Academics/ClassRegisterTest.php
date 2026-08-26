@@ -1,5 +1,6 @@
 <?php
 
+use App\Domains\Academics\Actions\AssignStudentToClassAction;
 use App\Domains\Academics\Actions\CopyPlanAction;
 use App\Domains\Academics\Actions\GenerateExpectedRegistersAction;
 use App\Domains\Academics\Actions\LockOverdueRegistersAction;
@@ -318,5 +319,40 @@ it('tells a login without a teachers row why today is empty', function () {
             ->component('Academics/Registers/Today')
             ->where('empty.code', 'no_teacher')
             ->where('empty.can_generate', false)
+        );
+});
+
+it('shows student number and date of birth on the register fill grid', function () {
+    $year = makeYear(['name' => '2026-2027', 'is_current' => true, 'status' => 'active']);
+    $teacher = makeTeacherRow();
+    $class = makeClass($year);
+    $student = makeStudent([
+        'first_name' => 'Mariyam',
+        'last_name' => 'Ali',
+        'student_id' => 'PIL-03',
+        'date_of_birth' => '2011-05-05',
+    ]);
+    app(AssignStudentToClassAction::class)->execute($class, $student->id);
+    $log = makeLessonLog([
+        'year' => $year,
+        'teacher_id' => $teacher->id,
+        'classroom_id' => $class->id,
+        'date' => now()->toDateString(),
+        'period_id' => makePeriodRow()->id,
+    ]);
+
+    $teacherUser = User::query()->findOrFail($teacher->user_id);
+    \Spatie\Permission\Models\Permission::findOrCreate('registers.fill', 'web');
+    $teacherUser->givePermissionTo('registers.fill');
+
+    $this->withoutLocalizationMiddleware()
+        ->actingAs($teacherUser)
+        ->get(route('academics.registers.show', $log))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('Academics/Registers/Show')
+            ->has('roster', 1)
+            ->where('roster.0.student_number', 'PIL-03')
+            ->where('roster.0.date_of_birth', '2011-05-05')
         );
 });

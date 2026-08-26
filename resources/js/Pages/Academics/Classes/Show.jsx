@@ -37,8 +37,8 @@ export default function Show({ classRoom, roster, q = '', candidates = [] }) {
 
             {hasAmbiguous && (
                 <p className="mb-4 rounded border border-amber-200 bg-amber-50 px-4 py-2 text-sm text-amber-900">
-                    Two or more records look the same on name, number, date of birth, national ID, and class.
-                    Choose one explicitly — the roster will not guess.
+                    Two or more records look the same on name, number, date of birth, and national ID.
+                    Class does not distinguish them. Choose one explicitly — the roster will not guess.
                 </p>
             )}
 
@@ -110,6 +110,7 @@ export default function Show({ classRoom, roster, q = '', candidates = [] }) {
                         <tr>
                             <th className="px-3 py-2">Name</th>
                             <th className="px-3 py-2">Number</th>
+                            <th className="px-3 py-2">Date of birth</th>
                             <th className="px-3 py-2">Status</th>
                         </tr>
                     </thead>
@@ -118,6 +119,7 @@ export default function Show({ classRoom, roster, q = '', candidates = [] }) {
                             <tr key={row.id} className="border-t">
                                 <td className="px-3 py-2">{row.name}</td>
                                 <td className="px-3 py-2">{row.student_number}</td>
+                                <td className="px-3 py-2">{row.date_of_birth || '—'}</td>
                                 <td className="px-3 py-2">{row.status}</td>
                             </tr>
                         ))}

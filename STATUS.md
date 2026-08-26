@@ -1320,8 +1320,8 @@ S1 Deploy 3 cleanup is a proposal only — wait for confirmation.
 `--backfill` still refused on `APP_ENV=production`. No Hifz behavior
 change. `PAYROLL_ENABLED` / settings stay off.
 Pilot rehearsal findings are in `docs/PILOT_REHEARSAL.md`. Round-2
-fix remaining: term grades/PDF label, fill-grid identity,
-generate/year/class/invoice validation, DoD docs.
+fix remaining: term grades/PDF label, generate/year/class/invoice
+validation, DoD docs.
 
 ## Round-2 fix 1 — SMS safety (2026-08-26)
 
@@ -1356,6 +1356,13 @@ generate/year/class/invoice validation, DoD docs.
   landing is titled Parent Dashboard (no Admin Dashboard fallback) and
   links attendance / absence notes / fees.
 - **Tests:** `tests/Feature/Portal/RoleLandingTest.php`.
+
+## Round-2 fix 5 — fill-grid identity (2026-08-26)
+
+- **Done:** Register fill grid and daily attendance show student number
+  and DOB. Picker indistinguishable flag ignores class.
+- **Tests:** `ClassRosterPickerTest` (class-only twins),
+  `ClassRegisterTest` roster identity.
 
 **Operator:** apply branch protection (`docs/BRANCH_PROTECTION.md`).
 Confirm or reject `docs/migrations/s11-deploy-3-cleanup-proposal.md`.
