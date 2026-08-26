@@ -13,8 +13,10 @@ use App\Domains\Notifications\Listeners\NotifyExamResultsPublished;
 use App\Domains\Notifications\Listeners\NotifyReportCardsPublished;
 use App\Domains\Notifications\Listeners\SendAbsenceSms;
 use App\Domains\Notifications\Listeners\SendInvoiceGuardianNotice;
+use App\Domains\Notifications\Services\LogSmsSender;
 use App\Domains\Notifications\Services\NullPushSender;
 use App\Domains\Notifications\Services\SmsGatewayService;
+use App\Domains\Notifications\Support\LiveSms;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 
@@ -22,7 +24,11 @@ class NotificationsServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        $this->app->singleton(SmsSenderInterface::class, SmsGatewayService::class);
+        $this->app->singleton(SmsSenderInterface::class, function () {
+            return LiveSms::allowed()
+                ? $this->app->make(SmsGatewayService::class)
+                : $this->app->make(LogSmsSender::class);
+        });
         $this->app->singleton(PushSenderInterface::class, NullPushSender::class);
     }
 

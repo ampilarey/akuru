@@ -2,31 +2,31 @@
 
 namespace App\Domains\Notifications\Http\Controllers;
 
-use App\Domains\Notifications\Services\SmsGatewayService;
+use App\Domains\Notifications\Contracts\SmsSenderInterface;
+use App\Domains\Notifications\Support\LiveSms;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
-/**
- * SMS API Controller
- *
- * Exposes SMS endpoints at akuru.edu.mv/api/v2 for the main site to send SMS.
- * Validates API key and forwards to the upstream SMS provider (Dhiraagu, etc.).
- * Set SMS_UPSTREAM_URL in .env to the actual provider (e.g. sms.akuru.edu.mv or Dhiraagu).
- */
 class SmsApiController extends Controller
 {
     public function __construct(
-        protected SmsGatewayService $smsService
+        protected SmsSenderInterface $smsService
     ) {}
 
-    /**
-     * Health check for SMS API
-     */
     public function health(): JsonResponse
     {
+        if (! LiveSms::allowed()) {
+            return response()->json([
+                'status' => 'ok',
+                'service' => 'sms',
+                'driver' => 'log',
+                'timestamp' => now()->toIso8601String(),
+            ]);
+        }
+
         $upstream = config('services.sms_gateway.upstream_url');
         $isHealthy = $upstream
             ? Http::timeout(5)->get($upstream.'/health')->successful()
@@ -58,6 +58,18 @@ class SmsApiController extends Controller
             'sender_id' => 'nullable|string|max:11',
             'type' => 'nullable|string|in:notification,otp,promotional',
         ]);
+
+        if (! LiveSms::allowed()) {
+            $logged = $this->smsService->sendSms($validated['to'], $validated['message'], [
+                'type' => $validated['type'] ?? 'notification',
+            ]);
+
+            return response()->json([
+                'success' => (bool) ($logged['success'] ?? false),
+                'data' => ['id' => $logged['message_id'] ?? null, 'status' => 'logged'],
+                'driver' => 'log',
+            ]);
+        }
 
         $upstream = config('services.sms_gateway.upstream_url');
         $upstreamKey = config('services.sms_gateway.upstream_api_key');

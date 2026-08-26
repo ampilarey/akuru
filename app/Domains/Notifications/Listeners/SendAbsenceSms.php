@@ -3,6 +3,7 @@
 namespace App\Domains\Notifications\Listeners;
 
 use App\Domains\Academics\Events\StudentMarkedAbsent;
+use App\Domains\Notifications\Actions\RecordSmsReceiptAction;
 use App\Domains\Notifications\Contracts\SmsSenderInterface;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -25,11 +26,20 @@ class SendAbsenceSms
 
         $status = $event->status->value;
         $message = "Akuru Institute: {$event->studentName} was marked {$status} on {$event->date}.";
+        $reference = 'attendance_'.$event->date.'_'.$event->studentId;
 
         foreach ($phones as $phone) {
-            $this->sms->sendSms($phone, $message, [
+            $result = $this->sms->sendSms($phone, $message, [
                 'type' => 'attendance',
-                'reference' => 'attendance_'.$event->date.'_'.$event->studentId,
+                'reference' => $reference,
+            ]);
+
+            app(RecordSmsReceiptAction::class)->execute([
+                'type' => 'attendance',
+                'reference' => $reference,
+                'phone' => $phone,
+                'driver' => $result['driver'] ?? (array_key_exists('message_id', $result) ? 'gateway' : 'log'),
+                'success' => (bool) ($result['success'] ?? false),
             ]);
         }
     }
