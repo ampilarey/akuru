@@ -234,6 +234,37 @@ Items 1–6 stop the teacher before attendance is saved. Item 7 stops a multi-ro
 
 ---
 
+## Re-walk after blocker PRs (2026-08-26 later)
+
+Original findings above are unchanged. This section is what works **after** PRs 79–84 on a combined local checkout (`cursor/pilot-rewalk-063c`). Staging was still not seeded (no SSH). Host: `akuru_institute` + Pest.
+
+| Original blocker | After the fix PRs | Evidence |
+|---|---|---|
+| 1 Staging seed login | **Still blocked** until an operator deploys and seeds `test.akuru.edu.mv` | HTTP 302 on seed login was recorded in the first walk; this environment still cannot SSH |
+| 2 Seed emails need `user_contacts` | **Works locally.** `UserSeeder` writes verified email contacts. `admin@akuru.edu.mv` / `teacher@akuru.edu.mv` / `password` authenticate | `tests/Feature/Identity/SeededLoginTest.php`; institute DB has 3 verified emails; HTML `POST /en/login` then `GET /en/academics/classes` 200 |
+| 3 No `teachers` row | **Still a data gap** if only `UserSeeder` ran. Empty Today now **says** that and does not offer generate | `it tells a login without a teachers row why today is empty` |
+| 4 Silent empty Today | **Works.** Empty state names the gap; `registers.fill` can generate their date | `it explains empty today and lets a teacher generate their own day` |
+| 5 No periods | **Works.** `PeriodSeeder` is in `DatabaseSeeder`; `/academics/periods` CRUD | `PeriodCrudTest`; institute `periods=12` |
+| 6 Blade dashboard hides Inertia | **Unchanged** (not in the six-item list) | Blade still lands first after login |
+| 7 AppShell logout | **Works.** Shell posts `/logout`. `GET /logout` still 405 | `AppShellLogoutTest`; live `GET /logout` 405 |
+| 8 Class teacher form | **Works.** Create form select + listing/show name | `ClassTeacherAssignmentTest`; classes HTML includes the teacher field |
+| 9 Roster raw PK | **Works.** Search by name/number/NID; PK `q=<id>` returns no rows; identical identity flagged | `ClassRosterPickerTest` |
+| 10 Duplicate names on fill grid | **Unchanged** (not in the six-item list) | Register fill grid still has no DOB/number |
+| 11–13 SMS / weights / HTML PDF | **Unchanged** | Not in this fix pass |
+
+Step 1–6 loop against the combined tree (Pest + HTTP, not a second Chrome six-role walk):
+
+1. Admin year/term/class + class teacher — form and listing cover the previous UI hole. Roster search replaces the id box.
+2. Teacher Today — generate-own-day path is tested; fill/submit path was already green in `ClassRegisterTest`.
+3. SMS — not re-tested; still not a fake.
+4. Absence note → excused — previous action-layer result still stands; not re-broken by these PRs.
+5. Exam / term grade / HTML card — previous result still stands (blank % without weights).
+6. Invoices / parent portal — previous result still stands.
+
+Hifz untouched. Deploy 3 not executed. Track B not started.
+
+---
+
 ## Out of scope (not done)
 
 No product fixes. No Hifz behavior change. Deploy 3 not executed. Track B not started.
