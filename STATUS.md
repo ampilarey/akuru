@@ -43,7 +43,7 @@ Legend — **CODE:** implementation in repo (models/migrations/actions/routes/pa
 | S2.8 absence notes | Yes. Portal submit + teacher approve → excused. | `AbsenceNoteTest`. | Walked **ok** (R2 S4, R3 S4). Date not defaulted. Attachment/period not in the form. | |
 | S2.9 behavior | Yes. | `BehaviorRecordTest`. | UNVERIFIED. | |
 | S2.10 requests / leave | Yes. | `SchoolRequestTest`. | UNVERIFIED. | |
-| S3.1 grading foundations | Yes. Scales, types, weights UI. | `GradingFoundationsTest` including HTTP store. | Weights form now saves a year scheme (this PR): numeric defaults summing to 100. | Previously walked **fail** (R2/R3 JSON zeros). |
+| S3.1 grading foundations | Yes. Scales, types, weights UI. | `GradingFoundationsTest` including HTTP store. | Weights form now saves a year scheme (#96): numeric defaults summing to 100. | Previously walked **fail** (R2/R3 JSON zeros). |
 | S3.2 exams | Yes. Status machine, schedule. | `ExamSchedulingTest`. | Walked **ok** (R2 S5) schedule → published. Easy to schedule the wrong class (form defaults). | |
 | S3.3 marks | Yes. Grid + CSV. | `ExamMarksTest`. | Walked **ok** (R2 S5) 15/15. PIL numbers **on this grid**. | |
 | S3.4 term grades | Yes. `ComputeTermGradesAction`, gradebook. | `TermGradesTest` happy path **and** missing-weights (#89); `WeightSchemePersistTest`. | Walked **explained fail** until this PR: scheme from Weights then Recompute fills Term % / Grade / Rank. `/academics/gradebook` is **404**; real path `/exams/gradebook`. | |

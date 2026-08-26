@@ -14,11 +14,7 @@
     "isEntry": true
   },
   "resources/js/app.jsx": {
-<<<<<<< HEAD
     "file": "assets/app-Cfd9ccA0.js",
-=======
-    "file": "assets/app-aiZi6OT6.js",
->>>>>>> a984a22 (fix(exams): persist assessment weight schemes from the Weights UI)
     "name": "app",
     "src": "resources/js/app.jsx",
     "isEntry": true
