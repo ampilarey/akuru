@@ -1,7 +1,7 @@
 import { Link, router, usePage } from '@inertiajs/react';
 import AppShell from '../../../Layouts/AppShell';
 
-export default function Today({ date, teacherId, registers }) {
+export default function Today({ date, teacherId, registers, empty }) {
     const { errors } = usePage().props;
 
     return (
@@ -17,7 +17,18 @@ export default function Today({ date, teacherId, registers }) {
                 {!teacherId && <p className="text-sm text-gray-600">No teacher profile is linked to this login.</p>}
             </div>
             {registers.length === 0 ? (
-                <p className="rounded-lg border bg-white p-4 text-sm text-gray-600">No registers for this date.</p>
+                <div className="rounded-lg border bg-white p-4 text-sm text-gray-700">
+                    <p>{empty?.message || 'No registers for this date.'}</p>
+                    {empty?.can_generate && (
+                        <button
+                            type="button"
+                            className="btn-primary mt-3"
+                            onClick={() => router.post('/academics/registers/today/generate', { date })}
+                        >
+                            Generate my registers for this date
+                        </button>
+                    )}
+                </div>
             ) : (
                 <ul className="grid gap-3">
                     {registers.map((item) => (
