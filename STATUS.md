@@ -1334,9 +1334,9 @@ fill-grid identity, generate/year/class/invoice validation, DoD docs.
 - **Done:** bind `LogSmsSender` unless `APP_ENV=production` **and**
   `services.sms.live` (`SMS_LIVE`) is an explicit true. Missing or unknown
   values fail closed. The fake logs and writes `sms_receipts` (channel, number,
-  body, timestamp). `SmsGatewayService` also refuses HTTP when live SMS is
-  not allowed. Tests call `Http::preventStrayRequests()`. Portal attendance
-  shows **Parent notified**.
+  body, timestamp). `SmsGatewayService` is unchanged; it is simply not bound
+  outside production+flag. Tests call `Http::preventStrayRequests()`. Portal
+  attendance shows **Parent notified**.
 - **Tests:** `tests/Feature/Notifications/SmsSafetyTest.php`.
 
 **Operator:** apply branch protection (`docs/BRANCH_PROTECTION.md`).

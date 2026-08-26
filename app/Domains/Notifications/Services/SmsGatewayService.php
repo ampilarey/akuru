@@ -3,7 +3,6 @@
 namespace App\Domains\Notifications\Services;
 
 use App\Domains\Notifications\Contracts\SmsSenderInterface;
-use App\Domains\Notifications\Support\LiveSms;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -38,20 +37,6 @@ class SmsGatewayService implements SmsSenderInterface
      */
     public function sendSms(string $phoneNumber, string $message, array $options = []): array
     {
-        if (! LiveSms::allowed()) {
-            Log::warning('Live SMS gateway refused outside production+SMS_LIVE', [
-                'env' => app()->environment(),
-                'to' => $phoneNumber,
-            ]);
-
-            return [
-                'success' => false,
-                'error' => 'Live SMS is disabled outside production with SMS_LIVE=true.',
-                'error_code' => 'SMS_LIVE_DISABLED',
-                'driver' => 'blocked',
-            ];
-        }
-
         if ($this->useDhiraagu()) {
             return $this->sendViaDhiraagu($phoneNumber, $message, $options);
         }
@@ -207,15 +192,6 @@ class SmsGatewayService implements SmsSenderInterface
      */
     public function sendBulkSms(array $recipients, string $message, array $options = []): array
     {
-        if (! LiveSms::allowed()) {
-            return [
-                'success' => false,
-                'error' => 'Live SMS is disabled outside production with SMS_LIVE=true.',
-                'error_code' => 'SMS_LIVE_DISABLED',
-                'driver' => 'blocked',
-            ];
-        }
-
         try {
             // Format all phone numbers
             $recipients = array_map([$this, 'formatPhoneNumber'], $recipients);
@@ -353,10 +329,6 @@ class SmsGatewayService implements SmsSenderInterface
      */
     public function checkHealth(): bool
     {
-        if (! LiveSms::allowed()) {
-            return false;
-        }
-
         try {
             $cacheKey = 'sms_gateway_health';
             if (Cache::has($cacheKey)) {

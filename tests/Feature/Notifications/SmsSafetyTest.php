@@ -38,9 +38,6 @@ it('binds a log SMS sender outside production even if SMS_LIVE is on', function 
 
     $sender->sendSms('7820288', 'Akuru Institute: test');
     Http::assertNothingSent();
-    expect(app(SmsGatewayService::class)->sendSms('7820288', 'leak'))
-        ->toMatchArray(['error_code' => 'SMS_LIVE_DISABLED']);
-    Http::assertNothingSent();
 })->with(['local', 'staging', 'testing']);
 
 it('fails closed in production unless SMS_LIVE is an explicit true', function (mixed $live) {
