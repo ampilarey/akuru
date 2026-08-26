@@ -1320,7 +1320,7 @@ S1 Deploy 3 cleanup is a proposal only — wait for confirmation.
 `--backfill` still refused on `APP_ENV=production`. No Hifz behavior
 change. `PAYROLL_ENABLED` / settings stay off.
 Pilot rehearsal findings are in `docs/PILOT_REHEARSAL.md`. Round-2
-fix remaining: role landings, term grades/PDF label, fill-grid identity,
+fix remaining: term grades/PDF label, fill-grid identity,
 generate/year/class/invoice validation, DoD docs.
 
 ## Round-2 fix 1 — SMS safety (2026-08-26)
@@ -1349,6 +1349,13 @@ generate/year/class/invoice validation, DoD docs.
   Settings models (architecture rules 1–2).
 - **Tests:** `tests/Feature/People/SeededSchoolTest.php` (including UserSeeder
   without SchoolSeeder first).
+
+## Round-2 fix 3 — role landings (2026-08-26)
+
+- **Done:** Teacher `/dashboard` redirects to Today registers. Parent
+  landing is titled Parent Dashboard (no Admin Dashboard fallback) and
+  links attendance / absence notes / fees.
+- **Tests:** `tests/Feature/Portal/RoleLandingTest.php`.
 
 **Operator:** apply branch protection (`docs/BRANCH_PROTECTION.md`).
 Confirm or reject `docs/migrations/s11-deploy-3-cleanup-proposal.md`.
