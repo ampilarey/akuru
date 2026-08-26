@@ -1383,7 +1383,8 @@ fix remaining: DoD docs.
 - **Done:** Generate flash names already-existing registers. Duplicate
   year names and class name+section return validation errors. Invoice
   admin lists issued invoices for the year; generate dates default to
-  the selected year's term.
+  the selected year's term via `ResolveDefaultTermPeriodAction` (Finance
+  does not import Academics `Term`).
 - **Tests:** `YearClassUniquenessTest`, generate flash in
   `ClassRegisterTest`, invoice index props in `InvoiceGenerationTest`.
 
