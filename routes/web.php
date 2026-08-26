@@ -38,6 +38,11 @@ Route::get('payments/bml/return', [\App\Domains\Finance\Http\Controllers\Payment
 Route::get('payments/status/{payment}', [\App\Domains\Finance\Http\Controllers\PaymentController::class, 'statusByPayment'])
     ->name('payments.status.by_id');
 
+// Public certificate QR verify (SPEC §39 / §48). Unlocalized so scanners hit a stable URL. No auth.
+Route::get('verify/certificates/{publicId}', [\App\Domains\Courses\Http\Controllers\PublicCertificateVerifyController::class, 'show'])
+    ->name('public.certificates.verify')
+    ->middleware('throttle:30,1');
+
 // Localized routes
 Route::group([
     'prefix' => LaravelLocalization::setLocale(),

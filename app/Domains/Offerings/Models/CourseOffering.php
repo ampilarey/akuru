@@ -24,6 +24,7 @@ class CourseOffering extends Model
         'pinned_at',
         'pinned_by',
         'seat_limit',
+        'certificate_rules',
         'academic_year_id',
         'term_id',
         'starts_at',
@@ -40,6 +41,7 @@ class CourseOffering extends Model
             'ends_at' => 'datetime',
             'pinned_at' => 'datetime',
             'pinned_revision_json' => 'array',
+            'certificate_rules' => 'array',
             'seat_limit' => 'integer',
         ];
     }

@@ -11,6 +11,7 @@ enum DocumentType: string
     case ReportCard = 'report_card';
     case Transcript = 'transcript';
     case AwardCertificate = 'award_certificate';
+    case CourseCertificate = 'course_certificate';
     case IdCard = 'id_card';
     case TransferCertificate = 'transfer_certificate';
     case Receipt = 'receipt';
