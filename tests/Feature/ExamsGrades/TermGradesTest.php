@@ -246,5 +246,27 @@ it('stores competency assessments and lists them on the gradebook', function () 
         ->assertInertia(fn (Assert $page) => $page
             ->has('competencies', 1)
             ->where('rows.0.competencies.'.$competency->id, 'mastered')
+            ->where('missing_weights', false)
+        );
+});
+
+it('tells the gradebook when no weight scheme is saved', function () {
+    $admin = termAdmin();
+    $year = makeYear(['is_current' => true, 'status' => 'active']);
+    $term = makeTerm($year);
+    $class = makeClass($year);
+    $subject = makeSubject();
+
+    $this->withoutLocalizationMiddleware()
+        ->actingAs($admin)
+        ->get(route('exams.gradebook.index', [
+            'class_id' => $class->id,
+            'subject_id' => $subject->id,
+            'term_id' => $term->id,
+        ]))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('ExamsGrades/Gradebook/Index')
+            ->where('missing_weights', true)
         );
 });

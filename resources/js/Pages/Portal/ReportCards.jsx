@@ -9,6 +9,9 @@ export default function ReportCards({ children, studentId, cards }) {
 
     return (
         <AppShell title="Report cards">
+            <p className="mb-4 rounded border border-gray-200 bg-white px-4 py-2 text-sm text-gray-700">
+                These files are HTML, not PDF.
+            </p>
             <div className="mb-4 flex flex-wrap gap-3">
                 <select
                     className="form-input"
@@ -47,7 +50,7 @@ export default function ReportCards({ children, studentId, cards }) {
                                 <td className="px-3 py-2">{card.term_name}</td>
                                 <td className="px-3 py-2">{card.published_at || '—'}</td>
                                 <td className="px-3 py-2">
-                                    <a className="text-[#7C2D37] underline" href={`/portal/report-cards/${card.id}/download`}>Download</a>
+                                    <a className="text-[#7C2D37] underline" href={`/portal/report-cards/${card.id}/download`}>Download HTML</a>
                                 </td>
                             </tr>
                         ))}

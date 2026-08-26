@@ -1107,6 +1107,9 @@ rate limiting, and the Inertia shell. No new 1A.1 code.
 - ADR-013 absent/exempt applied. Ties share rank.
 - Competencies + assessments (subject-level). Gradebook matrix + CSV.
 - Hifz / Deploy 3 untouched.
+- **Honesty (2026-08-26):** S3.4 was marked done while the gradebook
+  showed blank Term % / grade / rank unless a weight scheme had been
+  saved. The UI now states that gap and links to Weights.
 
 ## S3.5 — Curriculum standards (done)
 
@@ -1129,6 +1132,9 @@ rate limiting, and the Inertia shell. No new 1A.1 code.
 - Publish + portal download + transcript (`GenerateTranscriptAction`,
   optional GPA). Regeneration until published.
 - Admin unpublished list + CSV. Hifz / Deploy 3 untouched.
+- **Honesty (2026-08-26):** S3.6 was marked done while generated files
+  were HTML from `HtmlDocumentRenderer` labelled as if they were PDFs.
+  The UI now says HTML, not PDF. No PDF renderer in this slice.
 
 ## S3.7 — Awards & documents (done)
 
@@ -1320,8 +1326,7 @@ S1 Deploy 3 cleanup is a proposal only — wait for confirmation.
 `--backfill` still refused on `APP_ENV=production`. No Hifz behavior
 change. `PAYROLL_ENABLED` / settings stay off.
 Pilot rehearsal findings are in `docs/PILOT_REHEARSAL.md`. Round-2
-fix remaining: term grades/PDF label, generate/year/class/invoice
-validation, DoD docs.
+fix remaining: generate/year/class/invoice validation, DoD docs.
 
 ## Round-2 fix 1 — SMS safety (2026-08-26)
 
@@ -1356,6 +1361,15 @@ validation, DoD docs.
   landing is titled Parent Dashboard (no Admin Dashboard fallback) and
   links attendance / absence notes / fees.
 - **Tests:** `tests/Feature/Portal/RoleLandingTest.php`.
+
+## Round-2 fix 4 — term grades message + honest HTML label (2026-08-26)
+
+- **Done:** Gradebook shows an actionable missing-weights message.
+  Report card downloads are labelled HTML, not PDF.
+- **Tests:** `tests/Feature/ExamsGrades/TermGradesTest.php` missing
+  weights; existing renderer bind remains HTML.
+- **Honesty:** S3.4/S3.6 were marked done while user-visible output was
+  empty / not PDF.
 
 ## Round-2 fix 5 — fill-grid identity (2026-08-26)
 

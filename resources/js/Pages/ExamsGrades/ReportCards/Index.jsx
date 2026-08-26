@@ -48,6 +48,10 @@ export default function Index({ classes, terms, cards, unpublished, classId, ter
                 <a className="btn-secondary" href={`/exams/report-cards/export?class_id=${classId || ''}&term_id=${termId || ''}`}>Export CSV</a>
             </div>
 
+            <p className="mb-4 rounded border border-gray-200 bg-white px-4 py-2 text-sm text-gray-700">
+                Report cards are HTML documents (not PDF). Download opens an HTML file you can print.
+            </p>
+
             {unpublished.length > 0 && (
                 <div className="mb-4 rounded border border-amber-200 bg-amber-50 px-4 py-2 text-sm text-amber-900">
                     {unpublished.length} unpublished report card{unpublished.length === 1 ? '' : 's'}.
@@ -144,7 +148,7 @@ export default function Index({ classes, terms, cards, unpublished, classId, ter
                                 <td className="px-3 py-2">{card.term_name}</td>
                                 <td className="px-3 py-2">{card.status}</td>
                                 <td className="px-3 py-2">
-                                    {card.document_id ? <a className="text-[#7C2D37] underline" href={`/exams/report-cards/${card.id}/download`}>Download</a> : '—'}
+                                    {card.document_id ? <a className="text-[#7C2D37] underline" href={`/exams/report-cards/${card.id}/download`}>Download HTML</a> : '—'}
                                 </td>
                             </tr>
                         ))}
