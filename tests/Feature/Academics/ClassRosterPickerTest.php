@@ -116,3 +116,39 @@ it('flags indistinguishable candidates and still requires an explicit student id
     expect(ClassStudent::query()->where('class_id', $class->id)->where('student_id', $second->id)->exists())->toBeTrue()
         ->and(ClassStudent::query()->where('class_id', $class->id)->where('student_id', $first->id)->exists())->toBeFalse();
 });
+
+it('flags indistinguishable candidates when only class differs', function () {
+    $admin = actingPeopleAdmin();
+    $year = makeYear(['name' => '2026-2027', 'is_current' => true, 'status' => 'active']);
+    $classA = makeClass($year, 'Grade 5', 'A');
+    $classB = makeClass($year, 'Grade 5', 'B');
+
+    $first = makeStudent([
+        'first_name' => 'Fatima',
+        'last_name' => 'Yoosuf',
+        'date_of_birth' => '2010-03-12',
+        'national_id' => 'A222222',
+        'student_id' => null,
+        'class_id' => $classA->id,
+    ]);
+    $second = makeStudent([
+        'first_name' => 'Fatima',
+        'last_name' => 'Yoosuf',
+        'date_of_birth' => '2010-03-12',
+        'national_id' => 'A222222',
+        'student_id' => null,
+        'class_id' => $classB->id,
+    ]);
+
+    $this->withoutLocalizationMiddleware()
+        ->actingAs($admin)
+        ->get(route('academics.classes.show', ['classRoom' => $classA, 'q' => 'Fatima Yoosuf']))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->has('candidates', 2)
+            ->where('candidates.0.indistinguishable', true)
+            ->where('candidates.1.indistinguishable', true)
+            ->where('candidates.0.id', $first->id)
+            ->where('candidates.1.id', $second->id)
+        );
+});

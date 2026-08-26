@@ -62,6 +62,8 @@ export default function Daily({ yearId, classId, date, mode, years, classes, sta
                         <thead className="bg-[#F3EBE0] text-left">
                             <tr>
                                 <th className="px-2 py-1">Student</th>
+                                <th className="px-2 py-1">Number</th>
+                                <th className="px-2 py-1">Date of birth</th>
                                 <th className="px-2 py-1">Status</th>
                                 <th className="px-2 py-1">Minutes late</th>
                             </tr>
@@ -73,6 +75,8 @@ export default function Daily({ yearId, classId, date, mode, years, classes, sta
                                 return (
                                     <tr key={student.student_id} className="border-t">
                                         <td className="px-2 py-1">{student.name}</td>
+                                        <td className="px-2 py-1">{student.student_number || '—'}</td>
+                                        <td className="px-2 py-1">{student.date_of_birth || '—'}</td>
                                         <td className="px-2 py-1">
                                             <select
                                                 className="form-input w-full"

@@ -74,7 +74,6 @@ class SearchRosterCandidatesAction
                     (string) ($student->student_id ?? ''),
                     (string) $dob,
                     (string) ($student->national_id ?? ''),
-                    $class,
                 ])),
             ];
         });
