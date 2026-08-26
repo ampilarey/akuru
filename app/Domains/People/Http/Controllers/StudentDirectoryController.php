@@ -5,8 +5,10 @@ namespace App\Domains\People\Http\Controllers;
 use App\Domains\Academics\Actions\ListBehaviorRecordsAction;
 use App\Domains\People\Actions\AttachGuardianAction;
 use App\Domains\People\Actions\DetachGuardianAction;
+use App\Domains\People\Actions\ListStudentFormOptionsAction;
 use App\Domains\People\Actions\ListStudentsAction;
 use App\Domains\People\Actions\SaveCustomFieldValuesAction;
+use App\Domains\People\Actions\SaveStudentAction;
 use App\Domains\People\Enums\ConsentPersonType;
 use App\Domains\People\Enums\ConsentType;
 use App\Domains\People\Enums\CustomFieldEntityType;
@@ -20,6 +22,7 @@ use App\Domains\People\Models\Student;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -32,11 +35,42 @@ class StudentDirectoryController extends Controller
         $filters = $request->only(['search', 'status', 'class_id']);
         $students = app(ListStudentsAction::class)->execute($filters);
 
+        $options = app(ListStudentFormOptionsAction::class)->execute();
+
         return Inertia::render('People/Students/Index', [
             'filters' => $filters,
-            'statuses' => array_map(fn (StudentStatus $status) => $status->value, StudentStatus::cases()),
+            'statuses' => $options['statuses'],
             'students' => $students,
+            'schools' => $options['schools'],
+            'classes' => $options['classes'],
+            'guardians' => $options['guardians'],
+            'relationships' => $options['relationships'],
         ]);
+    }
+
+    public function store(Request $request): RedirectResponse
+    {
+        $student = app(SaveStudentAction::class)->execute(
+            $this->validatedStudent($request),
+            (int) $request->user()->id,
+        );
+
+        return redirect()
+            ->route('people.students.show', $student)
+            ->with('success', 'Student created.');
+    }
+
+    public function update(Request $request, Student $student): RedirectResponse
+    {
+        app(SaveStudentAction::class)->execute(
+            $this->validatedStudent($request, $student->id),
+            (int) $request->user()->id,
+            $student,
+        );
+
+        return redirect()
+            ->route('people.students.show', ['student' => $student, 'tab' => 'overview'])
+            ->with('success', 'Student updated.');
     }
 
     public function export(Request $request): StreamedResponse
@@ -81,6 +115,7 @@ class StudentDirectoryController extends Controller
             ->keyBy('definition_id');
 
         $student->load(['guardians', 'emergencyContacts', 'statusHistory']);
+        $options = app(ListStudentFormOptionsAction::class)->execute();
 
         return Inertia::render('People/Students/Show', [
             'tab' => $request->string('tab')->toString() ?: 'overview',
@@ -104,6 +139,9 @@ class StudentDirectoryController extends Controller
                 'address' => $student->address,
                 'status' => $student->status?->value,
                 'class_id' => $student->class_id,
+                'school_id' => $student->school_id,
+                'admission_date' => $student->admission_date?->toDateString(),
+                'place_of_birth' => $student->place_of_birth,
                 'medical' => $canViewSensitive ? [
                     'medical_conditions' => $student->medical_conditions,
                     'allergies' => $student->allergies,
@@ -136,7 +174,10 @@ class StudentDirectoryController extends Controller
                     'id' => $guardian->id,
                     'name' => $guardian->full_name,
                 ]),
-            'relationships' => array_map(fn (GuardianRelationship $rel) => $rel->value, GuardianRelationship::cases()),
+            'relationships' => $options['relationships'],
+            'statuses' => $options['statuses'],
+            'schools' => $options['schools'],
+            'classes' => $options['classes'],
             'statusHistory' => $student->statusHistory->map(fn ($row) => [
                 'id' => $row->id,
                 'from_status' => $row->from_status?->value,
@@ -211,5 +252,75 @@ class StudentDirectoryController extends Controller
         return redirect()
             ->route('people.students.show', ['student' => $student, 'tab' => 'guardians'])
             ->with('success', 'Guardian detached.');
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function validatedStudent(Request $request, ?int $studentId = null): array
+    {
+        $request->merge([
+            'school_id' => $this->emptyToNull($request->input('school_id')),
+            'class_id' => $this->emptyToNull($request->input('class_id')),
+            'user_id' => $this->emptyToNull($request->input('user_id')),
+            'guardian_id' => $this->emptyToNull($request->input('guardian_id')),
+            'student_id' => $this->emptyToNull($request->input('student_id')),
+            'admission_date' => $this->emptyToNull($request->input('admission_date')),
+            'national_id' => $this->emptyToNull($request->input('national_id')),
+            'passport' => $this->emptyToNull($request->input('passport')),
+            'email' => $this->emptyToNull($request->input('email')),
+            'place_of_birth' => $this->emptyToNull($request->input('place_of_birth')),
+            'phone' => $this->emptyToNull($request->input('phone')),
+            'address' => $this->emptyToNull($request->input('address')),
+            'notes' => $this->emptyToNull($request->input('notes')),
+            'first_name_arabic' => $this->emptyToNull($request->input('first_name_arabic')),
+            'last_name_arabic' => $this->emptyToNull($request->input('last_name_arabic')),
+            'first_name_dhivehi' => $this->emptyToNull($request->input('first_name_dhivehi')),
+            'last_name_dhivehi' => $this->emptyToNull($request->input('last_name_dhivehi')),
+        ]);
+
+        return $request->validate([
+            'first_name' => ['required', 'string', 'max:255'],
+            'last_name' => ['required', 'string', 'max:255'],
+            'first_name_arabic' => ['nullable', 'string', 'max:255'],
+            'last_name_arabic' => ['nullable', 'string', 'max:255'],
+            'first_name_dhivehi' => ['nullable', 'string', 'max:255'],
+            'last_name_dhivehi' => ['nullable', 'string', 'max:255'],
+            'date_of_birth' => ['required', 'date'],
+            'gender' => ['required', 'in:male,female'],
+            'national_id' => ['nullable', 'string', 'max:50'],
+            'passport' => ['nullable', 'string', 'max:50'],
+            'email' => ['nullable', 'email', 'max:255'],
+            'nationality' => ['nullable', 'string', 'max:100'],
+            'place_of_birth' => ['nullable', 'string', 'max:255'],
+            'phone' => ['nullable', 'string', 'max:30'],
+            'address' => ['nullable', 'string'],
+            'school_id' => ['nullable', 'integer', 'exists:schools,id'],
+            'class_id' => ['nullable', 'integer', 'exists:classes,id'],
+            'student_id' => [
+                'nullable',
+                'string',
+                'max:50',
+                Rule::unique('students', 'student_id')->ignore($studentId),
+            ],
+            'admission_date' => ['nullable', 'date'],
+            'status' => ['required', Rule::enum(StudentStatus::class)],
+            'notes' => ['nullable', 'string'],
+            'user_id' => ['nullable', 'integer', 'exists:users,id'],
+            'guardian_id' => ['nullable', 'integer', 'exists:parent_guardians,id'],
+            'guardian_relationship' => ['nullable', 'required_with:guardian_id', Rule::enum(GuardianRelationship::class)],
+            'is_primary' => ['sometimes', 'boolean'],
+            'can_pickup' => ['sometimes', 'boolean'],
+            'financial_responsible' => ['sometimes', 'boolean'],
+        ]);
+    }
+
+    private function emptyToNull(mixed $value): mixed
+    {
+        if ($value === '' || $value === null) {
+            return null;
+        }
+
+        return $value;
     }
 }

@@ -320,7 +320,9 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
     Route::prefix('people')->middleware(['role:super_admin|admin|headmaster|supervisor'])->group(function () {
         Route::get('students/export', [StudentDirectoryController::class, 'export'])->name('people.students.export');
         Route::get('students', [StudentDirectoryController::class, 'index'])->name('people.students.index');
+        Route::post('students', [StudentDirectoryController::class, 'store'])->name('people.students.store');
         Route::get('students/{student}', [StudentDirectoryController::class, 'show'])->name('people.students.show');
+        Route::put('students/{student}', [StudentDirectoryController::class, 'update'])->name('people.students.update');
         Route::put('students/{student}/custom-fields', [StudentDirectoryController::class, 'updateCustomFields'])->name('people.students.custom-fields.update');
         Route::post('students/{student}/guardians', [StudentDirectoryController::class, 'attachGuardian'])->name('people.students.guardians.attach');
         Route::delete('students/{student}/guardians/{guardian}', [StudentDirectoryController::class, 'detachGuardian'])->name('people.students.guardians.detach');
