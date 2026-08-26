@@ -2,26 +2,26 @@
 
 namespace App\Domains\People\Actions;
 
-use App\Domains\Identity\Models\User;
 use App\Domains\People\Models\Teacher;
-use App\Domains\Settings\Models\School;
+use Illuminate\Support\Facades\DB;
 
 class EnsureTeacherRowAction
 {
-    public function execute(User $user): Teacher
+    public function execute(int $userId, int $schoolId): Teacher
     {
-        $existing = Teacher::query()->where('user_id', $user->id)->first();
+        $existing = Teacher::query()->where('user_id', $userId)->first();
         if ($existing !== null) {
             return $existing;
         }
 
-        $schoolId = School::query()->value('id');
-        $parts = preg_split('/\s+/', trim($user->name)) ?: ['Teacher'];
+        $user = DB::table('users')->where('id', $userId)->first();
+        $name = trim((string) ($user->name ?? 'Teacher'));
+        $parts = preg_split('/\s+/', $name) ?: ['Teacher'];
 
         return Teacher::query()->create([
-            'user_id' => $user->id,
+            'user_id' => $userId,
             'school_id' => $schoolId,
-            'teacher_id' => 'T-USER-'.$user->id,
+            'teacher_id' => 'T-USER-'.$userId,
             'first_name' => $parts[0] ?: 'Teacher',
             'last_name' => $parts[1] ?? $parts[0],
             'date_of_birth' => $user->date_of_birth ?? '1985-01-01',

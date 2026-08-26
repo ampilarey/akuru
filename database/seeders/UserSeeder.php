@@ -11,7 +11,11 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
-        $school = \App\Domains\Settings\Models\School::first();
+        $school = \App\Domains\Settings\Models\School::query()->first();
+        if ($school === null) {
+            $this->call(SchoolSeeder::class);
+            $school = \App\Domains\Settings\Models\School::query()->first();
+        }
 
         // Create Admin User
         $admin = \App\Domains\Identity\Models\User::create([
@@ -51,7 +55,7 @@ class UserSeeder extends Seeder
             'is_active' => true,
         ]);
         $teacher->assignRole('teacher');
-        app(\App\Domains\People\Actions\EnsureTeacherRowAction::class)->execute($teacher);
+        app(\App\Domains\People\Actions\EnsureTeacherRowAction::class)->execute($teacher->id, (int) $school->id);
 
         // Create Student User
         $student = \App\Domains\Identity\Models\User::create([

@@ -20,3 +20,12 @@ it('seeds a usable school including students, years, and a teachers row for the 
         ->and($teacherUser->hasRole('teacher'))->toBeTrue()
         ->and(Teacher::query()->where('user_id', $teacherUser->id)->exists())->toBeTrue();
 });
+
+it('creates a teachers row when UserSeeder runs without SchoolSeeder first', function () {
+    $this->seed(\Database\Seeders\RoleSeeder::class);
+    $this->seed(\Database\Seeders\UserSeeder::class);
+
+    $teacherUser = User::query()->where('email', 'teacher@akuru.edu.mv')->sole();
+    $row = Teacher::query()->where('user_id', $teacherUser->id)->sole();
+    expect($row->school_id)->not->toBeNull();
+});
