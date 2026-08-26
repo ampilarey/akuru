@@ -36,6 +36,7 @@ class WeightSchemeController extends Controller
                     'id' => $type->id,
                     'name' => $type->name,
                     'code' => $type->code->value,
+                    'default_weight' => (int) $type->default_weight,
                 ]),
             'schemes' => AssessmentWeightScheme::query()->orderBy('academic_year_id')->get()->map(fn (AssessmentWeightScheme $scheme) => $this->serialize($scheme)),
             'resolve' => [
@@ -51,18 +52,32 @@ class WeightSchemeController extends Controller
     {
         abort_unless($request->user()?->can('exams.manage'), 403);
 
-        app(SaveWeightSchemeAction::class)->execute($this->validated($request));
+        $data = $this->validated($request);
+        app(SaveWeightSchemeAction::class)->execute($data);
 
-        return redirect()->route('exams.weights.index')->with('success', 'Weight scheme saved.');
+        return redirect()
+            ->route('exams.weights.index', [
+                'academic_year_id' => $data['academic_year_id'],
+                'class_id' => $data['class_id'] ?? null,
+                'subject_id' => $data['subject_id'] ?? null,
+            ])
+            ->with('success', 'Weight scheme saved.');
     }
 
     public function update(Request $request, AssessmentWeightScheme $weightScheme): RedirectResponse
     {
         abort_unless($request->user()?->can('exams.manage'), 403);
 
-        app(SaveWeightSchemeAction::class)->execute($this->validated($request), $weightScheme);
+        $data = $this->validated($request);
+        app(SaveWeightSchemeAction::class)->execute($data, $weightScheme);
 
-        return redirect()->route('exams.weights.index')->with('success', 'Weight scheme updated.');
+        return redirect()
+            ->route('exams.weights.index', [
+                'academic_year_id' => $data['academic_year_id'],
+                'class_id' => $data['class_id'] ?? null,
+                'subject_id' => $data['subject_id'] ?? null,
+            ])
+            ->with('success', 'Weight scheme updated.');
     }
 
     public function export(Request $request): StreamedResponse
@@ -92,11 +107,16 @@ class WeightSchemeController extends Controller
      */
     private function validated(Request $request): array
     {
+        $request->merge([
+            'class_id' => $request->input('class_id') ?: null,
+            'subject_id' => $request->input('subject_id') ?: null,
+        ]);
+
         return $request->validate([
             'academic_year_id' => ['required', 'integer'],
             'class_id' => ['nullable', 'integer'],
             'subject_id' => ['nullable', 'integer'],
-            'weights' => ['required'],
+            'weights' => ['required', 'array'],
         ]);
     }
 

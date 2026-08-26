@@ -13,7 +13,7 @@ What **runs for a person** is still narrower than the code. Staging `test.akuru.
 
 Local `migrate:fresh --seed` now includes `PilotRehearsalSeeder` (#87). Round 3 Chrome (stacked #86–#92, now on `main`) walked: teacher **Today** landing, fill grid **number + DOB**, **Parent Dashboard** + **Parent notified** column, absence-note approve, missing-weights **banner** + honest **HTML** (not PDF) labels, invoice **sent** rows on the Pilot year. SMS binds `LogSmsSender` unless `APP_ENV=production` **and** `SMS_LIVE` is an explicit true (#86).
 
-Still blocking a real teacher: staging access, AppShell nav IA, term % blank until Weights are saved (now explained, not silent), seeder still inserts duplicate Extra year names, `/academics/gradebook` 404 vs `/exams/gradebook`, Grade 5 B class teacher **None**. People → Students can create a child (#95). Most catalog/HR/course-engine slices remain **UNVERIFIED**.
+Still blocking a real teacher: staging access, AppShell nav IA, seeder still inserts duplicate Extra year names, `/academics/gradebook` 404 vs `/exams/gradebook`, Grade 5 B class teacher **None**. People → Students can create a child (#95). Weights can persist a year scheme (#96). Most catalog/HR/course-engine slices remain **UNVERIFIED**.
 
 Hifz untouched. Deploy 3 not executed. Track B not started.
 
@@ -43,10 +43,10 @@ Legend — **CODE:** implementation in repo (models/migrations/actions/routes/pa
 | S2.8 absence notes | Yes. Portal submit + teacher approve → excused. | `AbsenceNoteTest`. | Walked **ok** (R2 S4, R3 S4). Date not defaulted. Attachment/period not in the form. | |
 | S2.9 behavior | Yes. | `BehaviorRecordTest`. | UNVERIFIED. | |
 | S2.10 requests / leave | Yes. | `SchoolRequestTest`. | UNVERIFIED. | |
-| S3.1 grading foundations | Yes. Scales, types, weights UI. | `GradingFoundationsTest`. | Weights UI walked **fail** for producing a year scheme (R2 S5: `assessment_weight_schemes` count **0**, JSON blob of zeros). R3: Resolved scheme **none**; banner on gradebook. | Tests create schemes via Action, not the walked UI. |
+| S3.1 grading foundations | Yes. Scales, types, weights UI. | `GradingFoundationsTest` including HTTP store. | Weights form now saves a year scheme (#96): numeric defaults summing to 100. | Previously walked **fail** (R2/R3 JSON zeros). |
 | S3.2 exams | Yes. Status machine, schedule. | `ExamSchedulingTest`. | Walked **ok** (R2 S5) schedule → published. Easy to schedule the wrong class (form defaults). | |
 | S3.3 marks | Yes. Grid + CSV. | `ExamMarksTest`. | Walked **ok** (R2 S5) 15/15. PIL numbers **on this grid**. | |
-| S3.4 term grades | Yes. `ComputeTermGradesAction`, gradebook. | `TermGradesTest` happy path **and** missing-weights (#89). | Walked **explained fail** (R3 S5): Term % / Grade / Rank still **—** until Weights is saved; amber banner + Weights link. `/academics/gradebook` is **404**; real path `/exams/gradebook`. | Code was never empty-by-bug; it needs a scheme. |
+| S3.4 term grades | Yes. `ComputeTermGradesAction`, gradebook. | `TermGradesTest` happy path **and** missing-weights (#89); `WeightSchemePersistTest`. | Walked **explained fail** until this PR: scheme from Weights then Recompute fills Term % / Grade / Rank. `/academics/gradebook` is **404**; real path `/exams/gradebook`. | |
 | S3.5 standards | Yes. | `StandardsTest`. | UNVERIFIED. | |
 | S3.6 report cards | Yes. Templates, queued HTML via `HtmlDocumentRenderer`. | `ReportCardsTest` Content-Type HTML; seeds a filled `TermGrade`. | Walked **honest HTML** (R3 S5): labelled HTML not PDF; **Download HTML**. Still empty %/grade without weights. Queue worker required. | Not PDF (ADR-012). |
 | S3.7 awards / docs | Yes. HTML certificates/ID cards. | `AwardsDocumentsTest`. | UNVERIFIED. | Also HTML, not PDF (`AwardController`). |
@@ -78,12 +78,11 @@ Legend — **CODE:** implementation in repo (models/migrations/actions/routes/pa
 ### Agent-doable (remaining after #86–#93)
 
 1. **AppShell nav IA** — 50+ wrapping links, duplicate labels. Logout exists; finding surfaces still fails if you hunt the overflow. Round 3 ranked #2. Explicitly not in #86–#92.
-2. **Term % still blank until Weights is saved** — banner + link exist (#89); the Weights screen as walked still does not persist a usable scheme (JSON blob of zeros).
-3. **Wrong-URL 404** — `/academics/gradebook` vs `/exams/gradebook` (Round 3 ranked #6).
-4. **Seeder still inserts duplicate Extra year names** — UI uniqueness is validated (#91); seed bypasses it.
-5. **Class teacher on Grade 5 B is None** — field exists; this seed/UI walk did not stick (Round 3 ranked #7).
-6. **Parent notified shows — on excused** — column exists (#86); SMS body is not visible in the portal; log-only outside production.
-7. **Documents are HTML, not PDF** — honestly labelled (#89); replacing `HtmlDocumentRenderer` is a later slice (ADR-012).
+2. **Wrong-URL 404** — `/academics/gradebook` vs `/exams/gradebook` (Round 3 ranked #6).
+3. **Seeder still inserts duplicate Extra year names** — UI uniqueness is validated (#91); seed bypasses it.
+4. **Class teacher on Grade 5 B is None** — field exists; this seed/UI walk did not stick (Round 3 ranked #7).
+5. **Parent notified shows — on excused** — column exists (#86); SMS body is not visible in the portal; log-only outside production.
+6. **Documents are HTML, not PDF** — honestly labelled (#89); replacing `HtmlDocumentRenderer` is a later slice (ADR-012).
 
 ### Operator-only
 
@@ -100,7 +99,7 @@ Legend — **CODE:** implementation in repo (models/migrations/actions/routes/pa
 | Decision | Why it is blocked on a person, not an agent |
 |---|---|
 | **Pilot timing** | Staging cannot start the rehearsal. Local walk is not `test.akuru.edu.mv`. |
-| **Track B vs finishing gaps** | ADR-021 representative gate is green (archive). Track B is unblocked **and not started**. SMS-live, hollow seeder, and Blade parent landing are **fixed on main**. Remaining school-loop gaps: staging, AppShell nav, weights persistence, student create. Starting Track B now still risks “marked done / cannot use” for unverified slices. |
+| **Track B vs finishing gaps** | ADR-021 representative gate is green (archive). Track B is unblocked **and not started**. SMS-live, hollow seeder, Blade parent landing, student create (#95), and weights persist (#96) are **fixed on main**. Remaining school-loop gaps: staging, AppShell nav. Starting Track B now still risks “marked done / cannot use” for unverified slices. |
 | **Deploy 3** | Confirm or reject the cleanup proposal. Do not run it as a drive-by. |
 | **Branch protection** | Apply on GitHub or accept that every PR must wait for CI and not self-merge (S2 kickoff terms). |
 | **SMS_LIVE / production flag** | When (if) production should send Dhiraagu. Local/staging already bind `LogSmsSender`. |
@@ -112,10 +111,10 @@ Legend — **CODE:** implementation in repo (models/migrations/actions/routes/pa
 
 | Claim that was too strong | Wording that matched the evidence (post #86–#93) |
 |---|---|
-| STATUS “Remaining blockers: none” | Remaining: staging login, AppShell nav, weights persistence, student create, HTML-not-PDF, Extra-year seeder dupes. |
-| S3.4 “Term grades (done)” | Computes when a weight scheme exists. Banner when missing (#89). Walked columns still blank until Weights is saved. |
-| S3.6 “Report cards (done)” | Queued **HTML**; labelled HTML (#89). Walked cards still empty %/grade without weights. Not PDF. |
-| S3.1 weights implied ready | Scales/types seed; the Weights screen as walked did not persist a usable scheme. |
+| STATUS “Remaining blockers: none” | Remaining: staging login, AppShell nav, HTML-not-PDF, Extra-year seeder dupes. Student create (#95) and weights persist (#96) closed. |
+| S3.4 “Term grades (done)” | Computes when a weight scheme exists. Banner when missing (#89). Weights UI now persists a scheme (#96). |
+| S3.6 “Report cards (done)” | Queued **HTML**; labelled HTML (#89). %/grade fill when a scheme exists (#96). Not PDF. |
+| S3.1 weights implied ready | Scales/types seed; Weights UI now posts numeric percents summing to 100 (#96). |
 | 1A / 1B / 2 / Arabic A / Qur’an A “done” | Code + Pest exist. **USABLE UNVERIFIED**. |
 | S5.1–S5.5 “done” | Code + Pest. **UNVERIFIED**. S5.6 is honestly “done; flagged off”. |
 | S2.3 builder “done” | Page exists. R2 extra-period drag did not persist. |

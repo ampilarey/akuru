@@ -186,3 +186,73 @@ it('lists and exports weight schemes for an admin', function () {
 
     expect($csv)->toContain((string) $year->id);
 });
+
+it('persists a year scheme from the weights HTTP form using exam-type defaults', function () {
+    $admin = actingPeopleAdmin(['exams.manage']);
+    $year = makeYear(['name' => 'Pilot 2026', 'is_current' => true, 'status' => 'active']);
+    $weights = ExamType::query()
+        ->get()
+        ->mapWithKeys(fn (ExamType $type) => [(string) $type->id => (int) $type->default_weight])
+        ->all();
+
+    expect(array_sum($weights))->toBe(100)
+        ->and(AssessmentWeightScheme::query()->count())->toBe(0);
+
+    $this->withoutLocalizationMiddleware()
+        ->actingAs($admin)
+        ->get(route('exams.weights.index'))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('ExamsGrades/Weights/Index')
+            ->has('examTypes', 6)
+            ->where('resolve.scheme', null)
+        );
+
+    $this->withoutLocalizationMiddleware()
+        ->actingAs($admin)
+        ->post(route('exams.weights.store'), [
+            'academic_year_id' => $year->id,
+            'class_id' => '',
+            'subject_id' => '',
+            'weights' => $weights,
+        ])
+        ->assertRedirect();
+
+    expect(AssessmentWeightScheme::query()->count())->toBe(1);
+
+    $scheme = AssessmentWeightScheme::query()->sole();
+    expect($scheme->academic_year_id)->toBe($year->id)
+        ->and($scheme->class_id)->toBeNull()
+        ->and($scheme->subject_id)->toBeNull()
+        ->and(array_sum($scheme->weights))->toBe(100);
+
+    $this->withoutLocalizationMiddleware()
+        ->actingAs($admin)
+        ->get(route('exams.weights.index', ['academic_year_id' => $year->id]))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->has('schemes', 1)
+            ->where('resolve.scheme.academic_year_id', $year->id)
+            ->where('resolve.scheme.class_id', null)
+        );
+});
+
+it('rejects an HTTP weight scheme whose percents sum to zero', function () {
+    $admin = actingPeopleAdmin(['exams.manage']);
+    $year = makeYear(['is_current' => true, 'status' => 'active']);
+    $zeros = ExamType::query()
+        ->get()
+        ->mapWithKeys(fn (ExamType $type) => [(string) $type->id => 0])
+        ->all();
+
+    $this->withoutLocalizationMiddleware()
+        ->actingAs($admin)
+        ->from(route('exams.weights.index'))
+        ->post(route('exams.weights.store'), [
+            'academic_year_id' => $year->id,
+            'weights' => $zeros,
+        ])
+        ->assertSessionHasErrors('weights');
+
+    expect(AssessmentWeightScheme::query()->count())->toBe(0);
+});
