@@ -11,9 +11,9 @@ Re-checked 2026-08-26 against merged `main` and Round 3 (`docs/PILOT_REHEARSAL.m
 
 1. **Staging staff login** — seed passwords 302 back to login; no SSH from this environment. Blocks any judgement that `test.akuru.edu.mv` is a school.
 2. **AppShell nav IA** — 50+ wrapping links. Logout exists; finding Today/Years/Exams still fails if you hunt the overflow. Not in #86–#92.
-3. **Term % / grade / rank blank until Weights is saved** — banner exists (#89); the Weights UI as walked still does not persist a usable scheme.
-4. **Report cards are HTML, not PDF** — honestly labelled (#89); cells stay empty without weights. ADR-012 renderer unchanged.
-5. **Roster picker can still show two rows for the same identity** — numbers differ (PIL-01 vs blank), so they are not the class-only-twins case (#90).
+3. **Report cards are HTML, not PDF** — honestly labelled (#89); ADR-012 renderer unchanged. Cells fill when a weight scheme exists (#96).
+4. **Roster picker can still show two rows for the same identity** — numbers differ (PIL-01 vs blank), so they are not the class-only-twins case (#90).
+5. **`/academics/gradebook` is 404** — real path `/en/exams/gradebook`. Grade 5 B class teacher is still **None**.
 
 ---
 
@@ -33,9 +33,7 @@ Re-checked 2026-08-26 against merged `main` and Round 3 (`docs/PILOT_REHEARSAL.m
 
 ### 2. Term grades render blank unless a weight scheme is actually saved
 
-**Severity:** wrong data — published exams and marks are visible; Term % / Grade / Rank are `—`; report cards then print empty cells. **Mitigated:** gradebook amber banner + Weights link (#89). Not silent anymore.
-
-**Evidence:** Round 1/2 step 5; Round 3 step 5. `TermGradesTest` now covers missing weights. Weights page “Resolved scheme none”.
+**Fixed** — Weights form posts numeric type percents (seeded from `default_weight`, sum 100) and redirects with `academic_year_id` so the year scheme resolves. See **Fixed on main**.
 
 ### 3. “Report cards” are HTML with empty grades, not PDF
 
@@ -99,7 +97,7 @@ Re-checked 2026-08-26 against merged `main` and Round 3 (`docs/PILOT_REHEARSAL.m
 
 ### 14. Weights UI is a JSON blob of type ids → 0
 
-**Severity:** confusion. Walk did not persist a scheme (Round 2/3 step 5). Connects to issue 2.
+**Fixed** — numeric inputs per exam type, live sum, seeded from `default_weight`. See **Fixed on main**.
 
 ### 15. Teacher grid offers `excused` / `left_early`
 
@@ -157,6 +155,7 @@ These were open at the status audit (`c21630a`) and in Round 1/2 ranked lists. R
 | Was | Fix | Evidence |
 |---|---|---|
 | People → Students search/CSV only; no create | **#95** `SaveStudentAction` + status via `ChangeStudentStatusAction`; guardian pivot; course-only nullables | `StudentDirectoryCrudTest`; browser: add child → roster picker |
+| Term % blank; Weights JSON blob of zeros did not persist a scheme | **#96** numeric type percents from `default_weight`; redirect keeps `academic_year_id` | `GradingFoundationsTest` HTTP store; `WeightSchemePersistTest` report-card %/grade/rank |
 | SMS live Dhiraagu/HTTP in every environment | **#86** `LogSmsSender` unless `LiveSms::allowed()` | `NotificationsServiceProvider`; `SmsSafetyTest`; Round 3 Parent notified column |
 | `DatabaseSeeder` not a school (0 students / 0 `teachers` / 0 years) | **#87** `PilotRehearsalSeeder` + `EnsureTeacherRowAction` | `SeededSchoolTest`; Round 3 `migrate:fresh --seed` |
 | Teacher/parent Blade landing hid the loop (parent **Admin Dashboard**) | **#88** teacher → Today; parent **Parent Dashboard** | `RoleLandingTest`; Round 3 steps 2–3 |
