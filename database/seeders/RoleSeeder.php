@@ -309,5 +309,9 @@ class RoleSeeder extends Seeder
             'view_hifz_mistakes',
             'requests.submit',
         ]);
+
+        // Seed grants must be visible in this process; stale Spatie cache
+        // (cache table + in-memory registrar) can 403 admin HTTP checks.
+        app(\Spatie\Permission\PermissionRegistrar::class)->forgetCachedPermissions();
     }
 }
