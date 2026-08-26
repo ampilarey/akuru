@@ -2,7 +2,9 @@
 
 namespace App\Domains\Courses\Http\Controllers;
 
+use App\Domains\Courses\Actions\AttachLessonGlossaryItemAction;
 use App\Domains\Courses\Actions\DeleteContentBlockAction;
+use App\Domains\Courses\Actions\DetachLessonGlossaryItemAction;
 use App\Domains\Courses\Actions\ListCourseOutlineAction;
 use App\Domains\Courses\Actions\PublishLessonAction;
 use App\Domains\Courses\Actions\ReorderContentBlocksAction;
@@ -13,6 +15,7 @@ use App\Domains\Courses\Actions\StoreMediaContentBlockAction;
 use App\Domains\Courses\Enums\ContentBlockType;
 use App\Domains\Courses\Models\ContentBlock;
 use App\Domains\Courses\Models\Course;
+use App\Domains\Courses\Models\GlossaryItem;
 use App\Domains\Courses\Models\Lesson;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
@@ -124,6 +127,32 @@ class CourseOutlineController extends Controller
         app(PublishLessonAction::class)->execute($lesson, $request->user()?->id);
 
         return redirect()->route('catalog.courses.outline', $course)->with('success', 'Lesson published.');
+    }
+
+    public function attachGlossary(Request $request, int $course, Lesson $lesson): RedirectResponse
+    {
+        abort_unless($request->user()?->can('courses.manage'), 403);
+        abort_unless((int) $lesson->course_id === $course, 404);
+        $data = $request->validate([
+            'glossary_item_id' => ['required', 'integer', 'exists:glossary_items,id'],
+            'is_required' => ['nullable', 'boolean'],
+        ]);
+        app(AttachLessonGlossaryItemAction::class)->execute(
+            $lesson,
+            (int) $data['glossary_item_id'],
+            (bool) ($data['is_required'] ?? false),
+        );
+
+        return redirect()->route('catalog.courses.outline', $course)->with('success', 'Glossary term attached.');
+    }
+
+    public function detachGlossary(Request $request, int $course, Lesson $lesson, GlossaryItem $glossaryItem): RedirectResponse
+    {
+        abort_unless($request->user()?->can('courses.manage'), 403);
+        abort_unless((int) $lesson->course_id === $course, 404);
+        app(DetachLessonGlossaryItemAction::class)->execute($lesson, $glossaryItem->id);
+
+        return redirect()->route('catalog.courses.outline', $course)->with('success', 'Glossary term removed.');
     }
 
     public function togglePreview(Request $request, int $course, Lesson $lesson): RedirectResponse

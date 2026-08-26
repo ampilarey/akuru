@@ -80,6 +80,15 @@
   }
 }
 
+.glossary-term {
+  cursor: help;
+  border-bottom: 1px dotted #7C2D37;
+  background: transparent;
+  padding: 0;
+  font: inherit;
+  color: #7C2D37;
+}
+
 /* Arabic/RTL specific styles */
 [dir="rtl"] .text-left {
   text-align: right;

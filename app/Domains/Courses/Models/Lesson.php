@@ -5,6 +5,7 @@ namespace App\Domains\Courses\Models;
 use App\Domains\Courses\Enums\LessonStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -61,5 +62,13 @@ class Lesson extends Model
     public function currentRevision(): BelongsTo
     {
         return $this->belongsTo(LessonRevision::class, 'current_revision_id');
+    }
+
+    public function glossaryItems(): BelongsToMany
+    {
+        return $this->belongsToMany(GlossaryItem::class, 'lesson_glossary_items')
+            ->withPivot(['position', 'is_required'])
+            ->withTimestamps()
+            ->orderByPivot('position');
     }
 }
