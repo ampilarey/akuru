@@ -11,9 +11,9 @@ Re-checked 2026-08-26 against merged `main` and Round 3 (`docs/PILOT_REHEARSAL.m
 
 1. **Staging staff login** — seed passwords 302 back to login; no SSH from this environment. Blocks any judgement that `test.akuru.edu.mv` is a school.
 2. **AppShell nav IA** — 50+ wrapping links. Logout exists; finding Today/Years/Exams still fails if you hunt the overflow. Not in #86–#92.
-3. **Report cards are HTML, not PDF** — honestly labelled (#89); ADR-012 renderer unchanged. Cells fill when a weight scheme exists (#96).
-4. **Roster picker can still show two rows for the same identity** — numbers differ (PIL-01 vs blank), so they are not the class-only-twins case (#90).
-5. **`/academics/gradebook` is 404** — real path `/en/exams/gradebook`. Grade 5 B class teacher is still **None**.
+3. **Roster picker can still show two rows for the same identity** — numbers differ (PIL-01 vs blank), so they are not the class-only-twins case (#90).
+4. **`/academics/gradebook` is 404** — real path `/en/exams/gradebook`.
+5. **Grade 5 B class teacher is still None** / seeder still inserts duplicate Extra year names (UI uniqueness is #91).
 
 ---
 
@@ -37,9 +37,7 @@ Re-checked 2026-08-26 against merged `main` and Round 3 (`docs/PILOT_REHEARSAL.m
 
 ### 3. “Report cards” are HTML with empty grades, not PDF
 
-**Severity:** wrong data / mislabelled document — **label is now honest** (#89: Download HTML). Still not PDF. Fatima’s card empty without weights.
-
-**Evidence:** `HtmlDocumentRenderer` bound (ADR-012). Awards/ID cards same pattern. Round 3 step 5.
+**Fixed as a renderer decision** — HTML is the supported production output (ADR-012 amended). Empty cells without weights is the Weights issue (P1 #2), not a PDF bug. See **Fixed on main**.
 
 ### 4. Roster picker can still show two rows for the same identity with different numbers
 
@@ -156,6 +154,7 @@ These were open at the status audit (`c21630a`) and in Round 1/2 ranked lists. R
 |---|---|---|
 | People → Students search/CSV only; no create | **#95** `SaveStudentAction` + status via `ChangeStudentStatusAction`; guardian pivot; course-only nullables | `StudentDirectoryCrudTest`; browser: add child → roster picker |
 | Term % blank; Weights JSON blob of zeros did not persist a scheme | **#96** numeric type percents from `default_weight`; redirect keeps `academic_year_id` | `GradingFoundationsTest` HTTP store; `WeightSchemePersistTest`; browser: Fatima 28.00 / E / rank 15 on HTML report card |
+| Report cards HTML not PDF; ADR-012 still named Browsershot | **#97** ADR-012: HTML is the supported production output; PDF is a future binding swap | `ReportCardsTest`; report-cards page cites ADR-012 |
 | SMS live Dhiraagu/HTTP in every environment | **#86** `LogSmsSender` unless `LiveSms::allowed()` | `NotificationsServiceProvider`; `SmsSafetyTest`; Round 3 Parent notified column |
 | `DatabaseSeeder` not a school (0 students / 0 `teachers` / 0 years) | **#87** `PilotRehearsalSeeder` + `EnsureTeacherRowAction` | `SeededSchoolTest`; Round 3 `migrate:fresh --seed` |
 | Teacher/parent Blade landing hid the loop (parent **Admin Dashboard**) | **#88** teacher → Today; parent **Parent Dashboard** | `RoleLandingTest`; Round 3 steps 2–3 |

@@ -17,7 +17,7 @@
 **New `assessment_weight_schemes`:** `id, academic_year_id FK, class_id FK nullable (null = year default), subject_id FK nullable (null = class default), weights json ({exam_type_id: percent}), timestamps`
 Rule: weights must sum to 100 (validation); resolution order: subject-specific → class default → year default. Admin UI shows the resolved scheme per class/subject.
 
-**ADR-005 (required before coding):** PDF renderer choice for `DocumentRendererInterface` — recommendation: **Browsershot/headless-Chrome** rendering Blade/HTML templates, because report cards need proper Thaana + Arabic RTL typography, which HTML/CSS handles far better than PDF libs. Fallback: dompdf for simple docs. Render via queued jobs; output stored through Media (private).
+**ADR-012 (required before coding; amended 2026-08-26):** `DocumentRendererInterface` in Support. **HTML is the supported production output** (`HtmlDocumentRenderer`). Browsershot/Chrome PDF remains a future container binding swap — do not claim PDF in UI until that bind exists. Original S3.1 recommendation (Browsershot + Dompdf fallback) is historical; see `docs/adr/ADR-012-document-renderer.md`.
 
 ## Slice S3.2 — Exams
 

@@ -120,6 +120,31 @@ it('binds the production html document renderer', function () {
     expect(app(DocumentRendererInterface::class))->toBeInstanceOf(HtmlDocumentRenderer::class);
 });
 
+it('records HTML as the supported production output in ADR-012', function () {
+    $adr = (string) file_get_contents(base_path('docs/adr/ADR-012-document-renderer.md'));
+    $html = app(DocumentRendererInterface::class)->render('report-card', [
+        'locale' => 'en',
+        'dir' => 'ltr',
+        'student' => ['name' => 'Aisha Ali', 'number' => 'STU-1', 'id' => 1],
+        'class' => ['name' => 'Grade 5 A'],
+        'term' => ['name' => 'Term 1', 'year' => '2026-2027'],
+        'template' => ['header' => 'Report card', 'sections' => ['grades_table'], 'footer' => ''],
+        'grades' => [],
+        'attendance' => ['percent' => 0, 'present' => 0, 'late' => 0, 'absent' => 0, 'excused' => 0, 'total' => 0],
+        'behavior' => ['total' => 0, 'items' => []],
+        'competencies' => [],
+        'comments' => [],
+        'awards' => [],
+    ]);
+
+    expect($adr)->toContain('HTML is the supported production output')
+        ->and($adr)->toContain('PDF remains a future container binding swap')
+        ->and($adr)->toContain('amended 2026-08-26')
+        ->and(app(DocumentRendererInterface::class))->toBeInstanceOf(HtmlDocumentRenderer::class)
+        ->and($html)->toStartWith('<!DOCTYPE html>')
+        ->and($html)->not->toContain('%PDF');
+});
+
 it('generates report cards with attendance and parent-visible behavior matching S2', function () {
     $ctx = reportSetup();
 

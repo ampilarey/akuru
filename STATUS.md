@@ -13,7 +13,7 @@ What **runs for a person** is still narrower than the code. Staging `test.akuru.
 
 Local `migrate:fresh --seed` now includes `PilotRehearsalSeeder` (#87). Round 3 Chrome (stacked #86–#92, now on `main`) walked: teacher **Today** landing, fill grid **number + DOB**, **Parent Dashboard** + **Parent notified** column, absence-note approve, missing-weights **banner** + honest **HTML** (not PDF) labels, invoice **sent** rows on the Pilot year. SMS binds `LogSmsSender` unless `APP_ENV=production` **and** `SMS_LIVE` is an explicit true (#86).
 
-Still blocking a real teacher: staging access, AppShell nav IA, seeder still inserts duplicate Extra year names, `/academics/gradebook` 404 vs `/exams/gradebook`, Grade 5 B class teacher **None**. People → Students can create a child (#95). Weights can persist a year scheme (#96). Most catalog/HR/course-engine slices remain **UNVERIFIED**.
+Still blocking a real teacher: staging access, AppShell nav IA, seeder still inserts duplicate Extra year names, `/academics/gradebook` 404 vs `/exams/gradebook`, Grade 5 B class teacher **None**. People → Students can create a child (#95). Weights can persist a year scheme (#96). Documents are HTML by decision (ADR-012 / #97). Most catalog/HR/course-engine slices remain **UNVERIFIED**.
 
 Hifz untouched. Deploy 3 not executed. Track B not started.
 
@@ -48,7 +48,7 @@ Legend — **CODE:** implementation in repo (models/migrations/actions/routes/pa
 | S3.3 marks | Yes. Grid + CSV. | `ExamMarksTest`. | Walked **ok** (R2 S5) 15/15. PIL numbers **on this grid**. | |
 | S3.4 term grades | Yes. `ComputeTermGradesAction`, gradebook. | `TermGradesTest` happy path **and** missing-weights (#89); `WeightSchemePersistTest`. | Walked **explained fail** until this PR: scheme from Weights then Recompute fills Term % / Grade / Rank. `/academics/gradebook` is **404**; real path `/exams/gradebook`. | |
 | S3.5 standards | Yes. | `StandardsTest`. | UNVERIFIED. | |
-| S3.6 report cards | Yes. Templates, queued HTML via `HtmlDocumentRenderer`. | `ReportCardsTest` Content-Type HTML; seeds a filled `TermGrade`. | Walked **honest HTML** (R3 S5): labelled HTML not PDF; **Download HTML**. Still empty %/grade without weights. Queue worker required. | Not PDF (ADR-012). |
+| S3.6 report cards | Yes. Templates, queued HTML via `HtmlDocumentRenderer`. | `ReportCardsTest` Content-Type HTML; ADR-012 HTML decision. | Walked **honest HTML** (R3 S5) plus ADR-012 citation (this PR). Queue worker required. | HTML is the supported output (ADR-012 amended). |
 | S3.7 awards / docs | Yes. HTML certificates/ID cards. | `AwardsDocumentsTest`. | UNVERIFIED. | Also HTML, not PDF (`AwardController`). |
 | S4.1 finance schema | Yes. Year/term on invoices, receipts. | `FinanceSchemaTest`. | UNVERIFIED as a user task. | |
 | S4.2 fee structures | Yes. | `FeeStructureTest`. | UNVERIFIED (structure was **seeded** for the walk). | Default seed now includes pilot fees via `PilotRehearsalSeeder` (#87). |
@@ -82,7 +82,6 @@ Legend — **CODE:** implementation in repo (models/migrations/actions/routes/pa
 3. **Seeder still inserts duplicate Extra year names** — UI uniqueness is validated (#91); seed bypasses it.
 4. **Class teacher on Grade 5 B is None** — field exists; this seed/UI walk did not stick (Round 3 ranked #7).
 5. **Parent notified shows — on excused** — column exists (#86); SMS body is not visible in the portal; log-only outside production.
-6. **Documents are HTML, not PDF** — honestly labelled (#89); replacing `HtmlDocumentRenderer` is a later slice (ADR-012).
 
 ### Operator-only
 
@@ -103,7 +102,7 @@ Legend — **CODE:** implementation in repo (models/migrations/actions/routes/pa
 | **Deploy 3** | Confirm or reject the cleanup proposal. Do not run it as a drive-by. |
 | **Branch protection** | Apply on GitHub or accept that every PR must wait for CI and not self-merge (S2 kickoff terms). |
 | **SMS_LIVE / production flag** | When (if) production should send Dhiraagu. Local/staging already bind `LogSmsSender`. |
-| **HTML vs PDF documents** | `HtmlDocumentRenderer` is the bound implementation (ADR-012). Downloads are labelled HTML. Replacing the renderer is a later slice. |
+| **HTML vs PDF documents** | **Decided (this PR).** ADR-012: HTML is the supported production output. PDF is a future `DocumentRendererInterface` binding swap, not a domain `if`. |
 
 ## 5. Overstated “done” (DoD now includes a browser walk)
 
@@ -111,7 +110,7 @@ Legend — **CODE:** implementation in repo (models/migrations/actions/routes/pa
 
 | Claim that was too strong | Wording that matched the evidence (post #86–#93) |
 |---|---|
-| STATUS “Remaining blockers: none” | Remaining: staging login, AppShell nav, HTML-not-PDF, Extra-year seeder dupes. Student create (#95) and weights persist (#96) closed. |
+| STATUS “Remaining blockers: none” | Remaining: staging login, AppShell nav, Extra-year seeder dupes, gradebook URL, Grade 5 B class teacher. Student create (#95), weights persist (#96), and HTML-as-output (#97) closed. |
 | S3.4 “Term grades (done)” | Computes when a weight scheme exists. Banner when missing (#89). Weights UI now persists a scheme (#96). |
 | S3.6 “Report cards (done)” | Queued **HTML**; labelled HTML (#89). %/grade fill when a scheme exists (#96). Not PDF. |
 | S3.1 weights implied ready | Scales/types seed; Weights UI now posts numeric percents summing to 100 (#96). |
