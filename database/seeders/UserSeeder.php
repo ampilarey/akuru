@@ -90,5 +90,10 @@ class UserSeeder extends Seeder
             'is_active' => true,
         ]);
         $supervisor->assignRole('supervisor');
+
+        $ensure = app(\App\Domains\Identity\Actions\EnsureVerifiedEmailContactAction::class);
+        foreach ([$admin, $headmaster, $teacher, $student, $parent, $supervisor] as $user) {
+            $ensure->execute($user);
+        }
     }
 }

@@ -40,6 +40,8 @@ Dependencies are refreshed automatically on VM startup (`composer install` + `np
 
 `php artisan migrate --seed` creates users, all with password `password`, e.g.
 `admin@akuru.edu.mv` (admin), `teacher@akuru.edu.mv`, `student@akuru.edu.mv`.
+Password login looks up a **verified `user_contacts` email**, not `users.email`.
+`UserSeeder` writes those contacts. See `docs/AUTHENTICATION_GUIDE.md`.
 
 ### Deployment
 
