@@ -153,7 +153,12 @@ class IssueCertificateAction
      */
     private function filledBody(?string $body, array $face): string
     {
-        $text = $body ?: '<p>This certifies that <strong>{{student_name}}</strong> completed {{course_name}}.</p>';
+        $text = $body;
+        if ($text === null || trim($text) === '') {
+            $text = filled($face['course_name'] ?? null)
+                ? '<p>This certifies that <strong>{{student_name}}</strong> completed {{course_name}}.</p>'
+                : '<p>This certifies that <strong>{{student_name}}</strong> was awarded this certificate.</p>';
+        }
         foreach ($face as $key => $value) {
             $text = str_replace('{{'.$key.'}}', e((string) ($value ?? '')), $text);
         }
