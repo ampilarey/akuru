@@ -13,7 +13,7 @@ Re-checked 2026-08-26 against merged `main` and Round 3 (`docs/PILOT_REHEARSAL.m
 2. **AppShell nav IA** — 50+ wrapping links. Logout exists; finding Today/Years/Exams still fails if you hunt the overflow. Not in #86–#92.
 3. **Term % / grade / rank blank until Weights is saved** — banner exists (#89); the Weights UI as walked still does not persist a usable scheme.
 4. **Report cards are HTML, not PDF** — honestly labelled (#89); cells stay empty without weights. ADR-012 renderer unchanged.
-5. **People → Students cannot create a child** — search/CSV only. No Round-2 PR addressed this.
+5. **Roster picker can still show two rows for the same identity** — numbers differ (PIL-01 vs blank), so they are not the class-only-twins case (#90).
 
 ---
 
@@ -61,7 +61,7 @@ Re-checked 2026-08-26 against merged `main` and Round 3 (`docs/PILOT_REHEARSAL.m
 
 ### 6. People → Students cannot create a child
 
-**Severity:** blocked task. Index is search + CSV only (`resources/js/Pages/People/Students/Index.jsx`). Round 2; still true after Round 3.
+**Fixed** — create/edit on `people.students.*` via `SaveStudentAction` + `ChangeStudentStatusAction`; guardian pivot; course-only nullables. See **Fixed on main**.
 
 ### 7. Class teacher assignment did not stick on Grade 5 B
 
@@ -150,12 +150,13 @@ Re-checked 2026-08-26 against merged `main` and Round 3 (`docs/PILOT_REHEARSAL.m
 
 ---
 
-## Fixed on main (2026-08-26, PRs #86–#92)
+## Fixed on main (2026-08-26, PRs #86–#92, plus later)
 
 These were open at the status audit (`c21630a`) and in Round 1/2 ranked lists. Round 3 re-walked them on a local merge; they are now on `main`. Kept here so the audit does not silently drop the record.
 
 | Was | Fix | Evidence |
 |---|---|---|
+| People → Students search/CSV only; no create | **#95** `SaveStudentAction` + status via `ChangeStudentStatusAction`; guardian pivot; course-only nullables | `StudentDirectoryCrudTest`; browser: add child → roster picker |
 | SMS live Dhiraagu/HTTP in every environment | **#86** `LogSmsSender` unless `LiveSms::allowed()` | `NotificationsServiceProvider`; `SmsSafetyTest`; Round 3 Parent notified column |
 | `DatabaseSeeder` not a school (0 students / 0 `teachers` / 0 years) | **#87** `PilotRehearsalSeeder` + `EnsureTeacherRowAction` | `SeededSchoolTest`; Round 3 `migrate:fresh --seed` |
 | Teacher/parent Blade landing hid the loop (parent **Admin Dashboard**) | **#88** teacher → Today; parent **Parent Dashboard** | `RoleLandingTest`; Round 3 steps 2–3 |

@@ -26,6 +26,9 @@ export default function Show({
     consentTypes = [],
     documents,
     behaviorRecords = [],
+    statuses = [],
+    schools = [],
+    classes = [],
 }) {
     const initialValues = useMemo(() => {
         const next = {};
@@ -37,6 +40,25 @@ export default function Show({
 
     const [values, setValues] = useState(initialValues);
     const fieldForm = useForm({ values });
+    const editForm = useForm({
+        first_name: student.first_name || '',
+        last_name: student.last_name || '',
+        first_name_dhivehi: student.first_name_dhivehi || '',
+        last_name_dhivehi: student.last_name_dhivehi || '',
+        first_name_arabic: student.first_name_arabic || '',
+        last_name_arabic: student.last_name_arabic || '',
+        date_of_birth: student.date_of_birth || '',
+        gender: student.gender || '',
+        national_id: student.national_id || '',
+        student_id: student.student_id || '',
+        school_id: student.school_id || '',
+        class_id: student.class_id || '',
+        admission_date: student.admission_date || '',
+        status: student.status || 'active',
+        place_of_birth: student.place_of_birth || '',
+        phone: student.phone || '',
+        address: student.address || '',
+    });
     const guardianForm = useForm({
         guardian_id: availableGuardians[0]?.id || '',
         relationship: relationships[0] || 'guardian',
@@ -69,21 +91,94 @@ export default function Show({
 
             {tab === 'overview' && (
                 <div className="grid gap-6 md:grid-cols-2">
-                    <section className="rounded-lg border bg-white p-4 text-sm">
-                        <h2 className="mb-3 font-semibold">Profile</h2>
-                        <dl className="grid grid-cols-2 gap-2">
-                            <dt className="text-gray-500">English</dt>
-                            <dd>{student.first_name} {student.last_name}</dd>
-                            <dt className="text-gray-500">Dhivehi</dt>
-                            <dd>{student.first_name_dhivehi} {student.last_name_dhivehi}</dd>
-                            <dt className="text-gray-500">Arabic</dt>
-                            <dd>{student.first_name_arabic} {student.last_name_arabic}</dd>
-                            <dt className="text-gray-500">Date of birth</dt>
-                            <dd>{student.date_of_birth}</dd>
-                            <dt className="text-gray-500">National ID</dt>
-                            <dd>{student.national_id}</dd>
-                        </dl>
-                    </section>
+                    <form
+                        onSubmit={(e) => {
+                            e.preventDefault();
+                            editForm.put(`/people/students/${student.id}`);
+                        }}
+                        className="grid gap-3 rounded-lg border bg-white p-4 md:grid-cols-2"
+                    >
+                        <h2 className="md:col-span-2 font-semibold">Profile</h2>
+                        {Object.keys(editForm.errors).length > 0 && (
+                            <p className="md:col-span-2 text-sm text-red-600">{Object.values(editForm.errors).join(' ')}</p>
+                        )}
+                        <label className="text-xs text-gray-500">
+                            First name
+                            <input className="form-input mt-1 w-full" value={editForm.data.first_name} onChange={(e) => editForm.setData('first_name', e.target.value)} />
+                        </label>
+                        <label className="text-xs text-gray-500">
+                            Last name
+                            <input className="form-input mt-1 w-full" value={editForm.data.last_name} onChange={(e) => editForm.setData('last_name', e.target.value)} />
+                        </label>
+                        <label className="text-xs text-gray-500">
+                            Dhivehi first
+                            <input className="form-input mt-1 w-full" value={editForm.data.first_name_dhivehi} onChange={(e) => editForm.setData('first_name_dhivehi', e.target.value)} />
+                        </label>
+                        <label className="text-xs text-gray-500">
+                            Dhivehi last
+                            <input className="form-input mt-1 w-full" value={editForm.data.last_name_dhivehi} onChange={(e) => editForm.setData('last_name_dhivehi', e.target.value)} />
+                        </label>
+                        <label className="text-xs text-gray-500">
+                            Arabic first
+                            <input className="form-input mt-1 w-full" value={editForm.data.first_name_arabic} onChange={(e) => editForm.setData('first_name_arabic', e.target.value)} />
+                        </label>
+                        <label className="text-xs text-gray-500">
+                            Arabic last
+                            <input className="form-input mt-1 w-full" value={editForm.data.last_name_arabic} onChange={(e) => editForm.setData('last_name_arabic', e.target.value)} />
+                        </label>
+                        <label className="text-xs text-gray-500">
+                            Date of birth
+                            <input type="date" className="form-input mt-1 w-full" value={editForm.data.date_of_birth} onChange={(e) => editForm.setData('date_of_birth', e.target.value)} />
+                        </label>
+                        <label className="text-xs text-gray-500">
+                            Gender
+                            <select className="form-input mt-1 w-full" value={editForm.data.gender} onChange={(e) => editForm.setData('gender', e.target.value)}>
+                                <option value="female">female</option>
+                                <option value="male">male</option>
+                            </select>
+                        </label>
+                        <label className="text-xs text-gray-500">
+                            Student number
+                            <input className="form-input mt-1 w-full" value={editForm.data.student_id} onChange={(e) => editForm.setData('student_id', e.target.value)} />
+                        </label>
+                        <label className="text-xs text-gray-500">
+                            National ID
+                            <input className="form-input mt-1 w-full" value={editForm.data.national_id} onChange={(e) => editForm.setData('national_id', e.target.value)} />
+                        </label>
+                        <label className="text-xs text-gray-500">
+                            School
+                            <select className="form-input mt-1 w-full" value={editForm.data.school_id} onChange={(e) => editForm.setData('school_id', e.target.value)}>
+                                <option value="">None</option>
+                                {schools.map((school) => (
+                                    <option key={school.id} value={school.id}>{school.name}</option>
+                                ))}
+                            </select>
+                        </label>
+                        <label className="text-xs text-gray-500">
+                            Class
+                            <select className="form-input mt-1 w-full" value={editForm.data.class_id} onChange={(e) => editForm.setData('class_id', e.target.value)}>
+                                <option value="">None</option>
+                                {classes.map((room) => (
+                                    <option key={room.id} value={room.id}>{room.label}</option>
+                                ))}
+                            </select>
+                        </label>
+                        <label className="text-xs text-gray-500">
+                            Admission date
+                            <input type="date" className="form-input mt-1 w-full" value={editForm.data.admission_date} onChange={(e) => editForm.setData('admission_date', e.target.value)} />
+                        </label>
+                        <label className="text-xs text-gray-500">
+                            Status
+                            <select className="form-input mt-1 w-full" value={editForm.data.status} onChange={(e) => editForm.setData('status', e.target.value)}>
+                                {statuses.map((status) => (
+                                    <option key={status} value={status}>{status}</option>
+                                ))}
+                            </select>
+                        </label>
+                        <div className="md:col-span-2">
+                            <button type="submit" className="btn-primary" disabled={editForm.processing}>Save profile</button>
+                        </div>
+                    </form>
                     <form onSubmit={saveFields} className="rounded-lg border bg-white p-4">
                         <h2 className="mb-3 font-semibold">Custom fields</h2>
                         <CustomFields
