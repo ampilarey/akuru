@@ -8,6 +8,7 @@ use App\Domains\Academics\Actions\ResolveDefaultSchoolIdAction;
 use App\Domains\Academics\Models\AcademicYear;
 use App\Domains\Academics\Models\ClassRoom;
 use App\Domains\People\Actions\ListClassTeacherOptionsAction;
+use App\Domains\People\Actions\SearchRosterCandidatesAction;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -74,8 +75,9 @@ class ClassDirectoryController extends Controller
             ->with('success', 'Class created.');
     }
 
-    public function show(ClassRoom $classRoom): Response
+    public function show(Request $request, ClassRoom $classRoom): Response
     {
+        $query = trim($request->string('q')->toString());
         $teacher = $classRoom->class_teacher_id
             ? app(ListClassTeacherOptionsAction::class)->execute()->firstWhere('id', $classRoom->class_teacher_id)
             : null;
@@ -91,6 +93,8 @@ class ClassDirectoryController extends Controller
                 'class_teacher_name' => is_array($teacher) ? ($teacher['name'] ?? null) : null,
             ],
             'roster' => app(ListClassRosterAction::class)->execute($classRoom->id),
+            'q' => $query,
+            'candidates' => app(SearchRosterCandidatesAction::class)->execute($query),
         ]);
     }
 
