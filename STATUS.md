@@ -1,6 +1,6 @@
 # Status
 
-**Verified against:** `main` after PRs **#86–#104**.  
+**Verified against:** `main` after PRs **#86–#105**.  
 **USABLE column** cites `docs/PILOT_REHEARSAL.md` (Rounds 1–3) and staging notes in the [archive](docs/STATUS_ARCHIVE.md). It is **not** inferred from code or tests.  
 **History:** per-slice append log (including Round-2 fixes 1–7) → [`docs/STATUS_ARCHIVE.md`](docs/STATUS_ARCHIVE.md).  
 **Defects:** [`docs/KNOWN_ISSUES.md`](docs/KNOWN_ISSUES.md).
@@ -13,9 +13,9 @@ What **runs for a person** is still narrower than the code. Staging `test.akuru.
 
 Local `migrate:fresh --seed` now includes `PilotRehearsalSeeder` (#87). Round 3 Chrome (stacked #86–#92, now on `main`) walked: teacher **Today** landing, fill grid **number + DOB**, **Parent Dashboard** + **Parent notified** column, absence-note approve, missing-weights **banner** + honest **HTML** (not PDF) labels, invoice **sent** rows on the Pilot year. SMS binds `LogSmsSender` unless `APP_ENV=production` **and** `SMS_LIVE` is an explicit true (#86).
 
-Still blocking a real teacher: staging access, AppShell nav IA (**proposed**, `docs/APPSHELL_NAV_IA.md`, awaiting owner decision — wrap still live), parent notified still **—** on excused rows. People → Students can create a child (#95). Weights can persist a year scheme (#96). Documents are HTML by decision (ADR-012 / #97). Roster picker flags PIL-01 vs blank as one identity (#99). `/academics/gradebook` redirects to `/exams/gradebook` (#100). Class teacher can be set on an existing class; year seeders `firstOrCreate` by name. Most catalog/HR/course-engine slices remain **UNVERIFIED**.
+Still blocking a real teacher: staging access, AppShell nav IA (**proposed**, `docs/APPSHELL_NAV_IA.md`, awaiting owner decision — wrap still live), parent notified still **—** on excused rows. People → Students can create a child (#95). Weights can persist a year scheme (#96). Documents are HTML by decision (ADR-012 / #97). Roster picker flags PIL-01 vs blank as one identity (#99). `/academics/gradebook` redirects to `/exams/gradebook` (#100). Class teacher can be set on an existing class; year seeders `firstOrCreate` by name. Course certificates (C1) are in this PR. Most catalog/HR/course-engine slices remain **UNVERIFIED**.
 
-Hifz untouched. Deploy 3 not executed. Track B not started.
+Hifz untouched until Phase F. Deploy 3 not executed. Track B leftovers B1–B4 are on `main` (#102–#105).
 
 ## 2. Phase / slice table
 
@@ -49,7 +49,8 @@ Legend — **CODE:** implementation in repo (models/migrations/actions/routes/pa
 | S3.2 exams | Yes. Status machine, schedule. | `ExamSchedulingTest`. | Walked **ok** (R2 S5) schedule → published. Easy to schedule the wrong class (form defaults). | |
 | S3.3 marks | Yes. Grid + CSV. | `ExamMarksTest`. | Walked **ok** (R2 S5) 15/15. PIL numbers **on this grid**. | |
 | S3.4 term grades | Yes. `ComputeTermGradesAction`, gradebook. | `TermGradesTest` happy path **and** missing-weights (#89); `WeightSchemePersistTest`. | Walked **explained fail** until weights persist (#96): scheme from Weights then Recompute fills Term % / Grade / Rank. `/academics/gradebook` redirects to `/exams/gradebook` (#100). | |
-| 2 leftover — unified gradebook | Yes. `GradeItemContract` + exam/assessment providers; `grade_items` on `/exams/gradebook`. | `UnifiedGradebookTest`; `GradeItemContractTest`. | Walked this PR: Grade 5 A gradebook shows exam marks and engine quiz/assignment scores. | Engine stays subject-ignorant. Term % still exams-only. |
+| 2 leftover — unified gradebook | Yes. `GradeItemContract` + exam/assessment providers; `grade_items` on `/exams/gradebook`. | `UnifiedGradebookTest`; `GradeItemContractTest`. | Walked **#105**: Grade 5 A gradebook shows exam marks and engine quiz/assignment scores. | Engine stays subject-ignorant. Term % still exams-only. |
+| 3 C1 course certificates | Yes. `certificate_templates` + `issued_certificates`; admin builder; issue; public QR verify. | `CourseCertificateTest`. | Walked **this PR**: template “Course completion walk” → issued **AKU-2026-C9CAKP** to Fatima Yoosuf → guest `/verify/certificates/01M103MHM1VZRFHDEC1Z5Y3FDS` face only; CSV. | Unlocalized verify URL. Morph aliases `certificate_template`, `issued_certificate`. HTML, not PDF. |
 | S3.5 standards | Yes. | `StandardsTest`. | UNVERIFIED. | |
 | S3.6 report cards | Yes. Templates, queued HTML via `HtmlDocumentRenderer`. | `ReportCardsTest` Content-Type HTML; ADR-012 HTML decision. | Walked **honest HTML** (R3 S5) plus ADR-012 citation (#97). Queue worker required. | HTML is the supported output (ADR-012 amended). |
 | S3.7 awards / docs | Yes. HTML certificates/ID cards. | `AwardsDocumentsTest`. | UNVERIFIED. | Also HTML, not PDF (`AwardController`). |
@@ -98,7 +99,7 @@ Legend — **CODE:** implementation in repo (models/migrations/actions/routes/pa
 | Decision | Why it is blocked on a person, not an agent |
 |---|---|
 | **Pilot timing** | Staging cannot start the rehearsal. Local walk is not `test.akuru.edu.mv`. |
-| **Track B vs finishing gaps** | ADR-021 representative gate is green (archive). Track B is unblocked **and not started**. SMS-live, hollow seeder, Blade parent landing, student create (#95), and weights persist (#96) are **fixed on main**. Remaining school-loop gaps: staging, AppShell nav. Starting Track B now still risks “marked done / cannot use” for unverified slices. |
+| **Track B vs finishing gaps** | ADR-021 representative gate is green (archive). Track B leftovers **B1–B4 are on main** (#102–#105). Remaining school-loop gaps: staging, AppShell nav. |
 | **Deploy 3** | Confirm or reject the cleanup proposal. Do not run it as a drive-by. |
 | **Branch protection** | Apply on GitHub or accept that every PR must wait for CI and not self-merge (S2 kickoff terms). |
 | **SMS_LIVE / production flag** | When (if) production should send Dhiraagu. Local/staging already bind `LogSmsSender`. |
@@ -123,7 +124,7 @@ Fixed enough that the old overstatement no longer applies: SMS live-bind, `Datab
 
 ## 6. Out of scope (unchanged)
 
-Hifz behaviour frozen. Deploy 3 not executed. Track B not started.
+Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1 is this PR.
 
 **Operator:** apply branch protection (`docs/BRANCH_PROTECTION.md`). Confirm or reject `docs/migrations/s11-deploy-3-cleanup-proposal.md`.
 

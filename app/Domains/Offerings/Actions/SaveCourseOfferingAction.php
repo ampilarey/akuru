@@ -47,6 +47,9 @@ class SaveCourseOfferingAction
             'status' => OfferingStatus::tryFrom((string) ($data['status'] ?? OfferingStatus::Draft->value)) ?? OfferingStatus::Draft,
             'pin_mode' => in_array($data['pin_mode'] ?? 'latest', ['latest', 'pinned'], true) ? ($data['pin_mode'] ?? 'latest') : 'latest',
             'seat_limit' => isset($data['seat_limit']) && $data['seat_limit'] !== '' ? (int) $data['seat_limit'] : null,
+            'certificate_rules' => is_array($data['certificate_rules'] ?? null)
+                ? $data['certificate_rules']
+                : ($offering?->certificate_rules),
             'academic_year_id' => $data['academic_year_id'] ?? null,
             'term_id' => $data['term_id'] ?? null,
             'starts_at' => $data['starts_at'] ?? null,
