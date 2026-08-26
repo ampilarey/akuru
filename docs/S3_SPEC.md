@@ -4,7 +4,7 @@
 **Domains:** ExamsGrades (new), Academics (read), Media/Support (DocumentRenderer), Portal
 **Repo state:** `Grade` model exists as a thin stub with no exam entity and no controllers — S3 is a greenfield build inside the new architecture. The legacy `Quiz`/`Assignment` models stay untouched (replaced by engine components in Phase 2; their historical data migrates then).
 
-**Design constraint:** grading concepts here (grade scales, weighted items, term grades) must be reusable by the course engine's gradebook (`GradeItemContract`, Phase 2) — define them in ExamsGrades but keep them subject-agnostic.
+**Design constraint:** grading concepts here (grade scales, weighted items, term grades) must be reusable by the course engine's gradebook (`GradeItemContract`, Phase 2) — define them in ExamsGrades but keep them subject-agnostic. **Implemented** as `App\Domains\ExamsGrades\Contracts\GradeItemContract` + tagged `GradeItemProvider`s (exam + classroom assessment). The gradebook lists `grade_items` alongside existing `exams`.
 
 ---
 
