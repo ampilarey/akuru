@@ -77,11 +77,22 @@ Legend — **CODE:** implementation in repo (models/migrations/actions/routes/pa
 
 ### Agent-doable (remaining after #86–#93)
 
+<<<<<<< HEAD
 1. **AppShell nav IA** — 50+ wrapping links, duplicate labels. **Proposed, awaiting decision** in `docs/APPSHELL_NAV_IA.md` (PR #98). Do not implement until Accept / Accept with edits / Reject. The wrap is still live.
 2. **Wrong-URL 404** — `/academics/gradebook` vs `/exams/gradebook` (Round 3 ranked #6).
 3. **Seeder still inserts duplicate Extra year names** — UI uniqueness is validated (#91); seed bypasses it.
 4. **Class teacher on Grade 5 B is None** — field exists; this seed/UI walk did not stick (Round 3 ranked #7).
 5. **Parent notified shows — on excused** — column exists (#86); SMS body is not visible in the portal; log-only outside production.
+=======
+1. **AppShell nav IA** — 50+ wrapping links, duplicate labels. Logout exists; finding surfaces still fails if you hunt the overflow. Round 3 ranked #2. **Proposal only:** `docs/APPSHELL_NAV_IA.md` (PR #98). Do not implement until the owner confirms.
+2. **Term % still blank until Weights is saved** — banner + link exist (#89); the Weights screen as walked still does not persist a usable scheme (JSON blob of zeros).
+3. **People → Students has no create** — cannot type a child into existence on that screen.
+4. **Wrong-URL 404** — `/academics/gradebook` vs `/exams/gradebook` (Round 3 ranked #6).
+5. **Seeder still inserts duplicate Extra year names** — UI uniqueness is validated (#91); seed bypasses it.
+6. **Class teacher on Grade 5 B is None** — field exists; this seed/UI walk did not stick (Round 3 ranked #7).
+7. **Parent notified shows — on excused** — column exists (#86); SMS body is not visible in the portal; log-only outside production.
+8. **Documents are HTML, not PDF** — honestly labelled (#89); replacing `HtmlDocumentRenderer` is a later slice (ADR-012).
+>>>>>>> d6e1837 (docs(appshell): cite PR #98 on the nav IA proposal)
 
 ### Operator-only
 
@@ -102,8 +113,13 @@ Legend — **CODE:** implementation in repo (models/migrations/actions/routes/pa
 | **Deploy 3** | Confirm or reject the cleanup proposal. Do not run it as a drive-by. |
 | **Branch protection** | Apply on GitHub or accept that every PR must wait for CI and not self-merge (S2 kickoff terms). |
 | **SMS_LIVE / production flag** | When (if) production should send Dhiraagu. Local/staging already bind `LogSmsSender`. |
+<<<<<<< HEAD
 | **HTML vs PDF documents** | **Decided (#97).** ADR-012: HTML is the supported production output. PDF is a future `DocumentRendererInterface` binding swap, not a domain `if`. |
 | **AppShell nav IA** | `docs/APPSHELL_NAV_IA.md` (PR #98) proposes a role-first, frequency-second map. Reply Accept / Accept with edits / Reject. **Do not implement** until that reply. The wrap is still live. |
+=======
+| **HTML vs PDF documents** | `HtmlDocumentRenderer` is the bound implementation (ADR-012). Downloads are labelled HTML. Replacing the renderer is a later slice. |
+| **AppShell nav IA** | `docs/APPSHELL_NAV_IA.md` (PR #98) proposes a role-first, frequency-second map. Reply Accept / Accept with edits / Reject. **Do not implement** until that reply. |
+>>>>>>> d6e1837 (docs(appshell): cite PR #98 on the nav IA proposal)
 
 ## 5. Overstated “done” (DoD now includes a browser walk)
 

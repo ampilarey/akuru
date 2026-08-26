@@ -143,6 +143,7 @@ Re-checked 2026-08-26 against merged `main` and Round 3 (`docs/PILOT_REHEARSAL.m
 - **BML Pay now untested** — sandbox, not a product lie by itself; Rule 12 still requires webhook confirmation.
 - **UNVERIFIED slices** (S2.1 rooms, S2.4–S2.5, S2.9–S2.10, S3.5, S3.7, S4.4–S4.5, S5.*, 1A.2–2.5, Arabic A, Qur’an A) — absence of a walk is not a recorded functional bug.
 - **SMS log-bind outside production** — intended (#86). Live HTTP only if `APP_ENV=production` **and** `SMS_LIVE` is explicit true.
+- **`cursor/pilot-rewalk-063c`** — not merged; superseded by #79–#84 on `main` plus Round 3 notes **#93**. No open PR. Product overlap of picker / logout / seed contacts / class-teacher / periods / generate-today.
 
 ---
 

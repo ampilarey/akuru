@@ -1,7 +1,7 @@
 # AppShell navigation IA (proposal)
 
 **Status:** proposal only — **do not implement until confirmed**.  
-**Source:** `resources/js/Layouts/AppShell.jsx` (every Inertia screen). Round 3 ranked this #2 in `docs/KNOWN_ISSUES.md`.  
+**Source:** `resources/js/Layouts/AppShell.jsx` (every Inertia screen). Round 3 ranked this #2 in `docs/KNOWN_ISSUES.md`. Proposal PR: **#98**.  
 **Out of scope:** Hifz Blade chrome, public marketing nav, this file’s logout/locale row (those stay).
 
 ## Problem
