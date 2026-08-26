@@ -47,6 +47,7 @@ export default function Index({ years, yearId, classes, teachers = [] }) {
                     ))}
                 </select>
                 <button type="submit" className="btn-primary">Create class</button>
+                {form.errors.name && <p className="md:col-span-6 text-sm text-red-600">{form.errors.name}</p>}
             </form>
             <div className="overflow-x-auto rounded-lg border bg-white">
                 <table className="min-w-full text-sm">
