@@ -2,11 +2,15 @@
 
 **Date:** 2026-08-26  
 **Slice:** end-to-end walk of one class. No product fixes in this slice.  
-**Code:** `cursor/pilot-rehearsal-063c` (HEAD of this PR)  
 **Intended host:** `https://test.akuru.edu.mv`  
-**Host actually walked:** local MySQL `akuru_institute` at `http://127.0.0.1:8000` (same codebase). Staging was probed and **could not be seeded or logged into**.
+**Host actually walked:** local MySQL `akuru_institute` at `http://127.0.0.1:8000`. Staging was probed and **could not be seeded or logged into**.
 
 This is a findings document. A step that cannot be completed is recorded as failed, not worked around in the product.
+
+Two passes are recorded:
+
+- **Round 1** (`cursor/pilot-rehearsal-063c`, merged as #78): Chrome for Step 1 only; Steps 2–6 were domain actions / tinker. Original ranked list is unchanged.
+- **Round 2** (this file, after blocker PRs #79–#84 on `main`): Chrome as admin → teacher → parent → teacher → admin → parent. Fresh `migrate:fresh --seed` then `PilotRehearsalSeeder`. Screenshots: `/opt/cursor/artifacts/pilot-round2/`.
 
 Operator seed (after `DatabaseSeeder`):
 
@@ -16,7 +20,7 @@ php artisan db:seed --class=PilotRehearsalSeeder
 
 ---
 
-## How this walk was done
+## Round 1 — how that walk was done
 
 1. Staging HTTP: `/en` and `/up` return 200. Seed login `admin@akuru.edu.mv` / `password` POSTs to `/en/login` and **302s back to `/en/login`**. No SSH from this environment (`docs/STAGING.md`: webhook pull only). The seeder was **not** run on staging.
 2. Local: `PilotRehearsalSeeder` on `akuru_institute`. **Browser (Chrome):** Step 1 only, ~33 clicks, `http://127.0.0.1:8000`. Click-by-click notes: `/opt/cursor/artifacts/pilot-rehearsal/walk-notes.md`. **Domain actions** (tinker) for register → attendance → absence note → exam → report card → invoices against the seeded Grade 5 A class, because the browser could not switch users.
@@ -26,7 +30,7 @@ Logins after the seeder (password `password`): `admin@akuru.edu.mv`, `teacher@ak
 
 ---
 
-## Staging (step 0) — cannot start the rehearsal there
+## Round 1 — Staging (step 0) — cannot start the rehearsal there
 
 | | |
 |---|---|
@@ -40,7 +44,7 @@ Until an operator seeds `PilotRehearsalSeeder` on the server **and** creates ver
 
 ---
 
-## Seeded scenario (local)
+## Round 1 — Seeded scenario (local)
 
 | Item | Result |
 |---|---|
@@ -60,7 +64,7 @@ Shared `users.phone` `+960 782 0288` on admin, teacher, and parent would also ma
 
 ---
 
-## Step 1 — Admin creates year / term / class and assigns class teacher
+## Round 1 — Step 1 — Admin creates year / term / class and assigns class teacher
 
 **Worked?** Partial for year/term/class. **Class teacher assignment cannot be completed in the UI.** Browser walk stopped here: **cannot switch to teacher/parent from AppShell.**
 
@@ -115,7 +119,7 @@ Grade 5 A show **does** list PIL-01…PIL-15 in the Number column, including two
 
 ---
 
-## Step 2 — Teacher: today’s register, plan topic, attendance
+## Round 1 — Step 2 — Teacher: today’s register, plan topic, attendance
 
 **Worked?** **Not as a teacher-only user, from a cold start.** The write path works if an admin generates registers first and the login has a `teachers` row.
 
@@ -140,7 +144,7 @@ Grade 5 A show **does** list PIL-01…PIL-15 in the Number column, including two
 
 ---
 
-## Step 3 — Parent notification (`SmsSenderInterface`)
+## Round 1 — Step 3 — Parent notification (`SmsSenderInterface`)
 
 **Worked?** **Event is wired. There is no fake in staging/local, no UI confirmation, and “demo mode” is not what actually runs.**
 
@@ -162,7 +166,7 @@ Grade 5 A show **does** list PIL-01…PIL-15 in the Number column, including two
 
 ---
 
-## Step 4 — Parent absence note → teacher approve → excused
+## Round 1 — Step 4 — Parent absence note → teacher approve → excused
 
 **Worked?** **Yes, at the action layer.** Portal and review screens exist; parent needs a `parent_guardians.user_id` link (`ListGuardianChildrenAction`). Default `parent@akuru.edu.mv` has no such row until the seeder.
 
@@ -178,7 +182,7 @@ Grade 5 A show **does** list PIL-01…PIL-15 in the Number column, including two
 
 ---
 
-## Step 5 — Admin exam, marks, term grade, report card PDF
+## Round 1 — Step 5 — Admin exam, marks, term grade, report card PDF
 
 **Worked?** Exam + marks + HTML document **yes**. Term % / grade / rank **blank**. File is **HTML via `HtmlDocumentRenderer`**, not a PDF.
 
@@ -200,7 +204,7 @@ Grade 5 A show **does** list PIL-01…PIL-15 in the Number column, including two
 
 ---
 
-## Step 6 — Admin invoice from fee structure, parent portal
+## Round 1 — Step 6 — Admin invoice from fee structure, parent portal
 
 **Worked?** **Yes**, on the seeded structure.
 
@@ -214,7 +218,7 @@ Grade 5 A show **does** list PIL-01…PIL-15 in the Number column, including two
 
 ---
 
-## Ranked: what would block a real teacher next week
+## Round 1 — Ranked: what would block a real teacher next week
 
 1. **Cannot log in on staging** with documented seed passwords; this agent cannot seed staging. Operator credentials are required.
 2. **Cannot log in locally/staging with `DatabaseSeeder` users** until each has a **verified `user_contacts` email (or mobile)**. `users.email` is not enough.
@@ -234,34 +238,186 @@ Items 1–6 stop the teacher before attendance is saved. Item 7 stops a multi-ro
 
 ---
 
-## Re-walk after blocker PRs (2026-08-26 later)
+## Round 2 — browser walk after blocker PRs #79–#84 (2026-08-26)
 
-Original findings above are unchanged. This section is what works **after** PRs 79–84 on a combined local checkout (`cursor/pilot-rewalk-063c`). Staging was still not seeded (no SSH). Host: `akuru_institute` + Pest.
+**Worked as a three-user Chrome loop:** yes, locally, after operator seed. Staging still cannot start.
 
-| Original blocker | After the fix PRs | Evidence |
-|---|---|---|
-| 1 Staging seed login | **Still blocked** until an operator deploys and seeds `test.akuru.edu.mv` | HTTP 302 on seed login was recorded in the first walk; this environment still cannot SSH |
-| 2 Seed emails need `user_contacts` | **Works locally.** `UserSeeder` writes verified email contacts. `admin@akuru.edu.mv` / `teacher@akuru.edu.mv` / `password` authenticate | `tests/Feature/Identity/SeededLoginTest.php`; institute DB has 3 verified emails; HTML `POST /en/login` then `GET /en/academics/classes` 200 |
-| 3 No `teachers` row | **Still a data gap** if only `UserSeeder` ran. Empty Today now **says** that and does not offer generate | `it tells a login without a teachers row why today is empty` |
-| 4 Silent empty Today | **Works.** Empty state names the gap; `registers.fill` can generate their date | `it explains empty today and lets a teacher generate their own day` |
-| 5 No periods | **Works.** `PeriodSeeder` is in `DatabaseSeeder`; `/academics/periods` CRUD | `PeriodCrudTest`; institute `periods=12` |
-| 6 Blade dashboard hides Inertia | **Unchanged** (not in the six-item list) | Blade still lands first after login |
-| 7 AppShell logout | **Works.** Shell posts `/logout`. `GET /logout` still 405 | `AppShellLogoutTest`; live `GET /logout` 405 |
-| 8 Class teacher form | **Works.** Create form select + listing/show name | `ClassTeacherAssignmentTest`; classes HTML includes the teacher field |
-| 9 Roster raw PK | **Works.** Search by name/number/NID; PK `q=<id>` returns no rows; identical identity flagged | `ClassRosterPickerTest` |
-| 10 Duplicate names on fill grid | **Unchanged** (not in the six-item list) | Register fill grid still has no DOB/number |
-| 11–13 SMS / weights / HTML PDF | **Unchanged** | Not in this fix pass |
+**Code:** `main` including #79 roster picker, #80 AppShell logout, #81 seed login contacts, #82 class teacher field, #83 periods, #84 teacher generate-today.
 
-Step 1–6 loop against the combined tree (Pest + HTTP, not a second Chrome six-role walk):
+**Setup (not product):** `migrate:fresh --seed` then `PilotRehearsalSeeder`; `npm run build`; Laravel `:8000`. First Chrome attempt against Vite HMR (`public/hot`) rendered every Inertia page blank (`@vitejs/plugin-react can't detect preamble`). That is this VM’s Vite client, not an app bug. Walk continued on production `public/build`. Screenshots `10+` are the product walk; `01–07` are the HMR dead end.
 
-1. Admin year/term/class + class teacher — form and listing cover the previous UI hole. Roster search replaces the id box.
-2. Teacher Today — generate-own-day path is tested; fill/submit path was already green in `ClassRegisterTest`.
-3. SMS — not re-tested; still not a fake.
-4. Absence note → excused — previous action-layer result still stands; not re-broken by these PRs.
-5. Exam / term grade / HTML card — previous result still stands (blank % without weights).
-6. Invoices / parent portal — previous result still stands.
+**Cold `DatabaseSeeder` only (before PilotRehearsalSeeder):** 0 students, 0 `teachers` rows, 0 academic years, 12 periods, 6 verified `user_contacts`. Class-teacher dropdown would be empty; the roster picker would have nobody to find; Today would have no teacher profile. Operator seed is still required. People → Students is a **search list with no create form**, so an admin cannot type a new child into existence on that screen.
 
-Hifz untouched. Deploy 3 not executed. Track B not started.
+Logins (`password`): `admin@akuru.edu.mv`, `teacher@akuru.edu.mv`, `parent@akuru.edu.mv`. AppShell **Log out** is next to the name on Inertia pages (POST). Blade dashboard uses the user dropdown **Log Out**. `GET /logout` was not used as the happy path.
+
+---
+
+### Round 2 — Step 1 — Admin: year / term / class / teacher / picker / periods / timetable / generate
+
+**Worked?** **Partial.** Year + term + periods + picker search work. Assigning a class teacher **on a new class in this walk** did not stick. Generating “today” from Registers created **0** new rows (slots already existed from the seeder). Extra timetable cell did not persist.
+
+**Clicks / screens (~25):** login → Blade `/en/dashboard` → paste `/en/academics/years` → create Extra → add term → Activate (blocked) → Classes → Create Grade 5 B (500) → open Grade 5 B → search `1` / `Fatima` / `PIL-01` → Add PIL-01 → Periods → create Pilot extra → Timetable (seeder grid already filled) → Registers generate 2026-08-26 → AppShell Log out.
+
+**What broke**
+
+- After login the **Blade** dashboard still has Dashboard / Enrollments / Students / Teachers / Hifz / Quran / More. Years / Classes / Today / Periods live only on overflowing Inertia `AppShell`. A teacher who follows “what I see after login” still never reaches the loop.
+- Year names are still not unique. Create form stays filled (`2026-2027`). This walk produced **multiple `2026-2027 Extra` tabs**. Activate Extra still: *“Another academic year is already active. Close it before activating this one.”*
+- Shared Add-term fields still sit on every year card.
+- **Create class** posts `class_teacher_id` (users.id). Duplicate `Grade 5` / `B` on the same year is an **Ignition 500** (`UniqueConstraintViolationException` `Grade 5-B-2`), not an inline error.
+- Classes listing **does** show a Class teacher column. Grade 5 A = Fatimat Ali (seeder). Grade 5 B = **—**. Show line: **Class teacher: None**. The duplicate 500 meant B was never created in this click — the existing B stayed teacher-less.
+- Roster is a search picker (name / number / NID). `q=1` → *No students match* (does not bind `students.id`). `q=Fatima` → two Fatima Yoosuf, same DOB `2010-03-12`, same NID `A999001`: blank number on Grade 5 B vs **PIL-01** on Grade 5 A. Add stayed disabled until a radio. No amber “indistinguishable” banner (identity key includes current class, so they are not the same key). Admin can still pick the blank-number twin.
+- `q=PIL-01` finds the rehearsal child. Add → “Student assigned.” Grade 5 B then had both twins.
+- Periods screen lists the 12 seeded periods. Creating **Pilot extra** 16:00–16:45 succeeded.
+- Timetable already had Mon–Fri Period 1 Arabic / Period 2 Quran Recitation from the seeder (instruction text: “Drag a subject onto a period cell”). A drag onto Wednesday Extra did not persist a new cell.
+- Registers **Generate expected** for 2026-08-26: green *Created 0 expected registers.* Fill-rate cards already showed Fatimat Ali 1/1 (100%). Unfilled table: *No unfilled registers past their time* — today’s remaining slots are not listed there.
+
+**Confusing:** AppShell is ~50 wrapping links, duplicate labels (Report cards, Awards). Blade counters (28 students / 3 teachers) are not “Grade 5 A”. Class teacher options are people from `teachers.user_id`; `UserSeeder` teacher role alone is not in that list.
+
+**Twice:** year name left in the create form; term dates on every card; class/year chosen again on timetable and registers.
+
+<img src="/opt/cursor/artifacts/pilot-round2/10-admin-blade-dashboard.webp" alt="Blade admin dashboard after login; Inertia Years/Today not in this nav" />
+
+<img src="/opt/cursor/artifacts/pilot-round2/11-years-page.webp" alt="Inertia years: overflowing AppShell including Log out; closed 2026-2027 and active Pilot" />
+
+<img src="/opt/cursor/artifacts/pilot-round2/12-year-activate-blocked.webp" alt="Cannot activate Extra while Pilot is already active" />
+
+<img src="/opt/cursor/artifacts/pilot-round2/13-classes-page.webp" alt="Create class includes class teacher select; Grade 5 A has Fatimat Ali; Grade 5 B has none" />
+
+<img src="/opt/cursor/artifacts/pilot-round2/14-class-duplicate-error.webp" alt="Duplicate Grade 5 B is an Ignition unique constraint 500" />
+
+<img src="/opt/cursor/artifacts/pilot-round2/17-search-fatima-results.webp" alt="Fatima search: two rows, radio required, PIL-01 vs blank number" />
+
+<img src="/opt/cursor/artifacts/pilot-round2/21-period-created.webp" alt="Periods CRUD with Pilot extra created" />
+
+<img src="/opt/cursor/artifacts/pilot-round2/23-timetable-grade5a.webp" alt="Timetable Grade 5 A already filled Mon–Fri from seeder" />
+
+<img src="/opt/cursor/artifacts/pilot-round2/25-registers-generated.webp" alt="Generate expected created 0 registers for 2026-08-26" />
+
+---
+
+### Round 2 — Step 2 — Teacher: Today, topic, attendance, submit
+
+**Worked?** **Yes**, on the seeded Grade 5 A Period 1 Arabic register (already generated). Not a cold empty-Today: admin generate created 0; the seeder timetable + an earlier generate in this same browser session had already produced `lesson_logs`.
+
+**Clicks / screens (~6):** AppShell Log out → `teacher@akuru.edu.mv` → Blade dashboard → `/en/academics/registers/today` → View/Fill register → topic + statuses + Submit.
+
+**What the browser showed**
+
+- Today listed **one** card: Arabic Language · Grade 5 A · Period 1 · 07:45 · SUBMITTED. Period 2 Quran Recitation for the same Wednesday was **not** on Today for this teacher (different `teachers` row).
+- Fill grid: **name only**. Two Mariyam Ali, two Ahmed Naseem, no PIL / DOB / NID.
+- Topic dropdown included “Sun and moon letters”. Taught summary still a separate box (same title typed again).
+- Fatima Yoosuf **excused** after the note (see Step 4). Aminath Rishfa **late** / 10. Others present. Submit succeeded.
+- AppShell shows **Ustadh Mohamed Ali** and **Log out**.
+
+**Confusing:** attendance still offers `excused` on the teacher grid. Nav overflow.
+
+**Twice:** topic title vs “What was taught”.
+
+<img src="/opt/cursor/artifacts/pilot-round2/30-teacher-registers-today.webp" alt="Teacher Today: one submitted Arabic Period 1 card and AppShell Log out" />
+
+<img src="/opt/cursor/artifacts/pilot-round2/31-teacher-register-1-submitted.webp" alt="Register grid: Fatima excused, Aminath late 10, duplicate names, no numbers" />
+
+---
+
+### Round 2 — Step 3 — Parent notification
+
+**Worked?** **No UI.** Absence SMS is still not a fake and not visible in the portal.
+
+**Clicks / screens (~3):** parent login → Blade page titled **Admin Dashboard** (Hassan Ahmed) → portal children / absence notes. There is no “parent notified” / SMS log / in-app attendance alert.
+
+Parent landing on a screen labelled **Admin Dashboard** (Quick Actions: View Quran Progress; nav Dashboard / Hifz / Website) is the same Blade hide-the-loop problem as staff, with a worse label.
+
+Opening a teacher register URL as parent is **403 Forbidden** (`/en/academics/registers/1`). That is authorization, not a missing page.
+
+<img src="/opt/cursor/artifacts/pilot-round2/33-parent-landing-admin-dashboard.webp" alt="Parent Hassan Ahmed lands on Blade Admin Dashboard" />
+
+<img src="/opt/cursor/artifacts/pilot-round2/37-parent-no-sms-notification-ui.webp" alt="No SMS or absence notification surface in the parent portal" />
+
+---
+
+### Round 2 — Step 4 — Parent note → teacher approve → excused
+
+**Worked?** **Yes in the browser.**
+
+**Clicks / screens (~8):** parent `/en/portal/absence-notes` (child Fatima, date **empty by default**, type illness, reason Fever) → Submit → AppShell Log out → teacher `/en/academics/absence-notes` → Approve → open register → Fatima **excused**.
+
+**Confusing:** date not defaulted to today; parent AppShell is the same 50-link staff nav. Review notes vs Absence notes vs portal Absence notes.
+
+**Twice:** parent reason; optional teacher review notes.
+
+DB after the walk: `absence_notes` id 1 approved; `class_attendance` Fatima `excused`, Aminath `late`.
+
+<img src="/opt/cursor/artifacts/pilot-round2/34-parent-absence-notes.webp" alt="Parent absence notes: Fatima, empty date, approved Fever row" />
+
+<img src="/opt/cursor/artifacts/pilot-round2/32-teacher-absence-notes-approved.webp" alt="Teacher review: Fatima 2026-08-26 illness Fever APPROVED" />
+
+---
+
+### Round 2 — Step 5 — Admin exam, marks, term grade, report card
+
+**Worked?** Exam schedule → marks_entry → 15/15 marks → review → published **yes**. Term % / grade / rank **blank**. Download is **HTML**, not PDF. Weights screen did not produce a usable year scheme in this walk (`assessment_weight_schemes` count 0).
+
+**Clicks / screens (~12):** `/en/exams/schedule` (year/term/class/subject/type/name/date/times + three confirm checkboxes) → Move through statuses → Marks (per-row Save / blur) → Gradebook Load + Recompute → Report templates (needed for generate) → Report cards Generate → Download.
+
+**What broke**
+
+- Schedule form defaults wander (Extra / Term 2 / Arabic Beginners) while the real exam is Pilot / Grade 5 A. Easy to schedule the wrong class.
+- Marks grid **does** show PIL numbers (`Ahmed Naseem PIL-09` / `PIL-10`). The attendance grid still does not.
+- Gradebook Term 1 / Grade 5 A / Arabic: exam column filled (Fatima 70, duplicates 76/77 and 78/79); **Term % / Grade / Rank all —**.
+- Report cards: 15 rows status `ready`, Download links. Publish control defaulted to **Term 2** while the table is Term 1. Files under `storage/app/private/documents/report_card/` are `.html`. Fatima’s card: Arabic Language %/grade/GPA/rank **empty**.
+- Weights UI is a JSON blob of type ids → 0. No scheme saved in this walk.
+
+**Confusing / twice:** class/term/subject re-selected on schedule, marks, gradebook, templates, report cards.
+
+<img src="/opt/cursor/artifacts/pilot-round2/38-admin-exam-schedule-published.webp" alt="Exams: Term 1 Arabic Final Grade 5 A published" />
+
+<img src="/opt/cursor/artifacts/pilot-round2/39-admin-exam-marks-two-ahmed-naseem.webp" alt="Marks: 15/15 entered, two Ahmed Naseem with PIL numbers" />
+
+<img src="/opt/cursor/artifacts/pilot-round2/40-admin-gradebook-term-percent-columns.webp" alt="Gradebook exam marks filled; Term percent grade rank blank" />
+
+<img src="/opt/cursor/artifacts/pilot-round2/41-admin-report-cards-list-download.webp" alt="Report cards ready with Download; Term 2 publish control vs Term 1 table" />
+
+<TextReference path="/opt/cursor/artifacts/pilot-round2/fatima-yoosuf-report-card.html" start={16} end={40} alt="Fatima report card HTML: empty grade cells"></TextReference>
+
+---
+
+### Round 2 — Step 6 — Admin invoice, parent portal
+
+**Worked?** **Yes for the parent.** Admin invoice **list UI is easy to miss.**
+
+**Clicks / screens (~5):** `/en/finance/invoices` (year tabs, hardcoded 2026-01-01..2026-03-31, Generate drafts, Issue drafts) → parent `/en/portal/invoices`. Pay now not used (BML).
+
+**What broke / confused**
+
+- After issue, switching year tab to Extra (`academic_year_id=5`) shows **No draft invoices** and an empty structure select — looks like generate failed. Pilot year actually has **45 sent** invoices (15 × 3 months). Duplicate Extra tabs again.
+- Parent portal for Fatima: `INV-2-14-2026-01` … `-03`, due 2026-01-05 / 02-05 / 03-05, balance 1500.00, **Pay now**. Dates are the form defaults, not “this term”.
+
+**Twice:** year on fee structures and invoices; amount on catalog and structure.
+
+<img src="/opt/cursor/artifacts/pilot-round2/43-admin-finance-invoices-draft.webp" alt="Admin invoices on Extra year: no draft invoices, default Jan–Mar 2026 dates" />
+
+<img src="/opt/cursor/artifacts/pilot-round2/35-parent-invoices.webp" alt="Parent Fees: three Fatima invoices 1500.00 with Pay now" />
+
+---
+
+### Round 2 — Ranked: what still blocks a real teacher
+
+Round 1 ranked list above is **not** rewritten. This is the list **after** #79–#84, from the Chrome walk.
+
+1. **Cannot log in on staging** with seed passwords; this agent still cannot SSH or seed `test.akuru.edu.mv`.
+2. **Blade dashboard after login still hides the academic loop.** Years / Today / Registers / Exams / Invoices are Inertia AppShell only. Parent login is titled **Admin Dashboard**. A teacher next week who follows the first screen never reaches Today.
+3. **`DatabaseSeeder` alone is not a school.** 0 students, 0 `teachers` rows, 0 years. Class teacher select is empty; picker has no one to search; People → Students cannot create a child. `PilotRehearsalSeeder` (or equivalent) is still an operator step. Role `teacher` on `users` is not a `teachers` row.
+4. **AppShell nav is still unusable as navigation** (50+ wrapping links, duplicate labels). Logout **is** there (POST next to the name) — Round 1 item 7 is fixed as a control, not as information architecture. `GET /logout` remains 405.
+5. **Duplicate year names and duplicate class 500.** Extra can be created twice. Creating Grade 5 B again dumps Ignition instead of “already exists.” Grade 5 B in this walk never got a class teacher in the UI.
+6. **Wrong child is still easy.** Picker shows number/DOB/NID (Round 1 item 9 is fixed) but two Fatimas share name+NID+DOB and are **not** flagged indistinguishable because class differs. Register **fill grid still has no number/DOB** (two Mariyam Ali, two Ahmed Naseem). Marks grid *does* show PIL numbers.
+7. **Today / generate is still easy to read as broken.** Admin “Created 0 expected registers” when rows already exist; Unfilled hides today’s remaining periods until they are late; a class teacher only sees **their** subject cards (one Wednesday slot here, not the whole day).
+8. **No parent notification** of absence. SMS binding is still live Dhiraagu/HTTP, not a fake; portal has no “notified” signal.
+9. **Term grades stay blank** unless Weights is actually saved. Report cards generate HTML with empty %/grade/rank. Queue worker required. “PDF” is not PDF.
+10. **Invoice admin UI can show an empty table** on the wrong year tab while the parent already has three 1500.00 invoices. Generate dates are hardcoded Jan–Mar 2026.
+
+Items 1–3 still stop a cold staff user before attendance. Item 4 no longer blocks *switching users* on Inertia screens (logout works) but still blocks *finding* Today. Items 5–6 are first-week identity risk. Items 7–10 break generate confidence, parent comms, reports, and fees.
+
+Hifz untouched. Deploy 3 not executed. Track B not started. No product fixes in this slice.
 
 ---
 
