@@ -22,6 +22,7 @@ class DatabaseSeeder extends Seeder
             PageSeeder::class,
             CourseCategorySeeder::class,
             CourseSeeder::class,
+            PilotRehearsalSeeder::class,
         ]);
     }
 }

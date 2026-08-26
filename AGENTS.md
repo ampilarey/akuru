@@ -36,6 +36,10 @@ Dependencies are refreshed automatically on VM startup (`composer install` + `np
 - PHPStan is informational only (non-blocking): `./vendor/bin/phpstan analyse --memory-limit=512M`
 - Production asset build: `npm run build` (outputs to `public/build/`, which is tracked in git).
 
+`php artisan migrate --seed` now includes `PilotRehearsalSeeder` (year, Grade 5 A,
+students, `teachers` rows). Seeded teacher `teacher@akuru.edu.mv` has a `teachers`
+row, not only the Spatie role.
+
 ### Seeded logins
 
 `php artisan migrate --seed` creates users, all with password `password`, e.g.

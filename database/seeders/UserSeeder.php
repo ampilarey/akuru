@@ -51,6 +51,7 @@ class UserSeeder extends Seeder
             'is_active' => true,
         ]);
         $teacher->assignRole('teacher');
+        app(\App\Domains\People\Actions\EnsureTeacherRowAction::class)->execute($teacher);
 
         // Create Student User
         $student = \App\Domains\Identity\Models\User::create([
