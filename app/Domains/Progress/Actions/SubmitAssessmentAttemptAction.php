@@ -5,7 +5,6 @@ namespace App\Domains\Progress\Actions;
 use App\Domains\Courses\Actions\ResolveAssessmentSettingsAction;
 use App\Domains\Courses\Actions\ScoreAssessmentSnapshotsAction;
 use App\Domains\Progress\Enums\AssessmentAttemptStatus;
-use App\Domains\Progress\Models\AssessmentAttempt;
 use Illuminate\Validation\ValidationException;
 
 class SubmitAssessmentAttemptAction
@@ -14,18 +13,18 @@ class SubmitAssessmentAttemptAction
      * @param  array<string, mixed>  $answers
      * @return array<string, mixed>
      */
-    public function execute(int $assessmentId, int $enrollmentId, array $answers): array
+    public function execute(int $assessmentId, ?int $enrollmentId, array $answers, ?int $studentId = null): array
     {
         $settings = app(ResolveAssessmentSettingsAction::class)->execute($assessmentId);
         app(StartAssessmentAttemptAction::class)->assertRetakesAvailable(
             $assessmentId,
             $enrollmentId,
             $settings['retake_limit'] ?? null,
+            $studentId,
         );
 
-        $attempt = AssessmentAttempt::query()
-            ->where('enrollment_id', $enrollmentId)
-            ->where('assessment_id', $assessmentId)
+        $attempt = app(StartAssessmentAttemptAction::class)
+            ->scopedQuery($assessmentId, $enrollmentId, $studentId)
             ->where('status', AssessmentAttemptStatus::InProgress)
             ->orderByDesc('attempt_number')
             ->first();
@@ -45,7 +44,7 @@ class SubmitAssessmentAttemptAction
         $attempt->update([
             'answers' => $answers,
             'status' => AssessmentAttemptStatus::from($result['status']),
-            'score' => $result['status'] === 'scored' ? $result['score'] : $result['score'],
+            'score' => $result['score'],
             'max_score' => $result['max_score'],
             'submitted_at' => now(),
             'last_saved_at' => now(),

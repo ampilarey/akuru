@@ -2,7 +2,7 @@ import { useForm, router } from '@inertiajs/react';
 import { useState } from 'react';
 import AppShell from '../../../Layouts/AppShell';
 
-export default function Show({ classRoom, roster, q = '', candidates = [], teachers = [] }) {
+export default function Show({ classRoom, roster, q = '', candidates = [], teachers = [], assessments = [] }) {
     const searchForm = useForm({ q });
     const assignForm = useForm({ student_id: '' });
     const teacherForm = useForm({
@@ -156,6 +156,44 @@ export default function Show({ classRoom, roster, q = '', candidates = [], teach
                     </tbody>
                 </table>
             </div>
+
+            <section className="mt-6 rounded-lg border bg-white p-4">
+                <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                    <h2 className="font-medium">Engine assessments</h2>
+                    <a
+                        className="btn-secondary"
+                        href={`/academics/classes/${classRoom.id}/assessments/export`}
+                    >
+                        Export CSV
+                    </a>
+                </div>
+                {assessments.length === 0 && (
+                    <p className="text-sm text-gray-500">No engine assessments attached to this class.</p>
+                )}
+                <ul className="space-y-3">
+                    {assessments.map((row) => (
+                        <li key={row.id} className="border-t pt-3 text-sm">
+                            <div className="flex flex-wrap items-center justify-between gap-2">
+                                <span className="font-medium">{row.title}</span>
+                                <span className="uppercase text-gray-500">{row.status} · {row.assessment_type} · max {row.max_score}</span>
+                            </div>
+                            {row.legacy_quiz_id && (
+                                <p className="text-xs text-gray-500">Migrated quiz #{row.legacy_quiz_id}</p>
+                            )}
+                            {row.legacy_assignment_id && (
+                                <p className="text-xs text-gray-500">Migrated assignment #{row.legacy_assignment_id}</p>
+                            )}
+                            <ul className="mt-2 list-disc pl-5">
+                                {(row.questions || []).map((item) => (
+                                    <li key={item.question_id}>
+                                        {item.question.question_text} · {item.points_override || 1} pts
+                                    </li>
+                                ))}
+                            </ul>
+                        </li>
+                    ))}
+                </ul>
+            </section>
         </AppShell>
     );
 }

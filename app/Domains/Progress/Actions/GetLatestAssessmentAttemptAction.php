@@ -2,18 +2,15 @@
 
 namespace App\Domains\Progress\Actions;
 
-use App\Domains\Progress\Models\AssessmentAttempt;
-
 class GetLatestAssessmentAttemptAction
 {
     /**
      * @return array<string, mixed>|null
      */
-    public function execute(int $assessmentId, int $enrollmentId, bool $includeKeys = false): ?array
+    public function execute(int $assessmentId, ?int $enrollmentId, bool $includeKeys = false, ?int $studentId = null): ?array
     {
-        $attempt = AssessmentAttempt::query()
-            ->where('enrollment_id', $enrollmentId)
-            ->where('assessment_id', $assessmentId)
+        $attempt = app(StartAssessmentAttemptAction::class)
+            ->scopedQuery($assessmentId, $enrollmentId, $studentId)
             ->orderByDesc('attempt_number')
             ->first();
 

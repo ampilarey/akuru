@@ -13,6 +13,9 @@ class Assessment extends Model
 
     protected $fillable = [
         'course_id',
+        'classroom_id',
+        'academic_year_id',
+        'term_id',
         'course_module_id',
         'lesson_id',
         'title',
@@ -29,6 +32,8 @@ class Assessment extends Model
         'requires_teacher_marking',
         'settings',
         'created_by',
+        'legacy_quiz_id',
+        'legacy_assignment_id',
     ];
 
     protected function casts(): array

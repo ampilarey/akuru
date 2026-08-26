@@ -16,6 +16,7 @@ class ResolveAssessmentSettingsAction
         return [
             'id' => $assessment->id,
             'course_id' => $assessment->course_id,
+            'classroom_id' => $assessment->classroom_id,
             'title' => $assessment->title,
             'status' => $assessment->status->value,
             'retake_limit' => $assessment->retake_limit,

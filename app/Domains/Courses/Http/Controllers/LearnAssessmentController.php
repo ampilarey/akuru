@@ -21,7 +21,11 @@ class LearnAssessmentController extends Controller
         abort_unless($request->user() !== null, 403);
         $access = app(AuthorizeAssessmentAccessAction::class)->execute($assessment, (int) $request->user()->id);
         $settings = app(ResolveAssessmentSettingsAction::class)->execute($assessment);
-        $attempt = app(GetLatestAssessmentAttemptAction::class)->execute($assessment, $access['enrollment_id']);
+        $attempt = app(GetLatestAssessmentAttemptAction::class)->execute(
+            $assessment,
+            $access['enrollment_id'],
+            studentId: $access['student_id'],
+        );
         if ($attempt === null) {
             $attempt = app(StartAssessmentAttemptAction::class)->execute(
                 $access['assessment_id'],
@@ -29,6 +33,7 @@ class LearnAssessmentController extends Controller
                 $access['student_id'],
                 $access['course_id'],
                 $access['academic_year_id'],
+                $access['classroom_id'],
             );
         }
 
@@ -38,6 +43,7 @@ class LearnAssessmentController extends Controller
                 $assessment,
                 $access['enrollment_id'],
                 includeKeys: true,
+                studentId: $access['student_id'],
             );
         }
 
@@ -46,6 +52,7 @@ class LearnAssessmentController extends Controller
             'enrollment' => [
                 'id' => $access['enrollment_id'],
                 'course_id' => $access['course_id'],
+                'classroom_id' => $access['classroom_id'],
             ],
             'attempt' => $attempt,
         ]);
@@ -59,6 +66,7 @@ class LearnAssessmentController extends Controller
             $access['assessment_id'],
             $access['enrollment_id'],
             $this->answers($request),
+            $access['student_id'],
         );
 
         return back();
@@ -72,6 +80,7 @@ class LearnAssessmentController extends Controller
             $access['assessment_id'],
             $access['enrollment_id'],
             $this->answers($request),
+            $access['student_id'],
         );
 
         return back()->with('success', 'Assessment submitted.');

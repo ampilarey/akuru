@@ -45,6 +45,14 @@ roster with student names and bulk mark, student schedule at
 `/learn/schedule`, teacher schedule at `/teach/schedule`. Still
 Offerings-owned.
 
+## Slice 2 leftover — class quiz/assignment → engine (this slice)
+
+Migrate ClassRoom-bound `Quiz` / `Assignment` rows onto engine `assessments`
+(attachable to a **class** or a **course**, never both). Additive columns +
+idempotent backfill; legacy tables stay until a later cleanup deploy (ROADMAP
+§3.5 / rule 9). Gate: `php artisan assessments:verify-legacy-migration`.
+Maps onto the four activity patterns only — no second quiz engine.
+
 ## Out of scope
 
 AI, payments, certificates, Capacitor, Hifz behavior change, Arabic

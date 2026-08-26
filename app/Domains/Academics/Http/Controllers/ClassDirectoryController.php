@@ -8,6 +8,7 @@ use App\Domains\Academics\Actions\ListClassRosterAction;
 use App\Domains\Academics\Actions\ResolveDefaultSchoolIdAction;
 use App\Domains\Academics\Models\AcademicYear;
 use App\Domains\Academics\Models\ClassRoom;
+use App\Domains\Courses\Actions\ListClassroomAssessmentsAction;
 use App\Domains\People\Actions\ListClassTeacherOptionsAction;
 use App\Domains\People\Actions\SearchRosterCandidatesAction;
 use App\Http\Controllers\Controller;
@@ -16,6 +17,7 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ClassDirectoryController extends Controller
 {
@@ -126,9 +128,32 @@ class ClassDirectoryController extends Controller
             ],
             'teachers' => $teachers->all(),
             'roster' => app(ListClassRosterAction::class)->execute($classRoom->id),
+            'assessments' => app(ListClassroomAssessmentsAction::class)->execute($classRoom->id)->values(),
             'q' => $query,
             'candidates' => app(SearchRosterCandidatesAction::class)->execute($query),
         ]);
+    }
+
+    public function exportAssessments(ClassRoom $classRoom): StreamedResponse
+    {
+        $rows = app(ListClassroomAssessmentsAction::class)->execute($classRoom->id);
+
+        return response()->streamDownload(function () use ($rows): void {
+            $handle = fopen('php://output', 'w');
+            fputcsv($handle, ['id', 'title', 'assessment_type', 'status', 'max_score', 'legacy_quiz_id', 'legacy_assignment_id']);
+            foreach ($rows as $row) {
+                fputcsv($handle, [
+                    $row['id'],
+                    $row['title'],
+                    $row['assessment_type'],
+                    $row['status'],
+                    $row['max_score'],
+                    $row['legacy_quiz_id'],
+                    $row['legacy_assignment_id'],
+                ]);
+            }
+            fclose($handle);
+        }, 'class-'.$classRoom->id.'-assessments.csv', ['Content-Type' => 'text/csv']);
     }
 
     public function assign(Request $request, ClassRoom $classRoom): RedirectResponse

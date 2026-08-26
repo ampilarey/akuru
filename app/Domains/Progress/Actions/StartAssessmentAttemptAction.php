@@ -6,6 +6,7 @@ use App\Domains\Courses\Actions\BuildAssessmentSnapshotsAction;
 use App\Domains\Courses\Actions\ResolveAssessmentSettingsAction;
 use App\Domains\Progress\Enums\AssessmentAttemptStatus;
 use App\Domains\Progress\Models\AssessmentAttempt;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Validation\ValidationException;
 
 class StartAssessmentAttemptAction
@@ -15,14 +16,13 @@ class StartAssessmentAttemptAction
      */
     public function execute(
         int $assessmentId,
-        int $enrollmentId,
+        ?int $enrollmentId,
         int $studentId,
-        int $courseId,
+        ?int $courseId,
         ?int $academicYearId = null,
+        ?int $classroomId = null,
     ): array {
-        $existing = AssessmentAttempt::query()
-            ->where('enrollment_id', $enrollmentId)
-            ->where('assessment_id', $assessmentId)
+        $existing = $this->scopedQuery($assessmentId, $enrollmentId, $studentId)
             ->where('status', AssessmentAttemptStatus::InProgress)
             ->orderByDesc('attempt_number')
             ->first();
@@ -32,7 +32,7 @@ class StartAssessmentAttemptAction
         }
 
         $settings = app(ResolveAssessmentSettingsAction::class)->execute($assessmentId);
-        $this->assertRetakesAvailable($assessmentId, $enrollmentId, $settings['retake_limit'] ?? null);
+        $this->assertRetakesAvailable($assessmentId, $enrollmentId, $settings['retake_limit'] ?? null, $studentId);
 
         $snapshots = app(BuildAssessmentSnapshotsAction::class)->execute(
             $assessmentId,
@@ -44,8 +44,9 @@ class StartAssessmentAttemptAction
             'enrollment_id' => $enrollmentId,
             'student_id' => $studentId,
             'course_id' => $courseId,
+            'classroom_id' => $classroomId,
             'academic_year_id' => $academicYearId,
-            'attempt_number' => $this->nextNumber($assessmentId, $enrollmentId),
+            'attempt_number' => $this->nextNumber($assessmentId, $enrollmentId, $studentId),
             'status' => AssessmentAttemptStatus::InProgress,
             'answers' => [],
             'snapshots' => $snapshots,
@@ -74,6 +75,7 @@ class StartAssessmentAttemptAction
             'id' => $attempt->id,
             'assessment_id' => $attempt->assessment_id,
             'enrollment_id' => $attempt->enrollment_id,
+            'classroom_id' => $attempt->classroom_id,
             'attempt_number' => $attempt->attempt_number,
             'status' => $attempt->status->value,
             'answers' => $attempt->answers,
@@ -89,11 +91,9 @@ class StartAssessmentAttemptAction
         ];
     }
 
-    public function assertRetakesAvailable(int $assessmentId, int $enrollmentId, mixed $retakeLimit): void
+    public function assertRetakesAvailable(int $assessmentId, ?int $enrollmentId, mixed $retakeLimit, ?int $studentId = null): void
     {
-        $submitted = AssessmentAttempt::query()
-            ->where('enrollment_id', $enrollmentId)
-            ->where('assessment_id', $assessmentId)
+        $submitted = $this->scopedQuery($assessmentId, $enrollmentId, $studentId)
             ->whereIn('status', [AssessmentAttemptStatus::Submitted, AssessmentAttemptStatus::Scored])
             ->count();
 
@@ -104,11 +104,22 @@ class StartAssessmentAttemptAction
         }
     }
 
-    private function nextNumber(int $assessmentId, int $enrollmentId): int
+    /**
+     * @return Builder<AssessmentAttempt>
+     */
+    public function scopedQuery(int $assessmentId, ?int $enrollmentId, ?int $studentId = null): Builder
     {
-        return ((int) AssessmentAttempt::query()
-            ->where('enrollment_id', $enrollmentId)
-            ->where('assessment_id', $assessmentId)
-            ->max('attempt_number')) + 1;
+        $query = AssessmentAttempt::query()->where('assessment_id', $assessmentId);
+
+        if ($enrollmentId !== null) {
+            return $query->where('enrollment_id', $enrollmentId);
+        }
+
+        return $query->where('student_id', (int) $studentId)->whereNull('enrollment_id');
+    }
+
+    private function nextNumber(int $assessmentId, ?int $enrollmentId, ?int $studentId): int
+    {
+        return ((int) $this->scopedQuery($assessmentId, $enrollmentId, $studentId)->max('attempt_number')) + 1;
     }
 }
