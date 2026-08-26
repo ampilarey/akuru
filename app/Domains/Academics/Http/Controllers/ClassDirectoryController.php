@@ -7,7 +7,11 @@ use App\Domains\Academics\Actions\ListClassRosterAction;
 use App\Domains\Academics\Actions\ResolveDefaultSchoolIdAction;
 use App\Domains\Academics\Models\AcademicYear;
 use App\Domains\Academics\Models\ClassRoom;
+<<<<<<< HEAD
 use App\Domains\People\Actions\SearchRosterCandidatesAction;
+=======
+use App\Domains\People\Actions\ListClassTeacherOptionsAction;
+>>>>>>> origin/cursor/class-teacher-field-063c
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -22,6 +26,9 @@ class ClassDirectoryController extends Controller
             ->where('status', 'active')
             ->value('id');
 
+        $teachers = app(ListClassTeacherOptionsAction::class)->execute();
+        $teacherNames = $teachers->pluck('name', 'id');
+
         $classes = ClassRoom::query()
             ->when($yearId, fn ($query) => $query->where('academic_year_id', $yearId))
             ->orderBy('name')
@@ -33,17 +40,25 @@ class ClassDirectoryController extends Controller
                 'capacity' => $class->capacity,
                 'academic_year_id' => $class->academic_year_id,
                 'class_teacher_id' => $class->class_teacher_id,
+                'class_teacher_name' => $class->class_teacher_id
+                    ? ($teacherNames[$class->class_teacher_id] ?? null)
+                    : null,
             ]);
 
         return Inertia::render('Academics/Classes/Index', [
             'yearId' => $yearId,
             'years' => AcademicYear::query()->orderByDesc('start_date')->get(['id', 'name', 'status']),
             'classes' => $classes,
+            'teachers' => $teachers->all(),
         ]);
     }
 
     public function store(Request $request): RedirectResponse
     {
+        if ($request->input('class_teacher_id') === '') {
+            $request->merge(['class_teacher_id' => null]);
+        }
+
         $data = $request->validate([
             'academic_year_id' => ['required', 'exists:academic_years,id'],
             'name' => ['required', 'string', 'max:255'],
@@ -65,7 +80,13 @@ class ClassDirectoryController extends Controller
 
     public function show(Request $request, ClassRoom $classRoom): Response
     {
+<<<<<<< HEAD
         $query = trim($request->string('q')->toString());
+=======
+        $teacher = $classRoom->class_teacher_id
+            ? app(ListClassTeacherOptionsAction::class)->execute()->firstWhere('id', $classRoom->class_teacher_id)
+            : null;
+>>>>>>> origin/cursor/class-teacher-field-063c
 
         return Inertia::render('Academics/Classes/Show', [
             'classRoom' => [
@@ -74,6 +95,8 @@ class ClassDirectoryController extends Controller
                 'section' => $classRoom->section,
                 'capacity' => $classRoom->capacity,
                 'academic_year_id' => $classRoom->academic_year_id,
+                'class_teacher_id' => $classRoom->class_teacher_id,
+                'class_teacher_name' => is_array($teacher) ? ($teacher['name'] ?? null) : null,
             ],
             'roster' => app(ListClassRosterAction::class)->execute($classRoom->id),
             'q' => $query,

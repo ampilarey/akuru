@@ -1284,6 +1284,29 @@ is unchanged in this slice.
 Inertia `AppShell` posts `/logout`. `GET /logout` remains 405. Findings doc
 is unchanged in this slice.
 
+## Pilot blocker 3 — seed login contacts (2026-08-26)
+
+`UserSeeder` writes verified email `user_contacts`. Password login rule is in
+`docs/AUTHENTICATION_GUIDE.md`. Findings doc is unchanged in this slice.
+
+## Pilot blocker 4 — class teacher field (2026-08-26)
+
+Create-class form sends `class_teacher_id` (users.id of a `teachers` row).
+Listing and show display the name. Findings doc is unchanged in this slice.
+
+## Pilot blocker 5 — periods seed and CRUD (2026-08-26)
+
+`PeriodSeeder` is in `DatabaseSeeder`. Minimal Periods screen at
+`/academics/periods` (`manage_timetables`). Findings doc is unchanged
+in this slice.
+
+## Pilot blocker 6 — teacher can generate today's registers (2026-08-26)
+
+Today empty state names the gap (no teacher row / no periods / no
+timetable / not generated). Class teachers and subject teachers with
+`registers.fill` can generate their own date. Findings doc is unchanged
+in this slice.
+
 ## Next
 
 TRACK A code/docs A1–A5 plus ADR-021 representative gate are the current
@@ -1292,9 +1315,9 @@ unification story. **A4 protection is not applied** (bot 403; re-tried
 S1 Deploy 3 cleanup is a proposal only — wait for confirmation.
 `--backfill` still refused on `APP_ENV=production`. No Hifz behavior
 change. `PAYROLL_ENABLED` / settings stay off.
-Pilot rehearsal findings are in `docs/PILOT_REHEARSAL.md`. Remaining
-blockers: AppShell logout, seed `user_contacts`, class teacher field,
-periods UI/seed, register generate empty state.
+Pilot rehearsal findings are in `docs/PILOT_REHEARSAL.md`. Blockers 1–6 have
+fix PRs (roster picker, AppShell logout, seed contacts, class teacher,
+periods, teacher generate-today). Re-walk after those land.
 
 **Operator:** apply branch protection (`docs/BRANCH_PROTECTION.md`).
 Confirm or reject `docs/migrations/s11-deploy-3-cleanup-proposal.md`.
