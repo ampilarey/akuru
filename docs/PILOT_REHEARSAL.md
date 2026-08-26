@@ -7,10 +7,11 @@
 
 This is a findings document. A step that cannot be completed is recorded as failed, not worked around in the product.
 
-Two passes are recorded:
+Two passes are recorded, then a third after Round-2 product PRs:
 
 - **Round 1** (`cursor/pilot-rehearsal-063c`, merged as #78): Chrome for Step 1 only; Steps 2–6 were domain actions / tinker. Original ranked list is unchanged.
 - **Round 2** (this file, after blocker PRs #79–#84 on `main`): Chrome as admin → teacher → parent → teacher → admin → parent. Fresh `migrate:fresh --seed` then `PilotRehearsalSeeder`. Screenshots: `/opt/cursor/artifacts/pilot-round2/`.
+- **Round 3** (this file, after Round-2 fix PRs **#86–#92**, walked on a local merge of those branches; `main` may still be behind until they merge): Chrome steps 1–6. Screenshots: `/opt/cursor/artifacts/pilot-round3/`. Round 1 and Round 2 text is unchanged.
 
 Operator seed (after `DatabaseSeeder`):
 
@@ -421,6 +422,128 @@ Hifz untouched. Deploy 3 not executed. Track B not started. No product fixes in 
 
 ---
 
+## Round 3 — how this walk was done (2026-08-26)
+
+Local `akuru_institute`, `migrate:fresh --seed` (DatabaseSeeder now includes `PilotRehearsalSeeder` on #87). Stacked PRs **#86–#92** (not all merged to `main` at walk time). Vite production build (`public/hot` removed). Chrome as admin → teacher → parent → teacher → admin.
+
+PRs in this round (one per item):
+
+| Item | PR |
+|------|-----|
+| 1 SMS safety | [#86](https://github.com/ampilarey/akuru/pull/86) |
+| 2 Seeder school | [#87](https://github.com/ampilarey/akuru/pull/87) |
+| 3 Role landings | [#88](https://github.com/ampilarey/akuru/pull/88) |
+| 4 Term grades / HTML label | [#89](https://github.com/ampilarey/akuru/pull/89) |
+| 5 Fill-grid identity | [#90](https://github.com/ampilarey/akuru/pull/90) |
+| 6 Generate / duplicates / invoices | [#91](https://github.com/ampilarey/akuru/pull/91) |
+| 7 DoD browser walk | [#92](https://github.com/ampilarey/akuru/pull/92) |
+
+Not in this round: AppShell nav IA (Round 2 item 4), staging access (Round 2 item 1).
+
+---
+
+### Round 3 — Step 1 — Admin year / class / roster
+
+**Worked?** Class teacher names **yes**. Duplicate Extra / Grade 5 B **no 500**. First Chrome pass: uniqueness errors were **session-only** (forms spun and cleared with no red text). #91 follow-up commit shows `yearForm.errors.name` / `form.errors.name` on the create forms.
+
+**Clicks / screens:** login → Blade **Admin Dashboard** (admin is allowed this) → `/en/academics/years` duplicate Extra → `/en/academics/classes` (Grade 5 A **Fatimat Ali**) → Grade 5 A search Fatima.
+
+**What the browser showed**
+
+- Years: duplicate Extra did not Ignition; also did not show a message until the form-error follow-up.
+- Classes: Grade 5 A has a class teacher; Grade 5 B still **—**.
+- Fatima search: two Fatima Yoosuf rows, same NID `A999001` and DOB `2010-03-12`; one **PIL-01**, one **no number**; current class Grade 5 B on the listing. Number differs, so they are not the “class-only twins” case.
+
+<img src="/opt/cursor/artifacts/pilot-round3/01-admin-dashboard-landing.webp" alt="Admin Blade dashboard after login" />
+
+<img src="/opt/cursor/artifacts/pilot-round3/02-years-duplicate-silent-fail.webp" alt="Duplicate year submit with no visible error on first pass" />
+
+<img src="/opt/cursor/artifacts/pilot-round3/03-classes-teacher-names-populated.webp" alt="Classes: Grade 5 A class teacher Fatimat Ali" />
+
+<img src="/opt/cursor/artifacts/pilot-round3/04-grade5a-fatima-picker-duplicate-identity.webp" alt="Fatima picker: two rows, number vs blank, same NID and DOB" />
+
+<img src="/opt/cursor/artifacts/pilot-round3/05-duplicate-class-silent-fail.webp" alt="Duplicate Grade 5 B submit with no visible error on first pass" />
+
+---
+
+### Round 3 — Step 2 — Teacher Today and fill grid
+
+**Worked?** **Yes.** Teacher login lands on **Today’s registers**. Fill grid shows **Number** and **Date of birth**.
+
+**Clicks / screens:** logout → `teacher@akuru.edu.mv` → Today (no Blade teacher dashboard) → open register.
+
+**Confusing:** generate “already exist” flash was not re-clicked; Wednesday already had a generated card from the seed/session.
+
+<img src="/opt/cursor/artifacts/pilot-round3/step2-teacher-today-landing.webp" alt="Teacher lands on Today registers" />
+
+<img src="/opt/cursor/artifacts/pilot-round3/step2-teacher-register-grid-number-dob.webp" alt="Register grid with Number PIL-* and Date of birth columns" />
+
+---
+
+### Round 3 — Step 3 — Parent landing and notified
+
+**Worked?** **Yes** for landing title. Portal attendance has a **Parent notified** column.
+
+**Clicks / screens:** `parent@akuru.edu.mv` → Parent Dashboard → `/en/portal/attendance`.
+
+**What the browser showed:** heading **Parent Dashboard** (not Admin Dashboard). Attendance table includes Parent notified; this walk’s visible row was **—** (excused / no SMS receipt for that row).
+
+<img src="/opt/cursor/artifacts/pilot-round3/step3-parent-dashboard-title.webp" alt="Parent Dashboard title after login" />
+
+<img src="/opt/cursor/artifacts/pilot-round3/step3-parent-attendance-notified.webp" alt="Portal attendance Parent notified column" />
+
+---
+
+### Round 3 — Step 4 — Absence note
+
+**Worked?** **Yes.** Parent submitted illness note 2026-08-27; teacher approved.
+
+<img src="/opt/cursor/artifacts/pilot-round3/step4-parent-submit-absence-note.webp" alt="Parent absence note submitted" />
+
+<img src="/opt/cursor/artifacts/pilot-round3/step4-teacher-approve-absence-note.webp" alt="Teacher approved absence note" />
+
+---
+
+### Round 3 — Step 5 — Term grades and report cards
+
+**Worked?** Message and honest HTML label **yes**. Term % / grade / rank still **—** until Weights is saved (now explained). `/en/academics/gradebook` is 404; the real path is `/en/exams/gradebook`.
+
+<img src="/opt/cursor/artifacts/pilot-round3/step5-gradebook-missing-weights.webp" alt="Gradebook amber missing-weights message; Term percent blank" />
+
+<img src="/opt/cursor/artifacts/pilot-round3/step5-weights-page.webp" alt="Weights page Resolved scheme none" />
+
+<img src="/opt/cursor/artifacts/pilot-round3/step5-report-cards-html-message.webp" alt="Report cards are HTML documents not PDF" />
+
+<img src="/opt/cursor/artifacts/pilot-round3/step5-report-cards-download-html-links.webp" alt="Download HTML links on report cards" />
+
+---
+
+### Round 3 — Step 6 — Invoices
+
+**Worked?** **Yes** on the Pilot year tab: sent invoices listed (INV-2-14-2026-01 …), status **sent**, not an empty drafts-only table. Periods 2026-01..03 match Term 1 dates from the seed (not a leftover hardcoded form default in this walk).
+
+<img src="/opt/cursor/artifacts/pilot-round3/step6-invoices-pilot-year-data.webp" alt="Invoice admin Pilot year with sent rows and status" />
+
+---
+
+### Round 3 — Ranked: what still blocks a real teacher
+
+Round 1 and Round 2 ranked lists above are **not** rewritten.
+
+1. **Staging login** still operator-only (unchanged).
+2. **AppShell nav IA** still 50+ links (explicitly out of this round).
+3. **Uniqueness errors must be visible on the form.** First Chrome pass hid them; #91 follow-up paints the message. Seed still inserts duplicate Extra year names (seeder bypasses validation).
+4. **Weights still have to be saved** or term % stays blank — now with a banner, not silence.
+5. **Parent notified is a column**, but an excused row shows **—**; absence SMS is log-only outside production (#86). A teacher still cannot *see* the SMS body in the portal.
+6. **Wrong-URL 404:** `/academics/gradebook` vs `/exams/gradebook`. Nav still the only map.
+7. **Class teacher on Grade 5 B** still **—** in this seed/UI.
+
+Teacher Today, parent title, fill-grid number/DOB, invoice list, HTML-not-PDF, and default seed school are **fixed in the stacked PRs** and were used in Chrome.
+
+Hifz untouched. Deploy 3 not executed. Track B not started.
+
+---
+
 ## Out of scope (not done)
 
-No product fixes. No Hifz behavior change. Deploy 3 not executed. Track B not started.
+AppShell nav redesign and staging credentials were not this round. No Hifz behavior change. Deploy 3 not executed. Track B not started.

@@ -1280,6 +1280,11 @@ blank without weights, HTML “PDF”, invoice year-tab empty table. Picker,
 logout, seeded contacts, periods CRUD, class-teacher *field*, and
 teacher-owned generate exist and were used in Chrome.
 
+**Round 3 (browser, after #86–#92 on a local merge):** Chrome steps 1–6
+appended in `docs/PILOT_REHEARSAL.md`. Round 1 and Round 2 text is
+unchanged. Re-check those remaining items against merged main (this
+merge series); some are already fixed by #86–#92.
+
 Hifz untouched. Deploy 3 not executed. Track B not started.
 
 ## Pilot blocker 1 — roster picker (2026-08-26)
@@ -1325,7 +1330,11 @@ unification story. **A4 protection is not applied** (bot 403; re-tried
 S1 Deploy 3 cleanup is a proposal only — wait for confirmation.
 `--backfill` still refused on `APP_ENV=production`. No Hifz behavior
 change. `PAYROLL_ENABLED` / settings stay off.
-Pilot rehearsal findings are in `docs/PILOT_REHEARSAL.md`. Round-2
+Pilot rehearsal findings are in `docs/PILOT_REHEARSAL.md` (Rounds 1–3).
+Round-2 product PRs: #86 SMS, #87 seed school, #88 role landings, #89
+term grades/HTML, #90 fill-grid identity, #91 generate/duplicates/invoices,
+#92 DoD browser walk. Round 3 Chrome walk is appended in the findings
+doc. AppShell nav IA and staging access were not this round. Round-2
 fixes 1–7 are recorded below.
 
 ## Round-2 fix 1 — SMS safety (2026-08-26)
