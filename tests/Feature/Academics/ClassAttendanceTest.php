@@ -204,6 +204,7 @@ it('submits the register grid and keeps portal attendance to own children', func
             ->component('Portal/Attendance')
             ->has('rows', 1)
             ->where('rows.0.student_id', $mine->id)
+            ->where('rows.0.guardian_notified', true)
         );
 
     $this->withoutLocalizationMiddleware()

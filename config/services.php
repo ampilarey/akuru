@@ -44,6 +44,16 @@ return [
     | Option 2: HTTP gateway - uses SMS_GATEWAY_URL and SMS_GATEWAY_API_KEY
     |
     */
+    /*
+    | Live SMS HTTP is allowed only when APP_ENV=production AND SMS_LIVE=true
+    | (string "true" or "1"). Missing, "false", or unknown values fail closed.
+    | Local, staging, and testing bind LogSmsSender. Seed phones 7820288 and
+    | 7972434 are real numbers.
+    */
+    'sms' => [
+        'live' => env('SMS_LIVE', false),
+    ],
+
     'sms_gateway' => [
         'url' => env('SMS_GATEWAY_URL', 'https://akuru.edu.mv/api/v2'),
         'api_key' => env('SMS_GATEWAY_API_KEY', ''),

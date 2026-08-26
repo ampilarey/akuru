@@ -137,6 +137,7 @@ return [
     'room_booking' => \App\Domains\Academics\Models\RoomBooking::class,
     'school' => \App\Domains\Settings\Models\School::class,
     'setting' => \App\Domains\Settings\Models\Setting::class,
+    'sms_receipt' => \App\Domains\Notifications\Models\SmsReceipt::class,
     'document_expiry_notice' => \App\Domains\HR\Models\DocumentExpiryNotice::class,
     'leave_entitlement' => \App\Domains\HR\Models\LeaveEntitlement::class,
     'leave_ledger' => \App\Domains\HR\Models\LeaveLedger::class,

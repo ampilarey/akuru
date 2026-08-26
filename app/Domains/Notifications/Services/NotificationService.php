@@ -3,6 +3,7 @@
 namespace App\Domains\Notifications\Services;
 
 use App\Domains\Identity\Models\User;
+use App\Domains\Notifications\Contracts\SmsSenderInterface;
 use App\Domains\Notifications\Models\NotificationTemplate;
 use App\Domains\Notifications\Models\UserNotification;
 use Carbon\Carbon;
@@ -11,12 +12,7 @@ use Illuminate\Support\Facades\Mail;
 
 class NotificationService
 {
-    protected $smsService;
-
-    public function __construct(SmsGatewayService $smsService)
-    {
-        $this->smsService = $smsService;
-    }
+    public function __construct(protected SmsSenderInterface $smsService) {}
 
     /**
      * Send notification to a single user

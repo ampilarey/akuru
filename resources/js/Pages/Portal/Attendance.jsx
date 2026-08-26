@@ -25,17 +25,21 @@ export default function Attendance({ children, studentId, rows, summary }) {
                             <th className="px-3 py-2">Date</th>
                             <th className="px-3 py-2">Class</th>
                             <th className="px-3 py-2">Status</th>
+                            <th className="px-3 py-2">Parent notified</th>
                         </tr>
                     </thead>
                     <tbody>
                         {rows.length === 0 && (
-                            <tr><td className="px-3 py-4 text-gray-500" colSpan={3}>No attendance recorded yet.</td></tr>
+                            <tr><td className="px-3 py-4 text-gray-500" colSpan={4}>No attendance recorded yet.</td></tr>
                         )}
                         {rows.map((row) => (
                             <tr key={row.id} className="border-t">
                                 <td className="px-3 py-2">{row.date}</td>
                                 <td className="px-3 py-2">{row.class_name}</td>
                                 <td className="px-3 py-2 uppercase">{row.status}</td>
+                                <td className="px-3 py-2">
+                                    {row.guardian_notified ? 'Yes' : '—'}
+                                </td>
                             </tr>
                         ))}
                     </tbody>

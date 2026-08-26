@@ -3,6 +3,7 @@
 namespace App\Domains\Portal\Http\Controllers;
 
 use App\Domains\Academics\Actions\ListClassAttendanceAction;
+use App\Domains\Notifications\Actions\AbsenceWasNotifiedAction;
 use App\Domains\People\Actions\ListGuardianChildrenAction;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
@@ -27,6 +28,16 @@ class PortalAttendanceController extends Controller
         $rows = $studentId
             ? app(ListClassAttendanceAction::class)->execute(['student_id' => $studentId])
             : collect();
+
+        if ($studentId) {
+            $notified = app(AbsenceWasNotifiedAction::class);
+            $rows = $rows->map(function (array $row) use ($notified) {
+                $row['guardian_notified'] = ($row['status'] ?? null) === 'absent'
+                    && $notified->execute((int) $row['student_id'], (string) $row['date']);
+
+                return $row;
+            });
+        }
 
         return Inertia::render('Portal/Attendance', [
             'children' => $children->map(fn ($child) => [

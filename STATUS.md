@@ -1319,8 +1319,25 @@ unification story. **A4 protection is not applied** (bot 403; re-tried
 S1 Deploy 3 cleanup is a proposal only — wait for confirmation.
 `--backfill` still refused on `APP_ENV=production`. No Hifz behavior
 change. `PAYROLL_ENABLED` / settings stay off.
-Pilot rehearsal findings are in `docs/PILOT_REHEARSAL.md`. Remaining
-blockers: none.
+Pilot rehearsal findings are in `docs/PILOT_REHEARSAL.md`. Round-2
+fix remaining: seeder school, role landings, term grades/PDF label,
+fill-grid identity, generate/year/class/invoice validation, DoD docs.
+
+## Round-2 fix 1 — SMS safety (2026-08-26)
+
+- **Until this slice:** `NotificationsServiceProvider` bound `SmsSenderInterface`
+  to `SmsGatewayService` in **every** environment (local, staging, testing,
+  production). Marking a student absent dispatched `StudentMarkedAbsent` →
+  `SendAbsenceSms` → live Dhiraagu/HTTP. Seeded phones (`7820288`, `7972434`)
+  are real numbers named in this file; **any earlier local or
+  `test.akuru.edu.mv` absence-marking may have sent real messages.**
+- **Done:** bind `LogSmsSender` unless `APP_ENV=production` **and**
+  `services.sms.live` (`SMS_LIVE`) is an explicit true. Missing or unknown
+  values fail closed. The fake logs and writes `sms_receipts` (channel, number,
+  body, timestamp). `SmsGatewayService` is unchanged; it is simply not bound
+  outside production+flag. Tests call `Http::preventStrayRequests()`. Portal
+  attendance shows **Parent notified**.
+- **Tests:** `tests/Feature/Notifications/SmsSafetyTest.php`.
 
 **Operator:** apply branch protection (`docs/BRANCH_PROTECTION.md`).
 Confirm or reject `docs/migrations/s11-deploy-3-cleanup-proposal.md`.
