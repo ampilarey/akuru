@@ -7,11 +7,8 @@ use App\Domains\Academics\Actions\ListClassRosterAction;
 use App\Domains\Academics\Actions\ResolveDefaultSchoolIdAction;
 use App\Domains\Academics\Models\AcademicYear;
 use App\Domains\Academics\Models\ClassRoom;
-<<<<<<< HEAD
-use App\Domains\People\Actions\SearchRosterCandidatesAction;
-=======
 use App\Domains\People\Actions\ListClassTeacherOptionsAction;
->>>>>>> origin/cursor/class-teacher-field-063c
+use App\Domains\People\Actions\SearchRosterCandidatesAction;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -80,13 +77,10 @@ class ClassDirectoryController extends Controller
 
     public function show(Request $request, ClassRoom $classRoom): Response
     {
-<<<<<<< HEAD
         $query = trim($request->string('q')->toString());
-=======
         $teacher = $classRoom->class_teacher_id
             ? app(ListClassTeacherOptionsAction::class)->execute()->firstWhere('id', $classRoom->class_teacher_id)
             : null;
->>>>>>> origin/cursor/class-teacher-field-063c
 
         return Inertia::render('Academics/Classes/Show', [
             'classRoom' => [
