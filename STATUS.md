@@ -1320,8 +1320,8 @@ S1 Deploy 3 cleanup is a proposal only — wait for confirmation.
 `--backfill` still refused on `APP_ENV=production`. No Hifz behavior
 change. `PAYROLL_ENABLED` / settings stay off.
 Pilot rehearsal findings are in `docs/PILOT_REHEARSAL.md`. Round-2
-fix remaining: seeder school, role landings, term grades/PDF label,
-fill-grid identity, generate/year/class/invoice validation, DoD docs.
+fix remaining: role landings, term grades/PDF label, fill-grid identity,
+generate/year/class/invoice validation, DoD docs.
 
 ## Round-2 fix 1 — SMS safety (2026-08-26)
 
@@ -1338,6 +1338,17 @@ fill-grid identity, generate/year/class/invoice validation, DoD docs.
   outside production+flag. Tests call `Http::preventStrayRequests()`. Portal
   attendance shows **Parent notified**.
 - **Tests:** `tests/Feature/Notifications/SmsSafetyTest.php`.
+
+## Round-2 fix 2 — default seed is a usable school (2026-08-26)
+
+- **Done:** `DatabaseSeeder` calls `PilotRehearsalSeeder`. Role `teacher` also
+  gets a `teachers` row (`EnsureTeacherRowAction` in `UserSeeder`).
+  `UserSeeder` calls `SchoolSeeder` when no school exists (tests that seed
+  users alone). The action takes `userId`/`schoolId` primitives and reads
+  the user via `DB::table('users')` so People does not import Identity or
+  Settings models (architecture rules 1–2).
+- **Tests:** `tests/Feature/People/SeededSchoolTest.php` (including UserSeeder
+  without SchoolSeeder first).
 
 **Operator:** apply branch protection (`docs/BRANCH_PROTECTION.md`).
 Confirm or reject `docs/migrations/s11-deploy-3-cleanup-proposal.md`.
