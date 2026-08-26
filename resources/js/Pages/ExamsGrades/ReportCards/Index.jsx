@@ -50,6 +50,7 @@ export default function Index({ classes, terms, cards, unpublished, classId, ter
 
             <p className="mb-4 rounded border border-gray-200 bg-white px-4 py-2 text-sm text-gray-700">
                 Report cards are HTML documents (not PDF). Download opens an HTML file you can print.
+                ADR-012: HTML is the supported production output until a PDF renderer is bound behind DocumentRendererInterface.
             </p>
 
             {unpublished.length > 0 && (
