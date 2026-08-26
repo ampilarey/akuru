@@ -1326,7 +1326,7 @@ S1 Deploy 3 cleanup is a proposal only — wait for confirmation.
 `--backfill` still refused on `APP_ENV=production`. No Hifz behavior
 change. `PAYROLL_ENABLED` / settings stay off.
 Pilot rehearsal findings are in `docs/PILOT_REHEARSAL.md`. Round-2
-fix remaining: DoD docs.
+fixes 1–7 are recorded below.
 
 ## Round-2 fix 1 — SMS safety (2026-08-26)
 
@@ -1387,6 +1387,12 @@ fix remaining: DoD docs.
   does not import Academics `Term`).
 - **Tests:** `YearClassUniquenessTest`, generate flash in
   `ClassRegisterTest`, invoice index props in `InvoiceGenerationTest`.
+
+## Round-2 fix 7 — definition of done includes a browser walk (2026-08-26)
+
+- **Done:** `CLAUDE.md` / `.cursorrules` DoD: a slice is done when a
+  user can complete the task in a browser, not only when tests pass.
+  Checklist includes “walked in a browser.”
 
 **Operator:** apply branch protection (`docs/BRANCH_PROTECTION.md`).
 Confirm or reject `docs/migrations/s11-deploy-3-cleanup-proposal.md`.
