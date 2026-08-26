@@ -9,6 +9,7 @@ use App\Domains\Academics\Http\Controllers\CalendarDayController;
 use App\Domains\Academics\Http\Controllers\ClassDirectoryController;
 use App\Domains\Academics\Http\Controllers\CoursePlanController;
 use App\Domains\Academics\Http\Controllers\DailyAttendanceController;
+use App\Domains\Academics\Http\Controllers\PeriodDirectoryController;
 use App\Domains\Academics\Http\Controllers\PromotionController;
 use App\Domains\Academics\Http\Controllers\RegisterReportController;
 use App\Domains\Academics\Http\Controllers\RoomBookingController;
@@ -355,6 +356,11 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::get('rooms', [RoomDirectoryController::class, 'index'])->name('academics.rooms.index');
         Route::post('rooms', [RoomDirectoryController::class, 'store'])->name('academics.rooms.store');
         Route::put('rooms/{room}', [RoomDirectoryController::class, 'update'])->name('academics.rooms.update');
+
+        Route::get('periods/export', [PeriodDirectoryController::class, 'export'])->name('academics.periods.export');
+        Route::get('periods', [PeriodDirectoryController::class, 'index'])->name('academics.periods.index');
+        Route::post('periods', [PeriodDirectoryController::class, 'store'])->name('academics.periods.store');
+        Route::put('periods/{period}', [PeriodDirectoryController::class, 'update'])->name('academics.periods.update');
 
         Route::get('bookings/export', [RoomBookingController::class, 'export'])->name('academics.bookings.export');
         Route::get('bookings', [RoomBookingController::class, 'index'])->name('academics.bookings.index');
