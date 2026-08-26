@@ -28,7 +28,7 @@ it('does not change AppShell.jsx as part of the IA proposal', function () {
     expect($shell)->toContain('href="/exams/schedule"');
 
     $linkCount = substr_count($shell, '<Link href=');
-    expect($linkCount)->toBe(78);
+    expect($linkCount)->toBe(80);
 });
 
 it('does not register a product route for the proposal document', function () {

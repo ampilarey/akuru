@@ -25,9 +25,11 @@ Engine core stays subject-ignorant. No `if (course_type === …)`. Hifz frozen u
 
 **Morph-map (same slice):** `certificate_template`, `issued_certificate`.
 
-## C2 — Completion and performance reports (next)
+## C2 — Completion and performance reports (this slice)
 
-Offering completion reports + student/parent performance reports. New Inertia UI, CSV, compose other domains via Actions only.
+Staff `/catalog/reports/completions` (`courses.manage`): offering completion summaries, course completion summaries, roster with progress / attendance / lessons, CSV.
+
+Student and parent `/portal/performance`: own enrollments (`relationship: self`) and/or linked children via `ListGuardianChildrenAction`. CSV. Portal controller calls Courses actions only (no cross-domain Models).
 
 ## C3 — Teacher review reports (next)
 
