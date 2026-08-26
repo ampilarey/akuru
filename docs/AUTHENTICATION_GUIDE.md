@@ -3,6 +3,20 @@
 ## Overview
 Comprehensive guide to the authentication system in Akuru Institute LMS, including traditional email/password login and modern SMS-based OTP authentication.
 
+## Password login (the actual rule)
+
+`LoginRequest` does **not** look up `users.email`.
+
+| Identifier | Lookup |
+|---|---|
+| Contains `@` | Verified `user_contacts` row (`type=email`, `verified_at` not null) |
+| Digits / phone | Verified `user_contacts` row (`type=mobile`) |
+| Anything else | `users.national_id` |
+
+`UserSeeder` (via `php artisan migrate --seed`) writes a verified email contact for each seeded user so `admin@akuru.edu.mv` / `password` works. Seed users share phone numbers; **do not** treat the demo phones as unique mobile logins.
+
+`EnsureVerifiedEmailContactAction` is the helper used by `UserSeeder` and `PilotRehearsalSeeder`.
+
 ---
 
 ## 🔐 Authentication Methods
