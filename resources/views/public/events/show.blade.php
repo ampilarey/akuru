@@ -171,13 +171,22 @@ $eventTime = ($event->start_time && is_object($event->start_time)) ? $event->sta
                         <h3 class="text-lg font-semibold text-brandGray-900 mb-4">
                             {{ __('public.Registration') }}
                         </h3>
-                        <p class="text-brandGray-600 mb-4">
-                            {{ __('public.registration_required_message') }}
-                        </p>
-                        <a href="{{ route('public.contact.create', app()->getLocale()) }}" 
-                           class="btn-primary w-full text-center">
-                            {{ __('public.Register Now') }}
-                        </a>
+                        @if(session('success'))
+                            <p class="mb-3 text-sm text-green-700">{{ session('success') }}</p>
+                        @endif
+                        @if(session('error'))
+                            <p class="mb-3 text-sm text-red-700">{{ session('error') }}</p>
+                        @endif
+                        <form method="POST" action="{{ route('public.events.register', [app()->getLocale(), $event->id]) }}" class="space-y-3">
+                            @csrf
+                            <input class="form-input w-full" name="name" value="{{ old('name') }}" placeholder="{{ __('public.Name') }}" required>
+                            @error('name')<p class="text-xs text-red-600">{{ $message }}</p>@enderror
+                            <input class="form-input w-full" type="email" name="email" value="{{ old('email') }}" placeholder="{{ __('public.Email') }}" required>
+                            @error('email')<p class="text-xs text-red-600">{{ $message }}</p>@enderror
+                            @error('event_id')<p class="text-xs text-red-600">{{ $message }}</p>@enderror
+                            <input class="form-input w-full" name="phone" value="{{ old('phone') }}" placeholder="{{ __('public.Phone') }}">
+                            <button type="submit" class="btn-primary w-full text-center">{{ __('public.Register Now') }}</button>
+                        </form>
                     </div>
                     @endif
 

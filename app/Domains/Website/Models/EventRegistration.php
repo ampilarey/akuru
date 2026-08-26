@@ -9,12 +9,17 @@ class EventRegistration extends Model
 {
     protected $fillable = [
         'event_id',
+        'student_id',
+        'parent_user_id',
         'name',
         'email',
         'phone',
         'organization',
         'notes',
         'status',
+        'waitlist_position',
+        'academic_year_id',
+        'term_id',
         'registration_source',
         'additional_info',
         'dietary_requirements',
@@ -86,6 +91,8 @@ class EventRegistration extends Model
         return match ($this->status) {
             'confirmed' => 'green',
             'pending' => 'yellow',
+            'pending_parent' => 'yellow',
+            'waitlisted' => 'gray',
             'cancelled' => 'red',
             'attended' => 'blue',
             'no_show' => 'gray',

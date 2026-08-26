@@ -10,7 +10,7 @@ Re-checked 2026-08-26 against merged `main` and Round 3 (`docs/PILOT_REHEARSAL.m
 ## Top five (remaining)
 
 1. **Staging staff login** — seed passwords 302 back to login; no SSH from this environment. Blocks any judgement that `test.akuru.edu.mv` is a school.
-2. **AppShell nav IA** — **proposed, awaiting decision.** 75 wrapping `<Link href=` in `AppShell.jsx` (74 at the IA proposal, plus a Glossary catalog link for 1A §22). Proposal in `docs/APPSHELL_NAV_IA.md` (PR #98): grouped by role and frequency. **Do not implement** until Accept / Accept with edits / Reject. The wrap is still live.
+2. **AppShell nav IA** — **proposed, awaiting decision.** 77 wrapping `<Link href=` in `AppShell.jsx` (74 at the IA proposal, plus Glossary, admin Events, and portal Event signup). Proposal in `docs/APPSHELL_NAV_IA.md` (PR #98): grouped by role and frequency. **Do not implement** until Accept / Accept with edits / Reject. The wrap is still live.
 3. **Parent notified column shows — on excused rows** — column exists (#86); SMS body is not in the portal.
 4. **Shared Add-term form on every year card** — one `termForm` instance; typing on Extra fills other cards.
 5. **Exam schedule form defaults wander** — Extra / Term 2 / Arabic Beginners vs Pilot Grade 5 A (Round 2 step 5).
@@ -163,5 +163,7 @@ These were open at the status audit (`c21630a`) and in Round 1/2 ranked lists. R
 | `/academics/gradebook` 404 | **#100** redirect to `exams.gradebook.index`; Inertia static GET href scan | `HardcodedInertiaPathsTest`; browser: `/en/academics/gradebook` lands on Gradebook |
 | Grade 5 B class teacher stayed None; no update path | **#101** `AssignClassTeacherAction` + PUT on class show | `ClassTeacherAssignmentTest`; browser: Grade 5 B save teacher, reload |
 | Seeder duplicate Extra year names | **#101** `firstOrCreate` by year name in seeders | `AcademicYearSeederIdempotencyTest` |
+| 1A glossary tables missing | **#102** term bank + lesson attach + player definitions | `GlossaryTest`; browser: fatha on catalog, outline attach, player click |
+| Event/elective registration unused | **this PR** `EnforceSeatLimitAction` shared with 1B.2; waitlist / parent confirm / second round | `EventRegistrationTest`; browser walk on `/academics/events` and `/portal/events` |
 
 Round 1 vs Round 2 “still on the list after Round 2” for SMS, seeder, landings, fill-grid, generate/year/class/invoices is **obsolete** for those items. Round 3 remaining ranked list (`docs/PILOT_REHEARSAL.md`) is the current teacher-blocking set, minus uniqueness-as-500 (fixed) plus the form-visibility/seeder-dupe nuance.

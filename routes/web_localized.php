@@ -101,6 +101,7 @@ use App\Domains\Portal\Http\Controllers\PortalAppraisalController;
 use App\Domains\Portal\Http\Controllers\PortalAttendanceController;
 use App\Domains\Portal\Http\Controllers\PortalAwardController;
 use App\Domains\Portal\Http\Controllers\PortalBehaviorController;
+use App\Domains\Portal\Http\Controllers\PortalEventController;
 use App\Domains\Portal\Http\Controllers\PortalExamController;
 use App\Domains\Portal\Http\Controllers\PortalHolidayController;
 use App\Domains\Portal\Http\Controllers\PortalInvoiceController;
@@ -113,6 +114,7 @@ use App\Domains\Settings\Http\Controllers\Admin\SettingsController as AdminSetti
 use App\Domains\Settings\Http\Controllers\AnalyticsController;
 use App\Domains\Website\Http\Controllers\Admin\PublicSite\CourseController as AdminCourseController;
 use App\Domains\Website\Http\Controllers\Admin\PublicSite\PageController as AdminPageController;
+use App\Domains\Website\Http\Controllers\EventAdminController;
 use App\Support\Http\Controllers\LocaleController;
 use Illuminate\Support\Facades\Route;
 
@@ -132,6 +134,9 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
     Route::get('/portal/behavior', [PortalBehaviorController::class, 'index'])->name('portal.behavior');
     Route::get('/portal/absence-notes', [PortalAbsenceNoteController::class, 'index'])->name('portal.absence-notes');
     Route::post('/portal/absence-notes', [PortalAbsenceNoteController::class, 'store'])->name('portal.absence-notes.store');
+    Route::get('/portal/events', [PortalEventController::class, 'index'])->name('portal.events');
+    Route::post('/portal/events/{event}/register', [PortalEventController::class, 'register'])->name('portal.events.register')->whereNumber('event');
+    Route::post('/portal/events/registrations/{registration}/confirm', [PortalEventController::class, 'confirm'])->name('portal.events.confirm')->whereNumber('registration');
     Route::get('/portal/exams', [PortalExamController::class, 'index'])->name('portal.exams');
     Route::get('/portal/report-cards', [PortalReportCardController::class, 'index'])->name('portal.report-cards');
     Route::get('/portal/report-cards/{reportCard}/download', [PortalReportCardController::class, 'download'])->name('portal.report-cards.download');
@@ -379,6 +384,16 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::post('calendar', [CalendarDayController::class, 'store'])->name('academics.calendar.store');
         Route::put('calendar/{calendarDay}', [CalendarDayController::class, 'update'])->name('academics.calendar.update');
         Route::delete('calendar/{calendarDay}', [CalendarDayController::class, 'destroy'])->name('academics.calendar.destroy');
+
+        Route::get('events/export', [EventAdminController::class, 'export'])->name('academics.events.export');
+        Route::get('events', [EventAdminController::class, 'index'])->name('academics.events.index');
+        Route::post('events', [EventAdminController::class, 'store'])->name('academics.events.store');
+        Route::get('events/{event}', [EventAdminController::class, 'show'])->name('academics.events.show')->whereNumber('event');
+        Route::put('events/{event}', [EventAdminController::class, 'update'])->name('academics.events.update')->whereNumber('event');
+        Route::post('events/{event}/register', [EventAdminController::class, 'register'])->name('academics.events.register')->whereNumber('event');
+        Route::post('events/{event}/second-round', [EventAdminController::class, 'secondRound'])->name('academics.events.second-round')->whereNumber('event');
+        Route::post('events/{event}/registrations/{registration}/confirm', [EventAdminController::class, 'confirm'])->name('academics.events.confirm')->whereNumber('event')->whereNumber('registration');
+        Route::get('events/{event}/registrations/export', [EventAdminController::class, 'exportRegistrations'])->name('academics.events.registrations.export')->whereNumber('event');
 
         Route::get('timetable/export', [TimetableBuilderController::class, 'export'])->name('academics.timetable.export');
         Route::get('timetable', [TimetableBuilderController::class, 'index'])->name('academics.timetable.index');

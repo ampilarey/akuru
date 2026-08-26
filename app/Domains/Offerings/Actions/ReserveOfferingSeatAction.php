@@ -2,10 +2,6 @@
 
 namespace App\Domains\Offerings\Actions;
 
-use App\Domains\Offerings\Models\CourseOffering;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\ValidationException;
-
 class ReserveOfferingSeatAction
 {
     /**
@@ -13,26 +9,21 @@ class ReserveOfferingSeatAction
      */
     public function execute(int $offeringId): array
     {
-        return DB::transaction(function () use ($offeringId): array {
-            $offering = CourseOffering::query()->lockForUpdate()->findOrFail($offeringId);
-            if ($offering->seat_limit !== null) {
-                $taken = DB::table('course_enrollments')
-                    ->where('course_offering_id', $offering->id)
-                    ->whereIn('status', ['active', 'approved', 'pending', 'completed'])
-                    ->lockForUpdate()
-                    ->count();
-                if ($taken >= $offering->seat_limit) {
-                    throw ValidationException::withMessages([
-                        'course_offering_id' => 'This offering has no remaining seats.',
-                    ]);
-                }
-            }
+        $seat = app(EnforceSeatLimitAction::class)->execute(
+            resourceTable: 'course_offerings',
+            resourceId: $offeringId,
+            limitColumn: 'seat_limit',
+            occupancyTable: 'course_enrollments',
+            foreignKey: 'course_offering_id',
+            occupyingStatuses: ['active', 'approved', 'pending', 'completed'],
+            waitlistEnabledColumn: null,
+            fullMessage: 'This offering has no remaining seats.',
+        );
 
-            return [
-                'id' => $offering->id,
-                'course_id' => $offering->course_id,
-                'seat_limit' => $offering->seat_limit,
-            ];
-        });
+        return [
+            'id' => (int) $seat['row']->id,
+            'course_id' => (int) $seat['row']->course_id,
+            'seat_limit' => $seat['row']->seat_limit !== null ? (int) $seat['row']->seat_limit : null,
+        ];
     }
 }

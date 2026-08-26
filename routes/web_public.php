@@ -41,6 +41,7 @@ Route::get('articles/{post:slug}', [\App\Domains\Website\Http\Controllers\Public
 
 // Calendar .ics download for individual event
 Route::get('events/{event}/calendar.ics', [\App\Domains\Website\Http\Controllers\PublicSite\EventController::class, 'downloadCalendar'])->name('public.events.calendar');
+Route::post('events/{event}/register', [\App\Domains\Website\Http\Controllers\PublicSite\EventController::class, 'register'])->name('public.events.register')->middleware('throttle:20,1');
 
 Route::get('news', [\App\Domains\Website\Http\Controllers\PublicSite\PostController::class, 'newsIndex'])->name('public.news.index');
 Route::get('news/{post:slug}', [\App\Domains\Website\Http\Controllers\PublicSite\PostController::class, 'show'])->name('public.news.show');

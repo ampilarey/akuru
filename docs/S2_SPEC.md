@@ -91,4 +91,4 @@ Absent/late SMS (parent), unfilled-register reminder (teacher, end of day), leav
 - [ ] All S2 screens React; legacy timetable/announcement Blade screens removed.
 - [ ] STATUS.md updated; ADR-004 (attendance modes + notification policy).
 
-**Out of scope:** exam scheduling (S3), offering-session attendance (Phase 1B — separate table, shared Portal reporting), leave balances (S5), event seat-limited registration (reuses Offerings logic post-1B).
+**Out of scope:** exam scheduling (S3), offering-session attendance (Phase 1B — separate table, shared Portal reporting), leave balances (S5). Event/elective seat-limited registration (ROADMAP §8.2) reuses `EnforceSeatLimitAction` from 1B.2.
