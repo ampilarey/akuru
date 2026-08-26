@@ -1,4 +1,4 @@
-import { Link, usePage } from '@inertiajs/react';
+import { Link, router, usePage } from '@inertiajs/react';
 
 export default function AppShell({ title, children }) {
     const { locale, locales = ['en', 'dv', 'ar'], locale_urls = {}, rtl, auth, flash, i18n } = usePage().props;
@@ -236,7 +236,18 @@ export default function AppShell({ title, children }) {
                         <Link href="/portal/payslips" className="text-[#7C2D37] hover:underline">
                             Payslips
                         </Link>
-                        <span className="text-gray-500">{user?.name}</span>
+                        {user && (
+                            <span className="flex items-center gap-2">
+                                <span className="text-gray-500">{user.name}</span>
+                                <button
+                                    type="button"
+                                    className="text-[#7C2D37] hover:underline"
+                                    onClick={() => router.post('/logout')}
+                                >
+                                    {t.logout || 'Log out'}
+                                </button>
+                            </span>
+                        )}
                         <span className="flex items-center gap-1 rounded bg-[#F3EBE0] px-2 py-0.5 text-xs uppercase">
                             {locales.map((code) => (
                                 <a
