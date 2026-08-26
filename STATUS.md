@@ -13,7 +13,7 @@ What **runs for a person** is still narrower than the code. Staging `test.akuru.
 
 Local `migrate:fresh --seed` now includes `PilotRehearsalSeeder` (#87). Round 3 Chrome (stacked #86–#92, now on `main`) walked: teacher **Today** landing, fill grid **number + DOB**, **Parent Dashboard** + **Parent notified** column, absence-note approve, missing-weights **banner** + honest **HTML** (not PDF) labels, invoice **sent** rows on the Pilot year. SMS binds `LogSmsSender` unless `APP_ENV=production` **and** `SMS_LIVE` is an explicit true (#86).
 
-Still blocking a real teacher: staging access, AppShell nav IA, seeder still inserts duplicate Extra year names, `/academics/gradebook` 404 vs `/exams/gradebook`, Grade 5 B class teacher **None**. People → Students can create a child (#95). Weights can persist a year scheme (#96). Documents are HTML by decision (ADR-012 / #97). Most catalog/HR/course-engine slices remain **UNVERIFIED**.
+Still blocking a real teacher: staging access, AppShell nav IA (**proposed**, `docs/APPSHELL_NAV_IA.md`, awaiting owner decision — wrap still live), seeder still inserts duplicate Extra year names, `/academics/gradebook` 404 vs `/exams/gradebook`, Grade 5 B class teacher **None**. People → Students can create a child (#95). Weights can persist a year scheme (#96). Documents are HTML by decision (ADR-012 / #97). Most catalog/HR/course-engine slices remain **UNVERIFIED**.
 
 Hifz untouched. Deploy 3 not executed. Track B not started.
 
@@ -77,7 +77,7 @@ Legend — **CODE:** implementation in repo (models/migrations/actions/routes/pa
 
 ### Agent-doable (remaining after #86–#93)
 
-1. **AppShell nav IA** — 50+ wrapping links, duplicate labels. Logout exists; finding surfaces still fails if you hunt the overflow. Round 3 ranked #2. Explicitly not in #86–#92.
+1. **AppShell nav IA** — 50+ wrapping links, duplicate labels. **Proposed, awaiting decision** in `docs/APPSHELL_NAV_IA.md` (PR #98). Do not implement until Accept / Accept with edits / Reject. The wrap is still live.
 2. **Wrong-URL 404** — `/academics/gradebook` vs `/exams/gradebook` (Round 3 ranked #6).
 3. **Seeder still inserts duplicate Extra year names** — UI uniqueness is validated (#91); seed bypasses it.
 4. **Class teacher on Grade 5 B is None** — field exists; this seed/UI walk did not stick (Round 3 ranked #7).
@@ -103,6 +103,7 @@ Legend — **CODE:** implementation in repo (models/migrations/actions/routes/pa
 | **Branch protection** | Apply on GitHub or accept that every PR must wait for CI and not self-merge (S2 kickoff terms). |
 | **SMS_LIVE / production flag** | When (if) production should send Dhiraagu. Local/staging already bind `LogSmsSender`. |
 | **HTML vs PDF documents** | **Decided (#97).** ADR-012: HTML is the supported production output. PDF is a future `DocumentRendererInterface` binding swap, not a domain `if`. |
+| **AppShell nav IA** | `docs/APPSHELL_NAV_IA.md` (PR #98) proposes a role-first, frequency-second map. Reply Accept / Accept with edits / Reject. **Do not implement** until that reply. The wrap is still live. |
 
 ## 5. Overstated “done” (DoD now includes a browser walk)
 
