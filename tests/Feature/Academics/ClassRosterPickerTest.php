@@ -38,7 +38,10 @@ it('searches roster candidates by identity fields and does not match primary key
             ->where('candidates.0.national_id', 'A999001')
             ->has('candidates.0.student_number')
             ->has('candidates.0.current_class')
-            ->has('candidates.0.indistinguishable')
+            ->where('candidates.0.indistinguishable', true)
+            ->where('candidates.1.indistinguishable', true)
+            ->where('candidates.0.student_number', 'PIL-01')
+            ->where('candidates.1.student_number', null)
         );
 
     $this->withoutLocalizationMiddleware()
@@ -115,6 +118,44 @@ it('flags indistinguishable candidates and still requires an explicit student id
 
     expect(ClassStudent::query()->where('class_id', $class->id)->where('student_id', $second->id)->exists())->toBeTrue()
         ->and(ClassStudent::query()->where('class_id', $class->id)->where('student_id', $first->id)->exists())->toBeFalse();
+});
+
+it('flags indistinguishable candidates when student numbers differ', function () {
+    $admin = actingPeopleAdmin();
+    $year = makeYear(['name' => '2026-2027', 'is_current' => true, 'status' => 'active']);
+    $class = makeClass($year, 'Grade 5', 'A');
+
+    $numbered = makeStudent([
+        'first_name' => 'Fatima',
+        'last_name' => 'Yoosuf',
+        'date_of_birth' => '2010-03-12',
+        'national_id' => 'A333333',
+        'student_id' => 'PIL-01',
+    ]);
+    $otherNumber = makeStudent([
+        'first_name' => 'Fatima',
+        'last_name' => 'Yoosuf',
+        'date_of_birth' => '2010-03-12',
+        'national_id' => 'A333333',
+        'student_id' => 'PIL-99',
+    ]);
+
+    $this->withoutLocalizationMiddleware()
+        ->actingAs($admin)
+        ->get(route('academics.classes.show', ['classRoom' => $class, 'q' => 'Fatima Yoosuf']))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->has('candidates', 2)
+            ->where('candidates.0.indistinguishable', true)
+            ->where('candidates.1.indistinguishable', true)
+            ->where('candidates.0.id', $numbered->id)
+            ->where('candidates.1.id', $otherNumber->id)
+        );
+
+    $this->withoutLocalizationMiddleware()
+        ->actingAs($admin)
+        ->post(route('academics.classes.assign', $class), [])
+        ->assertSessionHasErrors('student_id');
 });
 
 it('flags indistinguishable candidates when only class differs', function () {

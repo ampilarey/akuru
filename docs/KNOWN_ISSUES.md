@@ -11,9 +11,9 @@ Re-checked 2026-08-26 against merged `main` and Round 3 (`docs/PILOT_REHEARSAL.m
 
 1. **Staging staff login** — seed passwords 302 back to login; no SSH from this environment. Blocks any judgement that `test.akuru.edu.mv` is a school.
 2. **AppShell nav IA** — **proposed, awaiting decision.** 74 wrapping `<Link href=` in `AppShell.jsx`. Proposal in `docs/APPSHELL_NAV_IA.md` (PR #98): grouped by role and frequency. **Do not implement** until Accept / Accept with edits / Reject. The wrap is still live.
-3. **Roster picker can still show two rows for the same identity** — numbers differ (PIL-01 vs blank), so they are not the class-only-twins case (#90).
-4. **`/academics/gradebook` is 404** — real path `/en/exams/gradebook`.
-5. **Grade 5 B class teacher is still None** / seeder still inserts duplicate Extra year names (UI uniqueness is #91).
+3. **`/academics/gradebook` is 404** — real path `/en/exams/gradebook`.
+4. **Grade 5 B class teacher is still None** / seeder still inserts duplicate Extra year names (UI uniqueness is #91).
+5. **Parent notified column shows — on excused rows** — column exists (#86); SMS body is not in the portal.
 
 ---
 
@@ -41,9 +41,7 @@ Re-checked 2026-08-26 against merged `main` and Round 3 (`docs/PILOT_REHEARSAL.m
 
 ### 4. Roster picker can still show two rows for the same identity with different numbers
 
-**Severity:** wrong data. `identity_key` **omits class** (#90) so class-only twins flag. Round 3 Fatima: two rows, same NID+DOB, one **PIL-01** and one **no number** — numbers differ, so they are not the class-only-twins case.
-
-**Evidence:** Round 3 step 1 picker screenshot; `SearchRosterCandidatesAction`.
+**Fixed** — `identity_key` is name + DOB + national ID. Student number (including blank) and class do not distinguish. Assign still requires an explicit `student_id`. See **Fixed on main**.
 
 ### 5. Unification matcher / staging collisions (historical, still a staging gate)
 
@@ -161,6 +159,7 @@ These were open at the status audit (`c21630a`) and in Round 1/2 ranked lists. R
 | Teacher/parent Blade landing hid the loop (parent **Admin Dashboard**) | **#88** teacher → Today; parent **Parent Dashboard** | `RoleLandingTest`; Round 3 steps 2–3 |
 | Term grades silent blank / UI called HTML a PDF | **#89** missing-weights banner; Download HTML | `TermGradesTest`; Round 3 step 5 |
 | Fill grid names only (wrong-child) | **#90** Number + DOB; picker `identity_key` omits class | `ClassRegisterTest`, `ClassRosterPickerTest`; Round 3 step 2 |
+| Roster picker two rows when numbers differ (PIL-01 vs blank) | **this PR** `identity_key` omits student number; blank is not distinguishing; admin must choose explicitly | `ClassRosterPickerTest`; browser: Grade 5 A search Fatima, amber banner |
 | Generate “Created 0”; duplicate year/class 500; invoice drafts-only + hardcoded dates | **#91** flash copy; unique year/class + form `errors.name`; list all statuses; term period action | `YearClassUniquenessTest`, `InvoiceGenerationTest`; Round 3 steps 1 and 6 |
 | DoD = tests only | **#92** “walked in a browser” in `CLAUDE.md` / `.cursorrules` | docs |
 
