@@ -2,9 +2,12 @@ import { useForm, router } from '@inertiajs/react';
 import { useState } from 'react';
 import AppShell from '../../../Layouts/AppShell';
 
-export default function Show({ classRoom, roster, q = '', candidates = [] }) {
+export default function Show({ classRoom, roster, q = '', candidates = [], teachers = [] }) {
     const searchForm = useForm({ q });
     const assignForm = useForm({ student_id: '' });
+    const teacherForm = useForm({
+        class_teacher_id: classRoom.class_teacher_id || '',
+    });
     const [selectedId, setSelectedId] = useState('');
 
     const selected = candidates.find((row) => String(row.id) === String(selectedId));
@@ -12,7 +15,33 @@ export default function Show({ classRoom, roster, q = '', candidates = [] }) {
 
     return (
         <AppShell title={`${classRoom.name} ${classRoom.section || ''}`}>
-            <p className="mb-3 text-sm text-gray-700">Class teacher: {classRoom.class_teacher_name || 'None'}</p>
+            <form
+                onSubmit={(e) => {
+                    e.preventDefault();
+                    teacherForm.put(`/academics/classes/${classRoom.id}`, { preserveScroll: true });
+                }}
+                className="mb-4 flex flex-wrap items-end gap-3 rounded-lg border bg-white p-4"
+            >
+                <label className="text-sm text-gray-700">
+                    Class teacher
+                    <select
+                        className="form-input mt-1 block min-w-56"
+                        value={teacherForm.data.class_teacher_id}
+                        onChange={(e) => teacherForm.setData('class_teacher_id', e.target.value)}
+                    >
+                        <option value="">None</option>
+                        {teachers.map((teacher) => (
+                            <option key={teacher.id} value={teacher.id}>{teacher.name}</option>
+                        ))}
+                    </select>
+                </label>
+                <button type="submit" className="btn-primary" disabled={teacherForm.processing}>
+                    Save class teacher
+                </button>
+                {teacherForm.errors.class_teacher_id && (
+                    <p className="text-sm text-red-600">{teacherForm.errors.class_teacher_id}</p>
+                )}
+            </form>
             <form
                 onSubmit={(e) => {
                     e.preventDefault();

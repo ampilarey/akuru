@@ -57,11 +57,18 @@ class ClassSeeder extends Seeder
         ];
 
         foreach ($classes as $class) {
-            \App\Domains\Academics\Models\ClassRoom::create(array_merge($class, [
-                'school_id' => $school->id,
-                'description' => 'Islamic education class',
-                'is_active' => true,
-            ]));
+            \App\Domains\Academics\Models\ClassRoom::query()->firstOrCreate(
+                [
+                    'school_id' => $school->id,
+                    'name' => $class['name'],
+                    'section' => $class['section'],
+                ],
+                array_merge($class, [
+                    'school_id' => $school->id,
+                    'description' => 'Islamic education class',
+                    'is_active' => true,
+                ]),
+            );
         }
     }
 }
