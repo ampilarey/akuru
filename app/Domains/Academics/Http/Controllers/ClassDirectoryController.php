@@ -7,6 +7,7 @@ use App\Domains\Academics\Actions\ListClassRosterAction;
 use App\Domains\Academics\Actions\ResolveDefaultSchoolIdAction;
 use App\Domains\Academics\Models\AcademicYear;
 use App\Domains\Academics\Models\ClassRoom;
+use App\Domains\People\Actions\SearchRosterCandidatesAction;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -62,8 +63,10 @@ class ClassDirectoryController extends Controller
             ->with('success', 'Class created.');
     }
 
-    public function show(ClassRoom $classRoom): Response
+    public function show(Request $request, ClassRoom $classRoom): Response
     {
+        $query = trim($request->string('q')->toString());
+
         return Inertia::render('Academics/Classes/Show', [
             'classRoom' => [
                 'id' => $classRoom->id,
@@ -73,6 +76,8 @@ class ClassDirectoryController extends Controller
                 'academic_year_id' => $classRoom->academic_year_id,
             ],
             'roster' => app(ListClassRosterAction::class)->execute($classRoom->id),
+            'q' => $query,
+            'candidates' => app(SearchRosterCandidatesAction::class)->execute($query),
         ]);
     }
 
