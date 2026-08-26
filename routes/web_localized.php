@@ -174,6 +174,7 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
     Route::post('exams/competencies/assess', [CompetencyController::class, 'assess'])->name('exams.competencies.assess');
 
     Route::get('academics/registers/today', [TeacherRegisterController::class, 'today'])->name('academics.registers.today');
+    Route::post('academics/registers/today/generate', [TeacherRegisterController::class, 'generateToday'])->name('academics.registers.today.generate');
     Route::get('academics/registers/export', [RegisterReportController::class, 'export'])->name('academics.registers.export');
     Route::post('academics/registers/generate', [RegisterReportController::class, 'generate'])->name('academics.registers.generate');
     Route::get('academics/registers', [RegisterReportController::class, 'index'])->name('academics.registers.index');
