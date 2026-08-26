@@ -69,12 +69,7 @@ class SearchRosterCandidatesAction
                 'date_of_birth' => $dob,
                 'national_id' => $student->national_id,
                 'current_class' => $class === '' ? null : $class,
-                'identity_key' => mb_strtolower(implode('|', [
-                    $name,
-                    (string) ($student->student_id ?? ''),
-                    (string) $dob,
-                    (string) ($student->national_id ?? ''),
-                ])),
+                'identity_key' => $this->identityKey($name, $dob, $student->national_id),
             ];
         });
 
@@ -89,5 +84,18 @@ class SearchRosterCandidatesAction
             })
             ->values()
             ->all();
+    }
+
+    /**
+     * Name + DOB + national ID. Student number (including blank) and class
+     * do not distinguish two rows as far as an admin is concerned.
+     */
+    private function identityKey(string $name, ?string $dob, mixed $nationalId): string
+    {
+        return mb_strtolower(implode('|', [
+            trim($name),
+            (string) $dob,
+            trim((string) $nationalId),
+        ]));
     }
 }

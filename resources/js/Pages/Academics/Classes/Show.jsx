@@ -37,8 +37,9 @@ export default function Show({ classRoom, roster, q = '', candidates = [] }) {
 
             {hasAmbiguous && (
                 <p className="mb-4 rounded border border-amber-200 bg-amber-50 px-4 py-2 text-sm text-amber-900">
-                    Two or more records look the same on name, number, date of birth, and national ID.
-                    Class does not distinguish them. Choose one explicitly — the roster will not guess.
+                    Two or more records look the same on name, date of birth, and national ID.
+                    Class and student number (including a blank number) do not distinguish them.
+                    Choose one explicitly — the roster will not guess.
                 </p>
             )}
 
