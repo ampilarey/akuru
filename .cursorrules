@@ -38,4 +38,10 @@ This file governs every AI-assisted coding session in this repo. It encodes the 
 
 ## Definition of done (every slice)
 
-code + tests green + arch tests green + STATUS.md updated + (if a decision was made) ADR written + no out-of-scope files touched.
+code + tests green + arch tests green + **walked in a browser** (a user
+can complete the task in a browser, not only when tests pass) +
+STATUS.md updated + (if a decision was made) ADR written + no
+out-of-scope files touched.
+
+This is the lesson of pilot rehearsal rounds 1 and 2: CI-green slices
+still left empty grids, live SMS, and Blade landings that hid the work.
