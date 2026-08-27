@@ -41,6 +41,8 @@ class AdminRouteNamesTest extends TestCase
             'admin.courses.destroy',
             'admin.leads.index',
             'admin.leads.export',
+            'admin.funnel.index',
+            'admin.funnel.export',
             'analytics.index',
             'analytics.reports',
             'analytics.reports.generate',

@@ -20,18 +20,19 @@ Merged #114.
 
 Merged #115.
 
-### W1.5 — SEO + sharing (this slice)
+### W1.5 — SEO + sharing
 
-- schema.org JSON-LD: `Course` + `CourseInstance` (dates + displayed price, including early-bird) on course pages; `Organization` sitewide; `FAQPage` matching the FAQs that render.
-- OG/Twitter per course: title, cover, price (`product:price:*`). Price omitted when `fee` is null.
-- Localized `hreflang` triplets (en/dv/ar + x-default) on the public layout.
-- XML sitemap includes courses, articles, news, events, with `xhtml:link` alternates. Course list via Courses `ListPublicCourseSitemapEntriesAction` (Website does not import Courses Models). News loc uses slug (the public route).
+Merged #116.
 
-Engine subject-ignorant. Hifz untouched. New Website files do not import Courses Models. Arch baselines shrunk (`SitemapController` no longer imports Course).
+### W1.6 — Funnel measurement (this slice)
 
-### W1.6 (next)
+- `funnel_events` in Website (not Settings; ADR-002 unchanged). No `academic_year_id` (website conversion, like `leads`).
+- Events: `course_view` → `register_click` → `registration_started` → `payment_completed`, plus `whatsapp_click` and `syllabus_download`.
+- Client beacon may only post click names. `payment_completed` only on BML webhook / `finalizeByReference` success.
+- Admin Blade report + CSV at `/admin/public-site/funnel`. Decision rule recorded in ADR-022: iterate W1 content from this funnel.
+- Admissions and Finance call `RecordFunnelEventAction` with **strings** (Enums are not a cross-domain layer).
 
-Funnel events.
+Engine subject-ignorant. Hifz untouched. No AppShell nav link. Arch baselines must not grow.
 
 ## E2 — W2 daily content (next phase)
 
