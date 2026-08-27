@@ -328,6 +328,7 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::get('/', [AdminEnrollmentController::class, 'index'])->name('admin.enrollments.index');
         Route::get('/export', [AdminEnrollmentController::class, 'export'])->name('admin.enrollments.export');
         Route::get('/payments', [AdminEnrollmentController::class, 'payments'])->name('admin.enrollments.payments');
+        Route::get('/payments/export', [AdminEnrollmentController::class, 'exportPayments'])->name('admin.enrollments.payments.export');
         Route::get('/{enrollment}', [AdminEnrollmentController::class, 'show'])->name('admin.enrollments.show');
         Route::patch('/{enrollment}/activate', [AdminEnrollmentController::class, 'activate'])->name('admin.enrollments.activate');
         Route::patch('/{enrollment}/reject', [AdminEnrollmentController::class, 'reject'])->name('admin.enrollments.reject');
@@ -336,6 +337,11 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
     // Admin payment refunds (P4.3 — money-sensitive, tighter than the payments listing)
     Route::prefix('admin/payments')->middleware(['role:super_admin|admin', 'can:payments.refund'])->group(function () {
         Route::post('/{payment}/refund', [\App\Domains\Finance\Http\Controllers\AdminPaymentRefundController::class, 'store'])->name('admin.payments.refund');
+    });
+
+    // Manual payment recording (P4.4 — money-sensitive, tighter than enrollment admin)
+    Route::prefix('admin/enrollments')->middleware(['role:super_admin|admin', 'can:payments.record'])->group(function () {
+        Route::post('/{enrollment}/record-payment', [AdminEnrollmentController::class, 'recordManualPayment'])->name('admin.enrollments.record-payment');
     });
 
     // Instructor management

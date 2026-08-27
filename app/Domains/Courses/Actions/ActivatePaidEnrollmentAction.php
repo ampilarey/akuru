@@ -13,10 +13,13 @@ use App\Domains\Courses\Models\CourseEnrollment;
  */
 class ActivatePaidEnrollmentAction
 {
-    public function execute(int $enrollmentId): CourseEnrollment
+    public function execute(int $enrollmentId, ?int $paymentId = null): CourseEnrollment
     {
         $enrollment = CourseEnrollment::query()->findOrFail($enrollmentId);
         $enrollment->payment_status = 'confirmed';
+        if ($paymentId !== null && $enrollment->payment_id === null) {
+            $enrollment->payment_id = $paymentId;
+        }
 
         $requiresApproval = (bool) (Course::query()
             ->whereKey($enrollment->course_id)

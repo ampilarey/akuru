@@ -8,7 +8,7 @@ use App\Domains\Offerings\Models\CourseOffering;
 class DefaultSelfLearningOfferingAction
 {
     /**
-     * @return array{id: int, course_id: int}|null
+     * @return array{id: int, course_id: int, price_override: float|null}|null
      */
     public function execute(int $courseId): ?array
     {
@@ -25,6 +25,8 @@ class DefaultSelfLearningOfferingAction
         return [
             'id' => $offering->id,
             'course_id' => $offering->course_id,
+            // P4.4 (SPEC §49): the offering may override the course price.
+            'price_override' => $offering->price_override !== null ? (float) $offering->price_override : null,
         ];
     }
 }

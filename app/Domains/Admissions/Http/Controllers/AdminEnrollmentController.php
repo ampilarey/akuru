@@ -208,6 +208,69 @@ class AdminEnrollmentController extends Controller
 
     public function payments(Request $request)
     {
+        $payments = $this->paymentsQuery($request)->paginate(20)->withQueryString();
+
+        return view('admin.enrollments.payments', compact('payments'));
+    }
+
+    /** P4.4 (SPEC §49 payment reports): CSV of the filtered payments listing. */
+    public function exportPayments(Request $request)
+    {
+        $payments = $this->paymentsQuery($request)->get();
+
+        return response()->streamDownload(function () use ($payments): void {
+            $out = fopen('php://output', 'w');
+            fputcsv($out, ['id', 'reference', 'payer', 'student', 'amount', 'currency', 'status', 'provider', 'refunded_total', 'created_at']);
+            foreach ($payments as $payment) {
+                fputcsv($out, [
+                    $payment->id,
+                    $payment->local_id ?? $payment->merchant_reference,
+                    $payment->user?->name ?? '',
+                    $payment->student?->full_name ?? '',
+                    number_format((float) $payment->amount, 2, '.', ''),
+                    $payment->currency,
+                    $payment->status,
+                    $payment->provider,
+                    number_format((float) $payment->refunds->sum('amount'), 2, '.', ''),
+                    $payment->created_at?->toDateTimeString(),
+                ]);
+            }
+            fclose($out);
+        }, 'payments.csv', ['Content-Type' => 'text/csv; charset=UTF-8']);
+    }
+
+    /**
+     * P4.4 (SPEC §49 "Admin can manually enroll or record payments"): record
+     * money received outside the gateway against this enrollment. The
+     * confirmed manual payment fires PaymentConfirmed — activation runs
+     * through the same single listener path as a webhook.
+     */
+    public function recordManualPayment(Request $request, CourseEnrollment $enrollment)
+    {
+        $data = $request->validate([
+            'amount' => ['required', 'numeric', 'min:0.01'],
+            'note' => ['nullable', 'string', 'max:500'],
+        ]);
+
+        $payerUserId = $enrollment->student?->user_id
+            ?? $enrollment->legacyStudent?->user_id
+            ?? $enrollment->created_by_user_id
+            ?? $request->user()->id;
+
+        app(\App\Domains\Finance\Actions\RecordManualPaymentAction::class)->execute(
+            'course_enrollment',
+            $enrollment->id,
+            (int) $payerUserId,
+            (float) $data['amount'],
+            $data['note'] ?? null,
+            $request->user()->id,
+        );
+
+        return back()->with('success', 'Manual payment recorded — enrollment updated.');
+    }
+
+    private function paymentsQuery(Request $request): \Illuminate\Database\Eloquent\Builder
+    {
         $query = Payment::with(['user', 'student', 'items.course', 'refunds'])
             ->latest();
 
@@ -230,8 +293,6 @@ class AdminEnrollmentController extends Controller
             });
         }
 
-        $payments = $query->paginate(20)->withQueryString();
-
-        return view('admin.enrollments.payments', compact('payments'));
+        return $query;
     }
 }

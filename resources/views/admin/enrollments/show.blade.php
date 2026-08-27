@@ -163,6 +163,26 @@
                 </form>
             @endif
         </div>
+
+        {{-- P4.4: record money received outside the gateway (cash / transfer). --}}
+        @if(auth()->user()?->can('payments.record') && in_array($enrollment->payment_status, ['pending', 'required'], true))
+            <div class="mt-6 border-t pt-4">
+                <h3 class="text-sm font-semibold text-gray-800 mb-2">Record manual payment</h3>
+                <form method="POST" action="{{ route('admin.enrollments.record-payment', $enrollment) }}"
+                      class="flex flex-wrap items-center gap-2">
+                    @csrf
+                    <input type="number" name="amount" step="0.01" min="0.01"
+                           value="{{ $enrollment->course?->registration_fee_amount ?: ($enrollment->course?->fee ?: '') }}"
+                           class="border rounded px-3 py-2 text-sm w-32" placeholder="Amount (MVR)">
+                    <input type="text" name="note" maxlength="500" placeholder="Note (e.g. cash at office)"
+                           class="border rounded px-3 py-2 text-sm w-64">
+                    <button type="submit" class="btn-primary text-sm py-2 px-4"
+                            onclick="return confirm('Record this payment as received? The enrollment activates through the payment pipeline.')">
+                        Record payment
+                    </button>
+                </form>
+            </div>
+        @endif
     </div>
 
 </div>
