@@ -143,6 +143,23 @@ class AdminLibraryController extends Controller
         }, 'writer-earnings.csv', ['Content-Type' => 'text/csv; charset=UTF-8']);
     }
 
+    /** L7 (§12.2): hand a submitted research item to a peer reviewer. */
+    public function assignReviewer(Request $request, int $item): RedirectResponse
+    {
+        abort_unless($request->user()?->can('library.manage'), 403);
+        $data = $request->validate([
+            'reviewer_email' => 'required|email',
+        ]);
+
+        app(\App\Domains\Library\Actions\AssignResearchReviewerAction::class)->execute(
+            $item,
+            $data['reviewer_email'],
+            (int) $request->user()->id,
+        );
+
+        return back()->with('success', 'Reviewer assigned.');
+    }
+
     /** L5 (§43.2): decide a pending writer application. */
     public function decideApplication(Request $request, int $application): RedirectResponse
     {
@@ -214,6 +231,7 @@ class AdminLibraryController extends Controller
             'library_category_id' => 'nullable|integer',
             'cover_image' => 'nullable|string|max:2048',
             'body' => 'nullable|string',
+            'citations' => 'nullable|string|max:20000',
             'page_count' => 'nullable|integer|min:1',
             'reading_time' => 'nullable|integer|min:1',
             'tags' => 'nullable|array',

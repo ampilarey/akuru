@@ -38,6 +38,13 @@
             <p class="text-lg text-gray-700 mb-6">{{ $item['abstract'] }}</p>
         @endif
 
+        @if(!empty($item['citations']))
+            <div class="mb-6 rounded border bg-gray-50 p-4">
+                <h2 class="mb-2 text-sm font-semibold text-gray-800">{{ __('public.Citations') }}</h2>
+                <pre class="whitespace-pre-wrap font-sans text-sm text-gray-600">{{ $item['citations'] }}</pre>
+            </div>
+        @endif
+
         @if($item['can_read'] && ($item['total_pages'] ?? 0) > 1)
             <div class="rounded-lg border bg-brandBeige-50 p-6 text-center">
                 <a href="{{ route('public.library.read', ['slug' => $item['slug'], 'page' => $item['continue_page'] ?? 1]) }}" class="btn-primary">

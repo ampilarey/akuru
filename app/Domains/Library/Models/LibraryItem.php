@@ -30,6 +30,7 @@ class LibraryItem extends Model
         'library_category_id',
         'cover_image',
         'body',
+        'citations',
         'pdf_media_file_id',
         'status',
         'published_at',

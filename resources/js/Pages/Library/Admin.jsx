@@ -121,10 +121,14 @@ function PayoutsQueue({ payouts }) {
 
 function SubmissionsQueue({ submissions }) {
     const [comments, setComments] = useState({});
+    const [reviewerEmails, setReviewerEmails] = useState({});
     if (submissions.length === 0) return null;
 
     const review = (id, decision) =>
         router.post(`/admin/library/items/${id}/review`, { decision, comment: comments[id] || undefined }, { preserveScroll: true });
+
+    const assign = (id) =>
+        router.post(`/admin/library/items/${id}/assign-reviewer`, { reviewer_email: reviewerEmails[id] || '' }, { preserveScroll: true });
 
     return (
         <div className="mb-6 overflow-x-auto rounded-lg border bg-white">
@@ -149,6 +153,22 @@ function SubmissionsQueue({ submissions }) {
                                 {sub.history.map((entry, index) => (
                                     <p key={index}>{entry.decision}{entry.comment ? ` — ${entry.comment}` : ''}</p>
                                 ))}
+                                {sub.content_type === 'research' && (
+                                    <div className="mt-2 border-t pt-2">
+                                        {(sub.reviews || []).map((rev, index) => (
+                                            <p key={index}>peer review: {rev.status}{rev.recommendation ? ` — ${rev.recommendation}` : ''}</p>
+                                        ))}
+                                        <span className="mt-1 flex gap-1">
+                                            <input
+                                                className="form-input w-44"
+                                                placeholder="Reviewer email"
+                                                value={reviewerEmails[sub.id] || ''}
+                                                onChange={(e) => setReviewerEmails({ ...reviewerEmails, [sub.id]: e.target.value })}
+                                            />
+                                            <button type="button" className="btn-secondary" onClick={() => assign(sub.id)}>Assign</button>
+                                        </span>
+                                    </div>
+                                )}
                             </td>
                             <td className="px-3 py-2">
                                 <input

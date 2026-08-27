@@ -5,6 +5,7 @@ namespace App\Domains\Library\Actions;
 use App\Domains\Library\Enums\LibraryItemStatus;
 use App\Domains\Library\Models\LibraryItem;
 use App\Domains\Library\Models\LibraryItemReview;
+use App\Domains\Library\Models\LibraryReviewAssignment;
 use App\Domains\Library\Models\WriterApplication;
 use App\Domains\Library\Models\WriterProfile;
 
@@ -47,6 +48,11 @@ class ListWriterQueuesAction
             ->orderBy('id')
             ->get()
             ->groupBy('library_item_id');
+        // L7: peer-review state per research item.
+        $assignments = LibraryReviewAssignment::query()
+            ->whereIn('library_item_id', $submitted->pluck('id'))
+            ->get()
+            ->groupBy('library_item_id');
 
         $submissions = $submitted->map(fn (LibraryItem $item) => [
             'id' => $item->id,
@@ -57,7 +63,11 @@ class ListWriterQueuesAction
             'price' => $item->price !== null ? (float) $item->price : null,
             'writer' => $writers->get($item->writer_id)?->display_name ?? '—',
             'submitted_at' => $item->submitted_at?->toDateTimeString(),
-            'history' => ($history[$item->id] ?? collect())->map(fn (LibraryItemReview $review) => [
+            'reviews' => ($assignments->get($item->id) ?? collect())->map(fn (LibraryReviewAssignment $assignment) => [
+                'status' => $assignment->status,
+                'recommendation' => $assignment->recommendation,
+            ])->values()->all(),
+            'history' => ($history->get($item->id) ?? collect())->map(fn (LibraryItemReview $review) => [
                 'decision' => $review->decision,
                 'comment' => $review->comment,
                 'at' => $review->created_at?->toDateTimeString(),

@@ -50,6 +50,7 @@ jobs:
         run: ./vendor/bin/pint --test
 
       - name: Pest
+        timeout-minutes: 20
         run: ./vendor/bin/pest
 
       - name: PHPStan (informational)

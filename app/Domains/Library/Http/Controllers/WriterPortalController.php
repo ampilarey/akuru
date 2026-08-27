@@ -118,6 +118,7 @@ class WriterPortalController extends Controller
             'language' => 'nullable|string|max:5',
             'library_category_id' => 'nullable|integer',
             'body' => 'nullable|string',
+            'citations' => 'nullable|string|max:20000',
             'tags' => 'nullable|array',
             'tags.*' => 'string|max:60',
             'pdf' => 'nullable|file|mimes:pdf|max:51200',

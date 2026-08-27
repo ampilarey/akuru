@@ -46,6 +46,7 @@ function ItemEditor({ item, options, onDone }) {
         price: item?.price ?? '',
         abstract: item?.abstract || '',
         body: item?.body || '',
+        citations: item?.citations || '',
         pdf: null,
     });
 
@@ -73,6 +74,9 @@ function ItemEditor({ item, options, onDone }) {
             <input className="form-input" placeholder="Suggested price (MVR)" value={form.data.price} onChange={(e) => form.setData('price', e.target.value)} />
             <textarea className="form-input md:col-span-3" rows="2" placeholder="Abstract" value={form.data.abstract} onChange={(e) => form.setData('abstract', e.target.value)} />
             <textarea className="form-input md:col-span-4" rows="6" placeholder="Body (HTML — use <!-- pagebreak --> between pages)" value={form.data.body} onChange={(e) => form.setData('body', e.target.value)} />
+            {form.data.content_type === 'research' && (
+                <textarea className="form-input md:col-span-4" rows="3" placeholder="Citations (one per line)" value={form.data.citations} onChange={(e) => form.setData('citations', e.target.value)} />
+            )}
             <label className="text-sm md:col-span-3">
                 Original PDF (stored privately)
                 <input className="form-input" type="file" accept="application/pdf" onChange={(e) => form.setData('pdf', e.target.files[0] ?? null)} />

@@ -116,6 +116,7 @@ return [
     'library_item_page' => \App\Domains\Library\Models\LibraryItemPage::class,
     'library_item_review' => \App\Domains\Library\Models\LibraryItemReview::class,
     'library_purchase' => \App\Domains\Library\Models\LibraryPurchase::class,
+    'library_review_assignment' => \App\Domains\Library\Models\LibraryReviewAssignment::class,
     'library_reading_progress' => \App\Domains\Library\Models\LibraryReadingProgress::class,
     'library_tag' => \App\Domains\Library\Models\LibraryTag::class,
     'lesson' => \App\Domains\Courses\Models\Lesson::class,
