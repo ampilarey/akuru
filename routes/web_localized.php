@@ -121,6 +121,7 @@ use App\Domains\Settings\Http\Controllers\Admin\SettingsController as AdminSetti
 use App\Domains\Settings\Http\Controllers\AnalyticsController;
 use App\Domains\Website\Http\Controllers\Admin\PublicSite\CourseController as AdminCourseController;
 use App\Domains\Website\Http\Controllers\Admin\PublicSite\DailyContentController as AdminDailyContentController;
+use App\Domains\Website\Http\Controllers\Admin\PublicSite\DailySubscriptionController as AdminDailySubscriptionController;
 use App\Domains\Website\Http\Controllers\Admin\PublicSite\FunnelController as AdminFunnelController;
 use App\Domains\Website\Http\Controllers\Admin\PublicSite\LeadController as AdminLeadController;
 use App\Domains\Website\Http\Controllers\Admin\PublicSite\PageController as AdminPageController;
@@ -347,6 +348,8 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::get('leads', [AdminLeadController::class, 'index'])->name('admin.leads.index');
         Route::get('funnel/export', [AdminFunnelController::class, 'export'])->name('admin.funnel.export');
         Route::get('funnel', [AdminFunnelController::class, 'index'])->name('admin.funnel.index');
+        Route::get('daily-subscriptions/export', [AdminDailySubscriptionController::class, 'export'])->name('admin.daily-subscriptions.export');
+        Route::get('daily-subscriptions', [AdminDailySubscriptionController::class, 'index'])->name('admin.daily-subscriptions.index');
         Route::get('daily-content/export', [AdminDailyContentController::class, 'export'])->name('admin.daily-content.export');
         Route::get('daily-content/queue', [AdminDailyContentController::class, 'queue'])->name('admin.daily-content.queue');
         Route::get('daily-content/ayah-preview', [AdminDailyContentController::class, 'ayahPreview'])->name('admin.daily-content.ayah-preview');

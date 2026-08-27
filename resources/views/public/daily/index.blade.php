@@ -26,6 +26,7 @@
         <a href="{{ route('public.daily.index', ['type' => $other]) }}"
            style="margin-right:.75rem;color:{{ $other === $type ? '#3D1219' : '#7C2D37' }};font-weight:{{ $other === $type ? '800' : '600' }};text-decoration:none">{{ ucfirst($other) }}</a>
       @endforeach
+      <a href="{{ route('public.daily.subscribe') }}" style="color:#7C2D37;font-weight:600;text-decoration:none">Subscribe</a>
     </p>
 
     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,280px),1fr));gap:1.25rem">

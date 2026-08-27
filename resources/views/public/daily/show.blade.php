@@ -62,6 +62,8 @@
          style="background:#25D366;color:#fff;font-weight:700;padding:.6rem 1rem;border-radius:.6rem;text-decoration:none">WhatsApp</a>
       <a data-share="twitter" href="{{ $twitter }}" target="_blank" rel="noopener"
          style="background:#0EA5E9;color:#fff;font-weight:700;padding:.6rem 1rem;border-radius:.6rem;text-decoration:none">Twitter</a>
+      <a href="{{ route('public.daily.subscribe') }}"
+         style="color:#7C2D37;font-weight:600;padding:.6rem 0;text-decoration:none">Subscribe</a>
       <a href="{{ route('public.daily.index', ['type' => $type]) }}"
          style="color:#7C2D37;font-weight:600;padding:.6rem 0;text-decoration:none">Back to archive</a>
     </div>

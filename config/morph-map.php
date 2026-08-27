@@ -58,6 +58,8 @@ return [
     'course_plan' => \App\Domains\Academics\Models\CoursePlan::class,
     'dashboard_analytics' => \App\Domains\Settings\Models\DashboardAnalytics::class,
     'daily_content' => \App\Domains\Website\Models\DailyContent::class,
+    'daily_content_delivery' => \App\Domains\Website\Models\DailyContentDelivery::class,
+    'daily_content_subscription' => \App\Domains\Website\Models\DailyContentSubscription::class,
     'device' => \App\Domains\Notifications\Models\Device::class,
     'document' => \App\Domains\Media\Models\Document::class,
     'emergency_contact' => \App\Domains\People\Models\EmergencyContact::class,

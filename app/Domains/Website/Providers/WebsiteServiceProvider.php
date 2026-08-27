@@ -4,6 +4,7 @@ namespace App\Domains\Website\Providers;
 
 use App\Domains\Website\Actions\ComposeHreflangLinksAction;
 use App\Domains\Website\Actions\ComposeOrganizationJsonLdAction;
+use App\Domains\Website\Console\DeliverDailyContentSubscriptionsCommand;
 use App\Domains\Website\Console\PublishDueDailyContentsCommand;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
@@ -25,6 +26,7 @@ class WebsiteServiceProvider extends ServiceProvider
         if ($this->app->runningInConsole()) {
             $this->commands([
                 PublishDueDailyContentsCommand::class,
+                DeliverDailyContentSubscriptionsCommand::class,
             ]);
         }
     }
