@@ -291,6 +291,8 @@ class LocalizedRouteNamesTest extends TestCase
             'catalog.reports.completions.export',
             'portal.home',
             'portal.home.export',
+            'portal.overview',
+            'portal.overview.export',
             'portal.meetings',
             'portal.meetings.export',
             'portal.meetings.book',
