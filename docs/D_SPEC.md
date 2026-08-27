@@ -26,7 +26,7 @@ Time-scoped tables `meeting_slots` + `meeting_bookings` (`academic_year_id` requ
 - Class-scoped slots require the child on that class roster.
 - Portal files import Academics/People Actions only.
 
-## D3 — Admin overview: unfilled registers, ungraded exams, plan adherence (this slice)
+## D3 — Admin overview: unfilled registers, ungraded exams, plan adherence (done, this PR)
 
 Staff Inertia page at `/portal/overview` (`portal.overview`) composed from existing Actions — no new tables, no new Blade, no `course_type` branch, no Hifz:
 
