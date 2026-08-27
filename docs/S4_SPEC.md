@@ -40,7 +40,7 @@ Status automation: scheduled job marks `sent` → `overdue` past due_date; arrea
 **New `payment_plans`:** `id, invoice_id FK unique, total_amount, status enum(active, completed, defaulted, cancelled), created_by, approved_by nullable, timestamps`
 **New `payment_plan_installments`:** `id, payment_plan_id FK, sequence, due_date, amount, paid_amount default 0, status enum(pending, partial, paid, overdue), timestamps`
 
-Rules: installment amounts must sum to invoice balance at plan creation; payments allocate to oldest unpaid installment first (`AllocatePaymentAction` — single allocation gateway, unit-tested); invoice shows plan progress; defaulting (N days overdue, setting) flags for follow-up, never auto-cancels access to *school* (policy decision — record ADR-006; course/library access rules differ and live with their own domains). **Designed as the shared pattern spec Phase 4 course payments inherit.**
+Rules: installment amounts must sum to invoice balance at plan creation; payments allocate to oldest unpaid installment first (`AllocatePaymentAction` — single allocation gateway, unit-tested); invoice shows plan progress; defaulting (N days overdue, setting) flags for follow-up, never auto-cancels access to *school* (policy decision — record **ADR-014**; course/library access rules differ and live with their own domains). **Designed as the shared pattern spec Phase 4 course payments inherit.**
 
 ## Slice S4.5 — Discounts, Scholarships, Waivers (school fees)
 
@@ -66,5 +66,5 @@ Applied at generation time as invoice-line discount rows (transparent on the inv
 
 ## DoD
 - [ ] Real cycle: build structure → generate class invoices → issue → guardian pays one via BML sandbox and one by cash entry → receipts render (Thaana template verified) → arrears + collections reports correct → CSV exports work.
-- [ ] Payment-plan flow live incl. allocation; ADR-006 (default policy) recorded.
+- [x] Payment-plan flow live incl. allocation; **ADR-014** (default policy) recorded. *(Drafted as ADR-006; that number was taken by unified-student.)*
 - [ ] STATUS.md updated. **Out of scope:** Commerce module (L4), course-offering pricing (spec Phase 4), payroll (S5), bank import (backlog).
