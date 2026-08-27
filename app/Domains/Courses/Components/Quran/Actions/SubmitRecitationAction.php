@@ -4,10 +4,12 @@ namespace App\Domains\Courses\Components\Quran\Actions;
 
 use App\Domains\Courses\Actions\ResolveLatestEnrollmentIdAction;
 use App\Domains\Courses\Components\Quran\Enums\QuranAssignmentStatus;
+use App\Domains\Courses\Components\Quran\Enums\QuranAssignmentType;
 use App\Domains\Courses\Components\Quran\Enums\RecitationMode;
 use App\Domains\Courses\Components\Quran\Enums\RecitationSubmissionStatus;
 use App\Domains\Courses\Components\Quran\Models\QuranHifzAssignment;
 use App\Domains\Courses\Components\Quran\Models\QuranRecitationSubmission;
+use App\Domains\Pronunciation\Actions\RecordExternalAudioPredictionAction;
 use App\Support\Contracts\QuranReferenceReader;
 use Illuminate\Validation\ValidationException;
 
@@ -72,6 +74,23 @@ class SubmitRecitationAction
         if ($assignment !== null) {
             $assignment->status = QuranAssignmentStatus::Submitted;
             $assignment->save();
+        }
+
+        // Qur'an B (§52.3): letter+haraka drills get the SAME Pronunciation
+        // check the Arabic module uses — flag-gated, and only an assist: the
+        // human review flow is untouched either way (rule 8).
+        if (config('ai.pronunciation_enabled')
+            && $assignment !== null
+            && $assignment->assignment_type === QuranAssignmentType::LetterHarakaPractice
+            && $assignment->expected_letter_id !== null
+            && $assignment->expected_haraka_id !== null
+            && $submission->audio_media_file_id !== null) {
+            app(RecordExternalAudioPredictionAction::class)->execute(
+                (int) $submission->audio_media_file_id,
+                (int) $assignment->expected_letter_id,
+                (int) $assignment->expected_haraka_id,
+                $submission->id,
+            );
         }
 
         return $submission;

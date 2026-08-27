@@ -8,6 +8,7 @@ class AiPrediction extends Model
 {
     protected $fillable = [
         'arabic_pronunciation_attempt_id',
+        'quran_recitation_submission_id',
         'predicted_letter_id',
         'predicted_haraka_id',
         'predicted_letter_label',
