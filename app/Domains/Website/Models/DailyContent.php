@@ -28,6 +28,7 @@ class DailyContent extends Model
         'notes_internal',
         'created_by',
         'approved_by',
+        'share_card_path',
     ];
 
     protected function casts(): array

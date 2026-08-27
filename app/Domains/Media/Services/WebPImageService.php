@@ -74,4 +74,50 @@ class WebPImageService implements ImageProcessorInterface
 
         return in_array($extension, $this->supportedFormats);
     }
+
+    /**
+     * @param  array{background?: string, lines?: list<array{text: string, font?: string, size?: int, color?: string, x?: int, y?: int, align?: string, valign?: string, wrap?: int}>}  $spec
+     */
+    public function renderSquarePng(int $size, array $spec): string
+    {
+        $manager = ImageManager::gd();
+        $image = $manager->create($size, $size);
+        $image->fill($spec['background'] ?? '#3D1219');
+
+        $fonts = config('media.card_fonts', []);
+
+        foreach ($spec['lines'] ?? [] as $line) {
+            $text = trim((string) ($line['text'] ?? ''));
+            if ($text === '') {
+                continue;
+            }
+
+            $fontKey = (string) ($line['font'] ?? 'latin');
+            $path = is_string($fonts[$fontKey] ?? null) ? $fonts[$fontKey] : $fontKey;
+            if (! is_file($path)) {
+                $path = (string) ($fonts['latin'] ?? '');
+            }
+            if (! is_file($path)) {
+                continue;
+            }
+
+            try {
+                $image->text($text, (int) ($line['x'] ?? (int) ($size / 2)), (int) ($line['y'] ?? 0), function ($font) use ($line, $path): void {
+                    $font->filename($path);
+                    $font->size((int) ($line['size'] ?? 32));
+                    $font->color((string) ($line['color'] ?? '#F5E6C8'));
+                    $font->align((string) ($line['align'] ?? 'center'));
+                    $font->valign((string) ($line['valign'] ?? 'top'));
+                    $wrap = (int) ($line['wrap'] ?? 0);
+                    if ($wrap > 0) {
+                        $font->wrap($wrap);
+                    }
+                });
+            } catch (\Throwable $e) {
+                report($e);
+            }
+        }
+
+        return (string) $image->toPng();
+    }
 }

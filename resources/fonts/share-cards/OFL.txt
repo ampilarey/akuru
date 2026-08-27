@@ -1,0 +1,3 @@
+This Font Software is licensed under the SIL Open Font License, Version 1.1.
+Copyright 2010–2020 Google Inc. / Google LLC (Noto Sans Thaana, Noto Naskh Arabic).
+https://scripts.sil.org/OFL

@@ -3,6 +3,7 @@
 use App\Domains\Website\Http\Controllers\PublicSite\AdmissionController;
 use App\Domains\Website\Http\Controllers\PublicSite\ContactController;
 use App\Domains\Website\Http\Controllers\PublicSite\CourseController;
+use App\Domains\Website\Http\Controllers\PublicSite\DailyContentController;
 use App\Domains\Website\Http\Controllers\PublicSite\GalleryController;
 use App\Domains\Website\Http\Controllers\PublicSite\HomeController;
 use App\Domains\Website\Http\Controllers\PublicSite\PageController;
@@ -70,6 +71,15 @@ Route::get('events/{event}', function ($id) {
 Route::get('achievements', [\App\Domains\Website\Http\Controllers\PublicSite\AchievementController::class, 'index'])->name('public.achievements');
 Route::get('gallery', [GalleryController::class, 'index'])->name('public.gallery.index');
 Route::get('gallery/{gallery}', [GalleryController::class, 'show'])->name('public.gallery.show');
+Route::get('daily/{type}', [DailyContentController::class, 'index'])
+    ->name('public.daily.index')
+    ->where('type', 'ayah|hadith|saying|reminder');
+Route::get('daily/{type}/{date}/card.png', [DailyContentController::class, 'card'])
+    ->name('public.daily.card')
+    ->where(['type' => 'ayah|hadith|saying|reminder', 'date' => '\d{4}-\d{2}-\d{2}']);
+Route::get('daily/{type}/{date}', [DailyContentController::class, 'show'])
+    ->name('public.daily.show')
+    ->where(['type' => 'ayah|hadith|saying|reminder', 'date' => '\d{4}-\d{2}-\d{2}']);
 // Public course registration flow (guest + auth)
 Route::get('courses/{course}/checkout', [\App\Domains\Admissions\Http\Controllers\CourseRegistrationController::class, 'checkout'])
     ->name('courses.checkout.show');
