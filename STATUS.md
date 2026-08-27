@@ -588,6 +588,33 @@ migration; no Hifz behaviour change outside it.
   before showing the free-course confirmation page — free notifications
   still send. Remaining Phase 4 work: refunds, offering-level pricing,
   and the public-flow UX swap (operator-gated).
+- **P4.3 (this PR):** refunds — the mirror of the money→access moment.
+  `payment_refunds` table (APPEND-ONLY, rule 12; alias `payment_refund`
+  same commit) + `RefundPaymentAction`, the ONLY way a payment refunds:
+  locks the payment, allows partials but never over the refundable
+  remainder, destination `wallet` (credits through the Commerce ledger,
+  source `refund` — §35.8) or `manual` (operator returned the money
+  outside the system, e.g. BML transfer — no BML refund API call; SDK
+  stays behind the interface), flips the payment to `refunded` when
+  fully refunded, and fires the new `PaymentRefunded` event inside the
+  transaction. Listeners mirror the confirm side: Courses
+  `CancelEnrollmentOnPaymentRefunded` (FULL refund → payment_status
+  refunded + status cancelled unless completed; both payment shapes;
+  discount slot released via new
+  `RecordDiscountRedemptionAction::releaseForRefund` — pending AND
+  confirmed → released, the customer kept nothing) and Library
+  `RevokeLibraryAccessOnPaymentRefunded` (purchase → refunded, grant →
+  revoked + ends_at; reader loses access — verified through
+  `ResolveLibraryAccessAction`). Partial refunds keep access (recorded).
+  Admin surface: refund form per row on the EXISTING
+  `/admin/enrollments/payments` Blade (existing-Blade zone — no new
+  Blade screen), POST `admin/payments/{payment}/refund` behind
+  `role:super_admin|admin` + seeded `payments.refund` permission.
+  Deliberately out of scope (recorded): refunding wallet-paid engine
+  checkouts (no Payment row exists — admin credits the wallet and
+  cancels the enrollment manually), BML-initiated `refunded` webhook
+  states (ignored, as before), and L-track writer-earnings clawback
+  (§35.5 `refunded` status — L6 payouts must subtract refunded sales).
 
 ## 6. Out of scope (unchanged)
 

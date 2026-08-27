@@ -135,6 +135,7 @@ return [
     'parent_guardian' => \App\Domains\People\Models\ParentGuardian::class,
     'payment' => \App\Domains\Finance\Models\Payment::class,
     'payment_plan' => \App\Domains\Finance\Models\PaymentPlan::class,
+    'payment_refund' => \App\Domains\Finance\Models\PaymentRefund::class,
     'payroll_period' => \App\Domains\HR\Models\PayrollPeriod::class,
     'payroll_posting' => \App\Domains\Finance\Models\PayrollPosting::class,
     'payslip' => \App\Domains\HR\Models\Payslip::class,

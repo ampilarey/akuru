@@ -208,7 +208,7 @@ class AdminEnrollmentController extends Controller
 
     public function payments(Request $request)
     {
-        $query = Payment::with(['user', 'student', 'items.course'])
+        $query = Payment::with(['user', 'student', 'items.course', 'refunds'])
             ->latest();
 
         if ($status = $request->input('status')) {
