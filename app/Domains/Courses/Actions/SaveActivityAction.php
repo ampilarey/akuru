@@ -2,6 +2,7 @@
 
 namespace App\Domains\Courses\Actions;
 
+use App\Domains\Courses\Components\Arabic\Actions\ListArabicReferenceAction;
 use App\Domains\Courses\Enums\ActivityPattern;
 use App\Domains\Courses\Models\Activity;
 use App\Domains\Courses\Models\Course;
