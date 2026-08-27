@@ -53,15 +53,20 @@ Merged #121.
 
 Merged #124.
 
-### W2.5 — Research & publications (this slice)
+### W2.5 — Research & publications
 
-- Reuse existing `posts.type` (`article` \| `news` \| `research`). Do **not** add a parallel `post_type` column.
-- Additive: `authors` JSON (`instructor_id` and/or external `name`), `abstract`, `citation_note`, `pdf_document_id` nullable FK to **`media_files`** (spec said Media; People `documents` are student records).
-- Public `/research` listing (year + instructor filters + CSV), `/research/{slug}` permalink, `/instructors/{slug}` via HR `ReadPublicInstructorProfileAction`. Article/news routes 404 when the type does not match.
-- PDFs via `StorePublicMediaAction` directory `research-pdfs/` (default directory remains `trust-logos/`).
-- Admin Blade `/admin/public-site/research` under existing public-site roles. No new Spatie permission. No AppShell link.
-- Free front door only — no paywall. When L1 ships, research posts may migrate or link into the Library catalog (decision deferred to L1).
+Merged #126.
 
-## E3 — W3 prayer times (next phase)
+## E3 — W3 prayer times (this slice)
 
-`docs/W3_SPEC.md`. `PrayerTimeProviderInterface`. No live SMS.
+`docs/W3_SPEC.md`. ADR-004.
+
+- New `PrayerTimes` domain + `PrayerTimesServiceProvider`. Tables: `prayer_categories`, `prayer_islands`, `prayer_times` (366-day leap table, minutes-since-midnight), `prayer_recipient_groups`, `prayer_broadcasts`, `prayer_broadcast_recipients`. No `academic_year_id` (rule 10 exemption, ADR-004).
+- `prayer:import` from operator-supplied `salat.db` (fails unless every category has 366 rows). Local/staging seeder is a **synthetic** 366-day fixture (Malé, Hulhumalé +2, Hithadhoo) — Bake&Grill `salat.db` is not in the repo.
+- Resolver: leap-year day index (`dayOfYear+1` from day 60 in non-leap years), island offset, `HH:MM` `Indian/Maldives`, versioned cache (never cache null), Haversine nearest-island.
+- `PrayerTimeProviderInterface` — Website and Portal consume only the contract. `IslamicCalendarService::getPrayerTimes()` / `getCurrentPrayerTime()` marked `@deprecated`. Hijri still from `IslamicCalendarService`.
+- Public Blade `/prayer-times` + `GET /api/v1/prayer-times` + homepage widget. Admin Blade `/admin/prayer-times/*` (`prayer.manage`). Spec said Inertia; public site is still Blade. No AppShell link (wrap stays 83).
+- SMS: preview → confirm → queue. Daily / range (split when times change) / change-only. Consent `prayer_reminders` via People Actions with **strings** (PrayerTimes must not import `ConsentType`). STOP via `HonorPrayerUnsubscribeKeywordAction`. `SmsSenderInterface` only — no live SMS.
+- Scheduler: `prayer:run-daily` every 15 min, `prayer:run-change-only` 20:00, `Indian/Maldives`.
+
+**Phase E complete** when this PR merges. Next is F1 (Hifz → engine). Do not start F in the Phase E report turn.
