@@ -551,6 +551,7 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::put('arabic/letters/{letter}', [CatalogArabicReferenceController::class, 'updateLetter'])->name('catalog.arabic.letters.update')->whereNumber('letter');
         Route::post('arabic/harakas', [CatalogArabicReferenceController::class, 'storeHarakah'])->name('catalog.arabic.harakas.store');
         Route::put('arabic/harakas/{harakah}', [CatalogArabicReferenceController::class, 'updateHarakah'])->name('catalog.arabic.harakas.update')->whereNumber('harakah');
+        Route::get('reviews/export', [CatalogReviewController::class, 'export'])->name('catalog.reviews.export');
         Route::get('reviews', [CatalogReviewController::class, 'index'])->name('catalog.reviews.index');
         Route::post('reviews', [CatalogReviewController::class, 'store'])->name('catalog.reviews.store');
         Route::get('questions/export', [CatalogQuestionController::class, 'export'])->name('catalog.questions.export');
