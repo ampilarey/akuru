@@ -339,7 +339,29 @@ migration; no Hifz behaviour change outside it.
   added. Legacy `quran_progress`/`recitation_practices` (old Blade app) stay
   frozen for F5 archive; no backfill from them — they are pre-engine practice
   data, migrated only if the operator asks.
-- **F4:** dashboards (§52.7–52.13) in Inertia, replacing frozen Hifz Blade.
+- **F4 (this PR):** the non-AI dashboard surfaces of §52.7–52.13 in
+  Inertia/React over F2/F3 data — everything AI-flavoured in those sections
+  (live checking, predictions, confidence, training samples) stays out per
+  rule 8. Three surfaces: **student** `/learn/quran` (my submissions, my
+  memorization progress, upcoming revision); **teacher** `/teach/recitations`
+  (review queue oldest-first with status filter + CSV, inline review form
+  posting to F3's ReviewRecitationAction — outcome, note, mistake rows);
+  **supervisor/dean** `/catalog/quran/oversight` (submissions by status,
+  common mistake types, most common wrong letters/harakas §52.12 — computed
+  from teacher marks, no AI — teacher activity, per-student progress, CSV).
+  The oversight controller is deliberately ENGINE-owned: it composes Quran
+  aggregates (bare ids) with Arabic reference names, which no component may
+  do itself (rule 3 isolation, documented engine→component direction).
+  Teacher gate = has a teachers row (new read-only
+  `People\ResolveTeacherForUserAction`) or `courses.manage`. New People
+  actions: ResolveTeacherForUser, ListTeachersByIds (both read-only,
+  additive). JSX parse-checked via esbuild (CI does not build JS).
+  **Deferred, recorded:** student audio record-and-submit (§52.9 manual mode
+  — needs private media upload + authenticated streaming; spec itself marks
+  student recitation submission "later"); per-guardian/i18n strings are
+  fallback-English pending the lang-file pass; supervisor/dean share one
+  oversight page until their AI-era features diverge; frozen Hifz Blade
+  routes stay until F5 retirement.
 - **F5:** retirement — archive don't drop; keep specialty tables; move
   QuranReferenceReader/QuranTextProvider implementations into Components/Quran;
   grep tests for Hifz model imports first and list casualties in the PR body.

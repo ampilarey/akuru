@@ -25,11 +25,14 @@ use App\Domains\Courses\Components\Arabic\Http\Controllers\CatalogArabicReferenc
 use App\Domains\Courses\Components\Arabic\Http\Controllers\CatalogArabicReportController;
 use App\Domains\Courses\Components\Arabic\Http\Controllers\LearnArabicReportController;
 use App\Domains\Courses\Components\Quran\Http\Controllers\CatalogQuranReferenceController;
+use App\Domains\Courses\Components\Quran\Http\Controllers\LearnQuranController;
+use App\Domains\Courses\Components\Quran\Http\Controllers\TeachRecitationController;
 use App\Domains\Courses\Http\Controllers\AudienceController;
 use App\Domains\Courses\Http\Controllers\CatalogActivityController;
 use App\Domains\Courses\Http\Controllers\CatalogAssessmentController;
 use App\Domains\Courses\Http\Controllers\CatalogMediaController;
 use App\Domains\Courses\Http\Controllers\CatalogQuestionController;
+use App\Domains\Courses\Http\Controllers\CatalogQuranOversightController;
 use App\Domains\Courses\Http\Controllers\CatalogReviewController;
 use App\Domains\Courses\Http\Controllers\CourseCertificateController;
 use App\Domains\Courses\Http\Controllers\CourseCompletionReportController;
@@ -180,7 +183,10 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
     Route::get('/learn', [LearnDashboardController::class, 'index'])->name('learn.dashboard');
     Route::get('/learn/schedule', [LearnScheduleController::class, 'index'])->name('learn.schedule');
     Route::get('/learn/arabic-report', [LearnArabicReportController::class, 'index'])->name('learn.arabic-report');
+    Route::get('/learn/quran', [LearnQuranController::class, 'index'])->name('learn.quran');
     Route::get('/teach/schedule', [TeacherScheduleController::class, 'index'])->name('teach.schedule');
+    Route::get('/teach/recitations', [TeachRecitationController::class, 'index'])->name('teach.recitations');
+    Route::post('/teach/recitations/{submission}/review', [TeachRecitationController::class, 'review'])->name('teach.recitations.review')->whereNumber('submission');
     Route::get('/learn/catalog', [LearnCatalogController::class, 'index'])->name('learn.catalog');
     Route::post('/learn/courses/{course}/enroll', [LearnCatalogController::class, 'enroll'])->name('learn.courses.enroll')->whereNumber('course');
     Route::get('/learn/courses/{course}', [LearnCourseController::class, 'show'])->name('learn.courses.show')->whereNumber('course');
@@ -614,6 +620,7 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::post('offerings/{offering}/halaqa/sync', [OfferingSessionController::class, 'syncHalaqa'])->name('catalog.offerings.halaqa.sync')->whereNumber('offering');
         Route::post('offerings/{offering}/sessions/{session}/halaqa', [OfferingSessionController::class, 'storeHalaqaSession'])->name('catalog.offerings.sessions.halaqa.store')->whereNumber('offering')->whereNumber('session');
         Route::get('quran/export', [CatalogQuranReferenceController::class, 'export'])->name('catalog.quran.export');
+        Route::get('quran/oversight', [CatalogQuranOversightController::class, 'index'])->name('catalog.quran.oversight');
         Route::get('quran', [CatalogQuranReferenceController::class, 'index'])->name('catalog.quran.index');
         Route::get('arabic/reports', [CatalogArabicReportController::class, 'index'])->name('catalog.arabic.reports');
         Route::get('arabic/export', [CatalogArabicReferenceController::class, 'export'])->name('catalog.arabic.export');
