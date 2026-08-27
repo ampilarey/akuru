@@ -20,19 +20,30 @@ class RedeemGiftCardAction
      */
     public function execute(int $userId, string $plainCode): array
     {
-        return DB::transaction(function () use ($userId, $plainCode) {
+        $codeHash = hash('sha256', trim($plainCode));
+
+        // Pre-checks run OUTSIDE the money transaction so the expiry flip
+        // survives the refusal (a throw inside the transaction would roll
+        // the status update back with it).
+        $card = GiftCard::query()->where('code_hash', $codeHash)->first();
+        if ($card === null || $card->status?->value !== 'active') {
+            throw ValidationException::withMessages(['code' => 'Gift card not found or no longer active.']);
+        }
+        if ($card->expires_at !== null && $card->expires_at->isPast()) {
+            $card->status = 'expired';
+            $card->save();
+            throw ValidationException::withMessages(['code' => 'Gift card has expired.']);
+        }
+
+        return DB::transaction(function () use ($userId, $codeHash) {
             $card = GiftCard::query()
-                ->where('code_hash', hash('sha256', trim($plainCode)))
+                ->where('code_hash', $codeHash)
                 ->lockForUpdate()
                 ->first();
 
+            // Re-verify under the lock — a concurrent redemption may have won.
             if ($card === null || $card->status?->value !== 'active') {
                 throw ValidationException::withMessages(['code' => 'Gift card not found or no longer active.']);
-            }
-            if ($card->expires_at !== null && $card->expires_at->isPast()) {
-                $card->status = 'expired';
-                $card->save();
-                throw ValidationException::withMessages(['code' => 'Gift card has expired.']);
             }
             $balance = (float) $card->balance_amount;
             if ($balance <= 0) {
