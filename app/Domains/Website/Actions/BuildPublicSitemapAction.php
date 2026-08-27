@@ -3,6 +3,9 @@
 namespace App\Domains\Website\Actions;
 
 use App\Domains\Courses\Actions\ListPublicCourseSitemapEntriesAction;
+use App\Domains\Website\Enums\DailyContentStatus;
+use App\Domains\Website\Enums\DailyContentType;
+use App\Domains\Website\Models\DailyContent;
 use App\Domains\Website\Models\Event;
 use App\Domains\Website\Models\GalleryAlbum;
 use App\Domains\Website\Models\Post;
@@ -67,6 +70,19 @@ class BuildPublicSitemapAction
 
         foreach (GalleryAlbum::query()->published()->public()->latest('updated_at')->get(['id', 'updated_at']) as $album) {
             $xml .= $this->localizedGroup($base, $locales, 'gallery/'.$album->id, $this->lastmod($album->updated_at), '0.5', 'monthly');
+        }
+
+        foreach (DailyContentType::cases() as $type) {
+            $xml .= $this->localizedGroup($base, $locales, 'daily/'.$type->value, now()->toDateString(), '0.6', 'daily');
+        }
+
+        foreach (DailyContent::query()->where('status', DailyContentStatus::Published)->orderBy('publish_date')->get(['content_type', 'publish_date', 'updated_at']) as $daily) {
+            $type = $daily->content_type instanceof DailyContentType ? $daily->content_type->value : (string) $daily->content_type;
+            $date = $daily->publish_date?->toDateString();
+            if ($date === null) {
+                continue;
+            }
+            $xml .= $this->localizedGroup($base, $locales, 'daily/'.$type.'/'.$date, $this->lastmod($daily->updated_at), '0.7', 'monthly');
         }
 
         $xml .= '</urlset>';

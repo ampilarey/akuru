@@ -4,6 +4,7 @@ namespace App\Domains\Website\Providers;
 
 use App\Domains\Website\Actions\ComposeHreflangLinksAction;
 use App\Domains\Website\Actions\ComposeOrganizationJsonLdAction;
+use App\Domains\Website\Console\PublishDueDailyContentsCommand;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
@@ -20,5 +21,11 @@ class WebsiteServiceProvider extends ServiceProvider
             $view->with('organizationJsonLd', app(ComposeOrganizationJsonLdAction::class)->execute());
             $view->with('hreflangLinks', app(ComposeHreflangLinksAction::class)->execute());
         });
+
+        if ($this->app->runningInConsole()) {
+            $this->commands([
+                PublishDueDailyContentsCommand::class,
+            ]);
+        }
     }
 }

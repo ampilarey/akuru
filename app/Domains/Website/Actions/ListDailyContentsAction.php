@@ -2,6 +2,7 @@
 
 namespace App\Domains\Website\Actions;
 
+use App\Domains\Media\Contracts\MediaStorageInterface;
 use App\Domains\Website\Enums\DailyContentStatus;
 use App\Domains\Website\Enums\DailyContentType;
 use App\Domains\Website\Models\DailyContent;
@@ -92,11 +93,14 @@ class ListDailyContentsAction
         $provider ??= app(QuranTextProviderInterface::class);
         $type = $row->content_type instanceof DailyContentType ? $row->content_type->value : (string) $row->content_type;
         $ayah = $row->quran_ayah_id ? $provider->ayahWithMeaningsById((int) $row->quran_ayah_id) : null;
+        $date = $row->publish_date?->toDateString();
+        $sharePath = $row->share_card_path;
+        $shareUrl = $sharePath ? app(MediaStorageInterface::class)->url('public', $sharePath) : null;
 
         return [
             'id' => $row->id,
             'content_type' => $type,
-            'publish_date' => $row->publish_date?->toDateString(),
+            'publish_date' => $date,
             'status' => $row->status instanceof DailyContentStatus ? $row->status->value : (string) $row->status,
             'quran_ayah_id' => $row->quran_ayah_id,
             'ayah' => $ayah,
@@ -115,6 +119,9 @@ class ListDailyContentsAction
             'notes_internal' => $row->notes_internal,
             'created_by' => $row->created_by,
             'approved_by' => $row->approved_by,
+            'share_card_path' => $sharePath,
+            'share_card_url' => $shareUrl,
+            'permalink_path' => $date ? 'daily/'.$type.'/'.$date : null,
         ];
     }
 }

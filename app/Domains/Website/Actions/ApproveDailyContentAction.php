@@ -4,6 +4,7 @@ namespace App\Domains\Website\Actions;
 
 use App\Domains\Website\Enums\DailyContentStatus;
 use App\Domains\Website\Enums\DailyContentType;
+use App\Domains\Website\Jobs\RenderDailyShareCardJob;
 use App\Domains\Website\Models\DailyContent;
 use Illuminate\Validation\ValidationException;
 
@@ -27,7 +28,12 @@ class ApproveDailyContentAction
         $row->status = $status;
         $row->save();
 
-        return $row->fresh();
+        $fresh = $row->fresh() ?? $row;
+        if ($fresh->status === DailyContentStatus::Published) {
+            RenderDailyShareCardJob::dispatch($fresh->id);
+        }
+
+        return $fresh;
     }
 
     public function assertPublishable(DailyContent $row): void

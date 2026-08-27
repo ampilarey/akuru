@@ -23,3 +23,4 @@ Schedule::command('invoices:mark-overdue')->dailyAt('01:45');
 Schedule::command('invoices:send-reminders')->dailyAt('02:00');
 Schedule::command('invoices:mark-defaulted-plans')->dailyAt('02:15');
 Schedule::command('hr:notify-expiring-documents')->dailyAt('02:30');
+Schedule::command('daily-content:publish-due')->dailyAt('00:05')->timezone('Indian/Maldives');

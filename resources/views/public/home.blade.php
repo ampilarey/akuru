@@ -153,6 +153,8 @@ $bannerCount = count($bannerList);
 
 </section>
 
+@include('public.home._daily')
+
 {{-- ═══════════════════════════════════════════════════════════
   SECTION 2 — OPEN COURSES   bg: white
 ═══════════════════════════════════════════════════════════ --}}
