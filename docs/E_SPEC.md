@@ -13,7 +13,7 @@ Course cards + course detail, from columns that already exist:
 - **Early bird:** `courses.meta.early_bird_*` (no new columns). Shown only when active, dated, and cheaper than `fee`.
 - **Waiting list:** public POST `/courses/{course}/waitlist` → `contact_inquiries` with `meta.source=waiting_list` and `course_id` (table was missing despite the model; additive).
 
-Never invent scarcity. Pest covers null / limited / exact / full / expired / early-bird / waitlist 422 when not full.
+Never invent scarcity. Pest covers null / limited / exact / full / expired / early-bird / waitlist 422 when not full. Browser walk: homepage Limited seats + 7 seats left + null-seats silent; waitlist inquiry stored.
 
 ### W1.2–W1.6 (next)
 
