@@ -4,6 +4,9 @@ namespace App\Domains\Library\Http\Controllers;
 
 use App\Domains\Library\Actions\ApplyAsWriterAction;
 use App\Domains\Library\Actions\ListWriterDashboardAction;
+use App\Domains\Library\Actions\ListWriterEarningsSummaryAction;
+use App\Domains\Library\Actions\RequestWriterPayoutAction;
+use App\Domains\Library\Actions\SaveWriterBankDetailsAction;
 use App\Domains\Library\Actions\SaveWriterItemAction;
 use App\Domains\Library\Actions\SubmitLibraryItemForReviewAction;
 use App\Domains\Library\Enums\LibraryContentType;
@@ -23,10 +26,33 @@ class WriterPortalController extends Controller
     {
         return Inertia::render('Library/Write', [
             'dashboard' => app(ListWriterDashboardAction::class)->execute((int) $request->user()->id),
+            'earnings' => app(ListWriterEarningsSummaryAction::class)->execute((int) $request->user()->id),
             'options' => [
                 'content_types' => array_map(fn ($case) => $case->value, LibraryContentType::cases()),
             ],
         ]);
+    }
+
+    /** L6: where payouts go. */
+    public function saveBankDetails(Request $request): RedirectResponse
+    {
+        $data = $request->validate([
+            'bank_name' => 'required|string|max:255',
+            'account_name' => 'required|string|max:255',
+            'account_number' => 'required|string|max:50',
+        ]);
+
+        app(SaveWriterBankDetailsAction::class)->execute((int) $request->user()->id, $data);
+
+        return back()->with('success', 'Bank details saved.');
+    }
+
+    /** L6: request the available balance (gated by library.payouts_enabled). */
+    public function requestPayout(Request $request): RedirectResponse
+    {
+        app(RequestWriterPayoutAction::class)->execute((int) $request->user()->id);
+
+        return back()->with('success', 'Payout requested — the admin will process it.');
     }
 
     public function apply(Request $request): RedirectResponse

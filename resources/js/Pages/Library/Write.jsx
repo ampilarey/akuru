@@ -86,7 +86,49 @@ function ItemEditor({ item, options, onDone }) {
     );
 }
 
-export default function Write({ dashboard, options }) {
+function EarningsCard({ earnings }) {
+    const bank = useForm({ bank_name: '', account_name: '', account_number: '' });
+    if (!earnings) return null;
+
+    return (
+        <div className="mb-6 rounded-lg border bg-white p-4">
+            <div className="mb-3 flex flex-wrap items-center gap-6 text-sm">
+                <span><strong>MVR {earnings.pending}</strong> pending (in refund window)</span>
+                <span><strong>MVR {earnings.available}</strong> available</span>
+                <span><strong>MVR {earnings.paid}</strong> paid out</span>
+                {earnings.refunded > 0 && <span className="text-red-600">MVR {earnings.refunded} refunded</span>}
+                {earnings.payouts_enabled ? (
+                    <button
+                        type="button"
+                        className="btn-primary"
+                        disabled={!earnings.can_request || !earnings.has_bank_details}
+                        onClick={() => router.post('/write/payout-request', {}, { preserveScroll: true })}
+                    >
+                        Request payout (min MVR {earnings.min_payout})
+                    </button>
+                ) : (
+                    <span className="text-xs text-gray-500">Payouts open soon — earnings keep accruing and stay yours.</span>
+                )}
+            </div>
+            <form
+                onSubmit={(e) => {
+                    e.preventDefault();
+                    bank.post('/write/bank-details', { preserveScroll: true });
+                }}
+                className="flex flex-wrap items-center gap-2"
+            >
+                <input className="form-input w-40" placeholder="Bank name" value={bank.data.bank_name} onChange={(e) => bank.setData('bank_name', e.target.value)} />
+                <input className="form-input w-40" placeholder="Account name" value={bank.data.account_name} onChange={(e) => bank.setData('account_name', e.target.value)} />
+                <input className="form-input w-40" placeholder="Account number" value={bank.data.account_number} onChange={(e) => bank.setData('account_number', e.target.value)} />
+                <button type="submit" className="btn-secondary" disabled={bank.processing}>
+                    {earnings.has_bank_details ? 'Update bank details' : 'Save bank details'}
+                </button>
+            </form>
+        </div>
+    );
+}
+
+export default function Write({ dashboard, options, earnings = null }) {
     const flash = usePage().props.flash || {};
     const [editing, setEditing] = useState(null);
     const { profile, application, items, sales } = dashboard;
@@ -118,6 +160,8 @@ export default function Write({ dashboard, options }) {
                             {editing === 'new' ? 'Close editor' : 'New draft'}
                         </button>
                     </div>
+
+                    <EarningsCard earnings={earnings} />
 
                     {editing === 'new' && <ItemEditor options={options} onDone={() => setEditing(null)} />}
                     {editing && editing !== 'new' && <ItemEditor item={editing} options={options} onDone={() => setEditing(null)} />}

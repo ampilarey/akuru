@@ -420,6 +420,8 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::post('items/{item}/publish', [AdminLibraryController::class, 'publish'])->name('admin.library.items.publish')->whereNumber('item');
         Route::post('items/{item}/review', [AdminLibraryController::class, 'reviewSubmission'])->name('admin.library.items.review')->whereNumber('item');
         Route::post('applications/{application}/decide', [AdminLibraryController::class, 'decideApplication'])->name('admin.library.applications.decide')->whereNumber('application');
+        Route::post('payouts/{payout}/decide', [AdminLibraryController::class, 'decidePayout'])->name('admin.library.payouts.decide')->whereNumber('payout');
+        Route::get('earnings/export', [AdminLibraryController::class, 'exportEarnings'])->name('admin.library.earnings.export');
         Route::post('categories', [AdminLibraryController::class, 'storeCategory'])->name('admin.library.categories.store');
     });
 
@@ -431,6 +433,8 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::post('items', [\App\Domains\Library\Http\Controllers\WriterPortalController::class, 'storeItem'])->name('write.items.store');
         Route::put('items/{item}', [\App\Domains\Library\Http\Controllers\WriterPortalController::class, 'updateItem'])->name('write.items.update')->whereNumber('item');
         Route::post('items/{item}/submit', [\App\Domains\Library\Http\Controllers\WriterPortalController::class, 'submit'])->name('write.items.submit')->whereNumber('item');
+        Route::post('bank-details', [\App\Domains\Library\Http\Controllers\WriterPortalController::class, 'saveBankDetails'])->name('write.bank-details');
+        Route::post('payout-request', [\App\Domains\Library\Http\Controllers\WriterPortalController::class, 'requestPayout'])->name('write.payout-request');
     });
 
     Route::prefix('admin/prayer-times')->middleware(['role:super_admin|admin|headmaster|supervisor', 'can:prayer.manage'])->group(function () {

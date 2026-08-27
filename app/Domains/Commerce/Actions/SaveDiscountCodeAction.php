@@ -49,6 +49,11 @@ class SaveDiscountCodeAction
             'status' => $data['status'] ?? 'active',
         ];
 
+        // L6 (§21): who funds the discount — decides the writer's cut.
+        if (in_array($data['discount_funding_source'] ?? null, ['shared', 'akuru', 'writer'], true)) {
+            $payload['discount_funding_source'] = $data['discount_funding_source'];
+        }
+
         if ($code === null) {
             return DiscountCode::query()->create($payload);
         }

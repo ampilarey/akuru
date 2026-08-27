@@ -51,6 +51,74 @@ function ApplicationsQueue({ applications }) {
     );
 }
 
+function PayoutsQueue({ payouts }) {
+    const [notes, setNotes] = useState({});
+    if (payouts.requests.length === 0 && payouts.writers.length === 0) return null;
+
+    const decide = (id, paid) =>
+        router.post(`/admin/library/payouts/${id}/decide`, { paid, note: notes[id] || undefined }, { preserveScroll: true });
+
+    return (
+        <div className="mb-6 overflow-x-auto rounded-lg border bg-white">
+            {payouts.requests.length > 0 && (
+                <table className="min-w-full border-b text-sm">
+                    <thead className="bg-[#F3EBE0] text-start">
+                        <tr>
+                            <th className="px-3 py-2">Payout request</th>
+                            <th className="px-3 py-2">Amount</th>
+                            <th className="px-3 py-2">Decision</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {payouts.requests.map((req) => (
+                            <tr key={req.id} className="border-t">
+                                <td className="px-3 py-2">{req.writer} · {req.requested_at}</td>
+                                <td className="px-3 py-2 font-medium">{req.currency} {req.amount}</td>
+                                <td className="px-3 py-2">
+                                    <input
+                                        className="form-input mb-1 w-40"
+                                        placeholder="Note"
+                                        value={notes[req.id] || ''}
+                                        onChange={(e) => setNotes({ ...notes, [req.id]: e.target.value })}
+                                    />
+                                    <span className="flex gap-2">
+                                        <button type="button" className="btn-primary" onClick={() => decide(req.id, true)}>Mark paid</button>
+                                        <button type="button" className="text-sm text-red-600" onClick={() => decide(req.id, false)}>Reject</button>
+                                    </span>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            )}
+            {payouts.writers.length > 0 && (
+                <table className="min-w-full text-sm">
+                    <thead className="bg-[#F3EBE0] text-start">
+                        <tr>
+                            <th className="px-3 py-2">Writer earnings</th>
+                            <th className="px-3 py-2">Pending</th>
+                            <th className="px-3 py-2">Available</th>
+                            <th className="px-3 py-2">Paid</th>
+                            <th className="px-3 py-2">Refunded</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {payouts.writers.map((row) => (
+                            <tr key={row.writer} className="border-t">
+                                <td className="px-3 py-2">{row.writer}</td>
+                                <td className="px-3 py-2">{row.pending}</td>
+                                <td className="px-3 py-2">{row.available}</td>
+                                <td className="px-3 py-2">{row.paid}</td>
+                                <td className="px-3 py-2">{row.refunded}</td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            )}
+        </div>
+    );
+}
+
 function SubmissionsQueue({ submissions }) {
     const [comments, setComments] = useState({});
     if (submissions.length === 0) return null;
@@ -187,16 +255,20 @@ function CategoryForm() {
     );
 }
 
-export default function Admin({ items, categories, options, sales = [], queues = { applications: [], submissions: [] } }) {
+export default function Admin({ items, categories, options, sales = [], queues = { applications: [], submissions: [] }, payouts = { requests: [], writers: [] } }) {
     return (
         <AppShell title="Library admin">
             <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
                 <CategoryForm />
-                <a className="btn-secondary" href="/admin/library?format=csv">Export CSV</a>
+                <span className="flex gap-2">
+                    <a className="btn-secondary" href="/admin/library/earnings/export">Earnings CSV</a>
+                    <a className="btn-secondary" href="/admin/library?format=csv">Export CSV</a>
+                </span>
             </div>
 
             <ApplicationsQueue applications={queues.applications} />
             <SubmissionsQueue submissions={queues.submissions} />
+            <PayoutsQueue payouts={payouts} />
 
             <ItemForm categories={categories} options={options} />
 

@@ -212,5 +212,8 @@ return [
     'wallet' => \App\Domains\Commerce\Models\Wallet::class,
     'wallet_transaction' => \App\Domains\Commerce\Models\WalletTransaction::class,
     'writer_application' => \App\Domains\Library\Models\WriterApplication::class,
+    'writer_bank_detail' => \App\Domains\Library\Models\WriterBankDetail::class,
+    'writer_earning' => \App\Domains\Library\Models\WriterEarning::class,
+    'writer_payout' => \App\Domains\Library\Models\WriterPayout::class,
     'writer_profile' => \App\Domains\Library\Models\WriterProfile::class,
 ];

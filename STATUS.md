@@ -542,6 +542,32 @@ migration; no Hifz behaviour change outside it.
   Deferred (recorded): writer suspension flow, bank details +
   agreements tables (ride L6 payouts), writer-funded promotions
   (post-MVP §11.6).
+- **L6 writer earnings & payouts (this PR):** §21–§23, §35.5, §43.7.
+  `writer_earnings` accrues ONE row per PAID sale of a writer's item —
+  from the webhook grant listener AND the wallet checkout branch
+  (`RecordWriterEarningForPurchaseAction`, idempotent on the purchase;
+  wallet is PAYMENT not discount §16.2). Commission: per-item override →
+  writer default → config default 70/30 (§22). Funding models §21 exact:
+  shared = writer% × paid; akuru-funded = writer% × original;
+  writer-funded = paid − akuru% × original. `SaveDiscountCodeAction`
+  gained `discount_funding_source` pass-through (L4 gap — codes were
+  always 'akuru'). Earnings mature pending→available lazily after
+  `library.refund_window_days` (§24/§43.7 — never payable while
+  refundable); a FULL refund flips the earning `refunded` (clawback in
+  the same P4.3 listener; an earning already PAID out that later refunds
+  is an operator reconciliation case — visible in the report). Payout
+  flow: bank details (`writer_bank_details`) → request
+  (`RequestWriterPayoutAction`, **blocked by the §9.4 operator gate**
+  `library.payouts_enabled=false` until the owner confirms
+  tax/accounting treatment — sales accrue meanwhile) → admin marks
+  paid/rejected (`DecideWriterPayoutAction`; paid stamps earnings
+  paid_at, rejected releases them). Surfaces: writer earnings card +
+  bank form + request button on `/write`; payout queue + per-writer
+  earnings report + CSV on `/admin/library`. Aliases
+  writer_earning/writer_payout/writer_bank_detail same commit.
+  **Operator (§9.4):** flip `LIBRARY_PAYOUTS_ENABLED` only after the
+  tax/accounting decision; until then requests refuse with a friendly
+  message.
 
 ## 5h. Spec Phase 4 — course payments on the engine (adopting L4 Commerce)
 
