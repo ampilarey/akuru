@@ -520,6 +520,33 @@ migration; no Hifz behaviour change outside it.
   Phase 4 handoff ROADMAP §9 promised. DV/AR strings ride the operator
   item.
 
+## 5h. Spec Phase 4 — course payments on the engine (adopting L4 Commerce)
+
+- **P4.1 (this PR):** the ENGINE path for paid enrollment exists — the
+  §7 "dual payment path" risk starts closing from the engine side.
+  `StartCourseCheckoutAction`: fee = `registration_fee_amount` falling
+  back to `fee` (the same money the legacy public checkout charges — the
+  two paths cannot disagree on price); free courses take the unchanged
+  free path; paid courses create a `pending/paid/payment_status=pending`
+  enrollment through the SAME creator (`EnrollSelfLearningAction` grew an
+  additive overrides param — one creator, both paths, no duplicated
+  seat/offering mechanics), then BML via the generic payable flow
+  (`payable_type=course_enrollment`) or wallet (immediate activation) or
+  full discount. Activation is `ActivatePaidEnrollmentAction`: payment
+  confirmed always; status active only when the course does not require
+  admin approval (legacy semantics preserved), idempotent. The
+  `PaymentConfirmed` listener registered in CoursesServiceProvider is the
+  engine's money→access moment (rule 12; L3's recorded follow-up now done
+  for the ENGINE path — the legacy PaymentItem flow keeps its inline
+  handling untouched and its webhook test green: both paths verified,
+  §7 rule). Discount codes work with `purchase_type=course_enrollment`
+  (pending→confirmed by the same webhook/wallet). Catalog UI: paid rows
+  show the fee with a discount-code field + wallet button. **Remaining
+  Phase 4 work (recorded):** retire the legacy public checkout onto the
+  engine path (needs the public-site enroll flow walked + W1 funnel
+  events preserved), refunds, and offering-level pricing (fee lives on
+  the course; per-offering price is a future decision).
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**; next is **F1** (Hifz → engine). Do not start F in the same turn as the Phase E report.

@@ -30,6 +30,8 @@ class ListPublishedCoursesAction
                 'short_desc' => $course->short_desc,
                 'enrolled' => $enrolled->has($course->id),
                 'progress_percentage' => (int) ($enrolled[$course->id] ?? 0),
+                // Phase 4: the same money the legacy checkout charges.
+                'fee' => (float) ($course->registration_fee_amount ?: $course->fee ?: 0),
             ])
             ->all();
     }
