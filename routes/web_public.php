@@ -1,5 +1,6 @@
 <?php
 
+use App\Domains\Library\Http\Controllers\PublicLibraryController;
 use App\Domains\Website\Http\Controllers\PublicSite\AdmissionController;
 use App\Domains\Website\Http\Controllers\PublicSite\ContactController;
 use App\Domains\Website\Http\Controllers\PublicSite\CourseController;
@@ -8,7 +9,6 @@ use App\Domains\Website\Http\Controllers\PublicSite\DailySubscriptionController;
 use App\Domains\Website\Http\Controllers\PublicSite\DailyUnsubscribeController;
 use App\Domains\Website\Http\Controllers\PublicSite\GalleryController;
 use App\Domains\Website\Http\Controllers\PublicSite\HomeController;
-use App\Domains\Library\Http\Controllers\PublicLibraryController;
 use App\Domains\Website\Http\Controllers\PublicSite\InstructorProfileController;
 use App\Domains\Website\Http\Controllers\PublicSite\PageController;
 use App\Domains\Website\Http\Controllers\PublicSite\PrayerTimesController;
