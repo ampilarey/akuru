@@ -3,9 +3,11 @@
 namespace App\Domains\Courses\Components\Quran\Actions;
 
 use App\Domains\Courses\Components\Quran\Enums\MemorizationStatus;
+use App\Domains\Courses\Components\Quran\Enums\QuranAssignmentStatus;
 use App\Domains\Courses\Components\Quran\Enums\QuranMistakeSeverity;
 use App\Domains\Courses\Components\Quran\Enums\QuranMistakeType;
 use App\Domains\Courses\Components\Quran\Enums\RecitationSubmissionStatus;
+use App\Domains\Courses\Components\Quran\Models\QuranHifzAssignment;
 use App\Domains\Courses\Components\Quran\Models\QuranMistakeMark;
 use App\Domains\Courses\Components\Quran\Models\QuranRecitationSubmission;
 use Illuminate\Support\Facades\DB;
@@ -93,6 +95,21 @@ class ReviewRecitationAction
                 'review_note' => $review['note'] ?? null,
             ]);
             $submission->save();
+
+            // §52.18: a review outcome moves the answered assignment on.
+            if ($submission->quran_hifz_assignment_id !== null) {
+                $assignmentStatus = match ($status) {
+                    RecitationSubmissionStatus::Passed => QuranAssignmentStatus::Passed,
+                    RecitationSubmissionStatus::NeedsRepeat => QuranAssignmentStatus::NeedsRepeat,
+                    RecitationSubmissionStatus::Failed => QuranAssignmentStatus::Failed,
+                    default => null,
+                };
+                if ($assignmentStatus !== null) {
+                    QuranHifzAssignment::query()
+                        ->whereKey($submission->quran_hifz_assignment_id)
+                        ->update(['status' => $assignmentStatus->value]);
+                }
+            }
 
             if ($submission->surah_id !== null) {
                 app(SaveMemorizationProgressAction::class)->execute([

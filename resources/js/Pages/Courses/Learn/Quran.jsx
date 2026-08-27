@@ -16,7 +16,7 @@ const statusBadge = (status) => {
     return <span className={`rounded px-2 py-0.5 text-xs ${tone}`}>{status?.replaceAll('_', ' ') ?? '—'}</span>;
 };
 
-export default function Quran({ student, submissions, progress, schedules }) {
+export default function Quran({ student, submissions, progress, schedules, assignments = [] }) {
     const t = usePage().props.i18n?.learn || {};
 
     return (
@@ -24,6 +24,37 @@ export default function Quran({ student, submissions, progress, schedules }) {
             {!student && (
                 <p className="mb-4 text-sm text-gray-600">{t.no_profile || 'No student profile is linked to this account.'}</p>
             )}
+
+            <h2 className="mb-2 text-lg font-semibold">{t.quran_assignments || 'My assignments'}</h2>
+            <div className="mb-6 overflow-x-auto rounded-lg border bg-white">
+                <table className="min-w-full text-sm">
+                    <thead className="bg-[#F3EBE0] text-start">
+                        <tr>
+                            <th className="px-3 py-2">{t.type || 'Type'}</th>
+                            <th className="px-3 py-2">{t.surah || 'Surah'}</th>
+                            <th className="px-3 py-2">{t.ayahs || 'Ayahs'}</th>
+                            <th className="px-3 py-2">{t.due || 'Due'}</th>
+                            <th className="px-3 py-2">{t.status || 'Status'}</th>
+                            <th className="px-3 py-2">{t.teacher || 'Teacher'}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {assignments.length === 0 && (
+                            <tr><td className="px-3 py-4 text-gray-500" colSpan={6}>{t.no_assignments || 'No assignments yet.'}</td></tr>
+                        )}
+                        {assignments.map((row) => (
+                            <tr key={row.id} className="border-t">
+                                <td className="px-3 py-2">{row.assignment_type?.replaceAll('_', ' ')}</td>
+                                <td className="px-3 py-2">{row.surah ?? '—'}</td>
+                                <td className="px-3 py-2">{range(row)}</td>
+                                <td className="px-3 py-2">{row.due_date ?? '—'}</td>
+                                <td className="px-3 py-2">{statusBadge(row.status)}</td>
+                                <td className="px-3 py-2">{row.teacher ?? '—'}</td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
 
             <h2 className="mb-2 text-lg font-semibold">{t.quran_progress || 'Memorization progress'}</h2>
             <div className="mb-6 overflow-x-auto rounded-lg border bg-white">
