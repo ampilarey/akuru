@@ -4,6 +4,7 @@ namespace App\Domains\Library\Http\Controllers;
 
 use App\Domains\Library\Actions\ListLibraryCategoriesAction;
 use App\Domains\Library\Actions\ListLibraryItemsAction;
+use App\Domains\Library\Actions\ListLibraryPurchasesAction;
 use App\Domains\Library\Actions\PublishLibraryItemAction;
 use App\Domains\Library\Actions\SaveLibraryCategoryAction;
 use App\Domains\Library\Actions\SaveLibraryItemAction;
@@ -52,6 +53,7 @@ class AdminLibraryController extends Controller
         return Inertia::render('Library/Admin', [
             'items' => $items,
             'categories' => app(ListLibraryCategoriesAction::class)->execute(activeOnly: false, withCounts: true),
+            'sales' => app(ListLibraryPurchasesAction::class)->salesSummary(),
             'filters' => $filters,
             'options' => [
                 'content_types' => array_map(fn ($case) => $case->value, LibraryContentType::cases()),

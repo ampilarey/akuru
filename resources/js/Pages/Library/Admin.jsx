@@ -83,7 +83,7 @@ function CategoryForm() {
     );
 }
 
-export default function Admin({ items, categories, options }) {
+export default function Admin({ items, categories, options, sales = [] }) {
     return (
         <AppShell title="Library admin">
             <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
@@ -92,6 +92,29 @@ export default function Admin({ items, categories, options }) {
             </div>
 
             <ItemForm categories={categories} options={options} />
+
+            {sales.length > 0 && (
+                <div className="mb-6 overflow-x-auto rounded-lg border bg-white">
+                    <table className="min-w-full text-sm">
+                        <thead className="bg-[#F3EBE0] text-start">
+                            <tr>
+                                <th className="px-3 py-2">Sales</th>
+                                <th className="px-3 py-2">Count</th>
+                                <th className="px-3 py-2">Revenue (MVR)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {sales.map((row) => (
+                                <tr key={row.library_item_id} className="border-t">
+                                    <td className="px-3 py-2">{row.title}</td>
+                                    <td className="px-3 py-2">{row.sales}</td>
+                                    <td className="px-3 py-2">{row.revenue}</td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            )}
 
             <div className="overflow-x-auto rounded-lg border bg-white">
                 <table className="min-w-full text-sm">

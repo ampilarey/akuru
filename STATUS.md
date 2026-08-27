@@ -454,6 +454,43 @@ migration; no Hifz behaviour change outside it.
   `lang/en/public.php`; DV/AR first pass pending native review (existing
   operator item). Next: **L2 protected reader** (private page delivery,
   watermark, progress, bookmarks), then L3 payments, L4 Commerce.
+- **L2 Protected Reader (this PR):** page-at-a-time reading with the gate
+  run on EVERY request. `library_item_pages` (body split on an explicit
+  `<!-- pagebreak -->` marker at save time — §36's secure-HTML path;
+  PDF-to-page-image conversion needs server tooling and is recorded as a
+  later infrastructure step), `library_reading_progress` (§35.3 upsert,
+  completion stamped once at the last page, reading seconds accumulate via
+  a throttled beacon endpoint), `library_bookmarks` (toggle per page).
+  Three morph aliases. Reader at `/library/{slug}/read?page=N`: one page
+  per response, per-user **watermark** (name • email • timestamp; generic
+  label for guests on free_public), `free_login` redirects guests to
+  login, locked types bounce to the item page; **no download path exists
+  in the reader** (§43.6). `/my-library` (auth): continue-reading +
+  bookmarks, private to the reader (§43.8). Item page shows Read
+  online/Continue for multi-page items and renders single-page items
+  inline. Reader UX is server-rendered Blade page turns (public zone
+  precedent). Deviations recorded: reading seconds are beacon-optional
+  (no JS timer shipped); PDF page conversion deferred as above.
+- **L3 Paid Content (this PR, with L2):** money → access, rule-12/§43.5
+  strict. New Finance pieces (both generic, Finance-owned):
+  `InitiatePayablePaymentAction` (any payable morph + amount → Payment +
+  BML redirect) and the `PaymentConfirmed` EVENT, dispatched inside the
+  confirmation transaction wherever a VERIFIED provider result flips a
+  payment to confirmed (webhook + finalize paths) — never the return URL.
+  Library listens (`GrantLibraryAccessOnPaymentConfirmed`, registered in
+  LibraryServiceProvider): payable `library_item` → purchase flips
+  pending→paid once + idempotent `library_access_grants` row (§35.4; two
+  new morph aliases). `ResolveLibraryAccessAction` is now the ONE gate for
+  item page and reader: free types answer from access_type, everything
+  else from an active grant; buy box on the item page (checkout POST →
+  BML redirect; throttled), payment-return page only DISPLAYS state and
+  refreshes. `/my-library` gains purchase history; admin gets the sales
+  rollup (paid count + revenue per item). Tests fake the provider behind
+  Finance's own `PaymentProviderInterface` and walk lock → checkout →
+  pending → webhook → grant → reader opens, webhook-retry idempotency,
+  not-for-sale/already-owned/guest refusals. Course enrollment's inline
+  confirmation path is untouched — folding it onto the event is a
+  recorded follow-up, not done here.
 
 ## 6. Out of scope (unchanged)
 

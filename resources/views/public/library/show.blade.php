@@ -38,12 +38,32 @@
             <p class="text-lg text-gray-700 mb-6">{{ $item['abstract'] }}</p>
         @endif
 
-        @if($item['can_read'] && $item['body'])
+        @if($item['can_read'] && ($item['total_pages'] ?? 0) > 1)
+            <div class="rounded-lg border bg-brandBeige-50 p-6 text-center">
+                <a href="{{ route('public.library.read', ['slug' => $item['slug'], 'page' => $item['continue_page'] ?? 1]) }}" class="btn-primary">
+                    {{ ($item['continue_page'] ?? 1) > 1 ? __('public.Continue reading') : __('public.Read online') }}
+                </a>
+                <p class="mt-2 text-sm text-gray-500">{{ $item['total_pages'] }} {{ __('public.pages') }}</p>
+            </div>
+        @elseif($item['can_read'] && $item['body'])
             <div class="prose max-w-none">{!! $item['body'] !!}</div>
+        @elseif($item['requires_login'] && $item['access_type'] === 'paid')
+            <div class="rounded-lg border bg-brandBeige-50 p-6 text-center">
+                <p class="mb-3 text-gray-700">{{ $item['currency'] }} {{ $item['price'] }} — {{ __('public.Sign in to buy and read this item.') }}</p>
+                <a href="{{ route('login') }}" class="btn-primary">{{ __('public.Sign in') }}</a>
+            </div>
         @elseif($item['requires_login'])
             <div class="rounded-lg border bg-brandBeige-50 p-6 text-center">
                 <p class="mb-3 text-gray-700">{{ __('public.Sign in to read this item for free.') }}</p>
                 <a href="{{ route('login') }}" class="btn-primary">{{ __('public.Sign in') }}</a>
+            </div>
+        @elseif($item['locked'] && $item['access_type'] === 'paid' && $item['price'])
+            <div class="rounded-lg border bg-brandBeige-50 p-6 text-center">
+                <form method="POST" action="{{ route('public.library.checkout', $item['slug']) }}">
+                    @csrf
+                    <button type="submit" class="btn-primary">{{ __('public.Buy for') }} {{ $item['currency'] }} {{ $item['price'] }}</button>
+                </form>
+                <p class="mt-2 text-sm text-gray-500">{{ __('public.Access opens as soon as the bank confirms your payment.') }}</p>
             </div>
         @elseif($item['locked'])
             <div class="rounded-lg border bg-brandBeige-50 p-6 text-center">
