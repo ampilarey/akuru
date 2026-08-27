@@ -37,9 +37,20 @@ exist yet and this rewrite spans Identity, Finance, and Notifications.
    `config/domain-models.php` where those classes appear (`user`, `course`,
    `school`, `instructor`, `admission_application`).
 
-2. **Non-enforcing first.** `MorphMapServiceProvider` calls `Relation::morphMap()`
-   only — not `enforceMorphMap()`. Enforcement is a one-line follow-up after the
-   map is verified in production, so a missed model cannot hard-crash the cutover.
+2. **Non-enforcing first, then enforced.** `MorphMapServiceProvider` originally
+   called `Relation::morphMap()` only, so a missed model could not hard-crash the
+   cutover. Enforcement was to follow "after the map is verified in production".
+
+   **Amended 2026-08-26 (Phase 0 audit):** the provider now calls
+   `Relation::enforceMorphMap()`. Production verification never became available
+   (ADR-021: no live deployment exists), so waiting on that trigger would have
+   deferred enforcement indefinitely. The assurance it was meant to provide comes
+   instead from `MorphMapConfigTest`, which asserts every model under
+   `app/Domains` has an alias, aliases are unique, and every alias resolves — plus
+   the audited fact that no Eloquent models exist outside `app/Domains`
+   (167 models, 167 aliases at the time of the flip). Enforcement converts a
+   future unregistered model from a silent bad-data write into an immediate
+   `ClassMorphViolationException`.
 
 3. **Provider placement.** `App\Providers\MorphMapServiceProvider`, registered first
    in `bootstrap/providers.php`. Not a domain provider — importing 19 domains'
@@ -79,5 +90,8 @@ exist yet and this rewrite spans Identity, Finance, and Notifications.
   part of the go/no-go evidence.
 - S1 polymorphic tables (e.g. Media `documents`) must register aliases in the same
   morph map — never store raw FQCNs. The no-backslash gate will catch mistakes.
-- Flip to `Relation::enforceMorphMap()` only after staging/production verification.
+- ~~Flip to `Relation::enforceMorphMap()` only after staging/production verification.~~
+  **Done 2026-08-26** — enforced on the strength of `MorphMapConfigTest` instead;
+  see the amendment in Decision §2. Any model added outside `config/morph-map.php`
+  now fails loudly rather than writing an FQCN.
 - Architecture baselines must not grow from this change.

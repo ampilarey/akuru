@@ -73,7 +73,9 @@ class ClearNonAdminUsers extends Command
         $userMorph = (new User)->getMorphClass();
         DB::table('model_has_roles')->whereNotIn('model_id', $keepIds)->where('model_type', $userMorph)->delete();
         DB::table('model_has_permissions')->whereNotIn('model_id', $keepIds)->where('model_type', $userMorph)->delete();
-        DB::table('otps')->truncate();
+        // OTPs for removed users go with their user_contacts rows above
+        // (user_contact_otps.user_contact_id cascades on delete). The pre-2026
+        // `otps` table this used to truncate is gone — see the drop migration.
 
         if ($deleteRsIds->isNotEmpty() && Schema::hasTable('student_guardians')) {
             DB::table('student_guardians')->whereIn('student_id', $deleteRsIds)->delete();

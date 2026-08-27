@@ -84,7 +84,7 @@ Create interface + container binding; change call-sites to the interface (mechan
 
 ## 0.6 Cleanups (safe now)
 
-- [ ] Squash/remove duplicate `2025_10_15*create_otps_table` migration (keep 2026 user_contacts-based OTP) — verify prod schema first.
+- [x] ~~Squash/remove duplicate `2025_10_15*create_otps_table` migration~~ — **premise was wrong** (audit 2026-08-26). The two migrations are not duplicates: `2025_10_15_161251` creates `otps`; the similarly-named `2026_02_16_000002` creates `user_contact_otps`. Only the filenames matched. The legacy `otps` table was dead (`Models\Otp` reads `user_contact_otps`; the last reference was a stale truncate in `ClearNonAdminUsers`) and is now dropped forward by `2026_08_26_000001_drop_legacy_otps_table`. The 2025 migration file stays — deleting a migration that has already run desyncs the `migrations` table. Note left open: `2025_10_15_161402` also added `users.otp_enabled` / `two_factor_enabled` / `phone_verified_at`, which appear unused; not dropped in this pass.
 - [x] Move the ~10 root-level deployment/readme MD files to `docs/legacy/`.
 - [x] Commit `ROADMAP.md`, `SPEC.md`, library plan, `S1_SPEC.md` into `docs/`.
 - [x] Add `.env.example` entries for any binding configs introduced.
@@ -92,11 +92,11 @@ Create interface + container binding; change call-sites to the interface (mechan
 ## 0.7 Definition of Done
 
 - [x] Route-name snapshot tests green (automated). [ ] Manual smoke (home, courses, registration+BML sandbox, Hifz, portal, admin) — **pending operator on staging**.
-- [x] `app/Models` and `app/Services` **removed** (directories do not exist; code lives in `app/Domains/*`); `app/Http/Controllers` = base `Controller.php` only.
+- [x] `app/Models` and `app/Services` **removed** (directories do not exist; code lives in `app/Domains/*`); `app/Http/Controllers` = base `Controller.php` plus `Api/TestDeployWebhookController` only. The webhook is **app infrastructure, not domain logic** (it fast-forwards the TEST checkout; host-guarded by `config/deploy.php`), so it stays out of the domains deliberately — filing it under a domain would misrepresent it, and creating an Ops domain for one controller would violate ROADMAP §7 "don't over-split domains early". Accepted exception, recorded in the audit 2026-08-26.
 - [x] Pest green including arch tests on `main` CI (Pint + Pest block; PHPStan informational only).
 - [x] Inertia smoke route `/inertia-test` exists for production build verification.
 - [x] STATUS.md updated; ADR-001 recorded.
-- [ ] Per-domain `routes.php` split — **deferred to early S1** (see §0.3).
+- [x] Per-domain `routes.php` split — **dropped, not deferred** (audit 2026-08-26). It was deferred "to early S1" and then skipped through S1–S5, 1A–1B, Phase 2 and the A-track without causing a problem. Central `routes/web_localized.php` + `routes/web_public.php` are the accepted end state; the route-name snapshot suite (`tests/Feature/Routes/`, 6 files) is the guard that matters. `app/Domains/Hifz/routes.php` exists as a one-off and is not a precedent. Revisit only if route volume becomes unmanageable.
 - [ ] Staging/production deploy — **pending operator** (staging `test.akuru.edu.mv` first).
 
 **Explicitly out of scope for Phase 0:** any schema migration, any Hifz logic change, any UI change, the Student unification (that's S1).
