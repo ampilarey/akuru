@@ -102,6 +102,20 @@
         <div class="grid lg:grid-cols-3 gap-8">
             <!-- Main Content -->
             <div class="lg:col-span-2 space-y-6">
+                @if(!empty($outcomes))
+                <div id="course-outcomes" class="card p-6">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-4">What you'll be able to do</h2>
+                    <ul class="space-y-2 text-gray-700">
+                        @foreach($outcomes as $line)
+                        <li class="flex items-start gap-3">
+                            <span class="mt-1.5 inline-block w-2 h-2 rounded-full bg-brandMaroon-600 shrink-0"></span>
+                            <span>{{ $line }}</span>
+                        </li>
+                        @endforeach
+                    </ul>
+                </div>
+                @endif
+
                 <!-- Description -->
                 <div class="card p-6">
                     <h2 class="text-2xl font-bold text-gray-900 mb-4">Course Description</h2>
@@ -110,13 +124,12 @@
                     </div>
                 </div>
 
-                <!-- Instructors -->
                 @if($course->instructors->count() > 0)
-                <div class="card p-6">
+                <div class="card p-6" id="course-instructors">
                     <h2 class="text-2xl font-bold text-gray-900 mb-4">Your Instructors</h2>
                     <div class="space-y-5">
                         @foreach($course->instructors as $instructor)
-                        <div class="flex items-start gap-4 p-4 bg-brandBeige-50 rounded-xl">
+                        <div class="flex items-start gap-4 p-4 bg-brandBeige-50 rounded-xl border-s-4 border-brandGold-400">
                             @if($instructor->photo)
                                 <img src="{{ asset('storage/'.$instructor->photo) }}" alt="{{ $instructor->name }}" class="w-16 h-16 rounded-full object-cover shrink-0 ring-2 ring-brandGold-300">
                             @else
@@ -124,16 +137,39 @@
                                     {{ strtoupper(substr($instructor->name, 0, 1)) }}
                                 </div>
                             @endif
-                            <div>
-                                <p class="font-bold text-gray-900">{{ $instructor->name }}</p>
+                            <div class="min-w-0">
+                                <p class="font-bold text-gray-900 text-lg">{{ $instructor->name }}</p>
                                 @if($instructor->qualification)
-                                    <p class="text-sm text-brandMaroon-600 font-medium">{{ $instructor->qualification }}</p>
+                                    <p class="mt-2 text-xs font-semibold uppercase tracking-wider text-brandMaroon-700">Qualifications</p>
+                                    <p class="text-base font-semibold text-brandMaroon-800 leading-snug">{{ $instructor->qualification }}</p>
+                                @endif
+                                @if($instructor->specialization)
+                                    <p class="text-sm text-gray-600 mt-1">{{ $instructor->specialization }}</p>
                                 @endif
                                 @if($instructor->bio)
-                                    <p class="text-sm text-gray-600 mt-1 leading-relaxed">{{ Str::limit($instructor->bio, 200) }}</p>
+                                    <p class="text-sm text-gray-600 mt-2 leading-relaxed">{{ $instructor->bio }}</p>
                                 @endif
                             </div>
                         </div>
+                        @endforeach
+                    </div>
+                </div>
+                @endif
+
+                @if(isset($testimonials) && $testimonials->isNotEmpty())
+                <div id="course-testimonials" class="card p-6">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-4">What students say</h2>
+                    <div class="space-y-4">
+                        @foreach($testimonials as $t)
+                        <blockquote class="p-4 rounded-xl bg-brandBeige-50 border border-brandGold-200">
+                            <p class="text-gray-700 leading-relaxed">“{{ $t->quote }}”</p>
+                            <footer class="mt-3 text-sm">
+                                <span class="font-semibold text-gray-900">{{ $t->name }}</span>
+                                @if(!empty($t->role))
+                                    <span class="text-gray-500"> · {{ $t->role }}</span>
+                                @endif
+                            </footer>
+                        </blockquote>
                         @endforeach
                     </div>
                 </div>

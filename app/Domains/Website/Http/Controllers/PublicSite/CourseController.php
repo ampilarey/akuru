@@ -3,9 +3,11 @@
 namespace App\Domains\Website\Http\Controllers\PublicSite;
 
 use App\Domains\Courses\Actions\ComposeCourseConversionSignalsAction;
+use App\Domains\Courses\Actions\PresentCourseLearningOutcomesAction;
 use App\Domains\Courses\Models\Course;
 use App\Domains\Courses\Models\CourseCategory;
 use App\Domains\Website\Actions\JoinCourseWaitlistAction;
+use App\Domains\Website\Actions\ListCoursePageTestimonialsAction;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -135,7 +137,10 @@ class CourseController extends Controller
 
         $this->attachConversion(collect([$course, ...$relatedCourses, ...$featuredCourses, ...$recentCourses]));
 
-        return view('public.courses.show', compact('course', 'relatedCourses', 'featuredCourses', 'recentCourses'));
+        $outcomes = app(PresentCourseLearningOutcomesAction::class)->execute((int) $course->id, app()->getLocale());
+        $testimonials = app(ListCoursePageTestimonialsAction::class)->execute((int) $course->id);
+
+        return view('public.courses.show', compact('course', 'relatedCourses', 'featuredCourses', 'recentCourses', 'outcomes', 'testimonials'));
     }
 
     public function waitlist(Request $request, Course $course): RedirectResponse

@@ -2,6 +2,7 @@
 
 namespace App\Domains\Website\Http\Controllers\Admin\PublicSite;
 
+use App\Domains\Courses\Actions\SaveCourseLearningOutcomesAction;
 use App\Domains\Courses\Models\Course;
 use App\Domains\Courses\Models\CourseCategory;
 use App\Http\Controllers\Controller;
@@ -39,7 +40,12 @@ class CourseController extends Controller
             'seats' => 'nullable|integer|min:1',
         ]);
 
-        Course::create($validated);
+        $course = Course::create($validated);
+        app(SaveCourseLearningOutcomesAction::class)->execute((int) $course->id, [
+            'en' => $request->input('learning_outcomes_en', ''),
+            'dv' => $request->input('learning_outcomes_dv', ''),
+            'ar' => $request->input('learning_outcomes_ar', ''),
+        ]);
 
         return redirect()->route('admin.courses.index')
             ->with('success', 'Course created successfully.');
@@ -69,6 +75,11 @@ class CourseController extends Controller
         ]);
 
         $course->update($validated);
+        app(SaveCourseLearningOutcomesAction::class)->execute((int) $course->id, [
+            'en' => $request->input('learning_outcomes_en', ''),
+            'dv' => $request->input('learning_outcomes_dv', ''),
+            'ar' => $request->input('learning_outcomes_ar', ''),
+        ]);
 
         return redirect()->route('admin.courses.index')
             ->with('success', 'Course updated successfully.');

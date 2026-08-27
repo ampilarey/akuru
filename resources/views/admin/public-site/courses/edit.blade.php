@@ -61,6 +61,8 @@
                 @enderror
             </div>
 
+            @include('admin.public-site.courses._outcomes_fields', ['course' => $course])
+
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                     <label for="language" class="block text-sm font-medium text-gray-700 mb-1">Language <span class="text-red-500">*</span></label>

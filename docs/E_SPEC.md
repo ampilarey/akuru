@@ -15,20 +15,23 @@ Course cards + course detail, from columns that already exist:
 
 Never invent scarcity. Pest covers null / limited / exact / full / expired / early-bird / waitlist 422 when not full. Browser walk: homepage Limited seats + 7 seats left + null-seats silent; waitlist inquiry stored.
 
-### W1.2 — Trust above the fold (this slice)
+### W1.2 — Trust above the fold
 
-Homepage hero reads Settings group `trust_settings` (no hardcoded ministry line, years, or student count):
+Homepage hero reads Settings group `trust_settings` (merged #113).
 
-- **Accreditation:** trilingual JSON `trust.accreditation` (EN/DV/AR). Empty → omitted.
-- **Years operating:** `trust.years_operating` override, else `current year − trust.founded_year` (seeded `2020` to match existing About “Est. 2020”). Zero/blank → omitted.
-- **Students taught:** `trust.students_taught` override, else `CountStudentsAction` (unified `students` table). Zero/blank → omitted. Never invents 500+.
-- **Partner logos:** `trust.partner_logo_ids` JSON list of `media_files` ids; `ListPublicMediaFilesAction` returns only `visibility=public` files on the `public` disk. Private ids are skipped.
+### W1.3 — Outcome-led course pages (this slice)
 
-New Website files import Settings/Media/People **Actions** only. About page still hardcodes Est. 2020 / years=5 (out of this slice). No operator form yet — values live in Settings.
+Public course detail:
 
-### W1.3–W1.6 (next)
+- **`courses.learning_outcomes`** JSON `{en,dv,ar}` string lists. Rendered as “What you'll be able to do” **above** the description. Empty → omitted. Admin field on existing Blade `admin.courses` create/edit (one outcome per line per locale).
+- **Per-course testimonials:** nullable `testimonials.course_id`. Course page shows its own public quotes first; if none, falls back to general (`course_id` null). Homepage only shows general quotes.
+- **Instructor qualifications:** existing `instructors.qualification` / `specialization` shown under a Qualifications label (gold-accent card). Not invented when blank.
 
-Learning outcomes + per-course testimonials, sticky WhatsApp CTA + `leads` table, JSON-LD/OG, funnel events.
+New files: Courses Actions for present/save outcomes; Website `ListCoursePageTestimonialsAction`. Engine subject-ignorant. Hifz untouched.
+
+### W1.4–W1.6 (next)
+
+Sticky WhatsApp CTA + `leads` table, JSON-LD/OG, funnel events.
 
 ## E2 — W2 daily content (next phase)
 
