@@ -48,6 +48,10 @@ Add in the cleanup slice (not now):
 - Arch: no remaining `student_guardians` schema.
 - Pest: `students:verify-unification` (strict, not `--representative`) still meaningful against leftover mappings *or* is retired once RS is archived.
 
+**Must be rewritten in the same PR (found in the S4 audit, 2026-08-27):**
+
+- `tests/Feature/BmlWebhookTest.php` imports `App\Domains\People\Models\RegistrationStudent` and builds its fixture from an RS row. It is green today only because dual-write is still on — **it breaks the moment `registration_students` is archived**. Rewrite it against unified `students` + `course_enrollments.unified_student_id` as part of this cleanup, not after. It is the one currently-green test that this slice is guaranteed to turn red, so budget for it rather than discovering it in CI.
+
 ## What this does not do
 
 - No Hifz behavior change. Hifz already keys on `students`.
