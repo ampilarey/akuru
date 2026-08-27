@@ -431,6 +431,30 @@ migration; no Hifz behaviour change outside it.
   `halaqa:verify-structure` capture here, operator sign-off — then the one
   retirement slice (models + readers + Blade deletion).
 
+## 5g. L-track — Akuru Knowledge Library (LIBRARY_PLAN §39)
+
+- **L1 Foundation (this PR):** `Domains/Library` created (per ROADMAP §9.1:
+  Library + shared Commerce, reusing Media/Identity/People). Tables:
+  `library_items` (full §35.1 shape — later-phase columns like price,
+  writer, commission exist now so the table only grows additively),
+  `library_categories` (trilingual name columns), `library_tags` +
+  pivot, `library_item_authors`. Four morph aliases; `library.manage`
+  permission seeded to super_admin/admin (W3 precedent). Public `/library`
+  + `/library/{slug}`: Blade in the public-site zone (the W2.5 research
+  precedent — recorded deviation from the Inertia rule, consistent within
+  the zone), basic LIKE search + type/category/tag filters + CSV;
+  **free-reading gate**: `free_public` reads open, `free_login` lists
+  publicly but withholds the body until sign-in (never sent to the
+  client), `paid`/`course`/`manual` show locked until L3. Admin
+  `/admin/library` is Inertia (new admin area — the rule applies): create/
+  edit with tags/authors, publish/unpublish stamping `approved_by`
+  (business rule §43.3), categories, CSV. **PDF originals go to PRIVATE
+  media** via the existing `StorePrivateMediaAction` (§43.6 — never
+  exposed; protected reading is L2). EN strings added to
+  `lang/en/public.php`; DV/AR first pass pending native review (existing
+  operator item). Next: **L2 protected reader** (private page delivery,
+  watermark, progress, bookmarks), then L3 payments, L4 Commerce.
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**; next is **F1** (Hifz → engine). Do not start F in the same turn as the Phase E report.
