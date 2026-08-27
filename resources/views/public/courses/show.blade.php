@@ -352,7 +352,7 @@
     $showSticky = $canEnroll || $course->status === 'upcoming' || ! empty($cta['whatsapp_url']);
 @endphp
 @if($showSticky)
-<div id="course-sticky-cta" class="fixed bottom-0 left-0 right-0 z-40 lg:hidden bg-white border-t border-gray-200 shadow-2xl px-4 py-3 flex items-center gap-3">
+<div id="course-sticky-cta" class="fixed left-0 right-0 z-40 lg:hidden bg-white border-t border-gray-200 shadow-2xl px-4 py-3 flex items-center gap-3" style="bottom:4rem">
     <div class="flex-1 min-w-0">
         <p class="text-xs text-gray-500 truncate">{{ $course->title }}</p>
         @if(($course->conversion['early_bird']['amount'] ?? null))
@@ -388,7 +388,12 @@
         </a>
     @endif
 </div>
-<div class="h-20 lg:hidden"></div>
+<div class="lg:hidden" style="height:9rem"></div>
+<style>
+@media (min-width: 640px) {
+    #course-sticky-cta { bottom: 0 !important; }
+}
+</style>
 @endif
 
 @endsection
