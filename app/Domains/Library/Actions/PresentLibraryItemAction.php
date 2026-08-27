@@ -3,6 +3,8 @@
 namespace App\Domains\Library\Actions;
 
 use App\Domains\Library\Models\LibraryItem;
+use App\Domains\Library\Models\LibraryItemPage;
+use App\Domains\Library\Models\LibraryReadingProgress;
 
 /**
  * L1 detail + free-reading gate (LIBRARY_PLAN §6): free_public reads
@@ -33,11 +35,23 @@ class PresentLibraryItemAction
             default => false, // paid / course / manual — L3+
         };
 
+        // L2: reader entry point — total pages and where this reader left off.
+        $totalPages = LibraryItemPage::query()->where('library_item_id', $item->id)->count();
+        $continuePage = null;
+        if ($userId !== null && $totalPages > 0) {
+            $continuePage = LibraryReadingProgress::query()
+                ->where('user_id', $userId)
+                ->where('library_item_id', $item->id)
+                ->value('current_page');
+        }
+
         return app(ListLibraryItemsAction::class)->serialize($item) + [
             'can_read' => $canRead,
             'requires_login' => $access === 'free_login' && $userId === null,
             'locked' => ! in_array($access, ['free_public', 'free_login'], true),
             'body' => $canRead ? $item->body : null,
+            'total_pages' => $totalPages,
+            'continue_page' => $continuePage !== null ? (int) $continuePage : null,
         ];
     }
 }

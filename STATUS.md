@@ -454,6 +454,23 @@ migration; no Hifz behaviour change outside it.
   `lang/en/public.php`; DV/AR first pass pending native review (existing
   operator item). Next: **L2 protected reader** (private page delivery,
   watermark, progress, bookmarks), then L3 payments, L4 Commerce.
+- **L2 Protected Reader (this PR):** page-at-a-time reading with the gate
+  run on EVERY request. `library_item_pages` (body split on an explicit
+  `<!-- pagebreak -->` marker at save time — §36's secure-HTML path;
+  PDF-to-page-image conversion needs server tooling and is recorded as a
+  later infrastructure step), `library_reading_progress` (§35.3 upsert,
+  completion stamped once at the last page, reading seconds accumulate via
+  a throttled beacon endpoint), `library_bookmarks` (toggle per page).
+  Three morph aliases. Reader at `/library/{slug}/read?page=N`: one page
+  per response, per-user **watermark** (name • email • timestamp; generic
+  label for guests on free_public), `free_login` redirects guests to
+  login, locked types bounce to the item page; **no download path exists
+  in the reader** (§43.6). `/my-library` (auth): continue-reading +
+  bookmarks, private to the reader (§43.8). Item page shows Read
+  online/Continue for multi-page items and renders single-page items
+  inline. Reader UX is server-rendered Blade page turns (public zone
+  precedent). Deviations recorded: reading seconds are beacon-optional
+  (no JS timer shipped); PDF page conversion deferred as above.
 
 ## 6. Out of scope (unchanged)
 

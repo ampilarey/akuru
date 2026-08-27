@@ -97,6 +97,8 @@ class SaveLibraryItemAction
             $item->tags()->sync($tagIds);
         }
 
+        app(SyncLibraryItemPagesAction::class)->execute($item);
+
         if (array_key_exists('authors', $data) && is_array($data['authors'])) {
             $item->authors()->delete();
             foreach (array_values($data['authors']) as $index => $author) {

@@ -1,5 +1,6 @@
 <?php
 
+use App\Domains\Library\Http\Controllers\LibraryReaderController;
 use App\Domains\Library\Http\Controllers\PublicLibraryController;
 use App\Domains\Website\Http\Controllers\PublicSite\AdmissionController;
 use App\Domains\Website\Http\Controllers\PublicSite\ContactController;
@@ -51,6 +52,10 @@ Route::get('articles/{post:slug}', [\App\Domains\Website\Http\Controllers\Public
 
 Route::get('library/export', [PublicLibraryController::class, 'export'])->name('public.library.export');
 Route::get('library', [PublicLibraryController::class, 'index'])->name('public.library.index');
+Route::get('my-library', [LibraryReaderController::class, 'myLibrary'])->name('public.library.my');
+Route::get('library/{slug}/read', [LibraryReaderController::class, 'read'])->name('public.library.read');
+Route::post('library/{slug}/progress', [LibraryReaderController::class, 'progress'])->name('public.library.progress')->middleware('throttle:60,1');
+Route::post('library/{slug}/bookmark', [LibraryReaderController::class, 'bookmark'])->name('public.library.bookmark')->middleware('throttle:30,1');
 Route::get('library/{slug}', [PublicLibraryController::class, 'show'])->name('public.library.show');
 
 Route::get('research/export', [ResearchPostController::class, 'export'])->name('public.research.export');

@@ -370,4 +370,22 @@ return [
     'Sign in to read this item for free.' => 'Sign in to read this item for free.',
     'Sign in' => 'Sign in',
     'This item is not yet available for online reading.' => 'This item is not yet available for online reading.',
+
+    // Library reader (L2) — DV/AR first pass pending native review (operator item)
+    'Read online' => 'Read online',
+    'Continue reading' => 'Continue reading',
+    'pages' => 'pages',
+    'Page' => 'Page',
+    'Previous' => 'Previous',
+    'Next' => 'Next',
+    'Bookmark this page' => 'Bookmark this page',
+    'Remove bookmark' => 'Remove bookmark',
+    'This item has no reader pages yet.' => 'This item has no reader pages yet.',
+    'My Library' => 'My Library',
+    'Continue' => 'Continue',
+    'Completed' => 'Completed',
+    'Read again' => 'Read again',
+    'Bookmarks' => 'Bookmarks',
+    'No bookmarks yet.' => 'No bookmarks yet.',
+    'Nothing in progress — find something in the library.' => 'Nothing in progress — find something in the library.',
 ];
