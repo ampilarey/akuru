@@ -165,6 +165,32 @@ Still open (not fixed here):
   the credential smoke has been open since June, and staging HEAD is far behind
   `main`, so the original Phase 0 deploy evidence describes nothing current.
 
+## 5c. S1 + S2 audit (2026-08-27) — findings and fixes
+
+### Fixed in this slice
+
+| Finding | Action |
+|---|---|
+| **`SendAbsenceSms` throttle bug.** `Cache::add` claimed the once-per-student-per-day key *before* resolving guardian phones, so a student with no reachable guardian burned the day's slot — a guardian attached later that day could never be notified. | Recipients resolved first; throttle claimed only when there is somebody to send to. Regression test added (`ClassAttendanceTest`). |
+| **Absence SMS was English-only**, against the S2 spec's trilingual template requirement — for a Dhivehi-first parent audience. | Message moved to `resources/lang/{en,dv,ar}/notifications.php`, rendered in the app locale. There is no per-guardian locale column, so app locale is the best available signal. **Dhivehi and Arabic strings are a first pass and need native review before reaching real guardians.** |
+
+### Corrections to the audit itself
+
+Four S2 findings I reported were **wrong**; verified against the code:
+
+- `attendance_notify` (`absent_only` / `absent_and_late`) **does exist and is honored** — gating happens at dispatch in `RecordClassAttendanceAction:91`, not in the listener.
+- **Chronic-absence reporting exists** — `chronic_threshold` is consumed by `ListClassAttendanceAction:106`, with a test covering a 5-day case.
+- **Spec test 6 is covered** — `SchoolRequestTest:55` asserts leave approval creates an approved `TeacherAbsence`.
+- S1's `term_key` "replace usages" is complete (zero code references remain); only the column drop is outstanding.
+
+### Still open (not fixed here)
+
+- **S2 notifications: 1 of 5 delivered.** Only absent/late SMS exists. Missing: unfilled-register reminder (the report exists, the nudge does not), leave-decision, substitution-assignment, behavior-incident-to-parent. No admin daily digest. This is a missing sub-slice, not a defect — it needs its own slice rather than being bolted on.
+- **Timetable builder partial vs S2.1**: substitution overlay and print exist; copy-week, copy-from-class, and teacher-view/room-view tabs do not. Pilot R2 also recorded that dragging an extra period did not persist — still open.
+- **Legacy Blade not removed** (S1 DoD line 159, S2 DoD line 91): `students.*` and `announcements` are still routed (`web_localized.php:253`). Same leftover class in both phases.
+- **`academic_years.terms` json and `course_enrollments.term_id`/`term_key` columns** still present — deliberate additive deferrals, cheap to drop now that ADR-021 applies.
+- **S2 DoD line 1** (teacher completes the loop on a phone, parent receives SMS) remains unverifiable while staging login is blocked. Walked on desktop with the log-fake sender only.
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1 Quran text provider merged (#118). W2.2 daily content store is this PR.

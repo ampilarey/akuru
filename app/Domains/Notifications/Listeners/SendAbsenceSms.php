@@ -7,6 +7,7 @@ use App\Domains\Notifications\Actions\RecordSmsReceiptAction;
 use App\Domains\Notifications\Contracts\SmsSenderInterface;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Lang;
 
 class SendAbsenceSms
 {
@@ -14,18 +15,21 @@ class SendAbsenceSms
 
     public function handle(StudentMarkedAbsent $event): void
     {
-        $key = 'attendance-sms:'.$event->studentId.':'.$event->date;
-        if (! Cache::add($key, true, now()->endOfDay())) {
-            return;
-        }
-
+        // Resolve recipients BEFORE consuming the once-per-day throttle key.
+        // Claiming the key first meant a student with no guardian phone burned
+        // the day's slot, so a guardian attached later that day could never be
+        // notified (S2 audit).
         $phones = $this->parentPhones($event->studentId);
         if ($phones === []) {
             return;
         }
 
-        $status = $event->status->value;
-        $message = "Akuru Institute: {$event->studentName} was marked {$status} on {$event->date}.";
+        $key = 'attendance-sms:'.$event->studentId.':'.$event->date;
+        if (! Cache::add($key, true, now()->endOfDay())) {
+            return;
+        }
+
+        $message = $this->message($event);
         $reference = 'attendance_'.$event->date.'_'.$event->studentId;
 
         foreach ($phones as $phone) {
@@ -48,6 +52,26 @@ class SendAbsenceSms
                 'success' => (bool) ($result['success'] ?? false),
             ]);
         }
+    }
+
+    /**
+     * Trilingual per the S2 spec: rendered in the app locale from
+     * resources/lang/{en,dv,ar}/notifications.php rather than a hardcoded
+     * English string. There is no per-guardian locale column, so the app
+     * locale is the best available signal.
+     */
+    private function message(StudentMarkedAbsent $event): string
+    {
+        $status = $event->status->value;
+        $statusKey = 'notifications.attendance.status.'.$status;
+
+        return trans('notifications.attendance.marked', [
+            'name' => $event->studentName,
+            // Any future AttendanceStatus without a translation falls back to
+            // its raw value rather than printing the lookup key.
+            'status' => Lang::has($statusKey) ? trans($statusKey) : $status,
+            'date' => $event->date,
+        ]);
     }
 
     /**
