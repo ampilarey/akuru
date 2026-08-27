@@ -711,6 +711,41 @@ migration; no Hifz behaviour change outside it.
   trial lessons / subscription-ready access recorded as post-MVP
   decisions, and the public-flow UX swap stays operator-gated.
 
+## 5i. Arabic Module B — Pronunciation AI (SPEC §51.9–§51.18)
+
+- **Arabic B (this PR):** `Domains/Pronunciation` stood up — LOCAL/offline
+  AI behind ONE contract (`PronunciationPredictionInterface`) and the
+  `AI_PRONUNCIATION_ENABLED` flag, DEFAULT OFF (rule 8: everything below
+  works fully with AI off — attempts are stored and teachers review by
+  ear; AI is an accelerator, never a dependency). Flag off binds a null
+  predictor; flag on binds `LocalPythonPronunciationPredictor`
+  (proc_open → predict.py, JSON only — §51.9: never a cloud speech API).
+  Tables §51.12/§51.13/§51.17/§51.18: `arabic_pronunciation_attempts`
+  (audio → PRIVATE media), `ai_predictions` (final status by confidence
+  threshold + letter/haraka match; a confident correct answer downgrades
+  teacher review to a spot-check, everything else stays human),
+  `training_samples` (teacher verdict → pending; admin approves/rejects
+  — only approved data ever exports), `ai_model_versions` + APPEND-ONLY
+  `ai_model_version_events` (register/activate/rollback all audited;
+  exactly one active per type; old versions kept). Surfaces:
+  `/learn/pronounce` (MediaRecorder practice page), `/teach/pronunciation`
+  (staff ear + verified letter/haraka verdict), `/admin/pronunciation`
+  (`pronunciation.manage` seeded: sample decisions, dataset cell stats,
+  manifest export, model shelf). `/ai/pronunciation` per §51.10:
+  audio_processor/model/predict/train/export scripts + README (train.py
+  consumes the exported manifest — Laravel never trains, Python never
+  touches the DB). Letter/haraka references are TABLE-LEVEL only (no
+  cross-domain model imports); labels are `key_name`s matching the
+  dataset folders. Five morph aliases same commit.
+  **Deferred (recorded):** wiring speaking ACTIVITIES in Components/
+  Arabic to the contract (activity_id column ready), §51.8 text
+  normalizer contract (typed-answer checking — separate slice),
+  audio playback streaming endpoint for the teacher queue (media id
+  shown; ReadPrivateMediaAction exists), Qur'an B consumption (§52.3 —
+  same service, second consumer). **Operator:** the flag stays OFF until
+  a model is trained from real approved samples and §51.17 consent
+  handling is confirmed (privacy backlog item).
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**; next is **F1** (Hifz → engine). Do not start F in the same turn as the Phase E report.

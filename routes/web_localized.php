@@ -189,6 +189,11 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
     Route::get('/learn/schedule', [LearnScheduleController::class, 'index'])->name('learn.schedule');
     Route::get('/learn/arabic-report', [LearnArabicReportController::class, 'index'])->name('learn.arabic-report');
     Route::get('/learn/quran', [LearnQuranController::class, 'index'])->name('learn.quran');
+    // Arabic B (§51): pronunciation practice + teacher review queue.
+    Route::get('/learn/pronounce', [\App\Domains\Pronunciation\Http\Controllers\PronunciationPracticeController::class, 'index'])->name('learn.pronounce');
+    Route::post('/learn/pronounce', [\App\Domains\Pronunciation\Http\Controllers\PronunciationPracticeController::class, 'store'])->name('learn.pronounce.store')->middleware('throttle:30,1');
+    Route::get('/teach/pronunciation', [\App\Domains\Pronunciation\Http\Controllers\TeachPronunciationController::class, 'index'])->name('teach.pronunciation');
+    Route::post('/teach/pronunciation/{attempt}/review', [\App\Domains\Pronunciation\Http\Controllers\TeachPronunciationController::class, 'review'])->name('teach.pronunciation.review')->whereNumber('attempt');
     Route::get('/teach/schedule', [TeacherScheduleController::class, 'index'])->name('teach.schedule');
     Route::get('/teach/recitations', [TeachRecitationController::class, 'index'])->name('teach.recitations');
     Route::post('/teach/recitations/{submission}/review', [TeachRecitationController::class, 'review'])->name('teach.recitations.review')->whereNumber('submission');
@@ -424,6 +429,15 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::post('items/{item}/assign-reviewer', [AdminLibraryController::class, 'assignReviewer'])->name('admin.library.items.assign-reviewer')->whereNumber('item');
         Route::get('earnings/export', [AdminLibraryController::class, 'exportEarnings'])->name('admin.library.earnings.export');
         Route::post('categories', [AdminLibraryController::class, 'storeCategory'])->name('admin.library.categories.store');
+    });
+
+    // Arabic B (§51.16 steps 6–9): dataset, samples, model shelf.
+    Route::prefix('admin/pronunciation')->middleware(['role:super_admin|admin', 'can:pronunciation.manage'])->group(function () {
+        Route::get('/', [\App\Domains\Pronunciation\Http\Controllers\AdminPronunciationController::class, 'index'])->name('admin.pronunciation.index');
+        Route::post('samples/{sample}/decide', [\App\Domains\Pronunciation\Http\Controllers\AdminPronunciationController::class, 'decideSample'])->name('admin.pronunciation.samples.decide')->whereNumber('sample');
+        Route::post('export', [\App\Domains\Pronunciation\Http\Controllers\AdminPronunciationController::class, 'export'])->name('admin.pronunciation.export');
+        Route::post('versions', [\App\Domains\Pronunciation\Http\Controllers\AdminPronunciationController::class, 'storeVersion'])->name('admin.pronunciation.versions.store');
+        Route::post('versions/{version}/activate', [\App\Domains\Pronunciation\Http\Controllers\AdminPronunciationController::class, 'activateVersion'])->name('admin.pronunciation.versions.activate')->whereNumber('version');
     });
 
     // L5 writer portal (§7.4) — any authed user may apply; item routes
