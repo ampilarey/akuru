@@ -15,9 +15,11 @@ use Illuminate\Validation\ValidationException;
 class EnrollSelfLearningAction
 {
     /**
-     * @param  array<string, mixed>  $overrides  Phase 4: the paid checkout
-     *     creates the SAME enrollment shape with pending/paid fields — one
-     *     creator for both paths, no duplicated seat/offering mechanics.
+     * Phase 4: the paid checkout passes $overrides to create the SAME
+     * enrollment shape with pending/paid fields — one creator for both
+     * paths, no duplicated seat/offering mechanics.
+     *
+     * @param  array<string, mixed>  $overrides
      */
     public function execute(int $userId, int $courseId, ?int $offeringId = null, array $overrides = []): CourseEnrollment
     {
