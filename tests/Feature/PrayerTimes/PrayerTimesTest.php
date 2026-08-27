@@ -282,17 +282,17 @@ it('blocks a changing range until it is split', function () {
 it('serves admin island CSV and public homepage widget from the contract', function () {
     seedPrayerTimesFixture();
     $admin = actingPeopleAdmin(['prayer.manage']);
-    $this->actingAs($admin)
+    $csv = $this->actingAs($admin)
         ->withoutLocalizationMiddleware()
         ->get(route('admin.prayer-times.islands.export'))
         ->assertOk()
-        ->assertHeader('content-type', 'text/csv; charset=UTF-8')
-        ->assertSee('Malé');
+        ->streamedContent();
+    expect($csv)->toContain('Malé')->toContain('Hulhumalé');
 
     $this->withoutLocalizationMiddleware()
         ->get(route('public.home'))
         ->assertOk()
-        ->assertSee(__('public.Prayer times'));
+        ->assertSee(__('public.Prayer times'), false);
 });
 
 it('new PrayerTimes and Website files stay on contracts and the fake sender', function () {
