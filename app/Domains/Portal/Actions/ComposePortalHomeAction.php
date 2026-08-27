@@ -38,7 +38,12 @@ class ComposePortalHomeAction
                 'attendance' => $attendance->execute(['student_id' => $id])->take(8)->values()->all(),
                 'exams' => $exams->get($id, collect())->take(8)->values()->all(),
                 'invoices' => $invoiceRows->take(8)->all(),
-                'invoice_balance' => $invoiceRows->sum(fn (array $row): float => (float) ($row['balance'] ?? 0)),
+                'invoice_balance' => number_format(
+                    (float) $invoiceRows->sum(fn (array $row): float => (float) ($row['balance'] ?? 0)),
+                    2,
+                    '.',
+                    '',
+                ),
                 'courses' => $performance->get($id)['rows'] ?? [],
                 'hifz' => $hifz->get($id, collect())->values()->all(),
             ];
