@@ -4,9 +4,9 @@ namespace App\Domains\Courses\Components\Quran\Actions;
 
 use App\Domains\Courses\Actions\ResolveLatestEnrollmentIdAction;
 use App\Domains\Courses\Components\Quran\Enums\QuranAssignmentStatus;
+use App\Domains\Courses\Components\Quran\Enums\QuranAssignmentType;
 use App\Domains\Courses\Components\Quran\Enums\RecitationMode;
 use App\Domains\Courses\Components\Quran\Enums\RecitationSubmissionStatus;
-use App\Domains\Courses\Components\Quran\Enums\QuranAssignmentType;
 use App\Domains\Courses\Components\Quran\Models\QuranHifzAssignment;
 use App\Domains\Courses\Components\Quran\Models\QuranRecitationSubmission;
 use App\Domains\Pronunciation\Actions\RecordExternalAudioPredictionAction;
