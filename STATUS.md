@@ -227,6 +227,58 @@ from grepping one file instead of tracing the call path):
 
 **No S3 fix slice required.**
 
+## 5e. S-track closure items (2026-08-27) — what shipped, what was rejected
+
+Six items came out of the S1–S5 audits. Three shipped; three did not, and two of
+those were rejected on investigation rather than left undone.
+
+**Shipped**
+
+1. **S2 notifications sub-slice** (#125) — the four missing notifications plus the
+   admin digest. The only genuine feature gap in the S-track.
+3. **S4 receipt template** — turned out to be a real gap, not the missing test I
+   reported: no `documents/finance/receipt` view existed, so receipts rendered
+   through `HtmlDocumentRenderer`'s generic fallback (`lang="en" dir="auto"`).
+   Template + trilingual strings + RTL test added.
+6. **Deploy 3 checklist note** — `BmlWebhookTest` builds its fixture from a
+   `RegistrationStudent` row and is guaranteed to break when that table is
+   archived; recorded so the cleanup PR budgets for it.
+
+**Rejected on investigation (premise was wrong)**
+
+5. **Deferred column drops — three of four are NOT safe.** Details in
+   `docs/migrations/s11-deploy-3-cleanup-proposal.md`. In short:
+   `course_enrollments.term_id` is still live (`EnrollmentService` reads and
+   writes it); `term_key` is a **generated** column backing the unique key that
+   prevents duplicate enrollments, so a plain drop removes that constraint
+   silently; and `students.emergency_contact_*` cannot be dropped because the
+   replacement is unfinished — `EmergencyContact` exists as a model but no
+   action, controller or screen uses it. Only `academic_years.terms` json is
+   safely droppable, and it is low value on its own.
+   **New finding:** `course_enrollments.unified_term_id` is a **dead column** —
+   referenced only by its migration and a schema-shape test. S1.5's intended
+   switch never happened; `term_id` remained live. Needs a deliberate decision.
+
+**Not attempted — needs capabilities this environment lacks**
+
+2. **Timetable builder** — the R2 drag-persist bug needs a browser to reproduce
+   (this environment cannot run the app), and copy-week / copy-from-class /
+   teacher- and room-view tabs are substantial React work that should be walked
+   before merging.
+4. **Legacy Blade removal** — 29 references, including the shared
+   `layouts/navigation.blade.php` used by every Blade page, and
+   `students.quran-progress`, which links into frozen Hifz territory. Removing
+   the routes also means editing the route-name snapshot suite that guards them.
+   Doable, but not blind: it needs a test run and a browser pass, so it belongs
+   in a slice where both are available.
+
+**Also corrected here:** my S4 audit claimed the literal webhook double-POST test
+was missing. It exists — `test_webhook_idempotent_does_not_double_enroll` posts
+the identical payload twice and asserts a single enrollment. That is the third
+audit finding of mine to dissolve on tracing (after four in S2 and two in S3), all
+from the same error: concluding absence from a keyword search instead of following
+the call path.
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.3 merged (#118–#119, #121). W2.4 daily subscriptions is this PR.
