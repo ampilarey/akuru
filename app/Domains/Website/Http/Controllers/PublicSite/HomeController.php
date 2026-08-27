@@ -3,6 +3,7 @@
 namespace App\Domains\Website\Http\Controllers\PublicSite;
 
 use App\Domains\Admissions\Models\AdmissionApplication;
+use App\Domains\Courses\Actions\ComposeCourseConversionSignalsAction;
 use App\Domains\Courses\Models\Course;
 use App\Domains\Website\Models\Event;
 use App\Domains\Website\Models\GalleryAlbum;
@@ -20,7 +21,7 @@ class HomeController extends Controller
         $locale = app()->getLocale();
 
         // Cache courses/posts/events/stats for 10 minutes; gallery+testimonials are fetched fresh
-        $cached = Cache::remember("homepage_data_v4_{$locale}", 600, function () use ($locale) {
+        $cached = Cache::remember("homepage_data_v5_{$locale}", 600, function () use ($locale) {
             return $this->buildHomepageData($locale);
         });
 
@@ -67,13 +68,17 @@ class HomeController extends Controller
             ]);
         }
 
-        // Courses from DB
-        $courses = Course::whereIn('status', ['open', 'upcoming'])
+        // Courses from DB — expired enrollment deadlines are hidden from Open Courses
+        $courses = Course::openForPublicListing()
             ->with('category')
             ->orderBy('sort_order')
             ->orderBy('title')
             ->take(6)
             ->get();
+        $signals = app(ComposeCourseConversionSignalsAction::class)->forCourses($courses);
+        foreach ($courses as $course) {
+            $course->setAttribute('conversion', $signals[$course->id] ?? null);
+        }
 
         if ($courses->isEmpty()) {
             $courses = collect([

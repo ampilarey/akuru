@@ -146,6 +146,22 @@ class Course extends Model
             });
     }
 
+    public function scopeOpenForPublicListing($query)
+    {
+        $today = now()->timezone(config('app.timezone'))->toDateString();
+
+        return $query->where(function ($q) use ($today) {
+            $q->where('status', 'upcoming')
+                ->orWhere(function ($q) use ($today) {
+                    $q->where('status', 'open')
+                        ->where(function ($q) use ($today) {
+                            $q->whereNull('enrollment_deadline')
+                                ->orWhereDate('enrollment_deadline', '>=', $today);
+                        });
+                });
+        });
+    }
+
     public function scopeUpcoming($query)
     {
         return $query->where('status', 'upcoming')
