@@ -17,6 +17,9 @@ export default function AppShell({ title, children }) {
                         <Link href="/portal/home" className="text-[#7C2D37] hover:underline">
                             Home
                         </Link>
+                        <Link href="/portal/overview" className="text-[#7C2D37] hover:underline">
+                            Overview
+                        </Link>
                         <Link href="/learn" className="text-[#7C2D37] hover:underline">
                             {i18n?.learn?.nav || 'Learn'}
                         </Link>

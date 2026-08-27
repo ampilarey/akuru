@@ -31,7 +31,7 @@ class DashboardController extends Controller
         if ($user->hasRole('super_admin')) {
             return $this->superAdminDashboard();
         } elseif ($user->isAdmin() || $user->isHeadmaster()) {
-            return $this->adminDashboard();
+            return redirect()->route('portal.overview');
         } elseif ($user->isSupervisor()) {
             return $this->supervisorDashboard();
         } elseif ($user->isTeacher()) {

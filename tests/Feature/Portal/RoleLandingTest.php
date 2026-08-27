@@ -29,6 +29,24 @@ it('sends a teacher from the dashboard to today registers', function () {
         ->assertInertia(fn (Assert $page) => $page->component('Academics/Registers/Today'));
 });
 
+it('sends an admin from the dashboard to the composed staff overview', function () {
+    $user = actingPeopleAdmin(['registers.manage', 'exams.manage']);
+
+    $this->withoutLocalizationMiddleware()
+        ->actingAs($user)
+        ->get(route('dashboard'))
+        ->assertRedirect(route('portal.overview'));
+
+    $this->withoutLocalizationMiddleware()
+        ->actingAs($user)
+        ->get(route('portal.overview'))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('Portal/StaffOverview')
+            ->where('title', 'Staff overview')
+        );
+});
+
 it('sends a parent from the dashboard to the composed portal home', function () {
     Role::findOrCreate('parent', 'web');
 

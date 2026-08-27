@@ -116,6 +116,7 @@ use App\Domains\Portal\Http\Controllers\PortalPayslipController;
 use App\Domains\Portal\Http\Controllers\PortalPerformanceController;
 use App\Domains\Portal\Http\Controllers\PortalReportCardController;
 use App\Domains\Portal\Http\Controllers\PortalStaffCheckInController;
+use App\Domains\Portal\Http\Controllers\StaffOverviewController;
 use App\Domains\Settings\Http\Controllers\Admin\SettingsController as AdminSettingsController;
 use App\Domains\Settings\Http\Controllers\AnalyticsController;
 use App\Domains\Website\Http\Controllers\Admin\PublicSite\CourseController as AdminCourseController;
@@ -136,6 +137,8 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
     Route::get('/enhanced-dashboard', [EnhancedDashboardController::class, 'index'])->name('enhanced.dashboard');
     Route::get('/portal/home/export', [PortalHomeController::class, 'export'])->name('portal.home.export');
     Route::get('/portal/home', [PortalHomeController::class, 'index'])->name('portal.home');
+    Route::get('/portal/overview/export', [StaffOverviewController::class, 'export'])->name('portal.overview.export');
+    Route::get('/portal/overview', [StaffOverviewController::class, 'index'])->name('portal.overview');
     Route::get('/portal/meetings/export', [PortalMeetingController::class, 'export'])->name('portal.meetings.export');
     Route::get('/portal/meetings', [PortalMeetingController::class, 'index'])->name('portal.meetings');
     Route::post('/portal/meetings/{slot}/book', [PortalMeetingController::class, 'book'])->name('portal.meetings.book')->whereNumber('slot');
