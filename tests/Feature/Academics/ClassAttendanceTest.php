@@ -240,3 +240,53 @@ it('lists chronic absences at the threshold', function () {
     expect($chronic)->toHaveCount(1)
         ->and($chronic->first()['absent_days'])->toBe(5);
 });
+
+it('does not burn the daily SMS throttle when the student has no guardian phone', function () {
+    // Regression (S2 audit): SendAbsenceSms claimed the once-per-day cache key
+    // BEFORE resolving guardian phones, so a student with no reachable guardian
+    // consumed the day's slot. Attaching a guardian later the same day could
+    // then never produce a message.
+    $sms = fakeSms();
+    $year = makeYear(['name' => '2026-2027', 'is_current' => true, 'status' => 'active']);
+    $class = makeClass($year);
+    $teacher = makeTeacherRow();
+    $student = makeStudent();
+    app(AssignStudentToClassAction::class)->execute($class, $student->id);
+
+    $log = makeLessonLog([
+        'year' => $year,
+        'teacher_id' => $teacher->id,
+        'classroom_id' => $class->id,
+        'date' => now()->toDateString(),
+        'period_id' => makePeriodRow()->id,
+    ]);
+
+    $mark = fn (): StudentAttendanceDTO => new StudentAttendanceDTO(
+        studentId: $student->id,
+        classId: $class->id,
+        academicYearId: $year->id,
+        date: (string) $log->date->toDateString(),
+        status: AttendanceStatus::Absent,
+        source: AttendanceSource::Register,
+        markedBy: (int) $teacher->user_id,
+        periodId: $log->period_id,
+        lessonLogId: $log->id,
+    );
+
+    $writer = app(AttendanceWriterInterface::class);
+
+    // No guardian yet: nothing to send, and nothing should be throttled.
+    $writer->record($mark());
+    expect($sms->sent)->toHaveCount(0);
+
+    // Guardian arrives the same day; the slot must still be available.
+    app(AttachGuardianAction::class)->execute($student, makeGuardian(), 'father', true);
+    $writer->record($mark());
+
+    expect($sms->sent)->toHaveCount(1)
+        ->and($sms->sent[0]['phone'])->toBe('7820288');
+
+    // And the throttle still holds for a third mark on the same day.
+    $writer->record($mark());
+    expect($sms->sent)->toHaveCount(1);
+});
