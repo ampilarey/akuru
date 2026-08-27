@@ -283,8 +283,13 @@
                         <a href="{{ route('public.admissions.create', [app()->getLocale(), 'course' => $course->id]) }}" class="text-xs text-center block mt-3 text-gray-400 hover:text-brandMaroon-600">Or submit an inquiry</a>
                     @endif
 
+                    <div class="mt-4">
+                        @include('public.courses._syllabus_form', ['course' => $course, 'cta' => $cta ?? []])
+                    </div>
+
                     <div class="mt-5 pt-5 border-t border-gray-100">
-                        <p class="text-xs text-gray-400 text-center mb-3">Have questions? Chat with us on Viber.</p>
+                        <p class="text-xs text-gray-400 text-center mb-3">Have questions? Chat with us.</p>
+                        @include('public.courses._whatsapp_link', ['cta' => $cta ?? [], 'class' => 'flex items-center justify-center gap-2 w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2.5 rounded-xl text-sm transition-colors mb-2'])
                         <a href="viber://chat?number=%2B{{ $siteSettings['viber'] ?? '9607972434' }}&text={{ urlencode('Assalaamu alaikum, I want to apply for '.$course->title.'. Please send me more details.') }}"
                            class="flex items-center justify-center gap-2 w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-2.5 rounded-xl text-sm transition-colors mb-2">
                             <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M11.993 0C5.5 0 .527 4.972.527 11.473c0 3.107 1.2 5.943 3.17 8.053V23l2.953-1.628A11.03 11.03 0 0011.993 22.736c6.457 0 11.43-4.972 11.43-11.472C23.459 4.813 18.487 0 11.993 0z"/></svg>
@@ -340,9 +345,14 @@
 </section>
 @endif
 
-{{-- ── Sticky mobile enroll bar ─────────────────────────────────── --}}
-@if($course->status === 'open' && ($course->conversion['seats_tone'] ?? null) !== 'full')
-<div class="fixed bottom-0 left-0 right-0 z-40 lg:hidden bg-white border-t border-gray-200 shadow-2xl px-4 py-3 flex items-center gap-3">
+{{-- ── Sticky mobile enroll bar (price + Register + WhatsApp; not a second bar) ── --}}
+@php
+    $cta = $cta ?? ['whatsapp_url' => null, 'syllabus' => null];
+    $canEnroll = $course->status === 'open' && ($course->conversion['seats_tone'] ?? null) !== 'full';
+    $showSticky = $canEnroll || $course->status === 'upcoming' || ! empty($cta['whatsapp_url']);
+@endphp
+@if($showSticky)
+<div id="course-sticky-cta" class="fixed left-0 right-0 z-40 lg:hidden bg-white border-t border-gray-200 shadow-2xl px-4 py-3 flex items-center gap-3" style="bottom:4rem">
     <div class="flex-1 min-w-0">
         <p class="text-xs text-gray-500 truncate">{{ $course->title }}</p>
         @if(($course->conversion['early_bird']['amount'] ?? null))
@@ -353,28 +363,37 @@
             <p class="font-bold text-green-600 text-sm leading-none">Free</p>
         @endif
     </div>
-    <a href="{{ route('courses.checkout.show', $course) }}"
-       class="shrink-0 bg-brandMaroon-600 hover:bg-brandMaroon-700 text-white font-bold px-6 py-3 rounded-xl text-sm transition-colors shadow-lg">
-        Enroll Now
-        @if($course->conversion['seats_label'] ?? null)
-            · {{ $course->conversion['seats_label'] }}
-        @endif
-    </a>
+    @if(! empty($cta['whatsapp_url']))
+        <a href="{{ $cta['whatsapp_url'] }}"
+           target="_blank"
+           rel="noopener"
+           id="sticky-whatsapp"
+           class="shrink-0 w-12 h-12 rounded-xl bg-green-600 hover:bg-green-700 text-white flex items-center justify-center shadow-lg"
+           aria-label="Ask on WhatsApp">
+            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.435 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        </a>
+    @endif
+    @if($canEnroll)
+        <a href="{{ route('courses.checkout.show', $course) }}"
+           class="shrink-0 bg-brandMaroon-600 hover:bg-brandMaroon-700 text-white font-bold px-6 py-3 rounded-xl text-sm transition-colors shadow-lg">
+            Register
+            @if($course->conversion['seats_label'] ?? null)
+                · {{ $course->conversion['seats_label'] }}
+            @endif
+        </a>
+    @elseif($course->status === 'upcoming')
+        <a href="{{ route('public.admissions.create', [app()->getLocale(), 'course' => $course->id]) }}"
+           class="shrink-0 bg-amber-500 hover:bg-amber-600 text-white font-bold px-5 py-3 rounded-xl text-sm transition-colors">
+            Notify Me
+        </a>
+    @endif
 </div>
-{{-- Spacer so content isn't hidden behind sticky bar on mobile --}}
-<div class="h-20 lg:hidden"></div>
-@elseif($course->status === 'upcoming')
-<div class="fixed bottom-0 left-0 right-0 z-40 lg:hidden bg-amber-50 border-t border-amber-200 px-4 py-3 flex items-center justify-between gap-3">
-    <div>
-        <p class="text-xs text-amber-600 font-semibold">Enrollment opening soon</p>
-        <p class="text-sm font-bold text-gray-900 truncate">{{ $course->title }}</p>
-    </div>
-    <a href="{{ route('public.admissions.create', [app()->getLocale(), 'course' => $course->id]) }}"
-       class="shrink-0 bg-amber-500 hover:bg-amber-600 text-white font-bold px-5 py-3 rounded-xl text-sm transition-colors">
-        Notify Me
-    </a>
-</div>
-<div class="h-20 lg:hidden"></div>
+<div class="lg:hidden" style="height:9rem"></div>
+<style>
+@media (min-width: 640px) {
+    #course-sticky-cta { bottom: 0 !important; }
+}
+</style>
 @endif
 
 @endsection

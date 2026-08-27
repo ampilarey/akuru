@@ -120,6 +120,7 @@ use App\Domains\Portal\Http\Controllers\StaffOverviewController;
 use App\Domains\Settings\Http\Controllers\Admin\SettingsController as AdminSettingsController;
 use App\Domains\Settings\Http\Controllers\AnalyticsController;
 use App\Domains\Website\Http\Controllers\Admin\PublicSite\CourseController as AdminCourseController;
+use App\Domains\Website\Http\Controllers\Admin\PublicSite\LeadController as AdminLeadController;
 use App\Domains\Website\Http\Controllers\Admin\PublicSite\PageController as AdminPageController;
 use App\Domains\Website\Http\Controllers\EventAdminController;
 use App\Support\Http\Controllers\LocaleController;
@@ -339,6 +340,9 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
             'update' => 'admin.courses.update',
             'destroy' => 'admin.courses.destroy',
         ]);
+
+        Route::get('leads/export', [AdminLeadController::class, 'export'])->name('admin.leads.export');
+        Route::get('leads', [AdminLeadController::class, 'index'])->name('admin.leads.index');
     });
 
     Route::prefix('people')->middleware(['role:super_admin|admin|headmaster|supervisor'])->group(function () {

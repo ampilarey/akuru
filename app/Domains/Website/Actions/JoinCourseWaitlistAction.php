@@ -3,6 +3,7 @@
 namespace App\Domains\Website\Actions;
 
 use App\Domains\Courses\Actions\ComposeCourseConversionSignalsAction;
+use App\Domains\Website\Enums\LeadSource;
 use App\Domains\Website\Models\ContactInquiry;
 use App\Domains\Website\Models\InquiryType;
 use Illuminate\Validation\ValidationException;
@@ -34,7 +35,7 @@ class JoinCourseWaitlistAction
             ],
         );
 
-        return ContactInquiry::query()->create([
+        $inquiry = ContactInquiry::query()->create([
             'inquiry_type_id' => $type->id,
             'name' => $data['name'],
             'email' => $data['email'] ?? null,
@@ -50,5 +51,14 @@ class JoinCourseWaitlistAction
                 'course_id' => $courseId,
             ],
         ]);
+
+        app(CaptureCourseLeadAction::class)->execute($courseId, LeadSource::WaitingList, [
+            'name' => $data['name'],
+            'mobile' => $data['phone'],
+            'email' => $data['email'] ?? null,
+            'notes' => $data['message'] ?? null,
+        ]);
+
+        return $inquiry;
     }
 }
