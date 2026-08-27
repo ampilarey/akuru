@@ -2,8 +2,8 @@
 
 namespace App\Domains\Courses\Http\Controllers;
 
-use App\Domains\Courses\Actions\EnrollSelfLearningAction;
 use App\Domains\Courses\Actions\ListPublishedCoursesAction;
+use App\Domains\Courses\Actions\StartCourseCheckoutAction;
 use App\Domains\People\Actions\ResolveStudentForUserAction;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
@@ -26,8 +26,29 @@ class LearnCatalogController extends Controller
     public function enroll(Request $request, int $course): RedirectResponse
     {
         abort_unless($request->user() !== null, 403);
-        app(EnrollSelfLearningAction::class)->execute((int) $request->user()->id, $course);
+        $data = $request->validate([
+            'discount_code' => 'nullable|string|max:40',
+            'pay_with_wallet' => 'nullable|boolean',
+        ]);
 
-        return redirect()->route('learn.courses.show', $course)->with('success', 'Enrolled.');
+        $result = app(StartCourseCheckoutAction::class)->execute(
+            (int) $request->user()->id,
+            $course,
+            null,
+            $data['discount_code'] ?? null,
+            (bool) ($data['pay_with_wallet'] ?? false),
+        );
+
+        if ($result['redirect_url'] !== null) {
+            return redirect()->away($result['redirect_url']);
+        }
+        if ($result['error'] !== null) {
+            return redirect()->route('learn.catalog')->with('error', $result['error']);
+        }
+
+        return redirect()->route('learn.courses.show', $course)->with(
+            'success',
+            $result['paid_with_wallet'] ? 'Paid with wallet — you are enrolled.' : 'Enrolled.'
+        );
     }
 }

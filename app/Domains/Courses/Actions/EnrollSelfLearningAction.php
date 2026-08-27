@@ -14,7 +14,12 @@ use Illuminate\Validation\ValidationException;
 
 class EnrollSelfLearningAction
 {
-    public function execute(int $userId, int $courseId, ?int $offeringId = null): CourseEnrollment
+    /**
+     * @param  array<string, mixed>  $overrides  Phase 4: the paid checkout
+     *     creates the SAME enrollment shape with pending/paid fields — one
+     *     creator for both paths, no duplicated seat/offering mechanics.
+     */
+    public function execute(int $userId, int $courseId, ?int $offeringId = null, array $overrides = []): CourseEnrollment
     {
         $course = Course::query()->findOrFail($courseId);
         $status = $course->workflow_status instanceof CourseWorkflowStatus
@@ -46,7 +51,7 @@ class EnrollSelfLearningAction
         $legacyId = $student['legacy_registration_student_id']
             ?? app(EnsureLegacyStudentForUnifiedAction::class)->execute($student['id']);
 
-        return DB::transaction(function () use ($userId, $courseId, $offeringId, $student, $legacyId): CourseEnrollment {
+        return DB::transaction(function () use ($userId, $courseId, $offeringId, $student, $legacyId, $overrides): CourseEnrollment {
             $offering = $offeringId
                 ? app(ReserveOfferingSeatAction::class)->execute($offeringId)
                 : app(DefaultSelfLearningOfferingAction::class)->execute($courseId);
@@ -59,7 +64,7 @@ class EnrollSelfLearningAction
                 ]);
             }
 
-            return CourseEnrollment::query()->create([
+            return CourseEnrollment::query()->create(array_merge([
                 'student_id' => $legacyId,
                 'unified_student_id' => $student['id'],
                 'course_id' => $courseId,
@@ -70,7 +75,7 @@ class EnrollSelfLearningAction
                 'enrolled_at' => now(),
                 'created_by_user_id' => $userId,
                 'payment_status' => 'not_required',
-            ]);
+            ], $overrides));
         });
     }
 }
