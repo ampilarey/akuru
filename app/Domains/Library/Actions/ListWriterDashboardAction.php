@@ -62,9 +62,9 @@ class ListWriterDashboardAction
                 'status' => $item->status?->value,
                 'submitted_at' => $item->submitted_at?->toDateTimeString(),
                 'published_at' => $item->published_at?->toDateTimeString(),
-                'latest_comment' => $latestComments[$item->id]?->comment,
-                'sales' => (int) ($salesRows[$item->id]->sales ?? 0),
-                'revenue' => (float) ($salesRows[$item->id]->revenue ?? 0),
+                'latest_comment' => $latestComments->get($item->id)?->comment,
+                'sales' => (int) ($salesRows->get($item->id)?->sales ?? 0),
+                'revenue' => (float) ($salesRows->get($item->id)?->revenue ?? 0),
             ])->values()->all();
 
             $sales = [

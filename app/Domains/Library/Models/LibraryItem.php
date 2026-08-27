@@ -51,6 +51,7 @@ class LibraryItem extends Model
             'access_type' => LibraryAccessType::class,
             'status' => LibraryItemStatus::class,
             'published_at' => 'datetime',
+            'submitted_at' => 'datetime',
             'preview_enabled' => 'boolean',
             'price' => 'decimal:2',
         ];

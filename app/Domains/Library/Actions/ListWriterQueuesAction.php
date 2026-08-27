@@ -55,7 +55,7 @@ class ListWriterQueuesAction
             'content_type' => $item->content_type?->value,
             'access_type' => $item->access_type?->value,
             'price' => $item->price !== null ? (float) $item->price : null,
-            'writer' => $writers[$item->writer_id]?->display_name ?? '—',
+            'writer' => $writers->get($item->writer_id)?->display_name ?? '—',
             'submitted_at' => $item->submitted_at?->toDateTimeString(),
             'history' => ($history[$item->id] ?? collect())->map(fn (LibraryItemReview $review) => [
                 'decision' => $review->decision,
