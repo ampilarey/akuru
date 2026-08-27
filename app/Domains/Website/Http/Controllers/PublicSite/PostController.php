@@ -2,6 +2,7 @@
 
 namespace App\Domains\Website\Http\Controllers\PublicSite;
 
+use App\Domains\Website\Enums\PostType;
 use App\Domains\Website\Models\Post;
 use App\Domains\Website\Models\PostCategory;
 use App\Http\Controllers\Controller;
@@ -135,10 +136,20 @@ class PostController extends Controller
         return view($view, compact('posts', 'categories', 'featuredPosts', 'recentPosts', 'popularTags'));
     }
 
-    public function show(Post $post)
+    public function show(Request $request, Post $post)
     {
         // Ensure the post is published
         if (! $post->is_published || $post->published_at > now()) {
+            abort(404);
+        }
+
+        $expected = match ($request->route()?->getName()) {
+            'public.articles.show' => PostType::Article->value,
+            'public.news.show' => PostType::News->value,
+            default => null,
+        };
+        $type = $post->type instanceof PostType ? $post->type->value : (string) $post->type;
+        if ($expected !== null && $type !== $expected) {
             abort(404);
         }
 

@@ -3,6 +3,7 @@
 namespace App\Domains\Website\Models;
 
 use App\Domains\Identity\Models\User;
+use App\Domains\Website\Enums\PostType;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -30,6 +31,10 @@ class Post extends Model
         'meta_description',
         'meta_keywords',
         'meta',
+        'abstract',
+        'citation_note',
+        'authors',
+        'pdf_document_id',
     ];
 
     protected $casts = [
@@ -39,6 +44,7 @@ class Post extends Model
         'is_pinned' => 'boolean',
         'tags' => 'array',
         'meta' => 'array',
+        'authors' => 'array',
     ];
 
     public function author(): BelongsTo
@@ -67,6 +73,11 @@ class Post extends Model
     public function scopeNews($query)
     {
         return $query->where('type', 'news');
+    }
+
+    public function scopeResearch($query)
+    {
+        return $query->where('type', PostType::Research->value);
     }
 
     public function scopeArticles($query)
@@ -129,12 +140,13 @@ class Post extends Model
 
     public function getReadingTimeAttribute()
     {
-        if ($this->reading_time) {
-            return $this->reading_time;
+        $stored = $this->attributes['reading_time'] ?? null;
+        if ($stored) {
+            return $stored;
         }
 
-        $wordCount = str_word_count(strip_tags($this->body));
-        $minutes = ceil($wordCount / 200); // Average reading speed: 200 words per minute
+        $wordCount = str_word_count(strip_tags((string) $this->body));
+        $minutes = max(1, (int) ceil($wordCount / 200));
 
         return $minutes.' min read';
     }

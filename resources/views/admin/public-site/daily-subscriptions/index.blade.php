@@ -6,6 +6,7 @@
         <div class="flex items-center gap-4">
             <h1 class="text-3xl font-bold text-gray-900">Daily subscriptions</h1>
             <a href="{{ route('admin.daily-content.index') }}" class="text-brandBlue-600 hover:text-brandBlue-800 text-sm font-medium">Daily content →</a>
+            <a href="{{ route('admin.research.index') }}" class="text-brandBlue-600 hover:text-brandBlue-800 text-sm font-medium">Research →</a>
             <a href="{{ route('admin.leads.index') }}" class="text-brandBlue-600 hover:text-brandBlue-800 text-sm font-medium">Leads →</a>
         </div>
         <a href="{{ route('admin.daily-subscriptions.export') }}" class="btn-secondary">Export CSV</a>

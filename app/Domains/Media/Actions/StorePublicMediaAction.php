@@ -7,6 +7,7 @@ use App\Domains\Media\Models\MediaFile;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
+use InvalidArgumentException;
 
 class StorePublicMediaAction
 {
@@ -28,8 +29,13 @@ class StorePublicMediaAction
      * @param  array<string, mixed>  $meta
      * @return array{id: int, url: string, mime: string, original_name: string, visibility: string}
      */
-    public function execute(UploadedFile $file, ?int $uploadedBy = null, array $allowedMimes = [], array $meta = []): array
-    {
+    public function execute(
+        UploadedFile $file,
+        ?int $uploadedBy = null,
+        array $allowedMimes = [],
+        array $meta = [],
+        string $directory = 'trust-logos',
+    ): array {
         $mime = (string) ($file->getMimeType() ?: $file->getClientMimeType());
         $allowed = $allowedMimes === [] ? self::DEFAULT_MIMES : $allowedMimes;
         if (! in_array($mime, $allowed, true)) {
@@ -38,8 +44,13 @@ class StorePublicMediaAction
             ]);
         }
 
+        $directory = trim($directory, '/');
+        if ($directory === '' || ! preg_match('/^[A-Za-z0-9_-]+$/', $directory)) {
+            throw new InvalidArgumentException('Directory is not allowed.');
+        }
+
         $extension = strtolower((string) ($file->guessExtension() ?: $file->getClientOriginalExtension()));
-        $path = 'trust-logos/'.now()->format('Y/m').'/'.Str::uuid().($extension !== '' ? '.'.$extension : '');
+        $path = $directory.'/'.now()->format('Y/m').'/'.Str::uuid().($extension !== '' ? '.'.$extension : '');
         $contents = (string) file_get_contents($file->getRealPath());
         $this->storage->put('public', $path, $contents);
 
