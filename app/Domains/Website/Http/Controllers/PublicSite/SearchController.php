@@ -3,6 +3,7 @@
 namespace App\Domains\Website\Http\Controllers\PublicSite;
 
 use App\Domains\Courses\Models\Course;
+use App\Domains\Website\Enums\PostType;
 use App\Domains\Website\Models\Event;
 use App\Domains\Website\Models\Post;
 use App\Http\Controllers\Controller;
@@ -31,6 +32,7 @@ class SearchController extends Controller
                 ->get();
 
             $posts = Post::published()
+                ->whereIn('type', [PostType::Article->value, PostType::News->value])
                 ->where(function ($query) use ($q) {
                     $query->where('title', 'like', "%{$q}%")
                         ->orWhere('summary', 'like', "%{$q}%")

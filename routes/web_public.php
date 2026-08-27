@@ -8,7 +8,9 @@ use App\Domains\Website\Http\Controllers\PublicSite\DailySubscriptionController;
 use App\Domains\Website\Http\Controllers\PublicSite\DailyUnsubscribeController;
 use App\Domains\Website\Http\Controllers\PublicSite\GalleryController;
 use App\Domains\Website\Http\Controllers\PublicSite\HomeController;
+use App\Domains\Website\Http\Controllers\PublicSite\InstructorProfileController;
 use App\Domains\Website\Http\Controllers\PublicSite\PageController;
+use App\Domains\Website\Http\Controllers\PublicSite\ResearchPostController;
 use App\Domains\Website\Http\Controllers\PublicSite\SitemapController;
 use Illuminate\Support\Facades\Route;
 
@@ -44,6 +46,11 @@ Route::get('search', [\App\Domains\Website\Http\Controllers\PublicSite\SearchCon
 // Articles (type=article posts)
 Route::get('articles', [\App\Domains\Website\Http\Controllers\PublicSite\PostController::class, 'articlesIndex'])->name('public.articles.index');
 Route::get('articles/{post:slug}', [\App\Domains\Website\Http\Controllers\PublicSite\PostController::class, 'show'])->name('public.articles.show');
+
+Route::get('research/export', [ResearchPostController::class, 'export'])->name('public.research.export');
+Route::get('research', [ResearchPostController::class, 'index'])->name('public.research.index');
+Route::get('research/{post:slug}', [ResearchPostController::class, 'show'])->name('public.research.show');
+Route::get('instructors/{slug}', [InstructorProfileController::class, 'show'])->name('public.instructors.show');
 
 // Calendar .ics download for individual event
 Route::get('events/{event}/calendar.ics', [\App\Domains\Website\Http\Controllers\PublicSite\EventController::class, 'downloadCalendar'])->name('public.events.calendar');

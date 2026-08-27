@@ -60,3 +60,24 @@ it('rejects a mime that is not allowed for public media', function () {
         UploadedFile::fake()->create('notes.pdf', 10, 'application/pdf'),
     ))->toThrow(ValidationException::class);
 });
+
+it('stores an allowed PDF under a custom public directory', function () {
+    Storage::fake('public');
+    Queue::fake();
+
+    $stored = app(StorePublicMediaAction::class)->execute(
+        UploadedFile::fake()->create('paper.pdf', 20, 'application/pdf'),
+        null,
+        ['application/pdf'],
+        ['alt' => 'W25 paper'],
+        'research-pdfs',
+    );
+
+    expect($stored['visibility'])->toBe('public')
+        ->and($stored['url'])->toContain('research-pdfs/')
+        ->and($stored['url'])->not->toContain('trust-logos/');
+
+    $file = MediaFile::query()->findOrFail($stored['id']);
+    expect($file->path)->toStartWith('research-pdfs/')
+        ->and(Storage::disk('public')->exists($file->path))->toBeTrue();
+});

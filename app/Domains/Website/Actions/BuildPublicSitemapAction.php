@@ -13,7 +13,7 @@ use App\Domains\Website\Models\Post;
 class BuildPublicSitemapAction
 {
     /**
-     * XML sitemap with xhtml hreflang triplets for courses, articles, events, and news.
+     * XML sitemap with xhtml hreflang triplets for courses, articles, news, research, events.
      */
     public function execute(): string
     {
@@ -43,6 +43,7 @@ class BuildPublicSitemapAction
             'courses' => ['0.8', 'weekly'],
             'articles' => ['0.7', 'weekly'],
             'news' => ['0.8', 'weekly'],
+            'research' => ['0.7', 'weekly'],
             'events' => ['0.8', 'weekly'],
             'gallery' => ['0.7', 'weekly'],
             'admissions' => ['0.9', 'weekly'],
@@ -58,6 +59,10 @@ class BuildPublicSitemapAction
 
         foreach (Post::query()->published()->news()->latest('updated_at')->get(['slug', 'updated_at']) as $post) {
             $xml .= $this->localizedGroup($base, $locales, 'news/'.$post->slug, $this->lastmod($post->updated_at), '0.7', 'monthly');
+        }
+
+        foreach (Post::query()->published()->research()->latest('updated_at')->get(['slug', 'updated_at']) as $post) {
+            $xml .= $this->localizedGroup($base, $locales, 'research/'.$post->slug, $this->lastmod($post->updated_at), '0.7', 'monthly');
         }
 
         foreach (app(ListPublicCourseSitemapEntriesAction::class)->execute() as $course) {
