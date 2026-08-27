@@ -184,6 +184,19 @@ Every content block, activity, and exam component is **registered, not hardcoded
 
 Phase 1A/1B ship the spec's core types. The Arabic and Quran components (below) register through the exact same mechanism — proof the registry is real.
 
+> **As built (Phase 2 audit, 2026-08-27).** `Courses/Components/` was never
+> created. Arabic and Quran code (letters/harakas models, Quran passage
+> resolution, skill metadata) lives directly in `Courses/Models` and
+> `Courses/Actions`; block types and activity patterns are enums; the only real
+> registry is the gradebook's `GradeItemProvider` tagging. Rule 6 holds
+> behaviourally (no subject branching in shared paths — verified), but the
+> structural isolation this section describes does not exist yet, and rule 3's
+> Components clause currently guards an empty set. **Phase F is the scheduled
+> correction point**: it creates `Components/Quran` as the §2b destination and
+> moves Arabic in the same slice (FQCN moves → morph-map + arch-baseline updates
+> together). Spec §43's `student_submissions` / `teacher_feedback` tables were
+> replaced by `answers` json on attempts + review fields — recorded deviation.
+
 **Phase 1A scope guard:** the registry is a **simple internal registry** (a service-provider registration list) — no marketplace, no dynamic installer, no external code loading, no public plugin API, no package discovery. Phase 1A registers only the spec's internal block types (Text, Rich Text, Instruction, Image, Audio, Video, PDF).
 
 ### 4. Course-type extension domains (own tables + dashboards)
