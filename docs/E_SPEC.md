@@ -30,16 +30,21 @@ Merged #117.
 
 ## E2 — W2 daily content
 
-### W2.1 — Quran translations (this slice)
+### W2.1 — Quran translations
 
-- `quran_translations` attached to existing `quran_ayahs`. No parallel Quran tables.
-- `QuranTextProviderInterface` in Support contracts; Hifz `ReadQuranTextAction` implements it. Website/W2 must not import Hifz Models.
-- Import: `php artisan quran:import-translations`. Repo ships a 1:1 teaching gloss only (ADR-023).
-- Hifz dashboards untouched.
+Merged #118.
 
-### W2.2 (next)
+### W2.2 — Daily content store (this slice)
 
-Daily content store (ayah/hadith/saying/reminder) with hadith integrity + maker–checker.
+- `daily_contents` in Website. Unique `(publish_date, content_type)`. No `academic_year_id` (ADR-024).
+- Hadith cannot publish without collection + number + grading + grading source.
+- Maker–checker: `daily_content.manage` vs `daily_content.approve`; creator ≠ approver. Save cannot set scheduled/published.
+- Ayahs via `QuranTextProviderInterface` only. Admin Blade under public-site (no AppShell link).
+- No auto-generation (WORKING_RULES + ADR-024).
+
+### W2.3 (next)
+
+Homepage widget, archive/permalink, share cards. Prayer/Hijri widget is **W3**.
 
 ## E3 — W3 prayer times (next phase)
 
