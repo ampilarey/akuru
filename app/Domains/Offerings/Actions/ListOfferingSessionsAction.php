@@ -47,6 +47,19 @@ class ListOfferingSessionsAction
             ] : null,
             'dual_write_enabled' => (bool) config('quran.halaqa_dual_write'),
             'halaqa_sessions' => $halaqa ? $reader->listSessions((int) $halaqa->hifz_program_id) : [],
+            // F1 (A.4b) read switch: engine sessions are authoritative for
+            // halaqa-linked offerings; the legacy list above stays for the
+            // manual link picker. Unmirrored ids let the UI flag lag without
+            // changing existing keys. Gate: php artisan halaqa:verify-mirror.
+            'read_source' => 'engine',
+            'unmirrored_halaqa_session_ids' => $halaqa
+                ? collect($reader->listSessions((int) $halaqa->hifz_program_id))
+                    ->pluck('id')
+                    ->map(fn ($id) => (int) $id)
+                    ->diff($sessionLinks->pluck('hifz_session_id')->map(fn ($id) => (int) $id))
+                    ->values()
+                    ->all()
+                : [],
             'sessions' => CourseOfferingSession::query()
                 ->where('course_offering_id', $offeringId)
                 ->orderBy('starts_at')
