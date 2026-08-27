@@ -95,6 +95,9 @@ export default function AppShell({ title, children }) {
                         <Link href="/academics/bookings" className="text-[#7C2D37] hover:underline">
                             Bookings
                         </Link>
+                        <Link href="/academics/meetings" className="text-[#7C2D37] hover:underline">
+                            Meetings
+                        </Link>
                         <Link href="/academics/calendar" className="text-[#7C2D37] hover:underline">
                             Calendar
                         </Link>

@@ -73,14 +73,16 @@ function StudentCard({ student, labels }) {
 
 export default function Home({ title = 'Dashboard', students = [], csvUrl = '/portal/home/export', sections = [] }) {
     const labels = Object.fromEntries(sections.map((section) => [section.key, section.label]));
-    const absence = sections.find((section) => section.key === 'absence_notes');
+    const extras = sections.filter((section) => !['attendance', 'exams', 'invoices', 'courses', 'hifz'].includes(section.key) && section.href);
 
     return (
         <AppShell title={title}>
             <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
                 <p className="text-sm text-gray-600">Attendance, exams, invoices, course progress, and Hifz — read from each domain's public contract.</p>
                 <div className="flex gap-3 text-sm">
-                    {absence && <a className="text-[#7C2D37] hover:underline" href={absence.href}>{absence.label}</a>}
+                    {extras.map((section) => (
+                        <a key={section.key} className="text-[#7C2D37] hover:underline" href={section.href}>{section.label}</a>
+                    ))}
                     <a className="btn-secondary" href={csvUrl}>Export CSV</a>
                 </div>
             </div>

@@ -100,6 +100,8 @@ return [
     'media_file' => \App\Domains\Media\Models\MediaFile::class,
     'media_gallery' => \App\Domains\Media\Models\MediaGallery::class,
     'media_item' => \App\Domains\Media\Models\MediaItem::class,
+    'meeting_booking' => \App\Domains\Academics\Models\MeetingBooking::class,
+    'meeting_slot' => \App\Domains\Academics\Models\MeetingSlot::class,
     'message' => \App\Domains\Notifications\Models\Message::class,
     'notification' => \App\Domains\Notifications\Models\Notification::class,
     'notification_template' => \App\Domains\Notifications\Models\NotificationTemplate::class,

@@ -9,6 +9,7 @@ use App\Domains\Academics\Http\Controllers\CalendarDayController;
 use App\Domains\Academics\Http\Controllers\ClassDirectoryController;
 use App\Domains\Academics\Http\Controllers\CoursePlanController;
 use App\Domains\Academics\Http\Controllers\DailyAttendanceController;
+use App\Domains\Academics\Http\Controllers\MeetingSlotController;
 use App\Domains\Academics\Http\Controllers\PeriodDirectoryController;
 use App\Domains\Academics\Http\Controllers\PromotionController;
 use App\Domains\Academics\Http\Controllers\RegisterReportController;
@@ -110,6 +111,7 @@ use App\Domains\Portal\Http\Controllers\PortalHomeController;
 use App\Domains\Portal\Http\Controllers\PortalInvoiceController;
 use App\Domains\Portal\Http\Controllers\PortalLearningController;
 use App\Domains\Portal\Http\Controllers\PortalLeaveBalanceController;
+use App\Domains\Portal\Http\Controllers\PortalMeetingController;
 use App\Domains\Portal\Http\Controllers\PortalPayslipController;
 use App\Domains\Portal\Http\Controllers\PortalPerformanceController;
 use App\Domains\Portal\Http\Controllers\PortalReportCardController;
@@ -134,6 +136,10 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
     Route::get('/enhanced-dashboard', [EnhancedDashboardController::class, 'index'])->name('enhanced.dashboard');
     Route::get('/portal/home/export', [PortalHomeController::class, 'export'])->name('portal.home.export');
     Route::get('/portal/home', [PortalHomeController::class, 'index'])->name('portal.home');
+    Route::get('/portal/meetings/export', [PortalMeetingController::class, 'export'])->name('portal.meetings.export');
+    Route::get('/portal/meetings', [PortalMeetingController::class, 'index'])->name('portal.meetings');
+    Route::post('/portal/meetings/{slot}/book', [PortalMeetingController::class, 'book'])->name('portal.meetings.book')->whereNumber('slot');
+    Route::post('/portal/meetings/bookings/{booking}/cancel', [PortalMeetingController::class, 'cancel'])->name('portal.meetings.cancel')->whereNumber('booking');
     Route::get('/portal/children', [GuardianChildrenController::class, 'index'])->name('portal.children');
     Route::get('/portal/holidays', [PortalHolidayController::class, 'index'])->name('portal.holidays');
     Route::get('/portal/attendance', [PortalAttendanceController::class, 'index'])->name('portal.attendance');
@@ -387,6 +393,12 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::post('bookings', [RoomBookingController::class, 'store'])->name('academics.bookings.store');
         Route::put('bookings/{roomBooking}', [RoomBookingController::class, 'update'])->name('academics.bookings.update');
         Route::delete('bookings/{roomBooking}', [RoomBookingController::class, 'destroy'])->name('academics.bookings.destroy');
+
+        Route::get('meetings/export', [MeetingSlotController::class, 'export'])->name('academics.meetings.export');
+        Route::get('meetings', [MeetingSlotController::class, 'index'])->name('academics.meetings.index');
+        Route::post('meetings', [MeetingSlotController::class, 'store'])->name('academics.meetings.store');
+        Route::put('meetings/{meetingSlot}', [MeetingSlotController::class, 'update'])->name('academics.meetings.update');
+        Route::delete('meetings/{meetingSlot}', [MeetingSlotController::class, 'destroy'])->name('academics.meetings.destroy');
 
         Route::get('calendar/export', [CalendarDayController::class, 'export'])->name('academics.calendar.export');
         Route::get('calendar', [CalendarDayController::class, 'index'])->name('academics.calendar.index');
