@@ -34,6 +34,7 @@ Route::get('courses', [CourseController::class, 'index'])->name('public.courses.
 Route::get('courses/{course}', [CourseController::class, 'show'])->name('public.courses.show');
 Route::post('courses/{course}/waitlist', [CourseController::class, 'waitlist'])->name('public.courses.waitlist')->middleware('throttle:10,1');
 Route::post('courses/{course}/syllabus', [CourseController::class, 'syllabus'])->name('public.courses.syllabus')->middleware('throttle:10,1');
+Route::post('funnel-events', [\App\Domains\Website\Http\Controllers\PublicSite\FunnelEventController::class, 'store'])->name('public.funnel.store')->middleware('throttle:60,1');
 // Search
 Route::get('search', [\App\Domains\Website\Http\Controllers\PublicSite\SearchController::class, 'index'])->name('public.search');
 

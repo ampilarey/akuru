@@ -10,6 +10,7 @@ use App\Domains\Finance\Models\Payment;
 use App\Domains\Finance\Models\PaymentItem;
 use App\Domains\Identity\Models\User;
 use App\Domains\Notifications\Contracts\SmsSenderInterface;
+use App\Domains\Website\Actions\RecordFunnelEventAction;
 use App\Mail\EnrollmentConfirmedMail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -173,6 +174,7 @@ class PaymentService
                 $this->sendConfirmationEmail($payment->fresh());
                 $this->notifyAdminsPaymentConfirmed($payment);
                 app(RecordInvoiceReceiptAction::class)->fromConfirmedPayment($payment->fresh());
+                $this->recordPaymentCompletedFunnel($payment->fresh());
             } elseif (in_array($providerStatus, ['failed', 'cancelled', 'declined'], true)) {
                 $payment->update([
                     'status' => 'failed',
@@ -262,6 +264,7 @@ class PaymentService
                 $this->sendConfirmationEmail($payment->fresh());
                 $this->notifyAdminsPaymentConfirmed($payment);
                 app(RecordInvoiceReceiptAction::class)->fromConfirmedPayment($payment->fresh());
+                $this->recordPaymentCompletedFunnel($payment->fresh());
             } else {
                 $providerStatus = strtolower((string) ($result->status ?? ''));
                 if (in_array($providerStatus, ['failed', 'cancelled', 'declined'], true)) {
@@ -272,6 +275,33 @@ class PaymentService
                 }
             }
         });
+    }
+
+    /**
+     * Website conversion: payment_completed only after webhook/provider confirmation.
+     */
+    private function recordPaymentCompletedFunnel(Payment $payment): void
+    {
+        $courseIds = [];
+        if ($payment->course_id) {
+            $courseIds[] = (int) $payment->course_id;
+        }
+
+        $payment->loadMissing(['items.enrollment']);
+        foreach ($payment->items as $item) {
+            if ($item->course_id) {
+                $courseIds[] = (int) $item->course_id;
+            } elseif ($item->enrollment?->course_id) {
+                $courseIds[] = (int) $item->enrollment->course_id;
+            }
+        }
+
+        $action = app(RecordFunnelEventAction::class);
+        foreach (array_values(array_unique($courseIds)) as $courseId) {
+            $action->execute($courseId, 'payment_completed', 'webhook', [
+                'payment_id' => $payment->id,
+            ]);
+        }
     }
 
     /**

@@ -11,6 +11,7 @@ use App\Domains\Identity\Models\UserContact;
 use App\Domains\Identity\Services\AccountResolverService;
 use App\Domains\Identity\Services\ContactNormalizer;
 use App\Domains\Identity\Services\OtpService;
+use App\Domains\Website\Actions\RecordFunnelEventAction;
 use App\Http\Requests\Registration\SetPasswordRequest;
 use App\Http\Requests\Registration\StartRegistrationRequest;
 use App\Http\Requests\Registration\VerifyOtpRequest;
@@ -42,6 +43,8 @@ class CourseRegistrationController extends PublicRegistrationController
                 'closed' => true,
             ]);
         }
+
+        app(RecordFunnelEventAction::class)->execute((int) $course->id, 'registration_started');
 
         // If the user is already logged in, skip the login/register step entirely
         if (auth()->check() && auth()->user()->hasVerifiedContact()) {
@@ -200,6 +203,11 @@ class CourseRegistrationController extends PublicRegistrationController
                 'pending_term_id' => $request->input('term_id'),
                 'checkout_flow' => $flowType,
             ]);
+
+            $startedCourseId = (int) $request->input('course_id');
+            if ($startedCourseId > 0) {
+                app(RecordFunnelEventAction::class)->execute($startedCourseId, 'registration_started');
+            }
 
             // Send OTP via cache — no UserContact created yet
             $this->otpService->sendForNewRegistration($type, $normalized);
