@@ -106,7 +106,7 @@ it('emits Course + CourseInstance JSON-LD with dates and the displayed price', f
         ->and($courseLd['hasCourseInstance']['startDate'])->toBe('2026-09-01')
         ->and($courseLd['offers']['price'])->toBe('180.00')
         ->and($orgLd)->not->toBeNull()
-        ->and($orgLd['name'])->not->toBe('')
+        ->and($orgLd['name'])->toBe('Akuru Institute')
         ->and($faqLd)->not->toBeNull()
         ->and($faqLd['mainEntity'])->toHaveCount(6)
         ->and($faqLd['mainEntity'][0]['name'])->toBe('Who is this course for?')
@@ -218,6 +218,7 @@ it('builds a sitewide Organization JSON-LD graph', function () {
     $json = app(ComposeOrganizationJsonLdAction::class)->execute();
     expect($json['@type'])->toBe('Organization')
         ->and($json['@context'])->toBe('https://schema.org')
+        ->and($json['name'])->toBe('Akuru Institute')
         ->and($json['url'])->not->toBe('');
 
     $html = $this->withoutLocalizationMiddleware()

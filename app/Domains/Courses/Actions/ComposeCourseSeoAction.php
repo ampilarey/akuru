@@ -30,7 +30,7 @@ class ComposeCourseSeoAction
             return [
                 'json_ld' => [],
                 'og' => [
-                    'title' => (string) config('app.name', 'Akuru Institute'),
+                    'title' => 'Akuru Institute',
                     'description' => '',
                     'image' => asset('images/og-default.jpg'),
                     'url' => url('/'),
@@ -66,7 +66,7 @@ class ComposeCourseSeoAction
         if ($address !== '') {
             $instance['location'] = [
                 '@type' => 'Place',
-                'name' => (string) config('app.name', 'Akuru Institute'),
+                'name' => $this->instituteName(),
                 'address' => $address,
             ];
         }
@@ -84,7 +84,7 @@ class ComposeCourseSeoAction
             'url' => $url,
             'provider' => [
                 '@type' => 'Organization',
-                'name' => (string) config('app.name', 'Akuru Institute'),
+                'name' => $this->instituteName(),
                 'url' => rtrim((string) config('app.url'), '/'),
             ],
             'hasCourseInstance' => $instance,
@@ -99,7 +99,7 @@ class ComposeCourseSeoAction
         return [
             'json_ld' => $jsonLd,
             'og' => [
-                'title' => $title !== '' ? $title : (string) config('app.name', 'Akuru Institute'),
+                'title' => $title !== '' ? $title : $this->instituteName(),
                 'description' => $description,
                 'image' => $image !== '' ? $image : asset('images/og-default.jpg'),
                 'url' => $url,
@@ -173,5 +173,15 @@ class ComposeCourseSeoAction
         }
 
         return asset('storage/'.$cover);
+    }
+
+    private function instituteName(): string
+    {
+        $fromSettings = trim((string) app(GetSettingAction::class)->execute('institute_name', ''));
+        if ($fromSettings !== '') {
+            return $fromSettings;
+        }
+
+        return 'Akuru Institute';
     }
 }

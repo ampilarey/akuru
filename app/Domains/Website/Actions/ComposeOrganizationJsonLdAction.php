@@ -14,7 +14,7 @@ class ComposeOrganizationJsonLdAction
     public function execute(): array
     {
         $settings = app(GetSettingAction::class);
-        $name = trim((string) config('app.name', 'Akuru Institute'));
+        $name = $this->present($settings->execute('institute_name', '')) ?? 'Akuru Institute';
         $url = rtrim((string) config('app.url'), '/');
         $address = $this->present($settings->execute('address', 'Malé, Republic of Maldives'));
         $phone = $this->present($settings->execute('phone', ''));
