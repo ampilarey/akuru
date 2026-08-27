@@ -40,6 +40,33 @@ it('rule 5 Hifz referenced outside Hifz domain matches baseline', function () {
     assertMatchesBaseline('Rule 5', ViolationScanner::hifzReferencedOutsideHifz(), $baseline);
 });
 
-it('rule 6 commerce wallet tables are untouched outside Commerce')->todo(
-    'Activates in L4 (Commerce track). No wallet/gift-card tables exist yet.'
-);
+it('rule 6 commerce wallet tables are untouched outside Commerce', function () {
+    // Activated in L4: the money tables exist now. Only the Commerce domain
+    // may touch them — other domains go through Commerce Actions (rule 12:
+    // append-only ledgers, one owner).
+    $tables = ['wallets', 'wallet_transactions', 'gift_cards', 'gift_card_transactions'];
+    $violations = [];
+    $root = base_path('app');
+    foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator($root)) as $file) {
+        if (! $file->isFile() || $file->getExtension() !== 'php') {
+            continue;
+        }
+        $path = str_replace(base_path().'/', '', $file->getPathname());
+        if (str_starts_with($path, 'app/Domains/Commerce/')) {
+            continue;
+        }
+        $contents = file_get_contents($file->getPathname());
+        if (str_contains($contents, 'App\\Domains\\Commerce\\Models\\')) {
+            $violations[] = $path.' -> Commerce\\Models';
+        }
+        foreach ($tables as $table) {
+            if (preg_match('/DB::table\(\s*[\'"]'.$table.'[\'"]/', $contents)) {
+                $violations[] = $path.' -> DB::table('.$table.')';
+            }
+        }
+    }
+
+    expect($violations)->toBeEmpty(
+        "Only Commerce touches the money tables (rule 6/12):\n".implode("\n", $violations)
+    );
+});

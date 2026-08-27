@@ -400,4 +400,15 @@ return [
     'Refresh' => 'Refresh',
     'Purchases' => 'Purchases',
     'No purchases yet.' => 'No purchases yet.',
+
+    // Commerce (L4) — DV/AR first pass pending native review (operator item)
+    'My Wallet' => 'My Wallet',
+    'Balance' => 'Balance',
+    'Redeem gift card' => 'Redeem gift card',
+    'Transactions' => 'Transactions',
+    'Source' => 'Source',
+    'Amount' => 'Amount',
+    'No wallet activity yet.' => 'No wallet activity yet.',
+    'Discount code' => 'Discount code',
+    'Pay with wallet' => 'Pay with wallet',
 ];
