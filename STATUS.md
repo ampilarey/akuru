@@ -412,6 +412,24 @@ migration; no Hifz behaviour change outside it.
   at the ENGINE controller like oversight; CSV; cancel). Student dashboard
   gains an additive `assignments` section. Browser walk still needed
   before the gate counts it (DoD).
+- **F5-P3 (this PR — gate item 3 of 3):** milestone recommend →
+  supervisor-review → approve/reject on the engine, with
+  **`hifz_milestones` remaining the single milestone store (rule 11)** until
+  the retirement slice: writes cross the boundary through the new
+  `Support\Contracts\HalaqaMilestoneWriter`, implemented and
+  transition-guarded in Hifz (`WriteHifzMilestonesAction` — pure addition,
+  freeze exception §2b), bound beside the readers. Board
+  `/teach/milestones` lists mapped programs' milestones with recommendable
+  targets from the F2 enrollment links; teachers recommend, review/decide
+  are `courses.manage` (the engine permission model does not split
+  supervisor from dean — recorded deviation). **Approval syncs straight
+  through ADR-022's evaluator**: `DecideQuranMilestoneAction` re-runs
+  `SyncHifzMilestoneProgressAction`, so an approved final milestone marks
+  the engine enrollment completed in the same request; a decided milestone
+  cannot be re-decided. **All three ADR-025 parity items now exist in
+  code.** Gate remainder: browser walks of P1–P3, green
+  `halaqa:verify-structure` capture here, operator sign-off — then the one
+  retirement slice (models + readers + Blade deletion).
 
 ## 6. Out of scope (unchanged)
 

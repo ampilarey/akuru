@@ -26,6 +26,7 @@ use App\Domains\Courses\Components\Arabic\Http\Controllers\CatalogArabicReportCo
 use App\Domains\Courses\Components\Arabic\Http\Controllers\LearnArabicReportController;
 use App\Domains\Courses\Components\Quran\Http\Controllers\CatalogQuranReferenceController;
 use App\Domains\Courses\Components\Quran\Http\Controllers\LearnQuranController;
+use App\Domains\Courses\Components\Quran\Http\Controllers\TeachQuranMilestoneController;
 use App\Domains\Courses\Components\Quran\Http\Controllers\TeachQuranSessionController;
 use App\Domains\Courses\Components\Quran\Http\Controllers\TeachRecitationController;
 use App\Domains\Courses\Http\Controllers\AudienceController;
@@ -192,6 +193,10 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
     Route::get('/teach/assignments', [TeachQuranAssignmentController::class, 'index'])->name('teach.assignments');
     Route::post('/teach/assignments', [TeachQuranAssignmentController::class, 'store'])->name('teach.assignments.store');
     Route::put('/teach/assignments/{assignment}', [TeachQuranAssignmentController::class, 'update'])->name('teach.assignments.update')->whereNumber('assignment');
+    Route::get('/teach/milestones', [TeachQuranMilestoneController::class, 'index'])->name('teach.milestones');
+    Route::post('/teach/milestones', [TeachQuranMilestoneController::class, 'store'])->name('teach.milestones.store');
+    Route::post('/teach/milestones/{milestone}/review', [TeachQuranMilestoneController::class, 'review'])->name('teach.milestones.review')->whereNumber('milestone');
+    Route::post('/teach/milestones/{milestone}/decide', [TeachQuranMilestoneController::class, 'decide'])->name('teach.milestones.decide')->whereNumber('milestone');
     Route::get('/teach/quran-sessions/{session}', [TeachQuranSessionController::class, 'show'])->name('teach.quran-sessions.show')->whereNumber('session');
     Route::post('/teach/quran-sessions/{session}/records', [TeachQuranSessionController::class, 'storeRecord'])->name('teach.quran-sessions.records.store')->whereNumber('session');
     Route::post('/teach/quran-session-records/{record}/review', [TeachQuranSessionController::class, 'review'])->name('teach.quran-sessions.records.review')->whereNumber('record');
