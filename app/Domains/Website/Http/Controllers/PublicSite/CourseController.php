@@ -2,9 +2,12 @@
 
 namespace App\Domains\Website\Http\Controllers\PublicSite;
 
+use App\Domains\Courses\Actions\ComposeCourseConversionSignalsAction;
 use App\Domains\Courses\Models\Course;
 use App\Domains\Courses\Models\CourseCategory;
+use App\Domains\Website\Actions\JoinCourseWaitlistAction;
 use App\Http\Controllers\Controller;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
 class CourseController extends Controller
@@ -24,8 +27,7 @@ class CourseController extends Controller
         if ($request->filled('status')) {
             $query->where('status', $request->status);
         } else {
-            // Default to open and upcoming courses
-            $query->whereIn('status', ['open', 'upcoming']);
+            $query->openForPublicListing();
         }
 
         // Filter by language
@@ -84,15 +86,24 @@ class CourseController extends Controller
                 $query->ordered();
         }
 
+        if ($request->input('status') === 'open') {
+            $query->where(function ($q) {
+                $q->whereNull('enrollment_deadline')
+                    ->orWhereDate('enrollment_deadline', '>=', now()->timezone(config('app.timezone'))->toDateString());
+            });
+        }
+
         $courses = $query->paginate(12)->withQueryString();
+        $this->attachConversion($courses->getCollection());
 
         $categories = CourseCategory::ordered()->get();
 
         // Get featured courses for sidebar
         $featuredCourses = Course::featured()
-            ->whereIn('status', ['open', 'upcoming'])
+            ->openForPublicListing()
             ->take(3)
             ->get();
+        $this->attachConversion($featuredCourses);
 
         return view('public.courses.index', compact('courses', 'categories', 'featuredCourses'));
     }
@@ -104,24 +115,59 @@ class CourseController extends Controller
         // Related courses from same category
         $relatedCourses = Course::where('course_category_id', $course->course_category_id)
             ->where('id', '!=', $course->id)
-            ->whereIn('status', ['open', 'upcoming'])
+            ->openForPublicListing()
             ->take(3)
             ->get();
 
         // Featured courses for sidebar
         $featuredCourses = Course::featured()
             ->where('id', '!=', $course->id)
-            ->whereIn('status', ['open', 'upcoming'])
+            ->openForPublicListing()
             ->take(3)
             ->get();
 
         // Recent courses
         $recentCourses = Course::where('id', '!=', $course->id)
-            ->whereIn('status', ['open', 'upcoming'])
+            ->openForPublicListing()
             ->orderBy('created_at', 'desc')
             ->take(3)
             ->get();
 
+        $this->attachConversion(collect([$course, ...$relatedCourses, ...$featuredCourses, ...$recentCourses]));
+
         return view('public.courses.show', compact('course', 'relatedCourses', 'featuredCourses', 'recentCourses'));
+    }
+
+    public function waitlist(Request $request, Course $course): RedirectResponse
+    {
+        if ($request->filled('website')) {
+            return back()->with('success', 'Thanks — we will contact you if a seat opens.');
+        }
+
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'phone' => ['required', 'string', 'max:30'],
+            'email' => ['nullable', 'email', 'max:255'],
+        ]);
+
+        app(JoinCourseWaitlistAction::class)->execute((int) $course->id, [
+            ...$data,
+            'message' => 'Waiting list for '.$course->title,
+            'ip' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+        ]);
+
+        return back()->with('success', 'You are on the waiting list. We will contact you if a seat opens.');
+    }
+
+    /**
+     * @param  \Illuminate\Support\Collection<int, Course>  $courses
+     */
+    private function attachConversion(\Illuminate\Support\Collection $courses): void
+    {
+        $signals = app(ComposeCourseConversionSignalsAction::class)->forCourses($courses->unique('id')->values());
+        foreach ($courses as $course) {
+            $course->setAttribute('conversion', $signals[$course->id] ?? null);
+        }
     }
 }

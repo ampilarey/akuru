@@ -174,7 +174,11 @@ $bannerCount = count($bannerList);
         $cFee   = $isModel ? ($course->fee ?? null) : null;
         $cStatus = $isModel ? ($course->status ?? 'open') : 'open';
         $cDate  = $isModel && !empty($course->start_date) ? \Carbon\Carbon::parse($course->start_date) : null;
-        $cSeats = $isModel ? ($course->available_seats ?? null) : null;
+        $cSeats = $isModel ? ($course->conversion['seats_label'] ?? null) : null;
+        $cSeatsTone = $isModel ? ($course->conversion['seats_tone'] ?? null) : null;
+        $cDeadlineBadge = $isModel && !empty($course->conversion['deadline_badge']);
+        $cDeadlineDays = $isModel ? ($course->conversion['deadline_days'] ?? null) : null;
+        $cEarly = $isModel ? ($course->conversion['early_bird'] ?? null) : null;
         $cImg   = $isModel && !empty($course->cover_image) ? asset('storage/'.$course->cover_image) : null;
         $cHref  = $cSlug ? route('public.courses.show',$cSlug) : route('public.courses.index');
         $cStatusStyle = $cStatus === 'open' ? 'background:#DCFCE7;color:#15803D' : 'background:#FEF9C3;color:#92400E';
@@ -200,17 +204,25 @@ $bannerCount = count($bannerList);
             <span style="font-size:.68rem;font-weight:700;padding:.15rem .55rem;border-radius:9999px;{{ $cStatusStyle }}">
               {{ $cStatus === 'open' ? '● Open' : '◷ Upcoming' }}
             </span>
-            @if($cSeats !== null && $cSeats <= 5 && $cSeats > 0)
-            <span style="font-size:.68rem;font-weight:700;padding:.15rem .55rem;border-radius:9999px;background:#FEE2E2;color:#B91C1C">{{ $cSeats }} left!</span>
-            @elseif($cSeats === 0)
-            <span style="font-size:.68rem;font-weight:700;padding:.15rem .55rem;border-radius:9999px;background:#F3F4F6;color:#6B7280">Full</span>
+            @if($cSeats)
+            <span style="font-size:.68rem;font-weight:700;padding:.15rem .55rem;border-radius:9999px;{{ $cSeatsTone === 'full' ? 'background:#F3F4F6;color:#6B7280' : ($cSeatsTone === 'exact' ? 'background:#FEE2E2;color:#B91C1C' : 'background:#FEF3C7;color:#92400E') }}">{{ $cSeats }}</span>
+            @endif
+            @if($cDeadlineBadge)
+            <span style="font-size:.68rem;font-weight:700;padding:.15rem .55rem;border-radius:9999px;background:#F3EBE0;color:#7C2D37">{{ $cDeadlineDays === 1 ? '1 day left' : $cDeadlineDays.' days left' }}</span>
             @endif
           </div>
           <h3 style="font-weight:700;color:#111827;font-size:1rem;line-height:1.35;margin-bottom:.375rem">{{ $cTitle }}</h3>
           <p style="font-size:.825rem;color:#6B7280;line-height:1.5;flex:1;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical">{{ $cDesc }}</p>
           <div style="display:flex;justify-content:space-between;align-items:center;padding-top:.875rem;margin-top:.875rem;border-top:1px solid #F3F4F6">
             <span style="font-size:.78rem;color:#9CA3AF">{{ $cDateText }}</span>
-            <span style="font-weight:700;font-size:.9rem;color:{{ $cFeeColor }}">{{ $cFeeText }}</span>
+            <span style="font-weight:700;font-size:.9rem;color:{{ $cEarly || ($cFee && $cFee > 0) ? '#7C2D37' : '#15803D' }}">
+              @if($cEarly)
+                <span style="text-decoration:line-through;color:#9CA3AF;font-weight:500;margin-inline-end:.35rem">MVR {{ number_format($cEarly['normal_amount'], 0) }}</span>
+                MVR {{ number_format($cEarly['amount'], 0) }}
+              @else
+                {{ $cFeeText }}
+              @endif
+            </span>
           </div>
         </div>
       </a>

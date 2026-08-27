@@ -47,21 +47,13 @@
                         <span class="w-2 h-2 rounded-full {{ $course->status === 'open' ? 'bg-green-500' : ($course->status === 'upcoming' ? 'bg-yellow-500' : 'bg-red-500') }}"></span>
                         {{ ucfirst($course->status) }}
                     </span>
-                    @if($course->available_seats !== null && $course->available_seats <= 5 && $course->available_seats > 0)
-                        <span class="flex items-center gap-1 text-sm font-bold px-3 py-1 rounded-full bg-red-100 text-red-700">
-                            ⚠ Only {{ $course->available_seats }} seat{{ $course->available_seats == 1 ? '' : 's' }} left
-                        </span>
-                    @endif
+                    @include('public.courses._conversion_badges', ['conversion' => $course->conversion ?? []])
                 </div>
 
                 <!-- Fee -->
-                @if($course->fee)
-                    <div class="mb-6">
-                        <div class="text-3xl font-bold text-brandMaroon-600">{{ number_format($course->fee, 2) }} MVR</div>
-                        @if($course->start_date)
-                            <p class="text-sm text-gray-500 mt-1">Starts {{ \Carbon\Carbon::parse($course->start_date)->format('d M Y') }}</p>
-                        @endif
-                    </div>
+                @include('public.courses._price', ['course' => $course, 'conversion' => $course->conversion ?? [], 'size' => 'xl', 'class' => 'mb-6'])
+                @if($course->start_date)
+                    <p class="text-sm text-gray-500 mt-1">Starts {{ \Carbon\Carbon::parse($course->start_date)->format('d M Y') }}</p>
                 @endif
 
                 <!-- CTA -->
@@ -71,15 +63,8 @@
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                             {{ $course->status === 'upcoming' ? 'Enrollment opening soon' : 'Enrollment closed' }}
                         </div>
-                    @elseif($course->isFull())
-                        <div class="inline-flex items-center gap-2 px-6 py-3 bg-red-50 text-red-700 border border-red-200 rounded-lg font-medium">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>
-                            Fully booked — no seats available
-                        </div>
-                        <a href="{{ route('public.admissions.create', [app()->getLocale(), 'course' => $course->id]) }}"
-                           class="text-sm text-brandMaroon-600 hover:underline">
-                            Submit an inquiry to join the waitlist →
-                        </a>
+                    @elseif(($course->conversion['seats_tone'] ?? null) === 'full')
+                        @include('public.courses._waitlist_form', ['course' => $course])
                     @else
                         <a href="{{ route('courses.checkout.show', $course) }}"
                            class="btn-primary inline-flex items-center px-8 py-4 text-lg">
@@ -232,21 +217,15 @@
                         @if($course->fee)
                         <div>
                             <dt class="text-xs font-medium text-gray-400 uppercase tracking-wider">Course Fee</dt>
-                            <dd class="mt-1 text-2xl font-bold text-brandMaroon-600">{{ number_format($course->fee, 2) }} MVR</dd>
+                            <dd class="mt-1">
+                                @include('public.courses._price', ['course' => $course, 'conversion' => $course->conversion ?? [], 'size' => 'lg'])
+                            </dd>
                         </div>
                         @endif
-                        @if($course->seats)
+                        @if($course->conversion['seats_label'] ?? null)
                         <div>
-                            <dt class="text-xs font-medium text-gray-400 uppercase tracking-wider">Available Seats</dt>
-                            <dd class="mt-1 text-gray-900 font-medium">
-                                @if($course->available_seats !== null && $course->available_seats <= 5 && $course->available_seats > 0)
-                                    <span class="text-red-600 font-bold">⚠ {{ $course->available_seats }} left</span>
-                                @elseif($course->available_seats === 0)
-                                    <span class="text-red-500">Fully booked</span>
-                                @else
-                                    {{ $course->seats }} seats
-                                @endif
-                            </dd>
+                            <dt class="text-xs font-medium text-gray-400 uppercase tracking-wider">Seats</dt>
+                            <dd class="mt-1 text-gray-900 font-medium">{{ $course->conversion['seats_label'] }}</dd>
                         </div>
                         @endif
                     </dl>
@@ -256,14 +235,11 @@
                         <span class="block w-full text-center py-3 px-4 rounded-xl bg-gray-100 text-gray-500 text-sm font-medium">
                             {{ $course->status === 'upcoming' ? 'Opening soon' : 'Enrollment closed' }}
                         </span>
-                    @elseif($course->isFull())
-                        <span class="block w-full text-center py-3 px-4 rounded-xl bg-red-100 text-red-700 text-sm font-semibold">
-                            Fully booked
-                        </span>
-                        <a href="{{ route('public.admissions.create', [app()->getLocale(), 'course' => $course->id]) }}" class="text-xs text-center block mt-3 text-brandMaroon-600 hover:underline">Join waitlist →</a>
+                    @elseif(($course->conversion['seats_tone'] ?? null) === 'full')
+                        @include('public.courses._waitlist_form', ['course' => $course])
                     @else
-                        @if($course->available_seats !== null && $course->available_seats <= 5)
-                            <p class="text-sm text-amber-600 font-medium mb-3 text-center">⚠ Only {{ $course->available_seats }} seat{{ $course->available_seats == 1 ? '' : 's' }} left</p>
+                        @if($course->conversion['seats_label'] ?? null)
+                            <p class="text-sm text-amber-700 font-medium mb-3 text-center">{{ $course->conversion['seats_label'] }}</p>
                         @endif
                         <a href="{{ route('courses.checkout.show', $course) }}" class="btn-primary w-full text-center block">
                             Enroll Now
@@ -329,11 +305,13 @@
 @endif
 
 {{-- ── Sticky mobile enroll bar ─────────────────────────────────── --}}
-@if($course->status === 'open' && !$course->isFull())
+@if($course->status === 'open' && ($course->conversion['seats_tone'] ?? null) !== 'full')
 <div class="fixed bottom-0 left-0 right-0 z-40 lg:hidden bg-white border-t border-gray-200 shadow-2xl px-4 py-3 flex items-center gap-3">
     <div class="flex-1 min-w-0">
         <p class="text-xs text-gray-500 truncate">{{ $course->title }}</p>
-        @if($course->fee > 0)
+        @if(($course->conversion['early_bird']['amount'] ?? null))
+            <p class="font-bold text-brandMaroon-700 text-sm leading-none">{{ number_format($course->conversion['early_bird']['amount'], 2) }} {{ $course->conversion['early_bird']['currency'] }}</p>
+        @elseif($course->fee > 0)
             <p class="font-bold text-brandMaroon-700 text-sm leading-none">{{ number_format($course->fee, 2) }} MVR</p>
         @else
             <p class="font-bold text-green-600 text-sm leading-none">Free</p>
@@ -342,8 +320,8 @@
     <a href="{{ route('courses.checkout.show', $course) }}"
        class="shrink-0 bg-brandMaroon-600 hover:bg-brandMaroon-700 text-white font-bold px-6 py-3 rounded-xl text-sm transition-colors shadow-lg">
         Enroll Now
-        @if($course->available_seats !== null && $course->available_seats <= 5)
-            · {{ $course->available_seats }} left
+        @if($course->conversion['seats_label'] ?? null)
+            · {{ $course->conversion['seats_label'] }}
         @endif
     </a>
 </div>

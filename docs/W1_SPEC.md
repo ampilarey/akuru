@@ -8,9 +8,9 @@
 ## Slice W1.1 — Urgency from existing data
 
 Course detail + course cards show, from existing `courses` columns:
-- **Seats left:** `seats − count(active enrollments)`; thresholds (Settings): hide above 20, show "Limited seats" 11–20, show exact "N seats left" ≤10, "Full — join waiting list" at 0 (waiting list = simple interest form into ContactInquiry with course ref until Admissions backlog item ships).
-- **Deadline countdown:** from `enrollment_deadline` — date + "X days left" badge under 14 days; auto-hide expired courses from "Open Courses".
-- **Early-bird display:** if `registration_fee_*` early-bird fields are set and active, show struck-through normal price + early-bird price + its end date.
+- **Seats left:** `seats − count(occupying enrollments)` (`pending`+`active`); thresholds (Settings `conversion.*`): hide above 20, show "Limited seats" 11–20, show exact "N seats left" ≤10, "Full — join waiting list" at 0. Waiting list = `contact_inquiries` with course ref.
+- **Deadline countdown:** from `enrollment_deadline` — date + "X days left" badge under 14 days; auto-hide expired **open** courses from "Open Courses".
+- **Early-bird display:** `courses.meta` `early_bird_active` / `early_bird_amount` / `early_bird_ends_at` (existing json column — no new fee columns). Struck-through `fee` + early-bird amount + end date, only when cheaper and not expired.
 Rules: never show false scarcity — all three render only from real data; if seats is null, show nothing.
 
 ## Slice W1.2 — Trust above the fold
