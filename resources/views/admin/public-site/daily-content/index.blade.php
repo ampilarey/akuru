@@ -12,6 +12,7 @@
         <div class="flex items-center gap-4">
             <h1 class="text-3xl font-bold text-gray-900">Daily content</h1>
             <a href="{{ route('admin.daily-content.queue') }}" class="text-brandBlue-600 hover:text-brandBlue-800 text-sm font-medium">Approval queue →</a>
+            <a href="{{ route('admin.daily-subscriptions.index') }}" class="text-brandBlue-600 hover:text-brandBlue-800 text-sm font-medium">Subscriptions →</a>
             <a href="{{ route('admin.leads.index') }}" class="text-brandBlue-600 hover:text-brandBlue-800 text-sm font-medium">Leads →</a>
             <a href="{{ route('admin.funnel.index') }}" class="text-brandBlue-600 hover:text-brandBlue-800 text-sm font-medium">Funnel →</a>
         </div>

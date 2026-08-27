@@ -11,56 +11,6 @@ use Illuminate\Support\Facades\Storage;
 
 uses(RefreshDatabase::class);
 
-function w23Published(array $overrides = []): DailyContent
-{
-    $maker = actingPeopleAdmin(['daily_content.manage']);
-    $checker = actingPeopleAdmin(['daily_content.approve']);
-
-    return DailyContent::query()->create(array_merge([
-        'content_type' => DailyContentType::Reminder->value,
-        'publish_date' => '2026-08-27',
-        'status' => DailyContentStatus::Published->value,
-        'text_en' => 'Seek knowledge.',
-        'text_dv' => 'އިލްމު ހޯދާ',
-        'attribution' => 'Teaching note',
-        'created_by' => $maker->id,
-        'approved_by' => $checker->id,
-    ], $overrides));
-}
-
-function w23PublishedAyah(string $date = '2026-08-27'): DailyContent
-{
-    $ayah = w22Ayah();
-    w22ImportMeanings();
-
-    return w23Published([
-        'content_type' => DailyContentType::Ayah->value,
-        'publish_date' => $date,
-        'quran_ayah_id' => $ayah->id,
-        'text_en' => null,
-        'text_dv' => null,
-        'attribution' => null,
-    ]);
-}
-
-function w23PublishedHadith(string $date = '2026-08-28'): DailyContent
-{
-    return w23Published([
-        'content_type' => DailyContentType::Hadith->value,
-        'publish_date' => $date,
-        'hadith_text_ar' => 'إنما الأعمال بالنيات',
-        'hadith_text_en' => 'Actions are by intentions.',
-        'hadith_text_dv' => 'ޢަމަލުތައް ނިޔަތުގެ މައްޗަށް',
-        'hadith_collection' => 'Bukhari',
-        'hadith_number' => '1',
-        'hadith_grading' => 'sahih',
-        'grading_source' => 'Sahih al-Bukhari',
-        'text_en' => null,
-        'text_dv' => null,
-        'attribution' => null,
-    ]);
-}
-
 it('shows today\'s published ayah meanings on the homepage widget', function () {
     $this->travelTo('2026-08-27 12:00:00');
     w23PublishedAyah('2026-08-27');

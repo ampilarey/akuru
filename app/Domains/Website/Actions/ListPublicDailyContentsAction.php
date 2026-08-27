@@ -67,4 +67,47 @@ class ListPublicDailyContentsAction
             ->where('status', DailyContentStatus::Published)
             ->first();
     }
+
+    /**
+     * Today's published items only — no fallback to older rows.
+     *
+     * @param  list<string>  $types
+     * @return list<array<string, mixed>>
+     */
+    public function publishedOnDate(string $date, array $types): array
+    {
+        if (! preg_match('/^\d{4}-\d{2}-\d{2}$/', $date) || $types === []) {
+            return [];
+        }
+
+        $allowed = [];
+        foreach ($types as $type) {
+            $enum = DailyContentType::tryFrom($type);
+            if ($enum !== null) {
+                $allowed[] = $enum->value;
+            }
+        }
+        if ($allowed === []) {
+            return [];
+        }
+
+        $order = ['ayah' => 0, 'hadith' => 1, 'saying' => 2, 'reminder' => 3];
+        $lister = app(ListDailyContentsAction::class);
+
+        return DailyContent::query()
+            ->whereDate('publish_date', $date)
+            ->where('status', DailyContentStatus::Published)
+            ->whereIn('content_type', $allowed)
+            ->get()
+            ->sortBy(function (DailyContent $row) use ($order) {
+                $type = $row->content_type instanceof DailyContentType
+                    ? $row->content_type->value
+                    : (string) $row->content_type;
+
+                return $order[$type] ?? 9;
+            })
+            ->map(fn (DailyContent $row) => $lister->present($row))
+            ->values()
+            ->all();
+    }
 }

@@ -4,6 +4,8 @@ use App\Domains\Website\Http\Controllers\PublicSite\AdmissionController;
 use App\Domains\Website\Http\Controllers\PublicSite\ContactController;
 use App\Domains\Website\Http\Controllers\PublicSite\CourseController;
 use App\Domains\Website\Http\Controllers\PublicSite\DailyContentController;
+use App\Domains\Website\Http\Controllers\PublicSite\DailySubscriptionController;
+use App\Domains\Website\Http\Controllers\PublicSite\DailyUnsubscribeController;
 use App\Domains\Website\Http\Controllers\PublicSite\GalleryController;
 use App\Domains\Website\Http\Controllers\PublicSite\HomeController;
 use App\Domains\Website\Http\Controllers\PublicSite\PageController;
@@ -71,6 +73,25 @@ Route::get('events/{event}', function ($id) {
 Route::get('achievements', [\App\Domains\Website\Http\Controllers\PublicSite\AchievementController::class, 'index'])->name('public.achievements');
 Route::get('gallery', [GalleryController::class, 'index'])->name('public.gallery.index');
 Route::get('gallery/{gallery}', [GalleryController::class, 'show'])->name('public.gallery.show');
+Route::get('daily/subscribe', [DailySubscriptionController::class, 'index'])
+    ->middleware('auth')
+    ->name('public.daily.subscribe');
+Route::post('daily/subscribe', [DailySubscriptionController::class, 'store'])
+    ->middleware('auth')
+    ->name('public.daily.subscribe.store');
+Route::post('daily/subscribe/{subscription}/pause', [DailySubscriptionController::class, 'pause'])
+    ->middleware('auth')
+    ->name('public.daily.subscribe.pause')
+    ->whereNumber('subscription');
+Route::post('daily/subscribe/{subscription}/resume', [DailySubscriptionController::class, 'resume'])
+    ->middleware('auth')
+    ->name('public.daily.subscribe.resume')
+    ->whereNumber('subscription');
+Route::get('daily/unsubscribe/{token}', [DailyUnsubscribeController::class, 'show'])
+    ->name('public.daily.unsubscribe');
+Route::post('daily/sms-opt-out', [DailyUnsubscribeController::class, 'smsOptOut'])
+    ->middleware('throttle:10,1')
+    ->name('public.daily.sms-opt-out');
 Route::get('daily/{type}', [DailyContentController::class, 'index'])
     ->name('public.daily.index')
     ->where('type', 'ayah|hadith|saying|reminder');

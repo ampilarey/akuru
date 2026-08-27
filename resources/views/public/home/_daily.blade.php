@@ -10,8 +10,12 @@
         <span style="color:#7C2D37;font-weight:600;font-size:.75rem;text-transform:uppercase;letter-spacing:.08em">Today</span>
         <h2 style="font-size:clamp(1.4rem,3vw,2rem);font-weight:800;color:#3D1219;margin:.25rem 0 0">Daily content</h2>
       </div>
-      <a href="{{ route('public.daily.index', ['type' => $daily['items'][0]['content_type'] ?? 'ayah']) }}"
-         style="color:#7C2D37;font-weight:600;font-size:.875rem;text-decoration:none">Archive</a>
+      <div style="display:flex;gap:1rem;align-items:center">
+        <a href="{{ route('public.daily.subscribe') }}"
+           style="color:#7C2D37;font-weight:600;font-size:.875rem;text-decoration:none">Subscribe</a>
+        <a href="{{ route('public.daily.index', ['type' => $daily['items'][0]['content_type'] ?? 'ayah']) }}"
+           style="color:#7C2D37;font-weight:600;font-size:.875rem;text-decoration:none">Archive</a>
+      </div>
     </div>
     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,280px),1fr));gap:1.25rem">
       @foreach($daily['items'] as $item)
