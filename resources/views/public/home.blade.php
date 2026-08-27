@@ -25,6 +25,7 @@ $bannerCount = count($bannerList);
   <div style="position:absolute;inset:0;opacity:.07;pointer-events:none;background-image:url(\"data:image/svg+xml,%3Csvg width='52' height='26' viewBox='0 0 52 26' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23C9A227' fill-opacity='1'%3E%3Cpath d='M10 10c0-2.21-1.79-4-4-4-3.314 0-6-2.686-6-6h2c0 2.21 1.79 4 4 4 3.314 0 6 2.686 6 6 0 2.21 1.79 4 4 4 3.314 0 6 2.686 6 6 0 2.21 1.79 4 4 4v2c-3.314 0-6-2.686-6-6 0-2.21-1.79-4-4-4-3.314 0-6-2.686-6-6zm25.464-1.95l8.486 8.486-1.414 1.414-8.486-8.486 1.414-1.414z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E\")"></div>
 
   {{-- Slide stage — overflow hidden, track slides horizontally --}}
+  <div style="position:relative">
   <div style="position:relative;height:clamp(20rem,55vw,28rem);overflow:hidden">
     <div id="akuru-track" style="display:flex;height:100%;transition:transform .7s cubic-bezier(.4,0,.2,1);will-change:transform">
       @foreach($bannerList as $i => $bn)
@@ -80,6 +81,7 @@ $bannerCount = count($bannerList);
     @endforeach
   </div>
   @endif
+  </div>{{-- end hero stage (slides + arrows + dots) --}}
 
   <style>
     @media (max-width: 639px) { .hero-arrow { display: none !important; } }
@@ -146,6 +148,8 @@ $bannerCount = count($bannerList);
   }());
   </script>
   @endif
+
+  @include('public.home._trust')
 
 </section>
 
@@ -281,9 +285,13 @@ $bannerCount = count($bannerList);
 <section style="background:#7C2D37;padding:3rem 0">
   <div class="container mx-auto px-4">
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:2rem;text-align:center">
-      <div><div style="font-size:2.75rem;font-weight:800;color:#C9A227;line-height:1">{{ number_format($stats['students']) }}+</div><div style="color:rgba(255,255,255,.65);font-size:.82rem;margin-top:.375rem">Students enrolled</div></div>
+      @if(!empty($trust['students_taught']))
+      <div><div style="font-size:2.75rem;font-weight:800;color:#C9A227;line-height:1">{{ number_format((int) $trust['students_taught']) }}</div><div style="color:rgba(255,255,255,.65);font-size:.82rem;margin-top:.375rem">{{ $trust['students_label'] }}</div></div>
+      @endif
       <div><div style="font-size:2.75rem;font-weight:800;color:#C9A227;line-height:1">{{ $stats['courses'] }}</div><div style="color:rgba(255,255,255,.65);font-size:.82rem;margin-top:.375rem">Courses offered</div></div>
-      <div><div style="font-size:2.75rem;font-weight:800;color:#C9A227;line-height:1">5+</div><div style="color:rgba(255,255,255,.65);font-size:.82rem;margin-top:.375rem">Years of service</div></div>
+      @if(!empty($trust['years_operating']))
+      <div><div style="font-size:2.75rem;font-weight:800;color:#C9A227;line-height:1">{{ number_format((int) $trust['years_operating']) }}</div><div style="color:rgba(255,255,255,.65);font-size:.82rem;margin-top:.375rem">{{ $trust['years_label'] }}</div></div>
+      @endif
       <div><div style="font-size:2.75rem;font-weight:800;color:#C9A227;line-height:1">100%</div><div style="color:rgba(255,255,255,.65);font-size:.82rem;margin-top:.375rem">Qualified teachers</div></div>
     </div>
   </div>

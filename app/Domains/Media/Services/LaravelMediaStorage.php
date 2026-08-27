@@ -26,4 +26,9 @@ class LaravelMediaStorage implements MediaStorageInterface
     {
         return Storage::disk($disk)->get($path);
     }
+
+    public function url(string $disk, string $path): string
+    {
+        return Storage::disk($disk)->url($path);
+    }
 }

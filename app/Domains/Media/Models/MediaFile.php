@@ -38,4 +38,9 @@ class MediaFile extends Model
     {
         return $this->visibility === 'private';
     }
+
+    public function isPublic(): bool
+    {
+        return $this->visibility === 'public';
+    }
 }
