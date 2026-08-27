@@ -43,8 +43,8 @@ it('walks admin create -> publish -> public listing, search and free reading', f
         ->and($item->authors()->count())->toBe(1);
 
     // Drafts are invisible publicly (business rule §43.3 — admin must approve).
-    $this->get(route('public.library.index'))->assertOk()->assertDontSee('Nahw Primer');
-    $this->get(route('public.library.show', $item->slug))->assertNotFound();
+    $this->withoutLocalizationMiddleware()->get(route('public.library.index'))->assertOk()->assertDontSee('Nahw Primer');
+    $this->withoutLocalizationMiddleware()->get(route('public.library.show', $item->slug))->assertNotFound();
 
     $this->withoutLocalizationMiddleware()
         ->actingAs($admin)
@@ -55,17 +55,17 @@ it('walks admin create -> publish -> public listing, search and free reading', f
         ->and((int) $item->approved_by)->toBe($admin->id)
         ->and($item->published_at)->not->toBeNull();
 
-    $this->get(route('public.library.index'))->assertOk()->assertSee('Nahw Primer')->assertSee('Ustadh Ahmed');
-    $this->get(route('public.library.index', ['q' => 'grammar']))->assertOk()->assertSee('Nahw Primer');
-    $this->get(route('public.library.index', ['q' => 'astronomy']))->assertOk()->assertDontSee('Nahw Primer');
-    $this->get(route('public.library.index', ['category' => 'arabic-studies']))->assertOk()->assertSee('Nahw Primer');
+    $this->withoutLocalizationMiddleware()->get(route('public.library.index'))->assertOk()->assertSee('Nahw Primer')->assertSee('Ustadh Ahmed');
+    $this->withoutLocalizationMiddleware()->get(route('public.library.index', ['q' => 'grammar']))->assertOk()->assertSee('Nahw Primer');
+    $this->withoutLocalizationMiddleware()->get(route('public.library.index', ['q' => 'astronomy']))->assertOk()->assertDontSee('Nahw Primer');
+    $this->withoutLocalizationMiddleware()->get(route('public.library.index', ['category' => 'arabic-studies']))->assertOk()->assertSee('Nahw Primer');
 
     // Free-public body reads without login.
-    $this->get(route('public.library.show', $item->slug))
+    $this->withoutLocalizationMiddleware()->get(route('public.library.show', $item->slug))
         ->assertOk()
         ->assertSee('the nahw journey begins', false);
 
-    $this->get(route('public.library.export'))
+    $this->withoutLocalizationMiddleware()->get(route('public.library.export'))
         ->assertOk()
         ->assertHeader('content-type', 'text/csv; charset=UTF-8');
 });
@@ -79,14 +79,14 @@ it('free_login lists publicly but gates the body behind sign-in', function () {
     ]);
     app(PublishLibraryItemAction::class)->execute($item->id, User::factory()->create()->id);
 
-    $this->get(route('public.library.index'))->assertOk()->assertSee('Members Reading');
+    $this->withoutLocalizationMiddleware()->get(route('public.library.index'))->assertOk()->assertSee('Members Reading');
 
-    $this->get(route('public.library.show', $item->slug))
+    $this->withoutLocalizationMiddleware()->get(route('public.library.show', $item->slug))
         ->assertOk()
         ->assertDontSee('Secret free content')
         ->assertSee('Sign in');
 
-    $this->actingAs(User::factory()->create())
+    $this->withoutLocalizationMiddleware()->actingAs(User::factory()->create())
         ->get(route('public.library.show', $item->slug))
         ->assertOk()
         ->assertSee('Secret free content for members', false);
