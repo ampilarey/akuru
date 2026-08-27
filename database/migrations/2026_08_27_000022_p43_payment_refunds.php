@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
@@ -32,6 +33,11 @@ return new class extends Migration
             $table->index(['payment_id', 'created_at']);
         });
 
+        // Additive enum widening: 'cancelled' (code already filtered on it but
+        // the column never allowed it) and 'refunded' for the refund flow.
+        DB::statement("ALTER TABLE course_enrollments MODIFY COLUMN status ENUM('pending', 'approved', 'rejected', 'active', 'completed', 'cancelled') NOT NULL DEFAULT 'pending'");
+        DB::statement("ALTER TABLE course_enrollments MODIFY COLUMN payment_status ENUM('not_required', 'required', 'pending', 'confirmed', 'refunded') NOT NULL DEFAULT 'not_required'");
+
         Permission::firstOrCreate(['name' => 'payments.refund', 'guard_name' => 'web']);
         foreach (['super_admin', 'admin'] as $roleName) {
             $role = Role::where('name', $roleName)->where('guard_name', 'web')->first();
@@ -41,6 +47,8 @@ return new class extends Migration
 
     public function down(): void
     {
+        DB::statement("ALTER TABLE course_enrollments MODIFY COLUMN status ENUM('pending', 'approved', 'rejected', 'active', 'completed') NOT NULL DEFAULT 'pending'");
+        DB::statement("ALTER TABLE course_enrollments MODIFY COLUMN payment_status ENUM('not_required', 'required', 'pending', 'confirmed') NOT NULL DEFAULT 'not_required'");
         Schema::dropIfExists('payment_refunds');
     }
 };
