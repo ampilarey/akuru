@@ -4,11 +4,14 @@ namespace App\Domains\Website\Http\Controllers\PublicSite;
 
 use App\Domains\Courses\Actions\ComposeCourseConversionSignalsAction;
 use App\Domains\Courses\Actions\ComposeCoursePageCtaAction;
+use App\Domains\Courses\Actions\ComposeCourseSeoAction;
 use App\Domains\Courses\Actions\PresentCourseLearningOutcomesAction;
 use App\Domains\Courses\Models\Course;
 use App\Domains\Courses\Models\CourseCategory;
 use App\Domains\Website\Actions\CaptureCourseLeadAction;
+use App\Domains\Website\Actions\ComposeFaqPageJsonLdAction;
 use App\Domains\Website\Actions\JoinCourseWaitlistAction;
+use App\Domains\Website\Actions\ListCoursePageFaqsAction;
 use App\Domains\Website\Actions\ListCoursePageTestimonialsAction;
 use App\Domains\Website\Enums\LeadSource;
 use App\Http\Controllers\Controller;
@@ -144,8 +147,22 @@ class CourseController extends Controller
         $outcomes = app(PresentCourseLearningOutcomesAction::class)->execute((int) $course->id, app()->getLocale());
         $testimonials = app(ListCoursePageTestimonialsAction::class)->execute((int) $course->id);
         $cta = app(ComposeCoursePageCtaAction::class)->execute((int) $course->id);
+        $seo = app(ComposeCourseSeoAction::class)->execute((int) $course->id);
+        $faqs = app(ListCoursePageFaqsAction::class)->execute();
+        $faqJsonLd = app(ComposeFaqPageJsonLdAction::class)->execute($faqs);
 
-        return view('public.courses.show', compact('course', 'relatedCourses', 'featuredCourses', 'recentCourses', 'outcomes', 'testimonials', 'cta'));
+        return view('public.courses.show', compact(
+            'course',
+            'relatedCourses',
+            'featuredCourses',
+            'recentCourses',
+            'outcomes',
+            'testimonials',
+            'cta',
+            'seo',
+            'faqs',
+            'faqJsonLd',
+        ));
     }
 
     public function syllabus(Request $request, Course $course): RedirectResponse

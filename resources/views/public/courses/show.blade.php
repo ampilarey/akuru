@@ -1,19 +1,24 @@
 @extends('public.layouts.public')
 
-@section('title', $course->title)
-@section('description', $course->short_desc)
+@section('title', $seo['og']['title'] ?? $course->title)
+@section('description', $seo['og']['description'] ?? $course->short_desc)
+@section('og_title', $seo['og']['title'] ?? $course->title)
+@section('og_description', $seo['og']['description'] ?? ($course->short_desc ?? ''))
+@section('og_image', $seo['og']['image'] ?? asset('images/og-default.jpg'))
+@section('og_type', $seo['og']['type'] ?? 'website')
 
-@push('scripts')
-<script type="application/ld+json">
-{
-  "@@context": "https://schema.org",
-  "@type": "Course",
-  "name": {{ json_encode($course->title) }},
-  "description": {{ json_encode($course->short_desc ?? '') }},
-  "provider": {"@type": "Organization", "name": "Akuru Institute", "url": "{{ config('app.url') }}"},
-  "offers": {"@type": "Offer", "price": "{{ $course->fee ?? 0 }}", "priceCurrency": "MVR"}
-}
-</script>
+@push('head_meta')
+@if(! empty($seo['og']['price_amount']))
+    <meta property="product:price:amount" content="{{ $seo['og']['price_amount'] }}">
+    <meta property="product:price:currency" content="{{ $seo['og']['price_currency'] ?? 'MVR' }}">
+    <meta name="twitter:label1" content="Price">
+    <meta name="twitter:data1" content="{{ $seo['og']['price_amount'] }} {{ $seo['og']['price_currency'] ?? 'MVR' }}">
+@endif
+@endpush
+
+@push('jsonld')
+    @include('public.partials.json_ld', ['payload' => $seo['json_ld'] ?? []])
+    @include('public.partials.json_ld', ['payload' => $faqJsonLd ?? []])
 @endpush
 
 @section('content')
@@ -190,18 +195,12 @@
                 </div>
                 @endif
 
+                @if(($faqs ?? []) !== [])
                 <!-- FAQ Accordion -->
                 <div class="card p-6" x-data="{open: null}">
                     <h2 class="text-2xl font-bold text-gray-900 mb-6">Frequently Asked Questions</h2>
                     <div class="space-y-2">
-                        @foreach([
-                            ['q'=>'Who is this course for?', 'a'=>'This course is open to anyone interested in Islamic education — students, adults, and professionals. No prior knowledge is required for beginner levels.'],
-                            ['q'=>'How do I enroll?', 'a'=>'Click the "Enroll in this course" button above to start the enrollment process. You will need to verify your mobile number via OTP and complete a short registration form.'],
-                            ['q'=>'What is the payment method?', 'a'=>'We accept payments online via BML Internet Banking and debit/credit cards. All payments are processed securely through the Bank of Maldives payment portal.'],
-                            ['q'=>'Can I get a refund if I cannot attend?', 'a'=>'Please review our refund policy on the website or contact us directly for guidance specific to your situation.'],
-                            ['q'=>'Will I receive a certificate?', 'a'=>'Yes, students who successfully complete the course requirements will receive a certificate of completion from Akuru Institute.'],
-                            ['q'=>'Are classes online or in-person?', 'a'=>'We offer both online and in-person sessions depending on the course. Check the schedule section above or contact us for details on this course.'],
-                        ] as $i => $faq)
+                        @foreach($faqs as $i => $faq)
                         <div class="border border-gray-200 rounded-xl overflow-hidden">
                             <button @click="open = (open === {{ $i }}) ? null : {{ $i }}"
                                     class="w-full flex items-center justify-between p-4 text-left font-semibold text-gray-900 hover:bg-brandBeige-50 transition-colors">
@@ -216,6 +215,7 @@
                     </div>
                     <p class="text-sm text-gray-400 mt-4">Have more questions? <a href="{{ route('public.contact.create') }}" class="text-brandMaroon-600 hover:underline">Contact us</a></p>
                 </div>
+                @endif
             </div>
 
             <!-- Sidebar -->

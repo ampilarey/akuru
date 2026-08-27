@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" dir="ltr">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="ltr">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes">
@@ -26,9 +26,18 @@
     <meta name="twitter:title" content="@yield('og_title', $title ?? config('app.name', 'Akuru Institute'))">
     <meta name="twitter:description" content="@yield('og_description', $description ?? __('public.Learn Quran, Arabic, and Islamic Studies'))">
     <meta name="twitter:image" content="@yield('og_image', asset('images/og-default.jpg'))">
-    
+
+    @stack('head_meta')
+
     <!-- Canonical URL -->
     <link rel="canonical" href="{{ url()->current() }}">
+
+    @foreach($hreflangLinks ?? [] as $link)
+    <link rel="alternate" hreflang="{{ $link['hreflang'] }}" href="{{ $link['href'] }}">
+    @endforeach
+
+    @include('public.partials.json_ld', ['payload' => $organizationJsonLd ?? []])
+    @stack('jsonld')
     
     <!-- Google Translate API -->
     <script src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit" defer></script>
