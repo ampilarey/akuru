@@ -28,7 +28,9 @@ return new class extends Migration
             $table->string('recommendation', 20)->nullable(); // accept/revise/reject
             $table->timestamps();
 
-            $table->unique(['library_item_id', 'reviewer_user_id']);
+            // Explicit name: the auto-generated one is 66 chars, past MySQL's
+            // 64-char identifier limit, and fails the whole migrate:fresh.
+            $table->unique(['library_item_id', 'reviewer_user_id'], 'lib_review_assignments_item_reviewer_unique');
         });
 
         Schema::table('library_items', function (Blueprint $table) {
