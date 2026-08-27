@@ -2,6 +2,7 @@
 
 namespace App\Domains\Academics\Http\Controllers;
 
+use App\Domains\Academics\Actions\NotifySubstituteAssignedAction;
 use App\Domains\Academics\Models\ClassRoom;
 use App\Domains\Academics\Models\Period;
 use App\Domains\Academics\Models\Subject;
@@ -199,13 +200,15 @@ class SubstitutionRequestController extends Controller
         }
 
         // Create the assignment
-        SubstitutionAssignment::create([
+        $assignment = SubstitutionAssignment::create([
             'substitution_request_id' => $substitutionRequest->id,
             'substitute_teacher_id' => $teacher->id,
             'assigned_by' => auth()->id(),
             'assigned_at' => now(),
             'notes' => $request->input('notes'),
         ]);
+
+        app(NotifySubstituteAssignedAction::class)->execute($assignment);
 
         return redirect()
             ->route('substitutions.requests.index')
@@ -235,13 +238,15 @@ class SubstitutionRequestController extends Controller
         }
 
         // Create the assignment
-        SubstitutionAssignment::create([
+        $assignment = SubstitutionAssignment::create([
             'substitution_request_id' => $substitutionRequest->id,
             'substitute_teacher_id' => $validated['substitute_teacher_id'],
             'assigned_by' => auth()->id(),
             'assigned_at' => now(),
             'notes' => $validated['notes'] ?? null,
         ]);
+
+        app(NotifySubstituteAssignedAction::class)->execute($assignment);
 
         return redirect()
             ->route('substitutions.requests.index')

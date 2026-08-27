@@ -48,12 +48,19 @@ class RecordInvoiceReceiptAction
                 'received_at' => $data['received_at'] ?? now('Indian/Maldives'),
             ]);
 
+            // Trilingual per S4.6. Before this, no documents/finance/receipt view
+            // existed, so receipts fell through to HtmlDocumentRenderer's generic
+            // key/value fallback — hardcoded lang="en" dir="auto" (S4 audit).
+            $locale = app()->getLocale();
+
             $html = app(DocumentRendererInterface::class)->render('finance.receipt', [
                 'title' => 'Receipt '.$receipt->receipt_number,
                 'invoice' => $invoice->invoice_number,
                 'amount' => number_format($amount, 2, '.', ''),
                 'method' => $method->value,
                 'received_at' => $receipt->received_at?->timezone('Indian/Maldives')->toDateTimeString(),
+                'locale' => $locale,
+                'dir' => in_array($locale, ['dv', 'ar'], true) ? 'rtl' : 'ltr',
             ]);
 
             $stored = app(StoreRenderedDocumentAction::class)->execute(

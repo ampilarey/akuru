@@ -10,8 +10,10 @@ use App\Domains\Finance\Models\Invoice;
 use App\Domains\Finance\Models\Payment;
 use App\Domains\Finance\Models\Receipt;
 use App\Domains\Identity\Models\User;
+use App\Domains\Media\Models\Document;
 use App\Domains\People\Actions\AttachGuardianAction;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Testing\AssertableInertia as Assert;
 
 uses(RefreshDatabase::class);
@@ -121,4 +123,48 @@ it('records webhook receipts once, gates manual entry, and scopes the parent por
         ->assertOk()
         ->streamedContent();
     expect($csv)->toContain($first->receipt_number);
+});
+
+it('renders the receipt document RTL in Dhivehi and LTR in English', function () {
+    // S4.6 asks for a trilingual receipt template. Before the S4 audit no
+    // documents/finance/receipt view existed, so receipts fell through to
+    // HtmlDocumentRenderer's generic fallback: a key/value table hardcoded to
+    // lang="en" dir="auto". Mirrors ReportCardsTest's dir assertions.
+    $admin = actingPeopleAdmin(['finance.manage']);
+    $year = makeYear(['is_current' => true, 'status' => 'active']);
+
+    $render = function (string $locale) use ($admin, $year): string {
+        app()->setLocale($locale);
+        $student = makeStudent();
+        $invoice = makeFeeInvoice($admin->id, $student->id, $year->id, 500);
+
+        $payment = Payment::query()->create([
+            'user_id' => $admin->id,
+            'unified_student_id' => $student->id,
+            'amount' => 500,
+            'currency' => 'MVR',
+            'status' => 'confirmed',
+            'provider' => 'bml',
+            'payable_type' => 'invoice',
+            'payable_id' => $invoice->id,
+            'paid_at' => now(),
+            'confirmed_at' => now(),
+        ]);
+
+        $receipt = app(RecordInvoiceReceiptAction::class)->fromConfirmedPayment($payment);
+        $path = (string) Document::query()->whereKey($receipt->document_id)->value('media_path');
+
+        return (string) Storage::disk('local')->get($path);
+    };
+
+    $en = $render('en');
+    expect($en)->toContain('dir="ltr"')
+        ->and($en)->toContain('lang="en"')
+        ->and($en)->toContain('Payment receipt');
+
+    $dv = $render('dv');
+    expect($dv)->toContain('dir="rtl"')
+        ->and($dv)->toContain('lang="dv"');
+
+    app()->setLocale('en');
 });

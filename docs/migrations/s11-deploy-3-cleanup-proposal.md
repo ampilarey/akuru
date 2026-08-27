@@ -48,6 +48,31 @@ Add in the cleanup slice (not now):
 - Arch: no remaining `student_guardians` schema.
 - Pest: `students:verify-unification` (strict, not `--representative`) still meaningful against leftover mappings *or* is retired once RS is archived.
 
+**Must be rewritten in the same PR (found in the S4 audit, 2026-08-27):**
+
+- `tests/Feature/BmlWebhookTest.php` imports `App\Domains\People\Models\RegistrationStudent` and builds its fixture from an RS row. It is green today only because dual-write is still on — **it breaks the moment `registration_students` is archived**. Rewrite it against unified `students` + `course_enrollments.unified_student_id` as part of this cleanup, not after. It is the one currently-green test that this slice is guaranteed to turn red, so budget for it rather than discovering it in CI.
+
+## Deferred column drops — investigated 2026-08-27, mostly NOT safe
+
+The S-track audit listed four "cheap additive deferrals to drop now that ADR-021
+applies". Tracing them found that premise is wrong for three of the four. Do not
+bundle these into the cleanup without reading this.
+
+| Column | Verdict |
+|---|---|
+| `academic_years.terms` (json) | **Safe.** Only `AcademicYear`'s `$fillable` + cast reference it; every consumer reads the `terms` table. Drop the column and both model entries together. |
+| `course_enrollments.term_key` | **NOT safe as a plain drop.** It is a MySQL **generated** column (`IFNULL(term_id, 0)`) and it backs `course_enrollments_student_course_term_unique (student_id, course_id, term_key)`. Dropping it silently removes the constraint that prevents duplicate enrollments. Any drop must replace that uniqueness first. |
+| `course_enrollments.term_id` | **NOT safe. Still live.** `EnrollmentService` reads and writes it (lines ~272, ~312, ~368, ~417) and `term_key` is generated from it. |
+| `students.emergency_contact_name` / `_phone` | **Unresolved.** Still in `Student::$fillable`. The replacement `EmergencyContact` model exists but is referenced only by `Student` — no action, controller or screen uses it, so the S1.1 emergency-contacts migration appears **incomplete**, not merely un-cleaned. Finish the replacement before dropping the columns. |
+
+**Separate finding — `course_enrollments.unified_term_id` is a dead column.** It
+is referenced only by its own migration and a schema-shape assertion in
+`AcademicYearBackboneTest`. Nothing reads or writes it, so S1.5's intended
+"switch to `unified_term_id`" never happened: `term_id` is still the live column
+and `unified_term_id` is the unused one — the reverse of what STATUS implied.
+Decide deliberately: either complete the switch, or drop `unified_term_id` and
+record that `term_id` is the permanent column.
+
 ## What this does not do
 
 - No Hifz behavior change. Hifz already keys on `students`.

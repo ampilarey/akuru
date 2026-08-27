@@ -2,6 +2,7 @@
 
 namespace App\Domains\Notifications\Providers;
 
+use App\Domains\Academics\Events\BehaviorRecordLogged;
 use App\Domains\Academics\Events\StudentMarkedAbsent;
 use App\Domains\ExamsGrades\Events\ExamResultsPublished;
 use App\Domains\ExamsGrades\Events\ReportCardsPublished;
@@ -12,6 +13,7 @@ use App\Domains\Notifications\Contracts\SmsSenderInterface;
 use App\Domains\Notifications\Listeners\NotifyExamResultsPublished;
 use App\Domains\Notifications\Listeners\NotifyReportCardsPublished;
 use App\Domains\Notifications\Listeners\SendAbsenceSms;
+use App\Domains\Notifications\Listeners\SendBehaviorParentSms;
 use App\Domains\Notifications\Listeners\SendInvoiceGuardianNotice;
 use App\Domains\Notifications\Services\LogSmsSender;
 use App\Domains\Notifications\Services\NullPushSender;
@@ -35,6 +37,7 @@ class NotificationsServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Event::listen(StudentMarkedAbsent::class, SendAbsenceSms::class);
+        Event::listen(BehaviorRecordLogged::class, SendBehaviorParentSms::class);
         Event::listen(ExamResultsPublished::class, NotifyExamResultsPublished::class);
         Event::listen(ReportCardsPublished::class, NotifyReportCardsPublished::class);
         Event::listen(InvoiceIssued::class, [SendInvoiceGuardianNotice::class, 'handleIssued']);
