@@ -2,7 +2,9 @@
 
 namespace App\Domains\Progress\Actions;
 
-class EvaluateLessonUnlockAction
+use App\Domains\Progress\Contracts\LessonUnlockEvaluator;
+
+class EvaluateLessonUnlockAction implements LessonUnlockEvaluator
 {
     /**
      * Sequential required-lesson unlock. Preview lessons are always open.

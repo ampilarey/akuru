@@ -5,8 +5,8 @@ namespace App\Domains\Courses\Actions;
 use App\Domains\Courses\Models\CourseEnrollment;
 use App\Domains\Courses\Models\Lesson;
 use App\Domains\People\Actions\ResolveStudentForUserAction;
-use App\Domains\Progress\Actions\EvaluateLessonUnlockAction;
 use App\Domains\Progress\Actions\ListLessonProgressAction;
+use App\Domains\Progress\Contracts\LessonUnlockEvaluator;
 use Illuminate\Contracts\Auth\Authenticatable;
 
 class AuthorizeLessonAccessAction
@@ -56,7 +56,7 @@ class AuthorizeLessonAccessAction
             $this->requiredLessons($lesson->course_id),
         );
 
-        return app(EvaluateLessonUnlockAction::class)->execute(
+        return app(LessonUnlockEvaluator::class)->execute(
             $lesson->id,
             $requiredIds,
             $completed,

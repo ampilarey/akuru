@@ -2,7 +2,9 @@
 
 namespace App\Domains\Progress\Actions;
 
-class EvaluateCourseCompletionAction
+use App\Domains\Progress\Contracts\CourseCompletionEvaluator;
+
+class EvaluateCourseCompletionAction implements CourseCompletionEvaluator
 {
     /**
      * Required lessons plus optional required sessions.
