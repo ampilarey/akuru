@@ -68,6 +68,7 @@ return [
     'fee_adjustment' => \App\Domains\Finance\Models\FeeAdjustment::class,
     'event_registration' => \App\Domains\Website\Models\EventRegistration::class,
     'faq' => \App\Domains\Website\Models\Faq::class,
+    'funnel_event' => \App\Domains\Website\Models\FunnelEvent::class,
     'fee_item' => \App\Domains\Finance\Models\FeeItem::class,
     'fee_structure' => \App\Domains\Finance\Models\FeeStructure::class,
     'fee_structure_item' => \App\Domains\Finance\Models\FeeStructureItem::class,

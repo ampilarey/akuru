@@ -13,7 +13,7 @@ class CaptureCourseLeadAction
      */
     public function execute(int $courseId, LeadSource $source, array $data): Lead
     {
-        return Lead::query()->create([
+        $lead = Lead::query()->create([
             'course_id' => $courseId,
             'name' => trim($data['name']),
             'mobile' => trim($data['mobile']),
@@ -22,5 +22,11 @@ class CaptureCourseLeadAction
             'status' => LeadStatus::New,
             'notes' => isset($data['notes']) && trim((string) $data['notes']) !== '' ? trim((string) $data['notes']) : null,
         ]);
+
+        if ($source === LeadSource::Syllabus) {
+            app(RecordFunnelEventAction::class)->execute($courseId, 'syllabus_download');
+        }
+
+        return $lead;
     }
 }

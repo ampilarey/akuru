@@ -221,6 +221,44 @@
     <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','{{ config('services.google.analytics_id') }}');</script>
     @endif
 
+    <script>
+    window.akuruFunnelUrl = @json(route('public.funnel.store'));
+    window.akuruFunnel = function (name, courseId) {
+        if (!name || !courseId) {
+            return;
+        }
+        if (typeof gtag === 'function') {
+            gtag('event', name, { course_id: courseId });
+        }
+        var tokenEl = document.querySelector('meta[name="csrf-token"]');
+        var body = new URLSearchParams();
+        body.set('name', String(name));
+        body.set('course_id', String(courseId));
+        if (tokenEl) {
+            body.set('_token', tokenEl.getAttribute('content') || '');
+        }
+        var blob = new Blob([body.toString()], { type: 'application/x-www-form-urlencoded' });
+        if (navigator.sendBeacon && window.akuruFunnelUrl) {
+            navigator.sendBeacon(window.akuruFunnelUrl, blob);
+            return;
+        }
+        fetch(window.akuruFunnelUrl, {
+            method: 'POST',
+            body: body,
+            credentials: 'same-origin',
+            keepalive: true,
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        });
+    };
+    document.addEventListener('click', function (event) {
+        var el = event.target && event.target.closest ? event.target.closest('[data-akuru-funnel]') : null;
+        if (!el) {
+            return;
+        }
+        window.akuruFunnel(el.getAttribute('data-akuru-funnel'), el.getAttribute('data-course-id'));
+    }, true);
+    </script>
+
     {{-- Cookie Consent Banner --}}
     <div id="cookieConsent" class="fixed bottom-0 left-0 right-0 z-50 hidden bg-white border-t border-gray-200 shadow-lg p-4 md:p-6">
         <div class="container mx-auto flex flex-col md:flex-row items-center justify-between gap-4">

@@ -13,6 +13,7 @@ use App\Domains\Website\Actions\ComposeFaqPageJsonLdAction;
 use App\Domains\Website\Actions\JoinCourseWaitlistAction;
 use App\Domains\Website\Actions\ListCoursePageFaqsAction;
 use App\Domains\Website\Actions\ListCoursePageTestimonialsAction;
+use App\Domains\Website\Actions\RecordFunnelEventAction;
 use App\Domains\Website\Enums\LeadSource;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
@@ -150,6 +151,8 @@ class CourseController extends Controller
         $seo = app(ComposeCourseSeoAction::class)->execute((int) $course->id);
         $faqs = app(ListCoursePageFaqsAction::class)->execute();
         $faqJsonLd = app(ComposeFaqPageJsonLdAction::class)->execute($faqs);
+
+        app(RecordFunnelEventAction::class)->execute((int) $course->id, 'course_view');
 
         return view('public.courses.show', compact(
             'course',

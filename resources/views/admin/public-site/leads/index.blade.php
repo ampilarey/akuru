@@ -8,6 +8,9 @@
             <a href="{{ route('admin.courses.index') }}" class="text-brandBlue-600 hover:text-brandBlue-800 text-sm font-medium">
                 Manage Courses →
             </a>
+            <a href="{{ route('admin.funnel.index') }}" class="text-brandBlue-600 hover:text-brandBlue-800 text-sm font-medium">
+                Funnel →
+            </a>
         </div>
         <a href="{{ route('admin.leads.export', request()->only(['source', 'status', 'course_id'])) }}" class="btn-secondary">
             Export CSV
