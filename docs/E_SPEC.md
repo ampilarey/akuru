@@ -34,17 +34,22 @@ Merged #117.
 
 Merged #118.
 
-### W2.2 — Daily content store (this slice)
+### W2.2 — Daily content store
 
-- `daily_contents` in Website. Unique `(publish_date, content_type)`. No `academic_year_id` (ADR-024).
-- Hadith cannot publish without collection + number + grading + grading source.
-- Maker–checker: `daily_content.manage` vs `daily_content.approve`; creator ≠ approver. Save cannot set scheduled/published.
-- Ayahs via `QuranTextProviderInterface` only. Admin Blade under public-site (no AppShell link).
-- No auto-generation (WORKING_RULES + ADR-024).
+Merged #119.
 
-### W2.3 (next)
+### W2.3 — Public display (this slice)
 
-Homepage widget, archive/permalink, share cards. Prayer/Hijri widget is **W3**.
+- Homepage widget: Settings `daily.homepage_layout` `stacked` (default, all types) or `rotate` (one type per day). Empty today falls back to the most recent published of that type.
+- Archive `/daily/{type}` + permalink `/daily/{type}/{date}` (e.g. `/en/daily/ayah/2026-08-27`).
+- Article JSON-LD + OG. Fixture gloss is not named as a published mushaf translation (ADR-023). Ayah pages may be indexed.
+- Share cards 1080×1080 via Media `ImageProcessorInterface` + `StoreGeneratedPublicImageAction`. Hadith collection/number/grading/source always on the card spec. Pre-render on publish (queued); card failures do not block publish.
+- Scheduler `daily-content:publish-due` at 00:05 `Indian/Maldives`.
+- Prayer/Hijri widget is **W3**.
+
+### W2.4 (next)
+
+Subscriptions + SMS via `SmsSenderInterface` only; fake in testing; opt-in only.
 
 ## E3 — W3 prayer times (next phase)
 
