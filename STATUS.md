@@ -546,6 +546,48 @@ migration; no Hifz behaviour change outside it.
   engine path (needs the public-site enroll flow walked + W1 funnel
   events preserved), refunds, and offering-level pricing (fee lives on
   the course; per-offering price is a future decision).
+- **P4.2 (this PR):** the legacy public checkout's MONEY mechanics retired
+  onto the engine pattern — §7's dual-path risk closed at the
+  money→access moment. (The OTP/identity onboarding UX is untouched;
+  swapping the public flow for `/learn` remains gated on the operator's
+  browser walk + nav decision.) Four changes, one concern:
+  **(1) enroll-first** — `processEnrollmentFromSession` no longer writes
+  `enrollment_pending_payload`; paid flows go through the SAME
+  `EnrollmentService` path as free ones (pending enrollments +
+  consolidated Payment + PaymentItems created BEFORE redirecting to BML),
+  so the webhook only activates and can never swallow an
+  enrollment-creation failure after taking money. Free-enrollment
+  notifications now fire only for `payment_status=not_required` rows
+  (paid ones announce from the webhook — rule 12).
+  **(2) single activation point** — `ActivateEnrollmentOnPaymentConfirmed`
+  handles BOTH payment shapes (payable `course_enrollment` and legacy
+  PaymentItems); the inline activation copies in `PaymentService` (×2)
+  are deleted, and `PaymentConfirmed` now dispatches BEFORE
+  notifications so confirmation mail renders the activated state.
+  **(3) stray confirmation paths unified** — `PaymentController::
+  applyBmlTransactionStatus` (return-URL) and `ReconcilePaymentsCommand`'s
+  private transaction both deleted; both now delegate to
+  `finalizeByReference`, so reconciled/returned payments finally fire the
+  event (Library grants, engine activation), send notifications, and
+  record the `payment_completed` funnel — previously they silently
+  activated and granted nothing else. DB-facade arch baseline shrank by
+  one (PaymentController). W1 funnel events preserved untouched
+  (`registration_started` in the public controllers,
+  `payment_completed` in PaymentService).
+  **(4) legacy-data safety net** — the `enrollment_pending_payload` READ
+  branch stays (webhook still finalizes pre-P4.2 payments; pinned by
+  test) but nothing writes it any more
+  (`createPaymentForPendingEnrollment` deleted). **Cleanup deploy
+  (recorded):** delete the safety-net branch +
+  `createEnrollmentForConfirmedPayment` + drop the
+  `payments.enrollment_pending_payload` column only after
+  `SELECT COUNT(*) FROM payments WHERE enrollment_pending_payload IS NOT
+  NULL AND status NOT IN ('confirmed','paid','failed','cancelled','expired')`
+  returns 0 (rule 9 shape: this deploy stops writing, cleanup is a later
+  deploy). Known gap (recorded): mixed free+paid carts redirect to BML
+  before showing the free-course confirmation page — free notifications
+  still send. Remaining Phase 4 work: refunds, offering-level pricing,
+  and the public-flow UX swap (operator-gated).
 
 ## 6. Out of scope (unchanged)
 

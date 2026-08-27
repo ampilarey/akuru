@@ -32,36 +32,12 @@ class PaymentService
     /**
      * Create consolidated payment for multiple enrollments.
      *
+     * P4.2: this is the ONLY payment shape the public checkout creates —
+     * enrollments exist (pending) before any money moves, and the webhook
+     * activates them through the PaymentConfirmed listener.
+     *
      * @param  array<int, array{enrollment: CourseEnrollment, course: Course, amount: float}>  $feeEnrollments
      */
-    /**
-     * Create a Payment record for a paid course enrollment WITHOUT creating any
-     * RegistrationStudent or CourseEnrollment rows yet.  The full enrollment data
-     * is stored in enrollment_pending_payload and is written to the DB only once
-     * BML confirms the payment (see EnrollmentService::createEnrollmentForConfirmedPayment).
-     *
-     * @param  \Illuminate\Support\Collection  $courses
-     */
-    public function createPaymentForPendingEnrollment(User $payer, array $enrollmentPayload, $courses): Payment
-    {
-        $totalAmount = collect($courses)->sum(fn ($c) => (float) ($c->registration_fee_amount ?? $c->fee ?? 0));
-        $totalLaar = (int) round($totalAmount * 100);
-        $firstCourse = collect($courses)->first();
-
-        return Payment::create([
-            'user_id' => $payer->id,
-            'student_id' => null,
-            'course_id' => $firstCourse->id,
-            'amount' => $totalAmount,
-            'amount_laar' => $totalLaar,
-            'currency' => config('bml.default_currency') ?: ($firstCourse->registration_fee_currency ?? 'MVR'),
-            'status' => 'initiated',
-            'provider' => 'bml',
-            'merchant_reference' => 'AKURU-'.strtoupper(Str::uuid()->toString()),
-            'enrollment_pending_payload' => $enrollmentPayload,
-        ]);
-    }
-
     public function createConsolidatedPayment(User $payer, int $registrationStudentId, array $feeEnrollments): Payment
     {
         $totalAmount = array_sum(array_column($feeEnrollments, 'amount'));
@@ -106,7 +82,8 @@ class PaymentService
      * - Locks the payment row FOR UPDATE.
      * - If already in a final state, returns immediately (idempotent).
      * - Queries provider for latest status.
-     * - Updates payment + linked enrollments.
+     * - Updates the payment; enrollment activation and access grants run in
+     *   the PaymentConfirmed listeners (P4.2: the single money→access path).
      */
     public function finalizeByReference(string $ref): ?Payment
     {
@@ -152,33 +129,24 @@ class PaymentService
                     'paid_at' => $payment->paid_at ?? now(),
                 ]);
 
-                // Deferred-enrollment flow
+                // Legacy-data safety net: payments created before P4.2 carry the
+                // enrollment in enrollment_pending_payload. No code writes this
+                // payload any more — delete this branch in the cleanup deploy
+                // once no non-final payment holds one.
                 if ($payment->enrollment_pending_payload) {
                     $this->finalizeDeferredEnrollment($payment->fresh());
-                } else {
-                    foreach ($payment->items as $item) {
-                        $enrollment = $item->enrollment;
-                        if (! $enrollment) {
-                            continue;
-                        }
-                        $enrollment->update(['payment_status' => 'confirmed']);
-                        $course = $enrollment->course;
-                        if (! ($course->requires_admin_approval ?? false)) {
-                            $enrollment->update([
-                                'status' => 'active',
-                                'enrolled_at' => $enrollment->enrolled_at ?? now(),
-                            ]);
-                        }
-                    }
                 }
+
+                // P4.2: money→access happens HERE, before any notification —
+                // domains activate enrollments / grant access by listening,
+                // inside this transaction (a failed listener rolls back with
+                // the payment), so the mails below render the granted state.
+                event(new PaymentConfirmed($payment->fresh()));
 
                 $this->sendConfirmationEmail($payment->fresh());
                 $this->notifyAdminsPaymentConfirmed($payment);
                 app(RecordInvoiceReceiptAction::class)->fromConfirmedPayment($payment->fresh());
                 $this->recordPaymentCompletedFunnel($payment->fresh());
-                // L3: other domains grant access by listening, inside this
-                // transaction — a failed listener rolls back with the payment.
-                event(new PaymentConfirmed($payment->fresh()));
             } elseif (in_array($providerStatus, ['failed', 'cancelled', 'declined'], true)) {
                 $payment->update([
                     'status' => 'failed',
@@ -244,34 +212,24 @@ class PaymentService
                     'paid_at' => $payment->paid_at ?? now(),
                 ]);
 
-                // Deferred-enrollment flow: create student + enrollment records now
+                // Legacy-data safety net: payments created before P4.2 carry the
+                // enrollment in enrollment_pending_payload. No code writes this
+                // payload any more — delete this branch in the cleanup deploy
+                // once no non-final payment holds one.
                 if ($payment->enrollment_pending_payload) {
                     $this->finalizeDeferredEnrollment($payment->fresh());
-                } else {
-                    // Legacy / existing-enrollment flow: just activate the linked enrollments
-                    foreach ($payment->items as $item) {
-                        $enrollment = $item->enrollment;
-                        if (! $enrollment) {
-                            continue;
-                        }
-                        $enrollment->update(['payment_status' => 'confirmed']);
-                        $course = $enrollment->course;
-                        if (! ($course->requires_admin_approval ?? false)) {
-                            $enrollment->update([
-                                'status' => 'active',
-                                'enrolled_at' => $enrollment->enrolled_at ?? now(),
-                            ]);
-                        }
-                    }
                 }
+
+                // P4.2: money→access happens HERE, before any notification —
+                // domains activate enrollments / grant access by listening,
+                // inside this transaction (a failed listener rolls back with
+                // the payment), so the mails below render the granted state.
+                event(new PaymentConfirmed($payment->fresh()));
 
                 $this->sendConfirmationEmail($payment->fresh());
                 $this->notifyAdminsPaymentConfirmed($payment);
                 app(RecordInvoiceReceiptAction::class)->fromConfirmedPayment($payment->fresh());
                 $this->recordPaymentCompletedFunnel($payment->fresh());
-                // L3: other domains grant access by listening, inside this
-                // transaction — a failed listener rolls back with the payment.
-                event(new PaymentConfirmed($payment->fresh()));
             } else {
                 $providerStatus = strtolower((string) ($result->status ?? ''));
                 if (in_array($providerStatus, ['failed', 'cancelled', 'declined'], true)) {

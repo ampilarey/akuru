@@ -940,52 +940,11 @@ class CourseRegistrationController extends PublicRegistrationController
             }
         }
 
-        $courses = \App\Domains\Courses\Models\Course::whereIn('id', $courseIds)->get();
-        $totalFee = $courses->sum(fn ($c) => (float) ($c->registration_fee_amount ?? $c->fee ?? 0));
-
-        // ── PAID COURSES: deferred enrollment — create only a Payment record now ──
-        // RegistrationStudent + CourseEnrollment are created AFTER BML confirms payment.
-        if ($totalFee > 0) {
-            $enrollmentPayload = [
-                'user_id' => $user->id,
-                'flow' => $flow,
-                'student_data' => $data,
-                'course_ids' => $courseIds,
-                'term_id' => $termId,
-                'student_mode' => $studentMode,
-                'child_password' => $childPassword,
-            ];
-
-            $payment = $this->paymentService->createPaymentForPendingEnrollment($user, $enrollmentPayload, $courses);
-
-            $init = $this->paymentService->initiatePayment($payment, [
-                'return_url' => route('payments.bml.return').'?ref='.$payment->merchant_reference,
-            ]);
-
-            \Illuminate\Support\Facades\Log::info('BML deferred-enrollment initiation', [
-                'payment_id' => $payment->id,
-                'success' => $init->success,
-                'has_redirect_url' => ! empty($init->redirectUrl),
-                'error' => $init->error ?? null,
-            ]);
-
-            if ($init->success && $init->redirectUrl) {
-                session(['pending_payment_ref' => $payment->merchant_reference]);
-                $this->clearEnrollPendingSession();
-
-                return redirect()->away($init->redirectUrl);
-            }
-
-            // BML initiation failed — payment record created but no redirect available
-            $this->clearEnrollPendingSession();
-            $this->clearPendingSession();
-            session(['pending_payment_ref' => $payment->merchant_reference]);
-
-            return redirect()->route('courses.register.complete')
-                ->with('error', 'Your enrollment request was received but we could not connect to the payment gateway right now. Please use the "Proceed to payment" button below to complete your payment.');
-        }
-
-        // ── FREE COURSES: create enrollment immediately (no payment needed) ──
+        // P4.2: enroll FIRST for free and paid alike — EnrollmentService creates
+        // pending enrollments (payment_status pending when a fee applies) plus one
+        // consolidated Payment with PaymentItem rows, the same shape the engine
+        // checkout uses. The BML webhook activates them through the
+        // PaymentConfirmed listener; nothing is created inside the webhook.
         try {
             if ($flow === 'parent') {
                 if ($studentMode === 'new') {
@@ -1034,9 +993,45 @@ class CourseRegistrationController extends PublicRegistrationController
             return redirect()->route('my.enrollments')->with('info', $msg);
         }
 
-        if (! empty($result->createdEnrollments)) {
-            $this->sendFreeEnrollmentStudentNotifications($user, $result->createdEnrollments);
-            $this->notifyAdminFreeEnrollment($user, $result->createdEnrollments);
+        // Free enrollments notify now; paid ones notify from the webhook once
+        // the money is real (rule 12 — never announce before confirmation).
+        $freeCreated = array_values(array_filter(
+            $result->createdEnrollments,
+            fn ($enrollment) => $enrollment->payment_status === 'not_required'
+        ));
+        if (! empty($freeCreated)) {
+            $this->sendFreeEnrollmentStudentNotifications($user, $freeCreated);
+            $this->notifyAdminFreeEnrollment($user, $freeCreated);
+        }
+
+        // Paid courses: redirect to BML for the consolidated payment.
+        if ($result->hasPaymentsPending()) {
+            $payment = $result->getConsolidatedPayment();
+
+            $init = $this->paymentService->initiatePayment($payment, [
+                'return_url' => route('payments.bml.return').'?ref='.$payment->merchant_reference,
+            ]);
+
+            \Illuminate\Support\Facades\Log::info('BML enroll-first initiation', [
+                'payment_id' => $payment->id,
+                'success' => $init->success,
+                'has_redirect_url' => ! empty($init->redirectUrl),
+                'error' => $init->error ?? null,
+            ]);
+
+            session(['pending_payment_ref' => $payment->merchant_reference]);
+            $this->clearEnrollPendingSession();
+
+            if ($init->success && $init->redirectUrl) {
+                return redirect()->away($init->redirectUrl);
+            }
+
+            // BML initiation failed — enrollment + payment exist, no redirect available
+            $this->clearPendingSession();
+            session(['pending_payment_ref' => $payment->merchant_reference]);
+
+            return redirect()->route('courses.register.complete')
+                ->with('error', 'Your enrollment request was received but we could not connect to the payment gateway right now. Please use the "Proceed to payment" button below to complete your payment.');
         }
 
         $this->clearEnrollPendingSession();
