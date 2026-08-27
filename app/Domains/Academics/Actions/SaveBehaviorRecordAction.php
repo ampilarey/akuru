@@ -3,8 +3,11 @@
 namespace App\Domains\Academics\Actions;
 
 use App\Domains\Academics\Enums\BehaviorType;
+use App\Domains\Academics\Events\BehaviorRecordLogged;
 use App\Domains\Academics\Models\BehaviorRecord;
 use App\Domains\Academics\Models\BehaviorRecordAudit;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Validation\ValidationException;
 
 class SaveBehaviorRecordAction
@@ -45,6 +48,7 @@ class SaveBehaviorRecordAction
         if ($record === null) {
             $created = BehaviorRecord::query()->create($payload);
             $this->audit($created, $actorId ?? $created->recorded_by, 'created', $created->toArray());
+            $this->notifyParents($created);
 
             return $created;
         }
@@ -61,6 +65,41 @@ class SaveBehaviorRecordAction
     {
         $this->audit($record, $actorId, 'deleted', $record->toArray());
         $record->delete();
+    }
+
+    /**
+     * S2 spec: notify parents of a parent-visible behaviour record, behind an
+     * opt-in setting. Gating happens here at dispatch — the same place
+     * RecordClassAttendanceAction gates absent-vs-late — so the listener stays
+     * a pure sender. Compliments never notify: a "good news" SMS at 9pm is not
+     * what the setting is for.
+     */
+    private function notifyParents(BehaviorRecord $record): void
+    {
+        if (! $record->parent_visible) {
+            return;
+        }
+
+        $type = $record->type instanceof BehaviorType ? $record->type : BehaviorType::from((string) $record->type);
+        if ($type === BehaviorType::Compliment) {
+            return;
+        }
+
+        if (! app(ResolveNotificationSettingsAction::class)->execute()['behavior_notify_parents']) {
+            return;
+        }
+
+        $student = DB::table('students')->where('id', $record->student_id)->first(['first_name', 'last_name']);
+
+        Event::dispatch(new BehaviorRecordLogged(
+            recordId: (int) $record->id,
+            studentId: (int) $record->student_id,
+            studentName: trim((string) ($student->first_name ?? '').' '.(string) ($student->last_name ?? '')),
+            type: $type->value,
+            date: (string) ($record->date instanceof \DateTimeInterface
+                ? $record->date->format('Y-m-d')
+                : $record->date),
+        ));
     }
 
     /**

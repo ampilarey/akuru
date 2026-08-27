@@ -36,7 +36,14 @@ class ReviewSchoolRequestAction
                 $this->registry->handlerFor($request)?->onApproved($request->fresh());
             }
 
-            return $request->refresh();
+            $request->refresh();
+
+            // Inside the transaction on purpose: the notice is a DB write, so a
+            // failed handler rolls the notice back with it. Nobody should be
+            // told their leave was approved by a transaction that then aborted.
+            app(NotifyRequestDecisionAction::class)->execute($request);
+
+            return $request;
         });
     }
 }

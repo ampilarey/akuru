@@ -25,3 +25,8 @@ Schedule::command('invoices:mark-defaulted-plans')->dailyAt('02:15');
 Schedule::command('hr:notify-expiring-documents')->dailyAt('02:30');
 Schedule::command('daily-content:publish-due')->dailyAt('00:05')->timezone('Indian/Maldives');
 Schedule::command('daily-content:deliver')->everyFifteenMinutes()->timezone('Indian/Maldives');
+
+// S2 end-of-day nudges — school-local time, after the last lesson but before
+// staff leave. Both are once-per-recipient-per-day internally.
+Schedule::command('registers:notify-unfilled')->dailyAt('17:00')->timezone('Indian/Maldives');
+Schedule::command('school:notify-daily-digest')->dailyAt('17:30')->timezone('Indian/Maldives');
