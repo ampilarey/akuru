@@ -47,6 +47,7 @@ class ListSessionAttendanceAction
                 'id' => $session->id,
                 'title' => $session->title,
                 'course_offering_id' => $session->course_offering_id,
+                'academic_year_id' => $session->academic_year_id ? (int) $session->academic_year_id : null,
                 'offering_title' => $session->offering?->title,
                 'starts_at' => $session->starts_at?->toIso8601String(),
             ],
