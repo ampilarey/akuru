@@ -2,9 +2,9 @@
 
 namespace App\Domains\Website\Http\Controllers\PublicSite;
 
-use App\Domains\Admissions\Models\AdmissionApplication;
 use App\Domains\Courses\Actions\ComposeCourseConversionSignalsAction;
 use App\Domains\Courses\Models\Course;
+use App\Domains\Website\Actions\ComposeHomepageTrustAction;
 use App\Domains\Website\Models\Event;
 use App\Domains\Website\Models\GalleryAlbum;
 use App\Domains\Website\Models\HeroBanner;
@@ -21,7 +21,7 @@ class HomeController extends Controller
         $locale = app()->getLocale();
 
         // Cache courses/posts/events/stats for 10 minutes; gallery+testimonials are fetched fresh
-        $cached = Cache::remember("homepage_data_v5_{$locale}", 600, function () use ($locale) {
+        $cached = Cache::remember("homepage_data_v6_{$locale}", 600, function () use ($locale) {
             return $this->buildHomepageData($locale);
         });
 
@@ -126,16 +126,17 @@ class HomeController extends Controller
             ]);
         }
 
-        // Stats (use real counts or fallback for empty DB)
+        // Course/teacher counts stay local to this page. Students + years come from
+        // trust settings (never invent a 500 / 5+ fallback).
         $courseCount = Course::whereIn('status', ['open', 'upcoming'])->count();
-        $studentCount = AdmissionApplication::whereIn('status', ['approved', 'pending'])->count();
         $teacherCount = class_exists(\App\Domains\People\Models\Teacher::class) ? \App\Domains\People\Models\Teacher::count() : 0;
         $stats = [
             'courses' => $courseCount ?: 12,
-            'students' => $studentCount ?: 500,
             'teachers' => $teacherCount ?: 25,
         ];
 
-        return compact('text', 'heroBanners', 'courses', 'posts', 'articles', 'events', 'stats');
+        $trust = app(ComposeHomepageTrustAction::class)->execute($locale);
+
+        return compact('text', 'heroBanners', 'courses', 'posts', 'articles', 'events', 'stats', 'trust');
     }
 }
