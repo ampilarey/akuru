@@ -134,6 +134,36 @@ Legend — **CODE:** implementation in repo (models/migrations/actions/routes/pa
 
 Fixed enough that the old overstatement no longer applies: SMS live-bind, `DatabaseSeeder` ≠ school, Blade parent/teacher landing, fill-grid names-only, generate-0 copy, class/year 500s, invoice drafts-only list.
 
+## 5b. Phase 0 audit (2026-08-26) — findings and fixes
+
+Phase 0 re-audited against `docs/PHASE_0_CHECKLIST.md` and ROADMAP §4. Core
+objective **passes**: `app/Models` and `app/Services` are gone, 21 providers
+registered, all 6 contracts exist with bindings, and the architecture baselines
+have only **shrunk** across 116 PRs (76→74, 184→178, 4→4, 3→3). Morph map has
+exact parity: **167 aliases / 167 models**.
+
+Fixed in this slice:
+
+| Finding | Action |
+|---|---|
+| `enforceMorphMap()` never flipped; its trigger ("after production verification") can never fire (ADR-021: no production). Provider comment contradicted ADR-005's stated intent. | **Enforced.** Assurance now comes from `MorphMapConfigTest` (every domain model mapped, aliases unique) + audited fact that no Eloquent models exist outside `app/Domains`. ADR-005 amended. |
+| Checklist claimed a "duplicate `create_otps_table` migration". **False premise** — `2025_10_15_161251` creates `otps`, `2026_02_16_000002` creates `user_contact_otps`; only filenames matched. | Legacy `otps` table was dead (`Models\Otp` reads `user_contact_otps`; last reference a stale truncate). Dropped forward by `2026_08_26_000001`; stale truncate removed from `ClearNonAdminUsers`. Checklist corrected. |
+| Checklist claimed `app/Http/Controllers` = `Controller.php` only; `Api/TestDeployWebhookController` disproves it. | Claim corrected. Controller **stays** — it is app infrastructure, not domain logic; an Ops domain for one controller would violate ROADMAP §7. Recorded as an accepted exception. |
+| Per-domain `routes.php` split "deferred to early S1" — skipped through S1–S5, 1A–1B, Phase 2, A-track. | **Dropped, not deferred.** Central routes are the accepted end state; `tests/Feature/Routes/` is the guard. |
+
+Still open (not fixed here):
+
+- **PHPStan remains `continue-on-error`** with ~410 errors and no owner. The fix
+  (generate a Larastan baseline, make new errors blocking) requires *running*
+  phpstan; this environment cannot `composer install` (proxy returns 403 on
+  `api.github.com` / `codeload.github.com`; only git protocol works). Needs an
+  environment that can install dev dependencies.
+- `2025_10_15_161402` added `users.otp_enabled` / `two_factor_enabled` /
+  `phone_verified_at`, which appear unused. Not dropped in this pass.
+- Phase 0's "site behaves identically" was never verifiable and still is not:
+  the credential smoke has been open since June, and staging HEAD is far behind
+  `main`, so the original Phase 0 deploy evidence describes nothing current.
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1 Quran text provider is this PR.

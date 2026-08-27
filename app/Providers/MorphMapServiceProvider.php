@@ -6,16 +6,21 @@ use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\ServiceProvider;
 
 /**
- * Registers the Eloquent morph map (non-enforcing).
+ * Registers the Eloquent morph map and enforces it.
  *
  * Must load before domain providers so polymorphic relations resolve aliases
- * as soon as models boot. Do NOT call Relation::enforceMorphMap() here —
- * flip to enforcement in a follow-up after production verification.
+ * as soon as models boot.
+ *
+ * Enforcement (ADR-005) means any model used polymorphically without an alias
+ * throws ClassMorphViolationException instead of silently writing an FQCN.
+ * The assurance ADR-005 originally deferred to "production verification" is
+ * provided instead by MorphMapConfigTest: every model under app/Domains has an
+ * alias, aliases are unique, and no Eloquent models live outside app/Domains.
  */
 class MorphMapServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        Relation::morphMap(config('morph-map', []));
+        Relation::enforceMorphMap(config('morph-map', []));
     }
 }
