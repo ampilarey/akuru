@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Domains\Courses\Http\Controllers;
+namespace App\Domains\Courses\Components\Quran\Http\Controllers;
 
-use App\Domains\Courses\Actions\ListQuranReferenceAction;
+use App\Domains\Courses\Components\Quran\Actions\ListQuranReferenceAction;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Inertia\Inertia;

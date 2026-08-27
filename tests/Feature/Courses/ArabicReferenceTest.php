@@ -1,9 +1,9 @@
 <?php
 
-use App\Domains\Courses\Actions\ListArabicReferenceAction;
-use App\Domains\Courses\Actions\SaveArabicLetterAction;
-use App\Domains\Courses\Models\ArabicHarakah;
-use App\Domains\Courses\Models\ArabicLetter;
+use App\Domains\Courses\Components\Arabic\Actions\ListArabicReferenceAction;
+use App\Domains\Courses\Components\Arabic\Actions\SaveArabicLetterAction;
+use App\Domains\Courses\Components\Arabic\Models\ArabicHarakah;
+use App\Domains\Courses\Components\Arabic\Models\ArabicLetter;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
 

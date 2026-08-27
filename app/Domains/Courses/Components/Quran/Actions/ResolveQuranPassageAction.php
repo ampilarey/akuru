@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Domains\Courses\Actions;
+namespace App\Domains\Courses\Components\Quran\Actions;
 
 use App\Support\Contracts\QuranReferenceReader;
 

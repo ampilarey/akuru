@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Domains\Courses\Models;
+namespace App\Domains\Courses\Components\Arabic\Models;
 
 use Illuminate\Database\Eloquent\Model;
 

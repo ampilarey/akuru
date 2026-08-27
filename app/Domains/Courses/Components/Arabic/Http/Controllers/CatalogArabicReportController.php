@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Domains\Courses\Http\Controllers;
+namespace App\Domains\Courses\Components\Arabic\Http\Controllers;
 
-use App\Domains\Courses\Actions\ListArabicSkillReportAction;
+use App\Domains\Courses\Components\Arabic\Actions\ListArabicSkillReportAction;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Inertia\Inertia;

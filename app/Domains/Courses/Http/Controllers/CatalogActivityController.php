@@ -2,10 +2,10 @@
 
 namespace App\Domains\Courses\Http\Controllers;
 
-use App\Domains\Courses\Actions\ListArabicReferenceAction;
 use App\Domains\Courses\Actions\ListCourseActivitiesAction;
-use App\Domains\Courses\Actions\ListQuranReferenceAction;
 use App\Domains\Courses\Actions\SaveActivityAction;
+use App\Domains\Courses\Components\Arabic\Actions\ListArabicReferenceAction;
+use App\Domains\Courses\Components\Quran\Actions\ListQuranReferenceAction;
 use App\Domains\Courses\Models\Activity;
 use App\Domains\Courses\Models\Course;
 use App\Http\Controllers\Controller;

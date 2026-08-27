@@ -2,8 +2,8 @@
 
 use App\Domains\Courses\Actions\SaveActivityAction;
 use App\Domains\Courses\Actions\SaveEngineCourseAction;
-use App\Domains\Courses\Models\ArabicHarakah;
-use App\Domains\Courses\Models\ArabicLetter;
+use App\Domains\Courses\Components\Arabic\Models\ArabicHarakah;
+use App\Domains\Courses\Components\Arabic\Models\ArabicLetter;
 use App\Domains\Courses\Models\CourseSubject;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Validation\ValidationException;
