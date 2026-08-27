@@ -42,7 +42,7 @@ Merged #119.
 
 Merged #121.
 
-### W2.4 — Subscriptions & delivery (this slice)
+### W2.4 — Subscriptions & delivery
 
 - `daily_content_subscriptions` (`user_id`, `channel` sms|email|push, `content_types` json, `language` en|dv, `send_time` default 06:00, `status` active|paused, unique user+channel) plus unsubscribe token/reason. `daily_content_deliveries` unique (subscription, send_date). No `academic_year_id` (website operational log, same exemption as `leads` / `daily_contents`).
 - Opt-in only from `/daily/subscribe` (auth). Guests cannot opt in. User A cannot pause user B. Creating a user does not auto-subscribe.
@@ -51,9 +51,16 @@ Merged #121.
 - Identity Actions only (`ReadVerifiedUserContactsAction`, `FindUserIdByVerifiedMobileAction`). Website does not import Identity/Notifications/Hifz/Courses models or `SmsGatewayService`.
 - Admin `/admin/public-site/daily-subscriptions` + CSV under `daily_content.manage`. No new Spatie permission. No AppShell link.
 
-### W2.5 (next)
+Merged #124.
 
-Research posts: extend `posts` with `post_type`, authors, abstract (`docs/W2_SPEC.md`).
+### W2.5 — Research & publications (this slice)
+
+- Reuse existing `posts.type` (`article` \| `news` \| `research`). Do **not** add a parallel `post_type` column.
+- Additive: `authors` JSON (`instructor_id` and/or external `name`), `abstract`, `citation_note`, `pdf_document_id` nullable FK to **`media_files`** (spec said Media; People `documents` are student records).
+- Public `/research` listing (year + instructor filters + CSV), `/research/{slug}` permalink, `/instructors/{slug}` via HR `ReadPublicInstructorProfileAction`. Article/news routes 404 when the type does not match.
+- PDFs via `StorePublicMediaAction` directory `research-pdfs/` (default directory remains `trust-logos/`).
+- Admin Blade `/admin/public-site/research` under existing public-site roles. No new Spatie permission. No AppShell link.
+- Free front door only — no paywall. When L1 ships, research posts may migrate or link into the Library catalog (decision deferred to L1).
 
 ## E3 — W3 prayer times (next phase)
 
