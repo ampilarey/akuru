@@ -124,8 +124,9 @@ class ListTeacherReviewReportsAction
      */
     private function isWeak(array $item, int $threshold): bool
     {
-        if ($item['passing_score'] !== null) {
-            return $item['score'] < $item['passing_score'];
+        $bar = $this->passingPercent($item);
+        if ($bar !== null) {
+            return $item['percent'] < $bar;
         }
 
         return $item['percent'] < $threshold;
@@ -136,11 +137,31 @@ class ListTeacherReviewReportsAction
      */
     private function reason(array $item, int $threshold): string
     {
-        if ($item['passing_score'] !== null && $item['score'] < $item['passing_score']) {
+        if ($this->passingPercent($item) !== null && $this->isWeak($item, $threshold)) {
             return 'Below passing score';
         }
 
         return 'Below '.$threshold.'% threshold';
+    }
+
+    /**
+     * Passing score is points when it fits on the attempt scale; otherwise a percent
+     * (legacy quizzes often store 50/70 on a 2–30 point max).
+     *
+     * @param  array<string, mixed>  $item
+     */
+    private function passingPercent(array $item): ?int
+    {
+        if ($item['passing_score'] === null) {
+            return null;
+        }
+        $passing = (int) $item['passing_score'];
+        $max = max(1, (int) $item['max_score']);
+        if ($passing > $max) {
+            return $passing;
+        }
+
+        return (int) round(($passing / $max) * 100);
     }
 
     /**

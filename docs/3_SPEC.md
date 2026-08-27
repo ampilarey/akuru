@@ -36,7 +36,7 @@ Student and parent `/portal/performance`: own enrollments (`relationship: self`)
 Pending-review / weakness / revision on `/catalog/reviews` (`courses.manage`). Engine stays subject-ignorant (no `course_type` branch).
 
 - **Pending:** submitted activity/assessment attempts waiting for a teacher score. Cards show student name, course, wait time; scoring form unchanged. CSV section `pending_review`.
-- **Weakness:** latest **scored** attempt per student + item. Weak if `score < passing_score`, or if no passing score is set and percent is below the page threshold (default 50).
+- **Weakness:** latest **scored** attempt per student + item. Weak if percent is below the passing bar, or below the page threshold (default 50%) when no passing score is set. If `passing_score` is greater than `max_score` (legacy quizzes stored 50/70 as percents), treat it as a percent, not raw points.
 - **Revision:** same weak rows with a recommendation — retry when retakes remain, otherwise teacher review. Derived from activity `settings.retake_limit` / assessment `retake_limit`.
 - Filters: academic year (via enrollment offering, or `attempts.academic_year_id`), course, threshold. CSV export of all three sections.
 

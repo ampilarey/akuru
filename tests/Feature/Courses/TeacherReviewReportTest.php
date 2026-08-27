@@ -163,6 +163,77 @@ it('lists weakness and revision for a failed scored activity, not a passing one'
         ->and($csv->streamedContent())->not->toContain('Yusuf Ali');
 });
 
+it('treats passing_score above max_score as a percent, not raw points', function () {
+    $ctx = publishTeacherReportCourse();
+    $question = app(\App\Domains\Courses\Actions\SaveQuestionAction::class)->execute([
+        'question_type' => 'mcq_single',
+        'question_text' => 'What is kitab?',
+        'options' => [['id' => 'a', 'label' => 'Book'], ['id' => 'b', 'label' => 'Pen']],
+        'correct_answer' => ['a'],
+    ]);
+    $assessment = app(\App\Domains\Courses\Actions\SaveAssessmentAction::class)->execute([
+        'course_id' => $ctx['course']->id,
+        'title' => 'Letters percent quiz',
+        'assessment_type' => 'lesson_quiz',
+        'status' => 'published',
+        'passing_score' => 50,
+        'created_by' => $ctx['admin']->id,
+    ]);
+    app(\App\Domains\Courses\Actions\AttachAssessmentQuestionAction::class)->execute([
+        'assessment_id' => $assessment->id,
+        'question_id' => $question->id,
+        'points_override' => 2,
+    ]);
+
+    $this->withoutLocalizationMiddleware()
+        ->actingAs($ctx['user'])
+        ->get(route('learn.assessments.show', $assessment->id))
+        ->assertOk();
+    $this->withoutLocalizationMiddleware()
+        ->actingAs($ctx['user'])
+        ->post(route('learn.assessments.submit', $assessment->id), [
+            'answers' => [(string) $question->id => ['selected_ids' => ['a']]],
+        ])
+        ->assertRedirect();
+
+    $this->withoutLocalizationMiddleware()
+        ->actingAs($ctx['admin'])
+        ->get(route('catalog.reviews.index'))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('weaknesses', fn ($rows) => collect($rows)->contains(fn ($row) => $row['title'] === 'Letters percent quiz') === false)
+        );
+
+    $failer = \App\Domains\Identity\Models\User::factory()->create();
+    makeStudent(['user_id' => $failer->id, 'first_name' => 'Noor', 'last_name' => 'Zahir']);
+    app(EnrollSelfLearningAction::class)->execute($failer->id, $ctx['course']->id);
+    $this->withoutLocalizationMiddleware()
+        ->actingAs($failer)
+        ->get(route('learn.assessments.show', $assessment->id))
+        ->assertOk();
+    $this->withoutLocalizationMiddleware()
+        ->actingAs($failer)
+        ->post(route('learn.assessments.submit', $assessment->id), [
+            'answers' => [(string) $question->id => ['selected_ids' => ['b']]],
+        ])
+        ->assertRedirect();
+
+    $this->withoutLocalizationMiddleware()
+        ->actingAs($ctx['admin'])
+        ->get(route('catalog.reviews.index'))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('weaknesses', function ($rows) {
+                $hit = collect($rows)->first(fn ($row) => $row['title'] === 'Letters percent quiz');
+
+                return $hit
+                    && $hit['student_name'] === 'Noor Zahir'
+                    && $hit['score'] === 0
+                    && $hit['reason'] === 'Below passing score';
+            })
+        );
+});
+
 it('forbids teacher review reports without courses.manage', function () {
     $other = actingPeopleAdmin(['hr.manage']);
 
