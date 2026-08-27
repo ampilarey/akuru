@@ -77,6 +77,10 @@ class SaveLibraryItemAction
             'reading_time' => $data['reading_time'] ?? null,
         ];
 
+        // L7: research citations ride the same writer.
+        if (array_key_exists('citations', $data)) {
+            $payload['citations'] = $data['citations'] !== '' ? $data['citations'] : null;
+        }
         // L5: price rides the same writer; writer_id only when the caller
         // sets it (never nulled by an admin edit).
         if (array_key_exists('price', $data)) {

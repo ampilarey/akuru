@@ -568,6 +568,23 @@ migration; no Hifz behaviour change outside it.
   **Operator (§9.4):** flip `LIBRARY_PAYOUTS_ENABLED` only after the
   tax/accounting decision; until then requests refuse with a friendly
   message.
+- **L7 research workflow (this PR):** §12.2 on top of the L5 editorial
+  loop. A SUBMITTED research item gets a peer reviewer assigned by email
+  (`AssignResearchReviewerAction` — reviewer is a role on the unified
+  identity, granted on first assignment; unique per item+reviewer). The
+  reviewer's `/review` Inertia inbox shows ONLY their own assignments
+  (ownership enforced in `SubmitResearchReviewAction`); recommendations
+  (accept/revise/reject) land in the SAME append-only
+  `library_item_reviews` trail the writer reads — reviewers stay
+  invisible to each other and to sales. The editor still owns publishing
+  (§43.3), but `ReviewLibraryItemSubmissionAction` refuses to approve
+  research without a done ACCEPT recommendation while
+  `library.research_review_required` is on (§29 setting; config-off
+  bypass tested). `library_items.citations` (additive) rides the one
+  item writer, shows in the writer/reviewer editors and publicly on the
+  research page. Alias library_review_assignment same commit.
+  Post-L7 backlog per §38 (recorded): DOI, journal issues/volumes,
+  subscriptions, bundles, audiobooks. **L-track L1–L7 complete.**
 
 ## 5h. Spec Phase 4 — course payments on the engine (adopting L4 Commerce)
 

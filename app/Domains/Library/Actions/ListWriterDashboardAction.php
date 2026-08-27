@@ -59,6 +59,7 @@ class ListWriterDashboardAction
                 'price' => $item->price !== null ? (float) $item->price : null,
                 'abstract' => $item->abstract,
                 'body' => $item->body,
+                'citations' => $item->citations,
                 'status' => $item->status?->value,
                 'submitted_at' => $item->submitted_at?->toDateTimeString(),
                 'published_at' => $item->published_at?->toDateTimeString(),

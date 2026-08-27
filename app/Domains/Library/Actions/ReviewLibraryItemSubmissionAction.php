@@ -2,9 +2,11 @@
 
 namespace App\Domains\Library\Actions;
 
+use App\Domains\Library\Enums\LibraryContentType;
 use App\Domains\Library\Enums\LibraryItemStatus;
 use App\Domains\Library\Models\LibraryItem;
 use App\Domains\Library\Models\LibraryItemReview;
+use App\Domains\Library\Models\LibraryReviewAssignment;
 use Illuminate\Validation\ValidationException;
 
 /**
@@ -26,6 +28,21 @@ class ReviewLibraryItemSubmissionAction
         $status = $item->status instanceof LibraryItemStatus ? $item->status : LibraryItemStatus::tryFrom((string) $item->status);
         if ($status !== LibraryItemStatus::Submitted) {
             throw ValidationException::withMessages(['item' => 'Only submitted items can be reviewed.']);
+        }
+
+        // L7 (§12.2/§29): research needs a peer reviewer's accept before the
+        // editor can publish, while the requirement is switched on.
+        if ($decision === 'approved'
+            && $item->content_type === LibraryContentType::Research
+            && config('library.research_review_required')
+            && ! LibraryReviewAssignment::query()
+                ->where('library_item_id', $item->id)
+                ->where('status', 'done')
+                ->where('recommendation', 'accept')
+                ->exists()) {
+            throw ValidationException::withMessages([
+                'item' => 'Research needs a peer reviewer accept recommendation before publishing.',
+            ]);
         }
 
         if ($decision === 'approved') {

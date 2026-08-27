@@ -43,6 +43,8 @@ class PresentLibraryItemAction
 
         return app(ListLibraryItemsAction::class)->serialize($item) + $gate + [
             'body' => $canRead ? $item->body : null,
+            // L7: citations are part of the scholarly record — always public.
+            'citations' => $item->citations,
             'price' => $item->price !== null ? (string) $item->price : null,
             'currency' => $item->currency,
             'total_pages' => $totalPages,

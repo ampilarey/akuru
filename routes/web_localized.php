@@ -421,6 +421,7 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::post('items/{item}/review', [AdminLibraryController::class, 'reviewSubmission'])->name('admin.library.items.review')->whereNumber('item');
         Route::post('applications/{application}/decide', [AdminLibraryController::class, 'decideApplication'])->name('admin.library.applications.decide')->whereNumber('application');
         Route::post('payouts/{payout}/decide', [AdminLibraryController::class, 'decidePayout'])->name('admin.library.payouts.decide')->whereNumber('payout');
+        Route::post('items/{item}/assign-reviewer', [AdminLibraryController::class, 'assignReviewer'])->name('admin.library.items.assign-reviewer')->whereNumber('item');
         Route::get('earnings/export', [AdminLibraryController::class, 'exportEarnings'])->name('admin.library.earnings.export');
         Route::post('categories', [AdminLibraryController::class, 'storeCategory'])->name('admin.library.categories.store');
     });
@@ -435,6 +436,12 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::post('items/{item}/submit', [\App\Domains\Library\Http\Controllers\WriterPortalController::class, 'submit'])->name('write.items.submit')->whereNumber('item');
         Route::post('bank-details', [\App\Domains\Library\Http\Controllers\WriterPortalController::class, 'saveBankDetails'])->name('write.bank-details');
         Route::post('payout-request', [\App\Domains\Library\Http\Controllers\WriterPortalController::class, 'requestPayout'])->name('write.payout-request');
+    });
+
+    // L7 reviewer portal (§12.2) — own assignments only, enforced in actions.
+    Route::prefix('review')->middleware(['auth'])->group(function () {
+        Route::get('/', [\App\Domains\Library\Http\Controllers\ReviewerPortalController::class, 'index'])->name('review.index');
+        Route::post('{assignment}', [\App\Domains\Library\Http\Controllers\ReviewerPortalController::class, 'store'])->name('review.store')->whereNumber('assignment');
     });
 
     Route::prefix('admin/prayer-times')->middleware(['role:super_admin|admin|headmaster|supervisor', 'can:prayer.manage'])->group(function () {

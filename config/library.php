@@ -20,4 +20,8 @@ return [
 
     // Minimum available balance before a payout can be requested.
     'min_payout' => env('LIBRARY_MIN_PAYOUT', 100),
+
+    // L7 (§12.2/§29): research cannot be approved without a peer-review
+    // recommendation while this is on.
+    'research_review_required' => env('LIBRARY_RESEARCH_REVIEW_REQUIRED', true),
 ];
