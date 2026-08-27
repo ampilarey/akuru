@@ -29,7 +29,7 @@ it('sends a teacher from the dashboard to today registers', function () {
         ->assertInertia(fn (Assert $page) => $page->component('Academics/Registers/Today'));
 });
 
-it('shows a parent-titled landing instead of the admin dashboard', function () {
+it('sends a parent from the dashboard to the composed portal home', function () {
     Role::findOrCreate('parent', 'web');
 
     $user = User::factory()->create();
@@ -38,9 +38,38 @@ it('shows a parent-titled landing instead of the admin dashboard', function () {
     $this->withoutLocalizationMiddleware()
         ->actingAs($user)
         ->get(route('dashboard'))
+        ->assertRedirect(route('portal.home'));
+
+    $this->withoutLocalizationMiddleware()
+        ->actingAs($user)
+        ->get(route('portal.home'))
         ->assertOk()
-        ->assertSee('Parent Dashboard', false)
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('Portal/Home')
+            ->where('title', 'Parent Dashboard')
+        )
         ->assertSee('Attendance', false)
         ->assertSee('Absence notes', false)
         ->assertDontSee('Admin Dashboard', false);
+});
+
+it('sends a student from the dashboard to the composed portal home', function () {
+    Role::findOrCreate('student', 'web');
+
+    $user = User::factory()->create();
+    $user->assignRole('student');
+
+    $this->withoutLocalizationMiddleware()
+        ->actingAs($user)
+        ->get(route('dashboard'))
+        ->assertRedirect(route('portal.home'));
+
+    $this->withoutLocalizationMiddleware()
+        ->actingAs($user)
+        ->get(route('portal.home'))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('Portal/Home')
+            ->where('title', 'Student Dashboard')
+        );
 });

@@ -284,6 +284,8 @@ class LocalizedRouteNamesTest extends TestCase
             'catalog.certificates.revoke',
             'catalog.reports.completions',
             'catalog.reports.completions.export',
+            'portal.home',
+            'portal.home.export',
             'portal.performance',
             'portal.performance.export',
             'catalog.courses.lessons.glossary.attach',
