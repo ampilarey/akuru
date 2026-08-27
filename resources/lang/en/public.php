@@ -351,4 +351,23 @@ return [
     'Ready to Start Learning?' => 'Ready to Start Learning?',
     'Apply now and begin your Islamic education journey' => 'Apply now and begin your Islamic education journey',
     'Apply Now' => 'Apply Now',
+
+    // Library (L1) — DV/AR first pass pending native review (operator item)
+    'Library' => 'Library',
+    'Books, articles and research from Akuru Institute' => 'Books, articles and research from Akuru Institute',
+    'Search the library' => 'Search the library',
+    'Type' => 'Type',
+    'All types' => 'All types',
+    'book' => 'Book',
+    'article' => 'Article',
+    'research' => 'Research paper',
+    'course_material' => 'Course material',
+    'All categories' => 'All categories',
+    'Nothing in the library matches your search yet.' => 'Nothing in the library matches your search yet.',
+    'Login to read' => 'Login to read',
+    'Coming soon' => 'Coming soon',
+    'min read' => 'min read',
+    'Sign in to read this item for free.' => 'Sign in to read this item for free.',
+    'Sign in' => 'Sign in',
+    'This item is not yet available for online reading.' => 'This item is not yet available for online reading.',
 ];

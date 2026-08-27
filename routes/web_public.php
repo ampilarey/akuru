@@ -8,6 +8,7 @@ use App\Domains\Website\Http\Controllers\PublicSite\DailySubscriptionController;
 use App\Domains\Website\Http\Controllers\PublicSite\DailyUnsubscribeController;
 use App\Domains\Website\Http\Controllers\PublicSite\GalleryController;
 use App\Domains\Website\Http\Controllers\PublicSite\HomeController;
+use App\Domains\Library\Http\Controllers\PublicLibraryController;
 use App\Domains\Website\Http\Controllers\PublicSite\InstructorProfileController;
 use App\Domains\Website\Http\Controllers\PublicSite\PageController;
 use App\Domains\Website\Http\Controllers\PublicSite\PrayerTimesController;
@@ -47,6 +48,10 @@ Route::get('search', [\App\Domains\Website\Http\Controllers\PublicSite\SearchCon
 // Articles (type=article posts)
 Route::get('articles', [\App\Domains\Website\Http\Controllers\PublicSite\PostController::class, 'articlesIndex'])->name('public.articles.index');
 Route::get('articles/{post:slug}', [\App\Domains\Website\Http\Controllers\PublicSite\PostController::class, 'show'])->name('public.articles.show');
+
+Route::get('library/export', [PublicLibraryController::class, 'export'])->name('public.library.export');
+Route::get('library', [PublicLibraryController::class, 'index'])->name('public.library.index');
+Route::get('library/{slug}', [PublicLibraryController::class, 'show'])->name('public.library.show');
 
 Route::get('research/export', [ResearchPostController::class, 'export'])->name('public.research.export');
 Route::get('research', [ResearchPostController::class, 'index'])->name('public.research.index');

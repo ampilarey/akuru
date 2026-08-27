@@ -92,6 +92,7 @@ use App\Domains\HR\Http\Controllers\StaffAttendanceController;
 use App\Domains\HR\Http\Controllers\StaffAttendanceReportController;
 use App\Domains\HR\Http\Controllers\StaffContractController;
 use App\Domains\Identity\Http\Controllers\ProfileController;
+use App\Domains\Library\Http\Controllers\AdminLibraryController;
 use App\Domains\Notifications\Http\Controllers\NotificationController;
 use App\Domains\Offerings\Http\Controllers\CourseOfferingController;
 use App\Domains\Offerings\Http\Controllers\OfferingSessionController;
@@ -391,6 +392,14 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::post('research', [AdminResearchPostController::class, 'store'])->name('admin.research.store');
         Route::get('research/{post}/edit', [AdminResearchPostController::class, 'edit'])->name('admin.research.edit')->whereNumber('post');
         Route::put('research/{post}', [AdminResearchPostController::class, 'update'])->name('admin.research.update')->whereNumber('post');
+    });
+
+    Route::prefix('admin/library')->middleware(['role:super_admin|admin|headmaster', 'can:library.manage'])->group(function () {
+        Route::get('/', [AdminLibraryController::class, 'index'])->name('admin.library.index');
+        Route::post('items', [AdminLibraryController::class, 'storeItem'])->name('admin.library.items.store');
+        Route::put('items/{item}', [AdminLibraryController::class, 'updateItem'])->name('admin.library.items.update')->whereNumber('item');
+        Route::post('items/{item}/publish', [AdminLibraryController::class, 'publish'])->name('admin.library.items.publish')->whereNumber('item');
+        Route::post('categories', [AdminLibraryController::class, 'storeCategory'])->name('admin.library.categories.store');
     });
 
     Route::prefix('admin/prayer-times')->middleware(['role:super_admin|admin|headmaster|supervisor', 'can:prayer.manage'])->group(function () {
