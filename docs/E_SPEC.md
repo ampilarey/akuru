@@ -38,18 +38,22 @@ Merged #118.
 
 Merged #119.
 
-### W2.3 — Public display (this slice)
+### W2.3 — Public display
 
-- Homepage widget: Settings `daily.homepage_layout` `stacked` (default, all types) or `rotate` (one type per day). Empty today falls back to the most recent published of that type.
-- Archive `/daily/{type}` + permalink `/daily/{type}/{date}` (e.g. `/en/daily/ayah/2026-08-27`).
-- Article JSON-LD + OG. Fixture gloss is not named as a published mushaf translation (ADR-023). Ayah pages may be indexed.
-- Share cards 1080×1080 via Media `ImageProcessorInterface` + `StoreGeneratedPublicImageAction`. Hadith collection/number/grading/source always on the card spec. Pre-render on publish (queued); card failures do not block publish.
-- Scheduler `daily-content:publish-due` at 00:05 `Indian/Maldives`.
-- Prayer/Hijri widget is **W3**.
+Merged #121.
 
-### W2.4 (next)
+### W2.4 — Subscriptions & delivery (this slice)
 
-Subscriptions + SMS via `SmsSenderInterface` only; fake in testing; opt-in only.
+- `daily_content_subscriptions` (`user_id`, `channel` sms|email|push, `content_types` json, `language` en|dv, `send_time` default 06:00, `status` active|paused, unique user+channel) plus unsubscribe token/reason. `daily_content_deliveries` unique (subscription, send_date). No `academic_year_id` (website operational log, same exemption as `leads` / `daily_contents`).
+- Opt-in only from `/daily/subscribe` (auth). Guests cannot opt in. User A cannot pause user B. Creating a user does not auto-subscribe.
+- `daily-content:deliver` every 15 minutes `Indian/Maldives`: one message per channel per day; compose **today’s published** items only (not fallback); skip silently with **no** delivery row when nothing is published so a later run can still send; SMS via `SmsSenderInterface` short text + permalink + STOP (never full Arabic); email via Laravel Mail; **push ignored** (schema ready).
+- Unsubscribe: public token GET pauses immediately; public STOP/UNSUBSCRIBE keyword on verified mobile pauses SMS immediately and is logged.
+- Identity Actions only (`ReadVerifiedUserContactsAction`, `FindUserIdByVerifiedMobileAction`). Website does not import Identity/Notifications/Hifz/Courses models or `SmsGatewayService`.
+- Admin `/admin/public-site/daily-subscriptions` + CSV under `daily_content.manage`. No new Spatie permission. No AppShell link.
+
+### W2.5 (next)
+
+Research posts: extend `posts` with `post_type`, authors, abstract (`docs/W2_SPEC.md`).
 
 ## E3 — W3 prayer times (next phase)
 
