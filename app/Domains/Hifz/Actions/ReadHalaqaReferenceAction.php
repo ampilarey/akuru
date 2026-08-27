@@ -10,6 +10,8 @@ class ReadHalaqaReferenceAction implements HalaqaReferenceReader
         private readonly ListHifzProgramsAction $programs,
         private readonly ListHifzSessionsAction $sessions,
         private readonly ListHifzEnrollmentsAction $enrollments,
+        private readonly ListHifzMilestonesAction $milestones,
+        private readonly ListHifzSessionRecordsAction $sessionRecords,
     ) {}
 
     public function listPrograms(): array
@@ -35,5 +37,15 @@ class ReadHalaqaReferenceAction implements HalaqaReferenceReader
     public function listEnrollments(int $programId): array
     {
         return $this->enrollments->execute($programId);
+    }
+
+    public function listMilestones(int $programId): array
+    {
+        return $this->milestones->execute($programId);
+    }
+
+    public function listSessionRecords(int $sessionId): array
+    {
+        return $this->sessionRecords->execute($sessionId);
     }
 }

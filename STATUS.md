@@ -282,6 +282,54 @@ audit finding of mine to dissolve on tracing (after four in S2 and two in S3), a
 from the same error: concluding absence from a keyword search instead of following
 the call path.
 
+## 5f. Phase F — Hifz → engine migration (ROADMAP §2b, freeze lifted for this phase only)
+
+Slice-by-slice, one PR each, CI-gated. The freeze exception covers exactly this
+migration; no Hifz behaviour change outside it.
+
+- **F0 (merged, #131):** `Courses/Components/{Arabic,Quran}` created — the Phase 2
+  audit correction. 12 classes relocated with morph aliases updated in the same
+  commit; two engine-owned seams (`ListSkillTaggedActivitiesAction`,
+  `ResolveLatestEnrollmentIdAction`) so components never import engine models;
+  `tests/Architecture/ComponentsIsolationTest` now enforces rule 3's Components
+  clause against a non-empty set. Known residue: engine still calls component
+  actions (SaveActivity validation, passage resolution) — inversion is a Phase F
+  follow-up.
+- **F1 (merged, #131):** halaqa mirror gate. `halaqa:verify-mirror`
+  (+`--mirror-missing` heal) proves every dual-write link's legacy sessions have
+  mirrored engine sessions and no link is orphaned; `ListOfferingSessionsAction`
+  declares `read_source=engine` + `unmirrored_halaqa_session_ids` additively.
+- **F2 (this PR):** structure mapping. Every Hifz program → engine Course
+  (`course_type` `hifz`, subject `hifz`) + face-to-face Offering + A.3 link
+  (`MapHalaqaProgramAction`, hand-made links respected); sessions mirrored
+  regardless of dual_write (one-time migration path,
+  `MirrorHalaqaSessionAction(requireDualWrite: false)`); active Hifz enrollments →
+  `course_enrollments` + `offering_halaqa_enrollment_links` (morph alias added);
+  session-record attendance → engine `attendance_records` (statuses map 1:1).
+  Commands: `halaqa:backfill-structure` (idempotent, additive) and
+  `halaqa:verify-structure` (rule 9 gate; unresolved listed, never guessed).
+  Milestones → completion: `SyncHifzMilestoneProgressAction` in Components/Quran
+  is ADR-022's named second `CourseCompletionEvaluator` consumer — a student's
+  milestone rows are the required units, approved ones complete; persisted through
+  the new engine seam `ApplyEnrollmentCompletionAction`. Mirrored halaqa sessions
+  are created `is_required=false` so attendance history can never complete a hifz
+  course through the session path — completion stays milestone-driven.
+  **Recorded limitations:** (1) reader exposes ACTIVE Hifz enrollments only —
+  paused/completed/transferred stay legacy-side until their own decision; (2) an
+  attendance edit after milestone completion re-runs lesson/session progress sync
+  and regresses `progress_percentage` (status/completed_at survive) until the next
+  milestone sync — F3/F4 wire milestone sync to events instead of the backfill
+  command. **Verification gate output must be captured here before any deploy
+  that switches Hifz reads to engine structure.**
+- **F3 (next):** recitation submissions, mistake marks (haraka-strict §52.2),
+  revision schedules, memorization progress re-keyed to engine IDs in
+  Components/Quran; reuse existing `surahs`/`quran_*` tables (rule 11). STOP after
+  F3 with full report.
+- **F4:** dashboards (§52.7–52.13) in Inertia, replacing frozen Hifz Blade.
+- **F5:** retirement — archive don't drop; keep specialty tables; move
+  QuranReferenceReader/QuranTextProvider implementations into Components/Quran;
+  grep tests for Hifz model imports first and list casualties in the PR body.
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**; next is **F1** (Hifz → engine). Do not start F in the same turn as the Phase E report.
