@@ -81,7 +81,7 @@ Rules: definitions are admin-managed (Settings UI inside People admin); deleting
 
 **`consents`:** `id, person_type/person_id (student or guardian user), consent_type (photo_media_use, ai_training_samples, data_processing, marketing_messages), granted bool, granted_by FK users (guardian for minors), granted_at, revoked_at nullable, source (admission_form|portal|admin), timestamps`
 
-Rules: consent is per-type, revocable, history kept (new row on change, never update granted→false in place). `photo_media_use` gates gallery/website usage of student photos; `ai_training_samples` pre-builds the spec §51.17 requirement. ADR-002: data-retention policy (what is deleted/anonymized when a student leaves, and when).
+Rules: consent is per-type, revocable, history kept (new row on change, never update granted→false in place). `photo_media_use` gates gallery/website usage of student photos; `ai_training_samples` pre-builds the spec §51.17 requirement. **ADR-009**: data-retention policy (what is deleted/anonymized when a student leaves, and when).
 
 ---
 
@@ -159,7 +159,7 @@ All screens trilingual-ready (labels via existing localization), RTL-safe.
 - [ ] 3 deploys completed; `RegistrationStudent` deprecated with zero remaining read paths; verification report archived in `docs/migrations/`.
 - [ ] All S1 screens live in React; corresponding legacy Blade screens removed.
 - [ ] Backbone rule documented in ROADMAP risk notes and enforced in code review checklist: new time-scoped tables must carry year/term FKs.
-- [ ] STATUS.md + ADR-002 (retention) + ADR-003 (promotion semantics) recorded.
+- [x] STATUS.md + **ADR-009** (retention) + **ADR-010** (promotion semantics) recorded. *(Drafted as ADR-002/003; those numbers were already taken by analytics and course-taxonomy, so the records were written at 009/010.)*
 - [ ] S2 unblocked: attendance/timetable can key on class_student + terms.
 
 **Out of scope for S1:** attendance, timetable, exams, fees (S2–S4); offerings split (§3.4, Phase 1B); HR beyond profiles (S5); any Hifz change.

@@ -89,6 +89,6 @@ Absent/late SMS (parent), unfilled-register reminder (teacher, end of day), leav
 - [ ] Timetable builder live with conflict blocking; current real timetable entered for the active year.
 - [ ] Unfilled-register and chronic-absence reports live; CSV exports on all listings.
 - [ ] All S2 screens React; legacy timetable/announcement Blade screens removed.
-- [ ] STATUS.md updated; ADR-004 (attendance modes + notification policy).
+- [x] STATUS.md updated; **ADR-011** (attendance modes + notification policy). *(Drafted as ADR-004; that number was already taken by prayer-times, so the record was written at 011.)*
 
 **Out of scope:** exam scheduling (S3), offering-session attendance (Phase 1B — separate table, shared Portal reporting), leave balances (S5). Event/elective seat-limited registration (ROADMAP §8.2) reuses `EnforceSeatLimitAction` from 1B.2.

@@ -192,6 +192,40 @@ Four S2 findings I reported were **wrong**; verified against the code:
 - **`academic_years.terms` json and `course_enrollments.term_id`/`term_key` columns** still present — deliberate additive deferrals, cheap to drop now that ADR-021 applies.
 - **S2 DoD line 1** (teacher completes the loop on a phone, parent receives SMS) remains unverifiable while staging login is blocked. Walked on desktop with the log-fake sender only.
 
+## 5d. S3 audit (2026-08-27) — clean
+
+S3 traced against `docs/S3_SPEC.md` by call path (not single-file grep). **All 15
+tables present; every spec rule and CI-gate test verified.** Highlights worth
+recording because they are the items usually skipped: roster historical accuracy
+(`ListExamRosterAction` excludes students whose `left_at` precedes `exam_date`,
+tested), rank ties sharing a rank and recomputing after a mark correction
+(`TermGradesTest:132,194`), report-card render asserted `dir="ltr"` for EN and
+`dir="rtl"` for DV (`ReportCardsTest:181-189`), standards tagging whitelisting
+types and storing **aliases** not FQCNs (`TagStandardAction`), and public
+achievements gating photos on active `photo_media_use` consent
+(`ListPublicAchievementsAction`).
+
+**Fixed here:** stale ADR references across all five phase specs. S1 said
+ADR-002/003, S2 said ADR-004, S3 said ADR-005, S4 said ADR-006, S5 said
+ADR-007/008 — every one of those numbers had been claimed by an earlier record,
+so the specs pointed at unrelated decisions. Now corrected to ADR-009/010, 011,
+012, 014 and 015/016, each with a note on the original draft number. Those DoD
+lines are also ticked, since the records exist.
+
+**Two audit findings of mine were wrong** (same error as S2 — inferring absence
+from grepping one file instead of tracing the call path):
+
+- **Exam room-conflict checking IS implemented.** `SaveExamAction` warn-confirms
+  on exam-vs-exam room+time overlap and calls `CheckRoomSlotConflictAction` →
+  `RoomBookingClashChecker` for bookings and timetable slots. Covered by
+  `ExamSchedulingTest`. I searched `SaveExamAction` for `TimetableConflictChecker`
+  and wrongly concluded the rule was skipped.
+- Golden-file tests: the spec asks for golden/snapshot files; the suite asserts
+  numeric components and `toContain` on rendered HTML instead. Equivalent
+  coverage — a deviation in form, not a gap.
+
+**No S3 fix slice required.**
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.2 merged (#118–#119). W2.3 public daily display is this PR.

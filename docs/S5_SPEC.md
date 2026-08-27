@@ -15,7 +15,7 @@ Reuses the S2 writer-contract pattern: `StaffAttendanceWriterInterface` — manu
 ## Slice S5.2 — Leave Management
 
 **New `leave_types`:** `id, name (+trilingual), code (annual, sick, family, hajj_umrah, maternity, paternity, unpaid, other), days_per_year decimal(5,1), carry_over_max decimal(5,1) default 0, requires_document bool (sick > N days), paid bool default true, active, timestamps`
-**New `leave_entitlements`:** `id, staff_profile_id FK, leave_type_id FK, academic_year_id FK (or calendar year — ADR-007 decides the leave year basis), entitled_days, carried_over_days, adjusted_days (admin +/− with reason), timestamps, unique(staff, type, year)`
+**New `leave_entitlements`:** `id, staff_profile_id FK, leave_type_id FK, academic_year_id FK (or calendar year — **ADR-015** decides the leave year basis), entitled_days, carried_over_days, adjusted_days (admin +/− with reason), timestamps, unique(staff, type, year)`
 **New `leave_requests`:** extends S2.6 `requests` (type `teacher_leave` generalized to `staff_leave`): payload gains `leave_type_id, from_date, to_date, half_day bool, document_id nullable`. Approval handler now: (1) checks balance (entitled + carried − taken ≥ requested, unless type unpaid), (2) creates `teacher_absences` (existing, drives substitutions) when staff teaches, (3) writes `staff_attendance` on_leave rows, (4) decrements via **`leave_ledger`** (append-only: `id, entitlement_id FK, request_id nullable, days +/-, reason, timestamps`) — balance is always a ledger sum, never a mutable column.
 
 Year-end `CarryOverLeaveAction`: min(remaining, carry_over_max) → next year, ledger entries both sides, report. Balances visible to staff in Portal; admin balance screen + adjustments (audited).
@@ -62,5 +62,5 @@ One active contract per staff (validation); new contract supersedes old (history
 ## DoD
 - [ ] Staff month-in-the-life works end to end: check-ins recorded → leave requested/approved (balance moves, substitution created) → permit-expiry alert fires → appraisal completed → payroll period run, reviewed, approved → payslip PDF (trilingual) downloaded by staff in Portal → bank CSV exported.
 - [ ] Two parallel payroll cycles match the manual process before `payroll.enabled` goes on (recorded in STATUS.md).
-- [ ] ADR-007 (leave year basis) + ADR-008 (payroll rounding + adjustment policy) recorded.
+- [x] **ADR-015** (leave year basis) + **ADR-016** (payroll rounding + adjustment policy) recorded. *(Drafted as ADR-007/008; those numbers were taken by the unification backfill and read-switch records.)*
 **Out of scope:** wallet/Commerce anything, biometric device drivers (writer interface ready), org-chart/department hierarchy beyond a field, recruitment public-site styling beyond a careers list (Website W-track).

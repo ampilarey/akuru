@@ -83,7 +83,7 @@ Parent/student: published exam results per term, report card download, transcrip
 ## Definition of Done
 - [ ] Full cycle on real data: schedule term exams → enter marks (grid) → publish → term grades computed → report cards generated (trilingual templates render correctly incl. Thaana) → published to Portal → parent downloads PDF.
 - [ ] Gradebook matrix + transcript live; awards batch issue works; one ID-card template renders.
-- [ ] DocumentRendererInterface has its first production implementation (ADR-005 recorded) — certificates (Phase 3) and Library invoices inherit it.
+- [x] DocumentRendererInterface has its first production implementation (**ADR-012** recorded — HTML output; PDF is a future container-binding swap) — certificates (Phase 3) and Library invoices inherit it. *(Drafted as ADR-005; that number was taken by the morph map.)*
 - [ ] CSV export on all listings; STATUS.md updated.
 
 **Out of scope:** question bank, per-standard student analytics, rubrics (Phase 2 — designed to attach to class or course); school quiz/assignment migration (Phase 2); fee/invoice anything (S4); self-evaluation (backlog).
