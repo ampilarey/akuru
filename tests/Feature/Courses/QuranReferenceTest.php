@@ -1,6 +1,6 @@
 <?php
 
-use App\Domains\Courses\Actions\ListQuranReferenceAction;
+use App\Domains\Courses\Components\Quran\Actions\ListQuranReferenceAction;
 use App\Domains\Hifz\Models\QuranAyah;
 use App\Domains\Hifz\Models\QuranMushaf;
 use App\Domains\Hifz\Models\Surah;

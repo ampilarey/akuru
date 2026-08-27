@@ -2,6 +2,7 @@
 
 namespace App\Domains\Courses\Actions;
 
+use App\Domains\Courses\Components\Quran\Actions\ResolveQuranPassageAction;
 use App\Domains\Courses\Models\Activity;
 use App\Domains\Courses\Models\Course;
 use Illuminate\Support\Collection;

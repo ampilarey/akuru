@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Domains\Courses\Actions;
+namespace App\Domains\Courses\Components\Arabic\Actions;
 
-use App\Domains\Courses\Models\ArabicHarakah;
-use App\Domains\Courses\Models\ArabicLetter;
+use App\Domains\Courses\Components\Arabic\Models\ArabicHarakah;
+use App\Domains\Courses\Components\Arabic\Models\ArabicLetter;
 use Illuminate\Support\Collection;
 
 class ListArabicReferenceAction

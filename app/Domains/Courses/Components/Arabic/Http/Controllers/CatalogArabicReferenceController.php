@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Domains\Courses\Http\Controllers;
+namespace App\Domains\Courses\Components\Arabic\Http\Controllers;
 
-use App\Domains\Courses\Actions\ListArabicReferenceAction;
-use App\Domains\Courses\Actions\SaveArabicHarakahAction;
-use App\Domains\Courses\Actions\SaveArabicLetterAction;
-use App\Domains\Courses\Models\ArabicHarakah;
-use App\Domains\Courses\Models\ArabicLetter;
+use App\Domains\Courses\Components\Arabic\Actions\ListArabicReferenceAction;
+use App\Domains\Courses\Components\Arabic\Actions\SaveArabicHarakahAction;
+use App\Domains\Courses\Components\Arabic\Actions\SaveArabicLetterAction;
+use App\Domains\Courses\Components\Arabic\Models\ArabicHarakah;
+use App\Domains\Courses\Components\Arabic\Models\ArabicLetter;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;

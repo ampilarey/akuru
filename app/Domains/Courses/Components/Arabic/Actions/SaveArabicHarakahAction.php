@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Domains\Courses\Actions;
+namespace App\Domains\Courses\Components\Arabic\Actions;
 
-use App\Domains\Courses\Models\ArabicHarakah;
+use App\Domains\Courses\Components\Arabic\Models\ArabicHarakah;
 use Illuminate\Validation\ValidationException;
 
 class SaveArabicHarakahAction

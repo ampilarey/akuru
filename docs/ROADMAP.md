@@ -184,7 +184,18 @@ Every content block, activity, and exam component is **registered, not hardcoded
 
 Phase 1A/1B ship the spec's core types. The Arabic and Quran components (below) register through the exact same mechanism — proof the registry is real.
 
-> **As built (Phase 2 audit, 2026-08-27).** `Courses/Components/` was never
+> **As built (Phase 2 audit, 2026-08-27; superseded by F0 the same day).**
+> `Courses/Components/` was created in Phase F slice F0: Arabic (letters/harakas
+> models, reference/save/report actions, three controllers) and Quran (reference/
+> passage actions, controller) now live under `Components/{Arabic,Quran}`, with
+> engine-owned seams (`ListSkillTaggedActivitiesAction`,
+> `ResolveLatestEnrollmentIdAction`) so components import no engine Models —
+> enforced by `tests/Architecture/ComponentsIsolationTest`. Remaining residue:
+> the ENGINE still references component actions (SaveActivityAction validation,
+> ListCourseActivitiesAction passage resolution); inverting that is a Phase F
+> follow-up. Original finding below for history:
+>
+> `Courses/Components/` was never
 > created. Arabic and Quran code (letters/harakas models, Quran passage
 > resolution, skill metadata) lives directly in `Courses/Models` and
 > `Courses/Actions`; block types and activity patterns are enums; the only real

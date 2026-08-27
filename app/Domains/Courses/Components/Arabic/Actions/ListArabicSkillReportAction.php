@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Domains\Courses\Actions;
+namespace App\Domains\Courses\Components\Arabic\Actions;
 
-use App\Domains\Courses\Models\Activity;
+use App\Domains\Courses\Actions\ListSkillTaggedActivitiesAction;
 use App\Domains\Progress\Actions\ListActivityAttemptsByIdsAction;
 use Illuminate\Support\Collection;
 
@@ -17,25 +17,21 @@ class ListArabicSkillReportAction
         $letters = $reference['letters']->keyBy('id');
         $harakas = $reference['harakas']->keyBy('id');
 
-        $query = Activity::query()->whereNotNull('settings->skill')->orderBy('id');
-        if ($courseId !== null) {
-            $query->where('course_id', $courseId);
-        }
-        $activities = $query->get();
+        $activities = app(ListSkillTaggedActivitiesAction::class)->execute($courseId);
         $attempts = app(ListActivityAttemptsByIdsAction::class)
             ->execute($activities->pluck('id')->all(), $enrollmentId)
             ->groupBy('activity_id');
 
-        $rows = $activities->map(function (Activity $activity) use ($attempts, $letters, $harakas): array {
-            $settings = $activity->settings ?? [];
-            $rows = $attempts->get($activity->id, collect());
+        $rows = $activities->map(function (array $activity) use ($attempts, $letters, $harakas): array {
+            $settings = $activity['settings'];
+            $rows = $attempts->get($activity['id'], collect());
             $scored = $rows->where('status', 'scored');
 
             return [
-                'activity_id' => $activity->id,
-                'course_id' => $activity->course_id,
-                'title' => $activity->title,
-                'pattern' => $activity->pattern->value,
+                'activity_id' => $activity['id'],
+                'course_id' => $activity['course_id'],
+                'title' => $activity['title'],
+                'pattern' => $activity['pattern'],
                 'skill' => $settings['skill'] ?? null,
                 'letter' => $letters->get($settings['letter_id'] ?? null),
                 'harakah' => $harakas->get($settings['harakah_id'] ?? null),
