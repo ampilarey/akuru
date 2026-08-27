@@ -3,19 +3,16 @@
 namespace App\Domains\Finance\Http\Controllers;
 
 use App\Domains\Finance\Models\Payment;
-use App\Domains\Finance\Services\BmlConnectService;
 use App\Domains\Finance\Services\Payment\PaymentService;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 class PaymentController extends Controller
 {
     public function __construct(
-        protected PaymentService $paymentService,
-        protected BmlConnectService $bml
+        protected PaymentService $paymentService
     ) {}
 
     /** Status poll for return page (JSON). */
@@ -65,18 +62,19 @@ class PaymentController extends Controller
             ->with('error', $result->error ?? 'Payment initiation failed.');
     }
 
-    /** Redirect return handler. BML appends ?transactionId=...&state=...&signature=...; we optionally fetch final state via Get Transaction. */
+    /** Redirect return handler. BML appends ?transactionId=...&state=...&signature=...; display-only — finalization goes through PaymentService (P4.2: one confirmation path). */
     public function returnByPayment(Request $request, Payment $payment): View
     {
         $query = $request->query->all();
         $payment->update(['redirect_return_payload' => $query]);
 
         $bmlTransactionId = $request->query('transactionId') ?? $request->query('transaction_id');
-        if ($bmlTransactionId && $this->bml && in_array($payment->status, ['pending', 'initiated'], true)) {
-            $this->applyBmlTransactionStatus($payment, $bmlTransactionId);
-        }
-        if (! $payment->bml_transaction_id && $bmlTransactionId) {
+        if ($bmlTransactionId && ! $payment->bml_transaction_id) {
             $payment->update(['bml_transaction_id' => $bmlTransactionId]);
+        }
+
+        if (in_array($payment->status, ['pending', 'initiated'], true)) {
+            $payment = $this->paymentService->finalizeByReference($payment->merchant_reference) ?? $payment;
         }
 
         return view('payments.processing', ['payment' => $payment]);
@@ -116,58 +114,6 @@ class PaymentController extends Controller
         $payment = $this->paymentService->finalizeByReference($ref) ?? $payment;
 
         return view('payments.processing', ['payment' => $payment]);
-    }
-
-    /** Fetch BML transaction state and update payment (same logic as reconciliation). */
-    protected function applyBmlTransactionStatus(Payment $payment, string $bmlTransactionId): void
-    {
-        $data = $this->bml->getTransactionStatus($bmlTransactionId);
-        if (! $data) {
-            return;
-        }
-        $state = $data['state'] ?? $data['status'] ?? $data['transactionStatus'] ?? null;
-        if ($state === null) {
-            return;
-        }
-        $newStatus = $this->bml->mapWebhookStatusToPaymentStatus((string) $state);
-        if ($newStatus === 'pending') {
-            return;
-        }
-        DB::transaction(function () use ($payment, $newStatus, $data) {
-            $payment->lockForUpdate();
-            $payment->bml_status_raw = array_merge($payment->bml_status_raw ?? [], $data);
-            $payment->status = $newStatus;
-            if ($newStatus === 'confirmed') {
-                $payment->paid_at = $payment->paid_at ?? now();
-                $payment->confirmed_at = $payment->confirmed_at ?? $payment->paid_at;
-                $payment->save();
-
-                // Deferred-enrollment flow
-                if ($payment->enrollment_pending_payload) {
-                    app(\App\Domains\Admissions\Services\Enrollment\EnrollmentService::class)
-                        ->createEnrollmentForConfirmedPayment($payment->fresh());
-                } else {
-                    foreach ($payment->items as $item) {
-                        $enrollment = $item->enrollment;
-                        if ($enrollment) {
-                            $enrollment->update(['payment_status' => 'confirmed', 'payment_id' => $payment->id]);
-                            $course = $enrollment->course;
-                            if (! ($course->requires_admin_approval ?? false)) {
-                                $enrollment->update([
-                                    'status' => 'active',
-                                    'enrolled_at' => $enrollment->enrolled_at ?? now(),
-                                ]);
-                            }
-                        }
-                    }
-                }
-            } elseif ($newStatus === 'failed') {
-                $payment->failed_at = now();
-                $payment->save();
-            } else {
-                $payment->save();
-            }
-        });
     }
 
     public function callback(Request $request)
