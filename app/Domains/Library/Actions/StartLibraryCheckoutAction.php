@@ -90,6 +90,9 @@ class StartLibraryCheckoutAction
                 $purchase->id,
             );
             app(RecordDiscountRedemptionAction::class)->transition('library_purchase', $purchase->id, 'confirmed');
+            // L6: wallet sales accrue the writer's earning too — wallet is
+            // payment, not discount (§16.2).
+            app(RecordWriterEarningForPurchaseAction::class)->execute($purchase->id);
 
             return [
                 'purchase' => $purchase->refresh(),

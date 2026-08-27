@@ -3,9 +3,11 @@
 namespace App\Domains\Library\Http\Controllers;
 
 use App\Domains\Library\Actions\DecideWriterApplicationAction;
+use App\Domains\Library\Actions\DecideWriterPayoutAction;
 use App\Domains\Library\Actions\ListLibraryCategoriesAction;
 use App\Domains\Library\Actions\ListLibraryItemsAction;
 use App\Domains\Library\Actions\ListLibraryPurchasesAction;
+use App\Domains\Library\Actions\ListWriterPayoutReportAction;
 use App\Domains\Library\Actions\ListWriterQueuesAction;
 use App\Domains\Library\Actions\PublishLibraryItemAction;
 use App\Domains\Library\Actions\ReviewLibraryItemSubmissionAction;
@@ -58,6 +60,7 @@ class AdminLibraryController extends Controller
             'categories' => app(ListLibraryCategoriesAction::class)->execute(activeOnly: false, withCounts: true),
             'sales' => app(ListLibraryPurchasesAction::class)->salesSummary(),
             'queues' => app(ListWriterQueuesAction::class)->execute(),
+            'payouts' => app(ListWriterPayoutReportAction::class)->execute(),
             'filters' => $filters,
             'options' => [
                 'content_types' => array_map(fn ($case) => $case->value, LibraryContentType::cases()),
@@ -103,6 +106,41 @@ class AdminLibraryController extends Controller
         );
 
         return back()->with('success', 'Library item status updated.');
+    }
+
+    /** L6 (§7.7): decide a requested payout — paid or rejected. */
+    public function decidePayout(Request $request, int $payout): RedirectResponse
+    {
+        abort_unless($request->user()?->can('library.manage'), 403);
+        $data = $request->validate([
+            'paid' => 'required|boolean',
+            'note' => 'nullable|string|max:500',
+        ]);
+
+        app(DecideWriterPayoutAction::class)->execute(
+            $payout,
+            (int) $request->user()->id,
+            (bool) $data['paid'],
+            $data['note'] ?? null,
+        );
+
+        return back()->with('success', 'Payout decided.');
+    }
+
+    /** L6 (§13.4): per-writer earnings CSV. */
+    public function exportEarnings(Request $request): StreamedResponse
+    {
+        abort_unless($request->user()?->can('library.manage'), 403);
+        $report = app(ListWriterPayoutReportAction::class)->execute();
+
+        return response()->streamDownload(function () use ($report): void {
+            $out = fopen('php://output', 'w');
+            fputcsv($out, ['writer', 'pending', 'available', 'paid', 'refunded']);
+            foreach ($report['writers'] as $row) {
+                fputcsv($out, [$row['writer'], $row['pending'], $row['available'], $row['paid'], $row['refunded']]);
+            }
+            fclose($out);
+        }, 'writer-earnings.csv', ['Content-Type' => 'text/csv; charset=UTF-8']);
     }
 
     /** L5 (§43.2): decide a pending writer application. */

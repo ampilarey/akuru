@@ -6,6 +6,7 @@ use App\Domains\Commerce\Actions\RecordDiscountRedemptionAction;
 use App\Domains\Finance\Events\PaymentRefunded;
 use App\Domains\Library\Models\LibraryAccessGrant;
 use App\Domains\Library\Models\LibraryPurchase;
+use App\Domains\Library\Models\WriterEarning;
 
 /**
  * P4.3: the mirror of GrantLibraryAccessOnPaymentConfirmed — a FULL
@@ -31,6 +32,12 @@ class RevokeLibraryAccessOnPaymentRefunded
             $purchase->status = 'refunded';
             $purchase->save();
             app(RecordDiscountRedemptionAction::class)->releaseForRefund('library_purchase', $purchase->id);
+            // L6 clawback (§43.7): the sale's earning is no longer payable.
+            // An earning already PAID out is an operator reconciliation case
+            // (recorded in STATUS) — it still flips so reports show it.
+            WriterEarning::query()
+                ->where('library_purchase_id', $purchase->id)
+                ->update(['status' => 'refunded']);
         }
 
         LibraryAccessGrant::query()

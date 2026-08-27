@@ -5,6 +5,7 @@ namespace App\Domains\Library\Listeners;
 use App\Domains\Commerce\Actions\RecordDiscountRedemptionAction;
 use App\Domains\Finance\Events\PaymentConfirmed;
 use App\Domains\Library\Actions\GrantLibraryAccessAction;
+use App\Domains\Library\Actions\RecordWriterEarningForPurchaseAction;
 use App\Domains\Library\Models\LibraryPurchase;
 
 /**
@@ -41,5 +42,10 @@ class GrantLibraryAccessOnPaymentConfirmed
             'purchase',
             $purchase?->id,
         );
+
+        // L6: the same paid sale accrues the writer's earning (idempotent).
+        if ($purchase !== null) {
+            app(RecordWriterEarningForPurchaseAction::class)->execute($purchase->id);
+        }
     }
 }
