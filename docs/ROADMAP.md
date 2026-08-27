@@ -165,6 +165,16 @@ Per-course-configurable implementations behind interfaces:
 
 A course (or offering) stores *which* strategy + its config (JSON settings); the container resolves the implementation. New pedagogy = new strategy class + registry entry, zero engine changes.
 
+> **As built (1A audit, 2026-08-27 — ADR-022).** Two of these are real contracts
+> today: `Progress\Contracts\LessonUnlockEvaluator` (sequential) and
+> `CourseCompletionEvaluator` (required lessons + required sessions), each with a
+> **single implementation** bound in `ProgressServiceProvider`. There is **no
+> per-course config layer** — no `completion_config` / `unlock_config` columns,
+> no strategy selection — because nothing needs a second policy yet; Phase F
+> (Hifz → engine) is the named next consumer and swaps the binding.
+> `ProgressCalculator` and `CertificateEligibility` are **not** extracted.
+> Treat the paragraph above as the target, not a description of `main`.
+
 ### 3. Component registry (the heart of the Moodle pattern)
 Every content block, activity, and exam component is **registered, not hardcoded**. Each component declares:
 - its settings **schema + validation**

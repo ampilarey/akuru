@@ -4,8 +4,8 @@ namespace App\Domains\Courses\Actions;
 
 use App\Domains\Courses\Models\CourseEnrollment;
 use App\Domains\Offerings\Actions\ListRequiredSessionProgressAction;
-use App\Domains\Progress\Actions\EvaluateCourseCompletionAction;
 use App\Domains\Progress\Actions\ListLessonProgressAction;
+use App\Domains\Progress\Contracts\CourseCompletionEvaluator;
 
 class SyncEnrollmentProgressAction
 {
@@ -24,7 +24,7 @@ class SyncEnrollmentProgressAction
             )
             : ['required_session_ids' => [], 'attended_session_ids' => []];
 
-        $result = app(EvaluateCourseCompletionAction::class)->execute(
+        $result = app(CourseCompletionEvaluator::class)->execute(
             array_map(fn ($lesson) => $lesson->id, $required),
             $completed,
             $sessions['required_session_ids'],
