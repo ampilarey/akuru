@@ -1,4 +1,4 @@
-# ADR-022: Iterate W1 content from the public course funnel
+# ADR-026: Iterate W1 content from the public course funnel
 
 ## Context
 
