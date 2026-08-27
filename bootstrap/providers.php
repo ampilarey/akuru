@@ -25,4 +25,5 @@ return [
     App\Domains\Portal\Providers\PortalServiceProvider::class,
     App\Domains\Website\Providers\WebsiteServiceProvider::class,
     App\Domains\Settings\Providers\SettingsServiceProvider::class,
+    App\Domains\PrayerTimes\Providers\PrayerTimesServiceProvider::class,
 ];

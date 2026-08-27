@@ -10,6 +10,7 @@ use App\Domains\Website\Http\Controllers\PublicSite\GalleryController;
 use App\Domains\Website\Http\Controllers\PublicSite\HomeController;
 use App\Domains\Website\Http\Controllers\PublicSite\InstructorProfileController;
 use App\Domains\Website\Http\Controllers\PublicSite\PageController;
+use App\Domains\Website\Http\Controllers\PublicSite\PrayerTimesController;
 use App\Domains\Website\Http\Controllers\PublicSite\ResearchPostController;
 use App\Domains\Website\Http\Controllers\PublicSite\SitemapController;
 use Illuminate\Support\Facades\Route;
@@ -51,6 +52,10 @@ Route::get('research/export', [ResearchPostController::class, 'export'])->name('
 Route::get('research', [ResearchPostController::class, 'index'])->name('public.research.index');
 Route::get('research/{post:slug}', [ResearchPostController::class, 'show'])->name('public.research.show');
 Route::get('instructors/{slug}', [InstructorProfileController::class, 'show'])->name('public.instructors.show');
+Route::get('prayer-times', [PrayerTimesController::class, 'index'])->name('public.prayer-times');
+Route::post('prayer-times/sms-opt-out', [PrayerTimesController::class, 'smsOptOut'])
+    ->middleware('throttle:10,1')
+    ->name('public.prayer-times.sms-opt-out');
 
 // Calendar .ics download for individual event
 Route::get('events/{event}/calendar.ics', [\App\Domains\Website\Http\Controllers\PublicSite\EventController::class, 'downloadCalendar'])->name('public.events.calendar');

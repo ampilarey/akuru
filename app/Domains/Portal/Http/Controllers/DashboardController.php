@@ -11,8 +11,8 @@ use App\Domains\Hifz\Models\QuranProgress;
 use App\Domains\Hifz\Models\RecitationPractice;
 use App\Domains\People\Models\Student;
 use App\Domains\People\Models\Teacher;
+use App\Domains\Portal\Actions\ComposeDashboardPrayerAction;
 use App\Http\Controllers\Controller;
-use App\Support\Services\IslamicCalendarService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
@@ -110,11 +110,11 @@ class DashboardController extends Controller
             ->take(10)
             ->get();
 
-        // Islamic calendar
-        $islamicDate = IslamicCalendarService::getCurrentIslamicDate();
-        $prayerTimes = IslamicCalendarService::getPrayerTimes();
-        $currentPrayer = IslamicCalendarService::getCurrentPrayerTime();
-        $specialDays = IslamicCalendarService::getSpecialIslamicDays();
+        $prayer = app(ComposeDashboardPrayerAction::class)->execute();
+        $islamicDate = $prayer['islamicDate'];
+        $prayerTimes = $prayer['prayerTimes'];
+        $currentPrayer = $prayer['currentPrayer'];
+        $specialDays = $prayer['specialDays'];
 
         return view('dashboard.super-admin', compact(
             'stats', 'metrics',
@@ -147,11 +147,11 @@ class DashboardController extends Controller
             'upcoming_events' => $this->getUpcomingEvents(),
         ];
 
-        // Islamic calendar data
-        $islamicDate = IslamicCalendarService::getCurrentIslamicDate();
-        $prayerTimes = IslamicCalendarService::getPrayerTimes();
-        $currentPrayer = IslamicCalendarService::getCurrentPrayerTime();
-        $specialDays = IslamicCalendarService::getSpecialIslamicDays();
+        $prayer = app(ComposeDashboardPrayerAction::class)->execute();
+        $islamicDate = $prayer['islamicDate'];
+        $prayerTimes = $prayer['prayerTimes'];
+        $currentPrayer = $prayer['currentPrayer'];
+        $specialDays = $prayer['specialDays'];
 
         return view('dashboard.admin', compact('stats', 'metrics', 'islamicDate', 'prayerTimes', 'currentPrayer', 'specialDays'));
     }

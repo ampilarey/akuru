@@ -51,6 +51,7 @@
             ['Admissions', route('public.admissions.create', app()->getLocale())],
             ['News', route('public.news.index', app()->getLocale())],
             ['Research', route('public.research.index')],
+            ['Prayer times', route('public.prayer-times')],
             ['Events', route('public.events.index', app()->getLocale())],
             ['Gallery', route('public.gallery.index')],
             ['Contact', route('public.contact.create', app()->getLocale())],

@@ -33,6 +33,8 @@ class PublicRouteNamesTest extends TestCase
             'public.research.index',
             'public.research.show',
             'public.research.export',
+            'public.prayer-times',
+            'public.prayer-times.sms-opt-out',
             'public.instructors.show',
             'public.achievements',
             'public.certificates.verify',

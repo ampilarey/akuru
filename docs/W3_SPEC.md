@@ -5,7 +5,7 @@
 **Blueprint:** replicate the proven **Bake&Grill** prayer-times model — same schema shape, `salat.db` import, leap-year rule, versioned cache, Haversine nearest-island. Do not reinvent.
 **Principle:** real Maldives island data replaces `IslamicCalendarService::getPrayerTimes()` hardcoded placeholders; SMS is opt-in, previewed, audited, and **never** hits a live gateway in tests.
 
-All schema below is **PLANNED (not yet migrated)**.
+All schema below is **shipped** (PR #128). Operator supplies `salat.db`; local/staging seed is a synthetic 366-day fixture.
 
 ---
 

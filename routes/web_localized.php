@@ -117,6 +117,10 @@ use App\Domains\Portal\Http\Controllers\PortalPerformanceController;
 use App\Domains\Portal\Http\Controllers\PortalReportCardController;
 use App\Domains\Portal\Http\Controllers\PortalStaffCheckInController;
 use App\Domains\Portal\Http\Controllers\StaffOverviewController;
+use App\Domains\PrayerTimes\Http\Controllers\Admin\BroadcastController as AdminPrayerBroadcastController;
+use App\Domains\PrayerTimes\Http\Controllers\Admin\ImportController as AdminPrayerImportController;
+use App\Domains\PrayerTimes\Http\Controllers\Admin\IslandController as AdminPrayerIslandController;
+use App\Domains\PrayerTimes\Http\Controllers\Admin\RecipientGroupController as AdminPrayerGroupController;
 use App\Domains\Settings\Http\Controllers\Admin\SettingsController as AdminSettingsController;
 use App\Domains\Settings\Http\Controllers\AnalyticsController;
 use App\Domains\Website\Http\Controllers\Admin\PublicSite\CourseController as AdminCourseController;
@@ -368,6 +372,26 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::post('research', [AdminResearchPostController::class, 'store'])->name('admin.research.store');
         Route::get('research/{post}/edit', [AdminResearchPostController::class, 'edit'])->name('admin.research.edit')->whereNumber('post');
         Route::put('research/{post}', [AdminResearchPostController::class, 'update'])->name('admin.research.update')->whereNumber('post');
+    });
+
+    Route::prefix('admin/prayer-times')->middleware(['role:super_admin|admin|headmaster|supervisor', 'can:prayer.manage'])->group(function () {
+        Route::get('islands/export', [AdminPrayerIslandController::class, 'export'])->name('admin.prayer-times.islands.export');
+        Route::get('islands', [AdminPrayerIslandController::class, 'index'])->name('admin.prayer-times.islands');
+        Route::get('import', [AdminPrayerImportController::class, 'index'])->name('admin.prayer-times.import');
+        Route::post('import', [AdminPrayerImportController::class, 'store'])->name('admin.prayer-times.import.store');
+        Route::get('groups', [AdminPrayerGroupController::class, 'index'])->name('admin.prayer-times.groups.index');
+        Route::get('groups/create', [AdminPrayerGroupController::class, 'create'])->name('admin.prayer-times.groups.create');
+        Route::post('groups', [AdminPrayerGroupController::class, 'store'])->name('admin.prayer-times.groups.store');
+        Route::get('groups/{group}/edit', [AdminPrayerGroupController::class, 'edit'])->name('admin.prayer-times.groups.edit')->whereNumber('group');
+        Route::put('groups/{group}', [AdminPrayerGroupController::class, 'update'])->name('admin.prayer-times.groups.update')->whereNumber('group');
+        Route::get('broadcasts/export', [AdminPrayerBroadcastController::class, 'export'])->name('admin.prayer-times.broadcasts.export');
+        Route::get('broadcasts/create', [AdminPrayerBroadcastController::class, 'create'])->name('admin.prayer-times.broadcasts.create');
+        Route::get('broadcasts', [AdminPrayerBroadcastController::class, 'index'])->name('admin.prayer-times.broadcasts.index');
+        Route::post('broadcasts', [AdminPrayerBroadcastController::class, 'store'])->name('admin.prayer-times.broadcasts.store');
+        Route::get('broadcasts/{broadcast}/edit', [AdminPrayerBroadcastController::class, 'edit'])->name('admin.prayer-times.broadcasts.edit')->whereNumber('broadcast');
+        Route::put('broadcasts/{broadcast}', [AdminPrayerBroadcastController::class, 'update'])->name('admin.prayer-times.broadcasts.update')->whereNumber('broadcast');
+        Route::post('broadcasts/{broadcast}/preview', [AdminPrayerBroadcastController::class, 'preview'])->name('admin.prayer-times.broadcasts.preview')->whereNumber('broadcast');
+        Route::post('broadcasts/{broadcast}/confirm', [AdminPrayerBroadcastController::class, 'confirm'])->name('admin.prayer-times.broadcasts.confirm')->whereNumber('broadcast');
     });
 
     Route::prefix('people')->middleware(['role:super_admin|admin|headmaster|supervisor'])->group(function () {

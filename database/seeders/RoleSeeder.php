@@ -152,6 +152,7 @@ class RoleSeeder extends Seeder
             'events.manage',
             'daily_content.manage',
             'daily_content.approve',
+            'prayer.manage',
         ];
 
         foreach ($permissions as $permission) {
@@ -205,6 +206,7 @@ class RoleSeeder extends Seeder
             'events.manage',
             'daily_content.manage',
             'daily_content.approve',
+            'prayer.manage',
             'registers.fill',
             'registers.manage',
             'behavior.record',
@@ -249,6 +251,7 @@ class RoleSeeder extends Seeder
             'meetings.manage',
             'daily_content.manage',
             'daily_content.approve',
+            'prayer.manage',
             'calendar.manage',
             'events.manage',
             'registers.fill',

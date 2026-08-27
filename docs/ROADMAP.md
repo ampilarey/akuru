@@ -267,7 +267,7 @@ Provider notes: Zoom = first implementation candidate (paid plan needed for clou
 | Academics | `class_attendance` (replaces stub `attendance`; student, class, date, status, marked_by, term), `timetables` + `periods` (exist — add conflict constraints), keep `teacher_absences`, `substitution_*` |
 | ExamsGrades | `exams` (type, term, class, subject, max marks, weight), `exam_marks` (replaces stub `grades` usage), `report_cards`, `grade_scales` |
 | Finance | `fee_structures` (class/year/optional items), `invoices` + `invoice_lines` (generate from structures), link to existing `payments`. Reuse `PaymentService` + `PaymentProviderInterface`. |
-| PrayerTimes | `prayer_categories`, `prayer_islands`, `prayer_times`, `prayer_recipient_groups`, `prayer_broadcasts`, `prayer_broadcast_recipients` — see `docs/W3_SPEC.md` (PLANNED; operational logs, no `academic_year_id`) |
+| PrayerTimes | `prayer_categories`, `prayer_islands`, `prayer_times`, `prayer_recipient_groups`, `prayer_broadcasts`, `prayer_broadcast_recipients` — see `docs/W3_SPEC.md` (shipped W3 / #128; operational logs, no `academic_year_id`) |
 
 ### 3.4 Course platform split (per spec §10–11, §28, §43)
 

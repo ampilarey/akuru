@@ -158,6 +158,9 @@ class IslamicCalendarService
     /**
      * Get prayer times for a given date and location
      */
+    /**
+     * @deprecated Use PrayerTimeProviderInterface. Hardcoded Malé placeholders.
+     */
     public static function getPrayerTimes($date = null, $latitude = 4.1755, $longitude = 73.5093) // Malé coordinates
     {
         if (! $date) {
@@ -180,6 +183,9 @@ class IslamicCalendarService
 
     /**
      * Check if current time is within prayer time
+     */
+    /**
+     * @deprecated Use PrayerTimeProviderInterface + PrayerTimesDTO::currentPrayer().
      */
     public static function getCurrentPrayerTime()
     {

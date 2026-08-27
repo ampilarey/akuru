@@ -9,6 +9,8 @@ arch('rule 3 cross-domain code uses notification SMS contract not concrete gatew
         'App\Domains\Identity',
         'App\Domains\Admissions',
         'App\Domains\Portal',
+        'App\Domains\PrayerTimes',
+        'App\Domains\Website',
     ])
     ->not->toUse('App\Domains\Notifications\Services\SmsGatewayService');
 
