@@ -10,6 +10,7 @@ export default function Index({ rows, courses, modes }) {
         status: 'draft',
         pin_mode: 'latest',
         seat_limit: '',
+        price_override: '',
     });
 
     return (
@@ -22,7 +23,7 @@ export default function Index({ rows, courses, modes }) {
                     e.preventDefault();
                     form.post('/catalog/offerings', { preserveScroll: true });
                 }}
-                className="mb-4 grid gap-3 rounded-lg border bg-white p-4 md:grid-cols-6"
+                className="mb-4 grid gap-3 rounded-lg border bg-white p-4 md:grid-cols-7"
             >
                 <select className="form-input" value={form.data.course_id} onChange={(e) => form.setData('course_id', e.target.value)}>
                     {courses.map((course) => <option key={course.id} value={course.id}>{course.title}</option>)}
@@ -38,6 +39,7 @@ export default function Index({ rows, courses, modes }) {
                     <option value="archived">archived</option>
                 </select>
                 <input className="form-input" placeholder="Seat limit" value={form.data.seat_limit} onChange={(e) => form.setData('seat_limit', e.target.value)} />
+                <input className="form-input" placeholder="Price override (MVR)" value={form.data.price_override} onChange={(e) => form.setData('price_override', e.target.value)} />
                 <button type="submit" className="btn-primary" disabled={form.processing || courses.length === 0}>Save offering</button>
             </form>
             <div className="overflow-x-auto rounded-lg border bg-white">
@@ -48,13 +50,14 @@ export default function Index({ rows, courses, modes }) {
                             <th className="px-3 py-2">Course</th>
                             <th className="px-3 py-2">Mode</th>
                             <th className="px-3 py-2">Status</th>
+                            <th className="px-3 py-2">Price</th>
                             <th className="px-3 py-2">Pin</th>
                             <th className="px-3 py-2">Sessions</th>
                         </tr>
                     </thead>
                     <tbody>
                         {rows.length === 0 && (
-                            <tr><td className="px-3 py-4 text-gray-500" colSpan={6}>No offerings yet.</td></tr>
+                            <tr><td className="px-3 py-4 text-gray-500" colSpan={7}>No offerings yet.</td></tr>
                         )}
                         {rows.map((row) => (
                             <tr key={row.id} className="border-t">
@@ -62,6 +65,7 @@ export default function Index({ rows, courses, modes }) {
                                 <td className="px-3 py-2">{row.course_title}</td>
                                 <td className="px-3 py-2">{row.delivery_mode}</td>
                                 <td className="px-3 py-2">{row.status}</td>
+                                <td className="px-3 py-2">{row.price_override !== null && row.price_override !== undefined ? `MVR ${row.price_override}` : '—'}</td>
                                 <td className="px-3 py-2">
                                     <span className="me-2">{row.pin_mode}</span>
                                     <button type="button" className="btn-secondary" onClick={() => router.post(`/catalog/offerings/${row.id}/pin`)}>Pin now</button>

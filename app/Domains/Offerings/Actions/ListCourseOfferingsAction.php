@@ -30,6 +30,7 @@ class ListCourseOfferingsAction
                     'pin_mode' => $offering->pin_mode,
                     'pinned_at' => $offering->pinned_at?->toIso8601String(),
                     'seat_limit' => $offering->seat_limit,
+                    'price_override' => $offering->price_override !== null ? (float) $offering->price_override : null,
                 ])
                 ->values()
                 ->all(),

@@ -615,6 +615,35 @@ migration; no Hifz behaviour change outside it.
   cancels the enrollment manually), BML-initiated `refunded` webhook
   states (ignored, as before), and L-track writer-earnings clawback
   (§35.5 `refunded` status — L6 payouts must subtract refunded sales).
+  Same migration widened `course_enrollments` enums additively —
+  `status` gains `cancelled` (code filtered on it but the column never
+  allowed it), `payment_status` gains `refunded`.
+- **P4.4 (this PR):** SPEC §49 close-out — the last codeable DoD items.
+  **(1) Offering price override** ("Offerings may override course
+  price"): additive `course_offerings.price_override` (null = no
+  override, 0 = free offering of a paid course), settable from the
+  offerings admin (`SaveCourseOfferingAction` + Catalog/Index.jsx),
+  honored by `StartCourseCheckoutAction` (explicit offering or the
+  default self-learning offering via
+  `ResolveOfferingPriceOverrideAction` / the extended
+  `DefaultSelfLearningOfferingAction` payload) and shown as the catalog
+  fee. The LEGACY public checkout stays course-fee-only (its
+  enrollments carry no offering) — recorded, not a price disagreement:
+  overrides only exist on engine offerings.
+  **(2) Manual payment recording**: `RecordManualPaymentAction`
+  (provider `manual`, created confirmed, fires `PaymentConfirmed` in
+  its transaction) — money received outside the gateway flows through
+  the SAME listener path as the webhook; form on the admin enrollment
+  page behind `role:super_admin|admin` + seeded `payments.record`.
+  `ActivatePaidEnrollmentAction` gained an optional paymentId (sets
+  `payment_id` when empty — manual/legacy payments now link).
+  **(3) Payment reports**: CSV export on `/admin/enrollments/payments`
+  (filtered listing → payments.csv with refunded totals; convention:
+  every listing gets CSV). **SPEC §49 DoD now closed in code** — the
+  remaining §49 line "students cannot access paid content without
+  eligibility" is enforced by payment_status gates (P4.1/P4.2 tests);
+  trial lessons / subscription-ready access recorded as post-MVP
+  decisions, and the public-flow UX swap stays operator-gated.
 
 ## 6. Out of scope (unchanged)
 

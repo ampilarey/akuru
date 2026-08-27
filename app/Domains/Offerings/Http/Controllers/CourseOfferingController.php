@@ -80,6 +80,7 @@ class CourseOfferingController extends Controller
             'status' => ['nullable', 'string', 'max:20'],
             'pin_mode' => ['nullable', 'string', 'max:20'],
             'seat_limit' => ['nullable', 'integer', 'min:1'],
+            'price_override' => ['nullable', 'numeric', 'min:0'],
         ]);
     }
 }

@@ -8,6 +8,8 @@ use App\Domains\Commerce\Actions\ResolveDiscountAction;
 use App\Domains\Courses\Models\Course;
 use App\Domains\Courses\Models\CourseEnrollment;
 use App\Domains\Finance\Actions\InitiatePayablePaymentAction;
+use App\Domains\Offerings\Actions\DefaultSelfLearningOfferingAction;
+use App\Domains\Offerings\Actions\ResolveOfferingPriceOverrideAction;
 
 /**
  * Phase 4 slice 1: the ENGINE path for paid enrollment, adopting Commerce
@@ -33,7 +35,13 @@ class StartCourseCheckoutAction
         bool $payWithWallet = false,
     ): array {
         $course = Course::query()->findOrFail($courseId);
-        $fee = (float) ($course->registration_fee_amount ?: $course->fee ?: 0);
+        // P4.4 (SPEC §49): the offering may override the course price —
+        // an override of 0 makes that offering free. Falls back to the
+        // course fee (the same money the legacy checkout charges).
+        $override = $offeringId !== null
+            ? app(ResolveOfferingPriceOverrideAction::class)->execute($offeringId)
+            : (app(DefaultSelfLearningOfferingAction::class)->execute($courseId)['price_override'] ?? null);
+        $fee = $override !== null ? (float) $override : (float) ($course->registration_fee_amount ?: $course->fee ?: 0);
 
         if ($fee <= 0) {
             $enrollment = app(EnrollSelfLearningAction::class)->execute($userId, $courseId, $offeringId);

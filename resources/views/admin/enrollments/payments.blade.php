@@ -41,6 +41,8 @@
         @if(request()->hasAny(['search','status']))
             <a href="{{ route('admin.enrollments.payments') }}" class="text-sm text-gray-500 hover:underline py-2">Clear</a>
         @endif
+        <a href="{{ route('admin.enrollments.payments.export') }}{{ request()->getQueryString() ? '?'.request()->getQueryString() : '' }}"
+           class="btn-secondary text-sm py-2 px-4">Export CSV</a>
     </form>
 
     <div class="card">

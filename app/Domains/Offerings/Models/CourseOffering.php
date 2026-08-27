@@ -24,6 +24,7 @@ class CourseOffering extends Model
         'pinned_at',
         'pinned_by',
         'seat_limit',
+        'price_override',
         'certificate_rules',
         'academic_year_id',
         'term_id',
@@ -43,6 +44,7 @@ class CourseOffering extends Model
             'pinned_revision_json' => 'array',
             'certificate_rules' => 'array',
             'seat_limit' => 'integer',
+            'price_override' => 'decimal:2',
         ];
     }
 }

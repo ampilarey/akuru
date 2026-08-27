@@ -24,7 +24,7 @@ class ActivateEnrollmentOnPaymentConfirmed
 
         if ($payment->getRawOriginal('payable_type') === 'course_enrollment'
             && $payment->payable_id !== null) {
-            $this->activate((int) $payment->payable_id);
+            $this->activate((int) $payment->payable_id, (int) $payment->id);
 
             return;
         }
@@ -33,14 +33,14 @@ class ActivateEnrollmentOnPaymentConfirmed
         foreach ($payment->items()->pluck('enrollment_id') as $enrollmentId) {
             if ($enrollmentId !== null
                 && CourseEnrollment::query()->whereKey((int) $enrollmentId)->exists()) {
-                $this->activate((int) $enrollmentId);
+                $this->activate((int) $enrollmentId, (int) $payment->id);
             }
         }
     }
 
-    private function activate(int $enrollmentId): void
+    private function activate(int $enrollmentId, int $paymentId): void
     {
-        app(ActivatePaidEnrollmentAction::class)->execute($enrollmentId);
+        app(ActivatePaidEnrollmentAction::class)->execute($enrollmentId, $paymentId);
         app(RecordDiscountRedemptionAction::class)->transition('course_enrollment', $enrollmentId, 'confirmed');
     }
 }
