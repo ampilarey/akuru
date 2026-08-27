@@ -2,10 +2,13 @@
 
 namespace App\Domains\Library\Http\Controllers;
 
+use App\Domains\Library\Actions\DecideWriterApplicationAction;
 use App\Domains\Library\Actions\ListLibraryCategoriesAction;
 use App\Domains\Library\Actions\ListLibraryItemsAction;
 use App\Domains\Library\Actions\ListLibraryPurchasesAction;
+use App\Domains\Library\Actions\ListWriterQueuesAction;
 use App\Domains\Library\Actions\PublishLibraryItemAction;
+use App\Domains\Library\Actions\ReviewLibraryItemSubmissionAction;
 use App\Domains\Library\Actions\SaveLibraryCategoryAction;
 use App\Domains\Library\Actions\SaveLibraryItemAction;
 use App\Domains\Library\Enums\LibraryAccessType;
@@ -54,6 +57,7 @@ class AdminLibraryController extends Controller
             'items' => $items,
             'categories' => app(ListLibraryCategoriesAction::class)->execute(activeOnly: false, withCounts: true),
             'sales' => app(ListLibraryPurchasesAction::class)->salesSummary(),
+            'queues' => app(ListWriterQueuesAction::class)->execute(),
             'filters' => $filters,
             'options' => [
                 'content_types' => array_map(fn ($case) => $case->value, LibraryContentType::cases()),
@@ -101,6 +105,44 @@ class AdminLibraryController extends Controller
         return back()->with('success', 'Library item status updated.');
     }
 
+    /** L5 (§43.2): decide a pending writer application. */
+    public function decideApplication(Request $request, int $application): RedirectResponse
+    {
+        abort_unless($request->user()?->can('library.manage'), 403);
+        $data = $request->validate([
+            'approve' => 'required|boolean',
+            'note' => 'nullable|string|max:500',
+        ]);
+
+        app(DecideWriterApplicationAction::class)->execute(
+            $application,
+            (int) $request->user()->id,
+            (bool) $data['approve'],
+            $data['note'] ?? null,
+        );
+
+        return back()->with('success', 'Application decided.');
+    }
+
+    /** L5 (§43.3): decide a submitted item — approve publishes it. */
+    public function reviewSubmission(Request $request, int $item): RedirectResponse
+    {
+        abort_unless($request->user()?->can('library.manage'), 403);
+        $data = $request->validate([
+            'decision' => 'required|in:approved,changes_requested,rejected',
+            'comment' => 'nullable|string|max:2000',
+        ]);
+
+        app(ReviewLibraryItemSubmissionAction::class)->execute(
+            $item,
+            (int) $request->user()->id,
+            $data['decision'],
+            $data['comment'] ?? null,
+        );
+
+        return back()->with('success', 'Submission reviewed.');
+    }
+
     public function storeCategory(Request $request): RedirectResponse
     {
         abort_unless($request->user()?->can('library.manage'), 403);
@@ -129,6 +171,7 @@ class AdminLibraryController extends Controller
             'abstract' => 'nullable|string|max:5000',
             'content_type' => 'required|string|max:30',
             'access_type' => 'nullable|string|max:20',
+            'price' => 'nullable|numeric|min:0',
             'language' => 'nullable|string|max:5',
             'library_category_id' => 'nullable|integer',
             'cover_image' => 'nullable|string|max:2048',

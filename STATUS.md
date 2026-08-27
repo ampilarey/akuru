@@ -519,6 +519,29 @@ migration; no Hifz behaviour change outside it.
   `discount_redemptions.purchase_type` + the wallet actions — the L4→
   Phase 4 handoff ROADMAP §9 promised. DV/AR strings ride the operator
   item.
+- **L5 writer portal (this PR):** §7.4/§11/§43.1–43.3. Writer = ROLE on
+  the unified identity (ROADMAP §9 override) — `writer_applications`
+  (agreement acceptance §31 stamped) → admin decision
+  (`DecideWriterApplicationAction`: approve creates `writer_profiles` +
+  assigns the `writer` role via the auth-configured user model, no
+  cross-domain model import) → `/write` Inertia portal: drafts
+  (`SaveWriterItemAction` — own items only, editable only while
+  draft/changes_requested, price is a SUGGESTION, reuses the ONE item
+  writer so pages/tags/PDF behave identically), submit
+  (`SubmitLibraryItemForReviewAction`), editorial loop
+  (`ReviewLibraryItemSubmissionAction`: approved → the ONE publisher
+  stamps approved_by; changes_requested/rejected return it), every step
+  in the APPEND-ONLY `library_item_reviews` trail.
+  `LibraryItemStatus` gains submitted/changes_requested/rejected (public
+  listings unaffected — publishedOnly). Admin: applications +
+  submissions queues on `/admin/library` (existing library.manage gate);
+  item forms (admin + writer) gain PRICE (closing the L3 gap where the
+  admin UI could not set a price). Dashboard shows own items, latest
+  editor comment, and AGGREGATE sales only (§43.9). Aliases
+  writer_application/writer_profile/library_item_review same commit.
+  Deferred (recorded): writer suspension flow, bank details +
+  agreements tables (ride L6 payouts), writer-funded promotions
+  (post-MVP §11.6).
 
 ## 5h. Spec Phase 4 — course payments on the engine (adopting L4 Commerce)
 

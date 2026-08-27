@@ -114,6 +114,7 @@ return [
     'library_item' => \App\Domains\Library\Models\LibraryItem::class,
     'library_item_author' => \App\Domains\Library\Models\LibraryItemAuthor::class,
     'library_item_page' => \App\Domains\Library\Models\LibraryItemPage::class,
+    'library_item_review' => \App\Domains\Library\Models\LibraryItemReview::class,
     'library_purchase' => \App\Domains\Library\Models\LibraryPurchase::class,
     'library_reading_progress' => \App\Domains\Library\Models\LibraryReadingProgress::class,
     'library_tag' => \App\Domains\Library\Models\LibraryTag::class,
@@ -210,4 +211,6 @@ return [
     'user_notification' => \App\Domains\Notifications\Models\UserNotification::class,
     'wallet' => \App\Domains\Commerce\Models\Wallet::class,
     'wallet_transaction' => \App\Domains\Commerce\Models\WalletTransaction::class,
+    'writer_application' => \App\Domains\Library\Models\WriterApplication::class,
+    'writer_profile' => \App\Domains\Library\Models\WriterProfile::class,
 ];

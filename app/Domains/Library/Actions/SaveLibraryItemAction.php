@@ -77,6 +77,17 @@ class SaveLibraryItemAction
             'reading_time' => $data['reading_time'] ?? null,
         ];
 
+        // L5: price rides the same writer; writer_id only when the caller
+        // sets it (never nulled by an admin edit).
+        if (array_key_exists('price', $data)) {
+            $payload['price'] = $data['price'] !== null && $data['price'] !== ''
+                ? round((float) $data['price'], 2)
+                : null;
+        }
+        if (isset($data['writer_id'])) {
+            $payload['writer_id'] = (int) $data['writer_id'];
+        }
+
         if ($item === null) {
             $payload['created_by'] = $data['created_by'] ?? null;
             $item = LibraryItem::query()->create($payload);
