@@ -66,9 +66,9 @@
 
     <div class="card p-4 mb-8">
         <h2 class="text-lg font-semibold mb-3">{{ $monthStart->format('F Y') }}</h2>
-        <div class="grid grid-cols-7 gap-1 text-sm">
+        <div style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;font-size:.875rem">
             @foreach(['Sun','Mon','Tue','Wed','Thu','Fri','Sat'] as $label)
-                <div class="text-center text-xs text-gray-500 py-1">{{ $label }}</div>
+                <div style="text-align:center;font-size:.75rem;color:#6B7280;padding:.25rem 0">{{ $label }}</div>
             @endforeach
             @php $cursor = $gridStart->copy(); @endphp
             @while($cursor->lte($gridEnd))
@@ -77,10 +77,10 @@
                     $inMonth = $cursor->month === $monthStart->month;
                     $dayItems = $byDate->get($key, collect());
                 @endphp
-                <div class="min-h-[5.5rem] rounded border p-1 {{ $inMonth ? 'bg-white border-gray-200' : 'bg-gray-50 border-transparent text-gray-400' }}">
-                    <div class="text-xs text-gray-500 mb-1">{{ $cursor->day }}</div>
+                <div style="min-height:5.5rem;border-radius:.375rem;padding:.25rem;{{ $inMonth ? 'background:#fff;border:1px solid #E5E7EB' : 'background:#F9FAFB;border:1px solid transparent;color:#9CA3AF' }}">
+                    <div style="font-size:.75rem;color:#6B7280;margin-bottom:.25rem">{{ $cursor->day }}</div>
                     @foreach($dayItems as $cell)
-                        <a href="{{ route('admin.daily-content.edit', $cell['id']) }}" class="block truncate text-[11px] leading-tight mb-0.5 {{ $cell['status'] === 'published' ? 'text-green-700' : ($cell['status'] === 'draft' ? 'text-amber-700' : 'text-gray-700') }}">
+                        <a href="{{ route('admin.daily-content.edit', $cell['id']) }}" style="display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px;line-height:1.25;margin-bottom:2px;text-decoration:none;{{ $cell['status'] === 'published' ? 'color:#15803D' : ($cell['status'] === 'draft' ? 'color:#B45309' : 'color:#374151') }}">
                             {{ $cell['content_type'] }}
                         </a>
                     @endforeach
