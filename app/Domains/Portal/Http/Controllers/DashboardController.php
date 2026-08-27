@@ -37,9 +37,9 @@ class DashboardController extends Controller
         } elseif ($user->isTeacher()) {
             return $this->teacherDashboard();
         } elseif ($user->isStudent()) {
-            return $this->studentDashboard();
+            return redirect()->route('portal.home');
         } elseif ($user->isParent()) {
-            return $this->parentDashboard();
+            return redirect()->route('portal.home');
         }
 
         // Public users (registered via OTP for course enrollment)

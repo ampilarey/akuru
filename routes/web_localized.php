@@ -106,6 +106,7 @@ use App\Domains\Portal\Http\Controllers\PortalBehaviorController;
 use App\Domains\Portal\Http\Controllers\PortalEventController;
 use App\Domains\Portal\Http\Controllers\PortalExamController;
 use App\Domains\Portal\Http\Controllers\PortalHolidayController;
+use App\Domains\Portal\Http\Controllers\PortalHomeController;
 use App\Domains\Portal\Http\Controllers\PortalInvoiceController;
 use App\Domains\Portal\Http\Controllers\PortalLearningController;
 use App\Domains\Portal\Http\Controllers\PortalLeaveBalanceController;
@@ -131,6 +132,8 @@ Route::get('/locale/{locale}', [LocaleController::class, 'setLocale'])->name('lo
 Route::middleware(['auth', 'trackActivity'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/enhanced-dashboard', [EnhancedDashboardController::class, 'index'])->name('enhanced.dashboard');
+    Route::get('/portal/home/export', [PortalHomeController::class, 'export'])->name('portal.home.export');
+    Route::get('/portal/home', [PortalHomeController::class, 'index'])->name('portal.home');
     Route::get('/portal/children', [GuardianChildrenController::class, 'index'])->name('portal.children');
     Route::get('/portal/holidays', [PortalHolidayController::class, 'index'])->name('portal.holidays');
     Route::get('/portal/attendance', [PortalAttendanceController::class, 'index'])->name('portal.attendance');

@@ -14,6 +14,9 @@ export default function AppShell({ title, children }) {
                         <h1 className="text-xl font-semibold">{title}</h1>
                     </div>
                     <nav className="flex flex-wrap items-center gap-3 text-sm">
+                        <Link href="/portal/home" className="text-[#7C2D37] hover:underline">
+                            Home
+                        </Link>
                         <Link href="/learn" className="text-[#7C2D37] hover:underline">
                             {i18n?.learn?.nav || 'Learn'}
                         </Link>
