@@ -34,6 +34,7 @@ class HomeController extends Controller
             ->values();
 
         $testimonials = Testimonial::where('is_public', true)
+            ->whereNull('course_id')
             ->orderBy('order')
             ->take(8)
             ->get();
