@@ -16,6 +16,7 @@ class QuranRecitationSubmission extends Model
 {
     protected $fillable = [
         'course_enrollment_id',
+        'quran_hifz_assignment_id',
         'student_id',
         'academic_year_id',
         'surah_id',

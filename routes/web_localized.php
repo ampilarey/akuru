@@ -52,6 +52,7 @@ use App\Domains\Courses\Http\Controllers\LearnLessonController;
 use App\Domains\Courses\Http\Controllers\LearnMediaController;
 use App\Domains\Courses\Http\Controllers\LearnScheduleController;
 use App\Domains\Courses\Http\Controllers\LessonPlayerController;
+use App\Domains\Courses\Http\Controllers\TeachQuranAssignmentController;
 use App\Domains\ExamsGrades\Http\Controllers\AwardController;
 use App\Domains\ExamsGrades\Http\Controllers\CompetencyController;
 use App\Domains\ExamsGrades\Http\Controllers\ExamController;
@@ -188,6 +189,9 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
     Route::get('/teach/schedule', [TeacherScheduleController::class, 'index'])->name('teach.schedule');
     Route::get('/teach/recitations', [TeachRecitationController::class, 'index'])->name('teach.recitations');
     Route::post('/teach/recitations/{submission}/review', [TeachRecitationController::class, 'review'])->name('teach.recitations.review')->whereNumber('submission');
+    Route::get('/teach/assignments', [TeachQuranAssignmentController::class, 'index'])->name('teach.assignments');
+    Route::post('/teach/assignments', [TeachQuranAssignmentController::class, 'store'])->name('teach.assignments.store');
+    Route::put('/teach/assignments/{assignment}', [TeachQuranAssignmentController::class, 'update'])->name('teach.assignments.update')->whereNumber('assignment');
     Route::get('/teach/quran-sessions/{session}', [TeachQuranSessionController::class, 'show'])->name('teach.quran-sessions.show')->whereNumber('session');
     Route::post('/teach/quran-sessions/{session}/records', [TeachQuranSessionController::class, 'storeRecord'])->name('teach.quran-sessions.records.store')->whereNumber('session');
     Route::post('/teach/quran-session-records/{record}/review', [TeachQuranSessionController::class, 'review'])->name('teach.quran-sessions.records.review')->whereNumber('record');

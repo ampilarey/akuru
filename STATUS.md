@@ -398,6 +398,20 @@ migration; no Hifz behaviour change outside it.
   review() (stamps reviewer, clears the flag). Remaining gate items: **P2
   assignments (§52.18)**, **P3 milestone approval workflow**. Browser walk
   of the sheet still needed before the gate counts it (DoD).
+- **F5-P2 (this PR — gate item 2 of 3):** §52.18 assignments engine-keyed.
+  `quran_hifz_assignments` (morph alias added; rule 10 academic_year_id;
+  letter/haraka practice targets via table-level FKs only) with the five
+  spec types and seven spec statuses, plus the §52.19 link F3 lacked:
+  additive `quran_recitation_submissions.quran_hifz_assignment_id`. The
+  loop closes: submit-against-assignment → `submitted`; review outcome maps
+  passed/needs_repeat/failed onto the assignment; a repeat submission
+  re-opens to `submitted`. Teacher board `/teach/assignments` (own board;
+  staff see all; create from live hifz-enrollment targets via new generic
+  engine seam `ListEnrollmentTargetsByCourseTypeAction` — course_type is a
+  parameter, engine stays subject-ignorant; letter/haraka pickers composed
+  at the ENGINE controller like oversight; CSV; cancel). Student dashboard
+  gains an additive `assignments` section. Browser walk still needed
+  before the gate counts it (DoD).
 
 ## 6. Out of scope (unchanged)
 

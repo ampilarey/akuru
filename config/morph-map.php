@@ -16,6 +16,7 @@ return [
     'assessment_question' => \App\Domains\Courses\Models\AssessmentQuestion::class,
     'arabic_harakah' => \App\Domains\Courses\Components\Arabic\Models\ArabicHarakah::class,
     'arabic_letter' => \App\Domains\Courses\Components\Arabic\Models\ArabicLetter::class,
+    'quran_hifz_assignment' => \App\Domains\Courses\Components\Quran\Models\QuranHifzAssignment::class,
     'quran_memorization_progress' => \App\Domains\Courses\Components\Quran\Models\QuranMemorizationProgress::class,
     'quran_mistake_mark' => \App\Domains\Courses\Components\Quran\Models\QuranMistakeMark::class,
     'quran_recitation_submission' => \App\Domains\Courses\Components\Quran\Models\QuranRecitationSubmission::class,

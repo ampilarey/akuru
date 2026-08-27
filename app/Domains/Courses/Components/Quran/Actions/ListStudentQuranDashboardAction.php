@@ -2,9 +2,11 @@
 
 namespace App\Domains\Courses\Components\Quran\Actions;
 
+use App\Domains\Courses\Components\Quran\Models\QuranHifzAssignment;
 use App\Domains\Courses\Components\Quran\Models\QuranMemorizationProgress;
 use App\Domains\Courses\Components\Quran\Models\QuranRecitationSubmission;
 use App\Domains\Courses\Components\Quran\Models\QuranRevisionSchedule;
+use App\Domains\People\Actions\ListTeachersByIdsAction;
 use App\Support\Contracts\QuranReferenceReader;
 
 /**
@@ -18,7 +20,8 @@ class ListStudentQuranDashboardAction
      * @return array{
      *     submissions: list<array<string, mixed>>,
      *     progress: list<array<string, mixed>>,
-     *     schedules: list<array<string, mixed>>
+     *     schedules: list<array<string, mixed>>,
+     *     assignments: list<array<string, mixed>>
      * }
      */
     public function execute(int $studentId): array
@@ -88,10 +91,34 @@ class ListStudentQuranDashboardAction
             ->values()
             ->all();
 
+        $assignmentRows = QuranHifzAssignment::query()
+            ->where('student_id', $studentId)
+            ->orderByDesc('id')
+            ->limit(50)
+            ->get();
+        $teachers = app(ListTeachersByIdsAction::class)
+            ->execute($assignmentRows->pluck('teacher_id')->all())
+            ->keyBy('id');
+        $assignments = $assignmentRows
+            ->map(fn (QuranHifzAssignment $row): array => [
+                'id' => $row->id,
+                'assignment_type' => $row->assignment_type?->value,
+                'surah' => $surahName($row->surah_id ? (int) $row->surah_id : null),
+                'start_ayah_number' => $row->start_ayah_number,
+                'end_ayah_number' => $row->end_ayah_number,
+                'due_date' => $row->due_date?->toDateString(),
+                'status' => $row->status?->value,
+                'notes' => $row->notes,
+                'teacher' => $teachers->get((int) $row->teacher_id)['name'] ?? null,
+            ])
+            ->values()
+            ->all();
+
         return [
             'submissions' => $submissions,
             'progress' => $progress,
             'schedules' => $schedules,
+            'assignments' => $assignments,
         ];
     }
 }

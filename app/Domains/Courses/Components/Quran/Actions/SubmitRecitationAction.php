@@ -3,8 +3,10 @@
 namespace App\Domains\Courses\Components\Quran\Actions;
 
 use App\Domains\Courses\Actions\ResolveLatestEnrollmentIdAction;
+use App\Domains\Courses\Components\Quran\Enums\QuranAssignmentStatus;
 use App\Domains\Courses\Components\Quran\Enums\RecitationMode;
 use App\Domains\Courses\Components\Quran\Enums\RecitationSubmissionStatus;
+use App\Domains\Courses\Components\Quran\Models\QuranHifzAssignment;
 use App\Domains\Courses\Components\Quran\Models\QuranRecitationSubmission;
 use App\Support\Contracts\QuranReferenceReader;
 use Illuminate\Validation\ValidationException;
@@ -41,8 +43,20 @@ class SubmitRecitationAction
             throw ValidationException::withMessages(['surah_id' => 'Unknown surah.']);
         }
 
-        return QuranRecitationSubmission::query()->create([
+        // §52.19: a submission may answer an assignment; submitting moves it on.
+        $assignment = null;
+        if (! empty($data['quran_hifz_assignment_id'])) {
+            $assignment = QuranHifzAssignment::query()->find((int) $data['quran_hifz_assignment_id']);
+            if ($assignment === null || (int) $assignment->student_id !== $studentId) {
+                throw ValidationException::withMessages([
+                    'quran_hifz_assignment_id' => 'Assignment not found for this student.',
+                ]);
+            }
+        }
+
+        $submission = QuranRecitationSubmission::query()->create([
             'course_enrollment_id' => $enrollmentId,
+            'quran_hifz_assignment_id' => $assignment?->id,
             'student_id' => $studentId,
             'academic_year_id' => $data['academic_year_id'] ?? null,
             'surah_id' => $surahId,
@@ -54,5 +68,12 @@ class SubmitRecitationAction
             'submitted_at' => now(),
             'status' => RecitationSubmissionStatus::Submitted,
         ]);
+
+        if ($assignment !== null) {
+            $assignment->status = QuranAssignmentStatus::Submitted;
+            $assignment->save();
+        }
+
+        return $submission;
     }
 }
