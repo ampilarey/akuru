@@ -12,6 +12,13 @@
         </div>
     </div>
 
+    @if(session('success'))
+        <div class="mb-4 rounded bg-green-50 p-3 text-sm text-green-700">{{ session('success') }}</div>
+    @endif
+    @if($errors->any())
+        <div class="mb-4 rounded bg-red-50 p-3 text-sm text-red-700">{{ $errors->first() }}</div>
+    @endif
+
     {{-- Filters --}}
     <form method="GET" class="card p-4 mb-6 flex flex-wrap gap-3 items-end">
         <div>
@@ -27,6 +34,7 @@
                 <option value="pending" @selected(request('status') === 'pending')>Pending</option>
                 <option value="failed" @selected(request('status') === 'failed')>Failed</option>
                 <option value="expired" @selected(request('status') === 'expired')>Expired</option>
+                <option value="refunded" @selected(request('status') === 'refunded')>Refunded</option>
             </select>
         </div>
         <button type="submit" class="btn-primary text-sm py-2 px-4">Filter</button>
@@ -46,6 +54,7 @@
                         <th class="px-5 py-3 text-left text-xs font-medium text-gray-500 uppercase">Amount</th>
                         <th class="px-5 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
                         <th class="px-5 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
+                        <th class="px-5 py-3 text-left text-xs font-medium text-gray-500 uppercase">Refund</th>
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
@@ -64,6 +73,7 @@
                                     $sc = match($payment->status) {
                                         'confirmed' => 'bg-green-100 text-green-800',
                                         'failed','cancelled','expired' => 'bg-red-100 text-red-800',
+                                        'refunded' => 'bg-gray-200 text-gray-700',
                                         default => 'bg-amber-100 text-amber-800',
                                     };
                                 @endphp
@@ -74,10 +84,43 @@
                             <td class="px-5 py-3 text-sm text-gray-500">
                                 {{ $payment->created_at->format('d M Y') }}
                             </td>
+                            <td class="px-5 py-3 text-sm">
+                                @php
+                                    $refunded = $payment->refunds->sum('amount');
+                                    $refundable = round($payment->amount - $refunded, 2);
+                                @endphp
+                                @if($refunded > 0)
+                                    <p class="text-xs text-gray-500 mb-1">Refunded: {{ number_format($refunded, 2) }} {{ $payment->currency }}</p>
+                                @endif
+                                @if(auth()->user()?->can('payments.refund') && in_array($payment->status, ['confirmed', 'paid'], true) && $refundable > 0)
+                                    <details>
+                                        <summary class="cursor-pointer text-xs text-brandMaroon-700 hover:underline">Refund…</summary>
+                                        <form method="POST" action="{{ route('admin.payments.refund', $payment) }}" class="mt-2 space-y-1">
+                                            @csrf
+                                            <input type="number" name="amount" step="0.01" min="0.01" max="{{ $refundable }}"
+                                                   value="{{ $refundable }}" class="border rounded px-2 py-1 text-xs w-24">
+                                            <select name="destination" class="border rounded px-2 py-1 text-xs">
+                                                <option value="wallet">To wallet</option>
+                                                <option value="manual">Manual (returned outside)</option>
+                                            </select>
+                                            <input type="text" name="reason" placeholder="Reason" maxlength="500"
+                                                   class="border rounded px-2 py-1 text-xs w-32">
+                                            <button type="submit" class="btn-primary text-xs py-1 px-2"
+                                                    onclick="return confirm('Record this refund? A full refund cancels what the payment bought.')">
+                                                Refund
+                                            </button>
+                                        </form>
+                                    </details>
+                                @elseif($payment->status === 'refunded')
+                                    <span class="text-xs text-gray-400">Fully refunded</span>
+                                @else
+                                    <span class="text-xs text-gray-300">—</span>
+                                @endif
+                            </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="px-5 py-10 text-center text-gray-400 text-sm">No payments found.</td>
+                            <td colspan="7" class="px-5 py-10 text-center text-gray-400 text-sm">No payments found.</td>
                         </tr>
                     @endforelse
                 </tbody>

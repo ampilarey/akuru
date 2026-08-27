@@ -333,6 +333,11 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::patch('/{enrollment}/reject', [AdminEnrollmentController::class, 'reject'])->name('admin.enrollments.reject');
     });
 
+    // Admin payment refunds (P4.3 — money-sensitive, tighter than the payments listing)
+    Route::prefix('admin/payments')->middleware(['role:super_admin|admin', 'can:payments.refund'])->group(function () {
+        Route::post('/{payment}/refund', [\App\Domains\Finance\Http\Controllers\AdminPaymentRefundController::class, 'store'])->name('admin.payments.refund');
+    });
+
     // Instructor management
     Route::prefix('admin/instructors')->middleware(['role:super_admin|admin|headmaster|supervisor'])->group(function () {
         Route::get('/', [AdminInstructorController::class, 'index'])->name('admin.instructors.index');

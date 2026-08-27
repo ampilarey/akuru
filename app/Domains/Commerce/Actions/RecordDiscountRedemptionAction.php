@@ -37,4 +37,17 @@ class RecordDiscountRedemptionAction
             ->where('status', 'pending')
             ->update(['status' => $status]);
     }
+
+    /**
+     * P4.3: a fully refunded purchase gives its usage slot back — pending
+     * AND confirmed redemptions release, since the customer kept nothing.
+     */
+    public function releaseForRefund(string $purchaseType, int $purchaseId): int
+    {
+        return DiscountRedemption::query()
+            ->where('purchase_type', $purchaseType)
+            ->where('purchase_id', $purchaseId)
+            ->whereIn('status', ['pending', 'confirmed'])
+            ->update(['status' => 'released']);
+    }
 }
