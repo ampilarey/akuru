@@ -20,6 +20,7 @@ return [
     'quran_mistake_mark' => \App\Domains\Courses\Components\Quran\Models\QuranMistakeMark::class,
     'quran_recitation_submission' => \App\Domains\Courses\Components\Quran\Models\QuranRecitationSubmission::class,
     'quran_revision_schedule' => \App\Domains\Courses\Components\Quran\Models\QuranRevisionSchedule::class,
+    'quran_session_record' => \App\Domains\Courses\Components\Quran\Models\QuranSessionRecord::class,
     'activity' => \App\Domains\Courses\Models\Activity::class,
     'activity_attempt' => \App\Domains\Progress\Models\ActivityAttempt::class,
     'admission_application' => \App\Domains\Admissions\Models\AdmissionApplication::class,

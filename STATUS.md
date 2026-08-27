@@ -382,6 +382,22 @@ migration; no Hifz behaviour change outside it.
   renumbered to ADR-026, references updated. **Phase F outcome: F0–F4 shipped
   and merged (#131–#134); §2b functionally complete for engine-side learning;
   formal retirement waits at the ADR-025 gate.**
+- **F5-P1 (this PR — gate item 1 of 3):** three-lane session-record entry on
+  the engine. `quran_session_records` (Components/Quran, morph alias added,
+  rule 10 `academic_year_id` from the session): new-memorization lane
+  (surah/ayah range + result + score), recent/old revision lanes, mistake
+  breakdown (haraka/word/fluency; total derived when not given), notes,
+  flags, overall status — enum values identical to legacy so the eventual
+  data copy is straight. **Attendance is not duplicated**: the save action
+  writes `attendance_status` through `RecordOfferingAttendanceAction` into
+  `attendance_records` (single source); roster membership is proven through
+  the same engine action the sheet reads (`ListSessionAttendanceAction`,
+  which additively gains `session.academic_year_id`). Teacher sheet at
+  `/teach/quran-sessions/{session}` (per-student expandable form, CSV);
+  supervisor review POST is `courses.manage`-gated and mirrors the legacy
+  review() (stamps reviewer, clears the flag). Remaining gate items: **P2
+  assignments (§52.18)**, **P3 milestone approval workflow**. Browser walk
+  of the sheet still needed before the gate counts it (DoD).
 
 ## 6. Out of scope (unchanged)
 

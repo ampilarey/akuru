@@ -26,6 +26,7 @@ use App\Domains\Courses\Components\Arabic\Http\Controllers\CatalogArabicReportCo
 use App\Domains\Courses\Components\Arabic\Http\Controllers\LearnArabicReportController;
 use App\Domains\Courses\Components\Quran\Http\Controllers\CatalogQuranReferenceController;
 use App\Domains\Courses\Components\Quran\Http\Controllers\LearnQuranController;
+use App\Domains\Courses\Components\Quran\Http\Controllers\TeachQuranSessionController;
 use App\Domains\Courses\Components\Quran\Http\Controllers\TeachRecitationController;
 use App\Domains\Courses\Http\Controllers\AudienceController;
 use App\Domains\Courses\Http\Controllers\CatalogActivityController;
@@ -187,6 +188,9 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
     Route::get('/teach/schedule', [TeacherScheduleController::class, 'index'])->name('teach.schedule');
     Route::get('/teach/recitations', [TeachRecitationController::class, 'index'])->name('teach.recitations');
     Route::post('/teach/recitations/{submission}/review', [TeachRecitationController::class, 'review'])->name('teach.recitations.review')->whereNumber('submission');
+    Route::get('/teach/quran-sessions/{session}', [TeachQuranSessionController::class, 'show'])->name('teach.quran-sessions.show')->whereNumber('session');
+    Route::post('/teach/quran-sessions/{session}/records', [TeachQuranSessionController::class, 'storeRecord'])->name('teach.quran-sessions.records.store')->whereNumber('session');
+    Route::post('/teach/quran-session-records/{record}/review', [TeachQuranSessionController::class, 'review'])->name('teach.quran-sessions.records.review')->whereNumber('record');
     Route::get('/learn/catalog', [LearnCatalogController::class, 'index'])->name('learn.catalog');
     Route::post('/learn/courses/{course}/enroll', [LearnCatalogController::class, 'enroll'])->name('learn.courses.enroll')->whereNumber('course');
     Route::get('/learn/courses/{course}', [LearnCourseController::class, 'show'])->name('learn.courses.show')->whereNumber('course');
