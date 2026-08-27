@@ -321,10 +321,24 @@ migration; no Hifz behaviour change outside it.
   milestone sync — F3/F4 wire milestone sync to events instead of the backfill
   command. **Verification gate output must be captured here before any deploy
   that switches Hifz reads to engine structure.**
-- **F3 (next):** recitation submissions, mistake marks (haraka-strict §52.2),
-  revision schedules, memorization progress re-keyed to engine IDs in
-  Components/Quran; reuse existing `surahs`/`quran_*` tables (rule 11). STOP after
-  F3 with full report.
+- **F3 (this PR):** the four §52.19–52.22 tables engine-keyed in
+  Components/Quran — `quran_recitation_submissions` (course_enrollment_id +
+  unified student_id + academic_year_id, audio via `media_files`, spec statuses
+  incl. reserved ai_* values nothing sets — rule 8), `quran_mistake_marks`
+  (letter/haraka ids FK the Arabic component's TABLES only; the Quran component
+  never references Arabic code — isolation test holds), `quran_revision_schedules`
+  and `quran_memorization_progress` (upsert per student+surah+range). Existing
+  `surahs` reused via `QuranReferenceReader` (rule 11); enrollment resolves
+  through the F0 seam. §52.2 haraka-strict rule is its own action
+  (`DeriveHarakaMistakeAction`): same letter + different haraka → `wrong_haraka`,
+  different letter → `wrong_letter`; review marks derive types when ids are given,
+  explicit type required when underivable (loud failure, no guessing).
+  `ReviewRecitationAction` (shaped like ReviewAttemptAction) closes a submission
+  with marks in one transaction and rolls the student's memorization-progress row
+  (passed→passed, needs_repeat→needs_revision, failed→weak). Four morph aliases
+  added. Legacy `quran_progress`/`recitation_practices` (old Blade app) stay
+  frozen for F5 archive; no backfill from them — they are pre-engine practice
+  data, migrated only if the operator asks.
 - **F4:** dashboards (§52.7–52.13) in Inertia, replacing frozen Hifz Blade.
 - **F5:** retirement — archive don't drop; keep specialty tables; move
   QuranReferenceReader/QuranTextProvider implementations into Components/Quran;
