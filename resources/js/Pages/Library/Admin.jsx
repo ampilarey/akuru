@@ -1,5 +1,107 @@
 import { router, useForm } from '@inertiajs/react';
+import { useState } from 'react';
 import AppShell from '../../Layouts/AppShell';
+
+function ApplicationsQueue({ applications }) {
+    const [notes, setNotes] = useState({});
+    if (applications.length === 0) return null;
+
+    const decide = (id, approve) =>
+        router.post(`/admin/library/applications/${id}/decide`, { approve, note: notes[id] || undefined }, { preserveScroll: true });
+
+    return (
+        <div className="mb-6 overflow-x-auto rounded-lg border bg-white">
+            <table className="min-w-full text-sm">
+                <thead className="bg-[#F3EBE0] text-start">
+                    <tr>
+                        <th className="px-3 py-2">Writer application</th>
+                        <th className="px-3 py-2">Background</th>
+                        <th className="px-3 py-2">Decision</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {applications.map((app) => (
+                        <tr key={app.id} className="border-t align-top">
+                            <td className="px-3 py-2">
+                                <p className="font-medium">{app.display_name}</p>
+                                <p className="text-xs text-gray-500">Applied {app.applied_at}</p>
+                                {app.motivation && <p className="mt-1 text-xs text-gray-600">{app.motivation}</p>}
+                            </td>
+                            <td className="px-3 py-2 text-xs text-gray-600">
+                                {app.expertise && <p>{app.expertise}</p>}
+                                {app.qualifications && <p>{app.qualifications}</p>}
+                            </td>
+                            <td className="px-3 py-2">
+                                <input
+                                    className="form-input mb-2 w-48"
+                                    placeholder="Note (optional)"
+                                    value={notes[app.id] || ''}
+                                    onChange={(e) => setNotes({ ...notes, [app.id]: e.target.value })}
+                                />
+                                <div className="flex gap-2">
+                                    <button type="button" className="btn-primary" onClick={() => decide(app.id, true)}>Approve</button>
+                                    <button type="button" className="text-sm text-red-600" onClick={() => decide(app.id, false)}>Reject</button>
+                                </div>
+                            </td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+        </div>
+    );
+}
+
+function SubmissionsQueue({ submissions }) {
+    const [comments, setComments] = useState({});
+    if (submissions.length === 0) return null;
+
+    const review = (id, decision) =>
+        router.post(`/admin/library/items/${id}/review`, { decision, comment: comments[id] || undefined }, { preserveScroll: true });
+
+    return (
+        <div className="mb-6 overflow-x-auto rounded-lg border bg-white">
+            <table className="min-w-full text-sm">
+                <thead className="bg-[#F3EBE0] text-start">
+                    <tr>
+                        <th className="px-3 py-2">Submitted item</th>
+                        <th className="px-3 py-2">History</th>
+                        <th className="px-3 py-2">Review</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {submissions.map((sub) => (
+                        <tr key={sub.id} className="border-t align-top">
+                            <td className="px-3 py-2">
+                                <p className="font-medium">{sub.title}</p>
+                                <p className="text-xs text-gray-500">
+                                    {sub.writer} · {sub.content_type} · {sub.access_type}{sub.price ? ` · MVR ${sub.price}` : ''} · {sub.submitted_at}
+                                </p>
+                            </td>
+                            <td className="px-3 py-2 text-xs text-gray-600">
+                                {sub.history.map((entry, index) => (
+                                    <p key={index}>{entry.decision}{entry.comment ? ` — ${entry.comment}` : ''}</p>
+                                ))}
+                            </td>
+                            <td className="px-3 py-2">
+                                <input
+                                    className="form-input mb-2 w-56"
+                                    placeholder="Editor comment"
+                                    value={comments[sub.id] || ''}
+                                    onChange={(e) => setComments({ ...comments, [sub.id]: e.target.value })}
+                                />
+                                <div className="flex flex-wrap gap-2">
+                                    <button type="button" className="btn-primary" onClick={() => review(sub.id, 'approved')}>Approve &amp; publish</button>
+                                    <button type="button" className="btn-secondary" onClick={() => review(sub.id, 'changes_requested')}>Request changes</button>
+                                    <button type="button" className="text-sm text-red-600" onClick={() => review(sub.id, 'rejected')}>Reject</button>
+                                </div>
+                            </td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+        </div>
+    );
+}
 
 function ItemForm({ categories, options }) {
     const form = useForm({
@@ -7,6 +109,7 @@ function ItemForm({ categories, options }) {
         subtitle: '',
         content_type: 'article',
         access_type: 'free_public',
+        price: '',
         library_category_id: '',
         abstract: '',
         body: '',
@@ -43,6 +146,7 @@ function ItemForm({ categories, options }) {
                 {options.access_types.map((type) => <option key={type} value={type}>{type.replaceAll('_', ' ')}</option>)}
             </select>
 
+            <input className="form-input" placeholder="Price (MVR)" value={form.data.price} onChange={(e) => form.setData('price', e.target.value)} />
             <input className="form-input" placeholder="Subtitle" value={form.data.subtitle} onChange={(e) => form.setData('subtitle', e.target.value)} />
             <select className="form-input" value={form.data.library_category_id} onChange={(e) => form.setData('library_category_id', e.target.value)}>
                 <option value="">Category…</option>
@@ -83,13 +187,16 @@ function CategoryForm() {
     );
 }
 
-export default function Admin({ items, categories, options, sales = [] }) {
+export default function Admin({ items, categories, options, sales = [], queues = { applications: [], submissions: [] } }) {
     return (
         <AppShell title="Library admin">
             <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
                 <CategoryForm />
                 <a className="btn-secondary" href="/admin/library?format=csv">Export CSV</a>
             </div>
+
+            <ApplicationsQueue applications={queues.applications} />
+            <SubmissionsQueue submissions={queues.submissions} />
 
             <ItemForm categories={categories} options={options} />
 

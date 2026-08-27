@@ -418,7 +418,19 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::post('items', [AdminLibraryController::class, 'storeItem'])->name('admin.library.items.store');
         Route::put('items/{item}', [AdminLibraryController::class, 'updateItem'])->name('admin.library.items.update')->whereNumber('item');
         Route::post('items/{item}/publish', [AdminLibraryController::class, 'publish'])->name('admin.library.items.publish')->whereNumber('item');
+        Route::post('items/{item}/review', [AdminLibraryController::class, 'reviewSubmission'])->name('admin.library.items.review')->whereNumber('item');
+        Route::post('applications/{application}/decide', [AdminLibraryController::class, 'decideApplication'])->name('admin.library.applications.decide')->whereNumber('application');
         Route::post('categories', [AdminLibraryController::class, 'storeCategory'])->name('admin.library.categories.store');
+    });
+
+    // L5 writer portal (§7.4) — any authed user may apply; item routes
+    // self-gate on an approved writer profile inside the actions.
+    Route::prefix('write')->middleware(['auth'])->group(function () {
+        Route::get('/', [\App\Domains\Library\Http\Controllers\WriterPortalController::class, 'index'])->name('write.index');
+        Route::post('apply', [\App\Domains\Library\Http\Controllers\WriterPortalController::class, 'apply'])->name('write.apply');
+        Route::post('items', [\App\Domains\Library\Http\Controllers\WriterPortalController::class, 'storeItem'])->name('write.items.store');
+        Route::put('items/{item}', [\App\Domains\Library\Http\Controllers\WriterPortalController::class, 'updateItem'])->name('write.items.update')->whereNumber('item');
+        Route::post('items/{item}/submit', [\App\Domains\Library\Http\Controllers\WriterPortalController::class, 'submit'])->name('write.items.submit')->whereNumber('item');
     });
 
     Route::prefix('admin/prayer-times')->middleware(['role:super_admin|admin|headmaster|supervisor', 'can:prayer.manage'])->group(function () {
