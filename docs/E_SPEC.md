@@ -4,16 +4,9 @@ Website domain. Engine core stays subject-ignorant. Hifz frozen. New Website fil
 
 ## E1 — W1 conversion layer
 
-### W1.1 — Urgency from existing data (this slice)
+### W1.1 — Urgency from existing data
 
-Course cards + course detail, from columns that already exist:
-
-- **Seats left:** `seats − occupying enrollments` (`pending` + `active`, matching checkout `isFull()`). Thresholds in Settings group `conversion` (defaults: hide above 20, exact “N seats left” at ≤10, “Limited seats” 11–20, “Full — join waiting list” at 0). `seats` null → show nothing.
-- **Deadline:** `enrollment_deadline` date + “X days left” when within 14 days. Expired **open** courses are hidden from Open Courses / default public listing.
-- **Early bird:** `courses.meta.early_bird_*` (no new columns). Shown only when active, dated, and cheaper than `fee`.
-- **Waiting list:** public POST `/courses/{course}/waitlist` → `contact_inquiries` with `meta.source=waiting_list` and `course_id` (table was missing despite the model; additive).
-
-Never invent scarcity. Pest covers null / limited / exact / full / expired / early-bird / waitlist 422 when not full. Browser walk: homepage Limited seats + 7 seats left + null-seats silent; waitlist inquiry stored.
+Merged #112.
 
 ### W1.2 — Trust above the fold
 
@@ -23,19 +16,22 @@ Homepage hero reads Settings group `trust_settings` (merged #113).
 
 Merged #114.
 
-### W1.4 — Mobile CTA + lead capture (this slice)
+### W1.4 — Mobile CTA + lead capture
 
-- Sticky mobile course bar: price + **Register** + WhatsApp icon (existing bar; not a second bar).
-- **Ask on WhatsApp** `https://wa.me/<digits>?text=<course title>`. Per-course `courses.whatsapp_number`, else Settings `conversion.whatsapp_number`, else existing contact `viber`. Blank at every layer omits the button.
-- **Get full syllabus** mini-form (name + mobile, email optional) when `courses.syllabus_media_file_id` points at a **public** `media_files` row. Stores `leads` (`source=syllabus`) then flashes the PDF URL.
-- Waiting-list posts also dual-write `leads` (`source=waiting_list`).
-- Admin Blade listing `/admin/public-site/leads` + CSV. Website-owned until Phase 0 Admissions move.
+Merged #115.
 
-Engine subject-ignorant. Hifz untouched. New Website files do not import Courses Models.
+### W1.5 — SEO + sharing (this slice)
 
-### W1.5–W1.6 (next)
+- schema.org JSON-LD: `Course` + `CourseInstance` (dates + displayed price, including early-bird) on course pages; `Organization` sitewide; `FAQPage` matching the FAQs that render.
+- OG/Twitter per course: title, cover, price (`product:price:*`). Price omitted when `fee` is null.
+- Localized `hreflang` triplets (en/dv/ar + x-default) on the public layout.
+- XML sitemap includes courses, articles, news, events, with `xhtml:link` alternates. Course list via Courses `ListPublicCourseSitemapEntriesAction` (Website does not import Courses Models). News loc uses slug (the public route).
 
-JSON-LD/OG/hreflang/sitemap, funnel events.
+Engine subject-ignorant. Hifz untouched. New Website files do not import Courses Models. Arch baselines shrunk (`SitemapController` no longer imports Course).
+
+### W1.6 (next)
+
+Funnel events.
 
 ## E2 — W2 daily content (next phase)
 
