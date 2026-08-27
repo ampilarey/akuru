@@ -97,6 +97,10 @@ it('toggles bookmarks, lists them privately, and re-syncs pages on body edits', 
     $item = seedReadableItem();
     $reader = User::factory()->create();
 
+    // Guests have no my-library. (First request — actingAs persists for the
+    // rest of the test case once used, so the guest check must come first.)
+    $this->withoutLocalizationMiddleware()->get(route('public.library.my'))->assertForbidden();
+
     $this->withoutLocalizationMiddleware()->actingAs($reader)
         ->post(route('public.library.bookmark', $item->slug), ['page' => 2, 'note' => 'Great section'])
         ->assertRedirect();
@@ -111,9 +115,6 @@ it('toggles bookmarks, lists them privately, and re-syncs pages on body edits', 
         ->post(route('public.library.bookmark', $item->slug), ['page' => 2])
         ->assertRedirect();
     expect(LibraryBookmark::query()->count())->toBe(0);
-
-    // Guests have no my-library.
-    $this->withoutLocalizationMiddleware()->get(route('public.library.my'))->assertForbidden();
 
     // Editing the body re-syncs the page set.
     app(SaveLibraryItemAction::class)->execute([
