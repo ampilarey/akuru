@@ -9,7 +9,7 @@ This file governs every AI-assisted coding session in this repo. It encodes the 
 | `docs/ROADMAP.md` | architecture, domain map, phase order, all decisions |
 | `docs/SPEC.md` | course engine requirements (Phases 1A–5, §51 Arabic, §52 Quran, §57 build strategy) |
 | `docs/LIBRARY_PLAN.md` | Knowledge Library (L-track) requirements |
-| `docs/PHASE_0_CHECKLIST.md`, `docs/S1_SPEC.md`, `docs/S2_SPEC.md`, `docs/S3_SPEC.md`, `docs/W1_SPEC.md`, `docs/W3_SPEC.md` | per-phase build specs |
+| `docs/PHASE_0_CHECKLIST.md`, `docs/S1_SPEC.md`, `docs/S2_SPEC.md`, `docs/S3_SPEC.md`, `docs/W1_SPEC.md`, `docs/W2_SPEC.md`, `docs/W3_SPEC.md` | per-phase build specs |
 | `STATUS.md` | what is done, in progress, next — UPDATE AFTER EVERY SLICE |
 | `docs/STAGING.md` | staging server paths, deploy one-liners, Phase 0 verify state — READ BEFORE SERVER GIT |
 | `docs/adr/` | architecture decision records |
@@ -32,6 +32,7 @@ This file governs every AI-assisted coding session in this repo. It encodes the 
 ## Conventions
 
 - New UI = Inertia + React. No new Blade screens (existing Blade keeps running until replaced). All screens trilingual-ready (EN/DV/AR) and RTL-safe; every listing gets CSV export.
+- Islamic daily content is admin-curated only: no auto-generation and no scraping of ayah, hadith, sayings, or reminders (W2, ADR-024).
 - Pest for new tests; `tests/Architecture/` is CI-blocking.
 - Enums: string-backed PHP enums. Money: integer laari or decimal(10,2) consistently per ADR. Dates: app timezone Indian/Maldives.
 - Migrations live in the owning domain's `Database/migrations`.

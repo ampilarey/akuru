@@ -150,6 +150,8 @@ class RoleSeeder extends Seeder
             'courses.manage',
             'courses.publish',
             'events.manage',
+            'daily_content.manage',
+            'daily_content.approve',
         ];
 
         foreach ($permissions as $permission) {
@@ -201,6 +203,8 @@ class RoleSeeder extends Seeder
             'timetables.allow_conflict',
             'calendar.manage',
             'events.manage',
+            'daily_content.manage',
+            'daily_content.approve',
             'registers.fill',
             'registers.manage',
             'behavior.record',
@@ -243,6 +247,8 @@ class RoleSeeder extends Seeder
             'view_timetables',
             'rooms.manage',
             'meetings.manage',
+            'daily_content.manage',
+            'daily_content.approve',
             'calendar.manage',
             'events.manage',
             'registers.fill',

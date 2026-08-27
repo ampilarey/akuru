@@ -11,6 +11,9 @@
             <a href="{{ route('admin.courses.index') }}" class="text-brandBlue-600 hover:text-brandBlue-800 text-sm font-medium">
                 Manage Courses →
             </a>
+            <a href="{{ route('admin.daily-content.index') }}" class="text-brandBlue-600 hover:text-brandBlue-800 text-sm font-medium">
+                Daily content →
+            </a>
         </div>
         <a href="{{ route('admin.funnel.export', request()->only(['course_id'])) }}" class="btn-secondary">
             Export CSV

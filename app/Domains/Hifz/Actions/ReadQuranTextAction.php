@@ -3,6 +3,7 @@
 namespace App\Domains\Hifz\Actions;
 
 use App\Domains\Hifz\Enums\QuranTranslationLanguage;
+use App\Domains\Hifz\Models\QuranAyah;
 use App\Domains\Hifz\Models\QuranTranslation;
 use App\Support\Contracts\QuranTextProviderInterface;
 
@@ -72,6 +73,49 @@ class ReadQuranTextAction implements QuranTextProviderInterface
         return [
             ...$ayah,
             'surah' => $this->findSurah($surahNumber),
+            'meanings' => [
+                'en' => $en['text'] ?? null,
+                'dv' => $dv['text'] ?? null,
+            ],
+            'meaning_source' => $en['source_name'] ?? $dv['source_name'] ?? null,
+        ];
+    }
+
+    public function findAyahById(int $quranAyahId): ?array
+    {
+        if ($quranAyahId <= 0) {
+            return null;
+        }
+
+        $ayah = QuranAyah::query()->find($quranAyahId);
+        if ($ayah === null) {
+            return null;
+        }
+
+        return [
+            'id' => $ayah->id,
+            'surah_number' => (int) $ayah->surah_number,
+            'ayah_number' => (int) $ayah->ayah_number,
+            'text_uthmani' => $ayah->text_uthmani,
+            'text_simple' => $ayah->text_simple,
+            'juz_number' => $ayah->juz_number ? (int) $ayah->juz_number : null,
+            'page_number' => $ayah->page_number ? (int) $ayah->page_number : null,
+        ];
+    }
+
+    public function ayahWithMeaningsById(int $quranAyahId, ?string $sourceName = null): ?array
+    {
+        $ayah = $this->findAyahById($quranAyahId);
+        if ($ayah === null) {
+            return null;
+        }
+
+        $en = $this->translation($quranAyahId, QuranTranslationLanguage::English->value, $sourceName);
+        $dv = $this->translation($quranAyahId, QuranTranslationLanguage::Dhivehi->value, $sourceName);
+
+        return [
+            ...$ayah,
+            'surah' => $this->findSurah((int) $ayah['surah_number']),
             'meanings' => [
                 'en' => $en['text'] ?? null,
                 'dv' => $dv['text'] ?? null,

@@ -14,6 +14,9 @@
             <a href="{{ route('admin.funnel.index') }}" class="text-brandBlue-600 hover:text-brandBlue-800 text-sm font-medium">
                 Funnel →
             </a>
+            <a href="{{ route('admin.daily-content.index') }}" class="text-brandBlue-600 hover:text-brandBlue-800 text-sm font-medium">
+                Daily content →
+            </a>
         </div>
         <a href="{{ route('admin.courses.create') }}" class="btn-primary">
             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
