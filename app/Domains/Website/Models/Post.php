@@ -140,12 +140,13 @@ class Post extends Model
 
     public function getReadingTimeAttribute()
     {
-        if ($this->reading_time) {
-            return $this->reading_time;
+        $stored = $this->attributes['reading_time'] ?? null;
+        if ($stored) {
+            return $stored;
         }
 
-        $wordCount = str_word_count(strip_tags($this->body));
-        $minutes = ceil($wordCount / 200); // Average reading speed: 200 words per minute
+        $wordCount = str_word_count(strip_tags((string) $this->body));
+        $minutes = max(1, (int) ceil($wordCount / 200));
 
         return $minutes.' min read';
     }

@@ -6,7 +6,7 @@
 @push('scripts')
 <script type="application/ld+json">
 {
-  "@context": "https://schema.org",
+  "@@context": "https://schema.org",
   "@type": "ScholarlyArticle",
   "headline": {{ json_encode($item['title']) }},
   "description": {{ json_encode($item['abstract'] ?? Str::limit(strip_tags($item['body'] ?? ''), 200)) }},
