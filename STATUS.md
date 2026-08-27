@@ -762,6 +762,21 @@ migration; no Hifz behaviour change outside it.
   precondition). Deferred (recorded): passage-level recitation
   assistance (future model family), auto-marking mistake marks from
   predictions (teacher stays the only mistake writer).
+## 5j. Phase 5 — mobile packaging (SPEC §50)
+
+- **Phase 5 scaffold (this PR):** the codeable surface of §50 — the
+  mobile app IS the responsive Inertia PWA, wrapped. `capacitor.config.ts`
+  (shell loads the hosted site via `CAPACITOR_SERVER_URL`, default
+  production — one codebase, every deploy reaches the app instantly),
+  `@capacitor/*` dev dependencies + `cap:*` scripts, and `docs/MOBILE.md`
+  with the build steps and the §50 device test checklist. Everything else
+  in §50 is DEVICE work by nature — **operator:** run `npx cap add`
+  on a machine with Android Studio/Xcode, walk the checklist on real
+  devices, record results here, then store signing/listing. Push
+  notifications stay future (devices table exists; needs FCM/APNs keys +
+  a Notifications token endpoint). §50's "Optional AI Features" are
+  covered by the Arabic B / Qur'an B foundations and stay optional
+  (rule 8).
 
 ## 6. Out of scope (unchanged)
 

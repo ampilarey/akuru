@@ -4,9 +4,16 @@
     "type": "module",
     "scripts": {
         "build": "vite build",
-        "dev": "vite"
+        "dev": "vite",
+        "cap:sync": "cap sync",
+        "cap:android": "cap open android",
+        "cap:ios": "cap open ios"
     },
     "devDependencies": {
+        "@capacitor/android": "^6.0.0",
+        "@capacitor/cli": "^6.0.0",
+        "@capacitor/core": "^6.0.0",
+        "@capacitor/ios": "^6.0.0",
         "@fullcalendar/core": "^6.1.19",
         "@fullcalendar/daygrid": "^6.1.19",
         "@fullcalendar/interaction": "^6.1.19",
