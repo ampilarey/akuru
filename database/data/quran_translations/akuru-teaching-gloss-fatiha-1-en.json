@@ -1,0 +1,12 @@
+{
+    "source_name": "Akuru teaching gloss (fixture)",
+    "source_note": "Internal teaching gloss for tests and local walk. Not a published translation edition. Replace by importing a licensed or public-domain set (ADR-023).",
+    "language": "en",
+    "ayahs": [
+        {
+            "surah": 1,
+            "ayah": 1,
+            "text": "In the name of Allah, the Beneficent, the Merciful."
+        }
+    ]
+}

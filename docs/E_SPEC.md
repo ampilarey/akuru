@@ -24,19 +24,22 @@ Merged #115.
 
 Merged #116.
 
-### W1.6 — Funnel measurement (this slice)
+### W1.6 — Funnel measurement
 
-- `funnel_events` in Website (not Settings; ADR-002 unchanged). No `academic_year_id` (website conversion, like `leads`).
-- Events: `course_view` → `register_click` → `registration_started` → `payment_completed`, plus `whatsapp_click` and `syllabus_download`.
-- Client beacon may only post click names. `payment_completed` only on BML webhook / `finalizeByReference` success.
-- Admin Blade report + CSV at `/admin/public-site/funnel`. Decision rule recorded in ADR-022: iterate W1 content from this funnel.
-- Admissions and Finance call `RecordFunnelEventAction` with **strings** (Enums are not a cross-domain layer).
+Merged #117.
 
-Engine subject-ignorant. Hifz untouched. No AppShell nav link. Arch baselines must not grow.
+## E2 — W2 daily content
 
-## E2 — W2 daily content (next phase)
+### W2.1 — Quran translations (this slice)
 
-Ayah/hadith/reminder engine reusing `surahs` / `quran_ayahs`. No parallel Quran tables.
+- `quran_translations` attached to existing `quran_ayahs`. No parallel Quran tables.
+- `QuranTextProviderInterface` in Support contracts; Hifz `ReadQuranTextAction` implements it. Website/W2 must not import Hifz Models.
+- Import: `php artisan quran:import-translations`. Repo ships a 1:1 teaching gloss only (ADR-023).
+- Hifz dashboards untouched.
+
+### W2.2 (next)
+
+Daily content store (ayah/hadith/saying/reminder) with hadith integrity + maker–checker.
 
 ## E3 — W3 prayer times (next phase)
 
