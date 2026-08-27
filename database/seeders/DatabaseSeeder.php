@@ -23,6 +23,7 @@ class DatabaseSeeder extends Seeder
             CourseCategorySeeder::class,
             CourseSeeder::class,
             PilotRehearsalSeeder::class,
+            PrayerTimesDatabaseSeeder::class,
         ]);
     }
 }

@@ -14,6 +14,7 @@
             <a href="{{ route('admin.daily-content.queue') }}" class="text-brandBlue-600 hover:text-brandBlue-800 text-sm font-medium">Approval queue →</a>
             <a href="{{ route('admin.daily-subscriptions.index') }}" class="text-brandBlue-600 hover:text-brandBlue-800 text-sm font-medium">Subscriptions →</a>
             <a href="{{ route('admin.research.index') }}" class="text-brandBlue-600 hover:text-brandBlue-800 text-sm font-medium">Research →</a>
+            <a href="{{ route('admin.prayer-times.islands') }}" class="text-brandBlue-600 hover:text-brandBlue-800 text-sm font-medium">Prayer times →</a>
             <a href="{{ route('admin.leads.index') }}" class="text-brandBlue-600 hover:text-brandBlue-800 text-sm font-medium">Leads →</a>
             <a href="{{ route('admin.funnel.index') }}" class="text-brandBlue-600 hover:text-brandBlue-800 text-sm font-medium">Funnel →</a>
         </div>

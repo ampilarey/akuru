@@ -140,7 +140,7 @@
                     <span style="font-size:.78rem;color:rgba(255,255,255,.8)">Current Prayer</span>
                     <span style="font-size:.85rem;font-weight:700;color:#F9C74F">
                         {{ ucfirst($currentPrayer['prayer']) }}
-                        @if($currentPrayer['time']) · {{ $currentPrayer['time']->format('H:i') }} @endif
+                        @if($currentPrayer['time']) · {{ is_object($currentPrayer['time']) ? $currentPrayer['time']->format('H:i') : $currentPrayer['time'] }} @endif
                     </span>
                 </div>
                 @endif

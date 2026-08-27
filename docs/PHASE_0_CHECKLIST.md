@@ -28,7 +28,7 @@ Create folders + a `ServiceProvider` per domain (register routes, migrations pat
 ```
 app/Domains/{Identity, People, Academics, ExamsGrades, Hifz, Admissions,
             Finance, HR, Commerce, Library, Courses, Offerings, Progress,
-            Pronunciation, Media, Notifications, Portal, Website, Settings}
+            Pronunciation, Media, Notifications, Portal, Website, Settings, PrayerTimes}
 app/Support/           (shared base classes, DTO base)
 ```
 

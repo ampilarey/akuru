@@ -5,6 +5,7 @@ namespace App\Domains\Website\Http\Controllers\PublicSite;
 use App\Domains\Courses\Actions\ComposeCourseConversionSignalsAction;
 use App\Domains\Courses\Models\Course;
 use App\Domains\Website\Actions\ComposeHomepageDailyAction;
+use App\Domains\Website\Actions\ComposeHomepagePrayerAction;
 use App\Domains\Website\Actions\ComposeHomepageTrustAction;
 use App\Domains\Website\Models\Event;
 use App\Domains\Website\Models\GalleryAlbum;
@@ -41,8 +42,9 @@ class HomeController extends Controller
             ->get();
 
         $daily = app(ComposeHomepageDailyAction::class)->execute();
+        $prayer = app(ComposeHomepagePrayerAction::class)->execute();
 
-        return view('public.home', array_merge($cached, compact('galleryPhotos', 'testimonials', 'daily')));
+        return view('public.home', array_merge($cached, compact('galleryPhotos', 'testimonials', 'daily', 'prayer')));
     }
 
     private function buildHomepageData(string $locale): array

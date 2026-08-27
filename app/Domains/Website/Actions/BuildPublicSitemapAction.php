@@ -44,6 +44,7 @@ class BuildPublicSitemapAction
             'articles' => ['0.7', 'weekly'],
             'news' => ['0.8', 'weekly'],
             'research' => ['0.7', 'weekly'],
+            'prayer-times' => ['0.6', 'daily'],
             'events' => ['0.8', 'weekly'],
             'gallery' => ['0.7', 'weekly'],
             'admissions' => ['0.9', 'weekly'],
