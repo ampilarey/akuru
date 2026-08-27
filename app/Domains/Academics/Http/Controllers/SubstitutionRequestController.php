@@ -2,10 +2,10 @@
 
 namespace App\Domains\Academics\Http\Controllers;
 
+use App\Domains\Academics\Actions\NotifySubstituteAssignedAction;
 use App\Domains\Academics\Models\ClassRoom;
 use App\Domains\Academics\Models\Period;
 use App\Domains\Academics\Models\Subject;
-use App\Domains\Academics\Actions\NotifySubstituteAssignedAction;
 use App\Domains\Academics\Models\SubstitutionAssignment;
 use App\Domains\Academics\Models\SubstitutionRequest;
 use App\Domains\Academics\Models\TeacherAbsence;
