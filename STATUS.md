@@ -471,6 +471,26 @@ migration; no Hifz behaviour change outside it.
   inline. Reader UX is server-rendered Blade page turns (public zone
   precedent). Deviations recorded: reading seconds are beacon-optional
   (no JS timer shipped); PDF page conversion deferred as above.
+- **L3 Paid Content (this PR, with L2):** money → access, rule-12/§43.5
+  strict. New Finance pieces (both generic, Finance-owned):
+  `InitiatePayablePaymentAction` (any payable morph + amount → Payment +
+  BML redirect) and the `PaymentConfirmed` EVENT, dispatched inside the
+  confirmation transaction wherever a VERIFIED provider result flips a
+  payment to confirmed (webhook + finalize paths) — never the return URL.
+  Library listens (`GrantLibraryAccessOnPaymentConfirmed`, registered in
+  LibraryServiceProvider): payable `library_item` → purchase flips
+  pending→paid once + idempotent `library_access_grants` row (§35.4; two
+  new morph aliases). `ResolveLibraryAccessAction` is now the ONE gate for
+  item page and reader: free types answer from access_type, everything
+  else from an active grant; buy box on the item page (checkout POST →
+  BML redirect; throttled), payment-return page only DISPLAYS state and
+  refreshes. `/my-library` gains purchase history; admin gets the sales
+  rollup (paid count + revenue per item). Tests fake the provider behind
+  Finance's own `PaymentProviderInterface` and walk lock → checkout →
+  pending → webhook → grant → reader opens, webhook-retry idempotency,
+  not-for-sale/already-owned/guest refusals. Course enrollment's inline
+  confirmation path is untouched — folding it onto the event is a
+  recorded follow-up, not done here.
 
 ## 6. Out of scope (unchanged)
 

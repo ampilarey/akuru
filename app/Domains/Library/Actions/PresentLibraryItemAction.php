@@ -28,12 +28,8 @@ class PresentLibraryItemAction
             return null;
         }
 
-        $access = $item->access_type?->value;
-        $canRead = match ($access) {
-            'free_public' => true,
-            'free_login' => $userId !== null,
-            default => false, // paid / course / manual — L3+
-        };
+        $gate = app(ResolveLibraryAccessAction::class)->execute($item, $userId);
+        $canRead = $gate['can_read'];
 
         // L2: reader entry point — total pages and where this reader left off.
         $totalPages = LibraryItemPage::query()->where('library_item_id', $item->id)->count();
@@ -45,11 +41,10 @@ class PresentLibraryItemAction
                 ->value('current_page');
         }
 
-        return app(ListLibraryItemsAction::class)->serialize($item) + [
-            'can_read' => $canRead,
-            'requires_login' => $access === 'free_login' && $userId === null,
-            'locked' => ! in_array($access, ['free_public', 'free_login'], true),
+        return app(ListLibraryItemsAction::class)->serialize($item) + $gate + [
             'body' => $canRead ? $item->body : null,
+            'price' => $item->price !== null ? (string) $item->price : null,
+            'currency' => $item->currency,
             'total_pages' => $totalPages,
             'continue_page' => $continuePage !== null ? (int) $continuePage : null,
         ];

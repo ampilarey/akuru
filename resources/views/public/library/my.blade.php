@@ -22,6 +22,22 @@
         @endforeach
     </div>
 
+    <h2 class="text-xl font-semibold mb-3">{{ __('public.Purchases') }}</h2>
+    <div class="mb-8 grid gap-2">
+        @if(count($library['purchases']) === 0)
+            <p class="text-gray-500">{{ __('public.No purchases yet.') }}</p>
+        @endif
+        @foreach($library['purchases'] as $row)
+            <div class="flex items-center justify-between rounded-lg border bg-white p-3">
+                <div>
+                    <span class="font-medium">{{ $row['title'] }}</span>
+                    <span class="text-sm text-gray-500"> — {{ $row['currency'] }} {{ $row['amount'] }}</span>
+                </div>
+                <span class="text-sm text-gray-600">{{ $row['status'] }}{{ $row['purchased_at'] ? ' · '.$row['purchased_at'] : '' }}</span>
+            </div>
+        @endforeach
+    </div>
+
     <h2 class="text-xl font-semibold mb-3">{{ __('public.Bookmarks') }}</h2>
     <div class="grid gap-2">
         @if(count($library['bookmarks']) === 0)

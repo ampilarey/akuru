@@ -12,7 +12,7 @@ use App\Domains\Library\Models\LibraryReadingProgress;
 class ListMyLibraryAction
 {
     /**
-     * @return array{continue: list<array<string, mixed>>, bookmarks: list<array<string, mixed>>}
+     * @return array{continue: list<array<string, mixed>>, bookmarks: list<array<string, mixed>>, purchases: list<array<string, mixed>>}
      */
     public function execute(int $userId): array
     {
@@ -52,6 +52,10 @@ class ListMyLibraryAction
             ->values()
             ->all();
 
-        return ['continue' => $continue, 'bookmarks' => $bookmarks];
+        return [
+            'continue' => $continue,
+            'bookmarks' => $bookmarks,
+            'purchases' => app(ListLibraryPurchasesAction::class)->execute($userId),
+        ];
     }
 }

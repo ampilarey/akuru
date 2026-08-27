@@ -388,4 +388,16 @@ return [
     'Bookmarks' => 'Bookmarks',
     'No bookmarks yet.' => 'No bookmarks yet.',
     'Nothing in progress — find something in the library.' => 'Nothing in progress — find something in the library.',
+
+    // Library paid content (L3) — DV/AR first pass pending native review (operator item)
+    'Buy for' => 'Buy for',
+    'Sign in to buy and read this item.' => 'Sign in to buy and read this item.',
+    'Access opens as soon as the bank confirms your payment.' => 'Access opens as soon as the bank confirms your payment.',
+    'Payment confirmed' => 'Payment confirmed',
+    'Your access is ready.' => 'Your access is ready.',
+    'Confirming your payment…' => 'Confirming your payment…',
+    'Bank confirmation can take a moment. Refresh this page shortly — access is granted as soon as the bank confirms.' => 'Bank confirmation can take a moment. Refresh this page shortly — access is granted as soon as the bank confirms.',
+    'Refresh' => 'Refresh',
+    'Purchases' => 'Purchases',
+    'No purchases yet.' => 'No purchases yet.',
 ];

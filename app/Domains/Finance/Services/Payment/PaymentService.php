@@ -6,6 +6,7 @@ use App\Domains\Courses\Models\Course;
 use App\Domains\Courses\Models\CourseEnrollment;
 use App\Domains\Finance\Actions\RecordInvoiceReceiptAction;
 use App\Domains\Finance\Contracts\PaymentProviderInterface;
+use App\Domains\Finance\Events\PaymentConfirmed;
 use App\Domains\Finance\Models\Payment;
 use App\Domains\Finance\Models\PaymentItem;
 use App\Domains\Identity\Models\User;
@@ -175,6 +176,9 @@ class PaymentService
                 $this->notifyAdminsPaymentConfirmed($payment);
                 app(RecordInvoiceReceiptAction::class)->fromConfirmedPayment($payment->fresh());
                 $this->recordPaymentCompletedFunnel($payment->fresh());
+                // L3: other domains grant access by listening, inside this
+                // transaction — a failed listener rolls back with the payment.
+                event(new PaymentConfirmed($payment->fresh()));
             } elseif (in_array($providerStatus, ['failed', 'cancelled', 'declined'], true)) {
                 $payment->update([
                     'status' => 'failed',
@@ -265,6 +269,9 @@ class PaymentService
                 $this->notifyAdminsPaymentConfirmed($payment);
                 app(RecordInvoiceReceiptAction::class)->fromConfirmedPayment($payment->fresh());
                 $this->recordPaymentCompletedFunnel($payment->fresh());
+                // L3: other domains grant access by listening, inside this
+                // transaction — a failed listener rolls back with the payment.
+                event(new PaymentConfirmed($payment->fresh()));
             } else {
                 $providerStatus = strtolower((string) ($result->status ?? ''));
                 if (in_array($providerStatus, ['failed', 'cancelled', 'declined'], true)) {

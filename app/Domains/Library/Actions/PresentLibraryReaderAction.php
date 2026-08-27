@@ -25,20 +25,14 @@ class PresentLibraryReaderAction
             return null;
         }
 
-        $access = $item->access_type?->value;
-        $canRead = match ($access) {
-            'free_public' => true,
-            'free_login' => $userId !== null,
-            default => false, // paid / course / manual — grants arrive in L3
-        };
+        $gate = app(ResolveLibraryAccessAction::class)->execute($item, $userId);
+        $canRead = $gate['can_read'];
 
-        $result = [
+        $result = $gate + [
             'id' => $item->id,
             'title' => $item->title,
             'slug' => $item->slug,
-            'access_type' => $access,
-            'can_read' => $canRead,
-            'requires_login' => $access === 'free_login' && $userId === null,
+            'access_type' => $item->access_type?->value,
         ];
         if (! $canRead) {
             return $result;
