@@ -3,14 +3,18 @@
 namespace App\Domains\Website\Http\Controllers\PublicSite;
 
 use App\Domains\Courses\Actions\ComposeCourseConversionSignalsAction;
+use App\Domains\Courses\Actions\ComposeCoursePageCtaAction;
 use App\Domains\Courses\Actions\PresentCourseLearningOutcomesAction;
 use App\Domains\Courses\Models\Course;
 use App\Domains\Courses\Models\CourseCategory;
+use App\Domains\Website\Actions\CaptureCourseLeadAction;
 use App\Domains\Website\Actions\JoinCourseWaitlistAction;
 use App\Domains\Website\Actions\ListCoursePageTestimonialsAction;
+use App\Domains\Website\Enums\LeadSource;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 
 class CourseController extends Controller
 {
@@ -139,8 +143,35 @@ class CourseController extends Controller
 
         $outcomes = app(PresentCourseLearningOutcomesAction::class)->execute((int) $course->id, app()->getLocale());
         $testimonials = app(ListCoursePageTestimonialsAction::class)->execute((int) $course->id);
+        $cta = app(ComposeCoursePageCtaAction::class)->execute((int) $course->id);
 
-        return view('public.courses.show', compact('course', 'relatedCourses', 'featuredCourses', 'recentCourses', 'outcomes', 'testimonials'));
+        return view('public.courses.show', compact('course', 'relatedCourses', 'featuredCourses', 'recentCourses', 'outcomes', 'testimonials', 'cta'));
+    }
+
+    public function syllabus(Request $request, Course $course): RedirectResponse
+    {
+        if ($request->filled('website')) {
+            return back()->with('success', 'Syllabus is on its way.');
+        }
+
+        $cta = app(ComposeCoursePageCtaAction::class)->execute((int) $course->id);
+        if (($cta['syllabus']['url'] ?? null) === null) {
+            throw ValidationException::withMessages([
+                'course' => 'A syllabus is not available for this course.',
+            ]);
+        }
+
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'mobile' => ['required', 'string', 'max:30'],
+            'email' => ['nullable', 'email', 'max:255'],
+        ]);
+
+        app(CaptureCourseLeadAction::class)->execute((int) $course->id, LeadSource::Syllabus, $data);
+
+        return back()
+            ->with('success', 'Syllabus is ready — download the PDF below.')
+            ->with('syllabus_url', $cta['syllabus']['url']);
     }
 
     public function waitlist(Request $request, Course $course): RedirectResponse

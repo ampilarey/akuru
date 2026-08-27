@@ -3,6 +3,7 @@
 namespace App\Domains\Website\Http\Controllers\Admin\PublicSite;
 
 use App\Domains\Courses\Actions\SaveCourseLearningOutcomesAction;
+use App\Domains\Courses\Actions\SaveCoursePublicCtaAction;
 use App\Domains\Courses\Models\Course;
 use App\Domains\Courses\Models\CourseCategory;
 use App\Http\Controllers\Controller;
@@ -38,6 +39,8 @@ class CourseController extends Controller
             'fee' => 'nullable|numeric|min:0',
             'status' => 'required|in:open,closed,upcoming',
             'seats' => 'nullable|integer|min:1',
+            'whatsapp_number' => 'nullable|string|max:32',
+            'syllabus_media_file_id' => 'nullable|integer|exists:media_files,id',
         ]);
 
         $course = Course::create($validated);
@@ -46,6 +49,11 @@ class CourseController extends Controller
             'dv' => $request->input('learning_outcomes_dv', ''),
             'ar' => $request->input('learning_outcomes_ar', ''),
         ]);
+        app(SaveCoursePublicCtaAction::class)->execute(
+            (int) $course->id,
+            $request->input('whatsapp_number'),
+            $request->input('syllabus_media_file_id'),
+        );
 
         return redirect()->route('admin.courses.index')
             ->with('success', 'Course created successfully.');
@@ -72,6 +80,8 @@ class CourseController extends Controller
             'fee' => 'nullable|numeric|min:0',
             'status' => 'required|in:open,closed,upcoming',
             'seats' => 'nullable|integer|min:1',
+            'whatsapp_number' => 'nullable|string|max:32',
+            'syllabus_media_file_id' => 'nullable|integer|exists:media_files,id',
         ]);
 
         $course->update($validated);
@@ -80,6 +90,11 @@ class CourseController extends Controller
             'dv' => $request->input('learning_outcomes_dv', ''),
             'ar' => $request->input('learning_outcomes_ar', ''),
         ]);
+        app(SaveCoursePublicCtaAction::class)->execute(
+            (int) $course->id,
+            $request->input('whatsapp_number'),
+            $request->input('syllabus_media_file_id'),
+        );
 
         return redirect()->route('admin.courses.index')
             ->with('success', 'Course updated successfully.');

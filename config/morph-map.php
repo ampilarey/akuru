@@ -92,6 +92,7 @@ return [
     'invoice_generation_log' => \App\Domains\Finance\Models\InvoiceGenerationLog::class,
     'invoice_line' => \App\Domains\Finance\Models\InvoiceLine::class,
     'issued_certificate' => \App\Domains\Courses\Models\IssuedCertificate::class,
+    'lead' => \App\Domains\Website\Models\Lead::class,
     'lesson' => \App\Domains\Courses\Models\Lesson::class,
     'lesson_glossary_item' => \App\Domains\Courses\Models\LessonGlossaryItem::class,
     'lesson_revision' => \App\Domains\Courses\Models\LessonRevision::class,

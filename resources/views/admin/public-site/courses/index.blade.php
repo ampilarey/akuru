@@ -8,6 +8,9 @@
             <a href="{{ route('admin.pages.index') }}" class="text-brandBlue-600 hover:text-brandBlue-800 text-sm font-medium">
                 Manage Pages →
             </a>
+            <a href="{{ route('admin.leads.index') }}" class="text-brandBlue-600 hover:text-brandBlue-800 text-sm font-medium">
+                Leads →
+            </a>
         </div>
         <a href="{{ route('admin.courses.create') }}" class="btn-primary">
             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">

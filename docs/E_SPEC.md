@@ -19,19 +19,23 @@ Never invent scarcity. Pest covers null / limited / exact / full / expired / ear
 
 Homepage hero reads Settings group `trust_settings` (merged #113).
 
-### W1.3 — Outcome-led course pages (this slice)
+### W1.3 — Outcome-led course pages
 
-Public course detail:
+Merged #114.
 
-- **`courses.learning_outcomes`** JSON `{en,dv,ar}` string lists. Rendered as “What you'll be able to do” **above** the description. Empty → omitted. Admin field on existing Blade `admin.courses` create/edit (one outcome per line per locale).
-- **Per-course testimonials:** nullable `testimonials.course_id`. Course page shows its own public quotes first; if none, falls back to general (`course_id` null). Homepage only shows general quotes.
-- **Instructor qualifications:** existing `instructors.qualification` / `specialization` shown under a Qualifications label (gold-accent card). Not invented when blank.
+### W1.4 — Mobile CTA + lead capture (this slice)
 
-New files: Courses Actions for present/save outcomes; Website `ListCoursePageTestimonialsAction`. Engine subject-ignorant. Hifz untouched.
+- Sticky mobile course bar: price + **Register** + WhatsApp icon (existing bar; not a second bar).
+- **Ask on WhatsApp** `https://wa.me/<digits>?text=<course title>`. Per-course `courses.whatsapp_number`, else Settings `conversion.whatsapp_number`, else existing contact `viber`. Blank at every layer omits the button.
+- **Get full syllabus** mini-form (name + mobile, email optional) when `courses.syllabus_media_file_id` points at a **public** `media_files` row. Stores `leads` (`source=syllabus`) then flashes the PDF URL.
+- Waiting-list posts also dual-write `leads` (`source=waiting_list`).
+- Admin Blade listing `/admin/public-site/leads` + CSV. Website-owned until Phase 0 Admissions move.
 
-### W1.4–W1.6 (next)
+Engine subject-ignorant. Hifz untouched. New Website files do not import Courses Models.
 
-Sticky WhatsApp CTA + `leads` table, JSON-LD/OG, funnel events.
+### W1.5–W1.6 (next)
+
+JSON-LD/OG/hreflang/sitemap, funnel events.
 
 ## E2 — W2 daily content (next phase)
 

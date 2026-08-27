@@ -40,6 +40,8 @@ class Course extends Model
         'course_type',
         'created_by',
         'seats',
+        'whatsapp_number',
+        'syllabus_media_file_id',
         'meta',
         'duration_weeks',
         'prerequisites',

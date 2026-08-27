@@ -16,6 +16,7 @@ class PublicRouteNamesTest extends TestCase
             'public.courses.index',
             'public.courses.show',
             'public.courses.waitlist',
+            'public.courses.syllabus',
             'public.contact.create',
             'public.contact.store',
             'public.news.index',
