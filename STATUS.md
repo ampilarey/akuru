@@ -1,6 +1,6 @@
 # Status
 
-**Verified against:** `main` after PRs **#86–#108**.  
+**Verified against:** `main` after PRs **#86–#109**.  
 **USABLE column** cites `docs/PILOT_REHEARSAL.md` (Rounds 1–3) and staging notes in the [archive](docs/STATUS_ARCHIVE.md). It is **not** inferred from code or tests.  
 **History:** per-slice append log (including Round-2 fixes 1–7) → [`docs/STATUS_ARCHIVE.md`](docs/STATUS_ARCHIVE.md).  
 **Defects:** [`docs/KNOWN_ISSUES.md`](docs/KNOWN_ISSUES.md).
@@ -13,7 +13,7 @@ What **runs for a person** is still narrower than the code. Staging `test.akuru.
 
 Local `migrate:fresh --seed` now includes `PilotRehearsalSeeder` (#87). Round 3 Chrome (stacked #86–#92, now on `main`) walked: teacher **Today** landing, fill grid **number + DOB**, **Parent Dashboard** + **Parent notified** column, absence-note approve, missing-weights **banner** + honest **HTML** (not PDF) labels, invoice **sent** rows on the Pilot year. SMS binds `LogSmsSender` unless `APP_ENV=production` **and** `SMS_LIVE` is an explicit true (#86).
 
-Still blocking a real teacher: staging access, AppShell nav IA (**proposed**, `docs/APPSHELL_NAV_IA.md`, awaiting owner decision — wrap still live), parent notified still **—** on excused rows. People → Students can create a child (#95). Weights can persist a year scheme (#96). Documents are HTML by decision (ADR-012 / #97). Roster picker flags PIL-01 vs blank as one identity (#99). `/academics/gradebook` redirects to `/exams/gradebook` (#100). Class teacher can be set on an existing class; year seeders `firstOrCreate` by name. Course certificates (C1 #106), completion/performance reports (C2 #107), and teacher review reports (C3 #108) are on `main`. Composed portal home (D1) is in this PR. Most catalog/HR/course-engine slices remain **UNVERIFIED**.
+Still blocking a real teacher: staging access, AppShell nav IA (**proposed**, `docs/APPSHELL_NAV_IA.md`, awaiting owner decision — wrap still live), parent notified still **—** on excused rows. People → Students can create a child (#95). Weights can persist a year scheme (#96). Documents are HTML by decision (ADR-012 / #97). Roster picker flags PIL-01 vs blank as one identity (#99). `/academics/gradebook` redirects to `/exams/gradebook` (#100). Class teacher can be set on an existing class; year seeders `firstOrCreate` by name. Course certificates (C1 #106), completion/performance reports (C2 #107), teacher review reports (C3 #108), and composed portal home (D1 #109) are on `main`. Parent-teacher meeting slots (D2) are in this PR. Most catalog/HR/course-engine slices remain **UNVERIFIED**.
 
 Hifz untouched until Phase F. Deploy 3 not executed. Track B leftovers B1–B4 are on `main` (#102–#105).
 
@@ -53,7 +53,8 @@ Legend — **CODE:** implementation in repo (models/migrations/actions/routes/pa
 | 3 C1 course certificates | Yes. `certificate_templates` + `issued_certificates`; admin builder; issue; public QR verify. | `CourseCertificateTest`. | Walked **#106**: template → issued AKU-2026-C9CAKP to Fatima Yoosuf → guest `/verify/certificates/{ulid}` face only; CSV. | Unlocalized verify URL. Morph aliases. HTML, not PDF. |
 | 3 C2 completion + performance reports | Yes. Staff `/catalog/reports/completions`; portal `/portal/performance`. | `CourseCompletionReportTest`. | Walked **#107**: admin roster 12 rows (Unification representative course); parent Hassan sees Fatima Yoosuf performance card; CSV. | Course-only enrollments included; offering summaries empty when `course_offering_id` is null. |
 | 3 C3 teacher review reports | Yes. `/catalog/reviews` pending + weakness + revision; CSV. | `TeacherReviewReportTest`; existing `TeacherReviewTest`. | Walked **#108**: pending Mariyam Ali “Write a sentence” scored 8/10; weakness/revision for “Choose meaning” 0/10 + retry. Live walk found `passing_score` 50 on a 2-point quiz (legacy percent) falsely marking 2/2 as weak — treated as percent when passing > max. | No `course_type` branch. Threshold default 50% when no passing score. |
-| D1 composed parent/student home | Yes. `/portal/home` + CSV; parent/student `/dashboard` redirect. Reads Academics/ExamsGrades/Finance/Courses Actions and `StudentHifzSummaryReader`. | `PortalHomeTest`; `RoleLandingTest`. | Walked this PR: parent Hassan `/en/dashboard` → `/en/portal/home` for Fatima Yoosuf (attendance 0% / 2 absent / 1 excused, Term 1 Arabic Final 70/100, three sent invoices, empty course + Hifz on seed). Student Mariyam Ali same page with course row. CSV `portal-home.csv`. | Portal new files import no other-domain Models and no `App\Domains\Hifz\`. AppShell Home link (wrap 81). Seed has no Hifz rows; Pest composes Hifz via a program created in the test. |
+| D1 composed parent/student home | Yes. `/portal/home` + CSV; parent/student `/dashboard` redirect. Reads Academics/ExamsGrades/Finance/Courses Actions and `StudentHifzSummaryReader`. | `PortalHomeTest`; `RoleLandingTest`. | Walked **#109**: parent Hassan `/en/dashboard` → `/en/portal/home` for Fatima Yoosuf (attendance 0% / 2 absent / 1 excused, Term 1 Arabic Final 70/100, three sent invoices, empty course + Hifz on seed). Student Mariyam Ali same page with course row. CSV `portal-home.csv`. | Portal new files import no other-domain Models and no `App\Domains\Hifz\`. AppShell Home link. Seed has no Hifz rows; Pest composes Hifz via a program created in the test. |
+| D2 parent-teacher meeting slots | Yes. `meeting_slots` + `meeting_bookings` (year-scoped); admin generate/publish `/academics/meetings`; portal `/portal/meetings` book/cancel + CSV. | `MeetingSlotTest`. | Walked this PR: admin generates published slots → parent Hassan books Fatima → CSV. | Morph aliases `meeting_slot` / `meeting_booking`. Permission `meetings.manage`. Portal files import no Models / no Hifz. AppShell Meetings (wrap 82). |
 | S3.5 standards | Yes. | `StandardsTest`. | UNVERIFIED. | |
 | S3.6 report cards | Yes. Templates, queued HTML via `HtmlDocumentRenderer`. | `ReportCardsTest` Content-Type HTML; ADR-012 HTML decision. | Walked **honest HTML** (R3 S5) plus ADR-012 citation (#97). Queue worker required. | HTML is the supported output (ADR-012 amended). |
 | S3.7 awards / docs | Yes. HTML certificates/ID cards. | `AwardsDocumentsTest`. | UNVERIFIED. | Also HTML, not PDF (`AwardController`). |
@@ -127,7 +128,7 @@ Fixed enough that the old overstatement no longer applies: SMS live-bind, `Datab
 
 ## 6. Out of scope (unchanged)
 
-Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1 composed portal home is this PR.
+Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1 composed portal home **#109**. D2 meeting slots is this PR.
 
 **Operator:** apply branch protection (`docs/BRANCH_PROTECTION.md`). Confirm or reject `docs/migrations/s11-deploy-3-cleanup-proposal.md`.
 

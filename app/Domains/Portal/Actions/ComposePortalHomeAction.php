@@ -62,6 +62,7 @@ class ComposePortalHomeAction
                 ['key' => 'courses', 'label' => 'Course progress', 'href' => '/portal/performance'],
                 ['key' => 'hifz', 'label' => 'Hifz', 'href' => null],
                 ['key' => 'absence_notes', 'label' => 'Absence notes', 'href' => '/portal/absence-notes'],
+                ['key' => 'meetings', 'label' => 'Meetings', 'href' => '/portal/meetings'],
             ],
         ];
     }

@@ -10,7 +10,7 @@ Re-checked 2026-08-26 against merged `main` and Round 3 (`docs/PILOT_REHEARSAL.m
 ## Top five (remaining)
 
 1. **Staging staff login** — seed passwords 302 back to login; no SSH from this environment. Blocks any judgement that `test.akuru.edu.mv` is a school.
-2. **AppShell nav IA** — **proposed, awaiting decision.** 81 wrapping `<Link href=` in `AppShell.jsx` (74 at the IA proposal, plus Glossary, admin Events, portal Event signup, Certificates, Completions, Performance, Home). C3 extends `/catalog/reviews` (already linked). D1 adds Home. Proposal in `docs/APPSHELL_NAV_IA.md` (PR #98): grouped by role and frequency. **Do not implement** until Accept / Accept with edits / Reject. The wrap is still live.
+2. **AppShell nav IA** — **proposed, awaiting decision.** 82 wrapping `<Link href=` in `AppShell.jsx` (74 at the IA proposal, plus Glossary, admin Events, portal Event signup, Certificates, Completions, Performance, Home, Meetings). C3 extends `/catalog/reviews` (already linked). D1 adds Home. D2 adds Meetings. Proposal in `docs/APPSHELL_NAV_IA.md` (PR #98): grouped by role and frequency. **Do not implement** until Accept / Accept with edits / Reject. The wrap is still live.
 3. **Parent notified column shows — on excused rows** — column exists (#86); SMS body is not in the portal.
 4. **Shared Add-term form on every year card** — one `termForm` instance; typing on Extra fills other cards.
 5. **Exam schedule form defaults wander** — Extra / Term 2 / Arabic Beginners vs Pilot Grade 5 A (Round 2 step 5).
