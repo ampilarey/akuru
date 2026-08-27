@@ -1,5 +1,6 @@
 <?php
 
+use App\Domains\Commerce\Http\Controllers\WalletController;
 use App\Domains\Library\Http\Controllers\LibraryCheckoutController;
 use App\Domains\Library\Http\Controllers\LibraryReaderController;
 use App\Domains\Library\Http\Controllers\PublicLibraryController;
@@ -54,6 +55,8 @@ Route::get('articles/{post:slug}', [\App\Domains\Website\Http\Controllers\Public
 Route::get('library/export', [PublicLibraryController::class, 'export'])->name('public.library.export');
 Route::get('library', [PublicLibraryController::class, 'index'])->name('public.library.index');
 Route::get('my-library', [LibraryReaderController::class, 'myLibrary'])->name('public.library.my');
+Route::get('my-wallet', [WalletController::class, 'show'])->name('public.wallet');
+Route::post('my-wallet/redeem', [WalletController::class, 'redeem'])->name('public.wallet.redeem')->middleware('throttle:10,1');
 Route::get('library/{slug}/read', [LibraryReaderController::class, 'read'])->name('public.library.read');
 Route::post('library/{slug}/checkout', [LibraryCheckoutController::class, 'checkout'])->name('public.library.checkout')->middleware('throttle:10,1');
 Route::get('library/{slug}/payment-return', [LibraryCheckoutController::class, 'paymentReturn'])->name('public.library.payment-return');

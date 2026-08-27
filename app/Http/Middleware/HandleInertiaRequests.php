@@ -52,6 +52,7 @@ class HandleInertiaRequests extends Middleware
             'flash' => [
                 'success' => $request->session()->get('success'),
                 'error' => $request->session()->get('error'),
+                'gift_card_code' => $request->session()->get('gift_card_code'),
             ],
             'i18n' => [
                 'learn' => trans('learn'),

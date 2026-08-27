@@ -59,11 +59,19 @@
             </div>
         @elseif($item['locked'] && $item['access_type'] === 'paid' && $item['price'])
             <div class="rounded-lg border bg-brandBeige-50 p-6 text-center">
-                <form method="POST" action="{{ route('public.library.checkout', $item['slug']) }}">
+                <form method="POST" action="{{ route('public.library.checkout', $item['slug']) }}" class="inline-flex flex-wrap items-center justify-center gap-2">
                     @csrf
+                    <input type="text" name="discount_code" class="form-input" placeholder="{{ __('public.Discount code') }}">
                     <button type="submit" class="btn-primary">{{ __('public.Buy for') }} {{ $item['currency'] }} {{ $item['price'] }}</button>
+                    <button type="submit" name="pay_with_wallet" value="1" class="btn-secondary">{{ __('public.Pay with wallet') }}</button>
                 </form>
                 <p class="mt-2 text-sm text-gray-500">{{ __('public.Access opens as soon as the bank confirms your payment.') }}</p>
+                @error('discount_code')
+                    <p class="mt-2 text-sm text-red-700">{{ $message }}</p>
+                @enderror
+                @error('amount')
+                    <p class="mt-2 text-sm text-red-700">{{ $message }}</p>
+                @enderror
             </div>
         @elseif($item['locked'])
             <div class="rounded-lg border bg-brandBeige-50 p-6 text-center">

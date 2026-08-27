@@ -17,13 +17,24 @@ class LibraryCheckoutController extends Controller
     public function checkout(Request $request, string $slug)
     {
         abort_unless($request->user() !== null, 403);
+        $data = $request->validate([
+            'discount_code' => 'nullable|string|max:40',
+            'pay_with_wallet' => 'nullable|boolean',
+        ]);
 
         $result = app(StartLibraryCheckoutAction::class)->execute(
             $slug,
             (int) $request->user()->id,
             route('public.library.payment-return', $slug),
+            $data['discount_code'] ?? null,
+            (bool) ($data['pay_with_wallet'] ?? false),
         );
 
+        if ($result['paid_with_wallet']) {
+            return redirect()
+                ->route('public.library.read', ['slug' => $slug])
+                ->with('success', 'Purchase complete — enjoy reading.');
+        }
         if ($result['redirect_url'] !== null) {
             return redirect()->away($result['redirect_url']);
         }

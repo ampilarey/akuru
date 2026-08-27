@@ -491,6 +491,34 @@ migration; no Hifz behaviour change outside it.
   not-for-sale/already-owned/guest refusals. Course enrollment's inline
   confirmation path is untouched — folding it onto the event is a
   recorded follow-up, not done here.
+- **L4 Commerce (this PR):** platform-wide `Domains/Commerce` (Phase-0
+  skeleton provider now real), MVP subset of §39.4 — campaigns, coupons,
+  bundles stay post-MVP (§38). **Rule 12 enforced in code and CI**:
+  `wallet_transactions`/`gift_card_transactions` are APPEND-ONLY (no
+  updated_at, no update path; corrections are reversal rows carrying
+  balance_before/after), credit/debit go through the only two actions
+  (transaction + lockForUpdate, loud overdraft refusal); the **rule-6 arch
+  test activates** — its Phase-0 `todo` is now a real scan (no
+  Commerce\Models references and no DB::table on the money tables outside
+  Commerce). Gift cards: issued by admin, SHA-256 **hash only** stored
+  (§43.19), plain code flashed exactly once; redemption moves the full
+  balance onto the wallet (gift card = payment method, §43.13; partial
+  redemption is a recorded deferral). Discount codes: percentage/fixed
+  with cap/window/minimum/global/per-user limits; redemptions are
+  pending→confirmed (webhook or wallet debit) or released; **discounts
+  never apply to gift cards** — trivially held since gift cards aren't
+  purchasable online yet (admin-issued only; recorded). Library checkout
+  integration: optional code reduces the BML amount and the webhook
+  confirms the redemption with the payment; **wallet pays in full** →
+  immediate paid purchase + grant, no BML round-trip; a fully discounted
+  order completes immediately (source `coupon`). Surfaces: `/my-wallet`
+  (balance, ledger, redeem form), buy box gains code field + wallet
+  button, `/admin/commerce` (issue gift card with one-time code flash,
+  manual wallet credit, discount codes). `commerce.manage` seeded.
+  **Spec Phase 4 note:** course payments can now adopt
+  `discount_redemptions.purchase_type` + the wallet actions — the L4→
+  Phase 4 handoff ROADMAP §9 promised. DV/AR strings ride the operator
+  item.
 
 ## 6. Out of scope (unchanged)
 

@@ -21,6 +21,7 @@ use App\Domains\Academics\Http\Controllers\TeacherRegisterController;
 use App\Domains\Academics\Http\Controllers\TimetableBuilderController;
 use App\Domains\Academics\Legacy\Http\Controllers\ELearningController;
 use App\Domains\Admissions\Http\Controllers\AdminEnrollmentController;
+use App\Domains\Commerce\Http\Controllers\AdminCommerceController;
 use App\Domains\Courses\Components\Arabic\Http\Controllers\CatalogArabicReferenceController;
 use App\Domains\Courses\Components\Arabic\Http\Controllers\CatalogArabicReportController;
 use App\Domains\Courses\Components\Arabic\Http\Controllers\LearnArabicReportController;
@@ -392,6 +393,13 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::post('research', [AdminResearchPostController::class, 'store'])->name('admin.research.store');
         Route::get('research/{post}/edit', [AdminResearchPostController::class, 'edit'])->name('admin.research.edit')->whereNumber('post');
         Route::put('research/{post}', [AdminResearchPostController::class, 'update'])->name('admin.research.update')->whereNumber('post');
+    });
+
+    Route::prefix('admin/commerce')->middleware(['role:super_admin|admin', 'can:commerce.manage'])->group(function () {
+        Route::get('/', [AdminCommerceController::class, 'index'])->name('admin.commerce.index');
+        Route::post('gift-cards', [AdminCommerceController::class, 'issueGiftCard'])->name('admin.commerce.gift-cards.store');
+        Route::post('wallet-credits', [AdminCommerceController::class, 'creditWallet'])->name('admin.commerce.wallet-credits.store');
+        Route::post('discount-codes', [AdminCommerceController::class, 'storeDiscount'])->name('admin.commerce.discount-codes.store');
     });
 
     Route::prefix('admin/library')->middleware(['role:super_admin|admin|headmaster', 'can:library.manage'])->group(function () {
