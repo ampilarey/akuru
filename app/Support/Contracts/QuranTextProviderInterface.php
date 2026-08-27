@@ -25,4 +25,14 @@ interface QuranTextProviderInterface
      * @return array<string, mixed>|null
      */
     public function ayahWithMeanings(int $surahNumber, int $ayahNumber, ?string $sourceName = null, ?int $mushafId = null): ?array;
+
+    /**
+     * @return array<string, mixed>|null
+     */
+    public function findAyahById(int $quranAyahId): ?array;
+
+    /**
+     * @return array<string, mixed>|null
+     */
+    public function ayahWithMeaningsById(int $quranAyahId, ?string $sourceName = null): ?array;
 }

@@ -57,6 +57,7 @@ return [
     'course_enrollment' => \App\Domains\Courses\Models\CourseEnrollment::class,
     'course_plan' => \App\Domains\Academics\Models\CoursePlan::class,
     'dashboard_analytics' => \App\Domains\Settings\Models\DashboardAnalytics::class,
+    'daily_content' => \App\Domains\Website\Models\DailyContent::class,
     'device' => \App\Domains\Notifications\Models\Device::class,
     'document' => \App\Domains\Media\Models\Document::class,
     'emergency_contact' => \App\Domains\People\Models\EmergencyContact::class,

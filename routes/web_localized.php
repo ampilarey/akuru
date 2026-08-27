@@ -120,6 +120,7 @@ use App\Domains\Portal\Http\Controllers\StaffOverviewController;
 use App\Domains\Settings\Http\Controllers\Admin\SettingsController as AdminSettingsController;
 use App\Domains\Settings\Http\Controllers\AnalyticsController;
 use App\Domains\Website\Http\Controllers\Admin\PublicSite\CourseController as AdminCourseController;
+use App\Domains\Website\Http\Controllers\Admin\PublicSite\DailyContentController as AdminDailyContentController;
 use App\Domains\Website\Http\Controllers\Admin\PublicSite\FunnelController as AdminFunnelController;
 use App\Domains\Website\Http\Controllers\Admin\PublicSite\LeadController as AdminLeadController;
 use App\Domains\Website\Http\Controllers\Admin\PublicSite\PageController as AdminPageController;
@@ -346,6 +347,16 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::get('leads', [AdminLeadController::class, 'index'])->name('admin.leads.index');
         Route::get('funnel/export', [AdminFunnelController::class, 'export'])->name('admin.funnel.export');
         Route::get('funnel', [AdminFunnelController::class, 'index'])->name('admin.funnel.index');
+        Route::get('daily-content/export', [AdminDailyContentController::class, 'export'])->name('admin.daily-content.export');
+        Route::get('daily-content/queue', [AdminDailyContentController::class, 'queue'])->name('admin.daily-content.queue');
+        Route::get('daily-content/ayah-preview', [AdminDailyContentController::class, 'ayahPreview'])->name('admin.daily-content.ayah-preview');
+        Route::post('daily-content/batch', [AdminDailyContentController::class, 'batch'])->name('admin.daily-content.batch');
+        Route::get('daily-content/create', [AdminDailyContentController::class, 'create'])->name('admin.daily-content.create');
+        Route::get('daily-content', [AdminDailyContentController::class, 'index'])->name('admin.daily-content.index');
+        Route::post('daily-content', [AdminDailyContentController::class, 'store'])->name('admin.daily-content.store');
+        Route::get('daily-content/{dailyContent}/edit', [AdminDailyContentController::class, 'edit'])->name('admin.daily-content.edit')->whereNumber('dailyContent');
+        Route::put('daily-content/{dailyContent}', [AdminDailyContentController::class, 'update'])->name('admin.daily-content.update')->whereNumber('dailyContent');
+        Route::post('daily-content/{dailyContent}/approve', [AdminDailyContentController::class, 'approve'])->name('admin.daily-content.approve')->whereNumber('dailyContent');
     });
 
     Route::prefix('people')->middleware(['role:super_admin|admin|headmaster|supervisor'])->group(function () {
