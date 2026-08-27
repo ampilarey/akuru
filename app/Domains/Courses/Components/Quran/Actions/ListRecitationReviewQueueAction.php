@@ -5,6 +5,7 @@ namespace App\Domains\Courses\Components\Quran\Actions;
 use App\Domains\Courses\Components\Quran\Models\QuranRecitationSubmission;
 use App\Domains\People\Actions\ListStudentsByIdsAction;
 use App\Support\Contracts\QuranReferenceReader;
+use Illuminate\Support\Facades\DB;
 
 /**
  * F4 teacher surface (§52.10 non-AI subset): the review queue, oldest first.
@@ -28,6 +29,11 @@ class ListRecitationReviewQueueAction
             ->execute($rows->pluck('student_id')->all())
             ->keyBy('id');
         $surahs = collect(app(QuranReferenceReader::class)->listSurahs())->keyBy('id');
+        // Qur'an B (§52.3): the Pronunciation opinion, table-level read only.
+        $predictions = DB::table('ai_predictions')
+            ->whereIn('quran_recitation_submission_id', $rows->pluck('id'))
+            ->get()
+            ->keyBy('quran_recitation_submission_id');
 
         return [
             'rows' => $rows
@@ -45,6 +51,13 @@ class ListRecitationReviewQueueAction
                     'reviewed_at' => $row->reviewed_at?->toDateTimeString(),
                     'review_note' => $row->review_note,
                     'mistake_count' => (int) $row->mistake_marks_count,
+                    'ai' => ($prediction = $predictions->get($row->id)) ? [
+                        'letter' => $prediction->predicted_letter_label,
+                        'haraka' => $prediction->predicted_haraka_label,
+                        'letter_confidence' => $prediction->letter_confidence !== null ? (float) $prediction->letter_confidence : null,
+                        'haraka_confidence' => $prediction->haraka_confidence !== null ? (float) $prediction->haraka_confidence : null,
+                        'final_status' => $prediction->final_status,
+                    ] : null,
                 ])
                 ->values()
                 ->all(),

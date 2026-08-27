@@ -745,6 +745,23 @@ migration; no Hifz behaviour change outside it.
   same service, second consumer). **Operator:** the flag stays OFF until
   a model is trained from real approved samples and §51.17 consent
   handling is confirmed (privacy backlog item).
+- **Qur'an B (this PR):** §52.3 — the SAME Pronunciation service gains
+  its second consumer (one model family, two consumers).
+  `letter_haraka_practice` assignments already carry
+  expected_letter/haraka (F5P2); when the flag is on,
+  `SubmitRecitationAction` hands the submission's audio to
+  `RecordExternalAudioPredictionAction` (Pronunciation owns its models —
+  consumers call the ACTION), predictions link to the submission
+  (`ai_predictions.quran_recitation_submission_id`, additive), and the
+  teacher recitation queue shows the AI opinion beside each submission
+  (mismatch/low-confidence visibly flagged). Shared classification core
+  extracted (`PredictIsolatedSoundAction`) so Arabic attempts and Qur'an
+  drills route through identical confidence rules. Flag off → zero
+  predictions and the F3/F4 human flow byte-identical (rule 8; the Hifz
+  program is fully functional without AI, per ROADMAP's Qur'an B
+  precondition). Deferred (recorded): passage-level recitation
+  assistance (future model family), auto-marking mistake marks from
+  predictions (teacher stays the only mistake writer).
 
 ## 6. Out of scope (unchanged)
 
