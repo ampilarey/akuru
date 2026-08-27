@@ -38,7 +38,7 @@ class ComposeHomepageTrustAction
         $logoIds = $settings->execute('trust.partner_logo_ids', []);
         if (is_string($logoIds) && $logoIds !== '') {
             $decoded = json_decode($logoIds, true);
-            $logoIds = is_array($decoded) ? $decoded : preg_split('/\s*,\s*/', $logoIds) ?: [];
+            $logoIds = is_array($decoded) ? $decoded : (preg_split('/\s*,\s*/', $logoIds) ?: []);
         }
         if (! is_array($logoIds)) {
             $logoIds = [];
