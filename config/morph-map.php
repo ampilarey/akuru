@@ -51,6 +51,7 @@ return [
     'attendance_record' => \App\Domains\Offerings\Models\AttendanceRecord::class,
     'course_offering' => \App\Domains\Offerings\Models\CourseOffering::class,
     'course_offering_session' => \App\Domains\Offerings\Models\CourseOfferingSession::class,
+    'offering_halaqa_enrollment_link' => \App\Domains\Offerings\Models\OfferingHalaqaEnrollmentLink::class,
     'offering_halaqa_link' => \App\Domains\Offerings\Models\OfferingHalaqaLink::class,
     'offering_halaqa_session_link' => \App\Domains\Offerings\Models\OfferingHalaqaSessionLink::class,
     'course_subject' => \App\Domains\Courses\Models\CourseSubject::class,

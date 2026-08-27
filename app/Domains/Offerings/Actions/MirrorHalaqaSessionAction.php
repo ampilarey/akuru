@@ -9,9 +9,13 @@ use App\Support\Contracts\HalaqaReferenceReader;
 class MirrorHalaqaSessionAction
 {
     /**
+     * $requireDualWrite=false is the F2 structure backfill's path: the one-time
+     * migration mirrors every linked program's sessions, while ongoing mirroring
+     * (listeners, verify-mirror heal) keeps honouring the dual_write flag.
+     *
      * @return array{created: bool, session_id: int|null}
      */
-    public function execute(int $hifzSessionId, ?int $offeringId = null): array
+    public function execute(int $hifzSessionId, ?int $offeringId = null, bool $requireDualWrite = true): array
     {
         $hifzSession = app(HalaqaReferenceReader::class)->findSession($hifzSessionId);
         if ($hifzSession === null) {
@@ -20,7 +24,7 @@ class MirrorHalaqaSessionAction
 
         $link = OfferingHalaqaLink::query()
             ->where('hifz_program_id', $hifzSession['hifz_program_id'])
-            ->where('dual_write', true)
+            ->when($requireDualWrite, fn ($query) => $query->where('dual_write', true))
             ->when($offeringId, fn ($query) => $query->where('course_offering_id', $offeringId))
             ->first();
         if ($link === null) {
@@ -41,6 +45,11 @@ class MirrorHalaqaSessionAction
             'session_type' => 'face_to_face',
             'starts_at' => $starts,
             'ends_at' => $this->endsAt($hifzSession, $starts),
+            // Mirrored halaqa sessions are attendance history, never completion
+            // requirements — hifz completion is milestone-driven (F2). Leaving
+            // the default true would let one attended session mark a hifz
+            // enrollment completed through the session-progress path.
+            'is_required' => false,
         ]);
 
         app(SaveOfferingHalaqaSessionLinkAction::class)->execute([
