@@ -20,6 +20,7 @@ return [
     'ai_model_version' => \App\Domains\Pronunciation\Models\AiModelVersion::class,
     'ai_model_version_event' => \App\Domains\Pronunciation\Models\AiModelVersionEvent::class,
     'ai_prediction' => \App\Domains\Pronunciation\Models\AiPrediction::class,
+    'translation_override' => \App\Domains\Settings\Models\TranslationOverride::class,
     'training_sample' => \App\Domains\Pronunciation\Models\TrainingSample::class,
     'quran_hifz_assignment' => \App\Domains\Courses\Components\Quran\Models\QuranHifzAssignment::class,
     'quran_memorization_progress' => \App\Domains\Courses\Components\Quran\Models\QuranMemorizationProgress::class,

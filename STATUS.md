@@ -818,6 +818,24 @@ migration; no Hifz behaviour change outside it.
   composed for future non-hero surfaces, but it no longer renders or
   counts toward has_signals.
 
+## 5n. Dhivehi translation overrides (T1)
+
+- **T1 (this PR):** the lang/dv files carry machine-made strings a
+  native speaker needs to fix without deploys. `translation_overrides`
+  (locale+group+key unique, updated_by) + `DatabaseOverrideLoader`
+  (extends FileLoader; DB override wins, file is fallback; cached per
+  locale+group, cache forgotten on save; serves file-only before the
+  table exists so migrate/console never break). Admin editor
+  `/admin/translations` (`translations.manage`): every EN reference key
+  with file-dv and a correction box; SUSPECT filter flags dv that is
+  empty or identical to EN (the machine leftovers); CSV export.
+  English keys are the reference — only existing keys accepted. UI is
+  dv-only for now; schema supports any locale. **Deferred (recorded):**
+  T2 machine-translation assist behind a Null-default contract
+  (suggestions only, never auto-published — religious terminology);
+  wrapping hardcoded-English admin JSX pages in keys (separate
+  long-tail; public/portal surfaces already use __()).
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**; next is **F1** (Hifz → engine). Do not start F in the same turn as the Phase E report.
