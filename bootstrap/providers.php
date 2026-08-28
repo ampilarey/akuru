@@ -4,6 +4,7 @@ return [
     // Morph map first so polymorphic relations resolve aliases before domain boot.
     App\Providers\MorphMapServiceProvider::class,
     App\Providers\AppServiceProvider::class,
+    App\Providers\TranslationOverrideServiceProvider::class,
 
     // Domain service providers (Phase 0 skeleton — bindings/routes load in later slices)
     App\Domains\Identity\Providers\IdentityServiceProvider::class,

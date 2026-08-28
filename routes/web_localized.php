@@ -358,6 +358,13 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::get('/features/export', [\App\Domains\Settings\Http\Controllers\Admin\OperationsController::class, 'featuresExport'])->name('admin.operations.features.export');
     });
 
+    // Dhivehi translation overrides (UI strings; override wins, file is fallback)
+    Route::prefix('admin/translations')->middleware(['role:super_admin|admin', 'can:translations.manage'])->group(function () {
+        Route::get('/', [\App\Domains\Settings\Http\Controllers\Admin\TranslationController::class, 'index'])->name('admin.translations.index');
+        Route::post('/save', [\App\Domains\Settings\Http\Controllers\Admin\TranslationController::class, 'save'])->name('admin.translations.save');
+        Route::get('/export', [\App\Domains\Settings\Http\Controllers\Admin\TranslationController::class, 'export'])->name('admin.translations.export');
+    });
+
     // Instructor management
     Route::prefix('admin/instructors')->middleware(['role:super_admin|admin|headmaster|supervisor'])->group(function () {
         Route::get('/', [AdminInstructorController::class, 'index'])->name('admin.instructors.index');
