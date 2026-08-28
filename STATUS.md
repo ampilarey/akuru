@@ -803,6 +803,18 @@ migration; no Hifz behaviour change outside it.
   the close-out checklist; same `operations.manage` gate. No schema
   change.
 
+## 5m. Trust-signal display floor
+
+- **Display floor (this PR):** the computed students-taught count now
+  holds back until it clears `trust.students_min_display` (default 25,
+  `ComposeHomepageTrustAction::DEFAULT_STUDENTS_MIN_DISPLAY`) — a hero
+  saying "9 students" undersells; below the floor the signal is omitted
+  entirely (W1.2's nothing-is-invented ethos). A MANUAL
+  `trust.students_taught` override always shows — the operator chose it.
+  Also this window: hero slide stage fixed-height → min-height (phone
+  widths clipped the Viber CTA under the trust stats; verified with
+  rendered before/after screenshots at 1366/390px).
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**; next is **F1** (Hifz → engine). Do not start F in the same turn as the Phase E report.

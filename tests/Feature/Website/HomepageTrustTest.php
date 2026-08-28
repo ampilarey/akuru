@@ -23,6 +23,7 @@ it('computes years from founded_year and students from unified Student rows', fu
     writeTrust('trust.years_operating', '');
     writeTrust('trust.founded_year', '2020');
     writeTrust('trust.students_taught', '');
+    writeTrust('trust.students_min_display', '2');
     writeTrust('trust.accreditation', ['en' => '', 'dv' => '', 'ar' => '']);
     makeStudent(['first_name' => 'Trust', 'last_name' => 'One']);
     makeStudent(['first_name' => 'Trust', 'last_name' => 'Two']);
@@ -34,6 +35,25 @@ it('computes years from founded_year and students from unified Student rows', fu
         ->and($trust['students_source'])->toBe('computed')
         ->and($trust['accreditation'])->toBeNull()
         ->and($trust['has_signals'])->toBeTrue();
+});
+
+it('holds back a small computed student count until the display floor', function () {
+    writeTrust('trust.students_taught', '');
+    writeTrust('trust.students_min_display', '');
+    makeStudent(['first_name' => 'Floor', 'last_name' => 'One']);
+    makeStudent(['first_name' => 'Floor', 'last_name' => 'Two']);
+
+    // Below the default floor the computed number is omitted, not shown small.
+    $trust = app(ComposeHomepageTrustAction::class)->execute('en');
+    expect(ComposeHomepageTrustAction::DEFAULT_STUDENTS_MIN_DISPLAY)->toBeGreaterThan(2)
+        ->and($trust['students_taught'])->toBeNull()
+        ->and($trust['students_source'])->toBeNull();
+
+    // A manual override is the operator's explicit choice and always shows.
+    writeTrust('trust.students_taught', '9');
+    $manual = app(ComposeHomepageTrustAction::class)->execute('en');
+    expect($manual['students_taught'])->toBe(9)
+        ->and($manual['students_source'])->toBe('manual');
 });
 
 it('uses manual years and students overrides instead of computing', function () {
