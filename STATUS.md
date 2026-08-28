@@ -983,6 +983,28 @@ migration; no Hifz behaviour change outside it.
   Round 4: both controls raised 15% to exactly 30px (translate py .375rem;
   pill 28px content + borders), operator request.
 
+## 5t. Writer per-book sales + Vite bundle refresh (2026-08-28)
+
+- **Per-book sales table (operator request):** new
+  `ListWriterItemSalesAction` groups `writer_earnings` per item — copies
+  sold, gross MVR, the writer's own share (matches the payout ledger),
+  and refund count — served as `item_sales` on `/write` and rendered as
+  a "Sales by book" table inside the earnings card. New `library_*` keys
+  in en/dv/ar common.php (Dhivehi editor can override). Test in
+  `WriterEarningsTest` covers grouping, share math, refunds, stranger
+  isolation, and the page payload.
+- **CRITICAL FIX — deployed JS bundle was stale since D3:** `public/build`
+  is committed and the TEST deploy never runs Vite, and no build had been
+  committed since the D3 slice — so every Inertia page added after it
+  (Library Write/Review, Settings Operations/Features/Translations, the
+  JSX i18n tranche) was MISSING from the deployed bundle. Rebuilt and
+  committed (`npm install` — lockfile was behind package.json after the
+  Phase 5 capacitor additions — then `vite build`). Also added
+  `resources/js/**/*.jsx` to the tailwind content globs (JSX-only
+  classes previously never reached the compiled CSS; additive).
+  **Process rule going forward: any PR that touches resources/js must
+  also commit a fresh `npm run build`.**
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**; next is **F1** (Hifz → engine). Do not start F in the same turn as the Phase E report.

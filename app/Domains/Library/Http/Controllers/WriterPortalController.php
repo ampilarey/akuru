@@ -5,6 +5,7 @@ namespace App\Domains\Library\Http\Controllers;
 use App\Domains\Library\Actions\ApplyAsWriterAction;
 use App\Domains\Library\Actions\ListWriterDashboardAction;
 use App\Domains\Library\Actions\ListWriterEarningsSummaryAction;
+use App\Domains\Library\Actions\ListWriterItemSalesAction;
 use App\Domains\Library\Actions\RequestWriterPayoutAction;
 use App\Domains\Library\Actions\SaveWriterBankDetailsAction;
 use App\Domains\Library\Actions\SaveWriterItemAction;
@@ -27,6 +28,7 @@ class WriterPortalController extends Controller
         return Inertia::render('Library/Write', [
             'dashboard' => app(ListWriterDashboardAction::class)->execute((int) $request->user()->id),
             'earnings' => app(ListWriterEarningsSummaryAction::class)->execute((int) $request->user()->id),
+            'item_sales' => app(ListWriterItemSalesAction::class)->execute((int) $request->user()->id),
             'options' => [
                 'content_types' => array_map(fn ($case) => $case->value, LibraryContentType::cases()),
             ],
