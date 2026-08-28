@@ -83,7 +83,9 @@ it('serves the islands API and renders the header prayer banner on the public si
         ->get(route('public.home'))
         ->assertOk()
         ->getContent();
-    expect(substr_count($html, 'data-pt-banner'))->toBe(2)
+    // Count the section markup, not the bare attribute name — the banner
+    // script also mentions data-pt-banner inside a querySelector string.
+    expect(substr_count($html, '<section class="prayer-banner'))->toBe(2)
         ->and(substr_count($html, 'id="hptPanel"'))->toBe(1);
 });
 
