@@ -813,7 +813,10 @@ migration; no Hifz behaviour change outside it.
   `trust.students_taught` override always shows — the operator chose it.
   Also this window: hero slide stage fixed-height → min-height (phone
   widths clipped the Viber CTA under the trust stats; verified with
-  rendered before/after screenshots at 1366/390px).
+  rendered before/after screenshots at 1366/390px). Years-operating
+  removed from the hero stats row entirely (owner call) — still
+  composed for future non-hero surfaces, but it no longer renders or
+  counts toward has_signals.
 
 ## 6. Out of scope (unchanged)
 

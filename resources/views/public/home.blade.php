@@ -294,9 +294,6 @@ $bannerCount = count($bannerList);
       <div><div style="font-size:2.75rem;font-weight:800;color:#C9A227;line-height:1">{{ number_format((int) $trust['students_taught']) }}</div><div style="color:rgba(255,255,255,.65);font-size:.82rem;margin-top:.375rem">{{ $trust['students_label'] }}</div></div>
       @endif
       <div><div style="font-size:2.75rem;font-weight:800;color:#C9A227;line-height:1">{{ $stats['courses'] }}</div><div style="color:rgba(255,255,255,.65);font-size:.82rem;margin-top:.375rem">Courses offered</div></div>
-      @if(!empty($trust['years_operating']))
-      <div><div style="font-size:2.75rem;font-weight:800;color:#C9A227;line-height:1">{{ number_format((int) $trust['years_operating']) }}</div><div style="color:rgba(255,255,255,.65);font-size:.82rem;margin-top:.375rem">{{ $trust['years_label'] }}</div></div>
-      @endif
       <div><div style="font-size:2.75rem;font-weight:800;color:#C9A227;line-height:1">100%</div><div style="color:rgba(255,255,255,.65);font-size:.82rem;margin-top:.375rem">Qualified teachers</div></div>
     </div>
   </div>

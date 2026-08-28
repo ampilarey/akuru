@@ -1,7 +1,7 @@
 {{-- W1.2 trust above the fold — Settings group trust_settings, nothing hardcoded. --}}
 @if(!empty($trust['has_signals']))
+{{-- Years-operating stays composed (About page candidate) but is not a hero stat. --}}
 <div id="hero-trust"
-     @if(!empty($trust['years_operating'])) data-years="{{ (int) $trust['years_operating'] }}" @endif
      @if(!empty($trust['students_taught'])) data-students="{{ (int) $trust['students_taught'] }}" @endif
      @if(!empty($trust['students_source'])) data-students-source="{{ $trust['students_source'] }}" @endif
      style="position:relative;z-index:2;padding:1.25rem 1rem 2.75rem">
@@ -12,14 +12,8 @@
     </p>
     @endif
 
-    @if(!empty($trust['years_operating']) || !empty($trust['students_taught']))
+    @if(!empty($trust['students_taught']))
     <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:.75rem 1.75rem">
-      @if(!empty($trust['years_operating']))
-      <div>
-        <div style="font-size:1.65rem;font-weight:800;color:#fff;line-height:1;font-variant-numeric:tabular-nums">{{ number_format((int) $trust['years_operating']) }}</div>
-        <div style="color:rgba(255,255,255,.7);font-size:.72rem;margin-top:.25rem">{{ $trust['years_label'] }}</div>
-      </div>
-      @endif
       @if(!empty($trust['students_taught']))
       <div>
         <div style="font-size:1.65rem;font-weight:800;color:#fff;line-height:1;font-variant-numeric:tabular-nums">{{ number_format((int) $trust['students_taught']) }}</div>
