@@ -53,6 +53,18 @@ it('imports the real Bake&Grill column shape: IslandId, Island, Status, Fajuru, 
         ->and((bool) $inactive->is_active)->toBeFalse();
 });
 
+it('lets an admin import the bundled dataset in one click with Malé defaulted', function () {
+    $admin = actingPeopleAdmin(['prayer.manage']);
+
+    $this->withoutLocalizationMiddleware()->actingAs($admin)
+        ->post(route('admin.prayer-times.import.store'), ['use_bundled' => '1'])
+        ->assertSessionHasNoErrors();
+
+    expect(PrayerIsland::query()->count())->toBe(205);
+    $defaultId = (int) app(GetSettingAction::class)->execute('prayer.default_island_id', '0');
+    expect(PrayerIsland::query()->find($defaultId)?->name)->toBe('މާލެ');
+});
+
 it('seeds the committed salat.db end-to-end and defaults the island to Malé', function () {
     expect(is_file(database_path('salat.db')))->toBeTrue();
 
