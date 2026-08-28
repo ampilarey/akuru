@@ -836,6 +836,13 @@ migration; no Hifz behaviour change outside it.
   wrapping hardcoded-English admin JSX pages in keys (separate
   long-tail; public/portal surfaces already use __()).
 
+## 5o. Admin nav links for ops/translations
+
+- **Nav (this PR):** AppShell gains permission-gated links (Ops
+  checklist, Feature walkthrough, Translations) via a new shared
+  `auth.can` prop — nav-only hints, every route still enforces its own
+  middleware gate. Pages were previously reachable only by URL.
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**; next is **F1** (Hifz → engine). Do not start F in the same turn as the Phase E report.
