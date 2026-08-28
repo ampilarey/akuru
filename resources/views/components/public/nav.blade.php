@@ -77,7 +77,7 @@
          uses plain scoped CSS instead of uncompiled Tailwind utilities. --}}
     <style>
       .nav-right { gap: .4rem; }
-      .nav-translate { padding: .25rem .45rem; }
+      .nav-translate { padding: .375rem .45rem; }
       .nav-burger { padding: .35rem; margin-right: -.35rem; }
       @media (min-width: 640px) {
         .nav-right { gap: .5rem; }

@@ -62,15 +62,15 @@
 
     /* Mobile/tablet header slot: pill between the logo and the translate button */
     .header-prayer--mobile { flex: 1 1 auto; width: auto; max-width: 420px; margin: 0 .5rem; }
-    /* Pill height matches the translate box (26px outer): 24px content + 1px borders */
-    .header-prayer--mobile .prayer-banner { min-height: 24px; }
+    /* Pill height matches the translate box (30px outer): 28px content + 1px borders */
+    .header-prayer--mobile .prayer-banner { min-height: 28px; }
     .header-prayer--mobile .prayer-banner-summary, .header-prayer--mobile .prayer-banner-expand,
-    .header-prayer--mobile .prayer-banner-unavailable { min-height: 24px; }
-    .header-prayer--mobile .prayer-banner-skeleton { height: 24px; }
+    .header-prayer--mobile .prayer-banner-unavailable { min-height: 28px; }
+    .header-prayer--mobile .prayer-banner-skeleton { height: 28px; }
     /* Exempt the pill's buttons from the layout's 44px tap-target rule */
     @media (max-width: 768px) {
         .header-prayer--mobile .prayer-banner-expand,
-        .header-prayer--mobile .prayer-banner-island { min-height: 24px; min-width: 0; }
+        .header-prayer--mobile .prayer-banner-island { min-height: 28px; min-width: 0; }
     }
     .header-prayer--mobile .prayer-banner-expand { padding-top: .1rem; padding-bottom: .1rem; padding-left: .6rem; }
     .header-prayer--mobile .prayer-banner-next { font-size: .72rem; }
