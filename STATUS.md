@@ -921,6 +921,10 @@ migration; no Hifz behaviour change outside it.
   to Malé when the setting is missing or dangling. **Operator:** on
   test, Admin → Prayer times → Import bundled dataset — one click,
   page + API go live with real times.
+  Migration 2026_08_28_000031 additionally auto-imports the bundle on
+  any deployment whose prayer tables are EMPTY (guards: skips testing
+  env, existing rows, missing bundle) — test went live on deploy with
+  no operator step; the admin one-click remains for re-imports.
 
 ## 6. Out of scope (unchanged)
 
