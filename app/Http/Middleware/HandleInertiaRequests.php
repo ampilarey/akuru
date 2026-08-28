@@ -48,6 +48,11 @@ class HandleInertiaRequests extends Middleware
             'rtl' => in_array($locale, ['ar', 'dv'], true),
             'auth' => [
                 'user' => $request->user()?->only(['id', 'name', 'email']),
+                // Nav-only hints; every route still enforces its own gate.
+                'can' => [
+                    'operations_manage' => (bool) $request->user()?->can('operations.manage'),
+                    'translations_manage' => (bool) $request->user()?->can('translations.manage'),
+                ],
             ],
             'flash' => [
                 'success' => $request->session()->get('success'),

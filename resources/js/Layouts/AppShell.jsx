@@ -263,6 +263,21 @@ export default function AppShell({ title, children }) {
                         <Link href="/portal/payslips" className="text-[#7C2D37] hover:underline">
                             Payslips
                         </Link>
+                        {auth?.can?.operations_manage && (
+                            <>
+                                <Link href="/admin/operations" className="text-[#7C2D37] hover:underline">
+                                    Ops checklist
+                                </Link>
+                                <Link href="/admin/operations/features" className="text-[#7C2D37] hover:underline">
+                                    Feature walkthrough
+                                </Link>
+                            </>
+                        )}
+                        {auth?.can?.translations_manage && (
+                            <Link href="/admin/translations" className="text-[#7C2D37] hover:underline">
+                                Translations
+                            </Link>
+                        )}
                         {user && (
                             <span className="flex items-center gap-2">
                                 <span className="text-gray-500">{user.name}</span>
