@@ -182,3 +182,63 @@ it('gates payout requests behind the operator flag and pays through the admin de
         ->and((int) $earning->writer_payout_id)->toBe($payout->id)
         ->and($payout->fresh()->status)->toBe('paid');
 });
+
+it('breaks sales down per book with the writer share and refunds', function () {
+    $ctx = seedEarningWriterItem(100);
+    $book2 = LibraryItem::query()->create([
+        'title' => 'Second Book',
+        'slug' => 'second-book-'.uniqid(),
+        'content_type' => 'book',
+        'access_type' => 'paid',
+        'price' => 50,
+        'status' => 'published',
+        'writer_id' => $ctx['profile']->id,
+    ]);
+
+    $buyEarning = function (LibraryItem $item, float $gross, float $writerAmount, string $status) use ($ctx) {
+        $purchase = \App\Domains\Library\Models\LibraryPurchase::query()->create([
+            'user_id' => User::factory()->create()->id,
+            'library_item_id' => $item->id,
+            'amount' => $gross,
+            'currency' => 'MVR',
+            'status' => 'paid',
+            'purchased_at' => now(),
+        ]);
+        WriterEarning::query()->create([
+            'writer_id' => $ctx['profile']->id,
+            'library_item_id' => $item->id,
+            'library_purchase_id' => $purchase->id,
+            'gross_amount' => $gross,
+            'platform_commission' => round($gross - $writerAmount, 2),
+            'writer_amount' => $writerAmount,
+            'status' => $status,
+        ]);
+    };
+
+    $buyEarning($ctx['item'], 100, 70, 'available');
+    $buyEarning($ctx['item'], 100, 70, 'pending');
+    $buyEarning($book2, 50, 35, 'paid');
+    $buyEarning($book2, 50, 35, 'refunded');
+
+    $rows = app(\App\Domains\Library\Actions\ListWriterItemSalesAction::class)->execute($ctx['writerUser']->id);
+    expect($rows)->toHaveCount(2)
+        ->and($rows[0]['title'])->toBe('Earning Item 100')
+        ->and($rows[0]['sold'])->toBe(2)
+        ->and($rows[0]['gross'])->toBe(200.0)
+        ->and($rows[0]['earned'])->toBe(140.0)
+        ->and($rows[0]['refunded'])->toBe(0)
+        ->and($rows[1]['title'])->toBe('Second Book')
+        ->and($rows[1]['sold'])->toBe(1)
+        ->and($rows[1]['earned'])->toBe(35.0)
+        ->and($rows[1]['refunded'])->toBe(1);
+
+    // A user with no writer profile sees nothing.
+    expect(app(\App\Domains\Library\Actions\ListWriterItemSalesAction::class)->execute(User::factory()->create()->id))->toBe([]);
+
+    // The portal page carries the table's data.
+    $this->withoutLocalizationMiddleware()->actingAs($ctx['writerUser'])
+        ->get(route('write.index'))
+        ->assertOk()
+        ->assertSee('item_sales')
+        ->assertSee('Earning Item 100');
+});

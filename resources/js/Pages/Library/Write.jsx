@@ -90,7 +90,7 @@ function ItemEditor({ item, options, onDone, t }) {
     );
 }
 
-function EarningsCard({ earnings }) {
+function EarningsCard({ earnings, itemSales = [], t = {} }) {
     const bank = useForm({ bank_name: '', account_name: '', account_number: '' });
     if (!earnings) return null;
 
@@ -128,11 +128,38 @@ function EarningsCard({ earnings }) {
                     {earnings.has_bank_details ? 'Update bank details' : 'Save bank details'}
                 </button>
             </form>
+            {itemSales.length > 0 && (
+                <div className="mt-4 overflow-x-auto">
+                    <p className="mb-1 text-sm font-semibold">{t.library_sales_by_book || 'Sales by book'}</p>
+                    <table className="min-w-full text-sm">
+                        <thead className="bg-[#F3EBE0] text-start">
+                            <tr>
+                                <th className="px-3 py-2">{t.library_th_book || 'Book'}</th>
+                                <th className="px-3 py-2">{t.library_th_sold || 'Copies sold'}</th>
+                                <th className="px-3 py-2">{t.library_th_gross || 'Gross (MVR)'}</th>
+                                <th className="px-3 py-2">{t.library_th_your_share || 'Your share (MVR)'}</th>
+                                <th className="px-3 py-2">{t.library_th_refunded || 'Refunded'}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {itemSales.map((row) => (
+                                <tr key={row.item_id} className="border-t">
+                                    <td className="px-3 py-2 font-medium">{row.title}</td>
+                                    <td className="px-3 py-2">{row.sold}</td>
+                                    <td className="px-3 py-2">{row.gross}</td>
+                                    <td className="px-3 py-2">{row.earned}</td>
+                                    <td className="px-3 py-2">{row.refunded > 0 ? <span className="text-red-600">{row.refunded}</span> : '—'}</td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            )}
         </div>
     );
 }
 
-export default function Write({ dashboard, options, earnings = null }) {
+export default function Write({ dashboard, options, earnings = null, item_sales = [] }) {
     const { flash = {}, i18n } = usePage().props;
     const t = i18n?.common || {};
     const [editing, setEditing] = useState(null);
@@ -166,7 +193,7 @@ export default function Write({ dashboard, options, earnings = null }) {
                         </button>
                     </div>
 
-                    <EarningsCard earnings={earnings} />
+                    <EarningsCard earnings={earnings} itemSales={item_sales} t={t} />
 
                     {editing === 'new' && <ItemEditor options={options} onDone={() => setEditing(null)} t={t} />}
                     {editing && editing !== 'new' && <ItemEditor item={editing} options={options} onDone={() => setEditing(null)} t={t} />}
