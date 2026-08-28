@@ -4,7 +4,7 @@
      @if(!empty($trust['years_operating'])) data-years="{{ (int) $trust['years_operating'] }}" @endif
      @if(!empty($trust['students_taught'])) data-students="{{ (int) $trust['students_taught'] }}" @endif
      @if(!empty($trust['students_source'])) data-students-source="{{ $trust['students_source'] }}" @endif
-     style="position:relative;z-index:2;padding:0 1rem 2.75rem">
+     style="position:relative;z-index:2;padding:1.25rem 1rem 2.75rem">
   <div style="max-width:56rem;margin:0 auto;display:flex;flex-direction:column;align-items:center;gap:.85rem;text-align:center">
     @if(!empty($trust['accreditation']))
     <p id="hero-trust-accreditation" style="margin:0;color:#E8BC3C;font-size:.8rem;font-weight:600;letter-spacing:.04em;line-height:1.5">

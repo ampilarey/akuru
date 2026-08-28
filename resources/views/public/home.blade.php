@@ -26,10 +26,12 @@ $bannerCount = count($bannerList);
 
   {{-- Slide stage — overflow hidden, track slides horizontally --}}
   <div style="position:relative">
-  <div style="position:relative;height:clamp(20rem,55vw,28rem);overflow:hidden">
-    <div id="akuru-track" style="display:flex;height:100%;transition:transform .7s cubic-bezier(.4,0,.2,1);will-change:transform">
+  {{-- min-height (not height): on narrow screens the slide content is taller
+       than the clamp and a fixed height clips the CTA under the trust block --}}
+  <div style="position:relative;min-height:clamp(20rem,55vw,28rem);overflow:hidden">
+    <div id="akuru-track" style="display:flex;transition:transform .7s cubic-bezier(.4,0,.2,1);will-change:transform">
       @foreach($bannerList as $i => $bn)
-      <div style="min-width:100%;height:100%;display:flex;align-items:center;justify-content:center">
+      <div style="min-width:100%;min-height:clamp(20rem,55vw,28rem);display:flex;align-items:center;justify-content:center">
         <div class="container mx-auto px-4 text-center text-white"
              style="width:100%;padding-top:4.5rem;padding-bottom:{{ $bannerCount > 1 ? '3rem' : '4.5rem' }}">
           <span style="display:inline-block;background:rgba(201,162,39,0.2);border:1px solid rgba(201,162,39,0.4);color:#E8BC3C;font-size:.75rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:.375rem 1rem;border-radius:9999px;margin-bottom:1.25rem">
