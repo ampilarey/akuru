@@ -26,6 +26,10 @@
          class="text-brandGray-600 hover:text-brandMaroon-600 transition-colors duration-200">
         {{ __('public.Research') }}
       </a>
+      <a href="{{ route('public.library.index') }}"
+         class="text-brandGray-600 hover:text-brandMaroon-600 transition-colors duration-200">
+        {{ __('public.Library') }}
+      </a>
       <a href="{{ route('public.prayer-times') }}"
          class="text-brandGray-600 hover:text-brandMaroon-600 transition-colors duration-200">
         {{ __('public.Prayer times') }}
@@ -206,6 +210,10 @@
       <a href="{{ route('public.research.index') }}"
          class="block py-3 px-4 text-brandGray-600 hover:text-brandMaroon-600 hover:bg-brandBeige-100 rounded-lg transition-colors duration-200">
         {{ __('public.Research') }}
+      </a>
+      <a href="{{ route('public.library.index') }}"
+         class="block py-3 px-4 text-brandGray-600 hover:text-brandMaroon-600 hover:bg-brandBeige-100 rounded-lg transition-colors duration-200">
+        {{ __('public.Library') }}
       </a>
       <a href="{{ route('public.prayer-times') }}"
          class="block py-3 px-4 text-brandGray-600 hover:text-brandMaroon-600 hover:bg-brandBeige-100 rounded-lg transition-colors duration-200">

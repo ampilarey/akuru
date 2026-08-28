@@ -183,4 +183,6 @@ return [
     'No items in this gallery' => 'لا توجد عناصر في هذا المعرض',
     'gallery_empty_message' => 'هذا المعرض فارغ حالياً. تفقد لاحقاً للاطلاع على المحتوى الجديد.',
     'Check back later for photo galleries' => 'تفقد لاحقاً للاطلاع على معارض الصور.',
+    'Careers' => 'Careers',
+    'Daily reminders' => 'Daily reminders',
 ];

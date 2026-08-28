@@ -411,4 +411,6 @@ return [
     'No wallet activity yet.' => 'No wallet activity yet.',
     'Discount code' => 'Discount code',
     'Pay with wallet' => 'Pay with wallet',
+    'Careers' => 'Careers',
+    'Daily reminders' => 'Daily reminders',
 ];

@@ -868,6 +868,17 @@ migration; no Hifz behaviour change outside it.
   native speaker. Remaining hardcoded-English admin JSX stays the
   recorded long tail (§5n).
 
+## 5r. Public-site discoverability links
+
+- **Links (this PR):** the Knowledge Library was ORPHANED on the public
+  site — /library served but nothing linked it. Nav (desktop + mobile)
+  gains Library (existing `public.Library` key, so the label is already
+  translatable); footer Quick Links gain Library, Daily reminders
+  (`/daily/ayah`), and Careers (also previously orphaned). Footer labels
+  stay raw-English per the existing footer pattern; `Careers` /
+  `Daily reminders` lang keys added en/dv/ar for when the footer is
+  localized.
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**; next is **F1** (Hifz → engine). Do not start F in the same turn as the Phase E report.
