@@ -926,6 +926,23 @@ migration; no Hifz behaviour change outside it.
   env, existing rows, missing bundle) — test went live on deploy with
   no operator step; the admin one-click remains for re-imports.
 
+## 5t. Prayer banner in the site chrome (Bake&Grill parity)
+
+- **Banner (this PR):** Bake&Grill's PrayerBar ported to the Akuru
+  public site in Akuru colors — desktop: compact pill in the nav row;
+  mobile: strip between the nav and the page content (above the hero),
+  site-wide like Bake&Grill's header placement. Next-prayer name +
+  time + live countdown; expands to the six-cell day grid (gold
+  highlight on the next prayer); island pill opens the searchable
+  picker grouped by atoll (205 real islands); "Use my location" resolves
+  the nearest island through the existing lat/lng resolver; localStorage
+  caches the chosen island + day tables (akuru_pt_* keys), MVT clock
+  with server-time skew. New `GET /api/v1/prayer-times/islands` (active
+  islands, DTO shape); day/nearest ride the existing endpoint. Labels
+  through __('public.*') so the Dhivehi editor reaches them. Assets
+  partial included once; banner markup twice (script drives all
+  instances, as in Bake&Grill).
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**; next is **F1** (Hifz → engine). Do not start F in the same turn as the Phase E report.

@@ -413,4 +413,5 @@ return [
     'Pay with wallet' => 'Pay with wallet',
     'Careers' => 'Careers',
     'Daily reminders' => 'Daily reminders',
+    'Change island' => 'Change island',
 ];

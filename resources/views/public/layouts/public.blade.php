@@ -139,12 +139,19 @@
 </head>
 <body class="min-h-screen bg-gray-50 text-gray-800 font-sans antialiased">
     <x-public.nav />
-    
+
+    {{-- Prayer strip (mobile — above the page content / hero) --}}
+    <div class="site-prayer-wrap site-prayer-wrap--mobile lg:hidden" data-block="prayer_bar">
+        @include('public.partials.prayer-banner')
+    </div>
+
     <main class="min-h-[70vh]">
         @yield('content')
     </main>
     
     <x-public.footer />
+
+    @include('public.partials.prayer-banner-assets')
 
     {{-- Sticky Mobile Bottom Bar (small screens only) --}}
     <nav class="fixed bottom-0 left-0 right-0 z-50 sm:hidden bg-white border-t border-gray-200 shadow-lg safe-area-bottom">

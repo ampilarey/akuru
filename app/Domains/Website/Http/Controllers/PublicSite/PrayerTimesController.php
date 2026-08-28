@@ -39,6 +39,18 @@ class PrayerTimesController extends Controller
         ]);
     }
 
+    public function islands(): Response
+    {
+        abort_unless((bool) app(GetSettingAction::class)->execute('prayer.public_page_enabled', true), 404);
+
+        $islands = app(PrayerTimeProviderInterface::class)
+            ->listIslands(true)
+            ->map(fn ($island) => $island->toArray())
+            ->values();
+
+        return response()->json(['islands' => $islands]);
+    }
+
     public function smsOptOut(Request $request): Response
     {
         $data = $request->validate([

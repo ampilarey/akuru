@@ -50,6 +50,10 @@
          class="text-brandGray-600 hover:text-brandMaroon-600 transition-colors duration-200">
         {{ __('public.Contact') }}
       </a>
+      {{-- Prayer strip (Bake&Grill-style, Akuru colors) --}}
+      <div class="header-prayer" data-block="prayer_bar">
+        @include('public.partials.prayer-banner')
+      </div>
       {{-- Search icon --}}
       <a href="{{ route('public.search') }}" class="text-brandGray-500 hover:text-brandMaroon-600 transition-colors" aria-label="Search">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
