@@ -954,6 +954,19 @@ migration; no Hifz behaviour change outside it.
   both still reachable from the expanded panel). Banner markup count
   stays 2 (desktop slot + mobile slot, both in nav.blade.php).
 
+- **Mobile polish round 2 (2026-08-28, operator request):** (1) translate
+  button shrunk on phones (px-1.5/py-1, icon 3.5) and right-side gap
+  tightened to gap-1 so it sits closer to the hamburger; (2) mobile pill
+  height reduced to 32px and the island now SHOWS in short form
+  (`data-pt-loc-short`: island name, >6 chars → 5+ellipsis; full "K. X"
+  label ≥520px) instead of hiding; (3) expanding on mobile no longer
+  stretches the header — the panel is a fixed full-width sheet pinned to
+  the nav's bottom edge (1rem side margins, JS re-pins each tick);
+  (4) Hijri date line (`data-pt-hijri`, api `hijri.formatted`) added to
+  the expanded panel on both slots; day cache bumped to `akuru_pt_day2_*`
+  storing `{times, hijri}`. Render test also pins the hijri node count
+  (by class — the bare attribute appears in the JS selector too).
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**; next is **F1** (Hifz → engine). Do not start F in the same turn as the Phase E report.

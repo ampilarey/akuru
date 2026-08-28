@@ -21,10 +21,11 @@
                 <span class="prayer-banner-chevron" data-pt-chevron aria-hidden="true">▾</span>
             </button>
             <button type="button" class="prayer-banner-island" data-pt-island>
-                <span data-pt-loc>K. Malé</span> ▾
+                <span class="pt-loc-full" data-pt-loc>K. Malé</span><span class="pt-loc-short" data-pt-loc-short>Malé</span> ▾
             </button>
         </div>
         <div class="prayer-banner-panel" data-pt-panel hidden>
+            <div class="prayer-banner-hijri" data-pt-hijri hidden></div>
             <div class="prayer-banner-grid" data-pt-grid role="list"></div>
             <div class="prayer-banner-actions">
                 <button type="button" class="prayer-banner-action" data-pt-geo>
