@@ -349,6 +349,13 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::post('/{enrollment}/record-payment', [AdminEnrollmentController::class, 'recordManualPayment'])->name('admin.enrollments.record-payment');
     });
 
+    // Operator close-out checklist (docs/OPERATOR_CHECKLIST.md, in-app)
+    Route::prefix('admin/operations')->middleware(['role:super_admin|admin', 'can:operations.manage'])->group(function () {
+        Route::get('/', [\App\Domains\Settings\Http\Controllers\Admin\OperationsController::class, 'index'])->name('admin.operations.index');
+        Route::post('/{item}/toggle', [\App\Domains\Settings\Http\Controllers\Admin\OperationsController::class, 'toggle'])->name('admin.operations.toggle');
+        Route::get('/export', [\App\Domains\Settings\Http\Controllers\Admin\OperationsController::class, 'export'])->name('admin.operations.export');
+    });
+
     // Instructor management
     Route::prefix('admin/instructors')->middleware(['role:super_admin|admin|headmaster|supervisor'])->group(function () {
         Route::get('/', [AdminInstructorController::class, 'index'])->name('admin.instructors.index');

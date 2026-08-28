@@ -778,6 +778,18 @@ migration; no Hifz behaviour change outside it.
   covered by the Arabic B / Qur'an B foundations and stay optional
   (rule 8).
 
+## 5k. Admin operations checklist
+
+- **Ops checklist (this PR):** docs/OPERATOR_CHECKLIST.md as an in-app
+  admin page at `/admin/operations` (`operations.manage`, seeded to
+  super_admin/admin). Definitions live in code
+  (`ListOperatorChecklistAction` — stable item keys, never renumber);
+  only tick state is stored (`operator_checklist_checks`: who + when,
+  shared across operators; untick deletes — progress tracking, NOT the
+  evidence of record, which stays in STATUS.md per the merge gates).
+  CSV export per the every-listing convention. Inertia page with
+  progress bar and attribution.
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**; next is **F1** (Hifz → engine). Do not start F in the same turn as the Phase E report.
