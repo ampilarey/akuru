@@ -1,10 +1,12 @@
 import { router } from '@inertiajs/react';
+import axios from 'axios';
 import { useMemo, useState } from 'react';
 import AppShell from '../../Layouts/AppShell';
 
-function Row({ group, item }) {
+function Row({ group, item, suggestAvailable }) {
     const [draft, setDraft] = useState(item.override ?? '');
     const [saving, setSaving] = useState(false);
+    const [suggesting, setSuggesting] = useState(false);
     const dirty = draft !== (item.override ?? '');
 
     const save = () => {
@@ -14,6 +16,16 @@ function Row({ group, item }) {
             { group, key: item.key, value: draft },
             { preserveScroll: true, onFinish: () => setSaving(false) },
         );
+    };
+
+    const suggest = async () => {
+        setSuggesting(true);
+        try {
+            const { data } = await axios.post('/admin/translations/suggest', { group, key: item.key });
+            if (data.suggestion) setDraft(data.suggestion);
+        } finally {
+            setSuggesting(false);
+        }
     };
 
     return (
@@ -37,6 +49,16 @@ function Row({ group, item }) {
                         placeholder={item.file_dv || ''}
                         className="w-full rounded border px-2 py-1 text-sm"
                     />
+                    {suggestAvailable && (
+                        <button
+                            onClick={suggest}
+                            disabled={suggesting}
+                            title="Prefill a machine draft — you still review and save"
+                            className="rounded border px-2 py-1 text-xs disabled:opacity-40"
+                        >
+                            Suggest
+                        </button>
+                    )}
                     <button
                         onClick={save}
                         disabled={!dirty || saving}
@@ -53,7 +75,7 @@ function Row({ group, item }) {
     );
 }
 
-export default function Translations({ groups, override_count, total }) {
+export default function Translations({ groups, override_count, total, suggest_available }) {
     const [query, setQuery] = useState('');
     const [suspectOnly, setSuspectOnly] = useState(false);
     const [activeGroup, setActiveGroup] = useState(groups[0]?.group ?? 'common');
@@ -133,7 +155,12 @@ export default function Translations({ groups, override_count, total }) {
                         </thead>
                         <tbody>
                             {visible.map((item) => (
-                                <Row key={`${activeGroup}.${item.key}`} group={activeGroup} item={item} />
+                                <Row
+                                    key={`${activeGroup}.${item.key}`}
+                                    group={activeGroup}
+                                    item={item}
+                                    suggestAvailable={Boolean(suggest_available)}
+                                />
                             ))}
                         </tbody>
                     </table>

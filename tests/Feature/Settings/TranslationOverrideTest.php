@@ -62,6 +62,36 @@ it('rejects unknown groups and keys and renders the editor with suspects flagged
         ->assertHeader('content-type', 'text/csv; charset=UTF-8');
 });
 
+it('suggests via the bound translator and stays silent on the null default', function () {
+    $admin = actingPeopleAdmin(['translations.manage']);
+
+    // Null default: endpoint answers, suggestion is null, no external calls.
+    $this->withoutLocalizationMiddleware()->actingAs($admin)
+        ->postJson(route('admin.translations.suggest'), ['group' => 'common', 'key' => 'dashboard'])
+        ->assertOk()
+        ->assertJson(['suggestion' => null]);
+
+    // A bound translator's draft comes back verbatim — prefill only,
+    // nothing is saved until a human posts it.
+    app()->instance(\App\Support\Contracts\MachineTranslatorInterface::class, new class implements \App\Support\Contracts\MachineTranslatorInterface
+    {
+        public function translate(string $text, string $from, string $to): ?string
+        {
+            return "[{$to}] {$text}";
+        }
+    });
+    $this->withoutLocalizationMiddleware()->actingAs($admin)
+        ->postJson(route('admin.translations.suggest'), ['group' => 'common', 'key' => 'dashboard'])
+        ->assertOk()
+        ->assertJsonPath('suggestion', '[dv] '.trans('common.dashboard', [], 'en'));
+    expect(TranslationOverride::query()->count())->toBe(0);
+
+    // Unknown keys are refused here too.
+    $this->withoutLocalizationMiddleware()->actingAs($admin)
+        ->postJson(route('admin.translations.suggest'), ['group' => 'common', 'key' => 'not_a_key'])
+        ->assertStatus(422);
+});
+
 it('forbids the editor without translations.manage', function () {
     $user = User::factory()->create();
 

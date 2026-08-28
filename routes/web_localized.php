@@ -362,6 +362,7 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
     Route::prefix('admin/translations')->middleware(['role:super_admin|admin', 'can:translations.manage'])->group(function () {
         Route::get('/', [\App\Domains\Settings\Http\Controllers\Admin\TranslationController::class, 'index'])->name('admin.translations.index');
         Route::post('/save', [\App\Domains\Settings\Http\Controllers\Admin\TranslationController::class, 'save'])->name('admin.translations.save');
+        Route::post('/suggest', [\App\Domains\Settings\Http\Controllers\Admin\TranslationController::class, 'suggest'])->name('admin.translations.suggest');
         Route::get('/export', [\App\Domains\Settings\Http\Controllers\Admin\TranslationController::class, 'export'])->name('admin.translations.export');
     });
 
