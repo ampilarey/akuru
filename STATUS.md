@@ -913,7 +913,14 @@ migration; no Hifz behaviour change outside it.
   stays Akuru-branded — the data changed, not the design. Tests: real
   column-shape mini fixture (mapping, day shift, Status, latin
   backfill) + end-to-end seed of the committed file (205/15372/188,
-  Malé default, real Fajr band).
+  Malé default, real Fajr band). Follow-up same window: the deployed
+  TEST server had NO prayer data ("no island selected" API answer — the
+  W3 walk was a local dev DB), so the admin import page gains an
+  "Import bundled dataset" one-click (server-side database/salat.db, no
+  upload) and any successful import now sets prayer.default_island_id
+  to Malé when the setting is missing or dangling. **Operator:** on
+  test, Admin → Prayer times → Import bundled dataset — one click,
+  page + API go live with real times.
 
 ## 6. Out of scope (unchanged)
 

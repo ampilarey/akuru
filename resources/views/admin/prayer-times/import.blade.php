@@ -12,7 +12,13 @@
     @if($errors->any())
         <div class="mb-4 p-3 bg-red-100 text-red-800 rounded text-sm">{{ $errors->first() }}</div>
     @endif
-    <p class="text-sm text-gray-600 mb-4">Cache version {{ $cacheVersion }}. Import fails unless every category has 366 rows. <code>salat.db</code> is operator-supplied and not stored in git.</p>
+    <p class="text-sm text-gray-600 mb-4">Cache version {{ $cacheVersion }}. Import fails unless every category has 366 rows.</p>
+    <form method="POST" action="{{ route('admin.prayer-times.import.store') }}" class="bg-white p-6 rounded border mb-4">
+        @csrf
+        <input type="hidden" name="use_bundled" value="1">
+        <p class="text-sm text-gray-600 mb-3">Import the bundled Maldivian dataset shipped with the app (42 zones, 205 islands, 366 days). Sets Malé as the default island if none is set.</p>
+        <button class="btn-primary">Import bundled dataset</button>
+    </form>
     <form method="POST" action="{{ route('admin.prayer-times.import.store') }}" enctype="multipart/form-data" class="bg-white p-6 rounded border mb-4">
         @csrf
         <label class="block text-sm mb-2">salat.db</label>
