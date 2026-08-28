@@ -7,7 +7,12 @@
         <x-akuru-logo size="h-10 sm:h-12" />
       </a>
     </div>
-    
+
+    {{-- Prayer ribbon (mobile/tablet): sits between the logo and the translate button --}}
+    <div class="header-prayer header-prayer--mobile lg:hidden" data-block="prayer_bar">
+      @include('public.partials.prayer-banner')
+    </div>
+
     <!-- Desktop Navigation -->
     <div class="hidden lg:flex items-center space-x-6 rtl:space-x-reverse">
       <a href="{{ route('public.courses.index') }}" 

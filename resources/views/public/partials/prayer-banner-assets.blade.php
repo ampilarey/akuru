@@ -1,7 +1,7 @@
 {{-- Prayer banner assets — island picker panel, styles, script.
      Ported from Bake&Grill's PrayerBar, recolored to the Akuru palette.
      Include ONCE per page (the banner partial itself may appear twice:
-     desktop header + mobile strip). --}}
+     desktop header slot + mobile header slot). --}}
 <div id="hptPanel" class="hpt-panel" role="listbox" aria-label="Select island">
     <div class="hpt-search-row">
         <input type="text" id="hptSearch" class="hpt-search-input" placeholder="Search island or atoll…" autocomplete="off" spellcheck="false">
@@ -57,8 +57,15 @@
     .header-prayer .prayer-banner-next { font-size: .78rem; }
     .header-prayer .prayer-banner-island { font-size: .7rem; }
 
-    /* Mobile strip above the page content */
-    .site-prayer-wrap--mobile { padding: .5rem 1rem 0; }
+    /* Mobile/tablet header slot: pill between the logo and the translate button */
+    .header-prayer--mobile { flex: 1 1 auto; width: auto; max-width: 420px; margin: 0 .625rem; }
+    @media (max-width: 520px) {
+        .header-prayer--mobile .prayer-banner-island { display: none; }
+        .header-prayer--mobile .prayer-banner-expand { padding-left: .6rem; }
+    }
+    @media (max-width: 400px) {
+        .header-prayer--mobile .prayer-banner-cd { display: none; }
+    }
 
     /* Island picker */
     .hpt-panel { position: fixed; z-index: 90; width: 290px; max-height: 60vh; display: none; flex-direction: column;

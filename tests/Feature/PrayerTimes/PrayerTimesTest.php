@@ -311,7 +311,6 @@ it('new PrayerTimes and Website files stay on contracts and the fake sender', fu
 
     $consumers = [
         app_path('Domains/Website/Http/Controllers/PublicSite/PrayerTimesController.php'),
-        app_path('Domains/Website/Actions/ComposeHomepagePrayerAction.php'),
         app_path('Domains/Portal/Actions/ComposeDashboardPrayerAction.php'),
     ];
     foreach ($consumers as $file) {
