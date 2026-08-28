@@ -943,6 +943,17 @@ migration; no Hifz behaviour change outside it.
   partial included once; banner markup twice (script drives all
   instances, as in Bake&Grill).
 
+- **Banner placement follow-up (2026-08-28, operator request):** the
+  old maroon prayer box below the hero is removed everywhere (include,
+  `public/home/_prayer.blade.php` partial, `ComposeHomepagePrayerAction`
+  and its consumer-list pin in `PrayerTimesTest` — the banner + API are
+  now the homepage's prayer surface). Mobile ribbon moved from the strip
+  under the nav into the header row itself, between the logo and the
+  translate button (`.header-prayer--mobile`, flex-1 pill; island pill
+  hidden ≤520px, countdown hidden ≤400px so it fits a 390px header —
+  both still reachable from the expanded panel). Banner markup count
+  stays 2 (desktop slot + mobile slot, both in nav.blade.php).
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**; next is **F1** (Hifz → engine). Do not start F in the same turn as the Phase E report.

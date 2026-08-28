@@ -140,11 +140,6 @@
 <body class="min-h-screen bg-gray-50 text-gray-800 font-sans antialiased">
     <x-public.nav />
 
-    {{-- Prayer strip (mobile — above the page content / hero) --}}
-    <div class="site-prayer-wrap site-prayer-wrap--mobile lg:hidden" data-block="prayer_bar">
-        @include('public.partials.prayer-banner')
-    </div>
-
     <main class="min-h-[70vh]">
         @yield('content')
     </main>
