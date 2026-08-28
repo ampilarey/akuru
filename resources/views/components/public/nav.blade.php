@@ -73,13 +73,30 @@
     </div>
 
     <!-- Right Side: Translate + User + Hamburger -->
-    <div class="flex items-center gap-1 sm:gap-2">
+    {{-- The deployed stylesheet is a committed Vite build, so sizing here
+         uses plain scoped CSS instead of uncompiled Tailwind utilities. --}}
+    <style>
+      .nav-right { gap: .4rem; }
+      .nav-translate { padding: .25rem .45rem; }
+      .nav-burger { padding: .35rem; margin-right: -.35rem; }
+      @media (min-width: 640px) {
+        .nav-right { gap: .5rem; }
+        .nav-translate { padding: .375rem .5rem; }
+        .nav-burger { padding: .5rem; margin-right: -.5rem; }
+      }
+      /* The layout's 44px tap-target rule (button,a ≤768px) would inflate
+         these compact header controls; exempt them explicitly. */
+      @media (max-width: 768px) {
+        .nav-translate, .nav-burger { min-height: 0; min-width: 0; }
+      }
+    </style>
+    <div class="nav-right flex items-center">
 
       {{-- ── Translate dropdown ── --}}
       <div class="relative" id="gt-wrapper">
         <button onclick="toggleGT(event)" aria-label="Translate"
-                class="flex items-center gap-1 px-1.5 py-1 sm:px-2 sm:py-1.5 rounded-lg text-sm text-brandGray-600 hover:text-brandMaroon-600 hover:bg-brandBeige-100 border border-gray-200 transition-colors">
-          <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                class="nav-translate flex items-center gap-1 rounded-lg text-sm text-brandGray-600 hover:text-brandMaroon-600 hover:bg-brandBeige-100 border border-gray-200 transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                   d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"/>
           </svg>
@@ -194,7 +211,7 @@
       </div>
 
       {{-- ── Hamburger (mobile/tablet) ── --}}
-      <button class="lg:hidden p-1.5 sm:p-2 text-brandGray-600 hover:text-brandMaroon-600 transition-colors"
+      <button class="lg:hidden nav-burger text-brandGray-600 hover:text-brandMaroon-600 transition-colors"
               onclick="toggleMobileMenu()" aria-label="Toggle mobile menu">
         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
