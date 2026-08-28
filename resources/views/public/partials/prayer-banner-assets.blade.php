@@ -76,19 +76,22 @@
     .hpt-no-results { padding: .75rem; font-size: .8125rem; color: #6b7280; }
 </style>
 
-<script>
-(function () {
-    'use strict';
-
-    var PRAYERS = ['fajr', 'sunrise', 'dhuhr', 'asr', 'maghrib', 'isha'];
-    var PRAYER_LABEL = @json([
+@php
+    $ptLabels = [
         'fajr' => __('public.Fajr'),
         'sunrise' => __('public.Sunrise'),
         'dhuhr' => __('public.Dhuhr'),
         'asr' => __('public.Asr'),
         'maghrib' => __('public.Maghrib'),
         'isha' => __('public.Isha'),
-    ]);
+    ];
+@endphp
+<script>
+(function () {
+    'use strict';
+
+    var PRAYERS = ['fajr', 'sunrise', 'dhuhr', 'asr', 'maghrib', 'isha'];
+    var PRAYER_LABEL = @json($ptLabels);
     var ATOLL_ABBR = {
         'Haa Alif':'HA','Haa Dhaalu':'HDh','Shaviyani':'Sh','Noonu':'N','Raa':'R',
         'Baa':'B','Lhaviyani':'Lh','Kaafu':'K','Alif Alif':'AA','Alif Dhaalu':'ADh',
