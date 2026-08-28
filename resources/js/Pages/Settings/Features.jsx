@@ -11,6 +11,7 @@ function Section({ section, checked }) {
             <ul>
                 {section.items.map((item) => {
                     const state = checked[item.key];
+                    const isPath = item.where.startsWith('/');
                     return (
                         <li key={item.key} className="flex items-start gap-3 border-t px-4 py-2 first:border-t-0">
                             <input
@@ -21,12 +22,22 @@ function Section({ section, checked }) {
                             />
                             <div className="text-sm">
                                 <p className={state ? 'text-gray-400 line-through' : ''}>{item.label}</p>
-                                {state && (
-                                    <p className="text-xs text-gray-500">
-                                        {state.by ? `${state.by} · ` : ''}
-                                        {state.at}
-                                    </p>
-                                )}
+                                <p className="text-xs text-gray-500">
+                                    {isPath && !item.where.includes('{') ? (
+                                        <a href={item.where} className="text-emerald-700 hover:underline">
+                                            {item.where}
+                                        </a>
+                                    ) : (
+                                        <span className="font-mono">{item.where}</span>
+                                    )}
+                                    {state && (
+                                        <>
+                                            {' · '}
+                                            {state.by ? `${state.by} · ` : ''}
+                                            {state.at}
+                                        </>
+                                    )}
+                                </p>
                             </div>
                         </li>
                     );
@@ -36,16 +47,16 @@ function Section({ section, checked }) {
     );
 }
 
-export default function Operations({ sections, checked, done, total }) {
+export default function Features({ sections, checked, done, total }) {
     return (
-        <AppShell title="Operations checklist">
+        <AppShell title="Feature walkthrough">
             <div className="mx-auto max-w-3xl px-4 py-6">
                 <div className="mb-6 flex flex-wrap items-center gap-4">
                     <div>
-                        <h1 className="text-xl font-bold">Operator close-out checklist</h1>
+                        <h1 className="text-xl font-bold">Platform feature walkthrough</h1>
                         <p className="text-sm text-gray-500">
-                            Shared across operators — a tick records who and when. The evidence of
-                            record stays in STATUS.md.
+                            Everything built, by area — what to try and where. A tick means a person
+                            walked it in a browser and it worked. Shared across operators.
                         </p>
                     </div>
                     <div className="ms-auto flex items-center gap-3">
@@ -53,16 +64,16 @@ export default function Operations({ sections, checked, done, total }) {
                             {done} / {total} done
                         </span>
                         <a
-                            href="/admin/operations/export"
+                            href="/admin/operations/features/export"
                             className="rounded border px-3 py-1 text-sm hover:bg-gray-50"
                         >
                             CSV
                         </a>
                         <a
-                            href="/admin/operations/features"
+                            href="/admin/operations"
                             className="rounded border px-3 py-1 text-sm hover:bg-gray-50"
                         >
-                            Feature walkthrough
+                            Close-out checklist
                         </a>
                     </div>
                 </div>

@@ -354,6 +354,8 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::get('/', [\App\Domains\Settings\Http\Controllers\Admin\OperationsController::class, 'index'])->name('admin.operations.index');
         Route::post('/{item}/toggle', [\App\Domains\Settings\Http\Controllers\Admin\OperationsController::class, 'toggle'])->name('admin.operations.toggle');
         Route::get('/export', [\App\Domains\Settings\Http\Controllers\Admin\OperationsController::class, 'export'])->name('admin.operations.export');
+        Route::get('/features', [\App\Domains\Settings\Http\Controllers\Admin\OperationsController::class, 'features'])->name('admin.operations.features');
+        Route::get('/features/export', [\App\Domains\Settings\Http\Controllers\Admin\OperationsController::class, 'featuresExport'])->name('admin.operations.features.export');
     });
 
     // Instructor management

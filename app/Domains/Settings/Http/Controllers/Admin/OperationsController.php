@@ -2,6 +2,7 @@
 
 namespace App\Domains\Settings\Http\Controllers\Admin;
 
+use App\Domains\Settings\Actions\ListFeatureWalkthroughAction;
 use App\Domains\Settings\Actions\ListOperatorChecklistAction;
 use App\Domains\Settings\Actions\ToggleOperatorCheckAction;
 use App\Http\Controllers\Controller;
@@ -20,6 +21,36 @@ class OperationsController extends Controller
     public function index(ListOperatorChecklistAction $list): Response
     {
         return Inertia::render('Settings/Operations', $list->execute());
+    }
+
+    public function features(ListFeatureWalkthroughAction $list): Response
+    {
+        return Inertia::render('Settings/Features', $list->execute());
+    }
+
+    public function featuresExport(ListFeatureWalkthroughAction $list): StreamedResponse
+    {
+        $data = $list->execute();
+
+        return response()->streamDownload(function () use ($data) {
+            $out = fopen('php://output', 'w');
+            fputcsv($out, ['section', 'item_key', 'label', 'where', 'checked', 'checked_by', 'checked_at']);
+            foreach ($data['sections'] as $section) {
+                foreach ($section['items'] as $item) {
+                    $state = $data['checked'][$item['key']] ?? null;
+                    fputcsv($out, [
+                        $section['title'],
+                        $item['key'],
+                        $item['label'],
+                        $item['where'],
+                        $state !== null ? 'yes' : 'no',
+                        $state['by'] ?? '',
+                        $state['at'] ?? '',
+                    ]);
+                }
+            }
+            fclose($out);
+        }, 'feature-walkthrough.csv', ['Content-Type' => 'text/csv']);
     }
 
     public function toggle(Request $request, string $item, ToggleOperatorCheckAction $toggle): RedirectResponse
