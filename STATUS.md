@@ -790,6 +790,19 @@ migration; no Hifz behaviour change outside it.
   CSV export per the every-listing convention. Inertia page with
   progress bar and attribution.
 
+## 5l. Admin feature walkthrough
+
+- **Feature walkthrough (this PR):** the whole platform as a testable
+  inventory at `/admin/operations/features` — every shipped area from
+  the §2 phase table (public site, admissions, engine authoring,
+  learning, Arabic/Qur'an, pronunciation AI, academics, exams, finance,
+  people, portal, HR, notifications, platform) as items with what-to-
+  try + where. Same shared tick store (`operator_checklist_checks`,
+  `fw-` keys); a tick = a person walked it in a browser and it worked
+  (the USABLE column, made clickable). CSV export; cross-linked with
+  the close-out checklist; same `operations.manage` gate. No schema
+  change.
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**; next is **F1** (Hifz → engine). Do not start F in the same turn as the Phase E report.
