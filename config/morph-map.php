@@ -137,6 +137,7 @@ return [
     'message' => \App\Domains\Notifications\Models\Message::class,
     'notification' => \App\Domains\Notifications\Models\Notification::class,
     'notification_template' => \App\Domains\Notifications\Models\NotificationTemplate::class,
+    'operator_check' => \App\Domains\Settings\Models\OperatorCheck::class,
     'otp' => \App\Domains\Identity\Models\Otp::class,
     'page' => \App\Domains\Website\Models\Page::class,
     'parent_guardian' => \App\Domains\People\Models\ParentGuardian::class,
