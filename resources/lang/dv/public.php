@@ -185,4 +185,5 @@ return [
     'Check back later for photo galleries' => 'ފޮޓޯ ގެލެރީތަކަށް ފަހުން ބައްލަވާ.',
     'Careers' => 'Careers',
     'Daily reminders' => 'Daily reminders',
+    'Change island' => 'Change island',
 ];

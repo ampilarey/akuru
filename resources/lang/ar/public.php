@@ -185,4 +185,5 @@ return [
     'Check back later for photo galleries' => 'تفقد لاحقاً للاطلاع على معارض الصور.',
     'Careers' => 'Careers',
     'Daily reminders' => 'Daily reminders',
+    'Change island' => 'Change island',
 ];

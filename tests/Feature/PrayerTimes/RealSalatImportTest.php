@@ -65,6 +65,30 @@ it('lets an admin import the bundled dataset in one click with Malé defaulted',
     expect(PrayerIsland::query()->find($defaultId)?->name)->toBe('މާލެ');
 });
 
+it('serves the islands API and renders the header prayer banner on the public site', function () {
+    $path = makeRealShapedSalatDb();
+    app(ImportPrayerTimesFromSalatDbAction::class)->execute($path);
+    unlink($path);
+
+    // Active islands only, in the DTO shape the banner script consumes.
+    $this->getJson('/api/v1/prayer-times/islands')
+        ->assertOk()
+        ->assertJsonCount(1, 'islands')
+        ->assertJsonPath('islands.0.id', 102)
+        ->assertJsonPath('islands.0.name_en', 'Malé')
+        ->assertJsonPath('islands.0.atoll_latin', 'Kaafu');
+
+    // Banner appears twice (desktop header + mobile strip); assets once.
+    $html = $this->withoutLocalizationMiddleware()
+        ->get(route('public.home'))
+        ->assertOk()
+        ->getContent();
+    // Count the section markup, not the bare attribute name — the banner
+    // script also mentions data-pt-banner inside a querySelector string.
+    expect(substr_count($html, '<section class="prayer-banner'))->toBe(2)
+        ->and(substr_count($html, 'id="hptPanel"'))->toBe(1);
+});
+
 it('seeds the committed salat.db end-to-end and defaults the island to Malé', function () {
     expect(is_file(database_path('salat.db')))->toBeTrue();
 

@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('v1/prayer-times', [PrayerTimesController::class, 'json'])->middleware('throttle:60,1');
+Route::get('v1/prayer-times/islands', [PrayerTimesController::class, 'islands'])->middleware('throttle:60,1');
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
