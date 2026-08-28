@@ -980,6 +980,8 @@ migration; no Hifz behaviour change outside it.
   aligns flush with the container's right content edge); pill + translate
   box both measured at exactly 26px; expanded date line now shows BOTH
   dates ("28 August 2026 · 15 Rabi' al-awwal 1448 AH").
+  Round 4: both controls raised 15% to exactly 30px (translate py .375rem;
+  pill 28px content + borders), operator request.
 
 ## 6. Out of scope (unchanged)
 
