@@ -56,6 +56,9 @@
     .header-prayer .prayer-banner-skeleton, .header-prayer .prayer-banner-unavailable { min-height: 38px; }
     .header-prayer .prayer-banner-next { font-size: .78rem; }
     .header-prayer .prayer-banner-island { font-size: .7rem; }
+    /* The desktop slot is ~360px wide, so the viewport-width 6-column rule
+       truncates times there; keep the grid at 3 columns in that slot. */
+    .header-prayer:not(.header-prayer--mobile) .prayer-banner-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 
     /* Mobile/tablet header slot: pill between the logo and the translate button */
     .header-prayer--mobile { flex: 1 1 auto; width: auto; max-width: 420px; margin: 0 .5rem; }
