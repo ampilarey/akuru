@@ -58,14 +58,35 @@
     .header-prayer .prayer-banner-island { font-size: .7rem; }
 
     /* Mobile/tablet header slot: pill between the logo and the translate button */
-    .header-prayer--mobile { flex: 1 1 auto; width: auto; max-width: 420px; margin: 0 .625rem; }
+    .header-prayer--mobile { flex: 1 1 auto; width: auto; max-width: 420px; margin: 0 .5rem; }
+    .header-prayer--mobile .prayer-banner { min-height: 32px; }
+    .header-prayer--mobile .prayer-banner-summary, .header-prayer--mobile .prayer-banner-expand,
+    .header-prayer--mobile .prayer-banner-skeleton, .header-prayer--mobile .prayer-banner-unavailable { min-height: 32px; }
+    .header-prayer--mobile .prayer-banner-expand { padding-top: .2rem; padding-bottom: .2rem; padding-left: .6rem; }
+    .header-prayer--mobile .prayer-banner-next { font-size: .75rem; }
+    .header-prayer--mobile .prayer-banner-island { font-size: .68rem; padding: .18rem .45rem; margin-right: .3rem; }
+    /* Short island label (≤6 chars) so the pill stays one line on phones */
+    .pt-loc-short { display: none; }
     @media (max-width: 520px) {
-        .header-prayer--mobile .prayer-banner-island { display: none; }
-        .header-prayer--mobile .prayer-banner-expand { padding-left: .6rem; }
+        .header-prayer--mobile .pt-loc-full { display: none; }
+        .header-prayer--mobile .pt-loc-short { display: inline; }
     }
     @media (max-width: 400px) {
         .header-prayer--mobile .prayer-banner-cd { display: none; }
     }
+    /* Expanded details drop below the header instead of stretching it:
+       fixed full-width sheet under the nav, keeping the page's 1rem padding.
+       JS sets its top to the nav's bottom edge each tick. */
+    .header-prayer--mobile .prayer-banner.is-expanded { border-radius: 999px; }
+    .header-prayer--mobile .prayer-banner-panel {
+        position: fixed; left: 0; right: 0; z-index: 80; margin: 0 1rem;
+        background: #F9F4EE; border: 1px solid #E6D9C8; border-radius: 0 0 12px 12px;
+        box-shadow: 0 14px 30px rgba(61, 18, 25, .18);
+    }
+
+    /* Hijri date inside the expanded panel */
+    .prayer-banner-hijri { font-size: .75rem; font-weight: 700; color: #7C2D37; margin-bottom: .6rem; }
+    .prayer-banner-hijri[hidden] { display: none !important; }
 
     /* Island picker */
     .hpt-panel { position: fixed; z-index: 90; width: 290px; max-height: 60vh; display: none; flex-direction: column;
@@ -131,6 +152,10 @@
         var abbr = ATOLL_ABBR[atollLatin] || (atollLatin ? atollLatin.split(' ')[0] : '');
         return (abbr ? abbr + '. ' : '') + (nameLatin || '');
     }
+    function makeShortLabel(nameLatin) {
+        var n = nameLatin || 'Malé';
+        return n.length > 6 ? n.slice(0, 5) + '…' : n;
+    }
     function toIslandInfo(raw) {
         if (!raw || typeof raw.id !== 'number' || !isFinite(raw.id)) return null;
         var nameLatin = raw.nameLatin || raw.name_en || raw.name_latin || '';
@@ -152,6 +177,7 @@
 
     var prayers = null;
     var tomorrowPrayers = null;
+    var hijri = null;
     var currentIsland = null;
     var allIslands = [];
     var tickTimer = null;
@@ -216,22 +242,42 @@
         if (btn) btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
         setHidden(panel, !isOpen);
         if (chev) chev.textContent = isOpen ? '⌃' : '▾';
+        if (isOpen) positionMobilePanel(root);
+    }
+
+    // The mobile header slot's panel is a fixed sheet below the nav so the
+    // header row never grows; pin its top to the nav's bottom edge.
+    function positionMobilePanel(root) {
+        var panel = root.querySelector('[data-pt-panel]');
+        if (!panel || !root.closest) return;
+        if (!root.closest('.header-prayer--mobile')) { panel.style.top = ''; return; }
+        var nav = root.closest('nav');
+        panel.style.top = (nav ? nav.getBoundingClientRect().bottom : 56) + 'px';
     }
 
     function tick() {
         var info = computeTick();
         if (!info) return;
         var label = currentIsland ? makeLabel(currentIsland.atollLatin, currentIsland.nameLatin) : 'K. Malé';
+        var shortLabel = makeShortLabel(currentIsland ? currentIsland.nameLatin : 'Malé');
         eachBanner(function (root) {
             var nameEl = root.querySelector('[data-pt-name]');
             var timeEl = root.querySelector('[data-pt-time]');
             var cdEl = root.querySelector('[data-pt-cd]');
             var locEl = root.querySelector('[data-pt-loc]');
+            var locShortEl = root.querySelector('[data-pt-loc-short]');
+            var hijriEl = root.querySelector('[data-pt-hijri]');
             if (nameEl) nameEl.textContent = info.pName;
             if (timeEl) timeEl.textContent = ' ' + info.pTime;
             if (cdEl) cdEl.textContent = ' · ' + info.cdStr;
             if (locEl) locEl.textContent = label;
-            if (expanded) paintGrid(root, info.pName);
+            if (locShortEl) locShortEl.textContent = shortLabel;
+            if (hijriEl) {
+                var hText = hijri ? (hijri.formatted || (hijri.day + ' ' + hijri.month_name + ' ' + hijri.year + ' AH')) : '';
+                hijriEl.textContent = hText;
+                setHidden(hijriEl, !hText);
+            }
+            if (expanded) { paintGrid(root, info.pName); positionMobilePanel(root); }
         });
     }
 
@@ -253,22 +299,26 @@
     function fetchDay(islandId, date) {
         return fetch(API + '?island_id=' + islandId + '&date=' + date)
             .then(function (r) { applyServerDate(r); return r.json(); })
-            .then(function (d) { return (d && d.available && d.times && d.times.fajr) ? d.times : null; });
+            .then(function (d) {
+                return (d && d.available && d.times && d.times.fajr)
+                    ? { times: d.times, hijri: d.hijri || null }
+                    : null;
+            });
     }
 
     function prefetchTomorrow(islandId) {
-        var tom = mvtDateStr(1), tKey = 'akuru_pt_day_' + tom + '_' + islandId;
-        try { var c = localStorage.getItem(tKey); if (c) { var tp = JSON.parse(c); if (tp.sunrise) { tomorrowPrayers = tp; return; } localStorage.removeItem(tKey); } } catch (e) {}
+        var tom = mvtDateStr(1), tKey = 'akuru_pt_day2_' + tom + '_' + islandId;
+        try { var c = localStorage.getItem(tKey); if (c) { var tp = JSON.parse(c); if (tp.times && tp.times.sunrise) { tomorrowPrayers = tp.times; return; } localStorage.removeItem(tKey); } } catch (e) {}
         fetchDay(islandId, tom).then(function (t) {
-            if (t) { tomorrowPrayers = t; try { localStorage.setItem(tKey, JSON.stringify(t)); } catch (e) {} }
+            if (t) { tomorrowPrayers = t.times; try { localStorage.setItem(tKey, JSON.stringify(t)); } catch (e) {} }
         }).catch(function () {});
     }
 
     function loadPrayers(islandId, cb) {
-        var today = mvtDateStr(), cKey = 'akuru_pt_day_' + today + '_' + islandId;
-        try { var c = localStorage.getItem(cKey); if (c) { var p = JSON.parse(c); if (p.sunrise) { prayers = p; cb(); prefetchTomorrow(islandId); return; } localStorage.removeItem(cKey); } } catch (e) {}
+        var today = mvtDateStr(), cKey = 'akuru_pt_day2_' + today + '_' + islandId;
+        try { var c = localStorage.getItem(cKey); if (c) { var p = JSON.parse(c); if (p.times && p.times.sunrise) { prayers = p.times; hijri = p.hijri || null; cb(); prefetchTomorrow(islandId); return; } localStorage.removeItem(cKey); } } catch (e) {}
         fetchDay(islandId, today).then(function (t) {
-            if (t) { prayers = t; try { localStorage.setItem(cKey, JSON.stringify(t)); } catch (e) {} }
+            if (t) { prayers = t.times; hijri = t.hijri; try { localStorage.setItem(cKey, JSON.stringify(t)); } catch (e) {} }
             cb(); prefetchTomorrow(islandId);
         }).catch(function () { cb(); });
     }
@@ -276,7 +326,7 @@
     function selectIsland(isl) {
         currentIsland = toIslandInfo(isl) || MALE_FALLBACK;
         try { localStorage.setItem('akuru_pt_island', JSON.stringify(currentIsland)); } catch (e) {}
-        prayers = null; tomorrowPrayers = null;
+        prayers = null; tomorrowPrayers = null; hijri = null;
         loadPrayers(currentIsland.id, showBanner);
     }
 
