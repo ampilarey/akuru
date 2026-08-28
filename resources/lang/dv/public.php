@@ -183,4 +183,6 @@ return [
     'No items in this gallery' => 'މި ގެލެރީގައި ފޮޓޯތަކެއް ނެތް',
     'gallery_empty_message' => 'މި ގެލެރީ މިހާރު ހުސްކޮށް ހުރި. ފަހަށް ބެލެހެއްޓި ބައްލަވާ.',
     'Check back later for photo galleries' => 'ފޮޓޯ ގެލެރީތަކަށް ފަހުން ބައްލަވާ.',
+    'Careers' => 'Careers',
+    'Daily reminders' => 'Daily reminders',
 ];
