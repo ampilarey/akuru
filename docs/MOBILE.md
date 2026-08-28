@@ -35,6 +35,24 @@ listing assets are operator tasks.
       and a Notifications-domain device token endpoint; `devices` table
       already exists)
 
+## App Store review risk — Apple guideline 4.2 (read before submission)
+
+Apple's "minimum functionality" guideline (4.2) routinely rejects apps
+that are plainly a website in a WebView — which a bare server-URL shell
+is. Before the iOS submission:
+
+- Lead the listing and the first-run experience with the app-like
+  capabilities: native mic recording for pronunciation practice, the
+  offline page, install-free login persistence — not "browse our site".
+- Wire push notifications first if possible (the strongest 4.2 mitigator;
+  needs FCM/APNs keys + the Notifications-domain token endpoint).
+- If rejected anyway, the fallback is a config change, not a rewrite:
+  drop `server.url` and ship the built assets in the binary (`webDir`
+  bundling; the app then calls the API remotely). App updates go back
+  through review, but 4.2 objections usually clear.
+- Google Play is more lenient but holds the same lever; the same
+  mitigations apply.
+
 ## Notes
 
 - The webview needs microphone permission entries:
