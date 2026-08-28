@@ -8,6 +8,8 @@ use App\Domains\Settings\Actions\GetSettingAction;
 
 class ComposeHomepageTrustAction
 {
+    public const DEFAULT_STUDENTS_MIN_DISPLAY = 25;
+
     /**
      * Settings-driven homepage trust signals. Empty settings omit the signal —
      * nothing is invented in the view.
@@ -94,9 +96,14 @@ class ComposeHomepageTrustAction
             return [$count > 0 ? $count : null, 'manual'];
         }
 
+        // A tiny computed count reads worse than no number (a hero saying
+        // "9 students" undersells) — hold it back until it clears the
+        // display floor. A manual override always shows: the operator chose it.
         $count = app(CountStudentsAction::class)->execute();
+        $floor = $settings->execute('trust.students_min_display', '');
+        $minimum = $this->isPresent($floor) ? max((int) $floor, 1) : self::DEFAULT_STUDENTS_MIN_DISPLAY;
 
-        return [$count > 0 ? $count : null, 'computed'];
+        return [$count >= $minimum ? $count : null, 'computed'];
     }
 
     private function localized(mixed $value, string $locale): ?string
