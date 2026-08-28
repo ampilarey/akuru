@@ -61,6 +61,15 @@ class HandleInertiaRequests extends Middleware
             ],
             'i18n' => [
                 'learn' => trans('learn'),
+                // Only the page-facing subset: sharing the whole group would
+                // serialize every common string into every page's payload
+                // (and unrelated strings then leak into page assertions).
+                'common' => array_filter(
+                    (array) trans('common'),
+                    fn ($value, $key) => is_string($value)
+                        && (str_starts_with($key, 'library_') || str_starts_with($key, 'review_')),
+                    ARRAY_FILTER_USE_BOTH,
+                ),
             ],
         ];
     }

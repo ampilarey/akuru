@@ -33,4 +33,18 @@ return [
     'locale_dv' => 'ދިވެހި',
     'locale_ar' => 'العربية',
     'offline' => 'އޮފްލައިން',
+
+    // JSX i18n tranche — EN placeholders; correct dv via /admin/translations
+    'pronounce_title' => 'Pronunciation practice',
+    'pronounce_record' => 'Record',
+    'pronounce_stop' => 'Stop',
+    'pronounce_submit' => 'Submit recording',
+    'pronounce_hint_ai' => 'The pronunciation checker gives instant feedback; your teacher still reviews.',
+    'pronounce_hint_teacher' => 'Your teacher will listen and respond.',
+    'pronounce_attempt' => 'Attempt',
+    'pronounce_status' => 'Status',
+    'pronounce_review' => 'Teacher review',
+    'pronounce_empty' => 'No attempts yet — record your first sound.',
+    'pronounce_waiting' => 'waiting',
+    'pronounce_done' => 'done',
 ];

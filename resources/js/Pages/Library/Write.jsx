@@ -2,7 +2,7 @@ import { router, useForm, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 import AppShell from '../../Layouts/AppShell';
 
-function ApplyForm() {
+function ApplyForm({ t }) {
     const form = useForm({
         display_name: '',
         bio: '',
@@ -20,7 +20,7 @@ function ApplyForm() {
             }}
             className="grid max-w-2xl gap-3 rounded-lg border bg-white p-4"
         >
-            <h2 className="text-lg font-semibold">Apply to publish with Akuru</h2>
+            <h2 className="text-lg font-semibold">{t.library_apply_title || 'Apply to publish with Akuru'}</h2>
             <input className="form-input" placeholder="Display name (as shown to readers)" value={form.data.display_name} onChange={(e) => form.setData('display_name', e.target.value)} />
             {form.errors.display_name && <p className="text-sm text-red-600">{form.errors.display_name}</p>}
             <textarea className="form-input" rows="3" placeholder="Bio" value={form.data.bio} onChange={(e) => form.setData('bio', e.target.value)} />
@@ -33,12 +33,12 @@ function ApplyForm() {
             </label>
             {form.errors.agreement_accepted && <p className="text-sm text-red-600">{form.errors.agreement_accepted}</p>}
             {form.errors.application && <p className="text-sm text-red-600">{form.errors.application}</p>}
-            <button type="submit" className="btn-primary justify-self-start" disabled={form.processing}>Submit application</button>
+            <button type="submit" className="btn-primary justify-self-start" disabled={form.processing}>{t.library_apply_submit || 'Submit application'}</button>
         </form>
     );
 }
 
-function ItemEditor({ item, options, onDone }) {
+function ItemEditor({ item, options, onDone, t }) {
     const form = useForm({
         title: item?.title || '',
         content_type: item?.content_type || options.content_types[0] || 'article',
@@ -82,8 +82,8 @@ function ItemEditor({ item, options, onDone }) {
                 <input className="form-input" type="file" accept="application/pdf" onChange={(e) => form.setData('pdf', e.target.files[0] ?? null)} />
             </label>
             <div className="flex gap-2 self-end">
-                <button type="submit" className="btn-primary" disabled={form.processing}>{item ? 'Update draft' : 'Save draft'}</button>
-                {onDone && <button type="button" className="btn-secondary" onClick={onDone}>Close</button>}
+                <button type="submit" className="btn-primary" disabled={form.processing}>{item ? t.library_update_draft || 'Update draft' : t.library_save_draft || 'Save draft'}</button>
+                {onDone && <button type="button" className="btn-secondary" onClick={onDone}>{t.library_close || 'Close'}</button>}
             </div>
             {Object.values(form.errors).map((error) => <p key={error} className="text-sm text-red-600 md:col-span-4">{error}</p>)}
         </form>
@@ -133,12 +133,13 @@ function EarningsCard({ earnings }) {
 }
 
 export default function Write({ dashboard, options, earnings = null }) {
-    const flash = usePage().props.flash || {};
+    const { flash = {}, i18n } = usePage().props;
+    const t = i18n?.common || {};
     const [editing, setEditing] = useState(null);
     const { profile, application, items, sales } = dashboard;
 
     return (
-        <AppShell title="Writer portal">
+        <AppShell title={t.library_write_title || 'Writer portal'}>
             {flash.success && <p className="mb-4 rounded bg-green-50 p-3 text-green-700">{flash.success}</p>}
 
             {!profile && (
@@ -149,7 +150,7 @@ export default function Write({ dashboard, options, earnings = null }) {
                     {application?.status === 'rejected' && (
                         <p className="mb-4 rounded bg-red-50 p-3 text-red-700">Your last application was not approved{application.decision_note ? ` — ${application.decision_note}` : ''}. You may apply again.</p>
                     )}
-                    {application?.status !== 'pending' && <ApplyForm />}
+                    {application?.status !== 'pending' && <ApplyForm t={t} />}
                 </div>
             )}
 
@@ -161,29 +162,29 @@ export default function Write({ dashboard, options, earnings = null }) {
                             <p className="text-sm text-gray-500">Approved writer since {profile.approved_at} · {sales.total_sales || 0} sales · MVR {sales.total_revenue || 0}</p>
                         </div>
                         <button type="button" className="btn-primary" onClick={() => setEditing(editing === 'new' ? null : 'new')}>
-                            {editing === 'new' ? 'Close editor' : 'New draft'}
+                            {editing === 'new' ? t.library_close_editor || 'Close editor' : t.library_new_draft || 'New draft'}
                         </button>
                     </div>
 
                     <EarningsCard earnings={earnings} />
 
-                    {editing === 'new' && <ItemEditor options={options} onDone={() => setEditing(null)} />}
-                    {editing && editing !== 'new' && <ItemEditor item={editing} options={options} onDone={() => setEditing(null)} />}
+                    {editing === 'new' && <ItemEditor options={options} onDone={() => setEditing(null)} t={t} />}
+                    {editing && editing !== 'new' && <ItemEditor item={editing} options={options} onDone={() => setEditing(null)} t={t} />}
 
                     <div className="overflow-x-auto rounded-lg border bg-white">
                         <table className="min-w-full text-sm">
                             <thead className="bg-[#F3EBE0] text-start">
                                 <tr>
-                                    <th className="px-3 py-2">Title</th>
-                                    <th className="px-3 py-2">Status</th>
-                                    <th className="px-3 py-2">Editor feedback</th>
-                                    <th className="px-3 py-2">Sales</th>
-                                    <th className="px-3 py-2">Actions</th>
+                                    <th className="px-3 py-2">{t.library_th_title || 'Title'}</th>
+                                    <th className="px-3 py-2">{t.library_th_status || 'Status'}</th>
+                                    <th className="px-3 py-2">{t.library_th_feedback || 'Editor feedback'}</th>
+                                    <th className="px-3 py-2">{t.library_th_sales || 'Sales'}</th>
+                                    <th className="px-3 py-2">{t.library_th_actions || 'Actions'}</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {items.length === 0 && (
-                                    <tr><td className="px-3 py-4 text-gray-500" colSpan={5}>No drafts yet — start one.</td></tr>
+                                    <tr><td className="px-3 py-4 text-gray-500" colSpan={5}>{t.library_no_drafts || 'No drafts yet — start one.'}</td></tr>
                                 )}
                                 {items.map((item) => (
                                     <tr key={item.id} className="border-t">
@@ -197,11 +198,11 @@ export default function Write({ dashboard, options, earnings = null }) {
                                         <td className="px-3 py-2">
                                             {['draft', 'changes_requested'].includes(item.status) && (
                                                 <span className="flex gap-2">
-                                                    <button type="button" className="text-[#7C2D37] hover:underline" onClick={() => setEditing(item)}>Edit</button>
-                                                    <button type="button" className="btn-secondary" onClick={() => router.post(`/write/items/${item.id}/submit`, {}, { preserveScroll: true })}>Submit for review</button>
+                                                    <button type="button" className="text-[#7C2D37] hover:underline" onClick={() => setEditing(item)}>{t.library_edit || 'Edit'}</button>
+                                                    <button type="button" className="btn-secondary" onClick={() => router.post(`/write/items/${item.id}/submit`, {}, { preserveScroll: true })}>{t.library_submit_review || 'Submit for review'}</button>
                                                 </span>
                                             )}
-                                            {item.status === 'published' && <a className="text-[#7C2D37] hover:underline" href={`/library/${item.slug}`}>View</a>}
+                                            {item.status === 'published' && <a className="text-[#7C2D37] hover:underline" href={`/library/${item.slug}`}>{t.library_view || 'View'}</a>}
                                         </td>
                                     </tr>
                                 ))}
