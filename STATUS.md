@@ -762,6 +762,20 @@ migration; no Hifz behaviour change outside it.
   precondition). Deferred (recorded): passage-level recitation
   assistance (future model family), auto-marking mistake marks from
   predictions (teacher stays the only mistake writer).
+  **Backlog — owner-approved 2026-08-28, "later" (build on request):**
+  **Recitation assist Tier 1** — word-level checking only (skipped /
+  wrong / out-of-order words), scoped as: locally-run recitation-trained
+  speech model (§51.9 — audio never leaves the server) doing FORCED
+  ALIGNMENT against the assignment's known surah/ayah range; output =
+  ADVISORY suspected-mistake flags in the teacher review queue via the
+  existing contract/queue/model-shelf architecture (second model family
+  on the shelf). Ship SHADOW-MODE first: run silently beside teachers,
+  measure agreement on real (child, phone-mic, Maldivian-accent) audio
+  before any teacher-visible output; student is never auto-notified — a
+  teacher confirms every mistake (§52.10). Haraka-level (Tier 2) and
+  tajweed (Tier 3) detection stay OUT of scope; revisit only with
+  accumulated teacher-marked data. Teacher mistake marks accrue as the
+  training/eval set passively from normal use.
 ## 5j. Phase 5 — mobile packaging (SPEC §50)
 
 - **Phase 5 scaffold (this PR):** the codeable surface of §50 — the
