@@ -61,6 +61,7 @@ class HandleInertiaRequests extends Middleware
             ],
             'i18n' => [
                 'learn' => trans('learn'),
+                'common' => trans('common'),
             ],
         ];
     }

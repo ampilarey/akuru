@@ -121,4 +121,30 @@ return [
 
     // Date formats
     'gregorian_date' => 'ގްރެގޯރިއަން ތާރީޚް',
+
+    // JSX i18n tranche — EN placeholders; correct dv via /admin/translations
+    'library_write_title' => 'Writer portal',
+    'library_apply_title' => 'Apply to publish with Akuru',
+    'library_apply_submit' => 'Submit application',
+    'library_new_draft' => 'New draft',
+    'library_close_editor' => 'Close editor',
+    'library_save_draft' => 'Save draft',
+    'library_update_draft' => 'Update draft',
+    'library_close' => 'Close',
+    'library_submit_review' => 'Submit for review',
+    'library_edit' => 'Edit',
+    'library_view' => 'View',
+    'library_no_drafts' => 'No drafts yet — start one.',
+    'library_th_title' => 'Title',
+    'library_th_status' => 'Status',
+    'library_th_feedback' => 'Editor feedback',
+    'library_th_sales' => 'Sales',
+    'library_th_actions' => 'Actions',
+    'review_title' => 'Peer review',
+    'review_empty' => 'No review assignments.',
+    'review_citations' => 'Citations',
+    'review_comment_placeholder' => 'Review comments for the writer',
+    'review_accept' => 'Recommend accept',
+    'review_revise' => 'Needs revision',
+    'review_reject' => 'Recommend reject',
 ];

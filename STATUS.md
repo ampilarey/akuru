@@ -856,6 +856,18 @@ migration; no Hifz behaviour change outside it.
   terminology). **Operator:** choosing/wiring a real provider (keys,
   cost, data-residency for student-visible text) is a future decision.
 
+## 5q. JSX i18n tranche (user-facing pages)
+
+- **Tranche (this PR):** the user-facing Inertia pages built this week
+  now run through translation keys: Pronunciation Practice (12 learn.*
+  keys), Writer portal + Peer review (24 common.* keys). `i18n.common`
+  joins `i18n.learn` in the shared Inertia props, so these strings ride
+  the T1 override loader — correctable at /admin/translations. dv/ar
+  values seed as ENGLISH placeholders on purpose (honest EN beats wrong
+  machine Dhivehi); the editor's Suspect filter queues them for the
+  native speaker. Remaining hardcoded-English admin JSX stays the
+  recorded long tail (§5n).
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**; next is **F1** (Hifz → engine). Do not start F in the same turn as the Phase E report.

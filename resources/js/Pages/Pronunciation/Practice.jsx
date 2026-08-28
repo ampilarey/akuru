@@ -3,7 +3,8 @@ import { useRef, useState } from 'react';
 import AppShell from '../../Layouts/AppShell';
 
 export default function Practice({ letters, harakas, attempts, ai_enabled: aiEnabled }) {
-    const flash = usePage().props.flash || {};
+    const { flash = {}, i18n } = usePage().props;
+    const t = i18n?.learn || {};
     const [letterId, setLetterId] = useState(letters[0]?.id || '');
     const [harakaId, setHarakaId] = useState(harakas[0]?.id || '');
     const [recording, setRecording] = useState(false);
@@ -47,7 +48,7 @@ export default function Practice({ letters, harakas, attempts, ai_enabled: aiEna
     const haraka = harakas.find((row) => String(row.id) === String(harakaId));
 
     return (
-        <AppShell title="Pronunciation practice">
+        <AppShell title={t.pronounce_title || 'Pronunciation practice'}>
             {flash.success && <p className="mb-4 rounded bg-green-50 p-3 text-green-700">{flash.success}</p>}
 
             <div className="mb-6 rounded-lg border bg-white p-6 text-center">
@@ -61,14 +62,14 @@ export default function Practice({ letters, harakas, attempts, ai_enabled: aiEna
                 </div>
                 <p className="mb-4 text-6xl" dir="rtl">{letter?.char}{haraka?.symbol}</p>
                 <div className="flex justify-center gap-3">
-                    {!recording && <button type="button" className="btn-primary" onClick={startRecording}>Record</button>}
-                    {recording && <button type="button" className="bg-red-600 text-white rounded px-4 py-2" onClick={stopRecording}>Stop</button>}
-                    {blob && !recording && <button type="button" className="btn-secondary" onClick={submit}>Submit recording</button>}
+                    {!recording && <button type="button" className="btn-primary" onClick={startRecording}>{t.pronounce_record || 'Record'}</button>}
+                    {recording && <button type="button" className="bg-red-600 text-white rounded px-4 py-2" onClick={stopRecording}>{t.pronounce_stop || 'Stop'}</button>}
+                    {blob && !recording && <button type="button" className="btn-secondary" onClick={submit}>{t.pronounce_submit || 'Submit recording'}</button>}
                 </div>
                 <p className="mt-3 text-xs text-gray-500">
                     {aiEnabled
-                        ? 'The pronunciation checker gives instant feedback; your teacher still reviews.'
-                        : 'Your teacher will listen and respond.'}
+                        ? t.pronounce_hint_ai || 'The pronunciation checker gives instant feedback; your teacher still reviews.'
+                        : t.pronounce_hint_teacher || 'Your teacher will listen and respond.'}
                 </p>
             </div>
 
@@ -76,20 +77,20 @@ export default function Practice({ letters, harakas, attempts, ai_enabled: aiEna
                 <table className="min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
-                            <th className="px-3 py-2">Attempt</th>
-                            <th className="px-3 py-2">Status</th>
-                            <th className="px-3 py-2">Teacher review</th>
+                            <th className="px-3 py-2">{t.pronounce_attempt || 'Attempt'}</th>
+                            <th className="px-3 py-2">{t.pronounce_status || 'Status'}</th>
+                            <th className="px-3 py-2">{t.pronounce_review || 'Teacher review'}</th>
                         </tr>
                     </thead>
                     <tbody>
                         {attempts.length === 0 && (
-                            <tr><td className="px-3 py-4 text-gray-500" colSpan={3}>No attempts yet — record your first sound.</td></tr>
+                            <tr><td className="px-3 py-4 text-gray-500" colSpan={3}>{t.pronounce_empty || 'No attempts yet — record your first sound.'}</td></tr>
                         )}
                         {attempts.map((attempt) => (
                             <tr key={attempt.id} className="border-t">
                                 <td className="px-3 py-2">{attempt.at}</td>
                                 <td className="px-3 py-2">{attempt.status?.replaceAll('_', ' ')}</td>
-                                <td className="px-3 py-2">{attempt.teacher_review_required ? 'waiting' : 'done'}</td>
+                                <td className="px-3 py-2">{attempt.teacher_review_required ? t.pronounce_waiting || 'waiting' : t.pronounce_done || 'done'}</td>
                             </tr>
                         ))}
                     </tbody>

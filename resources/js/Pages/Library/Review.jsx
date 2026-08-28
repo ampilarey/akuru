@@ -2,7 +2,7 @@ import { router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 import AppShell from '../../Layouts/AppShell';
 
-function AssignmentCard({ assignment }) {
+function AssignmentCard({ assignment, t }) {
     const [comment, setComment] = useState('');
     const item = assignment.item;
 
@@ -26,34 +26,35 @@ function AssignmentCard({ assignment }) {
             )}
             {item?.citations && (
                 <div className="mb-2 text-xs text-gray-600">
-                    <p className="font-semibold">Citations</p>
+                    <p className="font-semibold">{t.review_citations || 'Citations'}</p>
                     <pre className="whitespace-pre-wrap font-sans">{item.citations}</pre>
                 </div>
             )}
             <textarea
                 className="form-input mb-2 w-full"
                 rows="3"
-                placeholder="Review comments for the writer"
+                placeholder={t.review_comment_placeholder || 'Review comments for the writer'}
                 value={comment}
                 onChange={(e) => setComment(e.target.value)}
             />
             <div className="flex flex-wrap gap-2">
-                <button type="button" className="btn-primary" onClick={() => submit('accept')}>Recommend accept</button>
-                <button type="button" className="btn-secondary" onClick={() => submit('revise')}>Needs revision</button>
-                <button type="button" className="text-sm text-red-600" onClick={() => submit('reject')}>Recommend reject</button>
+                <button type="button" className="btn-primary" onClick={() => submit('accept')}>{t.review_accept || 'Recommend accept'}</button>
+                <button type="button" className="btn-secondary" onClick={() => submit('revise')}>{t.review_revise || 'Needs revision'}</button>
+                <button type="button" className="text-sm text-red-600" onClick={() => submit('reject')}>{t.review_reject || 'Recommend reject'}</button>
             </div>
         </div>
     );
 }
 
 export default function Review({ assignments }) {
-    const flash = usePage().props.flash || {};
+    const { flash = {}, i18n } = usePage().props;
+    const t = i18n?.common || {};
 
     return (
-        <AppShell title="Peer review">
+        <AppShell title={t.review_title || 'Peer review'}>
             {flash.success && <p className="mb-4 rounded bg-green-50 p-3 text-green-700">{flash.success}</p>}
-            {assignments.length === 0 && <p className="text-gray-500">No review assignments.</p>}
-            {assignments.map((assignment) => <AssignmentCard key={assignment.id} assignment={assignment} />)}
+            {assignments.length === 0 && <p className="text-gray-500">{t.review_empty || 'No review assignments.'}</p>}
+            {assignments.map((assignment) => <AssignmentCard key={assignment.id} assignment={assignment} t={t} />)}
         </AppShell>
     );
 }
