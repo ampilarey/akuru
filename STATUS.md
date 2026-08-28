@@ -967,6 +967,20 @@ migration; no Hifz behaviour change outside it.
   storing `{times, hijri}`. Render test also pins the hijri node count
   (by class — the bare attribute appears in the JS selector too).
 
+- **Mobile polish round 3 (2026-08-28, operator request):** KEY FINDING —
+  `public/build` is a COMMITTED Vite build and the TEST deploy only
+  git-pulls, so any Tailwind utility not already in the compiled CSS
+  silently no-ops (that broke the translate icon: `w-3.5`/`sm:*` don't
+  exist in the build). Public-site tweaks must use classes already in the
+  build or plain scoped `<style>` CSS. Also: the public layout forces
+  `min-height/min-width: 44px` on ALL button/a ≤768px (tap-target rule) —
+  compact header controls need explicit exemptions. This round: icon back
+  to `w-4 h-4`; `.nav-translate`/`.nav-burger`/`.nav-right` scoped CSS
+  (smaller box, tighter gap, burger negative right margin so the icon
+  aligns flush with the container's right content edge); pill + translate
+  box both measured at exactly 26px; expanded date line now shows BOTH
+  dates ("28 August 2026 · 15 Rabi' al-awwal 1448 AH").
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**; next is **F1** (Hifz → engine). Do not start F in the same turn as the Phase E report.

@@ -62,12 +62,19 @@
 
     /* Mobile/tablet header slot: pill between the logo and the translate button */
     .header-prayer--mobile { flex: 1 1 auto; width: auto; max-width: 420px; margin: 0 .5rem; }
-    .header-prayer--mobile .prayer-banner { min-height: 32px; }
+    /* Pill height matches the translate box (26px outer): 24px content + 1px borders */
+    .header-prayer--mobile .prayer-banner { min-height: 24px; }
     .header-prayer--mobile .prayer-banner-summary, .header-prayer--mobile .prayer-banner-expand,
-    .header-prayer--mobile .prayer-banner-skeleton, .header-prayer--mobile .prayer-banner-unavailable { min-height: 32px; }
-    .header-prayer--mobile .prayer-banner-expand { padding-top: .2rem; padding-bottom: .2rem; padding-left: .6rem; }
-    .header-prayer--mobile .prayer-banner-next { font-size: .75rem; }
-    .header-prayer--mobile .prayer-banner-island { font-size: .68rem; padding: .18rem .45rem; margin-right: .3rem; }
+    .header-prayer--mobile .prayer-banner-unavailable { min-height: 24px; }
+    .header-prayer--mobile .prayer-banner-skeleton { height: 24px; }
+    /* Exempt the pill's buttons from the layout's 44px tap-target rule */
+    @media (max-width: 768px) {
+        .header-prayer--mobile .prayer-banner-expand,
+        .header-prayer--mobile .prayer-banner-island { min-height: 24px; min-width: 0; }
+    }
+    .header-prayer--mobile .prayer-banner-expand { padding-top: .1rem; padding-bottom: .1rem; padding-left: .6rem; }
+    .header-prayer--mobile .prayer-banner-next { font-size: .72rem; }
+    .header-prayer--mobile .prayer-banner-island { font-size: .65rem; padding: .1rem .4rem; margin-right: .3rem; }
     /* Short island label (≤6 chars) so the pill stays one line on phones */
     .pt-loc-short { display: none; }
     @media (max-width: 520px) {
@@ -131,6 +138,7 @@
     };
     var API = '/api/v1/prayer-times';
     var MALE_FALLBACK = { id: 102, atollLatin: 'Kaafu', nameLatin: 'Malé' };
+    var MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
     var timeSkew = {{ now()->timestamp * 1000 }} - Date.now();
     function getMVT() { return new Date(Date.now() + timeSkew + 5 * 3600 * 1000); }
@@ -276,9 +284,11 @@
             if (locEl) locEl.textContent = label;
             if (locShortEl) locShortEl.textContent = shortLabel;
             if (hijriEl) {
+                var g = getMVT();
+                var gText = g.getUTCDate() + ' ' + MONTHS[g.getUTCMonth()] + ' ' + g.getUTCFullYear();
                 var hText = hijri ? (hijri.formatted || (hijri.day + ' ' + hijri.month_name + ' ' + hijri.year + ' AH')) : '';
-                hijriEl.textContent = hText;
-                setHidden(hijriEl, !hText);
+                hijriEl.textContent = hText ? gText + ' · ' + hText : gText;
+                setHidden(hijriEl, false);
             }
             if (expanded) { paintGrid(root, info.pName); positionMobilePanel(root); }
         });
