@@ -893,6 +893,28 @@ migration; no Hifz behaviour change outside it.
   `Daily reminders` lang keys added en/dv/ar for when the footer is
   localized.
 
+## 5s. Real prayer times (Bake&Grill salat.db)
+
+- **Real data (this PR):** `database/salat.db` — the Bake&Grill
+  Maldivian dataset (42 zone categories × 366 leap-indexed days, 205
+  islands, 188 active) — is now IN the repo, closing W3's "salat.db is
+  not in the repo / Fajr 09:00 is not Bake&Grill Malé" gap.
+  `ImportPrayerTimesFromSalatDbAction` now reads the REAL column shape
+  (`IslandId`/`Island`/`Minutes`/`Status`/`Fajuru`; `Date` 0–365
+  normalized to our 1–366) — the previous candidates were guessed names
+  the real file never matched (islands would have collapsed to id 0 and
+  the 366 gate failed). Bulk upserts (was per-row updateOrCreate) keep
+  the 15k-row import seed-fast. Latin names backfill from
+  `Support/IslandLatinNames` — Bake&Grill's curated Thaana→Latin map
+  (21 atolls / ~190 islands) ported verbatim, dot-insensitive atoll
+  fallback. Seeder prefers the real file (PRAYER_TIMES_DB overridable,
+  mirroring Bake&Grill's contract; synthetic fixture only when absent)
+  and defaults the island setting to real Malé (IslandId 102). Display
+  stays Akuru-branded — the data changed, not the design. Tests: real
+  column-shape mini fixture (mapping, day shift, Status, latin
+  backfill) + end-to-end seed of the committed file (205/15372/188,
+  Malé default, real Fajr band).
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**; next is **F1** (Hifz → engine). Do not start F in the same turn as the Phase E report.
