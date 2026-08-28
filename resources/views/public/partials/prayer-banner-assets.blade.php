@@ -130,6 +130,7 @@
 
     var PRAYERS = ['fajr', 'sunrise', 'dhuhr', 'asr', 'maghrib', 'isha'];
     var PRAYER_LABEL = @json($ptLabels);
+    var NEXT_IN = @json(__('public.next in'));
     var ATOLL_ABBR = {
         'Haa Alif':'HA','Haa Dhaalu':'HDh','Shaviyani':'Sh','Noonu':'N','Raa':'R',
         'Baa':'B','Lhaviyani':'Lh','Kaafu':'K','Alif Alif':'AA','Alif Dhaalu':'ADh',
@@ -280,7 +281,7 @@
             var hijriEl = root.querySelector('[data-pt-hijri]');
             if (nameEl) nameEl.textContent = info.pName;
             if (timeEl) timeEl.textContent = ' ' + info.pTime;
-            if (cdEl) cdEl.textContent = ' · ' + info.cdStr;
+            if (cdEl) cdEl.textContent = ' · ' + NEXT_IN + ' ' + info.cdStr;
             if (locEl) locEl.textContent = label;
             if (locShortEl) locShortEl.textContent = shortLabel;
             if (hijriEl) {

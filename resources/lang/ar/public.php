@@ -186,4 +186,5 @@ return [
     'Careers' => 'Careers',
     'Daily reminders' => 'Daily reminders',
     'Change island' => 'Change island',
+    'next in' => 'next in',
 ];
