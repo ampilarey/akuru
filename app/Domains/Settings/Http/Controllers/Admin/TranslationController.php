@@ -4,7 +4,11 @@ namespace App\Domains\Settings\Http\Controllers\Admin;
 
 use App\Domains\Settings\Actions\ListTranslationCatalogAction;
 use App\Domains\Settings\Actions\SaveTranslationOverrideAction;
+use App\Domains\Settings\Actions\SuggestTranslationAction;
 use App\Http\Controllers\Controller;
+use App\Support\Contracts\MachineTranslatorInterface;
+use App\Support\Translation\NullMachineTranslator;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -19,7 +23,20 @@ class TranslationController extends Controller
 {
     public function index(ListTranslationCatalogAction $list): Response
     {
-        return Inertia::render('Settings/Translations', $list->execute());
+        return Inertia::render('Settings/Translations', [
+            ...$list->execute(),
+            'suggest_available' => ! (app(MachineTranslatorInterface::class) instanceof NullMachineTranslator),
+        ]);
+    }
+
+    public function suggest(Request $request, SuggestTranslationAction $suggest): JsonResponse
+    {
+        $data = $request->validate([
+            'group' => 'required|string|max:40',
+            'key' => 'required|string|max:191',
+        ]);
+
+        return response()->json($suggest->execute($data['group'], $data['key']));
     }
 
     public function save(Request $request, SaveTranslationOverrideAction $save): RedirectResponse

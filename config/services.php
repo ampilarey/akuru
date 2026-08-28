@@ -95,4 +95,14 @@ return [
         'enabled' => (bool) env('CDN_ENABLED', false),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Machine translation (T2 — suggestions only, never auto-published)
+    |--------------------------------------------------------------------------
+    | 'null' ships by default; a provider slice adds real drivers.
+    */
+    'machine_translator' => [
+        'driver' => env('MACHINE_TRANSLATOR', 'null'),
+    ],
+
 ];

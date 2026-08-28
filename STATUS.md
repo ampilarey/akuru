@@ -843,6 +843,19 @@ migration; no Hifz behaviour change outside it.
   `auth.can` prop — nav-only hints, every route still enforces its own
   middleware gate. Pages were previously reachable only by URL.
 
+## 5p. T2 — translation suggestions (contract only)
+
+- **T2 (this PR):** `MachineTranslatorInterface` (Support contract) +
+  `NullMachineTranslator` default binding via
+  `services.machine_translator.driver` (env `MACHINE_TRANSLATOR`,
+  default null — rule 4: any real provider lands behind this interface
+  in its own slice). Editor gains a Suggest button (hidden while the
+  Null binding is active) that PREFILLS the correction box via
+  `POST /admin/translations/suggest`; nothing saves without a human
+  pressing Save — machine output never auto-publishes (religious
+  terminology). **Operator:** choosing/wiring a real provider (keys,
+  cost, data-residency for student-visible text) is a future decision.
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**; next is **F1** (Hifz → engine). Do not start F in the same turn as the Phase E report.
