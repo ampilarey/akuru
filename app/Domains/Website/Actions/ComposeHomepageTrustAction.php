@@ -56,7 +56,9 @@ class ComposeHomepageTrustAction
             'students_source' => $students === null ? null : $source,
             'students_label' => $studentsLabel,
             'logos' => $logos,
-            'has_signals' => $accreditation !== null || $years !== null || $students !== null || $logos !== [],
+            // Years stays composed for non-hero surfaces but no longer
+            // decides whether the hero trust block renders.
+            'has_signals' => $accreditation !== null || $students !== null || $logos !== [],
         ];
     }
 
