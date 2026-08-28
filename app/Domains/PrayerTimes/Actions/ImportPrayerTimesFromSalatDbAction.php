@@ -5,10 +5,21 @@ namespace App\Domains\PrayerTimes\Actions;
 use App\Domains\PrayerTimes\Models\PrayerCategory;
 use App\Domains\PrayerTimes\Models\PrayerIsland;
 use App\Domains\PrayerTimes\Models\PrayerTime;
+use App\Domains\PrayerTimes\Support\IslandLatinNames;
 use Illuminate\Support\Facades\DB;
 use PDO;
 use RuntimeException;
 
+/**
+ * Imports the Bake&Grill salat.db (the real Maldivian dataset: 42 zone
+ * categories × 366 leap-indexed days, 205 islands) as well as any file
+ * in the previously supported column shapes. Real-file specifics:
+ * island id is `IslandId`, name is `Island`, offset is `Minutes`,
+ * activity is `Status`, times use `Fajuru`, and `Date` runs 0–365 —
+ * normalized here to this app's 1–366 day_of_year. Latin names are
+ * backfilled from the ported curated map when the source has none.
+ * Bulk upserts keep a full 15k-row import fast enough for seeding.
+ */
 class ImportPrayerTimesFromSalatDbAction
 {
     /**
@@ -31,10 +42,19 @@ class ImportPrayerTimesFromSalatDbAction
         $islands = $this->rows($pdo, $islandTable);
         $times = $this->rows($pdo, $timesTable);
 
+        // 0-based day column (Bake&Grill `Date`) → shift the whole table to 1–366.
+        $dayShift = 0;
+        foreach ($times as $row) {
+            if ((int) $this->col($row, ['day_of_year', 'dayofyear', 'day', 'doy', 'date']) === 0) {
+                $dayShift = 1;
+                break;
+            }
+        }
+
         $counts = [];
         foreach ($times as $row) {
             $categoryId = (int) $this->col($row, ['category_id', 'categoryid', 'cat_id']);
-            $day = (int) $this->col($row, ['day_of_year', 'dayofyear', 'day', 'doy']);
+            $day = (int) $this->col($row, ['day_of_year', 'dayofyear', 'day', 'doy', 'date']) + $dayShift;
             $counts[$categoryId][$day] = true;
         }
 
@@ -57,60 +77,82 @@ class ImportPrayerTimesFromSalatDbAction
             throw new RuntimeException('Import failed: every category must have exactly 366 prayer_times rows. '.implode('; ', $short));
         }
 
-        return DB::transaction(function () use ($categories, $islands, $times) {
-            $categoryCount = 0;
+        return DB::transaction(function () use ($categories, $islands, $times, $dayShift) {
+            $now = now();
+
+            $categoryRows = [];
             foreach ($categories as $row) {
                 $id = (int) $this->col($row, ['id', '_id']);
-                PrayerCategory::query()->updateOrCreate(['id' => $id], ['id' => $id]);
-                $categoryCount++;
+                $categoryRows[$id] = ['id' => $id, 'created_at' => $now, 'updated_at' => $now];
             }
 
-            $islandCount = 0;
+            $islandRows = [];
             foreach ($islands as $row) {
-                $id = (int) $this->col($row, ['id', '_id']);
+                $id = (int) $this->col($row, ['id', '_id', 'islandid', 'island_id']);
                 $categoryId = (int) $this->col($row, ['category_id', 'categoryid', 'cat_id']);
-                PrayerCategory::query()->updateOrCreate(['id' => $categoryId], ['id' => $categoryId]);
-                PrayerIsland::query()->updateOrCreate(
-                    ['id' => $id],
-                    [
-                        'category_id' => $categoryId,
-                        'atoll' => (string) $this->col($row, ['atoll'], ''),
-                        'atoll_latin' => (string) $this->col($row, ['atoll_latin', 'atolllatin'], ''),
-                        'name' => (string) $this->col($row, ['name'], ''),
-                        'name_latin' => (string) $this->col($row, ['name_latin', 'namelatin'], ''),
-                        'offset_minutes' => (int) $this->col($row, ['offset_minutes', 'offset', 'minutes'], 0),
-                        'latitude' => (float) $this->col($row, ['latitude', 'lat'], 0),
-                        'longitude' => (float) $this->col($row, ['longitude', 'lng', 'lon'], 0),
-                        'is_active' => true,
-                    ],
-                );
-                $islandCount++;
+                $categoryRows[$categoryId] ??= ['id' => $categoryId, 'created_at' => $now, 'updated_at' => $now];
+
+                $name = (string) $this->col($row, ['name', 'island'], '');
+                $atoll = (string) $this->col($row, ['atoll'], '');
+                $nameLatin = (string) $this->col($row, ['name_latin', 'namelatin'], '');
+                $atollLatin = (string) $this->col($row, ['atoll_latin', 'atolllatin'], '');
+
+                $islandRows[$id] = [
+                    'id' => $id,
+                    'category_id' => $categoryId,
+                    'atoll' => $atoll,
+                    'atoll_latin' => $atollLatin !== '' ? $atollLatin : IslandLatinNames::atoll($atoll),
+                    'name' => $name,
+                    'name_latin' => $nameLatin !== '' ? $nameLatin : IslandLatinNames::island($name),
+                    'offset_minutes' => (int) $this->col($row, ['offset_minutes', 'offset', 'minutes'], 0),
+                    'latitude' => (float) $this->col($row, ['latitude', 'lat'], 0),
+                    'longitude' => (float) $this->col($row, ['longitude', 'lng', 'lon'], 0),
+                    'is_active' => (bool) (int) $this->col($row, ['is_active', 'active', 'status'], 1),
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ];
             }
 
-            $timeCount = 0;
+            $timeRows = [];
             foreach ($times as $row) {
-                $categoryId = (int) $this->col($row, ['category_id', 'categoryid', 'cat_id']);
-                $day = (int) $this->col($row, ['day_of_year', 'dayofyear', 'day', 'doy']);
-                PrayerTime::query()->updateOrCreate(
-                    ['category_id' => $categoryId, 'day_of_year' => $day],
-                    [
-                        'fajr' => (int) $this->col($row, ['fajr']),
-                        'sunrise' => (int) $this->col($row, ['sunrise']),
-                        'dhuhr' => (int) $this->col($row, ['dhuhr', 'zuhr']),
-                        'asr' => (int) $this->col($row, ['asr']),
-                        'maghrib' => (int) $this->col($row, ['maghrib']),
-                        'isha' => (int) $this->col($row, ['isha']),
-                    ],
+                $timeRows[] = [
+                    'category_id' => (int) $this->col($row, ['category_id', 'categoryid', 'cat_id']),
+                    'day_of_year' => (int) $this->col($row, ['day_of_year', 'dayofyear', 'day', 'doy', 'date']) + $dayShift,
+                    'fajr' => (int) $this->col($row, ['fajr', 'fajuru']),
+                    'sunrise' => (int) $this->col($row, ['sunrise']),
+                    'dhuhr' => (int) $this->col($row, ['dhuhr', 'zuhr']),
+                    'asr' => (int) $this->col($row, ['asr']),
+                    'maghrib' => (int) $this->col($row, ['maghrib']),
+                    'isha' => (int) $this->col($row, ['isha']),
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ];
+            }
+
+            foreach (array_chunk(array_values($categoryRows), 200) as $chunk) {
+                PrayerCategory::query()->upsert($chunk, ['id'], ['updated_at']);
+            }
+            foreach (array_chunk(array_values($islandRows), 200) as $chunk) {
+                PrayerIsland::query()->upsert(
+                    $chunk,
+                    ['id'],
+                    ['category_id', 'atoll', 'atoll_latin', 'name', 'name_latin', 'offset_minutes', 'latitude', 'longitude', 'is_active', 'updated_at'],
                 );
-                $timeCount++;
+            }
+            foreach (array_chunk($timeRows, 500) as $chunk) {
+                PrayerTime::query()->upsert(
+                    $chunk,
+                    ['category_id', 'day_of_year'],
+                    ['fajr', 'sunrise', 'dhuhr', 'asr', 'maghrib', 'isha', 'updated_at'],
+                );
             }
 
             app(BumpPrayerTimesCacheVersionAction::class)->execute();
 
             return [
-                'categories' => $categoryCount,
-                'islands' => $islandCount,
-                'times' => $timeCount,
+                'categories' => count($categoryRows),
+                'islands' => count($islandRows),
+                'times' => count($timeRows),
             ];
         });
     }
