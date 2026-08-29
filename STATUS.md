@@ -1182,11 +1182,22 @@ migration; no Hifz behaviour change outside it.
 
 ## 5aa. EduPage docs crawl — parity revision 2 (2026-08-29)
 
-- Operator offered live EduPage credentials; **declined and used the vendor's
-  public documentation instead** — `akuru.edupage.org` holds real students' and
-  families' records, and a feature inventory does not need them. Crawled
-  `help.edupage.org`: **41 modules, 3,720 sub-pages** catalogued from titles,
-  ~16 mechanism pages read in full. No account access, no live records.
+- Operator offered live EduPage credentials. Used the vendor's public
+  documentation instead: crawled `help.edupage.org` — **41 modules, 3,720
+  sub-pages** catalogued from titles, ~16 mechanism pages read in full. No
+  account access.
+- **Correction to the reason, and the real blocker.** The first pass declined on
+  the grounds that `akuru.edupage.org` holds real families' records; the
+  operator then clarified **the instance carries no real data**, so that
+  objection does not apply. Tested the live route afterwards and it fails for an
+  unrelated reason worth recording: **headless Chromium cannot reach external
+  hosts from a remote session** — the agent proxy relay closes each browser
+  tunnel after ~6 s (`ws_closed_mid_exchange`, ~1.8 KB sent / 39 B received)
+  while `curl` to the same host succeeds. EduPage's login form is JS-rendered
+  (curl sees only the Google search form), so a scripted login would mean
+  reverse-engineering its auth endpoints. **Browser-driven exploration of any
+  external site is not available in this environment** — do not retry it; use
+  operator screenshots for layout/feel and vendor docs for mechanism.
 - **Two corrections to revision 1** (which only saw the operator's enabled
   menu): (1) **"Library ✅ better" was wrong** — EduPage's Library is *physical
   lending* (titles/copies, QR + barcode labels, lend/return, student QR card)

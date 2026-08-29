@@ -11,11 +11,14 @@ Companion to `docs/EDUPAGE_FEATURES_PLAN.md` (the buildable slices) and
 screenshots of the installed app — it only saw the menu items this institute had
 switched on. Revision 2 adds a crawl of EduPage's own help site
 (`help.edupage.org`, English): **41 top-level modules, 3,720 documented
-sub-pages**, plus the full text of ~16 mechanism pages. No account credentials
-were used and no live records were read — the vendor's documentation describes
-every feature, including ones this institute never enabled, which screenshots
-cannot show. "Verified" below = checked in this codebase; EduPage behaviour is
-cited from its own docs.
+sub-pages**, plus the full text of ~16 mechanism pages. No account access was
+used: the vendor's documentation describes every feature, including ones this
+institute never enabled, which screenshots cannot show. (A live login was
+considered — the operator confirms the instance holds no real data — but
+headless Chromium cannot reach external hosts from a remote session; see
+STATUS §5aa. Screenshots remain the way to capture layout and feel.)
+"Verified" below = checked in this codebase; EduPage behaviour is cited from
+its own docs.
 
 Legend: ✅ parity or better · 🟡 partial · ❌ not built · ➖ not wanted / decide.
 
