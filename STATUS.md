@@ -1010,6 +1010,27 @@ migration; no Hifz behaviour change outside it.
   "next in" (their `prayer.next_in` string); Akuru showed the bare
   timer. New `public.next in` lang key (en/dv/ar) feeds the script.
 
+## 5u. Recitation module plan (2026-08-29, operator request)
+
+- `docs/RECITATION_MODULE_PLAN.md` — implementation plan (PLAN ONLY, no
+  app code) for the Tarteel-like recitation practice module. Grounded in
+  verified repo facts: reuses `QuranHifzAssignment` /
+  `QuranRecitationSubmission` / `QuranMistakeMark` (manual pipeline
+  already shipped), `quran_mushafs/ayahs/words` tables (rule 11),
+  `QuranTextProviderInterface`, the `Domains/Pronunciation`
+  contract+flag pattern (rule 8), and existing People consents
+  (`ai_training_samples`). Self-hosted inference: FastAPI +
+  faster-whisper + `tarteel-ai/whisper-base-ar-quran` (verified on HF,
+  Apache-2.0) on a separate CPU VPS (cPanel host is PHP-only).
+  Phases: 0 benchmark w/ go/no-go bars (20 samples incl. children) →
+  1 record+manual grade → 2 auto word grading (alignment over
+  normalized Arabic, per-age tunable thresholds, never auto-fail) →
+  3 hifz mode → 4 follow-along (conditional on Phase 0) → 5 analytics.
+  Privacy: process-then-delete default, new RecitationAudioReview
+  consent for retention, AiTrainingSamples reuse for fine-tuning.
+  Tajweed scoring explicitly out of scope (teacher-listen flag only).
+  Supersedes the shorter Tier-1 backlog sketch as the plan of record.
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**; next is **F1** (Hifz → engine). Do not start F in the same turn as the Phase E report.
