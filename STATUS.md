@@ -1054,6 +1054,17 @@ migration; no Hifz behaviour change outside it.
   ④ noticeboard, then surveys/pick-up/arrivals/switcher. Stance: run
   Reframed as the remembered-expectations benchmark (no dual-running):
   ship ①–④ before or with the app shell.
+  Follow-up in the same PR: `docs/EDUPAGE_FEATURES_PLAN.md` — the gap
+  list turned into implementable slices. Wave 1 (daily-habit core):
+  F1 status-tile portal home w/ tomorrow strip (extends
+  ComposePortalHomeAction + Timetable), F2 messaging threads (additive
+  on messages; per-family class threads), F3 homework read-side
+  (lesson_logs.homework ALREADY EXISTS — add due date + portal list),
+  F4 noticeboard (private, class-targeted). Wave 2: forms/surveys
+  domain, pick-up notice, account switcher. Wave 3 owner-gated:
+  arrivals, competences, canteen. 5 owner decisions listed; F1 first —
+  every later feature feeds its tiles and it becomes the app shell's
+  home tab.
 
 ## 6. Out of scope (unchanged)
 
