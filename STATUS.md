@@ -1180,6 +1180,41 @@ migration; no Hifz behaviour change outside it.
   a future edit cannot silently point them at a deleted view. Feature
   tests need MySQL (absent locally) — CI is the gate for the new cases.
 
+## 5aa. EduPage docs crawl — parity revision 2 (2026-08-29)
+
+- Operator offered live EduPage credentials; **declined and used the vendor's
+  public documentation instead** — `akuru.edupage.org` holds real students' and
+  families' records, and a feature inventory does not need them. Crawled
+  `help.edupage.org`: **41 modules, 3,720 sub-pages** catalogued from titles,
+  ~16 mechanism pages read in full. No account access, no live records.
+- **Two corrections to revision 1** (which only saw the operator's enabled
+  menu): (1) **"Library ✅ better" was wrong** — EduPage's Library is *physical
+  lending* (titles/copies, QR + barcode labels, lend/return, student QR card)
+  plus a separate Textbook storage module; Akuru's L-track is a digital
+  reader/bookstore. Different products, not a comparison. (2) "Applications"
+  understated a whole **approval-workflow engine** whose payoff is automatic
+  chaining — approving staff leave offers to create the `TeacherAbsence` the
+  existing substitution engine already consumes.
+- Mechanism detail that changed the plan: messages carry **polls**, **reply
+  policy** (reply-all off by default school-wide) and **saved recipient
+  groups**; homework is assigned from the class register and **auto-dated to
+  that class's next lesson**, with read/done tracking and a **daily digest that
+  lists what is due tomorrow**; sign-ups support **parent confirmation** (only
+  from a real parent account) and hand fees to the payments module; pick-up is a
+  five-step two-way protocol gated by a **parent security pattern**, not a
+  button. F6 pick-up re-estimated 3 days → 1 week; F5 promoted to its own
+  Requests domain; messaging 2 → 2–3 weeks.
+- Both docs rewritten. `EDUPAGE_PARITY.md` now maps all 41 modules with counts
+  as a depth signal; `EDUPAGE_FEATURES_PLAN.md` renumbers to F1–F14 and answers
+  two of the old owner decisions from the reference (per-family threads; the
+  register stays the single homework entry point).
+- **Also surfaced a live defect** (recorded in both docs): roles are additive
+  but `DashboardController::index()` tests `isTeacher()` before `isParent()`, so
+  a teacher who is also a parent can never reach the parent home from login.
+  Separable from F7 and should be fixed on its own.
+- F1 has exactly one blocking decision: does the tile grid cover teachers (whose
+  home is the separate `portal.overview` composer), or student/parent only.
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**; next is **F1** (Hifz → engine). Do not start F in the same turn as the Phase E report.
