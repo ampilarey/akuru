@@ -1038,6 +1038,34 @@ migration; no Hifz behaviour change outside it.
   (on-device whisper.cpp tiny model in a native app v2, $0 server,
   grading stays server-side).
 
+## 5v. EduPage parity checklist (2026-08-29, operator screenshots)
+
+- `docs/EDUPAGE_PARITY.md` — the Institute used akuru.edupage.org
+  BEFORE this platform was built (operator correction); the doc maps
+  every menu item from the operator's real EduPage app to this codebase (verified: Timetable +
+  TimetableConflictException, TeacherAbsence/SubstitutionRequest/
+  SubstitutionAssignment, Message model, LessonLog; missing: student
+  homework list, surveys/forms builder, noticeboard feed, pick-up
+  notice, student arrivals, competences, account switcher, canteen).
+  Academic core is at parity or better; the daily communication layer
+  is the gap. Ordered migration path: ① status-tile portal home (copy
+  EduPage's home pattern: tomorrow strip + live-status tiles + role
+  chip), ② messaging inbox UX, ③ student-facing homework,
+  ④ noticeboard, then surveys/pick-up/arrivals/switcher. Stance: run
+  Reframed as the remembered-expectations benchmark (no dual-running):
+  ship ①–④ before or with the app shell.
+  Follow-up in the same PR: `docs/EDUPAGE_FEATURES_PLAN.md` — the gap
+  list turned into implementable slices. Wave 1 (daily-habit core):
+  F1 status-tile portal home w/ tomorrow strip (extends
+  ComposePortalHomeAction + Timetable), F2 messaging threads (additive
+  on messages; per-family class threads), F3 homework read-side
+  (lesson_logs.homework ALREADY EXISTS — add due date + portal list),
+  F4 noticeboard (private, class-targeted). Wave 2: forms/surveys
+  domain, pick-up notice, account switcher. Wave 3 owner-gated:
+  arrivals, competences, canteen. 5 owner decisions listed; F1 first —
+  every later feature feeds its tiles and it becomes the app shell's
+  home tab.
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**; next is **F1** (Hifz → engine). Do not start F in the same turn as the Phase E report.
