@@ -1066,6 +1066,39 @@ migration; no Hifz behaviour change outside it.
   every later feature feeds its tiles and it becomes the app shell's
   home tab.
 
+## 5w. Desktop header fits again (2026-08-29, operator request)
+
+- **Prayer times tab removed** from the public nav (desktop + mobile
+  lists), leaving nine links: Courses, News, Articles, Research,
+  Library, Events, Gallery, Achievements, Contact. Merged as #180.
+- **BUG — the logo disappeared on desktop.** Reproduced in a mirror
+  render of the live header (`test.akuru.edu.mv` markup + the deployed
+  `app-BaEi0PBw.css`): at 1366px the nine links plus the 360px prayer
+  pill (`width: min(360px, 32vw)`) plus Enroll overflowed the row, the
+  logo flex item was squeezed to **0px wide**, and Translate/Login were
+  pushed off-screen. The logo was in the DOM the whole time — it had no
+  width. Fix, all in nav.blade.php's scoped `<style>` (rule from §5t
+  round 3 still holds: the deployed CSS is a committed Vite build with
+  no `xl:` variants, so breakpoint work is hand-written CSS):
+  - `.nav-logo { flex: 0 0 auto }` — the home link can never collapse.
+  - The full link row now starts at **1280px** (`.nav-desktop`, was the
+    `lg` 1024px); 1024–1279 falls back to the hamburger layout, which
+    already carries every link, so the logo and the prayer ribbon keep
+    their room. `.nav-mobile-only`/`.nav-mobile-menu` replace the
+    `lg:hidden` utilities and the JS resize threshold moved 1024→1280.
+  - Link row uses `gap` instead of `space-x-6 rtl:space-x-reverse`
+    (direction-agnostic, so it is RTL-correct for free): .7rem/13px
+    below 1400, .85rem/14px above.
+  - Desktop prayer pill is the one flexible item —
+    `.header-prayer:not(.header-prayer--mobile) { width: min(320px,19vw);
+    flex: 0 1 auto }` — it gives up width before anything leaves the row.
+- **Measured after the fix** (probe over the mirror, logo width and
+  container scroll vs client): no overflow at 1024/1280/1366/1440/1600/
+  1920; logo 88px at every width; at 1280 the link row holds 812px of
+  content in 935px — **~120px spare, room for about two more tabs**.
+  Renders at 390px and 900px are byte-identical to the pre-change
+  build, so nothing below 1024 moved.
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**; next is **F1** (Hifz → engine). Do not start F in the same turn as the Phase E report.

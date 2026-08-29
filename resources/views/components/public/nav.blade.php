@@ -1,20 +1,20 @@
 <div style="height:3px;background:linear-gradient(90deg,#A8861F,#C9A227,#E8BC3C,#C9A227,#A8861F)"></div>
 <nav class="bg-white border-b border-gray-100 shadow-sm sticky top-0 z-50">
   <div class="container mx-auto flex items-center justify-between py-3 px-4">
-    <!-- Logo -->
-    <div class="flex items-center space-x-3 rtl:space-x-reverse">
-      <a href="{{ LaravelLocalization::localizeURL('/') }}" class="flex items-center">
+    <!-- Logo (always visible, links home) -->
+    <div class="nav-logo shrink-0 flex items-center">
+      <a href="{{ LaravelLocalization::localizeURL('/') }}" class="flex items-center" aria-label="{{ __('public.Home') }}">
         <x-akuru-logo size="h-10 sm:h-12" />
       </a>
     </div>
 
     {{-- Prayer ribbon (mobile/tablet): sits between the logo and the translate button --}}
-    <div class="header-prayer header-prayer--mobile lg:hidden" data-block="prayer_bar">
+    <div class="header-prayer header-prayer--mobile nav-mobile-only" data-block="prayer_bar">
       @include('public.partials.prayer-banner')
     </div>
 
     <!-- Desktop Navigation -->
-    <div class="hidden lg:flex items-center space-x-6 rtl:space-x-reverse">
+    <div class="nav-desktop items-center">
       <a href="{{ route('public.courses.index') }}" 
          class="text-brandGray-600 hover:text-brandMaroon-600 transition-colors duration-200">
         {{ __('public.Courses') }}
@@ -52,17 +52,17 @@
         {{ __('public.Contact') }}
       </a>
       {{-- Prayer strip (Bake&Grill-style, Akuru colors) --}}
-      <div class="header-prayer" data-block="prayer_bar">
+      <div class="header-prayer nav-prayer" data-block="prayer_bar">
         @include('public.partials.prayer-banner')
       </div>
       {{-- Search icon --}}
-      <a href="{{ route('public.search') }}" class="text-brandGray-500 hover:text-brandMaroon-600 transition-colors" aria-label="Search">
+      <a href="{{ route('public.search') }}" class="nav-icon text-brandGray-500 hover:text-brandMaroon-600 transition-colors" aria-label="Search">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
         </svg>
       </a>
       <a href="{{ route('public.courses.index') }}"
-         class="font-bold px-5 py-2 rounded-lg shadow-md transition-all hover:scale-105"
+         class="nav-cta font-bold rounded-lg shadow-md transition-all hover:scale-105"
          style="background:#C9A227;color:#491821">
         {{ __('public.Enroll') }}
       </a>
@@ -72,6 +72,31 @@
     {{-- The deployed stylesheet is a committed Vite build, so sizing here
          uses plain scoped CSS instead of uncompiled Tailwind utilities. --}}
     <style>
+      /* ── Header layout ──────────────────────────────────────────────
+         The full link row only fits from 1280px up (nine links + the
+         prayer pill + Enroll). Below that the hamburger menu carries
+         every link, so the logo and the prayer ribbon always have room.
+         Written as plain scoped CSS: the deployed stylesheet is a
+         committed Vite build with no `xl:` variants compiled in. */
+      .nav-logo { flex: 0 0 auto; }
+      .nav-logo img { min-width: 0; }
+      .nav-desktop { display: none; min-width: 0; }
+      .nav-mobile-only { display: block; }
+      .nav-desktop > a { font-size: .8125rem; white-space: nowrap; }
+      .nav-desktop .nav-icon { flex: 0 0 auto; }
+      .nav-cta { padding: .5rem 1rem; }
+      /* The prayer pill is the one flexible item: it gives up width
+         before anything else is pushed out of the row. */
+      .header-prayer:not(.header-prayer--mobile) { width: min(320px, 19vw); flex: 0 1 auto; }
+      @media (min-width: 1280px) {
+        .nav-desktop { display: flex; gap: .7rem; }
+        .nav-mobile-only, .nav-mobile-menu { display: none !important; }
+      }
+      @media (min-width: 1400px) {
+        .nav-desktop { gap: .85rem; }
+        .nav-desktop > a { font-size: .875rem; }
+        .nav-cta { padding: .5rem 1.25rem; }
+      }
       .nav-right { gap: .4rem; }
       .nav-translate { padding: .375rem .45rem; }
       .nav-burger { padding: .35rem; margin-right: -.35rem; }
@@ -207,7 +232,7 @@
       </div>
 
       {{-- ── Hamburger (mobile/tablet) ── --}}
-      <button class="lg:hidden nav-burger text-brandGray-600 hover:text-brandMaroon-600 transition-colors"
+      <button class="nav-burger nav-mobile-only text-brandGray-600 hover:text-brandMaroon-600 transition-colors"
               onclick="toggleMobileMenu()" aria-label="Toggle mobile menu">
         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
@@ -218,7 +243,7 @@
   </div>
 
   <!-- Mobile Navigation -->
-  <div id="mobileMenu" class="hidden lg:hidden bg-white border-t shadow-lg">
+  <div id="mobileMenu" class="hidden nav-mobile-menu bg-white border-t shadow-lg">
     <div class="container mx-auto py-4 px-4 space-y-1">
       <!-- Mobile Navigation Links -->
       <a href="{{ route('public.courses.index') }}" 
@@ -517,7 +542,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     if (!menu || !button) return; // Safety check
     
-    if (window.innerWidth >= 1024) { // lg breakpoint
+    if (window.innerWidth >= 1280) { // desktop link row takes over
       menu.classList.add('hidden');
       menu.style.maxHeight = '0px';
       button.setAttribute('aria-expanded', 'false');
