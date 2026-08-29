@@ -1030,6 +1030,13 @@ migration; no Hifz behaviour change outside it.
   consent for retention, AiTrainingSamples reuse for fine-tuning.
   Tajweed scoring explicitly out of scope (teacher-listen flag only).
   Supersedes the shorter Tier-1 backlog sketch as the plan of record.
+  Amended same day (operator Q&A): §3.2 hosting options with costs
+  (rented CPU VPS ~$15–25/mo; self-owned machine with an
+  outbound-polling worker — no inbound ports; GPU figures only for
+  server-side follow-along), and Phase 4 split into Option A
+  (server-side chunks, GPU-sized by concurrency) vs Option B
+  (on-device whisper.cpp tiny model in a native app v2, $0 server,
+  grading stays server-side).
 
 ## 6. Out of scope (unchanged)
 
