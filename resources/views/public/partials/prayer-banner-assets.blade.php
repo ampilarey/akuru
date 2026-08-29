@@ -51,7 +51,9 @@
     /* Desktop header slot: compact strip inside the nav row */
     .header-prayer { min-width: 0; width: min(360px, 32vw); }
     .header-prayer .prayer-banner { border-radius: 999px; }
-    .header-prayer .prayer-banner.is-expanded { border-radius: 12px; }
+    /* Both header slots keep the pill shape when open — the details drop
+       below the nav as a detached sheet rather than growing the header. */
+    .header-prayer .prayer-banner.is-expanded { border-radius: 999px; }
     .header-prayer .prayer-banner-summary, .header-prayer .prayer-banner-expand,
     .header-prayer .prayer-banner-skeleton, .header-prayer .prayer-banner-unavailable { min-height: 38px; }
     .header-prayer .prayer-banner-next { font-size: .78rem; }
@@ -91,6 +93,13 @@
     .header-prayer--mobile .prayer-banner-panel {
         position: fixed; left: 0; right: 0; z-index: 80; margin: 0 1rem;
         background: #F9F4EE; border: 1px solid #E6D9C8; border-radius: 0 0 12px 12px;
+        box-shadow: 0 14px 30px rgba(61, 18, 25, .18);
+    }
+    /* Desktop slot gets the same treatment, but anchored under the pill as a
+       dropdown instead of a full-width sheet. JS sets top/left/width. */
+    .header-prayer:not(.header-prayer--mobile) .prayer-banner-panel {
+        position: fixed; z-index: 80; border-top: 1px solid #E6D9C8;
+        background: #F9F4EE; border: 1px solid #E6D9C8; border-radius: 12px;
         box-shadow: 0 14px 30px rgba(61, 18, 25, .18);
     }
 
@@ -254,17 +263,28 @@
         if (btn) btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
         setHidden(panel, !isOpen);
         if (chev) chev.textContent = isOpen ? '⌃' : '▾';
-        if (isOpen) positionMobilePanel(root);
+        if (isOpen) positionHeaderPanel(root);
     }
 
-    // The mobile header slot's panel is a fixed sheet below the nav so the
-    // header row never grows; pin its top to the nav's bottom edge.
-    function positionMobilePanel(root) {
+    // Both header slots drop their panel below the nav as a fixed sheet so the
+    // header row never grows. Mobile spans the viewport; desktop hangs under
+    // the pill as a dropdown, widened enough to read and kept on screen.
+    function positionHeaderPanel(root) {
         var panel = root.querySelector('[data-pt-panel]');
         if (!panel || !root.closest) return;
-        if (!root.closest('.header-prayer--mobile')) { panel.style.top = ''; return; }
+        var slot = root.closest('.header-prayer');
+        if (!slot) { panel.style.top = panel.style.left = panel.style.width = ''; return; }
         var nav = root.closest('nav');
         panel.style.top = (nav ? nav.getBoundingClientRect().bottom : 56) + 'px';
+        if (slot.classList.contains('header-prayer--mobile')) {
+            panel.style.left = ''; panel.style.width = '';
+            return;
+        }
+        var rect = slot.getBoundingClientRect();
+        var width = Math.max(rect.width, 380);
+        var left = Math.min(rect.left, window.innerWidth - width - 16);
+        panel.style.width = width + 'px';
+        panel.style.left = Math.max(16, left) + 'px';
     }
 
     function tick() {
@@ -291,7 +311,7 @@
                 hijriEl.textContent = hText ? gText + ' · ' + hText : gText;
                 setHidden(hijriEl, false);
             }
-            if (expanded) { paintGrid(root, info.pName); positionMobilePanel(root); }
+            if (expanded) { paintGrid(root, info.pName); positionHeaderPanel(root); }
         });
     }
 
