@@ -1142,6 +1142,44 @@ migration; no Hifz behaviour change outside it.
 - Branch protection itself is unchanged and still **unapplied** (403 from
   the agent token, 2026-08-25); operator action still outstanding.
 
+## 5z. Dead dashboard code removed (2026-08-29, operator request)
+
+- Asked how login differentiates account types; the answer exposed that
+  roughly half of `Portal\DashboardController` was unreachable.
+  `index()` redirects teacher → `academics.registers.today`, admin/
+  headmaster → `portal.overview`, student/parent → `portal.home`, so the
+  view-rendering methods behind those branches stopped being called and
+  took their helper clusters with them.
+- **Fixpoint analysis, not eyeballing:** iteratively removed private
+  methods with zero call sites until stable — **33 of 48 dead in 4
+  rounds** (`studentDashboard`, `parentDashboard`, `adminDashboard`, the
+  9 `getTeacher*`, 7 `getChildren*` and 11 `getStudent*` helpers, plus
+  `getUpcomingEvents`/`getAssignmentCompletionRate`). 15 survive, all
+  reachable from `superAdminDashboard`, `supervisorDashboard`,
+  `teacherDashboard` or `publicUserDashboard`. Re-ran after: 0 dead.
+- Four unreachable Blade views deleted (`dashboard.student`,
+  `.parent`, `.admin`, `.teacher` — the last orphaned when
+  `teacherDashboard()` became a one-line redirect). Verified no other
+  references; the `hifz.dashboard.*` views are separate and **untouched**
+  (rule 7 freeze respected). **1,289 lines removed.**
+- **The arch ratchet caught it, in the good direction.**
+  `BaselineArchitectureTest` rule 2 failed with "fixed violators — remove
+  from baseline": the deletion eliminated four real cross-domain Model
+  imports from Portal (`Academics\Legacy\Models\AssignmentSubmission`,
+  `Academics\Models\Attendance`, `Academics\Models\Timetable`,
+  `Hifz\Models\RecitationPractice`). Removed those four entries from
+  `cross_domain_non_contract.php` — the baseline may only shrink, so this
+  is a permanent tightening. Arch green after.
+- **Latent trap removed:** `studentDashboard()` returned
+  `adminDashboard()` both when the student profile was missing and on any
+  exception — anyone re-enabling that branch would have served
+  school-wide admin stats to a student.
+- Tests: `RoleLandingTest` already pinned the four redirects that made
+  this code unreachable. Added the three branches that still render a
+  view in place (super_admin, supervisor, and the no-role public user) so
+  a future edit cannot silently point them at a deleted view. Feature
+  tests need MySQL (absent locally) — CI is the gate for the new cases.
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**; next is **F1** (Hifz → engine). Do not start F in the same turn as the Phase E report.

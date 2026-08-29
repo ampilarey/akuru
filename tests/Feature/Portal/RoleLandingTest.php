@@ -91,3 +91,45 @@ it('sends a student from the dashboard to the composed portal home', function ()
             ->where('title', 'Student Dashboard')
         );
 });
+
+// The three branches above redirect; the three below still render a view
+// from the dashboard itself. They are the branches that could silently be
+// pointed at a deleted view, so pin the view each one renders.
+
+it('renders the super admin dashboard in place', function () {
+    Role::findOrCreate('super_admin', 'web');
+
+    $user = User::factory()->create();
+    $user->assignRole('super_admin');
+
+    $this->withoutLocalizationMiddleware()
+        ->actingAs($user)
+        ->get(route('dashboard'))
+        ->assertOk()
+        ->assertViewIs('dashboard.super-admin');
+});
+
+it('renders the supervisor dashboard in place', function () {
+    Role::findOrCreate('supervisor', 'web');
+
+    $user = User::factory()->create();
+    $user->assignRole('supervisor');
+
+    $this->withoutLocalizationMiddleware()
+        ->actingAs($user)
+        ->get(route('dashboard'))
+        ->assertOk()
+        ->assertViewIs('dashboard.supervisor');
+});
+
+it('falls through to the public-user dashboard when the account has no role', function () {
+    $user = User::factory()->create();
+
+    expect($user->getRoleNames())->toBeEmpty();
+
+    $this->withoutLocalizationMiddleware()
+        ->actingAs($user)
+        ->get(route('dashboard'))
+        ->assertOk()
+        ->assertViewIs('dashboard.public-user');
+});
