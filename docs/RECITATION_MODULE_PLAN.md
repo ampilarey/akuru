@@ -154,6 +154,22 @@ Browser (student)                    Laravel app (existing)              Inferen
 - **Process model:** uvicorn with 1 worker + an internal semaphore of 1–2 concurrent
   transcriptions (CPU-bound); the Laravel queue provides the buffering, so bursts
   wait in our queue rather than OOM-ing the VPS.
+- **Hosting options and rough costs** (owner decision #1; prices approximate, verify
+  at purchase):
+  - *Rented CPU VPS* — 4 vCPU / 8 GB at Hetzner/Contabo ≈ **US$15–25/month**
+    (DigitalOcean/Vultr ≈ $40–50). Covers Phases 0–3 and 5 entirely; zero marginal
+    cost per recitation.
+  - *Self-owned machine* — any 4-core/8 GB desktop on office broadband. In this
+    variant, invert the connection: instead of the inbound `/transcribe` endpoint,
+    the machine runs a small **outbound-polling worker** ("any recitations
+    waiting?" → download audio → transcribe → post results back over HTTPS). No
+    static IP, no port forwarding, nothing exposed; power cuts just delay the queue.
+    One-time hardware cost, but someone must maintain the box.
+  - *GPU (only if server-side follow-along is chosen — see Phase 4 Option A)* —
+    rented T4/A4000-class ≈ $0.30–0.50/hr → ≈ **$50–100/month if started only
+    during school hours** (~160 h), or a one-time ~US$500–700 self-owned desktop
+    with a used RTX 3060-class card (~10–20 concurrent streams). A school-LAN box
+    keeps live audio inside the building. **No GPU is needed for queued grading.**
 - **Laravel side:** a `RecitationTranscriberInterface` in the new component (same
   pattern as `PronunciationPredictionInterface`), with:
   - `NullRecitationTranscriber` — bound when the flag is off; everything stays
@@ -342,15 +358,43 @@ The core value. Ships behind `RECITATION_AI_ENABLED`.
 - *Acceptance:* text never visible while recording in hifz mode; result reveals the
   passage with mistake words highlighted; peeks recorded.
 
-### Phase 4 — Follow-along mode — ~2–3 weeks, **conditional on Phase 0 GO**
+### Phase 4 — Follow-along mode — **conditional on Phase 0 GO**; two implementations
+
+**Option A — server-side (web + app, ~2–3 weeks):**
 - Chunked MediaRecorder upload (3–5 s), per-chunk transcription with expected-range
   prompt, alignment locates current ayah/word, response highlights position; client
   merges chunk results; a "lost tracking" state falls back gracefully to manual
   page-turning. No sockets — sequential chunk POSTs; if the cPanel host can't take
   the request rate, chunks go directly to the inference VPS (signed short-lived
   token) which pushes positions back to Laravel.
-- *Acceptance:* reciting Al-Fatiha steadily, the highlight is on the correct ayah
-  within ~5 s of crossing into it, on a mid-range Android phone over 4G.
+- Needs real-time capacity: either Phase 0 shows CPU handles the expected number of
+  *simultaneous* reciters, or a GPU is added (§3.2 hosting options). Concurrency is
+  the sizing driver — a strong 8-core CPU ≈ 1–2 simultaneous streams; an RTX
+  3060/T4-class GPU ≈ 10–20. Supervised classes where students take turns need far
+  less than headcount suggests.
+
+**Option B — on-device (native app v2, larger effort, $0 server):**
+- Run `whisper-tiny-ar-quran` **on the student's phone** via whisper.cpp (the
+  established open-source Whisper port with iOS/Android support; verified via its
+  maintained PyPI binding `pywhispercpp` — "Python bindings for whisper.cpp"). The
+  phone does live ayah-locating locally; only the final recording is uploaded
+  afterward for authoritative server-side grading and teacher review, exactly as in
+  Phase 2.
+- Pros: no GPU server ever (a class of 30 scales for free, each phone does its own
+  work); works offline; live audio never leaves the device.
+- Cons: **requires native development beyond the current Capacitor webview** (a
+  native plugin embedding whisper.cpp per platform, ~150 MB model in the app);
+  low-end Android phones will run it slowly or hot, so it must feature-detect and
+  fall back to Option A or to no-live-highlighting; grading itself must never move
+  on-device (one controlled server model version keeps results consistent,
+  teacher-reviewable, and unspoofable).
+- Recommended order: ship Option A only if wanted and affordable after Phase 0;
+  treat Option B as the dedicated mobile-app investment once follow-along has
+  proven demand. The two share all server-side grading code.
+
+- *Acceptance (either option):* reciting Al-Fatiha steadily, the highlight is on the
+  correct ayah within ~5 s of crossing into it, on a mid-range Android phone over 4G
+  (Option A) or offline (Option B).
 
 ### Phase 5 — Progress analytics — ~1–2 weeks
 - `recitation_progress_aggregates` recompute-on-confirm; teacher dashboard: per
@@ -411,7 +455,8 @@ The core value. Ships behind `RECITATION_AI_ENABLED`.
 
 | # | Question | Recommendation |
 |---|---|---|
-| 1 | **Inference hosting spec & budget** — which VPS (4 vCPU/8 GB start?), where (latency to MV users is irrelevant for queued grading; any region works), monthly cost ceiling? GPU later? | Start 4 vCPU/8 GB CPU; decide GPU only if Phase 4 is wanted and Phase 0 says CPU can't do it |
+| 1 | **Inference hosting** — rented CPU VPS (~$15–25/mo), or self-owned machine with the outbound-polling worker (one-time cost, self-maintained)? Region is irrelevant for queued grading. | Start with a ~$20/mo rented CPU VPS for Phase 0; move to an owned box later if desired |
+| 1b | **Follow-along capacity (only if Phase 4 wanted)** — server GPU (~$50–100/mo school-hours rental, or ~$500–700 owned RTX 3060 box, ideally on the school LAN) vs on-device Option B (native app work, $0 server)? | Defer until Phase 0 numbers + real demand for follow-along exist |
 | 2 | **Mushaf text edition** to import into `quran_mushafs` — Tanzil Uthmani (recommended), or QPC/Madinah layout via QUL for page-true rendering? | Tanzil Uthmani first; page layout later if mushaf-page UI is wanted |
 | 3 | **Consent wording** (DV/EN) for `RecitationAudioReview` and reuse of `AiTrainingSamples` — needs guardian-facing language a parent actually understands | Draft with a scholar + a parent; keep under 100 words each |
 | 4 | **Age-profile boundaries** (child/teen/adult cut-offs) and whether teachers may loosen but not tighten | Teachers may loosen only |
