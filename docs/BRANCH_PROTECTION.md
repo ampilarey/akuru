@@ -25,7 +25,13 @@ Repository → Settings → Branches → Add classic branch protection rule.
 - Do **not** allow force pushes
 - Do **not** allow deletions
 
-One slice per PR under this rule. Do not self-merge from an agent token.
+One slice per PR under this rule.
+
+Merging from an agent token **is** allowed, but only once the required
+check has reported `success` on the PR head — see ADR-027. Read the run's
+conclusion back before merging; never assume it passed. Never weaken or
+bypass the settings above to get a merge through: if protection blocks
+the merge, report it rather than routing around it.
 
 ## Confirm
 
