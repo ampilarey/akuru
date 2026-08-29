@@ -1182,11 +1182,22 @@ migration; no Hifz behaviour change outside it.
 
 ## 5aa. EduPage docs crawl — parity revision 2 (2026-08-29)
 
-- Operator offered live EduPage credentials; **declined and used the vendor's
-  public documentation instead** — `akuru.edupage.org` holds real students' and
-  families' records, and a feature inventory does not need them. Crawled
-  `help.edupage.org`: **41 modules, 3,720 sub-pages** catalogued from titles,
-  ~16 mechanism pages read in full. No account access, no live records.
+- Operator offered live EduPage credentials. Used the vendor's public
+  documentation instead: crawled `help.edupage.org` — **41 modules, 3,720
+  sub-pages** catalogued from titles, ~16 mechanism pages read in full. No
+  account access.
+- **Correction to the reason, and the real blocker.** The first pass declined on
+  the grounds that `akuru.edupage.org` holds real families' records; the
+  operator then clarified **the instance carries no real data**, so that
+  objection does not apply. Tested the live route afterwards and it fails for an
+  unrelated reason worth recording: **headless Chromium cannot reach external
+  hosts from a remote session** — the agent proxy relay closes each browser
+  tunnel after ~6 s (`ws_closed_mid_exchange`, ~1.8 KB sent / 39 B received)
+  while `curl` to the same host succeeds. EduPage's login form is JS-rendered
+  (curl sees only the Google search form), so a scripted login would mean
+  reverse-engineering its auth endpoints. **Browser-driven exploration of any
+  external site is not available in this environment** — do not retry it; use
+  operator screenshots for layout/feel and vendor docs for mechanism.
 - **Two corrections to revision 1** (which only saw the operator's enabled
   menu): (1) **"Library ✅ better" was wrong** — EduPage's Library is *physical
   lending* (titles/copies, QR + barcode labels, lend/return, student QR card)
@@ -1214,6 +1225,24 @@ migration; no Hifz behaviour change outside it.
   Separable from F7 and should be fixed on its own.
 - F1 has exactly one blocking decision: does the tile grid cover teachers (whose
   home is the separate `portal.overview` composer), or student/parent only.
+- **Plan completed to full coverage (same day, operator request).** The first
+  rewrite gave concrete slices for the top 8 and waved at the rest; the plan now
+  carries **F1–F22**, every one with a scope, an effort figure and acceptance
+  criteria, plus a **coverage table mapping all 41 EduPage modules** to a slice,
+  a ✅ (already at parity), or a documented "not planned" with the reason — so
+  nothing is silently dropped. New in Wave 3: F9 staff-absence→substitution
+  wiring (**3 days, no dependencies — the cheapest win in the plan**, since
+  Akuru already has both halves), F10 attendance policy depth, F11 internal
+  calendar + room booking, F12 consultation slots, F13 materials library, F14
+  certificate printing. New in Wave 4 (all owner-gated): F15 lost & found, F16
+  physical lending — deliberately named *Circulation* so it is never confused
+  with the L-track Library — F17 interest groups, F18 gate arrivals, F19
+  sensitive information (**policy before schema**), F20 competences, F21 work
+  showcase, F22 notification centre with EduPage's daily-digest idea.
+  Explicitly not planned, with reasons recorded: chat, canteen, kindergarten,
+  generic AI features (recitation is the better bet), and the Slovak statutory
+  outputs. Family-facing "nobody misses EduPage" line = F1–F4 + F9 + F22,
+  ≈6–8 weeks.
 
 ## 6. Out of scope (unchanged)
 
