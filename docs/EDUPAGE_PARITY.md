@@ -1,11 +1,12 @@
 # EduPage → Akuru Parity Checklist
 
-Context: Akuru Institute currently runs on EduPage (`akuru.edupage.org`) alongside
-the Akuru platform. This document maps every feature in the school's actual EduPage
-app (from operator screenshots, 2026-08-29, EduPage 3.12.0) to what exists in this
-codebase, and orders the gaps by daily-use impact so the platform can eventually
-replace EduPage. Companion to `docs/RECITATION_MODULE_PLAN.md` and the future
-app-shell slice.
+Context: Akuru Institute used EduPage (`akuru.edupage.org`) **before this platform
+was built** — it is the system staff, parents, and students were accustomed to.
+This document maps every feature of that previous system (from operator screenshots
+of the still-installed app, 2026-08-29, EduPage 3.12.0) to what exists in this
+codebase. It serves as the feature benchmark the platform should meet so nobody
+misses the old system, and as the design reference for the future app shell.
+Companion to `docs/RECITATION_MODULE_PLAN.md`.
 
 Legend: ✅ parity or better · 🟡 partial · ❌ not built.
 "Verified" = checked in code this session, not assumed.
@@ -95,9 +96,12 @@ Items 1–4 are the credible "leave EduPage" core for families; 5 covers the off
 6–10 are optional depth. Recitation module (own plan) is Akuru-only differentiation
 EduPage cannot match, alongside the L-track library, prayer times, and Dhivehi UI.
 
-## 4. Migration stance
+## 4. How to use this checklist
 
-Run both systems until items 1–4 are shipped and one full term's daily use (messages,
-homework, attendance, grades) has happened on Akuru without falling back to EduPage.
-Only then cancel EduPage. Timetable *building* may stay in aSc's desktop tool longest
-(🟡 above) — export/import into `timetables` rather than rebuilding their editor.
+EduPage is the *former* system, so there is no dual-running to manage — this list is
+the bar of remembered expectations. Items 1–4 are the features families were
+accustomed to daily and would notice most if the platform's app launches without
+them; ship those before (or with) the app shell. If the EduPage subscription or the
+aSc timetable-builder desktop tool is still paid for or occasionally used, item
+"Timetables Online" is the one capability worth keeping an export/import path for
+rather than rebuilding their editor.

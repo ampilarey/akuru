@@ -1040,9 +1040,9 @@ migration; no Hifz behaviour change outside it.
 
 ## 5v. EduPage parity checklist (2026-08-29, operator screenshots)
 
-- `docs/EDUPAGE_PARITY.md` — the Institute currently runs
-  akuru.edupage.org; the doc maps every menu item from the operator's
-  real EduPage app to this codebase (verified: Timetable +
+- `docs/EDUPAGE_PARITY.md` — the Institute used akuru.edupage.org
+  BEFORE this platform was built (operator correction); the doc maps
+  every menu item from the operator's real EduPage app to this codebase (verified: Timetable +
   TimetableConflictException, TeacherAbsence/SubstitutionRequest/
   SubstitutionAssignment, Message model, LessonLog; missing: student
   homework list, surveys/forms builder, noticeboard feed, pick-up
@@ -1052,7 +1052,8 @@ migration; no Hifz behaviour change outside it.
   EduPage's home pattern: tomorrow strip + live-status tiles + role
   chip), ② messaging inbox UX, ③ student-facing homework,
   ④ noticeboard, then surveys/pick-up/arrivals/switcher. Stance: run
-  both systems until ①–④ ship plus one term of daily use.
+  Reframed as the remembered-expectations benchmark (no dual-running):
+  ship ①–④ before or with the app shell.
 
 ## 6. Out of scope (unchanged)
 
