@@ -35,7 +35,8 @@ This file governs every AI-assisted coding session in this repo. It encodes the 
 - Enums: string-backed PHP enums. Money: integer laari or decimal(10,2) consistently per ADR. Dates: app timezone Indian/Maldives.
 - Migrations live in the owning domain's `Database/migrations`.
 - Commit per slice-step; conventional commit messages; CI (pint + pest + arch) must pass before merge.
-- **Merge gates (mechanical, per ROADMAP §4):** one slice per PR; `main` is branch-protected — required CI check pre-merge, no direct pushes, no bot self-merge; a spec-mandated verification script's captured output must be in STATUS.md **before** the deploy it gates. A gate whose evidence isn't recorded has not run.
+- **Merge gates (mechanical, per ROADMAP §4):** one slice per PR; `main` is branch-protected — required CI check pre-merge, no direct pushes; a spec-mandated verification script's captured output must be in STATUS.md **before** the deploy it gates. A gate whose evidence isn't recorded has not run.
+- **Merging (ADR-027):** an agent may merge its own PR once the required CI check has **reported `success` on the PR head** — read the conclusion back, never assume it. Merging with CI queued, running, or failed is prohibited, as is weakening branch protection to get a merge through. Do not ask permission for a green single-slice PR; do stop if the owner says to hold one.
 - **Every new polymorphic or pseudo-polymorphic column** registers its aliases in `config/morph-map.php` in the same slice (ADR-005); FQCNs never enter the database.
 
 ## Definition of done (every slice)

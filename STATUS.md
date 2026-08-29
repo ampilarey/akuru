@@ -1124,6 +1124,24 @@ migration; no Hifz behaviour change outside it.
   glyph, `prefers-reduced-motion` disables the pulse. New
   `public.Chat with us on Viber` key in en/dv/ar.
 
+## 5y. Merge rule matches practice (2026-08-29, ADR-027)
+
+- The written gate said "no bot self-merge" (CLAUDE.md, ROADMAP §4,
+  BRANCH_PROTECTION.md) while the owner had been asking the agent to
+  merge PR by PR, and on 2026-08-29 made it standing ("always merge").
+  Doc and practice had diverged, which costs a turn of asking every
+  session and erodes the rest of the file.
+- **ADR-027** replaces the blanket ban with the condition that actually
+  prevents the recorded S1 failure (ROADMAP §4: *a four-slice PR
+  self-merged in two minutes with CI running only post-merge*). An agent
+  may merge when the required check has **reported `success` on the PR
+  head** — conclusion read back, never assumed — the PR is one slice, and
+  gating evidence is already in STATUS.md. Merging with CI queued,
+  running or failed stays prohibited, as does weakening branch protection
+  to force a merge. All three docs now say the same thing.
+- Branch protection itself is unchanged and still **unapplied** (403 from
+  the agent token, 2026-08-25); operator action still outstanding.
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**; next is **F1** (Hifz → engine). Do not start F in the same turn as the Phase E report.
