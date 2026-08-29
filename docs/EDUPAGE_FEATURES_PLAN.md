@@ -224,23 +224,181 @@ not ship steps 1–5 without step 2.
 
 ---
 
-## Wave 3 — decide need first
+## Wave 3 — depth on things Akuru already has
 
-- **F9. Attendance policy depth** (~1 wk) — custom absence types, tardy→absence
-  conversion (EduPage: e.g. 3 tardies = 1 lesson), rounding policy, and an
-  integrity story for parent-submitted absence notes.
-- **F10. Internal calendar + room booking** (~1–2 wks) — staff calendar, custom
-  event types, school holidays, classroom changes, message event participants.
-- **F11. Consultation slots** (~1 wk) — parent-teacher meeting booking with
-  configurable gaps, on top of the existing `/portal/meetings`.
-- **F12. Staff-absence → substitution automation** (~3 days) — Akuru has both
-  halves already; EduPage wires them together. Cheap, high leverage. Overlaps F5.
-- **F13. Physical library / textbook lending** (~2 wks) — titles + copies, QR
-  labels, lend/return. **Note this is not Akuru's L-track library**, which is a
-  digital reader/bookstore. Build only if the Institute lends physical books.
-- **F14. Lost and found** (~3 days), **canteen**, **competences**, **student
-  work showcase**, **gate arrivals/departures** — owner-gated; the last needs a
-  hardware decision.
+These are cheap because the hard part exists; they close the gap between "we
+have a gradebook" and "we have what they were used to".
+
+### F9. Staff absence → substitution automation — ~3 days
+Akuru has staff attendance (HR) **and** the substitution engine; EduPage's value
+is that they are wired together. An approved absence emits an event that offers
+to create the `TeacherAbsence` the substitution flow already consumes. Highest
+leverage-to-effort ratio in the whole plan. Overlaps F5 — build with it if F5
+lands first, standalone otherwise.
+
+### F10. Attendance policy depth — ~1 week
+Custom absence types; **tardy→absence conversion** (EduPage's example: 3 tardies
+= 1 lesson) as a configurable rule; rounding policy for part-lessons; tardy and
+early-departure summaries; a "who is absent today" staff view. Plus an integrity
+story for parent-submitted absence notes — EduPage documents this explicitly
+("can't they be falsified?"), and Akuru's `/portal/absence-notes` should answer
+the same question before parents lean on it.
+
+### F11. Internal calendar + room booking — ~1–2 weeks
+Staff-facing calendar distinct from the public events site: custom event types,
+whole-day events, school holidays for the year, **classroom change / room
+booking**, teachers' meetings, message all participants of an event, day/week
+views. `academic_year_id` per rule 10.
+
+### F12. Consultation slots — ~1 week
+Parent-teacher meeting booking on top of the existing `/portal/meetings`:
+teacher publishes slots, configurable gap between consultations, parent books
+one, both notified. EduPage also lets teachers book each other — include it,
+it is the same table.
+
+### F13. Class register + materials depth — ~2 weeks
+EduPage's "Plans, preparations, standards" (333 doc pages) is a reusable
+materials library that homework and tests draw from. Akuru has lesson logs and
+teacher plan views (D3) but no library. Scope v1 narrowly: a teacher's reusable
+material (title, body, attachments, subject, tags) that can be attached to a
+lesson log or a homework assignment. Do **not** build an assessment engine here.
+
+### F14. Certificates / report printing — ~1 week
+Report cards exist (C2); EduPage's depth is in printing — templates, grade
+categories, subject areas, verbal evaluation alongside marks. Scope: a printable
+report-card template with the Institute's own layout, not EduPage's per-country
+template set.
+
+---
+
+## Wave 4 — new capability, each owner-gated
+
+None of these should start without a "yes, we run this" from the Institute.
+
+### F15. Lost and found — ~3 days
+`found_items` (title, description, photo, found_at, location, holder staff id,
+status `listed|returned`). Staff log an item; families browse; notify on
+important items. Trivial, and genuinely liked in EduPage.
+
+### F16. Physical library + textbook lending — ~2 weeks
+**Not Akuru's L-track library**, which is a digital reader/bookstore — this is
+physical circulation: `book_titles` + `book_copies` (accession number, QR or
+barcode label), `loans` (copy, borrower person, out/due/returned dates),
+printable label sheets, a borrower QR card, availability lookup, and bulk
+borrow/return for textbook issue at term start. Build only if the Institute
+lends physical books. Name it distinctly (Circulation) so it never gets confused
+with the L-track Library in code or nav.
+
+### F17. Interest groups / school clubs — ~1 week
+Clubs as first-class offerings: club course, roster, plan, registration
+(reuses F6), printable attendance sheet, and support for members from outside
+the enrolled roll. The course engine can model these already — this is mostly
+configuration plus a roster screen, so keep it thin and resist a parallel
+enrolment system (rule 11).
+
+### F18. Student arrivals / departures — ~1 week + hardware decision
+Gate check-in/out with parent visibility: `student_movements` (student,
+direction, at, recorded_by, `academic_year_id`). EduPage integrates access
+control hardware; card/QR readers are a separate purchase. Do not build the
+software until the hardware question is answered, or it will be a manual log
+nobody fills.
+
+### F19. Student sensitive information — ~1 week + privacy decision
+Health and welfare notes on a pupil, visible only to authorised staff. Needs a
+policy decision before a schema: who may read, who may write, retention, and
+whether it is exportable. This is the one module where building first and
+deciding later is actively wrong.
+
+### F20. Competences / values tracking — ~2 weeks
+A generic "skill or value awarded to a pupil" record. Defer until a curriculum
+need names the competence list — Quran milestones already cover the flagship
+subject, and an unnamed framework becomes an empty screen.
+
+### F21. Student work showcase — ~1–2 weeks
+Photograph paper work, route it to the right parent. EduPage uses AI to read the
+pupil's handwritten name; a v1 without that is just "photo + pick the pupil",
+which is most of the value at a fraction of the cost. Note the failure mode
+their docs document — work sent to the wrong parent — and make reassignment easy.
+
+### F22. Notification centre — ~1 week
+A per-user notification list with scope control: which categories reach me, on
+which channel, and a "mark done" state. EduPage additionally offers a **daily
+digest instead of per-event pings, which also lists what is due tomorrow** —
+copy that; it is the single most parent-friendly idea in their notification
+design, and it pairs with F1's tomorrow strip and F3's homework list.
+
+---
+
+## Not planned (with reasons)
+
+- **Chat** — real-time messaging is a separate product surface; F2's threads
+  cover the need. Revisit only if families ask for it specifically.
+- **Canteen** (51 doc pages) — only if the Institute runs one.
+- **Kindergarten** (174) — not applicable.
+- **AI material generation, essay correction, paper-test grading by camera** —
+  EduPage's AI bets. Akuru's AI investment is the recitation module, which is
+  differentiation EduPage cannot match; spreading thin across generic AI
+  features would trade a defensible advantage for a commodity one.
+- **Reports / Pedagogical documentation / Final exam printing / New school year
+  / Podporné opatrenia** (165 pages combined) — statutory outputs shaped by the
+  Slovak curriculum. The Maldivian equivalents differ; build what the Ministry
+  actually asks for, not these.
+- **aSc timetable builder** — keep an import/export path instead of rebuilding a
+  drag-drop editor with decades of work behind it.
+
+---
+
+## Coverage — all 41 EduPage modules accounted for
+
+So nothing is silently dropped. ✅ = Akuru already at parity or better.
+
+| EduPage module | Akuru disposition |
+|---|---|
+| Messages and communication | F2 |
+| Chat | Not planned (see above) |
+| Noticeboard | F4 |
+| Notifications | F22 |
+| Sign up module / Surveys | F6 |
+| Requests | F5 |
+| Electronic Applications | ✅ Admissions |
+| Student pick up from school | F8 |
+| Lost and found | F15 |
+| Payments | ✅ better (BML, wallet, gift cards, refunds) |
+| Canteen | Not planned |
+| Home work and exams | F3 (+ F13 for materials) |
+| Class register | ✅ registers; depth in F13 |
+| Plans, preparations, standards | F13 |
+| TimeTables | ✅ data model; import/export path, not a builder |
+| Substitutions / cover | ✅ |
+| Interest groups | F17 |
+| Library (physical lending) | F16 |
+| Textbook storage | F16 |
+| EduPage AI | Not planned — recitation module instead |
+| Grades | ✅ gradebook + weights + report cards |
+| Attendance of students | ✅ registers; depth in F10 |
+| Attendance of teachers | ✅ HR; wiring in F9 |
+| Arrivals / departures | F18 |
+| Certificates | F14 |
+| Competences | F20 |
+| Calendar and events | F11 |
+| Parent-teacher meetings | F12 |
+| Student work showcase | F21 |
+| Student sensitive information | F19 |
+| User accounts / User rights | ✅ Spatie roles + permissions |
+| Multi-account switcher | F7 (plus the routing bug it exposed) |
+| Webpage | ✅ better — full CMS, news, courses, L-track library |
+| Mobile application | Capacitor scaffold (Phase 5); app shell slice |
+| Overview about your school | ✅ `portal.overview` + admin dashboards |
+| Basic school data / Create EduPage | ✅ settings + seeders |
+| Reports / Pedagogical documentation | Not planned — statutory mismatch |
+| New school year | ✅ academic year backbone (rule 10) |
+| Final exam printing | Not planned — statutory mismatch |
+| Podporné opatrenia | Not applicable (Slovak special-education measures) |
+| Kindergarten | Not applicable |
+
+**Akuru-only, no EduPage equivalent:** recitation practice module, digital
+reader + bookstore + writer payouts, prayer times, Dhivehi/Arabic RTL UI,
+Hifz/Quran engine.
 
 ---
 
@@ -255,23 +413,47 @@ F4 noticeboard──▶ independent; feeds F1
 F5 requests   ──▶ after Wave 1; chains into existing substitutions
 F6 sign-ups   ──▶ after F5; uses Finance for fees
 F7 switcher   ──▶ routing-bug fix is urgent and separable; switching anytime
-F8 pick-up    ──▶ owner-gated
-F9–F14        ──▶ owner-gated
+F9 absence→sub ─▶ 3 days, no dependencies — the cheapest win in the plan;
+                  pull it forward any time a short slot appears
+F22 digest    ──▶ pairs with F1's tomorrow strip and F3; do it near them
+F10–F14      ──▶ depth work; any order, no cross-dependencies
+F8, F15–F21  ──▶ owner-gated (see below)
 ```
 The app-shell slice can land before or after Wave 1; F1 is its home tab either
 way.
 
 ## Owner decisions
 
-1. **F1: does the tile grid cover teachers, or student/parent only for now?**
-   (Blocks F1 — nothing else does.)
-2. F8: does the physical setup make pick-up meaningful? If yes, security pattern
-   is mandatory.
-3. F13: does the Institute lend physical books or textbooks?
-4. F14: canteen, lost & found, gate tracking — does the Institute run these?
-5. Is the aSc timetable desktop tool still in use? If so, build import/export
+**Blocking now:**
+
+1. **F1: does the tile grid cover teachers, or student/parent only?** Teachers
+   currently land on `portal.overview`, a separate composer. Student/parent-only
+   is the smaller slice and matches where the data already is. *Nothing else in
+   the plan is blocked.*
+
+**Needed before their own slice starts:**
+
+2. F8 pick-up: does the physical setup (island, building, gate) make this
+   meaningful? If yes, the parent security pattern is mandatory, not optional.
+3. F16: does the Institute lend physical books or issue textbooks?
+4. F17: does it run clubs / interest groups?
+5. F18 gate tracking: is card/QR hardware wanted? Do not build the software
+   first.
+6. F19 sensitive information: who may read and write pupil health/welfare notes,
+   and what is the retention rule? Policy before schema on this one.
+7. F20 competences: is there a named framework to track, or is this empty?
+8. F15 lost & found / canteen: does the Institute run these services?
+9. Is the aSc timetable desktop tool still in use? If so, build import/export
    rather than a drag-drop builder.
 
-*(Revision 1's decisions on class-thread shape and homework entry point are now
-answered above — per-family threads, and the register stays the single entry
-point, both matching EduPage.)*
+*(Revision 1's questions on class-thread shape and homework entry point are now
+answered from the reference — per-family threads, and the register stays the
+single entry point, both matching EduPage.)*
+
+## Rough totals
+
+Wave 1 ≈ 5–7 weeks · Wave 2 ≈ 5–6 weeks · Wave 3 ≈ 5–6 weeks ·
+Wave 4 ≈ 8–10 weeks if every gate opens (most probably should not).
+
+The "nobody misses EduPage" line for families is **F1–F4 plus F9 and F22** —
+roughly 6–8 weeks, and F9 is three days of it.
