@@ -1099,6 +1099,31 @@ migration; no Hifz behaviour change outside it.
   Renders at 390px and 900px are byte-identical to the pre-change
   build, so nothing below 1024 moved.
 
+## 5x. Desktop prayer panel + Viber logo (2026-08-29, operator request)
+
+- **Desktop prayer panel now drops below the header** instead of
+  stretching the nav row. The mobile slot already did this (§5t round 2);
+  `positionMobilePanel()` is renamed `positionHeaderPanel()` and gained a
+  desktop branch: mobile keeps the full-width fixed sheet, desktop hangs a
+  fixed dropdown under the pill — `top` = nav bottom, `left` = pill left
+  clamped to a 16px viewport gutter, `width` = max(pill, 380px). Matching
+  CSS block for `.header-prayer:not(.header-prayer--mobile)
+  .prayer-banner-panel`, and the expanded pill keeps `border-radius: 999px`
+  in both slots (was 12px, which only made sense while it stretched).
+  Verified by driving the live markup into the expanded state in a
+  headless render: nav height stays **73px** open or closed, panel lands
+  at top 76px / width 380px, 3-column grid with the next prayer
+  highlighted.
+- **Viber logo replaced with the real glyph.** The old inline path was a
+  hand-rolled approximation. New `<x-public.viber-icon>` anonymous
+  component carries the authentic Simple Icons (CC0) path, used by both
+  the desktop float button and the mobile bottom-bar tab (was duplicated
+  ~2KB twice). Brand colour **#7360F2** (verified against Simple Icons
+  metadata, not guessed) replaces Tailwind `purple-600`: gradient fill,
+  brand-tinted pulse and shadow, float trimmed 64px→56px with a 28px
+  glyph, `prefers-reduced-motion` disables the pulse. New
+  `public.Chat with us on Viber` key in en/dv/ar.
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**; next is **F1** (Hifz → engine). Do not start F in the same turn as the Phase E report.

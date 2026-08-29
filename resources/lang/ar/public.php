@@ -7,6 +7,7 @@ return [
     'News' => 'الأخبار',
     'Research' => 'البحوث',
     'Prayer times' => 'مواقيت الصلاة',
+    'Chat with us on Viber' => 'تواصل معنا عبر فايبر',
     'Maldives prayer times by island' => 'مواقيت الصلاة في جزر المالديف',
     'Island' => 'الجزيرة',
     'Date' => 'التاريخ',

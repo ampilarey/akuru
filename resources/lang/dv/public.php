@@ -7,6 +7,7 @@ return [
     'News' => 'ޚަބަރު',
     'Research' => 'ދިރާސާ',
     'Prayer times' => 'ނަމާދު ގަޑި',
+    'Chat with us on Viber' => 'ވައިބަރ މެދުވެރިކޮށް ގުޅުއްވާ',
     'Maldives prayer times by island' => 'ރާއްޖޭގެ ރަށްރަށު ނަމާދު ގަޑި',
     'Island' => 'ރަށް',
     'Date' => 'ތާރީޚް',
