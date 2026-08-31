@@ -47,6 +47,27 @@ it('blocks a super admin deleting their own account from the profile page', func
     expect(auth()->check())->toBeTrue();
 });
 
+it('does not offer the delete form to a super admin', function () {
+    $user = superAdminUser();
+
+    // An offered button that then refuses is a trap: the guard must be
+    // visible in the UI, not only enforced on submit.
+    $this->actingAs($user)
+        ->get(route('profile.edit'))
+        ->assertOk()
+        ->assertDontSee('confirm-user-deletion')
+        ->assertSee('cannot be deleted', false);
+});
+
+it('still offers the delete form to an ordinary user', function () {
+    $user = User::factory()->create();
+
+    $this->actingAs($user)
+        ->get(route('profile.edit'))
+        ->assertOk()
+        ->assertSee('confirm-user-deletion', false);
+});
+
 it('still lets an ordinary user delete their own account', function () {
     $user = User::factory()->create();
 
