@@ -49,6 +49,16 @@ class ProfileController extends Controller
 
         $user = $request->user();
 
+        // A super admin deleting themselves here locks everyone out of the
+        // platform: `users` has no soft deletes, and AdminUserController
+        // already refuses to delete super admins. The model throws as a
+        // backstop; this check exists so the answer is a message rather than
+        // a 500, and so the session survives the refusal.
+        if ($user->hasRole('super_admin')) {
+            return Redirect::route('profile.edit')
+                ->with('error', __('Super admin accounts cannot be deleted. Remove the super_admin role first, and only while another super admin exists.'));
+        }
+
         Auth::logout();
 
         $user->delete();

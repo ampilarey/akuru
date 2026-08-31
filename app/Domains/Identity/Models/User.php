@@ -3,6 +3,7 @@
 namespace App\Domains\Identity\Models;
 
 use App\Domains\Finance\Models\Payment;
+use App\Domains\Identity\Exceptions\SuperAdminProtectedException;
 use App\Domains\People\Models\ParentGuardian;
 use App\Domains\People\Models\RegistrationStudent;
 use App\Domains\People\Models\Student;
@@ -67,6 +68,46 @@ class User extends Authenticatable implements MustVerifyEmail
             'force_password_change' => 'boolean',
             'last_login_at' => 'datetime',
         ];
+    }
+
+    /**
+     * Guard against deleting the platform's last line of access.
+     *
+     * `users` has no soft deletes, so a deleted super admin is gone. This lives
+     * on the model rather than in a controller because the hole was a second
+     * delete path: AdminUserController refused super admins, the profile page
+     * did not. Every Eloquent instance delete now meets the same rule.
+     *
+     * Caveat worth knowing: query-builder mass deletes
+     * (`User::where(...)->delete()`) do not fire model events and are NOT
+     * covered. `ClearNonAdminUsers` is the one such caller and it explicitly
+     * keeps super_admin/admin, aborting if none remain.
+     */
+    protected static bool $superAdminDeletionAllowed = false;
+
+    protected static function booted(): void
+    {
+        static::deleting(function (self $user) {
+            if (! static::$superAdminDeletionAllowed && $user->hasRole('super_admin')) {
+                throw SuperAdminProtectedException::cannotDelete($user->id);
+            }
+        });
+    }
+
+    /**
+     * Escape hatch for deliberate operations (retiring a redundant super admin,
+     * test fixtures). Deliberately awkward: the protection should be the
+     * default, and bypassing it should read as a decision.
+     */
+    public static function allowSuperAdminDeletion(callable $callback): mixed
+    {
+        static::$superAdminDeletionAllowed = true;
+
+        try {
+            return $callback();
+        } finally {
+            static::$superAdminDeletionAllowed = false;
+        }
     }
 
     // Relationships
