@@ -110,6 +110,41 @@
                         <a href="{{ route('admin.users.index') }}" style="display:block;padding:.5rem .75rem;border-radius:.375rem;font-size:.8rem;color:#991B1B;text-decoration:none;font-weight:600" onmouseover="this.style.background='#FEF2F2'" onmouseout="this.style.background='transparent'">👥 Manage Users</a>
                         <a href="{{ route('admin.settings.index') }}" style="display:block;padding:.5rem .75rem;border-radius:.375rem;font-size:.8rem;color:#991B1B;text-decoration:none;font-weight:600" onmouseover="this.style.background='#FEF2F2'" onmouseout="this.style.background='transparent'">⚙️ Settings</a>
                         @endif
+                        {{-- Operations tools. Gated by the same permissions the
+                             routes check, not by role, so nav and access agree.
+                             These pages were previously linked only from the
+                             Inertia AppShell, which Blade landings never render
+                             — so admins on a Blade dashboard could not find them. --}}
+                        @canany(['operations.manage', 'translations.manage'])
+                        <div style="height:1px;background:#F3F4F6;margin:.25rem 0"></div>
+                        @endcanany
+                        @can('operations.manage')
+                        <a href="{{ route('admin.operations.index') }}" style="display:block;padding:.5rem .75rem;border-radius:.375rem;font-size:.8rem;color:#374151;text-decoration:none" onmouseover="this.style.background='#F9FAFB'" onmouseout="this.style.background='transparent'">📋 Ops checklist</a>
+                        <a href="{{ route('admin.operations.features') }}" style="display:block;padding:.5rem .75rem;border-radius:.375rem;font-size:.8rem;color:#374151;text-decoration:none" onmouseover="this.style.background='#F9FAFB'" onmouseout="this.style.background='transparent'">✅ Feature walkthrough</a>
+                        @endcan
+                        @can('translations.manage')
+                        <a href="{{ route('admin.translations.index') }}" style="display:block;padding:.5rem .75rem;border-radius:.375rem;font-size:.8rem;color:#374151;text-decoration:none" onmouseover="this.style.background='#F9FAFB'" onmouseout="this.style.background='transparent'">🌐 Translations</a>
+                        @endcan
+                        {{-- Admin areas that had no inbound link from anywhere:
+                             commerce, library and pronunciation were linked from
+                             no view at all, and the five prayer-times pages only
+                             linked to each other — a closed island reachable only
+                             by typing the URL. --}}
+                        @canany(['commerce.manage', 'library.manage', 'pronunciation.manage', 'prayer.manage'])
+                        <div style="height:1px;background:#F3F4F6;margin:.25rem 0"></div>
+                        @endcanany
+                        @can('commerce.manage')
+                        <a href="{{ route('admin.commerce.index') }}" style="display:block;padding:.5rem .75rem;border-radius:.375rem;font-size:.8rem;color:#374151;text-decoration:none" onmouseover="this.style.background='#F9FAFB'" onmouseout="this.style.background='transparent'">🎁 Commerce</a>
+                        @endcan
+                        @can('library.manage')
+                        <a href="{{ route('admin.library.index') }}" style="display:block;padding:.5rem .75rem;border-radius:.375rem;font-size:.8rem;color:#374151;text-decoration:none" onmouseover="this.style.background='#F9FAFB'" onmouseout="this.style.background='transparent'">📖 Library</a>
+                        @endcan
+                        @can('prayer.manage')
+                        <a href="{{ route('admin.prayer-times.islands') }}" style="display:block;padding:.5rem .75rem;border-radius:.375rem;font-size:.8rem;color:#374151;text-decoration:none" onmouseover="this.style.background='#F9FAFB'" onmouseout="this.style.background='transparent'">🕌 Prayer times</a>
+                        @endcan
+                        @can('pronunciation.manage')
+                        <a href="{{ route('admin.pronunciation.index') }}" style="display:block;padding:.5rem .75rem;border-radius:.375rem;font-size:.8rem;color:#374151;text-decoration:none" onmouseover="this.style.background='#F9FAFB'" onmouseout="this.style.background='transparent'">🎤 Pronunciation</a>
+                        @endcan
                         <a href="{{ route('e-learning.index') }}" style="display:block;padding:.5rem .75rem;border-radius:.375rem;font-size:.8rem;color:#374151;text-decoration:none" onmouseover="this.style.background='#F9FAFB'" onmouseout="this.style.background='transparent'">💻 E-Learning</a>
                     </div>
                 </div>

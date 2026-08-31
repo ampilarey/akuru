@@ -1244,6 +1244,35 @@ migration; no Hifz behaviour change outside it.
   outputs. Family-facing "nobody misses EduPage" line = F1–F4 + F9 + F22,
   ≈6–8 weeks.
 
+## 5ab. Admin pages were unreachable from the Blade nav (2026-08-29)
+
+- **Reported:** a super admin could not find the feature checklist. The pages
+  were fine — `/admin/operations` and `/admin/operations/features` exist and the
+  `operations.manage` permission is granted to `super_admin` and `admin` by the
+  checklist migration. **The links were the problem: they lived only in
+  `AppShell.jsx`**, the Inertia layout, while super admin lands on
+  `dashboard.super-admin`, which `@extends('layouts.app')` — Blade, which never
+  renders AppShell. Exactly the failure the CLAUDE.md definition of done names:
+  *"Blade landings that hid the work."*
+- Audit of all **24 admin GET landing pages** found more of the same class.
+  A first pass claimed 15 orphans; that was wrong — most hang off sub-hubs
+  (Website CMS, prayer-times). Verified count: **three linked from no view at
+  all** (`admin.commerce.index`, `admin.library.index`,
+  `admin.pronunciation.index`) and the **five prayer-times pages formed a closed
+  island linking only to each other**, reachable only by typing a URL.
+- Added to the Blade admin dropdown, each gated by `@can` on **the same
+  permission the route's middleware checks**, so what is shown matches what is
+  allowed: Ops checklist, Feature walkthrough, Translations, Commerce, Library,
+  Prayer times, Pronunciation.
+- **Regression guard** `tests/Feature/Routes/AdminPagesAreReachableTest.php`:
+  every admin landing route must be linked from `layouts/navigation.blade.php`,
+  or listed in `$allowed` **naming the parent screen** it opens from. The first
+  draft measured "referenced anywhere" and would **not** have caught the
+  reported bug — a link in AppShell.jsx satisfied it, and the prayer-times
+  cluster satisfied it by linking to itself. Tightened to measure reachability
+  from the Blade nav specifically; verified by reverting the fix, where it names
+  all seven pages. A guard that passes trivially is worth nothing.
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**; next is **F1** (Hifz → engine). Do not start F in the same turn as the Phase E report.
