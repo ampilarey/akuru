@@ -76,22 +76,33 @@ class User extends Authenticatable implements MustVerifyEmail
      * `users` has no soft deletes, so a deleted super admin is gone. This lives
      * on the model rather than in a controller because the hole was a second
      * delete path: AdminUserController refused super admins, the profile page
-     * did not. Every Eloquent instance delete now meets the same rule.
+     * did not. Every Eloquent instance delete now meets the same rule, and
+     * `Model::destroy()` does too since it deletes instances.
      *
      * Caveat worth knowing: query-builder mass deletes
-     * (`User::where(...)->delete()`) do not fire model events and are NOT
-     * covered. `ClearNonAdminUsers` is the one such caller and it explicitly
-     * keeps super_admin/admin, aborting if none remain.
+     * (`User::where(...)->delete()`) never touch the model at all, so they are
+     * NOT covered. `ClearNonAdminUsers` is the one such caller and it
+     * explicitly keeps super_admin/admin, aborting if none would remain.
      */
     protected static bool $superAdminDeletionAllowed = false;
 
-    protected static function booted(): void
+    /**
+     * Overriding delete() rather than listening to the `deleting` event is
+     * deliberate, and the tests caught why: Spatie's `bootHasRoles()`
+     * registers its own `deleting` listener that runs `$model->roles()
+     * ->detach()`. Traits boot inside `boot()`, before `booted()`, so a guard
+     * registered there fires *after* the roles are already gone —
+     * `hasRole('super_admin')` then queries an empty pivot and returns false,
+     * and the guard silently never fires. Overriding delete() puts the check
+     * ahead of every deleting listener.
+     */
+    public function delete(): ?bool
     {
-        static::deleting(function (self $user) {
-            if (! static::$superAdminDeletionAllowed && $user->hasRole('super_admin')) {
-                throw SuperAdminProtectedException::cannotDelete($user->id);
-            }
-        });
+        if (! static::$superAdminDeletionAllowed && $this->hasRole('super_admin')) {
+            throw SuperAdminProtectedException::cannotDelete($this->id);
+        }
+
+        return parent::delete();
     }
 
     /**
