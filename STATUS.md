@@ -1273,6 +1273,43 @@ migration; no Hifz behaviour change outside it.
   from the Blade nav specifically; verified by reverting the fix, where it names
   all seven pages. A guard that passes trivially is worth nothing.
 
+## 5ac. Super-admin protection + email login fallback (2026-08-31)
+
+- **Operator deleted their own super admin account** from the profile page to
+  test what would happen, and was locked out. `users` has no soft deletes, so
+  nothing could be restored. `AdminUserController::destroy()` already refused
+  to delete super admins; **`ProfileController::destroy()` did not** — it only
+  checked the password. Guard moved to the model so every path meets it.
+- **The first guard did not work, and its own test caught it.** Registering it
+  in `booted()` put it *after* Spatie's `HasRoles::bootHasRoles()` deleting
+  listener, which calls `$model->roles()->detach()`; traits boot inside
+  `boot()`, before `booted()`, so `hasRole('super_admin')` then queried an
+  empty pivot, returned false, and the guard silently passed. **Overriding
+  `delete()`** puts the check ahead of every deleting listener and removes the
+  ordering dependency. A protection that looks real but never fires is worse
+  than none — the lesson is to test that a guard *refuses*, not just that the
+  happy path still works. `User::allowSuperAdminDeletion()` is the deliberate
+  escape hatch; a test pins that it re-arms even when the callback throws.
+  Query-builder mass deletes remain uncovered (documented on the model);
+  `ClearNonAdminUsers` is the only such caller and keeps super_admins.
+- **Email login ignored `users.email` entirely** — it required a *verified*
+  `user_contacts` row (`LoginRequest:58`). Found while recovering the account:
+  the recreated user could not log in despite a valid row. The blast radius is
+  much wider than recovery — **`RegisteredUserController::store()` creates no
+  contact row**, so anyone who registered normally could authenticate exactly
+  once (the `Auth::login` after signup) and never again. Admin-created users
+  and seeded users had the same problem.
+- Fix is deliberately narrow, because unverified contacts are a **meaningful
+  state**: `AccountResolverService` and `CourseRegistrationController` create
+  contacts with `verified_at = null` while OTP is pending. Rule now: a contact
+  row wins when present (verified → in, unverified → refused, preserving the
+  OTP gate); **only when no contact row exists at all** does login fall back to
+  `users.email`, which is unique so it cannot resolve to two accounts. That
+  grants nothing an unverified contact was withholding.
+- Tests cover all six branches including the OTP gate staying shut, and an
+  end-to-end register → logout → log-in-again that would have caught the
+  original bug.
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**; next is **F1** (Hifz → engine). Do not start F in the same turn as the Phase E report.

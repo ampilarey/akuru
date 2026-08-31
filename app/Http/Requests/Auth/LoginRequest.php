@@ -53,13 +53,28 @@ class LoginRequest extends FormRequest
         $user = null;
 
         if (str_contains($identifier, '@')) {
-            // ── Email login via user_contacts ──────────────────────────────
+            // ── Email login ────────────────────────────────────────────────
+            // A contact row is a deliberate state, so it wins when present:
+            // the public course-registration flow creates contacts with
+            // verified_at = null while OTP is pending, and those must stay
+            // locked out until verified.
+            //
+            // But accounts created outside the contact-aware flows never get
+            // a contact row at all — Breeze registration, admin user
+            // creation, seeders and console recovery all write users.email
+            // only. Those were permanently unable to log in: register, log
+            // out, and the account is dead. Fall back to users.email for
+            // exactly that case (no contact row), which grants nothing an
+            // unverified contact was withholding. users.email is unique, so
+            // the fallback cannot resolve to more than one account.
             $value = $normalizer->normalizeEmail($identifier);
             $contact = \App\Domains\Identity\Models\UserContact::where('type', 'email')
                 ->where('value', $value)
-                ->whereNotNull('verified_at')
                 ->first();
-            $user = $contact?->user;
+
+            $user = $contact !== null
+                ? ($contact->verified_at !== null ? $contact->user : null)
+                : \App\Domains\Identity\Models\User::whereRaw('LOWER(email) = ?', [$value])->first();
 
         } elseif (preg_match('/^\+?[\d\s\-]+$/', $identifier)) {
             // ── Mobile login via user_contacts ─────────────────────────────
