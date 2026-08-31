@@ -14,11 +14,31 @@ use App\Domains\Academics\Models\LessonLog;
 use App\Domains\Academics\Models\PlanTopic;
 use App\Domains\Academics\Models\RegisterUnlock;
 use App\Domains\Identity\Models\User;
+use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Validation\ValidationException;
 use Inertia\Testing\AssertableInertia as Assert;
 
 uses(RefreshDatabase::class);
+
+/**
+ * Freeze the clock inside the week these tests pin their lesson dates to.
+ *
+ * The register lock window (`register_lock_days`, default 7) is measured from
+ * "now", but the fixtures below hardcode dates in 2026-08-24..31. On
+ * 2026-08-31 the cutoff (`now()->startOfDay()->subDays(7)`) reached
+ * 2026-08-24 and, because the comparison is inclusive, the register the
+ * teacher fills became locked — so "it lets a teacher fill today" started
+ * failing with no code change behind it. It passed on 2026-08-29 and failed on
+ * 2026-08-31 for that reason alone.
+ *
+ * Freezing keeps the relationship the tests were written under. Fixtures that
+ * already use relative dates (`now()->subDay()`) move with it and stay
+ * distinct from the pinned ones.
+ */
+beforeEach(function () {
+    test()->travelTo(Carbon::parse('2026-08-26 09:00:00', config('app.timezone')));
+});
 
 function mondaySlot(array $overrides = []): array
 {
