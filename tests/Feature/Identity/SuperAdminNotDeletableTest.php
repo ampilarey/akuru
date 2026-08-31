@@ -52,8 +52,11 @@ it('does not offer the delete form to a super admin', function () {
 
     // An offered button that then refuses is a trap: the guard must be
     // visible in the UI, not only enforced on submit.
-    $this->actingAs($user)
-        ->get(route('profile.edit'))
+    // withoutLocalizationMiddleware() as elsewhere — the localised routes
+    // otherwise 302 to add a locale prefix before the view renders.
+    $this->withoutLocalizationMiddleware()
+        ->actingAs($user)
+        ->get('/profile')
         ->assertOk()
         ->assertDontSee('confirm-user-deletion')
         ->assertSee('cannot be deleted', false);
@@ -62,8 +65,9 @@ it('does not offer the delete form to a super admin', function () {
 it('still offers the delete form to an ordinary user', function () {
     $user = User::factory()->create();
 
-    $this->actingAs($user)
-        ->get(route('profile.edit'))
+    $this->withoutLocalizationMiddleware()
+        ->actingAs($user)
+        ->get('/profile')
         ->assertOk()
         ->assertSee('confirm-user-deletion', false);
 });
