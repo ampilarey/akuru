@@ -24,6 +24,7 @@ use App\Domains\Hifz\Models\HifzProgram;
 use App\Domains\Identity\Models\User;
 use App\Domains\People\Actions\AttachGuardianAction;
 use App\Domains\People\Enums\GuardianRelationship;
+use App\Domains\Portal\Actions\ComposePortalHomeAction;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
 use Spatie\Permission\Models\Role;
@@ -166,5 +167,36 @@ it('does not import other domain models or the Hifz namespace from new portal ho
         $src = file_get_contents($file);
         expect($src)->not->toContain('App\\Domains\\Hifz\\')
             ->and($src)->not->toMatch('/App\\\\Domains\\\\[A-Za-z]+\\\\Models\\\\/');
+    }
+});
+
+it('composes tiles whose counts match the payload they summarise', function () {
+    $user = User::factory()->create();
+    Role::findOrCreate('student', 'web');
+    $user->assignRole('student');
+    makeStudent(['user_id' => $user->id]);
+
+    $payload = app(ComposePortalHomeAction::class)->execute((int) $user->id);
+
+    expect($payload)->toHaveKey('tiles')
+        ->and($payload)->toHaveKey('nextSchoolDay');
+
+    $tiles = collect($payload['tiles'])->keyBy('key');
+
+    // Every tile must summarise, not just link: a status line is the point.
+    $tiles->each(function (array $tile): void {
+        expect($tile['status'])->not->toBeEmpty()
+            ->and($tile)->toHaveKeys(['key', 'label', 'href', 'badge', 'status']);
+    });
+
+    // Counts are derived from the same arrays the page renders, so they
+    // cannot drift from the module they point at.
+    $composed = collect($payload['students']);
+    expect($tiles->get('exams')['badge'])
+        ->toBe($composed->sum(fn (array $row): int => count($row['exams'])) ?: null);
+
+    // Hifz is omitted rather than shown empty on a glanceable screen.
+    if ($composed->sum(fn (array $row): int => count($row['hifz'])) === 0) {
+        expect($tiles->has('hifz'))->toBeFalse();
     }
 });
