@@ -22,6 +22,23 @@ its own docs.
 
 Legend: ✅ parity or better · 🟡 partial · ❌ not built · ➖ not wanted / decide.
 
+> **Audit correction, 2026-09-04.** Revision 2's status column was set from the
+> EduPage documentation with only a partial code audit, and **seven rows were
+> wrong** — all in the same direction, marking shipped features as missing. They
+> are corrected inline below and marked "Corrected 2026-09-04". The worst was
+> Requests/Applications, marked ❌ when the whole engine *including the
+> substitution chaining* was already built. Do not trust a ❌ in this document
+> without grepping for the table or controller first.
+>
+> The **eight ❌ rows that remain were re-verified** in the same pass and are
+> sound: Chat, Student Work Showcase, Lost and found, physical Library lending,
+> Textbook storage, EduPage AI, Arrivals/departures, Student sensitive
+> information. Three of those first showed as "found" and were discarded as grep
+> artefacts (the words appear incidentally in `documents`, `emergency_contacts`
+> and `terms`) — the check was run in both directions, not just the flattering
+> one. Sensitive information is the one partial: `emergency_contacts` and the
+> custom-field tables already carry some of it.
+
 ---
 
 ## 1. Corrections to revision 1
@@ -51,11 +68,11 @@ behaviour sits behind a menu item.
 |---|---|---|
 | **Messages** — send to users/classes/groups; **saved custom recipient groups** alongside course-derived ones; cross-class recipient picking; "Important" flag; **built-in voting/poll on a message** with results; **reply controls** (disable public replies → author-only, or disable replies entirely; reply-all off by default school-wide); mark handled/hide; delete a sent message; **block a user** for abuse | 🟡 | `Notifications\Models\Message` has sender/recipient/subject/body/attachments/priority/read state. Single-recipient rows, no threads, no groups, no poll, no reply policy, no block. |
 | **Chat** (separate from Messages) — whole-class chat, custom user selection, delete own messages | ❌ | No real-time chat. Deliberately deferred. |
-| **Noticeboard** — a teacher posts an announcement to colleagues **or to their own class's students/parents**, with file attachment; recipients notified on web + app | ❌ | Public news/gallery exist; no in-portal feed for enrolled families. |
-| **Notifications** — per-user scope control, filter to only HW/tests, mark a notification "Done", push on/off | 🟡 | SMS/mail notices exist with consents; no user-facing notification centre or scope settings. |
+| **Noticeboard** — a teacher posts an announcement to colleagues **or to their own class's students/parents**, with file attachment; recipients notified on web + app | ✅ | **Corrected 2026-09-04:** `Announcement` + `AnnouncementController` + 4 routes; surfaced to families through `EnhancedDashboardController::getRecentAnnouncements()`. A dedicated feed page is the only possible gap. |
+| **Notifications** — per-user scope control, filter to only HW/tests, mark a notification "Done", push on/off | ✅ | **Corrected 2026-09-04:** `UserNotification`, `NotificationTemplate`, `Device`, `NotificationController` + 3 routes all ship. EduPage's daily-digest mode may still be a genuine addition. |
 | **Student Work Showcase** — photograph paper work, **AI recognises the pupil's handwritten name** and routes it to that parent; categorising; send from the lesson menu; misfile recovery | ❌ | Not built. Related to Akuru's own AI plans. |
 | **Sign-up / Registration actions** — trips, seminars, electives, clubs; **"require parent's confirmation"** (green tick / red triangle in results, and only a real parent account can confirm); notify non-registered; copy templates; print results; **hand off to Payments as a per-target payment plan** | 🟡 | Admissions/event/course registration ✅; no generic sign-up builder, no parent-confirmation step, no registration→invoice handoff. |
-| **Requests / Applications** — parents and staff file typed applications (leave of absence, PE exemption, board examination, personal curriculum, staff leave, sickness notification); **configurable approver per type** (class teacher, headmaster, authority); all parties notified; **approval auto-generates the follow-on action** — approving staff leave offers to insert that teacher into substitutions as absent | ❌ | Admissions applications ✅, but no general request/approval workflow and no chaining into substitutions. |
+| **Requests / Applications** — parents and staff file typed applications (leave of absence, PE exemption, board examination, personal curriculum, staff leave, sickness notification); **configurable approver per type** (class teacher, headmaster, authority); all parties notified; **approval auto-generates the follow-on action** — approving staff leave offers to insert that teacher into substitutions as absent | ✅ | **Corrected 2026-09-04 — this entry was flatly wrong.** `requests` table (typed, morph target, payload, reviewer + notes), `SchoolRequest`, 5 types, `ReviewSchoolRequestAction`, `RequestHandlerRegistry` with per-type handlers, permissions, routes. **The substitution chaining exists**: approving staff leave creates the `TeacherAbsence` and generates `SubstitutionRequest` rows per affected period. |
 | **Electronic Applications** (admissions forms) — configurable layout, school-defined fields, embeddable on a non-EduPage site, parent can print/amend a submission | ✅ | Akuru admissions covers this. |
 | **Lost and found** — staff log an item with photo + pickup location; families browse; states incl. "returned to owner" | ❌ | Trivial slice if wanted. |
 | **Payments** (69) | ✅ better | BML gateway, invoices, wallet, gift cards, refunds (P4.3). |
@@ -83,15 +100,15 @@ behaviour sits behind a menu item.
 | **Attendance of students** (27) — **electronic absence notes with an anti-falsification story**; custom absence types; **tardy→absence conversion rules** (e.g. 3 tardies = 1 lesson); rounding policy; "who is absent today"; tardy/early-departure summaries | 🟡 | Registers with parent notification ✅ and `/portal/absence-notes` exists; no custom types, tardy conversion or rounding policy. |
 | **Arrivals / departures** — access-control/gate integration | ❌ | Only staff attendance (HR). Hardware question. |
 | **Attendance of teachers** (19) — workload types, one-off adjustments, **absences feed straight into substitutions**, rights model | 🟡 | Staff attendance ✅ and substitutions ✅; the automatic link between them is the gap. |
-| **Certificates / report printing** (31) — country templates, verbal evaluation, grade categories, subject areas | 🟡 | Report cards ✅; printing templates are thinner. |
-| **Competences** | ❌ | Not built (Quran milestones are a subject-specific cousin). |
+| **Certificates / report printing** (31) — country templates, verbal evaluation, grade categories, subject areas | ✅ | **Corrected 2026-09-04:** `report_cards`, `report_card_templates`, `report_card_comments` ship. |
+| **Competences** | ✅ | **Corrected 2026-09-04:** `competencies` + `competency_assessments`, `CompetencyController` + 5 routes. |
 
 ### Structural (108 + 102 + 94 + 70 + 68 + 42 + 19 + 8 doc pages)
 
 | EduPage module | Akuru | Evidence / gap |
 |---|---|---|
-| **Calendar and events** (19) — internal school calendar, custom event types, whole-day events, school holidays, **room booking / classroom change**, teachers' meetings, message all participants of an event, day/week views | 🟡 | Public events ✅; no internal staff calendar, holidays table or room booking. |
-| **Parent-teacher meetings** (9) — consultation-hour slots, assign a slot to a parent, configurable break between consultations, teachers booking each other | 🟡 | `/portal/meetings` exists; slot booking is thinner. |
+| **Calendar and events** (19) — internal school calendar, custom event types, whole-day events, school holidays, **room booking / classroom change**, teachers' meetings, message all participants of an event, day/week views | 🟡 | **Partly corrected 2026-09-04:** `room_bookings` + `RoomBookingController` ship, and `CalendarDay` carries holiday/exam-day types. Still missing: staff calendar with custom event types and a school-holidays view. |
+| **Parent-teacher meetings** (9) — consultation-hour slots, assign a slot to a parent, configurable break between consultations, teachers booking each other | ✅ | **Corrected 2026-09-04:** `meeting_slots` + `meeting_bookings`, `MeetingSlotController` + 10 routes. |
 | **User accounts** (42) + **User rights** (8) — granular per-teacher grants (attendance, grades, per-course admin, account administration) | ✅ | Spatie roles + permissions, `role:`/`can:` route guards. |
 | **Multi-account switcher** — parent + own-student + staff accounts in one app; note EduPage **enforces the separation** (a parent signed in with a pupil's credentials cannot give parent confirmation) | 🟡 | Roles stack on one login; no switching between separate accounts. See E7 and the teacher-parent priority bug below. |
 | **Student sensitive information** (5) — health/general notes visible to authorised staff | ❌ | Not built; would need a privacy decision. |
