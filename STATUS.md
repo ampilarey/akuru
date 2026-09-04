@@ -1310,6 +1310,43 @@ migration; no Hifz behaviour change outside it.
   end-to-end register → logout → log-in-again that would have caught the
   original bug.
 
+## 5ad. E1 — status-tile portal home (2026-09-04)
+
+- **Scope call:** E1 ships **student/parent only**. The teachers-or-not question
+  was put to the operator three times and answered with "start" each time, so
+  the smaller option was taken and stated rather than blocking. Teachers keep
+  landing on `portal.overview`; folding them in later is additive.
+- **New `ListDayTimetableForStudentAction`** (Academics) — one day's periods for
+  a student's class. Nothing read that before; Save, Copy, PreviewConflicts,
+  Backfill and Sync all write or validate. **E3 needs the same action** for its
+  next-lesson due dates, which is why it was split out and shipped first.
+  - Honours `CalendarDay.affects_timetable` exactly as
+    `GenerateExpectedRegistersAction` does. Without that the strip would promise
+    lessons the registers never create — and the strip would be the liar.
+  - An unassigned cover request reports **covered-but-unnamed** rather than
+    showing the absent teacher; an unstaffed period is the useful thing to say.
+  - Teacher names go through People's `ListTeachersByIdsAction`, not a `Teacher`
+    import: the cross-domain baseline may only shrink (rule 3). Arch confirms
+    nothing was added.
+  - CI caught a fixture bug: `substitution_assignments.assigned_by` is a real FK
+    to `users` and the test hardcoded `1`, which does not exist under
+    `RefreshDatabase`.
+- **`ComposePortalHomeAction` gains `tiles` + `nextSchoolDay`**, additive
+  alongside `sections` so the existing cards and CSV export keep working. Every
+  tile count is derived from the arrays already composed — no new queries — so
+  a tile cannot drift from the page it links to. Hifz is omitted when empty
+  rather than shown at zero. The prayer tile reuses
+  `ComposeDashboardPrayerAction`; it is the one tile EduPage has no answer to.
+- **`nextSchoolDay` looks forward up to 7 days**, not just literally tomorrow:
+  the Maldivian weekend would otherwise leave a Thursday visitor with an empty
+  strip. It returns `is_tomorrow` so the UI names the day honestly instead of
+  calling a Sunday "tomorrow".
+- **`public/build` rebuilt and committed** — §5t's rule: the TEST deploy only
+  git-pulls, so a JSX change without a rebuilt bundle ships invisibly. The CSS
+  hash moved too, so the new grid classes are actually in the bundle.
+- Still to do for E1: the teacher FAB (deep links into E2/E3, which do not exist
+  yet), and the teachers variant if the operator wants it.
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**.

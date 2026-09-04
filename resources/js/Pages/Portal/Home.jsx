@@ -71,12 +71,82 @@ function StudentCard({ student, labels }) {
     );
 }
 
-export default function Home({ title = 'Dashboard', students = [], csvUrl = '/portal/home/export', sections = [] }) {
+// The next school day, named honestly: "Tomorrow" only when it really is.
+function NextDayStrip({ day }) {
+    if (!day) return null;
+
+    const heading = day.is_tomorrow
+        ? 'Tomorrow'
+        : new Date(day.date + 'T00:00:00').toLocaleDateString(undefined, { weekday: 'long' });
+
+    return (
+        <section className="mb-6 rounded-xl border border-[#E6D9C8] bg-[#F9F4EE] p-4" aria-label="Next school day">
+            <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
+                <h2 className="text-sm font-bold text-[#7C2D37]">
+                    {heading}
+                    {day.class ? <span className="font-normal text-gray-600"> · {day.class.name}</span> : null}
+                </h2>
+                <span className="text-xs text-gray-500">{day.date}</span>
+            </div>
+            <ol className="flex flex-wrap gap-2">
+                {day.periods.map((period) => (
+                    <li key={period.timetable_entry_id} className="rounded-lg border border-[#E6D9C8] bg-white px-3 py-2">
+                        <p className="text-xs font-semibold text-gray-500">
+                            {period.period_name}
+                            {period.starts_at ? ` · ${period.starts_at}` : ''}
+                        </p>
+                        <p className="text-sm font-semibold text-gray-900">{period.subject}</p>
+                        <p className="text-xs text-gray-600">
+                            {/* An open cover request means nobody is assigned yet; saying so
+                                beats naming a teacher who will not be there. */}
+                            {period.is_substituted
+                                ? (period.substitute_teacher
+                                    ? `Cover: ${period.substitute_teacher}`
+                                    : 'Cover not yet assigned')
+                                : (period.teacher || '')}
+                            {period.room ? ` · ${period.room}` : ''}
+                        </p>
+                    </li>
+                ))}
+            </ol>
+        </section>
+    );
+}
+
+function Tile({ tile }) {
+    const body = (
+        <>
+            <div className="flex items-start justify-between gap-2">
+                <p className="text-sm font-semibold text-gray-900">{tile.label}</p>
+                {tile.badge ? (
+                    <span className="rounded-full bg-[#7C2D37] px-2 py-0.5 text-xs font-bold text-white">{tile.badge}</span>
+                ) : null}
+            </div>
+            <p className="mt-1 text-xs text-gray-600">{tile.status}</p>
+        </>
+    );
+
+    const className = 'block rounded-xl border border-gray-200 bg-white p-4 text-left';
+
+    return tile.href
+        ? <a className={`${className} hover:border-[#7C2D37]`} href={tile.href}>{body}</a>
+        : <div className={className}>{body}</div>;
+}
+
+export default function Home({ title = 'Dashboard', students = [], csvUrl = '/portal/home/export', sections = [], tiles = [], nextSchoolDay = null }) {
     const labels = Object.fromEntries(sections.map((section) => [section.key, section.label]));
     const extras = sections.filter((section) => !['attendance', 'exams', 'invoices', 'courses', 'hifz'].includes(section.key) && section.href);
 
     return (
         <AppShell title={title}>
+            <NextDayStrip day={nextSchoolDay} />
+
+            {tiles.length > 0 && (
+                <div className="mb-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                    {tiles.map((tile) => <Tile key={tile.key} tile={tile} />)}
+                </div>
+            )}
+
             <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
                 <p className="text-sm text-gray-600">Attendance, exams, invoices, course progress, and Hifz — read from each domain's public contract.</p>
                 <div className="flex gap-3 text-sm">
