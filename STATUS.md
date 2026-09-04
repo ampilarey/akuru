@@ -1056,13 +1056,13 @@ migration; no Hifz behaviour change outside it.
   ship ①–④ before or with the app shell.
   Follow-up in the same PR: `docs/EDUPAGE_FEATURES_PLAN.md` — the gap
   list turned into implementable slices. Wave 1 (daily-habit core):
-  F1 status-tile portal home w/ tomorrow strip (extends
-  ComposePortalHomeAction + Timetable), F2 messaging threads (additive
-  on messages; per-family class threads), F3 homework read-side
+  E1 status-tile portal home w/ tomorrow strip (extends
+  ComposePortalHomeAction + Timetable), E2 messaging threads (additive
+  on messages; per-family class threads), E3 homework read-side
   (lesson_logs.homework ALREADY EXISTS — add due date + portal list),
-  F4 noticeboard (private, class-targeted). Wave 2: forms/surveys
+  E4 noticeboard (private, class-targeted). Wave 2: forms/surveys
   domain, pick-up notice, account switcher. Wave 3 owner-gated:
-  arrivals, competences, canteen. 5 owner decisions listed; F1 first —
+  arrivals, competences, canteen. 5 owner decisions listed; E1 first —
   every later feature feeds its tiles and it becomes the app shell's
   home tab.
 
@@ -1213,35 +1213,35 @@ migration; no Hifz behaviour change outside it.
   lists what is due tomorrow**; sign-ups support **parent confirmation** (only
   from a real parent account) and hand fees to the payments module; pick-up is a
   five-step two-way protocol gated by a **parent security pattern**, not a
-  button. F6 pick-up re-estimated 3 days → 1 week; F5 promoted to its own
+  button. E6 pick-up re-estimated 3 days → 1 week; E5 promoted to its own
   Requests domain; messaging 2 → 2–3 weeks.
 - Both docs rewritten. `EDUPAGE_PARITY.md` now maps all 41 modules with counts
-  as a depth signal; `EDUPAGE_FEATURES_PLAN.md` renumbers to F1–F14 and answers
+  as a depth signal; `EDUPAGE_FEATURES_PLAN.md` renumbers to E1–E14 and answers
   two of the old owner decisions from the reference (per-family threads; the
   register stays the single homework entry point).
 - **Also surfaced a live defect** (recorded in both docs): roles are additive
   but `DashboardController::index()` tests `isTeacher()` before `isParent()`, so
   a teacher who is also a parent can never reach the parent home from login.
-  Separable from F7 and should be fixed on its own.
-- F1 has exactly one blocking decision: does the tile grid cover teachers (whose
+  Separable from E7 and should be fixed on its own.
+- E1 has exactly one blocking decision: does the tile grid cover teachers (whose
   home is the separate `portal.overview` composer), or student/parent only.
 - **Plan completed to full coverage (same day, operator request).** The first
   rewrite gave concrete slices for the top 8 and waved at the rest; the plan now
-  carries **F1–F22**, every one with a scope, an effort figure and acceptance
+  carries **E1–E22**, every one with a scope, an effort figure and acceptance
   criteria, plus a **coverage table mapping all 41 EduPage modules** to a slice,
   a ✅ (already at parity), or a documented "not planned" with the reason — so
-  nothing is silently dropped. New in Wave 3: F9 staff-absence→substitution
+  nothing is silently dropped. New in Wave 3: E9 staff-absence→substitution
   wiring (**3 days, no dependencies — the cheapest win in the plan**, since
-  Akuru already has both halves), F10 attendance policy depth, F11 internal
-  calendar + room booking, F12 consultation slots, F13 materials library, F14
-  certificate printing. New in Wave 4 (all owner-gated): F15 lost & found, F16
+  Akuru already has both halves), E10 attendance policy depth, E11 internal
+  calendar + room booking, E12 consultation slots, E13 materials library, E14
+  certificate printing. New in Wave 4 (all owner-gated): E15 lost & found, E16
   physical lending — deliberately named *Circulation* so it is never confused
-  with the L-track Library — F17 interest groups, F18 gate arrivals, F19
-  sensitive information (**policy before schema**), F20 competences, F21 work
-  showcase, F22 notification centre with EduPage's daily-digest idea.
+  with the L-track Library — E17 interest groups, E18 gate arrivals, E19
+  sensitive information (**policy before schema**), E20 competences, E21 work
+  showcase, E22 notification centre with EduPage's daily-digest idea.
   Explicitly not planned, with reasons recorded: chat, canteen, kindergarten,
   generic AI features (recitation is the better bet), and the Slovak statutory
-  outputs. Family-facing "nobody misses EduPage" line = F1–F4 + F9 + F22,
+  outputs. Family-facing "nobody misses EduPage" line = E1–E4 + E9 + E22,
   ≈6–8 weeks.
 
 ## 5ab. Admin pages were unreachable from the Blade nav (2026-08-29)
@@ -1312,7 +1312,42 @@ migration; no Hifz behaviour change outside it.
 
 ## 6. Out of scope (unchanged)
 
-Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**; next is **F1** (Hifz → engine). Do not start F in the same turn as the Phase E report.
+Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**.
+
+**Phase F (Hifz → engine) is built through F4** (2026-08-27, #131–#134, ADR-025)
+— F0 components, F1 halaqa mirror gate, F2 structure mapping, F3 engine-keyed
+§52.19–52.22, F4 non-AI dashboards. **F5 (retirement) is gated by ADR-025** and
+cannot start until the frozen Blade app is replaced: it remains the only UI for
+three-lane session-record entry, assignments (§52.18) and milestone approval, so
+the Quran dataset models move in the same slice that deletes the Blade app,
+never before. This line previously read "next is F1 (Hifz → engine)", which was
+stale by a week.
+
+The EduPage track is renamed **E1–E22** in `docs/EDUPAGE_FEATURES_PLAN.md` to
+end a genuine collision: "F1" meant both ROADMAP Phase F slice 1 (shipped) and
+the EduPage portal home (not started).
+
+**⚠ That plan is not yet trustworthy and must be audited before any E-slice
+starts.** Attempting E9 (staff absence → substitution wiring, estimated 3 days)
+on 2026-09-04 found it **already built end to end**: `SchoolRequest` →
+`ReviewSchoolRequestAction` → `RequestHandlerRegistry` →
+`HandleStaffLeaveApprovalAction`, which calls HR's `ApproveStaffLeaveAction`
+and then `RecordApprovedTeacherLeaveAction` to create the `TeacherAbsence` and
+generate `SubstitutionRequest` rows per affected period, idempotently. Spot
+checks then found the same error on more slices: **E5** (requests/approvals —
+generic engine, 5 types, submit/review/export routes, permissions and pluggable
+handlers all exist), **E4** (`Announcement` model + routes), **E11**
+(`CalendarDay`), **E22** (`UserNotification`, `NotificationTemplate`, `Device`).
+Cause: the plan was written from the EduPage documentation with only a partial
+codebase audit — the slices that were checked (`Message`, `LessonLog`,
+`Timetable`, `ComposePortalHomeAction`) are sound; the rest were inferred. The
+parity doc's "no general request/approval workflow and no chaining into
+substitutions" is flatly wrong.
+
+**Next slice is therefore the audit**: verify all 22 against the codebase and
+rewrite both EduPage docs on checked ground. Expect several to shrink from
+"build" to "finish the UI". Only E1's teachers-or-not decision is genuinely
+still open.
 
 **Operator:** apply branch protection (`docs/BRANCH_PROTECTION.md`). Confirm or reject `docs/migrations/s11-deploy-3-cleanup-proposal.md`.
 
