@@ -93,7 +93,7 @@ behaviour sits behind a menu item.
 | **Calendar and events** (19) — internal school calendar, custom event types, whole-day events, school holidays, **room booking / classroom change**, teachers' meetings, message all participants of an event, day/week views | 🟡 | Public events ✅; no internal staff calendar, holidays table or room booking. |
 | **Parent-teacher meetings** (9) — consultation-hour slots, assign a slot to a parent, configurable break between consultations, teachers booking each other | 🟡 | `/portal/meetings` exists; slot booking is thinner. |
 | **User accounts** (42) + **User rights** (8) — granular per-teacher grants (attendance, grades, per-course admin, account administration) | ✅ | Spatie roles + permissions, `role:`/`can:` route guards. |
-| **Multi-account switcher** — parent + own-student + staff accounts in one app; note EduPage **enforces the separation** (a parent signed in with a pupil's credentials cannot give parent confirmation) | 🟡 | Roles stack on one login; no switching between separate accounts. See F7 and the teacher-parent priority bug below. |
+| **Multi-account switcher** — parent + own-student + staff accounts in one app; note EduPage **enforces the separation** (a parent signed in with a pupil's credentials cannot give parent confirmation) | 🟡 | Roles stack on one login; no switching between separate accounts. See E7 and the teacher-parent priority bug below. |
 | **Student sensitive information** (5) — health/general notes visible to authorised staff | ❌ | Not built; would need a privacy decision. |
 | **Reports** (70), **Pedagogical documentation** (52), **New school year** (18), **Final exam printing** (25) | 🟡 | Assorted admin/statutory outputs, mostly Slovak-curriculum shaped. Low relevance. |
 | **Mobile application** (94) | 🟡 | Capacitor scaffold exists (Phase 5); no shipped app. |
@@ -102,7 +102,7 @@ behaviour sits behind a menu item.
 
 ## 3. The home-screen pattern to copy (design target for the app shell)
 
-EduPage's home screen earns daily opens with three moves Akuru's F1 reproduces:
+EduPage's home screen earns daily opens with three moves Akuru's E1 reproduces:
 
 1. **"Timetable tomorrow" strip** — the next school day's periods visible before
    any tap. Note the homework digest does the same trick from the other side:
@@ -125,7 +125,7 @@ The red "+" FAB (new message, new homework…) is worth copying for teachers.
 | 4 | **Noticeboard feed** | Replaces the photos/notice habit | 1 wk |
 | 5 | **Requests / approvals** (incl. staff leave → substitution chaining) | Office workflow; the chaining is the clever part | 2 wks |
 | 6 | **Sign-up actions** with parent confirmation + payment-plan handoff | Trips, electives, clubs | 2 wks |
-| 7 | **Student pick-up** (a real protocol — see plan F6) | Small but loved; islands context may differ | 1 wk |
+| 7 | **Student pick-up** (a real protocol — see plan E6) | Small but loved; islands context may differ | 1 wk |
 | 8 | **Account switcher** | Parents who are also staff — and Akuru has a live bug here | 1 wk |
 | 9 | Attendance policy depth (tardy conversion, custom types, note integrity) | Quiet but reduces disputes | 1 wk |
 | 10 | Internal calendar + room booking; consultation slots | Staff coordination | 1–2 wks |
@@ -142,7 +142,7 @@ Roles in Akuru are additive but `DashboardController::index()` is an `elseif`
 chain that checks `isTeacher()` before `isParent()`. **A teacher who is also a
 parent can never reach the parent home from login.** EduPage solves the same
 problem with account switching *and* enforces that only a genuine parent account
-may give parent confirmation on a registration. Whatever F7 does, it must not
+may give parent confirmation on a registration. Whatever E7 does, it must not
 paper over this ordering bug — fix the routing, then add switching.
 
 ## 6. How to use this checklist
