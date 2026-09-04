@@ -7,6 +7,7 @@ use App\Domains\Academics\Actions\SaveTimetableEntryAction;
 use App\Domains\Academics\Enums\CalendarDayType;
 use App\Domains\Academics\Models\SubstitutionAssignment;
 use App\Domains\Academics\Models\SubstitutionRequest;
+use App\Domains\Identity\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
@@ -138,7 +139,9 @@ it('names the substitute once cover is assigned', function () {
     SubstitutionAssignment::query()->create([
         'substitution_request_id' => $request->id,
         'substitute_teacher_id' => $cover->id,
-        'assigned_by' => 1,
+        // assigned_by is a real FK to users; a hardcoded 1 does not exist
+        // under RefreshDatabase.
+        'assigned_by' => User::factory()->create()->id,
         'assigned_at' => now(),
     ]);
 
