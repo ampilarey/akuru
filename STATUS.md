@@ -1344,10 +1344,26 @@ codebase audit — the slices that were checked (`Message`, `LessonLog`,
 parity doc's "no general request/approval workflow and no chaining into
 substitutions" is flatly wrong.
 
-**Next slice is therefore the audit**: verify all 22 against the codebase and
-rewrite both EduPage docs on checked ground. Expect several to shrink from
-"build" to "finish the UI". Only E1's teachers-or-not decision is genuinely
-still open.
+**The audit ran on 2026-09-04.** Result: **8 of 22 slices were already built**,
+all mis-marked in the same direction (shipped features recorded as missing) —
+E4 (`AnnouncementController`, surfaced in the portal dashboard), E5 (the whole
+requests engine), E9 (the full chain), E11 room booking, E12
+(`MeetingSlotController`, 10 routes), E14 (report-card templates), E20
+(`CompetencyController`), E22 (`NotificationController` + `UserNotification`).
+Seven parity rows corrected inline; the remaining eight ❌ rows were
+re-verified and are sound. The check was run **in both directions** — three
+false "found" hits were discarded as grep artefacts, so the missing list is as
+trustworthy as the built list.
+
+Two findings change design rather than status: **`assignments` /
+`assignment_submissions` exist** (the legacy module behind #184's dead code), so
+E3's assumption that `lesson_logs.homework` is the only homework concept is
+wrong and which to extend is now an owner decision; and **E11 is half-built**
+(room booking ships, the staff calendar does not).
+
+**Remaining work is 13 slices, most owner-gated. The family-facing core is now
+E1 + E2 + E3 ≈ 4–6 weeks** — E4, E9 and E22 were in the old "6–8 week" line and
+are done. Only E1's teachers-or-not decision blocks starting.
 
 **Operator:** apply branch protection (`docs/BRANCH_PROTECTION.md`). Confirm or reject `docs/migrations/s11-deploy-3-cleanup-proposal.md`.
 

@@ -30,6 +30,49 @@ than rediscovering it.
 
 ---
 
+## Audit against the codebase (2026-09-04) — read this before planning work
+
+Revision 1 of this plan was written from EduPage's documentation with only a
+**partial** code audit: `Message`, `LessonLog`, `Timetable` and
+`ComposePortalHomeAction` were checked, everything else was inferred. That was
+wrong for **8 of 22 slices**, found when E9 — advertised here as "the cheapest
+win in the plan, ~3 days" — turned out to be shipped end to end.
+
+**Already built. Do not plan these as new work:**
+
+| Slice | Evidence in this codebase |
+|---|---|
+| E4 Noticeboard | `Academics\Models\Announcement`, `AnnouncementController`, 4 routes; surfaced to families via `EnhancedDashboardController::getRecentAnnouncements()` |
+| E5 Requests & approvals | `requests` table (type/requester/regarding morph/payload/status/reviewed_by/at/notes), `SchoolRequest`, 5 types in `SchoolRequestType`, `ReviewSchoolRequestAction`, `RequestHandlerRegistry` with pluggable per-type handlers, `requests.submit`/`requests.review` permissions, index/store/review/export routes |
+| E9 Absence → substitution | `HandleStaffLeaveApprovalAction` calls HR `ApproveStaffLeaveAction` then `RecordApprovedTeacherLeaveAction`, which creates the `TeacherAbsence` **and** `firstOrCreate`s a `SubstitutionRequest` per affected timetable period, honouring `valid_from`/`valid_until` |
+| E11 Room booking | `room_bookings` table, `RoomBookingController`, 4 routes (the calendar half — see below) |
+| E12 Consultation slots | `meeting_slots` + `meeting_bookings`, `MeetingSlotController`, 10 routes |
+| E14 Certificates | `report_cards`, `report_card_templates`, `report_card_comments` |
+| E20 Competences | `competencies` + `competency_assessments`, `CompetencyController`, 5 routes |
+| E22 Notification centre | `UserNotification`, `NotificationTemplate`, `Device`, `NotificationController`, 3 routes |
+
+**Verified still missing** (checked in both directions — synonyms searched, and
+three false "found" results discarded as grep artefacts where the words appeared
+incidentally in `documents`, `emergency_contacts` and `terms`):
+E1, E2, E3, E6, E7, E8, E10, E13, E15, E16, E17, E18, E21.
+
+**Two findings that change design, not just status:**
+
+1. **`assignments` + `assignment_submissions` tables exist** — the legacy module
+   whose unreachable dashboard code was deleted in #184. E3 below assumes
+   `LessonLog.homework` is the only homework concept in the system. It is not.
+   Which of the two E3 should extend is an open design question.
+2. **E11 is half-built**: `room_bookings` ships, but `CalendarDay` covers only
+   holiday/exam day types (used by `GenerateExpectedRegistersAction`). The
+   staff-facing calendar with custom event types and school holidays is the
+   remaining part.
+
+Slice sections below are kept for their design detail — much of it still applies
+to finishing a UI over data that already exists — but **the effort figures on
+the eight built slices are void**.
+
+---
+
 ## Wave 1 — the daily-habit core
 
 ### E1. Status-tile portal home — ~1–2 weeks
@@ -122,6 +165,7 @@ subject with the due date; ticking done persists; parent sees the same list
 read-only; tile count correct.
 
 ### E4. Noticeboard feed — ~1 week
+**⚠ ALREADY BUILT** — `AnnouncementController` + 4 routes, surfaced to families in the portal dashboard. Remaining gap is at most a dedicated feed page; verify before planning.
 **Reference:** EduPage Noticeboard.
 **Build (Portal domain, `notice_posts`):** author_id, title, body, photos (Media
 ids json), audience (`all|class:<id>|role:<name>`), `academic_year_id`,
@@ -142,6 +186,7 @@ see it; an office `all` post reaches everyone; Dhivehi + RTL; CSV export.
 ## Wave 2 — office workflow
 
 ### E5. Requests & approvals — ~2 weeks *(promoted; was buried inside "forms")*
+**⚠ ALREADY BUILT** — the generic requests engine ships with 5 types, review action, pluggable handlers, permissions and routes. Remaining gap is at most extra request types and a parent-facing UI.
 **Reference:** EduPage Requests/Applications — an approval engine, not a form
 builder. This was mis-scoped in revision 1.
 **Build (new `Domains/Requests`):**
@@ -230,6 +275,7 @@ These are cheap because the hard part exists; they close the gap between "we
 have a gradebook" and "we have what they were used to".
 
 ### E9. Staff absence → substitution automation — ~3 days
+**⚠ ALREADY BUILT, END TO END.** Approving a staff-leave request already creates the `TeacherAbsence` and generates `SubstitutionRequest` rows per affected period, idempotently. Nothing to do.
 Akuru has staff attendance (HR) **and** the substitution engine; EduPage's value
 is that they are wired together. An approved absence emits an event that offers
 to create the `TeacherAbsence` the substitution flow already consumes. Highest
@@ -245,12 +291,14 @@ story for parent-submitted absence notes — EduPage documents this explicitly
 the same question before parents lean on it.
 
 ### E11. Internal calendar + room booking — ~1–2 weeks
+**⚠ HALF BUILT** — `room_bookings` + `RoomBookingController` ship. Missing: the staff calendar with custom event types and school holidays (`CalendarDay` covers only holiday/exam types today).
 Staff-facing calendar distinct from the public events site: custom event types,
 whole-day events, school holidays for the year, **classroom change / room
 booking**, teachers' meetings, message all participants of an event, day/week
 views. `academic_year_id` per rule 10.
 
 ### E12. Consultation slots — ~1 week
+**⚠ ALREADY BUILT** — `meeting_slots` + `meeting_bookings`, `MeetingSlotController`, 10 routes.
 Parent-teacher meeting booking on top of the existing `/portal/meetings`:
 teacher publishes slots, configurable gap between consultations, parent books
 one, both notified. EduPage also lets teachers book each other — include it,
@@ -264,6 +312,7 @@ material (title, body, attachments, subject, tags) that can be attached to a
 lesson log or a homework assignment. Do **not** build an assessment engine here.
 
 ### E14. Certificates / report printing — ~1 week
+**⚠ ALREADY BUILT** — `report_cards`, `report_card_templates`, `report_card_comments` all ship.
 Report cards exist (C2); EduPage's depth is in printing — templates, grade
 categories, subject areas, verbal evaluation alongside marks. Scope: a printable
 report-card template with the Institute's own layout, not EduPage's per-country
@@ -310,6 +359,7 @@ whether it is exportable. This is the one module where building first and
 deciding later is actively wrong.
 
 ### E20. Competences / values tracking — ~2 weeks
+**⚠ ALREADY BUILT** — `competencies` + `competency_assessments`, `CompetencyController`, 5 routes. The "defer until a curriculum names the list" advice below is void.
 A generic "skill or value awarded to a pupil" record. Defer until a curriculum
 need names the competence list — Quran milestones already cover the flagship
 subject, and an unnamed framework becomes an empty screen.
@@ -321,6 +371,7 @@ which is most of the value at a fraction of the cost. Note the failure mode
 their docs document — work sent to the wrong parent — and make reassignment easy.
 
 ### E22. Notification centre — ~1 week
+**⚠ ALREADY BUILT** — `UserNotification`, `NotificationTemplate`, `Device`, `NotificationController`. The daily-digest idea may still be a genuine addition; verify first.
 A per-user notification list with scope control: which categories reach me, on
 which channel, and a "mark done" state. EduPage additionally offers a **daily
 digest instead of per-event pings, which also lists what is due tomorrow** —
@@ -404,23 +455,23 @@ Hifz/Quran engine.
 
 ## Sequencing
 
+Post-audit, only 13 slices remain. Built ones are struck from the order.
+
 ```
 E1 home tiles ──▶ ships first; every later feature adds a tile
                   (also builds the timetable read Action E3 needs)
 E2 messaging  ──▶ independent; feeds E1 badge; absorbs simple polls
-E3 homework   ──▶ needs E1's timetable Action for next-lesson due dates
-E4 noticeboard──▶ independent; feeds E1
-E5 requests   ──▶ after Wave 1; chains into existing substitutions
-E6 sign-ups   ──▶ after E5; uses Finance for fees
-E7 switcher   ──▶ routing-bug fix is urgent and separable; switching anytime
-E9 absence→sub ─▶ 3 days, no dependencies — the cheapest win in the plan;
-                  pull it forward any time a short slot appears
-E22 digest    ──▶ pairs with E1's tomorrow strip and E3; do it near them
-E10–E14      ──▶ depth work; any order, no cross-dependencies
-E8, E15–E21  ──▶ owner-gated (see below)
+E3 homework   ──▶ needs E1's timetable Action for next-lesson due dates;
+                  FIRST settle whether it extends lesson_logs.homework or
+                  the existing assignments table (audit finding 1)
+E6 sign-ups   ──▶ uses Finance for fees; E5's request engine already exists
+                  and may cover part of it — check before building
+E7 switcher   ──▶ the role-routing bug is separable and still open
+E10 attendance depth, E13 materials ──▶ any order, no cross-dependencies
+E8, E15–E19, E21 ──▶ owner-gated (see below)
+E11 (calendar half only) ──▶ room booking already ships
 ```
-The app-shell slice can land before or after Wave 1; E1 is its home tab either
-way.
+The app-shell slice can land before or after E1; E1 is its home tab either way.
 
 ## Owner decisions
 
@@ -440,20 +491,31 @@ way.
 5. E18 gate tracking: is card/QR hardware wanted? Do not build the software
    first.
 6. E19 sensitive information: who may read and write pupil health/welfare notes,
-   and what is the retention rule? Policy before schema on this one.
-7. E20 competences: is there a named framework to track, or is this empty?
-8. E15 lost & found / canteen: does the Institute run these services?
-9. Is the aSc timetable desktop tool still in use? If so, build import/export
+   and what is the retention rule? Policy before schema on this one. (Note
+   `emergency_contacts` and the custom-field tables already carry some of this.)
+7. E15 lost & found / canteen: does the Institute run these services?
+8. Is the aSc timetable desktop tool still in use? If so, build import/export
    rather than a drag-drop builder.
+9. **E3: extend `lesson_logs.homework`, or the existing `assignments` /
+   `assignment_submissions` module?** Raised by the audit; the plan below was
+   written unaware the second existed.
 
-*(Revision 1's questions on class-thread shape and homework entry point are now
-answered from the reference — per-family threads, and the register stays the
-single entry point, both matching EduPage.)*
+*(E20's "is there a named framework?" question is withdrawn — competences are
+built. Revision 1's questions on class-thread shape and homework entry point
+were answered from the reference: per-family threads, register as the single
+entry point.)*
 
-## Rough totals
+## Rough totals — post-audit
 
-Wave 1 ≈ 5–7 weeks · Wave 2 ≈ 5–6 weeks · Wave 3 ≈ 5–6 weeks ·
-Wave 4 ≈ 8–10 weeks if every gate opens (most probably should not).
+The pre-audit figure of ~24–29 weeks counted eight slices that were already
+shipped. Remaining, on verified ground:
 
-The "nobody misses EduPage" line for families is **E1–E4 plus E9 and E22** —
-roughly 6–8 weeks, and E9 is three days of it.
+- **Genuinely missing:** E1, E2, E3, E6, E7, E8, E10, E13, E15, E16, E17, E18,
+  E21 — 13 slices, most owner-gated.
+- **The family-facing core is now just E1 + E2 + E3** (tiles, message threads,
+  homework list) ≈ **4–6 weeks**. E4, E9 and E22 were in that line and are done.
+- Everything else is either built, half-built (E11's calendar), or gated on a
+  decision the Institute has not made.
+
+Do not quote a total from this document without re-checking the slice against
+the codebase first. That is exactly how the first version went wrong.
