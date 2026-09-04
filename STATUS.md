@@ -1323,12 +1323,31 @@ the Quran dataset models move in the same slice that deletes the Blade app,
 never before. This line previously read "next is F1 (Hifz → engine)", which was
 stale by a week.
 
-**Next buildable work is the EduPage track**, renamed **E1–E22** in
-`docs/EDUPAGE_FEATURES_PLAN.md` to end a genuine collision: "F1" meant both
-ROADMAP Phase F slice 1 (shipped) and the EduPage portal home (not started).
-**E9** (staff absence → substitution wiring, ~3 days) needs no decisions; **E1**
-(status-tile portal home) is blocked only on whether the tile grid covers
-teachers or student/parent only.
+The EduPage track is renamed **E1–E22** in `docs/EDUPAGE_FEATURES_PLAN.md` to
+end a genuine collision: "F1" meant both ROADMAP Phase F slice 1 (shipped) and
+the EduPage portal home (not started).
+
+**⚠ That plan is not yet trustworthy and must be audited before any E-slice
+starts.** Attempting E9 (staff absence → substitution wiring, estimated 3 days)
+on 2026-09-04 found it **already built end to end**: `SchoolRequest` →
+`ReviewSchoolRequestAction` → `RequestHandlerRegistry` →
+`HandleStaffLeaveApprovalAction`, which calls HR's `ApproveStaffLeaveAction`
+and then `RecordApprovedTeacherLeaveAction` to create the `TeacherAbsence` and
+generate `SubstitutionRequest` rows per affected period, idempotently. Spot
+checks then found the same error on more slices: **E5** (requests/approvals —
+generic engine, 5 types, submit/review/export routes, permissions and pluggable
+handlers all exist), **E4** (`Announcement` model + routes), **E11**
+(`CalendarDay`), **E22** (`UserNotification`, `NotificationTemplate`, `Device`).
+Cause: the plan was written from the EduPage documentation with only a partial
+codebase audit — the slices that were checked (`Message`, `LessonLog`,
+`Timetable`, `ComposePortalHomeAction`) are sound; the rest were inferred. The
+parity doc's "no general request/approval workflow and no chaining into
+substitutions" is flatly wrong.
+
+**Next slice is therefore the audit**: verify all 22 against the codebase and
+rewrite both EduPage docs on checked ground. Expect several to shrink from
+"build" to "finish the UI". Only E1's teachers-or-not decision is genuinely
+still open.
 
 **Operator:** apply branch protection (`docs/BRANCH_PROTECTION.md`). Confirm or reject `docs/migrations/s11-deploy-3-cleanup-proposal.md`.
 
