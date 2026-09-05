@@ -116,6 +116,7 @@ use App\Domains\Portal\Http\Controllers\PortalEventController;
 use App\Domains\Portal\Http\Controllers\PortalExamController;
 use App\Domains\Portal\Http\Controllers\PortalHolidayController;
 use App\Domains\Portal\Http\Controllers\PortalHomeController;
+use App\Domains\Portal\Http\Controllers\PortalHomeworkController;
 use App\Domains\Portal\Http\Controllers\PortalInvoiceController;
 use App\Domains\Portal\Http\Controllers\PortalLearningController;
 use App\Domains\Portal\Http\Controllers\PortalLeaveBalanceController;
@@ -167,6 +168,10 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
     Route::get('/portal/behavior', [PortalBehaviorController::class, 'index'])->name('portal.behavior');
     Route::get('/portal/absence-notes', [PortalAbsenceNoteController::class, 'index'])->name('portal.absence-notes');
     Route::post('/portal/absence-notes', [PortalAbsenceNoteController::class, 'store'])->name('portal.absence-notes.store');
+    // Homework (E3a) — the reader for lesson_logs.homework.
+    Route::get('/portal/homework', [PortalHomeworkController::class, 'index'])->name('portal.homework');
+    Route::post('/portal/homework/{lessonLog}/tick', [PortalHomeworkController::class, 'tick'])->name('portal.homework.tick')->whereNumber('lessonLog');
+
     // Messages (E2a). `new` is declared before `{thread}` so the compose route
     // is not swallowed by the numeric-looking segment matcher.
     Route::get('/portal/messages', [PortalMessageController::class, 'index'])->name('portal.messages');

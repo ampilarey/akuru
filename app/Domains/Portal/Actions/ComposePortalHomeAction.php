@@ -4,6 +4,7 @@ namespace App\Domains\Portal\Actions;
 
 use App\Domains\Academics\Actions\ListClassAttendanceAction;
 use App\Domains\Academics\Actions\ListDayTimetableForStudentAction;
+use App\Domains\Academics\Actions\ListHomeworkForStudentAction;
 use App\Domains\Courses\Actions\ListStudentPerformanceReportAction;
 use App\Domains\ExamsGrades\Actions\ListPublishedExamResultsForStudentsAction;
 use App\Domains\Finance\Actions\ListPortalInvoicesAction;
@@ -27,6 +28,7 @@ class ComposePortalHomeAction
         $exams = app(ListPublishedExamResultsForStudentsAction::class)->execute($ids)->groupBy('student_id');
         $hifz = collect(app(StudentHifzSummaryReader::class)->summariesForStudents($ids))->groupBy('student_id');
         $attendance = app(ListClassAttendanceAction::class);
+        $homework = app(ListHomeworkForStudentAction::class);
 
         $students = [];
         foreach ($people as $person) {
@@ -48,6 +50,9 @@ class ComposePortalHomeAction
                 ),
                 'courses' => $performance->get($id)['rows'] ?? [],
                 'hifz' => $hifz->get($id, collect())->values()->all(),
+                // E3a: counted per student here so the tile badge is derived
+                // from the same read as the homework page.
+                'homework_outstanding' => $homework->outstandingCount($id),
             ];
         }
 
@@ -68,6 +73,7 @@ class ComposePortalHomeAction
                 ['key' => 'invoices', 'label' => 'Invoices', 'href' => '/portal/invoices'],
                 ['key' => 'courses', 'label' => 'Course progress', 'href' => '/portal/performance'],
                 ['key' => 'hifz', 'label' => 'Hifz', 'href' => null],
+                ['key' => 'homework', 'label' => 'Homework', 'href' => '/portal/homework'],
                 ['key' => 'messages', 'label' => 'Messages', 'href' => '/portal/messages'],
                 ['key' => 'absence_notes', 'label' => 'Absence notes', 'href' => '/portal/absence-notes'],
                 ['key' => 'meetings', 'label' => 'Meetings', 'href' => '/portal/meetings'],
@@ -147,6 +153,15 @@ class ComposePortalHomeAction
                 'status' => $hifz.' tracked',
             ];
         }
+
+        $outstandingHomework = $rows->sum(fn (array $student): int => (int) ($student['homework_outstanding'] ?? 0));
+        $tiles[] = [
+            'key' => 'homework',
+            'label' => 'Homework',
+            'href' => '/portal/homework',
+            'badge' => $outstandingHomework ?: null,
+            'status' => $outstandingHomework === 0 ? 'Nothing outstanding' : $outstandingHomework.' to do',
+        ];
 
         // E2a: an unread badge is the only reason a messages tile earns its
         // place on a glanceable home screen.

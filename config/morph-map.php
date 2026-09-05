@@ -107,6 +107,7 @@ return [
     'hifz_program' => \App\Domains\Hifz\Models\HifzProgram::class,
     'hifz_session' => \App\Domains\Hifz\Models\HifzSession::class,
     'hifz_session_record' => \App\Domains\Hifz\Models\HifzSessionRecord::class,
+    'homework_tick' => \App\Domains\Academics\Models\HomeworkTick::class,
     'inquiry_type' => \App\Domains\Website\Models\InquiryType::class,
     'instructor' => \App\Domains\HR\Models\Instructor::class,
     'job_application' => \App\Domains\HR\Models\JobApplication::class,

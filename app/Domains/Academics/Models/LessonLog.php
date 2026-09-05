@@ -29,6 +29,7 @@ class LessonLog extends Model
         'plan_topic_id',
         'taught_summary',
         'homework',
+        'homework_due_date',
         'materials',
         'present_count',
         'late_count',
@@ -39,6 +40,7 @@ class LessonLog extends Model
 
     protected $casts = [
         'date' => 'date',
+        'homework_due_date' => 'date',
         'materials' => 'array',
         'status' => LessonLogStatus::class,
         'submitted_at' => 'datetime',
