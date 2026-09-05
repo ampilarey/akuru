@@ -10,6 +10,7 @@ class Message extends Model
     use HasFactory;
 
     protected $fillable = [
+        'thread_id',
         'sender_id',
         'recipient_id',
         'subject',
@@ -33,12 +34,21 @@ class Message extends Model
         'is_deleted_by_recipient' => 'boolean',
     ];
 
+    public function thread()
+    {
+        return $this->belongsTo(MessageThread::class, 'thread_id');
+    }
+
     /**
      * Get the sender of the message
+     *
+     * `User::class` here would resolve to this namespace, where no such class
+     * exists; the auth config gives the real model without Notifications
+     * importing Identity\Models (rule 3).
      */
     public function sender()
     {
-        return $this->belongsTo(User::class, 'sender_id');
+        return $this->belongsTo(config('auth.providers.users.model'), 'sender_id');
     }
 
     /**
@@ -46,7 +56,7 @@ class Message extends Model
      */
     public function recipient()
     {
-        return $this->belongsTo(User::class, 'recipient_id');
+        return $this->belongsTo(config('auth.providers.users.model'), 'recipient_id');
     }
 
     /**

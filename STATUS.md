@@ -1347,6 +1347,80 @@ migration; no Hifz behaviour change outside it.
 - Still to do for E1: the teacher FAB (deep links into E2/E3, which do not exist
   yet), and the teachers variant if the operator wants it.
 
+## 5ae. E2a — messaging core loop (2026-09-05)
+
+- **Scope call:** E2's full plan (class fan-out, saved groups, polls, blocking)
+  is 2–3 weeks. E2a is the cut that is walkable in a browser: **start a 1:1
+  thread, see an inbox, open it, reply.** Fan-out, groups and polls are E2b.
+  The direction is deliberately one-way for *starting* threads — a family writes
+  to the people who teach their child; staff get inbox + reply, which is the
+  whole loop from their side. A teacher opening a thread with a whole class
+  needs the audience rules that belong to the next slice.
+- **Audit first (the §5aa lesson):** the `messages` table and `Message` model
+  already existed with `is_important`, `is_read` and per-side soft delete — and
+  **nothing in `app/` read them**: no route, no controller, no UI. So E2a is a
+  thread layer over an existing table, not a new messaging system, and the plan
+  overestimated the work.
+- **Additive migration (rule 9):** `message_threads` + `message_participants`
+  are new; `messages.thread_id` is **nullable**, so pre-existing rows keep
+  working and nothing needs backfilling before reads switch over.
+- **Migration lives in `database/migrations/`, not the domain folder.**
+  CLAUDE.md says migrations live in the owning domain's `Database/migrations`,
+  but **no `loadMigrationsFrom` call exists anywhere** and all 190 migrations
+  are in `database/migrations/`. A domain-local migration would simply never
+  run. Flagging the doc/reality mismatch rather than shipping a migration that
+  silently does nothing — **CLAUDE.md needs an owner decision**: either add the
+  loader or correct the convention.
+- **Reply policy copies EduPage's default because it was earned:** above 5
+  recipients a thread defaults to `author_only`. Without it, one message to
+  every parent becomes a message *from* every parent. `author_only` still lets a
+  recipient answer — privately, to the author; it withholds reply-all, not the
+  right to respond. The thread page says where a reply will land before it is
+  sent.
+- **Unread is counted from messages addressed to the reader**, not from the
+  thread's own timestamp, so a user's own reply never marks their own thread
+  unread. `MarkMessageThreadReadAction` updates **both** `last_read_at` and the
+  legacy per-message `is_read` flags — leaving the old flag stale would give the
+  app two disagreeing answers to "unread".
+- **Rule 3 held without growing the baseline.** Three separate places needed
+  care and arch tests confirm nothing was added:
+  - `MessageThread`/`MessageParticipant`/`Message` resolve the user model via
+    `config('auth.providers.users.model')` instead of importing
+    `Identity\Models\User`. This also **fixed a live bug**: `Message::sender()`
+    and `recipient()` referenced a bare `User::class`, which resolved to
+    `App\Domains\Notifications\Models\User` — a class that does not exist. It
+    had never fired because nothing called those relations.
+  - The Notifications actions take a **thread id**, not a model, so
+    `PortalMessageController` never names `Notifications\Models\*`; membership
+    is decided by the domain that owns the data.
+  - Participant names come from `DB::table('users')`, not an Identity import.
+- **New `ListTeacherContactsForStudentAction`** (Academics) — the messaging
+  directory. A full staff directory is how a parent writes to the wrong person;
+  the teachers on the child's timetable plus the class teacher are the honest
+  default and need no new permission model. Two gotchas handled: the roster
+  table is `class_student` (singular), and **`classes.class_teacher_id` stores a
+  `users.id` while `timetables.teacher_id` stores a `teachers.id`** — merging
+  the two id spaces would have silently produced the wrong teachers.
+- **Route order:** `/portal/messages/new` is declared before `{thread}`, which
+  is `whereNumber`-constrained, so compose is not swallowed by the thread
+  matcher. A test asserts this, because it is the kind of thing that breaks
+  quietly when a route is later reordered.
+- **E1 tile wired:** the home screen gains a Messages tile with an unread badge
+  (`ListMessageInboxAction::unreadCount`) — an unread badge is the only thing
+  that earns a tile a place on a glanceable home screen — plus a `messages`
+  entry in `sections`.
+- **Tests:** 14 action tests (directory scoping in both directions, unread
+  accounting, both reply-policy branches, morph-alias storage, guardian access)
+  and 4 HTTP tests that walk compose → send → inbox → open → reply → the family
+  sees it, plus the two 403 paths and the route-order guard.
+- **`public/build` rebuilt and committed** — §5t's rule: the TEST deploy only
+  git-pulls, so new JSX ships invisibly without it.
+- **Not verified locally:** no MySQL in this environment and SQLite cannot run
+  the suite (`2025_10_24_073337_add_advanced_fields_to_admission_applications`
+  issues `SHOW INDEX`). Architecture tests ran green locally; the DB-backed
+  tests are gated on CI. **Browser walk still owed on `test.akuru.edu.mv`**
+  after deploy — that is the §5t lesson and it is not discharged by green CI.
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**.
