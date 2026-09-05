@@ -16,6 +16,8 @@ export default function Show({
     register,
     topics,
     homework,
+    homeworkDueDate = null,
+    nextLessonDate = null,
     materials,
     notes,
     canSubmit,
@@ -35,6 +37,9 @@ export default function Show({
         plan_topic_id: register.plan_topic_id || '',
         taught_summary: register.taught_summary || '',
         homework: homework || '',
+        // An unset due date defaults to the next time this class meets this
+        // subject — never "tomorrow", which lands on days with no lesson.
+        homework_due_date: homeworkDueDate || nextLessonDate || '',
         materials: materials || '',
         notes: notes || '',
     });
@@ -97,6 +102,20 @@ export default function Show({
                         onChange={(e) => form.setData('homework', e.target.value)}
                         disabled={!canSubmit}
                     />
+                </Field>
+                <Field label="Homework due" error={errors.homework_due_date}>
+                    <input
+                        className="form-input w-full"
+                        type="date"
+                        value={form.data.homework_due_date}
+                        onChange={(e) => form.setData('homework_due_date', e.target.value)}
+                        disabled={!canSubmit || !form.data.homework}
+                    />
+                    <span className="mt-1 block text-xs text-gray-500">
+                        {nextLessonDate
+                            ? `Defaults to the next lesson for this class (${nextLessonDate}).`
+                            : 'No further lesson found for this class in the next three weeks.'}
+                    </span>
                 </Field>
                 <Field label="Materials (comma separated)">
                     <input

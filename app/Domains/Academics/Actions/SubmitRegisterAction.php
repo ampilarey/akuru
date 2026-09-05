@@ -52,6 +52,11 @@ class SubmitRegisterAction
             'plan_topic_id' => $topicId,
             'taught_summary' => $summary,
             'homework' => $this->nullableString($data['homework'] ?? null),
+            // A due date with no homework is meaningless, so it is dropped
+            // rather than left dangling on an empty box.
+            'homework_due_date' => $this->nullableString($data['homework'] ?? null) === null
+                ? null
+                : $this->nullableString($data['homework_due_date'] ?? null),
             'materials' => $this->materials($data['materials'] ?? null),
             'notes' => $this->nullableString($data['notes'] ?? null),
             'status' => LessonLogStatus::Submitted,

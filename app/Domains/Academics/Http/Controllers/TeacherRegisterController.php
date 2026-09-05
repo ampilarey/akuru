@@ -10,6 +10,7 @@ use App\Domains\Academics\Actions\ListPlanTopicsForRegisterAction;
 use App\Domains\Academics\Actions\ListTeacherTodayRegistersAction;
 use App\Domains\Academics\Actions\RecordRegisterAttendanceAction;
 use App\Domains\Academics\Actions\ResolveAttendanceSettingsAction;
+use App\Domains\Academics\Actions\ResolveNextLessonDateForClassAction;
 use App\Domains\Academics\Actions\ResolveTeacherIdForUserAction;
 use App\Domains\Academics\Actions\SubmitRegisterAction;
 use App\Domains\Academics\Enums\AttendanceMode;
@@ -89,6 +90,15 @@ class TeacherRegisterController extends Controller
             'register' => app(ListTeacherTodayRegistersAction::class)->serialize(collect([$lessonLog]))->first(),
             'topics' => app(ListPlanTopicsForRegisterAction::class)->execute($lessonLog),
             'homework' => $lessonLog->homework,
+            'homeworkDueDate' => $lessonLog->homework_due_date?->toDateString(),
+            // The next time this class actually meets this subject. Defaulting
+            // to tomorrow sets homework due on days with no lesson, which is
+            // how work goes unhanded-in and nobody knows why.
+            'nextLessonDate' => app(ResolveNextLessonDateForClassAction::class)->execute(
+                (int) $lessonLog->classroom_id,
+                $lessonLog->subject_id ? (int) $lessonLog->subject_id : null,
+                $lessonLog->date?->toDateString() ?? now()->toDateString(),
+            ),
             'materials' => is_array($lessonLog->materials) ? implode(', ', $lessonLog->materials) : '',
             'notes' => $lessonLog->notes,
             'canSubmit' => $this->canSubmit($request, $lessonLog),
@@ -113,6 +123,7 @@ class TeacherRegisterController extends Controller
             'plan_topic_id' => ['nullable', 'integer', 'exists:plan_topics,id'],
             'taught_summary' => ['nullable', 'string', 'max:5000'],
             'homework' => ['nullable', 'string', 'max:5000'],
+            'homework_due_date' => ['nullable', 'date'],
             'materials' => ['nullable'],
             'notes' => ['nullable', 'string', 'max:2000'],
             'attendance' => ['nullable', 'array'],

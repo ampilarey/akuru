@@ -1421,6 +1421,60 @@ migration; no Hifz behaviour change outside it.
   tests are gated on CI. **Browser walk still owed on `test.akuru.edu.mv`**
   after deploy — that is the §5t lesson and it is not discharged by green CI.
 
+## 5af. E3a — homework reaches the family (2026-09-05)
+
+- **The "owner decision" I flagged on E3 was already answered by the code.** The
+  question was whether homework extends `lesson_logs.homework` or the existing
+  `assignments`/`assignment_submissions` module. `assignments` lives in
+  `Academics\Legacy\Models` and `MigrateLegacyAssessmentsAction` migrates it
+  into `assessments` — it is graded coursework on its way out, not a homework
+  home. `lesson_logs.homework` is the live capture point. **No owner input
+  needed; the plan's approach stands.**
+- **Same shape as E2a:** `lesson_logs.homework` has existed since 2025-09,
+  teachers already fill it in the register (`SubmitRegisterAction`,
+  `Registers/Show.jsx`), and **nothing has ever shown it to a student or
+  parent**. This slice is the reader plus the two missing pieces.
+- **Additive migration (rule 9):** `lesson_logs.homework_due_date` (nullable)
+  and a new `homework_ticks` table. Ticks are time-scoped so they carry
+  `academic_year_id` (**rule 10**) — taken from the lesson, falling back to the
+  class, because `lesson_logs.academic_year_id` is itself nullable on older
+  rows. Stamping a tick with whatever year is current when the pupil gets round
+  to it would have been the easy wrong answer.
+- **Due date defaults to the next lesson, never tomorrow.** New
+  `ResolveNextLessonDateForClassAction` scans forward 21 days for the next time
+  the class meets *that subject*, honouring `CalendarDay.affects_timetable` with
+  the same rule `GenerateExpectedRegistersAction` uses. Homework due on a day
+  the class does not meet is how work goes unhanded-in and nobody knows why.
+  Returns null when there is no lesson in the window, and the register says so
+  rather than inventing a date.
+- **Only submitted registers are visible.** A draft register is the teacher's
+  working copy; showing half-typed homework to a family is worse than showing
+  none. Submitted and Locked count; Expected and Draft do not.
+- **A due date without homework is dropped** in `SubmitRegisterAction` rather
+  than left dangling on an empty box.
+- **Overdue is narrow on purpose:** dated, unticked, and past. Homework with no
+  due date is *undated*, not late, and a ticked item stops being overdue.
+- **The tick is the pupil's own.** A guardian sees the same list read-only and
+  gets a 403 on the tick route — it is the pupil's statement about their own
+  work. It is invisible to grading, for the reason EduPage found: the moment a
+  self-tick counts towards a mark, pupils stop telling the truth with it.
+- **Rule 3 held:** teacher names go through People's `ListTeachersByIdsAction`;
+  the Portal controller uses Academics and People **Actions** only. Arch tests
+  confirm the baseline did not grow.
+- **E1 home** gains a Homework tile badged with outstanding count, derived from
+  the same read as the page so the two cannot disagree.
+- **Tests:** 13 action tests (roster scoping, draft invisibility, empty-box
+  skip, tick/untick, idempotent tick, rule-10 year, overdue rules, sort order,
+  next-lesson resolution including the holiday skip and the no-timetable case)
+  and 3 HTTP tests walking pupil-sees → pupil-ticks, parent-sees-read-only, and
+  the two 403s.
+- **Deferred to E3b, deliberately:** homework attachments (needs Media
+  plumbing), exam dates merged into the same list, follow-up questions and
+  per-question points. The last of those is an assessment engine, not homework.
+- **Not verified locally:** same as §5ae — no MySQL here and SQLite cannot run
+  the suite. Architecture tests green locally; DB tests gated on CI. **Browser
+  walk on `test.akuru.edu.mv` still owed** for both §5ae and this entry.
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**.
