@@ -7,6 +7,7 @@ use App\Domains\Academics\Actions\ListDayTimetableForStudentAction;
 use App\Domains\Courses\Actions\ListStudentPerformanceReportAction;
 use App\Domains\ExamsGrades\Actions\ListPublishedExamResultsForStudentsAction;
 use App\Domains\Finance\Actions\ListPortalInvoicesAction;
+use App\Domains\Notifications\Actions\ListMessageInboxAction;
 use App\Domains\People\Actions\ListGuardianChildrenAction;
 use App\Domains\People\Actions\ResolveStudentForUserAction;
 use App\Support\Contracts\StudentHifzSummaryReader;
@@ -59,7 +60,7 @@ class ComposePortalHomeAction
             // E1: tiles carry live status, not just navigation. Every count is
             // derived from data already loaded above — no extra queries — so a
             // tile can never disagree with the page it links to.
-            'tiles' => $this->tiles($students),
+            'tiles' => $this->tiles($students, $userId),
             'nextSchoolDay' => $this->nextSchoolDay($students),
             'sections' => [
                 ['key' => 'attendance', 'label' => 'Attendance', 'href' => '/portal/attendance'],
@@ -67,6 +68,7 @@ class ComposePortalHomeAction
                 ['key' => 'invoices', 'label' => 'Invoices', 'href' => '/portal/invoices'],
                 ['key' => 'courses', 'label' => 'Course progress', 'href' => '/portal/performance'],
                 ['key' => 'hifz', 'label' => 'Hifz', 'href' => null],
+                ['key' => 'messages', 'label' => 'Messages', 'href' => '/portal/messages'],
                 ['key' => 'absence_notes', 'label' => 'Absence notes', 'href' => '/portal/absence-notes'],
                 ['key' => 'meetings', 'label' => 'Meetings', 'href' => '/portal/meetings'],
             ],
@@ -83,7 +85,7 @@ class ComposePortalHomeAction
      * @param  list<array<string, mixed>>  $students
      * @return list<array<string, mixed>>
      */
-    private function tiles(array $students): array
+    private function tiles(array $students, int $userId): array
     {
         $rows = collect($students);
 
@@ -145,6 +147,17 @@ class ComposePortalHomeAction
                 'status' => $hifz.' tracked',
             ];
         }
+
+        // E2a: an unread badge is the only reason a messages tile earns its
+        // place on a glanceable home screen.
+        $unreadMessages = app(ListMessageInboxAction::class)->unreadCount($userId);
+        $tiles[] = [
+            'key' => 'messages',
+            'label' => 'Messages',
+            'href' => '/portal/messages',
+            'badge' => $unreadMessages ?: null,
+            'status' => $unreadMessages === 0 ? 'Nothing new' : $unreadMessages.' unread',
+        ];
 
         $tiles[] = [
             'key' => 'absence_notes',

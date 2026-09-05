@@ -10,6 +10,8 @@
 
 return [
     'absence_note' => \App\Domains\Academics\Models\AbsenceNote::class,
+    'message_thread' => \App\Domains\Notifications\Models\MessageThread::class,
+    'message_participant' => \App\Domains\Notifications\Models\MessageParticipant::class,
     'academic_year' => \App\Domains\Academics\Models\AcademicYear::class,
     'assessment' => \App\Domains\Courses\Models\Assessment::class,
     'assessment_attempt' => \App\Domains\Progress\Models\AssessmentAttempt::class,

@@ -120,6 +120,7 @@ use App\Domains\Portal\Http\Controllers\PortalInvoiceController;
 use App\Domains\Portal\Http\Controllers\PortalLearningController;
 use App\Domains\Portal\Http\Controllers\PortalLeaveBalanceController;
 use App\Domains\Portal\Http\Controllers\PortalMeetingController;
+use App\Domains\Portal\Http\Controllers\PortalMessageController;
 use App\Domains\Portal\Http\Controllers\PortalPayslipController;
 use App\Domains\Portal\Http\Controllers\PortalPerformanceController;
 use App\Domains\Portal\Http\Controllers\PortalReportCardController;
@@ -166,6 +167,13 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
     Route::get('/portal/behavior', [PortalBehaviorController::class, 'index'])->name('portal.behavior');
     Route::get('/portal/absence-notes', [PortalAbsenceNoteController::class, 'index'])->name('portal.absence-notes');
     Route::post('/portal/absence-notes', [PortalAbsenceNoteController::class, 'store'])->name('portal.absence-notes.store');
+    // Messages (E2a). `new` is declared before `{thread}` so the compose route
+    // is not swallowed by the numeric-looking segment matcher.
+    Route::get('/portal/messages', [PortalMessageController::class, 'index'])->name('portal.messages');
+    Route::get('/portal/messages/new', [PortalMessageController::class, 'create'])->name('portal.messages.create');
+    Route::post('/portal/messages', [PortalMessageController::class, 'store'])->name('portal.messages.store');
+    Route::get('/portal/messages/{thread}', [PortalMessageController::class, 'show'])->name('portal.messages.show')->whereNumber('thread');
+    Route::post('/portal/messages/{thread}/reply', [PortalMessageController::class, 'reply'])->name('portal.messages.reply')->whereNumber('thread');
     Route::get('/portal/events', [PortalEventController::class, 'index'])->name('portal.events');
     Route::post('/portal/events/{event}/register', [PortalEventController::class, 'register'])->name('portal.events.register')->whereNumber('event');
     Route::post('/portal/events/registrations/{registration}/confirm', [PortalEventController::class, 'confirm'])->name('portal.events.confirm')->whereNumber('registration');
