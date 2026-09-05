@@ -1475,6 +1475,61 @@ migration; no Hifz behaviour change outside it.
   the suite. Architecture tests green locally; DB tests gated on CI. **Browser
   walk on `test.akuru.edu.mv` still owed** for both §5ae and this entry.
 
+## 5ag. Browser verification of E2a/E3a from the agent session (2026-09-05)
+
+The definition of done says *walked in a browser*, and §5t exists because
+CI-green slices shipped empty grids and invisible bundles. Most of that walk
+turned out to be reachable from here after all. What was actually done:
+
+- **The deployed test site is reachable by curl** (headless Chromium is not —
+  the proxy closes external tunnels). `/portal/messages` returned 302 → login
+  while `/portal/homework` returned 404 exactly like a nonsense URL, which
+  established that **E2a was already deployed to test and E3a was not** —
+  before either was assumed.
+- **Logged in as the super-admin and fetched the real pages.** Login posts to
+  `/{locale}/login` with an `identifier` field, not `login`. Results:
+  `/en/portal/messages` → component `Portal/Messages/Index`, `threads: []`,
+  `canCompose: false` (right: a super-admin has no student or children, so the
+  directory is correctly empty); `/en/portal/messages/new` →
+  `Portal/Messages/Create`, `recipients: []`; `/en/portal/home` carries the
+  `messages` tile and section. **The deployed bundle hash is `app-DXUF5yYG.js`
+  — byte-identical to the E2a build**, so §5t's invisible-bundle failure did
+  not happen.
+- **Mirror render for the branches real data could not reach.** The live page
+  shell plus the deployed bundle, served from localhost, with props swapped for
+  fabricated rows; headless Chromium then probed the DOM. This is the same
+  harness used for the §5w header bug. Verified, all with **zero page errors**:
+  - Inbox empty state and populated state — unread badge renders `2`, thread
+    links resolve, "With <name>" line renders.
+  - Compose — the select lists recipients with their child context
+    ("Fatimat Ali — Aisha Ali").
+  - Thread, all three reply policies: normal reply form; **`author_only` shows
+    "Reply — goes to the sender only"**; `none` replaces the form with
+    "Replies are turned off for this message."
+  - **E3a homework against the local (not yet deployed) bundle**: overdue item
+    styled red, done item struck through with its checkbox checked, undated
+    item shown as "No due date" and *not* red.
+  - **The parent-cannot-tick affordance**: given a child with homework and
+    `canTick` listing only the viewer's own student id, the child's section
+    renders the item with **zero checkboxes**. This is the §5ac lesson — in
+    #187 the action was guarded and the button was left on screen.
+- **A silent-failure trap worth recording:** loading the wrong Vite entry
+  renders a blank page with **no console error at all**. `resources/js/app.jsx`
+  → the ~800 kB bundle is the React app; `resources/js/app.js` → a ~44 kB
+  second entry. Read `public/build/manifest.json`, never `ls -t`.
+- **What this does NOT cover, and still needs a human:** the family → teacher
+  path end to end with real seeded data (a student on a class roster with a
+  timetable, a parent account, an actual send and reply), and E3a on the
+  deployed server at all — **E3a needs `scripts/pull-deploy-test.sh` run**,
+  which requires the `akuruedu` cPanel account and cannot be done from an agent
+  session.
+- **Branch protection on `main` is permanently operator-only.** Retried today;
+  the response is now explicit — *"Write access to this GitHub API path is not
+  permitted through this proxy"*. This is not a token-scope problem that might
+  clear later; no agent session can ever set it. **ADR-027's "required CI check
+  before merge" is therefore a convention agents honour voluntarily, not an
+  enforced gate, until an operator applies it in the GitHub UI.**
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**.
