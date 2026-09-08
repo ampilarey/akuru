@@ -2,7 +2,9 @@
 
 namespace App\Domains\Notifications\Actions;
 
+use App\Domains\Academics\Actions\ListClassesTaughtByUserAction;
 use App\Domains\Academics\Actions\ListTeacherContactsForStudentAction;
+use App\Domains\People\Actions\ListFamilyUserIdsForStudentsAction;
 use App\Domains\People\Actions\ListGuardianChildrenAction;
 use App\Domains\People\Actions\ResolveStudentForUserAction;
 use Illuminate\Support\Collection;
@@ -75,5 +77,34 @@ class ListMessageRecipientsAction
         return $this->execute($userId)->contains(
             fn (array $row): bool => $row['user_id'] === $recipientUserId
         );
+    }
+
+    /**
+     * E2b — the other direction: classes this member of staff may address, with
+     * the number of accounts each audience would actually reach.
+     *
+     * The counts are shown before sending because "message the class" means
+     * nothing without knowing how many people that is, and because the reply
+     * policy flips to author-only above five recipients — the sender should be
+     * able to see which side of that line they are on.
+     *
+     * @return Collection<int, array<string, mixed>>
+     */
+    public function classes(int $userId): Collection
+    {
+        $family = app(ListFamilyUserIdsForStudentsAction::class);
+
+        return app(ListClassesTaughtByUserAction::class)
+            ->execute($userId)
+            ->map(fn (array $class): array => [
+                'id' => $class['id'],
+                'name' => $class['name'],
+                'students_on_roster' => count($class['student_ids']),
+                'reach' => $family->counts($class['student_ids']),
+            ])
+            // A class nobody in it can be reached at is not a target; offering
+            // it would promise a delivery that silently reaches no one.
+            ->filter(fn (array $class): bool => $class['reach']['both'] > 0)
+            ->values();
     }
 }
