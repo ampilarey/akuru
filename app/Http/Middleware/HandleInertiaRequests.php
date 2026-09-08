@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Domains\Portal\Actions\ResolveDashboardLandingAction;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 use Mcamara\LaravelLocalization\Facades\LaravelLocalization;
@@ -53,6 +54,11 @@ class HandleInertiaRequests extends Middleware
                     'operations_manage' => (bool) $request->user()?->can('operations.manage'),
                     'translations_manage' => (bool) $request->user()?->can('translations.manage'),
                 ],
+                // E7: someone with two identities — a teacher who is also a
+                // parent — lands on one of them. This is the other one, so the
+                // UI can say it exists. Costs no query: Spatie already has the
+                // roles in memory, and this runs on every Inertia response.
+                'alternate' => $this->alternateIdentity($request),
             ],
             'flash' => [
                 'success' => $request->session()->get('success'),
@@ -71,6 +77,34 @@ class HandleInertiaRequests extends Middleware
                     ARRAY_FILTER_USE_BOTH,
                 ),
             ],
+        ];
+    }
+
+    /**
+     * The identity `/dashboard` did not land this person on, as a link.
+     *
+     * Returns null for everyone with a single identity, which is almost
+     * everyone — the prop only appears for the teacher-parent case E7 is about.
+     *
+     * @return ?array{label: string, href: string}
+     */
+    private function alternateIdentity(Request $request): ?array
+    {
+        $user = $request->user();
+        if ($user === null) {
+            return null;
+        }
+
+        $alternate = app(ResolveDashboardLandingAction::class)
+            ->execute($user->getRoleNames()->all())['alternate'];
+
+        if ($alternate === null) {
+            return null;
+        }
+
+        return [
+            'label' => $alternate['label'],
+            'href' => route($alternate['route'], [], false),
         ];
     }
 }
