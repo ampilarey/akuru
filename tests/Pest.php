@@ -25,3 +25,4 @@ require_once __DIR__.'/Support/AcademicsTestHelpers.php';
 require_once __DIR__.'/Support/FinanceTestHelpers.php';
 require_once __DIR__.'/Support/WebsiteDailyContentHelpers.php';
 require_once __DIR__.'/Support/PrayerTimesHelpers.php';
+require_once __DIR__.'/Support/MessagingTestHelpers.php';

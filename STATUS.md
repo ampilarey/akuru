@@ -1578,6 +1578,62 @@ turned out to be reachable from here after all. What was actually done:
   linking, re-auth for sensitive actions). This slice was only the defect the
   plan said should not wait for it.
 
+## 5ai. E2b-a — staff address a class (2026-09-08)
+
+- **The reason this came next:** E2a's reply policy defaults a thread to
+  `author_only` above five recipients — written specifically so one message to
+  every parent does not become a message *from* every parent. That code was
+  **unreachable**. The only caller was the portal compose form, which passes
+  exactly one recipient, so `policyFor()` could never return anything but
+  `'all'` in production. Class fan-out is the case it exists for.
+- **New `ListClassesTaughtByUserAction`** (Academics) — the mirror of E2a's
+  `ListTeacherContactsForStudentAction`. Keeping both narrow means neither side
+  gets a directory of the whole school: families reach the teachers of their own
+  child, staff reach the classes they actually teach.
+  - The **two id spaces** bite again and are handled again:
+    `classes.class_teacher_id` holds a `users.id`, `timetables.teacher_id` holds
+    a `teachers.id`. A test covers the class-teacher-only case, which the
+    timetable query alone would miss.
+- **New `ListFamilyUserIdsForStudentsAction`** (People) — the login accounts
+  behind a roster. It lives in People because students and guardians are
+  People's data; Academics knows who is on a roster, not who may speak for them.
+  Only accounts that **exist** are returned: a broadcast claiming 30 recipients
+  and delivering to 11 is worse than one that says 11.
+- **Audience is explicit — parents, students, or both.** Conflating them means
+  a "bring your PE kit" reminder lands in every parent's inbox. Default is
+  parents.
+- **The compose screen states the size before sending, and what the size does:**
+  "Goes to 18 accounts. Replies come back to you only, not to the whole class."
+  Discovering that rule after sending is exactly the surprise the policy exists
+  to prevent.
+- **`StartClassMessageThreadAction` deliberately passes no `reply_policy`** — it
+  lets the >5 default fire. Overriding it there would quietly reintroduce
+  reply-all on a broadcast to a whole class.
+- Thread is filed against the class via the morph alias `class_room` (ADR-005);
+  a test asserts the stored value is an alias, never an FQCN.
+- **New permission `messages.broadcast`**, granted to teacher and headmaster in
+  `RoleSeeder` (admin and super_admin hold everything). Authorisation is
+  enforced twice: the permission gates the route, the taught-classes rule gates
+  *which* class, and the latter lives inside the action so it is not restated
+  per caller.
+- **Rule 3 held.** The controller's private helpers return a thread **id**, not
+  a model, so Portal still never names `Notifications\Models`. Arch tests
+  confirm the baseline did not grow.
+- **Tests:** 12 action tests (directory scoping both ways, class-teacher-only
+  membership, per-audience delivery, morph alias, both sides of the reply-policy
+  threshold with delivered-recipient assertions, unreachable-class refusals) and
+  4 HTTP tests walking teacher → 6 families → parent replies to the teacher
+  alone, plus the permission and hand-posted-class refusals.
+- **Browser-verified** with the §5ag mirror harness, including the interactive
+  branches: switching between person and class routes, and the reach notice
+  tracking the class and audience live — "Goes to 3 accounts" → "Goes to 18
+  accounts. Replies come back to you only." Zero page errors.
+- **A shared test helper was extracted** (`tests/Support/MessagingTestHelpers.php`)
+  rather than declaring `seedClassWithFamilies()` in one test file — a function
+  declared in a test file only exists if that file happens to have been loaded,
+  so the HTTP walk would have failed when run alone.
+- Still open in E2b: saved recipient groups, message polls, and blocking.
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**.
