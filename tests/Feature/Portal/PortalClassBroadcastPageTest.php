@@ -102,6 +102,26 @@ it('offers no class picker to a family account', function () {
         ->assertInertia(fn ($page) => $page->where('classes', []));
 });
 
+it('still accepts a post with no target_type as a person message', function () {
+    $seed = seedClassWithFamilies(2);
+    $guardianUser = User::query()->find($seed['guardians'][0]->user_id);
+    $teacherUser = $seed['teacherUser'];
+
+    // A stale bundle posts the pre-E2b shape. It must keep working: the deploy
+    // only git-pulls, so the form can lag the backend (§5t).
+    $this->withoutLocalizationMiddleware()
+        ->actingAs($guardianUser)
+        ->post('/portal/messages', [
+            'recipient_id' => $teacherUser->id,
+            'subject' => 'About Sunday',
+            'body' => 'Body',
+        ])
+        ->assertRedirect();
+
+    expect(MessageThread::query()->count())->toBe(1)
+        ->and(Message::query()->where('recipient_id', $teacherUser->id)->count())->toBe(1);
+});
+
 it('refuses a hand-posted class the sender does not teach', function () {
     $seed = seedClassWithFamilies(3);
     $outsider = makeTeacherRow();

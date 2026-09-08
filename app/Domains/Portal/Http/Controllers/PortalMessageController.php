@@ -60,6 +60,12 @@ class PortalMessageController extends Controller
     {
         $userId = $this->userId($request);
 
+        // Defaulted rather than required: `public/build` is committed and the
+        // TEST deploy only git-pulls, so a bundle can lag the backend (§5t). A
+        // stale compose form that posts no target_type must still send to a
+        // person instead of failing validation in front of the user.
+        $request->merge(['target_type' => $request->input('target_type') ?: 'user']);
+
         $data = $request->validate([
             'target_type' => ['required', 'in:user,class'],
             'recipient_id' => ['required_if:target_type,user', 'integer'],
