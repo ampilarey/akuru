@@ -8,6 +8,7 @@ use App\Domains\Hifz\Models\QuranProgress;
 use App\Domains\People\Models\Student;
 use App\Domains\People\Models\Teacher;
 use App\Domains\Portal\Actions\ComposeDashboardPrayerAction;
+use App\Domains\Portal\Actions\ResolveDashboardLandingAction;
 use App\Http\Controllers\Controller;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -23,23 +24,22 @@ class DashboardController extends Controller
             return redirect()->route('login');
         }
 
-        // Get dashboard data based on user role
-        if ($user->hasRole('super_admin')) {
-            return $this->superAdminDashboard();
-        } elseif ($user->isAdmin() || $user->isHeadmaster()) {
-            return redirect()->route('portal.overview');
-        } elseif ($user->isSupervisor()) {
-            return $this->supervisorDashboard();
-        } elseif ($user->isTeacher()) {
-            return $this->teacherDashboard();
-        } elseif ($user->isStudent()) {
-            return redirect()->route('portal.home');
-        } elseif ($user->isParent()) {
-            return redirect()->route('portal.home');
-        }
+        // Precedence lives in the action, not in the order of an elseif chain.
+        // With two identities the old chain let branch order decide silently:
+        // a teacher who is also a parent matched isTeacher() first and the
+        // dashboard never offered them their child's view (E7).
+        $landing = app(ResolveDashboardLandingAction::class)
+            ->execute($user->getRoleNames()->all());
 
-        // Public users (registered via OTP for course enrollment)
-        return $this->publicUserDashboard();
+        return match ($landing['kind']) {
+            'super_admin' => $this->superAdminDashboard(),
+            'overview' => redirect()->route('portal.overview'),
+            'supervisor' => $this->supervisorDashboard(),
+            'registers' => $this->teacherDashboard(),
+            'portal_home' => redirect()->route('portal.home'),
+            // Public users (registered via OTP for course enrollment)
+            default => $this->publicUserDashboard(),
+        };
     }
 
     private function publicUserDashboard()

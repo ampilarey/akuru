@@ -278,6 +278,17 @@ export default function AppShell({ title, children }) {
                                 Translations
                             </Link>
                         )}
+                        {/* E7: a person with two identities lands on one of them.
+                            Given as a bordered pill rather than a 41st link in
+                            this list, because a link in here is not findable. */}
+                        {auth?.alternate && (
+                            <Link
+                                href={auth.alternate.href}
+                                className="rounded-full border border-[#7C2D37] px-3 py-1 font-medium text-[#7C2D37] hover:bg-[#F9F4EE]"
+                            >
+                                {auth.alternate.label}
+                            </Link>
+                        )}
                         {user && (
                             <span className="flex items-center gap-2">
                                 <span className="text-gray-500">{user.name}</span>

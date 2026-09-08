@@ -1530,6 +1530,54 @@ turned out to be reachable from here after all. What was actually done:
   before merge" is therefore a convention agents honour voluntarily, not an
   enforced gate, until an operator applies it in the GitHub UI.**
 
+## 5ah. E7 dual-identity landing defect (2026-09-08)
+
+- **The plan's description was overstated and is corrected here.**
+  EDUPAGE_FEATURES_PLAN says a teacher-parent "can never reach the parent
+  home". They can: the AppShell nav carries an unconditional `/portal/home`
+  link and `PortalHomeController` has no role gate. The real defect is
+  narrower and still worth fixing — `/dashboard` is the URL whose entire job is
+  role-based landing, and for a dual-identity account **the order of an
+  `elseif` chain, not any stated rule, decided the answer**; nothing on the
+  landing page said the other identity existed. Calling it "locked out" would
+  have justified a bigger change than the evidence supports.
+- **The fix is not a different order.** Flipping `isParent()` above
+  `isTeacher()` breaks the same case the other way — landing a teacher on their
+  child's attendance instead of the register they have to fill. Staff still
+  wins the landing, because that is the job the person signed in to do. What
+  changed is that the displaced identity stops being invisible.
+- **New `ResolveDashboardLandingAction`** (Portal) holds the precedence as a
+  `match` with the rule written down, and returns the alternate identity
+  alongside it. It takes **role names, not a User** — Portal may not import
+  `Identity\Models` (rule 3), and a pure function of an array is testable
+  without a database, which is how the dead code below was caught.
+- **Dead code found and deleted before it shipped.** The first draft also
+  offered a "Staff view" alternate to a family-first landing. Running the
+  action standalone over every role combination showed that branch can never
+  fire: every staff role outranks student and parent, so a `portal_home`
+  landing means the person holds no staff role at all. A test now asserts the
+  reverse case cannot arise, so nobody re-adds it.
+- **`auth.alternate` is a shared Inertia prop**, so the link appears on every
+  Inertia page rather than only the landing. It costs no query — Spatie already
+  has the roles in memory — and is `null` for everyone with a single identity,
+  which is almost everyone.
+- **Rendered as a bordered pill, not a 41st nav link.** KNOWN_ISSUES #11 says
+  the AppShell nav is unusable as navigation; adding another entry to a flat
+  40-link list would have satisfied the ticket without helping anyone.
+- **Verified in a browser** via the §5ag mirror harness: with the prop present
+  the pill renders as "Family view → /portal/home"; with it null the pill is
+  absent and the page keeps only its one ordinary nav link. Zero page errors.
+- **A related gap, found while doing this, deliberately not fixed here:**
+  `AttachGuardianAction` does not assign the `parent` role, so a guardian can
+  have children without holding the role this feature keys on. The alternate is
+  role-based because `/dashboard` routes by role and the two must agree —
+  making it query guardian children instead would put two queries on every
+  Inertia response. **Whether attaching a guardian should grant the role is a
+  data-model question for the owner**, not a routing one.
+- Still open in E7: the account switcher itself (`linked_accounts`, verified
+  linking, re-auth for sensitive actions). This slice was only the defect the
+  plan said should not wait for it.
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**.
