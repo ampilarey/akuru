@@ -27,10 +27,13 @@ class AboutController extends Controller
             ->take(8)
             ->get();
 
-        $testimonials = Testimonial::where('is_active', true)
-            ->orderBy('sort_order')
-            ->take(6)
-            ->get();
+        // Testimonial does not share Instructor's column names — it has
+        // `is_public` and `order`, not `is_active` and `sort_order`. The
+        // Instructor query shape above was copied onto it, and the resulting
+        // "Unknown column 'is_active'" made **the public About page 500 for
+        // every visitor**. Use the model's own scopes, as
+        // ListCoursePageTestimonialsAction already does.
+        $testimonials = Testimonial::query()->public()->ordered()->take(6)->get();
 
         return view('public.about.index', compact('page', 'stats', 'instructors', 'testimonials'));
     }

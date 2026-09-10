@@ -3575,6 +3575,59 @@ leave.
 Before/after screenshots captured. Whoever takes this decision should look at
 both rather than the description.
 
+## 5ca. SEVERE — two public pages returned 500 to every visitor (2026-09-10)
+
+The public marketing site had never been walked. Eight pages fetched; **two
+threw 500**. This is the front door of a school — the first thing a prospective
+family sees.
+
+**`/about` — `SQLSTATE[42S22]: Unknown column 'is_active'`.**
+`AboutController` queries `Testimonial::where('is_active')->orderBy('sort_order')`.
+`Testimonial` has **`is_public`** and **`order`**; `Instructor`, queried three
+lines above it *in the same method*, has `is_active` and `sort_order`. The
+Instructor query shape was copied onto the wrong model. Fixed by using the
+model's own scopes — `Testimonial::query()->public()->ordered()` — exactly as
+`ListCoursePageTestimonialsAction` already did, which is why `/courses`
+rendered fine while `/about` did not.
+
+**`/apply` — `Undefined variable $step`.** In the Blade view:
+
+```php
+'desc'=>'We'll reach out via mobile or email…'
+```
+
+An **unescaped apostrophe** in a single-quoted PHP string. It closes the string
+early, breaks the array literal, breaks the `@foreach`, and `$step` never
+exists. The admissions funnel entry — the page a family uses to apply to the
+school — has been throwing for every visitor.
+
+**Why nothing caught either.** `PublicRouteNamesTest` asserts these route
+**names are registered**. It never issues a request. `public.about` and
+`public.apply` both "passed" the entire time the pages were broken. Name-only
+coverage is the same trap recorded in §5bi, and it hid two 500s on the most
+public surface in the product.
+
+`tests/Feature/Website/PublicPagesDoNotCrashTest.php` now fetches **every
+parameterless `public.*` GET route** and asserts it does not 5xx. Not "is 200":
+a page may legitimately 404 on an empty database, but it may never throw.
+
+**Three drafts of that guard, and the first two were worthless.** Draft one
+issued a plain `get()` and saw the locale middleware's **302** — never 5xx — so
+it passed against the very bug it was written for. Draft two followed redirects
+and landed somewhere that was not the controller. Only
+`withoutLocalizationMiddleware()`, the helper the rest of the suite already
+uses, actually reaches these controllers.
+
+I nearly shipped a green test that checked nothing, twice — which is precisely
+what §5bt argued against when it declined to write a rule-10 guard. So the file
+now carries **a self-test**: a deliberately throwing route that the same
+mechanism must report as 5xx. If middleware or a redirect ever swallows the
+check again, that test fails and says so.
+
+**Verified by restoring each bug in turn**: the guard names
+`public.about (about) -> 500`, then `public.apply (apply) -> 500`. Both live
+URLs confirmed 200 after the fix.
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**.
