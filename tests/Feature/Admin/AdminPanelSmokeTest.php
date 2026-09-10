@@ -64,7 +64,6 @@ class AdminPanelSmokeTest extends TestCase
             'admin.courses.create',
             'admin.users.index',
             'admin.settings.index',
-            'enhanced.dashboard',
             'e-learning.index',
             'e-learning.quran',
             'e-learning.arabic',

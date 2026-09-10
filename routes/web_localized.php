@@ -105,7 +105,6 @@ use App\Domains\People\Http\Controllers\StudentController;
 use App\Domains\People\Http\Controllers\StudentDirectoryController;
 use App\Domains\People\Http\Controllers\TeacherController;
 use App\Domains\Portal\Http\Controllers\DashboardController;
-use App\Domains\Portal\Http\Controllers\EnhancedDashboardController;
 use App\Domains\Portal\Http\Controllers\GuardianChildrenController;
 use App\Domains\Portal\Http\Controllers\PortalAbsenceNoteController;
 use App\Domains\Portal\Http\Controllers\PortalAnnouncementController;
@@ -154,7 +153,6 @@ Route::get('/locale/{locale}', [LocaleController::class, 'setLocale'])->name('lo
 // Dashboard routes
 Route::middleware(['auth', 'trackActivity'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-    Route::get('/enhanced-dashboard', [EnhancedDashboardController::class, 'index'])->name('enhanced.dashboard');
     Route::get('/portal/home/export', [PortalHomeController::class, 'export'])->name('portal.home.export');
     Route::get('/portal/home', [PortalHomeController::class, 'index'])->name('portal.home');
     Route::get('/portal/overview/export', [StaffOverviewController::class, 'export'])->name('portal.overview.export');

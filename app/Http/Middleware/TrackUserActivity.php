@@ -69,7 +69,6 @@ class TrackUserActivity
     private function shouldSkipTracking($routeName, $path)
     {
         $skipRoutes = [
-            'enhanced.dashboard',
             'api.*',
             'livewire.*',
             'telescope.*',

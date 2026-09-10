@@ -1683,6 +1683,43 @@ turned out to be reachable from here after all. What was actually done:
   controller wants an audit of its own — it is the kind of file that makes a
   plan claim a feature exists.
 
+## 5ak. Enhanced dashboard removed (2026-09-10)
+
+- **Follow-up to §5aj, where this file was flagged.** It is the controller that
+  made EDUPAGE_FEATURES_PLAN believe E4 was already built.
+- **What it was:** a third dashboard beside `portal.home` (families) and
+  `portal.overview` (staff), 335 lines plus a 181-line Blade view. **Nothing in
+  any nav linked to it** — the only references anywhere were its own route, an
+  entry in `TrackUserActivity`'s skip list, and two tests asserting the route
+  name resolved. It was reachable only by typing the URL.
+- **Roughly thirty of its methods returned bare literals**, and several of those
+  literals were **invented figures**: `getMonthlyRevenue()` → `'$5,250'`,
+  `getRevenueGrowth()` → `'+12%'`, `getPendingPayments()` → `3`,
+  `getStorageUsage()` → `'2.5 GB / 10 GB'`, `getSystemUptime()` → `'99.9%'`,
+  `getUserGrowth()` → `'+15%'`, `getProfileCompletion()` → always `100`, and
+  `getSystemHealth()` reporting `'healthy'` unconditionally.
+- **Stated precisely, because the distinction matters:** the current Blade view
+  rendered only two of those — the database status and the storage figure. The
+  fabricated revenue was **computed into the payload but not printed**. So it
+  was one template edit away from showing a Maldivian school invented revenue
+  in **dollars**, not actively showing it. Worth removing on that basis alone;
+  not worth overstating.
+- **Deleting it lost nothing real.** Every genuine number it computed —
+  `pending_applications`, `unread_inquiries`, user and content counts — is
+  already produced by `AnalyticsService` with the identical queries, feeding
+  `analytics.index`. Checked before deleting, not assumed.
+- **The architecture baseline shrank by 9 entries** — 1 under rule 1 and 8 under
+  rule 2 — because the file imported `Admissions`, `Courses`, `Identity`,
+  `Settings` and four `Website` models directly. The arch tests failed until the
+  baselines were updated, which is the ratchet working as designed: a fixed
+  violator must leave the baseline, not linger in it.
+- **A test pins the removal** (`NoFabricatedDashboardTest`): the route name must
+  not resolve, the URL must 404, and neither file may come back. A dashboard
+  that makes up financial figures should not return by accident.
+- Rule 11 (single sources of truth) is the underlying argument: two working
+  dashboards already cover families and staff, and a third that duplicated them
+  with placeholder data was never going to be the one that got maintained.
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**.

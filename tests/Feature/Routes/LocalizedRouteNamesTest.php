@@ -12,7 +12,6 @@ class LocalizedRouteNamesTest extends TestCase
         $names = [
             'locale',
             'dashboard',
-            'enhanced.dashboard',
             'students.index',
             'students.create',
             'students.store',
