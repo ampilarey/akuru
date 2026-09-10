@@ -2,6 +2,7 @@
 
 namespace App\Domains\Portal\Actions;
 
+use App\Domains\Academics\Actions\ListAnnouncementsForUserAction;
 use App\Domains\Academics\Actions\ListClassAttendanceAction;
 use App\Domains\Academics\Actions\ListDayTimetableForStudentAction;
 use App\Domains\Academics\Actions\ListHomeworkForStudentAction;
@@ -16,9 +17,13 @@ use App\Support\Contracts\StudentHifzSummaryReader;
 class ComposePortalHomeAction
 {
     /**
+     * @param  list<string>  $roleNames  the caller's roles, for audience-targeted
+     *                                   reads such as the noticeboard. Portal may
+     *                                   not import Identity\Models (rule 3), so the
+     *                                   controller passes them in.
      * @return array{title: string, students: list<array<string, mixed>>, csvUrl: string, tiles: list<array<string, mixed>>, nextSchoolDay: ?array<string, mixed>, sections: list<array{key: string, label: string, href: ?string}>}
      */
-    public function execute(int $userId, bool $isParent = false): array
+    public function execute(int $userId, bool $isParent = false, array $roleNames = []): array
     {
         $people = $this->people($userId);
         $ids = array_map(fn (array $person): int => $person['id'], $people);
@@ -65,7 +70,7 @@ class ComposePortalHomeAction
             // E1: tiles carry live status, not just navigation. Every count is
             // derived from data already loaded above — no extra queries — so a
             // tile can never disagree with the page it links to.
-            'tiles' => $this->tiles($students, $userId),
+            'tiles' => $this->tiles($students, $userId, $roleNames),
             'nextSchoolDay' => $this->nextSchoolDay($students),
             'sections' => [
                 ['key' => 'attendance', 'label' => 'Attendance', 'href' => '/portal/attendance'],
@@ -73,6 +78,7 @@ class ComposePortalHomeAction
                 ['key' => 'invoices', 'label' => 'Invoices', 'href' => '/portal/invoices'],
                 ['key' => 'courses', 'label' => 'Course progress', 'href' => '/portal/performance'],
                 ['key' => 'hifz', 'label' => 'Hifz', 'href' => null],
+                ['key' => 'announcements', 'label' => 'Noticeboard', 'href' => '/portal/announcements'],
                 ['key' => 'homework', 'label' => 'Homework', 'href' => '/portal/homework'],
                 ['key' => 'messages', 'label' => 'Messages', 'href' => '/portal/messages'],
                 ['key' => 'absence_notes', 'label' => 'Absence notes', 'href' => '/portal/absence-notes'],
@@ -89,9 +95,10 @@ class ComposePortalHomeAction
      * tile matches the page it points at.
      *
      * @param  list<array<string, mixed>>  $students
+     * @param  list<string>  $roleNames
      * @return list<array<string, mixed>>
      */
-    private function tiles(array $students, int $userId): array
+    private function tiles(array $students, int $userId, array $roleNames): array
     {
         $rows = collect($students);
 
@@ -153,6 +160,19 @@ class ComposePortalHomeAction
                 'status' => $hifz.' tracked',
             ];
         }
+
+        // E4: the badge counts only urgent notices, because there is no
+        // per-user read state — a badge counting everything would never clear.
+        $notices = app(ListAnnouncementsForUserAction::class)->summary($userId, $roleNames);
+        $tiles[] = [
+            'key' => 'announcements',
+            'label' => 'Noticeboard',
+            'href' => '/portal/announcements',
+            'badge' => $notices['urgent'] ?: null,
+            'status' => $notices['total'] === 0
+                ? 'Nothing posted'
+                : $notices['total'].' notice'.($notices['total'] === 1 ? '' : 's'),
+        ];
 
         $outstandingHomework = $rows->sum(fn (array $student): int => (int) ($student['homework_outstanding'] ?? 0));
         $tiles[] = [

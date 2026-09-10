@@ -164,3 +164,28 @@ function makeLessonLog(array $overrides = []): \App\Domains\Academics\Models\Les
 
     return \App\Domains\Academics\Models\LessonLog::query()->create(array_merge($defaults, $overrides));
 }
+
+/**
+ * A published, school-wide notice. Overrides narrow it: audience, classes,
+ * dates, priority.
+ *
+ * Shared rather than declared in a test file — E4's action tests and its HTTP
+ * walk both need it, and a function declared in a test file only exists if that
+ * file happens to have been loaded.
+ */
+function makeNotice(array $overrides = []): \App\Domains\Academics\Models\Announcement
+{
+    return \App\Domains\Academics\Models\Announcement::query()->create(array_merge([
+        'school_id' => makeSchool()->id,
+        'created_by' => User::factory()->create()->id,
+        'title' => 'Sports day',
+        'content' => 'Wednesday on the field.',
+        'type' => 'general',
+        'priority' => 'medium',
+        'target_audience' => null,
+        'target_classes' => null,
+        'publish_date' => now()->subDay()->toDateString(),
+        'expiry_date' => null,
+        'is_published' => true,
+    ], $overrides));
+}

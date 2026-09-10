@@ -18,7 +18,7 @@ class PortalHomeController extends Controller
 
         return Inertia::render(
             'Portal/Home',
-            app(ComposePortalHomeAction::class)->execute((int) $user->id, $user->isParent()),
+            app(ComposePortalHomeAction::class)->execute((int) $user->id, $user->isParent(), $user->getRoleNames()->all()),
         );
     }
 
@@ -26,7 +26,7 @@ class PortalHomeController extends Controller
     {
         $user = $request->user();
         abort_unless($user !== null, 403);
-        $payload = app(ComposePortalHomeAction::class)->execute((int) $user->id, $user->isParent());
+        $payload = app(ComposePortalHomeAction::class)->execute((int) $user->id, $user->isParent(), $user->getRoleNames()->all());
 
         return response()->streamDownload(function () use ($payload): void {
             $out = fopen('php://output', 'w');
