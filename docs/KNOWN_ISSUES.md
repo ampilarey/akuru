@@ -7,10 +7,87 @@ Re-checked 2026-08-26 against merged `main` and Round 3 (`docs/PILOT_REHEARSAL.m
 
 ---
 
+## Decisions only the owner can make (consolidated 2026-09-10)
+
+The agent-buildable backlog is empty. Everything below was raised during
+autonomous sessions, deliberately **not** decided, and scattered across STATUS
+sections — collected here so there is one list to work from. Each is phrased as
+a question with a default, so "do nothing" is always a legible choice.
+
+**Before any deploy**
+
+1. **Walk the app in a browser.** 47 slices merged since 2026-08 are CI-green
+   and have never been executed. CLAUDE.md's definition of done requires it.
+   This is the largest gap between "the code works" and "the school can use it".
+2. **Set `BML_WEBHOOK_SECRET`**, and confirm with BML that they sign HMAC-`sha256`
+   over the raw body under `X-BML-Signature`. The webhook now fails closed
+   (STATUS §5bp), so **with no secret and no opt-out, no payment will confirm**.
+   The implementation's assumption about their scheme has never been checked
+   against BML's own documentation.
+3. **Verify the `permissions` table** on `test.akuru.edu.mv` holds all 34 dotted
+   names, and that the six seeder-only roles exist. §5bo fixed three rows going
+   forward; it cannot tell you what that database currently holds.
+4. **Rotate the super-admin password.** Raised repeatedly; the seeded
+   credentials are in `docs/AUTHENTICATION_GUIDE.md`.
+5. **Apply branch protection** (`docs/BRANCH_PROTECTION.md`). Structurally
+   impossible from an agent session.
+
+**Product scope**
+
+6. **Wave 4 — does the Institute actually run these?** E8 pick-up (~1wk),
+   E15 lost & found (~3d), E16 physical lending (~2wk), E17 interest groups
+   (~1wk), E18 gate arrivals (~1wk **+ hardware decision**), E19 sensitive
+   information (~1wk **+ privacy policy**), E21 work showcase (~1–2wk).
+   Verified against the code on 2026-09-10: all seven genuinely unbuilt.
+   **≈7½–8½ weeks, and the whole remaining feature backlog.** Default: build
+   none of them.
+7. **`docs/APPSHELL_NAV_IA.md`** — accept / accept with edits / reject. The nav
+   wrap is still live. See top-five item 2.
+8. **Confirm or reject `docs/migrations/s11-deploy-3-cleanup-proposal.md`.**
+
+**Security and permissions**
+
+9. **The Hifz module has no role guard at all.** `app/Domains/Hifz/routes.php`
+   is declared under `['auth', 'trackActivity']` — milestones, sessions,
+   mistakes, enrolments, every dashboard, the mushaf admin. Needs a role matrix
+   per screen, which is a product decision. Nothing is exposed today (ADR-021,
+   no live Hifz users). Recommended to settle as part of the §2b migration the
+   freeze is waiting for.
+10. **`admin` is granted `Permission::all()`, identical to `super_admin`**,
+    while the comment directly above it in `RoleSeeder` says "most permissions
+    (school operations, not system-level)". The code and its comment disagree;
+    which one is wrong is yours to say.
+11. **Only three of the nine roles are created by a migration** (`super_admin`,
+    `reviewer`, `writer`). The other six exist only if `RoleSeeder` has run, so
+    every permission-granting migration no-ops its role grants on a
+    migrate-only database — meaning **role changes cannot be shipped by deploy
+    at all**. Moving role creation into a migration touches the role matrix.
+12. **A supervisor can grant a place on a paid course.** The admissions group is
+    guarded by role alone, while the money endpoints next door also require
+    `can:payments.refund` / `can:payments.record`. Tightening it changes who can
+    do their job during admissions.
+
+**Data model**
+
+13. **Repeating pupils keep a roster row on the *old* academic year.**
+    `repeat()` touches the existing row rather than creating one on the target
+    year. Intended, or a gap?
+
+**Language**
+
+14. **200 English UI keys have no Dhivehi and no Arabic**, 152 of them
+    referenced from live `public.*` pages — the marketing site, admissions and
+    checkout. A ratchet stops it growing (STATUS §5bm); closing it needs a
+    native speaker, and deliberately was not attempted by the agent. Both
+    languages are now editable from the admin screen without a deploy
+    (§5bn), so this can be done by a person with no repository access.
+
+---
+
 ## Top five (remaining)
 
 1. **Staging staff login** — seed passwords 302 back to login; no SSH from this environment. Blocks any judgement that `test.akuru.edu.mv` is a school.
-1b. **Nothing merged since 2026-08 has been walked in a browser** — 30+ slices are CI-green and unexecuted on `test.akuru.edu.mv`. This is now the largest single gap between "the code works" and "the school can use it".
+1b. **Nothing merged since 2026-08 has been walked in a browser** — 47 slices as of 2026-09-10 are CI-green and unexecuted on `test.akuru.edu.mv`. This is now the largest single gap between "the code works" and "the school can use it". See decision 1 above.
 2. **AppShell nav IA** — **proposed, awaiting decision.** 83 wrapping `<Link href=` in `AppShell.jsx` (74 at the IA proposal, plus Glossary, admin Events, portal Event signup, Certificates, Completions, Performance, Home, Meetings, Overview). C3 extends `/catalog/reviews` (already linked). D1 adds Home. D2 adds Meetings. D3 adds Overview. Proposal in `docs/APPSHELL_NAV_IA.md` (PR #98): grouped by role and frequency. **Do not implement** until Accept / Accept with edits / Reject. The wrap is still live.
 3. **Parent notified column shows — on excused rows** — column exists (#86); SMS body is not in the portal.
 4. ~~Shared Add-term form on every year card~~ — **fixed** (#13).
