@@ -217,23 +217,52 @@ class BmlPaymentProvider implements PaymentProviderInterface
         return $this->authHeaders($apiKey, $appId)['Authorization'];
     }
 
+    /**
+     * Verify a BML webhook. Rule 12: this endpoint is the *only* thing standing
+     * between an anonymous POST and a confirmed payment, so it fails closed.
+     *
+     * It used to fail open twice over. `if ($signature && ...)` skipped the
+     * check whenever the header was simply absent — so an operator who had
+     * correctly set a secret was still defenceless against a request that
+     * omitted it — and with no secret configured the block was skipped
+     * entirely. Only a *wrong* signature was ever rejected, which is the one
+     * case an attacker has no reason to produce.
+     *
+     * A configured secret always wins: `webhook_allow_unsigned` governs only
+     * the no-secret case, and never weakens a deployment that has one.
+     */
     public function verifyCallback(Request $request): PaymentVerificationResult
     {
         // IMPORTANT: Use raw request body for signature verification before any JSON decoding.
         $rawBody = $request->getContent();
-        $secret = config('bml.webhook_secret') ?? config('bml.callback_secret');
+        $secret = config('bml.webhook_secret');
 
-        if ($secret) {
+        if (is_string($secret) && $secret !== '') {
             $headerName = config('bml.webhook_signature_header', 'X-BML-Signature');
             $signature = $request->header($headerName) ?? $request->header('X-BML-Signature');
-            if ($signature && ! $this->verifyRawSignature($rawBody, $signature, $secret)) {
+
+            if (! is_string($signature) || $signature === '') {
+                Log::warning('BML webhook: refused, signature header missing', ['header' => $headerName]);
+
+                return new PaymentVerificationResult(false, null, null, null, [], 'Missing signature');
+            }
+
+            if (! $this->verifyRawSignature($rawBody, $signature, $secret)) {
                 Log::warning('BML webhook: invalid signature');
 
                 return new PaymentVerificationResult(false, null, null, null, [], 'Invalid signature');
             }
+        } elseif (! config('bml.webhook_allow_unsigned', false)) {
+            // Refusing is the safe default: an unverifiable webhook confirms
+            // payments for free. Set BML_WEBHOOK_SECRET, or opt in explicitly
+            // with BML_WEBHOOK_ALLOW_UNSIGNED for a sandbox that has no shared
+            // secret.
+            Log::warning('BML webhook: refused, no webhook secret configured');
+
+            return new PaymentVerificationResult(false, null, null, null, [], 'Webhook secret not configured');
         }
 
-        // Only decode JSON after signature is validated
+        // Only decode JSON after the signature is verified
         $payload = json_decode($rawBody, true) ?? $request->all();
         $merchantRef = $payload['localId'] ?? $payload['reference'] ?? $payload['merchantReference'] ?? $payload['merchant_reference'] ?? null;
         $providerRef = $payload['id'] ?? $payload['transactionId'] ?? $payload['transaction_id'] ?? null;
