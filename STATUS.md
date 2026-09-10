@@ -2394,6 +2394,43 @@ turned out to be reachable from here after all. What was actually done:
   Whether they come from the existing guardian records, an import, or a term of
   data entry is an owner decision, not a code one.
 
+## 5ba. Push notifications stop claiming to be delivered (2026-09-10)
+
+- **A notification recorded as sent that was never sent.**
+  `NotificationService::sendPushNotification()` wrote a log line — *"Push
+  notification would be sent"* — and returned. The caller then called
+  `markAsSent()`. **Every push in the system was recorded as delivered while
+  nothing left the building.** That is worse than an unimplemented channel:
+  nobody goes looking for a message the audit trail says arrived.
+- **Everything needed already existed and was ignored.** The domain has
+  `PushSenderInterface`, a `NullPushSender` returning `false`, and a container
+  binding (rule 4, done properly). The legacy service bypassed all three.
+- **Now routed through the contract.** `SendPushNotificationAction` resolves the
+  user's active devices, sends through the bound sender, and reports
+  `{devices, delivered}`. No devices → nothing delivered; the service throws and
+  the existing catch marks the row **failed** with a reason, instead of sent.
+- **Nothing registers a device**, so "no active device" is the normal path
+  today. It now says so. `Device` has a table and a model and no route, action
+  or controller anywhere — the same unused-table family as the emergency
+  contacts above.
+- **Device registration is deliberately NOT in this slice.** With the sender
+  bound to null, a registration endpoint would collect tokens nothing can send
+  to — the exact "captured, never used" defect the last several slices existed
+  to fix. It belongs with a real provider binding and a client to register from.
+- **One device failing is not the notification failing.** A person with a dead
+  tablet and a working phone has been reached, and the count says so.
+- **Tests: 8** — no device, all devices, an inactive device skipped, partial
+  delivery counted as reached, another user's device excluded, and the three
+  status outcomes: failed with no device, failed when every device refuses, sent
+  only when one actually took it.
+- **Full suite run locally against MySQL: 995 tests, zero failures.**
+- **How it was found:** the same scan that found the emergency contacts —
+  domain models with no controller, action or JSX reference. It also produced
+  two false positives (`FeeStructureItem`, `LibraryItemAuthor`) because my first
+  pass excluded every `Models/` file, hiding relations like
+  `FeeStructure::items()`. Excluding only the model's own file fixed it. Worth
+  recording so the check is re-run correctly rather than trusted blindly.
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**.

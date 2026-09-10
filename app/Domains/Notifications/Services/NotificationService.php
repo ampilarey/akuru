@@ -3,6 +3,7 @@
 namespace App\Domains\Notifications\Services;
 
 use App\Domains\Identity\Models\User;
+use App\Domains\Notifications\Actions\SendPushNotificationAction;
 use App\Domains\Notifications\Contracts\SmsSenderInterface;
 use App\Domains\Notifications\Models\NotificationTemplate;
 use App\Domains\Notifications\Models\UserNotification;
@@ -190,13 +191,29 @@ class NotificationService
      */
     protected function sendPushNotification(UserNotification $notification)
     {
-        // This would integrate with Firebase Cloud Messaging or similar
-        // For now, we'll just log it
-        Log::info('Push notification would be sent', [
-            'user_id' => $notification->user_id,
-            'title' => $notification->title,
-            'message' => $notification->message,
-        ]);
+        // Previously this logged a line and returned, after which the caller
+        // marked the notification **sent** — so every push in the system was
+        // recorded as delivered while nothing left the building. An unsent
+        // notification recorded as sent is worse than an unimplemented channel:
+        // nobody goes looking for the message that never arrived.
+        $result = app(SendPushNotificationAction::class)->execute(
+            (int) $notification->user_id,
+            [
+                'title' => $notification->title,
+                'body' => $notification->message,
+                'data' => $notification->data ?? [],
+            ],
+        );
+
+        if ($result['devices'] === 0) {
+            // Nothing in the system registers a device yet, so this is the
+            // normal path today and it must not read as success.
+            throw new \RuntimeException('No active device is registered for this user.');
+        }
+
+        if ($result['delivered'] === 0) {
+            throw new \RuntimeException('Push delivery failed for all '.$result['devices'].' registered device(s).');
+        }
     }
 
     /**
