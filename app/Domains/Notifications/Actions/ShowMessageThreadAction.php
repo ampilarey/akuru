@@ -4,6 +4,8 @@ namespace App\Domains\Notifications\Actions;
 
 use App\Domains\Notifications\Models\Message;
 use App\Domains\Notifications\Models\MessageParticipant;
+use App\Domains\Notifications\Models\MessagePoll;
+use App\Domains\Notifications\Models\MessagePollResponse;
 use App\Domains\Notifications\Models\MessageThread;
 use Illuminate\Support\Facades\DB;
 
@@ -85,6 +87,57 @@ class ShowMessageThreadAction
                 ->values()
                 ->all(),
             'messages' => $messages,
+            'poll' => $this->poll($thread->id, $userId, (int) $thread->created_by === $userId),
+        ];
+    }
+
+    /**
+     * The thread's question, if it has one.
+     *
+     * **Tallies go to the author only.** The author needs the count to act on
+     * it; a parent does not, and on a class of twelve an aggregate is close to
+     * naming people — "1 of 12 said no" identifies someone. A respondent sees
+     * their own answer and nothing else.
+     *
+     * @return ?array<string, mixed>
+     */
+    private function poll(int $threadId, int $userId, bool $isAuthor): ?array
+    {
+        $poll = MessagePoll::query()->where('message_thread_id', $threadId)->first();
+        if ($poll === null) {
+            return null;
+        }
+
+        $mine = MessagePollResponse::query()
+            ->where('message_poll_id', $poll->id)
+            ->where('user_id', $userId)
+            ->first();
+
+        $payload = [
+            'question' => (string) $poll->question,
+            'options' => array_values($poll->options ?? []),
+            'is_open' => $poll->isOpen(),
+            'closes_at' => $poll->closes_at?->toIso8601String(),
+            'my_choice' => $mine?->choice,
+        ];
+
+        if (! $isAuthor) {
+            return $payload;
+        }
+
+        $counts = MessagePollResponse::query()
+            ->where('message_poll_id', $poll->id)
+            ->selectRaw('choice, COUNT(*) as total')
+            ->groupBy('choice')
+            ->pluck('total', 'choice');
+
+        return [
+            ...$payload,
+            'tallies' => array_map(
+                fn (int $index): int => (int) ($counts[$index] ?? 0),
+                array_keys($payload['options']),
+            ),
+            'responses' => (int) $counts->sum(),
         ];
     }
 

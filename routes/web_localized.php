@@ -186,6 +186,7 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
     Route::get('/portal/messages/new', [PortalMessageController::class, 'create'])->name('portal.messages.create');
     Route::post('/portal/messages', [PortalMessageController::class, 'store'])->name('portal.messages.store');
     Route::get('/portal/messages/{thread}', [PortalMessageController::class, 'show'])->name('portal.messages.show')->whereNumber('thread');
+    Route::post('/portal/messages/{thread}/poll', [PortalMessageController::class, 'respondToPoll'])->name('portal.messages.poll')->whereNumber('thread');
     Route::post('/portal/messages/{thread}/reply', [PortalMessageController::class, 'reply'])->name('portal.messages.reply')->whereNumber('thread');
     Route::get('/portal/events', [PortalEventController::class, 'index'])->name('portal.events');
     Route::post('/portal/events/{event}/register', [PortalEventController::class, 'register'])->name('portal.events.register')->whereNumber('event');

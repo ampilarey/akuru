@@ -32,3 +32,8 @@ Schedule::command('prayer:run-change-only')->dailyAt('20:00')->timezone('Indian/
 // staff leave. Both are once-per-recipient-per-day internally.
 Schedule::command('registers:notify-unfilled')->dailyAt('17:00')->timezone('Indian/Maldives');
 Schedule::command('school:notify-daily-digest')->dailyAt('17:30')->timezone('Indian/Maldives');
+
+// E22b family digest — 19:00 school-local, when a parent can still act on
+// "tomorrow". Later than the staff nudges on purpose: tomorrow's registers and
+// homework must be settled before families are told what is coming.
+Schedule::command('family:notify-daily-digest')->dailyAt('19:00')->timezone('Indian/Maldives');

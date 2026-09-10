@@ -12,7 +12,7 @@ class StartMessageThreadAction
 {
     /**
      * @param  list<int>  $recipientIds
-     * @param  array{context_type?: ?string, context_id?: ?int, reply_policy?: ?string, is_important?: bool}  $options
+     * @param  array{context_type?: ?string, context_id?: ?int, reply_policy?: ?string, is_important?: bool, poll?: ?array{question: string, options: list<string>, closes_at?: ?string}}  $options
      */
     public function execute(
         int $authorId,
@@ -68,6 +68,12 @@ class StartMessageThreadAction
                     'content' => $body,
                     'is_important' => (bool) ($options['is_important'] ?? false),
                 ]);
+            }
+
+            // Attached inside the transaction: a thread that asks a question
+            // and then fails to save the question is worse than neither.
+            if (($options['poll'] ?? null) !== null) {
+                app(AttachPollToThreadAction::class)->execute($thread, $options['poll']);
             }
 
             $thread = $thread->fresh();
