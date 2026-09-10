@@ -2874,18 +2874,57 @@ commit, and each one shrinks the baseline by hand.
 
 **Two things for the owner, neither fixed here:**
 
-- **Arabic has no editor.** `ListTranslationCatalogAction::LOCALE` is hardcoded
-  to `'dv'`, so the admin translation screen and the `translation_overrides`
-  table serve Dhivehi only. A deployment can fill Dhivehi gaps without a
-  commit; Arabic can only be fixed by editing files and redeploying. Making
-  that action locale-aware is a small slice, and worth doing before anyone
-  starts translating.
+- ~~**Arabic has no editor.**~~ **Fixed in §5bn**, immediately below.
 - **Only 18 of 136 Inertia pages read `props.i18n` at all.** The rest are
   hardcoded English in JSX and are not even *reachable* by a translation key,
   so they are outside the 557 and outside this baseline. The internal app is
   therefore substantially further from trilingual than the file counts suggest.
   Sizing that is a slice of its own; this entry records it so the 200 is not
   mistaken for the whole debt.
+
+## 5bn. Arabic is editable too (2026-09-10)
+
+The gap §5bm recorded, closed. `ListTranslationCatalogAction::LOCALE` was a
+hardcoded `'dv'`, so an operator could correct a Dhivehi string from the admin
+screen and have it live immediately, while the *same* Arabic string needed a
+file edit, a commit and a deploy. CLAUDE.md asks for EN/DV/AR equally.
+
+- **Nothing in the data layer had to change.** `translation_overrides` is keyed
+  `(locale, group, key)` and `DatabaseOverrideLoader` takes a locale — the
+  migration that created the table says so in its own docblock: *"Schema
+  supports any locale; the admin UI exposes dv only."* One constant was the
+  whole obstacle. No migration in this slice.
+- `LOCALE` becomes `DEFAULT_LOCALE` plus a `locales()` list of `['dv', 'ar']`
+  and a shared `assertEditableLocale()`, so the catalog, the save and the
+  suggest actions all refuse an unknown language identically.
+- **English is refused as an editable locale, deliberately.** It is the
+  reference the whole catalog is built from — its key set defines the rows —
+  so correcting English is a code change, not an override. Accepting one here
+  would let the editor quietly fork the key set.
+- **An absent `?locale=` still means Dhivehi**, on the index, the save and the
+  export alike, so links and habits from before Arabic existed land where they
+  did. A junk locale in a hand-edited URL falls back rather than 500ing.
+- The page gains a language switcher, the CSV exports per language
+  (`arabic-translations.csv`, header `file_ar`), and `file_dv` in the Inertia
+  payload becomes the locale-neutral `file_value`.
+- **4 tests.** The one that matters asserts one language moved and the other
+  did not, that both can hold a correction for the same key at once, and that
+  clearing Arabic restores the Arabic file string while leaving Dhivehi alone.
+  **Verified by breaking it**: hardcoding the locale back to `dv` fails that
+  test, so it is testing the plumbing and not the happy path.
+
+**Two test faults caught and fixed rather than shipped.** The Arabic fixture I
+first wrote was byte-identical to the shipped `ar/common.php` string, so the
+assertion would have passed whether or not the override applied — the same
+class of "passes for the wrong reason" as the back-dated register fixtures in
+§5at. And I asserted that `locale: ''` is rejected; it is not, because
+`nullable` normalises it to absent, which then means Dhivehi. That is the
+behaviour I want and the rule the rest of the slice follows, so **the test was
+wrong, not the code**, and the test now pins the defaulting instead.
+
+**Still not translated.** This makes Arabic *fixable without a deploy*; it does
+not fix anything. The 200-key baseline from §5bm is unchanged, and closing it
+is still a native speaker's work.
 
 ## 6. Out of scope (unchanged)
 

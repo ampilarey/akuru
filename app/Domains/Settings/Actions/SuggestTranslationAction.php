@@ -7,9 +7,10 @@ use Illuminate\Support\Facades\Lang;
 use Illuminate\Validation\ValidationException;
 
 /**
- * T2: ask the configured translator for a Dhivehi draft of one English
- * reference string. The result only prefills the correction box — a
- * human always confirms before anything is saved.
+ * T2: ask the configured translator for a draft of one English reference
+ * string, in the locale being edited. The result only prefills the
+ * correction box — a human always confirms before anything is saved,
+ * which matters more in Arabic and Dhivehi than the machine suggests.
  */
 class SuggestTranslationAction
 {
@@ -18,8 +19,10 @@ class SuggestTranslationAction
     /**
      * @return array{suggestion: ?string}
      */
-    public function execute(string $group, string $key): array
+    public function execute(string $group, string $key, string $locale = ListTranslationCatalogAction::DEFAULT_LOCALE): array
     {
+        ListTranslationCatalogAction::assertEditableLocale($locale);
+
         if (! in_array($group, ListTranslationCatalogAction::groups(), true)) {
             throw ValidationException::withMessages(['group' => 'Unknown translation group.']);
         }
@@ -30,7 +33,7 @@ class SuggestTranslationAction
         }
 
         return [
-            'suggestion' => $this->translator->translate($reference, 'en', ListTranslationCatalogAction::LOCALE),
+            'suggestion' => $this->translator->translate($reference, 'en', $locale),
         ];
     }
 }

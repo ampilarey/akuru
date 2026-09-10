@@ -9,8 +9,8 @@ use Illuminate\Support\Facades\Lang;
 use Illuminate\Validation\ValidationException;
 
 /**
- * Save or clear one Dhivehi override. Only keys that exist in the
- * English reference files are accepted — the editor corrects
+ * Save or clear one override, in Dhivehi or Arabic. Only keys that exist
+ * in the English reference files are accepted — the editor corrects
  * translations, it does not invent strings. An empty value clears the
  * override so the shipped file string returns.
  */
@@ -19,8 +19,10 @@ class SaveTranslationOverrideAction
     /**
      * @return array{override: ?string}
      */
-    public function execute(string $group, string $key, ?string $value, int $userId): array
+    public function execute(string $group, string $key, ?string $value, int $userId, string $locale = ListTranslationCatalogAction::DEFAULT_LOCALE): array
     {
+        ListTranslationCatalogAction::assertEditableLocale($locale);
+
         if (! in_array($group, ListTranslationCatalogAction::groups(), true)) {
             throw ValidationException::withMessages(['group' => 'Unknown translation group.']);
         }
@@ -30,7 +32,6 @@ class SaveTranslationOverrideAction
             throw ValidationException::withMessages(['key' => 'Unknown translation key.']);
         }
 
-        $locale = ListTranslationCatalogAction::LOCALE;
         $value = $value !== null ? trim($value) : '';
 
         if ($value === '') {
