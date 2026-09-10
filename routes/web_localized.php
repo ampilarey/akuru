@@ -170,6 +170,7 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
     Route::post('/portal/absence-notes', [PortalAbsenceNoteController::class, 'store'])->name('portal.absence-notes.store');
     // Notification centre (E22a) — the page for rows five features already write.
     Route::get('/portal/notifications', [PortalNotificationController::class, 'index'])->name('portal.notifications');
+    Route::post('/portal/notifications/preferences', [PortalNotificationController::class, 'savePreferences'])->name('portal.notifications.preferences');
     Route::post('/portal/notifications/read', [PortalNotificationController::class, 'markRead'])->name('portal.notifications.read');
 
     // Noticeboard (E4) — the reader for announcements' audience targeting.

@@ -1898,6 +1898,43 @@ turned out to be reachable from here after all. What was actually done:
   omission was caught afterwards, not by CI — the definition of done is not
   machine-checked, which is exactly why it is written down.
 
+## 5ap. E22c — which categories reach me (2026-09-10)
+
+- **Why this closed E22 rather than opening something new:** E22b's digest
+  fires **nightly to every family** once enabled, and E22a put a notification on
+  every message. The only control was the global on/off switch, so a parent who
+  wanted trip notices but not a nightly summary had to mute everything — which
+  kills the notices that mattered.
+- **A bug in my own E22b, fixed here:** the family digest was written with
+  `category => 'message'`, which conflated the nightly summary with a teacher
+  writing to you. They are different things and must be separately mutable, so
+  the digest now has its own `digest` category. A test pins it — muting the
+  digest must not mute messages.
+- **Absence of a row means opted in.** Storing only the choices people actually
+  make keeps the table small and, more importantly, means a category added later
+  reaches everyone by default rather than silently reaching nobody. That is the
+  same inversion E4's blank-audience rule had to avoid, and it fails in the
+  direction where nobody notices.
+- **Enforced at the single choke point.** Every writer in the app goes through
+  `SendUserNotificationAction`, so the check lives there once instead of six
+  call sites each remembering. Its return type became nullable; no caller uses
+  the return value, which was verified rather than assumed.
+- **A category with no toggle is always delivered.** Nobody has opted out of
+  something they were never offered, and dropping it would make an
+  un-configurable notification vanish. A hand-posted category is ignored rather
+  than stored, so it cannot silently suppress something nobody can re-enable.
+- **Muting a notification never loses the message.** A teacher who mutes message
+  notifications still gets the message in their inbox — the notification is the
+  announcement, not the delivery. Tested.
+- **No `academic_year_id`** — rule 10 covers things that happen in time, and a
+  preference is standing state.
+- **Tests:** 9 covering the default-on behaviour, delivery and suppression,
+  digest-vs-message separation, cross-user isolation, un-toggleable categories,
+  the hand-posted category, opting back in without duplicate rows, and the
+  message-still-delivered case.
+- Still open in E22: **channels** — every preference here is in-app, because SMS
+  remains an owner decision for the cost reason in §5am.
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**.

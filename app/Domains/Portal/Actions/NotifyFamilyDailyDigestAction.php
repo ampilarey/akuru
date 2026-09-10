@@ -65,7 +65,10 @@ class NotifyFamilyDailyDigestAction
                     'notices' => $summary['notices'],
                 ]),
                 [
-                    'category' => 'message',
+                    // Its own category, not 'message': the whole point of
+                    // E22c is that a parent can mute the nightly summary
+                    // without muting a teacher writing to them.
+                    'category' => 'digest',
                     'href' => '/portal/home',
                     'date' => $summary['date'],
                 ],

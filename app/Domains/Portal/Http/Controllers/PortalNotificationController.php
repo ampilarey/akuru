@@ -4,6 +4,8 @@ namespace App\Domains\Portal\Http\Controllers;
 
 use App\Domains\Notifications\Actions\ListUserNotificationsAction;
 use App\Domains\Notifications\Actions\MarkUserNotificationsReadAction;
+use App\Domains\Notifications\Actions\ResolveNotificationPreferencesAction;
+use App\Domains\Notifications\Actions\SaveNotificationPreferencesAction;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -26,6 +28,10 @@ class PortalNotificationController extends Controller
 
         return Inertia::render('Portal/Notifications', [
             'notifications' => app(ListUserNotificationsAction::class)->execute($userId)->all(),
+            // E22c: which categories reach me. Labels come from the action so
+            // the page cannot offer a toggle for a category nothing sends.
+            'categories' => ResolveNotificationPreferencesAction::CATEGORIES,
+            'preferences' => app(ResolveNotificationPreferencesAction::class)->execute($userId),
         ]);
     }
 
@@ -40,6 +46,22 @@ class PortalNotificationController extends Controller
         app(MarkUserNotificationsReadAction::class)->execute($userId, $data['id'] ?? null);
 
         return redirect()->route('portal.notifications');
+    }
+
+    public function savePreferences(Request $request): RedirectResponse
+    {
+        $userId = $this->userId($request);
+
+        $data = $request->validate([
+            'preferences' => ['required', 'array'],
+            'preferences.*' => ['boolean'],
+        ]);
+
+        app(SaveNotificationPreferencesAction::class)->execute($userId, $data['preferences']);
+
+        return redirect()
+            ->route('portal.notifications')
+            ->with('success', 'Notification preferences saved.');
     }
 
     private function userId(Request $request): int
