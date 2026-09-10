@@ -16,9 +16,12 @@ a question with a default, so "do nothing" is always a legible choice.
 
 **Before any deploy**
 
-1. **Walk the app in a browser.** 47 slices merged since 2026-08 are CI-green
-   and have never been executed. CLAUDE.md's definition of done requires it.
-   This is the largest gap between "the code works" and "the school can use it".
+1. **Walk the app on `test.akuru.edu.mv`.** The core daily loop is now walked
+   **locally** and works end to end (STATUS §5bu/§5bv) — that half is done, and
+   it found a real defect. What remains is the *deployment*: nothing has been
+   executed on the staging host, whose staff login is itself the standing P0
+   below. A local walk cannot tell you the deploy script, the built assets, or
+   the seeded database on that host are sound.
 2. **Set `BML_WEBHOOK_SECRET`**, and confirm with BML that they sign HMAC-`sha256`
    over the raw body under `X-BML-Signature`. The webhook now fails closed
    (STATUS §5bp), so **with no secret and no opt-out, no payment will confirm**.
@@ -87,7 +90,7 @@ a question with a default, so "do nothing" is always a legible choice.
 ## Top five (remaining)
 
 1. **Staging staff login** — seed passwords 302 back to login; no SSH from this environment. Blocks any judgement that `test.akuru.edu.mv` is a school.
-1b. **Nothing merged since 2026-08 has been walked in a browser** — 47 slices as of 2026-09-10 are CI-green and unexecuted on `test.akuru.edu.mv`. This is now the largest single gap between "the code works" and "the school can use it". See decision 1 above.
+1b. ~~**Nothing merged since 2026-08 has been walked in a browser**~~ — **partly closed 2026-09-10 (STATUS §5bu, §5bv).** The core daily loop is now walked **locally**, end to end, in Chromium: a teacher generates a register, fills it, marks a pupil absent and submits; the absence lands on the admin absence list; the homework and the absence both reach the family portal. That walk found a real defect (nested translation lines editable in neither language, fixed in #234). **Still open:** nothing has been walked on `test.akuru.edu.mv` itself, which is a separate question about the deployment rather than the code. See decision 1 above.
 2. **AppShell nav IA** — **proposed, awaiting decision.** 83 wrapping `<Link href=` in `AppShell.jsx` (74 at the IA proposal, plus Glossary, admin Events, portal Event signup, Certificates, Completions, Performance, Home, Meetings, Overview). C3 extends `/catalog/reviews` (already linked). D1 adds Home. D2 adds Meetings. D3 adds Overview. Proposal in `docs/APPSHELL_NAV_IA.md` (PR #98): grouped by role and frequency. **Do not implement** until Accept / Accept with edits / Reject. The wrap is still live.
 3. **Parent notified column shows — on excused rows** — column exists (#86); SMS body is not in the portal.
 4. ~~Shared Add-term form on every year card~~ — **fixed** (#13).
