@@ -2122,6 +2122,10 @@ turned out to be reachable from here after all. What was actually done:
   the *other* passed for the wrong reason. Both now use today's date and assert
   `assertSessionHasNoErrors()` before the count. SQLite cannot substitute — the
   migrations are MySQL-specific (`SHOW INDEX`).
+- **The full suite, also run locally, caught a second one:** the nav-IA guard
+  counts `<Link href=` in `AppShell.jsx` and the `Materials` entry took it 86 →
+  87. Bumped with a note rather than worked around — that guard exists to stop a
+  nav *redesign* arriving unannounced, not to freeze the list.
 - **Still owed:** the browser walk on `test.akuru.edu.mv`, which needs the
   deploy. Nineteen merged slices remain unexecuted there.
 

@@ -29,8 +29,11 @@ it('does not change AppShell.jsx as part of the IA proposal', function () {
 
     // 83 → 86: +Ops checklist, +Feature walkthrough, +Translations
     // (permission-gated admin links; conscious bump per this guard's intent).
+    // 86 → 87: +Materials (E13a). The guard exists to stop a nav *redesign*
+    // arriving unannounced, not to freeze the list — one link for a new screen
+    // that would otherwise be unreachable is the bump it is meant to allow.
     $linkCount = substr_count($shell, '<Link href=');
-    expect($linkCount)->toBe(86);
+    expect($linkCount)->toBe(87);
 });
 
 it('does not register a product route for the proposal document', function () {
