@@ -63,7 +63,6 @@ return [
     'app/Domains/People/Models/Teacher.php',
     'app/Domains/People/Policies/RegistrationStudentPolicy.php',
     'app/Domains/Portal/Http/Controllers/DashboardController.php',
-    'app/Domains/Portal/Http/Controllers/EnhancedDashboardController.php',
     'app/Domains/Portal/Http/Controllers/PortalController.php',
     'app/Domains/Settings/Models/DashboardAnalytics.php',
     'app/Domains/Settings/Models/Report.php',
