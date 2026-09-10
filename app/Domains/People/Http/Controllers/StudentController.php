@@ -63,6 +63,10 @@ class StudentController extends Controller
             'is_active' => true,
         ]);
 
+        // Staff-created accounts had no email contact row, so "reset my
+        // password by email" silently did nothing for them.
+        app(\App\Domains\Identity\Actions\EnsureVerifiedEmailContactAction::class)->execute($user);
+
         $user->assignRole('student');
 
         // Create student profile
