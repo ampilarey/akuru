@@ -112,6 +112,15 @@ class FormAdminController extends Controller
             'requires_parent_confirmation' => ['sometimes', 'boolean'],
             'fee_amount' => ['nullable', 'numeric', 'min:0', 'max:100000'],
             'is_published' => ['sometimes', 'boolean'],
+        ], [], [
+            // Without these a blank question reads "The fields.0.label field
+            // is required." to a member of school staff. The rule is right;
+            // only the name it uses was written for a developer.
+            'fields.*.label' => 'question',
+            'fields.*.type' => 'question type',
+            'fields.*.options' => 'question options',
+            'fee_amount' => 'fee',
+            'requires_parent_confirmation' => 'parent confirmation',
         ]);
     }
 

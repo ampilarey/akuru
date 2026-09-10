@@ -65,6 +65,19 @@ export default function Index({ forms = [], fieldTypes = [] }) {
                                         value={(field.options || []).join(', ')}
                                         onChange={(e) => setField(i, { options: e.target.value.split(',').map((o) => o.trim()) })} />
                                 )}
+                                {/* `fields.*.label` is `required` server-side, and nothing
+                                    rendered its error. Leaving a question blank made Save
+                                    do nothing at all: no save, no message, composer still
+                                    open. Every other rule on this form was already
+                                    surfaced — this was the one gap, and it sat on the
+                                    field a person is most likely to leave empty, because
+                                    "Add question" creates it blank. */}
+                                {form.errors[`fields.${i}.label`] && (
+                                    <span className="text-xs text-red-600 sm:col-span-3">{form.errors[`fields.${i}.label`]}</span>
+                                )}
+                                {form.errors[`fields.${i}.type`] && (
+                                    <span className="text-xs text-red-600 sm:col-span-3">{form.errors[`fields.${i}.type`]}</span>
+                                )}
                                 {form.errors[`fields.${i}.options`] && (
                                     <span className="text-xs text-red-600 sm:col-span-3">{form.errors[`fields.${i}.options`]}</span>
                                 )}

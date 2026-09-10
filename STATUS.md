@@ -3458,6 +3458,73 @@ gets `false` *and both get `canCompose: true`* — the assertion that would have
 caught the conflation. The other pins that `messages.broadcast` alone is not
 enough: an admin holding the permission but teaching nothing gets `false`.
 
+## 5by. SEVERE — every validation message in the app read as a raw key (2026-09-10)
+
+**The worst defect the browser walk has found, and it was one `Save` click
+away the entire time.**
+
+Walking E6a forms: an admin filled a title, clicked **Save**, and *nothing
+happened*. No save, no message, composer still open. Two separate defects
+stacked on top of each other.
+
+**Defect 1 — the error was never rendered.** `fields.*.label` is `required`
+server-side, and the composer rendered errors for `title`, `fields`,
+`fields.*.options`, `requires_parent_confirmation` and `fee_amount` — every
+rule except that one. It sat on **the field most likely to be blank**, because
+"Add question" creates one empty. Fixed by rendering `fields.N.label` (and
+`fields.N.type`) beside each question.
+
+**Defect 2 — and this one is app-wide.** With the error finally rendering, it
+read **`validation.required`**. The raw key.
+
+Laravel registers its translation loader with **two** paths:
+
+```php
+new FileLoader($app['files'], [__DIR__.'/lang', $app['path.lang']])
+```
+
+— the framework's own messages *and* the application's.
+`TranslationOverrideServiceProvider` (T1) replaced that loader with
+`new DatabaseOverrideLoader($app['files'], $app['path.lang'])`, passing the app
+path **alone** and silently dropping the framework half. This app ships no
+`lang/en/validation.php` of its own, so **everything Laravel provides resolved
+to its raw key**:
+
+| key | what a user saw |
+|---|---|
+| `auth.failed` | `auth.failed` on every failed login |
+| `validation.required` | on every required field, everywhere |
+| `validation.email`, `validation.max.string`, … | likewise |
+| `passwords.sent` | on password reset |
+| `pagination.next` | on every paginator |
+
+Fixed by inheriting `paths()` from the loader being replaced rather than naming
+them — which also carries `jsonPaths()` and `namespaces()` across, and means a
+future Laravel registering a third path keeps working without anyone
+rediscovering this file.
+
+**Why nothing caught it.** `assertSessionHasErrors('field')` asserts the *key a
+rule failed under*; it never reads the sentence a person sees. Over a thousand
+tests could pass with every message in the product rendering as
+`validation.required`. **Only opening the screen shows it.**
+
+Also set friendly attribute names on the forms controller, so the message reads
+*"The question field is required."* rather than *"The fields.0.label field is
+required."* The rule was right; only the name it used was written for a
+developer.
+
+**4 tests.** Two on the loader — framework messages must resolve *and* a DB
+override must still win, since the whole point of replacing the loader is the
+override — and two on the forms endpoint, that a blank question returns an error
+under exactly the key the composer reads, and that a filled one saves.
+**Verified by reverting the provider**: both loader tests fail.
+
+Verified in the browser at each step: raw key → *"The fields.0.label field is
+required."* → *"The question field is required."*
+
+**E6a otherwise works end to end**: with a question filled, **"Form saved."**,
+listed as *"Ramadan iftar — headcount · OPEN · 0 responses"*.
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**.

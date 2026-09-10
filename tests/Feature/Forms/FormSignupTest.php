@@ -214,3 +214,52 @@ it('names the respondent on a named form', function () {
     expect(app(ListFormResponsesAction::class)->execute((int) $form->id)['rows']->first()['respondent'])
         ->toBe($user->name);
 });
+
+/**
+ * A blank question made Save do nothing at all.
+ *
+ * `fields.*.label` is `required` server-side, and the composer rendered errors
+ * for `title`, `fields`, `fields.*.options`, `requires_parent_confirmation` and
+ * `fee_amount` — every rule except that one. So leaving a question blank
+ * produced no save, no message, and a composer still sitting open. A member of
+ * staff would reasonably conclude the feature was broken.
+ *
+ * It sat on the field most likely to be left empty, because "Add question"
+ * creates one blank. Found by walking the screen in a browser: the request
+ * came back 302 with no visible error, which is what sent me looking.
+ */
+function actingFormsAdmin(): User
+{
+    \Spatie\Permission\Models\Permission::findOrCreate('forms.manage', 'web');
+    $user = User::factory()->create();
+    $user->givePermissionTo('forms.manage');
+
+    return $user->fresh();
+}
+
+it('returns a field-level error for a blank question, so the screen can show it', function () {
+    $admin = actingFormsAdmin();
+
+    $this->withoutLocalizationMiddleware()->actingAs($admin)
+        ->post('/forms', [
+            'title' => 'Blank question probe',
+            'fields' => [['label' => '', 'type' => 'text']],
+        ])
+        // The key the composer reads. Without this exact key nothing renders.
+        ->assertSessionHasErrors('fields.0.label');
+
+    expect(Form::query()->where('title', 'Blank question probe')->exists())->toBeFalse();
+});
+
+it('saves once the question has a prompt', function () {
+    $admin = actingFormsAdmin();
+
+    $this->withoutLocalizationMiddleware()->actingAs($admin)
+        ->post('/forms', [
+            'title' => 'Ramadan iftar — headcount',
+            'fields' => [['label' => 'Will your child attend?', 'type' => 'yes_no', 'required' => true]],
+        ])
+        ->assertSessionHasNoErrors();
+
+    expect(Form::query()->where('title', 'Ramadan iftar — headcount')->exists())->toBeTrue();
+});

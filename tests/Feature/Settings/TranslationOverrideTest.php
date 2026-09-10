@@ -298,3 +298,50 @@ it('saves and clears an override on a nested key', function () {
 
     expect(freshTranslation('notifications.attendance.status.absent', 'ar'))->toBe($fileValue);
 });
+
+/**
+ * The override loader must keep Laravel's own lang directory.
+ *
+ * Laravel registers the loader with **two** paths —
+ * `new FileLoader($app['files'], [__DIR__.'/lang', $app['path.lang']])` — the
+ * framework's own messages and the application's. This provider replaced it
+ * passing `$app['path.lang']` alone, which silently dropped the framework half,
+ * and this app ships no `lang/en/validation.php` of its own.
+ *
+ * Every message Laravel provides then resolved to its raw key. A failed login
+ * read "auth.failed". Every validation error in the application read
+ * "validation.required". Found by walking a form in a browser and seeing
+ * `validation.required` rendered where a sentence belonged.
+ *
+ * The suite never caught it because `assertSessionHasErrors('field')` checks
+ * the *key* a rule failed under, never the sentence a person reads.
+ */
+it('resolves framework messages as well as application ones', function () {
+    App::forgetInstance('translator');
+
+    // Framework-provided. Each must be a sentence, not the key echoed back.
+    foreach (['auth.failed', 'passwords.sent', 'pagination.next'] as $key) {
+        expect(trans($key))->not->toBe($key, "{$key} fell through to its raw key.");
+    }
+
+    expect(trans('validation.required', ['attribute' => 'title']))
+        ->not->toBe('validation.required')
+        ->toContain('title');
+
+    // …without losing the application's own strings, or the DB overrides that
+    // are the whole point of replacing the loader.
+    expect(trans('common.dashboard', [], 'en'))->not->toBe('common.dashboard');
+});
+
+it('still lets a database override win after the loader keeps both paths', function () {
+    $admin = actingPeopleAdmin(['translations.manage']);
+
+    $this->withoutLocalizationMiddleware()->actingAs($admin)
+        ->post(route('admin.translations.save'), [
+            'group' => 'common', 'key' => 'dashboard', 'value' => 'ޑޭޝްބޯޑު — ފާސް', 'locale' => 'dv',
+        ])->assertSessionHasNoErrors();
+
+    expect(freshTranslation('common.dashboard', 'dv'))->toBe('ޑޭޝްބޯޑު — ފާސް')
+        // And the framework path is still there alongside it.
+        ->and(trans('auth.failed'))->not->toBe('auth.failed');
+});
