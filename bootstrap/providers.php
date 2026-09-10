@@ -14,6 +14,7 @@ return [
     App\Domains\Hifz\Providers\HifzServiceProvider::class,
     App\Domains\Admissions\Providers\AdmissionsServiceProvider::class,
     App\Domains\Finance\Providers\FinanceServiceProvider::class,
+    App\Domains\Forms\Providers\FormsServiceProvider::class,
     App\Domains\HR\Providers\HRServiceProvider::class,
     App\Domains\Commerce\Providers\CommerceServiceProvider::class,
     App\Domains\Library\Providers\LibraryServiceProvider::class,

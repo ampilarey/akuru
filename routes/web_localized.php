@@ -76,6 +76,8 @@ use App\Domains\Finance\Http\Controllers\ManualReceiptController;
 use App\Domains\Finance\Http\Controllers\PaymentPlanController;
 use App\Domains\Finance\Http\Controllers\ReceiptDocumentController;
 use App\Domains\Finance\Http\Controllers\ReconciliationController;
+use App\Domains\Forms\Http\Controllers\FormAdminController;
+use App\Domains\Forms\Http\Controllers\PortalFormController;
 use App\Domains\Hifz\Http\Controllers\QuranProgressController;
 use App\Domains\HR\Http\Controllers\AppraisalController;
 use App\Domains\HR\Http\Controllers\ComplianceController;
@@ -168,6 +170,15 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
     Route::get('/portal/behavior', [PortalBehaviorController::class, 'index'])->name('portal.behavior');
     Route::get('/portal/absence-notes', [PortalAbsenceNoteController::class, 'index'])->name('portal.absence-notes');
     Route::post('/portal/absence-notes', [PortalAbsenceNoteController::class, 'store'])->name('portal.absence-notes.store');
+    // Sign-up forms (E6a) — families answer, staff read the results.
+    Route::get('/portal/forms', [PortalFormController::class, 'index'])->name('portal.forms');
+    Route::post('/portal/forms/{form}/submit', [PortalFormController::class, 'submit'])->name('portal.forms.submit')->whereNumber('form');
+    Route::get('/forms', [FormAdminController::class, 'index'])->name('forms.index');
+    Route::post('/forms', [FormAdminController::class, 'store'])->name('forms.store');
+    Route::put('/forms/{form}', [FormAdminController::class, 'update'])->name('forms.update')->whereNumber('form');
+    Route::get('/forms/{form}/results', [FormAdminController::class, 'results'])->name('forms.results')->whereNumber('form');
+    Route::get('/forms/{form}/export', [FormAdminController::class, 'export'])->name('forms.export')->whereNumber('form');
+
     // Notification centre (E22a) — the page for rows five features already write.
     Route::get('/portal/notifications', [PortalNotificationController::class, 'index'])->name('portal.notifications');
     Route::post('/portal/notifications/preferences', [PortalNotificationController::class, 'savePreferences'])->name('portal.notifications.preferences');

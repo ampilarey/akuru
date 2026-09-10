@@ -11,7 +11,7 @@ final class ViolationScanner
     /** @var list<string> */
     private const DOMAINS = [
         'Identity', 'People', 'Academics', 'ExamsGrades', 'Hifz', 'Admissions',
-        'Finance', 'HR', 'Commerce', 'Library', 'Courses', 'Offerings', 'Progress',
+        'Finance', 'Forms', 'HR', 'Commerce', 'Library', 'Courses', 'Offerings', 'Progress',
         'Pronunciation', 'Media', 'Notifications', 'Portal', 'Website', 'Settings', 'PrayerTimes',
     ];
 
