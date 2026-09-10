@@ -3189,6 +3189,45 @@ courses), the repeating-pupil roster row, and the 200 untranslated strings.
 
 **The agent-buildable backlog is empty.** What remains is decisions and a deploy.
 
+## 5bt. Two guards deliberately not written, with the evidence (2026-09-10)
+
+After §5bs the buildable backlog was empty, so the remaining CLAUDE.md rules
+without a mechanical guard were assessed as candidates. **Both were rejected**,
+and the reasoning is recorded here so no future session re-runs the same dead
+end. A guard that cries wolf is worse than no guard: it teaches people to grow
+the baseline, which is the exact opposite of a ratchet.
+
+**Rule 10 (`academic_year_id` on time-scoped tables) is not mechanically
+checkable.** A keyword scan over 244 created tables flagged 37 as time-shaped
+and missing the column. Checking them by hand showed the scan was wrong in
+three separate ways:
+
+- **`term_id` also satisfies the rule** — it says "`academic_year_id` (and
+  `term_id` where relevant)", and a term belongs to a year. The first scan
+  looked only for `academic_year_id` and so flagged `competency_assessments`,
+  which carries `term_id`.
+- **Child rows inherit the backbone.** `exam_marks` → `exams`, which carries
+  *both* columns. `register_unlocks` → `lesson_logs`. `invoice_lines`,
+  `payment_items`, `fee_structure_items` and `lesson_log_material` are the same
+  shape. Each is compliant in substance; none carries the column itself.
+- **Lookup and non-academic tables match the keywords.** `exam_types` and
+  `grade_scales` are reference data, not events. `sessions` is Laravel's HTTP
+  session table.
+
+Deciding compliance needs transitive FK reachability *plus* a judgement about
+whether a table records an event or describes one. A static scan can produce
+neither, and would fire on every future lookup table containing "grade" or
+"fee". **Rule 10 stays a review-time rule, not a CI rule.**
+
+**CSV export on every listing needs no guard: the convention is already
+over-satisfied.** 42 Inertia `*/Index` pages render against **86** named
+`*.export` routes — exports outnumber listings two to one, because several
+screens export more than one view of their data. There is no gap to hold.
+
+Contrast with what *did* justify a guard: rules 3, 5 and ADR-005, plus the
+runtime-key family in §5bs, are all decidable from a single file's text with no
+judgement call, which is exactly why they work as tests.
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**.
