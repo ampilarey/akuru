@@ -3358,6 +3358,58 @@ previously "CI-green and never executed".
 - `/portal/timetable` does not exist — the family timetable lives on the portal
   home. Noted only because it is a natural URL to guess.
 
+## 5bw. E13 walked end to end, including its security rule (2026-09-10)
+
+The materials chain (E13a→E13b→E13c) was the largest thing built this session
+and, until now, entirely unexercised beyond an empty state. **E13c is a security
+surface**, and after §5bp — a fail-open money path that unit tests had declared
+correct — security logic that has only ever been unit-tested does not deserve
+much confidence. So it was driven through the UI.
+
+**E13a — write once, reuse.** Created *"Sun and moon letters — practice sheet"*
+against Arabic Language with tags. **"Material saved."** It then appeared in the
+register's library picker, correctly scoped to that subject — the same picker
+that had shown *"Nothing saved for this subject yet"* an hour earlier.
+
+**E13b — sending it home.** Ticking the material revealed **"Send home with the
+homework"**, exactly as designed (the option only exists once attached). Ticked
+both, resubmitted. The family homework page then showed a **"What you need"**
+block carrying the material's title *and* its detail text.
+
+**E13c — the access matrix, with a real uploaded file.** A `.txt` was uploaded
+through the UI and fetched as five different identities:
+
+| identity | result |
+|---|---|
+| anonymous | **302** → `/en/login` |
+| teacher (`registers.fill`) | **200**, real file contents |
+| admin | **200** |
+| parent of a Grade 5 A pupil | **200** |
+| an unrelated pupil account | **403** |
+
+**Then the decisive negative.** The teacher unticked *"Send home"* — leaving the
+material still **attached** to the lesson — and resubmitted. The same parent,
+same file, same class: **403**.
+
+That is the exact distinction the Action's docblock claims and the one that
+mattered: *"Attaching a material to a lesson is deliberately not enough."*
+Proven through the UI rather than asserted in a unit test.
+
+**A false alarm I caught before reporting it.** An early probe showed anonymous
+requests returning **200** on the file endpoint while an authenticated parent
+got 404 — which reads like a serious hole. It was neither: Playwright's
+`page.goto()` follows redirects, so the "200" was the **login page** it had been
+redirected to, and the 404s were simply because no file existed yet. Re-probed
+with `request.get(..., { maxRedirects: 0 })` and with raw `curl -D-`: the real
+answer is 302 to `/en/login`. **Measure the thing you think you are measuring**
+— had this been reported it would have been exactly the kind of false finding
+this session has spent so long correcting in the feature plan.
+
+**Now verified in a browser across §5bu, §5bv and this entry:** S2.6 registers,
+the homework due-date default, E13a, E13b, E13c and its full access matrix,
+the absence list, emergency contacts, the family calendar, the teacher landing,
+the Arabic translation editor, and the settings badges in both directions.
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**.
