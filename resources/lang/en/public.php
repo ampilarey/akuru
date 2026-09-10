@@ -102,7 +102,7 @@ return [
     'What Our Students Say' => 'What Our Students Say',
     'Frequently Asked Questions' => 'Frequently Asked Questions',
     'Ready to Start Learning?' => 'Ready to Start Learning?',
-    'Join thousands of students in their journey to learn Islam',
+    'Join thousands of students in their journey to learn Islam' => 'Join thousands of students in their journey to learn Islam',
     'Get Started Today' => 'Get Started Today',
 
     // Courses
