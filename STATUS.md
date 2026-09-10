@@ -1978,6 +1978,49 @@ turned out to be reachable from here after all. What was actually done:
   (it interacts with E7's switcher). And **E6c fees**, which must raise invoices
   through existing Commerce actions (rule 11) with money rule 12 still applying.
 
+## 5ar. E6b — a pupil's answer waits for a guardian (2026-09-10)
+
+- **Why the distinction is not pedantry:** a child ticking "yes, I am going on
+  the trip" is not the same fact as their parent agreeing to it. A results table
+  that conflates the two sends children on coaches their families never
+  approved.
+- **The rule that gives the feature its point, and the one easiest to lose:**
+  **acting as the pupil never grants the confirmation.** EduPage blocks
+  confirming while signed in as the child, and so does this. If the same
+  identity can both answer and confirm, the confirmation records nothing.
+- **Enforced on identity, not on session**, so **E7's account switcher cannot
+  route around it**: the confirming user must be a *different* user who is a
+  registered guardian of that pupil, checked through People's existing
+  `GuardianCanAccessStudentAction`. A switcher that changes which identity you
+  are acting as still cannot make you your own guardian.
+- **A bug caught by writing the test, not by CI:** re-answering after
+  confirmation left `confirmed_at` set, carrying a guardian's approval across to
+  an answer they never saw. Submission now withdraws any confirmation. That is
+  the whole failure mode of the feature and it would have shipped silently.
+- **Anonymous and requires-confirmation are refused together.** An anonymous
+  answer has nobody to confirm for, and allowing the pair would create forms
+  that quietly never become confirmable.
+- **"Unconfirmed" is made into a task, not a silent state.** The guardian gets a
+  pending queue showing the child's actual answers; the pupil is told their
+  answer is *waiting for a parent to confirm* rather than seeing it marked
+  answered. Without both halves the parent never learns there is anything to do.
+- **Staff see the two apart:** the results table gains a Confirmed column and a
+  confirmed count, only on forms that asked for it. Acting on unconfirmed
+  answers is the mistake this prevents, so they are never presented as
+  equivalent.
+- **Nobody is ever recorded as confirmed with nobody accountable** —
+  `confirmed_by_user_id` is stored alongside the timestamp.
+- **Additive migration (rule 9):** both columns nullable, every existing form
+  behaves exactly as before.
+- **Tests:** 12 covering the anonymous conflict, the unconfirmed default, both
+  the pupil-side and guardian-side surfacing, successful confirmation,
+  **the pupil-confirming-themselves refusal**, another family's guardian, an
+  unrelated account, a form that never asked, the staff view before and after,
+  the re-answer withdrawal, and a guardian with no children.
+- Still open in E6: **E6c fees** — a sign-up with a cost must raise invoices
+  through existing Commerce actions (rule 11), with money rule 12 intact:
+  access depends on the BML **webhook**, never the return URL.
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**.

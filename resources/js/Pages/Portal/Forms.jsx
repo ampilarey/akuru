@@ -1,4 +1,4 @@
-import { useForm } from '@inertiajs/react';
+import { router, useForm } from '@inertiajs/react';
 import AppShell from '../../Layouts/AppShell';
 
 function Field({ field, value, onChange, disabled }) {
@@ -62,7 +62,14 @@ function FormCard({ item }) {
         <li className="rounded-lg border bg-white p-4">
             <div className="mb-1 flex flex-wrap items-baseline justify-between gap-2">
                 <h2 className="text-sm font-semibold">{item.title}</h2>
-                {item.answered_at && <span className="text-xs text-green-700">Answered</span>}
+                    {item.answered_at && !item.awaiting_confirmation && (
+                    <span className="text-xs text-green-700">Answered</span>
+                )}
+                {/* A pupil whose answer is still waiting must be told, or the
+                    form looks finished and nobody chases the parent. */}
+                {item.awaiting_confirmation && (
+                    <span className="text-xs font-semibold text-[#7C2D37]">Waiting for a parent to confirm</span>
+                )}
                 {closed && <span className="text-xs text-gray-500">Closed</span>}
             </div>
             {item.description && <p className="mb-3 text-sm text-gray-700">{item.description}</p>}
@@ -106,10 +113,41 @@ function FormCard({ item }) {
     );
 }
 
-export default function Forms({ forms = [] }) {
+function Pending({ rows }) {
+    return (
+        <section className="mb-6 rounded-lg border border-[#7C2D37] bg-[#FDFBF8] p-4">
+            <h2 className="mb-2 text-sm font-semibold">Waiting for you to confirm</h2>
+            <ul className="grid gap-3">
+                {rows.map((row) => (
+                    <li key={row.response_id} className="rounded border bg-white p-3 text-sm">
+                        <p className="font-medium">{row.form_title}</p>
+                        <p className="text-xs text-gray-600">{row.child_name} answered {row.submitted_at}</p>
+                        <ul className="mt-2 grid gap-0.5 text-xs text-gray-700">
+                            {row.fields.map((f) => {
+                                const v = row.answers[f.key];
+                                return <li key={f.key}>{f.label}: {Array.isArray(v) ? v.join(', ') : (v ?? '—')}</li>;
+                            })}
+                        </ul>
+                        <button
+                            type="button"
+                            className="btn-primary mt-3"
+                            onClick={() => router.post(`/portal/forms/responses/${row.response_id}/confirm`, {}, { preserveScroll: true })}
+                        >
+                            Confirm
+                        </button>
+                    </li>
+                ))}
+            </ul>
+        </section>
+    );
+}
+
+export default function Forms({ forms = [], pending = [] }) {
     return (
         <AppShell title="Sign-ups and surveys">
             <p className="mb-4 text-sm text-gray-600">Forms the school has sent to you.</p>
+
+            {pending.length > 0 && <Pending rows={pending} />}
             {forms.length === 0 && (
                 <p className="rounded-lg border bg-white p-4 text-sm text-gray-600">Nothing to fill in right now.</p>
             )}

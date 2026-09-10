@@ -38,6 +38,7 @@ class SaveFormAction
             'opens_at' => $data['opens_at'] ?? null,
             'closes_at' => $data['closes_at'] ?? null,
             'is_anonymous' => (bool) ($data['is_anonymous'] ?? false),
+            'requires_parent_confirmation' => (bool) ($data['requires_parent_confirmation'] ?? false),
             'is_published' => (bool) ($data['is_published'] ?? false),
         ];
 
@@ -45,11 +46,20 @@ class SaveFormAction
             throw ValidationException::withMessages(['title' => 'A form needs a title.']);
         }
 
+        // An anonymous answer has nobody to confirm for, so the two settings
+        // cannot both be true. Refusing here beats shipping forms that quietly
+        // never become confirmable.
+        if ($attributes['is_anonymous'] && $attributes['requires_parent_confirmation']) {
+            throw ValidationException::withMessages([
+                'requires_parent_confirmation' => 'An anonymous form cannot ask a guardian to confirm.',
+            ]);
+        }
+
         if ($form !== null) {
             // Questions are frozen once anyone has answered: rewording or
             // reordering them would silently change what past answers meant.
             if ($form->responses()->exists()) {
-                unset($attributes['fields'], $attributes['is_anonymous']);
+                unset($attributes['fields'], $attributes['is_anonymous'], $attributes['requires_parent_confirmation']);
             }
 
             $form->update($attributes);

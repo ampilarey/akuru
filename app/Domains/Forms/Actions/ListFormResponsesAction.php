@@ -42,11 +42,18 @@ class ListFormResponsesAction
                 'is_anonymous' => (bool) $form->is_anonymous,
                 'is_open' => $form->isOpen(),
                 'responses' => $responses->count(),
+                'requires_parent_confirmation' => (bool) $form->requires_parent_confirmation,
+                // Counted separately because acting on unconfirmed answers is
+                // the mistake this feature exists to prevent.
+                'confirmed' => $responses->whereNotNull('confirmed_at')->count(),
             ],
             'rows' => $responses->map(fn (FormResponse $row): array => array_filter([
                 'id' => (int) $row->id,
                 'respondent' => $form->is_anonymous ? null : ($names[$row->user_id] ?? 'Unknown'),
                 'submitted_at' => $row->submitted_at?->toIso8601String(),
+                'confirmed_at' => $form->requires_parent_confirmation
+                    ? ($row->confirmed_at?->toIso8601String() ?? '')
+                    : null,
                 'answers' => $row->answers ?? [],
             ], fn ($value): bool => $value !== null))->values(),
         ];

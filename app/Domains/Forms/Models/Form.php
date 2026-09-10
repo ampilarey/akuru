@@ -18,6 +18,7 @@ class Form extends Model
         'opens_at',
         'closes_at',
         'is_anonymous',
+        'requires_parent_confirmation',
         'is_published',
     ];
 
@@ -28,6 +29,7 @@ class Form extends Model
         'opens_at' => 'datetime',
         'closes_at' => 'datetime',
         'is_anonymous' => 'boolean',
+        'requires_parent_confirmation' => 'boolean',
         'is_published' => 'boolean',
     ];
 

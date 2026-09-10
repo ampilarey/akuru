@@ -12,7 +12,7 @@ export default function Index({ forms = [], fieldTypes = [] }) {
     const form = useForm({
         title: '', description: '',
         fields: [{ label: '', type: 'text', options: [], required: false }],
-        target_audience: [], is_anonymous: false, is_published: true,
+        target_audience: [], is_anonymous: false, requires_parent_confirmation: false, is_published: true,
     });
 
     const setField = (i, patch) => form.setData('fields',
@@ -81,6 +81,16 @@ export default function Index({ forms = [], fieldTypes = [] }) {
                             onChange={(e) => form.setData('is_anonymous', e.target.checked)} />
                         Anonymous — no name is recorded, and answers cannot be traced back
                     </label>
+
+                    <label className="flex items-center gap-2 text-sm">
+                        <input type="checkbox" checked={form.data.requires_parent_confirmation}
+                            disabled={form.data.is_anonymous}
+                            onChange={(e) => form.setData('requires_parent_confirmation', e.target.checked)} />
+                        A pupil&apos;s answer needs a parent to confirm it
+                    </label>
+                    {form.errors.requires_parent_confirmation && (
+                        <span className="text-xs text-red-600">{form.errors.requires_parent_confirmation}</span>
+                    )}
 
                     <button type="submit" className="btn-primary justify-self-start" disabled={form.processing}>
                         Save form

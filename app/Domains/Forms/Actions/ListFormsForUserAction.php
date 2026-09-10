@@ -37,7 +37,8 @@ class ListFormsForUserAction
         $mine = FormResponse::query()
             ->whereIn('form_id', $forms->pluck('id'))
             ->where('user_id', $userId)
-            ->pluck('submitted_at', 'form_id');
+            ->get()
+            ->keyBy('form_id');
 
         return $forms
             ->filter(fn (Form $form): bool => $matcher->matches($form->target_audience, $form->target_classes, $context))
@@ -52,7 +53,15 @@ class ListFormsForUserAction
                 // An anonymous form cannot say whether you answered, because it
                 // does not know. Claiming otherwise would be a lie the schema
                 // could not back up.
-                'answered_at' => $form->is_anonymous ? null : $mine->get($form->id)?->toIso8601String(),
+                'answered_at' => $form->is_anonymous
+                    ? null
+                    : $mine->get($form->id)?->submitted_at?->toIso8601String(),
+                'requires_parent_confirmation' => (bool) $form->requires_parent_confirmation,
+                // A pupil whose answer is still waiting must be told: otherwise
+                // the form looks finished to them and nobody chases the parent.
+                'awaiting_confirmation' => (bool) $form->requires_parent_confirmation
+                    && $mine->has($form->id)
+                    && $mine->get($form->id)->confirmed_at === null,
             ])
             ->values();
     }
