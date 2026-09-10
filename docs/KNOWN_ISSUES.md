@@ -45,7 +45,18 @@ a question with a default, so "do nothing" is always a legible choice.
    **≈7½–8½ weeks, and the whole remaining feature backlog.** Default: build
    none of them.
 7. **`docs/APPSHELL_NAV_IA.md`** — accept / accept with edits / reject. The nav
-   wrap is still live. See top-five item 2.
+   wrap is still live. See top-five item 2. Now measured in a browser: ~90
+   links across **eleven rows**, roughly the top quarter of a 1200px viewport,
+   on every page (STATUS §5bv).
+7b. **Bidi alignment on Dhivehi and Arabic screens** (STATUS §5bz). An English
+   sentence on an RTL page renders its full stop at the **front**
+   (`.No exams still in marks entry after the exam date`). One CSS rule fixes
+   it — `unicode-bidi: plaintext` under `[dir="rtl"]`, tested live — but the
+   same rule left-aligns English text, and with ~87% of the UI still English
+   that means nearly every line on every RTL screen. **Correct punctuation and
+   left alignment, or wrong punctuation and right alignment**, until translation
+   catches up and the question disappears. Screenshots of both were captured
+   during the walk; decide from those, not from this description.
 8. **Confirm or reject `docs/migrations/s11-deploy-3-cleanup-proposal.md`.**
 
 **Security and permissions**
