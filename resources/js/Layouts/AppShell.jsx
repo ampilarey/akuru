@@ -131,6 +131,9 @@ export default function AppShell({ title, children }) {
                         <Link href="/academics/attendance" className="text-[#7C2D37] hover:underline">
                             Attendance
                         </Link>
+                        <Link href="/academics/attendance/absences" className="text-[#7C2D37] hover:underline">
+                            Absences
+                        </Link>
                         <Link href="/portal/attendance" className="text-[#7C2D37] hover:underline">
                             My attendance
                         </Link>

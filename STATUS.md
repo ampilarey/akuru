@@ -2310,6 +2310,46 @@ turned out to be reachable from here after all. What was actually done:
 - **Still owed:** the browser walk. Twenty-five merged slices are unexecuted on
   `test.akuru.edu.mv`.
 
+## 5ay. E10b — who is not in today (2026-09-10)
+
+- **The question a school office asks at 08:30 and could not ask here.**
+  Attendance is recorded per lesson; absence notes sit in a separate review
+  queue. Answering "which children are missing, and which of those has nobody
+  heard about" meant reading two screens and doing the join in your head.
+- **The join is the feature.** An absence with a note is administration. An
+  absence with **no** note is a telephone call, and it was the one thing neither
+  existing screen made visible. The list sorts unexplained first — it is a call
+  sheet, not a report — and the row is tinted, because a list that makes you
+  read a column to find the urgent ones is a list you stop reading.
+- **One child, however many periods.** Marks are per lesson, so a child absent
+  for four periods was four rows. Collapsing that is the difference between a
+  list you act on and a list you scroll; the periods are still listed.
+- **A pending note counts as an explanation.** Somebody told the school; the
+  office should not be telephoning them while it waits for a review. A
+  **rejected** note does not — that is what rejecting it meant. Where both an
+  approved and a pending note exist, the approved one is shown.
+- **Excused is included, late is not.** An excused child is still a child who is
+  not there, which is what the list is for. Late is a different problem and E10a
+  already reports it.
+- **No new tables.** Everything read already existed; this is the read that was
+  missing. Same permission pair as the attendance screens it draws from, since
+  it is that data rearranged.
+- **Tests: 15**, mostly about the note semantics — the four-period collapse,
+  unexplained flagged, pending counts, rejected does not, approved outranks
+  pending, a note for another day does not count, a note for another child does
+  not leak, present/late excluded, excused included, unexplained sorted first,
+  the class and unexplained-only filters, the render, the 403, the CSV, today's
+  default, and an empty day.
+- **Three fixture faults caught locally, all mine.** `AttendanceSource` has no
+  `manual` case; `class_attendance.marked_by` has no default; and the unique
+  index is on **`period_key`**, not `period_id` — `RecordClassAttendanceAction`
+  sets it and a raw fixture must too, or four periods collide at the default 0.
+  Worth recording: writing that table directly bypasses an invariant the real
+  writer maintains.
+- **Full suite run locally against MySQL: 975 tests, zero failures.**
+- **Still owed:** the browser walk. Twenty-six merged slices are unexecuted on
+  `test.akuru.edu.mv`.
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**.
