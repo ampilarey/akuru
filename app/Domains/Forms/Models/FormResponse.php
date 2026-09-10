@@ -13,11 +13,14 @@ class FormResponse extends Model
         'academic_year_id',
         'answers',
         'submitted_at',
+        'confirmed_at',
+        'confirmed_by_user_id',
     ];
 
     protected $casts = [
         'answers' => 'array',
         'submitted_at' => 'datetime',
+        'confirmed_at' => 'datetime',
     ];
 
     public function form(): BelongsTo

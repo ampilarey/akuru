@@ -173,6 +173,7 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
     // Sign-up forms (E6a) — families answer, staff read the results.
     Route::get('/portal/forms', [PortalFormController::class, 'index'])->name('portal.forms');
     Route::post('/portal/forms/{form}/submit', [PortalFormController::class, 'submit'])->name('portal.forms.submit')->whereNumber('form');
+    Route::post('/portal/forms/responses/{response}/confirm', [PortalFormController::class, 'confirm'])->name('portal.forms.confirm')->whereNumber('response');
     Route::get('/forms', [FormAdminController::class, 'index'])->name('forms.index');
     Route::post('/forms', [FormAdminController::class, 'store'])->name('forms.store');
     Route::put('/forms/{form}', [FormAdminController::class, 'update'])->name('forms.update')->whereNumber('form');

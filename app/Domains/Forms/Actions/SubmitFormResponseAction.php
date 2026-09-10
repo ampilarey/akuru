@@ -59,6 +59,11 @@ class SubmitFormResponseAction
                 'academic_year_id' => $form->academic_year_id,
                 'answers' => $clean,
                 'submitted_at' => now(),
+                // Changing the answer withdraws any confirmation: carrying a
+                // guardian's approval across to something they never saw is
+                // exactly the failure E6b exists to prevent.
+                'confirmed_at' => null,
+                'confirmed_by_user_id' => null,
             ],
         );
     }
