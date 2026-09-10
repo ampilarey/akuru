@@ -4,7 +4,7 @@
     "name": "index"
   },
   "resources/css/app.css": {
-    "file": "assets/app-B1Lt3nVI.css",
+    "file": "assets/app-1sFDfc4V.css",
     "src": "resources/css/app.css",
     "isEntry": true,
     "names": [
@@ -21,7 +21,7 @@
     ]
   },
   "resources/js/app.jsx": {
-    "file": "assets/app-Da0hZi5x.js",
+    "file": "assets/app-Dv5bqBTo.js",
     "name": "app",
     "src": "resources/js/app.jsx",
     "isEntry": true,

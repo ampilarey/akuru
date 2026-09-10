@@ -5,9 +5,12 @@ namespace App\Domains\People\Http\Controllers;
 use App\Domains\Academics\Actions\ListBehaviorRecordsAction;
 use App\Domains\People\Actions\AttachGuardianAction;
 use App\Domains\People\Actions\DetachGuardianAction;
+use App\Domains\People\Actions\ListEmergencyContactsAction;
 use App\Domains\People\Actions\ListStudentFormOptionsAction;
 use App\Domains\People\Actions\ListStudentsAction;
+use App\Domains\People\Actions\RemoveEmergencyContactAction;
 use App\Domains\People\Actions\SaveCustomFieldValuesAction;
+use App\Domains\People\Actions\SaveEmergencyContactAction;
 use App\Domains\People\Actions\SaveStudentAction;
 use App\Domains\People\Enums\ConsentPersonType;
 use App\Domains\People\Enums\ConsentType;
@@ -17,6 +20,7 @@ use App\Domains\People\Enums\StudentStatus;
 use App\Domains\People\Models\Consent;
 use App\Domains\People\Models\CustomFieldDefinition;
 use App\Domains\People\Models\CustomFieldValue;
+use App\Domains\People\Models\EmergencyContact;
 use App\Domains\People\Models\ParentGuardian;
 use App\Domains\People\Models\Student;
 use App\Http\Controllers\Controller;
@@ -199,8 +203,48 @@ class StudentDirectoryController extends Controller
                     'revoked_at' => $consent->revoked_at?->toDateTimeString(),
                     'source' => $consent->source->value,
                 ]),
+            // Loaded on this page since August and dropped before serialising:
+            // the query ran on every view and the answer reached nobody.
+            'emergencyContacts' => app(ListEmergencyContactsAction::class)->execute((int) $student->id),
             'documents' => [],
             'behaviorRecords' => app(ListBehaviorRecordsAction::class)->execute(['student_id' => $student->id]),
+        ]);
+    }
+
+    public function storeEmergencyContact(Request $request, Student $student): RedirectResponse
+    {
+        app(SaveEmergencyContactAction::class)
+            ->execute((int) $student->id, $this->validatedContact($request));
+
+        return back()->with('success', 'Emergency contact saved.');
+    }
+
+    public function updateEmergencyContact(Request $request, Student $student, EmergencyContact $contact): RedirectResponse
+    {
+        app(SaveEmergencyContactAction::class)
+            ->execute((int) $student->id, $this->validatedContact($request), $contact);
+
+        return back()->with('success', 'Emergency contact updated.');
+    }
+
+    public function destroyEmergencyContact(Student $student, EmergencyContact $contact): RedirectResponse
+    {
+        app(RemoveEmergencyContactAction::class)->execute((int) $student->id, $contact);
+
+        return back()->with('success', 'Emergency contact removed.');
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function validatedContact(Request $request): array
+    {
+        return $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'phone' => ['required', 'string', 'max:255'],
+            'relationship' => ['nullable', 'string', 'max:255'],
+            'priority' => ['sometimes', 'integer', 'min:1', 'max:255'],
+            'notes' => ['nullable', 'string', 'max:2000'],
         ]);
     }
 

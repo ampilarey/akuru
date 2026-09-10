@@ -558,6 +558,11 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::put('students/{student}/custom-fields', [StudentDirectoryController::class, 'updateCustomFields'])->name('people.students.custom-fields.update');
         Route::post('students/{student}/guardians', [StudentDirectoryController::class, 'attachGuardian'])->name('people.students.guardians.attach');
         Route::delete('students/{student}/guardians/{guardian}', [StudentDirectoryController::class, 'detachGuardian'])->name('people.students.guardians.detach');
+        // Emergency contacts: the table shipped in August and nothing has ever
+        // written to it or read it.
+        Route::post('students/{student}/emergency-contacts', [StudentDirectoryController::class, 'storeEmergencyContact'])->name('people.students.emergency-contacts.store');
+        Route::put('students/{student}/emergency-contacts/{contact}', [StudentDirectoryController::class, 'updateEmergencyContact'])->name('people.students.emergency-contacts.update')->whereNumber('contact');
+        Route::delete('students/{student}/emergency-contacts/{contact}', [StudentDirectoryController::class, 'destroyEmergencyContact'])->name('people.students.emergency-contacts.destroy')->whereNumber('contact');
         Route::post('students/{student}/consents', [StudentConsentController::class, 'store'])->name('people.students.consents.store');
 
         Route::get('staff', [StaffDirectoryController::class, 'index'])->name('people.staff.index');

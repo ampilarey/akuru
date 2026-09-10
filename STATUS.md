@@ -2350,6 +2350,50 @@ turned out to be reachable from here after all. What was actually done:
 - **Still owed:** the browser walk. Twenty-six merged slices are unexecuted on
   `test.akuru.edu.mv`.
 
+## 5az. Emergency contacts — who to ring (2026-09-10)
+
+- **The sharpest audit finding of the session.** `emergency_contacts` shipped in
+  `s11a_unified_student_schema` in August. `EmergencyContact` appeared in
+  exactly two files — its own model and a relation on `Student`. **Zero**
+  controllers, actions, routes, UI or tests. There was no way to enter an
+  emergency contact and no way to see one.
+- **It was worse than unused.** `StudentDirectoryController::show` already
+  eager-loads `emergencyContacts` and then drops the relation before
+  serialising, so the query has been running on every student page view since
+  August and the answer reached nobody.
+- **Found by asking a different question.** After eight slices of "the plan says
+  X, the code says Y", I stopped reading the plan and grepped for domain models
+  with no controller, action or JSX reference. `EmergencyContact` came back with
+  zero of each. That check is cheap and worth repeating — it is the same defect
+  family as E4, E22 and E11b, just further along: not merely unread, unwritten.
+- **Priority means "ring first", so the list is ordered by it.** A list in
+  insertion order is a list you have to think about while a child is hurt. A new
+  contact defaults to priority 1 rather than 0, so the column keeps meaning what
+  it says.
+- **Name and phone are both required.** A contact you cannot ring is not a
+  contact; an unnamed number tells whoever dials it nothing about who answers.
+- **Every write is checked against the student it belongs to.** Editing or
+  deleting by id through another child's page would rewrite the wrong family's
+  details, so both actions verify ownership rather than trusting the route.
+- **Surfaced where it is needed, not only where it is stored.** E10b hands the
+  office a list of children nobody has heard from; this puts the number on that
+  row, as a `tel:` link, with "+N more" so nobody assumes one contact is all
+  there is. Where there is none it says **"No contact on file"** rather than
+  leaving a blank the eye skips.
+- **Rule 3 held across that seam.** Academics asks People through
+  `ListEmergencyContactsAction::firstForStudents()`, arrays out — no
+  `People\Models` import, no new baseline entry.
+- **Tests: 12** — the record, both refusals, priority ordering, cross-student
+  edit and delete refused, the bulk "who to ring" read including the `others`
+  count and a student with no contact, the absence-list join in both directions,
+  and the HTTP save/show/remove walk.
+- **Full suite run locally against MySQL: 987 tests, zero failures.**
+- **Still owed:** the browser walk. Twenty-seven merged slices are unexecuted on
+  `test.akuru.edu.mv`. **This one deserves a data question too:** the table is
+  empty, so the feature is correct and useless until somebody enters contacts.
+  Whether they come from the existing guardian records, an import, or a term of
+  data entry is an owner decision, not a code one.
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**.

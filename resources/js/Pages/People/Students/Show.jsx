@@ -6,6 +6,7 @@ import CustomFields from '../../../Components/CustomFields';
 const tabs = [
     { id: 'overview', label: 'Overview' },
     { id: 'guardians', label: 'Guardians' },
+    { id: 'emergency', label: 'Emergency contacts' },
     { id: 'documents', label: 'Documents' },
     { id: 'medical', label: 'Medical' },
     { id: 'history', label: 'Status history' },
@@ -19,6 +20,7 @@ export default function Show({
     canViewSensitive,
     customFields,
     guardians,
+    emergencyContacts = [],
     availableGuardians,
     relationships,
     statusHistory,
@@ -65,6 +67,13 @@ export default function Show({
         is_primary: false,
         can_pickup: true,
         financial_responsible: false,
+    });
+
+    const contactForm = useForm({
+        name: '',
+        phone: '',
+        relationship: '',
+        priority: 1,
     });
 
     const saveFields = (e) => {
@@ -244,6 +253,86 @@ export default function Show({
                                                 onClick={() => router.delete(`/people/students/${student.id}/guardians/${guardian.id}`)}
                                             >
                                                 Detach
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            )}
+
+            {tab === 'emergency' && (
+                <section className="grid gap-4">
+                    <p className="text-sm text-gray-600">
+                        Who to ring when this child is hurt or unwell. Priority 1 is called
+                        first, and these numbers appear beside an unexplained absence.
+                    </p>
+                    <form
+                        onSubmit={(e) => {
+                            e.preventDefault();
+                            contactForm.post(`/people/students/${student.id}/emergency-contacts`, {
+                                preserveScroll: true,
+                                onSuccess: () => contactForm.reset(),
+                            });
+                        }}
+                        className="grid gap-3 rounded-lg border bg-white p-4 md:grid-cols-5"
+                    >
+                        <label className="block text-sm">
+                            <span className="mb-1 block text-gray-600">Name</span>
+                            <input className="form-input w-full" value={contactForm.data.name} onChange={(e) => contactForm.setData('name', e.target.value)} />
+                            {contactForm.errors.name && <span className="text-xs text-red-600">{contactForm.errors.name}</span>}
+                        </label>
+                        <label className="block text-sm">
+                            <span className="mb-1 block text-gray-600">Phone</span>
+                            <input className="form-input w-full" value={contactForm.data.phone} onChange={(e) => contactForm.setData('phone', e.target.value)} />
+                            {contactForm.errors.phone && <span className="text-xs text-red-600">{contactForm.errors.phone}</span>}
+                        </label>
+                        <label className="block text-sm">
+                            <span className="mb-1 block text-gray-600">Relationship</span>
+                            <input className="form-input w-full" value={contactForm.data.relationship} onChange={(e) => contactForm.setData('relationship', e.target.value)} />
+                        </label>
+                        <label className="block text-sm">
+                            <span className="mb-1 block text-gray-600">Priority</span>
+                            <input type="number" min="1" className="form-input w-full" value={contactForm.data.priority} onChange={(e) => contactForm.setData('priority', e.target.value)} />
+                        </label>
+                        <div className="flex items-end">
+                            <button type="submit" className="btn-primary" disabled={contactForm.processing}>Add contact</button>
+                        </div>
+                    </form>
+                    <div className="overflow-x-auto rounded-lg border bg-white">
+                        <table className="min-w-full text-sm">
+                            <thead className="bg-[#F3EBE0] text-left">
+                                <tr>
+                                    <th className="px-3 py-2">#</th>
+                                    <th className="px-3 py-2">Name</th>
+                                    <th className="px-3 py-2">Phone</th>
+                                    <th className="px-3 py-2">Relationship</th>
+                                    <th className="px-3 py-2"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {emergencyContacts.length === 0 && (
+                                    <tr><td className="px-3 py-4 text-gray-500" colSpan={5}>
+                                        No emergency contact on file. If this child is hurt, nobody knows who to ring.
+                                    </td></tr>
+                                )}
+                                {emergencyContacts.map((contact) => (
+                                    <tr key={contact.id} className="border-t">
+                                        <td className="px-3 py-2">{contact.priority}</td>
+                                        <td className="px-3 py-2">{contact.name}</td>
+                                        <td className="px-3 py-2">
+                                            <a className="text-[#7C2D37] underline" href={`tel:${contact.phone}`}>{contact.phone}</a>
+                                        </td>
+                                        <td className="px-3 py-2">{contact.relationship || '—'}</td>
+                                        <td className="px-3 py-2 text-right">
+                                            <button
+                                                type="button"
+                                                className="text-red-700 hover:underline"
+                                                onClick={() => router.delete(`/people/students/${student.id}/emergency-contacts/${contact.id}`, { preserveScroll: true })}
+                                            >
+                                                Remove
                                             </button>
                                         </td>
                                     </tr>

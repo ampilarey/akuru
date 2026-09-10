@@ -5,6 +5,7 @@ namespace App\Domains\Academics\Actions;
 use App\Domains\Academics\Enums\AttendanceStatus;
 use App\Domains\Academics\Models\AbsenceNote;
 use App\Domains\Academics\Models\ClassAttendance;
+use App\Domains\People\Actions\ListEmergencyContactsAction;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -67,10 +68,14 @@ class ListAbsencesForDayAction
             ->keyBy('id');
 
         $notes = $this->notesFor($studentIds->all(), $date);
+        // Asked of People through an Action, arrays out — Academics may not
+        // import People\Models (rule 3). The office ringing home about an
+        // unexplained absence needs the number on the row, not one screen away.
+        $contacts = app(ListEmergencyContactsAction::class)->firstForStudents($studentIds->all());
 
         $rows = $marks
             ->groupBy('student_id')
-            ->map(function (Collection $studentMarks, $studentId) use ($students, $classes, $periods, $notes): array {
+            ->map(function (Collection $studentMarks, $studentId) use ($students, $classes, $periods, $notes, $contacts): array {
                 $first = $studentMarks->first();
                 $student = $students[$studentId] ?? null;
                 $class = $classes[$first->class_id] ?? null;
@@ -98,6 +103,7 @@ class ListAbsencesForDayAction
                     'note_reason' => $note['reason'] ?? null,
                     // The whole point of the join.
                     'is_unexplained' => $note === null,
+                    'emergency_contact' => $contacts->get((int) $studentId),
                 ];
             })
             ->values();
