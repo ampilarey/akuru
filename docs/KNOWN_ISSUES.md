@@ -10,10 +10,12 @@ Re-checked 2026-08-26 against merged `main` and Round 3 (`docs/PILOT_REHEARSAL.m
 ## Top five (remaining)
 
 1. **Staging staff login** — seed passwords 302 back to login; no SSH from this environment. Blocks any judgement that `test.akuru.edu.mv` is a school.
+1b. **Nothing merged since 2026-08 has been walked in a browser** — 30+ slices are CI-green and unexecuted on `test.akuru.edu.mv`. This is now the largest single gap between "the code works" and "the school can use it".
 2. **AppShell nav IA** — **proposed, awaiting decision.** 83 wrapping `<Link href=` in `AppShell.jsx` (74 at the IA proposal, plus Glossary, admin Events, portal Event signup, Certificates, Completions, Performance, Home, Meetings, Overview). C3 extends `/catalog/reviews` (already linked). D1 adds Home. D2 adds Meetings. D3 adds Overview. Proposal in `docs/APPSHELL_NAV_IA.md` (PR #98): grouped by role and frequency. **Do not implement** until Accept / Accept with edits / Reject. The wrap is still live.
 3. **Parent notified column shows — on excused rows** — column exists (#86); SMS body is not in the portal.
-4. **Shared Add-term form on every year card** — one `termForm` instance; typing on Extra fills other cards.
-5. **Exam schedule form defaults wander** — Extra / Term 2 / Arabic Beginners vs Pilot Grade 5 A (Round 2 step 5).
+4. ~~Shared Add-term form on every year card~~ — **fixed** (#13).
+5. ~~Exam schedule form defaults wander~~ — **fixed** (#19), along with the
+   report-card publish default (#21).
 
 ---
 
@@ -63,7 +65,11 @@ Re-checked 2026-08-26 against merged `main` and Round 3 (`docs/PILOT_REHEARSAL.m
 
 ### 8. Report card generate needs a template + queue worker
 
-**Severity:** blocked task if either is missing. Round 1 step 5: generate without template errors; `QUEUE_CONNECTION=database` leaves cards draft without `queue:listen`.
+**Half fixed, half operator.** Generating with no applicable template now raises
+a named validation error ("No active report card template applies to this
+class.") rather than blowing up — `GenerateReportCardsAction::resolveTemplate`.
+The queue half is unchanged and is **operator config**: `QUEUE_CONNECTION=database`
+still leaves cards draft without a `queue:listen`/`queue:work` worker running.
 
 ### 9. Staging unify-verify / Deploy 3 / Track B
 
@@ -87,7 +93,9 @@ Re-checked 2026-08-26 against merged `main` and Round 3 (`docs/PILOT_REHEARSAL.m
 
 ### 13. Shared Add-term form on every year card
 
-**Severity:** confusion. One `termForm` instance; typing on Extra fills other cards (Round 1 step 1; still in R2). Not re-walked as fixed in Round 3.
+**Fixed** — each year card owns its own `useForm` via a `YearCard` component, so
+typing on one year no longer fills the others and "Add term" is unambiguous
+about which year it hits. See **Fixed on main**.
 
 ### 14. Weights UI is a JSON blob of type ids → 0
 
@@ -111,7 +119,11 @@ Re-checked 2026-08-26 against merged `main` and Round 3 (`docs/PILOT_REHEARSAL.m
 
 ### 19. Exam schedule form defaults wander
 
-**Severity:** confusion. Extra / Term 2 / Arabic Beginners vs Pilot Grade 5 A (Round 2 step 5). Not re-fixed in #86–#92.
+**Fixed** — the term and class dropdowns are scoped to the form's own selected
+year, and the year defaults to the one being viewed, else the active one. The
+lists spanned every year, which is why the defaults could land on another
+year's term. Changing the year resets a term or class that no longer belongs to
+it. See **Fixed on main**.
 
 ---
 
@@ -119,11 +131,15 @@ Re-checked 2026-08-26 against merged `main` and Round 3 (`docs/PILOT_REHEARSAL.m
 
 ### 20. Create-year description in `useForm` but no field; unlabelled date inputs; copyright 2025 on login
 
-**Evidence:** Round 1 step 1.
+**Fixed** — the description field exists (the controller had validated it since
+the screen shipped), every date input on the years screen is labelled, and no
+`2025` copyright remains in any view. See **Fixed on main**.
 
 ### 21. Report-card publish control defaulted to Term 2 while the table is Term 1
 
-**Evidence:** Round 2 step 5.
+**Fixed** — generate and publish default to the term being viewed, else the
+**active** term, rather than whichever term sorts first across all years. Same
+defect family as #19. See **Fixed on main**.
 
 ### 22. Blade counters (28 students / 3 teachers) are not “Grade 5 A”
 

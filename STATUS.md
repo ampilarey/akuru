@@ -2511,6 +2511,48 @@ turned out to be reachable from here after all. What was actually done:
   reader, Actions with no caller) have produced four real defects between them
   and are worth re-running after any large slice.
 
+## 5bd. The known-issues UI backlog (2026-09-10)
+
+Asked to "complete all coding", I worked `docs/KNOWN_ISSUES.md` rather than
+inventing scope. Four entries closed, one half-closed, and the rest are
+genuinely not coding.
+
+- **#13 Shared Add-term form.** One `useForm` was shared by every year card, so
+  typing a term name on one year filled the boxes on all of them and "Add term"
+  never made clear which year it would hit. Each card now owns its form
+  (`YearCard`). Empty years say "No terms yet" instead of showing nothing.
+- **#19 Exam schedule defaults wander.** The term and class dropdowns listed
+  **every year's** rows and defaulted to the first, so the form opened on
+  "Extra / Term 2 / Arabic Beginners" while the table below showed Pilot Grade
+  5 A. Both dropdowns are now scoped to the form's own selected year; the year
+  defaults to the one being viewed, else the **active** one; and changing the
+  year clears a term or class that no longer belongs to it.
+- **#21 Report-card publish defaulted to Term 2 with Term 1 on screen.** Same
+  family. Generate and publish now default to the term being viewed, else the
+  active term.
+- **#20 Cosmetics.** The create-year form carried a `description` key with
+  nowhere to type it — the controller had validated it since the screen shipped
+  — so the field exists now. Every date input on that screen is labelled. No
+  `2025` copyright remains anywhere in `resources/`.
+- **#8 Report card without a template — half fixed, and it was already done.**
+  `resolveTemplate` raises a named validation error rather than blowing up. I
+  checked before changing anything and left it alone. The queue half is
+  operator config, not code.
+- **Tests: 2 new**, pinning the payload the pages reason over — every term and
+  class must carry its `academic_year_id` and `status`, or scoping the dropdowns
+  by year is impossible in the first place. The page-level behaviour is React
+  and is honestly not covered by these; it needs the browser walk.
+- **Full suite run locally against MySQL: 1014 tests, zero failures.**
+
+**What is left in KNOWN_ISSUES is not coding**, and should not be recorded as
+if it were: staging staff login (#1, needs SSH), the unification staging gate
+(#5), Deploy 3 / Track B (#9, marked "do not execute"), the AppShell nav IA
+(#11, marked "do not implement until Accept / Reject"), and the report-card
+queue worker (#8, operator config). Three smaller entries (#15 teacher grid
+statuses, #16 taught-summary vs plan topic, #22 Blade counters) are judgement
+calls about intended behaviour rather than defects, and I have not guessed at
+them.
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**.

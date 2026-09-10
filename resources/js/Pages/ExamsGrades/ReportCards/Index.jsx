@@ -2,14 +2,24 @@ import { router, useForm } from '@inertiajs/react';
 import AppShell from '../../../Layouts/AppShell';
 
 export default function Index({ classes, terms, cards, unpublished, classId, termId }) {
+    // The term being viewed, else the one actually running, else the first.
+    // Defaulting straight to `terms[0]` opened the publish control on Term 2
+    // while the table below listed Term 1 — the control and the evidence for
+    // using it disagreed.
+    const startTerm = termId
+        || terms.find((term) => term.status === 'active')?.id
+        || terms[0]?.id
+        || '';
+    const startClass = classId || classes[0]?.id || '';
+
     const generate = useForm({
-        class_id: classId || classes[0]?.id || '',
-        term_id: termId || terms[0]?.id || '',
+        class_id: startClass,
+        term_id: startTerm,
         locale: 'en',
     });
     const publish = useForm({
-        class_id: classId || classes[0]?.id || '',
-        term_id: termId || terms[0]?.id || '',
+        class_id: startClass,
+        term_id: startTerm,
     });
     const comment = useForm({
         report_card_id: cards[0]?.id || '',
