@@ -2,12 +2,11 @@
 
 namespace App\Domains\Forms\Actions;
 
-use App\Domains\Academics\Enums\ClassStudentStatus;
+use App\Domains\Academics\Actions\ListStudentIdsOnClassesAction;
 use App\Domains\Forms\Models\Form;
 use App\Domains\People\Actions\GuardianCanAccessStudentAction;
 use App\Domains\People\Actions\ListGuardianChildrenAction;
 use App\Domains\People\Actions\ResolveStudentForUserAction;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 /**
@@ -85,23 +84,21 @@ class ResolveResponseStudentAction
             return $children->pluck('id')->map(fn ($id): int => (int) $id)->values()->all();
         }
 
-        // Asked of the roster directly, by student id.
+        // Asked of Academics by student id, through an Action.
         //
-        // The first version routed student → user account → audience context,
-        // which silently matched nothing: ListGuardianChildrenAction does not
-        // select `user_id`, so every child resolved as user 0. An indirection
-        // that degrades to "no match" rather than failing loudly is worth
-        // removing even where it would have worked.
-        $onTargetClasses = DB::table('class_student')
-            ->whereIn('student_id', $children->pluck('id'))
-            ->whereIn('class_id', $targetClasses)
-            ->where('status', ClassStudentStatus::Active->value)
-            ->pluck('student_id')
-            ->map(fn ($id): int => (int) $id)
-            ->unique();
+        // Two earlier attempts were wrong in different ways. The first routed
+        // student → user account → audience context, which silently matched
+        // nothing because ListGuardianChildrenAction does not select `user_id`.
+        // The second queried `class_student` here and imported Academics'
+        // status enum — and an enum is not a layer rule 2 allows across a
+        // domain boundary.
+        $onTargetClasses = app(ListStudentIdsOnClassesAction::class)->execute(
+            $children->pluck('id')->map(fn ($id): int => (int) $id)->all(),
+            $targetClasses,
+        );
 
         return $children
-            ->filter(fn ($child): bool => $onTargetClasses->contains((int) $child->id))
+            ->filter(fn ($child): bool => in_array((int) $child->id, $onTargetClasses, true))
             ->pluck('id')
             ->map(fn ($id): int => (int) $id)
             ->values()
