@@ -31,7 +31,7 @@
                 <p style="font-size:.9rem;font-weight:700;color:{{ $smsConfigured ? '#065F46' : '#92400E' }};margin:.15rem 0 0">
                     {{ $smsConfigured ? 'Configured' : 'Not Configured' }}
                 </p>
-                <p style="font-size:.7rem;color:#9CA3AF;margin:.1rem 0 0">Check .env SMS_GATEWAY_URL</p>
+                <p style="font-size:.7rem;color:#9CA3AF;margin:.1rem 0 0">Check .env SMS_GATEWAY_API_KEY</p>
             </div>
         </div>
         <div style="background:white;border-radius:.875rem;border:1px solid #E5E7EB;padding:1.1rem;display:flex;align-items:center;gap:.75rem">
@@ -41,7 +41,14 @@
                 <p style="font-size:.9rem;font-weight:700;color:{{ $bmlConfigured ? '#065F46' : '#92400E' }};margin:.15rem 0 0">
                     {{ $bmlConfigured ? 'Configured' : 'Not Configured' }}
                 </p>
-                <p style="font-size:.7rem;color:#9CA3AF;margin:.1rem 0 0">Check .env BML_API_KEY</p>
+                @if ($bmlConfigured && ! $bmlWebhookReady)
+                    <p style="font-size:.7rem;color:#92400E;font-weight:700;margin:.1rem 0 0">
+                        ⚠️ No webhook secret — payments will not confirm
+                    </p>
+                    <p style="font-size:.7rem;color:#9CA3AF;margin:.1rem 0 0">Set .env BML_WEBHOOK_SECRET</p>
+                @else
+                    <p style="font-size:.7rem;color:#9CA3AF;margin:.1rem 0 0">Check .env BML_API_KEY</p>
+                @endif
             </div>
         </div>
         <div style="background:white;border-radius:.875rem;border:1px solid #E5E7EB;padding:1.1rem;display:flex;align-items:center;gap:.75rem">
