@@ -2,12 +2,14 @@
 
 namespace App\Domains\Academics\Http\Controllers;
 
+use App\Domains\Academics\Actions\AttachMaterialsToLessonAction;
 use App\Domains\Academics\Actions\ExplainEmptyTodayRegistersAction;
 use App\Domains\Academics\Actions\GenerateExpectedRegistersAction;
 use App\Domains\Academics\Actions\ListClassAttendanceAction;
 use App\Domains\Academics\Actions\ListClassRosterAction;
 use App\Domains\Academics\Actions\ListPlanTopicsForRegisterAction;
 use App\Domains\Academics\Actions\ListTeacherTodayRegistersAction;
+use App\Domains\Academics\Actions\ListTeachingMaterialsAction;
 use App\Domains\Academics\Actions\RecordRegisterAttendanceAction;
 use App\Domains\Academics\Actions\ResolveAttendanceSettingsAction;
 use App\Domains\Academics\Actions\ResolveNextLessonDateForClassAction;
@@ -85,6 +87,10 @@ class TeacherRegisterController extends Controller
 
         $settings = app(ResolveAttendanceSettingsAction::class)->execute();
         $perLesson = $settings['mode'] === AttendanceMode::PerLesson;
+        $attached = $lessonLog->teachingMaterials()
+            ->pluck('teaching_materials.id')
+            ->map(fn ($id): int => (int) $id)
+            ->all();
 
         return Inertia::render('Academics/Registers/Show', [
             'register' => app(ListTeacherTodayRegistersAction::class)->serialize(collect([$lessonLog]))->first(),
@@ -99,7 +105,17 @@ class TeacherRegisterController extends Controller
                 $lessonLog->subject_id ? (int) $lessonLog->subject_id : null,
                 $lessonLog->date?->toDateString() ?? now()->toDateString(),
             ),
+            // The legacy free-text column, still shown (rule 9) …
             'materials' => is_array($lessonLog->materials) ? implode(', ', $lessonLog->materials) : '',
+            // … alongside the structured library (E13a). The picker syncs, so
+            // it must show everything already attached — narrowing it by
+            // subject alone would silently unattach on the next save.
+            'attachedMaterials' => $attached,
+            'materialLibrary' => app(ListTeachingMaterialsAction::class)->execute([
+                'subject_id' => $lessonLog->subject_id,
+                'include_general' => true,
+                'include_ids' => $attached,
+            ]),
             'notes' => $lessonLog->notes,
             'canSubmit' => $this->canSubmit($request, $lessonLog),
             'attendanceMode' => $settings['mode']->value,
@@ -125,6 +141,8 @@ class TeacherRegisterController extends Controller
             'homework' => ['nullable', 'string', 'max:5000'],
             'homework_due_date' => ['nullable', 'date'],
             'materials' => ['nullable'],
+            'material_ids' => ['nullable', 'array'],
+            'material_ids.*' => ['integer'],
             'notes' => ['nullable', 'string', 'max:2000'],
             'attendance' => ['nullable', 'array'],
             'attendance.*.student_id' => ['required_with:attendance', 'integer'],
@@ -138,6 +156,15 @@ class TeacherRegisterController extends Controller
             (int) $request->user()->id,
             (bool) $request->user()?->can('registers.manage'),
         );
+
+        if (array_key_exists('material_ids', $data)) {
+            app(AttachMaterialsToLessonAction::class)->execute(
+                $log,
+                $data['material_ids'] ?? [],
+                (int) $request->user()->id,
+                (bool) $request->user()?->can('registers.manage'),
+            );
+        }
 
         if (! empty($data['attendance'])) {
             abort_unless($request->user()?->can('mark_attendance') || $request->user()?->can('registers.manage'), 403);
