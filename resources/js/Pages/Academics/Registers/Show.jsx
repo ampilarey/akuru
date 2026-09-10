@@ -19,6 +19,8 @@ export default function Show({
     homeworkDueDate = null,
     nextLessonDate = null,
     materials,
+    attachedMaterials = [],
+    materialLibrary = [],
     notes,
     canSubmit,
     attendanceMode = 'per_lesson',
@@ -41,6 +43,9 @@ export default function Show({
         // subject — never "tomorrow", which lands on days with no lesson.
         homework_due_date: homeworkDueDate || nextLessonDate || '',
         materials: materials || '',
+        // The structured library (E13a). The free-text field above is the
+        // legacy one and still shown, so old registers keep reading correctly.
+        material_ids: attachedMaterials.map((id) => String(id)),
         notes: notes || '',
     });
     const unlock = useForm({ reason: '' });
@@ -125,6 +130,48 @@ export default function Show({
                         disabled={!canSubmit}
                     />
                 </Field>
+                <div>
+                    <p className="mb-2 text-sm text-gray-600">
+                        From the library
+                        {' · '}
+                        <Link href="/academics/materials" className="text-[#7C2D37] underline">Manage materials</Link>
+                    </p>
+                    {materialLibrary.length === 0 ? (
+                        <p className="text-xs text-gray-500">
+                            Nothing saved for this subject yet. Write a material once and it is reusable in every lesson.
+                        </p>
+                    ) : (
+                        <div className="grid gap-1 md:grid-cols-2">
+                            {materialLibrary.map((material) => {
+                                const id = String(material.id);
+                                const checked = form.data.material_ids.includes(id);
+
+                                return (
+                                    <label key={material.id} className="flex items-start gap-2 text-sm">
+                                        <input
+                                            type="checkbox"
+                                            className="mt-1"
+                                            checked={checked}
+                                            disabled={!canSubmit}
+                                            onChange={(e) => form.setData(
+                                                'material_ids',
+                                                e.target.checked
+                                                    ? [...form.data.material_ids, id]
+                                                    : form.data.material_ids.filter((value) => value !== id),
+                                            )}
+                                        />
+                                        <span>
+                                            {material.title}
+                                            {material.tags.length > 0 && (
+                                                <span className="text-xs text-gray-500"> · {material.tags.join(', ')}</span>
+                                            )}
+                                        </span>
+                                    </label>
+                                );
+                            })}
+                        </div>
+                    )}
+                </div>
                 <Field label="Notes">
                     <input
                         className="form-input w-full"

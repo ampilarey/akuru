@@ -18,6 +18,7 @@ use App\Domains\Academics\Http\Controllers\RoomDirectoryController;
 use App\Domains\Academics\Http\Controllers\SchoolRequestController;
 use App\Domains\Academics\Http\Controllers\SubstitutionRequestController;
 use App\Domains\Academics\Http\Controllers\TeacherRegisterController;
+use App\Domains\Academics\Http\Controllers\TeachingMaterialController;
 use App\Domains\Academics\Http\Controllers\TimetableBuilderController;
 use App\Domains\Academics\Legacy\Http\Controllers\ELearningController;
 use App\Domains\Admissions\Http\Controllers\AdminEnrollmentController;
@@ -282,6 +283,10 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
     Route::post('academics/plans/{coursePlan}/topics', [CoursePlanController::class, 'storeTopic'])->name('academics.plans.topics.store');
     Route::post('academics/plans/{coursePlan}/copy', [CoursePlanController::class, 'copy'])->name('academics.plans.copy');
 
+    Route::get('academics/materials', [TeachingMaterialController::class, 'index'])->name('academics.materials.index');
+    Route::get('academics/materials/export', [TeachingMaterialController::class, 'export'])->name('academics.materials.export');
+    Route::post('academics/materials', [TeachingMaterialController::class, 'store'])->name('academics.materials.store');
+    Route::put('academics/materials/{material}', [TeachingMaterialController::class, 'update'])->name('academics.materials.update')->whereNumber('material');
     Route::get('academics/attendance/export', [AttendanceReportController::class, 'export'])->name('academics.attendance.export');
     Route::get('academics/attendance/daily', [DailyAttendanceController::class, 'index'])->name('academics.attendance.daily');
     Route::post('academics/attendance/daily', [DailyAttendanceController::class, 'store'])->name('academics.attendance.daily.store');

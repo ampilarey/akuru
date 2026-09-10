@@ -217,6 +217,7 @@ return [
     'tajweed_feedback' => \App\Domains\Hifz\Models\TajweedFeedback::class,
     'teacher' => \App\Domains\People\Models\Teacher::class,
     'teacher_absence' => \App\Domains\Academics\Models\TeacherAbsence::class,
+    'teaching_material' => \App\Domains\Academics\Models\TeachingMaterial::class,
     'term' => \App\Domains\Academics\Models\Term::class,
     'term_grade' => \App\Domains\ExamsGrades\Models\TermGrade::class,
     'testimonial' => \App\Domains\Website\Models\Testimonial::class,

@@ -2068,6 +2068,63 @@ turned out to be reachable from here after all. What was actually done:
   enforce a seat limit (the events module has one; forms do not), and whether a
   confirmed-but-unpaid answer needs its own treatment. All three are additive.
 
+## 5at. E13a — a material a teacher can reuse (2026-09-10)
+
+- **The finding that justified the slice:** `lesson_logs.materials` is a
+  free-text JSON array, typed into the register as a comma-separated string.
+  There is **no reusable materials table anywhere in the codebase**, so a teacher
+  retypes "Textbook p.12, worksheet" every lesson, nothing is searchable, and
+  nothing can be attached to homework. E13 was recorded as not built and that is
+  correct — the first plan row in a while that survived the audit.
+- **`teaching_materials` + `lesson_log_material`.** Title, optional body,
+  optional subject, JSON tags, `created_by`. The pivot carries a unique
+  constraint: attaching the same material twice to one lesson is the same fact.
+- **No `academic_year_id` (rule 10 does not apply).** A material is standing
+  content, not something that happens in time — the same worksheet is the same
+  worksheet next year. The lesson it is attached to already carries the
+  backbone, which is where the time-scoped fact lives.
+- **The legacy free-text column is untouched (rule 9).** Existing registers keep
+  their strings and keep displaying them; the structured picker sits beside the
+  old field rather than replacing it. Migrating the old strings is a later
+  slice's job and needs a human to decide which strings are the same material.
+- **Owned by the author, visible to all staff.** A library one teacher can see
+  is a notebook. Only the author can edit, so shared visibility never means
+  somebody else rewriting your wording under your name.
+- **The picker syncs rather than appends**, so unticking removes — the register
+  records what the lesson actually *used*. That made two things load-bearing:
+  the picker must show everything already attached whatever the subject filter
+  says (a hidden attachment is an attachment silently deleted on the next save),
+  and a bundle that posts no `material_ids` at all must not be read as "the
+  teacher unticked everything" — §5t, `public/build` is committed, so an old
+  bundle is a real client. Both have tests.
+- **A material with no subject is offered in every lesson.** "Class rules
+  handout" belongs everywhere, not nowhere.
+- **`AttachMaterialsToLessonAction` reuses the register's own edit rule** — your
+  own lessons unless you hold `registers.manage` — rather than inventing a
+  second one. Without that, a locked or someone else's register could be edited
+  sideways through the materials picker.
+- **Reachable:** `Materials` added to the app nav, and `Manage materials` links
+  out of the register. CSV export honours the filters, so a teacher exports what
+  they were looking at.
+- **Tests: 20** (12 action, 8 HTTP), covering tag normalisation, the
+  no-title refusal, the author-only edit, search by title/body/subject/tag/mine,
+  general materials appearing alongside subject ones, an attached material
+  surviving every filter, sync-not-append, a dangling id ignored, the
+  someone-else's-register refusal, the admin override, the legacy column left
+  alone, cascade on delete, and the full HTTP walk including the 403, the CSV
+  and the register picker round trip.
+- **Run locally for the first time in this run of slices.** MariaDB was
+  installed in the session container, so pest ran against MySQL rather than
+  being handed to CI unseen. It **immediately caught a bug the review had
+  missed**: both register-picker tests used `makeLessonLog()`'s default
+  back-dated `2026-08-24`, which auto-locks, so the submit was refused with
+  "This register is locked." and the attach never ran. One test failed honestly;
+  the *other* passed for the wrong reason. Both now use today's date and assert
+  `assertSessionHasNoErrors()` before the count. SQLite cannot substitute — the
+  migrations are MySQL-specific (`SHOW INDEX`).
+- **Still owed:** the browser walk on `test.akuru.edu.mv`, which needs the
+  deploy. Nineteen merged slices remain unexecuted there.
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**.

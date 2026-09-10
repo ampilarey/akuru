@@ -7,6 +7,7 @@ use App\Domains\People\Models\Teacher;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class LessonLog extends Model
@@ -47,6 +48,15 @@ class LessonLog extends Model
         'locked_at' => 'datetime',
         'unlocked_until' => 'datetime',
     ];
+
+    /**
+     * Structured materials. The legacy free-text `materials` column is
+     * untouched and still displayed beside these (rule 9).
+     */
+    public function teachingMaterials(): BelongsToMany
+    {
+        return $this->belongsToMany(TeachingMaterial::class, 'lesson_log_material');
+    }
 
     /**
      * Get the teacher
