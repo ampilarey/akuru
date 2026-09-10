@@ -2767,6 +2767,40 @@ users, so nothing is exposed today.
 **Recommended:** settle the Hifz role matrix as part of the §2b migration phase
 the freeze is waiting for, rather than bolting guards on individually.
 
+## 5bk. Two documentation gaps closed, and one deletion refused (2026-09-10)
+
+**The document map now lists what sessions actually read.**
+`EDUPAGE_FEATURES_PLAN.md` and `KNOWN_ISSUES.md` were both absent from
+CLAUDE.md's map — STATUS has flagged the first for weeks. The plan's entry
+carries the warning it has earned: **verify every row against the code before
+starting a slice**, because it has been wrong 16 times across two audits. I had
+declined to touch CLAUDE.md as "the rules file"; adding two documents to a map
+is not changing a rule, and leaving sessions to rediscover the plan's
+unreliability was the worse outcome.
+
+**`/inertia-test` is kept, and the checklist item is answered rather than left
+open.** `PHASE_0_CHECKLIST.md` said "delete after verification" and marked the
+verification done, so this looked like tidy-up I owed. It is not:
+
+- **§5t commits `public/build`.** A stale or unbuilt bundle therefore ships
+  silently and renders a **blank page with no console error** — the exact
+  failure this project has already hit.
+- **`/up` proves Laravel booted. It does not prove the built assets render
+  React.** Only this route does, and that is a different question.
+- **`scripts/deploy-staging-phase0.sh` and `docs/STAGING.md` both smoke-test it**
+  unauthenticated, immediately before the deploy that is already overdue.
+
+Deleting it would have removed a real check to satisfy a line written before
+§5t existed. The checklist now records the decision, and two tests pin the
+route: that it serves without a session, and that it **exposes no props** —
+because a public unauthenticated page must stay a static string, and props
+appearing there later would be a leak rather than a feature.
+
+Reversible in one commit: delete the route, the page, and those two references
+together.
+
+- **Full suite run locally against MySQL: 1063 tests, zero failures.**
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**.

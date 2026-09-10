@@ -15,7 +15,7 @@
 | 1 | `composer require inertiajs/inertia-laravel` + publish middleware (`HandleInertiaRequests`) | Blade and Inertia coexist; register middleware in `web` group |
 | 2 | `npm i react react-dom @inertiajs/react @vitejs/plugin-react` | Add react plugin to `vite.config.js` alongside existing build; keep current Tailwind 3 setup |
 | 3 | Create `resources/js/app.jsx` Inertia bootstrap + `resources/views/app.blade.php` Inertia root | Existing Blade layouts untouched |
-| 4 | Smoke route: `/inertia-test` rendering one React page | Delete after verification |
+| 4 | Smoke route: `/inertia-test` rendering one React page | ~~Delete after verification~~ — **retained deliberately**, see STATUS §5bk |
 | 5 | `composer require pestphp/pest pestphp/pest-plugin-laravel pestphp/pest-plugin-arch --dev` then `pest --init` | Keep PHPUnit tests running; Pest runs both |
 | 6 | `composer require larastan/larastan --dev` (level 5 to start) | Optional but cheap now |
 | 7 | Add `STATUS.md` and `docs/adr/` (template: context → decision → consequences) | §57 discipline starts now |
@@ -95,6 +95,12 @@ Create interface + container binding; change call-sites to the interface (mechan
 - [x] `app/Models` and `app/Services` **removed** (directories do not exist; code lives in `app/Domains/*`); `app/Http/Controllers` = base `Controller.php` plus `Api/TestDeployWebhookController` only. The webhook is **app infrastructure, not domain logic** (it fast-forwards the TEST checkout; host-guarded by `config/deploy.php`), so it stays out of the domains deliberately — filing it under a domain would misrepresent it, and creating an Ops domain for one controller would violate ROADMAP §7 "don't over-split domains early". Accepted exception, recorded in the audit 2026-08-26.
 - [x] Pest green including arch tests on `main` CI (Pint + Pest block; PHPStan informational only).
 - [x] Inertia smoke route `/inertia-test` exists for production build verification.
+      **Kept rather than deleted:** §5t commits `public/build`, so a stale or
+      unbuilt bundle ships silently and renders a blank page with no console
+      error. `/up` proves Laravel booted; only this route proves the *built
+      assets* render React. `scripts/deploy-staging-phase0.sh` and
+      `docs/STAGING.md` both smoke-test it. Reversible: delete the route, the
+      page, and those two references together.
 - [x] STATUS.md updated; ADR-001 recorded.
 - [x] Per-domain `routes.php` split — **dropped, not deferred** (audit 2026-08-26). It was deferred "to early S1" and then skipped through S1–S5, 1A–1B, Phase 2 and the A-track without causing a problem. Central `routes/web_localized.php` + `routes/web_public.php` are the accepted end state; the route-name snapshot suite (`tests/Feature/Routes/`, 6 files) is the guard that matters. `app/Domains/Hifz/routes.php` exists as a one-off and is not a precedent. Revisit only if route volume becomes unmanageable.
 - [ ] Staging/production deploy — **pending operator** (staging `test.akuru.edu.mv` first).
