@@ -278,6 +278,19 @@ export default function AppShell({ title, children }) {
                                 Translations
                             </Link>
                         )}
+                        {/* E22a: notifications were invisible for months. A
+                            count in the chrome is what makes them exist. */}
+                        <Link
+                            href="/portal/notifications"
+                            className="flex items-center gap-1 text-[#7C2D37] hover:underline"
+                        >
+                            Alerts
+                            {auth?.unread_notifications > 0 && (
+                                <span className="rounded-full bg-[#7C2D37] px-1.5 py-0.5 text-xs font-bold text-white">
+                                    {auth.unread_notifications}
+                                </span>
+                            )}
+                        </Link>
                         {/* E7: a person with two identities lands on one of them.
                             Given as a bordered pill rather than a 41st link in
                             this list, because a link in here is not findable. */}

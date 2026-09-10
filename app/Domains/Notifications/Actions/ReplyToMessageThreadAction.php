@@ -70,7 +70,14 @@ class ReplyToMessageThreadAction
                 ->where('user_id', $senderId)
                 ->update(['last_read_at' => now()]);
 
-            return $thread->fresh();
+            $thread = $thread->fresh();
+
+            // $audience already honours author_only, so a reply under that
+            // policy notifies the author and nobody else.
+            app(NotifyMessageRecipientsAction::class)
+                ->execute($thread, $senderId, $audience, $body);
+
+            return $thread;
         });
     }
 }

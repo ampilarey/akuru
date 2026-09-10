@@ -1,6 +1,5 @@
 <?php
 
-use App\Domains\Academics\Actions\AssignStudentToClassAction;
 use App\Domains\Identity\Models\User;
 use App\Domains\Notifications\Actions\ListMessageInboxAction;
 use App\Domains\Notifications\Actions\ListMessageRecipientsAction;
@@ -21,35 +20,6 @@ uses(RefreshDatabase::class);
  * these tests cover the thread layer that gives it a conversation, an inbox and
  * a reply policy.
  */
-function seedFamilyAndTeacher(): array
-{
-    $year = makeYear(['name' => '2026-2027', 'is_current' => true, 'status' => 'active']);
-    $class = makeClass($year);
-    $student = makeStudent();
-    app(AssignStudentToClassAction::class)->execute($class, (int) $student->id);
-
-    $teacher = makeTeacherRow();
-    app(\App\Domains\Academics\Actions\SaveTimetableEntryAction::class)->execute([
-        'class_id' => $class->id,
-        'subject_id' => makeSubject()->id,
-        'teacher_id' => $teacher->id,
-        'academic_year_id' => $year->id,
-        'day_of_week' => 'monday',
-        'period_id' => makePeriodRow()->id,
-        'room_id' => makeRoomRow()->id,
-        'is_active' => true,
-    ]);
-
-    return [
-        'student' => $student,
-        'studentUser' => User::query()->find($student->user_id),
-        'teacher' => $teacher,
-        'teacherUser' => User::query()->find($teacher->user_id),
-        'class' => $class,
-        'year' => $year,
-    ];
-}
-
 it('offers the teachers who teach the student class as recipients', function () {
     ['studentUser' => $studentUser, 'teacherUser' => $teacherUser] = seedFamilyAndTeacher();
 
