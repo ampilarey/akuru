@@ -3,6 +3,7 @@
 namespace App\Domains\Settings\Actions;
 
 use App\Domains\Settings\Models\TranslationOverride;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Lang;
 use Illuminate\Validation\ValidationException;
 
@@ -82,16 +83,13 @@ class ListTranslationCatalogAction
             $groupOverrides = ($overrides->get($group) ?? collect())->keyBy('key');
 
             $items = [];
-            foreach ($en as $key => $reference) {
-                if (! is_string($reference)) {
-                    continue; // nested arrays are not editable rows
-                }
+            foreach (self::flatten($en) as $key => $reference) {
                 $total++;
                 $override = $groupOverrides->get($key);
                 if ($override !== null) {
                     $overrideCount++;
                 }
-                $file = $fileStrings[$key] ?? null;
+                $file = Arr::get($fileStrings, $key);
                 $items[] = [
                     'key' => $key,
                     'en' => $reference,
@@ -111,6 +109,42 @@ class ListTranslationCatalogAction
             'locale' => $locale,
             'locales' => self::locales(),
         ];
+    }
+
+    /**
+     * Flatten nested groups to dotted keys, so a nested line is an editable
+     * row like any other.
+     *
+     * This was `if (! is_string($reference)) continue;`, which silently
+     * dropped every nested line. `notifications.php` and `documents.php` are
+     * **entirely** nested, so both groups rendered as "(0)" and were editable
+     * in neither language — including the notification texts that get sent to
+     * families. Found by opening the screen, not by a test: the suite asserted
+     * the catalog renders, never that it contained anything.
+     *
+     * Nothing downstream needed changing. `SaveTranslationOverrideAction`
+     * validates with `Lang::get($group.'.'.$key)`, and `DatabaseOverrideLoader`
+     * writes with `Arr::set()` — both already speak dot notation.
+     *
+     * @param  array<string, mixed>  $lines
+     * @return array<string, string>
+     */
+    private static function flatten(array $lines, string $prefix = ''): array
+    {
+        $flat = [];
+        foreach ($lines as $key => $value) {
+            $dotted = $prefix === '' ? (string) $key : $prefix.'.'.$key;
+            if (is_array($value)) {
+                $flat += self::flatten($value, $dotted);
+
+                continue;
+            }
+            if (is_string($value)) {
+                $flat[$dotted] = $value;
+            }
+        }
+
+        return $flat;
     }
 
     /**

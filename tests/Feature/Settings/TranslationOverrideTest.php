@@ -239,3 +239,62 @@ it('suggests into the language being edited', function () {
         ->assertOk()
         ->assertJsonPath('suggestion', '[ar] '.trans('common.dashboard', [], 'en'));
 });
+
+/**
+ * Nested groups are editable rows too.
+ *
+ * `ListTranslationCatalogAction` used to `continue` past any non-string value,
+ * which silently dropped every nested line. `notifications.php` and
+ * `documents.php` are **entirely** nested, so both rendered as "(0)" in the
+ * editor and were editable in neither language — including the notification
+ * texts that get sent to families.
+ *
+ * Found by opening the screen in a browser, not by a test: the suite asserted
+ * the catalog renders and never that it contained anything. That is exactly
+ * the gap CLAUDE.md's "walked in a browser" clause exists to catch.
+ */
+it('lists nested language lines as editable rows', function () {
+    $catalog = app(\App\Domains\Settings\Actions\ListTranslationCatalogAction::class)->execute('ar');
+    $rows = collect($catalog['groups'])->keyBy('group')->map(fn ($g) => count($g['items']));
+
+    // The two entirely-nested groups. Before the fix both were 0.
+    expect($rows['notifications'])->toBeGreaterThan(0)
+        ->and($rows['documents'])->toBeGreaterThan(0)
+        // Flat groups must not regress.
+        ->and($rows['common'])->toBeGreaterThan(0)
+        ->and($rows['public'])->toBeGreaterThan(0);
+
+    // The catalog total must equal every English string in the five groups —
+    // the same 557 the translation-parity baseline counts independently.
+    expect($catalog['total'])->toBe($rows->sum());
+
+    $notifications = collect($catalog['groups'])->firstWhere('group', 'notifications');
+    $keys = collect($notifications['items'])->pluck('key');
+    expect($keys->contains(fn ($k) => str_contains($k, '.')))->toBeTrue('Nested keys should arrive dotted.');
+});
+
+it('saves and clears an override on a nested key', function () {
+    $admin = actingPeopleAdmin(['translations.manage']);
+    $fileValue = freshTranslation('notifications.attendance.status.absent', 'ar');
+
+    // The save action validates with Lang::get($group.'.'.$key) and the loader
+    // writes with Arr::set() — both already spoke dot notation, so nothing
+    // downstream needed changing. This proves that end to end.
+    $this->withoutLocalizationMiddleware()->actingAs($admin)
+        ->post(route('admin.translations.save'), [
+            'group' => 'notifications', 'key' => 'attendance.status.absent',
+            'value' => 'غائب — تصحيح', 'locale' => 'ar',
+        ])->assertSessionHasNoErrors();
+
+    expect(freshTranslation('notifications.attendance.status.absent', 'ar'))->toBe('غائب — تصحيح')
+        // A nested override must not flatten the group and lose its siblings.
+        ->and(freshTranslation('notifications.attendance.status.late', 'ar'))->not->toBe('غائب — تصحيح');
+
+    $this->withoutLocalizationMiddleware()->actingAs($admin)
+        ->post(route('admin.translations.save'), [
+            'group' => 'notifications', 'key' => 'attendance.status.absent',
+            'value' => '', 'locale' => 'ar',
+        ])->assertSessionHasNoErrors();
+
+    expect(freshTranslation('notifications.attendance.status.absent', 'ar'))->toBe($fileValue);
+});
