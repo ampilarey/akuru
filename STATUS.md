@@ -3298,6 +3298,66 @@ today.
   `fonts.bunny.net`, `fonts.googleapis.com`, `translate.google.com`. Worth
   knowing that the UI reaches for three third-party origins on every page.
 
+## 5bv. The daily loop, completed in a browser end to end (2026-09-10)
+
+§5bu loaded pages. This **completed the task**, which is what CLAUDE.md's
+definition of done actually asks for: *"a user can complete the task in a
+browser, not only when tests pass."* One continuous run, three roles, zero page
+errors.
+
+**As the teacher** (`teacher@akuru.edu.mv`):
+
+1. `/academics/registers/today` correctly offered **"Generate my registers for
+   this date"** — the fresh seed has none for today. Clicked it; one register
+   appeared.
+2. The register opened on *Arabic Language · Grade 5 A · 2026-09-10*, status
+   **EXPECTED**, with the plan-topic dropdown populated ("1. Sun and moon
+   letters").
+3. **Homework due was pre-filled to 2026-09-11**, captioned "Defaults to the
+   next lesson for this class" — §5ar's next-lesson default, working. Not
+   "tomorrow"; the next day this class actually meets this subject.
+4. The materials picker showed the empty state written for E13a: *"Nothing
+   saved for this subject yet. Write a material once and it is reusable in
+   every lesson."*
+5. Filled what was taught and the homework, marked the first of **15 pupils**
+   absent, submitted. → **"Register submitted."**, status **SUBMITTED**.
+
+**As the admin**, `/academics/attendance/absences` (§5ay) then showed the
+consequence, unprompted: *"**1** not in on 2026-09-10 · **1** with no note"*,
+with Fatima Yoosuf / PIL-01 / Grade 5 A / Period 1 / **"No note — call home"**
+and, in the Ring column, **"No contact on file"** — the emergency-contact
+lookup from §5az rendering its empty state.
+
+**As the family** (`parent@akuru.edu.mv`), both consequences arrived:
+
+- Portal home tiles updated to **Attendance 1 · 0% present** and **Homework
+  1 · 1 to do**, above tomorrow's real timetable with subjects, teachers and
+  rooms.
+- `/portal/homework` showed exactly what the teacher had typed minutes earlier:
+  *Fatima Yoosuf · Arabic Language · Ustadh Mohamed · **Due 2026-09-11** ·
+  "Revise lines 1-10." · Set on 2026-09-10.*
+- `/portal/holidays` (§5ax, the family calendar) rendered its broadened
+  wording — *"Holidays, closures, events and exam days for the current school
+  year"* — with an honest "Nothing published…" empty state.
+
+**Verified working end to end this way: S2.6 registers, §5ar homework due
+dates, E13a materials picker, §5ay absence list, §5az emergency contacts,
+§5ax family calendar, §5aw teacher landing.** Every one of those was
+previously "CI-green and never executed".
+
+**Three things for the owner, none a code defect:**
+
+- **The pilot seeder gives no student an emergency contact**, so the Ring
+  column can only ever show "No contact on file" on a fresh seed. The real path
+  has still never been seen. One seeded contact would fix that for every future
+  walk.
+- **The AppShell nav, measured rather than described.** ~90 links across
+  **eleven rows**, filling roughly the top quarter of a 1200px viewport on
+  *every* page before any content begins. KNOWN_ISSUES top-five item 2 has this
+  awaiting a decision; the screenshot settles what the prose could not.
+- `/portal/timetable` does not exist — the family timetable lives on the portal
+  home. Noted only because it is a natural URL to guess.
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**.
