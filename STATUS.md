@@ -2624,6 +2624,50 @@ records that there are no live Hifz users, so the practical risk today is low.
   rules unasked is not mine to do. It is a one-line addition whenever the owner
   wants it.
 
+## 5bg. Promotion — the most destructive route had no test (2026-09-10)
+
+- **Found by a fifth scan:** mutating routes (POST/PUT/PATCH/DELETE) that no
+  test exercises, by route name **or** by URI stem. **185 came back.** The first
+  pass, matching only `route('name')`, said 217 — inflated, because many tests
+  hit raw paths. Cross-checking both ways is what made the number trustworthy;
+  this is the third time today a first-pass scan needed that correction.
+- **Promotion was the one worth covering first.** `academics.promotion.commit`
+  moves **every active pupil** from one academic year into the next, and had no
+  route-level test at all.
+- **The dry-run gate is real and correctly placed.** `PromoteStudentsAction`
+  refuses a commit with no prior dry run, in the Action rather than the
+  controller (rule 5). No defect — but nothing stopped a refactor removing it
+  silently, and then one POST would promote a whole school with nobody having
+  seen a preview. Now it cannot be removed without a test going red.
+- **The confirmation is `cache()->pull()`, not `get()`** — spent on use — so an
+  accidental double submit cannot promote twice. That is a good decision that
+  was undocumented and untested; it is both now.
+- **Tests: 8** — commit refused with no preview, preview moves nobody, commit
+  works after a preview, a second commit refused, same-year rejected, a teacher
+  refused the wizard entirely, repeat behaviour, and a pupil who has left not
+  being carried forward.
+- **A test of mine asserted behaviour I had not verified**, and I corrected the
+  test rather than the code: I assumed "repeat" creates a row in the target
+  year. It does not — `repeat()` touches the row and leaves it in place.
+
+### ⚠ Question for the owner, raised rather than assumed
+
+Because `repeat()` leaves the roster row on the **source** year, a repeating
+pupil ends the promotion holding a row whose `academic_year_id` is the old year.
+Anything scoped to the current year — attendance, homework, the absence list,
+the teacher's register — will therefore not see them until somebody re-assigns
+them by hand.
+
+That may be intended (the class is re-created for the new year and they are
+re-enrolled deliberately), or it may be a gap that silently drops repeating
+pupils out of the new year. **The test records the behaviour; it does not bless
+it.** I have not changed it either way.
+
+- **Full suite run locally against MySQL: 1030 tests, zero failures.**
+- **181 mutating routes remain untested.** Worth working down, highest-risk
+  first — the money routes (`admin/commerce/*`) and enrolment activation are the
+  next tier.
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**.
