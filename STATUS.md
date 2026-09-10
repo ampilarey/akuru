@@ -2129,6 +2129,43 @@ turned out to be reachable from here after all. What was actually done:
 - **Still owed:** the browser walk on `test.akuru.edu.mv`, which needs the
   deploy. Nineteen merged slices remain unexecuted there.
 
+## 5au. E13b — a material goes home with the homework (2026-09-10)
+
+- **Closes the loop E13a opened.** E13a records which materials a lesson
+  *used*; that is not the same fact as which ones a pupil needs at home.
+  "Whiteboard" and "mushaf" stay in the room, "Alphabet worksheet — print double
+  sided" goes home. Showing a family everything the lesson touched would bury
+  the one thing they need, which is why this is a choice and not a rename.
+- **One flag on the existing pivot, not a second table (rule 11).** The homework
+  lives on the lesson log, so its materials belong on the same link. A material
+  can be both — used in the lesson *and* sent home — which a boolean expresses
+  and two tables would not.
+- **Additive and defaulted false (rule 9).** Every attachment E13a already
+  created stays exactly what it was. Defaulting the other way would have
+  published every register's materials to every family in one deploy.
+- **Absent is not empty.** `public/build` is committed (§5t), so a bundle
+  predating E13b is a real client and posts no homework key at all. That leaves
+  the teacher's existing choice alone; an explicitly empty list un-sends. The
+  two must not collapse into each other, and a test holds each apart.
+- **Un-attaching also un-sends.** A family should never be handed a material the
+  lesson no longer uses, so the flag follows the attachment rather than
+  outliving it — enforced in the action, not only in the checkbox.
+- **Drafts stay private.** The materials follow the homework text they belong
+  to: only submitted or locked registers reach a family, unchanged from E3a.
+- **This is the first time a teaching material becomes family-visible.** Until
+  now the library was staff-only. Worth stating plainly because it is a
+  visibility change, not just a feature: whatever a teacher ticks "send home"
+  is readable by that class's pupils and their guardians, title and body both.
+- **Tests: 7**, covering the chosen-only send, the send-nothing default, the
+  follow-the-attachment rule, absent-vs-empty in both directions, the draft
+  register, and an HTTP walk that posts from the register and then reads the
+  result as the pupil.
+- **Run locally against MySQL before pushing**, all green first time, plus the
+  Academics, Portal and Architecture suites (227) to catch regressions in E13a
+  and E3a.
+- **Still owed:** the browser walk. Twenty merged slices are now unexecuted on
+  `test.akuru.edu.mv`.
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**.

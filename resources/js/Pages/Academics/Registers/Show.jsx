@@ -20,6 +20,7 @@ export default function Show({
     nextLessonDate = null,
     materials,
     attachedMaterials = [],
+    homeworkMaterials = [],
     materialLibrary = [],
     notes,
     canSubmit,
@@ -46,6 +47,8 @@ export default function Show({
         // The structured library (E13a). The free-text field above is the
         // legacy one and still shown, so old registers keep reading correctly.
         material_ids: attachedMaterials.map((id) => String(id)),
+        // Which of them the family sees on the homework (E13b).
+        homework_material_ids: homeworkMaterials.map((id) => String(id)),
         notes: notes || '',
     });
     const unlock = useForm({ reason: '' });
@@ -145,28 +148,58 @@ export default function Show({
                             {materialLibrary.map((material) => {
                                 const id = String(material.id);
                                 const checked = form.data.material_ids.includes(id);
+                                const sentHome = form.data.homework_material_ids.includes(id);
 
                                 return (
-                                    <label key={material.id} className="flex items-start gap-2 text-sm">
-                                        <input
-                                            type="checkbox"
-                                            className="mt-1"
-                                            checked={checked}
-                                            disabled={!canSubmit}
-                                            onChange={(e) => form.setData(
-                                                'material_ids',
-                                                e.target.checked
-                                                    ? [...form.data.material_ids, id]
-                                                    : form.data.material_ids.filter((value) => value !== id),
-                                            )}
-                                        />
-                                        <span>
-                                            {material.title}
-                                            {material.tags.length > 0 && (
-                                                <span className="text-xs text-gray-500"> · {material.tags.join(', ')}</span>
-                                            )}
-                                        </span>
-                                    </label>
+                                    <div key={material.id} className="text-sm">
+                                        <label className="flex items-start gap-2">
+                                            <input
+                                                type="checkbox"
+                                                className="mt-1"
+                                                checked={checked}
+                                                disabled={!canSubmit}
+                                                onChange={(e) => {
+                                                    form.setData(
+                                                        'material_ids',
+                                                        e.target.checked
+                                                            ? [...form.data.material_ids, id]
+                                                            : form.data.material_ids.filter((value) => value !== id),
+                                                    );
+                                                    // Un-attaching also stops it going home; a
+                                                    // family should never be sent a material the
+                                                    // lesson no longer uses.
+                                                    if (!e.target.checked) {
+                                                        form.setData(
+                                                            'homework_material_ids',
+                                                            form.data.homework_material_ids.filter((value) => value !== id),
+                                                        );
+                                                    }
+                                                }}
+                                            />
+                                            <span>
+                                                {material.title}
+                                                {material.tags.length > 0 && (
+                                                    <span className="text-xs text-gray-500"> · {material.tags.join(', ')}</span>
+                                                )}
+                                            </span>
+                                        </label>
+                                        {checked && (
+                                            <label className="ml-6 flex items-center gap-2 text-xs text-gray-600">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={sentHome}
+                                                    disabled={!canSubmit}
+                                                    onChange={(e) => form.setData(
+                                                        'homework_material_ids',
+                                                        e.target.checked
+                                                            ? [...form.data.homework_material_ids, id]
+                                                            : form.data.homework_material_ids.filter((value) => value !== id),
+                                                    )}
+                                                />
+                                                Send home with the homework
+                                            </label>
+                                        )}
+                                    </div>
                                 );
                             })}
                         </div>

@@ -35,6 +35,21 @@ function Item({ item, studentId, canTick }) {
                     <p className={`mt-1 whitespace-pre-wrap text-sm ${item.is_done ? 'text-gray-400 line-through' : 'text-gray-800'}`}>
                         {item.homework}
                     </p>
+                    {(item.materials || []).length > 0 && (
+                        <div className="mt-2 rounded border border-[#E7DBC9] bg-[#FBF7F1] p-2">
+                            <p className="text-xs font-semibold text-gray-600">What you need</p>
+                            <ul className="mt-1 space-y-1">
+                                {item.materials.map((material) => (
+                                    <li key={material.id} className="text-sm">
+                                        {material.title}
+                                        {material.body && (
+                                            <span className="block whitespace-pre-wrap text-xs text-gray-600">{material.body}</span>
+                                        )}
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                    )}
                     <p className="mt-1 text-xs text-gray-500">Set on {item.set_on}</p>
                 </div>
             </div>
