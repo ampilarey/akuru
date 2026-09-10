@@ -10,6 +10,8 @@
 
 return [
     'absence_note' => \App\Domains\Academics\Models\AbsenceNote::class,
+    'form' => \App\Domains\Forms\Models\Form::class,
+    'form_response' => \App\Domains\Forms\Models\FormResponse::class,
     'notification_preference' => \App\Domains\Notifications\Models\NotificationPreference::class,
     'message_poll' => \App\Domains\Notifications\Models\MessagePoll::class,
     'message_poll_response' => \App\Domains\Notifications\Models\MessagePollResponse::class,

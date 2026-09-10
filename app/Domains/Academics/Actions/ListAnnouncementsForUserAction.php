@@ -2,13 +2,9 @@
 
 namespace App\Domains\Academics\Actions;
 
-use App\Domains\Academics\Enums\ClassStudentStatus;
 use App\Domains\Academics\Models\Announcement;
-use App\Domains\People\Actions\ListGuardianChildrenAction;
-use App\Domains\People\Actions\ResolveStudentForUserAction;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\DB;
 
 /**
  * E4 — the noticeboard, read by the people it was aimed at.
@@ -26,17 +22,6 @@ use Illuminate\Support\Facades\DB;
  */
 class ListAnnouncementsForUserAction
 {
-    /** Role name → the audience key an author would have ticked. */
-    private const ROLE_AUDIENCE = [
-        'student' => 'students',
-        'parent' => 'parents',
-        'teacher' => 'teachers',
-        'admin' => 'teachers',
-        'headmaster' => 'teachers',
-        'supervisor' => 'teachers',
-        'super_admin' => 'teachers',
-    ];
-
     /**
      * @param  list<string>  $roleNames
      * @return Collection<int, array<string, mixed>>
@@ -59,12 +44,11 @@ class ListAnnouncementsForUserAction
             return collect();
         }
 
-        $audiences = $this->audiencesFor($roleNames);
-        $classIds = $this->classIdsFor($userId, $roleNames);
+        $context = app(ResolveAudienceContextAction::class)->execute($userId, $roleNames);
 
         return $rows
-            ->filter(fn (Announcement $row): bool => $this->matchesAudience($row, $audiences))
-            ->filter(fn (Announcement $row): bool => $this->matchesClass($row, $classIds))
+            ->filter(fn (Announcement $row): bool => app(ResolveAudienceContextAction::class)
+                ->matches($row->target_audience, $row->target_classes, $context))
             ->map(fn (Announcement $row): array => [
                 'id' => (int) $row->id,
                 'title' => $this->localised($row, 'title'),
@@ -97,86 +81,6 @@ class ListAnnouncementsForUserAction
             'total' => $rows->count(),
             'urgent' => $rows->filter(fn (array $row): bool => $row['is_urgent'])->count(),
         ];
-    }
-
-    /**
-     * @param  list<string>  $roleNames
-     * @return list<string>
-     */
-    private function audiencesFor(array $roleNames): array
-    {
-        $audiences = ['all'];
-        foreach ($roleNames as $role) {
-            if (isset(self::ROLE_AUDIENCE[$role])) {
-                $audiences[] = self::ROLE_AUDIENCE[$role];
-            }
-        }
-
-        return array_values(array_unique($audiences));
-    }
-
-    /**
-     * @param  list<string>  $audiences
-     */
-    private function matchesAudience(Announcement $row, array $audiences): bool
-    {
-        $target = $row->target_audience;
-
-        // Unset means the whole school, not nobody.
-        if (! is_array($target) || $target === []) {
-            return true;
-        }
-
-        return array_intersect($target, $audiences) !== [];
-    }
-
-    /**
-     * @param  list<int>  $classIds
-     */
-    private function matchesClass(Announcement $row, array $classIds): bool
-    {
-        $target = $row->target_classes;
-
-        if (! is_array($target) || $target === []) {
-            return true;
-        }
-
-        return array_intersect(array_map('intval', $target), $classIds) !== [];
-    }
-
-    /**
-     * Every class this person is connected to: the ones they teach, their own,
-     * and their children's.
-     *
-     * @param  list<string>  $roleNames
-     * @return list<int>
-     */
-    private function classIdsFor(int $userId, array $roleNames): array
-    {
-        $classIds = app(ListClassesTaughtByUserAction::class)
-            ->execute($userId)
-            ->pluck('id')
-            ->all();
-
-        $studentIds = [];
-        $self = app(ResolveStudentForUserAction::class)->execute($userId);
-        if ($self !== null) {
-            $studentIds[] = (int) $self['id'];
-        }
-        foreach (app(ListGuardianChildrenAction::class)->executeForGuardianUserId($userId) as $child) {
-            $studentIds[] = (int) $child->id;
-        }
-
-        if ($studentIds !== []) {
-            $classIds = array_merge($classIds, DB::table('class_student')
-                ->whereIn('student_id', $studentIds)
-                ->where('status', ClassStudentStatus::Active->value)
-                ->pluck('class_id')
-                ->map(fn ($id): int => (int) $id)
-                ->all());
-        }
-
-        return array_values(array_unique(array_map('intval', $classIds)));
     }
 
     /**

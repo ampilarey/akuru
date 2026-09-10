@@ -1935,6 +1935,49 @@ turned out to be reachable from here after all. What was actually done:
 - Still open in E22: **channels** — every preference here is in-app, because SMS
   remains an owner decision for the cost reason in §5am.
 
+## 5aq. E6a — sign-up sheets and surveys (2026-09-10)
+
+- **First new domain in a long time: `Domains/Forms`.** A poll (E2b-b) answers
+  one question inside a conversation; a form is what a school actually sends for
+  a trip — several questions, a window, and a results table somebody works from.
+- **The new domain was added to `ViolationScanner::DOMAINS`.** Without that a
+  new domain is **invisible to every architecture rule** — boundaries, model
+  imports, the lot. Easy to miss, and the tests would have stayed green while
+  enforcing nothing.
+- **Audience matching was deduplicated, not copied.** E4's noticeboard and E6's
+  forms ask the same question — "is this aimed at me?" — so the logic moved into
+  Academics' new `ResolveAudienceContextAction` and E4 was refactored onto it.
+  Two copies is how the noticeboard and the sign-up sheet end up disagreeing
+  about who is in Grade 5. The blank-means-everyone rule moved with it.
+- **Questions freeze once anyone answers.** The title stays editable; the field
+  list does not, because rewording or reordering questions would silently change
+  what past answers meant. Each field carries a **stable key** so fixing a typo
+  in a label does not orphan the answers stored under it.
+- **Anonymous means no person id at all**, not a hidden one. The consequence is
+  that an anonymous form cannot say whether you have answered, and cannot stop a
+  second submission. Both are **asserted in tests** rather than left as
+  surprises — the promise is only worth making if the schema can keep it.
+- **Answers are validated against the form's own frozen field list**, so a
+  hand-posted key or an option that was never offered cannot land in the results
+  table where somebody would act on it. Tested for select and multi-select.
+- **The respondent column is absent on anonymous results, not blank.** A column
+  of dashes invites someone to go looking for the answer in the database.
+- **`file` is deliberately not a field type in v1.** Uploads need Media plumbing
+  and a retention answer; a half-built upload on a permission slip is worse than
+  a text box. It arrives with the slice that gives homework attachments a home.
+- New permission `forms.manage` (teacher and headmaster; admin and super_admin
+  hold everything). Both tables carry `academic_year_id` — rule 10 for responses,
+  and because "the trip sign-up" means a different sheet each year.
+- **Tests:** 17 covering validation of the form itself, audience scoping,
+  answer correction, required fields, discarding un-offered options on both
+  choice types, closed and not-for-you refusals, all three anonymity
+  consequences, question freezing, and both results shapes.
+- Still open in E6: **E6b parent confirmation** — a pupil's answer staying
+  unconfirmed until a guardian confirms from their own account, which must
+  preserve the rule that acting *as* a pupil never grants guardian confirmation
+  (it interacts with E7's switcher). And **E6c fees**, which must raise invoices
+  through existing Commerce actions (rule 11) with money rule 12 still applying.
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**.
