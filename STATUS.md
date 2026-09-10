@@ -2209,6 +2209,55 @@ turned out to be reachable from here after all. What was actually done:
   `UploadedFile` proves. Twenty-two merged slices are unexecuted on
   `test.akuru.edu.mv`.
 
+## 5aw. E1b — a teacher's own home (2026-09-10)
+
+- **The audit contradicted the plan for the seventh time, in the usual
+  direction.** E1 is recorded as "~1–2 weeks, not started". In fact
+  `ComposePortalHomeAction` already ships the whole family half: tiles with live
+  badges and status lines, `nextSchoolDay`, prayer,
+  `ListDayTimetableForStudentAction`. Its acceptance criteria are met. The only
+  unbuilt part of E1 was the **teacher** half — which is exactly the open
+  decision the plan said must be answered before starting.
+- **Answered as "their own home, not the school's report".** A teacher had no
+  home at all: `/dashboard` redirected them into `/academics/registers/today`, a
+  task queue that answers "what do I owe" and nothing else. No glanceable view
+  of their day, their unread messages, or a notice aimed at them.
+- **`ComposeStaffOverviewAction` is deliberately left alone.** It is school-wide
+  — every teacher's fill rate, every unfilled register — which is right for a
+  head and noise for a class teacher. "One grid for everyone" would have had to
+  be one or the other, so there are two composers and each is honest about who
+  it serves.
+- **One genuinely new read: `ListDayTimetableForTeacherAction`,** the mirror of
+  the student one. Reading the day off `lesson_logs` instead would have been
+  wrong — expected registers are generated in batches, so a day nobody had
+  generated yet would report a free morning to someone teaching four periods.
+- **Cover cuts both ways for a teacher, which it does not for a pupil.** A
+  period of mine that somebody else is covering still appears, marked, because I
+  need to know it is handled; a period somebody else owns that **I** am covering
+  appears on my day, because a cover that does not show on the substitute's own
+  timetable is how a class sits unattended. Only *assigned* cover counts — an
+  open request would tell someone they are teaching a class nobody gave them.
+- **"Next" scans forward, it is not "tomorrow".** A strip that says "nothing
+  tomorrow" on a Thursday while staying silent about a full Sunday is worse than
+  useless.
+- **The badge counts what is owed, not what exists.** A count that never reaches
+  zero stops being read. Scoped per teacher — `ListUnfilledRegistersAction`
+  already took a teacher argument, so no new read was needed.
+- **The landing changed, and that is the part that makes it real.** `/dashboard`
+  now sends the `registers` kind to `portal.teacher`. Without it the slice would
+  be CI-green and unreachable — the rehearsal lesson. **E7's precedence is
+  untouched**: staff still outranks family, only the staff destination moved.
+  Two E7 tests asserted the old URL; both were rewritten to guard the
+  *precedence* rather than the address, which is what they were always for.
+- **Tests: 11** — period ordering, a day not taught, a holiday named plainly,
+  cover in both directions, unassigned cover ignored, the owed-only badge,
+  next-teaching-day lookahead, a staff account with no teacher record getting a
+  partial home rather than an error, the 403, and the landing itself.
+- **Full suite run locally against MySQL: 950 tests, zero failures.**
+- **Still owed:** the browser walk. Twenty-three merged slices are unexecuted on
+  `test.akuru.edu.mv` — and this one changes where **every teacher lands**, so
+  it is the slice most worth seeing before the next.
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**.

@@ -132,6 +132,7 @@ use App\Domains\Portal\Http\Controllers\PortalPerformanceController;
 use App\Domains\Portal\Http\Controllers\PortalReportCardController;
 use App\Domains\Portal\Http\Controllers\PortalStaffCheckInController;
 use App\Domains\Portal\Http\Controllers\StaffOverviewController;
+use App\Domains\Portal\Http\Controllers\TeacherHomeController;
 use App\Domains\PrayerTimes\Http\Controllers\Admin\BroadcastController as AdminPrayerBroadcastController;
 use App\Domains\PrayerTimes\Http\Controllers\Admin\ImportController as AdminPrayerImportController;
 use App\Domains\PrayerTimes\Http\Controllers\Admin\IslandController as AdminPrayerIslandController;
@@ -160,6 +161,8 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/portal/home/export', [PortalHomeController::class, 'export'])->name('portal.home.export');
     Route::get('/portal/home', [PortalHomeController::class, 'index'])->name('portal.home');
+    // A teacher's own home (E1b), distinct from the school-wide staff overview.
+    Route::get('/portal/teacher', [TeacherHomeController::class, 'index'])->name('portal.teacher');
     Route::get('/portal/overview/export', [StaffOverviewController::class, 'export'])->name('portal.overview.export');
     Route::get('/portal/overview', [StaffOverviewController::class, 'index'])->name('portal.overview');
     Route::get('/portal/meetings/export', [PortalMeetingController::class, 'export'])->name('portal.meetings.export');

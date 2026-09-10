@@ -96,13 +96,17 @@ it('has no reverse case, because staff always outranks family', function () {
     }
 });
 
-it('still lands a teacher-parent on their registers', function () {
+it('still lands a teacher-parent on the staff side, not their childs view', function () {
     $user = makeTeacherParent();
 
+    // The guard is the *precedence*, not the destination: teaching is the job
+    // they signed in to do. E1b only changed where that landing points — from
+    // the register list to the teacher's own home, whose first tile is the
+    // register list.
     $this->withoutLocalizationMiddleware()
         ->actingAs($user)
         ->get(route('dashboard'))
-        ->assertRedirect(route('academics.registers.today'));
+        ->assertRedirect(route('portal.teacher'));
 });
 
 it('shows a teacher-parent a link to the family view on every inertia page', function () {
