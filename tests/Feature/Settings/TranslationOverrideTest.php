@@ -8,14 +8,19 @@ use Illuminate\Support\Facades\Cache;
 
 uses(RefreshDatabase::class);
 
-function freshDvTranslation(string $key): string
+function freshTranslation(string $key, string $locale = 'dv'): string
 {
     // The translator memoizes loaded groups per instance — re-resolve so
     // each assertion goes back through the loader.
     App::forgetInstance('translator');
     Cache::flush();
 
-    return trans($key, [], 'dv');
+    return trans($key, [], $locale);
+}
+
+function freshDvTranslation(string $key): string
+{
+    return freshTranslation($key, 'dv');
 }
 
 it('serves a Dhivehi override over the file string and falls back when cleared', function () {
@@ -100,4 +105,137 @@ it('forbids the editor without translations.manage', function () {
     $this->withoutLocalizationMiddleware()->actingAs($user)
         ->post(route('admin.translations.save'), ['group' => 'common', 'key' => 'dashboard', 'value' => 'x'])
         ->assertForbidden();
+});
+
+/**
+ * Arabic became editable alongside Dhivehi. Until now
+ * `ListTranslationCatalogAction` hardcoded `dv`, so an operator could fix a
+ * Dhivehi string from this screen while the same Arabic string needed a file
+ * edit and a deploy — against CLAUDE.md, which asks for EN/DV/AR equally. The
+ * table and the loader were already locale-generic.
+ */
+it('edits Arabic without touching the Dhivehi override for the same key', function () {
+    $admin = actingPeopleAdmin(['translations.manage']);
+    $arFile = freshTranslation('common.dashboard', 'ar');
+    $dvFile = freshTranslation('common.dashboard', 'dv');
+
+    $this->withoutLocalizationMiddleware()->actingAs($admin)
+        ->post(route('admin.translations.save'), [
+            'group' => 'common', 'key' => 'dashboard', 'value' => 'لوحة التحكم — تصحيح', 'locale' => 'ar',
+        ])->assertSessionHasNoErrors();
+
+    expect(freshTranslation('common.dashboard', 'ar'))->toBe('لوحة التحكم — تصحيح')
+        // The whole point: one language moved and the other did not.
+        ->and(freshTranslation('common.dashboard', 'dv'))->toBe($dvFile)
+        ->and(TranslationOverride::query()->where('locale', 'ar')->count())->toBe(1)
+        ->and(TranslationOverride::query()->where('locale', 'dv')->count())->toBe(0);
+
+    // Both can hold a correction for the same key at once — the unique index
+    // is (locale, group, key), not (group, key).
+    $this->withoutLocalizationMiddleware()->actingAs($admin)
+        ->post(route('admin.translations.save'), [
+            'group' => 'common', 'key' => 'dashboard', 'value' => 'ޑޭޝްބޯޑު — ރަނގަޅު', 'locale' => 'dv',
+        ])->assertSessionHasNoErrors();
+
+    expect(freshTranslation('common.dashboard', 'ar'))->toBe('لوحة التحكم — تصحيح')
+        ->and(freshTranslation('common.dashboard', 'dv'))->toBe('ޑޭޝްބޯޑު — ރަނގަޅު')
+        ->and(TranslationOverride::query()->count())->toBe(2);
+
+    // Clearing Arabic restores the Arabic file string and leaves Dhivehi.
+    $this->withoutLocalizationMiddleware()->actingAs($admin)
+        ->post(route('admin.translations.save'), [
+            'group' => 'common', 'key' => 'dashboard', 'value' => '', 'locale' => 'ar',
+        ])->assertSessionHasNoErrors();
+
+    expect(freshTranslation('common.dashboard', 'ar'))->toBe($arFile)
+        ->and(freshTranslation('common.dashboard', 'dv'))->toBe('ޑޭޝްބޯޑު — ރަނގަޅު');
+});
+
+it('renders and exports each editable language, and defaults to Dhivehi', function () {
+    $admin = actingPeopleAdmin(['translations.manage']);
+
+    // No ?locale= means Dhivehi, so links written before Arabic existed
+    // still land where they used to.
+    $this->withoutLocalizationMiddleware()->actingAs($admin)
+        ->get(route('admin.translations.index'))
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page->component('Settings/Translations')
+            ->where('locale', 'dv')
+            ->where('locales', ['dv', 'ar'])
+            ->etc());
+
+    $this->withoutLocalizationMiddleware()->actingAs($admin)
+        ->get(route('admin.translations.index', ['locale' => 'ar']))
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page->where('locale', 'ar')->etc());
+
+    // A junk locale falls back rather than 500ing on a hand-edited URL.
+    $this->withoutLocalizationMiddleware()->actingAs($admin)
+        ->get(route('admin.translations.index', ['locale' => 'fr']))
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page->where('locale', 'dv')->etc());
+
+    $arabic = $this->withoutLocalizationMiddleware()->actingAs($admin)
+        ->get(route('admin.translations.export', ['locale' => 'ar']))
+        ->assertOk()
+        ->assertHeader('content-type', 'text/csv; charset=UTF-8');
+    expect($arabic->headers->get('content-disposition'))->toContain('arabic-translations.csv')
+        ->and($arabic->streamedContent())->toContain('file_ar');
+
+    $dhivehi = $this->withoutLocalizationMiddleware()->actingAs($admin)
+        ->get(route('admin.translations.export'))->assertOk();
+    expect($dhivehi->headers->get('content-disposition'))->toContain('dhivehi-translations.csv');
+});
+
+it('refuses a locale it does not edit, English included', function () {
+    $admin = actingPeopleAdmin(['translations.manage']);
+
+    // English is the reference. Correcting it is a code change, not an
+    // override — accepting one here would let the editor quietly fork the
+    // key set the whole catalog is built from.
+    foreach (['en', 'fr'] as $locale) {
+        $this->withoutLocalizationMiddleware()->actingAs($admin)
+            ->post(route('admin.translations.save'), [
+                'group' => 'common', 'key' => 'dashboard', 'value' => 'x', 'locale' => $locale,
+            ])->assertSessionHasErrors('locale');
+    }
+
+    $this->withoutLocalizationMiddleware()->actingAs($admin)
+        ->postJson(route('admin.translations.suggest'), [
+            'group' => 'common', 'key' => 'dashboard', 'locale' => 'en',
+        ])->assertStatus(422);
+
+    expect(TranslationOverride::query()->count())->toBe(0);
+
+    // An *absent* locale is not a rejection — it means Dhivehi, the same
+    // rule the index and export use, so a caller written before Arabic
+    // existed still works. `nullable` normalises '' to absent, so both
+    // land here.
+    $this->withoutLocalizationMiddleware()->actingAs($admin)
+        ->post(route('admin.translations.save'), [
+            'group' => 'common', 'key' => 'dashboard', 'value' => 'x',
+        ])->assertSessionHasNoErrors();
+
+    expect(TranslationOverride::query()->where('locale', 'dv')->count())->toBe(1)
+        ->and(TranslationOverride::query()->where('locale', 'ar')->count())->toBe(0);
+});
+
+it('suggests into the language being edited', function () {
+    $admin = actingPeopleAdmin(['translations.manage']);
+
+    app()->instance(\App\Support\Contracts\MachineTranslatorInterface::class, new class implements \App\Support\Contracts\MachineTranslatorInterface
+    {
+        public function translate(string $text, string $from, string $to): ?string
+        {
+            return "[{$to}] {$text}";
+        }
+    });
+
+    // The draft must be asked for in Arabic, not in Dhivehi and relabelled.
+    $this->withoutLocalizationMiddleware()->actingAs($admin)
+        ->postJson(route('admin.translations.suggest'), [
+            'group' => 'common', 'key' => 'dashboard', 'locale' => 'ar',
+        ])
+        ->assertOk()
+        ->assertJsonPath('suggestion', '[ar] '.trans('common.dashboard', [], 'en'));
 });
