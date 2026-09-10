@@ -1,6 +1,7 @@
 <?php
 
 use App\Domains\Academics\Http\Controllers\AbsenceNoteReviewController;
+use App\Domains\Academics\Http\Controllers\AbsencesTodayController;
 use App\Domains\Academics\Http\Controllers\AcademicYearController;
 use App\Domains\Academics\Http\Controllers\AnnouncementController;
 use App\Domains\Academics\Http\Controllers\AttendanceReportController;
@@ -297,6 +298,10 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
     // lives in ServeMaterialFileAction, not in a route group.
     Route::get('academics/materials/files/{file}', [MaterialFileController::class, 'show'])->name('academics.materials.files.show')->whereNumber('file');
     Route::get('academics/attendance/export', [AttendanceReportController::class, 'export'])->name('academics.attendance.export');
+    // E10b: the office's morning list, and the only place an absence with no
+    // note is visible as such.
+    Route::get('academics/attendance/absences/export', [AbsencesTodayController::class, 'export'])->name('academics.attendance.absences.export');
+    Route::get('academics/attendance/absences', [AbsencesTodayController::class, 'index'])->name('academics.attendance.absences');
     Route::get('academics/attendance/daily', [DailyAttendanceController::class, 'index'])->name('academics.attendance.daily');
     Route::post('academics/attendance/daily', [DailyAttendanceController::class, 'store'])->name('academics.attendance.daily.store');
     Route::get('academics/attendance', [AttendanceReportController::class, 'index'])->name('academics.attendance.index');
