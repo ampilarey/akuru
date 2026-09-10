@@ -3,8 +3,8 @@
 namespace App\Domains\PrayerTimes\Http\Controllers\Admin;
 
 use App\Domains\PrayerTimes\Actions\ImportPrayerTimesFromSalatDbAction;
+use App\Domains\PrayerTimes\Actions\ResolveDefaultPrayerIslandAction;
 use App\Domains\PrayerTimes\Actions\SeedSyntheticPrayerTimesAction;
-use App\Domains\PrayerTimes\Models\PrayerIsland;
 use App\Domains\Settings\Actions\GetSettingAction;
 use App\Domains\Settings\Actions\SetSettingAction;
 use App\Http\Controllers\Controller;
@@ -61,14 +61,15 @@ class ImportController extends Controller
     private function ensureDefaultIsland(): void
     {
         $current = (int) app(GetSettingAction::class)->execute('prayer.default_island_id', '0');
-        if ($current > 0 && PrayerIsland::query()->whereKey($current)->exists()) {
+        $resolved = app(ResolveDefaultPrayerIslandAction::class)->execute();
+
+        // Already pointing at a usable island: nothing to write.
+        if ($resolved !== null && $resolved === $current) {
             return;
         }
 
-        $island = PrayerIsland::query()->where('name', 'މާލެ')->orderBy('id')->first()
-            ?? PrayerIsland::query()->where('is_active', true)->orderBy('id')->first();
-        if ($island !== null) {
-            app(SetSettingAction::class)->execute('prayer.default_island_id', (string) $island->id, 'string', 'prayer', 'Default prayer island');
+        if ($resolved !== null) {
+            app(SetSettingAction::class)->execute('prayer.default_island_id', (string) $resolved, 'string', 'prayer', 'Default prayer island');
             app(SetSettingAction::class)->execute('prayer.public_page_enabled', true, 'boolean', 'prayer', 'Public prayer page');
         }
     }

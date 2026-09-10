@@ -2472,6 +2472,45 @@ turned out to be reachable from here after all. What was actually done:
   the dashboard's differs from the action's (first-active vs Malé). Prayer times
   for the wrong island are wrong times. **Next slice.**
 
+## 5bc. One rule for which island's prayer times to show (2026-09-10)
+
+- **Four implementations of one question, and the one written to be the answer
+  was called by nothing.** `ResolveDefaultPrayerIslandAction` was the second
+  uncalled Action the caller-scan found.
+  - it: setting (validated) → Malé by `name_latin` → first active;
+  - `ImportController::ensureDefaultIsland`: setting (validated) → Malé by its
+    **Dhivehi** name `މާލެ` → first active, and it *writes* the setting;
+  - `ComposeDashboardPrayerAction` and the public `PrayerTimesController`:
+    setting **unvalidated** → `listIslands()->first()`.
+- **Two consequences, both real.** `ListPrayerIslandsAction` orders by
+  `atoll_latin` then name, so the readers' "first island" is the
+  alphabetically-first *atoll* — never Malé. The Maldives is wide enough that
+  another atoll's times are wrong by minutes, and for prayer times minutes are
+  the whole point. And because neither reader validated the setting, an island
+  that had been deleted or deactivated left `resolveForIsland()` holding a dead
+  id: prayer times **silently blanked** on the dashboard and the public page
+  instead of falling back.
+- **The two Malé matchers were each half right.** The importer knew it as
+  `މާލެ`, the action as `Malé` — so each found it only on datasets the other
+  would have missed. The consolidated rule matches both.
+- **Deactivated now counts as unusable, not just deleted.** An island switched
+  off has no current times, so treating it as configured-and-fine was the same
+  bug wearing a different hat.
+- **All three readers now call the one action (rule 11)**, and the importer uses
+  it to decide what to write rather than re-deriving it.
+- **Tests: 9** — Malé over an earlier atoll, Malé by Dhivehi name, an explicit
+  choice honoured, fallback on deleted and on deactivated, first-active when
+  there is no Malé, inactive never chosen, null when there are no islands, and
+  the dashboard agreeing with everything else.
+- **A fixture fault worth noting:** `prayer_islands.category_id` is required —
+  islands belong to a B&G timing category. The fixture creates one rather than
+  pretending the column is optional.
+- **Full suite run locally against MySQL: 1012 tests, zero failures.**
+- **The caller-scan is now exhausted:** both Actions it found are fixed, and no
+  domain model is unreferenced. The two cheap structural scans (models with no
+  reader, Actions with no caller) have produced four real defects between them
+  and are worth re-running after any large slice.
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**.
