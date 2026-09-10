@@ -2668,6 +2668,35 @@ it.** I have not changed it either way.
   first — the money routes (`admin/commerce/*`) and enrolment activation are the
   next tier.
 
+## 5bh. The money routes, tested at the route (2026-09-10)
+
+- **Second tier of the untested-routes list.** `CommerceCoreTest` covers the
+  actions well — append-only ledger, hashed gift cards, discount resolution —
+  but **nothing exercised the three admin endpoints that create money**.
+- **Motivated by #218.** Having just found `/students` and `/teachers` guarded
+  by `auth` alone, a money endpoint is the last place to assume a guard holds
+  because it looks like it should.
+- **The guards are right and now pinned.** `admin/commerce/*` requires
+  `role:super_admin|admin` **and** `can:commerce.manage`. The half-privileged
+  case has its own test: an account with the admin **role** but not the
+  permission is refused, so the role alone can never mint money.
+- **What the tests assert beyond authorization:** a gift card stores only
+  `code_hash` — there is no `code` column at all, so leaking the table does not
+  leak spendable cards — and the plain value is flashed exactly once (§43.19); a
+  wallet credit writes a ledger row carrying `balance_before`/`balance_after`
+  rather than a bare balance update (rule 12); and a zero or negative "credit"
+  is refused, because removing money is a reversal and not this endpoint's job.
+- **Tests: 10** — four refusals (no role, parent, admin-without-permission,
+  anonymous), the three happy paths, and three validation refusals.
+- **A fixture fault of mine:** I asserted `amount` and `code` on `gift_cards`.
+  The columns are `original_amount`, `balance_amount` and `code_hash`. Reading
+  the schema rather than assuming it turned a wrong test into a better one — the
+  hashed-code assertion only exists because I had to look.
+- **Full suite run locally against MySQL: 1040 tests, zero failures.**
+- **~171 mutating routes remain untested.** Enrolment activation
+  (`admin/enrollments/*`) and the library payout decisions are the next tier by
+  risk: both move money or grant access.
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**.
