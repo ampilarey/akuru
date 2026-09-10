@@ -18,6 +18,12 @@ return [
         'title' => 'Daily summary — :date',
         'body' => 'Absent/late marks today: :absent. Registers still unfilled: :unfilled.',
     ],
+    'family_digest' => [
+        'title' => 'Tomorrow at school — :date',
+        'body' => ':lessons Homework due soon: :homework. New notices: :notices.',
+        'lessons' => ':count lesson(s), first is :first.',
+        'no_lessons' => 'No lessons scheduled.',
+    ],
     'request' => [
         'decision_title' => 'Your request was :status',
         'decision_body' => 'Your :type request was :status. :notes',

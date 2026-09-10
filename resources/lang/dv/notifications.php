@@ -20,6 +20,12 @@ return [
         'title' => 'ދުވަހުގެ ޚުލާސާ — :date',
         'body' => 'މިއަދު ޣައިރު ހާޒިރު/ލަސްވި: :absent. ފުރިހަމަ ނުކުރެވޭ ރަޖިސްޓަރ: :unfilled.',
     ],
+    'family_digest' => [
+        'title' => 'މާދަމާ ސްކޫލްގައި — :date',
+        'body' => ':lessons ހޯމްވޯކް: :homework. އާ ނޯޓިސް: :notices.',
+        'lessons' => ':count lesson(s), first is :first.',
+        'no_lessons' => 'No lessons scheduled.',
+    ],
     'request' => [
         'decision_title' => 'ތިޔަ އެދިވަޑައިގަތުން :status',
         'decision_body' => 'ތިޔަ :type އެދިވަޑައިގަތުން :status ވެއްޖެއެވެ. :notes',

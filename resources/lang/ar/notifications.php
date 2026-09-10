@@ -20,6 +20,12 @@ return [
         'title' => 'الملخص اليومي — :date',
         'body' => 'حالات الغياب/التأخير اليوم: :absent. السجلات غير المستكملة: :unfilled.',
     ],
+    'family_digest' => [
+        'title' => 'غدًا في المدرسة — :date',
+        'body' => ':lessons الواجبات القادمة: :homework. إشعارات جديدة: :notices.',
+        'lessons' => ':count lesson(s), first is :first.',
+        'no_lessons' => 'No lessons scheduled.',
+    ],
     'request' => [
         'decision_title' => 'تم :status طلبك',
         'decision_body' => 'تم :status طلب :type الخاص بك. :notes',
