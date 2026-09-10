@@ -184,7 +184,7 @@ export default function Show({
                                             </span>
                                         </label>
                                         {checked && (
-                                            <label className="ml-6 flex items-center gap-2 text-xs text-gray-600">
+                                            <label className="ms-6 flex items-center gap-2 text-xs text-gray-600">
                                                 <input
                                                     type="checkbox"
                                                     checked={sentHome}
@@ -219,7 +219,7 @@ export default function Show({
                         {errors?.attendance && <p className="mb-2 text-xs text-red-600">{errors.attendance}</p>}
                         <div className="overflow-x-auto">
                             <table className="min-w-full text-sm">
-                                <thead className="bg-[#F3EBE0] text-left">
+                                <thead className="bg-[#F3EBE0] text-start">
                                     <tr>
                                         <th className="px-2 py-1">Student</th>
                                         <th className="px-2 py-1">Number</th>

@@ -126,7 +126,7 @@ function Tile({ tile }) {
         </>
     );
 
-    const className = 'block rounded-xl border border-gray-200 bg-white p-4 text-left';
+    const className = 'block rounded-xl border border-gray-200 bg-white p-4 text-start';
 
     return tile.href
         ? <a className={`${className} hover:border-[#7C2D37]`} href={tile.href}>{body}</a>

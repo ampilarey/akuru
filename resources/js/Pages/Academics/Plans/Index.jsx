@@ -85,7 +85,7 @@ function PlanCard({ plan, classes, years }) {
                 <h2 className="font-semibold">{plan.title}</h2>
                 <span className="text-xs uppercase text-gray-500">{plan.status} · {plan.academic_year}</span>
             </div>
-            <ul className="mb-3 list-disc pl-5 text-sm">
+            <ul className="mb-3 list-disc ps-5 text-sm">
                 {plan.topics.map((item) => (
                     <li key={item.id}>{item.title}{item.is_completed ? ' — taught' : ''}</li>
                 ))}

@@ -34,7 +34,7 @@ export default function Show({ staff }) {
 
             <div className="overflow-x-auto rounded-lg border bg-white">
                 <table className="min-w-full text-sm">
-                    <thead className="bg-[#F3EBE0] text-left">
+                    <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">Title</th>
                             <th className="px-3 py-2">Institution</th>
@@ -48,7 +48,7 @@ export default function Show({ staff }) {
                                 <td className="px-3 py-2">{row.title}</td>
                                 <td className="px-3 py-2">{row.institution}</td>
                                 <td className="px-3 py-2">{row.year}</td>
-                                <td className="px-3 py-2 text-right">
+                                <td className="px-3 py-2 text-end">
                                     <button
                                         type="button"
                                         className="text-red-700 hover:underline"

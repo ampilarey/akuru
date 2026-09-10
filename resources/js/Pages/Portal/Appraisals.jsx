@@ -10,7 +10,7 @@ export default function Appraisals({ staff, appraisals, observations, cpd }) {
                     <h2 className="mb-2 font-medium">Appraisals</h2>
                     <div className="mb-6 overflow-x-auto rounded-lg border bg-white">
                         <table className="min-w-full text-sm">
-                            <thead className="bg-[#F3EBE0] text-left">
+                            <thead className="bg-[#F3EBE0] text-start">
                                 <tr>
                                     <th className="px-3 py-2">Cycle</th>
                                     <th className="px-3 py-2">Status</th>
@@ -27,7 +27,7 @@ export default function Appraisals({ staff, appraisals, observations, cpd }) {
                     <h2 className="mb-2 font-medium">Shared observations</h2>
                     <div className="mb-6 overflow-x-auto rounded-lg border bg-white">
                         <table className="min-w-full text-sm">
-                            <thead className="bg-[#F3EBE0] text-left">
+                            <thead className="bg-[#F3EBE0] text-start">
                                 <tr>
                                     <th className="px-3 py-2">Date</th>
                                     <th className="px-3 py-2">Class</th>
@@ -48,7 +48,7 @@ export default function Appraisals({ staff, appraisals, observations, cpd }) {
                     <h2 className="mb-2 font-medium">CPD</h2>
                     <div className="overflow-x-auto rounded-lg border bg-white">
                         <table className="min-w-full text-sm">
-                            <thead className="bg-[#F3EBE0] text-left">
+                            <thead className="bg-[#F3EBE0] text-start">
                                 <tr>
                                     <th className="px-3 py-2">Title</th>
                                     <th className="px-3 py-2">Hours</th>

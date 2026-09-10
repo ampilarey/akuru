@@ -183,7 +183,7 @@ export default function Builder({
                 <table className="min-w-full text-xs">
                     <thead className="bg-[#F3EBE0]">
                         <tr>
-                            <th className="px-2 py-2 text-left">Period</th>
+                            <th className="px-2 py-2 text-start">Period</th>
                             {DAYS.map((day) => <th key={day} className="px-2 py-2 capitalize">{day.slice(0, 3)}</th>)}
                         </tr>
                     </thead>

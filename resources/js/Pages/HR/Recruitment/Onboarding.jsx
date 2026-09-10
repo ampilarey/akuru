@@ -30,7 +30,7 @@ export default function Onboarding({ kind, staff, rows }) {
             </form>
             <div className="overflow-x-auto rounded-lg border bg-white">
                 <table className="min-w-full text-sm">
-                    <thead className="bg-[#F3EBE0] text-left">
+                    <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">Staff</th>
                             <th className="px-3 py-2">Item</th>

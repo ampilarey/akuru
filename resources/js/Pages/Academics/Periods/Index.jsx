@@ -40,7 +40,7 @@ export default function Index({ periods }) {
             {form.errors.end_time && <p className="mb-2 text-sm text-red-600">{form.errors.end_time}</p>}
             <div className="overflow-x-auto rounded-lg border bg-white">
                 <table className="min-w-full text-sm">
-                    <thead className="bg-[#F3EBE0] text-left">
+                    <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">Order</th>
                             <th className="px-3 py-2">Name</th>

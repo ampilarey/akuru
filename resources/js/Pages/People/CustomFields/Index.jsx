@@ -89,7 +89,7 @@ export default function Index({ entityType, entityTypes, fieldTypes, definitions
 
             <div className="overflow-x-auto rounded-lg border bg-white">
                 <table className="min-w-full text-sm">
-                    <thead className="bg-[#F3EBE0] text-left">
+                    <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">Key</th>
                             <th className="px-3 py-2">Label</th>
@@ -109,7 +109,7 @@ export default function Index({ entityType, entityTypes, fieldTypes, definitions
                                     {definition.show_in_admission_form ? 'admission ' : ''}
                                     {definition.active ? 'active' : 'inactive'}
                                 </td>
-                                <td className="px-3 py-2 text-right">
+                                <td className="px-3 py-2 text-end">
                                     <button
                                         type="button"
                                         className="text-red-700 hover:underline"

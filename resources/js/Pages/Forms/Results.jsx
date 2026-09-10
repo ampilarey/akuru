@@ -15,7 +15,7 @@ export default function Results({ form, rows = [] }) {
 
             <div className="overflow-x-auto rounded-lg border bg-white">
                 <table className="w-full min-w-[40rem] text-sm">
-                    <thead className="bg-[#F9F4EE] text-left">
+                    <thead className="bg-[#F9F4EE] text-start">
                         <tr>
                             {/* No respondent column at all on an anonymous form —
                                 a column of dashes invites someone to go looking. */}

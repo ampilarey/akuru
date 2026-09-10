@@ -83,7 +83,7 @@ export default function Index({ years, terms, classes, subjects, exams, competen
 
             <div className="overflow-x-auto rounded-lg border bg-white">
                 <table className="min-w-full text-sm">
-                    <thead className="bg-[#F3EBE0] text-left">
+                    <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">Student</th>
                             {exams.map((exam) => <th key={exam.id} className="px-3 py-2">{exam.name}</th>)}

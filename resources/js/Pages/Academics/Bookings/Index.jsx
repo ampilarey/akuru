@@ -95,7 +95,7 @@ export default function Index({ yearId, years, rooms, periods, bookings }) {
             </form>
             <div className="overflow-x-auto rounded-lg border bg-white">
                 <table className="min-w-full text-sm">
-                    <thead className="bg-[#F3EBE0] text-left">
+                    <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">Date</th>
                             <th className="px-3 py-2">Title</th>
@@ -146,7 +146,7 @@ function BookingRow({ booking, rooms }) {
             <td className="px-3 py-2">{roomName}</td>
             <td className="px-3 py-2 text-xs text-gray-600">{booking.start_time}–{booking.end_time}</td>
             <td className="px-3 py-2">
-                <button type="button" className="btn-secondary mr-2" disabled={form.processing} onClick={() => form.put(`/academics/bookings/${booking.id}`, { preserveScroll: true })}>Save</button>
+                <button type="button" className="btn-secondary me-2" disabled={form.processing} onClick={() => form.put(`/academics/bookings/${booking.id}`, { preserveScroll: true })}>Save</button>
                 <button type="button" className="text-sm text-red-700 underline" onClick={() => router.delete(`/academics/bookings/${booking.id}`)}>Remove</button>
             </td>
         </tr>
