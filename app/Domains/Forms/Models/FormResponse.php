@@ -10,6 +10,8 @@ class FormResponse extends Model
     protected $fillable = [
         'form_id',
         'user_id',
+        'student_id',
+        'invoice_id',
         'academic_year_id',
         'answers',
         'submitted_at',

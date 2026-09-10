@@ -28,6 +28,7 @@ class FormAdminController extends Controller
                     'is_open' => $form->isOpen(),
                     'is_anonymous' => (bool) $form->is_anonymous,
                     'requires_parent_confirmation' => (bool) $form->requires_parent_confirmation,
+                    'fee_amount' => $form->hasFee() ? (float) $form->fee_amount : null,
                     'responses' => $form->responses()->count(),
                 ]),
             'fieldTypes' => array_map(fn (FormFieldType $t): string => $t->value, FormFieldType::cases()),
@@ -109,6 +110,7 @@ class FormAdminController extends Controller
             'closes_at' => ['nullable', 'date'],
             'is_anonymous' => ['sometimes', 'boolean'],
             'requires_parent_confirmation' => ['sometimes', 'boolean'],
+            'fee_amount' => ['nullable', 'numeric', 'min:0', 'max:100000'],
             'is_published' => ['sometimes', 'boolean'],
         ]);
     }

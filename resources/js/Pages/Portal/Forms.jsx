@@ -54,8 +54,8 @@ function Field({ field, value, onChange, disabled }) {
         onChange={(e) => onChange(e.target.value)} />;
 }
 
-function FormCard({ item }) {
-    const form = useForm({ answers: {} });
+function FormCard({ item, children = [] }) {
+    const form = useForm({ answers: {}, student_id: '' });
     const closed = !item.is_open;
 
     return (
@@ -73,6 +73,14 @@ function FormCard({ item }) {
                 {closed && <span className="text-xs text-gray-500">Closed</span>}
             </div>
             {item.description && <p className="mb-3 text-sm text-gray-700">{item.description}</p>}
+            {item.fee_amount !== null && item.fee_amount !== undefined && (
+                <p className="mb-3 rounded border border-[#E6D9C8] bg-[#F9F4EE] p-2 text-xs text-gray-700">
+                    Fee: MVR {item.fee_amount.toFixed(2)}.
+                    {item.invoice_id
+                        ? ` An invoice has been raised${item.invoice_status ? ` (${item.invoice_status})` : ''} — pay it on the Invoices page.`
+                        : ' An invoice is raised when you sign up.'}
+                </p>
+            )}
             {item.is_anonymous && (
                 <p className="mb-3 text-xs text-gray-500">
                     Anonymous — your name is not recorded, so this cannot show whether you have answered.
@@ -86,6 +94,18 @@ function FormCard({ item }) {
                 }}
                 className="grid gap-3"
             >
+                {/* Only asked when the answer is genuinely ambiguous. */}
+                {children.length > 1 && item.fee_amount != null && (
+                    <label className="block text-sm">
+                        <span className="mb-1 block text-gray-600">Which child is this for?</span>
+                        <select className="form-input w-full" value={form.data.student_id}
+                            onChange={(e) => form.setData('student_id', e.target.value)}>
+                            <option value="">—</option>
+                            {children.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+                        </select>
+                        {form.errors.student_id && <span className="text-xs text-red-600">{form.errors.student_id}</span>}
+                    </label>
+                )}
                 {item.fields.map((field) => (
                     <label key={field.key} className="block text-sm">
                         <span className="mb-1 block text-gray-600">
@@ -142,7 +162,7 @@ function Pending({ rows }) {
     );
 }
 
-export default function Forms({ forms = [], pending = [] }) {
+export default function Forms({ forms = [], pending = [], children: myChildren = [] }) {
     return (
         <AppShell title="Sign-ups and surveys">
             <p className="mb-4 text-sm text-gray-600">Forms the school has sent to you.</p>
@@ -152,7 +172,7 @@ export default function Forms({ forms = [], pending = [] }) {
                 <p className="rounded-lg border bg-white p-4 text-sm text-gray-600">Nothing to fill in right now.</p>
             )}
             <ul className="grid gap-3">
-                {forms.map((item) => <FormCard key={item.id} item={item} />)}
+                {forms.map((item) => <FormCard key={item.id} item={item} children={myChildren} />)}
             </ul>
         </AppShell>
     );

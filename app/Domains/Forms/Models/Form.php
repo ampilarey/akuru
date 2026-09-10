@@ -19,6 +19,7 @@ class Form extends Model
         'closes_at',
         'is_anonymous',
         'requires_parent_confirmation',
+        'fee_amount',
         'is_published',
     ];
 
@@ -30,6 +31,7 @@ class Form extends Model
         'closes_at' => 'datetime',
         'is_anonymous' => 'boolean',
         'requires_parent_confirmation' => 'boolean',
+        'fee_amount' => 'decimal:2',
         'is_published' => 'boolean',
     ];
 
@@ -45,6 +47,12 @@ class Form extends Model
      * the trip sheet, answer whenever", and demanding dates for that would make
      * every form a scheduling exercise.
      */
+    /** A form costs money when an amount above zero was set. */
+    public function hasFee(): bool
+    {
+        return $this->fee_amount !== null && (float) $this->fee_amount > 0;
+    }
+
     public function isOpen(): bool
     {
         if (! $this->is_published) {
