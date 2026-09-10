@@ -336,9 +336,21 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::resource('teachers', TeacherController::class);
     });
 
-    // Quran Progress routes
-    Route::resource('quran-progress', QuranProgressController::class);
-    Route::post('/quran-progress/{student}/update', [QuranProgressController::class, 'updateProgress'])->name('quran-progress.update-progress');
+    // Quran Progress routes (legacy Blade screens, same block as the student
+    // and teacher ones above).
+    //
+    // These were `auth`-only, so any signed-in account could write Quran
+    // progress for any pupil. Rule 7 freezes Hifz to "namespace/route changes
+    // only" — a route guard is exactly a route change, and the freeze is scope
+    // discipline rather than production-safety (ADR-021), so this is in scope.
+    //
+    // ⚠ The Hifz **module** (`app/Domains/Hifz/routes.php`) is still `auth`-only
+    // throughout — see STATUS §5bj. That is a larger question than these two
+    // legacy routes and is not settled here.
+    Route::middleware(['role:super_admin|admin|headmaster|supervisor|teacher'])->group(function () {
+        Route::resource('quran-progress', QuranProgressController::class);
+        Route::post('/quran-progress/{student}/update', [QuranProgressController::class, 'updateProgress'])->name('quran-progress.update-progress');
+    });
 
     // Hifz Progress module
     require base_path('app/Domains/Hifz/routes.php');
