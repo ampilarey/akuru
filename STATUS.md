@@ -2166,6 +2166,49 @@ turned out to be reachable from here after all. What was actually done:
 - **Still owed:** the browser walk. Twenty merged slices are now unexecuted on
   `test.akuru.edu.mv`.
 
+## 5av. E13c — files on a material (2026-09-10)
+
+- **Finishes E13's v1 scope**, which read "title, body, **attachments**, subject,
+  tags". A worksheet a teacher *describes* is not a worksheet a pupil can print.
+- **Media owns the bytes; Academics owns the link (rules 3, 4, 11).** Files go
+  through `StorePrivateMediaAction` and come back through
+  `ReadPrivateMediaAction`. `teaching_material_files.media_file_id` is an
+  **opaque handle**, deliberately not a foreign key into Media's table — a
+  cascade there would let one domain's cleanup silently rewrite another's rows.
+  Name, mime and size are copied at upload time so listing a material never
+  reads Media's table.
+- **Removing a file deletes the link, never the stored file.** Media owns its
+  own lifecycle; a domain reaching across to delete another's bytes is how a
+  file still referenced elsewhere disappears.
+- **The authorisation is the slice.** These files are private and the download
+  route is reachable by families, so `ServeMaterialFileAction` is the only place
+  the rule exists and the controller is four lines. Two ways in and no others:
+  register staff see any material file (matching E13a's staff-wide library), and
+  a family sees a file **only where the material was sent home (E13b) on a
+  submitted register for a class their pupil is actually on**.
+- **Attaching a material to a lesson is deliberately not enough to download it.**
+  E13b's distinction is enforced a second time here, so the download route
+  cannot become a way around it. Same for drafts.
+- **"Logged in" is not "entitled",** and there is a test that says so. Without
+  that check the route would hand every uploaded worksheet to anyone with an
+  account — the single most likely way this slice could have gone wrong.
+- **Types and size are capped** at what a teacher actually hands out (PDF,
+  Office, images, audio) and 20 MB — large enough for a scanned worksheet, small
+  enough for cPanel. The mime list is enforced inside Media's action rather than
+  restated per caller.
+- **Tests: 16**, weighted towards refusals — someone else's material, a
+  disallowed type, an oversized file, a removal by a non-author, an account with
+  no pupil, an anonymous visitor, a pupil whose teacher did not send the
+  material home, a pupil on a draft register, a pupil from another class
+  entirely. The allow and refuse cases **share a seed**, so a refusal cannot
+  pass for the wrong reason: flipping only the send-home flag flips 200 to 403.
+- **Run locally against MySQL**, green first time, plus Academics, Portal,
+  Courses and Architecture (314) and the morph-map guard.
+- **Still owed:** the browser walk — and this slice wants one more than most,
+  because a real upload through cPanel's PHP limits is not something a fake
+  `UploadedFile` proves. Twenty-two merged slices are unexecuted on
+  `test.akuru.edu.mv`.
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**.

@@ -198,12 +198,84 @@ export default function Index({ materials = [], subjects = [], filters = {}, use
                                         ))}
                                     </p>
                                 )}
+                                <Files
+                                    material={material}
+                                    canEdit={material.created_by === userId}
+                                />
                             </article>
                         )
                     ))}
                 </div>
             )}
         </AppShell>
+    );
+}
+
+function humanSize(bytes) {
+    if (!bytes) return '';
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`;
+
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+function Files({ material, canEdit }) {
+    const upload = useForm({ file: null });
+    const remove = useForm({});
+    const files = material.files || [];
+
+    return (
+        <div className="mt-3 border-t pt-3">
+            {files.length === 0 ? (
+                <p className="text-xs text-gray-500">No files attached.</p>
+            ) : (
+                <ul className="space-y-1">
+                    {files.map((file) => (
+                        <li key={file.id} className="flex flex-wrap items-center gap-2 text-sm">
+                            <a
+                                className="text-[#7C2D37] underline"
+                                href={`/academics/materials/files/${file.id}`}
+                            >
+                                {file.name}
+                            </a>
+                            <span className="text-xs text-gray-500">{humanSize(file.size)}</span>
+                            {canEdit && (
+                                <button
+                                    type="button"
+                                    className="text-xs text-gray-500 underline"
+                                    onClick={() => remove.delete(`/academics/materials/files/${file.id}`, { preserveScroll: true })}
+                                >
+                                    Remove
+                                </button>
+                            )}
+                        </li>
+                    ))}
+                </ul>
+            )}
+            {canEdit && (
+                <form
+                    onSubmit={(e) => {
+                        e.preventDefault();
+                        upload.post(`/academics/materials/${material.id}/files`, {
+                            preserveScroll: true,
+                            forceFormData: true,
+                            onSuccess: () => upload.reset(),
+                        });
+                    }}
+                    className="mt-2 flex flex-wrap items-center gap-2"
+                >
+                    <input
+                        type="file"
+                        className="text-xs"
+                        onChange={(e) => upload.setData('file', e.target.files[0])}
+                    />
+                    <button type="submit" className="btn-secondary text-xs" disabled={!upload.data.file || upload.processing}>
+                        Add file
+                    </button>
+                    {upload.errors.file && <span className="text-xs text-red-600">{upload.errors.file}</span>}
+                </form>
+            )}
+        </div>
     );
 }
 
