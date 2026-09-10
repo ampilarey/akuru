@@ -3118,6 +3118,77 @@ globally.
 directly. **Verified by restoring the old logic**: 4 of the 5 fail, the tardies
 test being independent of the controller.
 
+## 5bs. Every runtime key must resolve — and the owner's list, in one place (2026-09-10)
+
+Three defects on 2026-09-10 were the same bug wearing different clothes: **a
+string looked up at runtime that nothing defined**, resolving to null or false
+instead of throwing. Permissions checked but created by no migration (§5bo). A
+config key that did not exist, sitting in the fallback of the payment webhook's
+signature check — pulling that thread found the webhook confirming payments for
+free (§5bp). Config keys that could not answer the question they were asked, so
+both settings badges were wrong (§5br). **None of them threw.** That is the
+whole problem: `config()` returns null, `->can()` returns false, and the feature
+is simply not there.
+
+`tests/Architecture/RuntimeKeysResolveTest.php` closes the family. The
+permission half already had `RoutePermissionsExistTest`; this adds the other two:
+
+- **Config keys** — every `config('a.b')` the code reads must resolve. Hard
+  assertion, **no baseline**: all resolve today, because §5bp and §5br fixed the
+  ones that did not. Keys built by concatenation (`config('payments.providers.'
+  .$name)`) and Spatie's published `permission.*` are excluded, with reasons.
+- **Route names** — every `route('name')` must be registered, against a
+  4-entry baseline.
+
+**Four `route()` calls name no registered route** and would throw
+`RouteNotFoundException` the moment they were reached. All four are in code
+nothing currently calls — **verified rather than assumed**, which is the whole
+difference between "latent" and "live":
+
+- `recitation-practices.index` / `.show` — `RecitationPracticeController` is not
+  routed at all. A dead controller; Hifz is frozen and deleting it is a scope
+  change.
+- `public.events.qr` — `EventRegistration`'s QR url builder. Nothing calls it,
+  and the model has **no `$appends`**, so serialisation never fires it.
+- `media-galleries.show` — `MediaGallery::getUrlAttribute()`. Same shape, same
+  check, same answer.
+
+Fixing the last two means *adding routes* — a feature, not a repair — so they
+are baselined rather than papered over.
+
+**One fixed:** `auth/verify.blade.php` posted to `route('verification.resend')`;
+the registered name is `verification.send`. That view is an orphan (the live
+prompt renders `auth.verify-email`), so it was never reachable, but the right
+name was one word away.
+
+**Both guards verified by breaking them**, and both carry a floor assertion so
+they cannot pass by scanning nothing if the patterns drift. Two false-positive
+classes are excluded explicitly, because both appeared in the first draft:
+`Notification::route('mail', …)` sets a channel, and `$request->route('id')`
+reads a route *parameter*. Neither is a url. A first pass then over-corrected
+and missed `redirect()->route('x')`, which *is* — the pattern now matches both
+shapes deliberately.
+
+**A scan that found nothing, recorded so it is not re-run:** events dispatched
+without a listener. 17 dispatched, and every apparent orphan was a false
+positive — Laravel framework events (`Registered`, `PasswordReset`, `Verified`,
+`Lockout`), `Job::dispatch()` calls caught by an event-shaped regex, and
+`InvoiceIssued`/`InvoiceReminderDue`, which are wired with `Event::listen()` in
+a service provider rather than a `::class =>` array. No defect.
+
+**`docs/KNOWN_ISSUES.md` now carries "Decisions only the owner can make"** — all
+14 items raised across autonomous sessions and deliberately not decided,
+collected from the STATUS sections they were scattered through. Each is phrased
+as a question with a default, so "do nothing" is a legible choice. Grouped:
+before any deploy (browser walk, `BML_WEBHOOK_SECRET`, verify the permission
+rows, rotate the super-admin password, branch protection), product scope (Wave 4
+— all seven slices verified genuinely unbuilt, ≈7½–8½ weeks, the entire
+remaining feature backlog), security and permissions (the unguarded Hifz module,
+`admin` == `super_admin`, roles that cannot ship by deploy, supervisor and paid
+courses), the repeating-pupil roster row, and the 200 untranslated strings.
+
+**The agent-buildable backlog is empty.** What remains is decisions and a deploy.
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**.
