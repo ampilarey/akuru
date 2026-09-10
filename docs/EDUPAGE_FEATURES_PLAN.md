@@ -51,10 +51,54 @@ win in the plan, ~3 days" — turned out to be shipped end to end.
 | E20 Competences | `competencies` + `competency_assessments`, `CompetencyController`, 5 routes |
 | E22 Notification centre | `UserNotification`, `NotificationTemplate`, `Device`, `NotificationController`, 3 routes |
 
-**Verified still missing** (checked in both directions — synonyms searched, and
-three false "found" results discarded as grep artefacts where the words appeared
-incidentally in `documents`, `emergency_contacts` and `terms`):
+**Verified still missing** *(as recorded on 2026-09-04 — see the correction
+below; this line is kept for the audit trail and is now out of date)*:
 E1, E2, E3, E6, E7, E8, E10, E13, E15, E16, E17, E18, E21.
+
+---
+
+## ⚠ Correction, 2026-09-10 — this plan disagreed with the code eight more times
+
+A session that built E13, E1b, E11b and E10b checked each slice against the
+codebase before starting. **Eight rows were wrong, all in the same direction as
+the 2026-09-04 audit found: work recorded as missing that already shipped.**
+
+| Row | What it says | What the code says |
+|---|---|---|
+| E1 | ~1–2 weeks, not started | `ComposePortalHomeAction` ships the **entire family half** — live tile badges, `nextSchoolDay`, prayer, `ListDayTimetableForStudentAction` — and meets E1's own acceptance criteria. Only the **teacher** half was missing (built as E1b). |
+| E2 | not started | `Message`, threads, participants, reply policy, polls all ship (E2a/E2b). |
+| E3 | not started | Homework reader, ticks and due-date defaults ship (E3a). |
+| E6 | not started | Forms domain ships end to end including fees (E6a–E6c). |
+| E7 | not started | `ResolveDashboardLandingAction` + the alternate-identity switcher ship. |
+| E10 | ~1 week | Mostly shipped; only lateness aggregation (E10a) and the absence list (E10b) were genuinely missing. |
+| E13 | ~2 weeks | Was genuinely missing and is now complete (E13a–E13c). **The one row that held.** |
+| E11 | "half built — `CalendarDay` covers only holiday/exam day types" | `CalendarDayType` has had **five** cases since it shipped — holiday, event, exam_day, closure, special_schedule — with full CRUD, a month grid, CSV export and trilingual titles. The staff calendar is done. The real gap was that the **portal** read only published two of the five (fixed as E11b). |
+
+### The dismissed "grep artefacts" were not all artefacts
+
+That audit discarded three "found" hits as incidental matches, one of them in
+`emergency_contacts`. **`emergency_contacts` is a real table**, shipped in
+`s11a_unified_student_schema` in August, and it had never been written or read
+by anything — no controller, action, route, UI or test. It was found on
+2026-09-10 by a scan for models with no reader, and built out then.
+
+### How to audit this plan, learned the hard way
+
+Reading a row and believing it has been wrong 16 times across two audits. What
+actually works, and is cheap:
+
+1. **Grep for the domain model and the table**, not the feature name.
+2. **Check for a reader, not just a writer.** The dominant defect in this
+   codebase is data captured and never surfaced — E4's noticeboard, E22's
+   notifications, E11b's calendar, the emergency contacts.
+3. **Scan structurally rather than by feature.** Models with no
+   controller/action/JSX reference, and Actions with no caller anywhere, found
+   five real defects in one session — including a privilege-escalation hole.
+   Exclude only each file's *own* path when scanning; excluding whole
+   directories hides relations and produces false positives.
+4. **Route guards usually live in route-group middleware**, not in the
+   controller. Check the enclosing group before concluding anything is
+   unguarded.
 
 **Two findings that change design, not just status:**
 
@@ -76,6 +120,7 @@ the eight built slices are void**.
 ## Wave 1 — the daily-habit core
 
 ### E1. Status-tile portal home — ~1–2 weeks
+**✅ BUILT** — family half shipped before 2026-09-10 (`ComposePortalHomeAction`); teacher half shipped as E1b (`ComposeTeacherHomeAction`, `ListDayTimetableForTeacherAction`). The open decision below was answered: **a teacher's own home, not the school-wide report**, which `ComposeStaffOverviewAction` already serves.
 **Reference:** EduPage home = tomorrow-timetable strip + tile grid with live
 status + role identity + quick-action FAB. Note that EduPage's homework digest
 independently converges on the same idea ("what is due tomorrow"), so *tomorrow*
@@ -283,6 +328,7 @@ leverage-to-effort ratio in the whole plan. Overlaps E5 — build with it if E5
 lands first, standalone otherwise.
 
 ### E10. Attendance policy depth — ~1 week
+**✅ MOSTLY BUILT** — E10a tardy→absence aggregation, E10b "who is not in today" with the absence-note join. Custom absence types and the rounding policy remain.
 Custom absence types; **tardy→absence conversion** (EduPage's example: 3 tardies
 = 1 lesson) as a configurable rule; rounding policy for part-lessons; tardy and
 early-departure summaries; a "who is absent today" staff view. Plus an integrity
@@ -305,6 +351,7 @@ one, both notified. EduPage also lets teachers book each other — include it,
 it is the same table.
 
 ### E13. Class register + materials depth — ~2 weeks
+**✅ BUILT** — E13a reusable materials library, E13b send-home with homework, E13c file attachments. v1 scope complete.
 EduPage's "Plans, preparations, standards" (333 doc pages) is a reusable
 materials library that homework and tests draw from. Akuru has lesson logs and
 teacher plan views (D3) but no library. Scope v1 narrowly: a teacher's reusable

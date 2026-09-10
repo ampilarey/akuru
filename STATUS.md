@@ -2592,6 +2592,38 @@ records that there are no live Hifz users, so the practical risk today is low.
 
 **The one-line fix is the same as the one above.** Say the word and it ships.
 
+## 5bf. The EduPage plan, corrected against the code (2026-09-10)
+
+- **The plan has now been wrong 16 times across two audits**, always in the same
+  direction: work recorded as missing that already shipped. Eight more rows were
+  found wrong this session, each caught by checking the code before starting the
+  slice rather than after.
+- **Corrected inline with evidence**, and the stale "verified still missing"
+  line is kept rather than deleted, marked out of date — the audit trail is
+  worth more than a tidy document.
+- **E1 is the sharpest example.** Filed as "~1–2 weeks, not started"; in fact
+  the entire family half shipped long ago and met E1's own acceptance criteria.
+  Only the teacher half was missing. **E13 was the one row that held.**
+- **E11's note was wrong twice over.** It says `CalendarDay` "covers only
+  holiday/exam day types"; the enum has had five cases since it shipped, with
+  full CRUD, a month grid, CSV export and trilingual titles.
+- **One dismissed "grep artefact" was real.** The 2026-09-04 audit discarded
+  three false hits, one in `emergency_contacts`. That table is real, shipped in
+  August, and had **never been written or read by anything**. Dismissing it cost
+  a month of a school having no way to record who to ring for a hurt child.
+- **Recorded how to audit it**, since reading a row and believing it has failed
+  16 times: grep the model and table rather than the feature name; check for a
+  **reader**, not just a writer, because the dominant defect here is data
+  captured and never surfaced; scan structurally (models with no reader, Actions
+  with no caller) rather than feature by feature; exclude only each file's own
+  path when scanning, because excluding whole directories hides relations and
+  manufactures false positives; and remember route guards usually live in
+  route-group middleware, not in the controller.
+- **`EDUPAGE_FEATURES_PLAN.md` is still not in CLAUDE.md's document map.** I
+  have not added it: CLAUDE.md is the governing rules file and editing my own
+  rules unasked is not mine to do. It is a one-line addition whenever the owner
+  wants it.
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**.
