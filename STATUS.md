@@ -2732,6 +2732,41 @@ changed.
 
 - **Full suite run locally against MySQL: 1050 tests, zero failures.**
 
+## 5bj. SECURITY — the legacy /quran-progress routes, and a bigger question (2026-09-10)
+
+- **I declined this twice and was wrong to.** Rule 7 freezes Hifz to
+  "**namespace/route changes only**; no behavior change, no refactor". A route
+  middleware guard **is** a route change — the exact category the rule permits —
+  and the freeze is explicitly *scope discipline*, not production-safety
+  (ADR-021). My earlier reading treated "no behavior change" as covering who may
+  reach a route; re-reading the rule properly, guarding it is in scope.
+- **The hole.** `Route::resource('quran-progress', ...)` and
+  `POST /quran-progress/{student}/update` sat in the same `auth`-only legacy
+  block as `/students` and `/teachers` (§5be), so **any signed-in account could
+  write Quran progress for any pupil** — a parent, or the pupil themselves.
+- **Fixed** with `role:super_admin|admin|headmaster|supervisor|teacher`.
+  **Teachers are admitted here**, unlike the `/students` block: recording a
+  pupil's memorisation is a teaching task, not an administrative one.
+- **Tests: 6** — no role, parent, a pupil writing their own record, a parent
+  posting an update, anonymous, and all five legitimate roles still admitted.
+- **Full suite run locally against MySQL: 1061 tests, zero failures.**
+
+### ⚠ The larger finding, not settled here
+
+`app/Domains/Hifz/routes.php` declares the **entire Hifz module** under
+`['auth', 'trackActivity']` with **no role or permission guard anywhere** —
+milestones, sessions, mistakes, enrolments, the dean/supervisor/teacher/parent
+dashboards, the mushaf and page admin. Every one of those is reachable by any
+signed-in account.
+
+That is a module-wide design question, not a two-route slip, and fixing it means
+deciding who each Hifz screen is for — dean, supervisor, teacher, parent, pupil
+— which is a product decision I should not invent. ADR-021 records no live Hifz
+users, so nothing is exposed today.
+
+**Recommended:** settle the Hifz role matrix as part of the §2b migration phase
+the freeze is waiting for, rather than bolting guards on individually.
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**.
