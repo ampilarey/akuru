@@ -2926,6 +2926,74 @@ wrong, not the code**, and the test now pins the defaulting instead.
 not fix anything. The 200-key baseline from §5bm is unchanged, and closing it
 is still a native speaker's work.
 
+## 5bo. SECURITY/DEPLOY — three screens nobody could open (2026-09-10)
+
+Found by a structural scan, not by the plan: **every permission the code
+checks, against every permission the database creates.**
+
+- **The defect.** `events.manage`, `forms.manage` and `messages.broadcast` were
+  created **only by `RoleSeeder`**. `scripts/pull-deploy-test.sh` runs
+  `php artisan migrate --force` and **never `db:seed`**, so a permission added
+  to the seeder after a deployment was set up never reaches it. All three were
+  added after the repo started: `events.manage` in August,
+  `messages.broadcast` on 2026-09-08, **`forms.manage` on 2026-09-10 — the same
+  day this was found.**
+- **It fails closed, silently, for everyone.** `->can('forms.manage')` on a
+  permission with no row returns false for **every account including
+  super_admin** — Spatie's gate check swallows `PermissionDoesNotExist` and
+  falls through to a Gate with no matching ability, and this app defines no
+  `Gate::before` super-admin bypass. Verified by probe, not assumed. So the
+  website events admin, the sign-up-sheet results and export, and staff
+  broadcast messaging return 403 to everybody, with nothing in the log to say
+  why. Broadcast is worse than a 403: `canBroadcast()` also decides whether the
+  compose-to-a-class affordance renders at all, so the feature is invisible
+  as well as refused.
+- **31 of the 34 permissions the code checks are already created by a
+  migration** — including `custom_fields.manage` and `translations.manage`.
+  These three were the outliers. The fix follows the project's own convention
+  and the `add_hifz_permissions` precedent: one additive, idempotent migration
+  (`2026_09_10_000010_seeder_only_route_permissions`).
+- **The role matrix is transcribed from `RoleSeeder`, not invented.**
+  super_admin and admin receive everything there via `Permission::all()`;
+  headmaster/supervisor/teacher are copied line for line. This migration is the
+  delivery vehicle for a decision already made.
+- **Why no test caught it:** `actingPeopleAdmin()` calls
+  `Permission::findOrCreate`, so every existing test manufactures the very row
+  whose absence is the defect. The new tests give a user a role and nothing
+  else, so the migration is the only possible source.
+- **`tests/Architecture/RoutePermissionsExistTest.php`** now requires every
+  checked permission to be created by a *migration*, hard, with no baseline —
+  all 34 pass. It carries a floor assertion so it cannot pass by finding
+  nothing if the scan patterns drift. **Verified by breaking it**: removing the
+  migration names exactly the three offenders.
+- **4 behavioural tests**, 25 assertions. 3 of the 4 fail without the
+  migration; the roleless-account test is the control and passes either way.
+
+**Correction to my own first pass.** The scan initially reported four
+permissions, including `custom_fields.manage`, because it only looked for
+`Permission::firstOrCreate(['name' => …])` and missed `RoleSeeder`'s
+array-and-loop form. `custom_fields.manage` is fine. Rescanned against both
+migrations and seeders before claiming anything — the count went 4 → 0 → 3 as
+the question got sharper.
+
+**Related, recorded not fixed — for the owner:**
+
+- **Only three of the nine roles are created by a migration** (`super_admin`,
+  `reviewer`, `writer`). `admin`, `headmaster`, `supervisor`, `teacher`,
+  `student` and `parent` exist only if `RoleSeeder` has run. Every
+  permission-granting migration in the repo, mine included, therefore no-ops
+  its role grants on a migrate-only database. That is the established pattern
+  and it works on a seeded deployment, but it means role changes cannot be
+  shipped by deploy at all. Moving role creation into a migration touches the
+  role matrix, which is a product decision.
+- **`admin` is granted `Permission::all()`, identical to `super_admin`**, while
+  the comment directly above it says "most permissions (school operations, not
+  system-level)". The code and its comment disagree; one of them is wrong.
+- **Operator check before the next deploy:** on `test.akuru.edu.mv`, confirm
+  the `permissions` table holds all 34 dotted names and that the six
+  seeder-only roles exist. This migration fixes the three rows going forward;
+  it cannot tell you what the existing database currently holds.
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**.
