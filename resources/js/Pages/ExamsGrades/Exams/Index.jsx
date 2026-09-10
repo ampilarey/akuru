@@ -1,11 +1,34 @@
 import { router, useForm } from '@inertiajs/react';
+import { useEffect } from 'react';
 import AppShell from '../../../Layouts/AppShell';
 
+/**
+ * The year an exam form should start on: the one being viewed, else the active
+ * one, else the newest. `years` is ordered by start_date descending.
+ */
+function defaultYearId(years, yearId) {
+    return yearId
+        || years.find((year) => year.status === 'active')?.id
+        || years[0]?.id
+        || '';
+}
+
+const forYear = (rows, yearId) => rows.filter(
+    (row) => String(row.academic_year_id ?? '') === String(yearId),
+);
+
 export default function Index({ years, terms, classes, subjects, rooms, examTypes, exams, ungraded, statuses, yearId }) {
+    // Terms and classes belong to a year. Offering all of them let the form
+    // open on "Extra / Term 2 / Arabic Beginners" while the table below showed
+    // Pilot Grade 5 A — the defaults wandered away from what was on screen.
+    const startYear = defaultYearId(years, yearId);
+    const startTerms = forYear(terms, startYear);
+    const startClasses = forYear(classes, startYear);
+
     const form = useForm({
-        academic_year_id: yearId || years[0]?.id || '',
-        term_id: terms[0]?.id || '',
-        class_id: classes[0]?.id || '',
+        academic_year_id: startYear,
+        term_id: startTerms[0]?.id || '',
+        class_id: startClasses[0]?.id || '',
         subject_id: subjects[0]?.id || '',
         exam_type_id: examTypes[0]?.id || '',
         name: '',
@@ -21,9 +44,9 @@ export default function Index({ years, terms, classes, subjects, rooms, examType
     });
 
     const bulk = useForm({
-        academic_year_id: yearId || years[0]?.id || '',
-        term_id: terms[0]?.id || '',
-        class_id: classes[0]?.id || '',
+        academic_year_id: startYear,
+        term_id: startTerms[0]?.id || '',
+        class_id: startClasses[0]?.id || '',
         exam_type_id: examTypes[0]?.id || '',
         name: '',
         exam_date: '',
@@ -36,6 +59,32 @@ export default function Index({ years, terms, classes, subjects, rooms, examType
         confirm_same_day: true,
         confirm_room: false,
     });
+
+    const formTerms = forYear(terms, form.data.academic_year_id);
+    const formClasses = forYear(classes, form.data.academic_year_id);
+    const bulkTerms = forYear(terms, bulk.data.academic_year_id);
+    const bulkClasses = forYear(classes, bulk.data.academic_year_id);
+
+    // Changing the year must not leave last year's term selected underneath it.
+    useEffect(() => {
+        if (!formTerms.some((row) => String(row.id) === String(form.data.term_id))) {
+            form.setData('term_id', formTerms[0]?.id || '');
+        }
+        if (!formClasses.some((row) => String(row.id) === String(form.data.class_id))) {
+            form.setData('class_id', formClasses[0]?.id || '');
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [form.data.academic_year_id]);
+
+    useEffect(() => {
+        if (!bulkTerms.some((row) => String(row.id) === String(bulk.data.term_id))) {
+            bulk.setData('term_id', bulkTerms[0]?.id || '');
+        }
+        if (!bulkClasses.some((row) => String(row.id) === String(bulk.data.class_id))) {
+            bulk.setData('class_id', bulkClasses[0]?.id || '');
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [bulk.data.academic_year_id]);
 
     return (
         <AppShell title="Exams">
@@ -66,8 +115,8 @@ export default function Index({ years, terms, classes, subjects, rooms, examType
             >
                 <h2 className="md:col-span-4 text-sm font-semibold">Schedule one exam</h2>
                 <Select label="Year" value={form.data.academic_year_id} error={form.errors.academic_year_id} onChange={(v) => form.setData('academic_year_id', v)} options={years} />
-                <Select label="Term" value={form.data.term_id} error={form.errors.term_id} onChange={(v) => form.setData('term_id', v)} options={terms} />
-                <Select label="Class" value={form.data.class_id} error={form.errors.class_id} onChange={(v) => form.setData('class_id', v)} options={classes.map((row) => ({ id: row.id, name: `${row.name} ${row.section}` }))} />
+                <Select label="Term" value={form.data.term_id} error={form.errors.term_id} onChange={(v) => form.setData('term_id', v)} options={formTerms} />
+                <Select label="Class" value={form.data.class_id} error={form.errors.class_id} onChange={(v) => form.setData('class_id', v)} options={formClasses.map((row) => ({ id: row.id, name: `${row.name} ${row.section}` }))} />
                 <Select label="Subject" value={form.data.subject_id} error={form.errors.subject_id} onChange={(v) => form.setData('subject_id', v)} options={subjects} />
                 <Select label="Type" value={form.data.exam_type_id} error={form.errors.exam_type_id} onChange={(v) => form.setData('exam_type_id', v)} options={examTypes} />
                 <label className="text-sm">
@@ -113,8 +162,8 @@ export default function Index({ years, terms, classes, subjects, rooms, examType
             >
                 <h2 className="md:col-span-4 text-sm font-semibold">Bulk: one exam per subject</h2>
                 <Select label="Year" value={bulk.data.academic_year_id} onChange={(v) => bulk.setData('academic_year_id', v)} options={years} />
-                <Select label="Term" value={bulk.data.term_id} onChange={(v) => bulk.setData('term_id', v)} options={terms} />
-                <Select label="Class" value={bulk.data.class_id} onChange={(v) => bulk.setData('class_id', v)} options={classes.map((row) => ({ id: row.id, name: `${row.name} ${row.section}` }))} />
+                <Select label="Term" value={bulk.data.term_id} onChange={(v) => bulk.setData('term_id', v)} options={bulkTerms} />
+                <Select label="Class" value={bulk.data.class_id} onChange={(v) => bulk.setData('class_id', v)} options={bulkClasses.map((row) => ({ id: row.id, name: `${row.name} ${row.section}` }))} />
                 <Select label="Type" value={bulk.data.exam_type_id} onChange={(v) => bulk.setData('exam_type_id', v)} options={examTypes} />
                 <label className="text-sm md:col-span-2">
                     <span className="mb-1 block text-gray-600">Name prefix</span>
