@@ -94,6 +94,7 @@ export default function AbsencesToday({
                                 <th className="px-3 py-2">Class</th>
                                 <th className="px-3 py-2">Periods</th>
                                 <th className="px-3 py-2">Note</th>
+                                <th className="px-3 py-2">Ring</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -125,6 +126,29 @@ export default function AbsencesToday({
                                                     <span className="block text-xs text-gray-600">{row.note_reason}</span>
                                                 )}
                                             </>
+                                        )}
+                                    </td>
+                                    <td className="px-3 py-2">
+                                        {row.emergency_contact ? (
+                                            <>
+                                                <a
+                                                    className="text-[#7C2D37] underline"
+                                                    href={`tel:${row.emergency_contact.phone}`}
+                                                >
+                                                    {row.emergency_contact.phone}
+                                                </a>
+                                                <span className="block text-xs text-gray-500">
+                                                    {row.emergency_contact.name}
+                                                    {row.emergency_contact.relationship
+                                                        ? ` · ${row.emergency_contact.relationship}`
+                                                        : ''}
+                                                    {row.emergency_contact.others > 0
+                                                        ? ` · +${row.emergency_contact.others} more`
+                                                        : ''}
+                                                </span>
+                                            </>
+                                        ) : (
+                                            <span className="text-xs text-gray-500">No contact on file</span>
                                         )}
                                     </td>
                                 </tr>
