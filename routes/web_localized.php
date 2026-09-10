@@ -322,12 +322,19 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
     Route::post('academics/requests', [SchoolRequestController::class, 'store'])->name('academics.requests.store');
     Route::post('academics/requests/{schoolRequest}/review', [SchoolRequestController::class, 'review'])->name('academics.requests.review');
 
-    // Student routes
-    Route::resource('students', StudentController::class);
-    Route::get('/students/{student}/quran-progress', [StudentController::class, 'quranProgress'])->name('students.quran-progress');
-
-    // Teacher routes
-    Route::resource('teachers', TeacherController::class);
+    // Student and teacher routes (legacy Blade screens).
+    //
+    // These sat in the `auth` group with **no role guard**, while the modern
+    // `people.*` equivalents require role:super_admin|admin|headmaster|supervisor.
+    // Any signed-in account — a parent, a pupil — could therefore list, create,
+    // edit and delete students and teachers through these, including creating
+    // user accounts with a password of their choosing. Same guard as the
+    // screens they duplicate.
+    Route::middleware(['role:super_admin|admin|headmaster|supervisor'])->group(function () {
+        Route::resource('students', StudentController::class);
+        Route::get('/students/{student}/quran-progress', [StudentController::class, 'quranProgress'])->name('students.quran-progress');
+        Route::resource('teachers', TeacherController::class);
+    });
 
     // Quran Progress routes
     Route::resource('quran-progress', QuranProgressController::class);

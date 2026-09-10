@@ -2553,6 +2553,45 @@ statuses, #16 taught-summary vs plan topic, #22 Blade counters) are judgement
 calls about intended behaviour rather than defects, and I have not guessed at
 them.
 
+## 5be. SECURITY — the legacy /students and /teachers routes had no role guard (2026-09-10)
+
+- **The hole.** `Route::resource('students', ...)` and
+  `Route::resource('teachers', ...)` sat in the `['auth', 'trackActivity']`
+  group with **no role or permission guard**, and neither controller carried an
+  `abort_unless`. The modern `people.*` screens that duplicate them require
+  `role:super_admin|admin|headmaster|supervisor`.
+- **What any signed-in account could do** — a parent reading their child's
+  portal, a pupil: list every student and teacher, open any record, edit one,
+  **delete** one, and `POST /students` to create a student **and a `User`
+  account with a password of their choosing**. That last one is privilege
+  escalation, not just disclosure.
+- **Fixed** by wrapping those routes in the same role middleware as the screens
+  they duplicate. The legacy Blade screens themselves are untouched.
+- **Tests: 8**, weighted to refusals — no role, parent, student, teacher, a
+  parent creating an account, a parent deleting a student, anonymous — plus one
+  that the four privileged roles still get in, so the guard cannot pass by
+  locking everyone out.
+- **How it was found:** a fourth structural scan — controllers with no
+  authorization signal at all. It produced ~24 hits, and **almost all were false
+  positives** because the guard lives in route-group middleware rather than the
+  controller. Checking the enclosing group before believing any of them is what
+  separated the two real hits from the noise; I had already published one bad
+  scan today and did not want a second.
+- **Full suite run locally against MySQL: 1022 tests, zero failures.**
+
+### ⚠ Left deliberately unfixed, needs an owner decision
+
+`Route::resource('quran-progress', QuranProgressController::class)` and
+`POST /quran-progress/{student}/update` are in the **same unguarded group**, so
+any signed-in account can write Quran progress for any pupil.
+
+I did not fix it: **rule 7 freezes Hifz** — "namespace/route changes only; no
+behaviour change" — and adding a guard changes who can reach it. CLAUDE.md says
+to stop and ask when an instruction conflicts, and this one does. ADR-021 also
+records that there are no live Hifz users, so the practical risk today is low.
+
+**The one-line fix is the same as the one above.** Say the word and it ships.
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**.
