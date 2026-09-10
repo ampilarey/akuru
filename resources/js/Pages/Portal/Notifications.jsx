@@ -1,4 +1,4 @@
-import { router } from '@inertiajs/react';
+import { router, useForm } from '@inertiajs/react';
 import AppShell from '../../Layouts/AppShell';
 
 const CATEGORY_LABELS = {
@@ -16,8 +16,9 @@ function when(iso) {
     return Number.isNaN(date.getTime()) ? '' : date.toLocaleString();
 }
 
-export default function Notifications({ notifications = [] }) {
+export default function Notifications({ notifications = [], categories = {}, preferences = {} }) {
     const unread = notifications.filter((n) => !n.is_read).length;
+    const prefs = useForm({ preferences });
 
     const markRead = (id) => router.post('/portal/notifications/read', id ? { id } : {}, {
         preserveScroll: true,
@@ -35,6 +36,36 @@ export default function Notifications({ notifications = [] }) {
                     </button>
                 )}
             </div>
+
+            {Object.keys(categories).length > 0 && (
+                <details className="mb-4 rounded-lg border bg-white p-4">
+                    <summary className="cursor-pointer text-sm font-medium">What reaches me</summary>
+                    <form
+                        onSubmit={(e) => {
+                            e.preventDefault();
+                            prefs.post('/portal/notifications/preferences', { preserveScroll: true });
+                        }}
+                        className="mt-3 space-y-2"
+                    >
+                        {Object.entries(categories).map(([key, label]) => (
+                            <label key={key} className="flex items-center gap-2 text-sm">
+                                <input
+                                    type="checkbox"
+                                    checked={prefs.data.preferences[key] !== false}
+                                    onChange={(e) => prefs.setData('preferences', {
+                                        ...prefs.data.preferences,
+                                        [key]: e.target.checked,
+                                    })}
+                                />
+                                {label}
+                            </label>
+                        ))}
+                        <button type="submit" className="btn-secondary mt-2" disabled={prefs.processing}>
+                            Save
+                        </button>
+                    </form>
+                </details>
+            )}
 
             {notifications.length === 0 && (
                 <p className="rounded-lg border bg-white p-4 text-sm text-gray-600">
