@@ -50,7 +50,7 @@ class ListHomeworkForStudentAction
             // E13b: only the materials the teacher chose to send home. The
             // register's own materials stay staff-side — a family needs the
             // worksheet, not "whiteboard".
-            ->with(['subject', 'homeworkMaterials'])
+            ->with(['subject', 'homeworkMaterials.files'])
             ->get();
 
         if ($logs->isEmpty()) {
@@ -85,6 +85,14 @@ class ListHomeworkForStudentAction
                             'id' => (int) $material->id,
                             'title' => (string) $material->title,
                             'body' => $material->body,
+                            // E13c. Downloading is still authorised per request
+                            // by ServeMaterialFileAction — listing a file is not
+                            // permission to fetch it.
+                            'files' => $material->files->map(fn ($file): array => [
+                                'id' => (int) $file->id,
+                                'name' => (string) $file->original_name,
+                                'size' => (int) $file->size,
+                            ])->values()->all(),
                         ])
                         ->values()
                         ->all(),

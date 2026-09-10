@@ -9,6 +9,7 @@ use App\Domains\Academics\Http\Controllers\CalendarDayController;
 use App\Domains\Academics\Http\Controllers\ClassDirectoryController;
 use App\Domains\Academics\Http\Controllers\CoursePlanController;
 use App\Domains\Academics\Http\Controllers\DailyAttendanceController;
+use App\Domains\Academics\Http\Controllers\MaterialFileController;
 use App\Domains\Academics\Http\Controllers\MeetingSlotController;
 use App\Domains\Academics\Http\Controllers\PeriodDirectoryController;
 use App\Domains\Academics\Http\Controllers\PromotionController;
@@ -287,6 +288,11 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
     Route::get('academics/materials/export', [TeachingMaterialController::class, 'export'])->name('academics.materials.export');
     Route::post('academics/materials', [TeachingMaterialController::class, 'store'])->name('academics.materials.store');
     Route::put('academics/materials/{material}', [TeachingMaterialController::class, 'update'])->name('academics.materials.update')->whereNumber('material');
+    Route::post('academics/materials/{material}/files', [TeachingMaterialController::class, 'storeFile'])->name('academics.materials.files.store')->whereNumber('material');
+    Route::delete('academics/materials/files/{file}', [TeachingMaterialController::class, 'destroyFile'])->name('academics.materials.files.destroy')->whereNumber('file');
+    // Reachable by families too, for materials sent home (E13b/E13c) — the rule
+    // lives in ServeMaterialFileAction, not in a route group.
+    Route::get('academics/materials/files/{file}', [MaterialFileController::class, 'show'])->name('academics.materials.files.show')->whereNumber('file');
     Route::get('academics/attendance/export', [AttendanceReportController::class, 'export'])->name('academics.attendance.export');
     Route::get('academics/attendance/daily', [DailyAttendanceController::class, 'index'])->name('academics.attendance.daily');
     Route::post('academics/attendance/daily', [DailyAttendanceController::class, 'store'])->name('academics.attendance.daily.store');

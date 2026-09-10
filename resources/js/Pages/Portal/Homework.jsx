@@ -45,6 +45,15 @@ function Item({ item, studentId, canTick }) {
                                         {material.body && (
                                             <span className="block whitespace-pre-wrap text-xs text-gray-600">{material.body}</span>
                                         )}
+                                        {(material.files || []).map((file) => (
+                                            <a
+                                                key={file.id}
+                                                className="mt-0.5 block text-xs text-[#7C2D37] underline"
+                                                href={`/academics/materials/files/${file.id}`}
+                                            >
+                                                {file.name}
+                                            </a>
+                                        ))}
                                     </li>
                                 ))}
                             </ul>

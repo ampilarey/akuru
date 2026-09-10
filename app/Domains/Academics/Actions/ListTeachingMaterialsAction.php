@@ -44,7 +44,7 @@ class ListTeachingMaterialsAction
                 $query->where(fn ($q) => $q->where('title', 'like', $like)->orWhere('body', 'like', $like));
             })
             ->when($keep !== [], fn ($q) => $q->orWhereIn('id', $keep))
-            ->with('subject')
+            ->with(['subject', 'files'])
             ->orderBy('title')
             ->get();
 
@@ -69,6 +69,12 @@ class ListTeachingMaterialsAction
             'tags' => $m->tags ?? [],
             'created_by' => (int) $m->created_by,
             'author' => $authors[$m->created_by] ?? 'Unknown',
+            'files' => $m->files->map(fn ($file): array => [
+                'id' => (int) $file->id,
+                'name' => (string) $file->original_name,
+                'mime' => (string) $file->mime,
+                'size' => (int) $file->size,
+            ])->values()->all(),
         ])->values();
     }
 }

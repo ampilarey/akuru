@@ -5,6 +5,7 @@ namespace App\Domains\Academics\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * A reusable teaching material.
@@ -30,6 +31,11 @@ class TeachingMaterial extends Model
     public function subject(): BelongsTo
     {
         return $this->belongsTo(Subject::class);
+    }
+
+    public function files(): HasMany
+    {
+        return $this->hasMany(TeachingMaterialFile::class);
     }
 
     public function lessonLogs(): BelongsToMany

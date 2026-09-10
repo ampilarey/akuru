@@ -2,10 +2,13 @@
 
 namespace App\Domains\Academics\Http\Controllers;
 
+use App\Domains\Academics\Actions\AttachFileToMaterialAction;
 use App\Domains\Academics\Actions\ListSubjectsAction;
 use App\Domains\Academics\Actions\ListTeachingMaterialsAction;
+use App\Domains\Academics\Actions\RemoveMaterialFileAction;
 use App\Domains\Academics\Actions\SaveTeachingMaterialAction;
 use App\Domains\Academics\Models\TeachingMaterial;
+use App\Domains\Academics\Models\TeachingMaterialFile;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -83,6 +86,34 @@ class TeachingMaterialController extends Controller
             ->execute($this->validated($request), (int) $request->user()->id, $material);
 
         return redirect()->route('academics.materials.index')->with('success', 'Material updated.');
+    }
+
+    public function storeFile(Request $request, TeachingMaterial $material): RedirectResponse
+    {
+        $this->authorizeUse($request);
+
+        $request->validate([
+            'file' => ['required', 'file', 'max:'.(AttachFileToMaterialAction::MAX_BYTES / 1024)],
+        ]);
+
+        // Ownership and the allowed types are enforced inside the action, so the
+        // rules live with the data rather than being restated per caller.
+        app(AttachFileToMaterialAction::class)->execute(
+            $material,
+            $request->file('file'),
+            (int) $request->user()->id,
+        );
+
+        return redirect()->route('academics.materials.index')->with('success', 'File added.');
+    }
+
+    public function destroyFile(Request $request, TeachingMaterialFile $file): RedirectResponse
+    {
+        $this->authorizeUse($request);
+
+        app(RemoveMaterialFileAction::class)->execute($file, (int) $request->user()->id);
+
+        return redirect()->route('academics.materials.index')->with('success', 'File removed.');
     }
 
     /**
