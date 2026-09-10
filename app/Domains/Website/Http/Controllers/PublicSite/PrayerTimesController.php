@@ -3,6 +3,7 @@
 namespace App\Domains\Website\Http\Controllers\PublicSite;
 
 use App\Domains\PrayerTimes\Actions\HonorPrayerUnsubscribeKeywordAction;
+use App\Domains\PrayerTimes\Actions\ResolveDefaultPrayerIslandAction;
 use App\Domains\PrayerTimes\Contracts\PrayerTimeProviderInterface;
 use App\Domains\Settings\Actions\GetSettingAction;
 use App\Http\Controllers\Controller;
@@ -70,10 +71,8 @@ class PrayerTimesController extends Controller
     {
         $provider = app(PrayerTimeProviderInterface::class);
         $islands = $provider->listIslands(true);
-        $defaultId = (int) app(GetSettingAction::class)->execute('prayer.default_island_id', 0);
-        if ($defaultId < 1) {
-            $defaultId = (int) ($islands->first()?->id ?? 0);
-        }
+        // Same rule as the dashboard and the importer (rule 11).
+        $defaultId = (int) (app(ResolveDefaultPrayerIslandAction::class)->execute() ?? 0);
 
         $islandId = (int) $request->query('island_id', $defaultId);
         $lat = $request->query('lat');

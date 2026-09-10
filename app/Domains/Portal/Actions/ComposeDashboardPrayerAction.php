@@ -2,8 +2,8 @@
 
 namespace App\Domains\Portal\Actions;
 
+use App\Domains\PrayerTimes\Actions\ResolveDefaultPrayerIslandAction;
 use App\Domains\PrayerTimes\Contracts\PrayerTimeProviderInterface;
-use App\Domains\Settings\Actions\GetSettingAction;
 use App\Support\Services\IslamicCalendarService;
 
 class ComposeDashboardPrayerAction
@@ -16,10 +16,10 @@ class ComposeDashboardPrayerAction
         $islamicDate = IslamicCalendarService::getCurrentIslamicDate();
         $specialDays = IslamicCalendarService::getSpecialIslamicDays();
         $provider = app(PrayerTimeProviderInterface::class);
-        $islandId = (int) app(GetSettingAction::class)->execute('prayer.default_island_id', 0);
-        if ($islandId < 1) {
-            $islandId = (int) ($provider->listIslands(true)->first()?->id ?? 0);
-        }
+        // One rule for "which island", in PrayerTimes (rule 11). This used to
+        // read the setting unvalidated and fall back to the first island by
+        // atoll — never Malé, and a deleted island blanked the tile entirely.
+        $islandId = (int) (app(ResolveDefaultPrayerIslandAction::class)->execute() ?? 0);
 
         $prayerTimes = [];
         $currentPrayer = ['prayer' => null, 'time' => null, 'is_prayer_time' => false];
