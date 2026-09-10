@@ -2,11 +2,12 @@
 
 namespace App\Domains\Forms\Actions;
 
-use App\Domains\Academics\Actions\ResolveAudienceContextAction;
+use App\Domains\Academics\Enums\ClassStudentStatus;
 use App\Domains\Forms\Models\Form;
 use App\Domains\People\Actions\GuardianCanAccessStudentAction;
 use App\Domains\People\Actions\ListGuardianChildrenAction;
 use App\Domains\People\Actions\ResolveStudentForUserAction;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 /**
@@ -84,16 +85,23 @@ class ResolveResponseStudentAction
             return $children->pluck('id')->map(fn ($id): int => (int) $id)->values()->all();
         }
 
-        $matcher = app(ResolveAudienceContextAction::class);
+        // Asked of the roster directly, by student id.
+        //
+        // The first version routed student → user account → audience context,
+        // which silently matched nothing: ListGuardianChildrenAction does not
+        // select `user_id`, so every child resolved as user 0. An indirection
+        // that degrades to "no match" rather than failing loudly is worth
+        // removing even where it would have worked.
+        $onTargetClasses = DB::table('class_student')
+            ->whereIn('student_id', $children->pluck('id'))
+            ->whereIn('class_id', $targetClasses)
+            ->where('status', ClassStudentStatus::Active->value)
+            ->pluck('student_id')
+            ->map(fn ($id): int => (int) $id)
+            ->unique();
 
         return $children
-            ->filter(function ($child) use ($matcher, $targetClasses): bool {
-                // Reuses the same class resolution the audience matcher uses,
-                // so "aimed at" means the same thing everywhere.
-                $context = $matcher->execute((int) ($child->user_id ?? 0), []);
-
-                return array_intersect($targetClasses, $context['class_ids']) !== [];
-            })
+            ->filter(fn ($child): bool => $onTargetClasses->contains((int) $child->id))
             ->pluck('id')
             ->map(fn ($id): int => (int) $id)
             ->values()
