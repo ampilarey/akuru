@@ -1861,6 +1861,43 @@ turned out to be reachable from here after all. What was actually done:
 - Still open in E22: per-category channel preferences, and SMS as a digest
   channel — which stays an owner decision for the cost reason in §5am.
 
+## 5ao. E2b-b — a thread can carry a question (2026-09-10)
+
+- **"Will your child attend the trip?" is what schools actually want from
+  messaging.** The plan puts simple polls here rather than in E6's form builder,
+  and that is right: a thread already has an audience, a delivery mechanism and
+  a reply policy, so a poll is a question attached to one — not a second system.
+- **Tallies go to the author only.** This was the genuinely close call. On a
+  class of twelve an aggregate is close to naming people — *"1 of 12 said no"*
+  identifies someone. The teacher needs the count to act on it; a parent does
+  not. A recipient sees their own answer and nothing else, and a test asserts
+  the recipient payload carries no `tallies` key at all rather than a zeroed one.
+- **Options are frozen once asked.** There is deliberately no update path:
+  rewording an option after answers exist would silently change what people
+  answered, and a response stores the *index* into that list.
+- **Answering again replaces, never adds** — a parent who mis-taps can correct
+  it and the tally still means what it says. Enforced by a unique constraint,
+  not only by the action.
+- **Two options minimum, ten maximum.** One option is not a choice, and an
+  unanswerable question sent to thirty families is worse than no question.
+- **One poll per thread**, unique-constrained: two questions in one conversation
+  is how answers get attributed to the wrong one.
+- Additive migration (rule 9); both tables are time-scoped so both carry
+  `academic_year_id` (rule 10), taken from **when the question was asked** rather
+  than whichever year is current when somebody answers.
+- The compose form offers a question only for class messages — a poll of one is
+  just a message — and a blank question box attaches nothing.
+- **Tests:** 12, including both refusal branches on option count, out-of-range
+  choice, closed poll, non-participant, replace-not-duplicate, and the
+  author-vs-recipient payload difference.
+- **Known limitation, deliberately deferred:** one answer per **user**, not per
+  **child**. A parent with two children in the same class answers once. Doing it
+  per child means resolving which of a user's children are in the thread's
+  context class, which is real work and belongs in its own slice.
+- **Process note:** this slice was committed without its STATUS entry and the
+  omission was caught afterwards, not by CI — the definition of done is not
+  machine-checked, which is exactly why it is written down.
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**.
