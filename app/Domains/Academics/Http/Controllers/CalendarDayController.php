@@ -84,7 +84,7 @@ class CalendarDayController extends Controller
 
         return response()->streamDownload(function () use ($rows): void {
             $handle = fopen('php://output', 'w');
-            fputcsv($handle, ['id', 'date', 'type', 'title', 'title_arabic', 'title_dhivehi', 'affects_timetable', 'event_id', 'notes']);
+            fputcsv($handle, ['id', 'date', 'type', 'title', 'title_arabic', 'title_dhivehi', 'affects_timetable', 'is_public', 'event_id', 'notes']);
 
             foreach ($rows as $row) {
                 fputcsv($handle, [
@@ -95,6 +95,7 @@ class CalendarDayController extends Controller
                     $row->title_arabic,
                     $row->title_dhivehi,
                     $row->affects_timetable ? '1' : '0',
+                    $row->is_public ? '1' : '0',
                     $row->event_id,
                     $row->notes,
                 ]);
@@ -117,6 +118,7 @@ class CalendarDayController extends Controller
             'title_arabic' => ['nullable', 'string', 'max:255'],
             'title_dhivehi' => ['nullable', 'string', 'max:255'],
             'affects_timetable' => ['sometimes', 'boolean'],
+            'is_public' => ['sometimes', 'boolean'],
             'event_id' => ['nullable', 'integer', 'exists:events,id'],
             'notes' => ['nullable', 'string', 'max:2000'],
         ]);
@@ -147,6 +149,7 @@ class CalendarDayController extends Controller
             'title_arabic' => $day->title_arabic,
             'title_dhivehi' => $day->title_dhivehi,
             'affects_timetable' => $day->affects_timetable,
+            'is_public' => $day->is_public,
             'event_id' => $day->event_id,
             'notes' => $day->notes,
         ];

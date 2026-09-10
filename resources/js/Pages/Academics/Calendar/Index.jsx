@@ -27,6 +27,9 @@ export default function Index({ yearId, yearStart, yearEnd, years, types, days }
         title_arabic: '',
         title_dhivehi: '',
         affects_timetable: true,
+        // E11b: closed days reach families by default; anything else is the
+        // office's until somebody says otherwise.
+        is_public: true,
         notes: '',
     });
 
@@ -83,6 +86,10 @@ export default function Index({ yearId, yearStart, yearEnd, years, types, days }
                     <input type="checkbox" checked={form.data.affects_timetable} onChange={(e) => form.setData('affects_timetable', e.target.checked)} />
                     Affects timetable
                 </label>
+                <label className="flex items-center gap-2 text-sm">
+                    <input type="checkbox" checked={form.data.is_public} onChange={(e) => form.setData('is_public', e.target.checked)} />
+                    Show to families and teachers
+                </label>
                 <button type="submit" className="btn-primary" disabled={form.processing}>Add day</button>
             </form>
 
@@ -121,12 +128,13 @@ export default function Index({ yearId, yearStart, yearEnd, years, types, days }
                             <th className="px-3 py-2">Type</th>
                             <th className="px-3 py-2">Title</th>
                             <th className="px-3 py-2">Affects timetable</th>
+                            <th className="px-3 py-2">Shown to families</th>
                             <th className="px-3 py-2" />
                         </tr>
                     </thead>
                     <tbody>
                         {days.length === 0 && (
-                            <tr><td className="px-3 py-4 text-gray-500" colSpan={5}>No calendar days yet.</td></tr>
+                            <tr><td className="px-3 py-4 text-gray-500" colSpan={6}>No calendar days yet.</td></tr>
                         )}
                         {days.map((day) => (
                             <tr key={day.id} className="border-t">
@@ -134,6 +142,7 @@ export default function Index({ yearId, yearStart, yearEnd, years, types, days }
                                 <td className="px-3 py-2">{day.type}</td>
                                 <td className="px-3 py-2">{day.title}</td>
                                 <td className="px-3 py-2">{day.affects_timetable ? 'yes' : 'no'}</td>
+                                <td className="px-3 py-2">{day.is_public ? 'yes' : 'no'}</td>
                                 <td className="px-3 py-2">
                                     <button type="button" className="text-sm text-red-700 underline" onClick={() => router.delete(`/academics/calendar/${day.id}`)}>Remove</button>
                                 </td>

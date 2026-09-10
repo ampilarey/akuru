@@ -2258,6 +2258,58 @@ turned out to be reachable from here after all. What was actually done:
   `test.akuru.edu.mv` — and this one changes where **every teacher lands**, so
   it is the slice most worth seeing before the next.
 
+## 5ax. E11b — the school calendar families can see (2026-09-10)
+
+- **Eighth plan contradiction, and the plan's own note was wrong twice over.**
+  It says E11 is half-built because "`CalendarDay` covers only holiday/exam day
+  types". The enum has had **five** types since it shipped — holiday, event,
+  exam_day, closure, special_schedule — with full CRUD, a month grid, CSV
+  export and trilingual titles. The staff calendar is done.
+- **The real gap was underneath it.** `ListCalendarHolidaysAction` returns
+  `holiday` and `closure` only, so a sports day, an exam week or a half-day
+  timetable was entered by the office and **read by nobody**. Same defect as
+  E4's noticeboard and E22's notifications: captured, never surfaced.
+- **The trap I nearly walked into.** The obvious fix is to widen that action.
+  It is used by **HR** — `AutoFillHolidayStaffAttendanceAction` and
+  `RecordStaffAttendanceAction` read it to decide which days staff are not
+  expected in. Widening it would have marked every teacher on holiday for a
+  sports day. Two questions that happen to read one table are two actions, so
+  E11b adds `ListPublicCalendarAction` and leaves the holiday read untouched.
+  A test now pins that: the holiday read must still return holidays only.
+- **An audience, not a wider whitelist.** `calendar_days` had no audience, so
+  publishing every type would have pushed internal entries — a staff meeting, a
+  note to the office — to every parent in one deploy. `is_public` is explicit,
+  because a school meeting and a parents' evening are both `event` and only one
+  is anybody's business outside the office.
+- **Backfilled, not defaulted (rule 9).** `is_public` is true exactly where the
+  portal already published the row, so **today's behaviour is preserved to the
+  row** and nothing new appears until somebody ticks it. On save, closed days
+  publish by default — a family that is not told the school is shut turns up at
+  the gate — and everything else stays internal until chosen.
+- **`notes` is never published.** It is the office's working field on a shared
+  row; publishing the row must not publish the margin.
+- **`no_school` is stated, not implied.** "special_schedule" tells a parent
+  nothing about whether to send their child in.
+- **The public website is unchanged.** `public.events.index` reads the holiday
+  action, so the open internet still sees closures only — which is right: an
+  internal parents' evening does not belong on a public page. The signed-in
+  portal seeing more than the public site is the intended asymmetry.
+- **The URL is kept, the page renamed.** `/portal/holidays` still works because
+  families may have bookmarked it; the component is now `Portal/SchoolCalendar`
+  and the nav says "School calendar", because "Holidays" became a lie.
+- **Tests: 10 new, 1 existing updated.** Default-publish for closed days,
+  default-private for everything else, all published types listed, `no_school`
+  stated, notes withheld, upcoming/past split newest-first, **the HR read left
+  alone**, the signed-in read, the anonymous refusal, and the admin save.
+- **Two of my own test errors, caught locally.** `actingAs` persists for the
+  rest of a test, so an anonymous assertion tacked onto a signed-in test is not
+  anonymous and passes for free — it is now its own test, with a comment saying
+  why. And the existing calendar fixtures straddle today, so the upcoming/past
+  split moved one of them; that assertion now covers both buckets.
+- **Full suite run locally against MySQL: 960 tests, zero failures.**
+- **Still owed:** the browser walk. Twenty-five merged slices are unexecuted on
+  `test.akuru.edu.mv`.
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**.
