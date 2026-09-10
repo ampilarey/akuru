@@ -6,6 +6,7 @@ use App\Domains\Notifications\Actions\ListMessageInboxAction;
 use App\Domains\Notifications\Actions\ListMessageRecipientsAction;
 use App\Domains\Notifications\Actions\MarkMessageThreadReadAction;
 use App\Domains\Notifications\Actions\ReplyToMessageThreadAction;
+use App\Domains\Notifications\Actions\RespondToMessagePollAction;
 use App\Domains\Notifications\Actions\ShowMessageThreadAction;
 use App\Domains\Notifications\Actions\StartClassMessageThreadAction;
 use App\Domains\Notifications\Actions\StartMessageThreadAction;
@@ -73,6 +74,9 @@ class PortalMessageController extends Controller
             'audience' => ['nullable', 'in:guardians,students,both'],
             'subject' => ['required', 'string', 'max:200'],
             'body' => ['required', 'string', 'max:5000'],
+            'poll_question' => ['nullable', 'string', 'max:200'],
+            'poll_options' => ['nullable', 'array', 'max:10'],
+            'poll_options.*' => ['nullable', 'string', 'max:100'],
         ]);
 
         // The private helpers hand back an id, not a model: Portal may not
@@ -122,7 +126,31 @@ class PortalMessageController extends Controller
             $data['subject'],
             $data['body'],
             $data['audience'] ?? 'guardians',
+            $this->pollFrom($data),
         )->id;
+    }
+
+    /**
+     * A question only exists when it was actually filled in — a blank box on
+     * the compose form must not attach an empty poll to thirty families.
+     *
+     * @param  array<string, mixed>  $data
+     * @return ?array{question: string, options: list<string>}
+     */
+    private function pollFrom(array $data): ?array
+    {
+        $question = trim((string) ($data['poll_question'] ?? ''));
+        if ($question === '') {
+            return null;
+        }
+
+        return [
+            'question' => $question,
+            'options' => array_values(array_filter(
+                array_map(fn ($o): string => trim((string) $o), $data['poll_options'] ?? []),
+                fn (string $o): bool => $o !== '',
+            )),
+        ];
     }
 
     private function canBroadcast(Request $request): bool
@@ -162,6 +190,23 @@ class PortalMessageController extends Controller
         return redirect()
             ->route('portal.messages.show', $thread)
             ->with('success', 'Reply sent.');
+    }
+
+    public function respondToPoll(Request $request, int $thread): RedirectResponse
+    {
+        $userId = $this->userId($request);
+
+        $data = $request->validate([
+            'choice' => ['required', 'integer', 'min:0'],
+        ]);
+
+        // Membership is enforced inside the action, with the same rule the
+        // thread view uses.
+        app(RespondToMessagePollAction::class)->execute($thread, $userId, (int) $data['choice']);
+
+        return redirect()
+            ->route('portal.messages.show', $thread)
+            ->with('success', 'Answer saved.');
     }
 
     private function userId(Request $request): int

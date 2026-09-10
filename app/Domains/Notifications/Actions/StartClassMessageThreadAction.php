@@ -27,6 +27,7 @@ class StartClassMessageThreadAction
         string $subject,
         string $body,
         string $audience = ListFamilyUserIdsForStudentsAction::AUDIENCE_GUARDIANS,
+        ?array $poll = null,
     ): MessageThread {
         $class = app(ListClassesTaughtByUserAction::class)
             ->execute($authorId)
@@ -60,6 +61,7 @@ class StartClassMessageThreadAction
             [
                 'context_type' => 'class_room',
                 'context_id' => $classId,
+                'poll' => $poll,
             ],
         );
     }

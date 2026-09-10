@@ -18,6 +18,8 @@ export default function Create({ recipients = [], classes = [] }) {
         audience: 'guardians',
         subject: '',
         body: '',
+        poll_question: '',
+        poll_options: ['', ''],
     });
 
     const selectedClass = classes.find((c) => String(c.id) === String(form.data.class_id));
@@ -139,6 +141,54 @@ export default function Create({ recipients = [], classes = [] }) {
                         />
                         {form.errors.body && <span className="text-xs text-red-600">{form.errors.body}</span>}
                     </label>
+
+                    {/* Only classes get a question: "will your child attend?"
+                        is a class-sized ask, and a poll of one is a message. */}
+                    {form.data.target_type === 'class' && (
+                        <fieldset className="rounded border border-[#E6D9C8] p-3">
+                            <legend className="px-1 text-xs uppercase tracking-wide text-gray-500">
+                                Ask a question (optional)
+                            </legend>
+                            <input
+                                className="form-input w-full"
+                                type="text"
+                                placeholder="e.g. Will your child attend the trip?"
+                                value={form.data.poll_question}
+                                onChange={(e) => form.setData('poll_question', e.target.value)}
+                            />
+                            {form.errors['poll.question'] && (
+                                <span className="text-xs text-red-600">{form.errors['poll.question']}</span>
+                            )}
+                            <div className="mt-2 grid gap-2 sm:grid-cols-2">
+                                {form.data.poll_options.map((option, index) => (
+                                    <input
+                                        key={index}
+                                        className="form-input w-full"
+                                        type="text"
+                                        placeholder={`Option ${index + 1}`}
+                                        value={option}
+                                        onChange={(e) => {
+                                            const next = [...form.data.poll_options];
+                                            next[index] = e.target.value;
+                                            form.setData('poll_options', next);
+                                        }}
+                                    />
+                                ))}
+                            </div>
+                            {form.data.poll_options.length < 10 && (
+                                <button
+                                    type="button"
+                                    className="mt-2 text-xs text-[#7C2D37] hover:underline"
+                                    onClick={() => form.setData('poll_options', [...form.data.poll_options, ''])}
+                                >
+                                    Add option
+                                </button>
+                            )}
+                            {form.errors['poll.options'] && (
+                                <span className="block text-xs text-red-600">{form.errors['poll.options']}</span>
+                            )}
+                        </fieldset>
+                    )}
 
                     <button
                         type="submit"
