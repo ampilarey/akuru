@@ -60,6 +60,16 @@ return [
     'webhook_hmac_algo' => env('BML_WEBHOOK_HMAC_ALGO', 'sha256'),
 
     /*
+    | Accept webhooks that carry no signature, for a sandbox with no shared
+    | secret. Off by default: an unverifiable webhook confirms payments for
+    | free, and this endpoint is the whole basis of paid access (rule 12).
+    |
+    | This governs ONLY the case where no webhook_secret is set. Once a secret
+    | is configured, a valid signature is required regardless of this flag.
+    */
+    'webhook_allow_unsigned' => (bool) env('BML_WEBHOOK_ALLOW_UNSIGNED', false),
+
+    /*
     | Optional IP allowlist for webhook (comma-separated). Empty = no allowlist.
     */
     'webhook_ip_allowlist' => array_filter(array_map('trim', explode(',', env('BML_WEBHOOK_IP_ALLOWLIST', '')))),

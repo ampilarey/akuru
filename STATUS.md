@@ -2994,6 +2994,91 @@ the question got sharper.
   seeder-only roles exist. This migration fixes the three rows going forward;
   it cannot tell you what the existing database currently holds.
 
+## 5bp. SECURITY — the BML webhook confirmed payments for free (2026-09-10)
+
+**The most serious defect found this session.** Rule 12 says access to paid
+anything depends on BML **webhook** confirmation. `POST /webhooks/bml` is
+anonymous, the IP allowlist is empty by default (`Empty = no allowlist`), and
+the signature check was the only thing between the open internet and a
+confirmed payment. It failed open two different ways.
+
+**Both proven against the running app before anything was changed** — a probe
+posted an unsigned webhook and read the payment status back:
+
+- **No secret configured** → the whole check was skipped. Unsigned POST of
+  `{"localId":"<ref>","state":"success"}` → payment `confirmed`, 5000 MVR.
+- **Secret configured, header simply absent** → `if ($signature && …)`
+  short-circuited to false and the check never ran. **An operator who had done
+  the right thing was still defenceless.** This is the worse of the two.
+- The *only* case ever rejected was a **wrong** signature — the one thing an
+  attacker has no reason to send.
+
+Anyone who could guess or observe a `merchant_reference` could mark someone's
+payment paid, which then activates the enrolment through the normal listener
+chain. `PaymentService::applyVerifiedResult` carries the comment "authoritative
+since signature was verified"; that invariant was false, and is now true.
+
+**Fixed by failing closed.** A missing signature is refused when a secret is
+configured. With no secret, the webhook is refused unless
+`BML_WEBHOOK_ALLOW_UNSIGNED` is explicitly set — a sandbox escape hatch that
+**never weakens a deployment that has a secret**: once one is configured a valid
+signature is always required, regardless of the flag. Also dropped a dead
+`?? config('bml.callback_secret')` — that key does not exist in `config/bml.php`
+and `webhook_secret` already falls back to the `BML_CALLBACK_SECRET` env.
+
+**7 tests** (`tests/Feature/Finance/BmlWebhookSignatureTest.php`): both fail-open
+paths, a wrong signature, a signature valid for a *different* body (what
+verifying the raw body buys), the custom header name, the sandbox opt-out, and
+a correctly signed webhook that does confirm — without that last one the suite
+would pass on a webhook that rejects everything, which would be its own defect.
+**Verified by restoring the old logic**: exactly the two fail-open tests fail,
+the other five pass either way as controls.
+
+**Why the suite never caught it.** `BmlWebhookTest` posts unsigned and asserts
+the payment confirms — the existing tests *documented the vulnerable behaviour
+as correct*. And `test_webhook_accepts_valid_raw_body_signature` mocks
+`verifyCallback` wholesale, so it never exercised the real branch logic.
+
+**`phpunit.xml` now sets `BML_WEBHOOK_ALLOW_UNSIGNED=true`**, because the suite
+fakes BML and shares no secret with it, and 14 call sites across 7 files post
+unsigned. The refusal paths are pinned by tests that set a secret and clear the
+flag explicitly, so the guarantee is asserted rather than assumed.
+
+**⚠ OPERATOR — before any real payment:** set `BML_WEBHOOK_SECRET` in `.env`
+and confirm BML signs with HMAC-`sha256` over the raw body under
+`X-BML-Signature` (adjust `BML_WEBHOOK_SIGNATURE_HEADER` /
+`BML_WEBHOOK_HMAC_ALGO` if their docs differ). **With no secret and no opt-out,
+no payment will confirm** — that is deliberate, and better than the alternative.
+Setting `BML_WEBHOOK_IP_ALLOWLIST` is worth doing as defence in depth.
+
+**Found by scanning `config()` keys referenced in code against the config files
+that exist** — 80 referenced, 5 unresolved. Two of the other four are real and
+recorded below; `payments.providers.` is dynamic concatenation and
+`permission.testing` is Spatie's own.
+
+## 5bq. Two config keys that silently do not exist (2026-09-10)
+
+From the same scan, neither fixed here — kept out of the security PR so it stays
+reviewable. Both are small and should go in one follow-up slice.
+
+- **`services.bml.api_key` is always empty, so the admin settings screen
+  permanently reports BML as not configured.** `SettingsController` reads
+  `! empty(config('services.bml.api_key')) || ! empty(env('BML_API_KEY'))`.
+  There is no `bml` block in `config/services.php` — BML config lives in
+  `config/bml.php` — so the first half is always null. The second half saves it
+  locally but **not on a deployment**: both `pull-deploy-test.sh` and
+  `deploy-staging-phase0.sh` run `php artisan config:cache`, and Laravel skips
+  loading `.env` entirely when config is cached, so `env()` returns null outside
+  config files. An operator asking "is BML set up?" gets a permanent "no".
+  (Unless the host exports them as real server environment variables rather
+  than via `.env`.) Fix: read `config('bml.api_key')`.
+- **`academics.attendance_tardies_per_absence` is missing from
+  `config/academics.php`.** Its three siblings — `attendance_mode`,
+  `attendance_notify`, `attendance_chronic_threshold` — are all there.
+  `ResolveAttendanceSettingsAction` passes an explicit default of `0`, so it
+  degrades safely, but a school cannot set this one globally the way it can set
+  the other three. Fix: add the key with an env fallback.
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**.

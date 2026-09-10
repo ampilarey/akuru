@@ -26,6 +26,11 @@
         <env name="APP_KEY" value="base64:i8oMr3g3LXa5WBZKOOaMkHSgf0Nm2bIpnjIXCL7p/0w="/>
         <env name="APP_MAINTENANCE_DRIVER" value="file"/>
         <env name="BCRYPT_ROUNDS" value="4"/>
+        <!-- The suite fakes BML and shares no secret with it, so webhook tests
+             post unsigned. Production fails closed without this; the refusal
+             paths are pinned in BmlWebhookSignatureTest, which sets a secret
+             and clears this flag explicitly. -->
+        <env name="BML_WEBHOOK_ALLOW_UNSIGNED" value="true"/>
         <env name="CACHE_STORE" value="array"/>
         <env name="DB_CONNECTION" value="mysql"/>
         <env name="DB_HOST" value="127.0.0.1"/>
