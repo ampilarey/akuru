@@ -2828,6 +2828,65 @@ together.
 and Arabic strings are complete and correct is a separate question, and one the
 browser walk would answer better than any grep.
 
+## 5bm. Translation coverage — measured, ratcheted, not invented (2026-09-10)
+
+The other half of §5bl. Every screen now mirrors; almost none of them speak
+Dhivehi or Arabic. This slice measures that precisely, stops it getting worse,
+and deliberately translates nothing.
+
+- **The counts, from the files: 557 English keys, 357 Dhivehi, 357 Arabic.**
+  200 English keys have no entry in either. Dhivehi and Arabic are exactly in
+  step with each other — no key is in one and not the other.
+- **152 of the 200 are referenced from Blade or JSX**, so a Dhivehi or Arabic
+  visitor reads English on a live page today. **Every one of them is
+  `public.*`**: the marketing site, admissions and checkout — the most
+  language-sensitive surface this project has, on the public website of a
+  Maldivian institute.
+- **48 have no reference anywhere**, including all 18 snake_case `common.*`
+  dashboard keys (`avg_accuracy`, `student_growth`, …). Left in the baseline
+  rather than deleted — proving a key unreachable needs a sweep for dynamic
+  lookups, which is its own slice.
+- **A defect found on the way, and fixed:** `resources/lang/en/public.php` had
+  `'Join thousands of students in their journey to learn Islam',` with the
+  `=> '...'` left off, so PHP indexed it as `0`. English rendered correctly *by
+  accident* — the key it fell back to was the sentence — while the file grew a
+  `public.0` no locale could match. It survived long enough for both Dhivehi
+  and Arabic to translate a key English did not have. The third test in the new
+  file catches this whole class.
+- **`tests/Architecture/TranslationParityTest.php` + a 200-key baseline.** Three
+  guards: Dhivehi and Arabic must move together; no new English key may ship
+  without both; no language line may be numerically indexed. **All four failure
+  branches verified by breaking them** — a new key, a one-language key, a
+  missing `=>`, and a *translated* key that must shrink the baseline.
+- Severity is not uniform, and the test header says so. A missing `public.*`
+  key degrades to English, because that group is keyed by its English sentence.
+  A missing snake_case `common.*` key would render the literal
+  `common.avg_accuracy` on screen. None of those 18 is reachable today; if one
+  is ever wired up, the baseline is where somebody finds out it needs a
+  translation first.
+
+**I did not write any Dhivehi or Arabic, and that was the point.** Inventing
+school and religious terminology for this institute is a job for someone who
+speaks the language. A machine-made string that reads *almost* right is worse
+than an obviously English one, because nobody goes back to check it. The
+ratchet makes the debt visible and bounded; closing it is a native speaker's
+commit, and each one shrinks the baseline by hand.
+
+**Two things for the owner, neither fixed here:**
+
+- **Arabic has no editor.** `ListTranslationCatalogAction::LOCALE` is hardcoded
+  to `'dv'`, so the admin translation screen and the `translation_overrides`
+  table serve Dhivehi only. A deployment can fill Dhivehi gaps without a
+  commit; Arabic can only be fixed by editing files and redeploying. Making
+  that action locale-aware is a small slice, and worth doing before anyone
+  starts translating.
+- **Only 18 of 136 Inertia pages read `props.i18n` at all.** The rest are
+  hardcoded English in JSX and are not even *reachable* by a translation key,
+  so they are outside the 557 and outside this baseline. The internal app is
+  therefore substantially further from trilingual than the file counts suggest.
+  Sizing that is a slice of its own; this entry records it so the 200 is not
+  mistaken for the whole debt.
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**.
