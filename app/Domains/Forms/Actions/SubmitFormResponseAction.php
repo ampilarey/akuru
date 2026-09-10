@@ -3,6 +3,7 @@
 namespace App\Domains\Forms\Actions;
 
 use App\Domains\Academics\Actions\ResolveAudienceContextAction;
+use App\Domains\Finance\Actions\RaiseAdHocInvoiceAction;
 use App\Domains\Forms\Enums\FormFieldType;
 use App\Domains\Forms\Models\Form;
 use App\Domains\Forms\Models\FormResponse;
@@ -21,7 +22,7 @@ class SubmitFormResponseAction
      * @param  array<string, mixed>  $answers
      * @param  list<string>  $roleNames
      */
-    public function execute(int $formId, int $userId, array $answers, array $roleNames): FormResponse
+    public function execute(int $formId, int $userId, array $answers, array $roleNames, ?int $studentId = null): FormResponse
     {
         $form = Form::query()->findOrFail($formId);
 
@@ -53,9 +54,19 @@ class SubmitFormResponseAction
             ]);
         }
 
-        return FormResponse::query()->updateOrCreate(
+        $student = app(ResolveResponseStudentAction::class)
+            ->execute($form, $userId, $roleNames, $studentId);
+
+        if ($form->hasFee() && $student === null) {
+            throw ValidationException::withMessages([
+                'student_id' => 'A paid sign-up has to be for a pupil.',
+            ]);
+        }
+
+        $response = FormResponse::query()->updateOrCreate(
             ['form_id' => $form->id, 'user_id' => $userId],
             [
+                'student_id' => $student,
                 'academic_year_id' => $form->academic_year_id,
                 'answers' => $clean,
                 'submitted_at' => now(),
@@ -66,6 +77,25 @@ class SubmitFormResponseAction
                 'confirmed_by_user_id' => null,
             ],
         );
+
+        // Raised once. Re-answering does not bill a family twice, and the
+        // existing invoice is left alone rather than cancelled and re-made —
+        // a family may already be part-way through paying it.
+        if ($form->hasFee() && $response->invoice_id === null && $student !== null) {
+            $invoice = app(RaiseAdHocInvoiceAction::class)->execute(
+                $student,
+                (float) $form->fee_amount,
+                $form->title,
+                $userId,
+                $form->closes_at?->toDateString(),
+                $form->academic_year_id,
+                ['source' => 'form', 'source_id' => (int) $form->id],
+            );
+
+            $response->update(['invoice_id' => $invoice->id]);
+        }
+
+        return $response->refresh();
     }
 
     /**

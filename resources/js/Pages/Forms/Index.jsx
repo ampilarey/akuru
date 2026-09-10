@@ -12,7 +12,8 @@ export default function Index({ forms = [], fieldTypes = [] }) {
     const form = useForm({
         title: '', description: '',
         fields: [{ label: '', type: 'text', options: [], required: false }],
-        target_audience: [], is_anonymous: false, requires_parent_confirmation: false, is_published: true,
+        target_audience: [], is_anonymous: false, requires_parent_confirmation: false,
+        fee_amount: '', is_published: true,
     });
 
     const setField = (i, patch) => form.setData('fields',
@@ -91,6 +92,18 @@ export default function Index({ forms = [], fieldTypes = [] }) {
                     {form.errors.requires_parent_confirmation && (
                         <span className="text-xs text-red-600">{form.errors.requires_parent_confirmation}</span>
                     )}
+
+                    <label className="block text-sm">
+                        <span className="mb-1 block text-gray-600">Fee (MVR, leave blank for free)</span>
+                        <input className="form-input w-full sm:w-40" type="number" min="0" step="0.01"
+                            value={form.data.fee_amount} disabled={form.data.is_anonymous}
+                            onChange={(e) => form.setData('fee_amount', e.target.value)} />
+                        <span className="mt-1 block text-xs text-gray-500">
+                            Raises an invoice per pupil when they sign up. Paid through the normal invoice
+                            screen — the amount cannot be changed once families have been invoiced.
+                        </span>
+                        {form.errors.fee_amount && <span className="text-xs text-red-600">{form.errors.fee_amount}</span>}
+                    </label>
 
                     <button type="submit" className="btn-primary justify-self-start" disabled={form.processing}>
                         Save form

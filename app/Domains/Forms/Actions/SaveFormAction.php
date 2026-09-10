@@ -39,6 +39,9 @@ class SaveFormAction
             'closes_at' => $data['closes_at'] ?? null,
             'is_anonymous' => (bool) ($data['is_anonymous'] ?? false),
             'requires_parent_confirmation' => (bool) ($data['requires_parent_confirmation'] ?? false),
+            'fee_amount' => ($data['fee_amount'] ?? null) !== null && (float) $data['fee_amount'] > 0
+                ? (float) $data['fee_amount']
+                : null,
             'is_published' => (bool) ($data['is_published'] ?? false),
         ];
 
@@ -55,11 +58,28 @@ class SaveFormAction
             ]);
         }
 
+        // An invoice is student-scoped and an anonymous answer records nobody,
+        // so there is no one to bill. Refusing beats raising invoices against
+        // a pupil the form promised not to identify.
+        if ($attributes['is_anonymous'] && $attributes['fee_amount'] !== null) {
+            throw ValidationException::withMessages([
+                'fee_amount' => 'An anonymous form cannot charge a fee.',
+            ]);
+        }
+
         if ($form !== null) {
             // Questions are frozen once anyone has answered: rewording or
             // reordering them would silently change what past answers meant.
             if ($form->responses()->exists()) {
-                unset($attributes['fields'], $attributes['is_anonymous'], $attributes['requires_parent_confirmation']);
+                // The price is frozen with the questions: changing it after
+                // some families have been invoiced would bill later ones
+                // differently for the same trip.
+                unset(
+                    $attributes['fields'],
+                    $attributes['is_anonymous'],
+                    $attributes['requires_parent_confirmation'],
+                    $attributes['fee_amount'],
+                );
             }
 
             $form->update($attributes);

@@ -6,6 +6,7 @@ use App\Domains\Academics\Actions\ResolveAudienceContextAction;
 use App\Domains\Forms\Models\Form;
 use App\Domains\Forms\Models\FormResponse;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 
 /**
  * The forms aimed at this person, and whether they have answered.
@@ -40,6 +41,13 @@ class ListFormsForUserAction
             ->get()
             ->keyBy('form_id');
 
+        // Paid state is read from the invoice, never copied onto the response:
+        // two records of whether a family has paid is one more than a school
+        // can reconcile.
+        $invoices = DB::table('invoices')
+            ->whereIn('id', $mine->pluck('invoice_id')->filter())
+            ->pluck('status', 'id');
+
         return $forms
             ->filter(fn (Form $form): bool => $matcher->matches($form->target_audience, $form->target_classes, $context))
             ->map(fn (Form $form): array => [
@@ -57,6 +65,9 @@ class ListFormsForUserAction
                     ? null
                     : $mine->get($form->id)?->submitted_at?->toIso8601String(),
                 'requires_parent_confirmation' => (bool) $form->requires_parent_confirmation,
+                'fee_amount' => $form->hasFee() ? (float) $form->fee_amount : null,
+                'invoice_id' => $mine->get($form->id)?->invoice_id,
+                'invoice_status' => $invoices[$mine->get($form->id)?->invoice_id ?? 0] ?? null,
                 // A pupil whose answer is still waiting must be told: otherwise
                 // the form looks finished to them and nobody chases the parent.
                 'awaiting_confirmation' => (bool) $form->requires_parent_confirmation

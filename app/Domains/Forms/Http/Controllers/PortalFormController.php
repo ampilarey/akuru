@@ -6,6 +6,7 @@ use App\Domains\Forms\Actions\ConfirmFormResponseAction;
 use App\Domains\Forms\Actions\ListFormsForUserAction;
 use App\Domains\Forms\Actions\ListPendingConfirmationsAction;
 use App\Domains\Forms\Actions\SubmitFormResponseAction;
+use App\Domains\People\Actions\ListGuardianChildrenAction;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -26,6 +27,12 @@ class PortalFormController extends Controller
             // E6b: a guardian's queue. Without it, "unconfirmed" is a silent
             // state nobody acts on.
             'pending' => app(ListPendingConfirmationsAction::class)->execute((int) $user->id)->all(),
+            'children' => app(ListGuardianChildrenAction::class)
+                ->executeForGuardianUserId((int) $user->id)
+                ->map(fn ($c): array => [
+                    'id' => (int) $c->id,
+                    'name' => trim(($c->first_name ?? '').' '.($c->last_name ?? '')),
+                ])->values(),
         ]);
     }
 
@@ -48,6 +55,9 @@ class PortalFormController extends Controller
 
         $data = $request->validate([
             'answers' => ['required', 'array'],
+            // A guardian with several eligible children has to say which one;
+            // guessing is how the wrong family gets billed.
+            'student_id' => ['nullable', 'integer'],
         ]);
 
         // Audience and open/closed are both enforced inside the action, with
@@ -57,6 +67,7 @@ class PortalFormController extends Controller
             (int) $user->id,
             $data['answers'],
             $user->getRoleNames()->all(),
+            isset($data['student_id']) ? (int) $data['student_id'] : null,
         );
 
         return redirect()->route('portal.forms')->with('success', 'Answer submitted.');

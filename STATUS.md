@@ -2021,6 +2021,53 @@ turned out to be reachable from here after all. What was actually done:
   through existing Commerce actions (rule 11), with money rule 12 intact:
   access depends on the BML **webhook**, never the return URL.
 
+## 5as. E6c — a sign-up that costs money (2026-09-10)
+
+- **I asked for a decision on the semantics and was told "Next", so these are my
+  calls, stated plainly and cheap to change.** The money rules themselves were
+  never in doubt; the product questions underneath them were.
+- **Money rule 12 holds by construction.** Nothing in Forms confirms a payment.
+  The invoice is raised through Finance and paid through the portal's **existing**
+  BML flow, so access still follows the webhook and never a return URL. E6c does
+  not build a second checkout.
+- **Rule 11 held:** the new `RaiseAdHocInvoiceAction` lives in **Finance**, not
+  Forms. A sign-up sheet that grew its own money tables would be a second
+  invoice system. `meta.source` records what raised it, so an invoice is always
+  traceable rather than appearing from nowhere on a family's statement.
+- **Paid state is never copied onto the response.** It is read from the invoice.
+  Two records of whether a family has paid is one more than a school can
+  reconcile — a test changes the invoice and asserts the form view follows.
+- **Signing up is not gated on paying.** The answer is recorded and an invoice
+  is raised; whether an unpaid family has a seat is a school decision, not one
+  the schema should make silently. The existing scheduled
+  `invoices:send-reminders` already chases them, so nothing new was built for
+  that either.
+- **The genuinely ambiguous part, handled rather than guessed:** invoices are
+  student-scoped, so a fee needs to know *which pupil*. A pupil answering for
+  themselves is unambiguous. A guardian with exactly one child the form is
+  aimed at is unambiguous — narrowing by the form's own class targeting is what
+  makes the common case silent. A guardian with **several** must say which, and
+  the named child is checked against their own children rather than trusted.
+  Guessing is how the wrong family gets billed.
+- **Raised once.** Re-answering does not bill a family twice, and the existing
+  invoice is left alone rather than cancelled and re-made — a family may already
+  be part-way through paying it.
+- **The price freezes once anyone has been invoiced**, alongside the questions
+  and the anonymity flag. Changing it would bill later families differently for
+  the same trip.
+- **Anonymous and a fee are refused together**, for the same reason as anonymous
+  and confirmation: there is nobody to bill, and raising an invoice against a
+  pupil the form promised not to identify would break the promise.
+- **Tests:** 11 covering the anonymous refusal, single invoice with correct
+  student and traceable meta, free forms raising nothing, no double billing,
+  the unambiguous-guardian case, the **refuses-to-guess** case, the named-child
+  case, a child that is not theirs, an account with no pupil, the frozen price,
+  and paid state following the invoice.
+- **Open questions I would still put to the owner**, none of which block what
+  shipped: whether an unpaid sign-up should expire, whether a paid form should
+  enforce a seat limit (the events module has one; forms do not), and whether a
+  confirmed-but-unpaid answer needs its own treatment. All three are additive.
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**.
