@@ -2697,6 +2697,41 @@ it.** I have not changed it either way.
   (`admin/enrollments/*`) and the library payout decisions are the next tier by
   risk: both move money or grant access.
 
+## 5bi. Enrolment activation, tested at the route (2026-09-10)
+
+- **`AdminRouteNamesTest` proved the routes exist; nothing tested what they do
+  or who may do it.** Activating an enrolment grants somebody a place on a
+  course, so "the name is registered" is not coverage.
+- **My untested-routes list is thinner in this tier than I claimed.** Refunds
+  and manual payments already have route coverage — they showed as untested
+  because the test used a raw path rather than `route()`. Said plainly because I
+  quoted "185" twice: the real number of *high-risk* uncovered routes is smaller,
+  and the list is a starting point rather than a score.
+- **Tests: 10** — four refusals (no role, parent, teacher, anonymous), all four
+  admissions roles activating, `enrolled_at` stamped, the original join date
+  preserved on a re-activation (`enrolled_at ?? now()`), rejection, and a parent
+  refused rejection.
+- **SMS stays off the wire** because `phpunit.xml` sets `SMS_LIVE=false`. Both
+  endpoints message a family on success, and a suite that texted real people
+  would be a worse defect than the one being covered — so it is asserted in the
+  file header rather than assumed.
+
+### ⚠ Two things recorded rather than changed
+
+**Activating does not require payment.** That is a **manual override** and does
+not contradict money rule 12: that rule governs *automatic* access following the
+BML webhook, never the return URL. A named member of staff admitting an unpaid
+pupil is a different thing from the system doing it by accident. The test
+records the behaviour without blessing it.
+
+**A supervisor can grant a place on a paid course.** `admin/enrollments/*` is
+guarded by role alone, while the money endpoints next door additionally require
+`can:payments.refund` / `can:payments.record`. Tightening this would change who
+can do their job during admissions, so it is raised for the owner rather than
+changed.
+
+- **Full suite run locally against MySQL: 1050 tests, zero failures.**
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**.
