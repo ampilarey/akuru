@@ -3056,10 +3056,9 @@ that exist** — 80 referenced, 5 unresolved. Two of the other four are real and
 recorded below; `payments.providers.` is dynamic concatenation and
 `permission.testing` is Spatie's own.
 
-## 5bq. Two config keys that silently do not exist (2026-09-10)
+## 5bq. Two config keys that silently do not exist (2026-09-10) — FIXED in §5br
 
-From the same scan, neither fixed here — kept out of the security PR so it stays
-reviewable. Both are small and should go in one follow-up slice.
+From the same scan, neither fixed in the security PR, so it stayed reviewable.
 
 - **`services.bml.api_key` is always empty, so the admin settings screen
   permanently reports BML as not configured.** `SettingsController` reads
@@ -3078,6 +3077,46 @@ reviewable. Both are small and should go in one follow-up slice.
   `ResolveAttendanceSettingsAction` passes an explicit default of `0`, so it
   degrades safely, but a school cannot set this one globally the way it can set
   the other three. Fix: add the key with an env fallback.
+
+## 5br. Both integration badges lied, in opposite directions (2026-09-10)
+
+The §5bq follow-up. The admin settings screen shows a green ✅ "Configured" or
+amber ⚠️ "Not Configured" badge for SMS and BML. Both read keys that could not
+answer the question they were asked.
+
+- **SMS was always green.** It checked `services.sms_gateway.url`, which carries
+  a non-empty default (`https://akuru.edu.mv/api/v2`), so `! empty()` could
+  never be false. An operator saw "Configured" with **no API key at all**.
+  This is the dangerous direction, and worse than the BML half: this school
+  texts families when a child is absent, and false reassurance means nobody
+  goes looking when those texts silently fail.
+- **BML was always amber on a deployment.** It checked
+  `services.bml.api_key`, which does not exist, then fell through to
+  `env('BML_API_KEY')`. Both deploy scripts run `config:cache`, after which
+  Laravel never loads `.env`, so `env()` returns null. **It read correctly on a
+  developer machine, which is exactly why it survived.**
+
+Each badge now reads what the code it describes actually requires:
+`SmsGatewayService` needs the Dhiraagu credentials or the gateway `api_key`
+(it has two send paths, and the badge honours both), and
+`BmlPaymentProvider::initiate` needs `bml.api_key` and `bml.base_url`.
+
+**A new warning, from the trap §5bp created.** An `api_key` is enough to send a
+family to the BML payment page, but since the webhook now fails closed, a
+deployment with no `webhook_secret` will **take the money and never grant
+access**. The card now says "⚠️ No webhook secret — payments will not confirm"
+in that exact state. Better to say it on the screen the operator is already
+looking at than only in a STATUS entry.
+
+`academics.attendance_tardies_per_absence` added to `config/academics.php`
+alongside its three siblings, with an `ATTENDANCE_TARDIES_PER_ABSENCE` env
+fallback. It degraded safely before (the Action passes an explicit `0`), but it
+was the only one of the four attendance settings a school could not set
+globally.
+
+**5 tests**, 20 assertions, including the two "always wrong" regressions
+directly. **Verified by restoring the old logic**: 4 of the 5 fail, the tardies
+test being independent of the controller.
 
 ## 6. Out of scope (unchanged)
 
