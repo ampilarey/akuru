@@ -1761,6 +1761,62 @@ turned out to be reachable from here after all. What was actually done:
   data), a rounding policy for part-lessons, and the integrity story for
   parent-submitted absence notes that EduPage's docs address explicitly.
 
+## 5am. E22a — notifications reach a human, and messages emit them (2026-09-10)
+
+- **The finding is the biggest of the session.** `user_notifications` has been
+  written for months by **five features** — `NotifyUnfilledRegistersAction`,
+  `NotifyRequestDecisionAction`, `NotifySubstituteAssignedAction`,
+  `NotifyExpiringDocumentsAction`, `NotifyAdminDailyDigestAction` — and **no
+  human could read a single one**. `/notifications` returns JSON that nothing
+  calls, and `resources/views/notifications/index.blade.php` was rendered by no
+  route at all. Every notification those features have ever raised went into a
+  table and stopped there.
+- **The plan calls E22 "ALREADY BUILT".** The models and the writers are real;
+  the reading half never existed. Fifth time the plan and the code disagreed.
+- **The mirror-image gap in my own recent work:** E2a and E2b shipped delivery
+  with no announcement. A teacher could broadcast to thirty families and none
+  of them would be told — the only hint was the portal-home unread badge, which
+  requires visiting first. A notice about tomorrow is no use found next week.
+- **What shipped:** `ListUserNotificationsAction` and
+  `MarkUserNotificationsReadAction`, a `Portal/Notifications` page, an **unread
+  count in the AppShell chrome** so notifications are reachable from any screen,
+  and `NotifyMessageRecipientsAction` wired into thread start and reply.
+- **The announcement can never be wider than the delivery.** Both thread actions
+  already compute their exact audience — including the `author_only` case — and
+  the notifier is handed that list rather than re-deriving it. A test asserts a
+  parent's reply under `author_only` notifies the teacher and no other family;
+  re-deriving would have leaked the reply to five households.
+- **In-app only, deliberately.** SMS costs real money per message and is gated
+  on `APP_ENV=production` plus an explicit `SMS_LIVE` (#86). A class broadcast is
+  exactly the shape of feature that turns a wiring mistake into a bill, so
+  whether messages send SMS stays an **owner decision**, not a default.
+- **`read_at` is the source of truth**, not `status` — the model's own `unread()`
+  scope uses it and `status` carries delivery state. Marking read is scoped by
+  user id **inside the query**, so a hand-posted id belonging to someone else
+  matches nothing rather than being found and then rejected. Tested.
+- **The existing `/notifications` JSON route is untouched**, so any future API
+  caller keeps working; the new page sits at `/portal/notifications`.
+- **The orphan Blade view was deleted** — same reasoning as §5ak. It called
+  `/api/notifications*` endpoints and was rendered by nothing; leaving it is how
+  the next reader concludes a notification centre exists.
+- **Notifications carry an href where the writer supplies one**, and render as
+  plain text where none exists rather than as a dead link. Message notifications
+  deep-link to their thread.
+- **Tests:** 11 action tests (ordering, cross-user isolation both for listing and
+  for the count, mark-one vs mark-all, the hand-posted-id case, message
+  dispatch, author not told about their own message, class fan-out, the
+  author-only leak case, preview truncation) and 6 HTTP tests.
+- **Browser-verified:** the chrome shows "Alerts 1" with a badge and plain
+  "Alerts" at zero; the unread row deep-links to its thread while the read row
+  with no href stays plain text; "Mark read" appears only on unread rows and
+  "Mark all read" only when something is unread. Zero page errors.
+- `seedFamilyAndTeacher()` moved to `tests/Support/MessagingTestHelpers.php` —
+  third time this lesson has come up, now applied without being caught by CI.
+- **Still open in E22:** per-category channel preferences ("which categories
+  reach me, on which channel"), and the daily digest that EduPage pairs with a
+  "what is due tomorrow" list — it would compose E1's next-day strip with E3's
+  homework list and is the most parent-friendly idea in their design.
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**.

@@ -122,6 +122,7 @@ use App\Domains\Portal\Http\Controllers\PortalLearningController;
 use App\Domains\Portal\Http\Controllers\PortalLeaveBalanceController;
 use App\Domains\Portal\Http\Controllers\PortalMeetingController;
 use App\Domains\Portal\Http\Controllers\PortalMessageController;
+use App\Domains\Portal\Http\Controllers\PortalNotificationController;
 use App\Domains\Portal\Http\Controllers\PortalPayslipController;
 use App\Domains\Portal\Http\Controllers\PortalPerformanceController;
 use App\Domains\Portal\Http\Controllers\PortalReportCardController;
@@ -167,6 +168,10 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
     Route::get('/portal/behavior', [PortalBehaviorController::class, 'index'])->name('portal.behavior');
     Route::get('/portal/absence-notes', [PortalAbsenceNoteController::class, 'index'])->name('portal.absence-notes');
     Route::post('/portal/absence-notes', [PortalAbsenceNoteController::class, 'store'])->name('portal.absence-notes.store');
+    // Notification centre (E22a) — the page for rows five features already write.
+    Route::get('/portal/notifications', [PortalNotificationController::class, 'index'])->name('portal.notifications');
+    Route::post('/portal/notifications/read', [PortalNotificationController::class, 'markRead'])->name('portal.notifications.read');
+
     // Noticeboard (E4) — the reader for announcements' audience targeting.
     Route::get('/portal/announcements/export', [PortalAnnouncementController::class, 'export'])->name('portal.announcements.export');
     Route::get('/portal/announcements', [PortalAnnouncementController::class, 'index'])->name('portal.announcements');

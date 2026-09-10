@@ -70,7 +70,14 @@ class StartMessageThreadAction
                 ]);
             }
 
-            return $thread->fresh();
+            $thread = $thread->fresh();
+
+            // The audience is exactly the recipients resolved above, so the
+            // announcement can never reach further than the delivery did.
+            app(NotifyMessageRecipientsAction::class)
+                ->execute($thread, $authorId, $recipients, $body);
+
+            return $thread;
         });
     }
 

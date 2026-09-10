@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Domains\Notifications\Actions\ListUserNotificationsAction;
 use App\Domains\Portal\Actions\ResolveDashboardLandingAction;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
@@ -59,6 +60,10 @@ class HandleInertiaRequests extends Middleware
                 // UI can say it exists. Costs no query: Spatie already has the
                 // roles in memory, and this runs on every Inertia response.
                 'alternate' => $this->alternateIdentity($request),
+                // E22a: five features have been writing notifications nobody
+                // could see. One indexed COUNT per Inertia response is the
+                // price of them being discoverable from any page.
+                'unread_notifications' => $this->unreadNotifications($request),
             ],
             'flash' => [
                 'success' => $request->session()->get('success'),
@@ -78,6 +83,15 @@ class HandleInertiaRequests extends Middleware
                 ),
             ],
         ];
+    }
+
+    private function unreadNotifications(Request $request): int
+    {
+        $user = $request->user();
+
+        return $user === null
+            ? 0
+            : app(ListUserNotificationsAction::class)->unreadCount((int) $user->id);
     }
 
     /**
