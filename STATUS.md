@@ -3525,6 +3525,56 @@ required."* → *"The question field is required."*
 **E6a otherwise works end to end**: with a question filled, **"Form saved."**,
 listed as *"Ramadan iftar — headcount · OPEN · 0 responses"*.
 
+## 5bz. The app walked in Dhivehi and Arabic — mechanics sound, one bidi defect (2026-09-10)
+
+§5bl shipped RTL-safety and §5bm/§5bn the translation layer, and **the app had
+never once been looked at in Dhivehi or Arabic**. Given §5by — a defect in the
+translation layer that a thousand tests missed — that was the obvious place to
+look next.
+
+**The mechanics are right.** `/en`, `/dv` and `/ar` on the staff overview:
+
+| locale | `lang` | `dir` | computed | horizontal scroll |
+|---|---|---|---|---|
+| en | `en` | `ltr` | ltr | none |
+| dv | `dv` | `rtl` | rtl | **none** |
+| ar | `ar` | `rtl` | rtl | **none** |
+
+No page errors in any locale. The layout genuinely mirrors: nav, brand, stat
+cards and table headers all move to the right edge, and **nothing overflows
+horizontally** — which is §5bl's logical-utility conversion doing its job.
+
+**One real rendering defect, and only a browser could show it.** An English
+sentence inside an RTL page has its trailing full stop moved to the **front**:
+
+> `.No exams still in marks entry after the exam date`
+
+The DOM string is correct — `"No exams still in marks entry after the exam
+date."` — and the element resolves `direction: rtl; unicode-bidi: isolate`. This
+is the Unicode bidi algorithm placing a neutral character at the visual left of
+an RTL paragraph. It affects **every untranslated English sentence on a Dhivehi
+or Arabic page**, which today is most of them.
+
+**The fix is one CSS rule, and it is deliberately not applied here.**
+`unicode-bidi: plaintext` on text-bearing elements under `[dir="rtl"]` resolves
+each paragraph's direction from its first strong character. Tested by injecting
+it live: the sentence renders correctly, period at the end.
+
+But `plaintext` also resolves `text-align: start` against the *paragraph's* new
+direction, so English text becomes **left**-aligned on an RTL page. With ~87% of
+the interface still English (§5bm: 18 of 136 Inertia pages read `props.i18n`),
+that would left-align nearly every line on every Dhivehi and Arabic screen.
+
+That is a visible design change across the whole RTL experience, not a bug fix,
+and it is the owner's call — the same category as the nav. It also **shrinks to
+nothing as translation progresses**: once a string is Dhivehi, its first strong
+character is Thaana and it aligns right on its own. Deciding it now, against a
+mostly-English UI, would be optimising for a state the project is trying to
+leave.
+
+Before/after screenshots captured. Whoever takes this decision should look at
+both rather than the description.
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**.
