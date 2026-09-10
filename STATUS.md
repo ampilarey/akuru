@@ -2431,6 +2431,47 @@ turned out to be reachable from here after all. What was actually done:
   `FeeStructure::items()`. Excluding only the model's own file fixed it. Worth
   recording so the check is re-run correctly rather than trusted blindly.
 
+## 5bb. Password reset by email could not find staff-created accounts (2026-09-10)
+
+- **The defect.** `OtpPasswordResetController` resolves a person by looking up
+  `user_contacts`, not `users.email`. Accounts created through the People
+  screens — **every teacher and student account made by staff** — have a
+  `users.email` and no contact row, so the lookup found nothing. The flow
+  deliberately does not reveal whether an account exists, so the person is told
+  *"if that contact is registered, a code has been sent"* and simply never
+  receives one. No error, no log, no support signal.
+- **The fix already existed and was called by nothing.**
+  `EnsureVerifiedEmailContactAction` does exactly this job. Only the public
+  enrolment paths ever created contact rows, by hand, inline.
+- **It also had a latent bug, found while making it live.**
+  `user_contacts(type, value)` is **globally unique**, and the action used
+  `firstOrCreate` on those two columns — so where the address already belonged
+  to somebody else it returned *their* row and the caller would have believed it
+  had ensured a contact for this user. That would point one person's password
+  reset at another person's account. It now returns null instead, and leaves the
+  other row alone: two accounts contesting an address needs a human.
+- **Wired into the three account-creation paths** — `CreateUserAction` and the
+  teacher and student controllers.
+- **`identity:backfill-email-contacts`** for accounts that already exist,
+  idempotent and additive (rule 9), with `--dry-run`. It **reports** contested
+  addresses rather than resolving them, listing the accounts that still cannot
+  reset by email.
+- **Tests: 8**, including the end-to-end walk that is the actual point: backfill
+  an existing account, post the reset form, and assert the flow now resolves it
+  to the right user.
+- **Two fixture faults of my own, both instructive.** `users.email` is itself
+  unique, so my first "two accounts share an address" test was impossible to
+  build — the conflict is only reachable the way it happens in practice, via a
+  **secondary** contact row. And the reset route is `password.otp.send`, not the
+  name I guessed. The first of those changed the test into a better one.
+- **Full suite run locally against MySQL: 1003 tests, zero failures.**
+- **How it was found:** scanning for Actions with **no caller anywhere**. Two
+  came back. This was one; the other is `ResolveDefaultPrayerIslandAction`,
+  which is a **real and unfixed** duplicate-logic problem — three call sites
+  re-implement "default island, else fall back" with *different* fallbacks, and
+  the dashboard's differs from the action's (first-active vs Malé). Prayer times
+  for the wrong island are wrong times. **Next slice.**
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**.

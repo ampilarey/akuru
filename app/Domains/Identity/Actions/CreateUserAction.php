@@ -20,6 +20,11 @@ class CreateUserAction
             'phone' => $phone,
         ]);
 
+        // Without this the account cannot reset its own password by email:
+        // the OTP flow resolves people through `user_contacts`, not
+        // `users.email`.
+        app(EnsureVerifiedEmailContactAction::class)->execute($user);
+
         return [
             'id' => $user->id,
             'email' => $user->email,
