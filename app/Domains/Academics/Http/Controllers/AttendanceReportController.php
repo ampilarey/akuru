@@ -3,6 +3,8 @@
 namespace App\Domains\Academics\Http\Controllers;
 
 use App\Domains\Academics\Actions\ListClassAttendanceAction;
+use App\Domains\Academics\Actions\ListTardySummaryAction;
+use App\Domains\Academics\Actions\ResolveAttendanceSettingsAction;
 use App\Domains\Academics\Enums\AttendanceStatus;
 use App\Domains\Academics\Models\AcademicYear;
 use App\Domains\Academics\Models\ClassRoom;
@@ -29,6 +31,10 @@ class AttendanceReportController extends Controller
             'rows' => $lister->execute($filters),
             'chronic' => $lister->chronic($filters['academic_year_id'] ?? null),
             'unexcused' => $lister->unexcused($filters['academic_year_id'] ?? null),
+            // E10: lateness has been recorded since 2026-08 and never
+            // aggregated. Reported beside the absence figures, never folded in.
+            'tardies' => app(ListTardySummaryAction::class)->execute($filters),
+            'tardiesPerAbsence' => app(ResolveAttendanceSettingsAction::class)->execute()['tardies_per_absence'],
         ]);
     }
 
@@ -43,6 +49,10 @@ class AttendanceReportController extends Controller
         if ($kind === 'chronic') {
             $rows = $lister->chronic($filters['academic_year_id'] ?? null);
             $headers = ['student_id', 'student_number', 'student_name', 'absent_days'];
+        } elseif ($kind === 'tardies') {
+            $rows = app(ListTardySummaryAction::class)->execute($filters);
+            $headers = ['student_id', 'student_number', 'student_name', 'tardies', 'minutes_late',
+                'early_departures', 'absent_days', 'absences_from_tardies', 'effective_absences'];
         } elseif ($kind === 'unexcused') {
             $rows = $lister->unexcused($filters['academic_year_id'] ?? null);
             $headers = ['id', 'date', 'student_name', 'student_number', 'class_name', 'status'];

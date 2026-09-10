@@ -1720,6 +1720,47 @@ turned out to be reachable from here after all. What was actually done:
   dashboards already cover families and staff, and a third that duplicated them
   with placeholder data was never going to be the one that got maintained.
 
+## 5al. E10a — lateness, aggregated (2026-09-10)
+
+- **Audit first, and this time the plan was mostly right in the other
+  direction:** attendance is genuinely well built. Recording, reporting,
+  chronic-absence detection, unexcused listing, CSV export and a configurable
+  `attendance_chronic_threshold` all ship and work. E10's list of gaps is
+  shorter than it reads.
+- **The real gap is lateness.** `class_attendance.minutes_late` has been written
+  since 2026-08 and **never aggregated anywhere**. `chronic()` counts full
+  absences only, so a pupil ten minutes late every day for a term appears in no
+  report at all.
+- **New `ListTardySummaryAction`** — per pupil: late marks, total minutes,
+  early departures, absent days over the same window, and the tardy-derived
+  figure.
+- **New setting `attendance_tardies_per_absence`, defaulting to 0 = off.** A
+  school that has not chosen a number must not have one applied to its reported
+  attendance behind its back. EduPage's documented example is 3; the default
+  here is still off.
+- **The design decision worth challenging if you disagree: the rule is reported,
+  not applied.** `chronic()` returns exactly what it returned before. Folding
+  tardy-derived absences into it would move a number the school already reads
+  and reports, with nothing on screen to explain why it moved. The combined
+  figure appears as its own `effective_absences` column, and the panel says so
+  in words. A test asserts `chronic()` is unchanged even under the most
+  aggressive possible rule (1 late = 1 absence).
+- **Integer division on purpose:** two lates under a three-per-rule are not
+  two-thirds of an absence, they are not yet an absence. Tested.
+- **Both halves of a row cover the same date window** — lateness and absences
+  are filtered identically, or the two numbers on one line would describe
+  different periods. Tested.
+- **Surfaced on the existing report page** rather than a new screen: a fourth
+  panel plus a `kind=tardies` CSV export, alongside the chronic and unexcused
+  exports that were already there.
+- **Tests:** 11 covering the sums, early departures separated from lateness,
+  rule off by default, conversion once set, no rounding up, `chronic()` left
+  untouched, window scoping on both halves, class scoping, sort order, and a
+  null `minutes_late` treated as zero rather than failing.
+- Still open in E10: custom absence types (the status enum would have to become
+  data), a rounding policy for part-lessons, and the integrity story for
+  parent-submitted absence notes that EduPage's docs address explicitly.
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**.

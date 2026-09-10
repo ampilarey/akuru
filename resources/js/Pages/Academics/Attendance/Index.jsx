@@ -1,7 +1,7 @@
 import { router } from '@inertiajs/react';
 import AppShell from '../../../Layouts/AppShell';
 
-export default function Index({ filters, years, classes, statuses, rows, chronic, unexcused }) {
+export default function Index({ filters, years, classes, statuses, rows, chronic, unexcused, tardies = [], tardiesPerAbsence = 0 }) {
     const query = new URLSearchParams(
         Object.fromEntries(Object.entries(filters).filter(([, value]) => value)),
     ).toString();
@@ -24,6 +24,7 @@ export default function Index({ filters, years, classes, statuses, rows, chronic
                 <a className="btn-secondary" href={`/academics/attendance/export?${query}`}>Export sheet</a>
                 <a className="btn-secondary" href={`/academics/attendance/export?kind=chronic&${query}`}>Chronic CSV</a>
                 <a className="btn-secondary" href={`/academics/attendance/export?kind=unexcused&${query}`}>Unexcused CSV</a>
+                <a className="btn-secondary" href={`/academics/attendance/export?kind=tardies&${query}`}>Lateness CSV</a>
             </div>
 
             <section className="mb-6 overflow-x-auto rounded-lg border bg-white">
@@ -72,6 +73,44 @@ export default function Index({ filters, years, classes, statuses, rows, chronic
                     </ul>
                 </section>
             </div>
+
+            <section className="mt-4 overflow-x-auto rounded-lg border bg-white">
+                <div className="flex flex-wrap items-baseline justify-between gap-2 p-4 pb-2">
+                    <h2 className="text-sm font-semibold">Lateness and early departures</h2>
+                    <p className="text-xs text-gray-500">
+                        {tardiesPerAbsence > 0
+                            ? `${tardiesPerAbsence} late marks count as 1 absence in the last column. This is shown, not applied — absence figures above are unchanged.`
+                            : 'No tardy-to-absence rule is set, so no lateness is counted as absence.'}
+                    </p>
+                </div>
+                <table className="w-full min-w-[46rem] text-sm">
+                    <thead className="bg-[#F9F4EE] text-left">
+                        <tr>
+                            <th className="p-2">Student</th>
+                            <th className="p-2">Late</th>
+                            <th className="p-2">Minutes</th>
+                            <th className="p-2">Left early</th>
+                            <th className="p-2">Absent days</th>
+                            {tardiesPerAbsence > 0 && <th className="p-2">From lateness</th>}
+                            {tardiesPerAbsence > 0 && <th className="p-2">Effective</th>}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {tardies.map((row) => (
+                            <tr key={row.student_id} className="border-t">
+                                <td className="p-2">{row.student_name}</td>
+                                <td className="p-2">{row.tardies}</td>
+                                <td className="p-2">{row.minutes_late}</td>
+                                <td className="p-2">{row.early_departures}</td>
+                                <td className="p-2">{row.absent_days}</td>
+                                {tardiesPerAbsence > 0 && <td className="p-2">{row.absences_from_tardies}</td>}
+                                {tardiesPerAbsence > 0 && <td className="p-2 font-semibold">{row.effective_absences}</td>}
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+                {tardies.length === 0 && <p className="p-4 text-sm text-gray-600">No lateness recorded for these filters.</p>}
+            </section>
         </AppShell>
     );
 }
