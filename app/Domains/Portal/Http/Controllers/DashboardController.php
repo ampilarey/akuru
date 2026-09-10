@@ -119,9 +119,16 @@ class DashboardController extends Controller
         ));
     }
 
+    /**
+     * E1b: a teacher now has a home rather than being dropped straight into the
+     * register list. The list is a task queue; it answered "what do I owe" and
+     * nothing else, so a teacher had no glanceable view of their day, their
+     * unread messages, or a notice aimed at them. The home's first tile still
+     * links to it.
+     */
     private function teacherDashboard()
     {
-        return redirect()->route('academics.registers.today');
+        return redirect()->route('portal.teacher');
     }
 
     private function supervisorDashboard()

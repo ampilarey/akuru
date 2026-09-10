@@ -8,7 +8,7 @@ use Spatie\Permission\Models\Role;
 
 uses(RefreshDatabase::class);
 
-it('sends a teacher from the dashboard to today registers', function () {
+it('sends a teacher from the dashboard to their own home', function () {
     Role::findOrCreate('teacher', 'web');
     Permission::findOrCreate('registers.fill', 'web');
 
@@ -20,8 +20,17 @@ it('sends a teacher from the dashboard to today registers', function () {
     $this->withoutLocalizationMiddleware()
         ->actingAs($user)
         ->get(route('dashboard'))
-        ->assertRedirect(route('academics.registers.today'));
+        // E1b: the register list is a task queue, not a home. It is still the
+        // first tile on the page they now land on.
+        ->assertRedirect(route('portal.teacher'));
 
+    $this->withoutLocalizationMiddleware()
+        ->actingAs($user)
+        ->get(route('portal.teacher'))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->component('Portal/TeacherHome'));
+
+    // The queue itself still works and is still reachable.
     $this->withoutLocalizationMiddleware()
         ->actingAs($user)
         ->get(route('academics.registers.today'))
