@@ -21,10 +21,20 @@ class AttachMaterialsToLessonAction
 {
     /**
      * @param  list<int>  $materialIds
+     * @param  list<int>|null  $homeworkIds  which of them go home with the
+     *                                       homework (E13b). Null leaves the
+     *                                       existing choice alone, so a bundle
+     *                                       that predates E13b cannot silently
+     *                                       un-send everything (§5t).
      * @return list<int> the ids actually attached
      */
-    public function execute(LessonLog $log, array $materialIds, int $actorUserId, bool $canManage = false): array
-    {
+    public function execute(
+        LessonLog $log,
+        array $materialIds,
+        int $actorUserId,
+        bool $canManage = false,
+        ?array $homeworkIds = null,
+    ): array {
         if (! $canManage) {
             $teacherId = app(ResolveTeacherIdForUserAction::class)->execute($actorUserId);
             if ($teacherId === null || (int) $log->teacher_id !== $teacherId) {
@@ -42,8 +52,28 @@ class AttachMaterialsToLessonAction
             : TeachingMaterial::query()->whereIn('id', $ids)->pluck('id')
                 ->map(fn ($id): int => (int) $id)->all();
 
-        $log->teachingMaterials()->sync($valid);
+        $sendHome = $homeworkIds === null
+            ? $this->currentlySentHome($log)
+            : array_map('intval', $homeworkIds);
+
+        $log->teachingMaterials()->sync(array_combine($valid, array_map(
+            // Sending home a material that is not attached is not a state the
+            // picker can produce, so the flag follows the attachment.
+            fn (int $id): array => ['for_homework' => in_array($id, $sendHome, true)],
+            $valid,
+        )) ?: []);
 
         return $valid;
+    }
+
+    /**
+     * @return list<int>
+     */
+    private function currentlySentHome(LessonLog $log): array
+    {
+        return $log->homeworkMaterials()
+            ->pluck('teaching_materials.id')
+            ->map(fn ($id): int => (int) $id)
+            ->all();
     }
 }

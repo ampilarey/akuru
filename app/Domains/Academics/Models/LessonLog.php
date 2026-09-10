@@ -55,7 +55,18 @@ class LessonLog extends Model
      */
     public function teachingMaterials(): BelongsToMany
     {
-        return $this->belongsToMany(TeachingMaterial::class, 'lesson_log_material');
+        return $this->belongsToMany(TeachingMaterial::class, 'lesson_log_material')
+            ->withPivot('for_homework');
+    }
+
+    /**
+     * The subset a pupil needs at home (E13b). "Whiteboard" is used in the room;
+     * the worksheet goes home. Showing a family everything the lesson touched
+     * would bury the one thing they need.
+     */
+    public function homeworkMaterials(): BelongsToMany
+    {
+        return $this->teachingMaterials()->wherePivot('for_homework', true);
     }
 
     /**

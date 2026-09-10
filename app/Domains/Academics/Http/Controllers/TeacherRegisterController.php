@@ -91,6 +91,10 @@ class TeacherRegisterController extends Controller
             ->pluck('teaching_materials.id')
             ->map(fn ($id): int => (int) $id)
             ->all();
+        $sentHome = $lessonLog->homeworkMaterials()
+            ->pluck('teaching_materials.id')
+            ->map(fn ($id): int => (int) $id)
+            ->all();
 
         return Inertia::render('Academics/Registers/Show', [
             'register' => app(ListTeacherTodayRegistersAction::class)->serialize(collect([$lessonLog]))->first(),
@@ -111,6 +115,8 @@ class TeacherRegisterController extends Controller
             // it must show everything already attached — narrowing it by
             // subject alone would silently unattach on the next save.
             'attachedMaterials' => $attached,
+            // Which of them the family sees on the homework (E13b).
+            'homeworkMaterials' => $sentHome,
             'materialLibrary' => app(ListTeachingMaterialsAction::class)->execute([
                 'subject_id' => $lessonLog->subject_id,
                 'include_general' => true,
@@ -143,6 +149,8 @@ class TeacherRegisterController extends Controller
             'materials' => ['nullable'],
             'material_ids' => ['nullable', 'array'],
             'material_ids.*' => ['integer'],
+            'homework_material_ids' => ['nullable', 'array'],
+            'homework_material_ids.*' => ['integer'],
             'notes' => ['nullable', 'string', 'max:2000'],
             'attendance' => ['nullable', 'array'],
             'attendance.*.student_id' => ['required_with:attendance', 'integer'],
@@ -163,6 +171,12 @@ class TeacherRegisterController extends Controller
                 $data['material_ids'] ?? [],
                 (int) $request->user()->id,
                 (bool) $request->user()?->can('registers.manage'),
+                // Absent, not empty: a bundle predating E13b posts no key at
+                // all, and that must leave the teacher's choice alone rather
+                // than un-sending everything (§5t).
+                array_key_exists('homework_material_ids', $data)
+                    ? ($data['homework_material_ids'] ?? [])
+                    : null,
             );
         }
 

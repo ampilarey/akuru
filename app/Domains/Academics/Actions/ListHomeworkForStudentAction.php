@@ -6,6 +6,7 @@ use App\Domains\Academics\Enums\ClassStudentStatus;
 use App\Domains\Academics\Enums\LessonLogStatus;
 use App\Domains\Academics\Models\HomeworkTick;
 use App\Domains\Academics\Models\LessonLog;
+use App\Domains\Academics\Models\TeachingMaterial;
 use App\Domains\People\Actions\ListTeachersByIdsAction;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
@@ -46,7 +47,10 @@ class ListHomeworkForStudentAction
             ->where('homework', '!=', '')
             ->whereIn('status', [LessonLogStatus::Submitted->value, LessonLogStatus::Locked->value])
             ->whereDate('date', '>=', $since)
-            ->with(['subject'])
+            // E13b: only the materials the teacher chose to send home. The
+            // register's own materials stay staff-side — a family needs the
+            // worksheet, not "whiteboard".
+            ->with(['subject', 'homeworkMaterials'])
             ->get();
 
         if ($logs->isEmpty()) {
@@ -76,6 +80,14 @@ class ListHomeworkForStudentAction
                     'set_on' => $log->date?->toDateString(),
                     'due_date' => $due?->toDateString(),
                     'homework' => (string) $log->homework,
+                    'materials' => $log->homeworkMaterials
+                        ->map(fn (TeachingMaterial $material): array => [
+                            'id' => (int) $material->id,
+                            'title' => (string) $material->title,
+                            'body' => $material->body,
+                        ])
+                        ->values()
+                        ->all(),
                     'is_done' => $tick !== null,
                     'done_at' => $tick?->toIso8601String(),
                     // Overdue only means something once a due date exists and
