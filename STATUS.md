@@ -3228,6 +3228,76 @@ Contrast with what *did* justify a guard: rules 3, 5 and ADR-005, plus the
 runtime-key family in §5bs, are all decidable from a single file's text with no
 judgement call, which is exactly why they work as tests.
 
+## 5bu. WALKED IN A BROWSER — and it found a defect (2026-09-10)
+
+**I was wrong to call this operator-blocked.** I had been reporting the browser
+walk as impossible from an agent session because `test.akuru.edu.mv` needs
+cPanel access. But CLAUDE.md's definition of done says *"walked in a browser"*,
+not *"walked on production"*, and `docs/PILOT_REHEARSAL.md` records rounds 1–3
+being walked **locally**. This container has Chromium at
+`/opt/pw-browsers/chromium-1194` and Playwright installs against it. The walk
+was available the whole time.
+
+Local instance: `akuru_walk` database, `migrate:fresh --seed` (which runs
+`PilotRehearsalSeeder` — 2026-2027 Pilot, Grade 5 A, 15 students), committed
+`public/build` assets with `public/hot` removed, `php artisan serve`.
+
+**13 pages loaded, all 200, none blank, no page errors.** Verified as an
+admin, a super_admin, a teacher and a parent:
+
+- The **three screens §5bo made reachable** — `/academics/events`, `/forms`,
+  `/portal/messages` — all render. That was the verification I had said I could
+  not give.
+- **§5bn Arabic editor, driven end to end**: typed a correction, saved,
+  reloaded, **it persisted**; the row showed "Override active"; and the
+  **Dhivehi box stayed empty**, which is the exact claim the test makes.
+- **§5br settings badges**, read off the page. SMS shows "Not Configured" with
+  the corrected `SMS_GATEWAY_API_KEY` hint — correct, since this .env has no
+  key, and *the opposite of what the old code would have shown*. Setting a
+  `BML_API_KEY` with no webhook secret produced "Configured · ⚠️ No webhook
+  secret — payments will not confirm", the branch invented in §5br and never
+  before seen.
+- **§5aw teacher landing** confirmed: `teacher@akuru.edu.mv` lands on
+  `/portal/teacher`, the redirect that slice changed.
+
+**The defect the walk found, which no test caught.** The translation editor
+showed **`notifications (0)`** and **`documents (0)`**.
+`ListTranslationCatalogAction` did `if (! is_string($reference)) continue;`,
+and both of those files are **entirely** nested arrays — so every line was
+silently dropped and **both groups were editable in neither language**. That
+includes `notifications.attendance.marked`, the SMS text sent to a family when
+their child is marked absent.
+
+Fixed by flattening to dotted keys. Nothing downstream needed changing:
+`SaveTranslationOverrideAction` validates with `Lang::get($group.'.'.$key)` and
+`DatabaseOverrideLoader` writes with `Arr::set()` — both already spoke dot
+notation. The catalog total went 525 → **557**, which is exactly the English key
+count the §5bm parity baseline arrived at independently. Two separately written
+flatteners agreeing is a better check than either alone.
+
+Verified in the browser after the fix: tabs read `notifications (21)` and
+`documents (11)`, 21 rows render, and a nested key edited from the UI persisted
+through a reload.
+
+**The suite asserted the catalog *renders*; it never asserted it contained
+anything.** That is precisely the gap the "walked in a browser" clause exists to
+catch, and it went unnoticed through the two slices that touched this screen
+today.
+
+**Two observations for the owner, not fixed:**
+
+- **The AppShell nav is worse rendered than described.** KNOWN_ISSUES top-five
+  item 2 records ~90 wrapping links awaiting a decision. On screen it occupies
+  **ten rows and roughly a third of the viewport above any content**, on every
+  page. The screenshot makes the case the issue text does not.
+- **No `super_admin` account is seeded.** `admin@akuru.edu.mv` holds `admin`,
+  and `/admin/settings` is `role:super_admin`, so **the settings screen cannot
+  be reached with any documented seed login** — a walker has to create an
+  account first, as this walk did. Either seed one or relax the guard.
+- Subresources blocked in this sandbox, all external and none an app fault:
+  `fonts.bunny.net`, `fonts.googleapis.com`, `translate.google.com`. Worth
+  knowing that the UI reaches for three third-party origins on every page.
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**.
