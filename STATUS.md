@@ -3410,6 +3410,54 @@ the homework due-date default, E13a, E13b, E13c and its full access matrix,
 the absence list, emergency contacts, the family calendar, the teacher landing,
 the Arabic translation editor, and the settings badges in both directions.
 
+## 5bx. The messages page called a teacher a parent (2026-09-10)
+
+Continuing the walk into the **three screens §5bo made reachable**. Loading them
+proved they no longer 403; it did not prove they work. Using them found this.
+
+**Events works end to end.** An admin created a trilingual event — Title
+EN/DV/AR, location, start/end, type, status, registration, year, seats — got
+**"Event saved."**, and the family then saw it at `/portal/events`. A screen that
+returned 403 to *every account including super_admin* from August until today
+now demonstrably does its job.
+
+**Forms renders its own empty state** correctly: *"Forms you have sent, and what
+came back. · New form · No forms yet."*
+
+**Messages had a real defect.** The page greets a teacher with:
+
+> Conversations with your child's teachers.
+
+A teacher has no child here. The whole page is written for families, and the
+staff half had **never been seen by anyone** — `messages.broadcast` did not
+exist as a permission row until §5bo created it in a migration, so
+`canBroadcast()` was false for every account since the feature shipped on
+2026-09-08.
+
+**`canCompose` could not fix it**, which is the interesting part. It is true for
+a family too — their personal directory of teachers is non-empty — so it does
+not separate staff from families. The real discriminator is *"can this person
+address a class"*, which the controller already computed **inside** the
+`canCompose` expression and then threw away. It is now returned as
+`canBroadcast` and the subtitle branches on it: staff get *"Message a class, or
+reply to a family."* Same query count — the `classes()` result is computed once
+and reused rather than resolved twice.
+
+Verified in the browser after rebuilding the bundle: teacher → the staff line,
+parent → the family line.
+
+**Not fully solved, and worth saying so.** An **admin** still sees the family
+line, because they teach no class so `canBroadcast` is correctly false — but an
+admin has no child either. A third string would be over-engineering a screen
+that is fundamentally the family messaging inbox; the accurate fix would be
+deciding whether staff who teach nothing belong on this page at all, which is a
+product question. Flagged, not invented.
+
+**2 tests.** One pins that a teacher gets `canBroadcast: true` while a family
+gets `false` *and both get `canCompose: true`* — the assertion that would have
+caught the conflation. The other pins that `messages.broadcast` alone is not
+enough: an admin holding the permission but teaching nothing gets `false`.
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**.

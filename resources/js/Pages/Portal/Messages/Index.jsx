@@ -6,11 +6,19 @@ function when(iso) {
     return Number.isNaN(date.getTime()) ? '' : date.toLocaleString();
 }
 
-export default function Index({ threads = [], canCompose = false }) {
+export default function Index({ threads = [], canCompose = false, canBroadcast = false }) {
     return (
         <AppShell title="Messages">
             <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-                <p className="text-sm text-gray-600">Conversations with your child&apos;s teachers.</p>
+                {/* This page told a teacher about "your child's teachers". It
+                    was written for families and nobody had opened it as staff,
+                    because messages.broadcast did not exist until the
+                    permission was created in a migration. */}
+                <p className="text-sm text-gray-600">
+                    {canBroadcast
+                        ? 'Message a class, or reply to a family.'
+                        : 'Conversations with your child’s teachers.'}
+                </p>
                 {canCompose && <a className="btn-primary" href="/portal/messages/new">New message</a>}
             </div>
 

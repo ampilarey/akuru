@@ -143,3 +143,53 @@ it('refuses a hand-posted class the sender does not teach', function () {
 
     expect(MessageThread::query()->count())->toBe(0);
 });
+
+/**
+ * The messages page described itself to staff as if they were a parent:
+ * "Conversations with your child's teachers."
+ *
+ * Found by opening it as a teacher in a browser. Nobody had, because
+ * `messages.broadcast` did not exist as a permission row until §5bo created
+ * it in a migration — so this screen's staff half had never been seen.
+ *
+ * `canCompose` cannot answer the question: it is true for a family too, whose
+ * personal directory is non-empty. The discriminator is "can address a class".
+ */
+it('tells staff and families apart on the messages page', function () {
+    $seed = seedClassWithFamilies(2);
+    $teacherUser = actingBroadcastTeacher($seed);
+    $guardianUser = User::query()->find($seed['guardians'][0]->user_id);
+
+    // A teacher can address a class.
+    $this->withoutLocalizationMiddleware()->actingAs($teacherUser)
+        ->get('/portal/messages')
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page->component('Portal/Messages/Index')
+            ->where('canBroadcast', true)
+            ->where('canCompose', true)
+            ->etc());
+
+    // A family cannot, but can still compose to their child's teachers — the
+    // two flags are genuinely different questions.
+    $this->withoutLocalizationMiddleware()->actingAs($guardianUser)
+        ->get('/portal/messages')
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page->component('Portal/Messages/Index')
+            ->where('canBroadcast', false)
+            ->where('canCompose', true)
+            ->etc());
+});
+
+it('does not offer broadcast to staff who teach no class', function () {
+    // messages.broadcast alone is not enough: an admin holds the permission
+    // but teaches nothing, so there is no class to address and the page must
+    // not claim otherwise.
+    Permission::findOrCreate('messages.broadcast', 'web');
+    $admin = User::factory()->create();
+    $admin->givePermissionTo('messages.broadcast');
+
+    $this->withoutLocalizationMiddleware()->actingAs($admin->fresh())
+        ->get('/portal/messages')
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page->where('canBroadcast', false)->etc());
+});

@@ -33,13 +33,18 @@ class PortalMessageController extends Controller
     public function index(Request $request): Response
     {
         $userId = $this->userId($request);
+        $directory = app(ListMessageRecipientsAction::class);
+        $classes = $this->canBroadcast($request) ? $directory->classes($userId) : collect();
 
         return Inertia::render('Portal/Messages/Index', [
             'threads' => app(ListMessageInboxAction::class)->execute($userId),
             // Staff often have no personal directory of their own but can still
             // address a class, so both routes into compose have to count.
-            'canCompose' => app(ListMessageRecipientsAction::class)->execute($userId)->isNotEmpty()
-                || ($this->canBroadcast($request) && app(ListMessageRecipientsAction::class)->classes($userId)->isNotEmpty()),
+            'canCompose' => $directory->execute($userId)->isNotEmpty() || $classes->isNotEmpty(),
+            // Not the same question as canCompose, which is true for a family
+            // too. This one is "can address a class", and it is what decides
+            // whether the page describes itself to staff or to a parent.
+            'canBroadcast' => $classes->isNotEmpty(),
         ]);
     }
 
