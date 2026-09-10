@@ -1634,6 +1634,55 @@ turned out to be reachable from here after all. What was actually done:
   so the HTTP walk would have failed when run alone.
 - Still open in E2b: saved recipient groups, message polls, and blocking.
 
+## 5aj. E4 — the noticeboard reaches families (2026-09-10)
+
+- **The plan said "ALREADY BUILT". It is not, and the audit is worth recording
+  because this is the fourth time.** EDUPAGE_FEATURES_PLAN claims announcements
+  are "surfaced to families via `EnhancedDashboardController::getRecentAnnouncements()`".
+  That method **returns the integer `0`** — it is a stub. And families land on
+  `/portal/home`, which never touches that controller; nothing redirects anyone
+  to `/enhanced-dashboard` at all. **No family has ever seen an announcement.**
+- **`target_audience` and `target_classes` have existed since 2025-09** and the
+  admin form writes both. Grepping for readers outside the model found only the
+  controller that *writes* them. The targeting was collected and never applied.
+- **New `ListAnnouncementsForUserAction`** (Academics) is the reader. It honours
+  publish window, expiry, published flag, audience and class targeting.
+- **The dangerous inversion, handled explicitly:** a blank `target_audience` or
+  `target_classes` means **the whole school, not nobody**. Treating a blank as a
+  filter would have silently hidden every row written before targeting was read
+  by anything. Two tests pin this.
+- **A notice expiring today is still today's news** — the expiry comparison is
+  inclusive, with a test for the boundary.
+- **The tile badge counts only urgent and high priority.** There is no per-user
+  read state, so a badge counting everything would sit there forever and stop
+  meaning anything. An urgent notice expires and the badge goes with it. Adding
+  `announcement_reads` for a true unread badge is a reasonable follow-up but was
+  not needed to make the feature useful.
+- **Trilingual with a real fallback:** the reader picks the Dhivehi or Arabic
+  title and content when the author supplied one, and falls back to English when
+  the field is blank. A blank translation must not blank the notice — tested
+  both ways.
+- **Urgent sorts first in the UI.** A notice marked urgent that sits below three
+  general ones has been marked urgent for nothing.
+- **Rule 3 held.** `ComposePortalHomeAction` gained a `roleNames` parameter
+  rather than reaching for the user model; `PortalHomeController` passes them
+  in. Arch tests confirm the baseline did not grow.
+- **Tests:** 12 action tests (audience matching in both directions, the blank
+  = everyone inversion, publish/expiry boundaries, class targeting for pupils
+  and for the teacher of that class, badge arithmetic, both translation paths)
+  and 5 HTTP tests including **the CSV export not leaking what the page hides**.
+- **Browser-verified** with the §5ag mirror harness: urgent notice renders above
+  the newer general one, the emergency type and expiry line render, the CSV link
+  is hidden when there is nothing to export, and the empty state reads honestly.
+  Zero page errors.
+- `makeNotice()` went into `tests/Support/AcademicsTestHelpers.php` — the same
+  shared-helper lesson as §5ai.
+- **Not fixed here, flagged instead:** `EnhancedDashboardController` is full of
+  stub methods returning `0` (`getRecentAnnouncements` is one of several). The
+  route `/enhanced-dashboard` is reachable but nothing links to it. That
+  controller wants an audit of its own — it is the kind of file that makes a
+  plan claim a feature exists.
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**.

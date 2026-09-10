@@ -108,6 +108,7 @@ use App\Domains\Portal\Http\Controllers\DashboardController;
 use App\Domains\Portal\Http\Controllers\EnhancedDashboardController;
 use App\Domains\Portal\Http\Controllers\GuardianChildrenController;
 use App\Domains\Portal\Http\Controllers\PortalAbsenceNoteController;
+use App\Domains\Portal\Http\Controllers\PortalAnnouncementController;
 use App\Domains\Portal\Http\Controllers\PortalAppraisalController;
 use App\Domains\Portal\Http\Controllers\PortalAttendanceController;
 use App\Domains\Portal\Http\Controllers\PortalAwardController;
@@ -168,6 +169,10 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
     Route::get('/portal/behavior', [PortalBehaviorController::class, 'index'])->name('portal.behavior');
     Route::get('/portal/absence-notes', [PortalAbsenceNoteController::class, 'index'])->name('portal.absence-notes');
     Route::post('/portal/absence-notes', [PortalAbsenceNoteController::class, 'store'])->name('portal.absence-notes.store');
+    // Noticeboard (E4) — the reader for announcements' audience targeting.
+    Route::get('/portal/announcements/export', [PortalAnnouncementController::class, 'export'])->name('portal.announcements.export');
+    Route::get('/portal/announcements', [PortalAnnouncementController::class, 'index'])->name('portal.announcements');
+
     // Homework (E3a) — the reader for lesson_logs.homework.
     Route::get('/portal/homework', [PortalHomeworkController::class, 'index'])->name('portal.homework');
     Route::post('/portal/homework/{lessonLog}/tick', [PortalHomeworkController::class, 'tick'])->name('portal.homework.tick')->whereNumber('lessonLog');
