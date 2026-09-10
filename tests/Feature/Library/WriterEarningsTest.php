@@ -242,3 +242,101 @@ it('breaks sales down per book with the writer share and refunds', function () {
         ->assertSee('item_sales')
         ->assertSee('Earning Item 100');
 });
+
+/**
+ * Route-level authorization for the library money endpoints.
+ *
+ * The action above is covered thoroughly — the payout gate, bank details, the
+ * amount, the second-request refusal, the paid outcome. What nothing tested is
+ * **who may call the endpoint**, and the obvious abuse is a writer approving
+ * their own payout.
+ *
+ * `admin/library/*` requires `role:super_admin|admin|headmaster` **and**
+ * `can:library.manage`. These pin that.
+ */
+function requestedPayout(): array
+{
+    $ctx = seedEarningWriterItem(200);
+    $buyer = User::factory()->create();
+    app(CreditWalletAction::class)->execute($buyer->id, 300, 'admin');
+    app(StartLibraryCheckoutAction::class)->execute($ctx['item']->slug, $buyer->id, null, null, true);
+    test()->travel(8)->days();
+
+    config()->set('library.payouts_enabled', true);
+    app(SaveWriterBankDetailsAction::class)->execute($ctx['writerUser']->id, [
+        'bank_name' => 'BML',
+        'account_name' => 'Earning Writer',
+        'account_number' => '7701234567',
+    ]);
+
+    return ['payout' => app(RequestWriterPayoutAction::class)->execute($ctx['writerUser']->id), 'ctx' => $ctx];
+}
+
+function libraryAdmin(): User
+{
+    $user = User::factory()->create();
+    \Spatie\Permission\Models\Role::findOrCreate('admin', 'web');
+    \Spatie\Permission\Models\Permission::findOrCreate('library.manage', 'web');
+    $user->assignRole('admin');
+    $user->givePermissionTo('library.manage');
+
+    return $user;
+}
+
+it('refuses a writer approving their own payout', function () {
+    ['payout' => $payout, 'ctx' => $ctx] = requestedPayout();
+
+    // Self-dealing is the whole reason this endpoint needs a guard.
+    test()->withoutLocalizationMiddleware()
+        ->actingAs($ctx['writerUser'])
+        ->post(route('admin.library.payouts.decide', $payout->id), ['paid' => true])
+        ->assertForbidden();
+
+    expect($payout->fresh()->status)->toBe('requested');
+});
+
+it('refuses a signed-in account with no library permission', function () {
+    ['payout' => $payout] = requestedPayout();
+
+    test()->withoutLocalizationMiddleware()
+        ->actingAs(User::factory()->create())
+        ->post(route('admin.library.payouts.decide', $payout->id), ['paid' => true])
+        ->assertForbidden();
+
+    expect($payout->fresh()->status)->toBe('requested');
+});
+
+it('refuses an anonymous visitor deciding a payout', function () {
+    ['payout' => $payout] = requestedPayout();
+
+    test()->withoutLocalizationMiddleware()
+        ->post(route('admin.library.payouts.decide', $payout->id), ['paid' => true])
+        ->assertRedirect();
+
+    expect($payout->fresh()->status)->toBe('requested');
+});
+
+it('lets a library admin mark a payout paid through the route', function () {
+    ['payout' => $payout] = requestedPayout();
+
+    test()->withoutLocalizationMiddleware()
+        ->actingAs(libraryAdmin())
+        ->post(route('admin.library.payouts.decide', $payout->id), ['paid' => true, 'note' => 'Transferred'])
+        ->assertSessionHasNoErrors()
+        ->assertRedirect();
+
+    expect($payout->fresh()->status)->toBe('paid')
+        ->and(WriterEarning::query()->firstOrFail()->status)->toBe('paid');
+});
+
+it('requires an explicit decision rather than defaulting to paid', function () {
+    ['payout' => $payout] = requestedPayout();
+
+    // `paid` is required:boolean — an empty post must not quietly pay somebody.
+    test()->withoutLocalizationMiddleware()
+        ->actingAs(libraryAdmin())
+        ->post(route('admin.library.payouts.decide', $payout->id), [])
+        ->assertSessionHasErrors('paid');
+
+    expect($payout->fresh()->status)->toBe('requested');
+});
