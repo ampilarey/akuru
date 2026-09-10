@@ -75,7 +75,7 @@ export default function Show({ classRoom, roster, q = '', candidates = [], teach
             {candidates.length > 0 && (
                 <div className="mb-4 overflow-x-auto rounded-lg border bg-white">
                     <table className="min-w-full text-sm">
-                        <thead className="bg-[#F3EBE0] text-left">
+                        <thead className="bg-[#F3EBE0] text-start">
                             <tr>
                                 <th className="px-3 py-2">Choose</th>
                                 <th className="px-3 py-2">Name</th>
@@ -136,7 +136,7 @@ export default function Show({ classRoom, roster, q = '', candidates = [], teach
 
             <div className="overflow-x-auto rounded-lg border bg-white">
                 <table className="min-w-full text-sm">
-                    <thead className="bg-[#F3EBE0] text-left">
+                    <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">Name</th>
                             <th className="px-3 py-2">Number</th>
@@ -183,7 +183,7 @@ export default function Show({ classRoom, roster, q = '', candidates = [], teach
                             {row.legacy_assignment_id && (
                                 <p className="text-xs text-gray-500">Migrated assignment #{row.legacy_assignment_id}</p>
                             )}
-                            <ul className="mt-2 list-disc pl-5">
+                            <ul className="mt-2 list-disc ps-5">
                                 {(row.questions || []).map((item) => (
                                     <li key={item.question_id}>
                                         {item.question.question_text} · {item.points_override || 1} pts

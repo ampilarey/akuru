@@ -2801,6 +2801,33 @@ together.
 
 - **Full suite run locally against MySQL: 1063 tests, zero failures.**
 
+## 5bl. RTL-safety — a stated rule that was quietly not kept (2026-09-10)
+
+- **CLAUDE.md says every screen is "trilingual-ready (EN/DV/AR) and RTL-safe".**
+  It was not. Tailwind's physical utilities do not mirror: `text-left` stays
+  left in Dhivehi and Arabic, `ml-2` puts the gap on the wrong side, and the
+  page looks subtly broken to **two of this school's three languages**.
+- **The codebase was half converted** — 50 `text-start` against 80 `text-left`.
+  The intent was there; the rule had drifted.
+- **I wrote several of the offenders myself** this session, in the materials
+  library, the absence list, the teacher home and the school calendar. Every
+  new screen I added used `text-left` on its table header. That is why this
+  shipped as a **test** rather than a tidy-up.
+- **72 files converted**, mechanically and completely: `text-left`→`text-start`,
+  `text-right`→`text-end`, `ml-`→`ms-`, `mr-`→`me-`, `pl-`→`ps-`, `pr-`→`pe-`.
+  Every occurrence was checked first: all but one `text-left` was a table
+  header, the exception is a card that should mirror too, and the six
+  margin/padding cases are ordinary spacing. The `dir="ltr"` inputs in the
+  glossary use no directional classes and are untouched.
+- **The guard was verified by breaking it.** I injected a single `text-left`,
+  confirmed the test failed, and restored — because a test that scans for
+  something and finds nothing looks identical whether it works or not.
+- **Full suite: 1064 tests, zero failures.** Bundle rebuilt (§5t).
+
+**Not claimed:** this fixes *mirroring*, not translation. Whether the Dhivehi
+and Arabic strings are complete and correct is a separate question, and one the
+browser walk would answer better than any grep.
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**.

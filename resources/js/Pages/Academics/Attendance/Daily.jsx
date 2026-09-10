@@ -59,7 +59,7 @@ export default function Daily({ yearId, classId, date, mode, years, classes, sta
                     className="rounded-lg border bg-white p-4"
                 >
                     <table className="mb-3 min-w-full text-sm">
-                        <thead className="bg-[#F3EBE0] text-left">
+                        <thead className="bg-[#F3EBE0] text-start">
                             <tr>
                                 <th className="px-2 py-1">Student</th>
                                 <th className="px-2 py-1">Number</th>

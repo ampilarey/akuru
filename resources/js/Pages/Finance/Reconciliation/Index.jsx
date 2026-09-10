@@ -9,7 +9,7 @@ export default function Index({ rows, daily }) {
             <h2 className="mb-2 text-sm font-medium">Daily totals by method</h2>
             <div className="mb-6 overflow-x-auto rounded-lg border bg-white">
                 <table className="min-w-full text-sm">
-                    <thead className="bg-[#F3EBE0] text-left">
+                    <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">Date</th>
                             <th className="px-3 py-2">Method</th>
@@ -35,7 +35,7 @@ export default function Index({ rows, daily }) {
             <h2 className="mb-2 text-sm font-medium">Payments ↔ receipts ↔ balances</h2>
             <div className="overflow-x-auto rounded-lg border bg-white">
                 <table className="min-w-full text-sm">
-                    <thead className="bg-[#F3EBE0] text-left">
+                    <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">Receipt</th>
                             <th className="px-3 py-2">Payment</th>

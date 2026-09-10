@@ -11,7 +11,7 @@ export default function Invoices({ children, studentId, invoices }) {
             </div>
             <div className="overflow-x-auto rounded-lg border bg-white">
                 <table className="min-w-full text-sm">
-                    <thead className="bg-[#F3EBE0] text-left">
+                    <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">Invoice</th>
                             <th className="px-3 py-2">Due</th>
@@ -37,7 +37,7 @@ export default function Invoices({ children, studentId, invoices }) {
                                         </form>
                                     )}
                                     {row.receipts.map((receipt) => (
-                                        <a key={receipt.id} className="ml-2 text-[#7C2D37] underline" href={`/finance/receipts/${receipt.id}/document`}>Receipt</a>
+                                        <a key={receipt.id} className="ms-2 text-[#7C2D37] underline" href={`/finance/receipts/${receipt.id}/document`}>Receipt</a>
                                     ))}
                                 </td>
                             </tr>

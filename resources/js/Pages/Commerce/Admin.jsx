@@ -11,7 +11,7 @@ function GiftCardForm() {
             {flash.gift_card_code && (
                 <p className="mb-3 rounded bg-amber-50 p-3 font-mono text-lg">
                     {flash.gift_card_code}
-                    <span className="ml-2 text-sm font-sans text-amber-800">Copy it now — it is shown only once.</span>
+                    <span className="ms-2 text-sm font-sans text-amber-800">Copy it now — it is shown only once.</span>
                 </p>
             )}
             <form

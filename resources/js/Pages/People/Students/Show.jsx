@@ -228,7 +228,7 @@ export default function Show({
                     </form>
                     <div className="overflow-x-auto rounded-lg border bg-white">
                         <table className="min-w-full text-sm">
-                            <thead className="bg-[#F3EBE0] text-left">
+                            <thead className="bg-[#F3EBE0] text-start">
                                 <tr>
                                     <th className="px-3 py-2">Name</th>
                                     <th className="px-3 py-2">Relationship</th>
@@ -246,7 +246,7 @@ export default function Show({
                                             {guardian.can_pickup ? 'pickup ' : ''}
                                             {guardian.financial_responsible ? 'financial' : ''}
                                         </td>
-                                        <td className="px-3 py-2 text-right">
+                                        <td className="px-3 py-2 text-end">
                                             <button
                                                 type="button"
                                                 className="text-red-700 hover:underline"
@@ -303,7 +303,7 @@ export default function Show({
                     </form>
                     <div className="overflow-x-auto rounded-lg border bg-white">
                         <table className="min-w-full text-sm">
-                            <thead className="bg-[#F3EBE0] text-left">
+                            <thead className="bg-[#F3EBE0] text-start">
                                 <tr>
                                     <th className="px-3 py-2">#</th>
                                     <th className="px-3 py-2">Name</th>
@@ -326,7 +326,7 @@ export default function Show({
                                             <a className="text-[#7C2D37] underline" href={`tel:${contact.phone}`}>{contact.phone}</a>
                                         </td>
                                         <td className="px-3 py-2">{contact.relationship || '—'}</td>
-                                        <td className="px-3 py-2 text-right">
+                                        <td className="px-3 py-2 text-end">
                                             <button
                                                 type="button"
                                                 className="text-red-700 hover:underline"
@@ -366,7 +366,7 @@ export default function Show({
             {tab === 'history' && (
                 <div className="overflow-x-auto rounded-lg border bg-white">
                     <table className="min-w-full text-sm">
-                        <thead className="bg-[#F3EBE0] text-left">
+                        <thead className="bg-[#F3EBE0] text-start">
                             <tr>
                                 <th className="px-3 py-2">From</th>
                                 <th className="px-3 py-2">To</th>
@@ -391,7 +391,7 @@ export default function Show({
             {tab === 'behavior' && (
                 <section className="overflow-x-auto rounded-lg border bg-white">
                     <table className="min-w-full text-sm">
-                        <thead className="bg-[#F3EBE0] text-left">
+                        <thead className="bg-[#F3EBE0] text-start">
                             <tr>
                                 <th className="px-3 py-2">Date</th>
                                 <th className="px-3 py-2">Type</th>
@@ -442,7 +442,7 @@ export default function Show({
                     </form>
                     <div className="overflow-x-auto rounded-lg border bg-white">
                         <table className="min-w-full text-sm">
-                            <thead className="bg-[#F3EBE0] text-left">
+                            <thead className="bg-[#F3EBE0] text-start">
                                 <tr>
                                     <th className="px-3 py-2">Type</th>
                                     <th className="px-3 py-2">Granted</th>

@@ -29,7 +29,7 @@ export default function Index({ filters, years, classes, statuses, rows, chronic
 
             <section className="mb-6 overflow-x-auto rounded-lg border bg-white">
                 <table className="min-w-full text-sm">
-                    <thead className="bg-[#F3EBE0] text-left">
+                    <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">Date</th>
                             <th className="px-3 py-2">Student</th>
@@ -84,7 +84,7 @@ export default function Index({ filters, years, classes, statuses, rows, chronic
                     </p>
                 </div>
                 <table className="w-full min-w-[46rem] text-sm">
-                    <thead className="bg-[#F9F4EE] text-left">
+                    <thead className="bg-[#F9F4EE] text-start">
                         <tr>
                             <th className="p-2">Student</th>
                             <th className="p-2">Late</th>
