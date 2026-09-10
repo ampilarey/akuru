@@ -43,6 +43,13 @@ class SaveCalendarDayAction
             'affects_timetable' => array_key_exists('affects_timetable', $data)
                 ? (bool) $data['affects_timetable']
                 : true,
+            // E11b. Absent means "not decided", which for an audience must read
+            // as **no**: an entry reaches families only when somebody says so.
+            // A closed day is the exception — a family that is not told the
+            // school is shut turns up at the gate.
+            'is_public' => array_key_exists('is_public', $data)
+                ? (bool) $data['is_public']
+                : $this->closesSchool((string) $data['type']),
             'event_id' => isset($data['event_id']) && $data['event_id'] !== '' && $data['event_id'] !== null
                 ? (int) $data['event_id']
                 : null,
@@ -57,6 +64,17 @@ class SaveCalendarDayAction
         $day->save();
 
         return $day->refresh();
+    }
+
+    /**
+     * Types that mean there is no school, which a family must always be told.
+     */
+    private function closesSchool(string $type): bool
+    {
+        return in_array($type, [
+            CalendarDayType::Holiday->value,
+            CalendarDayType::Closure->value,
+        ], true);
     }
 
     private function nullableString(mixed $value): ?string

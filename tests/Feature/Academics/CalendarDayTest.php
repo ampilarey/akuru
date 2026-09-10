@@ -112,10 +112,18 @@ it('lists only holidays and closures for portal and public readers', function ()
         ->get(route('portal.holidays'))
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
-            ->component('Portal/Holidays')
-            ->has('holidays', 2)
-            ->where('holidays.0.title', 'Independence Day')
+            // E11b: the page is the school calendar now and splits by date, so
+            // the assertion is on both buckets together — the fixtures straddle
+            // today. What a family is shown is unchanged: closed days publish
+            // by default, and the exam day above still does not appear.
+            ->component('Portal/SchoolCalendar')
+            ->has('upcoming')
+            ->has('past')
         );
+
+    $payload = app(\App\Domains\Academics\Actions\ListPublicCalendarAction::class)->execute($year->id);
+    expect(collect([...$payload['upcoming'], ...$payload['past']])->pluck('title')->sort()->values()->all())
+        ->toBe(['Independence Day', 'Storm closure']);
 
     $this->withoutLocalizationMiddleware()
         ->get(route('public.events.index'))

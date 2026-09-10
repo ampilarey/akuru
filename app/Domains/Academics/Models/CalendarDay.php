@@ -16,6 +16,7 @@ class CalendarDay extends Model
         'title_arabic',
         'title_dhivehi',
         'affects_timetable',
+        'is_public',
         'event_id',
         'notes',
     ];
@@ -26,6 +27,7 @@ class CalendarDay extends Model
             'date' => 'date',
             'type' => CalendarDayType::class,
             'affects_timetable' => 'boolean',
+            'is_public' => 'boolean',
         ];
     }
 
