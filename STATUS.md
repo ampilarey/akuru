@@ -4183,6 +4183,68 @@ server validation message the browser's `max` attribute prevents from ever
 being requested — the property worth asserting was that a nonsense value never
 persists, whichever layer stops it.
 
+## 5cl. Every staff screen walked, and a guard so it stays that way (2026-09-11)
+
+Thirty rows in §2 above read **UNVERIFIED** — code and tests exist, nobody has
+loaded the screen. Today's slices made that gap hard to ignore: walking found
+defects in five of nine, including two screens that worked perfectly and
+silently said nothing.
+
+**All 116 staff GET screens were swept in a browser** as a `super_admin`
+holding all 108 permissions, checking for server errors, page errors and blank
+shells.
+
+### The result, triaged honestly
+
+Eleven came back flagged. **None was a defect:**
+
+| Flag | Count | What it actually was |
+|---|---|---|
+| "interrupted by another navigation" | 8 | My own sweep navigating while a redirect was still in flight — a harness artefact, reproduced away by probing each route on its own |
+| `[BLANK]` on `admin/…/ayah-preview` | 1 | A **JSON endpoint**, not a screen |
+| `exams/transcript` redirect | 1 | Legitimately forwards to `exams/awards`, which returns 200 |
+| `hr/payroll` 403 | 1 | **Deliberate.** See below |
+
+**Zero real defects in 116 screens.** That is a better result than the day's
+earlier evidence suggested, and worth recording as such rather than quietly
+moving on.
+
+### The payroll 403, and a correction to my own reasoning
+
+`hr/payroll` returns 403 because `index()` guards on the payroll kill-switch,
+which is off by default (ADR-016: two parallel cycles must match the manual
+process first). I began rewriting that guard — reads are not writes, and the
+screen carries an `enabled` prop plus a banner reading *"Payroll is disabled
+until two parallel cycles match"*, which looked like an unreachable state the
+controller was wrongly blocking.
+
+**Then the suite refused the change**, and the test that refused it is named
+*"keeps payroll **screens** off when the feature flag is down"* — screens, not
+writes. The behaviour is deliberate, tested and named. I had also claimed "no
+test asserts what an admin sees when payroll is off"; that was simply false.
+**Reverted.**
+
+What remains true is smaller and is a question, not a defect: the screen's
+`!enabled` branch cannot render in either state, so that UI is dead. Whether an
+administrator should be able to open payroll and read *why* it is off is a
+product decision, and not one to take on a money feature by rewriting a tested
+guard.
+
+### The durable part
+
+`tests/Feature/Routes/StaffScreensDoNotCrashTest` — the sibling of
+`PublicPagesDoNotCrashTest`, which exists because two public pages returned 500
+to every visitor while 1,100 tests passed. It loads every parameterless staff
+GET screen as a `super_admin` and asserts **no 5xx**, deliberately nothing more:
+a page may render an empty grid and pass. It catches the failure that makes
+every other question moot.
+
+Verified by breaking a controller on purpose: the guard fails and names the
+screen. It also asserts it is still matching more than 50 routes, so a change
+to the route file cannot quietly reduce it to testing nothing.
+
+**A one-off sweep is evidence for a day. This makes it a gate.**
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**.
