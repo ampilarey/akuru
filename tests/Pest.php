@@ -27,3 +27,4 @@ require_once __DIR__.'/Support/WebsiteDailyContentHelpers.php';
 require_once __DIR__.'/Support/PrayerTimesHelpers.php';
 require_once __DIR__.'/Support/MessagingTestHelpers.php';
 require_once __DIR__.'/Support/ScreenCensusHelpers.php';
+require_once __DIR__.'/Support/PortalCastHelpers.php';

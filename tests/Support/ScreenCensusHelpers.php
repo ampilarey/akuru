@@ -177,6 +177,7 @@ function detailScreens(): array
         'finance/receipts/{receipt}/document' => 'streams a stored document, not a page',
         'catalog/media/{media}' => 'streams catalog media inline, not a page',
         'circulation/barcode/{value}' => 'returns image/svg+xml — an image endpoint, not a page. The labels screen renders these barcodes inline and is swept instead.',
+        'learn/media/{media}' => 'streams catalog media inline through the same action as catalog/media, not a page',
         'storage/{path}' => 'serves files from disk',
         'locale/{locale}' => 'switches language and redirects',
         'verify-email/{id}/{hash}' => 'signed link that consumes its own token',
@@ -205,6 +206,15 @@ function detailScreens(): array
         }
 
         if (array_key_exists($uri, $notPages)) {
+            continue;
+        }
+
+        // Family-facing detail screens belong to
+        // `FamilyDetailScreensDoNotCrashTest`, which sweeps them as an enrolled
+        // student rather than as a super_admin. Splitting them out here mirrors
+        // how `allScreens()` splits the parameterless half, and keeps each test
+        // asserting about the audience it can actually speak for.
+        if (collect(familyPrefixes())->contains(fn (string $p): bool => underPrefix($uri, $p))) {
             continue;
         }
 

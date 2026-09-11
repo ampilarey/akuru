@@ -4626,6 +4626,53 @@ not exercised; everything downstream of it was:** the component's `onstop` →
 `blob:` source and controls, and the buttons read `Record again` and
 `Submit recording`. A real microphone check belongs in the staging walk.
 
+### The family detail screens, swept as the student who owns them
+
+The staff detail guard cannot sweep `learn/*`: those screens are scoped to the
+person who owns the record, and an administrator holding every permission sails
+straight through scoping that is broken for a student. That is why they sat in
+the pinned list rather than being swept badly.
+`FamilyDetailScreensDoNotCrashTest` sweeps them as the cast's student, and
+`detailScreens()` now splits family from staff exactly as `allScreens()` already
+did for the parameterless half — so each test only asserts about the audience it
+can speak for.
+
+`portalCast()` moved from inside `PortalScreensDoNotCrashTest` into
+`tests/Support`, for the reason `makeNotice()` already records: a function
+declared in a test file only exists if that file happens to have been loaded.
+Writing a probe against it proved the point immediately —
+`Call to undefined function familyDetailFixtures()`.
+
+**The cast is enrolled deliberately.** `AuthorizeActivityAccessAction`,
+`AuthorizeAssessmentAccessAction` and `AuthorizeLessonAccessAction` all refuse a
+student with no enrollment, and 403 is an allowed status here — so an unenrolled
+cast would pass the test while proving nothing. All four screens return **200**:
+`learn/courses`, `learn/lessons`, `learn/activities`, `learn/assessments`.
+
+Getting there took three fixture corrections, each of which first looked like a
+defect:
+
+1. **Two student ids, not one.** `course_enrollments.student_id` still carries a
+   foreign key to the legacy `registration_students` table — S1.1 left it there
+   on purpose (rule 9), and §2 of this document records "posted enrollment id
+   still legacy RS". The authorize actions match on `unified_student_id`. Set
+   only one and you get either a foreign-key failure or a 403.
+2. **`pattern` is a backed enum.** An invented `'matching'` inserted fine and
+   then threw `ValueError` when the model *read* it back — surfacing as a 500 on
+   the screen, not an error on the insert. The fixture now follows
+   `ActivityPatternTest`'s own payload.
+3. **An assessment defaults to draft**, and the authorize action 403s anything
+   unpublished — so a draft fixture would have exercised only the guard clause.
+
+`learn/media/{media}` is **not a screen**: it streams catalog media inline
+through the same action as `catalog/media/{media}`. Named as a non-page
+exclusion beside it.
+
+Verified by throwing from `LearnActivityController::show()` — the guard fails and
+names the screen. **Pinned list down to 21**, and what remains is honest: two
+scalars, an offering session nothing seeds, the Hifz cluster, payments (left
+alone under rule 12), exams, substitutions and prayer-times.
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**.
