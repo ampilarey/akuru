@@ -3942,6 +3942,59 @@ replacing it.
 **10 tests, 41 assertions. Walked in a browser: 15 checks, clean** — including
 an admin account holding every permission being refused with a 403.
 
+## 5ch. E16 — Circulation, and why it is not the Library (2026-09-11)
+
+Physical lending: books and textbooks with labels on them. **Not the L-track
+Library**, which is a digital reader and bookstore. The plan asks that the two
+*"never get confused in code or nav"*, so Circulation has **its own domain**,
+its own tables and its own nav entry — and a test asserts the separation rather
+than trusting it.
+
+`book_titles` (the work) → `book_copies` (the object on the shelf, each with an
+**accession number**) → `loans`. Loans attach to a **copy, never a title**:
+*"who has our second copy"* is the question a librarian actually asks.
+
+### Decisions worth recording
+
+- **Accession numbers are allocated, never reused.** The next number continues
+  past the highest that ever existed, including withdrawn copies. Reissuing one
+  makes an old loan record point at a different book.
+- **`LendCopyAction` is the only writer of a loan** (rule 11), and it locks the
+  copy row inside the transaction. Two people scanning at once on the first day
+  of term is exactly how a book ends up on two borrowers' records.
+- **Return is by accession number, not loan id.** Somebody hands over a book and
+  you scan it; nobody at a return desk knows which loan row it is, and asking
+  them is how a return desk stops being used.
+- **Bulk issue succeeds partially, on purpose.** Forty textbooks are forty
+  independent facts, and one pupil who already holds a copy must not leave the
+  other thirty-nine unissued. The result names who missed out and why, so the
+  librarian acts on a short list instead of re-running the class.
+- **Overdue is derived from `due_on`**, so nothing has to run overnight to keep
+  a flag honest.
+- **Borrowers are two nullable columns, not a morph** — no type column to
+  disagree with the id, real foreign keys on both, and rule 11's single student
+  record still holds.
+
+### Code 39 rather than QR
+
+The plan says *"QR or barcode label"*. At a desk the reader is a cheap USB wedge
+scanner, not a camera: every one reads **Code 39** and types the accession
+number straight into the focused field. QR would have meant adding a dependency
+to draw it and a camera to read it, for a worse desk workflow. Rendered as
+inline SVG in ~60 lines of pure PHP — **no package added**.
+
+Two defects the tests caught in that renderer, both mine: the human-readable
+number on the label was taken from the *input* rather than from what the bars
+actually encode, so a value containing the `*` sentinel would have printed a
+number the scanner disagreed with; and `days_overdue` used Carbon's signed diff
+and reported negative days. **A label whose printed number differs from its
+barcode is worse than no label.**
+
+**13 tests, 104 assertions. Full suite 1168 green. Walked in a browser: 22
+checks, clean** — including that the label sheet draws real bars (50 rects per
+barcode) whose `aria-label` matches the printed accession number, and that a
+second issue of an already-out copy is refused at the desk.
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**.
@@ -3993,12 +4046,25 @@ E3's assumption that `lesson_logs.homework` is the only homework concept is
 wrong and which to extend is now an owner decision; and **E11 is half-built**
 (room booking ships, the staff calendar does not).
 
-**Remaining work is 13 slices, most owner-gated. The family-facing core is now
-E1 + E2 + E3 ≈ 4–6 weeks** — E4, E9 and E22 were in the old "6–8 week" line and
-are done. Only E1's teachers-or-not decision blocks starting.
+**Wave 4 is now built out.** E15 (#241), E17 (#242), E8 (#243), E18 (#244),
+E21 (#245), E19 (#246) and E16 all shipped on 2026-09-11, each with tests, a
+browser walk and its own PR. The plan's gating notes were respected in design
+rather than used to defer: E18 carries `source` so a card reader is a binding
+and not a rewrite, E19 fails closed on every question the policy has not
+answered, and E16 is named Circulation so it never merges with the L-track
+Library. **The family-facing core that remains is E1 + E2 + E3**, and only
+E1's teachers-or-not decision blocks starting.
 
 **Operator:** apply branch protection (`docs/BRANCH_PROTECTION.md`). Confirm or reject `docs/migrations/s11-deploy-3-cleanup-proposal.md`.
 
 **Qur'an A.4b (later):** switch offering-session reads to `offering_halaqa_session_links` after operators confirm dual-write. Then Hifz cleanup (deploy 3). Keep `QURAN_HALAQA_DUAL_WRITE` off until verified.
 
-**Arabic B / Qur'an B / later:** pronunciation AI, Capacitor, W1–W3, L-track.
+**One thing to confirm rather than inherit (E19):** health and welfare notes
+are readable by `super_admin` and `headmaster` only. `admin` is deliberately
+excluded, because `RoleSeeder`'s blanket `Permission::all()` would otherwise
+have granted every admin account access by accident. Widening it is one line in
+a migration; narrowing it later is a disclosure.
+
+*(This closing section previously listed pronunciation AI, Capacitor, W1–W3 and
+the L-track as later work. All five have shipped; the line was stale by
+several weeks and is removed rather than corrected in place.)*
