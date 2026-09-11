@@ -10,6 +10,7 @@ use App\Domains\Academics\Http\Controllers\CalendarDayController;
 use App\Domains\Academics\Http\Controllers\ClassDirectoryController;
 use App\Domains\Academics\Http\Controllers\CoursePlanController;
 use App\Domains\Academics\Http\Controllers\DailyAttendanceController;
+use App\Domains\Academics\Http\Controllers\FoundItemController;
 use App\Domains\Academics\Http\Controllers\MaterialFileController;
 use App\Domains\Academics\Http\Controllers\MeetingSlotController;
 use App\Domains\Academics\Http\Controllers\PeriodDirectoryController;
@@ -119,6 +120,7 @@ use App\Domains\Portal\Http\Controllers\PortalAwardController;
 use App\Domains\Portal\Http\Controllers\PortalBehaviorController;
 use App\Domains\Portal\Http\Controllers\PortalEventController;
 use App\Domains\Portal\Http\Controllers\PortalExamController;
+use App\Domains\Portal\Http\Controllers\PortalFoundItemController;
 use App\Domains\Portal\Http\Controllers\PortalHolidayController;
 use App\Domains\Portal\Http\Controllers\PortalHomeController;
 use App\Domains\Portal\Http\Controllers\PortalHomeworkController;
@@ -172,6 +174,9 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
     Route::post('/portal/meetings/bookings/{booking}/cancel', [PortalMeetingController::class, 'cancel'])->name('portal.meetings.cancel')->whereNumber('booking');
     Route::get('/portal/children', [GuardianChildrenController::class, 'index'])->name('portal.children');
     Route::get('/portal/holidays', [PortalHolidayController::class, 'index'])->name('portal.holidays');
+    // E15: what is still on the shelf. Families only ever see unreturned items.
+    Route::get('/portal/found-items', [PortalFoundItemController::class, 'index'])->name('portal.found-items');
+    Route::get('/portal/found-items/{foundItem}/photo', [PortalFoundItemController::class, 'photo'])->name('portal.found-items.photo')->whereNumber('foundItem');
     Route::get('/portal/attendance', [PortalAttendanceController::class, 'index'])->name('portal.attendance');
     Route::get('/portal/behavior', [PortalBehaviorController::class, 'index'])->name('portal.behavior');
     Route::get('/portal/absence-notes', [PortalAbsenceNoteController::class, 'index'])->name('portal.absence-notes');
@@ -650,6 +655,16 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::post('events/{event}/second-round', [EventAdminController::class, 'secondRound'])->name('academics.events.second-round')->whereNumber('event');
         Route::post('events/{event}/registrations/{registration}/confirm', [EventAdminController::class, 'confirm'])->name('academics.events.confirm')->whereNumber('event')->whereNumber('registration');
         Route::get('events/{event}/registrations/export', [EventAdminController::class, 'exportRegistrations'])->name('academics.events.registrations.export')->whereNumber('event');
+
+        // E15 lost and found. Any member of staff in this group may log an
+        // item and hand one back — see SaveFoundItemAction on why editing is
+        // not restricted to the finder.
+        Route::get('found-items/export', [FoundItemController::class, 'export'])->name('academics.found-items.export');
+        Route::get('found-items', [FoundItemController::class, 'index'])->name('academics.found-items.index');
+        Route::post('found-items', [FoundItemController::class, 'store'])->name('academics.found-items.store');
+        Route::post('found-items/{foundItem}', [FoundItemController::class, 'update'])->name('academics.found-items.update')->whereNumber('foundItem');
+        Route::post('found-items/{foundItem}/return', [FoundItemController::class, 'return'])->name('academics.found-items.return')->whereNumber('foundItem');
+        Route::get('found-items/{foundItem}/photo', [FoundItemController::class, 'photo'])->name('academics.found-items.photo')->whereNumber('foundItem');
 
         Route::get('timetable/export', [TimetableBuilderController::class, 'export'])->name('academics.timetable.export');
         Route::get('timetable', [TimetableBuilderController::class, 'index'])->name('academics.timetable.index');

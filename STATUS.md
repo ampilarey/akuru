@@ -3628,6 +3628,57 @@ check again, that test fails and says so.
 `public.about (about) -> 500`, then `public.apply (apply) -> 500`. Both live
 URLs confirmed 200 after the fix.
 
+## 5cb. E15 — lost and found (2026-09-11)
+
+**Wave 4 un-gated by the owner**, who asked for all remaining coding after
+being told twice that most of it was decision-blocked rather than unbuilt. That
+is their call to make, and it is recorded here as the reason these slices start.
+Built one per PR, per rule 1.
+
+`found_items` — title, description, location, `found_at`, who is holding it,
+status `listed|returned`, and a private photo media id. Staff log what turns up;
+**families browse what is still on the shelf**, which is the half that makes the
+feature worth having.
+
+Design decisions worth stating:
+
+- **Carries `academic_year_id` (rule 10), stamped not chosen.** An item found is
+  something that happens on a date, and last year's shelf must not join this
+  year's list. Nobody logging a lost water bottle should have to think about
+  which school year it is, so `SaveFoundItemAction` reads the active year and
+  refuses if none is active.
+- **Any member of staff may edit any item — deliberately unlike E13a
+  materials.** A material carries its author's wording; a lost jumper does not.
+  The person who finds a bag is often not the person who later learns whose it
+  is, and making them chase the finder is the kind of rule that gets worked
+  around by logging a duplicate. Editing never reassigns authorship.
+- **Returning is its own Action**, not a status flip, because the only fact
+  anyone asks afterwards is *who took it away*. Returning twice is refused: two
+  people believing they collected the same item is worth an error.
+- **Two photo reads, and the family one is narrower.** Staff see the photo of a
+  returned item because that is their record; for a family a returned item stops
+  being a notice on the board. Portal reaches it through
+  `ReadListedFoundItemPhotoAction` rather than the model — Portal importing
+  `Academics\Models\FoundItem` would have been a new rule-3 violation, and the
+  baseline may only shrink.
+
+**10 tests, 46 assertions**, most of them the boundary between the two
+audiences. **Walked in a browser end to end**: staff logged an item → the family
+saw it with description, place and holder → staff marked it returned to a named
+person → the family list went empty. Zero page errors.
+
+**Two things the process caught, both worth recording:**
+
+- The **morph-map test failed** on first run — `FoundItem` was not registered in
+  `config/morph-map.php`. ADR-005 and the arch test did exactly their job.
+- The **walk found a duplicate flash banner**: AppShell already renders one, and
+  the page rendered a second, so "Item logged." appeared twice. Invisible to
+  every test; obvious on screen in one second.
+
+**Fixture correction:** the first draft hand-rolled an `AcademicYear` with
+`starts_on`/`ends_on`. The columns are `start_date`/`end_date`, and the repo
+already has a `makeYear()` helper. Used the helper.
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**.
