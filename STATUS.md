@@ -4778,6 +4778,42 @@ exactly like a regression from whatever change happens to be in the tree, and
 the next person to hit it would start by bisecting their own work. A flake that
 nobody writes down is the expensive kind.
 
+### The last screen, and a guard for a failure that has not happened
+
+`catalog/offerings/{offering}/sessions/{session}/attendance` was the only entry
+left on the pinned list that was both uncovered and fixable. It now has an
+offering-session row and renders **200**. It is the first two-parameter route in
+the declared map, and a small vindication of keying that map by **URI rather
+than parameter name**: `{session}` means an *offering* session here and a Hifz
+session three routes away.
+
+**The pinned list is 7, and every entry is there by choice:**
+
+| entry | why it stays |
+|---|---|
+| `{pageNumber}`, `{merchant_reference}` | scalars — there is no row to point at |
+| the two `quran-progress` screens | covered by `AdminResourcePagesSmokeTest` |
+| the three `payments/*` routes | ledger is append-only (rule 12) |
+
+Screen coverage is now as complete as it can honestly be: every parameterless
+staff and family screen, both halves of the detail screens, and the marketing
+site.
+
+**`InertiaPagesExistTest` is prevention, not a fix** — scanned first, and all
+**156** render calls already resolve. It is here because the failure it catches
+belongs to a family this repository met twice today, and every member looks the
+same from outside: **HTTP 200, and a page the user cannot use.** Five routes
+pointing at absent controller methods (those at least 500'd); eight submit
+buttons that threw and did nothing while the page rendered perfectly; and now a
+renamed page component, where the controller answers 200 and Inertia fails to
+resolve it in the browser. No screen guard would ever catch the third — they
+assert on the status, and the status is fine.
+
+It needs no database, no HTTP and no fixture, which is the argument for adding
+it before the first violation rather than after. Verified by renaming
+`Academics/Bookings/Index` to `…IndexTypo`: it fails and names both the file and
+the page.
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**.
