@@ -3724,6 +3724,67 @@ including that `clubs` and `club_members` do not exist as tables. **Walked in a
 browser**: added a member, the visitor flag rendered, the sheet printed with
 eight blank columns. Zero page errors.
 
+## 5cd. E8 — student pick-up, as a protocol (2026-09-11)
+
+**This slice releases a child**, so almost all of it is refusals. The plan calls
+it *"a protocol, not a button"* and says in terms: *do not ship steps 1–5
+without step 2*. Step 2 is the PIN.
+
+Three tables, all additive: `pickup_pins` (hashed, one per guardian),
+`pickup_windows` (the school opens pick-up per day — a family cannot ask at
+2am), `pickup_notices` (`academic_year_id` per rule 10). Morph aliases
+registered in the same slice per ADR-005.
+
+The five steps: staff open the window → a guardian says *"I am ten minutes
+away"* → the office is told → staff send the child to reception → **the
+guardian confirms they have the child**. Step 5 is what makes it a loop rather
+than a notification.
+
+**Every gate lives in `RequestPickupAction`**, not the controller (rule 5), so
+there is one place to read when somebody asks what stops the wrong adult taking
+a child. The order is deliberate: window open → may collect → PIN. **The PIN is
+checked last on purpose** — a wrong PIN is the only failure that tells an
+attacker the earlier answers were right, so a stranger never reaches the
+credential.
+
+`can_pickup` on `guardian_student` gets its **first ever reader** here. Being
+allowed to see a child's attendance was never the same permission as being
+allowed to take them out of the building; the column has existed unread since
+the table was created.
+
+### Verifying the refusals rather than trusting them
+
+A passing test on this module proves nothing by itself, so each gate was
+**deliberately broken and the suite re-run**: window check, `can_pickup` check,
+PIN check, idempotency, the state machine, the requesting-guardian check, the
+verifier's fail-closed branch when no PIN exists, the weak-PIN rule, and the
+hashing. **Nine mutations, nine detections.** Every gate is load-bearing.
+
+### What the browser found that 1,129 tests did not
+
+The child dropdown listed **every** linked child — including one this guardian
+may not collect — and **every option rendered blank**, because the shared
+`ListGuardianChildrenAction` returns `first_name`/`last_name` and the page read
+`name`. The gate would still have refused the extra child, so this was never an
+opening; it was a parent at a school gate being told "no" with no way to know
+why, choosing from a list of empty rows.
+
+Fixed with `ListCollectableChildrenAction` — a **new** reader rather than a new
+argument on the shared one, which has thirty-odd callers whose shape must not
+move. The dropdown and the gate now read the same column. A guardian listed for
+no child gets a sentence saying the record is the thing to correct, not an
+empty select.
+
+**11 tests, 67 assertions. Walked in a browser: 27 checks, clean.**
+
+Two harness lessons worth keeping, since both produced false failures first:
+`artisan serve` needs `--no-reload` plus `PHP_CLI_SERVER_WORKERS` or two
+browser contexts deadlock the single-process dev server; and `networkidle`
+never settles in this sandbox, because blocked Google Fonts and Translate
+requests retry forever. **The first walk reported six defects that were all the
+harness checking before the response arrived.** Waiting on text is the only
+honest signal.
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**.
