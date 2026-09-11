@@ -24,6 +24,30 @@ uses(RefreshDatabase::class);
  * Several assertions below exist to prove the log stays *fillable* — that the
  * action never dead-ends somebody standing at a gate.
  */
+/**
+ * Pin the clock to mid-morning before every test in this file.
+ *
+ * Several of these travel forward by minutes and then assert on what happened
+ * **today** — `ListGateMovementsAction` filters `whereDate('at', $date)`. Run
+ * the suite at 23:57 Indian/Maldives and `travel(5)->minutes()` puts the
+ * departure on the *next* day, so today's list holds one movement instead of
+ * two and `toHaveCount(2)` fails.
+ *
+ * That is not hypothetical: a full-suite run failed here on 2026-09-11 at
+ * 23:5x, then passed alone, paired, on the next run, and on clean main — which
+ * is exactly how a clock-dependent failure looks when you go hunting for a
+ * code change to blame. Reproduced deterministically by pinning to 23:57:
+ * `in=0 out=1 movements=1`.
+ *
+ * Nine hours in leaves far more headroom than the ~13 minutes these tests
+ * travel between them, and makes the file independent of when CI happens to
+ * run. `yesterday` in the day-boundary test stays correct, since it is derived
+ * from the pinned `now()` rather than from wall time.
+ */
+beforeEach(function () {
+    $this->travelTo(now()->startOfDay()->addHours(9));
+});
+
 function gateSetup(): array
 {
     makeYear(['name' => 'Gate year', 'status' => AcademicYearStatus::Active, 'is_current' => true]);
