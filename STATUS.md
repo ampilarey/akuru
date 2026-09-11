@@ -4747,6 +4747,37 @@ It fires in a five-minute window each night and will fail CI for anyone who runs
 then. Recorded as its own slice: pin the clock with `travelTo` instead of
 trusting wall time.
 
+### The midnight flake, reproduced before it was fixed
+
+Rather than pin the clock on a hunch, the failure was **reproduced
+deterministically**: pin to 23:57, record an arrival, travel five minutes, and
+today's list returns
+
+```
+in=0 out=1 movements=1
+```
+
+against the test's `toHaveCount(2)`. The arrival sits on day N, the departure on
+day N+1, and `whereDate('at', $date)` only sees the departure. That is the whole
+mechanism, confirmed rather than inferred.
+
+Fixed with a `beforeEach` pinning the file to 09:00. Proven in place rather than
+assumed: a temporary assertion inside the file reported `now() = 09:00` with
+**899 minutes of headroom** to midnight, against the ~13 minutes these tests
+travel between them. The boundary is now unreachable by construction, not merely
+unlikely. `yesterday` in the day-boundary test stays correct, since it derives
+from the pinned `now()`.
+
+**The other two time-travelling tests were checked and left alone.**
+`WriterEarningsTest` and `CirculationTest` travel in *days*, which lands at the
+same time of day and keeps the arithmetic stable; only minutes-scale travel can
+cross a boundary it did not intend to.
+
+Worth naming why this was not simply re-run until green: the failure looks
+exactly like a regression from whatever change happens to be in the tree, and
+the next person to hit it would start by bisecting their own work. A flake that
+nobody writes down is the expensive kind.
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**.
