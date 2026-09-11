@@ -4869,6 +4869,30 @@ was given against the ADR's stated parity, and that parity is incomplete, so it
 is not treated as covering this. **Decision needed: build mushaf management on
 the engine first, or accept losing the capability.**
 
+### Two things this document had recorded and never fixed
+
+Both were listed here as "found, not fixed (rule 1)". With the remaining coding
+authorised, both are now closed.
+
+**`DatabaseSeeder` never ran `SurahSeeder`.** On a fresh install `surahs` was
+empty, so the halaqa sheet's "From surah…" / "To surah…" pickers rendered with
+**no options** and the new-memorization lane could not be filled in at all until
+somebody found the seeder and ran it by hand. The empty dropdown was found by
+walking the F5 gate, where it first read as a broken screen rather than a missing
+seed. It seeds the 14-surah development subset — the authoritative dataset still
+arrives through the mushaf import, which is exactly the workflow F5 would have
+deleted.
+
+**`teachers.user_id` had a foreign key but no unique index.** Idempotence rested
+entirely on `EnsureTeacherRowAction` checking for an existing row first — a
+read-then-write that two concurrent requests can both pass. The index now
+enforces it, and the migration **collapses duplicates before adding it** rather
+than failing on them: lowest id wins, because it is the row other tables have had
+longest to point at, and anything actually removed is logged as a warning. A
+deleted teacher profile deserves a line in the deploy log even when it was a
+duplicate. No database checked had any duplicates, so in practice this only adds
+an index (rule 9: nothing dropped or renamed).
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**.
