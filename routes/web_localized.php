@@ -5,6 +5,7 @@ use App\Domains\Academics\Http\Controllers\AbsencesTodayController;
 use App\Domains\Academics\Http\Controllers\AbsenceTypeController;
 use App\Domains\Academics\Http\Controllers\AcademicYearController;
 use App\Domains\Academics\Http\Controllers\AnnouncementController;
+use App\Domains\Academics\Http\Controllers\AttendancePolicyController;
 use App\Domains\Academics\Http\Controllers\AttendanceReportController;
 use App\Domains\Academics\Http\Controllers\BehaviorRecordController;
 use App\Domains\Academics\Http\Controllers\CalendarDayController;
@@ -727,6 +728,11 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::post('pickup/close', [PickupConsoleController::class, 'close'])->name('academics.pickup.close');
         Route::post('pickup/{notice}/send', [PickupConsoleController::class, 'send'])->name('academics.pickup.send')->whereNumber('notice');
         Route::post('pickup/{notice}/cancel', [PickupConsoleController::class, 'cancel'])->name('academics.pickup.cancel')->whereNumber('notice');
+
+        // E10d the school's attendance policy — read since August, never
+        // writable until now.
+        Route::get('attendance-policy', [AttendancePolicyController::class, 'index'])->name('academics.attendance-policy.index');
+        Route::put('attendance-policy', [AttendancePolicyController::class, 'update'])->name('academics.attendance-policy.update');
 
         // E10c absence reasons the school defines for itself.
         Route::get('absence-types', [AbsenceTypeController::class, 'index'])->name('academics.absence-types.index');
