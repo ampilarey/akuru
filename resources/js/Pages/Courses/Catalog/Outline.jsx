@@ -151,7 +151,8 @@ export default function Outline({ course, modules, glossaryItems = [] }) {
                         blockForm.transform((data) => ({
                             ...data,
                             lesson_id: data.lesson_id || modules.flatMap((module) => module.lessons)[0]?.id || '',
-                        })).post(`/catalog/courses/${course.id}/blocks`, { preserveScroll: true, forceFormData: true });
+                        }));
+                        blockForm.post(`/catalog/courses/${course.id}/blocks`, { preserveScroll: true, forceFormData: true });
                     }}
                     className="rounded-lg border bg-white p-4"
                 >

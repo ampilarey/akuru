@@ -78,7 +78,8 @@ export default function Show({
 
     const saveFields = (e) => {
         e.preventDefault();
-        fieldForm.transform(() => ({ values })).put(`/people/students/${student.id}/custom-fields`);
+        fieldForm.transform(() => ({ values }));
+        fieldForm.put(`/people/students/${student.id}/custom-fields`);
     };
 
     return (

@@ -26,7 +26,8 @@ export default function Index({ entityType, entityTypes, fieldTypes, definitions
                 .split('\n')
                 .map((line) => line.trim())
                 .filter(Boolean),
-        })).post('/people/custom-fields', { preserveScroll: true });
+        }));
+        form.post('/people/custom-fields', { preserveScroll: true });
     };
 
     return (

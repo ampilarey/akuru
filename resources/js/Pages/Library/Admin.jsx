@@ -218,7 +218,8 @@ function ItemForm({ categories, options }) {
                     authors: data.authors_text
                         ? data.authors_text.split(',').map((name) => ({ name: name.trim() })).filter((author) => author.name)
                         : [],
-                })).post('/admin/library/items', {
+                }));
+                form.post('/admin/library/items', {
                     preserveScroll: true,
                     forceFormData: true,
                     onSuccess: () => form.reset(),

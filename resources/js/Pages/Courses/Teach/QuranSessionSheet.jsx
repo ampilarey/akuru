@@ -49,8 +49,8 @@ function RecordForm({ sessionId, row, surahs, options, onDone }) {
         <form
             onSubmit={(e) => {
                 e.preventDefault();
-                form.transform((data) => ({ ...data, course_enrollment_id: row.enrollment_id }))
-                    .post(`/teach/quran-sessions/${sessionId}/records`, { preserveScroll: true, onSuccess: onDone });
+                form.transform((data) => ({ ...data, course_enrollment_id: row.enrollment_id }));
+                form.post(`/teach/quran-sessions/${sessionId}/records`, { preserveScroll: true, onSuccess: onDone });
             }}
             className="grid gap-3 border-t bg-[#FBF7F0] p-4"
         >
