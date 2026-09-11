@@ -26,7 +26,13 @@ Route::prefix('hifz')->name('hifz.')->middleware(['auth', 'trackActivity'])->gro
     Route::get('/student', [StudentHifzDashboardController::class, 'index'])->name('student.dashboard');
     Route::get('/parent', [ParentHifzDashboardController::class, 'index'])->name('parent.dashboard');
 
-    Route::resource('programs', HifzProgramController::class)->parameters(['programs' => 'program']);
+    // `HifzProgramController` implements every resource action except `destroy`,
+    // so the DELETE route `Route::resource` registered for it answered 500.
+    // Removing an unroutable route is a route change, which rule 7's freeze
+    // permits; no Hifz behaviour moves.
+    Route::resource('programs', HifzProgramController::class)
+        ->except('destroy')
+        ->parameters(['programs' => 'program']);
     Route::post('programs/{program}/assign-supervisor', [HifzProgramController::class, 'assignSupervisor'])->name('programs.assign-supervisor');
 
     Route::get('programs/{program}/enrollments', [HifzEnrollmentController::class, 'index'])->name('enrollments.index');

@@ -39,9 +39,13 @@ class LocalizedRouteNamesTest extends TestCase
             'announcements.create',
             'announcements.store',
             'announcements.show',
-            'announcements.edit',
-            'announcements.update',
-            'announcements.destroy',
+            // `.edit`, `.update` and `.destroy` are deliberately absent.
+            // `AnnouncementController` never implemented those methods, so the
+            // routes `Route::resource` registered for them answered 500 — while
+            // this very test passed, because a name being registered says
+            // nothing about whether the route works. The registration is now
+            // `->only([...])`; `RoutesHaveControllerMethodsTest` catches the
+            // general case.
             'e-learning.index',
             'e-learning.quran',
             'e-learning.arabic',

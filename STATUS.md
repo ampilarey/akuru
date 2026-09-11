@@ -4364,6 +4364,56 @@ and the controller 404s on purpose, so the fixture exercises the guard clause,
 not the form. Rendering is what the browser walk checks; the test is the floor
 beneath it.
 
+### Five routes that answered 500, and the reason nothing caught them
+
+Checking why `admin/public-site/courses/{course}` could not be swept turned up a
+real fault rather than a fixture gap. `Route::resource()` registers all seven
+actions whether or not the controller implements them, and a missing method does
+not fail at boot — it fails with a **500 the moment a person clicks it**.
+
+| route | missing method |
+|---|---|
+| `GET announcements/{announcement}/edit` | `AnnouncementController@edit` |
+| `PUT announcements/{announcement}` | `@update` |
+| `DELETE announcements/{announcement}` | `@destroy` |
+| `DELETE hifz/programs/{program}` | `HifzProgramController@destroy` |
+| `GET admin/public-site/courses/{course}` | `CourseController@show` |
+
+All four reachable ones were confirmed 500 by actual request before anything was
+changed. The admin-courses one is the instructive case: its registration passed a
+`names()` array listing six actions and omitting `show`, which reads exactly like
+the route was excluded — but **omitting a name only leaves the route unnamed**.
+It still registered, and it still answered 500. That is why it appeared in the
+census with a blank name.
+
+**Two guards were passing on these.** `LocalizedRouteNamesTest` asserted
+`announcements.edit` is registered and `HifzRouteNamesTest` asserted
+`hifz.programs.destroy` is — both true, both meaningless, because a registered
+name says nothing about whether the route works. This is the same weakness
+`PublicPagesDoNotCrashTest` was written against in September, in two more places.
+
+**And my own pinned list was hiding two of them.** Both GET routes sat in
+`unresolvedDetailScreens()` with the reason "int param". That reason was wrong:
+reflection found no binding because there was no method to reflect. An entry on
+that list says *not covered*, never *not broken*, and a plausible-sounding reason
+is the easiest place for a live fault to hide. Both entries are now gone, and the
+docblock says so.
+
+Fixed by narrowing each registration to the methods that exist — `->only()` on
+announcements, `->except('show')` on admin courses, `->except('destroy')` on Hifz
+programs. Removing an unroutable route is a route change, which rule 7's freeze
+permits; no Hifz behaviour moves. Nothing in the UI linked to any of the five, so
+no working path was removed.
+
+`RoutesHaveControllerMethodsTest` keeps the whole class out. It runs on pure
+reflection — no fixture, no row, no database — because the fault it catches is
+exactly the kind a fixture-based guard reports as "cannot test this". Verified by
+restoring one registration: it fails and names the route and the missing method.
+
+Verified after the fix: the removed routes answer 404/405, and `announcements`,
+`announcements/{id}`, `admin/public-site/courses/{course}/edit` and
+`hifz/programs` all still return 200.
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**.

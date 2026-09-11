@@ -22,7 +22,9 @@ class HifzRouteNamesTest extends TestCase
             'hifz.programs.show',
             'hifz.programs.edit',
             'hifz.programs.update',
-            'hifz.programs.destroy',
+            // `hifz.programs.destroy` is deliberately absent: the controller
+            // has no `destroy` method, so that route answered 500 on every hit
+            // while this test passed on the name alone.
             'hifz.programs.assign-supervisor',
             'hifz.enrollments.index',
             'hifz.enrollments.create',

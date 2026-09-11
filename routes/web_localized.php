@@ -388,8 +388,14 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
     // Hifz Progress module
     require base_path('app/Domains/Hifz/routes.php');
 
-    // Announcement routes
-    Route::resource('announcements', AnnouncementController::class);
+    // Announcement routes. `AnnouncementController` implements index, create,
+    // store and show — never edit, update or destroy. A bare `Route::resource`
+    // registers all seven regardless, so `GET announcements/{a}/edit` and the
+    // PUT and DELETE both answered **500** to anyone who reached them. Nothing
+    // in the UI links to them, so this removes three dead routes rather than a
+    // working feature; the editing screens are a separate piece of work.
+    Route::resource('announcements', AnnouncementController::class)
+        ->only(['index', 'create', 'store', 'show']);
 
     // E-Learning routes
     Route::get('/e-learning', [ELearningController::class, 'index'])->name('e-learning.index');
@@ -537,7 +543,12 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
             'destroy' => 'admin.pages.destroy',
         ]);
 
-        Route::resource('courses', AdminCourseController::class)->names([
+        // `->except('show')` is load-bearing, not tidiness. The `names()` array
+        // below already omitted `show`, which reads like the route was excluded
+        // — but omitting a name only leaves the route **unnamed**, it still
+        // registers. `AdminCourseController` has no `show` method, so
+        // `GET admin/public-site/courses/{course}` answered 500 on every hit.
+        Route::resource('courses', AdminCourseController::class)->except('show')->names([
             'index' => 'admin.courses.index',
             'create' => 'admin.courses.create',
             'store' => 'admin.courses.store',
