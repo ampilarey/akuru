@@ -3679,6 +3679,51 @@ person → the family list went empty. Zero page errors.
 `starts_on`/`ends_on`. The columns are `start_date`/`end_date`, and the repo
 already has a `makeYear()` helper. Used the helper.
 
+## 5cc. E17 — clubs, with no clubs table (2026-09-11)
+
+**There is no `clubs` table and no club-membership table**, and that is the
+whole slice. A club is a `Course` with `course_type = 'club'`; its members are
+ordinary `CourseEnrollment` rows. The plan asked for precisely this — *"the
+course engine can model these already … resist a parallel enrolment system"* —
+and rule 11 says the same thing. **No migration.**
+
+Built as `Courses/Components/Clubs`, following rule 6: subject behaviour is a
+component, and the engine never branches on `course_type`. The component
+touches no model of any domain, its own included, reaching everything through
+Action seams — `ComponentsIsolationTest` enforces that and passes.
+
+Two engine seams were involved:
+
+- `ListEngineCoursesAction` gained an **optional** `?string $courseType`. The
+  value is supplied by the caller — `'club'` from this component, `'hifz'` from
+  Quran — exactly as `ListEnrollmentTargetsByCourseTypeAction` already did for
+  enrollments. Data, not a branch.
+- `CancelEnrollmentAction` is new, and is the mirror of
+  `EnrollUnifiedStudentInOfferingAction`. Components need a way to remove a
+  member and rule 3 forbids them touching `CourseEnrollment`, so the engine
+  owns the verb. It **cancels rather than deletes**: an enrollment is the
+  record that somebody was in a club last term, and the status column already
+  exists to say it ended.
+
+**"Members from outside the enrolled roll" needed no code — only the absence of
+a check.** A `CourseEnrollment` wants a student id and never asks whether that
+student sits on a class roster. What it *did* need was
+`ListStudentsOnActiveRosterAction` (new, Academics, batched to avoid N+1), so a
+club leader taking a register can tell a pupil from a visitor. A register that
+cannot make that distinction is one nobody trusts.
+
+Adding a member to a club with no offering raises an operator-facing sentence
+rather than failing quietly — *"nothing happened"* is the failure mode this
+session spent all day fixing.
+
+Also: a **printable attendance sheet**, deliberately eight blank weeks. A club
+leader takes a register on a clipboard in a hall with no screen.
+
+**8 tests, 52 assertions**, most asserting that nothing new was invented —
+including that `clubs` and `club_members` do not exist as tables. **Walked in a
+browser**: added a member, the visitor flag rendered, the sheet printed with
+eight blank columns. Zero page errors.
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**.

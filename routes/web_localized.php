@@ -29,6 +29,7 @@ use App\Domains\Commerce\Http\Controllers\AdminCommerceController;
 use App\Domains\Courses\Components\Arabic\Http\Controllers\CatalogArabicReferenceController;
 use App\Domains\Courses\Components\Arabic\Http\Controllers\CatalogArabicReportController;
 use App\Domains\Courses\Components\Arabic\Http\Controllers\LearnArabicReportController;
+use App\Domains\Courses\Components\Clubs\Http\Controllers\ClubController;
 use App\Domains\Courses\Components\Quran\Http\Controllers\CatalogQuranReferenceController;
 use App\Domains\Courses\Components\Quran\Http\Controllers\LearnQuranController;
 use App\Domains\Courses\Components\Quran\Http\Controllers\TeachQuranMilestoneController;
@@ -655,6 +656,15 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::post('events/{event}/second-round', [EventAdminController::class, 'secondRound'])->name('academics.events.second-round')->whereNumber('event');
         Route::post('events/{event}/registrations/{registration}/confirm', [EventAdminController::class, 'confirm'])->name('academics.events.confirm')->whereNumber('event')->whereNumber('registration');
         Route::get('events/{event}/registrations/export', [EventAdminController::class, 'exportRegistrations'])->name('academics.events.registrations.export')->whereNumber('event');
+
+        // E17 clubs. A club is a course (course_type='club'); these routes are
+        // a roster screen over the engine, not a second enrolment system.
+        Route::get('clubs', [ClubController::class, 'index'])->name('academics.clubs.index');
+        Route::get('clubs/{club}', [ClubController::class, 'show'])->name('academics.clubs.show')->whereNumber('club');
+        Route::get('clubs/{club}/attendance-sheet', [ClubController::class, 'attendanceSheet'])->name('academics.clubs.attendance-sheet')->whereNumber('club');
+        Route::get('clubs/{club}/export', [ClubController::class, 'export'])->name('academics.clubs.export')->whereNumber('club');
+        Route::post('clubs/{club}/members', [ClubController::class, 'addMember'])->name('academics.clubs.members.add')->whereNumber('club');
+        Route::delete('clubs/{club}/members/{enrollment}', [ClubController::class, 'removeMember'])->name('academics.clubs.members.remove')->whereNumber('club')->whereNumber('enrollment');
 
         // E15 lost and found. Any member of staff in this group may log an
         // item and hand one back — see SaveFoundItemAction on why editing is
