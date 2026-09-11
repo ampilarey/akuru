@@ -19,12 +19,19 @@ uses(RefreshDatabase::class);
  * display data, which are the ones most likely to fall over on a null relation,
  * and until this test nothing loaded a single one of them.
  *
- * **How a route gets swept.** Its controller's own signature has to say which
- * model each parameter is. A controller that type-hints `ClassRoom $classRoom`
- * tells us exactly which table to point at; one that takes `int $course` does
- * not. Nothing is guessed from the parameter's *name* — `{session}` is a Hifz
- * session on one route and an offering session on another, and a guard that
- * guesses between them by name is a guard that asserts nothing.
+ * **How a route gets swept — two ways, neither of them guessing.**
+ *
+ * 1. **Reflection.** The controller's signature says which model a parameter
+ *    is: `ClassRoom $classRoom` names the table exactly.
+ * 2. **A declared value** in `detailDeclaredParams()`, keyed by route URI, for
+ *    controllers that take `int $course` and resolve through an Action so there
+ *    is nothing to reflect.
+ *
+ * What is never done is inferring from the parameter's *name*. `{session}` is a
+ * Hifz session on one route and an offering session on another; `{course}` is an
+ * ordinary course on `catalog/courses/{course}/outline` and a **club** on
+ * `academics/clubs/{club}`. A guard that guesses between those by name is a
+ * guard that asserts nothing.
  *
  * **The rows come from the app's own seeders** (`DatabaseSeeder`, which
  * includes `PilotRehearsalSeeder`) wherever it provides them, so the sweep runs
@@ -66,19 +73,17 @@ uses(RefreshDatabase::class);
 function unresolvedDetailScreens(): array
 {
     return [
-        // Controllers take `int $id` and resolve through an Action, so the
-        // signature names no model. Each needs a declared fixture; a follow-up
-        // slice adds them.
-        'academics/clubs/{club}' => 'int param; a club is a courses row with course_type=club',
-        'academics/clubs/{club}/attendance-sheet' => 'int param',
-        'catalog/courses/{course}/activities' => 'int param',
-        'catalog/courses/{course}/assessments' => 'int param',
-        'catalog/courses/{course}/outline' => 'int param',
-        'catalog/offerings/{offering}/sessions' => 'int param',
-        'catalog/offerings/{offering}/sessions/{session}/attendance' => 'two int params',
-        'catalog/player/{lesson}' => 'int param',
-        'circulation/barcode/{value}' => 'renders a barcode for an arbitrary string',
+        // Scalars with no row behind them, and one route needing a second row
+        // (an offering *session*) that nothing seeds yet.
+        'catalog/offerings/{offering}/sessions/{session}/attendance' => 'needs an offering session row as well as the offering',
         'hifz/quran/mushafs/{mushaf}/pages/{pageNumber}' => 'page number is a scalar, not a row',
+        'payments/ref/{merchant_reference}/status' => 'string reference, not a row',
+
+        // Family screens. These resolve as `int` too, but sweeping them as a
+        // super_admin would prove the wrong thing: they are scoped to the
+        // parent, student or teacher who owns the record, so they need the
+        // portal cast from `PortalScreensDoNotCrashTest`. That is a slice of
+        // its own, not a fixture tweak.
         'learn/activities/{activity}' => 'int param, and a family screen: needs the portal cast',
         'learn/assessments/{assessment}' => 'int param, family screen',
         'learn/courses/{course}' => 'int param, family screen',
@@ -86,7 +91,6 @@ function unresolvedDetailScreens(): array
         'learn/media/{media}' => 'int param, family screen',
         'portal/messages/{thread}' => 'int param, family screen',
         'teach/quran-sessions/{session}' => 'int param, family screen',
-        'payments/ref/{merchant_reference}/status' => 'string reference, not a row',
 
         // Bound to a model, but no row: building one means fabricating Hifz
         // programme structure or a payment. Payments especially are left alone
@@ -112,6 +116,118 @@ function unresolvedDetailScreens(): array
         'substitutions/requests/{request}/edit' => 'no SubstitutionRequest row',
         'admin/prayer-times/groups/{group}/edit' => 'no PrayerRecipientGroup row',
         'admin/prayer-times/broadcasts/{broadcast}/edit' => 'no PrayerBroadcast row',
+    ];
+}
+
+/**
+ * The second way a route gets swept: a **declared** parameter value, for
+ * controllers that take `int $course` and resolve through an Action rather than
+ * type-hinting a model.
+ *
+ * Keyed by route URI, never by parameter name. `{session}` is a Hifz session on
+ * one route and an offering session on another, and `{course}` is an ordinary
+ * course on `catalog/courses/{course}/outline` but a **club** on
+ * `academics/clubs/{club}` — clubs have no table of their own, they are
+ * `courses` rows carrying `course_type = 'club'` (E17, rule 11). Declaring by
+ * URI keeps each of those explicit instead of collapsing them into one guess.
+ *
+ * @return array<string, callable(array<string, int|string>): (array<string, int|string>|null)>
+ */
+function detailDeclaredParams(): array
+{
+    $course = fn (array $seeded): array => ['course' => $seeded['course']];
+
+    return [
+        'academics/clubs/{club}' => fn (array $s): array => ['club' => $s['club']],
+        'academics/clubs/{club}/attendance-sheet' => fn (array $s): array => ['club' => $s['club']],
+        'catalog/courses/{course}/outline' => $course,
+        'catalog/courses/{course}/activities' => $course,
+        'catalog/courses/{course}/assessments' => $course,
+        'catalog/offerings/{offering}/sessions' => fn (array $s): array => ['offering' => $s['offering']],
+        'catalog/player/{lesson}' => fn (array $s): array => ['lesson' => $s['lesson']],
+    ];
+}
+
+/**
+ * The rows those declared routes point at. Built once per test run.
+ *
+ * `DatabaseSeeder` provides ten courses but **no** offerings, modules, lessons
+ * or clubs, and every seeded course is `course_type = 'general'` — checked
+ * rather than assumed, after an earlier count of mine read the walk database by
+ * mistake and made them look present.
+ *
+ * @return array<string, int|string>
+ */
+function detailSeededIds(): array
+{
+    $courseClass = \App\Domains\Courses\Models\Course::class;
+    $course = $courseClass::query()->firstOrFail();
+
+    $club = $courseClass::query()->create([
+        'course_category_id' => $course->course_category_id,
+        'title' => 'Chess club',
+        'slug' => 'chess-club-'.Str::random(6),
+        'short_desc' => 'Thursdays after school.',
+        'body' => 'Open to Grade 4 and up.',
+        'cover_image' => '',
+        'workflow_status' => 'published',
+        'course_type' => 'club',
+        'status' => 'open',
+    ]);
+
+    $offering = \Illuminate\Support\Facades\DB::table('course_offerings')->insertGetId([
+        'course_id' => $course->id,
+        'title' => 'Term 1 offering',
+        'slug' => 'term-1-offering-'.Str::random(6),
+        'delivery_mode' => 'self_learning',
+        'status' => 'open',
+        'created_at' => now(),
+        'updated_at' => now(),
+    ]);
+
+    $moduleId = \Illuminate\Support\Facades\DB::table('course_modules')->insertGetId([
+        'course_id' => $course->id,
+        'title' => 'Module one',
+        'position' => 1,
+        'created_at' => now(),
+        'updated_at' => now(),
+    ]);
+
+    $lessonId = \Illuminate\Support\Facades\DB::table('lessons')->insertGetId([
+        'course_id' => $course->id,
+        'course_module_id' => $moduleId,
+        'title' => 'Lesson one',
+        'slug' => 'lesson-one-'.Str::random(6),
+        'position' => 1,
+        'status' => 'published',
+        'created_at' => now(),
+        'updated_at' => now(),
+    ]);
+
+    // A lesson without a published revision is a 404 on the player by design
+    // (`ResolvePublishedLessonAction` returns null and the controller aborts).
+    // The sweep would still "pass" on that 404 while proving only that the
+    // route does not throw — so the revision is built, and the player renders.
+    $revisionId = \Illuminate\Support\Facades\DB::table('lesson_revisions')->insertGetId([
+        'lesson_id' => $lessonId,
+        'revision_number' => 1,
+        'snapshot_json' => json_encode([
+            'title' => 'Lesson one',
+            'blocks' => [],
+        ]),
+        'published_at' => now(),
+        'created_at' => now(),
+        'updated_at' => now(),
+    ]);
+    \Illuminate\Support\Facades\DB::table('lessons')
+        ->where('id', $lessonId)
+        ->update(['current_revision_id' => $revisionId]);
+
+    return [
+        'course' => (int) $course->id,
+        'club' => (int) $club->id,
+        'offering' => (int) $offering,
+        'lesson' => (int) $lessonId,
     ];
 }
 
@@ -179,6 +295,9 @@ it('loads every resolvable detail screen without a server error', function () {
     $swept = [];
     $unresolved = [];
 
+    $seededIds = detailSeededIds();
+    $declared = detailDeclaredParams();
+
     foreach (detailScreens() as [$name, $uri, $params]) {
         $route = null;
         foreach ($byUri[$uri] ?? [] as $candidate) {
@@ -189,6 +308,33 @@ it('loads every resolvable detail screen without a server error', function () {
         $route ??= ($byUri[$uri][0] ?? null);
 
         if ($route === null) {
+            continue;
+        }
+
+        // A declared value wins over reflection: these routes have no model to
+        // reflect, which is the whole reason they are declared.
+        if (array_key_exists($uri, $declared)) {
+            $values = $declared[$uri]($seededIds);
+            $path = $uri;
+
+            foreach ($values as $param => $value) {
+                $path = str_replace('{'.$param.'}', (string) $value, $path);
+            }
+
+            $swept[] = $uri;
+
+            try {
+                $response = $this->withoutLocalizationMiddleware()
+                    ->actingAs($actor->fresh())
+                    ->get('/'.$path);
+
+                if ($response->getStatusCode() >= 500) {
+                    $crashed[] = sprintf('%s (%s) → %d', $path, $name, $response->getStatusCode());
+                }
+            } catch (Throwable $e) {
+                $crashed[] = sprintf('%s (%s) threw %s: %s', $path, $name, $e::class, $e->getMessage());
+            }
+
             continue;
         }
 
