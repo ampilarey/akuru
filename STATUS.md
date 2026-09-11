@@ -4814,6 +4814,61 @@ it before the first violation rather than after. Verified by renaming
 `Academics/Bookings/Index` to `…IndexTypo`: it fails and names both the file and
 the page.
 
+### Live classes Level 2: the seam, and an adapter nobody has run yet
+
+ROADMAP §2d schedules Level 2 post-Phase 2 and says the *decision* to pull it
+forward "must be taken consciously, not discovered under load". The owner took
+it; **ADR-028** records it.
+
+`VideoConferencingInterface` (Offerings) carries the four operations §2d names —
+`createMeeting`, `getJoinUrl`, `getAttendance`, `getRecording` — plus
+`isConfigured()`. Rule 4: no SDK reaches domain logic.
+
+**`NullVideoConferencing` is the default, and that is a supported production
+state**, not an unfinished one. §2d requires the engine to "function fully in
+Level 1 mode if no provider is configured", so every method answers nothing
+rather than throwing. The binding also degrades to null when a driver is named
+but its credentials are missing — the half-configured case is the dangerous one,
+and it must land on Level 1 rather than a stack trace on a teacher's schedule.
+
+**BigBlueButton is the first adapter, chosen over Zoom for one reason: it can be
+tested.** Every BBB call is `{base}/api/{call}?{query}&checksum=sha1(call+query+secret)`,
+so the request is deterministic and assertable exactly. Zoom's OAuth flow cannot
+be checked without live credentials, and an adapter nobody can test is an adapter
+nobody should trust.
+
+**What the green tests do not prove.** The adapter has **never spoken to a real
+BigBlueButton server**. Checksum, URL shape, XML parsing and failure handling are
+unit-tested; the response field names come from the published API rather than
+from observation. The first live call is the real test. Nothing is wired into the
+engine yet either — no session auto-creates a meeting, no participant log marks
+attendance, no recording reaches Media. Those consuming slices each need the
+adapter verified against a real host first.
+
+### F5 retirement: authorised, then blocked by a gap in ADR-025 itself
+
+The owner gave the ADR-025 gate condition 3 sign-off. The slice still did not
+proceed, because checking the code before deleting found a **fourth unreplaced
+workflow the ADR never listed**.
+
+ADR-025 names three parity items — three-lane session records, §52.18
+assignments, milestone approval — all of which exist and were walked. But the
+Blade app also owns the **mushaf editorial workflow**: `mushafs.approve`,
+`mushafs.lock`, `mushafs.import-ayah`, `pages.show`,
+`pages.positions.store`, `words.index`. That is how the Qur'an dataset itself is
+built, reviewed and locked, and there is **no engine equivalent** — zero
+references to "mushaf" anywhere in `Courses` or in engine routes.
+
+It cannot be worked around by deleting only part of the Blade app: those exact
+controllers hold `QuranMushaf`, `QuranPage` and `QuranWord`, so keeping them
+blocks the model move that F5 exists to perform. All or nothing, by construction.
+
+Deleting anyway would do the precise thing ADR-025 was written to prevent —
+remove "the only browser path for work the engine cannot yet do". The sign-off
+was given against the ADR's stated parity, and that parity is incomplete, so it
+is not treated as covering this. **Decision needed: build mushaf management on
+the engine first, or accept losing the capability.**
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**.
