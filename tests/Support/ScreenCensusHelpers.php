@@ -7,15 +7,15 @@ use Illuminate\Support\Facades\Route as RouteFacade;
  *
  * `StaffScreensDoNotCrashTest` and `PortalScreensDoNotCrashTest` were each
  * built from their own hand-written list of URI prefixes. Both lists were
- * mine, and between them they **missed forty authenticated screens**:
+ * mine, and between them they **missed sixty-five authenticated screens**:
  * `students`, `teachers`, `substitutions/*`, `quran-progress`, all seventeen
  * `hifz/*` pages, `notifications`, `my-enrollments`, `review`, `write`,
  * `forms`, `e-learning/*` and `dashboard` itself.
  *
  * Nothing was wrong with either test. The **shape** was wrong: an allow-list
  * of prefixes only covers what someone remembered to write down, and it fails
- * silently — a sweep reports what it looked at, never what it forgot. Adding a
- * new route group to the app coveres it in no guard and says nothing.
+ * silently — a sweep reports what it looked at, never what it forgot. A route
+ * group added to the app lands in no guard, and nothing says so.
  *
  * So the allow-list is inverted here. This file enumerates **every**
  * parameterless GET route, subtracts the handful that are genuinely not
@@ -85,8 +85,8 @@ function nonPageSegments(): array
 /**
  * Every parameterless GET screen in the app.
  *
- * Routes carrying a `{parameter}` need a real row to point at and are not
- * covered here — that is a known, named gap rather than an accidental one.
+ * Routes carrying a `{parameter}` need a real row to point at, and are covered
+ * separately by `detailScreens()` and `DetailScreensDoNotCrashTest`.
  *
  * @return list<array{0: string, 1: string}> name + uri
  */
@@ -146,4 +146,109 @@ function staffScreens(): array
         allScreens(),
         fn (array $s): bool => ! collect(familyPrefixes())->contains(fn (string $p): bool => underPrefix($s[1], $p))
     ));
+}
+
+/**
+ * Detail screens: routes that show one record, named by a `{parameter}`.
+ *
+ * These are the pages that actually display data, so they are the ones most
+ * likely to fall over on a null relation — and until now nothing loaded any of
+ * them. `allScreens()` drops every route with a parameter; this is that half.
+ *
+ * Two kinds of route are excluded here, and the reason matters:
+ *
+ * - **File responses.** `hr/payslips/{payslip}/document` and
+ *   `finance/receipts/{receipt}/document` stream a stored document, and
+ *   `catalog/media/{media}` streams catalog media with an inline
+ *   `Content-Disposition`. None of them renders a page. The `nonPageSegments()`
+ *   filter does not catch these, because their URIs say "document" and "media"
+ *   rather than "download" — so they are named here explicitly. Each was read
+ *   before being excluded, not guessed from its name.
+ * - **Not screens at all.** `storage/{path}` serves files, `locale/{locale}`
+ *   switches language and redirects, and `verify-email/{id}/{hash}` is a
+ *   signed link that consumes its own token.
+ *
+ * @return list<array{0: string, 1: string, 2: list<string>}> name, uri, parameter names
+ */
+function detailScreens(): array
+{
+    $notPages = [
+        'hr/payslips/{payslip}/document' => 'streams a stored document, not a page',
+        'finance/receipts/{receipt}/document' => 'streams a stored document, not a page',
+        'catalog/media/{media}' => 'streams catalog media inline, not a page',
+        'storage/{path}' => 'serves files from disk',
+        'locale/{locale}' => 'switches language and redirects',
+        'verify-email/{id}/{hash}' => 'signed link that consumes its own token',
+    ];
+
+    $screens = [];
+
+    foreach (RouteFacade::getRoutes() as $route) {
+        $uri = $route->uri();
+        $name = $route->getName() ?? '';
+
+        if (! in_array('GET', $route->methods(), true)) {
+            continue;
+        }
+
+        if ($route->parameterNames() === []) {
+            continue;
+        }
+
+        if (collect(nonPageSegments())->contains(fn (string $s): bool => str_contains($uri, $s))) {
+            continue;
+        }
+
+        if (str_starts_with($name, 'public.') || str_starts_with($uri, 'api/')) {
+            continue;
+        }
+
+        if (array_key_exists($uri, $notPages)) {
+            continue;
+        }
+
+        $screens[] = [$name, $uri, $route->parameterNames()];
+    }
+
+    return array_values(array_unique($screens, SORT_REGULAR));
+}
+
+/**
+ * The Eloquent class each parameter of a route is bound to, read off the
+ * controller's own signature.
+ *
+ * A route whose controller type-hints `ClassRoom $classRoom` tells us exactly
+ * which table to build a row in; one that takes `int $course` does not, and is
+ * reported as unresolved rather than quietly skipped. Nothing is inferred from
+ * the parameter's *name* — `{session}` means a Quran session on one route and
+ * an offering session on another, and guessing between them by name is how a
+ * guard ends up asserting nothing.
+ *
+ * @return array<string, class-string> parameter name => model class
+ */
+function routeModelBindings(\Illuminate\Routing\Route $route): array
+{
+    $bindings = [];
+
+    try {
+        foreach ($route->signatureParameters() as $parameter) {
+            $type = $parameter->getType();
+
+            if (! $type instanceof ReflectionNamedType || $type->isBuiltin()) {
+                continue;
+            }
+
+            $class = $type->getName();
+
+            if (is_subclass_of($class, \Illuminate\Database\Eloquent\Model::class)) {
+                $bindings[$parameter->getName()] = $class;
+            }
+        }
+    } catch (Throwable) {
+        // A route with an unresolvable action signature simply yields no
+        // bindings, and is reported as unresolved by the caller.
+        return [];
+    }
+
+    return $bindings;
 }

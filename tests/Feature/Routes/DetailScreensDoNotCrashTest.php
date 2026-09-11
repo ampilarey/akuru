@@ -1,0 +1,247 @@
+<?php
+
+use App\Domains\Identity\Models\User;
+use Database\Seeders\RoleSeeder;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Route as RouteFacade;
+use Illuminate\Support\Str;
+use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
+
+uses(RefreshDatabase::class);
+
+/**
+ * Detail screens — the pages that show one record — load without crashing.
+ *
+ * `StaffScreensDoNotCrashTest` and `PortalScreensDoNotCrashTest` between them
+ * sweep every screen with no `{parameter}`. That leaves the pages that actually
+ * display data, which are the ones most likely to fall over on a null relation,
+ * and until this test nothing loaded a single one of them.
+ *
+ * **How a route gets swept.** Its controller's own signature has to say which
+ * model each parameter is. A controller that type-hints `ClassRoom $classRoom`
+ * tells us exactly which table to point at; one that takes `int $course` does
+ * not. Nothing is guessed from the parameter's *name* — `{session}` is a Hifz
+ * session on one route and an offering session on another, and a guard that
+ * guesses between them by name is a guard that asserts nothing.
+ *
+ * **The rows come from the app's own seeders** (`DatabaseSeeder`, which
+ * includes `PilotRehearsalSeeder`) wherever it provides them, so the sweep runs
+ * against representative data rather than against rows invented to make it
+ * pass. Where it provides none, a small builder below creates one.
+ *
+ * The assertion is the same narrow one as its siblings: **no 5xx**. 403, 404
+ * and redirects are all allowed — a detail screen may legitimately refuse, and
+ * one pointed at a row it cannot show should 404 rather than throw.
+ *
+ * **What that costs, stated plainly.** A screen whose row does not suit it
+ * lands on its refusal branch, and then the sweep proves only that the route
+ * does not throw — not that the page renders. `admin/public-site/research/{post}/edit`
+ * is the live example: `PresentResearchPostAction` returns null for a post that
+ * is not a research post, and the controller 404s on purpose, so the fixture
+ * row exercises the guard clause rather than the form. Rendering is what the
+ * browser walk checks; this test is the floor beneath it, not a substitute.
+ */
+
+/**
+ * Routes still out of reach, and why. Pinned rather than counted: if a new
+ * detail route lands that cannot be resolved, this list stops matching and the
+ * test fails, forcing the decision instead of silently skipping the screen.
+ *
+ * Every entry here is a screen with **no crash coverage**. The list is meant to
+ * shrink.
+ *
+ * @return array<string, string> uri => reason
+ */
+function unresolvedDetailScreens(): array
+{
+    return [
+        // Controllers take `int $id` and resolve through an Action, so the
+        // signature names no model. Each needs a declared fixture; a follow-up
+        // slice adds them.
+        'academics/clubs/{club}' => 'int param; a club is a courses row with course_type=club',
+        'academics/clubs/{club}/attendance-sheet' => 'int param',
+        'admin/public-site/courses/{course}' => 'int param',
+        'announcements/{announcement}/edit' => 'int param',
+        'catalog/courses/{course}/activities' => 'int param',
+        'catalog/courses/{course}/assessments' => 'int param',
+        'catalog/courses/{course}/outline' => 'int param',
+        'catalog/offerings/{offering}/sessions' => 'int param',
+        'catalog/offerings/{offering}/sessions/{session}/attendance' => 'two int params',
+        'catalog/player/{lesson}' => 'int param',
+        'circulation/barcode/{value}' => 'renders a barcode for an arbitrary string',
+        'hifz/quran/mushafs/{mushaf}/pages/{pageNumber}' => 'page number is a scalar, not a row',
+        'learn/activities/{activity}' => 'int param, and a family screen: needs the portal cast',
+        'learn/assessments/{assessment}' => 'int param, family screen',
+        'learn/courses/{course}' => 'int param, family screen',
+        'learn/lessons/{lesson}' => 'int param, family screen',
+        'learn/media/{media}' => 'int param, family screen',
+        'portal/messages/{thread}' => 'int param, family screen',
+        'teach/quran-sessions/{session}' => 'int param, family screen',
+        'payments/ref/{merchant_reference}/status' => 'string reference, not a row',
+
+        // Bound to a model, but no row: building one means fabricating Hifz
+        // programme structure or a payment. Payments especially are left alone
+        // — the ledger is append-only (rule 12) and a sweep has no business
+        // inventing rows in it.
+        'hifz/programs/{program}' => 'no HifzProgram row; Hifz is frozen (rule 7)',
+        'hifz/programs/{program}/edit' => 'no HifzProgram row',
+        'hifz/programs/{program}/enrollments' => 'no HifzProgram row',
+        'hifz/programs/{program}/enrollments/create' => 'no HifzProgram row',
+        'hifz/quran/mushafs/{mushaf}' => 'no QuranMushaf row',
+        'hifz/quran/mushafs/{mushaf}/words' => 'no QuranMushaf row',
+        'hifz/session-records/{record}/quran-page' => 'no HifzSessionRecord row',
+        'hifz/sessions/{session}/edit' => 'no HifzSession row',
+        'quran-progress/{quran_progress}' => 'no QuranProgress row',
+        'quran-progress/{quran_progress}/edit' => 'no QuranProgress row',
+        'payments/return/{payment}' => 'money path; a sweep does not invent ledger rows',
+        'payments/status/{payment}' => 'money path',
+        'payments/{payment}/receipt' => 'money path',
+        'admin/enrollments/{enrollment}' => 'no CourseEnrollment row',
+        'exams/{exam}/marks' => 'an Exam needs year, term, class, subject and exam type',
+        'substitutions/absences/{absence}/edit' => 'no TeacherAbsence row',
+        'substitutions/requests/{request}' => 'no SubstitutionRequest row',
+        'substitutions/requests/{request}/edit' => 'no SubstitutionRequest row',
+        'admin/prayer-times/groups/{group}/edit' => 'no PrayerRecipientGroup row',
+        'admin/prayer-times/broadcasts/{broadcast}/edit' => 'no PrayerBroadcast row',
+    ];
+}
+
+/**
+ * One row per model the sweep needs, preferring what the seeders already
+ * produced. Only the cheap ones are built here; the rest are named in
+ * `unresolvedDetailScreens()` rather than half-built.
+ */
+function detailFixtureRow(string $class, User $actor): ?Model
+{
+    $existing = $class::query()->first();
+
+    if ($existing !== null) {
+        return $existing;
+    }
+
+    return match (class_basename($class)) {
+        'Announcement' => makeNotice(),
+        'LessonLog' => makeLessonLog(),
+        'DailyContent' => w23Published(),
+        'BookTitle' => $class::query()->create(['title' => 'A Borrowed Book']),
+        'Instructor' => $class::query()->create(['name' => 'Walk Instructor', 'slug' => 'walk-instructor']),
+        'Event' => $class::query()->create([
+            'title' => 'Sports day',
+            'slug' => 'sports-day-'.Str::random(6),
+            'description' => 'On the field.',
+            'location' => 'Main field',
+            'start_date' => now()->addWeek(),
+            'end_date' => now()->addWeek()->addHours(3),
+        ]),
+        'Form' => $class::query()->create([
+            'created_by' => $actor->id,
+            'title' => 'Trip consent',
+            'fields' => [],
+        ]),
+        'Post' => $class::query()->create([
+            'title' => 'A research note',
+            'slug' => 'a-research-note-'.Str::random(6),
+            'summary' => 'Short summary.',
+            'body' => 'Body text.',
+            'author_id' => $actor->id,
+        ]),
+        default => null,
+    };
+}
+
+it('loads every resolvable detail screen without a server error', function () {
+    $this->seed(RoleSeeder::class);
+    $this->seed(\Database\Seeders\DatabaseSeeder::class);
+
+    $role = Role::findOrCreate('super_admin', 'web');
+    $role->givePermissionTo(Permission::all());
+
+    $actor = User::factory()->create(['name' => 'Detail Sweeper']);
+    $actor->assignRole('super_admin');
+
+    $byUri = [];
+    foreach (RouteFacade::getRoutes() as $route) {
+        if (in_array('GET', $route->methods(), true)) {
+            $byUri[$route->uri()][] = $route;
+        }
+    }
+
+    $crashed = [];
+    $swept = [];
+    $unresolved = [];
+
+    foreach (detailScreens() as [$name, $uri, $params]) {
+        $route = null;
+        foreach ($byUri[$uri] ?? [] as $candidate) {
+            if (($candidate->getName() ?? '') === $name) {
+                $route = $candidate;
+            }
+        }
+        $route ??= ($byUri[$uri][0] ?? null);
+
+        if ($route === null) {
+            continue;
+        }
+
+        $bindings = routeModelBindings($route);
+        $path = $uri;
+        $resolved = true;
+
+        foreach ($params as $param) {
+            $class = $bindings[$param] ?? null;
+            $row = $class === null ? null : detailFixtureRow($class, $actor);
+
+            if ($row === null) {
+                $resolved = false;
+
+                break;
+            }
+
+            $path = str_replace('{'.$param.'}', (string) $row->getRouteKey(), $path);
+        }
+
+        if (! $resolved) {
+            $unresolved[$uri] = true;
+
+            continue;
+        }
+
+        $swept[] = $uri;
+
+        try {
+            $response = $this->withoutLocalizationMiddleware()
+                ->actingAs($actor->fresh())
+                ->get('/'.$path);
+
+            if ($response->getStatusCode() >= 500) {
+                $crashed[] = sprintf('%s (%s) → %d', $path, $name, $response->getStatusCode());
+            }
+        } catch (Throwable $e) {
+            $crashed[] = sprintf('%s (%s) threw %s: %s', $path, $name, $e::class, $e->getMessage());
+        }
+    }
+
+    // The gap is pinned, not counted. A new unresolvable detail route fails
+    // here rather than slipping through unswept.
+    $stillUnresolved = array_keys($unresolved);
+    sort($stillUnresolved);
+    $declared = array_keys(unresolvedDetailScreens());
+    sort($declared);
+
+    expect($stillUnresolved)->toBe(
+        $declared,
+        "The set of unsweepable detail screens changed.\nAdd the new one to\n"
+        ."unresolvedDetailScreens() with its reason, or — better — give it a row\n"
+        ."in detailFixtureRow() so it is actually swept.\n"
+    );
+
+    // If this collapses, the resolution above silently stopped working and the
+    // test is loading nothing.
+    expect(count($swept))->toBeGreaterThan(15);
+
+    expect($crashed)->toBeEmpty(
+        count($crashed)." detail screen(s) return a server error:\n".implode("\n", $crashed)
+    );
+});
