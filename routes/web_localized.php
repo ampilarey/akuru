@@ -28,6 +28,7 @@ use App\Domains\Academics\Http\Controllers\TeachingMaterialController;
 use App\Domains\Academics\Http\Controllers\TimetableBuilderController;
 use App\Domains\Academics\Legacy\Http\Controllers\ELearningController;
 use App\Domains\Admissions\Http\Controllers\AdminEnrollmentController;
+use App\Domains\Circulation\Http\Controllers\CirculationController;
 use App\Domains\Commerce\Http\Controllers\AdminCommerceController;
 use App\Domains\Courses\Components\Arabic\Http\Controllers\CatalogArabicReferenceController;
 use App\Domains\Courses\Components\Arabic\Http\Controllers\CatalogArabicReportController;
@@ -132,6 +133,7 @@ use App\Domains\Portal\Http\Controllers\PortalHomeworkController;
 use App\Domains\Portal\Http\Controllers\PortalInvoiceController;
 use App\Domains\Portal\Http\Controllers\PortalLearningController;
 use App\Domains\Portal\Http\Controllers\PortalLeaveBalanceController;
+use App\Domains\Portal\Http\Controllers\PortalLoanController;
 use App\Domains\Portal\Http\Controllers\PortalMeetingController;
 use App\Domains\Portal\Http\Controllers\PortalMessageController;
 use App\Domains\Portal\Http\Controllers\PortalMovementController;
@@ -191,6 +193,9 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
 
     // E18 — parent visibility is the point of the gate log, not a bolt-on.
     Route::get('/portal/movements', [PortalMovementController::class, 'index'])->name('portal.movements');
+
+    // E16 — a parent who can see a due date can act on it.
+    Route::get('/portal/loans', [PortalLoanController::class, 'index'])->name('portal.loans');
 
     // E21 — the half that makes photographing paper worth doing.
     Route::get('/portal/work', [PortalStudentWorkController::class, 'index'])->name('portal.work');
@@ -457,6 +462,23 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
     });
 
     // Dhivehi translation overrides (UI strings; override wins, file is fallback)
+    // E16 Circulation — physical lending. Deliberately *not* under
+    // admin/library: the L-track Library is a digital reader and bookstore,
+    // and the plan asks for the two never to be confused in code or nav.
+    Route::prefix('circulation')->middleware(['role:super_admin|admin|headmaster|supervisor'])->group(function () {
+        Route::get('/', [CirculationController::class, 'index'])->name('circulation.index');
+        Route::post('titles', [CirculationController::class, 'storeTitle'])->name('circulation.titles.store');
+        Route::get('titles/{title}', [CirculationController::class, 'show'])->name('circulation.titles.show')->whereNumber('title');
+        Route::post('titles/{title}/copies', [CirculationController::class, 'addCopies'])->name('circulation.copies.add')->whereNumber('title');
+        Route::get('titles/{title}/labels', [CirculationController::class, 'labels'])->name('circulation.labels')->whereNumber('title');
+        Route::post('titles/{title}/issue', [CirculationController::class, 'bulkIssue'])->name('circulation.bulk.issue')->whereNumber('title');
+        Route::post('titles/{title}/collect', [CirculationController::class, 'bulkReturn'])->name('circulation.bulk.return')->whereNumber('title');
+        Route::post('lend', [CirculationController::class, 'lend'])->name('circulation.lend');
+        Route::post('return', [CirculationController::class, 'return'])->name('circulation.return');
+        Route::get('cards', [CirculationController::class, 'borrowerCard'])->name('circulation.cards');
+        Route::get('barcode/{value}', [CirculationController::class, 'barcode'])->name('circulation.barcode')->where('value', '[A-Za-z0-9\-\.]+');
+    });
+
     // E19 sensitive information. Narrower than every other admin group on
     // purpose: `admin` is not in the role list and is not granted
     // `sensitive.read`, because RoleSeeder's blanket Permission::all() would

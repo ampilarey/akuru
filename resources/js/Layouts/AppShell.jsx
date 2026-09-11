@@ -143,6 +143,15 @@ export default function AppShell({ title, children }) {
                         <Link href="/people/sensitive" className="text-[#7C2D37] hover:underline">
                             Sensitive info
                         </Link>
+                        <Link href="/circulation" className="text-[#7C2D37] hover:underline">
+                            Circulation
+                        </Link>
+                        <Link href="/circulation/cards" className="text-[#7C2D37] hover:underline">
+                            Borrower cards
+                        </Link>
+                        <Link href="/portal/loans" className="text-[#7C2D37] hover:underline">
+                            Library books
+                        </Link>
                         <Link href="/portal/teacher" className="text-[#7C2D37] hover:underline">
                             My day
                         </Link>
