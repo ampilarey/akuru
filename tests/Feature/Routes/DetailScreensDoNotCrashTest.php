@@ -50,7 +50,16 @@ uses(RefreshDatabase::class);
  * test fails, forcing the decision instead of silently skipping the screen.
  *
  * Every entry here is a screen with **no crash coverage**. The list is meant to
- * shrink.
+ * shrink, and it already has: `admin/public-site/courses/{course}` and
+ * `announcements/{announcement}/edit` were on it, described as taking an int
+ * parameter. That reason was wrong. Reflection found no binding because those
+ * controllers had **no such method at all**, and both routes answered 500 to
+ * anyone who reached them. They are gone now, along with three sibling write
+ * routes, and `RoutesHaveControllerMethodsTest` keeps the whole class out.
+ *
+ * The lesson is worth keeping next to the list: an entry here says "not
+ * covered", never "not broken". A plausible-sounding reason is the easiest
+ * place for a live fault to hide.
  *
  * @return array<string, string> uri => reason
  */
@@ -62,8 +71,6 @@ function unresolvedDetailScreens(): array
         // slice adds them.
         'academics/clubs/{club}' => 'int param; a club is a courses row with course_type=club',
         'academics/clubs/{club}/attendance-sheet' => 'int param',
-        'admin/public-site/courses/{course}' => 'int param',
-        'announcements/{announcement}/edit' => 'int param',
         'catalog/courses/{course}/activities' => 'int param',
         'catalog/courses/{course}/assessments' => 'int param',
         'catalog/courses/{course}/outline' => 'int param',
