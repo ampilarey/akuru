@@ -11,6 +11,7 @@ use App\Domains\Academics\Http\Controllers\ClassDirectoryController;
 use App\Domains\Academics\Http\Controllers\CoursePlanController;
 use App\Domains\Academics\Http\Controllers\DailyAttendanceController;
 use App\Domains\Academics\Http\Controllers\FoundItemController;
+use App\Domains\Academics\Http\Controllers\GateMovementController;
 use App\Domains\Academics\Http\Controllers\MaterialFileController;
 use App\Domains\Academics\Http\Controllers\MeetingSlotController;
 use App\Domains\Academics\Http\Controllers\PeriodDirectoryController;
@@ -131,6 +132,7 @@ use App\Domains\Portal\Http\Controllers\PortalLearningController;
 use App\Domains\Portal\Http\Controllers\PortalLeaveBalanceController;
 use App\Domains\Portal\Http\Controllers\PortalMeetingController;
 use App\Domains\Portal\Http\Controllers\PortalMessageController;
+use App\Domains\Portal\Http\Controllers\PortalMovementController;
 use App\Domains\Portal\Http\Controllers\PortalNotificationController;
 use App\Domains\Portal\Http\Controllers\PortalPayslipController;
 use App\Domains\Portal\Http\Controllers\PortalPerformanceController;
@@ -183,6 +185,9 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
     Route::post('/portal/pickup/pin', [PortalPickupController::class, 'setPin'])->name('portal.pickup.pin');
     Route::post('/portal/pickup/request', [PortalPickupController::class, 'request'])->name('portal.pickup.request');
     Route::post('/portal/pickup/{notice}/confirm', [PortalPickupController::class, 'confirm'])->name('portal.pickup.confirm')->whereNumber('notice');
+
+    // E18 — parent visibility is the point of the gate log, not a bolt-on.
+    Route::get('/portal/movements', [PortalMovementController::class, 'index'])->name('portal.movements');
     Route::get('/portal/found-items', [PortalFoundItemController::class, 'index'])->name('portal.found-items');
     Route::get('/portal/found-items/{foundItem}/photo', [PortalFoundItemController::class, 'photo'])->name('portal.found-items.photo')->whereNumber('foundItem');
     Route::get('/portal/attendance', [PortalAttendanceController::class, 'index'])->name('portal.attendance');
@@ -671,6 +676,12 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::post('pickup/close', [PickupConsoleController::class, 'close'])->name('academics.pickup.close');
         Route::post('pickup/{notice}/send', [PickupConsoleController::class, 'send'])->name('academics.pickup.send')->whereNumber('notice');
         Route::post('pickup/{notice}/cancel', [PickupConsoleController::class, 'cancel'])->name('academics.pickup.cancel')->whereNumber('notice');
+
+        // E18 gate arrivals and departures. Search-driven: somebody at a gate
+        // deals with one child at a time.
+        Route::get('gate', [GateMovementController::class, 'index'])->name('academics.gate.index');
+        Route::post('gate/record', [GateMovementController::class, 'record'])->name('academics.gate.record');
+        Route::post('gate/{movement}/void', [GateMovementController::class, 'void'])->name('academics.gate.void')->whereNumber('movement');
 
         // E17 clubs. A club is a course (course_type='club'); these routes are
         // a roster screen over the engine, not a second enrolment system.

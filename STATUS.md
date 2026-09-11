@@ -3785,6 +3785,61 @@ requests retry forever. **The first walk reported six defects that were all the
 harness checking before the response arrived.** Waiting on text is the only
 honest signal.
 
+## 5ce. E18 — arrivals and departures, built against the warning (2026-09-11)
+
+The plan says **"do not build the software until the hardware question is
+answered, or it will be a manual log nobody fills."** That warning shaped the
+slice rather than blocking it: **the hardware decision picks what presses the
+button, not what the row looks like.** A card reader and a member of staff
+record the same fact — this child was at the gate, going this way, at this
+time.
+
+So `student_movements` carries `source` from its first row and
+`RecordStudentMovementAction` is the single writer (rule 11). A card or QR
+adapter calls that action with a different source and needs no new table and no
+migration. `recorded_by` is nullable precisely so an unattended reader has
+somewhere to be: a turnstile has no user id, and the console then names the
+device rather than blaming a member of staff who was not there.
+
+**What was deliberately not built is an empty `GateReader` interface with no
+implementation.** Rule 4 puts SDKs behind contracts; there is no SDK, and a
+contract for a device nobody has purchased is speculative generality.
+
+### Keeping the log fillable
+
+The plan's real risk is a log nobody fills, so the action **never dead-ends the
+person at the gate**. Two arrivals in a row are allowed: a child who goes to
+the dentist and comes back is in/out/in/out, and a log that starts at 10am has
+an `out` with no `in`. Refusing the second would leave somebody unable to
+record what they are looking at, and staff who cannot record what they see stop
+using the system. The console shows the child's **current state** instead, so
+the operator sees the oddity and decides. The one thing refused is an accident:
+the same direction inside two minutes is a double tap, not a child who left and
+returned.
+
+Search-driven rather than a roster of the whole school — somebody at a gate
+deals with one child at a time, and three letters beat nine hundred names.
+Reuses `SearchRosterCandidatesAction` (rule 11), which already flags
+**indistinguishable names**: two pupils called Ibrahim Nasir at a gate is
+exactly when a system must say *check the number*.
+
+A mistake is **taken back, not deleted**. A family told their child left at
+13:40 and later told they did not is owed an explanation a deleted row cannot
+give. Staff see the correction struck through; families see nothing, because a
+list of retracted times answers a question they never asked.
+
+**9 tests, 58 assertions. Full suite 1138 green. Walked in a browser: 17
+checks, clean.**
+
+### A harness fault worth recording
+
+The walk assertions read `page.textContent('body')`, which **includes the
+Inertia props JSON in the page's script tag**. A name can therefore "appear on
+screen" while being only in the payload. It produced one false failure here —
+and could have produced a silent false **pass** on any check for data-derived
+text. Switched to `innerText`, and **E8's walk was re-run under the corrected
+method to confirm none of its passes were spurious**: still clean.
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**.

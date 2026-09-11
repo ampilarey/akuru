@@ -138,6 +138,7 @@ return [
     'lesson_revision' => \App\Domains\Courses\Models\LessonRevision::class,
     'found_item' => \App\Domains\Academics\Models\FoundItem::class,
     'pickup_notice' => \App\Domains\Academics\Models\PickupNotice::class,
+    'student_movement' => \App\Domains\Academics\Models\StudentMovement::class,
     'pickup_pin' => \App\Domains\People\Models\PickupPin::class,
     'pickup_window' => \App\Domains\Academics\Models\PickupWindow::class,
     'lesson_log' => \App\Domains\Academics\Models\LessonLog::class,
