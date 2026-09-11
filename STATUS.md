@@ -4414,6 +4414,44 @@ Verified after the fix: the removed routes answer 404/405, and `announcements`,
 `announcements/{id}`, `admin/public-site/courses/{course}/edit` and
 `hifz/programs` all still return 200.
 
+### EnsureTeacherRowAction, and closing a fragility this document opened
+
+Two slices ago this document recorded, without fixing it (rule 1), that
+`EnsureTeacherRowAction` copies `users.phone` and `users.address` into
+`teachers`, where both are NOT NULL. On looking properly it was **three**
+columns, not two — `users.email` is nullable as well — and the action had **no
+test of any kind**.
+
+That the author saw the mismatch is not in doubt: `date_of_birth` and `gender`
+are nullable on `users` and NOT NULL on `teachers` too, and both already had
+fallbacks on the lines immediately above. Three columns were simply missed.
+
+Fixed with `?? ''` to match that existing convention. **Empty rather than
+invented:** a blank phone says "we do not know", where a fabricated one is a
+number somebody might dial. `teachers.email` carries no unique index (only
+`teacher_id` does), so a blank cannot collide.
+
+The test was written first and **failed on the real defect** —
+`Column 'phone' cannot be null` — before the fix went in. Four cases now pinned:
+the nullable trio, the copy-across when values are present, idempotence, and a
+one-word name.
+
+**Walked in a browser, and this one closes a loop.** During the family sweep a
+teacher was refused `teach/assignments`, `teach/milestones` and
+`teach/recitations`; the cause was a `teachers` row missing for a user who had
+the role — the hazard §2 of this document records, whose mitigation is this very
+action. So the walk was that scenario end to end: a teacher-role user with
+`phone`, `address` and `email` all null, backfilled by the action (which would
+have thrown before this change), then signed in. They land on
+`/en/portal/teacher` and all six `teach/*` screens return 200 with real content.
+
+**Two things found and deliberately not fixed here (rule 1):**
+`teachers.user_id` has a foreign key but **no unique index**, so nothing in the
+database prevents a second row for one user — idempotence is the action's job
+alone, and the new test pins it. And a non-existent `$userId` reaches the insert
+with every column null; `?? ''` now absorbs it, though arguably it should fail
+loudly instead. That is a design decision, not a defect fix.
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**.

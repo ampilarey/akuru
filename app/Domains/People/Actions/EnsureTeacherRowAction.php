@@ -26,9 +26,14 @@ class EnsureTeacherRowAction
             'last_name' => $parts[1] ?? $parts[0],
             'date_of_birth' => $user->date_of_birth ?? '1985-01-01',
             'gender' => $user->gender ?? 'male',
-            'phone' => $user->phone,
-            'address' => $user->address,
-            'email' => $user->email,
+            // `users` makes all three of these nullable; `teachers` makes them
+            // NOT NULL. Copying them straight across threw for any user missing
+            // one — the same mismatch the two lines above already guard against.
+            // Empty rather than invented: a blank phone says "we do not know",
+            // where a fabricated one is a number somebody might dial.
+            'phone' => $user->phone ?? '',
+            'address' => $user->address ?? '',
+            'email' => $user->email ?? '',
             'qualification' => 'BA',
             'specialization' => 'General',
             'joining_date' => now()->toDateString(),
