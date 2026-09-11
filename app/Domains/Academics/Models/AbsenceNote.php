@@ -18,6 +18,7 @@ class AbsenceNote extends Model
         'period_id',
         'reason',
         'type',
+        'absence_type_id',
         'status',
         'reviewed_by',
         'reviewed_at',

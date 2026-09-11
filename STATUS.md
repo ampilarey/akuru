@@ -4070,6 +4070,65 @@ whoever shipped next.
 **14 tests, 84 assertions. Full suite 1182 green. Walked in a browser: 17
 checks, clean.**
 
+## 5cj. E10c — absence reasons the school defines for itself (2026-09-11)
+
+The five reasons a family could give were a **MySQL enum** —
+`illness, medical_appointment, family_emergency, religious, other` — hardcoded
+in the column, again in `PortalAbsenceNoteController`'s list, and a third time
+in its validation rule. Adding "bereavement" meant a migration and a deploy.
+
+More than naming, each reason now carries **what it does**:
+
+- **`excuses_absence`** — does approving the note clear the register? That was
+  `absence_notes.affects_attendance`, a per-note boolean defaulting to true,
+  which meant the policy was decided one note at a time by whoever filled the
+  form. It belongs to the type.
+- **`requires_evidence`** — must a document be attached? This is the honest
+  half of the plan's *"can't they be falsified?"*: you cannot stop a parent
+  writing what they like, but you can require a document and record who
+  accepted it. The family is told **before** they type, not after.
+
+A used reason is **retired, not deleted**, and its code never changes — old
+notes point at it, and rewriting it would restate why a child was away last
+term.
+
+### Three things the tests and the browser found
+
+1. **The legacy enum could not hold a custom code.** Keeping `type` in step
+   (rule 9 — this is the deploy that stops *reading* it, not the one that drops
+   it) silently truncated `unauthorised_holiday`, so the old column would have
+   described the note as a reason nobody chose. Widened to `varchar(40)`:
+   lossless, nothing dropped, every existing value still valid.
+2. **`absence_type_id` was silently dropped on create** — missing from
+   `AbsenceNote::$fillable`, so mass assignment discarded it and the id came
+   back null with no error anywhere.
+3. **A new reason was spliced into the middle of the list**, because
+   `sort_order` defaulted to 0 and tied with *illness*. The browser showed
+   "Illness, Unauthorised holiday, Medical appointment" — an order nobody
+   chose. New reasons now go to the end.
+
+**The suite also caught a contract break I had made**: requiring
+`absence_type_id` stopped `AbsenceNoteTest`, which posts the old `type` code.
+That break would have silently stopped any client not yet redeployed — the
+mobile scaffold included. **Both fields are accepted** for the transition, and
+that now has its own test.
+
+**8 tests, 49 assertions. Full suite 1190 green. Walked in a browser: 17
+checks, clean.**
+
+### Audit note
+
+A full re-audit of `EDUPAGE_FEATURES_PLAN.md` against tables, routes and
+actions found **E1, E2, E3, E6, E11 and E13 all built** while the plan's
+summary listed them as missing. E11's own header still said "⚠ HALF BUILT"
+while a correction lower in the same document said it was done — the document
+was contradicting itself. Both are corrected.
+
+**What remains on the EduPage track is the E10 rounding policy, and nothing
+else.** That one needs a design decision first: `attendance` carries
+`check_in_time`/`check_out_time` but no lesson duration, so there is no
+part-lesson for a rounding rule to round.
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**.

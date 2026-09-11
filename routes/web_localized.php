@@ -2,6 +2,7 @@
 
 use App\Domains\Academics\Http\Controllers\AbsenceNoteReviewController;
 use App\Domains\Academics\Http\Controllers\AbsencesTodayController;
+use App\Domains\Academics\Http\Controllers\AbsenceTypeController;
 use App\Domains\Academics\Http\Controllers\AcademicYearController;
 use App\Domains\Academics\Http\Controllers\AnnouncementController;
 use App\Domains\Academics\Http\Controllers\AttendanceReportController;
@@ -726,6 +727,11 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::post('pickup/close', [PickupConsoleController::class, 'close'])->name('academics.pickup.close');
         Route::post('pickup/{notice}/send', [PickupConsoleController::class, 'send'])->name('academics.pickup.send')->whereNumber('notice');
         Route::post('pickup/{notice}/cancel', [PickupConsoleController::class, 'cancel'])->name('academics.pickup.cancel')->whereNumber('notice');
+
+        // E10c absence reasons the school defines for itself.
+        Route::get('absence-types', [AbsenceTypeController::class, 'index'])->name('academics.absence-types.index');
+        Route::post('absence-types', [AbsenceTypeController::class, 'store'])->name('academics.absence-types.store');
+        Route::put('absence-types/{absenceType}', [AbsenceTypeController::class, 'update'])->name('academics.absence-types.update')->whereNumber('absenceType');
 
         // E18 gate arrivals and departures. Search-driven: somebody at a gate
         // deals with one child at a time.
