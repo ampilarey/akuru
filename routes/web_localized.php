@@ -21,6 +21,7 @@ use App\Domains\Academics\Http\Controllers\RegisterReportController;
 use App\Domains\Academics\Http\Controllers\RoomBookingController;
 use App\Domains\Academics\Http\Controllers\RoomDirectoryController;
 use App\Domains\Academics\Http\Controllers\SchoolRequestController;
+use App\Domains\Academics\Http\Controllers\StudentWorkController;
 use App\Domains\Academics\Http\Controllers\SubstitutionRequestController;
 use App\Domains\Academics\Http\Controllers\TeacherRegisterController;
 use App\Domains\Academics\Http\Controllers\TeachingMaterialController;
@@ -139,6 +140,7 @@ use App\Domains\Portal\Http\Controllers\PortalPerformanceController;
 use App\Domains\Portal\Http\Controllers\PortalPickupController;
 use App\Domains\Portal\Http\Controllers\PortalReportCardController;
 use App\Domains\Portal\Http\Controllers\PortalStaffCheckInController;
+use App\Domains\Portal\Http\Controllers\PortalStudentWorkController;
 use App\Domains\Portal\Http\Controllers\StaffOverviewController;
 use App\Domains\Portal\Http\Controllers\TeacherHomeController;
 use App\Domains\PrayerTimes\Http\Controllers\Admin\BroadcastController as AdminPrayerBroadcastController;
@@ -188,6 +190,10 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
 
     // E18 — parent visibility is the point of the gate log, not a bolt-on.
     Route::get('/portal/movements', [PortalMovementController::class, 'index'])->name('portal.movements');
+
+    // E21 — the half that makes photographing paper worth doing.
+    Route::get('/portal/work', [PortalStudentWorkController::class, 'index'])->name('portal.work');
+    Route::get('/portal/work/{work}/photo', [PortalStudentWorkController::class, 'photo'])->name('portal.work.photo')->whereNumber('work');
     Route::get('/portal/found-items', [PortalFoundItemController::class, 'index'])->name('portal.found-items');
     Route::get('/portal/found-items/{foundItem}/photo', [PortalFoundItemController::class, 'photo'])->name('portal.found-items.photo')->whereNumber('foundItem');
     Route::get('/portal/attendance', [PortalAttendanceController::class, 'index'])->name('portal.attendance');
@@ -682,6 +688,15 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::get('gate', [GateMovementController::class, 'index'])->name('academics.gate.index');
         Route::post('gate/record', [GateMovementController::class, 'record'])->name('academics.gate.record');
         Route::post('gate/{movement}/void', [GateMovementController::class, 'void'])->name('academics.gate.void')->whereNumber('movement');
+
+        // E21 student work showcase. Reassignment is a first-class verb, not
+        // an edit form — wrong-parent is the documented failure mode.
+        Route::get('work', [StudentWorkController::class, 'index'])->name('academics.work.index');
+        Route::post('work', [StudentWorkController::class, 'store'])->name('academics.work.store');
+        Route::post('work/{work}/reassign', [StudentWorkController::class, 'reassign'])->name('academics.work.reassign')->whereNumber('work');
+        Route::post('work/{work}/hide', [StudentWorkController::class, 'hide'])->name('academics.work.hide')->whereNumber('work');
+        Route::post('work/{work}/restore', [StudentWorkController::class, 'restore'])->name('academics.work.restore')->whereNumber('work');
+        Route::get('work/{work}/photo', [StudentWorkController::class, 'photo'])->name('academics.work.photo')->whereNumber('work');
 
         // E17 clubs. A club is a course (course_type='club'); these routes are
         // a roster screen over the engine, not a second enrolment system.

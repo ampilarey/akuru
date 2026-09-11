@@ -3840,6 +3840,50 @@ and could have produced a silent false **pass** on any check for data-derived
 text. Switched to `innerText`, and **E8's walk was re-run under the corrected
 method to confirm none of its passes were spurious**: still clean.
 
+## 5cf. E21 — student work showcase, built around the wrong parent (2026-09-11)
+
+Photograph paper work, route it to the right parent. EduPage reads the pupil's
+handwritten name with AI; the plan's judgement is that a v1 without that is
+*"photo + pick the pupil, which is most of the value at a fraction of the
+cost"* — and rule 8 forbids AI here anyway.
+
+**The plan also names the failure mode EduPage's own documentation records:
+work sent to the wrong parent.** That is what the slice is built around, not
+the photo store.
+
+Because nothing reads the handwriting, **picking the pupil is the only thing
+standing between a photo and the wrong family**, so it is required rather than
+defaulted, and the upload form names the family before you save: *"this will go
+to Mariyam Hassan's family."*
+
+Correcting it is a first-class verb, not an edit form:
+
+- `ReassignStudentWorkAction` moves the photo and the first family stops seeing
+  it **at once** — list and image alike; the old family gets a 404 on the image
+  they could fetch a second earlier.
+- `student_work_reassignments` records every move with who and when. *"Which
+  family saw my child's work, and for how long?"* is a question a school will
+  be asked, and a silently-updated `student_id` cannot answer it.
+- The staff card shows **how many times a photo has been moved**. One that has
+  bounced twice is worth a second look before anybody trusts it.
+- A no-op move is refused rather than writing an audit row that makes the
+  history harder to read.
+
+Separately, `HideStudentWorkAction` covers the *other* urgent case — a photo
+that caught another child's work or face in frame. Hidden, not deleted, and
+reversible; families lose both the row and the image immediately, staff keep
+both because it is their record.
+
+The photo is a private media id (rule 4, as E13c and E15 already do): a
+photograph of schoolwork carries a child's handwriting and usually their name.
+The family scope comes from **who the viewer is, never from the request** — a
+guessable id in a URL would be a second way for work to reach the wrong parent.
+
+**7 tests, 66 assertions. Walked in a browser: 24 checks, clean** — including
+the full wrong-parent correction with two real family accounts open at once,
+and a check that the images are actually rendered pixels rather than broken
+icons.
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**.
