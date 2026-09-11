@@ -4669,9 +4669,47 @@ through the same action as `catalog/media/{media}`. Named as a non-page
 exclusion beside it.
 
 Verified by throwing from `LearnActivityController::show()` — the guard fails and
-names the screen. **Pinned list down to 21**, and what remains is honest: two
-scalars, an offering session nothing seeds, the Hifz cluster, payments (left
-alone under rule 12), exams, substitutions and prayer-times.
+names the screen. What remained: two scalars, an offering session nothing seeds,
+the Hifz cluster, payments (left alone under rule 12), exams, substitutions and
+prayer-times. (This entry first said "pinned list down to 21". That number was
+estimated rather than counted, and was wrong — see the next section, where it is
+read out of the array instead.)
+
+### The Hifz cluster, and a correction to the pinned list itself
+
+Eight Hifz detail screens were pinned for want of rows — four programme pages,
+two mushaf pages, a session and a session record. The app's **own demo seeder**
+builds exactly those, so the detail guard now runs `HifzDemoSeeder` (plus
+`SurahSeeder`, since `DatabaseSeeder` omits it) and sweeps them against the
+project's fixture rather than rows invented to make a test pass. All eight
+return **200** as a super_admin. Verified by throwing from
+`HifzProgramController::show()` — the guard fails and names the screen.
+
+**A correction to the list's own claim.** Its docblock calls every entry "a
+screen with no crash coverage". For three of them that was false:
+`AdminResourcePagesSmokeTest` — a guard predating all of this week's work, found
+only by reading it rather than assuming — already loads `quran-progress.show`,
+`quran-progress.edit` and `substitutions.requests.show` against its own
+`HifzDemoSeeder` fixture. Those three are still listed, because *this* test
+cannot build their rows, but each now says where it is covered instead of
+implying a hole. A list that overstates a gap is the same failure as one that
+hides a defect: both describe something nobody checked.
+
+**`hifz/quran/mushafs/{mushaf}/words` is not a screen.** It returns JSON for the
+mushaf page editor and requires `surah_number` and `ayah_number`, so a bare GET
+only ever exercises the validation redirect — it 302s and tells us nothing.
+Named as a non-page exclusion beside the media and barcode endpoints.
+
+**Pinned list is 15**, counted from the file rather than estimated — the last
+slice's note of "21" and a first draft of this one saying "12" were both wrong,
+which is exactly why the number is now read out of the array:
+
+- 2 scalars with no row (`{pageNumber}`, a merchant reference)
+- 1 needing an offering *session* nothing seeds
+- 3 covered by `AdminResourcePagesSmokeTest`, not uncovered
+- 6 model-bound with no row yet: enrollment, exam, teacher absence,
+  substitution-request edit, prayer-times group and broadcast
+- 3 payment routes left alone deliberately (rule 12)
 
 ## 6. Out of scope (unchanged)
 
