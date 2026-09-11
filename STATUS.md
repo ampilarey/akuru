@@ -4323,6 +4323,47 @@ not hold, which is correct. `notifications` returns JSON rather than a page.
 One screen flagged as an error was my own regex matching the word "exceptional"
 in the refunds policy copy.
 
+### Detail screens: the half that shows a record
+
+The census above covers screens with no `{parameter}`. That left **63 detail
+screens** — the pages that actually display a record, and so the ones most
+likely to fall over on a null relation. Nothing loaded a single one of them.
+
+`DetailScreensDoNotCrashTest` sweeps the ones that can be resolved **from the
+controller's own signature**: a controller type-hinting `ClassRoom $classRoom`
+says exactly which table to point at, while one taking `int $course` does not.
+Nothing is inferred from the parameter's *name* — `{session}` is a Hifz session
+on one route and an offering session on another, and guessing between them by
+name is how a guard ends up asserting nothing.
+
+Rows come from `DatabaseSeeder` (which includes `PilotRehearsalSeeder`) wherever
+it provides them, so the sweep runs against the representative dataset rather
+than rows invented to make it pass. Six cheap builders cover the rest.
+**24 detail screens swept, from zero.**
+
+**The remaining 39 are pinned, not counted.** `unresolvedDetailScreens()` lists
+each with its reason, and the test asserts the unresolved set *equals* that
+list — so a new detail route that cannot be swept fails the suite and forces a
+decision, rather than slipping through. The list is meant to shrink. Payments
+are on it deliberately: the ledger is append-only (rule 12) and a sweep has no
+business inventing rows in it.
+
+Both halves verified by mutation: breaking `CirculationController::labels()`
+fails it by name, and deleting one fixture makes the pinned list stop matching.
+
+**Walked in a browser**, 26 detail screens: **zero 5xx, zero blank pages.**
+Five 404s turned out to be my own walk URLs — `Course` binds by **slug**, not
+id, so `courses/1/register` was never going to resolve; with the slug all four
+render. The test was already correct, since it uses `getRouteKey()`.
+
+**One limitation worth stating rather than burying.** A screen whose fixture row
+does not suit it lands on its refusal branch, and the sweep then proves only
+that the route does not throw. `admin/public-site/research/{post}/edit` is the
+live example: `PresentResearchPostAction` returns null for a non-research post
+and the controller 404s on purpose, so the fixture exercises the guard clause,
+not the form. Rendering is what the browser walk checks; the test is the floor
+beneath it.
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**.
