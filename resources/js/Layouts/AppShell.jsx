@@ -140,6 +140,9 @@ export default function AppShell({ title, children }) {
                         <Link href="/portal/work" className="text-[#7C2D37] hover:underline">
                             My child’s work
                         </Link>
+                        <Link href="/people/sensitive" className="text-[#7C2D37] hover:underline">
+                            Sensitive info
+                        </Link>
                         <Link href="/portal/teacher" className="text-[#7C2D37] hover:underline">
                             My day
                         </Link>
