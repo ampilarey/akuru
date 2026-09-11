@@ -4277,6 +4277,52 @@ a user missing either makes it throw. Only `UserSeeder` calls it today, so this
 is not a reachable product path — but the first controller that calls it will
 find a 500 waiting.
 
+### The allow-list was the bug, not the entries in it
+
+Both guards above were built from a hand-written list of URI prefixes. Having
+just written that "a sweep reports what it looked at, never what it forgot," I
+asked what those two lists forgot, and the answer was **sixty-five screens**.
+
+Neither guard covered `students`, `teachers`, `substitutions/*`,
+`quran-progress`, `notifications`, `my-enrollments`, `review`, `write`,
+`forms`, `my-library`, `my-wallet`, `refunds`, `search`, `e-learning/*`, all
+**seventeen `hifz/*` pages**, or `dashboard` itself — the screen every signed-in
+user lands on. `AdminPagesAreReachableTest` was checked first and covers nav
+links, not crashes; `PublicPagesDoNotCrashTest` covers `public.*` names only.
+
+There was also a prefix bug inside the family guard: matching `teach` as a bare
+string also matches `teachers/`, so the staff teacher CRUD was being swept as a
+family screen — and since no guard's list contained `teachers` either, it was
+swept *only* by three roles who are all correctly refused it. It was guarded in
+appearance and unguarded in fact.
+
+**The entries were not the problem; the shape was.** An allow-list covers what
+someone remembered to write down and fails silently when a route group is
+added. So it is inverted in `tests/Support/ScreenCensusHelpers.php`: enumerate
+every parameterless GET route, subtract the handful that are genuinely not
+screens (`api/`, the PWA files, locale roots, the Inertia smoke route — each
+listed with its reason), give the family half to the portal guard, and give
+**everything else** to the staff guard by subtraction. There is no list left to
+forget to add to, and `underPrefix()` matches on segment boundaries so `teach`
+can never mean `teachers` again. Staff coverage went **116 → 181** screens.
+
+Verified by breaking `HifzReportController::weakStudents()` — a screen that no
+guard touched an hour ago — and watching the staff guard name it.
+
+**One fixture lesson, the same one as last time.** The first run of the census
+reported `hifz/dean` and `hifz/programs/create` returning 500. Both threw
+`RoleDoesNotExist: supervisor`, because the guard invented a single
+`super_admin` role instead of seeding the real ones. Two screens that look
+exactly like product defects were artefacts of the test's own fixture. The
+guard now runs `RoleSeeder`, so a 500 here means what it says.
+
+**Walked in a browser**, 50 of the newly covered screens as a super_admin:
+**zero 5xx, zero blank pages.** The three Hifz role dashboards return 403 —
+`hifz/parent`, `hifz/student`, `hifz/teacher` gate on roles a super_admin does
+not hold, which is correct. `notifications` returns JSON rather than a page.
+One screen flagged as an error was my own regex matching the word "exceptional"
+in the refunds policy copy.
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**.
