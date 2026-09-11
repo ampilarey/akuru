@@ -113,6 +113,9 @@ export default function AppShell({ title, children }) {
                         <Link href="/portal/holidays" className="text-[#7C2D37] hover:underline">
                             School calendar
                         </Link>
+                        <Link href="/academics/clubs" className="text-[#7C2D37] hover:underline">
+                            Clubs
+                        </Link>
                         <Link href="/academics/found-items" className="text-[#7C2D37] hover:underline">
                             Lost and found
                         </Link>
