@@ -4452,6 +4452,50 @@ alone, and the new test pins it. And a non-existent `$userId` reaches the insert
 with every column null; `?? ''` now absorbs it, though arguably it should fail
 loudly instead. That is a design decision, not a defect fix.
 
+### Shrinking the pinned list: routes whose controllers take an int
+
+The detail guard sweeps a route when the controller's signature names the model.
+Many take `int $course` and resolve through an Action instead, so there is
+nothing to reflect. Those now get a **declared** parameter value, keyed by route
+URI — never by parameter name, because `{course}` is an ordinary course on
+`catalog/courses/{course}/outline` and a **club** on `academics/clubs/{club}`,
+and clubs have no table of their own: they are `courses` rows carrying
+`course_type = 'club'` (E17, rule 11).
+
+**Swept 24 → 31.** Newly covered: both club screens, the three catalog course
+sub-pages (outline, activities, assessments), offering sessions, and the lesson
+player.
+
+Checking beat assuming twice here:
+
+- `DatabaseSeeder` provides ten courses but **no** offerings, modules, lessons
+  or clubs, and every seeded course is `course_type = 'general'`. An earlier
+  count of mine read the walk database by mistake and made them look present.
+  The fixtures build all four.
+- The lesson player returned **404** at first, correctly: a lesson with no
+  published revision is a 404 by design. The sweep would have "passed" on that
+  refusal while proving only that the route does not throw — exactly the
+  limitation this document recorded last slice. A `lesson_revisions` row was
+  added so the player actually renders.
+
+**`circulation/barcode/{value}` is not a screen.** It returns `image/svg+xml`.
+The browser walk found it by failing on `document.body` being null — an SVG
+document has no body — and a `curl` that appeared to show HTML was reading the
+unauthenticated login redirect, not the route. It is now a named non-page
+exclusion beside `catalog/media/{media}`; the labels screen, which renders these
+barcodes inline, is swept instead.
+
+**Walked in a browser:** all seven newly swept screens render with real content
+as a super_admin — club roster, club attendance sheet, course outline,
+activities, assessments, offering sessions, and the lesson player showing
+"Lesson one". Zero 5xx, zero blanks.
+
+The remaining pinned screens are now honestly grouped: scalars with no row
+behind them, seven **family** screens that need the portal cast rather than a
+super_admin (a slice of its own), and model-bound routes whose rows nothing
+seeds — Hifz structure, payments (left alone deliberately, rule 12), exams,
+substitutions and prayer-times.
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**.

@@ -176,6 +176,7 @@ function detailScreens(): array
         'hr/payslips/{payslip}/document' => 'streams a stored document, not a page',
         'finance/receipts/{receipt}/document' => 'streams a stored document, not a page',
         'catalog/media/{media}' => 'streams catalog media inline, not a page',
+        'circulation/barcode/{value}' => 'returns image/svg+xml — an image endpoint, not a page. The labels screen renders these barcodes inline and is swept instead.',
         'storage/{path}' => 'serves files from disk',
         'locale/{locale}' => 'switches language and redirects',
         'verify-email/{id}/{hash}' => 'signed link that consumes its own token',
