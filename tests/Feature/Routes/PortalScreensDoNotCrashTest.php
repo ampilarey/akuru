@@ -4,7 +4,6 @@ use App\Domains\Identity\Models\User;
 use App\Domains\People\Actions\EnsureTeacherRowAction;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Route as RouteFacade;
 use Spatie\Permission\Models\Role;
 
 uses(RefreshDatabase::class);
@@ -12,9 +11,9 @@ uses(RefreshDatabase::class);
 /**
  * Every family- and teacher-facing screen loads for the person it is for.
  *
- * `StaffScreensDoNotCrashTest` covers `academics/`, `people/`, `admin/` and the
- * rest. It does **not** cover `portal/`, `learn/` or `teach/` — 49 screens, and
- * the ones parents actually open. This is that half.
+ * `StaffScreensDoNotCrashTest` takes every screen that is not family-facing.
+ * This takes the other half — `portal/`, `learn` and `teach/`, the ones parents
+ * actually open — and walks them as the people they are built for.
  *
  * **Walked as the real audience, never as a super_admin.** An administrator
  * holding every permission would sail through screens whose scoping is broken
@@ -24,36 +23,15 @@ uses(RefreshDatabase::class);
  * The assertion is narrow on purpose — **no 5xx** — matching its sibling. 403
  * is allowed: a parent opening `portal/overview` or `teach/assignments` should
  * be refused, and several of these screens are staff-only by design.
+ *
+ * The screen list comes from `familyScreens()` in `ScreenCensusHelpers`. It
+ * used to be built here from the prefixes `['portal/', 'learn', 'teach']`, and
+ * the last of those was a bug: as a bare string it also matches `teachers/`,
+ * so the staff teacher CRUD was being swept as a family screen — and, since no
+ * guard's prefix list contained `teachers` either, it was swept *only* as a
+ * family screen, by three roles who are all correctly refused it. The census
+ * matches on segment boundaries.
  */
-
-/** @return list<array{0: string, 1: string}> */
-function portalScreens(): array
-{
-    $prefixes = ['portal/', 'learn', 'teach'];
-    $skip = ['export', 'photo', 'file', 'download', 'csv', 'pdf', 'print'];
-
-    $screens = [];
-
-    foreach (RouteFacade::getRoutes() as $route) {
-        $uri = $route->uri();
-
-        if (! in_array('GET', $route->methods(), true) || str_contains($uri, '{')) {
-            continue;
-        }
-
-        if (! collect($prefixes)->contains(fn (string $p): bool => str_starts_with($uri, $p))) {
-            continue;
-        }
-
-        if (collect($skip)->contains(fn (string $s): bool => str_contains($uri, $s))) {
-            continue;
-        }
-
-        $screens[] = [$route->getName() ?? '', $uri];
-    }
-
-    return array_values(array_unique($screens, SORT_REGULAR));
-}
 
 /**
  * A parent with a child, a student who *is* that child, and a teacher who has
@@ -114,7 +92,7 @@ function portalCast(): array
 
 it('loads every family and teacher screen without a server error', function () {
     $cast = portalCast();
-    $screens = portalScreens();
+    $screens = familyScreens();
 
     expect(count($screens))->toBeGreaterThan(30);
 
