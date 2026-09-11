@@ -35,7 +35,7 @@ it('does not change AppShell.jsx as part of the IA proposal', function () {
     // 87 → 88: +My day (E1b), the teacher's home.
     // 88 → 89: +Absences (E10b), the office's morning list.
     $linkCount = substr_count($shell, '<Link href=');
-    expect($linkCount)->toBe(102);
+    expect($linkCount)->toBe(103);
 });
 
 it('does not register a product route for the proposal document', function () {

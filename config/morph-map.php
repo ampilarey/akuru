@@ -139,6 +139,8 @@ return [
     'found_item' => \App\Domains\Academics\Models\FoundItem::class,
     'pickup_notice' => \App\Domains\Academics\Models\PickupNotice::class,
     'student_movement' => \App\Domains\Academics\Models\StudentMovement::class,
+    'linked_account' => \App\Domains\Identity\Models\LinkedAccount::class,
+    'account_link_event' => \App\Domains\Identity\Models\AccountLinkEvent::class,
     'book_title' => \App\Domains\Circulation\Models\BookTitle::class,
     'book_copy' => \App\Domains\Circulation\Models\BookCopy::class,
     'loan' => \App\Domains\Circulation\Models\Loan::class,

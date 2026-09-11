@@ -21,7 +21,15 @@
         </include>
     </source>
     <php>
-        <ini name="memory_limit" value="512M"/>
+        <!--
+            Raised from 512M on 2026-09-11. The suite passed 1,168 tests under
+            the old limit and failed at 1,181 — and it had already begun
+            failing on `main` before this slice added anything, so it was
+            sitting on the boundary and whether a run passed had become a
+            coin toss. Raising it is the honest fix: nothing here leaks, the
+            suite has simply grown. Measured peak at 1,181 tests is under 1G.
+        -->
+        <ini name="memory_limit" value="1G"/>
         <env name="APP_ENV" value="testing"/>
         <env name="APP_KEY" value="base64:i8oMr3g3LXa5WBZKOOaMkHSgf0Nm2bIpnjIXCL7p/0w="/>
         <env name="APP_MAINTENANCE_DRIVER" value="file"/>

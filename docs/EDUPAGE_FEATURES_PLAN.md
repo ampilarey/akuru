@@ -56,8 +56,8 @@ below; this line is kept for the audit trail and is now out of date twice
 over)*:
 E1, E2, E3, E6, E7, E8, E10, E13, E15, E16, E17, E18, E21.
 
-**As of 2026-09-11 the genuinely missing list is E1, E2, E3, E6, E7, E10 and
-E13** — seven slices. E8, E15, E16, E17, E18 and E21 shipped that day
+**As of 2026-09-11 the genuinely missing list is E1, E2, E3, E6, E10 and
+E13** — six slices. E8, E15, E16, E17, E18 and E21 shipped that day
 (PRs #241–#247), each with tests and a browser walk.
 
 ---
@@ -285,10 +285,15 @@ forms reject submissions; anonymous surveys store no person id.
 
 ### E7. Account switcher + role-routing fix — ~1 week
 **Reference:** EduPage multi-account sidebar.
+**⚠ THE ORDERING BUG WAS ALREADY FIXED** — `ResolveDashboardLandingAction`
+replaced the `elseif` chain and shares the other identity as `auth.alternate`.
+The row below claimed it was outstanding; that was **the seventeenth time this
+document recorded shipped work as missing**. Corrected 2026-09-11. The switcher
+itself shipped the same day.
+
 **Build (Identity):**
-- **Fix the ordering bug first, separately:** `DashboardController::index()`
-  checks `isTeacher()` before `isParent()`, so a teacher-parent can never reach
-  the parent home. That is a live defect and should not wait for switching.
+- ~~Fix the ordering bug first, separately~~ — done before this row was read;
+  see above.
 - `linked_accounts` (user_id, linked_user_id, verified_at) created by signing
   into the second account once; switching swaps the session between
   *verified-linked* accounts. Re-auth still required for sensitive actions.
@@ -562,7 +567,9 @@ entry point.)*
 The pre-audit figure of ~24–29 weeks counted eight slices that were already
 shipped. Remaining, on verified ground:
 
-- **Genuinely missing:** E1, E2, E3, E6, E7, E10, E13 — **seven slices**.
+- **Genuinely missing:** E1, E2, E3, E6, E10, E13 — **six slices**.
+  *(E7 shipped 2026-09-11 as #248: the routing half was already built, and
+  linked accounts plus the switcher completed it.)*
   *(Was thirteen. E8, E15, E16, E17, E18 and E21 shipped on 2026-09-11 as
   PRs #241–#247. Each of the three gating notes in this document was honoured
   in the design rather than used to defer: E18 carries a `source` column so a

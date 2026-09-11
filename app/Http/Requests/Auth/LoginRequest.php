@@ -35,10 +35,10 @@ class LoginRequest extends FormRequest
     /**
      * Attempt to authenticate the request's credentials.
      *
-     * Supports three identifier types:
-     *  - Email      → contains '@'          → looked up in user_contacts
-     *  - Mobile     → digits only            → looked up in user_contacts (E.164 normalised)
-     *  - National ID → anything else         → looked up directly on users.national_id
+     * The three identifier types and their asymmetries now live in
+     * `ResolveUserByIdentifierAction`. What stays here is everything that is
+     * specific to *logging in*: rate limiting, the password check, the active
+     * flag and the session.
      *
      * @throws \Illuminate\Validation\ValidationException
      */
@@ -48,47 +48,11 @@ class LoginRequest extends FormRequest
 
         $identifier = trim($this->input('identifier'));
         $password = $this->input('password');
-        $normalizer = app(\App\Domains\Identity\Services\ContactNormalizer::class);
 
-        $user = null;
-
-        if (str_contains($identifier, '@')) {
-            // ── Email login ────────────────────────────────────────────────
-            // A contact row is a deliberate state, so it wins when present:
-            // the public course-registration flow creates contacts with
-            // verified_at = null while OTP is pending, and those must stay
-            // locked out until verified.
-            //
-            // But accounts created outside the contact-aware flows never get
-            // a contact row at all — Breeze registration, admin user
-            // creation, seeders and console recovery all write users.email
-            // only. Those were permanently unable to log in: register, log
-            // out, and the account is dead. Fall back to users.email for
-            // exactly that case (no contact row), which grants nothing an
-            // unverified contact was withholding. users.email is unique, so
-            // the fallback cannot resolve to more than one account.
-            $value = $normalizer->normalizeEmail($identifier);
-            $contact = \App\Domains\Identity\Models\UserContact::where('type', 'email')
-                ->where('value', $value)
-                ->first();
-
-            $user = $contact !== null
-                ? ($contact->verified_at !== null ? $contact->user : null)
-                : \App\Domains\Identity\Models\User::whereRaw('LOWER(email) = ?', [$value])->first();
-
-        } elseif (preg_match('/^\+?[\d\s\-]+$/', $identifier)) {
-            // ── Mobile login via user_contacts ─────────────────────────────
-            $value = $normalizer->normalizePhone($identifier);
-            $contact = \App\Domains\Identity\Models\UserContact::where('type', 'mobile')
-                ->where('value', $value)
-                ->whereNotNull('verified_at')
-                ->first();
-            $user = $contact?->user;
-
-        } else {
-            // ── National ID login directly on users table ──────────────────
-            $user = \App\Domains\Identity\Models\User::whereRaw('LOWER(national_id) = ?', [strtolower($identifier)])->first();
-        }
+        // Resolution lives in an Action so that E7's account linking can prove
+        // you own a second account without signing you into it (rule 11).
+        $user = app(\App\Domains\Identity\Actions\ResolveUserByIdentifierAction::class)
+            ->execute($identifier);
 
         if (! $user || ! \Illuminate\Support\Facades\Hash::check($password, $user->password)) {
             RateLimiter::hit($this->throttleKey());

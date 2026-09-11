@@ -3995,6 +3995,81 @@ checks, clean** — including that the label sheet draws real bars (50 rects per
 barcode) whose `aria-label` matches the printed accession number, and that a
 second issue of an already-out copy is refused at the desk.
 
+## 5ci. E7 — linked accounts and the switcher (2026-09-11)
+
+A teacher who is also a parent has two real accounts here, and until now had to
+log out and back in to see their own child's attendance.
+
+**The plan's other half was already built.** It said to *"fix the ordering bug
+first, separately"* — `DashboardController` checking `isTeacher()` before
+`isParent()`. That `elseif` chain is long gone: `ResolveDashboardLandingAction`
+replaced it and shares the unchosen identity as `auth.alternate`. **That was
+the seventeenth time `EDUPAGE_FEATURES_PLAN.md` recorded shipped work as
+missing**, and it is corrected in this slice.
+
+### The link is a claim that two accounts are one human
+
+So it is only ever created by proving both: you are signed into the first and
+supply the second's credentials. **No administrator can create one**, because
+an administrator cannot know that two accounts are the same person — and a link
+they could create would be an impersonation tool under a friendlier name.
+
+Rows are reciprocal, and unlinking removes both. A one-way link would let an
+account reach one that cannot reach back, which is impersonation again.
+
+Switching is a **real login, not impersonation**: the target's own roles apply
+in full. That is what keeps the E6 rule the plan asks to preserve — somebody who
+switches into a pupil account holds a pupil's roles, so they cannot confirm
+anything as a guardian, and no special-casing was needed to arrange it.
+
+The link form takes a password, so it is **rate limited exactly as login is**,
+and every refusal returns the **same sentence** — "no such account" told apart
+from "wrong password" is an account-enumeration oracle, and a signed-in attacker
+probing identifiers is the likeliest use of that form. Failed attempts are
+logged as well as successful ones, since the failures are the interesting ones.
+
+`ResolveUserByIdentifierAction` was extracted from `LoginRequest::authenticate()`,
+which resolved the user and logged them in in one breath. Linking needs the
+first half without the second, and copying three identifier types and their
+hard-won asymmetries would have created a second source of truth for the most
+security-sensitive lookup in the app (rule 11). Login's own 25 tests still pass
+unchanged.
+
+### Verifying the refusals, and finding three that were not verified
+
+Eight mutations were applied on purpose. Five were caught immediately; **three
+survived**, which is the useful part:
+
+- **unverified links were accepted** — `verified_at` had no test at all;
+- **session rotation was untested**;
+- **the password-confirmation test was vacuous** — it asserted the timestamp
+  was absent *without ever setting it*, so it passed against a build that
+  cleared nothing.
+
+All three now have real tests. Chasing the session one also found **dead code**:
+the explicit `regenerate()` did nothing, because `Auth::login()` already
+migrates the session. It is removed, and the comment now credits the guard
+rather than a line that was not doing the work.
+
+### What the browser found
+
+The switch worked and **said nothing**. `/dashboard` is a pure router — it works
+out where you belong and redirects again — and that hop consumed the flash aimed
+at the destination. Every test asserted the redirect; none asserted what the
+person reads at the end of it. `DashboardController` now reflashes when it
+forwards, which fixes it for every caller, not just this one.
+
+### One change outside the slice
+
+**`phpunit.xml`'s memory limit is raised 512M → 1G.** The suite passed at 1,168
+tests and failed at 1,181 — and had already begun failing on `main` before this
+slice added anything, so whether a run passed had become a coin toss. Nothing
+leaks; the suite has simply grown. Left alone it would have broken CI for
+whoever shipped next.
+
+**14 tests, 84 assertions. Full suite 1182 green. Walked in a browser: 17
+checks, clean.**
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**.
