@@ -4711,6 +4711,42 @@ which is exactly why the number is now read out of the array:
   substitution-request edit, prayer-times group and broadcast
 - 3 payment routes left alone deliberately (rule 12)
 
+### The last model fixtures, and a flake that is not what it looked like
+
+Six model-bound screens were pinned for want of a row. Each now has a builder,
+and all of them render **200**: `exams/{exam}/marks`, `admin/enrollments/{enrollment}`,
+`substitutions/absences/{absence}/edit`, `substitutions/requests/{request}/edit`,
+and both prayer-times edit screens. `substitutions/requests/{request}` came off
+the list entirely — it was listed as "covered elsewhere", and now that this test
+builds the row it is swept in both places.
+
+Every enum value was read out of its enum class rather than guessed —
+`ExamStatus`, `PrayerBroadcastMode`, `PrayerBroadcastStatus` — because of the
+trap the family fixtures found: an invented value **inserts cleanly** and throws
+`ValueError` only when the model casts it back, surfacing as a 500 on the screen
+rather than an error at the insert. `island_id` points at `prayer_islands`, not
+`islands`.
+
+**Pinned list is 8**, read from the array: two scalars, one offering session
+nothing seeds, two covered by `AdminResourcePagesSmokeTest`, and the three
+payment routes left alone under rule 12. Only **one** of the eight is both
+uncovered and fixable.
+
+**A flake found, diagnosed, and not fixed here (rule 1).** The full suite failed
+once on `StudentMovementsTest › it records an arrival and a departure`. It passed
+alone, passed paired with this test, passed on the next full run, and clean
+`main` passed too — so the first instinct, that this slice broke it, was wrong.
+
+The cause is the clock. The test does `$this->travel(5)->minutes()` while
+`ListGateMovementsAction` filters `whereDate('at', $date)` — today. Record an
+arrival at 23:57 Indian/Maldives and the travel lands the departure on **the next
+day**, so "today" shows one movement instead of two and every count assertion
+fails. The run happened at 23:5x on 2026-09-11; it is 00:12 as this is written.
+
+It fires in a five-minute window each night and will fail CI for anyone who runs
+then. Recorded as its own slice: pin the clock with `travelTo` instead of
+trusting wall time.
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**.
