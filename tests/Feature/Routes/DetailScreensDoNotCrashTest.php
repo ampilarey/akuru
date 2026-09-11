@@ -73,9 +73,7 @@ uses(RefreshDatabase::class);
 function unresolvedDetailScreens(): array
 {
     return [
-        // Scalars with no row behind them, and one route needing a second row
-        // (an offering *session*) that nothing seeds yet.
-        'catalog/offerings/{offering}/sessions/{session}/attendance' => 'needs an offering session row as well as the offering',
+        // Scalars: there is no row to point at, so nothing to build.
         'hifz/quran/mushafs/{mushaf}/pages/{pageNumber}' => 'page number is a scalar, not a row',
         'payments/ref/{merchant_reference}/status' => 'string reference, not a row',
 
@@ -126,6 +124,13 @@ function detailDeclaredParams(): array
         'catalog/courses/{course}/activities' => $course,
         'catalog/courses/{course}/assessments' => $course,
         'catalog/offerings/{offering}/sessions' => fn (array $s): array => ['offering' => $s['offering']],
+        // The only two-parameter route here, and the reason this map is keyed
+        // by URI: `{session}` means an *offering* session on this route and a
+        // Hifz session elsewhere.
+        'catalog/offerings/{offering}/sessions/{session}/attendance' => fn (array $s): array => [
+            'offering' => $s['offering'],
+            'session' => $s['offering_session'],
+        ],
         'catalog/player/{lesson}' => fn (array $s): array => ['lesson' => $s['lesson']],
     ];
 }
@@ -163,6 +168,19 @@ function detailSeededIds(): array
         'slug' => 'term-1-offering-'.Str::random(6),
         'delivery_mode' => 'self_learning',
         'status' => 'open',
+        'created_at' => now(),
+        'updated_at' => now(),
+    ]);
+
+    // The offering's own session. `session_type` is a backed enum
+    // (`SessionType`) and is read from it rather than guessed, for the reason
+    // the activity fixture learned the hard way: an invented value inserts
+    // cleanly and throws only when the model casts it back.
+    $offeringSessionId = \Illuminate\Support\Facades\DB::table('course_offering_sessions')->insertGetId([
+        'course_offering_id' => $offering,
+        'title' => 'Session one',
+        'session_type' => 'face_to_face',
+        'starts_at' => now()->addDay(),
         'created_at' => now(),
         'updated_at' => now(),
     ]);
@@ -210,6 +228,7 @@ function detailSeededIds(): array
         'club' => (int) $club->id,
         'offering' => (int) $offering,
         'lesson' => (int) $lessonId,
+        'offering_session' => (int) $offeringSessionId,
     ];
 }
 
