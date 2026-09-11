@@ -178,6 +178,7 @@ function detailScreens(): array
         'catalog/media/{media}' => 'streams catalog media inline, not a page',
         'circulation/barcode/{value}' => 'returns image/svg+xml — an image endpoint, not a page. The labels screen renders these barcodes inline and is swept instead.',
         'learn/media/{media}' => 'streams catalog media inline through the same action as catalog/media, not a page',
+        'hifz/quran/mushafs/{mushaf}/words' => 'JSON for the mushaf page editor; requires surah_number and ayah_number query parameters, so a bare GET only ever exercises the validation redirect',
         'storage/{path}' => 'serves files from disk',
         'locale/{locale}' => 'switches language and redirects',
         'verify-email/{id}/{hash}' => 'signed link that consumes its own token',

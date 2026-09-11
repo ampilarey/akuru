@@ -83,30 +83,28 @@ function unresolvedDetailScreens(): array
         // `detailScreens()` hands them to `FamilyDetailScreensDoNotCrashTest`,
         // which sweeps them as an enrolled student.
 
-        // Bound to a model, but no row: building one means fabricating Hifz
-        // programme structure or a payment. Payments especially are left alone
-        // — the ledger is append-only (rule 12) and a sweep has no business
-        // inventing rows in it.
-        'hifz/programs/{program}' => 'no HifzProgram row; Hifz is frozen (rule 7)',
-        'hifz/programs/{program}/edit' => 'no HifzProgram row',
-        'hifz/programs/{program}/enrollments' => 'no HifzProgram row',
-        'hifz/programs/{program}/enrollments/create' => 'no HifzProgram row',
-        'hifz/quran/mushafs/{mushaf}' => 'no QuranMushaf row',
-        'hifz/quran/mushafs/{mushaf}/words' => 'no QuranMushaf row',
-        'hifz/session-records/{record}/quran-page' => 'no HifzSessionRecord row',
-        'hifz/sessions/{session}/edit' => 'no HifzSession row',
-        'quran-progress/{quran_progress}' => 'no QuranProgress row',
-        'quran-progress/{quran_progress}/edit' => 'no QuranProgress row',
-        'payments/return/{payment}' => 'money path; a sweep does not invent ledger rows',
-        'payments/status/{payment}' => 'money path',
-        'payments/{payment}/receipt' => 'money path',
+        // Swept elsewhere. These three are NOT uncovered — `AdminResourcePagesSmokeTest`
+        // loads each of them against its own `HifzDemoSeeder` fixture. They are
+        // listed here only because *this* test cannot build their rows, and the
+        // distinction matters: the docblock above calls this list "screens with
+        // no crash coverage", which for these three would simply be false.
+        'quran-progress/{quran_progress}' => 'covered by AdminResourcePagesSmokeTest (quran-progress.show)',
+        'quran-progress/{quran_progress}/edit' => 'covered by AdminResourcePagesSmokeTest (quran-progress.edit)',
+        'substitutions/requests/{request}' => 'covered by AdminResourcePagesSmokeTest (substitutions.requests.show)',
+
+        // Bound to a model with no row, and genuinely unswept.
         'admin/enrollments/{enrollment}' => 'no CourseEnrollment row',
         'exams/{exam}/marks' => 'an Exam needs year, term, class, subject and exam type',
         'substitutions/absences/{absence}/edit' => 'no TeacherAbsence row',
-        'substitutions/requests/{request}' => 'no SubstitutionRequest row',
         'substitutions/requests/{request}/edit' => 'no SubstitutionRequest row',
         'admin/prayer-times/groups/{group}/edit' => 'no PrayerRecipientGroup row',
         'admin/prayer-times/broadcasts/{broadcast}/edit' => 'no PrayerBroadcast row',
+
+        // Payments are left alone on purpose: the ledger is append-only
+        // (rule 12) and a sweep has no business inventing rows in it.
+        'payments/return/{payment}' => 'money path; a sweep does not invent ledger rows',
+        'payments/status/{payment}' => 'money path',
+        'payments/{payment}/receipt' => 'money path',
     ];
 }
 
@@ -268,6 +266,17 @@ function detailFixtureRow(string $class, User $actor): ?Model
 it('loads every resolvable detail screen without a server error', function () {
     $this->seed(RoleSeeder::class);
     $this->seed(\Database\Seeders\DatabaseSeeder::class);
+
+    // `DatabaseSeeder` does not run `SurahSeeder`, so `surahs` is empty on a
+    // fresh install — recorded in STATUS as a seeding gap, and it matters here
+    // because the Hifz demo builds a mushaf against that dataset.
+    $this->seed(\Database\Seeders\SurahSeeder::class);
+
+    // Eight Hifz detail screens — four programme pages, two mushaf pages, a
+    // session and a session record — were pinned for want of rows. The app's
+    // own demo seeder builds exactly those, so they are swept against the
+    // project's fixture rather than against rows invented here.
+    $this->seed(\Database\Seeders\HifzDemoSeeder::class);
 
     $role = Role::findOrCreate('super_admin', 'web');
     $role->givePermissionTo(Permission::all());
