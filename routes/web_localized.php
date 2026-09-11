@@ -14,6 +14,7 @@ use App\Domains\Academics\Http\Controllers\FoundItemController;
 use App\Domains\Academics\Http\Controllers\MaterialFileController;
 use App\Domains\Academics\Http\Controllers\MeetingSlotController;
 use App\Domains\Academics\Http\Controllers\PeriodDirectoryController;
+use App\Domains\Academics\Http\Controllers\PickupConsoleController;
 use App\Domains\Academics\Http\Controllers\PromotionController;
 use App\Domains\Academics\Http\Controllers\RegisterReportController;
 use App\Domains\Academics\Http\Controllers\RoomBookingController;
@@ -133,6 +134,7 @@ use App\Domains\Portal\Http\Controllers\PortalMessageController;
 use App\Domains\Portal\Http\Controllers\PortalNotificationController;
 use App\Domains\Portal\Http\Controllers\PortalPayslipController;
 use App\Domains\Portal\Http\Controllers\PortalPerformanceController;
+use App\Domains\Portal\Http\Controllers\PortalPickupController;
 use App\Domains\Portal\Http\Controllers\PortalReportCardController;
 use App\Domains\Portal\Http\Controllers\PortalStaffCheckInController;
 use App\Domains\Portal\Http\Controllers\StaffOverviewController;
@@ -176,6 +178,11 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
     Route::get('/portal/children', [GuardianChildrenController::class, 'index'])->name('portal.children');
     Route::get('/portal/holidays', [PortalHolidayController::class, 'index'])->name('portal.holidays');
     // E15: what is still on the shelf. Families only ever see unreturned items.
+    // E8, the family side.
+    Route::get('/portal/pickup', [PortalPickupController::class, 'index'])->name('portal.pickup');
+    Route::post('/portal/pickup/pin', [PortalPickupController::class, 'setPin'])->name('portal.pickup.pin');
+    Route::post('/portal/pickup/request', [PortalPickupController::class, 'request'])->name('portal.pickup.request');
+    Route::post('/portal/pickup/{notice}/confirm', [PortalPickupController::class, 'confirm'])->name('portal.pickup.confirm')->whereNumber('notice');
     Route::get('/portal/found-items', [PortalFoundItemController::class, 'index'])->name('portal.found-items');
     Route::get('/portal/found-items/{foundItem}/photo', [PortalFoundItemController::class, 'photo'])->name('portal.found-items.photo')->whereNumber('foundItem');
     Route::get('/portal/attendance', [PortalAttendanceController::class, 'index'])->name('portal.attendance');
@@ -656,6 +663,14 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::post('events/{event}/second-round', [EventAdminController::class, 'secondRound'])->name('academics.events.second-round')->whereNumber('event');
         Route::post('events/{event}/registrations/{registration}/confirm', [EventAdminController::class, 'confirm'])->name('academics.events.confirm')->whereNumber('event')->whereNumber('registration');
         Route::get('events/{event}/registrations/export', [EventAdminController::class, 'exportRegistrations'])->name('academics.events.registrations.export')->whereNumber('event');
+
+        // E8 student pick-up — the office console. Releasing a child, so every
+        // gate lives in the Actions rather than here.
+        Route::get('pickup', [PickupConsoleController::class, 'index'])->name('academics.pickup.index');
+        Route::post('pickup/open', [PickupConsoleController::class, 'open'])->name('academics.pickup.open');
+        Route::post('pickup/close', [PickupConsoleController::class, 'close'])->name('academics.pickup.close');
+        Route::post('pickup/{notice}/send', [PickupConsoleController::class, 'send'])->name('academics.pickup.send')->whereNumber('notice');
+        Route::post('pickup/{notice}/cancel', [PickupConsoleController::class, 'cancel'])->name('academics.pickup.cancel')->whereNumber('notice');
 
         // E17 clubs. A club is a course (course_type='club'); these routes are
         // a roster screen over the engine, not a second enrolment system.
