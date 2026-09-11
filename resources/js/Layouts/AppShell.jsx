@@ -350,9 +350,27 @@ export default function AppShell({ title, children }) {
                                 {auth.alternate.label}
                             </Link>
                         )}
+                        {/* E7: the switch itself, not a link to a page that
+                            offers it — the plan's acceptance is "two taps", and
+                            a settings page in between makes it four. Rendered
+                            only when a proved link exists, so it is invisible
+                            to the great majority who have one account. */}
+                        {(auth?.linked_accounts ?? []).map((account) => (
+                            <button
+                                key={account.id}
+                                type="button"
+                                className="rounded-full border border-[#7C2D37] px-3 py-1 font-medium text-[#7C2D37] hover:bg-[#F9F4EE]"
+                                onClick={() => router.post(`/account/switch/${account.id}`)}
+                                title={`Switch to ${account.name} (${account.roles})`}
+                            >
+                                Switch to {account.name}
+                            </button>
+                        ))}
                         {user && (
                             <span className="flex items-center gap-2">
-                                <span className="text-gray-500">{user.name}</span>
+                                <Link href="/account/linked" className="text-gray-500 hover:underline">
+                                    {user.name}
+                                </Link>
                                 <button
                                     type="button"
                                     className="text-[#7C2D37] hover:underline"

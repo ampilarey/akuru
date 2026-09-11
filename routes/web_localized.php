@@ -103,6 +103,7 @@ use App\Domains\HR\Http\Controllers\PayslipDocumentController;
 use App\Domains\HR\Http\Controllers\StaffAttendanceController;
 use App\Domains\HR\Http\Controllers\StaffAttendanceReportController;
 use App\Domains\HR\Http\Controllers\StaffContractController;
+use App\Domains\Identity\Http\Controllers\LinkedAccountController;
 use App\Domains\Identity\Http\Controllers\ProfileController;
 use App\Domains\Library\Http\Controllers\AdminLibraryController;
 use App\Domains\Notifications\Http\Controllers\NotificationController;
@@ -462,6 +463,13 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
     });
 
     // Dhivehi translation overrides (UI strings; override wins, file is fallback)
+    // E7 account switching. Not admin-gated: it is every signed-in person's
+    // own identity, and the Actions refuse anything that is not a proved link.
+    Route::get('/account/linked', [LinkedAccountController::class, 'index'])->name('account.linked');
+    Route::post('/account/linked', [LinkedAccountController::class, 'store'])->name('account.linked.store');
+    Route::delete('/account/linked/{account}', [LinkedAccountController::class, 'destroy'])->name('account.linked.destroy')->whereNumber('account');
+    Route::post('/account/switch/{account}', [LinkedAccountController::class, 'switch'])->name('account.switch')->whereNumber('account');
+
     // E16 Circulation — physical lending. Deliberately *not* under
     // admin/library: the L-track Library is a digital reader and bookstore,
     // and the plan asks for the two never to be confused in code or nav.

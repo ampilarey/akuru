@@ -31,7 +31,7 @@ class DashboardController extends Controller
         $landing = app(ResolveDashboardLandingAction::class)
             ->execute($user->getRoleNames()->all());
 
-        return match ($landing['kind']) {
+        $response = match ($landing['kind']) {
             'super_admin' => $this->superAdminDashboard(),
             'overview' => redirect()->route('portal.overview'),
             'supervisor' => $this->supervisorDashboard(),
@@ -40,6 +40,19 @@ class DashboardController extends Controller
             // Public users (registered via OTP for course enrollment)
             default => $this->publicUserDashboard(),
         };
+
+        // `/dashboard` is a pure router: for most people it does not render
+        // anything, it works out where they belong and sends them on. A flash
+        // message aimed at that destination would otherwise be consumed *here*
+        // and never seen — which is exactly what happened to E7's "you are now
+        // signed in as …" until a browser walk caught it. Found this way and
+        // not by any test, because every test asserted the redirect rather
+        // than what the person reads at the end of it.
+        if ($response instanceof \Illuminate\Http\RedirectResponse) {
+            session()->reflash();
+        }
+
+        return $response;
     }
 
     private function publicUserDashboard()

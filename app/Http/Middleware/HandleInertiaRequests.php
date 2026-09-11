@@ -36,6 +36,28 @@ class HandleInertiaRequests extends Middleware
      *
      * @return array<string, mixed>
      */
+    /**
+     * E7: accounts the signed-in person may switch to.
+     *
+     * Shared rather than fetched per page because the plan's acceptance is
+     * *"switches in two taps"*, and a switcher that lives only on a settings
+     * screen is four.
+     *
+     * @return list<array{id: int, name: string, roles: string}>
+     */
+    private function linkedAccounts(Request $request): array
+    {
+        $user = $request->user();
+
+        if ($user === null) {
+            return [];
+        }
+
+        return app(\App\Domains\Identity\Actions\ListLinkedAccountsAction::class)
+            ->execute((int) $user->id)
+            ->all();
+    }
+
     public function share(Request $request): array
     {
         $locale = app()->getLocale();
@@ -60,6 +82,12 @@ class HandleInertiaRequests extends Middleware
                 // UI can say it exists. Costs no query: Spatie already has the
                 // roles in memory, and this runs on every Inertia response.
                 'alternate' => $this->alternateIdentity($request),
+                // E7: the accounts this person has proved they also own, so
+                // the switch is two taps from any screen rather than a trip to
+                // a settings page. One indexed lookup on a tiny table, and it
+                // short-circuits to nothing for everybody who has no links —
+                // which is almost everybody.
+                'linked_accounts' => $this->linkedAccounts($request),
                 // E22a: five features have been writing notifications nobody
                 // could see. One indexed COUNT per Inertia response is the
                 // price of them being discoverable from any page.
