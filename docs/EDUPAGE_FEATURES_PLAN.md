@@ -51,9 +51,14 @@ win in the plan, ~3 days" — turned out to be shipped end to end.
 | E20 Competences | `competencies` + `competency_assessments`, `CompetencyController`, 5 routes |
 | E22 Notification centre | `UserNotification`, `NotificationTemplate`, `Device`, `NotificationController`, 3 routes |
 
-**Verified still missing** *(as recorded on 2026-09-04 — see the correction
-below; this line is kept for the audit trail and is now out of date)*:
+**Verified still missing** *(as recorded on 2026-09-04 — see the corrections
+below; this line is kept for the audit trail and is now out of date twice
+over)*:
 E1, E2, E3, E6, E7, E8, E10, E13, E15, E16, E17, E18, E21.
+
+**As of 2026-09-11 the genuinely missing list is E1, E2, E3, E6, E7, E10 and
+E13** — seven slices. E8, E15, E16, E17, E18 and E21 shipped that day
+(PRs #241–#247), each with tests and a browser walk.
 
 ---
 
@@ -557,8 +562,14 @@ entry point.)*
 The pre-audit figure of ~24–29 weeks counted eight slices that were already
 shipped. Remaining, on verified ground:
 
-- **Genuinely missing:** E1, E2, E3, E6, E7, E8, E10, E13, E15, E16, E17, E18,
-  E21 — 13 slices, most owner-gated.
+- **Genuinely missing:** E1, E2, E3, E6, E7, E10, E13 — **seven slices**.
+  *(Was thirteen. E8, E15, E16, E17, E18 and E21 shipped on 2026-09-11 as
+  PRs #241–#247. Each of the three gating notes in this document was honoured
+  in the design rather than used to defer: E18 carries a `source` column so a
+  card reader becomes a binding and not a rewrite; E19 fails closed on every
+  question its policy has not answered, and grants `admin` nothing; E16 is
+  named Circulation, in its own domain, so it can never merge with the L-track
+  Library.)*
 - **The family-facing core is now just E1 + E2 + E3** (tiles, message threads,
   homework list) ≈ **4–6 weeks**. E4, E9 and E22 were in that line and are done.
 - Everything else is either built, half-built (E11's calendar), or gated on a
