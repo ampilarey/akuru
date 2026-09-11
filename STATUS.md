@@ -4129,6 +4129,60 @@ else.** That one needs a design decision first: `attendance` carries
 `check_in_time`/`check_out_time` but no lesson duration, so there is no
 part-lesson for a rounding rule to round.
 
+## 5ck. E10d — the rounding policy, and a policy the school can actually set (2026-09-11)
+
+**The last open item on the EduPage track.** With it, E1–E22 are built.
+
+### I was wrong that this was blocked
+
+Earlier the same day I said the rounding policy needed a design decision first,
+because *"`attendance` has check-in/out times but no lesson duration."* That was
+a first-pass scan, not a finding: **`class_attendance.minutes_late` has carried
+a part-lesson since August**, written by the register and — like so much else
+in this codebase — never read by anything that reports.
+
+`studentSummary()` computed `percent = (present + late) / total`, so **a pupil
+arriving 35 minutes into a 40-minute lesson scored exactly like one who was on
+time.**
+
+### The rule, and where it is applied
+
+Past `attendance_part_lesson_minutes`, a late arrival stops counting as
+attended. **Zero means off, and that is the default** — the same choice
+`tardies_per_absence` already makes, for the reason its own comment gives: a
+school that has not picked a number must not have one applied to its reported
+attendance behind its back.
+
+**Applied at read time. The register is never rewritten.** The row stays `late`
+with its minutes, because that is what happened, and a school that clears the
+threshold gets its old figures back rather than a rewritten history. That is
+the load-bearing test.
+
+The summary returns `percent` **and** `percent_before_rounding` and
+`part_lessons`, so a figure that moved can be explained rather than argued
+about — the principle E10a already set when it reported the tardy rule *beside*
+the absence figures rather than folding it in.
+
+### The other half: nobody could set any of this
+
+`ResolveAttendanceSettingsAction` has read four keys since August and
+**nothing has ever written them**. `SettingsController` has only `index` and
+`clearCache`, so changing the chronic threshold or the tardy rule meant editing
+the `settings` table by hand. Policy only a DBA can change is policy the school
+does not own. There is now a screen, with each rule stating what it does and
+how to switch it off.
+
+**5 tests, 34 assertions. Full suite 1195 green. Walked in a browser: 10
+checks, clean.**
+
+Three things caught along the way: the architecture guard built earlier today
+refused a `config('academics.attendance_part_lesson_minutes')` key that did not
+exist; an existing `makeClass()` helper and fixture pattern already existed and
+my hand-rolled one was wrong twice over; and my own walk assertion expected a
+server validation message the browser's `max` attribute prevents from ever
+being requested — the property worth asserting was that a nonsense value never
+persists, whichever layer stops it.
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**.

@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\DB;
 class ResolveAttendanceSettingsAction
 {
     /**
-     * @return array{mode: AttendanceMode, notify: string, chronic_threshold: int, tardies_per_absence: int}
+     * @return array{mode: AttendanceMode, notify: string, chronic_threshold: int, tardies_per_absence: int, part_lesson_minutes: int}
      */
     public function execute(): array
     {
@@ -18,6 +18,7 @@ class ResolveAttendanceSettingsAction
                 'attendance_notify',
                 'attendance_chronic_threshold',
                 'attendance_tardies_per_absence',
+                'attendance_part_lesson_minutes',
             ])
             ->pluck('value', 'key');
 
@@ -38,6 +39,17 @@ class ResolveAttendanceSettingsAction
             // the default: a school that has not chosen a number must not have
             // one applied to its reported attendance behind its back.
             'tardies_per_absence' => max(0, (int) ($rows['attendance_tardies_per_absence'] ?? config('academics.attendance_tardies_per_absence', 0))),
+            // E10d, the plan's "rounding policy for part-lessons". A pupil who
+            // arrives 35 minutes into a 40-minute lesson counts today exactly
+            // like one who arrived on time, because the percentage is
+            // (present + late) / total with no regard for *how* late.
+            //
+            // Past this many minutes, the lesson stops counting as attended.
+            // **Zero means off, and that is the default** — the same choice
+            // `tardies_per_absence` makes above, and for the same reason: a
+            // school that has not picked a number must not have one applied to
+            // its reported attendance behind its back.
+            'part_lesson_minutes' => max(0, (int) ($rows['attendance_part_lesson_minutes'] ?? config('academics.attendance_part_lesson_minutes', 0))),
         ];
     }
 }

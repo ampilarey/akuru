@@ -84,6 +84,27 @@ class ListClassAttendanceAction
         $present = (int) ($byStatus[AttendanceStatus::Present->value] ?? 0);
         $late = (int) ($byStatus[AttendanceStatus::Late->value] ?? 0);
 
+        // E10d — the rounding policy for part-lessons.
+        //
+        // `percent` counted every late mark as fully attended, so a pupil who
+        // arrived 35 minutes into a 40-minute lesson scored the same as one who
+        // was on time. Past the school's threshold, a late arrival stops
+        // counting as attended.
+        //
+        // **Applied here, at read time. The register is never rewritten** — the
+        // row stays `late` with its minutes, because that is what happened, and
+        // a school that changes or clears the threshold must get its old
+        // numbers back rather than a rewritten history.
+        $threshold = app(ResolveAttendanceSettingsAction::class)->execute()['part_lesson_minutes'];
+
+        $partLessons = $threshold === 0 ? 0 : (clone $query)
+            ->where('status', AttendanceStatus::Late->value)
+            ->where('minutes_late', '>=', $threshold)
+            ->count();
+
+        $attended = $present + $late - $partLessons;
+        $percent = $total === 0 ? 0 : round((($present + $late) / $total) * 100, 1);
+
         return collect([[
             'student_id' => $studentId,
             'total' => $total,
@@ -92,7 +113,13 @@ class ListClassAttendanceAction
             'absent' => (int) ($byStatus[AttendanceStatus::Absent->value] ?? 0),
             'excused' => (int) ($byStatus[AttendanceStatus::Excused->value] ?? 0),
             'left_early' => (int) ($byStatus[AttendanceStatus::LeftEarly->value] ?? 0),
-            'percent' => $total === 0 ? 0 : round((($present + $late) / $total) * 100, 1),
+            'percent' => $total === 0 ? 0 : round(($attended / $total) * 100, 1),
+            // Both numbers are returned so a figure that moved can be
+            // explained. With the rule off they are identical and
+            // `part_lessons` is zero, which is the default.
+            'percent_before_rounding' => $percent,
+            'part_lessons' => $partLessons,
+            'part_lesson_minutes' => $threshold,
         ]]);
     }
 

@@ -61,8 +61,8 @@ E1, E2, E3, E6 and E13 all built** — the "genuinely missing" list above was
 wrong about every one of them. **E11 is complete too** — its "⚠ HALF BUILT"
 header contradicted this document's own 2026-09-10 correction, and
 `CalendarDayType` really does have five cases. What actually remains on this
-track is **the E10 rounding policy, and nothing else**. E8, E15, E16, E17, E18
-and E21 shipped that day
+track is **nothing** — E10d closed the last item the same day. E8, E15, E16,
+E17, E18 and E21 shipped that day
 (PRs #241–#247), each with tests and a browser walk.
 
 ---
@@ -343,7 +343,7 @@ leverage-to-effort ratio in the whole plan. Overlaps E5 — build with it if E5
 lands first, standalone otherwise.
 
 ### E10. Attendance policy depth — ~1 week
-**✅ MOSTLY BUILT** — E10a tardy→absence aggregation, E10b "who is not in today" with the absence-note join, **E10c custom absence types (2026-09-11)**. Only the **rounding policy for part-lessons** remains — and note that `attendance` has `check_in_time`/`check_out_time` but no lesson duration, so a part-lesson concept has to be designed before a rounding rule can round anything.
+**✅ BUILT (2026-09-11).** E10a tardy→absence aggregation, E10b "who is not in today", E10c custom absence types, **E10d the rounding policy for part-lessons plus an editor for the whole attendance policy**. A first pass called the rounding policy blocked for want of a part-lesson concept; that was wrong — `class_attendance.minutes_late` has carried one since August. The threshold defaults to 0 (off) and is applied at read time, so the register is never rewritten.
 Custom absence types; **tardy→absence conversion** (EduPage's example: 3 tardies
 = 1 lesson) as a configurable rule; rounding policy for part-lessons; tardy and
 early-departure summaries; a "who is absent today" staff view. Plus an integrity
@@ -572,8 +572,10 @@ entry point.)*
 The pre-audit figure of ~24–29 weeks counted eight slices that were already
 shipped. Remaining, on verified ground:
 
-- **Genuinely missing: the E10 rounding policy.** Nothing else on this track.
-  Verified 2026-09-11 against tables, routes and actions, not against these rows.
+- **Nothing.** E1–E22 are built as of 2026-09-11, verified against tables,
+  routes and actions rather than against these rows. What remains for this
+  product is not on the EduPage track: F5 (gated by ADR-025), Deploy 3 cleanup,
+  and the operator items in STATUS.
   *(E7 shipped 2026-09-11 as #248: the routing half was already built, and
   linked accounts plus the switcher completed it.)*
   *(Was thirteen. E8, E15, E16, E17, E18 and E21 shipped on 2026-09-11 as
