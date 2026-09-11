@@ -4245,6 +4245,38 @@ to the route file cannot quietly reduce it to testing nothing.
 
 **A one-off sweep is evidence for a day. This makes it a gate.**
 
+### The family half, and a blind spot in my own filter
+
+That sweep covered `academics/`, `people/`, `admin/`, `exams/`, `catalog/`,
+`circulation`, `hr/` and `finance/`. It did **not** cover `portal/`, `learn/`
+or `teach/` — **49 screens, and the ones parents actually open.** The filter
+was mine and the omission was silent: a sweep reports what it looked at, never
+what it forgot.
+
+Those 49 were then walked as the **real audience** — a parent with a linked
+child, a student who *is* that child, and a teacher — never as a super_admin,
+because an administrator holding every permission sails through screens whose
+scoping is broken for the person they are built for.
+
+**Zero crashes, zero blank screens, across all three roles.** The 403s were
+checked one by one rather than counted: a parent refused `portal/overview` and
+`teach/*` is correct.
+
+A teacher refused `teach/assignments`, `teach/milestones` and
+`teach/recitations` looked like a real defect for a while. It was my fixture:
+those screens resolve a **`teachers` row**, and `teachers` row ≠ Spatie role
+`teacher` — a hazard §2 of this document already records. The walk teacher had
+the role and no row.
+
+`PortalScreensDoNotCrashTest` makes that half a gate too, verified the same
+way: breaking `PortalLoanController` fails it for all three roles by name.
+
+**One fragility noted, not fixed (rule 1):** `EnsureTeacherRowAction` copies
+`users.phone` and `users.address` into `teachers`, where both are NOT NULL, so
+a user missing either makes it throw. Only `UserSeeder` calls it today, so this
+is not a reachable product path — but the first controller that calls it will
+find a 500 waiting.
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**.
