@@ -79,18 +79,9 @@ function unresolvedDetailScreens(): array
         'hifz/quran/mushafs/{mushaf}/pages/{pageNumber}' => 'page number is a scalar, not a row',
         'payments/ref/{merchant_reference}/status' => 'string reference, not a row',
 
-        // Family screens. These resolve as `int` too, but sweeping them as a
-        // super_admin would prove the wrong thing: they are scoped to the
-        // parent, student or teacher who owns the record, so they need the
-        // portal cast from `PortalScreensDoNotCrashTest`. That is a slice of
-        // its own, not a fixture tweak.
-        'learn/activities/{activity}' => 'int param, and a family screen: needs the portal cast',
-        'learn/assessments/{assessment}' => 'int param, family screen',
-        'learn/courses/{course}' => 'int param, family screen',
-        'learn/lessons/{lesson}' => 'int param, family screen',
-        'learn/media/{media}' => 'int param, family screen',
-        'portal/messages/{thread}' => 'int param, family screen',
-        'teach/quran-sessions/{session}' => 'int param, family screen',
+        // Family-facing detail screens are no longer listed here at all:
+        // `detailScreens()` hands them to `FamilyDetailScreensDoNotCrashTest`,
+        // which sweeps them as an enrolled student.
 
         // Bound to a model, but no row: building one means fabricating Hifz
         // programme structure or a payment. Payments especially are left alone
