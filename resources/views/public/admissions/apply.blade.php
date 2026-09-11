@@ -96,7 +96,7 @@
                     <ol class="space-y-4">
                         @foreach([
                             ['n'=>'1', 'title'=>'We review your application', 'desc'=>'Our team will review your details, usually within 1–2 business days.'],
-                            ['n'=>'2', 'title'=>'We contact you', 'desc'=>'We'll reach out via mobile or email with the next steps and any info you need.'],
+                            ['n'=>'2', 'title'=>'We contact you', 'desc'=>'We will reach out via mobile or email with the next steps and any info you need.'],
                             ['n'=>'3', 'title'=>'Complete enrollment', 'desc'=>'Once confirmed, you complete a short online form and pay the course fee.'],
                         ] as $step)
                         <li class="flex gap-3">
