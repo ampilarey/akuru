@@ -3884,6 +3884,64 @@ the full wrong-parent correction with two real family accounts open at once,
 and a check that the images are actually rendered pixels rather than broken
 icons.
 
+## 5cg. E19 — sensitive information, with the decisions left open (2026-09-11)
+
+**The plan is blunt about this one:** *"Needs a policy decision before a
+schema: who may read, who may write, retention, and whether it is exportable.
+This is the one module where building first and deciding later is actively
+wrong."*
+
+That warning is respected by making every undecided question **fail closed and
+stay visible**, rather than by picking answers quietly.
+
+### ⚠ One decision was made on the Institute's behalf — please confirm it
+
+`RoleSeeder` grants `admin` `Permission::all()`. **Adding a `sensitive.read`
+permission and doing nothing else would have handed every admin account every
+child's health note by accident** — the blanket grant would have decided the
+policy before anybody read the question.
+
+So the route group is narrower than every other admin group in the app:
+`role:super_admin|headmaster` **plus** `can:sensitive.read`, and the migration
+grants those permissions to `super_admin` and `headmaster` only. **`admin` is
+deliberately excluded from both.** A test asserts this holds even for an admin
+account that genuinely holds every permission in the system.
+
+**Widening this is one line in a migration. Narrowing it after the fact is a
+disclosure.** That asymmetry is the whole reason the conservative default was
+chosen, and it is the one thing in Wave 4 that should be confirmed rather than
+inherited.
+
+### The other two questions
+
+- **Retention** — `review_on` lets a human say when a note should be looked at
+  again, and `archived_at` takes it out of use. **Nothing deletes
+  automatically, and there is no job that will.** Auto-expiring a child's
+  allergy on a guessed retention rule is far worse than keeping it a term too
+  long.
+- **Exportable** — no CSV, deliberately departing from the repo convention that
+  every listing gets one. A convention that exists to help an office move data
+  is the wrong default for the one table where *"somebody exported it"* is the
+  incident. **A test asserts the route list contains no export and no
+  `portal.*` route**, so a later slice cannot add one for consistency without
+  someone noticing.
+
+### What is recorded regardless of the policy
+
+`sensitive_note_views` logs **every read** — including reads that find nothing,
+because *"somebody went looking"* is itself worth knowing. The log is rendered
+**on the same screen as the notes**, not in an audit page nobody opens: someone
+about to read a child's welfare record should see that their own name will join
+that list. Opening the search box logs nothing; choosing a pupil does.
+
+Editing is narrow: only the author may change their own note. A welfare note is
+a professional observation with a name on it, and a second reader who disagrees
+adds their own, so the disagreement becomes part of the record rather than
+replacing it.
+
+**10 tests, 41 assertions. Walked in a browser: 15 checks, clean** — including
+an admin account holding every permission being refused with a 403.
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**.

@@ -109,6 +109,7 @@ use App\Domains\Offerings\Http\Controllers\CourseOfferingController;
 use App\Domains\Offerings\Http\Controllers\OfferingSessionController;
 use App\Domains\Offerings\Http\Controllers\TeacherScheduleController;
 use App\Domains\People\Http\Controllers\CustomFieldDefinitionController;
+use App\Domains\People\Http\Controllers\SensitiveNoteController;
 use App\Domains\People\Http\Controllers\StaffDirectoryController;
 use App\Domains\People\Http\Controllers\StudentConsentController;
 use App\Domains\People\Http\Controllers\StudentController;
@@ -456,6 +457,19 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
     });
 
     // Dhivehi translation overrides (UI strings; override wins, file is fallback)
+    // E19 sensitive information. Narrower than every other admin group on
+    // purpose: `admin` is not in the role list and is not granted
+    // `sensitive.read`, because RoleSeeder's blanket Permission::all() would
+    // otherwise hand every admin account every child's health note by
+    // accident. Widening this is a decision for the Institute to make
+    // explicitly — see the E19 migration.
+    Route::prefix('people/sensitive')->middleware(['role:super_admin|headmaster', 'can:sensitive.read'])->group(function () {
+        Route::get('/', [SensitiveNoteController::class, 'index'])->name('people.sensitive.index');
+        Route::post('/', [SensitiveNoteController::class, 'store'])->middleware('can:sensitive.write')->name('people.sensitive.store');
+        Route::put('/{note}', [SensitiveNoteController::class, 'update'])->middleware('can:sensitive.write')->name('people.sensitive.update')->whereNumber('note');
+        Route::post('/{note}/archive', [SensitiveNoteController::class, 'archive'])->middleware('can:sensitive.write')->name('people.sensitive.archive')->whereNumber('note');
+    });
+
     Route::prefix('admin/translations')->middleware(['role:super_admin|admin', 'can:translations.manage'])->group(function () {
         Route::get('/', [\App\Domains\Settings\Http\Controllers\Admin\TranslationController::class, 'index'])->name('admin.translations.index');
         Route::post('/save', [\App\Domains\Settings\Http\Controllers\Admin\TranslationController::class, 'save'])->name('admin.translations.save');
