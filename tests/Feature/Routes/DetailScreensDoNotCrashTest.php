@@ -83,22 +83,15 @@ function unresolvedDetailScreens(): array
         // `detailScreens()` hands them to `FamilyDetailScreensDoNotCrashTest`,
         // which sweeps them as an enrolled student.
 
-        // Swept elsewhere. These three are NOT uncovered — `AdminResourcePagesSmokeTest`
-        // loads each of them against its own `HifzDemoSeeder` fixture. They are
-        // listed here only because *this* test cannot build their rows, and the
+        // Swept elsewhere. These two are NOT uncovered — `AdminResourcePagesSmokeTest`
+        // loads both against its own `HifzDemoSeeder` fixture. They are listed
+        // here only because *this* test cannot build their rows, and the
         // distinction matters: the docblock above calls this list "screens with
-        // no crash coverage", which for these three would simply be false.
+        // no crash coverage", which for these two would simply be false.
+        // (`substitutions/requests/{request}` was a third until this slice gave
+        // it a row here, so it is now swept in both places.)
         'quran-progress/{quran_progress}' => 'covered by AdminResourcePagesSmokeTest (quran-progress.show)',
         'quran-progress/{quran_progress}/edit' => 'covered by AdminResourcePagesSmokeTest (quran-progress.edit)',
-        'substitutions/requests/{request}' => 'covered by AdminResourcePagesSmokeTest (substitutions.requests.show)',
-
-        // Bound to a model with no row, and genuinely unswept.
-        'admin/enrollments/{enrollment}' => 'no CourseEnrollment row',
-        'exams/{exam}/marks' => 'an Exam needs year, term, class, subject and exam type',
-        'substitutions/absences/{absence}/edit' => 'no TeacherAbsence row',
-        'substitutions/requests/{request}/edit' => 'no SubstitutionRequest row',
-        'admin/prayer-times/groups/{group}/edit' => 'no PrayerRecipientGroup row',
-        'admin/prayer-times/broadcasts/{broadcast}/edit' => 'no PrayerBroadcast row',
 
         // Payments are left alone on purpose: the ledger is append-only
         // (rule 12) and a sweep has no business inventing rows in it.
@@ -259,6 +252,77 @@ function detailFixtureRow(string $class, User $actor): ?Model
             'body' => 'Body text.',
             'author_id' => $actor->id,
         ]),
+
+        // Every enum value below was read out of its enum class rather than
+        // guessed. An invented one inserts cleanly and then throws a ValueError
+        // when the model *casts it back*, which surfaces as a 500 on the screen
+        // — the trap that cost a debugging round on the family fixtures.
+        'Exam' => (function () use ($class) {
+            $year = makeYear(['name' => 'Exam year '.Str::random(4), 'is_current' => false]);
+
+            return $class::query()->create([
+                'academic_year_id' => $year->id,
+                'term_id' => makeTerm($year)->id,
+                'class_id' => makeClass($year, 'Exam class '.Str::random(4))->id,
+                'subject_id' => makeSubject()->id,
+                // `DatabaseSeeder` already provides six exam types.
+                'exam_type_id' => \Illuminate\Support\Facades\DB::table('exam_types')->value('id'),
+                'name' => 'Term test',
+                'status' => 'scheduled',
+            ]);
+        })(),
+
+        'CourseEnrollment' => (function () use ($class) {
+            $course = \App\Domains\Courses\Models\Course::query()->firstOrFail();
+
+            // `student_id` foreign-keys to the legacy `registration_students`
+            // table while the app reads `unified_student_id` — see the family
+            // detail fixtures for why both are set.
+            return $class::query()->create([
+                'student_id' => makeRegistrationStudent()->id,
+                'unified_student_id' => makeStudent(['first_name' => 'Enrolled', 'last_name' => 'Child'])->id,
+                'course_id' => $course->id,
+                'status' => 'active',
+            ]);
+        })(),
+
+        'TeacherAbsence' => $class::query()->create([
+            'teacher_id' => makeTeacherRow()->id,
+            'from_date' => now()->toDateString(),
+            'to_date' => now()->addDay()->toDateString(),
+            'reason' => 'Medical leave',
+            'created_by' => $actor->id,
+        ]),
+
+        'SubstitutionRequest' => (function () use ($class) {
+            $year = makeYear(['name' => 'Sub year '.Str::random(4), 'is_current' => false]);
+
+            return $class::query()->create([
+                'date' => now()->toDateString(),
+                'absent_teacher_id' => makeTeacherRow()->id,
+                'subject_id' => makeSubject()->id,
+                'classroom_id' => makeClass($year, 'Sub class '.Str::random(4))->id,
+                'period_id' => makePeriodRow()->id,
+            ]);
+        })(),
+
+        'PrayerRecipientGroup' => $class::query()->create([
+            'name_en' => 'Friday reminders',
+            'created_by' => $actor->id,
+        ]),
+
+        'PrayerBroadcast' => (function () use ($class, $actor) {
+            // `island_id` points at `prayer_islands`, not `islands`.
+            $island = \Illuminate\Support\Facades\DB::table('prayer_islands')->value('id')
+                ?? (seedPrayerTimesFixture() ? \Illuminate\Support\Facades\DB::table('prayer_islands')->value('id') : null);
+
+            return $island === null ? null : $class::query()->create([
+                'mode' => 'daily',
+                'island_id' => $island,
+                'created_by' => $actor->id,
+            ]);
+        })(),
+
         default => null,
     };
 }
