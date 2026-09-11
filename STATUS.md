@@ -4496,6 +4496,100 @@ super_admin (a slice of its own), and model-bound routes whose rows nothing
 seeds — Hifz structure, payments (left alone deliberately, rule 12), exams,
 substitutions and prayer-times.
 
+### Eight buttons that did nothing, found by the F5 gate walk
+
+**First, a correction to this document's own plan.** ADR-025 (2026-08-27) says
+the three F5 parity workflows have no engine replacement. They do — F5-P1, P2
+and P3 shipped in #136–#138, and §5f above says so. Reading the ADR without
+checking the code would have meant rebuilding three finished features; the code
+was checked first, which is the rule.
+
+What the gate actually still needed was the **browser walk** those entries each
+deferred ("Browser walk of the sheet still needed before the gate counts it").
+Doing it found a defect that had been shipped, tested and merged.
+
+`teach/quran-sessions/{session}` renders the full three-lane form — attendance,
+overall, the New / Recent / Old lanes with surah-ayah ranges, results and
+scores, the haraka/word/fluency breakdown, notes, flags. **Pressing "Save
+record" did nothing at all.** No POST, no error a person could see, no 5xx: the
+page simply sat there.
+
+The cause is one chained call. In `@inertiajs/react` v3, `transform()` stores
+its callback on a ref and returns **undefined**, so
+`form.transform(fn).post(url)` throws
+`TypeError: Cannot read properties of undefined (reading 'post')`, the submit
+handler dies, and the button is inert. **Eight screens shipped that way:**
+
+| screen | action that did nothing |
+|---|---|
+| Qur'an halaqa sheet | save a three-lane session record |
+| Portal homework | **a parent ticking homework done** |
+| Student profile | save custom-field values |
+| Custom fields admin | create a field |
+| Course outline | add a content block |
+| Library admin | create an item |
+| Writer portal | update an item |
+| HR appraisals | create an appraisal |
+
+**Nothing in the suite could have caught these, by construction.** The screen
+guards built earlier today load pages and assert no 5xx — a page whose button is
+dead renders perfectly. Feature tests POST to the route directly, so they
+exercise the controller and never touch the JSX. The defect lives precisely in
+the gap between them. That is the argument for the definition of done saying
+*walked in a browser*, and for "walked" meaning **completing the task**, not
+loading the screen.
+
+Fixed in all eight by splitting into the two-statement form the codebase already
+used correctly in `Academics/Attendance/Daily.jsx` and
+`People/Sensitive/Index.jsx`. `InertiaFormTransformTest` keeps the class out;
+verified by re-chaining Homework and watching it fail by filename. `npm run
+build` re-run, since §5t commits `public/build`.
+
+**Verified end to end after the fix.** The teacher signs in, opens the halaqa
+sheet, fills all three lanes and saves: `POST /teach/quran-sessions/1/records`
+→ 302, "Session record saved.", and the row reads
+`Fatima Yoosuf · present · pass (92) · pass · pass · 0 · good`. The
+`quran_session_records` row carries every lane —
+`new_from_surah_id=1, new_from_ayah=1, new_to_ayah=7, new_result=pass,
+new_score=92, recent_revision_text="Al-Fatiha 1-7", recent_revision_score=85,
+old_revision_text="Al-Baqarah 1-10", old_revision_score=78,
+overall_status=good`.
+
+### ADR-025 gate condition 2: halaqa:verify-structure
+
+Captured against the seeded representative dataset (ADR-021 makes that the gate,
+not a production dump). `HifzDemoSeeder`, then:
+
+```
+$ php artisan halaqa:verify-structure          # before backfill
+programs=1 unmapped=1 enrollments=0 unlinked=0 sessions=0 unmirrored=0 attendance_expected=0 missing=0
+  unmapped program: 1 "Quran Hifz Program A"
+halaqa:verify-structure FAILED — do not treat engine structure as authoritative for Hifz.
+
+$ php artisan halaqa:backfill-structure --by=1
+programs=1 mapped=1 sessions_mirrored=5 enrollments_linked=1 attendance_written=5
+milestone progress: evaluated=1 completed=0
+
+$ php artisan halaqa:verify-structure          # after backfill
+programs=1 unmapped=0 enrollments=1 unlinked=0 sessions=5 unmirrored=0 attendance_expected=5 missing=0
+halaqa:verify-structure OK — Hifz structure fully represented on the engine.
+```
+
+The gate fails before the backfill and passes after it, so the capture is
+evidence rather than decoration.
+
+**One seeding gap found on the way:** `DatabaseSeeder` does not run
+`SurahSeeder`, so `surahs` is empty on a fresh install and the sheet's
+"From surah…" / "To surah…" pickers render with **no options**. The lane cannot
+be recorded at all until someone runs `db:seed --class=SurahSeeder` by hand.
+Recorded here, not fixed (rule 1) — whether the Qur'an dataset belongs in the
+default seeder is a decision, not a defect.
+
+**ADR-025 gate now stands at:** parity code ✅ (#136–#138), browser walks ✅
+(this slice), `halaqa:verify-structure` green ✅ (above). Remaining: **operator
+sign-off** that staff will use the engine surfaces, including the nav/IA
+decision — then the single retirement slice (models + readers + Blade deletion).
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**.

@@ -39,13 +39,12 @@ export default function Appraisals({ years, staff, cycles, rows, statuses }) {
             <form
                 onSubmit={(e) => {
                     e.preventDefault();
-                    form
-                        .transform((data) => ({
-                            ...data,
-                            cycle_id: data.cycle_id || cycles[0]?.id || '',
-                            staff_profile_id: data.staff_profile_id || staff[0]?.id || '',
-                        }))
-                        .post('/hr/appraisals', { preserveScroll: true });
+                    form.transform((data) => ({
+                        ...data,
+                        cycle_id: data.cycle_id || cycles[0]?.id || '',
+                        staff_profile_id: data.staff_profile_id || staff[0]?.id || '',
+                    }));
+                    form.post('/hr/appraisals', { preserveScroll: true });
                 }}
                 className="mb-4 grid gap-3 rounded-lg border bg-white p-4 md:grid-cols-4"
             >

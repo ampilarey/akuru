@@ -54,7 +54,8 @@ function ItemEditor({ item, options, onDone, t }) {
         e.preventDefault();
         const opts = { preserveScroll: true, forceFormData: true, onSuccess: onDone };
         if (item) {
-            form.transform((data) => ({ ...data, _method: 'put' })).post(`/write/items/${item.id}`, opts);
+            form.transform((data) => ({ ...data, _method: 'put' }));
+            form.post(`/write/items/${item.id}`, opts);
         } else {
             form.post('/write/items', opts);
         }

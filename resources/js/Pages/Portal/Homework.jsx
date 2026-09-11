@@ -5,8 +5,8 @@ function Item({ item, studentId, canTick }) {
     const form = useForm({ student_id: studentId, done: !item.is_done });
 
     const toggle = () => {
-        form.transform((data) => ({ ...data, done: !item.is_done }))
-            .post(`/portal/homework/${item.id}/tick`, { preserveScroll: true });
+        form.transform((data) => ({ ...data, done: !item.is_done }));
+        form.post(`/portal/homework/${item.id}/tick`, { preserveScroll: true });
     };
 
     return (
