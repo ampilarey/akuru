@@ -28,7 +28,8 @@ class PortalAbsenceNoteController extends Controller
             'notes' => $childIds === []
                 ? collect()
                 : app(ListAbsenceNotesAction::class)->execute(['student_ids' => $childIds]),
-            'types' => ['illness', 'medical_appointment', 'family_emergency', 'religious', 'other'],
+            // E10c: the school's own reasons, not five strings compiled in.
+            'types' => app(\App\Domains\Academics\Actions\ListAbsenceTypesAction::class)->execute(),
         ]);
     }
 
@@ -41,10 +42,19 @@ class PortalAbsenceNoteController extends Controller
             'date' => ['required', 'date'],
             'period_id' => ['nullable', 'integer', 'exists:periods,id'],
             'reason' => ['required', 'string', 'max:2000'],
-            'type' => ['required', 'string', 'in:illness,medical_appointment,family_emergency,religious,other'],
+            // E10c: the form sends an id now. The old `type` code is still
+            // accepted, because a hard break here would silently stop any
+            // client that has not been redeployed — the mobile scaffold
+            // included — and `SubmitAbsenceNoteAction` resolves either.
+            'absence_type_id' => ['nullable', 'integer', 'exists:absence_types,id'],
+            'type' => ['nullable', 'string', 'max:40', 'exists:absence_types,code'],
             'affects_attendance' => ['sometimes', 'boolean'],
             'attachment' => ['nullable', 'file', 'max:5120'],
         ]);
+
+        if (($data['absence_type_id'] ?? null) === null && ($data['type'] ?? null) === null) {
+            return back()->withErrors(['absence_type_id' => 'Choose a reason.']);
+        }
 
         $childIds = app(ListGuardianChildrenAction::class)
             ->executeForGuardianUserId((int) $request->user()->id)

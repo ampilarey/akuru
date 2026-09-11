@@ -56,8 +56,13 @@ below; this line is kept for the audit trail and is now out of date twice
 over)*:
 E1, E2, E3, E6, E7, E8, E10, E13, E15, E16, E17, E18, E21.
 
-**As of 2026-09-11 the genuinely missing list is E1, E2, E3, E6, E10 and
-E13** — six slices. E8, E15, E16, E17, E18 and E21 shipped that day
+**As of 2026-09-11, a full re-audit against tables, routes and actions found
+E1, E2, E3, E6 and E13 all built** — the "genuinely missing" list above was
+wrong about every one of them. **E11 is complete too** — its "⚠ HALF BUILT"
+header contradicted this document's own 2026-09-10 correction, and
+`CalendarDayType` really does have five cases. What actually remains on this
+track is **the E10 rounding policy, and nothing else**. E8, E15, E16, E17, E18
+and E21 shipped that day
 (PRs #241–#247), each with tests and a browser walk.
 
 ---
@@ -338,7 +343,7 @@ leverage-to-effort ratio in the whole plan. Overlaps E5 — build with it if E5
 lands first, standalone otherwise.
 
 ### E10. Attendance policy depth — ~1 week
-**✅ MOSTLY BUILT** — E10a tardy→absence aggregation, E10b "who is not in today" with the absence-note join. Custom absence types and the rounding policy remain.
+**✅ MOSTLY BUILT** — E10a tardy→absence aggregation, E10b "who is not in today" with the absence-note join, **E10c custom absence types (2026-09-11)**. Only the **rounding policy for part-lessons** remains — and note that `attendance` has `check_in_time`/`check_out_time` but no lesson duration, so a part-lesson concept has to be designed before a rounding rule can round anything.
 Custom absence types; **tardy→absence conversion** (EduPage's example: 3 tardies
 = 1 lesson) as a configurable rule; rounding policy for part-lessons; tardy and
 early-departure summaries; a "who is absent today" staff view. Plus an integrity
@@ -347,7 +352,7 @@ story for parent-submitted absence notes — EduPage documents this explicitly
 the same question before parents lean on it.
 
 ### E11. Internal calendar + room booking — ~1–2 weeks
-**⚠ HALF BUILT** — `room_bookings` + `RoomBookingController` ship. Missing: the staff calendar with custom event types and school holidays (`CalendarDay` covers only holiday/exam types today).
+**✅ BUILT.** This header read "⚠ HALF BUILT — `CalendarDay` covers only holiday/exam types" until 2026-09-11, contradicting the 2026-09-10 correction lower down in this very document. `CalendarDayType` has five cases (holiday, event, exam_day, closure, special_schedule) with full CRUD, a month grid, CSV and trilingual titles; the portal gap was fixed as E11b.
 Staff-facing calendar distinct from the public events site: custom event types,
 whole-day events, school holidays for the year, **classroom change / room
 booking**, teachers' meetings, message all participants of an event, day/week
@@ -567,7 +572,8 @@ entry point.)*
 The pre-audit figure of ~24–29 weeks counted eight slices that were already
 shipped. Remaining, on verified ground:
 
-- **Genuinely missing:** E1, E2, E3, E6, E10, E13 — **six slices**.
+- **Genuinely missing: the E10 rounding policy.** Nothing else on this track.
+  Verified 2026-09-11 against tables, routes and actions, not against these rows.
   *(E7 shipped 2026-09-11 as #248: the routing half was already built, and
   linked accounts plus the switcher completed it.)*
   *(Was thirteen. E8, E15, E16, E17, E18 and E21 shipped on 2026-09-11 as

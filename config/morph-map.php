@@ -9,6 +9,7 @@
  */
 
 return [
+    'absence_type' => \App\Domains\Academics\Models\AbsenceType::class,
     'absence_note' => \App\Domains\Academics\Models\AbsenceNote::class,
     'form' => \App\Domains\Forms\Models\Form::class,
     'form_response' => \App\Domains\Forms\Models\FormResponse::class,

@@ -6,9 +6,13 @@ export default function AbsenceNotes({ children, notes, types }) {
         student_id: children[0]?.id || '',
         date: '',
         reason: '',
-        type: types[0] || 'illness',
-        affects_attendance: true,
+        absence_type_id: types[0]?.id ?? '',
     });
+
+    // E10c: the school defines its own reasons, and a reason can require a
+    // document. Saying so before the parent submits is cheaper than a refusal
+    // after they have typed everything.
+    const chosen = types.find((t) => String(t.id) === String(form.data.absence_type_id));
 
     return (
         <AppShell title="Absence notes">
@@ -31,9 +35,23 @@ export default function AbsenceNotes({ children, notes, types }) {
                 </label>
                 <label className="block text-sm">
                     <span className="mb-1 block text-gray-600">Type</span>
-                    <select className="form-input w-full" value={form.data.type} onChange={(e) => form.setData('type', e.target.value)}>
-                        {types.map((type) => <option key={type} value={type}>{type}</option>)}
+                    <select className="form-input w-full" value={form.data.absence_type_id}
+                        onChange={(e) => form.setData('absence_type_id', e.target.value)}>
+                        {types.map((type) => <option key={type.id} value={type.id}>{type.name}</option>)}
                     </select>
+                    {chosen?.requires_evidence && (
+                        <span className="mt-1 block text-xs text-[#7C2D37]">
+                            This reason needs a document attached.
+                        </span>
+                    )}
+                    {chosen && !chosen.excuses_absence && (
+                        <span className="mt-1 block text-xs text-gray-600">
+                            The day will still be recorded as absent.
+                        </span>
+                    )}
+                    {form.errors.attachment_path && (
+                        <span className="mt-1 block text-xs text-red-600">{form.errors.attachment_path}</span>
+                    )}
                 </label>
                 <label className="block text-sm md:col-span-2">
                     <span className="mb-1 block text-gray-600">Reason</span>
