@@ -1,5 +1,5 @@
 import { router, usePage } from '@inertiajs/react';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import AppShell from '../../Layouts/AppShell';
 
 export default function Practice({ letters, harakas, attempts, ai_enabled: aiEnabled }) {
@@ -11,6 +11,25 @@ export default function Practice({ letters, harakas, attempts, ai_enabled: aiEna
     const [blob, setBlob] = useState(null);
     const recorderRef = useRef(null);
     const chunksRef = useRef([]);
+
+    // §52.9 step 4: the student replays before submitting. The object URL is
+    // created from the blob and revoked whenever the blob is replaced or
+    // cleared — a recording session can produce several, and leaking them holds
+    // the audio in memory for as long as the page is open.
+    const [playbackUrl, setPlaybackUrl] = useState(null);
+
+    useEffect(() => {
+        if (blob === null) {
+            setPlaybackUrl(null);
+
+            return undefined;
+        }
+
+        const url = URL.createObjectURL(blob);
+        setPlaybackUrl(url);
+
+        return () => URL.revokeObjectURL(url);
+    }, [blob]);
 
     const startRecording = async () => {
         try {
@@ -62,10 +81,18 @@ export default function Practice({ letters, harakas, attempts, ai_enabled: aiEna
                 </div>
                 <p className="mb-4 text-6xl" dir="rtl">{letter?.char}{haraka?.symbol}</p>
                 <div className="flex justify-center gap-3">
-                    {!recording && <button type="button" className="btn-primary" onClick={startRecording}>{t.pronounce_record || 'Record'}</button>}
+                    {!recording && !blob && <button type="button" className="btn-primary" onClick={startRecording}>{t.pronounce_record || 'Record'}</button>}
                     {recording && <button type="button" className="bg-red-600 text-white rounded px-4 py-2" onClick={stopRecording}>{t.pronounce_stop || 'Stop'}</button>}
+                    {blob && !recording && <button type="button" className="btn-primary" onClick={startRecording}>{t.pronounce_rerecord || 'Record again'}</button>}
                     {blob && !recording && <button type="button" className="btn-secondary" onClick={submit}>{t.pronounce_submit || 'Submit recording'}</button>}
                 </div>
+
+                {playbackUrl && !recording && (
+                    <div className="mt-4">
+                        <p className="mb-2 text-sm text-gray-600">{t.pronounce_replay || 'Replay'}</p>
+                        <audio className="mx-auto w-full max-w-md" controls src={playbackUrl} preload="metadata" />
+                    </div>
+                )}
                 <p className="mt-3 text-xs text-gray-500">
                     {aiEnabled
                         ? t.pronounce_hint_ai || 'The pronunciation checker gives instant feedback; your teacher still reviews.'

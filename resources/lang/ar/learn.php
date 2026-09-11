@@ -38,6 +38,8 @@ return [
     'pronounce_title' => 'Pronunciation practice',
     'pronounce_record' => 'Record',
     'pronounce_stop' => 'Stop',
+    'pronounce_replay' => 'Replay',
+    'pronounce_rerecord' => 'Record again',
     'pronounce_submit' => 'Submit recording',
     'pronounce_hint_ai' => 'The pronunciation checker gives instant feedback; your teacher still reviews.',
     'pronounce_hint_teacher' => 'Your teacher will listen and respond.',

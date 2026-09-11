@@ -4590,6 +4590,42 @@ default seeder is a decision, not a defect.
 sign-off** that staff will use the engine surfaces, including the nav/IA
 decision — then the single retirement slice (models + readers + Blade deletion).
 
+### §52.9 manual recording: the blocker was not the blocker
+
+ADR-025 records §52.9 as not done and gated on **private media streaming**.
+Checked against code rather than taken on trust, and the gate is wrong twice
+over: that streaming already exists, and eight of the nine spec steps are built.
+
+`ServeCatalogMediaAction` is the authenticated audio route §52.9 asks for — it
+403s without a user, allows `courses.manage` or a student who may view the
+media, 404s a missing file, and serves `private, no-store` inline with
+`X-Content-Type-Options: nosniff`. **No storage path is ever exposed.** Record,
+Stop and upload exist in `Pronunciation/Practice.jsx`; audio is stored privately
+against `audio_media_file_id`; the local AI runs behind the `Pronunciation`
+contract; results persist; teachers review at `/teach/pronunciation`.
+
+**The one missing step was #4 — replay before submit.** The only `<audio>`
+element in the whole JSX tree was the lesson player, so a student had to submit
+a recording they had never heard. Added here, with a `Record again` beside it so
+a bad take can be replaced rather than sent.
+
+The object URL is created in an effect keyed on the blob and **revoked when the
+blob is replaced or cleared** — a practice session produces several recordings,
+and leaking them holds the audio in memory for as long as the page is open.
+`pronounce_replay` and `pronounce_rerecord` were added to **all three** locale
+files, so the translation ratchet neither breaks nor grows (dv/ar carry the
+English placeholder, as the rest of that tranche does).
+
+**Walked in a browser, with one honest caveat.** The sandbox denies microphone
+access — `getUserMedia` throws `NotAllowedError` even with
+`--use-fake-device-for-media-stream` — so `navigator.mediaDevices` and
+`MediaRecorder` were stubbed to hand the page a real Blob. **The microphone was
+not exercised; everything downstream of it was:** the component's `onstop` →
+`setBlob` → object-URL effect → rendered player. Before recording there is no
+`<audio>` and one `Record` button; after Stop there is an `<audio>` with a
+`blob:` source and controls, and the buttons read `Record again` and
+`Submit recording`. A real microphone check belongs in the staging walk.
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**.
