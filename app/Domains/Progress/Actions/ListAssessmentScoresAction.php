@@ -10,9 +10,15 @@ class ListAssessmentScoresAction
     /**
      * Latest attempt per student per assessment, preferring scored over submitted over in-progress.
      *
+     * `is_final` says whether a teacher has settled the mark. A submitted
+     * attempt already carries a provisional auto-score (SPEC §19) that a later
+     * marking can change, so a caller deciding something irreversible — a
+     * certificate, say — must be able to tell the two apart without reading
+     * this domain's status enum for itself.
+     *
      * @param  list<int>  $assessmentIds
      * @param  list<int>  $studentIds
-     * @return array<int, array<int, array{score: float|null, max_score: float|null, status: string|null, is_absent: bool, is_exempt: bool}>>
+     * @return array<int, array<int, array{score: float|null, max_score: float|null, status: string|null, is_final: bool, is_absent: bool, is_exempt: bool}>>
      */
     public function execute(array $assessmentIds, array $studentIds): array
     {
@@ -45,6 +51,7 @@ class ListAssessmentScoresAction
                     'score' => $attempt->score !== null ? (float) $attempt->score : null,
                     'max_score' => $attempt->max_score !== null ? (float) $attempt->max_score : null,
                     'status' => $attempt->status->value,
+                    'is_final' => $attempt->status === AssessmentAttemptStatus::Scored,
                     'is_absent' => false,
                     'is_exempt' => false,
                 ];

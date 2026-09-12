@@ -6141,6 +6141,89 @@ availability, not adoption. Whether the Arabic component's own activities
 should default to strict diacritics is a subject decision for §51, not
 something to choose here.
 
+### SPEC §27: "Reach minimum score" compared a percentage against a raw mark
+
+§27 lists "Reach minimum score" and "Pass final assessment" among the course
+completion rules; §11.11 hangs certificate rules off the same configuration.
+`CheckCertificateEligibilityAction` implements them, and is the gate
+`IssueCertificateAction` and (since #279) the student's learning page both run.
+
+**`min_score` is a percentage in every place it is written.** The request
+validates it `min:0, max:100`. The builder's input is `type=number min=0
+max=100`. It sits between `min_progress_percent` and `min_attendance_percent`.
+It was compared against the **raw mark**:
+
+| Attempt | Percent | `min_score: 50` said |
+|---|---|---|
+| 10 / 10 | 100% | **below the minimum** — certificate refused |
+| 60 / 200 | 30% | **passed** — certificate granted |
+
+So the threshold meant whatever the assessment happened to be marked out of.
+A student who answered a short quiz perfectly was refused; one who scored 30%
+on a long exam was awarded. And an admin could not have expressed a raw
+threshold even if that had been the intent, because the field refuses anything
+above 100. `max_score` was already in the payload the action reads — it was
+simply not used.
+
+**Two more on the same rule:**
+
+- **A provisional mark counted.** `ListAssessmentScoresAction` returns
+  `submitted` attempts alongside `scored` ones, and the eligibility check took
+  the score without looking at status. §19 established that a submitted attempt
+  carries an auto-score awaiting a teacher — so a certificate could be issued
+  on a number no human had agreed to, and that a later marking could contradict.
+  Only settled marks count now, and an outstanding one reads as "Required
+  assessment is awaiting teacher marking" rather than "has no score".
+- **`assessment_id` had no control.** The field that names *which* assessment
+  is the final was validated, normalised and stored — and absent from the
+  builder. So "Require final assessment" could only ever fall back to "best
+  percentage across every published assessment on the course", a practice quiz
+  included. The selector exists now; the fallback is unchanged and documented
+  rather than silently redefined.
+
+**That is the fourth storable-but-unsettable field this sweep** (§16 block
+order, §16 duplicate, §18 normalization, §27 assessment_id). The shape is
+consistent enough to be worth naming: a field reaches the migration, the
+validator and the action, and the form is never revisited. No test catches it,
+because every test exercises the field directly.
+
+**Domain boundary:** Courses needed to tell a settled mark from a provisional
+one, and rule 3 confines cross-domain traffic to Contracts/DTOs/Events/Actions
+— Progress's status enum is none of those, and nothing in Courses imports one
+today. So Progress's own Action now reports `is_final` and Courses reads a
+plain fact instead of another domain's enum.
+
+**Verified the tests catch the old behaviour**, rather than trusting green:
+reverting just the percentage line turns 4 of the 11 red, including both
+headline rows of the table above.
+
+**1,425 tests green** (11 new). **Walked in a browser**:
+
+```
+ok   the score rule is labelled a percentage
+ok   and is capped at 100, as the request validation already required
+ok   the final assessment can now be named (SPEC §27)
+ok   the named-assessment list offers the seeded exam (Walk final exam)
+ok   the template saved with both rules
+```
+
+and the saved template was read back from the database:
+
+```
+rules={"min_score":60,"assessment_id":6,…}
+```
+
+**Still open on §27, and larger than this slice:** the section opens "Admin
+must be able to configure completion rules", and *enrollment* completion —
+`SyncEnrollmentProgressAction` → `EvaluateCourseCompletionAction` — is still
+hardcoded to required lessons plus required sessions. Assessments, minimum
+score and assignments do not enter it, so a student can reach
+`status = 'completed'` having failed or never taken every assessment on the
+course. The certificate gate is the only place §27's criteria are configurable.
+Whether completion should adopt the same rule set, or stay a progress measure
+with certificates carrying the judgment, is a design decision for the owner and
+is not something to settle while fixing a comparison operator.
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**.

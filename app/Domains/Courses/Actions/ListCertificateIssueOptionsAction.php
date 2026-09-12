@@ -12,6 +12,7 @@ class ListCertificateIssueOptionsAction
      *     students: Collection<int, array{id: int, name: string}>,
      *     years: Collection<int, array{id: int, name: string}>,
      *     courses: Collection<int, array{id: int, title: string}>,
+     *     assessments: Collection<int, array{id: int, course_id: int|null, title: string}>,
      *     offerings: Collection<int, array{id: int, course_id: int, title: string}>
      * }
      */
@@ -40,6 +41,20 @@ class ListCertificateIssueOptionsAction
                 ->get(['id', 'title'])
                 ->map(fn ($row): array => [
                     'id' => (int) $row->id,
+                    'title' => (string) $row->title,
+                ])
+                ->values(),
+            // SPEC §27 "Pass final assessment". `rules.assessment_id` was
+            // validated and stored but had no control in the builder, so
+            // "Require final assessment" could only fall back to "best of any
+            // published assessment on the course" — a practice quiz included.
+            'assessments' => DB::table('assessments')
+                ->where('status', 'published')
+                ->orderBy('title')
+                ->get(['id', 'course_id', 'title'])
+                ->map(fn ($row): array => [
+                    'id' => (int) $row->id,
+                    'course_id' => $row->course_id === null ? null : (int) $row->course_id,
                     'title' => (string) $row->title,
                 ])
                 ->values(),

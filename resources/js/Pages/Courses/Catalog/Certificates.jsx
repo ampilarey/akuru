@@ -14,6 +14,7 @@ const EMPTY_TEMPLATE = {
         min_progress_percent: '',
         min_attendance_percent: '',
         min_score: '',
+        assessment_id: '',
         require_final_assessment: false,
         require_teacher_approval: false,
         require_payment: false,
@@ -27,6 +28,7 @@ export default function Certificates({
     students = [],
     years = [],
     courses = [],
+    assessments = [],
     offerings = [],
     filters = {},
 }) {
@@ -57,6 +59,7 @@ export default function Certificates({
                 min_progress_percent: row.rules?.min_progress_percent ?? '',
                 min_attendance_percent: row.rules?.min_attendance_percent ?? '',
                 min_score: row.rules?.min_score ?? '',
+                assessment_id: row.rules?.assessment_id ?? '',
                 require_final_assessment: Boolean(row.rules?.require_final_assessment),
                 require_teacher_approval: Boolean(row.rules?.require_teacher_approval),
                 require_payment: Boolean(row.rules?.require_payment),
@@ -107,11 +110,30 @@ export default function Certificates({
                 </label>
                 <input className="form-input" type="number" min="0" max="100" placeholder="Min progress %" value={templateForm.data.rules.min_progress_percent} onChange={(e) => templateForm.setData('rules', { ...templateForm.data.rules, min_progress_percent: e.target.value })} />
                 <input className="form-input" type="number" min="0" max="100" placeholder="Min attendance %" value={templateForm.data.rules.min_attendance_percent} onChange={(e) => templateForm.setData('rules', { ...templateForm.data.rules, min_attendance_percent: e.target.value })} />
-                <input className="form-input" type="number" min="0" max="100" placeholder="Min score" value={templateForm.data.rules.min_score} onChange={(e) => templateForm.setData('rules', { ...templateForm.data.rules, min_score: e.target.value })} />
+                {/* Labelled a percentage, because it is one: the request
+                    validates it max:100 and it sits beside two _percent
+                    rules. It was compared against the raw mark, so 10/10 on a
+                    ten-mark quiz failed a threshold of 50 while 60/200 passed
+                    it. */}
+                <input className="form-input" type="number" min="0" max="100" placeholder="Min score %" value={templateForm.data.rules.min_score} onChange={(e) => templateForm.setData('rules', { ...templateForm.data.rules, min_score: e.target.value })} />
                 <label className="flex items-center gap-2 text-sm">
                     <input type="checkbox" checked={templateForm.data.rules.require_final_assessment} onChange={(e) => templateForm.setData('rules', { ...templateForm.data.rules, require_final_assessment: e.target.checked })} />
                     Require final assessment
                 </label>
+                {/* SPEC §27 "Pass final assessment" — which assessment that is
+                    was storable but unsettable, so the rule always fell back to
+                    the best score across every published assessment on the
+                    course, practice quizzes included. */}
+                <select
+                    className="form-input"
+                    value={templateForm.data.rules.assessment_id}
+                    onChange={(e) => templateForm.setData('rules', { ...templateForm.data.rules, assessment_id: e.target.value })}
+                >
+                    <option value="">Final assessment: any published one</option>
+                    {assessments
+                        .filter((a) => !templateForm.data.course_id || String(a.course_id) === String(templateForm.data.course_id))
+                        .map((a) => <option key={a.id} value={a.id}>{a.title}</option>)}
+                </select>
                 <label className="flex items-center gap-2 text-sm">
                     <input type="checkbox" checked={templateForm.data.rules.require_teacher_approval} onChange={(e) => templateForm.setData('rules', { ...templateForm.data.rules, require_teacher_approval: e.target.checked })} />
                     Require teacher approval

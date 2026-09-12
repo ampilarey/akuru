@@ -79,19 +79,52 @@ class CheckCertificateEligibilityAction
             $assessmentId = $this->nullableInt($context['assessment_id'] ?? $rules['assessment_id'] ?? null);
             $ids = $assessmentId ? [$assessmentId] : $this->assessmentIds((int) $enrollment->course_id);
             $scores = app(ListAssessmentScoresAction::class)->execute($ids, [$studentId]);
+
+            // SPEC §27 "Reach minimum score". `min_score` is a percentage
+            // everywhere it is written — the request validates it `max:100`,
+            // the builder's input caps at 100, and it sits between
+            // `min_progress_percent` and `min_attendance_percent`. It was
+            // compared against the **raw mark**, so the threshold meant
+            // whatever the assessment happened to be marked out of:
+            //
+            //   - 10/10 on a ten-mark quiz is 100%, and failed `min_score: 50`.
+            //   - 60/200 on an exam is 30%, and passed it.
+            //
+            // An admin could not even express a raw threshold above 100 marks,
+            // because the field refuses one. Percent is the only reading the
+            // rest of the system supports, so percent is what it compares.
             $best = null;
+            $awaitingMarking = false;
             foreach ($scores as $byStudent) {
-                $score = $byStudent[$studentId]['score'] ?? null;
-                if ($score !== null) {
-                    $best = $best === null ? (float) $score : max($best, (float) $score);
+                $row = $byStudent[$studentId] ?? null;
+                if ($row === null) {
+                    continue;
+                }
+                // A submitted attempt carries a provisional auto-score waiting
+                // for a teacher (SPEC §19). Treating it as a mark meant a
+                // certificate could be granted on a number no human had agreed
+                // to, and that a later marking could contradict.
+                if (! ($row['is_final'] ?? false)) {
+                    $awaitingMarking = true;
+
+                    continue;
+                }
+                $percent = $this->percentage($row['score'] ?? null, $row['max_score'] ?? null);
+                if ($percent !== null) {
+                    $best = $best === null ? $percent : max($best, $percent);
                 }
             }
+
             if (($rules['require_final_assessment'] ?? false) && $best === null) {
-                $reasons[] = 'Required assessment has no score.';
+                $reasons[] = $awaitingMarking
+                    ? 'Required assessment is awaiting teacher marking.'
+                    : 'Required assessment has no score.';
             }
             $minScore = $this->nullableInt($rules['min_score'] ?? null);
             if ($minScore !== null && ($best === null || $best < $minScore)) {
-                $reasons[] = 'Assessment score is below the minimum.';
+                $reasons[] = $best === null && $awaitingMarking
+                    ? 'Required assessment is awaiting teacher marking.'
+                    : 'Assessment score is below the minimum.';
             }
         }
 
@@ -99,6 +132,31 @@ class CheckCertificateEligibilityAction
     }
 
     /**
+     * A score as a percentage of what the attempt was marked out of.
+     *
+     * An attempt with no `max_score` cannot be turned into a percentage, so it
+     * does not count toward the threshold — silently treating it as the raw
+     * number is the bug this replaces.
+     */
+    private function percentage(mixed $score, mixed $maxScore): ?float
+    {
+        if ($score === null || $maxScore === null || (float) $maxScore <= 0.0) {
+            return null;
+        }
+
+        return ((float) $score / (float) $maxScore) * 100.0;
+    }
+
+    /**
+     * Every published assessment on the course — the fallback when the
+     * template does not name one.
+     *
+     * This is a weak reading of "Pass final assessment": the best percentage
+     * across any published assessment satisfies it, a practice quiz included.
+     * `assessment_id` is the precise answer and is now settable in the builder;
+     * before this slice it was validated and stored but had no control, so the
+     * fallback was the only behaviour reachable.
+     *
      * @return list<int>
      */
     private function assessmentIds(int $courseId): array
