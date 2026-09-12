@@ -6388,6 +6388,110 @@ ok   the entry records the mode transition
   automatic re-pin would leave an event with no `changed_by` — but nothing yet
   asserts it across the codebase.
 
+### SPEC §26: unlock was hardcoded, so "All lessons open" could not be chosen
+
+§26 opens with a requirement and closes with a storage rule:
+
+> Admin must be able to configure unlock rules.
+>
+> Supported unlock rules: **All lessons open** · Complete previous lesson first
+> · Complete previous module first · Pass quiz first · Submit assignment first
+> · Teacher approval required · Date-based unlock · Offering start date
+> required · Session attendance required later · Payment required later ·
+> Manual unlock by admin
+>
+> Unlock rules should be stored in JSON settings at course, module, lesson, or
+> offering level.
+
+**Nothing was configurable.** `EvaluateLessonUnlockAction` implemented exactly
+one of the eleven rules — "Complete previous lesson first" — and applied it
+unconditionally to every course in the system. There were no JSON settings at
+any of the four levels.
+
+The consequence is sharper than "a setting is missing": **"All lessons open",
+the first rule §26 lists, was unreachable**, so a reference course, a resource
+library, or any course whose lessons are genuinely independent could not be
+built. A student had to walk the entire sequence to reach the last page of a
+course that had no sequence.
+
+Now: `courses.unlock_rules` JSON, a `UnlockMode` enum, a resolver that owns the
+default, and a control on the catalog screen — both on the create form and per
+row for draft courses. Published and archived courses show the mode as text
+rather than a control, because `SaveEngineCourseAction` refuses to edit them
+and a control that always fails is worse than none (the same reasoning as §12's
+module delete).
+
+**Two of eleven rules, and the enum says so.** The other nine each need a source
+of truth the evaluator is not handed — a quiz result, an approval, a payment, a
+date. They are **deliberately absent rather than stubbed**: an enum case that
+silently behaved like `sequential` would be worse than its absence, because a
+course could be configured to require teacher approval and quietly not. A test
+pins the enum to exactly the two implemented rules so a future stub cannot slip
+in unnoticed.
+
+**Rule 9:** additive nullable column, and NULL resolves to `sequential` — the
+behaviour every course already had. No course changes on deploy. **Rule 3:** the
+`LessonUnlockEvaluator` contract takes a plain `bool $allOpen` rather than the
+Courses `UnlockMode` enum, so Progress does not learn how Courses spells its
+settings. **Rule 6** was already satisfied and stays so: the engine still does
+not branch on course type.
+
+**An update that does not mention unlock leaves it alone**, so renaming a
+course cannot silently reset it to sequential.
+
+**The one test that mattered.** Thirteen of the fourteen exercise the evaluator
+or the resolver directly — they would all pass with the course setting never
+read. The fourteenth goes through `AuthorizeLessonAccessAction`, which is where
+the setting is actually consulted. Breaking just that wiring (`&& false`) turns
+**only** that test red, which is the point of having written it.
+
+**1,465 tests green** (14 new). **Walked in a browser**:
+
+```
+ok   the create form offers both unlock rules (SPEC §26)
+     (All lessons open | Complete previous lesson first)
+ok   the course saved with the chosen rule (all_open)
+ok   changing the rule from the table persisted (sequential)
+```
+
+**Still open on §26:** nine rules unimplemented, as above; and the JSON
+settings live at course level only — §26 also names module, lesson and offering
+level. `ResolveCourseUnlockModeAction` is the single place those overrides
+would read through, so adding them does not change any caller.
+
+#### The first red CI of this sweep, and it was not this slice
+
+PR #290 failed CI while the same commit was green locally:
+
+```
+Duplicate entry 'ARB101' for key 'subjects.subjects_code_unique'
+  tests/Support/AcademicsTestHelpers.php:66
+  tests/Feature/Routes/DetailScreensDoNotCrashTest.php:350
+```
+
+`makeSubject()` built its code as `'ARB'.fake()->unique()->numerify('###')`,
+and **that does not do what it looks like**. `fake()->unique()` returns a
+*fresh* `UniqueGenerator` on every call, each with its own empty memory, so it
+guarantees uniqueness only within a single call — which is to say, never. The
+helper was three random digits against a globally unique column: a thousand
+possible codes, and a birthday collision waiting for any test that makes
+several subjects.
+
+So it was **always** flaky, in a domain this slice did not touch. Adding tests
+shifted the random sequence and the coin finally landed badly. It passed
+locally on the same commit, which is exactly how this kind of fixture survives.
+
+Fixed with a monotonic counter in the two **shared** helpers — `makeSubject()`,
+`makeRoomRow()` and `makeStaffProfile()` — because a counter cannot collide at
+any seed, so the fixtures stop depending on luck.
+
+**The same mistake is in eight more places** (`tests/Feature/Website/*`, each
+building a slug this way). Those are per-file helpers called once or twice per
+test, so the odds are far longer, but the pattern is identical and it will bite
+eventually. Left for its own sweep rather than rewritten inside a §26 PR — and
+recorded here so it is not rediscovered from scratch the next time CI goes red
+for no apparent reason.
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**.

@@ -7,10 +7,12 @@ use App\Domains\Courses\Actions\ListEngineCoursesAction;
 use App\Domains\Courses\Actions\SaveEngineCourseAction;
 use App\Domains\Courses\Actions\TransitionCourseWorkflowAction;
 use App\Domains\Courses\Enums\CourseWorkflowStatus;
+use App\Domains\Courses\Enums\UnlockMode;
 use App\Domains\Courses\Models\Course;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -26,6 +28,10 @@ class EngineCourseController extends Controller
             'subjects' => app(ListCourseSubjectsAction::class)->execute()->values(),
             'statuses' => array_map(fn (CourseWorkflowStatus $status) => $status->value, CourseWorkflowStatus::cases()),
             'canPublish' => (bool) $request->user()?->can('courses.publish'),
+            'unlockModes' => array_map(
+                fn (UnlockMode $mode) => ['value' => $mode->value, 'label' => $mode->label()],
+                UnlockMode::cases(),
+            ),
         ]);
     }
 
@@ -96,6 +102,8 @@ class EngineCourseController extends Controller
             'short_desc' => ['nullable', 'string'],
             'body' => ['nullable', 'string'],
             'language' => ['nullable', 'string', 'max:16'],
+            // SPEC §26 "Admin must be able to configure unlock rules."
+            'unlock_mode' => ['nullable', Rule::enum(UnlockMode::class)],
         ]);
     }
 }

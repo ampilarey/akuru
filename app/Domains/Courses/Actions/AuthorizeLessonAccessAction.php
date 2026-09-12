@@ -2,6 +2,7 @@
 
 namespace App\Domains\Courses\Actions;
 
+use App\Domains\Courses\Enums\UnlockMode;
 use App\Domains\Courses\Models\CourseEnrollment;
 use App\Domains\Courses\Models\Lesson;
 use App\Domains\People\Actions\ResolveStudentForUserAction;
@@ -56,11 +57,18 @@ class AuthorizeLessonAccessAction
             $this->requiredLessons($lesson->course_id),
         );
 
+        // SPEC §26: the course decides whether its lessons are a sequence at
+        // all. This was hardcoded, so every course in the system was
+        // sequential whether or not that suited it.
+        $allOpen = app(ResolveCourseUnlockModeAction::class)
+            ->execute($lesson->course) === UnlockMode::AllOpen;
+
         return app(LessonUnlockEvaluator::class)->execute(
             $lesson->id,
             $requiredIds,
             $completed,
             $lesson->is_preview && $lesson->current_revision_id !== null,
+            $allOpen,
         );
     }
 

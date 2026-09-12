@@ -1,13 +1,16 @@
 import { router, useForm } from '@inertiajs/react';
 import AppShell from '../../../Layouts/AppShell';
 
-export default function Index({ rows, subjects, canPublish }) {
+export default function Index({ rows, subjects, canPublish, unlockModes = [] }) {
     const form = useForm({
         title: '',
         title_dv: '',
         title_ar: '',
         subject_id: subjects[0]?.id || '',
         language: 'en',
+        // SPEC §26. Sequential is the default the resolver applies, so the
+        // form opens on the behaviour a course would have had anyway.
+        unlock_mode: 'sequential',
     });
 
     return (
@@ -32,6 +35,13 @@ export default function Index({ rows, subjects, canPublish }) {
                     <option value="ar">AR</option>
                     <option value="mixed">Mixed</option>
                 </select>
+                {/* SPEC §26 "Admin must be able to configure unlock rules."
+                    Unlock was hardcoded sequential for every course, so "All
+                    lessons open" — the first rule §26 lists — could not be
+                    chosen at all. */}
+                <select className="form-input" value={form.data.unlock_mode} onChange={(e) => form.setData('unlock_mode', e.target.value)}>
+                    {unlockModes.map((mode) => <option key={mode.value} value={mode.value}>{mode.label}</option>)}
+                </select>
                 <button type="submit" className="btn-primary" disabled={form.processing}>Save draft</button>
                 {form.errors.title && <span className="text-xs text-red-600">{form.errors.title}</span>}
             </form>
@@ -42,12 +52,13 @@ export default function Index({ rows, subjects, canPublish }) {
                             <th className="px-3 py-2">Title</th>
                             <th className="px-3 py-2">Subject</th>
                             <th className="px-3 py-2">Workflow</th>
+                            <th className="px-3 py-2">Unlock</th>
                             <th className="px-3 py-2">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         {rows.length === 0 && (
-                            <tr><td className="px-3 py-4 text-gray-500" colSpan={4}>No engine courses yet.</td></tr>
+                            <tr><td className="px-3 py-4 text-gray-500" colSpan={5}>No engine courses yet.</td></tr>
                         )}
                         {rows.map((row) => (
                             <tr key={row.id} className="border-t">
@@ -57,6 +68,31 @@ export default function Index({ rows, subjects, canPublish }) {
                                 </td>
                                 <td className="px-3 py-2">{row.subject_name || '—'}</td>
                                 <td className="px-3 py-2">{row.workflow_status}</td>
+                                <td className="px-3 py-2">
+                                    {row.workflow_status === 'draft' ? (
+                                        <select
+                                            className="form-input"
+                                            value={row.unlock_mode}
+                                            onChange={(e) => router.post(`/catalog/courses/${row.id}`, {
+                                                _method: 'put',
+                                                title: row.title,
+                                                title_dv: row.title_dv || '',
+                                                title_ar: row.title_ar || '',
+                                                subject_id: row.subject_id || '',
+                                                language: row.language || 'en',
+                                                unlock_mode: e.target.value,
+                                            }, { preserveScroll: true })}
+                                        >
+                                            {unlockModes.map((mode) => <option key={mode.value} value={mode.value}>{mode.label}</option>)}
+                                        </select>
+                                    ) : (
+                                        // Only draft courses are editable
+                                        // (SaveEngineCourseAction refuses the
+                                        // rest), so show the mode rather than a
+                                        // control that would always fail.
+                                        <span>{(unlockModes.find((m) => m.value === row.unlock_mode) || {}).label || row.unlock_mode}</span>
+                                    )}
+                                </td>
                                 <td className="px-3 py-2">
                                     {row.workflow_status === 'draft' && (
                                         <button type="button" className="btn-secondary" onClick={() => router.post(`/catalog/courses/${row.id}/transition`, { workflow_status: 'in_review' })}>Submit review</button>

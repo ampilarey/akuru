@@ -63,10 +63,23 @@ function makeTerm(AcademicYear $year, string $name = 'Term 1'): Term
 
 function makeSubject(): Subject
 {
+    // `subjects.code` is globally unique. This used to be
+    // `fake()->unique()->numerify('###')`, which does not do what it looks
+    // like: `unique()` returns a **fresh** UniqueGenerator on every call, each
+    // with its own empty memory, so it guarantees nothing across calls — it
+    // was three random digits, a thousand possible codes, and a birthday
+    // collision waiting for a test that makes several subjects.
+    //
+    // It duly failed in CI while passing locally, on a run whose only change
+    // was to a different domain. A counter cannot collide, so the fixture
+    // stops depending on the random seed.
+    static $sequence = 0;
+    $sequence++;
+
     return Subject::query()->create([
         'school_id' => makeSchool()->id,
         'name' => 'Arabic',
-        'code' => 'ARB'.fake()->unique()->numerify('###'),
+        'code' => sprintf('ARB%05d', $sequence),
         'type' => 'Arabic',
         'is_active' => true,
     ]);
@@ -109,8 +122,13 @@ function makePeriodRow(string $start = '08:00:00', string $end = '08:45:00', int
 
 function makeRoomRow(?string $name = null): Room
 {
+    // Same reason as makeSubject(): `fake()->unique()` is per-call and
+    // guarantees nothing across calls.
+    static $roomSequence = 0;
+    $roomSequence++;
+
     return Room::query()->create([
-        'name' => $name ?? 'Room '.fake()->unique()->numerify('###'),
+        'name' => $name ?? 'Room '.sprintf('%05d', $roomSequence),
         'type' => RoomType::Lab,
         'bookable' => true,
         'active' => true,
