@@ -6492,6 +6492,60 @@ eventually. Left for its own sweep rather than rewritten inside a §26 PR — an
 recorded here so it is not rediscovered from scratch the next time CI goes red
 for no apparent reason.
 
+### SPEC §28.1: the snapshot was missing the one field §28.6 depends on
+
+§28.1 lists what a lesson revision snapshot must include. Every item was there
+except one:
+
+> Lesson metadata · Ordered block list · Block type · Block data JSON · Block
+> settings JSON · **Required/optional status** · Attached media references ·
+> Revision number · Published timestamp · Published by
+
+`content_blocks.is_required` existed and `SaveContentBlockAction` honoured it,
+but **no form ever sent it** and `PublishLessonAction` did not copy it into the
+snapshot. I found this while shipping §28.4 and deferred it deliberately,
+recording that it was "a latent §28.6 hazard rather than a live one" and
+"worth fixing with that control, not before it". This is that slice.
+
+§28.6 is why it matters:
+
+> Editing or reordering blocks must never change historical progress, scores,
+> attempt snapshots, or student-visible history.
+
+A flag absent from the snapshot has to be read live. Flipping it would change
+what an **already-published** revision demands of a student part-way through
+it — which is the thing §28.6 forbids in as many words.
+
+**Four places had to change, and one of them is the reason the flag would have
+stayed broken.** `StoreMediaContentBlockAction` does not pass its caller's
+array through; it assembles a fresh payload. An unforwarded field there does
+not error — it silently becomes `false`. So an author could tick "required" on
+an image or an embedded video and get an optional block, with nothing to show
+for it. Both of its paths now forward the flag, and both have a test.
+
+**A fifth instance of the storable-but-unsettable pattern**, and the count is
+worth keeping: §16 block order, §16 duplicate, §18 normalization, §27
+`assessment_id`, and now §28.1 `is_required`. Every one reached the migration,
+the model and the Action, and every one stopped at the form.
+
+**Verified the tests catch the old behaviour**: reverting the four changes
+turns **7 of 10** red. The three that stay green are the ones asserting a
+default or a path that never lost the flag — which is what they are for.
+
+**1,475 tests green** (10 new). **Walked in a browser**:
+
+```
+ok   the builder offers a required/optional control (SPEC §16/§28.1)
+ok   the saved block is shown as required (1 marked)
+```
+
+**Nothing consumes the flag yet.** Completion still counts required *lessons*
+and sessions, not required *blocks* — so this makes the setting authorable,
+recorded and historically safe, not yet load-bearing. Wiring block-level
+requirements into completion is §27 work, and §27's larger question (whether
+enrollment completion should weigh assessments at all) is an owner decision
+that is still open.
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**.

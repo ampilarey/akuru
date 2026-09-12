@@ -26,6 +26,12 @@ class PublishLessonAction
                     'title' => $block->title,
                     'data' => $block->data,
                     'settings' => $block->settings,
+                    // SPEC §28.1 lists "Required/optional status" among what
+                    // the snapshot must include, and it was the one listed
+                    // field missing. Without it, flipping a block's required
+                    // flag would change what an already-published revision
+                    // demands — §28.6 forbids exactly that.
+                    'is_required' => (bool) $block->is_required,
                 ])->values()->all(),
                 'glossary' => app(ListLessonGlossaryAction::class)->execute($lesson->id),
             ];

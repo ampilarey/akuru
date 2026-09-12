@@ -50,6 +50,9 @@ class ListCourseOutlineAction
                         'title' => $block->title,
                         'data' => $block->data,
                         'settings' => $block->settings,
+                        // SPEC §28.1 / §16: required-or-optional is part of
+                        // what an author sets and what the snapshot carries.
+                        'is_required' => (bool) $block->is_required,
                     ])->values(),
                 ])->values(),
             ])->values(),

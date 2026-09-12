@@ -115,7 +115,12 @@ function LessonBlockList({ courseId, lesson }) {
                     >
                         <span className="flex items-center gap-2">
                             <span aria-hidden="true" className="cursor-grab text-gray-400">⠿</span>
-                            <span>{index + 1}. {block.type}: {blockLabel(block)}</span>
+                            <span>
+                                {index + 1}. {block.type}: {blockLabel(block)}
+                                {block.is_required && (
+                                    <span className="ms-2 text-xs uppercase text-amber-800">required</span>
+                                )}
+                            </span>
                         </span>
                         <span className="flex items-center gap-2">
                             <button
@@ -235,6 +240,10 @@ export default function Outline({ course, modules, glossaryItems = [] }) {
         body: '',
         tone: 'note',
         direction: 'auto',
+        // SPEC §28.1 carries required/optional into the revision snapshot,
+        // and §16 lets the author set it. The column and the Action always
+        // supported it; no form ever sent it.
+        is_required: false,
         embed_url: '',
         term: '',
         definition: '',
@@ -374,6 +383,14 @@ export default function Outline({ course, modules, glossaryItems = [] }) {
                     ) : !isPair && !isEmbed ? (
                         <textarea className="form-input mb-2" placeholder="Block content" value={blockForm.data.body} onChange={(e) => blockForm.setData('body', e.target.value)} />
                     ) : null}
+                    <label className="mb-2 flex items-center gap-2 text-sm">
+                        <input
+                            type="checkbox"
+                            checked={!!blockForm.data.is_required}
+                            onChange={(e) => blockForm.setData('is_required', e.target.checked)}
+                        />
+                        Required to complete the lesson
+                    </label>
                     <button type="submit" className="btn-primary" disabled={blockForm.processing}>Save block</button>
                     {blockForm.errors.data && <p className="mt-1 text-xs text-red-600">{blockForm.errors.data}</p>}
                     {blockForm.errors.type && <p className="mt-1 text-xs text-red-600">{blockForm.errors.type}</p>}
