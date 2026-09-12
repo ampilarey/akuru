@@ -5615,6 +5615,57 @@ filter hid the plumbing — both are accepted by `CatalogAssessmentController`,
 saved by `SaveAssessmentAction` and returned by `ListCourseAssessmentsAction`.
 What was missing was the builder control and the enforcement, not the capture.
 
+### SPEC §20: the assessment player answered arrange questions on the student's behalf
+
+§20 lists "Arrange/order" among the question types the bank must support, and
+the machinery existed at every layer — `scoreArrange()`,
+`ActivityPattern::Arrange`, `QuestionType::Arrange->pattern()`, and sample
+options in the question-bank authoring UI.
+
+**The assessment player had no control for it.** `Activity.jsx` renders arrange
+correctly, with Up/Down buttons; `Assessment.jsx` rendered `selection`,
+`text_input` and `teacher_marked` and nothing else.
+
+Worse than a missing control: `blankAnswers()` in that same file **seeded**
+`{order: options.map(o => o.id)}` — the options in the order they happened to be
+presented in. So the player submitted an answer the student was never shown and
+could not change. If the correct order happened to match the presented one they
+scored full marks without acting; otherwise zero, with no recourse.
+
+This is the fourth member of a family this codebase keeps meeting, and every one
+looks identical from outside — **HTTP 200, and a page the user cannot use**:
+routes pointing at missing controller methods, `form.transform().post()`
+silently not posting, `Inertia::render` naming a component that does not exist,
+and now a question type with no input.
+
+So the fix ships with a guard. **`AnswerControlsExistTest`** asserts every
+`ActivityPattern` case has a rendering branch in both players. It is filesystem
+only — no database, no HTTP, no fixture — and it checks for the *branch*, not a
+mention, because `blankAnswers()` referenced `'arrange'` while rendering nothing
+for it, which is precisely the bug. **The guard was verified by removing the new
+branch and watching it go red**, then restoring it: a guard that has never
+failed proves nothing.
+
+**1,322 tests green** (6 new). **Walked in a browser** on a question whose
+correct order is deliberately *not* the presented one:
+
+```
+ok   the arrange question has controls (3 items movable)
+ok   the student can actually reorder:
+     "1. Second 2. Third 3. First" → "1. First 2. Second 3. Third"
+ok   the reordered answer scored full marks (6/6)
+```
+
+**Found and not fixed here (rule 1):** `QuestionType::Matching` maps to
+`ActivityPattern::Selection`, which compares unordered id sets — so a matching
+question cannot express "A goes with 3, B goes with 1" and its pairing is never
+checked. The mis-modelling is baked into the authoring UI too: the sample
+matching `correct_answer` is `['1']`, a single id. A real fix needs a new
+pattern, a scorer, a pairing control in both players and a change to the
+authored answer shape. **That is worth an owner decision first** — §20 lists the
+type, but a matching question that scores as a selection is worse than not
+offering one. No live data is affected: the `questions` table is empty.
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**.
