@@ -2,6 +2,16 @@ import { router, usePage } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
 import AppShell from '../../../Layouts/AppShell';
 
+/**
+ * SPEC §17 Pattern 3 covers two shapes: orderings ("arrange words", "arrange
+ * steps") and mappings ("match pairs", "sort items into categories"). A
+ * question carries a mapping when its answer key is an object rather than a
+ * list — the same test the server uses, so the two never disagree.
+ */
+function isMapping(snapshot) {
+    return Array.isArray(snapshot.targets) && snapshot.targets.length > 0;
+}
+
 function blankAnswers(snapshots, existing) {
     const next = { ...(existing || {}) };
     (snapshots || []).forEach((snapshot) => {
@@ -10,6 +20,11 @@ function blankAnswers(snapshots, existing) {
         }
         if (snapshot.pattern === 'selection') {
             next[snapshot.question_id] = { selected_ids: [] };
+        } else if (snapshot.pattern === 'arrange' && isMapping(snapshot)) {
+            // §17 Pattern 3 covers mappings as well as orderings. An empty
+            // pairing is seeded rather than a guessed one: unlike an ordering,
+            // there is no neutral starting arrangement to offer.
+            next[snapshot.question_id] = { pairs: {} };
         } else if (snapshot.pattern === 'arrange') {
             next[snapshot.question_id] = { order: (snapshot.options || []).map((item) => item.id) };
         } else {
@@ -148,7 +163,33 @@ export default function Assessment({ assessment, enrollment, attempt }) {
                                     ))}
                                 </ul>
                             )}
-                            {snapshot.pattern === 'arrange' && (
+                            {/* §17 Pattern 3, mapping mode: "match pairs" and
+                                "sort items into categories". One select per
+                                left-hand item — reachable on touch, and it says
+                                plainly what is being asked. */}
+                            {snapshot.pattern === 'arrange' && isMapping(snapshot) && (
+                                <ul className="space-y-2">
+                                    {(snapshot.options || []).map((option) => (
+                                        <li key={option.id} className="flex flex-wrap items-center gap-2 text-sm">
+                                            <span className="min-w-40">{option.label}</span>
+                                            <select
+                                                className="form-input"
+                                                disabled={submitted}
+                                                value={(current.pairs || {})[option.id] || ''}
+                                                onChange={(e) => setAnswer(snapshot.question_id, {
+                                                    pairs: { ...(current.pairs || {}), [option.id]: e.target.value },
+                                                })}
+                                            >
+                                                <option value="">{t.choose || '—'}</option>
+                                                {snapshot.targets.map((target) => (
+                                                    <option key={target.id} value={target.id}>{target.label}</option>
+                                                ))}
+                                            </select>
+                                        </li>
+                                    ))}
+                                </ul>
+                            )}
+                            {snapshot.pattern === 'arrange' && !isMapping(snapshot) && (
                                 <ul className="space-y-2">
                                     {(current.order || (snapshot.options || []).map((o) => o.id)).map((id, position) => {
                                         const option = (snapshot.options || []).find((o) => o.id === id) || { id, label: id };

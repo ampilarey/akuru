@@ -24,6 +24,13 @@ class SnapshotQuestionAction
             'explanation' => $question->explanation,
             'options' => $question->options,
             'correct_answer' => $question->correct_answer,
+            // SPEC §17 Pattern 3 mapping questions ("match pairs", "sort into
+            // categories") need their right-hand column visible — that is the
+            // question, not the answer. It is computed here rather than in the
+            // client because `correct_answer` is stripped from the student's
+            // snapshot, so the client has nothing to derive it from and must
+            // not be handed the key to do so.
+            'targets' => $this->targets($question),
             'acceptable_answers' => $question->acceptable_answers,
             'normalization_settings' => $question->normalization_settings,
             'attachments' => $question->attachments,
@@ -31,5 +38,30 @@ class SnapshotQuestionAction
             'skill_tag' => $question->skill_tag,
             'snapshotted_at' => now()->toIso8601String(),
         ];
+    }
+
+    /**
+     * The right-hand choices for a mapping question, in a stable order.
+     *
+     * Sorted rather than left in key order: the order `correct_answer` happens
+     * to be written in would otherwise hint at the pairing.
+     *
+     * @return list<array{id: string, label: string}>|null
+     */
+    private function targets(Question $question): ?array
+    {
+        $key = $question->correct_answer;
+
+        if (! is_array($key) || $key === [] || array_is_list($key)) {
+            return null;
+        }
+
+        $values = array_values(array_unique(array_map('strval', $key)));
+        sort($values);
+
+        return array_map(static fn (string $value): array => [
+            'id' => $value,
+            'label' => $value,
+        ], $values);
     }
 }

@@ -12,10 +12,25 @@ function initialAnswers(activity, attempt) {
     if (activity.pattern === 'text_input') {
         return { text: '' };
     }
+    if (activity.pattern === 'arrange' && isMapping(activity)) {
+        // No neutral starting pairing exists, unlike an ordering — so an empty
+        // one is seeded rather than a guessed one.
+        return { pairs: {} };
+    }
     if (activity.pattern === 'arrange') {
         return { order: (activity.data.items || []).map((item) => item.id) };
     }
     return { text: '' };
+}
+
+/**
+ * SPEC §17 Pattern 3 covers orderings ("arrange words") and mappings ("match
+ * pairs", "sort items into categories"). The server sends `targets` for the
+ * mapping shape; it never sends the answer key to a student, so the presence of
+ * the right-hand column is what distinguishes them.
+ */
+function isMapping(activity) {
+    return Array.isArray(activity.data?.targets) && activity.data.targets.length > 0;
 }
 
 export default function Activity({ activity, enrollment, attempt }) {
@@ -97,7 +112,30 @@ export default function Activity({ activity, enrollment, attempt }) {
                     disabled={submitted}
                 />
             )}
-            {activity.pattern === 'arrange' && (
+            {activity.pattern === 'arrange' && isMapping(activity) && (
+                <ul className="mb-4 space-y-2">
+                    {(activity.data.items || []).map((item) => (
+                        <li key={item.id} className="flex flex-wrap items-center gap-2 rounded-lg border bg-white p-3 text-sm">
+                            <span className="min-w-40">{item.label}</span>
+                            <select
+                                className="form-input"
+                                disabled={submitted}
+                                value={(answers.pairs || {})[item.id] || ''}
+                                onChange={(e) => setAnswers({
+                                    ...answers,
+                                    pairs: { ...(answers.pairs || {}), [item.id]: e.target.value },
+                                })}
+                            >
+                                <option value="">{t.choose || '—'}</option>
+                                {activity.data.targets.map((target) => (
+                                    <option key={target.id} value={target.id}>{target.label}</option>
+                                ))}
+                            </select>
+                        </li>
+                    ))}
+                </ul>
+            )}
+            {activity.pattern === 'arrange' && !isMapping(activity) && (
                 <ul className="mb-4 space-y-2">
                     {items.map((item, index) => (
                         <li key={item.id} className="flex items-center justify-between gap-2 rounded-lg border bg-white p-3 text-sm">

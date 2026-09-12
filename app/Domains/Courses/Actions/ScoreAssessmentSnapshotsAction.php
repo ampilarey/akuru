@@ -43,6 +43,13 @@ class ScoreAssessmentSnapshotsAction
                     'correct_ids' => $snapshot['correct_answer'] ?? [],
                     'acceptable' => $snapshot['acceptable_answers'] ?? [],
                     'correct_order' => $snapshot['correct_answer'] ?? [],
+                    // SPEC §17 Pattern 3 covers mappings as well as orderings
+                    // ("Match pairs", "Sort items into categories"). A matching
+                    // question's `correct_answer` is a map of left id => right
+                    // value; an ordering's is a list. The shape tells them
+                    // apart, so no new snapshot field is needed and older
+                    // snapshots keep scoring exactly as before.
+                    'correct_pairs' => $this->pairsOrNothing($snapshot['correct_answer'] ?? null),
                     'options' => $snapshot['options'] ?? [],
                 ],
                 'settings' => [
@@ -75,5 +82,22 @@ class ScoreAssessmentSnapshotsAction
             'status' => $needsTeacher ? 'submitted' : 'scored',
             'items' => $items,
         ];
+    }
+
+    /**
+     * A matching question's `correct_answer` is a map (left id => right value);
+     * an ordering question's is a list. Only the map shape is a pairing, so an
+     * existing arrange question keeps scoring by order exactly as before.
+     *
+     * @param  mixed  $correctAnswer
+     * @return array<string, mixed>
+     */
+    private function pairsOrNothing($correctAnswer): array
+    {
+        if (! is_array($correctAnswer) || $correctAnswer === []) {
+            return [];
+        }
+
+        return array_is_list($correctAnswer) ? [] : $correctAnswer;
     }
 }
