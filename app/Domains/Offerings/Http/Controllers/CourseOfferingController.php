@@ -46,7 +46,18 @@ class CourseOfferingController extends Controller
     public function pin(Request $request, int $offering): RedirectResponse
     {
         abort_unless($request->user()?->can('courses.manage'), 403);
-        app(PinOfferingContentAction::class)->execute($offering, $request->user()?->id);
+        // SPEC §28.4 keeps the reason nullable, so a pin is never blocked for
+        // want of a comment — but it has to be askable, and it was not
+        // captured at all.
+        $data = $request->validate([
+            'reason' => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        app(PinOfferingContentAction::class)->execute(
+            $offering,
+            $request->user()?->id,
+            $data['reason'] ?? null,
+        );
 
         return redirect()->route('catalog.offerings.index')->with('success', 'Offering pinned to current revisions.');
     }

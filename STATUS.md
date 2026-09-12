@@ -6311,6 +6311,83 @@ the one that shows — the session bag was dumped directly to confirm it
 So there is **no outline-form defect**, and the follow-up I opened for one is
 closed as not-a-bug.
 
+### SPEC §28.4: re-pinning overwrote the old version and recorded nothing
+
+§28.4 is unusually specific about what a re-pin must leave behind:
+
+> Admins may explicitly re-pin an offering to a newer course content version,
+> but this must be a **deliberate** action.
+>
+> Offering re-pinning must **never** happen automatically.
+>
+> If an offering is re-pinned, the system should record:
+> Old pinned version · New pinned version · Admin who changed it · Timestamp ·
+> Reason/comment nullable
+
+`PinOfferingContentAction` overwrote `pinned_revision_json` in place. The
+offering carried `pinned_by` and `pinned_at` for the **latest** pin only, so
+the previous version was gone the moment it was replaced. Of §28.4's five
+required fields, two existed and three did not — and the two that existed
+described only the current state, never a transition.
+
+That matters more than an ordinary audit gap: re-pinning **changes what
+enrolled students see mid-offering**, which is exactly why §28.4 insists it be
+deliberate. "What were these students seeing last week, who changed it, and
+why" was unanswerable, and the pin UI did not so much as confirm the action.
+
+Now: an append-only `offering_repin_events` table written in the same
+transaction as the pin, so the record cannot drift from the thing it describes.
+Both revision maps are stored whole rather than a version number — the record
+still answers "what did this student see" even if a lesson is later deleted.
+The offerings screen asks for a reason before pinning (nullable per §28.4, so
+an empty answer still pins) and shows the history inline: date, admin, mode
+transition, how many lessons actually moved, and the reason.
+
+**Rule 10** — a re-pin happens in time, so the row carries `academic_year_id`,
+taken from the **offering's** year rather than today's, because that is the
+year the affected teaching belongs to. **Rule 9** — additive migration, no
+existing column touched. **ADR-005** — the arch test caught the new model
+missing from `config/morph-map.php` and it was added in the same slice, which
+is the guard working as intended.
+
+**Cleared, not faulted:** §28.5's two self-learning modes (`pin_mode` =
+`latest` / `pinned`) already exist, and §28.2's rule that progress references a
+revision id is already enforced — `RecordLessonProgressAction` refuses a write
+without `lesson_revision_id`.
+
+**A correction I made to my own new code.** I wrote a normalising pass over the
+revision maps with a comment claiming it was load-bearing — that JSON casting
+turned integer keys into strings, so comparing `"12"` against `12` would report
+every lesson as changed. I checked by replacing it with the naive comparison:
+**all 12 tests still passed.** PHP casts numeric string keys back to int on
+decode, so the pass was decoration. It is deleted rather than left in with a
+false justification attached.
+
+**1,451 tests green** (12 new). **Walked in a browser**:
+
+```
+ok   no re-pin history before the first pin
+ok   the pin is recorded and shown on the offerings screen (1 re-pin)
+ok   the entry names the admin (2026-09-12 · Admin User · latest → pinned
+     · 1 lesson changed · Syllabus corrected after review)
+ok   the entry carries the reason typed into the prompt
+ok   the entry records the mode transition
+```
+
+**Still open on §28, and not fixed here:**
+
+- **§28.1 requires "Required/optional status" in the lesson revision
+  snapshot**, and `PublishLessonAction` does not include `is_required`.
+  Currently harmless because block-level `is_required` is not settable anywhere
+  — the outline's only `is_required` control belongs to the glossary form, and
+  `SaveContentBlockAction` always defaults it to `false`. So it is a latent
+  §28.6 hazard rather than a live one: the day a required/optional control
+  appears, flipping it would retroactively change what a published revision
+  demands. Worth fixing with that control, not before it.
+- **§28.4's "must never happen automatically"** is now *checkable* — any
+  automatic re-pin would leave an event with no `changed_by` — but nothing yet
+  asserts it across the codebase.
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**.
