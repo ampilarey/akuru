@@ -7,7 +7,10 @@ class GetLatestAssessmentAttemptAction
     /**
      * @return array<string, mixed>|null
      */
-    public function execute(int $assessmentId, ?int $enrollmentId, bool $includeKeys = false, ?int $studentId = null): ?array
+    /**
+     * @param  bool  $asStudent  SPEC §19 `show_results` — see `StartAssessmentAttemptAction::serialize()`.
+     */
+    public function execute(int $assessmentId, ?int $enrollmentId, bool $includeKeys = false, ?int $studentId = null, bool $asStudent = false): ?array
     {
         $attempt = app(StartAssessmentAttemptAction::class)
             ->scopedQuery($assessmentId, $enrollmentId, $studentId)
@@ -15,7 +18,7 @@ class GetLatestAssessmentAttemptAction
             ->first();
 
         return $attempt
-            ? app(StartAssessmentAttemptAction::class)->serialize($attempt, includeKeys: $includeKeys)
+            ? app(StartAssessmentAttemptAction::class)->serialize($attempt, includeKeys: $includeKeys, asStudent: $asStudent)
             : null;
     }
 }

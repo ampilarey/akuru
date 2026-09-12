@@ -25,6 +25,9 @@ class LearnAssessmentController extends Controller
             $assessment,
             $access['enrollment_id'],
             studentId: $access['student_id'],
+            // SPEC §19 `show_results`: this is the student looking at their own
+            // attempt, which is the only place the setting is about.
+            asStudent: true,
         );
         if ($attempt === null) {
             $attempt = app(StartAssessmentAttemptAction::class)->execute(
@@ -44,6 +47,7 @@ class LearnAssessmentController extends Controller
                 $access['enrollment_id'],
                 includeKeys: true,
                 studentId: $access['student_id'],
+                asStudent: true,
             );
         }
 

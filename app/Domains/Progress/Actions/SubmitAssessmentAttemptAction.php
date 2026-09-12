@@ -50,6 +50,9 @@ class SubmitAssessmentAttemptAction
             $attempt->snapshots ?? [],
             $scoredAnswers,
             $settings['passing_score'] ?? null,
+            // SPEC §19: an assessment the teacher marked as needing a human
+            // waits for one, whatever its questions happen to be.
+            (bool) ($settings['requires_teacher_marking'] ?? false),
         );
 
         $attempt->update([
@@ -64,7 +67,7 @@ class SubmitAssessmentAttemptAction
         $showKeys = (bool) $settings['show_correct_answers'] && $result['status'] === 'scored';
 
         return [
-            'attempt' => app(StartAssessmentAttemptAction::class)->serialize($attempt->fresh(), includeKeys: $showKeys),
+            'attempt' => app(StartAssessmentAttemptAction::class)->serialize($attempt->fresh(), includeKeys: $showKeys, asStudent: true),
             'result' => $result,
             // Reported rather than silent: a student whose late answers were
             // dropped is owed an explanation, and a teacher looking at the

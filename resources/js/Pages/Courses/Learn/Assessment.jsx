@@ -90,6 +90,18 @@ export default function Assessment({ assessment, enrollment, attempt }) {
                 {attempt?.status ? ` · ${attempt.status}` : ''}
                 {attempt?.score != null ? ` · ${attempt.score}/${attempt.max_score}` : ''}
             </p>
+            {/* §19: an attempt held for a teacher, or a mark the teacher chose
+                not to publish, reads as a bug unless it is explained. */}
+            {attempt?.status === 'submitted' && (
+                <p className="mb-4 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
+                    {t.awaiting_marking || 'Submitted. Your teacher will mark this — the result is not final yet.'}
+                </p>
+            )}
+            {attempt?.show_results === false && attempt?.status !== 'submitted' && (
+                <p className="mb-4 rounded-lg border bg-white p-3 text-sm text-gray-600">
+                    {t.marks_not_published || 'Your teacher has not published marks for this assessment.'}
+                </p>
+            )}
             {attempt?.feedback && (
                 <p className="mb-4 rounded-lg border bg-white p-3 text-sm">Teacher feedback: {attempt.feedback}</p>
             )}

@@ -9,11 +9,23 @@ class ScoreAssessmentSnapshotsAction
      * @param  array<string, mixed>  $answers
      * @return array{score: int, max_score: int, passed: bool, status: string, items: list<array<string, mixed>>}
      */
-    public function execute(array $snapshots, array $answers, ?int $passingScore = null): array
+    /**
+     * @param  bool  $requiresTeacherMarking  SPEC §19: the assessment-level flag.
+     *                                        Auto-scorable questions still get their marks — the
+     *                                        teacher is not made to re-do arithmetic — but the
+     *                                        attempt does not become final until a human says so.
+     */
+    public function execute(array $snapshots, array $answers, ?int $passingScore = null, bool $requiresTeacherMarking = false): array
     {
         $score = 0;
         $max = 0;
-        $needsTeacher = false;
+        // Per-question marking was the only way an attempt could be held for a
+        // teacher: it waited only if some question's pattern could not be
+        // auto-scored. So a speaking or writing assessment built out of
+        // multiple-choice questions was scored and finalised with no teacher
+        // involved — and with `show_correct_answers` on, the student was handed
+        // the answer key too.
+        $needsTeacher = $requiresTeacherMarking;
         $items = [];
 
         foreach ($snapshots as $snapshot) {

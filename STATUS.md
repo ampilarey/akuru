@@ -5564,6 +5564,57 @@ have text-only `feedback`, so §36's correction audio covers the recitation path
 only. Those two are the generic engine review loop and want the same treatment,
 but on their own slice.
 
+### SPEC §19: a paper the teacher meant to mark was graded by nobody
+
+Two of the columns §19's own table mandates were captured by the controller,
+saved, and listed back — and then honoured nowhere. Same shape as the §31
+time-limit bug: the setting existed everywhere except the one place that acts on
+it.
+
+**`requires_teacher_marking` never reached `ResolveAssessmentSettingsAction`**,
+so the scoring path could not have honoured it even in principle. An attempt
+waited for a human only when some *question's* pattern could not be auto-scored
+(`teacher_marked`). So a **speaking or writing assessment built out of
+selection questions was scored and finalised with no teacher involved** — and
+with `show_correct_answers` on, the student was handed the answer key with it.
+`MigrateLegacyAssessmentsAction` sets this flag true for every migrated legacy
+assignment, so there is real data carrying it.
+
+Now the flag holds the attempt at `submitted` whatever its questions are. The
+marks are still computed — a teacher is not made to redo arithmetic — but
+`passed` is false and nothing is final until a human says so.
+
+**`show_results` was resolved into settings and read by nothing**, so a teacher
+who turned the mark off still showed it. It now suppresses `score`, `max_score`
+and `item_scores` — and **only on the student's own view**. That distinction is
+load-bearing: `ListScoredAttemptsAction` serializes through the same method
+*without* `includeKeys` to build a **teacher** report, so hanging this off that
+existing flag would have blanked the gradebook. It takes an explicit
+`asStudent` argument instead, passed from the two student-facing call sites.
+
+Teacher **feedback is deliberately not hidden**. `show_results` is about the
+mark; a teacher who wrote a comment meant it to be read.
+
+Both now have a control in the assessment builder, which neither had — 
+`show_results` was posted as a hardcoded `true` with no checkbox, and
+`requires_teacher_marking` was not in the form at all. And the student is told
+why there is no mark, rather than left with a bare status.
+
+**1,317 tests green** (8 new). **Walked in a browser**:
+
+```
+ok   the builder can say an assessment needs a human
+ok   the builder can withhold the mark
+ok   the student is told a human still has to mark it
+ok   no auto-grade was shown
+```
+
+**Correcting an earlier note in this session:** this was first written up as
+"neither setting is settable at all". That was wrong, and came from a grep whose
+filter hid the plumbing — both are accepted by `CatalogAssessmentController`,
+saved by `SaveAssessmentAction` and returned by `ListCourseAssessmentsAction`.
+What was missing was the builder control and the enforcement, not the capture.
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**.

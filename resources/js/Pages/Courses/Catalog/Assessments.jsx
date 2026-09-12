@@ -10,6 +10,7 @@ export default function Assessments({ course, assessments, questions, types }) {
         show_correct_answers: true,
         show_results: true,
         randomize_questions: false,
+        requires_teacher_marking: false,
     });
     const attachForm = useForm({
         assessment_id: assessments[0]?.id || '',
@@ -47,6 +48,21 @@ export default function Assessments({ course, assessments, questions, types }) {
                 <label className="flex items-center gap-2 text-sm">
                     <input type="checkbox" checked={form.data.randomize_questions} onChange={(e) => form.setData('randomize_questions', e.target.checked)} />
                     Randomize
+                </label>
+                {/* §19 "Show/hide correct answers" has a sibling: whether the
+                    student sees the mark at all. It was posted as a hardcoded
+                    true with no control, and read by nothing. */}
+                <label className="flex items-center gap-2 text-sm">
+                    <input type="checkbox" checked={form.data.show_results} onChange={(e) => form.setData('show_results', e.target.checked)} />
+                    Show the mark to the student
+                </label>
+                {/* §19 "Teacher marking". Without this an assessment waited for
+                    a human only if some question could not be auto-scored — so
+                    a speaking or writing paper made of multiple-choice
+                    questions was graded and finalised by nobody. */}
+                <label className="flex items-center gap-2 text-sm">
+                    <input type="checkbox" checked={form.data.requires_teacher_marking} onChange={(e) => form.setData('requires_teacher_marking', e.target.checked)} />
+                    Needs teacher marking
                 </label>
                 <button type="submit" className="btn-primary" disabled={form.processing}>Save assessment</button>
             </form>
