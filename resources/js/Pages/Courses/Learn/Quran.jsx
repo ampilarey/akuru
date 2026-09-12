@@ -98,11 +98,13 @@ export default function Quran({ student, submissions, progress, schedules, assig
                             <th className="px-3 py-2">{t.status || 'Status'}</th>
                             <th className="px-3 py-2">{t.mistakes || 'Mistakes'}</th>
                             <th className="px-3 py-2">{t.teacher_note || 'Teacher note'}</th>
+                            {/* §36: a correction the student cannot play is not feedback. */}
+                            <th className="px-3 py-2">{t.listen || 'Listen'}</th>
                         </tr>
                     </thead>
                     <tbody>
                         {submissions.length === 0 && (
-                            <tr><td className="px-3 py-4 text-gray-500" colSpan={6}>{t.no_submissions || 'No submissions yet.'}</td></tr>
+                            <tr><td className="px-3 py-4 text-gray-500" colSpan={7}>{t.no_submissions || 'No submissions yet.'}</td></tr>
                         )}
                         {submissions.map((row) => (
                             <tr key={row.id} className="border-t">
@@ -112,6 +114,26 @@ export default function Quran({ student, submissions, progress, schedules, assig
                                 <td className="px-3 py-2">{statusBadge(row.status)}</td>
                                 <td className="px-3 py-2">{row.mistake_count}</td>
                                 <td className="px-3 py-2">{row.review_note ?? '—'}</td>
+                                <td className="px-3 py-2">
+                                    <div className="grid gap-1">
+                                        {row.has_audio && (
+                                            <audio controls preload="none" className="h-8 w-52" src={`/recitations/${row.id}/audio/submission`}>
+                                                {t.audio_unsupported || 'Your browser cannot play audio.'}
+                                            </audio>
+                                        )}
+                                        {row.has_correction_audio && (
+                                            <div>
+                                                <span className="text-xs font-medium text-brandMaroon-700">
+                                                    {t.teacher_correction || "Teacher's correction"}
+                                                </span>
+                                                <audio controls preload="none" className="h-8 w-52" src={`/recitations/${row.id}/audio/correction`}>
+                                                    {t.audio_unsupported || 'Your browser cannot play audio.'}
+                                                </audio>
+                                            </div>
+                                        )}
+                                        {!row.has_audio && !row.has_correction_audio && <span className="text-gray-400">—</span>}
+                                    </div>
+                                </td>
                             </tr>
                         ))}
                     </tbody>

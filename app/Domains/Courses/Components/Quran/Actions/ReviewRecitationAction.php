@@ -94,6 +94,14 @@ class ReviewRecitationAction
                 'reviewed_at' => now(),
                 'review_note' => $review['note'] ?? null,
             ]);
+
+            // SPEC §36 "Upload correction audio". Only set when one was sent:
+            // a teacher who re-reviews without recording again keeps the
+            // correction already attached rather than silently losing it.
+            if (($review['correction_audio_media_file_id'] ?? null) !== null) {
+                $submission->correction_audio_media_file_id = (int) $review['correction_audio_media_file_id'];
+            }
+
             $submission->save();
 
             // §52.18: a review outcome moves the answered assignment on.

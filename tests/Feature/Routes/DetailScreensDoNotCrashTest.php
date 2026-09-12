@@ -90,6 +90,12 @@ function unresolvedDetailScreens(): array
         // no crash coverage", which for these two would simply be false.
         // (`substitutions/requests/{request}` was a third until this slice gave
         // it a row here, so it is now swept in both places.)
+        // Not a screen at all: it streams a recording, and its second parameter
+        // is a kind (submission|correction) rather than a row. Directly covered
+        // by RecitationAudioTest, which loads both kinds as a teacher and as the
+        // student, and pins the 403 and 404 paths.
+        'recitations/{submission}/audio/{kind}' => 'covered by RecitationAudioTest (both kinds, both roles)',
+
         'quran-progress/{quran_progress}' => 'covered by AdminResourcePagesSmokeTest (quran-progress.show)',
         'quran-progress/{quran_progress}/edit' => 'covered by AdminResourcePagesSmokeTest (quran-progress.edit)',
 

@@ -48,6 +48,11 @@ class ListStudentQuranDashboardAction
                 'reviewed_at' => $row->reviewed_at?->toDateTimeString(),
                 'review_note' => $row->review_note,
                 'mistake_count' => (int) $row->mistake_marks_count,
+                // SPEC §36. The student could see a mistake count and a written
+                // note, and hear nothing: not their own recitation, and not the
+                // teacher's correction, because there was nowhere to put one.
+                'has_audio' => $row->audio_media_file_id !== null,
+                'has_correction_audio' => $row->correction_audio_media_file_id !== null,
             ])
             ->values()
             ->all();
