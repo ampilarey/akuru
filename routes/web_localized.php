@@ -616,6 +616,10 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::post('items/{item}/assign-reviewer', [AdminLibraryController::class, 'assignReviewer'])->name('admin.library.items.assign-reviewer')->whereNumber('item');
         Route::get('earnings/export', [AdminLibraryController::class, 'exportEarnings'])->name('admin.library.earnings.export');
         Route::post('categories', [AdminLibraryController::class, 'storeCategory'])->name('admin.library.categories.store');
+        // L2b (§29 "suspicious activity", §30.3): the reading-abuse queue.
+        Route::get('reading-alerts/export', [AdminLibraryController::class, 'exportReadingAlerts'])->name('admin.library.reading-alerts.export');
+        Route::get('reading-alerts', [AdminLibraryController::class, 'readingAlerts'])->name('admin.library.reading-alerts');
+        Route::post('reading-alerts/{alert}/review', [AdminLibraryController::class, 'reviewReadingAlert'])->name('admin.library.reading-alerts.review')->whereNumber('alert');
     });
 
     // Arabic B (§51.16 steps 6–9): dataset, samples, model shelf.
