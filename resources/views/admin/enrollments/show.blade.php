@@ -174,7 +174,15 @@
                     <input type="number" name="amount" step="0.01" min="0.01"
                            value="{{ $enrollment->course?->registration_fee_amount ?: ($enrollment->course?->fee ?: '') }}"
                            class="border rounded px-3 py-2 text-sm w-32" placeholder="Amount (MVR)">
-                    <input type="text" name="note" maxlength="500" placeholder="Note (e.g. cash at office)"
+                    {{-- SPEC §38 "Payment method", separate from Gateway. This
+                         form is the only place anyone knows which it was, and
+                         it was being kept as prose in the note below. --}}
+                    <select name="payment_method" class="border rounded px-3 py-2 text-sm" aria-label="Payment method">
+                        @foreach($paymentMethods ?? [] as $method)
+                            <option value="{{ $method['value'] }}">{{ $method['label'] }}</option>
+                        @endforeach
+                    </select>
+                    <input type="text" name="note" maxlength="500" placeholder="Note (e.g. receipt number)"
                            class="border rounded px-3 py-2 text-sm w-64">
                     <button type="submit" class="btn-primary text-sm py-2 px-4"
                             onclick="return confirm('Record this payment as received? The enrollment activates through the payment pipeline.')">

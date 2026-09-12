@@ -6771,6 +6771,80 @@ and the Blade, and §39's **"Institute logo"** is absent entirely, though
 `Settings\Models\School` carries `name` and `logo`. That is a §39 gap with a
 ready source; it is a separate slice from making the override reachable.
 
+Merged as **#296**.
+
+### SPEC §38: three fields missing, two never filled, and a funnel that lost every engine sale
+
+§38 lists the fields the payments table must carry. **Course offering ID**,
+**Payment method** and **Metadata JSON** did not exist. `student_id` and
+`course_id` did exist — and the engine path left both null on every payment,
+though the legacy public checkout filled them.
+
+That last one is not a bookkeeping complaint. `PaymentService::
+recordPaymentCompletedFunnel()` resolves the course from `payment->course_id`
+or from `payment_items`. An engine payment has **neither** — no course id, and
+`InitiatePayablePaymentAction` creates no items — so **every course bought
+through the engine recorded no `payment_completed` funnel event at all.** The
+W1.1 conversion reporting has been silently under-counting engine sales since
+it shipped, and nothing looked broken.
+
+**Payment method** is listed by §38 *separately* from Gateway, and rule 12
+makes the distinction load bearing ("Gift cards = payment method"). The table
+had only `provider` (bml | manual). How money actually arrived survived as
+English prose in `notes` — prompted by a form placeholder reading
+*"Note (e.g. cash at office)"*. "How much cash came through the office this
+term" was a question the finance data could not answer.
+
+**Enrollment ID is deliberately still not a column**, though §38 lists it.
+`payable_type`/`payable_id` already carries it and `course_enrollment` is a
+registered morph alias; a second column for the same fact is exactly the drift
+rule 11 exists to stop. That reasoning is written into the migration and
+pinned by a test, so it reads as a decision rather than an omission.
+
+**Gateway payments leave `payment_method` null on purpose.** BML Connect does
+not report an instrument back, and stamping every gateway payment "card" would
+be recording a guess as a fact.
+
+#### The arch suite caught a rule 3 violation I had talked myself into
+
+The first version imported `Finance\Enums\PaymentMethod` straight into the
+Admissions controller. `BaselineArchitectureTest` refused it: rule 3 allows
+cross-domain traffic through **Contracts/DTOs/Events/Actions only**, and an
+enum is none of those. I had considered exactly this question earlier in the
+sweep (for a shared certificate-rule vocabulary), reasoned that an enum is
+"like a DTO", and let it go — the baseline test is the reason that guess did
+not ship. The enum now stays inside Finance behind
+`ListManualPaymentMethodsAction`, the Action takes a method *string*, and a
+test asserts the controller never names the enum again.
+
+#### Verification
+
+**Revert-check:** removing the context array from `StartCourseCheckoutAction`
+turns exactly the two engine-path tests red, including the funnel one.
+
+**Walked in a browser** (seeded DB, Playwright/Chromium) and re-walked after
+the boundary refactor: the manual payment form offers **Cash / Bank transfer /
+Cheque / Card / Other**; recording a bank transfer stored
+`payment_method=bank_transfer`, `provider=manual`, `course_id=1`,
+`student_id=1`, `metadata={source: admin_manual_payment, recorded_by: 1}`,
+status confirmed, and activated the enrolment through the same
+`PaymentConfirmed` path a webhook uses.
+
+**1,521 tests green** (12 new), arch suite green.
+
+**One existing test changed, deliberately:** `Phase4CloseoutTest` posted the
+manual-payment form without a method. The field is now required — the select
+has no blank option, so the form always sends one — and that test now sends
+`cash` and asserts it lands.
+
+**Not fixed here, recorded instead:** a wallet-paid enrolment still writes **no
+payments row at all** (`StartCourseCheckoutAction` debits the wallet and
+activates directly), so revenue reports over `payments` omit it entirely.
+Making one would be a revenue-recognition decision — the money entered the
+wallet earlier, possibly via a gift card that itself had a payment — and
+double-counting it is worse than omitting it. **Owner decision, not a code
+choice**, and rule 12 territory.
+
 #### Environment recovery, recorded because it cost most of a turn
 
 The container restart took MySQL, `vendor/`, `node_modules`, `.env` and the

@@ -113,12 +113,31 @@ class StartCourseCheckoutAction
             ];
         }
 
+        // SPEC §38: the payment row carries the student, the course and the
+        // offering. It carried none of them — and `PaymentService::
+        // recordPaymentCompletedFunnel()` resolves the course from
+        // `payment->course_id` or from `payment_items`, neither of which an
+        // engine payment has, so every course bought through this path
+        // recorded **no `payment_completed` funnel event at all**.
         $initiated = app(InitiatePayablePaymentAction::class)->execute(
             'course_enrollment',
             $enrollment->id,
             $userId,
             $amount,
             'MVR',
+            null,
+            [
+                'course_id' => $course->id,
+                'course_offering_id' => $enrollment->course_offering_id,
+                'unified_student_id' => $enrollment->unified_student_id,
+                'student_id' => $enrollment->student_id,
+                'metadata' => [
+                    'source' => 'course_engine_checkout',
+                    'course_title' => $course->title,
+                    'list_price' => $fee,
+                    'discount_code' => $resolvedDiscount['discount_code']->code ?? null,
+                ],
+            ],
         );
         $enrollment->payment_id = $initiated['payment']->id;
         $enrollment->save();
