@@ -5666,6 +5666,63 @@ authored answer shape. **That is worth an owner decision first** — §20 lists 
 type, but a matching question that scores as a selection is worse than not
 offering one. No live data is affected: the `questions` table is empty.
 
+### SPEC §24: the certificate rules ran once, at the moment an admin issued it
+
+§24's Course Learning Page list requires "Certificate eligibility status" and
+"Offering title/mode if enrolled through an offering".
+`ListCourseLearningAction`'s payload had neither.
+
+The rules engine was **complete**: `CheckCertificateEligibilityAction` weighs
+minimum progress, payment, teacher approval, minimum attendance and minimum
+score, with course-level rules overridden at offering level. It had exactly
+**one caller** — `IssueCertificateAction`. So eligibility was computed once, at
+the moment an admin issued the certificate. A student working toward one could
+not see whether they were on track.
+
+The part that matters is not the verdict but the **reasons**. "Not yet" is
+discouraging; "progress is below the minimum, teacher approval is required" is
+something a student can act on. Both are now on the page.
+
+**Three details that decide whether this is honest:**
+
+- **A certificate already held is reported, not re-judged.** Re-running the
+  rules could tell a student they are ineligible for a certificate they are
+  holding — if the thresholds were raised after it was awarded.
+- **A revoked certificate does not count as earned.** `issued_certificates`
+  carries `revoked_at`, and ignoring it would show a withdrawn certificate as
+  current.
+- **Teacher approval is deliberately reported as outstanding.** The student view
+  asserts no approval, so a course requiring sign-off lists it as still needed —
+  which is true, and is the one requirement a student cannot satisfy alone.
+
+Courses with no active template show nothing at all, rather than an empty box.
+
+**1,329 tests green** (7 new). **Walked in a browser** as a student at 35%
+progress on a course requiring 80% and sign-off:
+
+```
+ok   the certificate is named on the learning page
+ok   the student is told the certificate is not yet earned
+ok   the outstanding progress requirement is named
+ok   the outstanding approval requirement is named
+```
+
+**Also swept and found sound:** §22 (glossary table complete, with media ids and
+the trilingual columns), §21 (assessment-question pivot), §25 (progress formula
+respects *required* lessons, folds required sessions in for offerings, and has
+unit tests including the 0/0 edge — §25 asks for those explicitly), and §23's
+seat rule, which is row-locked in `EnforceSeatLimitAction` and counts
+`['active','approved','pending','completed']`, correctly excluding cancelled and
+rejected exactly as §23 demands.
+
+**§23's thin gaps, recorded rather than built:** `access_starts_at` /
+`access_ends_at` do not exist, so enrolment access is never time-boxed — worth a
+decision before building, since nothing sells time-limited access yet. The
+status enum has no `suspended`, so suspending means cancelling. And
+`certificate_issued_at` is **deliberately not added**: `issued_certificates` is
+the better-normalised record, and duplicating it onto the enrolment would
+violate rule 11.
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**.

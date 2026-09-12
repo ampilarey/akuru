@@ -1,14 +1,68 @@
 import { router, usePage } from '@inertiajs/react';
 import AppShell from '../../../Layouts/AppShell';
 
-export default function Show({ course, enrollment, modules, upcoming_sessions = [], activities = [], assessments = [] }) {
+export default function Show({
+    course,
+    enrollment,
+    modules,
+    upcoming_sessions = [],
+    activities = [],
+    assessments = [],
+    offering = null,
+    certificate = null,
+}) {
     const t = usePage().props.i18n?.learn || {};
 
     return (
         <AppShell title={course.title}>
             <p className="mb-4 text-sm text-gray-600">
                 {enrollment ? `${enrollment.progress_percentage}%` : (t.preview_only || 'Preview only — enroll to track progress.')}
+                {/* §24: which offering. A student in one of several batches
+                    could not tell from this screen which one this was. */}
+                {offering && (
+                    <span className="ms-2">
+                        · {offering.title}
+                        <span className="ms-1 text-gray-500">({(offering.delivery_mode || '').replaceAll('_', ' ')})</span>
+                    </span>
+                )}
             </p>
+
+            {/* §24 "Certificate eligibility status". The rules engine existed
+                and ran only when an admin issued the certificate, so a student
+                could not see whether they were on track — or what was missing,
+                which is the part they can act on. */}
+            {certificate && (
+                <section
+                    className={`mb-4 rounded-lg border p-4 text-sm ${
+                        certificate.issued
+                            ? 'border-green-200 bg-green-50 text-green-900'
+                            : certificate.eligible
+                                ? 'border-green-200 bg-green-50 text-green-900'
+                                : 'border-gray-200 bg-white text-gray-700'
+                    }`}
+                >
+                    <h2 className="mb-1 font-medium">{certificate.template}</h2>
+                    {certificate.issued ? (
+                        <p>
+                            {t.certificate_issued || 'Issued.'}{' '}
+                            {certificate.certificate_number && (
+                                <span className="font-mono text-xs">{certificate.certificate_number}</span>
+                            )}
+                        </p>
+                    ) : certificate.eligible ? (
+                        <p>{t.certificate_eligible || 'You have met the requirements for this certificate.'}</p>
+                    ) : (
+                        <>
+                            <p className="mb-1">{t.certificate_outstanding || 'Still needed for this certificate:'}</p>
+                            <ul className="list-inside list-disc">
+                                {(certificate.reasons || []).map((reason) => (
+                                    <li key={reason}>{reason}</li>
+                                ))}
+                            </ul>
+                        </>
+                    )}
+                </section>
+            )}
             {!enrollment && (
                 <div className="mb-4">
                     <button type="button" className="btn-primary" onClick={() => router.post(`/learn/courses/${course.id}/enroll`)}>{t.enroll || 'Enroll'}</button>

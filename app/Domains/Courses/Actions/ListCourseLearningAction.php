@@ -51,6 +51,19 @@ class ListCourseLearningAction
                 'progress_percentage' => (int) $enrollment->progress_percentage,
                 'status' => $enrollment->status,
             ] : null,
+            // SPEC §24: "Offering title/mode if enrolled through an offering".
+            // The page knew the offering id and never said which offering it
+            // was, so a student enrolled in one of several batches could not
+            // tell from this screen which one they were looking at.
+            'offering' => $enrollment?->course_offering_id
+                ? app(\App\Domains\Offerings\Actions\DescribeOfferingAction::class)
+                    ->execute((int) $enrollment->course_offering_id)
+                : null,
+            // SPEC §24: "Certificate eligibility status". The engine for this
+            // existed and was reachable only from `IssueCertificateAction`, so
+            // it ran once, at the moment an admin issued the certificate.
+            'certificate' => app(ResolveCourseCertificateStatusAction::class)
+                ->execute($courseId, $enrollment, $student ? (int) $student['id'] : null),
             'upcoming_sessions' => $enrollment?->course_offering_id
                 ? app(ListUpcomingSessionsForOfferingsAction::class)->execute([(int) $enrollment->course_offering_id])
                 : [],
