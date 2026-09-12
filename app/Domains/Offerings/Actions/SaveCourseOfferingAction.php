@@ -67,8 +67,23 @@ class SaveCourseOfferingAction
             return CourseOffering::query()->create($payload);
         }
 
+        // SPEC §11.4: "Invalid transitions must be rejected." An edit form
+        // posts the whole offering back, status included, so this is the path
+        // an invalid transition would actually arrive through — it took
+        // whatever `status` came in and stored it. The status is removed from
+        // the general payload and routed through the transition rules, so an
+        // ordinary edit cannot reopen a completed cohort in passing.
+        $requested = $payload['status'];
+        unset($payload['status']);
+
         $offering->fill($payload);
         $offering->save();
+
+        app(TransitionOfferingStatusAction::class)->execute(
+            $offering,
+            $requested,
+            $data['created_by'] ?? null,
+        );
 
         return $offering->refresh();
     }
