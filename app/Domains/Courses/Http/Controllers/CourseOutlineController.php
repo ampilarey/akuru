@@ -8,6 +8,7 @@ use App\Domains\Courses\Actions\DeleteCourseModuleAction;
 use App\Domains\Courses\Actions\DetachLessonGlossaryItemAction;
 use App\Domains\Courses\Actions\DuplicateContentBlockAction;
 use App\Domains\Courses\Actions\ListCourseOutlineAction;
+use App\Domains\Courses\Actions\NormalizeBlockTextSettingsAction;
 use App\Domains\Courses\Actions\PublishLessonAction;
 use App\Domains\Courses\Actions\ReorderContentBlocksAction;
 use App\Domains\Courses\Actions\SaveContentBlockAction;
@@ -84,7 +85,17 @@ class CourseOutlineController extends Controller
             'body' => ['nullable', 'string'],
             'html' => ['nullable', 'string'],
             'tone' => ['nullable', 'string'],
+            // SPEC §15.3 makes these settings on every text-capable block
+            // rather than separate block types. Only `direction` existed, so
+            // a lesson could not say an Arabic passage was Arabic, could not
+            // right-align a Thaana note, and could not ask for a Thaana face.
             'direction' => ['nullable', 'string', 'in:ltr,rtl,auto'],
+            // "Text alignment using start/end" — logical only. `left`/`right`
+            // are physical and silently wrong when the same block is read in
+            // the other direction.
+            'align' => ['nullable', 'string', 'in:start,end,center'],
+            'language' => ['nullable', 'string', 'in:auto,en,dv,ar'],
+            'font' => ['nullable', 'string', 'in:default,thaana,arabic'],
             'embed_url' => ['nullable', 'string', 'max:500'],
             'term' => ['nullable', 'string'],
             'definition' => ['nullable', 'string'],
@@ -113,7 +124,7 @@ class CourseOutlineController extends Controller
                 'type' => $data['type'],
                 'file' => $request->file('file'),
                 'embed_url' => $data['embed_url'] ?? null,
-                'settings' => ['direction' => $data['direction'] ?? 'auto'],
+                'settings' => $this->textSettings($data),
                 'is_required' => (bool) ($data['is_required'] ?? false),
                 'created_by' => $request->user()?->id,
             ]);
@@ -122,7 +133,7 @@ class CourseOutlineController extends Controller
                 'lesson_id' => $data['lesson_id'],
                 'type' => $data['type'],
                 'data' => $this->blockDataFromRequest($data),
-                'settings' => ['direction' => $data['direction'] ?? 'auto'],
+                'settings' => $this->textSettings($data),
                 'is_required' => (bool) ($data['is_required'] ?? false),
                 'created_by' => $request->user()?->id,
             ]);
@@ -248,6 +259,29 @@ class CourseOutlineController extends Controller
         ], $lesson);
 
         return redirect()->route('catalog.courses.outline', $course)->with('success', 'Completion rule updated.');
+    }
+
+    /**
+     * SPEC §15.3's block text settings, merged over whatever the block
+     * already carries.
+     *
+     * This used to assign a whole new `['direction' => ...]` array on every
+     * save, so any other setting a block held was destroyed the next time
+     * anyone touched it — which is why the four new settings merge rather
+     * than replace.
+     *
+     * @param  array<string, mixed>  $data
+     * @param  array<string, mixed>  $existing
+     * @return array<string, mixed>
+     */
+    private function textSettings(array $data, array $existing = []): array
+    {
+        return app(NormalizeBlockTextSettingsAction::class)->execute($existing, [
+            'direction' => $data['direction'] ?? 'auto',
+            'align' => $data['align'] ?? null,
+            'language' => $data['language'] ?? null,
+            'font' => $data['font'] ?? null,
+        ]);
     }
 
     /**
