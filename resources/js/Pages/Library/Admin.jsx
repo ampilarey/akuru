@@ -282,6 +282,7 @@ export default function Admin({ items, categories, options, sales = [], queues =
             <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
                 <CategoryForm />
                 <span className="flex gap-2">
+                    <a className="btn-secondary" href="/admin/library/reading-alerts">Reading alerts</a>
                     <a className="btn-secondary" href="/admin/library/earnings/export">Earnings CSV</a>
                     <a className="btn-secondary" href="/admin/library?format=csv">Export CSV</a>
                 </span>

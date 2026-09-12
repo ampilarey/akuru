@@ -45,6 +45,9 @@ it('reaches every admin landing page from the Blade nav', function () {
         'admin.research.index' => 'opened from the Website CMS hub (admin.pages.index)',
         'admin.daily-content.index' => 'opened from the Website CMS hub (admin.pages.index)',
         'admin.daily-subscriptions.index' => 'opened from the Website CMS hub (admin.pages.index)',
+        // Deliberately not in the menu: a list that accuses readers of
+        // theft should take a decision to open, not sit in a nav bar.
+        'admin.library.reading-alerts' => 'opened from the Library admin hub (admin.library.index)',
     ];
 
     $nav = (string) file_get_contents(resource_path('views/layouts/navigation.blade.php'));

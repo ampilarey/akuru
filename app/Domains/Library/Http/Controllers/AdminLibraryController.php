@@ -7,15 +7,18 @@ use App\Domains\Library\Actions\DecideWriterPayoutAction;
 use App\Domains\Library\Actions\ListLibraryCategoriesAction;
 use App\Domains\Library\Actions\ListLibraryItemsAction;
 use App\Domains\Library\Actions\ListLibraryPurchasesAction;
+use App\Domains\Library\Actions\ListLibraryReadingAlertsAction;
 use App\Domains\Library\Actions\ListWriterPayoutReportAction;
 use App\Domains\Library\Actions\ListWriterQueuesAction;
 use App\Domains\Library\Actions\PublishLibraryItemAction;
 use App\Domains\Library\Actions\ReviewLibraryItemSubmissionAction;
+use App\Domains\Library\Actions\ReviewLibraryReadingAlertAction;
 use App\Domains\Library\Actions\SaveLibraryCategoryAction;
 use App\Domains\Library\Actions\SaveLibraryItemAction;
 use App\Domains\Library\Enums\LibraryAccessType;
 use App\Domains\Library\Enums\LibraryContentType;
 use App\Domains\Library\Models\LibraryItem;
+use App\Domains\Library\Models\LibraryReadingAlert;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -241,5 +244,59 @@ class AdminLibraryController extends Controller
             'authors.*.user_id' => 'nullable|integer',
             'pdf' => 'nullable|file|mimes:pdf|max:51200',
         ]);
+    }
+
+    /**
+     * L2b (§29 "suspicious activity"): the reading-abuse queue.
+     *
+     * Deliberately its own screen rather than a tile on the library dashboard.
+     * A list that accuses readers of theft should take a decision to open, not
+     * appear beside sales figures where it gets skimmed.
+     */
+    public function readingAlerts(Request $request): Response
+    {
+        abort_unless($request->user()?->can('library.manage'), 403);
+
+        return Inertia::render(
+            'Library/ReadingAlerts',
+            app(ListLibraryReadingAlertsAction::class)->execute(! $request->boolean('all')),
+        );
+    }
+
+    public function reviewReadingAlert(Request $request, int $alert): RedirectResponse
+    {
+        abort_unless($request->user()?->can('library.manage'), 403);
+
+        $data = $request->validate([
+            'outcome' => ['required', 'string', 'in:legitimate,watching,abuse'],
+        ]);
+
+        app(ReviewLibraryReadingAlertAction::class)->execute(
+            LibraryReadingAlert::query()->findOrFail($alert),
+            (int) $request->user()->id,
+            $data['outcome'],
+        );
+
+        return back()->with('success', 'Alert reviewed.');
+    }
+
+    public function exportReadingAlerts(Request $request): StreamedResponse
+    {
+        abort_unless($request->user()?->can('library.manage'), 403);
+
+        $payload = app(ListLibraryReadingAlertsAction::class)->execute(! $request->boolean('all'));
+
+        return response()->streamDownload(function () use ($payload): void {
+            $handle = fopen('php://output', 'w');
+            fputcsv($handle, ['signal', 'reader', 'item', 'observed', 'threshold', 'detail', 'raised_at', 'reviewed_at', 'outcome']);
+            foreach ($payload['alerts'] as $row) {
+                fputcsv($handle, [
+                    $row['signal'], $row['reader'], $row['item_title'],
+                    $row['observed'], $row['threshold'], $row['detail'],
+                    $row['raised_at'], $row['reviewed_at'], $row['outcome'],
+                ]);
+            }
+            fclose($handle);
+        }, 'library-reading-alerts.csv', ['Content-Type' => 'text/csv']);
     }
 }

@@ -2,8 +2,10 @@
 
 namespace App\Domains\Library\Http\Controllers;
 
+use App\Domains\Library\Actions\DetectLibraryReadingAbuseAction;
 use App\Domains\Library\Actions\ListMyLibraryAction;
 use App\Domains\Library\Actions\PresentLibraryReaderAction;
+use App\Domains\Library\Actions\RecordLibraryReadingEventAction;
 use App\Domains\Library\Actions\SaveReadingProgressAction;
 use App\Domains\Library\Actions\ToggleLibraryBookmarkAction;
 use App\Domains\Library\Models\LibraryItem;
@@ -35,6 +37,29 @@ class LibraryReaderController extends Controller
         }
         if (! $reader['can_read']) {
             return redirect()->route('public.library.show', $slug);
+        }
+
+        // §9.2: log the delivered page, then evaluate the three abuse signals.
+        // After the gate, never before — a refused request is not a read, and
+        // counting it would let a locked-out reader trip their own alert.
+        if ($user !== null) {
+            app(RecordLibraryReadingEventAction::class)->execute(
+                $user->id,
+                (int) $reader['id'],
+                (int) $reader['page'],
+                $request->session()->getId(),
+                $request->ip(),
+                (string) $request->userAgent(),
+            );
+
+            $detector = app(DetectLibraryReadingAbuseAction::class);
+            $detector->execute($user->id, (int) $reader['id']);
+
+            // Enforcement is off by default (config `library.abuse.enforce`):
+            // refusing a page locks a paying reader out of a book they own.
+            if ($detector->shouldBlock($user->id)) {
+                abort(429, 'Too many reading sessions are open on this account.');
+            }
         }
 
         return view('public.library.reader', ['reader' => $reader]);

@@ -5135,6 +5135,110 @@ than an annoyance, is something only real statements can say. This is the same
 caveat ADR-028 records for the BigBlueButton adapter, and it is recorded rather
 than buried for the same reason.
 
+### L2b: the half of the protected reader that was never built, and a scheduled command that had never once run
+
+Asked to complete all coding after the plan looked empty, a harder sweep of the
+documents found `LIBRARY_PLAN` §9.2 — the protected reader's copy-protection
+list. L2 shipped most of it (private storage, no download path, per-request
+permission check, dynamic watermark) and **four clauses were never built**:
+"detect rapid page opening, detect multi-device/session abuse, limit
+simultaneous sessions, log suspicious activity". §30.3 repeats them and §29
+lists "suspicious activity" on the admin dashboard. There were zero references
+to any of it in `Library` or `Commerce`.
+
+That is a gap in a **shipped** slice, not future-phase work, so it is built:
+ADR-031.
+
+**Identity is hashed on the way in.** No raw IP or user-agent ever reaches the
+database — every question §30.3 asks is answerable from a hash, so storing the
+address would add no capability and real liability. **Some readers here are
+children;** §30 is a security section, not a surveillance one. The hash is
+peppered with the app key, because an IPv4 space is small enough to enumerate
+against a bare SHA-256. Anonymous reading of free content is not logged at all.
+
+**Detection asks; it never decides.** A reader skimming a reference book turns
+pages fast, and a family sharing an account across a phone and a laptop is not
+a book being resold. Alerts de-duplicate while open and keep the worst reading
+rather than the latest, because how far past the line it went is what a
+reviewer needs.
+
+**Enforcement is off by default, and that is the real decision.** §9.2 does say
+"limit simultaneous sessions" and `shouldBlock()` implements it — gated on
+`library.abuse.enforce`, default false. Blocking on a heuristic refuses a
+paying reader a book they own, on thresholds that are guesses about human
+behaviour nobody has checked against a real reader. A false positive here does
+not inconvenience someone, it accuses them of theft. Every threshold is
+env-driven so real traffic can move them without a deploy.
+
+**Events expire, decisions do not.** Reading events prune at 90 days through the
+existing `akuru:prune-expired`; alerts are kept, because an alert is a decision
+somebody took.
+
+### …and the command that had never run
+
+Wiring the prune into `akuru:prune-expired` — **scheduled hourly** — surfaced
+that it had **never executed successfully**. It threw on its first query: `Otp`
+was filtered on `consumed_at`, a column `user_contact_otps` does not have (it is
+`used_at`). Everything after that line was therefore dead too, so **no OTP was
+ever pruned and no stale enrolment was ever cancelled**.
+
+A second bug sat behind the first and only appeared once it was fixed:
+`payments()` is not a relation on `CourseEnrollment` (there is `payment()` and
+`paymentItem()`), so it then threw `BadMethodCallException`. Rewritten against
+`payment_status`, the field `isPaymentConfirmed()` reads and the BML webhook
+sets.
+
+**No test had ever invoked the command.** It was found by a test written for the
+library prune that happened to call it. `tests/Feature/Console/PruneExpiredDataTest.php`
+now pins it, including the case that matters most under rule 12: an enrolment
+whose payment was **confirmed** must survive the sweep, because cancelling it
+takes a paid course away from a student.
+
+```
+$ php artisan akuru:prune-expired --dry-run
+Expired OTPs to delete: 0
+Stale draft enrollments to delete: 0
+Stale pending-payment enrollments to cancel: 0
+Library reading events older than 90 days to delete: 0
+Dry-run mode — no changes made.
+```
+
+That is the first time that command has printed all four lines.
+
+**1,261 tests green.** Walked in a browser as a reader and then an admin:
+
+```
+PASS  a reader signs in
+PASS  the reader can read the book — 8 pages served
+PASS  no page was refused while enforcement is off — 8/8 served
+PASS  the Library hub links to the alerts queue
+PASS  the screen says enforcement is off
+PASS  the page-view count is shown — … 8 page views logged.
+PASS  the rapid-pages alert is listed
+PASS  reviewing clears it from the open queue
+PASS  the reviewed alert is kept, not deleted
+PASS  CSV export responds — status 200
+No 5xx responses during the walk.
+```
+
+The privacy guarantee checked against the rows real HTTP traffic produced,
+rather than against the unit test alone:
+
+```
+device_hash=4105fa6651e69d77… (len 64)
+session_hash=4ebbb38f702c2522… (len 64)
+contains 127.0.0.1? no
+contains Mozilla?   no
+alert outcome=legitimate
+```
+
+**What the green tests do not prove.** The thresholds — 40 pages a minute, 5
+devices a day, 3 concurrent sessions — came from nobody's observation, because
+there are no Akuru readers yet. Expect all three to move once there is real
+traffic, and expect the first few alerts to be legitimate readers. And §9.2 is
+explicit that this class of measure "reduces copying; cannot stop
+screenshots/cameras" — a phone camera defeats every measure here.
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**.
