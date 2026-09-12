@@ -3,6 +3,7 @@
 namespace App\Domains\Courses\Actions;
 
 use App\Domains\Courses\Enums\CourseWorkflowStatus;
+use App\Domains\Courses\Enums\UnlockMode;
 use App\Domains\Courses\Models\Course;
 use App\Domains\Courses\Models\CourseCategory;
 use Illuminate\Support\Str;
@@ -35,6 +36,20 @@ class SaveEngineCourseAction
             'course_type' => $data['course_type'] ?? 'general',
             'created_by' => $data['created_by'] ?? null,
         ];
+
+        // SPEC §26: the course's unlock rules. Only written when the caller
+        // says something about them, so an update that does not mention unlock
+        // leaves the existing setting alone rather than silently resetting a
+        // course to sequential.
+        if (array_key_exists('unlock_mode', $data)) {
+            $mode = UnlockMode::tryFrom((string) $data['unlock_mode']);
+            if ($mode === null) {
+                throw ValidationException::withMessages([
+                    'unlock_mode' => 'Unknown unlock mode.',
+                ]);
+            }
+            $payload['unlock_rules'] = ['mode' => $mode->value];
+        }
 
         if ($course === null) {
             $payload['workflow_status'] = CourseWorkflowStatus::Draft;

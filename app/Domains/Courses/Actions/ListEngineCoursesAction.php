@@ -37,6 +37,10 @@ class ListEngineCoursesAction
                     'subject_id' => $course->subject_id,
                     'subject_name' => $subject['name_en'] ?? '',
                     'language' => $course->language,
+                    // SPEC §26: what unlock rule this course runs under. The
+                    // resolver owns the default, so the screen shows the mode
+                    // actually in force rather than a blank for "unset".
+                    'unlock_mode' => app(ResolveCourseUnlockModeAction::class)->execute($course)->value,
                     'course_type' => $course->course_type,
                     'workflow_status' => $course->workflow_status?->value ?? $course->workflow_status,
                     'marketing_status' => $course->status,
