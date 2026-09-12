@@ -2,6 +2,7 @@
 
 namespace App\Domains\Courses\Models;
 
+use App\Domains\Courses\Enums\ModuleStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -21,6 +22,19 @@ class CourseModule extends Model
         'status',
         'created_by',
     ];
+
+    /**
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            // SPEC §12 Status. The column existed as a bare string that
+            // nothing ever wrote past the create default, so every module was
+            // permanently draft.
+            'status' => ModuleStatus::class,
+        ];
+    }
 
     public function course(): BelongsTo
     {
