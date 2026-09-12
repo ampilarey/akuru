@@ -4,12 +4,15 @@ namespace App\Domains\Admissions\Http\Controllers;
 
 use App\Domains\Courses\Models\Course;
 use App\Domains\Courses\Models\CourseEnrollment;
+use App\Domains\Finance\Actions\ListManualPaymentMethodsAction;
+use App\Domains\Finance\Actions\RecordManualPaymentAction;
 use App\Domains\Finance\Models\Payment;
 use App\Domains\Notifications\Contracts\SmsSenderInterface;
 use App\Http\Controllers\Controller;
 use App\Mail\EnrollmentStatusMail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Validation\Rule;
 
 class AdminEnrollmentController extends Controller
 {
@@ -51,8 +54,11 @@ class AdminEnrollmentController extends Controller
     public function show(CourseEnrollment $enrollment)
     {
         $enrollment->load(['student.guardians', 'course', 'payment.items.course', 'creator']);
+        // SPEC §38's payment-method vocabulary, fetched through Finance's
+        // Action rather than its enum (rule 3).
+        $paymentMethods = app(ListManualPaymentMethodsAction::class)->execute();
 
-        return view('admin.enrollments.show', compact('enrollment'));
+        return view('admin.enrollments.show', compact('enrollment', 'paymentMethods'));
     }
 
     public function activate(CourseEnrollment $enrollment)
@@ -250,6 +256,11 @@ class AdminEnrollmentController extends Controller
         $data = $request->validate([
             'amount' => ['required', 'numeric', 'min:0.01'],
             'note' => ['nullable', 'string', 'max:500'],
+            // SPEC §38's "Payment method", which this form is the only place
+            // anyone knows. It was captured as prose in `note` — the
+            // placeholder literally read "e.g. cash at office" — so the
+            // finance data could not tell cash from a bank transfer.
+            'payment_method' => ['required', Rule::in(app(ListManualPaymentMethodsAction::class)->values())],
         ]);
 
         $payerUserId = $enrollment->student?->user_id
@@ -257,13 +268,21 @@ class AdminEnrollmentController extends Controller
             ?? $enrollment->created_by_user_id
             ?? $request->user()->id;
 
-        app(\App\Domains\Finance\Actions\RecordManualPaymentAction::class)->execute(
+        app(RecordManualPaymentAction::class)->execute(
             'course_enrollment',
             $enrollment->id,
             (int) $payerUserId,
             (float) $data['amount'],
             $data['note'] ?? null,
             $request->user()->id,
+            (string) $data['payment_method'],
+            [
+                'course_id' => $enrollment->course_id,
+                'course_offering_id' => $enrollment->course_offering_id,
+                'unified_student_id' => $enrollment->unified_student_id,
+                'student_id' => $enrollment->student_id,
+                'metadata' => ['source' => 'admin_manual_payment', 'recorded_by' => $request->user()->id],
+            ],
         );
 
         return back()->with('success', 'Manual payment recorded — enrollment updated.');

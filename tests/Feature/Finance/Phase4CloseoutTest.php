@@ -8,6 +8,7 @@ use App\Domains\Courses\Models\Course;
 use App\Domains\Courses\Models\CourseEnrollment;
 use App\Domains\Courses\Models\CourseSubject;
 use App\Domains\Finance\Contracts\PaymentProviderInterface;
+use App\Domains\Finance\Enums\PaymentMethod;
 use App\Domains\Finance\Models\Payment;
 use App\Domains\Finance\Services\Payment\PaymentInitiationResult;
 use App\Domains\Finance\Services\Payment\PaymentVerificationResult;
@@ -125,10 +126,16 @@ it('records a manual payment that activates the enrollment through the single pa
         ->post(route('admin.enrollments.record-payment', $enrollment->id), [
             'amount' => 80,
             'note' => 'Cash at office',
+            // SPEC §38 makes "Payment method" its own field, and this form is
+            // the only place anyone knows which it was, so it is now required
+            // rather than left to prose in the note. The select has no blank
+            // option, so the form always sends one.
+            'payment_method' => 'cash',
         ])->assertSessionHasNoErrors()->assertRedirect();
 
     $payment = Payment::query()->firstOrFail();
     expect($payment->provider)->toBe('manual')
+        ->and($payment->payment_method)->toBe(PaymentMethod::Cash)
         ->and($payment->status)->toBe('confirmed')
         ->and($payment->getRawOriginal('payable_type'))->toBe('course_enrollment')
         ->and((int) $payment->payable_id)->toBe($enrollment->id)

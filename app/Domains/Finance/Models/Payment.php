@@ -4,6 +4,7 @@ namespace App\Domains\Finance\Models;
 
 use App\Domains\Courses\Models\Course;
 use App\Domains\Courses\Models\CourseEnrollment;
+use App\Domains\Finance\Enums\PaymentMethod;
 use App\Domains\Identity\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -19,6 +20,12 @@ class Payment extends Model
         'student_id',
         'unified_student_id',
         'course_id',
+        // SPEC §38 names these; see the spec38 migration for why
+        // `enrollment_id` is not among them (the payable morph already
+        // carries it).
+        'course_offering_id',
+        'payment_method',
+        'metadata',
         'amount',
         'currency',
         'status',
@@ -55,6 +62,8 @@ class Payment extends Model
             'redirect_return_payload' => 'array',
             'webhook_payload' => 'array',
             'enrollment_pending_payload' => 'array',
+            'metadata' => 'array',
+            'payment_method' => PaymentMethod::class,
             'confirmed_at' => 'datetime',
             'paid_at' => 'datetime',
             'failed_at' => 'datetime',
