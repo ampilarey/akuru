@@ -10,11 +10,21 @@
             {{ $users->total() }} users total
         </p>
     </div>
-    <a href="{{ route('dashboard') }}"
-       style="font-size:.78rem;color:rgba(255,255,255,.75);text-decoration:none;display:flex;align-items:center;gap:.375rem"
-       onmouseover="this.style.color='white'" onmouseout="this.style.color='rgba(255,255,255,.75)'">
-        ← Dashboard
-    </a>
+    <div style="display:flex;align-items:center;gap:1rem">
+        {{-- SPEC §32's admin review surface. Not in the nav bar: a list of who
+             has been hammering the OTP endpoints should take a decision to
+             open, the same call made for the library's reading alerts. --}}
+        <a href="{{ route('admin.users.otp-abuse') }}"
+           style="font-size:.78rem;color:rgba(255,255,255,.75);text-decoration:none;display:flex;align-items:center;gap:.375rem"
+           onmouseover="this.style.color='white'" onmouseout="this.style.color='rgba(255,255,255,.75)'">
+            OTP abuse events
+        </a>
+        <a href="{{ route('dashboard') }}"
+           style="font-size:.78rem;color:rgba(255,255,255,.75);text-decoration:none;display:flex;align-items:center;gap:.375rem"
+           onmouseover="this.style.color='white'" onmouseout="this.style.color='rgba(255,255,255,.75)'">
+            ← Dashboard
+        </a>
+    </div>
 </div>
 
 <div style="max-width:72rem;margin:0 auto;padding:1.5rem 1rem">

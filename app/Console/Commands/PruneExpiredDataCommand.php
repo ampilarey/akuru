@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Domains\Courses\Models\CourseEnrollment;
 use App\Domains\Identity\Models\Otp;
+use App\Domains\Identity\Models\OtpAbuseEvent;
 use App\Domains\Library\Models\LibraryReadingEvent;
 use Illuminate\Console\Command;
 
@@ -82,6 +83,20 @@ class PruneExpiredDataCommand extends Command
         $this->line("Library reading events older than {$retentionDays} days to delete: {$eventCount}");
         if (! $dryRun) {
             $eventQuery->delete();
+        }
+
+        // --- OTP abuse events past retention (SPEC §32) ---
+        // These exist so an admin can see a pattern across days, not forever:
+        // the contact is already hashed, and an incident from last year tells
+        // nobody anything useful about this month's SMS bill.
+        $otpRetention = max(1, (int) config('otp.abuse_log_retention_days', 90));
+        $abuseQuery = OtpAbuseEvent::query()
+            ->where('occurred_at', '<', now('Indian/Maldives')->subDays($otpRetention));
+
+        $abuseCount = $abuseQuery->count();
+        $this->line("OTP abuse events older than {$otpRetention} days to delete: {$abuseCount}");
+        if (! $dryRun) {
+            $abuseQuery->delete();
         }
 
         if ($dryRun) {

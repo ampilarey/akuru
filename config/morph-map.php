@@ -167,6 +167,7 @@ return [
     'notification_template' => \App\Domains\Notifications\Models\NotificationTemplate::class,
     'operator_check' => \App\Domains\Settings\Models\OperatorCheck::class,
     'otp' => \App\Domains\Identity\Models\Otp::class,
+    'otp_abuse_event' => \App\Domains\Identity\Models\OtpAbuseEvent::class,
     'page' => \App\Domains\Website\Models\Page::class,
     'parent_guardian' => \App\Domains\People\Models\ParentGuardian::class,
     'payment' => \App\Domains\Finance\Models\Payment::class,

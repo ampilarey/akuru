@@ -13,17 +13,49 @@ use Illuminate\Validation\ValidationException;
 
 class OtpService
 {
-    protected const MAX_SEND_ATTEMPTS = 5;
+    /*
+     * SPEC §32's numbers, read from config rather than frozen here.
+     *
+     * The old constants were 5 sends per 60 minutes and a 30-second resend
+     * cooldown. §32 says "Maximum 3 OTP sends per phone number per 15 minutes"
+     * and "Minimum 60-second resend cooldown" — so the burst allowance was
+     * nearly double, and the cooldown was HALF the mandated floor, which
+     * doubles the achievable send rate. §32 explains why that matters in its
+     * own words: "This protects future Dhiraagu SMS integration from cost abuse
+     * and spam." Every send is a message somebody pays for.
+     *
+     * §32 also requires these be configurable, so an operator can tighten them
+     * under attack without waiting for a deploy.
+     */
+    protected function maxSends(): int
+    {
+        return max(1, (int) config('otp.max_sends', 3));
+    }
 
-    protected const SEND_DECAY_MINUTES = 60;
+    protected function sendWindowMinutes(): int
+    {
+        return max(1, (int) config('otp.send_window_minutes', 15));
+    }
 
-    protected const RESEND_COOLDOWN_SECONDS = 30;
+    protected function resendCooldownSeconds(): int
+    {
+        return max(1, (int) config('otp.resend_cooldown_seconds', 60));
+    }
 
-    protected const MAX_VERIFY_ATTEMPTS = 10;
+    protected function maxVerifyAttempts(): int
+    {
+        return max(1, (int) config('otp.max_verify_attempts', 10));
+    }
 
-    protected const VERIFY_DECAY_MINUTES = 15;
+    protected function verifyWindowMinutes(): int
+    {
+        return max(1, (int) config('otp.verify_window_minutes', 15));
+    }
 
-    protected const OTP_MAX_ATTEMPTS = 5;
+    protected function maxAttemptsPerCode(): int
+    {
+        return max(1, (int) config('otp.max_attempts_per_code', 5));
+    }
 
     public function __construct(
         protected SmsSenderInterface $smsGateway,
@@ -36,17 +68,19 @@ class OtpService
         $sendKey = $this->sendRateLimitKey($contact, $purpose);
         $cooldownKey = $this->resendCooldownKey($contact, $purpose);
 
-        // Hard per-contact throttle (5 sends / 60 min)
-        if (RateLimiter::tooManyAttempts($sendKey, self::MAX_SEND_ATTEMPTS)) {
+        // §32: max sends per contact per window.
+        if (RateLimiter::tooManyAttempts($sendKey, $this->maxSends())) {
             $seconds = RateLimiter::availableIn($sendKey);
+            $this->recordAbuse('send_rate', $contact, $purpose, $this->maxSends() + 1, $this->maxSends());
             throw ValidationException::withMessages([
                 'contact' => ['Too many OTP requests. Please try again in '.ceil($seconds / 60).' minutes.'],
             ]);
         }
 
-        // Resend cooldown (30 s between sends)
+        // §32: minimum resend cooldown.
         if (RateLimiter::tooManyAttempts($cooldownKey, 1)) {
             $seconds = RateLimiter::availableIn($cooldownKey);
+            $this->recordAbuse('resend_cooldown', $contact, $purpose, 1, 1);
             throw ValidationException::withMessages([
                 'contact' => ["Please wait {$seconds} seconds before requesting a new code."],
             ]);
@@ -65,8 +99,8 @@ class OtpService
             ]);
         }
 
-        RateLimiter::hit($sendKey, self::SEND_DECAY_MINUTES * 60);
-        RateLimiter::hit($cooldownKey, self::RESEND_COOLDOWN_SECONDS);
+        RateLimiter::hit($sendKey, $this->sendWindowMinutes() * 60);
+        RateLimiter::hit($cooldownKey, $this->resendCooldownSeconds());
     }
 
     public function verify(UserContact $contact, string $purpose, string $code): void
@@ -74,8 +108,9 @@ class OtpService
         $this->validatePurpose($purpose);
         $key = $this->verifyRateLimitKey($contact, $purpose);
 
-        if (RateLimiter::tooManyAttempts($key, self::MAX_VERIFY_ATTEMPTS)) {
+        if (RateLimiter::tooManyAttempts($key, $this->maxVerifyAttempts())) {
             $seconds = RateLimiter::availableIn($key);
+            $this->recordAbuse('verify_rate', $contact, $purpose, $this->maxVerifyAttempts() + 1, $this->maxVerifyAttempts());
             throw ValidationException::withMessages([
                 'code' => ['Too many verification attempts. Please try again in '.ceil($seconds / 60).' minutes.'],
             ]);
@@ -89,20 +124,21 @@ class OtpService
             ->first();
 
         if (! $otp) {
-            RateLimiter::hit($key, self::VERIFY_DECAY_MINUTES * 60);
+            RateLimiter::hit($key, $this->verifyWindowMinutes() * 60);
             throw ValidationException::withMessages([
                 'code' => ['Invalid or expired verification code.'],
             ]);
         }
 
-        if ($otp->attempts >= self::OTP_MAX_ATTEMPTS) {
+        if ($otp->attempts >= $this->maxAttemptsPerCode()) {
+            $this->recordAbuse('code_attempts', $contact, $purpose, (int) $otp->attempts, $this->maxAttemptsPerCode());
             throw ValidationException::withMessages([
                 'code' => ['Too many failed attempts. Please request a new code.'],
             ]);
         }
 
         if (! $otp->verify($code)) {
-            RateLimiter::hit($key, self::VERIFY_DECAY_MINUTES * 60);
+            RateLimiter::hit($key, $this->verifyWindowMinutes() * 60);
             throw ValidationException::withMessages([
                 'code' => ['Invalid verification code.'],
             ]);
@@ -114,6 +150,36 @@ class OtpService
         }
 
         RateLimiter::clear($key);
+    }
+
+    /**
+     * §32: "OTP abuse event logging for admin review." Recording must never be
+     * the reason a request fails — the limit has already done its job by the
+     * time this runs, and losing the log entry is better than turning a
+     * throttle into a 500.
+     */
+    protected function recordAbuse(string $kind, UserContact $contact, string $purpose, int $observed, int $threshold): void
+    {
+        try {
+            app(\App\Domains\Identity\Actions\RecordOtpAbuseEventAction::class)
+                ->execute($kind, $contact, $purpose, $observed, $threshold);
+        } catch (\Throwable $e) {
+            report($e);
+        }
+    }
+
+    /**
+     * Same contract as `recordAbuse()`, for the registration path where no
+     * `UserContact` row exists yet.
+     */
+    protected function recordAbuseForValue(string $kind, string $value, string $channel, string $purpose, int $observed, int $threshold): void
+    {
+        try {
+            app(\App\Domains\Identity\Actions\RecordOtpAbuseEventAction::class)
+                ->forValue($kind, $value, $channel, $purpose, $observed, $threshold);
+        } catch (\Throwable $e) {
+            report($e);
+        }
     }
 
     // -------------------------------------------------------------------------
@@ -178,14 +244,20 @@ class OtpService
         $sendKey = 'new_reg_otp_send:'.md5($type.$normalizedValue);
         $cooldownKey = 'new_reg_otp_cooldown:'.md5($type.$normalizedValue);
 
-        if (RateLimiter::tooManyAttempts($sendKey, 5)) {
+        if (RateLimiter::tooManyAttempts($sendKey, $this->maxSends())) {
             $seconds = RateLimiter::availableIn($sendKey);
+            $this->recordAbuseForValue('send_rate', $normalizedValue, $type, 'verify_contact',
+                $this->maxSends() + 1, $this->maxSends());
             throw ValidationException::withMessages([
                 'contact_value' => ['Too many OTP requests. Please try again in '.ceil($seconds / 60).' minutes.'],
             ]);
         }
         if (RateLimiter::tooManyAttempts($cooldownKey, 1)) {
             $seconds = RateLimiter::availableIn($cooldownKey);
+            // Logged like the signed-in path's cooldown, and for a stronger
+            // reason: this branch is reachable without an account, so it is the
+            // cheapest place in the app to burn SMS credit.
+            $this->recordAbuseForValue('resend_cooldown', $normalizedValue, $type, 'verify_contact', 1, 1);
             throw ValidationException::withMessages([
                 'contact_value' => ["Please wait {$seconds} seconds before requesting a new code."],
             ]);
@@ -217,8 +289,8 @@ class OtpService
             ]);
         }
 
-        RateLimiter::hit($sendKey, 60 * 60);
-        RateLimiter::hit($cooldownKey, self::RESEND_COOLDOWN_SECONDS);
+        RateLimiter::hit($sendKey, $this->sendWindowMinutes() * 60);
+        RateLimiter::hit($cooldownKey, $this->resendCooldownSeconds());
     }
 
     /**
@@ -230,8 +302,10 @@ class OtpService
         $cacheKey = $this->newRegCacheKey($type, $normalizedValue);
         $verifyKey = 'new_reg_otp_verify:'.md5($type.$normalizedValue);
 
-        if (RateLimiter::tooManyAttempts($verifyKey, self::MAX_VERIFY_ATTEMPTS)) {
+        if (RateLimiter::tooManyAttempts($verifyKey, $this->maxVerifyAttempts())) {
             $seconds = RateLimiter::availableIn($verifyKey);
+            $this->recordAbuseForValue('verify_rate', $normalizedValue, $type, 'verify_contact',
+                $this->maxVerifyAttempts() + 1, $this->maxVerifyAttempts());
             throw ValidationException::withMessages([
                 'code' => ['Too many attempts. Please try again in '.ceil($seconds / 60).' minutes.'],
             ]);
@@ -245,7 +319,9 @@ class OtpService
             ]);
         }
 
-        if (($cached['attempts'] ?? 0) >= self::OTP_MAX_ATTEMPTS) {
+        if (($cached['attempts'] ?? 0) >= $this->maxAttemptsPerCode()) {
+            $this->recordAbuseForValue('code_attempts', $normalizedValue, $type, 'verify_contact',
+                (int) ($cached['attempts'] ?? 0), $this->maxAttemptsPerCode());
             \Illuminate\Support\Facades\Cache::forget($cacheKey);
             throw ValidationException::withMessages([
                 'code' => ['Too many failed attempts. Please start the registration again.'],
@@ -256,7 +332,7 @@ class OtpService
             \Illuminate\Support\Facades\Cache::put($cacheKey, array_merge($cached, [
                 'attempts' => ($cached['attempts'] ?? 0) + 1,
             ]), now()->addMinutes(10));
-            RateLimiter::hit($verifyKey, self::VERIFY_DECAY_MINUTES * 60);
+            RateLimiter::hit($verifyKey, $this->verifyWindowMinutes() * 60);
             throw ValidationException::withMessages([
                 'code' => ['Invalid verification code.'],
             ]);
