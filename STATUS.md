@@ -5723,6 +5723,74 @@ status enum has no `suspended`, so suspending means cancelling. And
 the better-normalised record, and duplicating it onto the enrolment would
 violate rule 11.
 
+### SPEC §14: rich-text blocks kept every HTML attribute
+
+§14: "The `data` JSON must be validated per block type … **Do not allow
+unvalidated arbitrary JSON.**"
+
+Rich-text blocks were sanitised with
+`strip_tags($html, '<p><br><strong><em><ul><ol><li><h2><h3><a>')`. That removes
+disallowed **tags** and preserves every **attribute** on the ones it keeps.
+Verified directly rather than assumed — all three survived byte-for-byte:
+
+```
+<a href="javascript:alert(1)">click</a>
+<p onclick="alert(1)">text</p>
+<a href="#" onmouseover="alert(1)">hover</a>
+```
+
+The stored value is rendered with `dangerouslySetInnerHTML` in the lesson player
+(`Courses/Player/Show.jsx:135`), so it ran in the browser of every student and
+teacher who opened the lesson.
+
+**Severity, stated accurately.** Block authoring is gated to
+`role:super_admin|admin|headmaster`, so this was **not** reachable by a
+low-privileged account, and no rich-text block exists in any dataset — nothing
+needs backfilling. It is worth fixing because §34 plans for **Course Creators**
+to author blocks, at which point it becomes privilege escalation; because
+content pasted in from elsewhere should not be able to execute; and because §14
+asks for exactly this.
+
+**The fix drops every attribute except a scheme-checked `href` on `<a>`.**
+Disallowed tags are *unwrapped* so the author's words survive — except
+`script`, `style`, `iframe`, `object`, `embed`, `form` and friends, which are
+removed with their contents. Unwrapping those would leave `alert(1)` sitting in
+the lesson as loose text, which is what `strip_tags` used to do and what my own
+first attempt did until a test caught it.
+
+Hand-rolled rather than a library because the allowlist is ten tags and one
+attribute, so there is no configuration surface to get wrong; no sanitiser
+package is installed (`composer.lock` checked for `symfony/html-sanitizer`,
+`ezyang/htmlpurifier`, `mews/purifier` — none present), and adding a dependency
+is an owner's call. **If that allowlist ever grows much, switch to a real
+sanitiser.**
+
+`href` is checked after entity-decoding and whitespace-stripping, so
+`java&#09;script:` and ` javascript:` are refused along with `vbscript:` and
+`data:`.
+
+**1,351 tests green** (22 new — the payload battery is the point). **Walked in a
+browser** with a payload stored through the real validator and published through
+a real lesson revision:
+
+```
+ok   the author's text and formatting survived
+ok   no event handler reached the DOM
+ok   no javascript: href reached the DOM
+ok   clicking the former payloads executed nothing
+```
+
+**Also swept in §14 and found sound:** per-type block validation is thorough —
+https-only embeds with a YouTube/Vimeo host allowlist, a MIME allowlist per
+media block type, and required-field checks per type. And §14's rule that "no
+code may rely on `content_blocks.course_id` or `module_id` unless a sync
+guarantee exists" is **satisfied by abstention**: there is no observer, and
+nothing anywhere reads those two columns.
+
+**Noted, not fixed:** the Website CMS renders `{!! $page->body !!}` in five
+Blade views (pages, research, library, articles). That is a different authoring
+path with its own permissions, and wants its own look.
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**.
