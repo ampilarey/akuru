@@ -6587,6 +6587,55 @@ instead of reading it.
 
 **1,476 tests green** (1 new guard).
 
+### SPEC §28.5: every offering defaulted to "latest", including the ones that must not
+
+§28.5 sets the default by delivery mode, and the two halves point opposite
+ways:
+
+> Default for self-learning offerings: **Always latest published**
+>
+> Scheduled offerings such as face-to-face, live online, blended, and hybrid
+> should default to **pinned** mode when the offering opens.
+
+`SaveCourseOfferingAction` defaulted **every** offering to `latest`, whatever
+its mode:
+
+```php
+'pin_mode' => in_array($data['pin_mode'] ?? 'latest', ['latest', 'pinned'], true)
+    ? ($data['pin_mode'] ?? 'latest') : 'latest',
+```
+
+So a face-to-face or live-online cohort tracked the newest published content
+and had its material change **underneath it mid-term**, unless an admin
+remembered to pin. That is the opposite of what §28.5 asks for, and the failure
+is silent — the offering looks correctly configured either way, and the
+symptom appears weeks later as students seeing a lesson their teacher did not
+set.
+
+Self-learning is the only mode §28.5 leaves on `latest`, and the reason is
+structural: it is the only one without a cohort moving through the material
+together. The default now follows the mode; an explicit choice still wins in
+either direction, because §28.5 sets a default, not a rule.
+
+One quiet improvement: an unrecognised `pin_mode` used to collapse to `latest`
+for everything. It now falls back to whatever that delivery mode should have
+defaulted to.
+
+**Cleared, not faulted — §28.2 and §28.3.** The player already reads the
+pinned revision rather than the live lesson: `LearnLessonController` resolves
+`revisionIdForLesson()` and passes it to `ResolvePublishedLessonAction`, which
+falls back to the current revision only when the offering is not pinned. §28.2
+holds. `EnsureSelfLearningOfferingAction` hardcodes `latest`, which is correct
+for its mode rather than an instance of the same bug.
+
+**1,482 tests green** (6 new). No existing test depended on the old blanket
+default, which is worth stating: nothing was relying on the wrong behaviour.
+
+**§28 status after this slice:** 28.1 ✅ (snapshot), 28.2 ✅ (cleared),
+28.3 ✅ (cleared), 28.4 ✅ (audit trail), 28.5 ✅ (this), 28.6 — enforced in
+practice by 28.1's snapshot fix and the pinning path, but not separately
+asserted end to end.
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**.
