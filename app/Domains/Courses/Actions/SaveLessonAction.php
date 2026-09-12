@@ -2,6 +2,7 @@
 
 namespace App\Domains\Courses\Actions;
 
+use App\Domains\Courses\Enums\LessonCompletionMode;
 use App\Domains\Courses\Enums\LessonStatus;
 use App\Domains\Courses\Models\CourseModule;
 use App\Domains\Courses\Models\Lesson;
@@ -42,6 +43,12 @@ class SaveLessonAction
             'position' => (int) ($data['position'] ?? ((Lesson::query()->where('course_module_id', $module->id)->max('position') ?? -1) + 1)),
             'estimated_minutes' => $data['estimated_minutes'] ?? null,
             'is_preview' => (bool) ($data['is_preview'] ?? false),
+            // SPEC §13 Lesson Management: "Set completion rules". An absent
+            // key keeps what is there, so a caller that does not deal in
+            // completion rules cannot blank one in passing.
+            'completion_rule' => array_key_exists('completion_rule', $data)
+                ? $this->completionRule($data['completion_rule'])
+                : ($lesson?->completion_rule),
             'created_by' => $data['created_by'] ?? null,
         ];
 
@@ -55,5 +62,32 @@ class SaveLessonAction
         $lesson->save();
 
         return $lesson->refresh();
+    }
+
+    /**
+     * A rule the engine actually enforces, or null for the default.
+     *
+     * An unrecognised mode is refused rather than stored: a lesson whose rule
+     * nothing implements would assert a requirement on screen that is never
+     * checked, which is the failure §26 avoided by declaring only the unlock
+     * modes it built.
+     *
+     * @return array{mode: string}|null
+     */
+    private function completionRule(mixed $given): ?array
+    {
+        $mode = is_array($given) ? ($given['mode'] ?? null) : $given;
+        if ($mode === null || $mode === '' || $mode === LessonCompletionMode::Click->value) {
+            return null;
+        }
+
+        $resolved = LessonCompletionMode::tryFrom((string) $mode);
+        if ($resolved === null) {
+            throw ValidationException::withMessages([
+                'completion_rule' => 'That completion rule is not available.',
+            ]);
+        }
+
+        return ['mode' => $resolved->value];
     }
 }

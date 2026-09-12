@@ -26,6 +26,8 @@ class Lesson extends Model
         'status',
         'current_revision_id',
         'is_preview',
+        // SPEC §13 lists "Completion rule" among a lesson's fields.
+        'completion_rule',
         'created_by',
         'published_at',
     ];
@@ -34,6 +36,7 @@ class Lesson extends Model
     {
         return [
             'is_preview' => 'boolean',
+            'completion_rule' => 'array',
             'published_at' => 'datetime',
             'status' => LessonStatus::class,
         ];
