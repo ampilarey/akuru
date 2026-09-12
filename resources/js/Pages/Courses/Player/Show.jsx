@@ -296,15 +296,23 @@ export default function Show({ snapshot, mediaShowUrl = '/catalog/media', canCom
     const locale = usePage().props.locale || 'en';
     const glossary = snapshot.glossary || [];
     const [selected, setSelected] = useState(null);
+    // SPEC §27's completion rules refuse a premature "Mark complete" server
+    // side. The refusal has to be *readable*: without this the button simply
+    // does nothing from the student's side, which is indistinguishable from a
+    // broken page — and is exactly the failure the walk for this slice caught.
+    const completionError = usePage().props.errors?.lesson;
 
     return (
         <AppShell title={snapshot.title || 'Lesson'}>
             <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
                 <p className="text-sm text-gray-600">Published revision {snapshot.revision_number}</p>
                 {canComplete && completeUrl && (
-                    <button type="button" className="btn-primary" onClick={() => router.post(completeUrl)}>{t.mark_complete || 'Mark complete'}</button>
+                    <button type="button" className="btn-primary" onClick={() => router.post(completeUrl, {}, { preserveScroll: true })}>{t.mark_complete || 'Mark complete'}</button>
                 )}
             </div>
+            {completionError && (
+                <p className="mb-4 rounded border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{completionError}</p>
+            )}
             {snapshot.description && <p className="mb-4">{wrapPlainText(snapshot.description, glossary, setSelected)}</p>}
             {selected && (
                 <aside className="mb-4 rounded-lg border border-[#7C2D37]/30 bg-white p-4" dir="auto">

@@ -427,6 +427,24 @@ export default function Outline({ course, modules, glossaryItems = [] }) {
                                     <p className="font-medium">{lesson.title}</p>
                                     <span className="text-xs uppercase text-gray-500">{lesson.status}{lesson.revision_number ? ` r${lesson.revision_number}` : ''}{lesson.is_preview ? ' preview' : ''}</span>
                                     <button type="button" className="btn-secondary" onClick={() => router.post(`/catalog/courses/${course.id}/lessons/${lesson.id}/preview`)}>{lesson.is_preview ? 'Unmark preview' : 'Mark preview'}</button>
+                                    {/* SPEC §13 Lesson Management: "Set completion rules".
+                                        Only the two rules the engine enforces are
+                                        offered — §26's lesson, that a rule an admin
+                                        can pick and the engine ignores is worse than
+                                        no rule at all. */}
+                                    <select
+                                        className="form-input ms-2 inline-block w-auto text-xs"
+                                        aria-label="Completion rule"
+                                        value={lesson.completion_rule || 'click'}
+                                        onChange={(e) => router.post(
+                                            `/catalog/courses/${course.id}/lessons/${lesson.id}/completion-rule`,
+                                            { completion_rule: e.target.value },
+                                            { preserveScroll: true },
+                                        )}
+                                    >
+                                        <option value="click">Completes on click</option>
+                                        <option value="required_activities">Requires all required activities</option>
+                                    </select>
                                     <button type="button" className="btn-secondary" onClick={() => router.post(`/catalog/courses/${course.id}/lessons/${lesson.id}/publish`)}>Publish</button>
                                     {lesson.current_revision_id && (
                                         <a className="text-sm text-[#7C2D37] hover:underline" href={`/catalog/player/${lesson.id}`}>Open player</a>

@@ -6997,6 +6997,77 @@ example, working.
 
 **1,542 tests green** (11 new), arch green, `npm run build` clean.
 
+Merged as **#299**.
+
+### SPEC §13/§27: a lesson was complete because the student said so
+
+§13 lists **"Completion rule"** among a lesson's fields and **"Set completion
+rules"** among what a course creator must be able to do. §27 opens "Admin must
+be able to configure completion rules", gives five for a lesson, and closes:
+
+> Use a dedicated completion calculation service.
+> Do not put completion rules directly inside controllers.
+
+There was no column, no service, and no rule.
+`StartOrCompleteLessonProgressAction` took the status straight from the
+controller, so `POST /learn/lessons/{id}/complete` recorded `completed`
+unconditionally. The one clause of §27 that was implemented — "student clicks
+complete" — was also the only one that could ever be true.
+
+**This is not cosmetic.** A student could open a lesson holding a required
+activity, never attempt it, click Mark complete, and the lesson counted. That
+feeds `CalculateCourseProgressAction` → the enrolment's `progress_percentage`
+→ §39's `min_progress_percent` certificate rule. A certificate could be issued
+on a percentage earned by clicking past the work.
+
+**Two of §27's five rules are implemented**, and the other three are
+deliberately absent rather than declared and ignored — §26's call, for §26's
+reason: an option an admin can pick and the engine ignores asserts a
+requirement on screen that is never checked. `LessonCompletionMode` records
+what each of the missing three would need first (quiz-passed needs a decision
+about multiple quizzes and re-attempts after a pass; assignment-submitted needs
+the pattern-4 list rather than the required-activity list; teacher-approval
+attaches to an *attempt* today, not a lesson).
+
+Null stays the default, so **every existing lesson keeps exactly the behaviour
+it has** (rule 9: additive, no backfill). An unrecognised rule also falls back
+to clicking, so a lesson can never become uncompletable because its rule was
+written by a newer version of the app than the one reading it.
+
+#### The walk caught what the tests could not
+
+14 tests green, revert-check clean — and the browser walk found the slice was
+still half-delivered. The rule **did** block the click (progress stayed
+`in_progress`), but the student **saw nothing**: the `ValidationException`
+redirected back and `Player/Show.jsx` rendered no error, so the button looked
+simply broken. Indistinguishable from a dead page, and exactly the failure the
+`InertiaFormTransformTest` docblock was written about.
+
+Fixed in the same slice — the player now renders `errors.lesson` — and
+re-walked:
+
+- Author sets **"Requires all required activities"** on the outline; it reads
+  back as `required_activities`.
+- Student clicks Mark complete → **"Finish the required activities first:
+  Match the words."**, and `student_lesson_progress` stays `in_progress`.
+- After an attempt is recorded, the same click is **accepted** and the row
+  becomes `completed`.
+
+#### Cleared, not faulted
+
+`lessons` carries §13's other fields, and **"Revision number" is correctly
+*not* duplicated** on the lesson — it is read from `lesson_revisions` via
+`currentRevision`, which is rule 11 done right. The slug index is
+`unique(course_id, slug)`, exactly §13's "unique within their course, two
+different courses may share one". `is_preview` is settable and honoured.
+
+**Still missing from §13's field list, recorded not fixed:** `updated_by`
+(audit only), and a per-lesson **unlock rule** — §26 put `unlock_rules` on the
+course alone, and §13 wants one per lesson. That is the §26 deferral seen from
+the other side, and it is its own slice.
+
+**1,556 tests green** (14 new), arch green, build clean.
+
 #### Environment recovery, recorded because it cost most of a turn
 
 The container restart took MySQL, `vendor/`, `node_modules`, `.env` and the

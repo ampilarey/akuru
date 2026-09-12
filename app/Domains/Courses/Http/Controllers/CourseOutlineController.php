@@ -68,6 +68,8 @@ class CourseOutlineController extends Controller
             'course_module_id' => ['required', 'integer', 'exists:course_modules,id'],
             'title' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
+            // SPEC §13 Lesson Management: "Set completion rules".
+            'completion_rule' => ['nullable', 'string', 'max:40'],
         ]) + ['created_by' => $request->user()?->id]);
 
         return redirect()->route('catalog.courses.outline', $course)->with('success', 'Lesson saved.');
@@ -218,6 +220,34 @@ class CourseOutlineController extends Controller
         ], $lesson);
 
         return redirect()->route('catalog.courses.outline', $course)->with('success', 'Preview flag updated.');
+    }
+
+    /**
+     * SPEC §13 Lesson Management: "Set completion rules."
+     *
+     * A dedicated endpoint rather than a general lesson edit, because there
+     * is no lesson edit form — the outline builds lessons and toggles their
+     * preview flag, and nothing else. Mirroring `togglePreview` keeps the one
+     * shape the screen already has.
+     */
+    public function setCompletionRule(Request $request, int $course, Lesson $lesson): RedirectResponse
+    {
+        abort_unless($request->user()?->can('courses.manage'), 403);
+        $data = $request->validate([
+            'completion_rule' => ['nullable', 'string', 'max:40'],
+        ]);
+
+        app(SaveLessonAction::class)->execute([
+            'course_module_id' => $lesson->course_module_id,
+            'title' => $lesson->title,
+            'slug' => $lesson->slug,
+            'description' => $lesson->description,
+            'position' => $lesson->position,
+            'is_preview' => $lesson->is_preview,
+            'completion_rule' => $data['completion_rule'] ?? null,
+        ], $lesson);
+
+        return redirect()->route('catalog.courses.outline', $course)->with('success', 'Completion rule updated.');
     }
 
     /**

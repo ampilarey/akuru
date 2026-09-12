@@ -38,6 +38,9 @@ class ListCourseOutlineAction
                     'status' => $lesson->status?->value ?? $lesson->status,
                     'current_revision_id' => $lesson->current_revision_id,
                     'is_preview' => (bool) $lesson->is_preview,
+                    // SPEC §13 lists "Completion rule" as a lesson field, and
+                    // a rule that is stored but never shown cannot be checked.
+                    'completion_rule' => app(EvaluateLessonCompletionAction::class)->mode($lesson)->value,
                     'revision_number' => $lesson->currentRevision?->revision_number,
                     'glossary' => $lesson->glossaryItems->map(fn ($item) => $item->toPayload(
                         (int) $item->pivot->position,
