@@ -45,7 +45,12 @@ class SaveCourseOfferingAction
             'slug' => $slug,
             'delivery_mode' => $mode,
             'status' => OfferingStatus::tryFrom((string) ($data['status'] ?? OfferingStatus::Draft->value)) ?? OfferingStatus::Draft,
-            'pin_mode' => in_array($data['pin_mode'] ?? 'latest', ['latest', 'pinned'], true) ? ($data['pin_mode'] ?? 'latest') : 'latest',
+            // SPEC §28.5 sets the default by delivery mode, not one default
+            // for all of them. This defaulted every offering to `latest`, so a
+            // face-to-face or live-online cohort had its content change
+            // underneath it mid-term unless someone remembered to pin — the
+            // opposite of what §28.5 asks for.
+            'pin_mode' => $this->pinMode($data['pin_mode'] ?? null, $mode),
             'seat_limit' => isset($data['seat_limit']) && $data['seat_limit'] !== '' ? (int) $data['seat_limit'] : null,
             'price_override' => isset($data['price_override']) && $data['price_override'] !== '' ? round((float) $data['price_override'], 2) : null,
             'certificate_rules' => is_array($data['certificate_rules'] ?? null)
@@ -66,5 +71,27 @@ class SaveCourseOfferingAction
         $offering->save();
 
         return $offering->refresh();
+    }
+
+    /**
+     * SPEC §28.5:
+     *
+     *   > Default for self-learning offerings: Always latest published
+     *   >
+     *   > Scheduled offerings such as face-to-face, live online, blended, and
+     *   > hybrid should default to pinned mode when the offering opens.
+     *
+     * An explicit choice always wins; this only decides what happens when the
+     * caller says nothing. Self-learning is the only mode that tracks the
+     * latest published content, because it is the only one without a cohort
+     * moving through the material together.
+     */
+    private function pinMode(mixed $given, DeliveryMode $mode): string
+    {
+        if (in_array($given, ['latest', 'pinned'], true)) {
+            return $given;
+        }
+
+        return $mode === DeliveryMode::SelfLearning ? 'latest' : 'pinned';
     }
 }
