@@ -6845,6 +6845,78 @@ wallet earlier, possibly via a gift card that itself had a payment — and
 double-counting it is worse than omitting it. **Owner decision, not a code
 choice**, and rule 12 territory.
 
+Merged as **#297**.
+
+### SPEC §45: the enforcement is sound, and it was hiding a receipt nobody could fetch
+
+§45 lists 18 areas the backend must enforce. Auditing them route by route, the
+**enforcement is broadly in good shape** — and the first scan said otherwise.
+A crude "authed route with no `can:` middleware and no inline check" sweep
+flagged 193 routes; following one level of same-class helpers and constructor
+middleware, and then reading the hits, almost all were false positives.
+`FormAdminController` guards through `$this->authorizeManage()`;
+`LearnMediaController` and `MaterialFileController` push the rule into an
+Action on purpose (a pupil and their guardians reach material files, so the
+register permissions would be wrong); the remaining 75 are ownership-scoped
+routes — own profile, own password, own portal — where ownership *is* the
+rule §45 wants. Recording that plainly: this section is mostly **cleared, not
+faulted**.
+
+What the audit did find is one route where the access rule never ran at all.
+
+**`GET payments/{payment}/receipt` returned 404 for every payment ever made.**
+The gate read:
+
+```php
+if (! in_array($payment->status, ['paid', 'completed'])) { abort(404); }
+```
+
+and **neither value exists**. `payments.status` is an enum of
+`initiated, pending, confirmed, failed, cancelled, expired, refunded`, and the
+only status written for money received is `confirmed` — by `PaymentService` on
+webhook confirmation and by `RecordManualPaymentAction` for money taken at the
+office. The ownership check above it (payer or staff) never got to run.
+
+**Nothing in the product links to that route**, which is why no walk found it
+and why it stayed broken: the page could only be reached by typing the URL.
+That is the argument for auditing §45 route by route rather than by screen —
+an access rule nobody can reach is indistinguishable from one that works.
+
+#### Two more defects were hiding behind the 404
+
+Both are what the page does the moment it opens, so they are fixed here rather
+than filed:
+
+- The line-item table loops `$payment->items`, and an **engine payment has
+  none** — `InitiatePayablePaymentAction` creates the Payment and no items. A
+  receipt that reached a browser would have shown an **empty table above a
+  total**. §38's newly populated `course_id` is what lets the payment name
+  what was bought.
+- The method line read `BML {{ $payment->provider }}`, printing **"BML bml"**
+  for a gateway payment and **"BML manual"** for cash at the office — the one
+  case where it is certainly not BML. §38 separates gateway from method, so
+  the receipt now shows both as the different things they are.
+
+#### A deliberate narrowing
+
+§45 asks for **permissions**, not roles. Staff access was a `hasAnyRole` list
+including `supervisor`, who does **not** hold `finance.manage`. It is now the
+`finance.manage` permission that governs the rest of Finance — so an academic
+supervisor loses access to families' payment receipts. Stated rather than
+slipped in.
+
+#### Verification
+
+**Revert-check:** restoring the `['paid', 'completed']` gate turns 5 of the 10
+new tests red.
+
+**Walked in a browser:** `/en/payments/2/receipt` returns **200** (was 404) and
+renders `Complete Quran Memorization (Hifz) · 500.00 · Total 500.00 MVR ·
+Paid through: Recorded at the institute · Payment method: Bank transfer` —
+the item fallback and the §38 gateway/method split both visible on the page.
+
+**1,531 tests green** (10 new), arch green.
+
 #### Environment recovery, recorded because it cost most of a turn
 
 The container restart took MySQL, `vendor/`, `node_modules`, `.env` and the
