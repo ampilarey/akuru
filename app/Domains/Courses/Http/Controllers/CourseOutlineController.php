@@ -6,6 +6,7 @@ use App\Domains\Courses\Actions\AttachLessonGlossaryItemAction;
 use App\Domains\Courses\Actions\DeleteContentBlockAction;
 use App\Domains\Courses\Actions\DeleteCourseModuleAction;
 use App\Domains\Courses\Actions\DetachLessonGlossaryItemAction;
+use App\Domains\Courses\Actions\DuplicateContentBlockAction;
 use App\Domains\Courses\Actions\ListCourseOutlineAction;
 use App\Domains\Courses\Actions\PublishLessonAction;
 use App\Domains\Courses\Actions\ReorderContentBlocksAction;
@@ -119,9 +120,24 @@ class CourseOutlineController extends Controller
     public function destroyBlock(Request $request, int $course, ContentBlock $block): RedirectResponse
     {
         abort_unless($request->user()?->can('courses.manage'), 403);
+        abort_unless((int) $block->course_id === $course, 404);
         app(DeleteContentBlockAction::class)->execute($block);
 
         return redirect()->route('catalog.courses.outline', $course)->with('success', 'Block deleted.');
+    }
+
+    /**
+     * SPEC §16 "Duplicating blocks where safe" — there was no way to copy a
+     * block at all, so a run of similar blocks had to be retyped.
+     */
+    public function duplicateBlock(Request $request, int $course, ContentBlock $block): RedirectResponse
+    {
+        abort_unless($request->user()?->can('courses.manage'), 403);
+        abort_unless((int) $block->course_id === $course, 404);
+
+        app(DuplicateContentBlockAction::class)->execute($block);
+
+        return redirect()->route('catalog.courses.outline', $course)->with('success', 'Block duplicated.');
     }
 
     public function reorderBlocks(Request $request, int $course): RedirectResponse
@@ -132,7 +148,13 @@ class CourseOutlineController extends Controller
             'block_ids' => ['required', 'array'],
             'block_ids.*' => ['integer'],
         ]);
-        app(ReorderContentBlocksAction::class)->execute((int) $data['lesson_id'], $data['block_ids']);
+        // The lesson was only checked to exist. Without this a reorder posted
+        // against course A could renumber a lesson belonging to course B, and
+        // the redirect would send the author back to A showing no change.
+        $lesson = Lesson::query()->findOrFail((int) $data['lesson_id']);
+        abort_unless((int) $lesson->course_id === $course, 404);
+
+        app(ReorderContentBlocksAction::class)->execute($lesson->id, $data['block_ids']);
 
         return redirect()->route('catalog.courses.outline', $course)->with('success', 'Blocks reordered.');
     }

@@ -1,4 +1,5 @@
 import { router, useForm } from '@inertiajs/react';
+import { useEffect, useRef, useState } from 'react';
 import AppShell from '../../../Layouts/AppShell';
 
 const MEDIA_TYPES = ['image', 'audio', 'video', 'pdf', 'download'];
@@ -16,6 +17,147 @@ function blockLabel(block) {
         || block.data?.embed_url
         || block.title
         || '—';
+}
+
+/**
+ * SPEC §16: "Block reordering must use drag and drop" and "Reordering must
+ * persist correctly." The backend and its route existed; nothing in the UI
+ * ever called them, so the order a block was created in was the only order it
+ * could ever have.
+ *
+ * Drag and drop is native HTML5 — no dependency added for it. Dragging is also
+ * not reachable by keyboard and is awkward on touch, so each block keeps Up
+ * and Down buttons that post the same payload. §16 asks for drag and drop; it
+ * does not ask for drag and drop *only*.
+ *
+ * The list is optimistic: the new order paints immediately and is posted with
+ * `preserveScroll`. If the server refuses it, the reload brings back the real
+ * order and the effect below re-seeds from it.
+ */
+function LessonBlockList({ courseId, lesson }) {
+    const blocks = lesson.blocks || [];
+    const [order, setOrder] = useState(() => blocks.map((block) => block.id));
+    // The dragged index lives in a ref, not state. `onDrop` has to read the
+    // value `onDragStart` wrote, and a state write is only visible to a later
+    // render — fine when a real pointer puts time between the two events,
+    // but the drop silently did nothing when they arrived in one task. The
+    // highlight is separate because that genuinely is a render concern.
+    const draggingRef = useRef(null);
+    const [dragging, setDragging] = useState(null);
+
+    // Re-seed whenever the server sends a different set — after a save, a
+    // delete, a duplicate, or a rejected reorder.
+    const signature = blocks.map((block) => block.id).join(',');
+    useEffect(() => {
+        setOrder(blocks.map((block) => block.id));
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [signature]);
+
+    const persist = (ids) => {
+        setOrder(ids);
+        router.post(
+            `/catalog/courses/${courseId}/blocks/reorder`,
+            { lesson_id: lesson.id, block_ids: ids },
+            { preserveScroll: true },
+        );
+    };
+
+    const moveTo = (fromIndex, toIndex) => {
+        if (toIndex < 0 || toIndex >= order.length || fromIndex === toIndex) {
+            return;
+        }
+        const next = [...order];
+        const [moved] = next.splice(fromIndex, 1);
+        next.splice(toIndex, 0, moved);
+        persist(next);
+    };
+
+    if (blocks.length === 0) {
+        return <p className="text-sm text-gray-500">No blocks yet.</p>;
+    }
+
+    const byId = new Map(blocks.map((block) => [block.id, block]));
+
+    return (
+        <ul className="space-y-1 text-sm text-gray-700">
+            {order.map((id, index) => {
+                const block = byId.get(id);
+                if (!block) {
+                    return null;
+                }
+
+                return (
+                    <li
+                        key={id}
+                        draggable
+                        aria-label={`Block ${index + 1} of ${order.length}: ${block.type}`}
+                        onDragStart={() => {
+                            draggingRef.current = index;
+                            setDragging(index);
+                        }}
+                        onDragEnd={() => {
+                            draggingRef.current = null;
+                            setDragging(null);
+                        }}
+                        onDragOver={(e) => e.preventDefault()}
+                        onDrop={(e) => {
+                            e.preventDefault();
+                            const from = draggingRef.current;
+                            draggingRef.current = null;
+                            setDragging(null);
+                            if (from !== null) {
+                                moveTo(from, index);
+                            }
+                        }}
+                        className={`flex flex-wrap items-center justify-between gap-3 rounded border p-2 ${
+                            dragging === index ? 'border-[#7C2D37] bg-[#F9F4EE]' : 'border-transparent'
+                        }`}
+                    >
+                        <span className="flex items-center gap-2">
+                            <span aria-hidden="true" className="cursor-grab text-gray-400">⠿</span>
+                            <span>{index + 1}. {block.type}: {blockLabel(block)}</span>
+                        </span>
+                        <span className="flex items-center gap-2">
+                            <button
+                                type="button"
+                                className="btn-secondary"
+                                disabled={index === 0}
+                                onClick={() => moveTo(index, index - 1)}
+                            >
+                                Up
+                            </button>
+                            <button
+                                type="button"
+                                className="btn-secondary"
+                                disabled={index === order.length - 1}
+                                onClick={() => moveTo(index, index + 1)}
+                            >
+                                Down
+                            </button>
+                            <button
+                                type="button"
+                                className="text-xs text-[#7C2D37]"
+                                onClick={() => router.post(
+                                    `/catalog/courses/${courseId}/blocks/${block.id}/duplicate`,
+                                    {},
+                                    { preserveScroll: true },
+                                )}
+                            >
+                                Duplicate
+                            </button>
+                            <button
+                                type="button"
+                                className="text-xs text-red-700"
+                                onClick={() => router.delete(`/catalog/courses/${courseId}/blocks/${block.id}`, { preserveScroll: true })}
+                            >
+                                Delete draft
+                            </button>
+                        </span>
+                    </li>
+                );
+            })}
+        </ul>
+    );
 }
 
 function LessonGlossaryForm({ courseId, lesson, glossaryItems }) {
@@ -273,14 +415,7 @@ export default function Outline({ course, modules, glossaryItems = [] }) {
                                         <a className="text-sm text-[#7C2D37] hover:underline" href={`/catalog/player/${lesson.id}`}>Open player</a>
                                     )}
                                 </div>
-                                <ul className="text-sm text-gray-700">
-                                    {lesson.blocks.map((block) => (
-                                        <li key={block.id} className="flex justify-between gap-3">
-                                            <span>{block.type}: {blockLabel(block)}</span>
-                                            <button type="button" className="text-xs text-red-700" onClick={() => router.delete(`/catalog/courses/${course.id}/blocks/${block.id}`)}>Delete draft</button>
-                                        </li>
-                                    ))}
-                                </ul>
+                                <LessonBlockList courseId={course.id} lesson={lesson} />
                                 <LessonGlossaryForm courseId={course.id} lesson={lesson} glossaryItems={glossaryItems} />
                             </div>
                         ))}

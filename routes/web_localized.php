@@ -1016,7 +1016,8 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::post('courses/{course}/lessons', [CourseOutlineController::class, 'storeLesson'])->name('catalog.courses.lessons.store')->whereNumber('course');
         Route::post('courses/{course}/blocks', [CourseOutlineController::class, 'storeBlock'])->name('catalog.courses.blocks.store')->whereNumber('course');
         Route::post('courses/{course}/blocks/reorder', [CourseOutlineController::class, 'reorderBlocks'])->name('catalog.courses.blocks.reorder')->whereNumber('course');
-        Route::delete('courses/{course}/blocks/{block}', [CourseOutlineController::class, 'destroyBlock'])->name('catalog.courses.blocks.destroy')->whereNumber('course');
+        Route::post('courses/{course}/blocks/{block}/duplicate', [CourseOutlineController::class, 'duplicateBlock'])->name('catalog.courses.blocks.duplicate')->whereNumber('course')->whereNumber('block');
+        Route::delete('courses/{course}/blocks/{block}', [CourseOutlineController::class, 'destroyBlock'])->name('catalog.courses.blocks.destroy')->whereNumber('course')->whereNumber('block');
         Route::post('courses/{course}/lessons/{lesson}/publish', [CourseOutlineController::class, 'publishLesson'])->name('catalog.courses.lessons.publish')->whereNumber('course');
         Route::post('courses/{course}/lessons/{lesson}/preview', [CourseOutlineController::class, 'togglePreview'])->name('catalog.courses.lessons.preview')->whereNumber('course');
         Route::post('courses/{course}/lessons/{lesson}/glossary', [CourseOutlineController::class, 'attachGlossary'])->name('catalog.courses.lessons.glossary.attach')->whereNumber('course');

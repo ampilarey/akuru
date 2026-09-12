@@ -5974,6 +5974,92 @@ because `/correct_answer/` matches the substring inside
 `"show_correct_answers":false`, a settings field name. The server was stripping
 the key correctly all along. The check is now anchored on `"correct_answer":`.
 
+### SPEC §16: reordering had a backend, a route, and no caller
+
+§16 lists what the content block builder must support. Three of its items were
+missing, and one of the three had its backend already sitting there unused:
+
+> Reordering blocks · Duplicating blocks where safe
+>
+> Block reordering must use drag and drop.
+>
+> Reordering must persist correctly.
+
+`catalog.courses.blocks.reorder` and `ReorderContentBlocksAction` existed.
+**Nothing in `Outline.jsx` ever posted to them.** The order a block was created
+in was the only order it could ever have — and the outline is the only place a
+lesson's blocks can be arranged, so a mistyped sequence meant deleting blocks
+and retyping them. Duplicating was not built at all.
+
+**The unused backend was also wrong**, which is the part that would have bitten
+whoever wired it up first. `ReorderContentBlocksAction` wrote
+`position = array index` for whatever ids it was handed, one UPDATE at a time,
+and validated nothing:
+
+- A **partial** list renumbered only the ids given. Send `[C, B]` for a lesson
+  holding `[A, B, C]` and C lands on 0 beside A, B lands on 1 beside itself —
+  two blocks per position, and the order the player then shows is a database
+  tie-break. §16 says "Reordering must persist correctly"; this did not.
+- An id from **another lesson** was silently skipped, so a reorder built from
+  stale client state half-applied and still reported success.
+
+The action now requires the list to name the lesson's blocks exactly — same
+set, each once — and renumbers inside a transaction, so a refused reorder
+leaves the lesson untouched. The route gained the lesson-belongs-to-course
+check the other outline methods already had; without it a reorder posted under
+course A could renumber course B's lesson and redirect the author back to A
+showing nothing changed.
+
+**Drag and drop is native HTML5**, no dependency added. Each block also keeps
+Up/Down buttons: dragging is unreachable by keyboard and awkward on touch, and
+§16 asks for drag and drop, not for drag and drop *only*. Saying that plainly
+rather than letting the buttons imply the drag requirement was skipped.
+
+**"Where safe" for duplication is: everywhere, and it is worth saying why.**
+The outline is the working copy — students read the published revision snapshot
+via `ResolvePublishedLessonAction` — so adding a block to a published lesson
+changes nothing for anyone until the author publishes again. And a media block
+holds a `media_id` that block deletion never removes, so two blocks sharing one
+upload is an ordinary state, not a dangling reference in waiting. The copy
+lands **immediately after** the original: duplicating is how an author builds a
+run of similar blocks, and dropping it at the bottom would mean a reorder every
+time.
+
+**A real bug the browser walk found in my own new code.** `onDrop` read the
+dragged index from React state that `onDragStart` had written. A state write is
+only visible to a later render — fine when a real pointer puts time between the
+two events, which is why this would have passed a casual manual check, but the
+drop did nothing when both events arrived in one task. It is a ref now. The
+walk caught it because the drag assertion dispatches the real events rather
+than only asserting `draggable` is set; the weaker assertion would have been
+green on broken code.
+
+**11 new tests; full suite green.** **Walked in a browser**:
+
+```
+ok   the blocks list renders with reorder controls (3 blocks)
+ok   every block is draggable (SPEC §16)
+ok   moving a block down persisted through a reload
+ok   Up is disabled on the first block
+ok   duplicating added a block (3 → 4)
+ok   the copy landed directly after the original
+ok   dragging the last block onto the first persisted (SPEC §16)
+```
+
+**Cleared while here, not faulted:** the outline's "Delete draft" button is
+correctly safe on a published lesson for the same reason duplication is — it
+edits the working copy, not the revision students read. §16's remaining items
+(previewing, validating, media upload, RTL preview, mobile preview) are
+unaudited and stay on the list.
+
+**Process note, recorded because it cost real work:** midway through this slice
+I ran `git reset --hard origin/main` intending to rebase onto the just-merged
+#284. It discarded every uncommitted tracked edit in the slice. The two new
+files survived only because `reset --hard` leaves untracked files alone, and
+the rest was retyped from the session's own context. The lesson is mechanical:
+commit the slice *before* moving the branch, or use `git rebase`, never `reset
+--hard` as a way to pick up a new base with work in the tree.
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**.
