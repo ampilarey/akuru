@@ -11,9 +11,11 @@
  *
  * Nothing did. `PageController` validated `body` as `required|string` and the
  * public page rendered it raw, on a surface an anonymous visitor sees and a
- * `supervisor` can author. This test does not fix that; it makes the full list
- * visible, and stops a new one being added without somebody saying which kind
- * it is.
+ * `supervisor` can author.
+ *
+ * Every authored surface now sanitises on write. What this test does is keep
+ * the list honest: a new `{!! !!}` cannot be added without somebody saying
+ * which kind it is, and a surface cannot quietly stop being sanitised.
  *
  * Filesystem only. No database, no HTTP.
  */
@@ -41,17 +43,25 @@ it('declares every raw HTML render in a Blade view', function () {
         'documents/course-certificate.blade.php' => 'system-generated: template body and QR svg',
         'documents/id-card.blade.php' => 'system-generated: QR svg',
 
-        // Known gaps. Internal-facing, narrower audience than the public site.
-        'public/research/show.blade.php' => 'UNSANITISED: research_items.body',
-        'public/library/show.blade.php' => 'UNSANITISED: library item body',
-        'public/library/reader.blade.php' => 'UNSANITISED: protected reader content',
-        'public/articles/show.blade.php' => 'UNSANITISED: posts.body',
-        'public/news/show.blade.php' => 'UNSANITISED: posts.body',
-        'public/about/index.blade.php' => 'UNSANITISED: pages.body via the about page',
-        'public/events/show.blade.php' => 'UNSANITISED: events.description and requirements',
-        'e-learning/show.blade.php' => 'UNSANITISED: subject descriptions (3 locales)',
-        'announcements/index.blade.php' => 'UNSANITISED: announcement content (3 locales)',
-        'announcements/show.blade.php' => 'UNSANITISED: announcement content (3 locales)',
+        'public/research/show.blade.php' => 'sanitised on write (SaveResearchPostAction)',
+        'public/articles/show.blade.php' => 'sanitised on write (SaveResearchPostAction — same posts table)',
+        'public/news/show.blade.php' => 'sanitised on write (SaveResearchPostAction — same posts table)',
+        'public/about/index.blade.php' => 'sanitised on write (PageController)',
+        'public/events/show.blade.php' => 'sanitised on write (SaveEventAction); requirements is an array, iterated and escaped',
+        'announcements/index.blade.php' => 'sanitised on write (AnnouncementController, 3 locales)',
+        'announcements/show.blade.php' => 'sanitised on write (AnnouncementController, 3 locales)',
+
+        // Library items are the lowest-privilege authored HTML in the app:
+        // written by approved writers, and any authed user may apply to be one.
+        // Both the admin and writer paths funnel through SaveLibraryItemAction,
+        // and the reader's pages are chunked from the same sanitised body.
+        'public/library/show.blade.php' => 'sanitised on write (SaveLibraryItemAction)',
+        'public/library/reader.blade.php' => 'sanitised on write (pages chunked from the sanitised item body)',
+
+        // Not a gap and not sanitised: a legacy screen whose columns
+        // (subjects.description_arabic / _dhivehi) are written by nothing but
+        // DemoDataCommand. There is no user-facing path to reach them.
+        'e-learning/show.blade.php' => 'no write path: legacy screen, seed-only columns',
     ];
 
     // Blade's own helpers are markup the framework emits, not authored content.

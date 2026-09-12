@@ -5,6 +5,7 @@ namespace App\Domains\Website\Actions;
 use App\Domains\Media\Actions\StorePublicMediaAction;
 use App\Domains\Website\Enums\PostType;
 use App\Domains\Website\Models\Post;
+use App\Support\Html\HtmlSanitizer;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -37,7 +38,12 @@ class SaveResearchPostAction
 
         $abstract = trim((string) ($input['abstract'] ?? ''));
         $abstract = $abstract !== '' ? $abstract : null;
-        $body = (string) ($input['body'] ?? '');
+        // Rendered raw at public/research/show.blade.php, public/articles/show.blade.php
+        // and public/news/show.blade.php — all three read the same `posts` table.
+        $body = app(HtmlSanitizer::class)->clean(
+            (string) ($input['body'] ?? ''),
+            HtmlSanitizer::PROFILE_CMS,
+        );
         $citation = trim((string) ($input['citation_note'] ?? ''));
         $citation = $citation !== '' ? $citation : null;
         $summary = $abstract ?? Str::limit(strip_tags($body), 200);
