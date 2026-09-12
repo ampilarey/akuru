@@ -142,6 +142,12 @@ class HifzScopeService
         return collect();
     }
 
+    /**
+     * Reads `guardian_student`, the pivot the product writes. This used to call
+     * the guardian's legacy `students()` relation over `student_parent`, which
+     * nothing in the application writes — so a real parent's child list came
+     * back empty here, and `canAccessStudent()` refused them their own child.
+     */
     protected function parentChildIds(User $user): Collection
     {
         $parent = $user->parentGuardian;
@@ -150,6 +156,6 @@ class HifzScopeService
             return collect();
         }
 
-        return $parent->students()->pluck('students.id');
+        return $parent->children()->pluck('students.id');
     }
 }

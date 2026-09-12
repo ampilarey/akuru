@@ -38,6 +38,31 @@ class ParentGuardian extends Model
         return $this->belongsTo(User::class);
     }
 
+    /**
+     * The guardian's children, through `guardian_student` — the pivot the rest
+     * of the product actually writes.
+     *
+     * Prefer this to `students()`. There are two guardian↔student pivots in
+     * this schema and only this one is live: every notification listener
+     * (absence SMS, behaviour SMS, exam results, report cards) and every People
+     * action (collection policy, financial responsibility, guardian access)
+     * reads `guardian_student`. `student_parent` is written by nothing in the
+     * application — `HifzDemoSeeder` was its only writer, which is why the Hifz
+     * parent dashboard worked for the demo parent and 403'd for every real one.
+     */
+    public function children(): BelongsToMany
+    {
+        return $this->belongsToMany(Student::class, 'guardian_student', 'guardian_id', 'student_id')
+            ->withPivot('relationship', 'is_primary', 'can_pickup', 'financial_responsible')
+            ->withTimestamps();
+    }
+
+    /**
+     * @deprecated Reads the legacy `student_parent` pivot, which nothing writes.
+     *             Use `children()`. Kept because the table is populated and
+     *             rule 9 does not drop populated tables in the deploy that
+     *             stops using them.
+     */
     public function students(): BelongsToMany
     {
         return $this->belongsToMany(Student::class, 'student_parent')

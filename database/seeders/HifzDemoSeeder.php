@@ -231,8 +231,11 @@ class HifzDemoSeeder extends Seeder
                     'relationship' => 'father',
                 ]
             );
-            $guardian->students()->syncWithoutDetaching([
-                $students->first()->id => ['relationship' => 'father', 'is_primary_contact' => true],
+            // `guardian_student` is the pivot the product writes; seeding the
+            // legacy `student_parent` one is what made the demo parent the only
+            // parent who could open the Hifz dashboard.
+            $guardian->children()->syncWithoutDetaching([
+                $students->first()->id => ['relationship' => 'father', 'is_primary' => true],
             ]);
         }
 

@@ -228,6 +228,14 @@ class User extends Authenticatable implements MustVerifyEmail
 
     /**
      * School children linked via ParentGuardian profile (LMS students, not course registrants).
+     *
+     * Reads `guardian_student`. It used to read the guardian's `students()`
+     * relation, which is the legacy `student_parent` pivot that nothing in the
+     * application writes — so this returned an empty set for every parent the
+     * product itself had linked, and its one caller
+     * (`ParentHifzDashboardController`) turns an empty set into a 403. The Hifz
+     * parent dashboard therefore worked only for the demo-seeded parent, whose
+     * link `HifzDemoSeeder` wrote into the legacy pivot by hand.
      */
     public function schoolChildren()
     {
@@ -237,7 +245,7 @@ class User extends Authenticatable implements MustVerifyEmail
             return Student::query()->whereRaw('1 = 0');
         }
 
-        return $parent->students();
+        return $parent->children();
     }
 
     /** Course / unified children via guardian_student (Deploy 2 reads). */
