@@ -24,6 +24,12 @@ class ResolveAssessmentSettingsAction
             'show_results' => (bool) $assessment->show_results,
             'show_correct_answers' => (bool) $assessment->show_correct_answers,
             'passing_score' => $assessment->passing_score !== null ? (int) $assessment->passing_score : null,
+            // SPEC §31. This was absent, which is why nothing downstream could
+            // enforce the limit even in principle: the submit path resolves
+            // settings through here and the field simply never arrived.
+            'time_limit_minutes' => $assessment->time_limit_minutes !== null
+                ? (int) $assessment->time_limit_minutes
+                : null,
             'max_score' => (int) $assessment->max_score,
         ];
     }

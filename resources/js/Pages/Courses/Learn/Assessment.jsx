@@ -1,5 +1,5 @@
 import { router, usePage } from '@inertiajs/react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import AppShell from '../../../Layouts/AppShell';
 
 function blankAnswers(snapshots, existing) {
@@ -19,10 +19,37 @@ function blankAnswers(snapshots, existing) {
     return next;
 }
 
+function formatRemaining(seconds) {
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+
+    return `${m}:${String(s).padStart(2, '0')}`;
+}
+
 export default function Assessment({ assessment, enrollment, attempt }) {
     const t = usePage().props.i18n?.learn || {};
     const submitted = attempt && attempt.status !== 'in_progress';
     const [answers, setAnswers] = useState(() => blankAnswers(attempt?.snapshots || [], attempt?.answers || {}));
+
+    // SPEC §31: the countdown is SEEDED from the server's `seconds_remaining`
+    // and only ticked locally. The device clock is never asked what time it is
+    // — it is only asked how long a second is, which is the one thing it can be
+    // trusted about. On reload the server's figure wins again.
+    const [remaining, setRemaining] = useState(attempt?.seconds_remaining ?? null);
+
+    useEffect(() => {
+        setRemaining(attempt?.seconds_remaining ?? null);
+    }, [attempt?.seconds_remaining]);
+
+    useEffect(() => {
+        if (remaining === null || submitted) return undefined;
+        if (remaining <= 0) return undefined;
+        const id = setInterval(() => setRemaining((r) => (r === null ? null : Math.max(0, r - 1))), 1000);
+
+        return () => clearInterval(id);
+    }, [remaining, submitted]);
+
+    const outOfTime = remaining !== null && remaining <= 0;
 
     const setAnswer = (questionId, value) => {
         setAnswers((current) => ({ ...current, [questionId]: value }));
@@ -30,6 +57,30 @@ export default function Assessment({ assessment, enrollment, attempt }) {
 
     return (
         <AppShell title={assessment.title}>
+            {remaining !== null && !submitted && (
+                <div
+                    role="status"
+                    className={`mb-4 rounded-lg border p-3 text-sm ${
+                        outOfTime
+                            ? 'border-red-300 bg-red-50 text-red-900'
+                            : remaining <= 120
+                                ? 'border-amber-300 bg-amber-50 text-amber-900'
+                                : 'border-gray-200 bg-gray-50 text-gray-700'
+                    }`}
+                >
+                    {outOfTime ? (
+                        <>
+                            <strong>Time is up.</strong> Answers saved before the deadline have been kept;
+                            anything typed after it will not be counted.
+                        </>
+                    ) : (
+                        <>
+                            <strong>Time remaining: {formatRemaining(remaining)}</strong>
+                            {attempt?.time_limit_minutes ? ` of ${attempt.time_limit_minutes} minutes` : ''}.
+                        </>
+                    )}
+                </div>
+            )}
             <p className="mb-4 text-sm text-gray-600">
                 {enrollment?.course_id ? (
                     <a className="text-[#7C2D37] hover:underline" href={`/learn/courses/${enrollment.course_id}`}>{t.course || 'Course'}</a>

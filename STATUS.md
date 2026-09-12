@@ -5307,6 +5307,63 @@ while building the walk fixture. Whether an archived course should release its
 slug is a product question (the old URL may still be linked), so it is recorded
 here rather than decided in a delete slice.
 
+### SPEC §31: assessment time limits were decorative
+
+Continuing the section-by-section `SPEC.md` walk after §29. §31 says:
+
+> Assessment countdowns and time limits must be computed **server-side** from
+> `attempt.started_at` and configured time limit. Never trust client device
+> clocks for time-limit enforcement.
+
+`assessments.time_limit_minutes` was settable in the admin screen, stored, and
+listed to the student. It was enforced **nowhere**.
+`ResolveAssessmentSettingsAction` — which the submit path uses to resolve
+settings — did not even return the field, so `SubmitAssessmentAttemptAction`
+could not have honoured it if it had wanted to. There was no client-side
+countdown either. A teacher set thirty minutes and a student could take a week.
+
+**Enforced, without destroying work.** `ResolveAssessmentDeadlineAction` is the
+single place a deadline is computed, so the countdown the student sees and the
+cut-off the server applies can never disagree — which is what §31's second
+sentence is really guarding against. On submit, late answers are discarded and
+the attempt is scored on what **autosave** had already written; nothing saved
+inside the limit is lost. Refusing the submission outright would punish a slow
+connection exactly as hard as cheating.
+
+**Three details that decide whether this is fair:**
+
+- A **30-second grace window**. A student pressing Submit on the last second
+  still has to get the request across a Maldivian mobile connection; refusing
+  that fails precisely the person who obeyed the limit.
+- **Autosave is closed too.** Without that, a browser left open past the
+  deadline keeps posting answers and every one becomes "what was in hand when
+  time ran out" — which would make the submit-side cut-off pointless.
+- **The countdown is served, then ticked locally.** The device clock is never
+  asked what time it is, only how long a second is, and a reload re-seeds from
+  the server.
+
+The student is told, rather than silently cut off — an enforced limit with no
+visible timer is a trap.
+
+**1,277 tests green** (10 new). **Walked in a browser** as a student:
+
+```
+PASS  the timed assessment loads — status 200
+PASS  the student is shown time remaining — Time remaining: 37:49 of 45 minutes.
+PASS  the countdown ticks down — 37:49 → 37:47
+PASS  the expired assessment still loads rather than erroring — status 200
+PASS  the student is told time is up — Time is up. Answers saved before the deadline
+      have been kept; anything typed after it will not be counted.
+PASS  no countdown is offered on an expired attempt
+No 5xx responses during the walk.
+```
+
+**Not done here (rule 1):** nothing auto-submits an abandoned attempt at the
+deadline. It stays `in_progress` until the student returns and submits, at which
+point the autosaved answers are scored. Closing them on a schedule needs a job
+and a decision about what an unattempted expiry should score, which is a
+question for the owner rather than a delete-and-see.
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**.
