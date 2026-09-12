@@ -5436,6 +5436,75 @@ needs a decision about how much a shared connection — a school computer lab, a
 household — should be allowed to do before it looks like an attack, and getting
 that wrong locks out a whole building.
 
+### Deleting a course could not be undone — and the walk found unpublished courses on the public site
+
+Two defects, the second found by the browser walk for the first.
+
+**1. #272's safe delete was not reversible.** That slice made Delete keep the
+row when a course has a roster, attempts or payment line items, because
+`course_enrollments.course_id` and `payment_items.course_id` both CASCADE. What
+it did not do was give anybody a way back: **nothing in the app called
+`withTrashed()`, `onlyTrashed()` or `restore()`**. The course left every screen
+and could not be seen or recovered short of a database client. A safe delete
+that is in practice final is just a slower one.
+
+Worse, `unique:courses` reads the raw table, so the deleted row still held its
+slug. Trying to re-create a course at that address produced *"The slug has
+already been taken"* with **no course on any screen holding it** — an
+unanswerable error.
+
+Now: `admin/public-site/courses/deleted` lists what was removed, says what each
+course holds (the counts are the justification for the row still existing), and
+restores it. The slug collision names the course and points at Restore.
+
+**A naming trap avoided.** The catalogue **already** has an Archive — a
+`workflow_status` value, set from the Catalog screen, on an ordinary visible
+row. Calling this screen "Archived courses" would have given the word two
+meanings in one admin. It is "Deleted courses", and the delete flash no longer
+says "Course archived" either.
+
+**2. The walk failed on a step I expected to pass**, and the failure was not
+mine: `restoring did not put it back on the public site`. The restore was
+correct — the course went back to `draft` — and the public page served it
+anyway.
+
+`scopeOpenForPublicListing()` filtered on `status` (open/upcoming, which is
+about **enrolment**) and never on `workflow_status` (which is about
+**publication**). `PublicSite\CourseController::show()` had **no gate at all**:
+any course was readable at its own URL, in any state, by anyone who knew the
+slug. In the seeded dataset **11 of 12 courses were drafts, and all 11 were
+publicly listed**.
+
+The strongest evidence this was an accident rather than a decision: adding the
+gate broke **13 existing tests**, every one of which asserted that a public
+course page renders — for a course the factory had left as a draft. Not one
+test in the suite had ever asserted a *published* course. `CourseFactory` now
+defaults to `published`, and `CoursePublicationGateTest` pins the draft and
+in-review cases explicitly so the gate cannot drift back.
+
+**1,300 tests green** (13 new). **Walked in a browser** end to end:
+
+```
+ok   the course is in Manage Courses before deleting
+ok   delete says what it kept: "Course removed from the catalogue. It has 1 enrolment,
+     which stay on the record (SPEC §29) — you can restore it from Deleted courses."
+ok   the message avoids "archived", which means something else here
+ok   the course is gone from Manage Courses
+ok   the deleted course is listed for recovery
+ok   the screen says what the course holds
+ok   the slug it still holds is shown
+ok   restore explains the draft
+ok   the course is back in Manage Courses
+ok   restoring did not put it back on the public site
+```
+
+Decisions recorded as **ADR-033**.
+
+**Correcting an earlier entry in this document:** the finding was first written
+up as "SPEC §33 Archive course is missing". That was wrong — §33's Archive is
+built, as the catalogue workflow state. The real defect was narrower and is as
+described above.
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**.

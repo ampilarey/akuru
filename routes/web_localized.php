@@ -569,6 +569,13 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         // — but omitting a name only leaves the route **unnamed**, it still
         // registers. `AdminCourseController` has no `show` method, so
         // `GET admin/public-site/courses/{course}` answered 500 on every hit.
+        // Recovery for #272's safe delete. Declared BEFORE the resource, or
+        // `courses/deleted` is swallowed by `courses/{course}` (which binds by
+        // slug, so it would 404 looking for a course called "deleted").
+        Route::get('courses/deleted', [AdminCourseController::class, 'deleted'])->name('admin.courses.deleted');
+        Route::post('courses/{course}/restore', [AdminCourseController::class, 'restore'])
+            ->name('admin.courses.restore')->whereNumber('course');
+
         Route::resource('courses', AdminCourseController::class)->except('show')->names([
             'index' => 'admin.courses.index',
             'create' => 'admin.courses.create',

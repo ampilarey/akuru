@@ -2,6 +2,7 @@
 
 namespace App\Domains\Courses\Models;
 
+use App\Domains\Courses\Enums\CourseWorkflowStatus;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -154,20 +155,46 @@ class Course extends Model
             });
     }
 
+    /**
+     * Whether the public site may show this course at all.
+     *
+     * A method rather than an enum comparison at each call site, so callers in
+     * other domains do not have to import `Courses\Enums` to ask (rule 3).
+     */
+    public function isPublished(): bool
+    {
+        return $this->workflow_status === CourseWorkflowStatus::Published;
+    }
+
+    /**
+     * What the public site may list.
+     *
+     * `status` (open/upcoming/closed) is about *enrolment*; `workflow_status`
+     * (draft/in_review/published/archived) is about *publication*. This scope
+     * filtered on the first and never on the second, so a course being written
+     * was on the public site the moment somebody set its status to "open" —
+     * 11 of the 12 courses in the seeded dataset were drafts, and all 11 were
+     * listed. `PublicSite\CourseController::show()` had no gate at all, so any
+     * course was also readable at its own URL whatever state it was in.
+     *
+     * Publication is now the first condition, because it is the one that says
+     * whether anybody outside the institute was meant to see this at all.
+     */
     public function scopeOpenForPublicListing($query)
     {
         $today = now()->timezone(config('app.timezone'))->toDateString();
 
-        return $query->where(function ($q) use ($today) {
-            $q->where('status', 'upcoming')
-                ->orWhere(function ($q) use ($today) {
-                    $q->where('status', 'open')
-                        ->where(function ($q) use ($today) {
-                            $q->whereNull('enrollment_deadline')
-                                ->orWhereDate('enrollment_deadline', '>=', $today);
-                        });
-                });
-        });
+        return $query->where('workflow_status', CourseWorkflowStatus::Published->value)
+            ->where(function ($q) use ($today) {
+                $q->where('status', 'upcoming')
+                    ->orWhere(function ($q) use ($today) {
+                        $q->where('status', 'open')
+                            ->where(function ($q) use ($today) {
+                                $q->whereNull('enrollment_deadline')
+                                    ->orWhereDate('enrollment_deadline', '>=', $today);
+                            });
+                    });
+            });
     }
 
     public function scopeUpcoming($query)

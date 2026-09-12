@@ -51,6 +51,7 @@ it('reaches every admin landing page from the Blade nav', function () {
         // Same call as the reading alerts: a security log naming contacts that
         // have been refused should be opened deliberately, not sat in a menu.
         'admin.users.otp-abuse' => 'opened from User management (admin.users.index)',
+        'admin.courses.deleted' => 'opened from Manage Courses (admin.courses.index)',
     ];
 
     $nav = (string) file_get_contents(resource_path('views/layouts/navigation.blade.php'));

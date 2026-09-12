@@ -34,6 +34,13 @@ class CourseFactory extends Factory
             'registration_fee_currency' => 'MVR',
             'requires_admin_approval' => true,
             'status' => 'open',
+            // The factory never set this, so every factory-made course was a
+            // draft — and thirteen tests asserting that a public course page
+            // renders were, without anyone noticing, asserting it for content
+            // that should never have been public. A factory course is meant to
+            // be an ordinary usable course; tests about unpublished states set
+            // this explicitly (see CoursePublicationGateTest).
+            'workflow_status' => 'published',
             'seats' => null,
         ];
     }

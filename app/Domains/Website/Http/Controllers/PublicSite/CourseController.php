@@ -120,6 +120,12 @@ class CourseController extends Controller
 
     public function show(Course $course)
     {
+        // The listing filtered on `status` and never on `workflow_status`; this
+        // page filtered on nothing at all. A course being written was readable
+        // at its own URL by anybody who knew the slug, whatever state it was
+        // in. Publication is what decides whether the public may see it.
+        abort_unless($course->isPublished(), 404);
+
         $course->load('category', 'admissionApplications', 'instructors');
 
         // Related courses from same category
