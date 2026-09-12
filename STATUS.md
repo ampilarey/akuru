@@ -6268,33 +6268,48 @@ behaviour: reverting the two changes turns **5 of 14** red.
 
 #### Two findings from the walk that are not fixed here
 
-**1. `upload_max_filesize` makes every §30 limit unreachable.** The first walk
-run "passed" its oversize check for the wrong reason: PHP's
-`upload_max_filesize` is **2M**, so the 6MB image never reached Laravel at all.
-At that setting §30's limits are aspirational — a 5MB image, a 20MB audio file
-and a 200MB video are all impossible regardless of what the code says. Re-run
-against `-d upload_max_filesize=20M -d post_max_size=25M`, the refusal came
-from the new code, as intended:
+**1. `upload_max_filesize` makes every §30 limit unreachable, and the browser
+walk could not exercise the new code at all.** The oversize check "passed" for
+the wrong reason: PHP's `upload_max_filesize` is **2M**, so the 6MB image never
+reached Laravel — the refusal came from PHP, not from this slice.
 
-```
-ok   a small image uploads and becomes a block (8 → 9)
-ok   a 6MB image is refused (SPEC §30: images max 5MB) (9 → 9)
-```
+**Two of my own corrections belong here, because I got both wrong first.**
 
-This is **operator-gated**: `php.ini` (`upload_max_filesize`, `post_max_size`)
-and nginx `client_max_body_size` must be raised to at least 200MB before §30's
-video allowance means anything on a deployment. Not something a code change can
-settle, and it belongs on the deploy checklist.
+I re-ran with `php -d upload_max_filesize=20M -d post_max_size=25M artisan
+serve` and reported that the refusal then came from the new code. It did not.
+`artisan serve` spawns a child `php -S` that does **not** inherit `-d` flags
+from the parent CLI process; a probe file confirmed the server was still at
+`upload_max_filesize=2M`. Both walk runs were at 2M. **No browser run in this
+slice ever exercised the new size check.**
 
-**2. A refused upload shows the author nothing — open question.** After the
-6MB image is rejected, no error text appears anywhere on the outline screen;
-the block simply is not there. The **server side is correct and proven** —
-`assertSessionHasErrors('file')` passes, so the message reaches the session —
-and `Outline.jsx` does render `blockForm.errors.file`. Why it does not appear
-after an Inertia `forceFormData` POST I could not pin down inside this slice,
-and I am not going to assert a cause I have not confirmed. Recorded as its own
-follow-up rather than folded in here, because it is about the outline form's
-error handling and not about §30's limits.
+What actually proves the fix is the feature suite: 14 tests, of which **5 turn
+red** when the two changes are reverted. That evidence stands on its own. The
+walk's contribution is narrower than I first claimed and is written down here
+as such — a walk that cannot reach the code under test is not a walk of it.
+
+At the default `php.ini`, §30's limits are aspirational: a 5MB image, a 20MB
+audio file and a 200MB video are all impossible whatever the code says. This is
+**operator-gated** — `php.ini` (`upload_max_filesize`, `post_max_size`) and
+nginx `client_max_body_size` must be raised to at least 200MB before §30's
+video allowance means anything on a deployment. It belongs on the deploy
+checklist, and it means the browser gate for this section cannot be satisfied
+until the environment is fixed.
+
+**2. The author is NOT shown nothing — my second wrong claim.** I recorded that
+a refused upload produced no on-screen error. It does produce one. A probe that
+waited for React to render (rather than reading the body at `networkidle`)
+found `.text-red-600` carrying **"The file failed to upload."** — the exact
+hydration-timing trap this file already warns about, walked into again.
+
+The message is Laravel's generic upload-failure text rather than "That file is
+larger than 5 MB." for the same reason as finding 1: at 2M the file never
+arrives, so the `file` rule fails on an invalid upload before the §30 check is
+reached. Once the environment allows the file through, the specific message is
+the one that shows — the session bag was dumped directly to confirm it
+(`{"file":["That file is larger than 5 MB."]}`).
+
+So there is **no outline-form defect**, and the follow-up I opened for one is
+closed as not-a-bug.
 
 ## 6. Out of scope (unchanged)
 
