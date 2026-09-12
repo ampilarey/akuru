@@ -8,10 +8,14 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Course extends Model
 {
-    use HasFactory;
+    // SPEC §29. Without this, `admin.courses.destroy` hard-deleted the row and
+    // `course_enrollments.course_id` / `payment_items.course_id` cascaded the
+    // roster and its payment line items away with it.
+    use HasFactory, SoftDeletes;
 
     protected static function newFactory(): \Database\Factories\CourseFactory
     {

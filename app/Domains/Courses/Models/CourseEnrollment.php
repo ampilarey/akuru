@@ -6,10 +6,14 @@ use App\Domains\Finance\Models\Payment;
 use App\Domains\Identity\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\DB;
 
 class CourseEnrollment extends Model
 {
+    // SPEC §29: an enrolment is a student's record of having taken something.
+    use SoftDeletes;
+
     protected $fillable = [
         'student_id',
         'unified_student_id',
