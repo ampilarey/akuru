@@ -23,6 +23,13 @@ class ResolveAssessmentSettingsAction
             'randomize_questions' => (bool) $assessment->randomize_questions,
             'show_results' => (bool) $assessment->show_results,
             'show_correct_answers' => (bool) $assessment->show_correct_answers,
+            // SPEC §19 "Teacher marking". Same shape as the §31 bug above: the
+            // column was captured by the controller, saved, and listed back —
+            // and never arrived here, so the scoring path could not honour it
+            // even in principle. `MigrateLegacyAssessmentsAction` sets it true
+            // for every migrated legacy assignment, so there is real data
+            // carrying a flag that did nothing.
+            'requires_teacher_marking' => (bool) $assessment->requires_teacher_marking,
             'passing_score' => $assessment->passing_score !== null ? (int) $assessment->passing_score : null,
             // SPEC §31. This was absent, which is why nothing downstream could
             // enforce the limit even in principle: the submit path resolves

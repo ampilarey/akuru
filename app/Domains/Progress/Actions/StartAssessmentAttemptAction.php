@@ -60,7 +60,14 @@ class StartAssessmentAttemptAction
     /**
      * @return array<string, mixed>
      */
-    public function serialize(AssessmentAttempt $attempt, bool $includeKeys = false): array
+    /**
+     * @param  bool  $asStudent  Apply SPEC §19's `show_results`, which hides the mark from the
+     *                           person who sat the assessment. Off by default and passed only
+     *                           from the student-facing paths — `ListScoredAttemptsAction` feeds
+     *                           a *teacher* report through here without `includeKeys`, so hanging
+     *                           this off that flag would have blanked scores for teachers.
+     */
+    public function serialize(AssessmentAttempt $attempt, bool $includeKeys = false, bool $asStudent = false): array
     {
         $snapshots = $attempt->snapshots ?? [];
         if (! $includeKeys) {
@@ -70,6 +77,14 @@ class StartAssessmentAttemptAction
                 return $snapshot;
             }, $snapshots);
         }
+
+        // SPEC §19 "Show/hide correct answers" has a sibling the code never
+        // read: `show_results`, which is whether the student sees the mark at
+        // all. It was captured, saved, listed and resolved into settings, and
+        // consumed nowhere — so a teacher who turned it off still showed the
+        // score. It matters most where marking is not finished: a provisional
+        // auto-total on an assessment awaiting a teacher reads as the grade.
+        $hideScore = $asStudent && ! $this->showsResults($attempt);
 
         return [
             'id' => $attempt->id,
@@ -83,13 +98,16 @@ class StartAssessmentAttemptAction
             'status' => $attempt->status->value,
             'answers' => $attempt->answers,
             'snapshots' => $snapshots,
-            'score' => $attempt->score,
-            'max_score' => $attempt->max_score,
+            'score' => $hideScore ? null : $attempt->score,
+            'max_score' => $hideScore ? null : $attempt->max_score,
+            'show_results' => ! $hideScore,
             'started_at' => optional($attempt->started_at)?->toIso8601String(),
             'last_saved_at' => optional($attempt->last_saved_at)?->toIso8601String(),
             'submitted_at' => optional($attempt->submitted_at)?->toIso8601String(),
+            // Feedback is deliberately NOT hidden: `show_results` is about the
+            // mark. A teacher who wrote a comment meant the student to read it.
             'feedback' => $attempt->feedback,
-            'item_scores' => $attempt->item_scores,
+            'item_scores' => $hideScore ? null : $attempt->item_scores,
             'reviewed_at' => optional($attempt->reviewed_at)?->toIso8601String(),
             // SPEC §31: the countdown is served, not inferred. A client that
             // computes remaining time from its own clock disagrees with the
@@ -97,6 +115,14 @@ class StartAssessmentAttemptAction
             // discovers it only when their submission is refused.
             ...$this->deadlineFields($attempt),
         ];
+    }
+
+    private function showsResults(AssessmentAttempt $attempt): bool
+    {
+        $settings = app(\App\Domains\Courses\Actions\ResolveAssessmentSettingsAction::class)
+            ->execute((int) $attempt->assessment_id);
+
+        return (bool) ($settings['show_results'] ?? true);
     }
 
     /**
