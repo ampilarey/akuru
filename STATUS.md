@@ -6060,6 +6060,87 @@ the rest was retyped from the session's own context. The lesson is mechanical:
 commit the slice *before* moving the branch, or use `git rebase`, never `reset
 --hard` as a way to pick up a new base with work in the tree.
 
+### SPEC §18: comparison was configurable by API only, and "remove punctuation" quietly did Arabic normalization
+
+§18 opens with the requirement and then lists what must be configurable:
+
+> For auto-marked text input, comparison must be configurable per activity.
+>
+> … Trim whitespace · Normalize repeated spaces · Remove punctuation ·
+> Case-insensitive comparison · Accept multiple correct answers ·
+> **Strict mode** · **Lenient mode**
+>
+> Arabic normalization must not be global. It should apply only when the
+> activity configuration requires it.
+
+`normalization_settings` existed on `questions`, `SnapshotQuestionAction`
+carried it, and `ScoreActivityAnswersAction` read it. Four things were wrong:
+
+**1. No screen could set any of it.** `Questions.jsx` has no normalization
+control, so every text question in the product was marked on whatever the
+defaults happened to be. This is the §16 shape again — a working backend with
+no caller — and it is now the third time this sweep has found one.
+
+**2. Neither named mode existed.** The switches each defaulted on their own,
+and the defaults are lenient: `trim`, `collapse_space` and `case_insensitive`
+all on. §18's own example of the opposite case is "A formula answer may use
+strict matching", and there was no way to ask for it short of listing every
+flag as false by hand and knowing which flags exist. `strict` and `lenient` are
+now starting points that individual switches still override, so "strict, but
+tolerate a trailing space" is one setting rather than an enumeration.
+
+**3. Settings were stored unvalidated.** The controller read
+`normalization_settings` straight from the request and the action saved any
+array. A misspelled switch — `strict_tashkeel` for `strip_tashkeel` — was
+accepted, stored, and then ignored by the normalizer: the question marked
+leniently while its settings said otherwise, and nothing reported a problem.
+
+**4. `strip_punctuation` stripped Arabic tashkeel.** This one pre-dates the
+modes entirely and is the serious one. The regex kept only `\p{L}`, `\p{N}` and
+whitespace — and an Arabic haraka is a **combining mark**, none of those. So
+"Remove punctuation", a switch §18 lists under *general* normalization, quietly
+performed the Arabic normalization §18 says "must not be global". An Arabic
+diacritics question that ticked it accepted an undiacriticized answer as
+correct, which is the single thing that question exists to reject. `\p{M}` is
+in the keep-set now.
+
+**I found #4 by writing a test for a different claim.** The assertion was that
+lenient mode leaves Arabic alone — a check on my own new modes. It went red,
+and the cause turned out to be a pre-existing bug two layers down. The
+mis-scoring had been reachable since the normalizer was written.
+
+**Also fixed, same surface:** `acceptable_answers` went through `jsonList`,
+which turns any string that fails to decode into `[]`. A plainly-typed list of
+accepted answers was therefore saved as *none at all*, and the question then
+marked only its single `correct_answer` — silently. The field now takes one
+answer per line as well as JSON, which is what the new textarea posts.
+
+**1,414 tests green** (19 new). **Walked in a browser**:
+
+```
+ok   no comparison controls on a selection question
+ok   comparison controls appear for a text question
+ok   strict and lenient are both offered (SPEC §18)
+ok   Arabic switches are shown as a separate, opt-in group
+ok   every §18 switch has a control (8 checkboxes)
+ok   the strict question saved and appears in the bank
+```
+
+and the stored row was read back from the database afterwards, because a screen
+that renders the switches but drops them on the way down would have passed
+every check above:
+
+```
+settings={"mode":"strict"}
+acceptable=["millilitre"]
+```
+
+**Still open on §18:** the strict/lenient distinction is now expressible but
+nothing yet *uses* it — no seeded question sets a mode, so the win is
+availability, not adoption. Whether the Arabic component's own activities
+should default to strict diacritics is a subject decision for §51, not
+something to choose here.
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**.
