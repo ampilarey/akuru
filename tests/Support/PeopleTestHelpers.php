@@ -27,9 +27,6 @@ function makeStudent(array $overrides = []): Student
 
 function makeStaffProfile(array $overrides = []): StaffProfile
 {
-    static $staffSequence = 0;
-    $staffSequence++;
-
     if (! array_key_exists('user_id', $overrides)) {
         $overrides['user_id'] = User::factory()->create()->id;
     }
@@ -39,9 +36,9 @@ function makeStaffProfile(array $overrides = []): StaffProfile
         'last_name' => 'Didi',
         'employment_type' => 'full_time',
         'status' => 'active',
-        // `fake()->unique()` is per-call and guarantees nothing across calls
-        // — see makeSubject() in AcademicsTestHelpers.
-        'staff_number' => sprintf('STF-%05d', $staffSequence),
+        // See uniqueFixtureSuffix() for why the previous `fake()->unique()`
+        // guaranteed nothing.
+        'staff_number' => 'STF-'.uniqueFixtureSuffix(),
     ], $overrides));
 }
 

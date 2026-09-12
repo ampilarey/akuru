@@ -15,7 +15,7 @@ function leadCourse(array $overrides = []): Course
 {
     return Course::factory()->create(array_merge([
         'title' => 'W14 CTA Course',
-        'slug' => 'w14-cta-'.fake()->unique()->numerify('###'),
+        'slug' => 'w14-cta-'.uniqueFixtureSuffix(),
         'status' => 'open',
         'fee' => 450,
         'seats' => 20,

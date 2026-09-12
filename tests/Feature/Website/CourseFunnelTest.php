@@ -15,7 +15,7 @@ function funnelCourse(array $overrides = []): Course
 {
     return Course::factory()->create(array_merge([
         'title' => 'W16 Funnel Course',
-        'slug' => 'w16-funnel-'.fake()->unique()->numerify('###'),
+        'slug' => 'w16-funnel-'.uniqueFixtureSuffix(),
         'status' => 'open',
         'fee' => 180,
         'enrollment_deadline' => now()->addDays(20)->toDateString(),

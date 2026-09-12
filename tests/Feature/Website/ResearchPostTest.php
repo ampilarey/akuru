@@ -18,7 +18,7 @@ function w25Instructor(array $overrides = []): Instructor
 {
     return Instructor::query()->create(array_merge([
         'name' => 'Ustadha W25 Shifa',
-        'slug' => 'ustadha-w25-shifa-'.fake()->unique()->numerify('###'),
+        'slug' => 'ustadha-w25-shifa-'.uniqueFixtureSuffix(),
         'bio' => 'Teaches Arabic and research methods.',
         'qualification' => 'Ijazah in Quran',
         'specialization' => 'Tajweed',
@@ -35,7 +35,7 @@ function w25Research(array $overrides = []): Post
     return Post::query()->create(array_merge([
         'type' => PostType::Research->value,
         'title' => 'W25 Research Paper',
-        'slug' => 'w25-research-paper-'.fake()->unique()->numerify('###'),
+        'slug' => 'w25-research-paper-'.uniqueFixtureSuffix(),
         'summary' => 'Abstract summary',
         'abstract' => 'This paper examines dhivehi tafsir methods.',
         'body' => '<p>Research body</p>',

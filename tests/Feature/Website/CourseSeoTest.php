@@ -18,7 +18,7 @@ function seoCourse(array $overrides = []): Course
 {
     return Course::factory()->create(array_merge([
         'title' => 'W15 Arabic Beginners',
-        'slug' => 'w15-arabic-beginners-'.fake()->unique()->numerify('###'),
+        'slug' => 'w15-arabic-beginners-'.uniqueFixtureSuffix(),
         'short_desc' => 'Learn the Arabic alphabet with tajweed.',
         'status' => 'open',
         'fee' => 300,
