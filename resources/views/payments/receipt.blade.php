@@ -74,12 +74,16 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach($payment->items as $item)
+                    {{-- An engine payment has no `payment_items` at all, so
+                         this used to render an empty table above a total.
+                         BuildPaymentReceiptAction falls back to the payment's
+                         own course (SPEC §38's `course_id`). --}}
+                    @foreach($receipt['lines'] as $line)
                     <tr class="border-b border-gray-100">
-                        <td class="py-3 text-gray-800">{{ $item->course?->title ?? 'Course enrollment' }}</td>
-                        <td class="py-3 text-gray-600">{{ $item->enrollment?->student?->full_name ?? $payment->student?->full_name ?? '—' }}</td>
+                        <td class="py-3 text-gray-800">{{ $line['description'] }}</td>
+                        <td class="py-3 text-gray-600">{{ $line['student'] ?? '—' }}</td>
                         <td class="py-3 text-right text-gray-800 font-mono">
-                            {{ number_format($item->amount ?? $payment->amount, 2) }}
+                            {{ number_format($line['amount'], 2) }}
                         </td>
                     </tr>
                     @endforeach
@@ -88,7 +92,7 @@
                     <tr>
                         <td colspan="2" class="pt-4 text-right font-semibold text-gray-700">Total</td>
                         <td class="pt-4 text-right font-bold text-brandMaroon-900 font-mono text-base">
-                            {{ number_format($payment->amount, 2) }} {{ $payment->currency }}
+                            {{ number_format($receipt['total'], 2) }} {{ $receipt['currency'] }}
                         </td>
                     </tr>
                 </tfoot>
@@ -96,10 +100,20 @@
 
             {{-- Payment details --}}
             <div class="bg-gray-50 rounded-lg p-4 text-sm space-y-2">
+                {{-- SPEC §38 keeps gateway and method apart. This line read
+                     "BML {{ provider }}", which printed "BML bml" for a
+                     gateway payment and "BML manual" for cash taken at the
+                     office — the one case where it is certainly not BML. --}}
+                <div class="flex justify-between">
+                    <span class="text-gray-500">Paid through</span>
+                    <span class="font-medium">{{ $receipt['gateway'] }}</span>
+                </div>
+                @if($receipt['method'])
                 <div class="flex justify-between">
                     <span class="text-gray-500">Payment method</span>
-                    <span class="font-medium">BML {{ $payment->provider ?? 'Card' }}</span>
+                    <span class="font-medium">{{ $receipt['method'] }}</span>
                 </div>
+                @endif
                 @if($payment->bml_transaction_id)
                 <div class="flex justify-between">
                     <span class="text-gray-500">Transaction ID</span>
