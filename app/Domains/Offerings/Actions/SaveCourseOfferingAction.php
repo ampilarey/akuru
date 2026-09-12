@@ -4,6 +4,7 @@ namespace App\Domains\Offerings\Actions;
 
 use App\Domains\Courses\Actions\NormalizeCertificateRulesAction;
 use App\Domains\Courses\Actions\ResolveEngineCourseAction;
+use App\Domains\Courses\Actions\ResolveOfferingTaxonomyAction;
 use App\Domains\Offerings\Enums\DeliveryMode;
 use App\Domains\Offerings\Enums\OfferingStatus;
 use App\Domains\Offerings\Models\CourseOffering;
@@ -52,6 +53,12 @@ class SaveCourseOfferingAction
             // underneath it mid-term unless someone remembered to pin — the
             // opposite of what §28.5 asks for.
             'pin_mode' => $this->pinMode($data['pin_mode'] ?? null, $mode),
+            // SPEC §10.5: "Audience is stored on `course_offerings` ... so the
+            // same course template can run for different audiences without
+            // duplicating content." §10.6 puts `level_id` beside it. Neither
+            // column existed, though both admin-managed taxonomies did.
+            'audience_id' => $this->taxonomyId($data['audience_id'] ?? null, 'audience', $offering?->audience_id),
+            'level_id' => $this->taxonomyId($data['level_id'] ?? null, 'level', $offering?->level_id),
             'seat_limit' => isset($data['seat_limit']) && $data['seat_limit'] !== '' ? (int) $data['seat_limit'] : null,
             'price_override' => isset($data['price_override']) && $data['price_override'] !== '' ? round((float) $data['price_override'], 2) : null,
             // SPEC §39: "Certificate rules may be set at course level and
@@ -102,6 +109,38 @@ class SaveCourseOfferingAction
         );
 
         return $offering->refresh();
+    }
+
+    /**
+     * An id that names a live row, or null.
+     *
+     * An absent key keeps what is there — a caller that does not deal in
+     * taxonomy must not blank it in passing — while an explicitly empty value
+     * clears it.
+     */
+    private function taxonomyId(mixed $given, string $kind, ?int $current): ?int
+    {
+        if ($given === null) {
+            return $current;
+        }
+        if ($given === '') {
+            return null;
+        }
+
+        $id = (int) $given;
+        if ($id < 1) {
+            return null;
+        }
+
+        $taxonomy = app(ResolveOfferingTaxonomyAction::class);
+        $ok = $kind === 'audience' ? $taxonomy->audienceExists($id) : $taxonomy->levelExists($id);
+        if (! $ok) {
+            throw ValidationException::withMessages([
+                $kind.'_id' => 'That '.$kind.' is not available.',
+            ]);
+        }
+
+        return $id;
     }
 
     /**

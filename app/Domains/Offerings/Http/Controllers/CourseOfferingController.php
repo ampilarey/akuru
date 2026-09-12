@@ -69,9 +69,15 @@ class CourseOfferingController extends Controller
 
         return response()->streamDownload(function () use ($payload): void {
             $out = fopen('php://output', 'w');
-            fputcsv($out, ['id', 'course_title', 'title', 'delivery_mode', 'status', 'pin_mode']);
+            fputcsv($out, ['id', 'course_title', 'title', 'delivery_mode', 'audience', 'level', 'status', 'pin_mode']);
             foreach ($payload['rows'] as $row) {
-                fputcsv($out, [$row['id'], $row['course_title'], $row['title'], $row['delivery_mode'], $row['status'], $row['pin_mode']]);
+                fputcsv($out, [
+                    $row['id'], $row['course_title'], $row['title'], $row['delivery_mode'],
+                    // SPEC §10.5/§10.6: which batch this is, in the export an
+                    // admin actually reads.
+                    $row['audience'] ?? '', $row['level'] ?? '',
+                    $row['status'], $row['pin_mode'],
+                ]);
             }
             fclose($out);
         }, 'course-offerings.csv', ['Content-Type' => 'text/csv; charset=UTF-8']);
@@ -90,6 +96,10 @@ class CourseOfferingController extends Controller
             'delivery_mode' => ['required', 'string', 'max:32'],
             'status' => ['nullable', 'string', 'max:20'],
             'pin_mode' => ['nullable', 'string', 'max:20'],
+            // SPEC §10.5/§10.6: who a batch is for and how advanced it is,
+            // stored on the offering rather than duplicated onto the course.
+            'audience_id' => ['nullable', 'integer', 'exists:audiences,id'],
+            'level_id' => ['nullable', 'integer', 'exists:course_levels,id'],
             'seat_limit' => ['nullable', 'integer', 'min:1'],
             'price_override' => ['nullable', 'numeric', 'min:0'],
             // SPEC §39's offering-level override. These were missing, and

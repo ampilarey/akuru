@@ -70,7 +70,7 @@ function ruleSummary(rules) {
     return parts.length > 0 ? parts.join(' · ') : null;
 }
 
-export default function Index({ rows, courses, modes, statuses = [], assessments = [] }) {
+export default function Index({ rows, courses, modes, statuses = [], assessments = [], audiences = [], levels = [] }) {
     const t = usePage().props.i18n?.learn || {};
     const [editing, setEditing] = useState(null);
 
@@ -80,6 +80,11 @@ export default function Index({ rows, courses, modes, statuses = [], assessments
         delivery_mode: modes[0] || 'self_learning',
         status: 'draft',
         pin_mode: 'latest',
+        // SPEC §10.5/§10.6: who the batch is for and how advanced it is. Both
+        // taxonomies were admin-managed and seeded long before there was
+        // anywhere to attach them.
+        audience_id: '',
+        level_id: '',
         seat_limit: '',
         price_override: '',
         certificate_rules: { ...BLANK_RULES },
@@ -104,6 +109,8 @@ export default function Index({ rows, courses, modes, statuses = [], assessments
             delivery_mode: row.delivery_mode || modes[0],
             status: row.status || 'draft',
             pin_mode: row.pin_mode || 'latest',
+            audience_id: row.audience_id ? String(row.audience_id) : '',
+            level_id: row.level_id ? String(row.level_id) : '',
             seat_limit: row.seat_limit === null || row.seat_limit === undefined ? '' : String(row.seat_limit),
             price_override:
                 row.price_override === null || row.price_override === undefined ? '' : String(row.price_override),
@@ -152,7 +159,7 @@ export default function Index({ rows, courses, modes, statuses = [], assessments
                         </button>
                     )}
                 </div>
-                <div className="grid gap-3 md:grid-cols-7">
+                <div className="grid gap-3 md:grid-cols-4 lg:grid-cols-5">
                     <select className="form-input" aria-label="Course" value={form.data.course_id} onChange={(e) => form.setData('course_id', e.target.value)}>
                         {courses.map((course) => <option key={course.id} value={course.id}>{course.title}</option>)}
                     </select>
@@ -164,6 +171,14 @@ export default function Index({ rows, courses, modes, statuses = [], assessments
                         {statusChoices.map((status) => (
                             <option key={status.value} value={status.value}>{status.label}</option>
                         ))}
+                    </select>
+                    <select className="form-input" aria-label="Audience" value={form.data.audience_id} onChange={(e) => form.setData('audience_id', e.target.value)}>
+                        <option value="">Audience —</option>
+                        {audiences.map((a) => <option key={a.id} value={a.id}>{a.label}</option>)}
+                    </select>
+                    <select className="form-input" aria-label="Level" value={form.data.level_id} onChange={(e) => form.setData('level_id', e.target.value)}>
+                        <option value="">Level —</option>
+                        {levels.map((l) => <option key={l.id} value={l.id}>{l.label}</option>)}
                     </select>
                     <input className="form-input" placeholder="Seat limit" value={form.data.seat_limit} onChange={(e) => form.setData('seat_limit', e.target.value)} />
                     <input className="form-input" placeholder="Price override (MVR)" value={form.data.price_override} onChange={(e) => form.setData('price_override', e.target.value)} />
@@ -236,6 +251,8 @@ export default function Index({ rows, courses, modes, statuses = [], assessments
                             <th className="px-3 py-2">Title</th>
                             <th className="px-3 py-2">Course</th>
                             <th className="px-3 py-2">Mode</th>
+                            <th className="px-3 py-2">Audience</th>
+                            <th className="px-3 py-2">Level</th>
                             <th className="px-3 py-2">Status</th>
                             <th className="px-3 py-2">Price</th>
                             <th className="px-3 py-2">Certificate rules</th>
@@ -245,7 +262,7 @@ export default function Index({ rows, courses, modes, statuses = [], assessments
                     </thead>
                     <tbody>
                         {rows.length === 0 && (
-                            <tr><td className="px-3 py-4 text-gray-500" colSpan={8}>No offerings yet.</td></tr>
+                            <tr><td className="px-3 py-4 text-gray-500" colSpan={10}>No offerings yet.</td></tr>
                         )}
                         {rows.map((row) => (
                             <tr key={row.id} className="border-t">
@@ -256,6 +273,8 @@ export default function Index({ rows, courses, modes, statuses = [], assessments
                                 </td>
                                 <td className="px-3 py-2">{row.course_title}</td>
                                 <td className="px-3 py-2">{row.delivery_mode}</td>
+                                <td className="px-3 py-2">{row.audience || '—'}</td>
+                                <td className="px-3 py-2">{row.level || '—'}</td>
                                 <td className="px-3 py-2">{row.status}</td>
                                 <td className="px-3 py-2">{row.price_override !== null && row.price_override !== undefined ? `MVR ${row.price_override}` : '—'}</td>
                                 <td className="px-3 py-2 text-xs text-gray-600">{ruleSummary(row.certificate_rules) || 'Inherits course template'}</td>
