@@ -241,7 +241,26 @@ export default function Outline({ course, modules, glossaryItems = [] }) {
             <div className="space-y-4">
                 {modules.map((module) => (
                     <section key={module.id} className="rounded-lg border bg-white p-4">
-                        <h2 className="mb-2 font-medium">{module.title}</h2>
+                        <div className="mb-2 flex flex-wrap items-center justify-between gap-3">
+                            <h2 className="font-medium">{module.title}</h2>
+                            {/* §12 "Delete draft modules if safe". Offered only
+                                when the module is empty: the server refuses
+                                otherwise, and a button that always fails is
+                                worse than no button. */}
+                            {module.lessons.length === 0 && (
+                                <button
+                                    type="button"
+                                    className="text-xs text-red-700"
+                                    onClick={() => {
+                                        if (window.confirm(`Delete the empty module "${module.title}"?`)) {
+                                            router.delete(`/catalog/courses/${course.id}/modules/${module.id}`);
+                                        }
+                                    }}
+                                >
+                                    Delete module
+                                </button>
+                            )}
+                        </div>
                         {module.lessons.length === 0 && <p className="text-sm text-gray-500">No lessons yet.</p>}
                         {module.lessons.map((lesson) => (
                             <div key={lesson.id} className="mb-3 border-t pt-3">
