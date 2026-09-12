@@ -4,6 +4,7 @@ namespace App\Domains\Courses\Http\Controllers;
 
 use App\Domains\Courses\Actions\AttachLessonGlossaryItemAction;
 use App\Domains\Courses\Actions\DeleteContentBlockAction;
+use App\Domains\Courses\Actions\DeleteCourseModuleAction;
 use App\Domains\Courses\Actions\DetachLessonGlossaryItemAction;
 use App\Domains\Courses\Actions\ListCourseOutlineAction;
 use App\Domains\Courses\Actions\PublishLessonAction;
@@ -15,6 +16,7 @@ use App\Domains\Courses\Actions\StoreMediaContentBlockAction;
 use App\Domains\Courses\Enums\ContentBlockType;
 use App\Domains\Courses\Models\ContentBlock;
 use App\Domains\Courses\Models\Course;
+use App\Domains\Courses\Models\CourseModule;
 use App\Domains\Courses\Models\GlossaryItem;
 use App\Domains\Courses\Models\Lesson;
 use App\Http\Controllers\Controller;
@@ -42,6 +44,20 @@ class CourseOutlineController extends Controller
         ]) + ['course_id' => $course, 'created_by' => $request->user()?->id]);
 
         return redirect()->route('catalog.courses.outline', $course)->with('success', 'Module saved.');
+    }
+
+    /**
+     * SPEC §12 "Delete draft modules if safe". There was no module delete at
+     * all — blocks could be removed, the module holding them could not.
+     */
+    public function destroyModule(Request $request, int $course, CourseModule $module): RedirectResponse
+    {
+        abort_unless($request->user()?->can('courses.manage'), 403);
+        abort_unless((int) $module->course_id === $course, 404);
+
+        app(DeleteCourseModuleAction::class)->execute($module);
+
+        return redirect()->route('catalog.courses.outline', $course)->with('success', 'Module deleted.');
     }
 
     public function storeLesson(Request $request, int $course): RedirectResponse

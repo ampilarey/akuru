@@ -1009,6 +1009,10 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::delete('courses/{course}/activities/{activity}', [CatalogActivityController::class, 'destroy'])->name('catalog.courses.activities.destroy')->whereNumber('course')->whereNumber('activity');
         Route::get('courses/{course}/outline', [CourseOutlineController::class, 'show'])->name('catalog.courses.outline')->whereNumber('course');
         Route::post('courses/{course}/modules', [CourseOutlineController::class, 'storeModule'])->name('catalog.courses.modules.store')->whereNumber('course');
+        // SPEC §12 "Delete draft modules if safe". Refuses readably rather than
+        // letting the RESTRICT foreign keys surface as a 500.
+        Route::delete('courses/{course}/modules/{module}', [CourseOutlineController::class, 'destroyModule'])
+            ->name('catalog.courses.modules.destroy')->whereNumber('course')->whereNumber('module');
         Route::post('courses/{course}/lessons', [CourseOutlineController::class, 'storeLesson'])->name('catalog.courses.lessons.store')->whereNumber('course');
         Route::post('courses/{course}/blocks', [CourseOutlineController::class, 'storeBlock'])->name('catalog.courses.blocks.store')->whereNumber('course');
         Route::post('courses/{course}/blocks/reorder', [CourseOutlineController::class, 'reorderBlocks'])->name('catalog.courses.blocks.reorder')->whereNumber('course');

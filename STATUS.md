@@ -5877,6 +5877,47 @@ the guard records it as `no write path: legacy screen, seed-only columns`.
 **1,368 tests green** (11 new). Every `{!! !!}` in the application is now
 declared as *sanitised on write*, *system-generated*, or *no write path*.
 
+### SPEC §12: a module added by mistake was permanent
+
+§12: "Course creators must be able to … **Delete draft modules if safe**."
+
+There was no module delete anywhere — no route, no controller method, no action.
+The blocks *inside* a module could be removed freely; the module holding them
+could not.
+
+**The foreign keys were already on the right side of this.** `lessons`,
+`content_blocks` and `student_lesson_progress` all point at `course_modules`
+with **ON DELETE RESTRICT** — the opposite of the course cascade §29 had to fix,
+and worth recording as a case where the schema was right. The database would
+refuse an unsafe delete on its own.
+
+What it would not do is explain itself: a RESTRICT violation reaches the admin
+as a 500 and an SQL string. So dependents are counted first and the refusal
+names them — *"This module still has 1 lessons. Move or delete those first."*
+
+Both of §12's conditions are enforced, from its own wording: **draft** (a
+published module is part of a course people are taking) and **safe** (nothing of
+anyone's hangs off it). A soft-deleted lesson does not count — it is in nobody's
+way, and counting it would leave a module undeletable with nothing visible
+holding it.
+
+The outline offers the button **only on an empty module**, because the server
+would refuse otherwise and a button that always fails is worse than none.
+
+**1,374 tests green** (6 new). **Walked in a browser**:
+
+```
+ok   a module holding lessons offers no delete button
+ok   the empty draft module "Empty walk module" was deleted
+ok   the outline lost it (2 → 1)
+```
+
+**Also swept in §12/§13 and found sound:** lesson slugs carry a composite unique
+on `(course_id, slug)` — exactly §13's "unique within their course, duplicatable
+across courses"; both `lessons` and `course_modules` have `deleted_at` **and**
+the `SoftDeletes` trait (the §29 trap was a column without the trait); and §13
+does not ask for lesson delete, so its absence is correct rather than a gap.
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**.
