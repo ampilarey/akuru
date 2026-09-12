@@ -5505,6 +5505,65 @@ up as "SPEC §33 Archive course is missing". That was wrong — §33's Archive i
 built, as the catalogue workflow state. The real defect was narrower and is as
 described above.
 
+### SPEC §36: teachers were passing and failing recitations without hearing them
+
+§36 lists, among what a teacher/reviewer must be able to do:
+
+> Play audio/voice submissions … Upload correction audio
+
+Neither existed on the recitation review queue. `RecitationQueue.jsx` was 130
+lines with **no audio in it at all**, and `ListRecitationReviewQueueAction` did
+not put the audio id in the payload — so the screen could not have played the
+recitation even if it had tried. A teacher picked a mistake type, a severity and
+a pass/fail outcome from dropdowns, **without ever hearing the student recite**.
+For a Qur'an institute that is not review.
+
+There was also nowhere to put a correction. Tajweed is a sound: *"your madd is
+short on ayah 4"* describes the correction; three seconds of the teacher
+reciting it **is** the correction. The student side was the same — a mistake
+count and a written note, and nothing to listen to, not even their own recording.
+
+**Both halves now exist**, plus the return path: the student plays their own
+recitation and the teacher's correction from their Qur'an page. A correction
+nobody can play is not feedback.
+
+**Why these get their own serving path.** `ServeCatalogMediaAction` authorizes
+by asking whether a media id appears in a lesson's content blocks — the right
+question for course material, and the wrong one entirely for a recording of a
+named child's voice. `ServeRecitationAudioAction` asks the only two questions
+that matter here: is this the student it belongs to, or a teacher who may review
+it. A second student gets 403.
+
+**The walk caught a test that was green for the wrong reason.** The Pest tests
+used `UploadedFile::fake()->create('correction.mp3', 30, 'audio/mpeg')`, which
+sets the MIME type directly, so they passed. The `mimetypes` rule validates the
+MIME the server **detects** — so in a real browser the same bytes were rejected,
+and the review silently did not save. The walk now uploads a genuine WAV it
+synthesises, which is what a real recording would be.
+
+Two fixture errors of mine along the way, both of the same family as earlier
+ones in this document: `new_memorization` is not a `RecitationMode` (the real
+cases are `live` and `manual`), and `quran_recitation_submissions.student_id`
+references People `students`, not `registration_students` — so the walk's
+student saw an empty dashboard until the seed pointed at the right table.
+
+**1,309 tests green** (9 new). **Walked in a browser**, both roles:
+
+```
+ok   the student recitation has a player on the review form
+ok   the recording actually streams (audio/mpeg, 4099 bytes)
+ok   the review form takes a correction recording
+ok   the review saved with the correction attached
+ok   the student can replay their own recitation
+ok   the teacher's correction is on the student's page
+ok   the student can actually play the correction
+```
+
+**Not done here (rule 1):** `activity_attempts` and `assessment_attempts` still
+have text-only `feedback`, so §36's correction audio covers the recitation path
+only. Those two are the generic engine review loop and want the same treatment,
+but on their own slice.
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**.

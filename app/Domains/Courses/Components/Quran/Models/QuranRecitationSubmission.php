@@ -23,6 +23,9 @@ class QuranRecitationSubmission extends Model
         'start_ayah_number',
         'end_ayah_number',
         'audio_media_file_id',
+        // SPEC §36 "Upload correction audio": the teacher's own recording, not
+        // the student's. Tajweed is a sound; a description of one is weaker.
+        'correction_audio_media_file_id',
         'mode',
         'duration_seconds',
         'submitted_at',

@@ -14,7 +14,9 @@ const range = (row) =>
     row.start_ayah_number ? `${row.start_ayah_number}–${row.end_ayah_number ?? row.start_ayah_number}` : '—';
 
 function ReviewForm({ submission, onDone }) {
-    const form = useForm({ status: 'passed', note: '', mistakes: [] });
+    // `correction_audio` is a File, so this form posts multipart. Inertia
+    // handles that automatically once a File is present in the data.
+    const form = useForm({ status: 'passed', note: '', mistakes: [], correction_audio: null });
 
     const addMistake = () =>
         form.setData('mistakes', [...form.data.mistakes, { mistake_type: 'wrong_haraka', severity: 'minor', ayah_number: '', comment: '' }]);
@@ -31,6 +33,32 @@ function ReviewForm({ submission, onDone }) {
             }}
             className="grid gap-2 border-t bg-[#FBF7F0] p-3"
         >
+            {/* §36 "Play audio/voice submissions". Before this the queue let a
+                teacher pick mistake types and pass or fail a student without
+                ever hearing the recitation — the payload did not even carry
+                the audio. */}
+            {submission.has_audio ? (
+                <label className="grid gap-1 text-sm">
+                    <span className="font-medium">Listen to the recitation</span>
+                    <audio controls preload="none" className="w-full max-w-lg" src={`/recitations/${submission.id}/audio/submission`}>
+                        Your browser cannot play audio.
+                    </audio>
+                </label>
+            ) : (
+                <p className="text-sm text-amber-700">
+                    No recording was submitted — mark this one on what you heard in person.
+                </p>
+            )}
+
+            {submission.has_correction_audio && (
+                <label className="grid gap-1 text-sm">
+                    <span className="font-medium">Correction already attached</span>
+                    <audio controls preload="none" className="w-full max-w-lg" src={`/recitations/${submission.id}/audio/correction`}>
+                        Your browser cannot play audio.
+                    </audio>
+                </label>
+            )}
+
             <div className="flex flex-wrap items-center gap-2">
                 <select className="form-input" value={form.data.status} onChange={(e) => form.setData('status', e.target.value)}>
                     {OUTCOMES.map((status) => <option key={status} value={status}>{status.replaceAll('_', ' ')}</option>)}
@@ -44,6 +72,26 @@ function ReviewForm({ submission, onDone }) {
                 <button type="button" className="btn-secondary" onClick={addMistake}>+ Mistake</button>
                 <button type="submit" className="btn-primary" disabled={form.processing}>Save review</button>
             </div>
+
+            {/* §36 "Upload correction audio". A written note describes the
+                correction; the teacher reciting it *is* the correction. */}
+            <label className="grid gap-1 text-sm">
+                <span className="font-medium">
+                    Record or attach a correction <span className="font-normal text-gray-500">(optional)</span>
+                </span>
+                <input
+                    type="file"
+                    accept="audio/*"
+                    className="form-input"
+                    onChange={(e) => form.setData('correction_audio', e.target.files?.[0] ?? null)}
+                />
+                {form.errors.correction_audio && (
+                    <span className="text-xs text-red-600">{form.errors.correction_audio}</span>
+                )}
+                <span className="text-xs text-gray-500">
+                    Up to 20 MB. The student can play it from their Qur&apos;an page.
+                </span>
+            </label>
             {form.data.mistakes.map((mistake, index) => (
                 <div key={index} className="flex flex-wrap items-center gap-2">
                     <select className="form-input" value={mistake.mistake_type} onChange={(e) => setMistake(index, 'mistake_type', e.target.value)}>

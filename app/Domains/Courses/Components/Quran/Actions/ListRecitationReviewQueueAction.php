@@ -51,6 +51,13 @@ class ListRecitationReviewQueueAction
                     'reviewed_at' => $row->reviewed_at?->toDateTimeString(),
                     'review_note' => $row->review_note,
                     'mistake_count' => (int) $row->mistake_marks_count,
+                    // SPEC §36 "Play audio/voice submissions". This payload
+                    // carried no audio at all, so the review screen could not
+                    // have played the recitation if it had wanted to — a
+                    // teacher marked mistakes and passed or failed a student
+                    // without ever hearing them.
+                    'has_audio' => $row->audio_media_file_id !== null,
+                    'has_correction_audio' => $row->correction_audio_media_file_id !== null,
                     'ai' => ($prediction = $predictions->get($row->id)) ? [
                         'letter' => $prediction->predicted_letter_label,
                         'haraka' => $prediction->predicted_haraka_label,

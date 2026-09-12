@@ -274,6 +274,14 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
     Route::get('/teach/schedule', [TeacherScheduleController::class, 'index'])->name('teach.schedule');
     Route::get('/teach/recitations', [TeachRecitationController::class, 'index'])->name('teach.recitations');
     Route::post('/teach/recitations/{submission}/review', [TeachRecitationController::class, 'review'])->name('teach.recitations.review')->whereNumber('submission');
+    // SPEC §36: play the student's recitation, and the teacher's correction.
+    // Authorized inside `ServeRecitationAudioAction` — the student it belongs
+    // to, or a reviewing teacher — because these are recordings of a named
+    // child's voice, not catalogue media.
+    Route::get('/recitations/{submission}/audio/{kind}', [TeachRecitationController::class, 'audio'])
+        ->name('recitations.audio')
+        ->whereNumber('submission')
+        ->where('kind', 'submission|correction');
     Route::get('/teach/assignments', [TeachQuranAssignmentController::class, 'index'])->name('teach.assignments');
     Route::post('/teach/assignments', [TeachQuranAssignmentController::class, 'store'])->name('teach.assignments.store');
     Route::put('/teach/assignments/{assignment}', [TeachQuranAssignmentController::class, 'update'])->name('teach.assignments.update')->whereNumber('assignment');
