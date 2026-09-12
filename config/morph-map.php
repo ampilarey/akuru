@@ -48,6 +48,8 @@ return [
     'assignment' => \App\Domains\Academics\Legacy\Models\Assignment::class,
     'assignment_submission' => \App\Domains\Academics\Legacy\Models\AssignmentSubmission::class,
     'attendance' => \App\Domains\Academics\Models\Attendance::class,
+    'bank_statement_import' => \App\Domains\Finance\Models\BankStatementImport::class,
+    'bank_statement_line' => \App\Domains\Finance\Models\BankStatementLine::class,
     'behavior_record' => \App\Domains\Academics\Models\BehaviorRecord::class,
     'behavior_record_audit' => \App\Domains\Academics\Models\BehaviorRecordAudit::class,
     'calendar_day' => \App\Domains\Academics\Models\CalendarDay::class,

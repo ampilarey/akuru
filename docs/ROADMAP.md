@@ -382,7 +382,7 @@ Exam types, scheduling per term/class/subject (calendar-aware to avoid clashes),
 
 ### Phase S4 — Finance
 
-Fee structures per class/year → invoice generation (term billing) → **payment plans/installments** (`invoice_installments` — designed so spec Phase 4 course payments inherit it) → pay online via existing PaymentService → receipts; arrears reports; sibling discounts/scholarships/waivers. Parent portal payment view. Backlog: bank-statement import + auto-matching (EduPage-style). S4's Finance structures are also the foundation Phase S5 payroll builds on.
+Fee structures per class/year → invoice generation (term billing) → **payment plans/installments** (`invoice_installments` — designed so spec Phase 4 course payments inherit it) → pay online via existing PaymentService → receipts; arrears reports; sibling discounts/scholarships/waivers. Parent portal payment view. ~~Backlog: bank-statement import + auto-matching (EduPage-style).~~ **Built 2026-09-12 (ADR-030)** — `/finance/bank-statements`: a parser behind an interface whose column map is configuration (the real BML export format has never been seen), idempotent import, suggestion-only matching that refuses to guess between equal candidates, and confirmation that writes a `transfer` receipt through the ordinary audited path and grants access to nothing. S4's Finance structures are also the foundation Phase S5 payroll builds on.
 
 ### Phase S5 — Full HR (after S4; payroll needs Finance + staff attendance)
 

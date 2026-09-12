@@ -5046,6 +5046,95 @@ links families the same way the product does.
 
 1,218 tests green.
 
+### Bank-statement import: the last unbuilt ROADMAP item, built against a format nobody has seen (ADR-030)
+
+§S4 carried one line of backlog — "bank-statement import + auto-matching
+(EduPage-style)" — and never specified it. It was the only genuinely unbuilt
+item left after a full sweep of the code (no TODOs, no skipped tests, Wave 4 and
+E7 and the Pronunciation pipeline all verified present).
+
+**The honest problem, stated up front: no real BML export has ever been seen.**
+Not its column names, not its date convention, not whether amounts arrive in one
+signed column or a credit/debit pair. The recommendation here was to wait for a
+genuine statement; the owner asked for the work anyway, so it is built with the
+assumption made visible instead of buried.
+
+**The format is configuration, not code.** `ConfiguredCsvBankStatementParser`
+reads the bank's own header names, the date formats to try in order, and the
+currency out of `config/finance.php`. Adapting to a real export is an `.env`
+change. Both amount shapes are supported because banks use both. Date-format
+order is load-bearing and documented as such: `03/04/2026` parses cleanly as
+both 3 April and 4 March, so the list is the only thing deciding, and getting it
+backwards silently misdates every line in the file. A file the parser cannot
+read fails naming **both** what it expected and what the file actually
+contained, so the error is a config edit rather than a mystery.
+
+**Matching suggests; a person decides.** Two strategies: the invoice number
+appearing in the line's own text (the only non-circumstantial evidence, and it
+wins even when the amount disagrees), then an exact amount against exactly one
+open invoice. When two invoices share a balance it **refuses to choose** and
+records why — two families owing the same termly fee is the ordinary case, and
+picking one puts money on the wrong child.
+
+**Rule 12 shapes the rest.** Confirming is the only thing that writes money, and
+it writes it through `RecordInvoiceReceiptAction` — the same path the cashier
+screen uses. The method is `transfer`, never `bml`: a statement line is a bank
+saying money arrived, not a gateway webhook, and recording it as one would make
+the reconciliation report lie about how the school was paid. It grants access to
+nothing. An overpayment is credited only up to the balance, with the surplus
+left unplaced. Nothing is deleted — a dismissed line is kept with a reason, and
+a confirmed line cannot be ignored away, because undoing money is a refund.
+
+**Two permissions, because two things happen.** `finance.manage` opens the
+screen and imports; `finance.record-manual-payment` gates confirmation. Reading
+what the bank sent is not the same privilege as deciding the school has been
+paid. Asserted over HTTP, since the split lives in the controller and an
+action-level test would pass either way.
+
+**Idempotent twice over**, because both duplicates happen routinely: the file's
+SHA-256 makes re-uploading the same export a no-op returning the original
+import, and a per-import row hash keeps a re-exported overlapping period from
+doubling rows.
+
+24 new tests (12 import/matching, 8 parser, 4 authorization). **1,242 green.**
+
+**Walked in a browser** as admin, against a seeded invoice:
+
+```
+PASS  the bank statements screen loads — status 200
+PASS  the screen states the expected column headings
+PASS  import reports what it did — 3 line(s) imported, 1 suggested match(es), 0 left ambiguous.
+PASS  the referenced credit is suggested against its invoice
+PASS  the debit is present and not suggested
+PASS  the unidentifiable credit stays unmatched
+PASS  confirming records a receipt
+PASS  re-uploading the same file is refused as a duplicate
+PASS  the statement still has exactly three lines — 3 rows
+PASS  a bank charge can be dismissed without deleting it
+PASS  CSV export responds with the lines — status 200, 4 rows
+No 5xx responses during the walk.
+```
+
+Money checked directly afterwards rather than inferred from a green screen:
+
+```
+invoice paid=250.00 of 250.00
+receipt=RCPT-20260912-0001 method=transfer amount=250.00
+TRANSFER FROM GUARDIAN => confirmed
+MONTHLY SERVICE FEE     => ignored
+INWARD TRANSFER UNKNOWN => unmatched
+```
+
+**What the green tests do not prove.** Every parser fixture was written by the
+same person who wrote the parser, which makes them a test of internal
+consistency, not of the format. Expect the first genuine export to need a config
+change, and possibly to reveal a shape neither amount convention covers. The
+matcher has never met a real month of transactions either: how often each
+strategy fires, and how often the ambiguity branch is the right answer rather
+than an annoyance, is something only real statements can say. This is the same
+caveat ADR-028 records for the BigBlueButton adapter, and it is recorded rather
+than buried for the same reason.
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**.

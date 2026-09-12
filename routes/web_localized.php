@@ -80,6 +80,7 @@ use App\Domains\ExamsGrades\Http\Controllers\ReportCardTemplateController;
 use App\Domains\ExamsGrades\Http\Controllers\StandardController;
 use App\Domains\ExamsGrades\Http\Controllers\WeightSchemeController;
 use App\Domains\Finance\Http\Controllers\ArrearsController;
+use App\Domains\Finance\Http\Controllers\BankStatementController;
 use App\Domains\Finance\Http\Controllers\CollectionsController;
 use App\Domains\Finance\Http\Controllers\FeeAdjustmentController;
 use App\Domains\Finance\Http\Controllers\FeeItemController;
@@ -895,6 +896,15 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::get('collections', [CollectionsController::class, 'index'])->name('finance.collections.index');
         Route::get('reconciliation/export', [ReconciliationController::class, 'export'])->name('finance.reconciliation.export');
         Route::get('reconciliation', [ReconciliationController::class, 'index'])->name('finance.reconciliation.index');
+        // S4 backlog: bank-statement import. `confirm` writes a receipt, so the
+        // controller demands `finance.record-manual-payment` on top of this
+        // group's role — reading the bank's file and deciding the school has
+        // been paid are not the same privilege.
+        Route::get('bank-statements/export', [BankStatementController::class, 'export'])->name('finance.bank-statements.export');
+        Route::get('bank-statements', [BankStatementController::class, 'index'])->name('finance.bank-statements.index');
+        Route::post('bank-statements', [BankStatementController::class, 'store'])->name('finance.bank-statements.store');
+        Route::post('bank-statements/lines/{line}/confirm', [BankStatementController::class, 'confirm'])->name('finance.bank-statements.confirm')->whereNumber('line');
+        Route::post('bank-statements/lines/{line}/ignore', [BankStatementController::class, 'ignore'])->name('finance.bank-statements.ignore')->whereNumber('line');
     });
 
     Route::prefix('catalog')->middleware(['role:super_admin|admin|headmaster'])->group(function () {
