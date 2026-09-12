@@ -6459,6 +6459,39 @@ settings live at course level only — §26 also names module, lesson and offeri
 level. `ResolveCourseUnlockModeAction` is the single place those overrides
 would read through, so adding them does not change any caller.
 
+#### The first red CI of this sweep, and it was not this slice
+
+PR #290 failed CI while the same commit was green locally:
+
+```
+Duplicate entry 'ARB101' for key 'subjects.subjects_code_unique'
+  tests/Support/AcademicsTestHelpers.php:66
+  tests/Feature/Routes/DetailScreensDoNotCrashTest.php:350
+```
+
+`makeSubject()` built its code as `'ARB'.fake()->unique()->numerify('###')`,
+and **that does not do what it looks like**. `fake()->unique()` returns a
+*fresh* `UniqueGenerator` on every call, each with its own empty memory, so it
+guarantees uniqueness only within a single call — which is to say, never. The
+helper was three random digits against a globally unique column: a thousand
+possible codes, and a birthday collision waiting for any test that makes
+several subjects.
+
+So it was **always** flaky, in a domain this slice did not touch. Adding tests
+shifted the random sequence and the coin finally landed badly. It passed
+locally on the same commit, which is exactly how this kind of fixture survives.
+
+Fixed with a monotonic counter in the two **shared** helpers — `makeSubject()`,
+`makeRoomRow()` and `makeStaffProfile()` — because a counter cannot collide at
+any seed, so the fixtures stop depending on luck.
+
+**The same mistake is in eight more places** (`tests/Feature/Website/*`, each
+building a slug this way). Those are per-file helpers called once or twice per
+test, so the odds are far longer, but the pattern is identical and it will bite
+eventually. Left for its own sweep rather than rewritten inside a §26 PR — and
+recorded here so it is not rediscovered from scratch the next time CI goes red
+for no apparent reason.
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**.
