@@ -2,6 +2,7 @@
 
 namespace App\Domains\Website\Http\Controllers\Admin\PublicSite;
 
+use App\Domains\Courses\Actions\DeleteCourseAction;
 use App\Domains\Courses\Actions\SaveCourseLearningOutcomesAction;
 use App\Domains\Courses\Actions\SaveCoursePublicCtaAction;
 use App\Domains\Courses\Models\Course;
@@ -102,9 +103,42 @@ class CourseController extends Controller
 
     public function destroy(Course $course)
     {
-        $course->delete();
+        // SPEC §29 via `DeleteCourseAction`: a course with a roster, attempts,
+        // progress, certificates or payment line items is archived rather than
+        // removed. This used to call `$course->delete()` on a model with no
+        // soft deletes, and `course_enrollments` / `payment_items` both cascade
+        // — so it silently took the roster and its money with it.
+        $result = app(DeleteCourseAction::class)->execute($course);
 
-        return redirect()->route('admin.courses.index')
-            ->with('success', 'Course deleted successfully.');
+        $message = $result['soft']
+            ? 'Course archived. It has '.$this->describe($result['blocked_by'])
+                .', which stay on the record (SPEC §29).'
+            : 'Course deleted.';
+
+        return redirect()->route('admin.courses.index')->with('success', $message);
+    }
+
+    /**
+     * @param  array<string, int>  $counts
+     */
+    private function describe(array $counts): string
+    {
+        $labels = [
+            'course_enrollments' => 'enrolment',
+            'attendance_records' => 'attendance record',
+            'activity_attempts' => 'activity attempt',
+            'assessment_attempts' => 'assessment attempt',
+            'student_lesson_progress' => 'progress record',
+            'issued_certificates' => 'issued certificate',
+            'payment_items' => 'payment record',
+        ];
+
+        $parts = [];
+        foreach ($counts as $table => $count) {
+            $label = $labels[$table] ?? $table;
+            $parts[] = $count.' '.$label.($count === 1 ? '' : 's');
+        }
+
+        return implode(', ', $parts);
     }
 }

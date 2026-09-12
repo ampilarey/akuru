@@ -5239,6 +5239,74 @@ traffic, and expect the first few alerts to be legitimate readers. And §9.2 is
 explicit that this class of measure "reduces copying; cannot stop
 screenshots/cameras" — a phone camera defeats every measure here.
 
+### SPEC §29 walked section by section: deleting a course took the roster and its money with it
+
+The L2b sweep showed that reading each plan section against the code finds what
+TODO-scanning cannot, so `SPEC.md` — the one document never walked that way —
+got the same treatment. §43's table list checked out (renames plus the deferred
+AI tables; teacher-marked submissions consolidate into `activity_attempts` with
+`feedback`/`reviewed_by`). §44 asks for API-*ready*, which the thin-controller
+rule already satisfies.
+
+**§29 did not.** It requires soft deletes on eight models; six had them.
+`Course` and `CourseEnrollment` did not, and neither table had a `deleted_at`.
+
+That mattered because `admin.courses.destroy` called `$course->delete()` with no
+dependency check, and the foreign keys turn that into far more than a missing
+row:
+
+```
+course_enrollments.course_id -> CASCADE
+payment_items.course_id      -> CASCADE
+```
+
+So deleting a course **silently removed the whole roster and its payment line
+items**. Rule 12 says ledger tables are append-only — reversals, not deletes —
+and a cascade is the quietest delete there is. §29 says the same thing in its
+own words: "Never hard-delete a course … if it has: Enrollments … Payment
+records. Historical student data must remain intact."
+
+**The fix.** `deleted_at` on both tables (additive, rule 9 — nothing dropped,
+every existing row keeps it null so no query changes meaning), `SoftDeletes` on
+both models, and `DeleteCourseAction` as the only way a course is removed. A
+course with any dependent is **archived**; a genuinely empty draft is still
+deleted outright, which §29 permits explicitly and which keeps the table from
+filling with abandoned drafts. `executeStrict()` refuses instead, for callers
+that want §29's "never" to be literal.
+
+The admin is told which dependents held it back, rather than being left to
+wonder why the row is still there.
+
+**1,267 tests green** — adding `SoftDeletes` to two central models changed no
+existing query, because nothing was soft-deleted.
+
+**Walked in a browser**, clicking the real Delete button on the admin index and
+accepting its confirm dialog rather than bypassing either:
+
+```
+PASS  the delete button is on the index
+PASS  the admin is told it was archived, and why — Course archived. It has 1 enrolment,
+      1 payment record, which stay on the record (SPEC §29).
+PASS  an empty draft is still deleted outright — Course deleted.
+PASS  the archived course is gone from the catalogue list
+No 5xx responses during the walk.
+```
+
+Checked in the database afterwards rather than trusting the message:
+
+```
+archived at: 2026-09-12 11:23:49
+enrolments surviving:    1
+payment_items surviving: 1
+empty draft row: gone
+```
+
+**Noted, not fixed (rule 1).** A soft-deleted course keeps its slug, so
+re-creating a course at the same slug now fails on `courses_slug_unique` — seen
+while building the walk fixture. Whether an archived course should release its
+slug is a product question (the old URL may still be linked), so it is recorded
+here rather than decided in a delete slice.
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**.
