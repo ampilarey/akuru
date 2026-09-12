@@ -23,11 +23,20 @@ class ValidateContentBlockDataAction
         }
 
         $direction = (string) ($settings['direction'] ?? 'auto');
-        if (! in_array($direction, ['ltr', 'rtl', 'auto'], true)) {
+        if (! in_array($direction, NormalizeBlockTextSettingsAction::DIRECTIONS, true)) {
             throw ValidationException::withMessages([
                 'settings' => 'Text direction must be ltr, rtl, or auto.',
             ]);
         }
+
+        // SPEC §15.3 puts content language, alignment and font preference
+        // beside direction as settings on every text-capable block. This
+        // rebuilt settings as `['direction' => $direction]` and dropped
+        // everything else on the floor — the deepest of the three places that
+        // discarded them, and the one that would have made the other two
+        // fixes look like they worked while changing nothing.
+        $textSettings = app(NormalizeBlockTextSettingsAction::class)
+            ->execute([], $settings + ['direction' => $direction]);
 
         $clean = match ($blockType) {
             ContentBlockType::Text => [
@@ -73,7 +82,7 @@ class ValidateContentBlockDataAction
 
         return [
             'data' => $clean,
-            'settings' => ['direction' => $direction],
+            'settings' => $textSettings,
         ];
     }
 

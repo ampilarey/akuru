@@ -122,13 +122,42 @@ function wrapHtml(html, items) {
     }).join('');
 }
 
+/**
+ * SPEC §15.3: direction, content language, alignment and font preference are
+ * settings on every text-capable block — never separate block types, and
+ * never physical left/right.
+ *
+ * `textAlign: start|end|center` and `dir` are both logical, so the same block
+ * renders correctly in either direction without a second code path, which is
+ * what "Never duplicate block logic only because text direction is different"
+ * asks for. `lang` is what lets a browser pick line-breaking and digit shaping
+ * for Arabic or Thaana.
+ */
+const BLOCK_FONTS = {
+    thaana: '"Noto Sans Thaana", "MV Faseyha", sans-serif',
+    arabic: '"Noto Naskh Arabic", "Amiri", serif',
+};
+
+function blockTextProps(block) {
+    const s = block.settings || {};
+    const direction = s.direction || 'auto';
+    const align = s.align || 'start';
+    const language = s.language && s.language !== 'auto' ? s.language : undefined;
+    const style = { textAlign: align };
+    if (BLOCK_FONTS[s.font]) {
+        style.fontFamily = BLOCK_FONTS[s.font];
+    }
+    return { dir: direction, lang: language, style };
+}
+
 function BlockView({ block, mediaShowUrl, glossary = [], onSelectTerm = () => {} }) {
     const direction = block.settings?.direction || 'auto';
+    const textProps = blockTextProps(block);
     const src = block.data?.media_id ? mediaSrc(mediaShowUrl, block.data.media_id) : null;
 
     if (block.type === 'rich_text') {
         return (
-            <article className="rounded-lg border bg-white p-4" dir={direction}>
+            <article className="rounded-lg border bg-white p-4" {...textProps}>
                 {block.title && <h2 className="mb-2 font-medium">{block.title}</h2>}
                 <div
                     className="prose text-sm"
@@ -149,7 +178,7 @@ function BlockView({ block, mediaShowUrl, glossary = [], onSelectTerm = () => {}
     }
     if (block.type === 'instruction') {
         return (
-            <aside className="rounded-lg border border-amber-200 bg-amber-50 p-4" dir={direction}>
+            <aside className="rounded-lg border border-amber-200 bg-amber-50 p-4" {...textProps}>
                 <p className="mb-1 text-xs uppercase tracking-wide text-amber-800">{block.data?.tone || 'note'}</p>
                 <p className="whitespace-pre-wrap text-sm">{wrapPlainText(block.data?.body, glossary, onSelectTerm)}</p>
             </aside>
@@ -157,7 +186,7 @@ function BlockView({ block, mediaShowUrl, glossary = [], onSelectTerm = () => {}
     }
     if (block.type === 'image' && src) {
         return (
-            <figure className="rounded-lg border bg-white p-4" dir={direction}>
+            <figure className="rounded-lg border bg-white p-4" {...textProps}>
                 {block.title && <figcaption className="mb-2 font-medium">{block.title}</figcaption>}
                 <img src={src} alt={block.data?.original_name || block.title || ''} className="max-h-[32rem] w-full object-contain" />
             </figure>
@@ -165,7 +194,7 @@ function BlockView({ block, mediaShowUrl, glossary = [], onSelectTerm = () => {}
     }
     if (block.type === 'audio' && src) {
         return (
-            <article className="rounded-lg border bg-white p-4" dir={direction}>
+            <article className="rounded-lg border bg-white p-4" {...textProps}>
                 {block.title && <h2 className="mb-2 font-medium">{block.title}</h2>}
                 <p className="mb-2 text-sm text-gray-600">{block.data?.original_name}</p>
                 <audio className="w-full" controls src={src} preload="metadata" />
@@ -175,7 +204,7 @@ function BlockView({ block, mediaShowUrl, glossary = [], onSelectTerm = () => {}
     if (block.type === 'video') {
         if (block.data?.embed_url) {
             return (
-                <article className="rounded-lg border bg-white p-4" dir={direction}>
+                <article className="rounded-lg border bg-white p-4" {...textProps}>
                     {block.title && <h2 className="mb-2 font-medium">{block.title}</h2>}
                     <iframe
                         className="aspect-video w-full rounded border-0"
@@ -188,7 +217,7 @@ function BlockView({ block, mediaShowUrl, glossary = [], onSelectTerm = () => {}
         }
         if (src) {
             return (
-                <article className="rounded-lg border bg-white p-4" dir={direction}>
+                <article className="rounded-lg border bg-white p-4" {...textProps}>
                     {block.title && <h2 className="mb-2 font-medium">{block.title}</h2>}
                     <video className="w-full" controls src={src} preload="metadata" />
                 </article>
@@ -197,7 +226,7 @@ function BlockView({ block, mediaShowUrl, glossary = [], onSelectTerm = () => {}
     }
     if (block.type === 'pdf' && src) {
         return (
-            <article className="rounded-lg border bg-white p-4" dir={direction}>
+            <article className="rounded-lg border bg-white p-4" {...textProps}>
                 {block.title && <h2 className="mb-2 font-medium">{block.title}</h2>}
                 <iframe className="h-[36rem] w-full rounded border" src={src} title={block.data?.original_name || 'PDF'} />
                 <a className="mt-2 inline-block text-sm text-[#7C2D37] hover:underline" href={src}>{block.data?.original_name || 'Open PDF'}</a>
@@ -206,7 +235,7 @@ function BlockView({ block, mediaShowUrl, glossary = [], onSelectTerm = () => {}
     }
     if ((block.type === 'glossary' || block.type === 'term') && block.data?.entries?.length) {
         return (
-            <article className="rounded-lg border bg-white p-4" dir={direction}>
+            <article className="rounded-lg border bg-white p-4" {...textProps}>
                 {block.title && <h2 className="mb-2 font-medium">{block.title}</h2>}
                 <dl className="space-y-2 text-sm">
                     {block.data.entries.map((entry, index) => (
@@ -221,7 +250,7 @@ function BlockView({ block, mediaShowUrl, glossary = [], onSelectTerm = () => {}
     }
     if (block.type === 'dialogue' && block.data?.lines?.length) {
         return (
-            <article className="rounded-lg border bg-white p-4" dir={direction}>
+            <article className="rounded-lg border bg-white p-4" {...textProps}>
                 {block.title && <h2 className="mb-2 font-medium">{block.title}</h2>}
                 <ol className="space-y-2 text-sm">
                     {block.data.lines.map((line, index) => (
@@ -238,7 +267,7 @@ function BlockView({ block, mediaShowUrl, glossary = [], onSelectTerm = () => {}
     }
     if (block.type === 'download' && src) {
         return (
-            <article className="rounded-lg border bg-white p-4" dir={direction}>
+            <article className="rounded-lg border bg-white p-4" {...textProps}>
                 {block.title && <h2 className="mb-2 font-medium">{block.title}</h2>}
                 <a className="text-sm text-[#7C2D37] hover:underline" href={src} download={block.data?.original_name || true}>
                     {block.data?.original_name || 'Download'}
@@ -249,7 +278,7 @@ function BlockView({ block, mediaShowUrl, glossary = [], onSelectTerm = () => {}
     if (block.type === 'quiz_embed' || block.type === 'assignment_embed') {
         const label = block.data?.title || (block.type === 'quiz_embed' ? `Quiz ${block.data?.quiz_id || ''}`.trim() : `Assignment ${block.data?.assignment_id || ''}`.trim());
         return (
-            <article className="rounded-lg border bg-white p-4" dir={direction}>
+            <article className="rounded-lg border bg-white p-4" {...textProps}>
                 <p className="mb-1 text-xs uppercase tracking-wide text-gray-500">{block.type === 'quiz_embed' ? 'Quiz' : 'Assignment'}</p>
                 <p className="font-medium">{label || 'Embedded activity'}</p>
                 {block.data?.url && <a className="mt-2 inline-block text-sm text-[#7C2D37] hover:underline" href={block.data.url}>Open</a>}
@@ -259,7 +288,7 @@ function BlockView({ block, mediaShowUrl, glossary = [], onSelectTerm = () => {}
     }
 
     return (
-        <article className="rounded-lg border bg-white p-4" dir={direction}>
+        <article className="rounded-lg border bg-white p-4" {...textProps}>
             {block.title && <h2 className="mb-2 font-medium">{block.title}</h2>}
             <p className="whitespace-pre-wrap text-sm">{wrapPlainText(block.data?.body, glossary, onSelectTerm)}</p>
         </article>
@@ -272,7 +301,7 @@ function FlashcardView({ cards, title, direction }) {
     const card = cards[index];
 
     return (
-        <article className="rounded-lg border bg-white p-4" dir={direction}>
+        <article className="rounded-lg border bg-white p-4" {...textProps}>
             {title && <h2 className="mb-2 font-medium">{title}</h2>}
             <button type="button" className="min-h-24 w-full rounded border bg-[#F3EBE0] p-4 text-start text-sm" onClick={() => setShowBack((value) => !value)}>
                 {showBack ? card.back : card.front}

@@ -7068,6 +7068,73 @@ the other side, and it is its own slice.
 
 **1,556 tests green** (14 new), arch green, build clean.
 
+### SPEC §15.3: the direction rule was right, and four of its five settings did not exist
+
+§15.3's structural half was **already correct and stays cleared**: there is no
+`RtlText` case, and the player reads `settings.direction` rather than branching
+per block type — which is what "Never duplicate block logic only because text
+direction is different" asks for. All 13 block types §15.1 and §15.2 name are
+present.
+
+What was missing is four of the five settings the section lists.
+**Only `direction` existed.** A lesson could not say an Arabic passage was
+Arabic, could not right-align a Thaana note, and could not ask for a Thaana
+face — the three things §15.3 exists to make possible *without* a second block
+type.
+
+"Text alignment using **start/end**" is the specific wording and it is the
+point: `left`/`right` are physical and silently wrong the moment the same block
+is read the other way. Only logical values are accepted, and a physical one is
+refused rather than translated.
+
+#### Three places discarded the settings, and the deepest one nearly hid the fix
+
+1. `CourseOutlineController::validated()` did not list them, so
+   `$request->validate()` dropped them on the way in.
+2. The same controller assigned `'settings' => ['direction' => ...]` — a
+   **whole new array** — on every save, so any other setting a block carried
+   was destroyed the next time anyone touched it.
+3. **`ValidateContentBlockDataAction` rebuilt settings as
+   `['direction' => $direction]` at the end.** This is the one that mattered:
+   fixing the first two alone would have looked like it worked and changed
+   nothing, because the Action every path funnels through threw the rest away.
+
+The test found (3). I had fixed (1) and (2) and expected green; the failure
+named exactly which keys were missing.
+
+#### Verification
+
+**Revert-check:** restoring the `['direction' => $direction]` rebuild turns the
+HTTP test and the snapshot test red and leaves the eight unit-level ones green.
+
+**Walked in a browser.** Authored a block with all four settings on the outline
+(`Align to start / end / centre` — no left/right offered), then opened it in
+the player as an enrolled student:
+
+```
+dir  = "rtl"
+lang = "ar"
+computed text-align  = "end"      ← logical, not "right"
+computed font-family = "Noto Naskh Arabic", Amiri, serif
+```
+
+A test also pins the settings into the published revision snapshot (§28.1): a
+revision that lost its direction would render an Arabic passage
+left-to-right for every enrolled student.
+
+**1,566 tests green** (10 new), arch green, build clean.
+
+#### A process mistake worth recording
+
+The §13 slice was pushed as PR #300 **stacked on the unmerged §10 commit**
+rather than on `main`, because the local branch had not been re-pointed after
+#299 merged. GitHub reported `mergeable_state: dirty` and two commits, and no
+CI run existed for the head at all — the workflow fires on `pull_request` and
+`push` to `main`/`phase-*` only, and the push had happened before the PR was
+opened. Fixed with `git rebase --onto origin/main <old-base>`, which replayed
+the single §13 commit onto real main. **Re-point the branch at `origin/main`
+immediately after each merge**, not just before the next push.
+
 #### Environment recovery, recorded because it cost most of a turn
 
 The container restart took MySQL, `vendor/`, `node_modules`, `.env` and the

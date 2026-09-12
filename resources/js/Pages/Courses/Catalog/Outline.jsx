@@ -240,6 +240,10 @@ export default function Outline({ course, modules, glossaryItems = [] }) {
         body: '',
         tone: 'note',
         direction: 'auto',
+        // SPEC §15.3's other text settings. Only direction was ever settable.
+        align: 'start',
+        language: 'auto',
+        font: 'default',
         // SPEC §28.1 carries required/optional into the revision snapshot,
         // and §16 lets the author set it. The column and the Action always
         // supported it; no form ever sent it.
@@ -327,11 +331,34 @@ export default function Outline({ course, modules, glossaryItems = [] }) {
                         <option value="quiz_embed">Quiz embed</option>
                         <option value="assignment_embed">Assignment embed</option>
                     </select>
-                    <select className="form-input mb-2" value={blockForm.data.direction} onChange={(e) => blockForm.setData('direction', e.target.value)}>
-                        <option value="auto">Direction auto</option>
-                        <option value="ltr">LTR</option>
-                        <option value="rtl">RTL</option>
-                    </select>
+                    {/* SPEC §15.3: direction, content language, alignment and
+                        font are settings on every text-capable block, never
+                        separate block types. Alignment is start/end, not
+                        left/right — physical values are silently wrong the
+                        moment the same block is read the other way. */}
+                    <div className="mb-2 grid gap-2 sm:grid-cols-2">
+                        <select className="form-input" aria-label="Text direction" value={blockForm.data.direction} onChange={(e) => blockForm.setData('direction', e.target.value)}>
+                            <option value="auto">Direction auto</option>
+                            <option value="ltr">LTR</option>
+                            <option value="rtl">RTL</option>
+                        </select>
+                        <select className="form-input" aria-label="Text alignment" value={blockForm.data.align} onChange={(e) => blockForm.setData('align', e.target.value)}>
+                            <option value="start">Align to start</option>
+                            <option value="end">Align to end</option>
+                            <option value="center">Align centre</option>
+                        </select>
+                        <select className="form-input" aria-label="Content language" value={blockForm.data.language} onChange={(e) => blockForm.setData('language', e.target.value)}>
+                            <option value="auto">Language of the lesson</option>
+                            <option value="en">English</option>
+                            <option value="dv">Dhivehi</option>
+                            <option value="ar">Arabic</option>
+                        </select>
+                        <select className="form-input" aria-label="Font preference" value={blockForm.data.font} onChange={(e) => blockForm.setData('font', e.target.value)}>
+                            <option value="default">Default font</option>
+                            <option value="thaana">Thaana face</option>
+                            <option value="arabic">Arabic face</option>
+                        </select>
+                    </div>
                     {blockForm.data.type === 'instruction' && (
                         <select className="form-input mb-2" value={blockForm.data.tone} onChange={(e) => blockForm.setData('tone', e.target.value)}>
                             <option value="note">Note</option>
