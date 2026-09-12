@@ -25,6 +25,12 @@ class CourseOffering extends Model
         'pinned_by',
         'seat_limit',
         'price_override',
+        // SPEC §10.5/§10.6 store these on the offering, not the course.
+        // Plain ids with no Eloquent relation: both taxonomies belong to
+        // Courses, and rule 3 lets this domain reach them only through an
+        // Action. ResolveOfferingTaxonomyAction is that seam.
+        'audience_id',
+        'level_id',
         'certificate_rules',
         'academic_year_id',
         'term_id',

@@ -6917,6 +6917,86 @@ the item fallback and the §38 gateway/method split both visible on the page.
 
 **1,531 tests green** (10 new), arch green.
 
+Merged as **#298**.
+
+### SPEC §10: a control with no field — the taxonomy nothing could be
+
+§10.5 and §10.6 say where audience and level live, in as many words:
+
+> Audience is stored on **`course_offerings`** (§11), so the same course
+> template can run for different audiences without duplicating content.
+
+> **Offerings:** `level_id` on `course_offerings` combines with `audience_id`
+> (§10.5) to describe *who* and *how advanced* a batch is — e.g. Nahw Level 1
+> for Kids vs Nahw Level 2 for Adults on the same course template.
+
+**Neither column existed**, and both taxonomies were built anyway. `audiences`
+and `course_levels` are real admin-managed trilingual tables, seeded with
+exactly §10.5's and §10.6's example values (Kids / School children / Adults /
+All; Foundation / Beginner / Intermediate / Advanced / Level 1 / Level 2),
+with List/Save Actions, admin screens, CSV export and an AppShell nav link.
+
+They had nowhere to attach. `level_id` is referenced by exactly one model in
+the codebase (`GlossaryItem`), and **`audience_id` by nothing at all** — an
+entire admin-managed dimension with zero referencing rows anywhere in the
+system.
+
+**This is the storable-but-unsettable pattern inverted.** The previous six
+were a field with no control. This is a **control with no field**: an admin
+could add, rename, reorder, deactivate and export audiences all day, and
+nothing in the product could ever *be* one. §10.6's own worked example — "Nahw
+Level 1 for Kids vs Nahw Level 2 for Adults on the same course template" — was
+unexpressible.
+
+#### What stood in for it, and why it is still there
+
+`courses.level` is an `enum('kids','youth','adult','all')`. Three things are
+wrong with it, and only the third is addressed:
+
+1. Those are **audience** values wearing the name "level". §10.6's levels are
+   Foundation / Beginner / A1 — a different dimension entirely.
+2. It is **hardcoded**, which §10.6 forbids outright ("These must not be
+   hardcoded").
+3. It is **on the course**, which §10.2 forbids ("Audience and Level are
+   **not** duplicated on every course row"), defeating the one-template-many-
+   offerings design §10.1 opens with.
+
+**`courses.level` is left exactly as it is.** Rule 9: it is populated and the
+public site filters on it live (`PublicSite\CourseController` line 49), so it
+cannot be dropped or repurposed in the deploy that stops depending on it.
+Retiring it is a later deploy with its own backfill, plus a decision about the
+public filter that is not this slice's to make. A test pins that as a decision
+rather than an omission.
+
+#### Rule 3, the same seam as §38
+
+Both taxonomies are Courses models, and `Phase1ABoundariesTest` fails outright
+if any file under `app/Domains/Offerings` so much as names one. So there is no
+Eloquent relation from `CourseOffering` — the ids are stored plainly and
+`ResolveOfferingTaxonomyAction` resolves labels, options and validity. A test
+walks the Offerings tree and asserts the model names never appear, so the
+relation cannot be "helpfully" added later.
+
+Deactivating an audience removes it from the options and refuses it on new
+saves, but **does not blank the batches already using it** — a cohort that ran
+for "School children" keeps saying so.
+
+#### Verification
+
+**Revert-check:** removing the two validator lines turns "carries the choice
+through the offering form" red and leaves the other ten green — the §39 lesson
+applied deliberately, since a column the validator does not list is dropped on
+the way in however it is posted.
+
+**Walked in a browser:** the form offers **Kids / School children / Adults /
+All** and **Foundation → Level 2**; created *Walk Nahw Kids* and *Walk Nahw
+Adults* on one course template (Advanced Arabic Grammar), which list as
+`… face_to_face Kids Level 1 draft` and `… face_to_face Adults Level 2 draft`;
+reopening the first round-trips `audience=1, level=5` into the controls. §10.6's
+example, working.
+
+**1,542 tests green** (11 new), arch green, `npm run build` clean.
+
 #### Environment recovery, recorded because it cost most of a turn
 
 The container restart took MySQL, `vendor/`, `node_modules`, `.env` and the

@@ -4,6 +4,7 @@ namespace App\Domains\Offerings\Actions;
 
 use App\Domains\Courses\Actions\ListEngineCoursesAction;
 use App\Domains\Courses\Actions\ListPublishedAssessmentsAction;
+use App\Domains\Courses\Actions\ResolveOfferingTaxonomyAction;
 use App\Domains\Offerings\Enums\DeliveryMode;
 use App\Domains\Offerings\Enums\OfferingStatus;
 use App\Domains\Offerings\Models\CourseOffering;
@@ -16,8 +17,15 @@ class ListCourseOfferingsAction
     public function execute(): array
     {
         $courses = app(ListEngineCoursesAction::class)->execute()->keyBy('id');
+        // SPEC §10.5/§10.6. Resolved through a Courses Action rather than an
+        // Eloquent relation: both taxonomies are Courses models, and this
+        // domain may not name them (rule 3).
+        $taxonomy = app(ResolveOfferingTaxonomyAction::class);
+        $options = $taxonomy->options();
 
         return [
+            'audiences' => $options['audiences'],
+            'levels' => $options['levels'],
             'courses' => $courses->values()->all(),
             'modes' => array_map(fn ($mode) => $mode->value, DeliveryMode::cases()),
             // SPEC §11.4's vocabulary, read from the enum instead of typed
@@ -42,6 +50,9 @@ class ListCourseOfferingsAction
                     'course_title' => $courses[$offering->course_id]['title'] ?? '',
                     'title' => $offering->title,
                     'delivery_mode' => $offering->delivery_mode?->value ?? $offering->delivery_mode,
+                    'audience_id' => $offering->audience_id,
+                    'level_id' => $offering->level_id,
+                    ...$taxonomy->labels($offering->audience_id, $offering->level_id),
                     'status' => $offering->status?->value ?? $offering->status,
                     'pin_mode' => $offering->pin_mode,
                     'pinned_at' => $offering->pinned_at?->toIso8601String(),
