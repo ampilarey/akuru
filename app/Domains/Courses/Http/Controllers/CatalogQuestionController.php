@@ -4,7 +4,9 @@ namespace App\Domains\Courses\Http\Controllers;
 
 use App\Domains\Courses\Actions\ListCourseSubjectsAction;
 use App\Domains\Courses\Actions\ListQuestionsAction;
+use App\Domains\Courses\Actions\NormalizeTextAnswerAction;
 use App\Domains\Courses\Actions\SaveQuestionAction;
+use App\Domains\Courses\Enums\ActivityPattern;
 use App\Domains\Courses\Enums\QuestionType;
 use App\Domains\Courses\Models\Question;
 use App\Domains\ExamsGrades\Actions\ListStandardsAction;
@@ -30,6 +32,19 @@ class CatalogQuestionController extends Controller
             'subjects' => app(ListCourseSubjectsAction::class)->execute()->values(),
             'standards' => app(ListStandardsAction::class)->execute()->values(),
             'types' => array_map(fn (QuestionType $type) => $type->value, QuestionType::cases()),
+            // SPEC §18 applies to "auto-marked text input" only. Which types
+            // those are is the enum's answer, not the client's — sending the
+            // list keeps the builder from re-deriving a mapping that already
+            // exists and would drift the moment a type is added.
+            'textInputTypes' => array_values(array_map(
+                fn (QuestionType $type) => $type->value,
+                array_filter(
+                    QuestionType::cases(),
+                    fn (QuestionType $type) => $type->pattern() === ActivityPattern::TextInput,
+                ),
+            )),
+            'normalizationFlags' => NormalizeTextAnswerAction::flags(),
+            'normalizationModes' => NormalizeTextAnswerAction::modes(),
         ]);
     }
 

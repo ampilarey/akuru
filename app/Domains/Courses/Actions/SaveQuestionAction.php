@@ -64,9 +64,11 @@ class SaveQuestionAction
             'options' => $this->jsonList($data['options'] ?? null),
             'correct_answer' => $this->jsonList($data['correct_answer'] ?? null),
             'acceptable_answers' => $this->stringList($data['acceptable_answers'] ?? null),
-            'normalization_settings' => is_array($data['normalization_settings'] ?? null)
-                ? $data['normalization_settings']
-                : null,
+            // SPEC §18: an unknown or misspelled switch used to be stored and
+            // then silently ignored at scoring time, so the question marked
+            // leniently while its settings claimed otherwise.
+            'normalization_settings' => app(ValidateNormalizationSettingsAction::class)
+                ->execute($data['normalization_settings'] ?? null),
             'difficulty' => in_array($difficulty = (string) ($data['difficulty'] ?? 'medium'), ['easy', 'medium', 'hard'], true)
                 ? $difficulty
                 : 'medium',
@@ -116,10 +118,22 @@ class SaveQuestionAction
     }
 
     /**
+     * SPEC §18 "Accept multiple correct answers". Accepts either a JSON array
+     * or one answer per line.
+     *
+     * The line form is not a convenience: `jsonList` turns any string that
+     * fails to decode into `[]`, so a plainly-typed list of accepted answers
+     * was silently saved as none at all — and a text question then marked only
+     * its single `correct_answer`, with nothing reported to the author.
+     *
      * @return list<string>|null
      */
     private function stringList(mixed $value): ?array
     {
+        if (is_string($value) && trim($value) !== '' && json_decode($value, true) === null) {
+            $value = preg_split('/\r\n|\r|\n/', $value) ?: [];
+        }
+
         $list = $this->jsonList($value);
         if ($list === null) {
             return null;
