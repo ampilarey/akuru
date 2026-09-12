@@ -6224,6 +6224,93 @@ Whether completion should adopt the same rule set, or stay a progress measure
 with certificates carrying the judgment, is a design decision for the owner and
 is not something to settle while fixing a comparison operator.
 
+### SPEC §30: one blanket 50MB cap, and student voice uploads with no type check
+
+§30 "Upload Validation" is unusually concrete:
+
+> Images: max 5MB, jpg/png/webp · Audio: max 20MB, mp3/m4a/ogg/webm ·
+> Video: max 200MB, mp4/webm · PDFs: max 25MB ·
+> Student voice recordings: max 10MB
+>
+> Reject uploads by MIME validation/sniffing, not extension only.
+
+**Every media block shared one 50MB cap** (`'file' => [..., 'max:51200']`),
+which is wrong in both directions: an image could be **ten times** its
+allowance, and a video was held to **a quarter** of its own — so the one type
+§30 gives real room to was the one type that could not use it, and an ordinary
+lesson video was rejected against a number the spec does not contain. Each type
+now carries its own limit (`ContentBlockType::maxBytes()`), enforced in
+`StorePrivateMediaAction` — the single funnel every private upload passes
+through — so a future caller that forgets a `max:` rule still cannot store an
+unbounded file.
+
+**Student voice recordings had no type check at all.**
+`StoreArabicPronunciationAttemptAction` called `StorePrivateMediaAction` with
+no allow-list, and that action skips the MIME check entirely when the list is
+empty. The request's `max:10240` was the only limit, and a size says nothing
+about what the bytes are — so a "voice recording" could be a PDF, a zip or an
+executable, stored under the student's name and handed to a teacher to open.
+§30 asks for the opposite in as many words. The allow-list and the 10MB cap are
+now constants on the action, and `video/webm` is in the list because that is
+what `MediaRecorder` emits on Chromium for an audio-only stream.
+
+**Cleared, not faulted:** `getMimeType()` already sniffs contents rather than
+trusting the extension, and thumbnailing already runs through
+`ProcessMediaFileJob` — §30's two other hard requirements were met.
+
+**Tests write real bytes**, not `UploadedFile::fake()`. `fake()` sets the MIME
+directly, so a test using it passes whether or not sniffing works — which is
+precisely how an earlier slice in this session shipped nine green tests over
+uploads a browser could not actually make. Verified the new tests catch the old
+behaviour: reverting the two changes turns **5 of 14** red.
+
+**1,438 tests green** (14 new).
+
+#### Two findings from the walk that are not fixed here
+
+**1. `upload_max_filesize` makes every §30 limit unreachable, and the browser
+walk could not exercise the new code at all.** The oversize check "passed" for
+the wrong reason: PHP's `upload_max_filesize` is **2M**, so the 6MB image never
+reached Laravel — the refusal came from PHP, not from this slice.
+
+**Two of my own corrections belong here, because I got both wrong first.**
+
+I re-ran with `php -d upload_max_filesize=20M -d post_max_size=25M artisan
+serve` and reported that the refusal then came from the new code. It did not.
+`artisan serve` spawns a child `php -S` that does **not** inherit `-d` flags
+from the parent CLI process; a probe file confirmed the server was still at
+`upload_max_filesize=2M`. Both walk runs were at 2M. **No browser run in this
+slice ever exercised the new size check.**
+
+What actually proves the fix is the feature suite: 14 tests, of which **5 turn
+red** when the two changes are reverted. That evidence stands on its own. The
+walk's contribution is narrower than I first claimed and is written down here
+as such — a walk that cannot reach the code under test is not a walk of it.
+
+At the default `php.ini`, §30's limits are aspirational: a 5MB image, a 20MB
+audio file and a 200MB video are all impossible whatever the code says. This is
+**operator-gated** — `php.ini` (`upload_max_filesize`, `post_max_size`) and
+nginx `client_max_body_size` must be raised to at least 200MB before §30's
+video allowance means anything on a deployment. It belongs on the deploy
+checklist, and it means the browser gate for this section cannot be satisfied
+until the environment is fixed.
+
+**2. The author is NOT shown nothing — my second wrong claim.** I recorded that
+a refused upload produced no on-screen error. It does produce one. A probe that
+waited for React to render (rather than reading the body at `networkidle`)
+found `.text-red-600` carrying **"The file failed to upload."** — the exact
+hydration-timing trap this file already warns about, walked into again.
+
+The message is Laravel's generic upload-failure text rather than "That file is
+larger than 5 MB." for the same reason as finding 1: at 2M the file never
+arrives, so the `file` rule fails on an invalid upload before the §30 check is
+reached. Once the environment allows the file through, the specific message is
+the one that shows — the session bag was dumped directly to confirm it
+(`{"file":["That file is larger than 5 MB."]}`).
+
+So there is **no outline-form defect**, and the follow-up I opened for one is
+closed as not-a-bug.
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**.

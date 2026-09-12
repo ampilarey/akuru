@@ -41,6 +41,46 @@ enum ContentBlockType: string
         };
     }
 
+    /**
+     * SPEC §30 "Upload Validation" sets a limit per kind of media:
+     *
+     *   > Images: max 5MB · Audio: max 20MB · Video: max 200MB · PDFs: max 25MB
+     *
+     * Every media block shared one blanket 50MB cap instead, which was wrong
+     * in both directions: an image could be ten times its allowance, and a
+     * video was held to a quarter of its own — so the one type §30 gives room
+     * to was the one type that could not use it, and an ordinary lesson video
+     * was rejected with a size error that named no limit the spec recognises.
+     *
+     * Download has no §30 row of its own. It carries documents and archives,
+     * so it keeps the PDF allowance rather than inventing a number.
+     */
+    public function maxBytes(): ?int
+    {
+        return match ($this) {
+            self::Image => 5 * 1024 * 1024,
+            self::Audio => 20 * 1024 * 1024,
+            self::Video => 200 * 1024 * 1024,
+            self::Pdf, self::Download => 25 * 1024 * 1024,
+            default => null,
+        };
+    }
+
+    /**
+     * The most any media block may weigh — §30's video allowance.
+     *
+     * Request rules run before the block type is known, so this is the outer
+     * bound they can enforce. The type's own `maxBytes()` is the limit a
+     * caller actually hits, applied once the type is resolved.
+     */
+    public static function largestMaxBytes(): int
+    {
+        return max(array_map(
+            static fn (self $type): int => $type->maxBytes() ?? 0,
+            self::cases(),
+        ));
+    }
+
     public function isMedia(): bool
     {
         return in_array($this, [self::Image, self::Audio, self::Video, self::Pdf, self::Download], true);
