@@ -91,6 +91,29 @@ class StartAssessmentAttemptAction
             'feedback' => $attempt->feedback,
             'item_scores' => $attempt->item_scores,
             'reviewed_at' => optional($attempt->reviewed_at)?->toIso8601String(),
+            // SPEC §31: the countdown is served, not inferred. A client that
+            // computes remaining time from its own clock disagrees with the
+            // server the moment the device clock is wrong — and the student
+            // discovers it only when their submission is refused.
+            ...$this->deadlineFields($attempt),
+        ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function deadlineFields(AssessmentAttempt $attempt): array
+    {
+        $settings = app(\App\Domains\Courses\Actions\ResolveAssessmentSettingsAction::class)
+            ->execute((int) $attempt->assessment_id);
+
+        $deadline = app(ResolveAssessmentDeadlineAction::class)->execute($attempt, $settings);
+
+        return [
+            'time_limit_minutes' => $settings['time_limit_minutes'] ?? null,
+            'deadline_at' => $deadline['deadline']?->toIso8601String(),
+            'seconds_remaining' => $deadline['seconds_remaining'],
+            'expired' => $deadline['expired'],
         ];
     }
 
