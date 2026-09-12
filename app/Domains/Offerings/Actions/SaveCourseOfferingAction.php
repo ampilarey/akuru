@@ -2,6 +2,7 @@
 
 namespace App\Domains\Offerings\Actions;
 
+use App\Domains\Courses\Actions\NormalizeCertificateRulesAction;
 use App\Domains\Courses\Actions\ResolveEngineCourseAction;
 use App\Domains\Offerings\Enums\DeliveryMode;
 use App\Domains\Offerings\Enums\OfferingStatus;
@@ -53,8 +54,23 @@ class SaveCourseOfferingAction
             'pin_mode' => $this->pinMode($data['pin_mode'] ?? null, $mode),
             'seat_limit' => isset($data['seat_limit']) && $data['seat_limit'] !== '' ? (int) $data['seat_limit'] : null,
             'price_override' => isset($data['price_override']) && $data['price_override'] !== '' ? round((float) $data['price_override'], 2) : null,
-            'certificate_rules' => is_array($data['certificate_rules'] ?? null)
-                ? $data['certificate_rules']
+            // SPEC §39: "Certificate rules may be set at course level and
+            // overridden at offering level." The column, the cast and this
+            // assignment all existed; nothing could reach them, because the
+            // controller's validator did not list the field and
+            // `$request->validate()` returns only what it validates. The
+            // override half of §39 was unreachable from the product.
+            //
+            // Sparse on purpose — see NormalizeCertificateRulesAction. An
+            // absent key inherits the template's answer; storing `false` for
+            // every unticked box would quietly switch off the course's own
+            // requirements.
+            //
+            // A posted-but-empty override clears any previous one; an *absent*
+            // key leaves what is there alone, so a caller that does not deal
+            // in certificate rules cannot wipe them in passing.
+            'certificate_rules' => array_key_exists('certificate_rules', $data)
+                ? app(NormalizeCertificateRulesAction::class)->execute($data['certificate_rules'], sparse: true)
                 : ($offering?->certificate_rules),
             'academic_year_id' => $data['academic_year_id'] ?? null,
             'term_id' => $data['term_id'] ?? null,

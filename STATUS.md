@@ -6683,7 +6683,93 @@ is now guaranteed is that the lock cannot be removed unnoticed.
 suspended, failed and rejected, as §11.7 requires, and an offering with no seat
 limit is correctly unbounded. Both now have tests.
 
-**1,499 tests green** (5 new).
+**1,499 tests green** (5 new). Merged as **#295**.
+
+### SPEC §39: the offering-level override, and the six-state form that could not reach it
+
+§39 ends its eligibility rules with one sentence:
+
+> Certificate rules may be set at course level and **overridden at offering
+> level**.
+
+The override half did not work, and every part of it existed except one.
+`course_offerings.certificate_rules` is a real column with a real cast.
+`SaveCourseOfferingAction` assigned it. `GetOfferingCertificateRulesAction`
+read it. `CheckCertificateEligibilityAction` layered it over the template's
+rules and got the layering right. What was missing was the field in
+`CourseOfferingController::validated()` — and `$request->validate()` returns
+only the keys it validates, so the value was dropped on the way in no matter
+how it was posted. Nothing could set it: not the form, not the API, not an
+admin with database access to the form.
+
+**That is the sixth storable-but-unsettable field this sweep** (§16 block
+order, §16 duplicate, §18 normalization, §27 `assessment_id`, §28.1
+`is_required`, now §39's override). The shape is identical every time: the
+migration, the model and the Action are all correct, and the chain stops at
+the form. No test catches it because every test calls the Action directly,
+which is why the guarding test here goes through HTTP on purpose.
+
+#### The trap inside the fix: absent is not false
+
+An override cannot reuse the template's rule shape. A template is a base, so
+an unticked box there genuinely means "not required" and `false` is the right
+thing to store. An offering is an override, where "not required" and "inherit
+what the course says" are **different answers** — and if unticked boxes stored
+`false`, a batch that only wanted to raise its progress bar would silently
+switch off the course's teacher-approval and payment requirements on its way
+past. Certificates would be issued to students who had not met the course's
+own rules, and the screen would look correct.
+
+So `NormalizeCertificateRulesAction` holds one vocabulary in two shapes: the
+template shape answers all seven rules; the override shape is **sparse** and
+carries only what someone deliberately set. The flags are three-way selects in
+the form (inherit / required / not required) because a checkbox has no way to
+say "leave this one alone". `SaveCertificateTemplateAction`'s own normalizer
+was folded into it, so the two cannot drift apart.
+
+#### The §11.4 states shipped last slice were unreachable
+
+Found while wiring the form. #294 added `in_progress`, `completed` and
+`cancelled` to `OfferingStatus` and deprecated the invented `closed` — and the
+**only screen that writes a status still listed the old four**,
+`draft/open/closed/archived`, hardcoded in the JSX. There was also no edit
+control of any kind: offerings could be created and never changed, so the
+transition rules #294 added had no path to run at all. A correction to my own
+slice, not new scope: the status list now comes from the enum, the row title
+opens the offering in the same form, and the edit form narrows the choices to
+that state's `allowedTransitions()` rather than offering an illegal one and
+erroring afterwards.
+
+#### Verification
+
+**Revert-check:** removing the seven validator lines turns **5 of the 10 new
+tests red** and leaves the Action-level ones green — the discrimination that
+was missing. Worth recording that my first probe of this defect was wrong: it
+posted to `/en/catalog/offerings`, which **404s** (these routes carry no locale
+prefix), so the empty result proved nothing. The claim above rests on the
+corrected probe, not that one.
+
+**Walked in a browser** (seeded DB, `php artisan serve`, Playwright/Chromium),
+admin@akuru.edu.mv:
+
+- Status select offers **Draft / Open / In progress / Completed / Cancelled /
+  Archived** — §11.4's six, with the deprecated `closed` hidden on create.
+- Created *Walk batch* on Advanced Arabic Grammar with **Min progress 88** and
+  **Teacher approval: required**; the row reads back
+  `Min progress % 88 · Teacher approval: required`.
+- Clicking the row title opens *Editing "Walk batch"* with `88` and `1`
+  **round-tripped into the controls**, not blank.
+- Editing a draft narrows the status list to **Draft / Open / Cancelled /
+  Archived** — exactly `Draft->allowedTransitions()`.
+- Saved a status change to **open**; the row updated.
+
+**1,509 tests green** (10 new), arch suite green, `npm run build` clean.
+
+**Not fixed here, recorded instead:** the certificate face hardcodes
+`'Akuru Institute'` in `IssueCertificateAction`, `VerifyIssuedCertificateAction`
+and the Blade, and §39's **"Institute logo"** is absent entirely, though
+`Settings\Models\School` carries `name` and `logo`. That is a §39 gap with a
+ready source; it is a separate slice from making the override reachable.
 
 #### Environment recovery, recorded because it cost most of a turn
 

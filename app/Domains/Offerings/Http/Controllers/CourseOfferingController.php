@@ -92,6 +92,21 @@ class CourseOfferingController extends Controller
             'pin_mode' => ['nullable', 'string', 'max:20'],
             'seat_limit' => ['nullable', 'integer', 'min:1'],
             'price_override' => ['nullable', 'numeric', 'min:0'],
+            // SPEC §39's offering-level override. These were missing, and
+            // `validate()` returns only what it validates, so the field was
+            // dropped on the way in however it was posted.
+            //
+            // Every rule is `nullable` rather than `sometimes` — including the
+            // booleans — because blank means "inherit the course's answer",
+            // which is a different instruction from "not required".
+            'certificate_rules' => ['nullable', 'array'],
+            'certificate_rules.min_progress_percent' => ['nullable', 'integer', 'min:0', 'max:100'],
+            'certificate_rules.min_attendance_percent' => ['nullable', 'integer', 'min:0', 'max:100'],
+            'certificate_rules.min_score' => ['nullable', 'integer', 'min:0', 'max:100'],
+            'certificate_rules.assessment_id' => ['nullable', 'integer', 'exists:assessments,id'],
+            'certificate_rules.require_final_assessment' => ['nullable', 'boolean'],
+            'certificate_rules.require_teacher_approval' => ['nullable', 'boolean'],
+            'certificate_rules.require_payment' => ['nullable', 'boolean'],
         ]);
     }
 }

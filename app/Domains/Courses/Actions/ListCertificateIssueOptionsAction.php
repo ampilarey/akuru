@@ -48,16 +48,7 @@ class ListCertificateIssueOptionsAction
             // validated and stored but had no control in the builder, so
             // "Require final assessment" could only fall back to "best of any
             // published assessment on the course" — a practice quiz included.
-            'assessments' => DB::table('assessments')
-                ->where('status', 'published')
-                ->orderBy('title')
-                ->get(['id', 'course_id', 'title'])
-                ->map(fn ($row): array => [
-                    'id' => (int) $row->id,
-                    'course_id' => $row->course_id === null ? null : (int) $row->course_id,
-                    'title' => (string) $row->title,
-                ])
-                ->values(),
+            'assessments' => app(ListPublishedAssessmentsAction::class)->execute(),
             'offerings' => DB::table('course_offerings')
                 ->whereNull('deleted_at')
                 ->orderBy('title')
