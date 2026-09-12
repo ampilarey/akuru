@@ -1,8 +1,8 @@
 <?php
 
-use App\Domains\Hifz\Models\QuranAyah;
-use App\Domains\Hifz\Models\QuranMushaf;
-use App\Domains\Hifz\Models\Surah;
+use App\Domains\Courses\Components\Quran\Models\QuranAyah;
+use App\Domains\Courses\Components\Quran\Models\QuranMushaf;
+use App\Domains\Courses\Components\Quran\Models\Surah;
 use App\Domains\Website\Enums\DailyContentStatus;
 use App\Domains\Website\Enums\DailyContentType;
 use App\Domains\Website\Models\DailyContent;

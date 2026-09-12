@@ -4,6 +4,7 @@ namespace App\Domains\Hifz\Actions;
 
 use App\Domains\Hifz\Models\HifzEnrollment;
 use App\Domains\Hifz\Models\QuranProgress;
+use App\Support\Contracts\QuranReferenceReader;
 use App\Support\Contracts\StudentHifzSummaryReader;
 
 class ListStudentHifzSummariesAction implements StudentHifzSummaryReader
@@ -25,22 +26,39 @@ class ListStudentHifzSummariesAction implements StudentHifzSummaryReader
             ->get()
             ->groupBy('student_id');
 
+        // F5: the surah name used to come from a `currentSurah` relation. The
+        // dataset moved to Courses\Components\Quran, so it is read through the
+        // support contract instead — one call per distinct surah, memoised,
+        // because this runs for a whole portal page of children.
+        $reader = app(QuranReferenceReader::class);
+        $seen = [];
+        $surahs = function (?int $surahId) use ($reader, &$seen): ?string {
+            if ($surahId === null) {
+                return null;
+            }
+            if (! array_key_exists($surahId, $seen)) {
+                $row = $reader->findSurah($surahId);
+                $seen[$surahId] = $row === null
+                    ? null
+                    : ($row['english_name'] ?? $row['arabic_name'] ?? $row['transliteration'] ?? null);
+            }
+
+            return $seen[$surahId];
+        };
+
         $rows = HifzEnrollment::query()
-            ->with(['program', 'currentSurah'])
+            ->with(['program'])
             ->whereIn('student_id', $ids)
             ->orderBy('id')
             ->get()
-            ->map(function (HifzEnrollment $enrollment) use ($progress): array {
+            ->map(function (HifzEnrollment $enrollment) use ($progress, $surahs): array {
                 $studentProgress = $progress->get($enrollment->student_id, collect());
 
                 return [
                     'student_id' => (int) $enrollment->student_id,
                     'program' => (string) ($enrollment->program?->name ?? ''),
                     'status' => $enrollment->status?->value ?? (string) $enrollment->status,
-                    'current_surah' => $enrollment->currentSurah?->english_name
-                        ?? $enrollment->currentSurah?->arabic_name
-                        ?? $enrollment->currentSurah?->transliteration
-                        ?? null,
+                    'current_surah' => $surahs($enrollment->current_surah_id),
                     'current_juz' => $enrollment->current_juz !== null ? (int) $enrollment->current_juz : null,
                     'completed_surahs' => $studentProgress->where('status', 'completed')->count(),
                     'accuracy_percent' => $studentProgress->avg('accuracy_percentage') !== null

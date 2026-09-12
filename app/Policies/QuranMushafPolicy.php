@@ -2,7 +2,7 @@
 
 namespace App\Policies;
 
-use App\Domains\Hifz\Models\QuranMushaf;
+use App\Domains\Courses\Components\Quran\Models\QuranMushaf;
 use App\Domains\Identity\Models\User;
 
 class QuranMushafPolicy

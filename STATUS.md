@@ -4845,29 +4845,111 @@ engine yet either — no session auto-creates a meeting, no participant log mark
 attendance, no recording reaches Media. Those consuming slices each need the
 adapter verified against a real host first.
 
-### F5 retirement: authorised, then blocked by a gap in ADR-025 itself
+### F5 retirement: shipped — the Qur'an dataset is the engine's, and mushaf editorial was ported (ADR-029)
 
-The owner gave the ADR-025 gate condition 3 sign-off. The slice still did not
-proceed, because checking the code before deleting found a **fourth unreplaced
-workflow the ADR never listed**.
+The block recorded here last round was real: the owner's ADR-025 gate-3 sign-off
+was given against a parity list that turned out to be incomplete. ADR-025 names
+three unreplaced workflows; re-running its casualty inventory found a **fourth**
+it never listed — the **mushaf editorial workflow** (`mushafs.approve`,
+`mushafs.lock`, `mushafs.import-ayah`, `pages.show`, `pages.positions.store`,
+`words.index`), which is how the Qur'an dataset itself is built, reviewed and
+locked, and which had **no engine equivalent at all**.
 
-ADR-025 names three parity items — three-lane session records, §52.18
-assignments, milestone approval — all of which exist and were walked. But the
-Blade app also owns the **mushaf editorial workflow**: `mushafs.approve`,
-`mushafs.lock`, `mushafs.import-ayah`, `pages.show`,
-`pages.positions.store`, `words.index`. That is how the Qur'an dataset itself is
-built, reviewed and locked, and there is **no engine equivalent** — zero
-references to "mushaf" anywhere in `Courses` or in engine routes.
+The decision that block asked for is taken and recorded in **ADR-029**: port it,
+do not lose it. The code was small — ~10 controller actions, a 53-line service,
+108 lines of Blade — and losing the ability to build the dataset would have been
+worse than either option ADR-025 contemplated.
 
-It cannot be worked around by deleting only part of the Blade app: those exact
-controllers hold `QuranMushaf`, `QuranPage` and `QuranWord`, so keeping them
-blocks the model move that F5 exists to perform. All or nothing, by construction.
+**What moved.** The seven dataset models (`Surah`, `QuranAyah`, `QuranMushaf`,
+`QuranPage`, `QuranWord`, `QuranWordPosition`, `QuranTranslation`), the
+`QuranTranslationLanguage` enum, five reader/importer Actions and the import
+command now live under `App\Domains\Courses\Components\Quran`. The
+`QuranReferenceReader` / `QuranTextProviderInterface` bindings moved from
+`HifzServiceProvider` to `CoursesServiceProvider`. **Neither contract changed**,
+so no consumer of either one had to move.
 
-Deleting anyway would do the precise thing ADR-025 was written to prevent —
-remove "the only browser path for work the engine cannot yet do". The sign-off
-was given against the ADR's stated parity, and that parity is incomplete, so it
-is not treated as covering this. **Decision needed: build mushaf management on
-the engine first, or accept losing the capability.**
+**What was ported.** `/quran/mushafs/*` as Inertia
+(`Courses/Quran/Mushafs/{Index,Create,Show}`, `Courses/Quran/Pages/Show`).
+Authorization is unchanged — `QuranMushafPolicy`, which needs
+`manage_quran_mushaf` **and** `isHifzDean()`, so the routes deliberately sit
+outside the `catalog` role group rather than adopting a different rule under the
+same name. Two things got better in the port because the Blade versions were
+working around Blade: the page screen ships its word list with the render
+instead of fetching it from a second JSON endpoint (`quran.words.index`, now
+deleted), and saving a word position no longer calls `location.reload()`.
+
+**What was deleted.** `HifzSessionController`, `HifzSessionRecordController`,
+`HifzMistakeController` and the unrouted `RecitationPracticeController`, with
+their views and routes — the engine covers them through `teach.quran-sessions.*`
+and `teach.recitations.*`.
+
+**What was NOT deleted, and why.** The other eleven Blade controllers — five
+dashboards, hub, programs, enrollments, milestones, mistakes, reports — never
+touched the dataset, so they block nothing this slice decides. Retiring them is
+a separate question with its own parity work (`HifzReportService`'s five reports
+have no engine equivalent yet). Three links inside them pointed at deleted
+routes and were repointed; the programme page's per-student "History" link got
+**no** replacement, because both candidate engine screens would 403 for most
+viewers of that page and a link that always fails is worse than none.
+
+**Rule 9.** No migration ships with this slice. Every foreign-key column is
+untouched — only Eloquent relations went — and `hifz_*`, `quran_progress` and
+`recitation_practices` keep every row. `HifzReportService` still reads
+`hifz_mistakes`.
+
+**Gate condition 2, captured against the seeded representative dataset:**
+
+```
+$ php artisan halaqa:backfill-structure
+programs=1 mapped=1 sessions_mirrored=5 enrollments_linked=1 attendance_written=5
+milestone progress: evaluated=1 completed=0
+halaqa:backfill-structure done — run halaqa:verify-structure before switching reads.
+
+$ php artisan halaqa:verify-structure
+programs=1 unmapped=0 enrollments=1 unlinked=0 sessions=5 unmirrored=0 attendance_expected=5 missing=0
+halaqa:verify-structure OK — Hifz structure fully represented on the engine.
+```
+
+**Walked in a browser** (headmaster, then a teacher, Chromium):
+
+```
+PASS  signed in as headmaster
+PASS  mushaf index lists the seeded mushaf
+PASS  index offers the upload action
+PASS  create redirects to the new mushaf — /en/quran/mushafs/2
+PASS  show reports the placeholder pages that were created — Pages: 3 · Ayahs: 0 · Words: 0
+PASS  importing an ayah updates the counts — Pages: 3 · Ayahs: 1 · Words: 2
+PASS  page screen shows the imported ayah
+PASS  word picker is populated from the import — 1:1 #1 بِسْمِ | 1:1 #2 اللَّهِ
+PASS  saved position renders as an overlay box on the page
+PASS  approve activates the mushaf
+PASS  lock marks the mushaf locked
+PASS  a teacher is refused the manage screen — status 403
+PASS  the old hifz.quran.mushafs URL is retired — status 404
+No 5xx responses during the walk.
+```
+
+**Baselines shrank, none grew:** `cross_domain_models` −3,
+`cross_domain_non_contract` −3, `unregistered_route_names` −2. Two of those came
+from a deliberate choice rather than from deletion —
+`QuranMushafImportService::activate()` now takes an approver **id** instead of an
+`Identity\Models\User`, and `QuranMushaf::approver()` is gone, because inherited
+into the engine those imports would have been *new* rule 3 violations rather
+than grandfathered ones.
+
+**New guard:** `tests/Architecture/QuranDatasetOwnershipTest.php`, as ADR-025
+required. It needs to exist separately because the general scanners cannot see
+this direction: `crossDomainModelViolators()` matches only
+`App\Domains\X\Models\…`, so a `Components\Quran\Models\…` import is invisible
+to it, and `crossDomainNonContractViolators()` would report one as a *new
+baseline entry* — which reads as "add it to the baseline" rather than "this is
+forbidden".
+
+**Pinned detail screens: 7 → 6.** The mushaf page screen was pinned as "page
+number is a scalar, not a row". It is now swept for real: `HifzDemoSeeder` builds
+a mushaf and an ayah but no `quran_pages` row, so the fixture creates one —
+otherwise the sweep would have passed on a 404, proving only that the route did
+not throw.
 
 ### Two things this document had recorded and never fixed
 
@@ -4897,14 +4979,15 @@ an index (rule 9: nothing dropped or renamed).
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**.
 
-**Phase F (Hifz → engine) is built through F4** (2026-08-27, #131–#134, ADR-025)
-— F0 components, F1 halaqa mirror gate, F2 structure mapping, F3 engine-keyed
-§52.19–52.22, F4 non-AI dashboards. **F5 (retirement) is gated by ADR-025** and
-cannot start until the frozen Blade app is replaced: it remains the only UI for
-three-lane session-record entry, assignments (§52.18) and milestone approval, so
-the Quran dataset models move in the same slice that deletes the Blade app,
-never before. This line previously read "next is F1 (Hifz → engine)", which was
-stale by a week.
+**Phase F (Hifz → engine) is complete.** F0 components, F1 halaqa mirror gate,
+F2 structure mapping, F3 engine-keyed §52.19–52.22, F4 non-AI dashboards
+(2026-08-27, #131–#134, ADR-025); F5-P1/P2/P3 parity (#136–#138); **F5
+retirement shipped 2026-09-12 (ADR-029)** — the Qur'an dataset and its readers
+now belong to `Courses\Components\Quran`, mushaf editorial was ported to
+Inertia rather than lost, and the four Blade controllers that read the dataset
+are deleted. What remains of the Blade app (dashboards, hub, programs,
+enrollments, milestones, mistakes, reports) touches no dataset model; retiring
+it is an IA decision, not a dataset one.
 
 The EduPage track is renamed **E1–E22** in `docs/EDUPAGE_FEATURES_PLAN.md` to
 end a genuine collision: "F1" meant both ROADMAP Phase F slice 1 (shipped) and

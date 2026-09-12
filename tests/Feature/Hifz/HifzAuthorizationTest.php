@@ -3,14 +3,18 @@
 namespace Tests\Feature\Hifz;
 
 use App\Domains\Hifz\Models\HifzProgram;
-use App\Domains\Hifz\Models\HifzSession;
 use App\Domains\Identity\Models\User;
-use App\Domains\People\Models\Student;
 use Database\Seeders\HifzDemoSeeder;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
+/**
+ * What survives F5: program scoping. The session-edit, session-review and
+ * per-student-history cases moved out with the Blade screens they asserted on
+ * — the engine covers the same ground in `QuranSessionRecordTest` and
+ * `QuranMilestoneWorkflowTest`, against `teach.quran-sessions.*`.
+ */
 class HifzAuthorizationTest extends TestCase
 {
     use RefreshDatabase;
@@ -32,16 +36,6 @@ class HifzAuthorizationTest extends TestCase
         $user->markEmailAsVerified();
 
         return $user;
-    }
-
-    public function test_teacher_can_access_assigned_hifz_session(): void
-    {
-        $teacher = $this->verifiedUser('teacher@akuru.edu.mv');
-        $session = HifzSession::first();
-
-        $response = $this->actingAs($teacher)->followingRedirects()->get(route('hifz.sessions.edit', $session));
-
-        $response->assertOk();
     }
 
     public function test_teacher_cannot_access_unassigned_program(): void
@@ -81,41 +75,6 @@ class HifzAuthorizationTest extends TestCase
         $response->assertForbidden();
     }
 
-    public function test_parent_can_view_own_child_history(): void
-    {
-        $parent = $this->verifiedUser('parent@akuru.edu.mv');
-        $student = Student::first();
-
-        $response = $this->actingAs($parent)->followingRedirects()->get(route('hifz.students.history', $student));
-
-        $response->assertOk();
-    }
-
-    public function test_parent_cannot_view_other_student(): void
-    {
-        $parent = $this->verifiedUser('parent@akuru.edu.mv');
-        $school = \App\Domains\Settings\Models\School::first();
-        $class = \App\Domains\Academics\Models\ClassRoom::first();
-        $otherStudent = Student::create([
-            'school_id' => $school->id,
-            'class_id' => $class->id,
-            'user_id' => User::factory()->create()->id,
-            'student_id' => 'S-OTHER-001',
-            'first_name' => 'Other',
-            'last_name' => 'Student',
-            'date_of_birth' => '2011-01-01',
-            'gender' => 'male',
-            'admission_date' => now(),
-            'status' => 'active',
-        ]);
-
-        $response = $this->withoutLocalizationMiddleware()
-            ->actingAs($parent)
-            ->get(route('hifz.students.history', $otherStudent));
-
-        $response->assertForbidden();
-    }
-
     protected function withoutLocalizationMiddleware(): static
     {
         return $this->withoutMiddleware([
@@ -131,16 +90,5 @@ class HifzAuthorizationTest extends TestCase
         $response = $this->actingAs($dean)->followingRedirects()->get(route('hifz.programs.index'));
 
         $response->assertOk();
-    }
-
-    public function test_supervisor_can_mark_session_reviewed(): void
-    {
-        $supervisor = $this->verifiedUser('supervisor@akuru.edu.mv');
-        $session = HifzSession::first();
-
-        $response = $this->actingAs($supervisor)->post(route('hifz.sessions.review', $session));
-
-        $response->assertRedirect();
-        $this->assertEquals('reviewed', $session->fresh()->status->value);
     }
 }

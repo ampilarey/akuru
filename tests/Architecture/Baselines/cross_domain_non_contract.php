@@ -2,7 +2,7 @@
 
 // PHASE_0_CHECKLIST §0.5 rule 2: cross-domain non-contract references.
 // Baseline may only shrink when violations are fixed — never grow.
-// Baseline count: 178
+// Baseline count: 175
 
 return [
     'app/Domains/Academics/Http/Controllers/AnnouncementController.php -> App\Domains\Settings\Models\School',
@@ -70,7 +70,6 @@ return [
     'app/Domains/Hifz/Http/Controllers/HifzProgramController.php -> App\Domains\Academics\Models\ClassRoom',
     'app/Domains/Hifz/Http/Controllers/HifzProgramController.php -> App\Domains\Identity\Models\User',
     'app/Domains/Hifz/Http/Controllers/HifzProgramController.php -> App\Domains\People\Models\Teacher',
-    'app/Domains/Hifz/Http/Controllers/HifzSessionRecordController.php -> App\Domains\People\Models\Student',
     'app/Domains/Hifz/Http/Controllers/QuranProgressController.php -> App\Domains\People\Models\Student',
     'app/Domains/Hifz/Http/Controllers/QuranProgressController.php -> App\Domains\People\Models\Teacher',
     'app/Domains/Hifz/Models/HifzAssignment.php -> App\Domains\People\Models\Student',
@@ -89,7 +88,6 @@ return [
     'app/Domains/Hifz/Models/HifzSession.php -> App\Domains\People\Models\Teacher',
     'app/Domains/Hifz/Models/HifzSessionRecord.php -> App\Domains\People\Models\Student',
     'app/Domains/Hifz/Models/HifzSessionRecord.php -> App\Domains\People\Models\Teacher',
-    'app/Domains/Hifz/Models/QuranMushaf.php -> App\Domains\Identity\Models\User',
     'app/Domains/Hifz/Models/QuranProgress.php -> App\Domains\People\Models\Student',
     'app/Domains/Hifz/Models/QuranProgress.php -> App\Domains\People\Models\Teacher',
     'app/Domains/Hifz/Models/RecitationPractice.php -> App\Domains\Identity\Models\User',
@@ -99,7 +97,6 @@ return [
     'app/Domains/Hifz/Services/HifzScopeService.php -> App\Domains\People\Models\Student',
     'app/Domains/Hifz/Services/HifzSessionService.php -> App\Domains\Identity\Models\User',
     'app/Domains/Hifz/Services/HifzSessionService.php -> App\Domains\People\Models\Teacher',
-    'app/Domains/Hifz/Services/QuranMushafImportService.php -> App\Domains\Identity\Models\User',
     'app/Domains/Identity/Models/User.php -> App\Domains\Finance\Models\Payment',
     'app/Domains/Identity/Models/User.php -> App\Domains\People\Models\ParentGuardian',
     'app/Domains/Identity/Models/User.php -> App\Domains\People\Models\RegistrationStudent',

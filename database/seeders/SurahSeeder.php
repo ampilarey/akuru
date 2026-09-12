@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-use App\Domains\Hifz\Models\Surah;
+use App\Domains\Courses\Components\Quran\Models\Surah;
 use Illuminate\Database\Seeder;
 
 class SurahSeeder extends Seeder
