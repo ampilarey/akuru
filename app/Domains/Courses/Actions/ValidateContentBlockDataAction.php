@@ -3,6 +3,7 @@
 namespace App\Domains\Courses\Actions;
 
 use App\Domains\Courses\Enums\ContentBlockType;
+use App\Support\Html\HtmlSanitizer;
 use Illuminate\Validation\ValidationException;
 
 class ValidateContentBlockDataAction
@@ -295,156 +296,19 @@ class ValidateContentBlockDataAction
         return $url;
     }
 
-    /** Tags a rich-text block may keep. */
-    private const ALLOWED_TAGS = ['p', 'br', 'strong', 'em', 'ul', 'ol', 'li', 'h2', 'h3', 'a'];
-
-    /** The only attribute worth keeping, and only where it means something. */
-    private const ALLOWED_ATTRIBUTES = ['a' => ['href']];
-
     /**
-     * Elements removed with their contents rather than unwrapped.
+     * Sanitise rich-text HTML through the shared allowlist sanitiser.
      *
-     * Everything else is unwrapped, because the text inside a `<div>` is the
-     * author's and should survive. What is inside these is not prose: unwrapping
-     * `<script>alert(1)</script>` leaves `alert(1)` sitting in the lesson as
-     * loose text, which is exactly what `strip_tags` used to do.
-     */
-    private const DROPPED_TAGS = [
-        'script', 'style', 'iframe', 'object', 'embed',
-        'template', 'noscript', 'svg', 'math', 'form', 'input', 'button',
-    ];
-
-    /**
-     * Sanitise rich-text HTML.
+     * This was `strip_tags($html, '<p>…<a>')`, which removes disallowed **tags**
+     * and preserves every **attribute** on the ones it keeps — so
+     * `<p onclick="…">` and `<a href="javascript:…">` survived intact, and the
+     * lesson player renders the stored value with `dangerouslySetInnerHTML`.
      *
-     * This used to be `strip_tags($html, '<p>…<a>')`, which removes disallowed
-     * **tags** and preserves every **attribute** on the ones it keeps. So all
-     * of these survived intact:
-     *
-     *     <a href="javascript:alert(1)">click</a>
-     *     <p onclick="alert(1)">text</p>
-     *     <a href="#" onmouseover="alert(1)">hover</a>
-     *
-     * and the stored value is rendered with `dangerouslySetInnerHTML` in the
-     * lesson player, so it ran in the browser of every student and teacher who
-     * opened the lesson. Block authoring is gated to
-     * `super_admin|admin|headmaster`, so this was not reachable by a
-     * low-privileged account — but §34 plans for Course Creators to author
-     * blocks, and content pasted from elsewhere should not be able to execute
-     * either way.
-     *
-     * Every attribute is now dropped except an `href` on `<a>` whose scheme is
-     * one a link may safely carry. The tag allowlist is small and the attribute
-     * allowlist is one entry, which is what makes a hand-rolled pass defensible
-     * here rather than a general-purpose sanitiser: there is no configuration
-     * surface to get wrong. If the allowlist ever grows much beyond this,
-     * reach for a real sanitiser library instead.
+     * The sanitiser lives in `Support` because the Website CMS needs the same
+     * thing with a richer allowlist, and neither domain may import the other.
      */
     private function plainHtml(string $html): string
     {
-        $html = trim($html);
-        if ($html === '') {
-            return '';
-        }
-
-        $document = new \DOMDocument;
-        $previous = libxml_use_internal_errors(true);
-        // The wrapper keeps DOMDocument from inventing <html><body>, and the
-        // encoding hint keeps multibyte content (Dhivehi, Arabic) intact.
-        $document->loadHTML(
-            '<?xml encoding="UTF-8"?><div id="akuru-root">'.$html.'</div>',
-            LIBXML_HTML_NODEFDTD | LIBXML_HTML_NOIMPLIED
-        );
-        libxml_clear_errors();
-        libxml_use_internal_errors($previous);
-
-        $root = $document->getElementById('akuru-root');
-        if ($root === null) {
-            return '';
-        }
-
-        $this->stripDisallowed($root);
-
-        $clean = '';
-        foreach (iterator_to_array($root->childNodes) as $child) {
-            $clean .= $document->saveHTML($child);
-        }
-
-        return trim($clean);
-    }
-
-    private function stripDisallowed(\DOMNode $node): void
-    {
-        foreach (iterator_to_array($node->childNodes) as $child) {
-            if ($child instanceof \DOMText) {
-                continue;
-            }
-
-            if (! $child instanceof \DOMElement) {
-                // Comments, CDATA and processing instructions carry no content
-                // a lesson needs, and can carry things it does not.
-                $child->parentNode?->removeChild($child);
-
-                continue;
-            }
-
-            $tag = strtolower($child->tagName);
-
-            if (in_array($tag, self::DROPPED_TAGS, true)) {
-                $child->parentNode?->removeChild($child);
-
-                continue;
-            }
-
-            if (! in_array($tag, self::ALLOWED_TAGS, true)) {
-                // Unwrap rather than delete: the text inside a <div> or a
-                // <span> is the author's content and should survive.
-                $this->stripDisallowed($child);
-                while ($child->firstChild !== null) {
-                    $child->parentNode?->insertBefore($child->firstChild, $child);
-                }
-                $child->parentNode?->removeChild($child);
-
-                continue;
-            }
-
-            $allowedAttributes = self::ALLOWED_ATTRIBUTES[$tag] ?? [];
-            foreach (iterator_to_array($child->attributes ?? []) as $attribute) {
-                $name = strtolower($attribute->nodeName);
-
-                if (! in_array($name, $allowedAttributes, true)) {
-                    $child->removeAttribute($attribute->nodeName);
-
-                    continue;
-                }
-
-                if ($name === 'href' && ! $this->safeHref((string) $attribute->nodeValue)) {
-                    $child->removeAttribute($attribute->nodeName);
-                }
-            }
-
-            $this->stripDisallowed($child);
-        }
-    }
-
-    private function safeHref(string $href): bool
-    {
-        // Entity-decoded and whitespace-stripped first: `java&#09;script:` and
-        // ` javascript:` are the same link to a browser, and neither should be
-        // one a lesson can carry.
-        $value = strtolower(preg_replace('/\s+/', '', html_entity_decode($href, ENT_QUOTES | ENT_HTML5)) ?? '');
-
-        if ($value === '') {
-            return false;
-        }
-
-        // Relative links, anchors and mailto are ordinary in lesson text.
-        if (str_starts_with($value, '/') || str_starts_with($value, '#')) {
-            return true;
-        }
-
-        return str_starts_with($value, 'https://')
-            || str_starts_with($value, 'http://')
-            || str_starts_with($value, 'mailto:');
+        return app(HtmlSanitizer::class)->clean($html, HtmlSanitizer::PROFILE_LESSON);
     }
 }

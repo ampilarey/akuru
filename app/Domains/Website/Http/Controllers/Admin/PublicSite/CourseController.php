@@ -10,6 +10,7 @@ use App\Domains\Courses\Actions\SaveCoursePublicCtaAction;
 use App\Domains\Courses\Models\Course;
 use App\Domains\Courses\Models\CourseCategory;
 use App\Http\Controllers\Controller;
+use App\Support\Html\HtmlSanitizer;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
@@ -63,6 +64,10 @@ class CourseController extends Controller
             ]);
         }
 
+        // Rendered raw at `public/courses/show.blade.php`.
+        $validated['body'] = app(HtmlSanitizer::class)
+            ->clean($validated['body'], HtmlSanitizer::PROFILE_CMS);
+
         $course = Course::create($validated);
         app(SaveCourseLearningOutcomesAction::class)->execute((int) $course->id, [
             'en' => $request->input('learning_outcomes_en', ''),
@@ -103,6 +108,9 @@ class CourseController extends Controller
             'whatsapp_number' => 'nullable|string|max:32',
             'syllabus_media_file_id' => 'nullable|integer|exists:media_files,id',
         ]);
+
+        $validated['body'] = app(HtmlSanitizer::class)
+            ->clean($validated['body'], HtmlSanitizer::PROFILE_CMS);
 
         $course->update($validated);
         app(SaveCourseLearningOutcomesAction::class)->execute((int) $course->id, [

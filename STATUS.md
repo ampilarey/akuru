@@ -5791,6 +5791,54 @@ nothing anywhere reads those two columns.
 Blade views (pages, research, library, articles). That is a different authoring
 path with its own permissions, and wants its own look.
 
+### The CMS path was never sanitised at all
+
+#280 closed the lesson-block path. The CMS path had no sanitisation of any kind:
+`PageController` validated `body` as `required|string`, and
+`public/page/show.blade.php` renders `{!! $page->body !!}`.
+
+**Wider than the block case on every axis.** `admin/public-site` is gated to
+`super_admin|admin|headmaster|**supervisor**` — a broader role than the block
+path, which excluded supervisor — and the audience is **anonymous visitors**
+rather than enrolled students.
+
+**Sanitised on write, not at each render.** The stored value is the safe one, so
+every reader of it is safe; the alternative asks a dozen Blade views to each
+remember, and the one that forgets is the one that matters.
+
+The §14 sanitiser moved to `App\Support\Html\HtmlSanitizer` with two profiles,
+because `Courses` and `Website` both need it and neither may import the other
+(rule 3). The CMS profile is deliberately richer — headings, images, blockquote,
+tables, `colspan` — since a marketing page legitimately wants what a lesson does
+not. `img` carries `src`, `alt` and `title` and nothing else: no `srcset`, no
+handlers. Both `href` and `src` are scheme-checked after entity-decoding.
+
+**23 raw `{!! !!}` renders exist, and they are now all declared.**
+`RawHtmlRendersAreDeclaredTest` requires each to say which kind it is —
+*sanitised on write*, *system-generated* (QR codes, certificate PDFs), or
+**UNSANITISED**, named explicitly so a known gap is never mistaken for something
+handled. **Verified by adding a raw render to a view and watching it go red**,
+then restoring.
+
+Closed here: `pages.body` (store and update) and `courses.body`. Still declared
+UNSANITISED, all internal-facing or narrower: `posts.body` (articles, news),
+`events.description`/`requirements`, `research_items.body`, library item body
+and reader content, subject descriptions, announcement content. Those are the
+follow-up.
+
+**1,362 tests green** (32 new). **Walked in a browser as an anonymous visitor**:
+
+```
+ok   the page content renders
+ok   no event handler reached the public page
+ok   no javascript: url reached the public page
+ok   legitimate formatting survived
+ok   clicking the former payload executed nothing
+```
+
+No existing data was at risk: `pages` holds 3 rows and `posts` none, and not one
+contains an HTML tag.
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**.
