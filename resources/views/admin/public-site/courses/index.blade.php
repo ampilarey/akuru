@@ -17,6 +17,11 @@
             <a href="{{ route('admin.daily-content.index') }}" class="text-brandBlue-600 hover:text-brandBlue-800 text-sm font-medium">
                 Daily content →
             </a>
+            {{-- #272 made Delete safe but not reversible. This is where a
+                 removed course is seen and restored. --}}
+            <a href="{{ route('admin.courses.deleted') }}" class="text-sm text-gray-600 hover:text-gray-900">
+                Deleted courses →
+            </a>
         </div>
         <a href="{{ route('admin.courses.create') }}" class="btn-primary">
             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
