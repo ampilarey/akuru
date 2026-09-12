@@ -5364,6 +5364,78 @@ point the autosaved answers are scored. Closing them on a schedule needs a job
 and a decision about what an unattempted expiry should score, which is a
 question for the owner rather than a delete-and-see.
 
+### SPEC §32: the OTP limits were wrong numbers, frozen, and invisible
+
+Fourth finding from the section-by-section `SPEC.md` walk. §32 states four rules
+and then, unusually, the reason they exist: *"This protects future Dhiraagu SMS
+integration from cost abuse and spam."* Every send is a message somebody pays
+for, which makes this a money rule wearing an auth rule's clothes.
+
+Measured against the code:
+
+| §32 requires | the code did |
+|---|---|
+| max 3 OTP sends per number per 15 minutes | 5 per 60 minutes |
+| minimum 60-second resend cooldown | **30 seconds** |
+| abuse event logging for admin review | **nothing was logged** |
+| configurable in system settings | hardcoded `const`s |
+
+The cooldown is the one that mattered. Half the mandated floor doubles the
+achievable send rate, and therefore the bill.
+
+**Fixed at all four points.** `config/otp.php` holds every number, each read
+through a method that floors at 1 — an operator can tighten these under attack
+without a deploy, but cannot switch a protection off by setting it to zero.
+`otp_abuse_events` records every trip, and `admin/users/otp-abuse` is where a
+super admin reads them.
+
+**The log is grouped, not listed.** The question an admin actually has is *one
+person or many* — a parent pressing Resend four times in a minute is a support
+call; forty contacts hitting the send ceiling in an hour is the cost abuse §32
+names. A flat list answers neither.
+
+**Two things found while building, both worth naming:**
+
+- **The unauthenticated path tripped silently.** `send()` (signed-in) logged its
+  cooldown refusal; `sendForNewRegistration()` did not. That is the branch
+  reachable *without an account* — the cheapest place in the app to burn SMS
+  credit, and the only one that left no trace. The first row the browser walk
+  produced came from that branch, which is to say: before this slice the walk
+  would have logged nothing at all.
+- **The last four characters are useless for email.** Contacts are stored
+  hashed with the tail kept so a human can recognise a number; for
+  `someone@example.test` the tail is the TLD, so the first walk rendered two
+  different contacts as identical rows. The group's short hash code is now shown
+  alongside, which separates them without revealing more. Caught by looking at
+  the screenshot, not by a test.
+
+**1,287 tests green** (10 new). **Walked in a browser**, both halves — the
+public registration form and the admin review screen:
+
+```
+ok   first send reaches the OTP screen
+ok   cooldown refused the resend: "Please wait 47 seconds before requesting a new code."
+ok   user stays on the OTP screen, code entry still available
+ok   User management links to the abuse log
+ok   screen states the §32 limits in force
+ok   3 contact group(s) listed
+ok   no raw contact rendered on the screen
+ok   CSV export downloads
+ok   no raw contact in the CSV export
+```
+
+47 seconds remaining out of 60 is the new floor visibly biting; under the old
+30-second constant that resend would have been allowed.
+
+Decision recorded as **ADR-032** (what the abuse log stores, and what it
+deliberately does not).
+
+**Not done here (rule 1):** nothing throttles by IP or device, only by contact,
+so the limits slow a single number rather than a spread attack across many. That
+needs a decision about how much a shared connection — a school computer lab, a
+household — should be allowed to do before it looks like an attack, and getting
+that wrong locks out a whole building.
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**.

@@ -453,6 +453,11 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
     // Admin user management (super_admin only)
     Route::prefix('admin/users')->middleware(['role:super_admin'])->group(function () {
         Route::get('/', [\App\Domains\Identity\Http\Controllers\AdminUserController::class, 'index'])->name('admin.users.index');
+        // SPEC §32: "OTP abuse event logging for admin review." Declared before
+        // the {user} delete route is irrelevant (different verb), but kept next
+        // to the index it is linked from.
+        Route::get('otp-abuse/export', [\App\Domains\Identity\Http\Controllers\OtpAbuseController::class, 'export'])->name('admin.users.otp-abuse.export');
+        Route::get('otp-abuse', [\App\Domains\Identity\Http\Controllers\OtpAbuseController::class, 'index'])->name('admin.users.otp-abuse');
         Route::delete('/{user}', [\App\Domains\Identity\Http\Controllers\AdminUserController::class, 'destroy'])->name('admin.users.destroy');
     });
 
