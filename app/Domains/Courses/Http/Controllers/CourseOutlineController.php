@@ -92,7 +92,13 @@ class CourseOutlineController extends Controller
             'quiz_id' => ['nullable', 'integer'],
             'assignment_id' => ['nullable', 'integer'],
             'title' => ['nullable', 'string', 'max:255'],
-            'file' => ['nullable', 'file', 'max:51200'],
+            // SPEC §30 sets the ceiling per kind of media. A single blanket
+            // 50MB let an image be ten times its allowance and held a video to
+            // a quarter of its own. The real limit depends on the block type,
+            // which is validated just below, so the rule here is only the
+            // outer bound — `StoreMediaContentBlockAction` applies the type's
+            // own limit, and that is the number a caller actually hits.
+            'file' => ['nullable', 'file', 'max:'.(int) (ContentBlockType::largestMaxBytes() / 1024)],
         ]);
         $blockType = ContentBlockType::tryFrom($data['type']);
         if ($blockType?->isMedia()) {

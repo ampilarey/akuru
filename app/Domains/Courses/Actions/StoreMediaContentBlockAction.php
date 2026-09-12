@@ -45,6 +45,9 @@ class StoreMediaContentBlockAction
             $file,
             isset($data['created_by']) ? (int) $data['created_by'] : null,
             $blockType->allowedMimes(),
+            // SPEC §30 sets the ceiling per kind of media, not one number for
+            // all of them.
+            $blockType->maxBytes(),
         );
 
         return app(SaveContentBlockAction::class)->execute([
