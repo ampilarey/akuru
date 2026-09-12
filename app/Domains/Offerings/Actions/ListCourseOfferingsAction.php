@@ -31,6 +31,11 @@ class ListCourseOfferingsAction
                     'pinned_at' => $offering->pinned_at?->toIso8601String(),
                     'seat_limit' => $offering->seat_limit,
                     'price_override' => $offering->price_override !== null ? (float) $offering->price_override : null,
+                    // SPEC §28.4's audit trail. Written but never shown is not
+                    // an audit trail — the question it exists to answer ("who
+                    // changed what enrolled students see, and why") is only
+                    // answerable on screen.
+                    'repin_events' => app(ListOfferingRepinEventsAction::class)->execute($offering->id)->all(),
                 ])
                 ->values()
                 ->all(),

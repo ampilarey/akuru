@@ -68,7 +68,46 @@ export default function Index({ rows, courses, modes }) {
                                 <td className="px-3 py-2">{row.price_override !== null && row.price_override !== undefined ? `MVR ${row.price_override}` : '—'}</td>
                                 <td className="px-3 py-2">
                                     <span className="me-2">{row.pin_mode}</span>
-                                    <button type="button" className="btn-secondary" onClick={() => router.post(`/catalog/offerings/${row.id}/pin`)}>Pin now</button>
+                                    {/* SPEC §28.4: re-pinning changes what enrolled
+                                        students see mid-offering, so it must be
+                                        deliberate and it must record why. The reason
+                                        is nullable in the spec, so an empty answer
+                                        still pins — but it is asked for, and it was
+                                        not captured at all before. */}
+                                    <button
+                                        type="button"
+                                        className="btn-secondary"
+                                        onClick={() => {
+                                            const reason = window.prompt(
+                                                `Re-pin "${row.title}" to the current published revisions?\n\nEnrolled students will see the new content. Reason (optional):`,
+                                                '',
+                                            );
+                                            if (reason === null) {
+                                                return;
+                                            }
+                                            router.post(`/catalog/offerings/${row.id}/pin`, { reason }, { preserveScroll: true });
+                                        }}
+                                    >
+                                        Pin now
+                                    </button>
+                                    {(row.repin_events || []).length > 0 && (
+                                        <details className="mt-1 text-xs text-gray-600">
+                                            <summary className="cursor-pointer">
+                                                {row.repin_events.length} re-pin{row.repin_events.length === 1 ? '' : 's'}
+                                            </summary>
+                                            <ul className="mt-1 space-y-1">
+                                                {row.repin_events.map((event) => (
+                                                    <li key={event.id}>
+                                                        <span className="font-medium">{(event.changed_at || '').slice(0, 10)}</span>
+                                                        {event.changed_by ? ` · ${event.changed_by}` : ' · unknown admin'}
+                                                        {` · ${event.old_pin_mode || 'unset'} → ${event.new_pin_mode}`}
+                                                        {` · ${event.changed_lessons.length} lesson${event.changed_lessons.length === 1 ? '' : 's'} changed`}
+                                                        {event.reason ? ` · ${event.reason}` : ''}
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </details>
+                                    )}
                                 </td>
                                 <td className="px-3 py-2">
                                     <a className="text-[#7C2D37] hover:underline" href={`/catalog/offerings/${row.id}/sessions`}>{t.sessions || 'Sessions'}</a>

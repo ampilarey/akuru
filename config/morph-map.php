@@ -76,6 +76,7 @@ return [
     'offering_halaqa_enrollment_link' => \App\Domains\Offerings\Models\OfferingHalaqaEnrollmentLink::class,
     'offering_halaqa_link' => \App\Domains\Offerings\Models\OfferingHalaqaLink::class,
     'offering_halaqa_session_link' => \App\Domains\Offerings\Models\OfferingHalaqaSessionLink::class,
+    'offering_repin_event' => \App\Domains\Offerings\Models\OfferingRepinEvent::class,
     'course_subject' => \App\Domains\Courses\Models\CourseSubject::class,
     'course_enrollment' => \App\Domains\Courses\Models\CourseEnrollment::class,
     'course_plan' => \App\Domains\Academics\Models\CoursePlan::class,
