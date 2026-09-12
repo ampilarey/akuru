@@ -5,6 +5,7 @@ namespace App\Domains\Academics\Http\Controllers;
 use App\Domains\Academics\Models\Announcement;
 use App\Domains\Settings\Models\School;
 use App\Http\Controllers\Controller;
+use App\Support\Html\HtmlSanitizer;
 use Illuminate\Http\Request;
 
 class AnnouncementController extends Controller
@@ -52,9 +53,10 @@ class AnnouncementController extends Controller
             'title' => $request->title,
             'title_arabic' => $request->title_arabic,
             'title_dhivehi' => $request->title_dhivehi,
-            'content' => $request->content,
-            'content_arabic' => $request->content_arabic,
-            'content_dhivehi' => $request->content_dhivehi,
+            // Rendered raw in announcements/index.blade.php and show.blade.php.
+            'content' => $this->cleanHtml($request->content),
+            'content_arabic' => $this->cleanHtml($request->content_arabic),
+            'content_dhivehi' => $this->cleanHtml($request->content_dhivehi),
             'type' => $request->type,
             'priority' => $request->priority,
             'target_audience' => $request->target_audience,
@@ -73,5 +75,18 @@ class AnnouncementController extends Controller
         $announcement->load('createdBy');
 
         return view('announcements.show', compact('announcement'));
+    }
+
+    /**
+     * Announcement bodies are rendered raw in the announcement views. Three
+     * locale columns carry the same risk, so all three go through the same door.
+     */
+    private function cleanHtml(?string $html): ?string
+    {
+        if ($html === null || trim($html) === '') {
+            return $html;
+        }
+
+        return app(HtmlSanitizer::class)->clean($html, HtmlSanitizer::PROFILE_CMS);
     }
 }

@@ -7,6 +7,7 @@ use App\Domains\Library\Enums\LibraryContentType;
 use App\Domains\Library\Models\LibraryItem;
 use App\Domains\Library\Models\LibraryTag;
 use App\Domains\Media\Actions\StorePrivateMediaAction;
+use App\Support\Html\HtmlSanitizer;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -71,7 +72,15 @@ class SaveLibraryItemAction
             'language' => $data['language'] ?? 'en',
             'library_category_id' => $data['library_category_id'] ?? null,
             'cover_image' => $data['cover_image'] ?? null,
-            'body' => $data['body'] ?? null,
+            // Rendered raw at `public/library/show.blade.php`, and chunked by
+            // `SyncLibraryItemPagesAction` into the pages the protected reader
+            // serves — so sanitising here closes both surfaces at once.
+            //
+            // This is the lowest-privilege author of HTML in the application:
+            // library items are written by approved **writers**, and any
+            // authenticated user may apply to become one. Every other authored
+            // HTML path requires a staff role.
+            'body' => $this->cleanBody($data['body'] ?? null),
             'pdf_media_file_id' => $pdfId,
             'page_count' => $data['page_count'] ?? null,
             'reading_time' => $data['reading_time'] ?? null,
@@ -130,5 +139,29 @@ class SaveLibraryItemAction
         }
 
         return $item->refresh();
+    }
+
+    private function cleanBody(?string $body): ?string
+    {
+        if ($body === null || trim($body) === '') {
+            return null;
+        }
+
+        // The sanitiser strips HTML comments, and `<!-- pagebreak -->` is one:
+        // sanitising the body whole silently collapsed a three-page book into
+        // one page. So the body is split on the marker first, each part is
+        // sanitised, and the markers are put back.
+        //
+        // Done here rather than by teaching `HtmlSanitizer` about pagination:
+        // the marker is the Library's convention (LIBRARY_PLAN §36), and a
+        // shared sanitiser should not carry one domain's formatting rules.
+        $sanitizer = app(HtmlSanitizer::class);
+
+        $parts = array_map(
+            fn (string $part): string => $sanitizer->clean($part, HtmlSanitizer::PROFILE_CMS),
+            explode(SyncLibraryItemPagesAction::PAGE_BREAK, $body),
+        );
+
+        return implode(SyncLibraryItemPagesAction::PAGE_BREAK, $parts);
     }
 }

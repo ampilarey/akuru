@@ -3,6 +3,7 @@
 namespace App\Domains\Website\Actions;
 
 use App\Domains\Website\Models\Event;
+use App\Support\Html\HtmlSanitizer;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
@@ -45,7 +46,12 @@ class SaveEventAction
             throw ValidationException::withMessages(['slug' => 'An event with this slug already exists.']);
         }
 
-        $description = trim((string) ($data['description'] ?? $data['short_description'] ?? $title));
+        // Rendered raw at public/events/show.blade.php. (`requirements` is an
+        // array there, iterated and escaped with {{ }}, so it needs nothing.)
+        $description = app(HtmlSanitizer::class)->clean(
+            trim((string) ($data['description'] ?? $data['short_description'] ?? $title)),
+            HtmlSanitizer::PROFILE_CMS,
+        );
         if ($description === '') {
             $description = $title;
         }

@@ -5839,6 +5839,44 @@ ok   clicking the former payload executed nothing
 No existing data was at risk: `pages` holds 3 rows and `posts` none, and not one
 contains an HTML tag.
 
+### The rest of the authored-HTML surfaces, and one regression the suite caught
+
+#281 left eight surfaces declared UNSANITISED. All are closed, each at its
+**single write path**, so the admin route and the lower-privileged route into
+the same table are covered together:
+
+| Write path | Surfaces closed |
+|---|---|
+| `SaveLibraryItemAction` | library item page **and** the protected reader |
+| `SaveResearchPostAction` | research, articles and news (one `posts` table) |
+| `SaveEventAction` | event description |
+| `AnnouncementController` | announcement content, three locales |
+
+**Library items were the ones worth doing first.** They are written by approved
+**writers**, and any authenticated user may apply to become one — every other
+authored-HTML path in the application requires a staff role. Their body is also
+chunked into the reader's pages, so one write path feeds two public surfaces.
+
+**A regression I introduced, caught by the existing suite.** The Library uses
+`<!-- pagebreak -->` as its page separator (LIBRARY_PLAN §36) — an HTML comment,
+and the sanitiser strips comments. Sanitising the body whole **silently
+collapsed a three-page book into one page**. `LibraryReaderTest` failed on the
+full run and named it exactly.
+
+The fix splits on the marker, sanitises each part, and rejoins — done in the
+Library rather than by teaching `HtmlSanitizer` about pagination, because the
+marker is one domain's convention and a shared sanitiser should not carry it.
+A test now pins the three-page case.
+
+**One surface is not sanitised and should not be.** `e-learning/show.blade.php`
+renders `subjects.description_arabic` / `_dhivehi`, and **nothing writes those
+columns but `DemoDataCommand`** — it is a legacy screen with no user-facing
+write path. Declaring it "UNSANITISED" would imply a gap that does not exist, so
+the guard records it as `no write path: legacy screen, seed-only columns`.
+
+**1,368 tests green** (11 new). Every `{!! !!}` in the application is now
+declared as *sanitised on write*, *system-generated*, or *no write path*.
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**.
