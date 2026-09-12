@@ -30,6 +30,11 @@ class StoreMediaContentBlockAction
                 'title' => $data['title'] ?? null,
                 'data' => ['embed_url' => $embedUrl],
                 'settings' => is_array($data['settings'] ?? null) ? $data['settings'] : [],
+                // SPEC §28.1: the snapshot carries required/optional status,
+                // so a media block must not lose it on the way in. This action
+                // builds its own payload, so the flag has to be forwarded
+                // explicitly or it silently becomes false.
+                'is_required' => (bool) ($data['is_required'] ?? false),
                 'created_by' => $data['created_by'] ?? null,
             ]);
         }
@@ -60,6 +65,7 @@ class StoreMediaContentBlockAction
                 'original_name' => $stored['original_name'],
             ],
             'settings' => is_array($data['settings'] ?? null) ? $data['settings'] : [],
+            'is_required' => (bool) ($data['is_required'] ?? false),
             'created_by' => $data['created_by'] ?? null,
         ]);
     }

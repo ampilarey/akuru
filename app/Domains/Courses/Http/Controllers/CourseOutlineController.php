@@ -92,6 +92,10 @@ class CourseOutlineController extends Controller
             'quiz_id' => ['nullable', 'integer'],
             'assignment_id' => ['nullable', 'integer'],
             'title' => ['nullable', 'string', 'max:255'],
+            // SPEC §28.1 carries "Required/optional status" into the lesson
+            // revision snapshot, and §16 lets the author set it. The column
+            // and the Action already handled it; nothing ever sent it.
+            'is_required' => ['nullable', 'boolean'],
             // SPEC §30 sets the ceiling per kind of media. A single blanket
             // 50MB let an image be ten times its allowance and held a video to
             // a quarter of its own. The real limit depends on the block type,
@@ -108,6 +112,7 @@ class CourseOutlineController extends Controller
                 'file' => $request->file('file'),
                 'embed_url' => $data['embed_url'] ?? null,
                 'settings' => ['direction' => $data['direction'] ?? 'auto'],
+                'is_required' => (bool) ($data['is_required'] ?? false),
                 'created_by' => $request->user()?->id,
             ]);
         } else {
@@ -116,6 +121,7 @@ class CourseOutlineController extends Controller
                 'type' => $data['type'],
                 'data' => $this->blockDataFromRequest($data),
                 'settings' => ['direction' => $data['direction'] ?? 'auto'],
+                'is_required' => (bool) ($data['is_required'] ?? false),
                 'created_by' => $request->user()?->id,
             ]);
         }
