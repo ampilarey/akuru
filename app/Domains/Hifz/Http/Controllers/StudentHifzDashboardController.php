@@ -18,7 +18,7 @@ class StudentHifzDashboardController extends Controller
         $student = auth()->user()->student;
         abort_unless($student, 403);
 
-        $enrollment = HifzEnrollment::where('student_id', $student->id)->where('status', 'active')->with('program', 'currentSurah')->first();
+        $enrollment = HifzEnrollment::where('student_id', $student->id)->where('status', 'active')->with('program')->first();
         $recentRecords = HifzSessionRecord::where('student_id', $student->id)->with('session')->latest()->take(10)->get();
         $milestones = HifzMilestone::where('student_id', $student->id)->where('status', 'approved')->latest()->get();
         $weakRecords = HifzSessionRecord::where('student_id', $student->id)->where('overall_status', 'needs_revision')->latest()->take(5)->get();

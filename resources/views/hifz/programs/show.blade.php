@@ -16,6 +16,10 @@
 </form>
 @endcan
 <div class="card overflow-x-auto"><table class="min-w-full text-sm"><thead><tr class="bg-gray-50"><th class="px-4 py-2 text-left">Student</th><th>Teacher</th><th>Status</th><th>Page</th><th></th></tr></thead>
-<tbody>@foreach($program->enrollments as $e)<tr class="border-t"><td class="px-4 py-3">{{ $e->student->full_name }}</td><td>{{ $e->teacher->full_name ?? '—' }}</td><td>{{ $e->status->value }}</td><td>{{ $e->current_page ?? '—' }}</td><td><a href="{{ route('hifz.students.history', $e->student) }}">History</a></td></tr>@endforeach</tbody></table></div>
+<tbody>@foreach($program->enrollments as $e)<tr class="border-t"><td class="px-4 py-3">{{ $e->student->full_name }}</td><td>{{ $e->teacher->full_name ?? '—' }}</td><td>{{ $e->status->value }}</td><td>{{ $e->current_page ?? '—' }}</td>{{-- F5: the per-student Blade history screen went with the session
+     controllers. The engine equivalents are `/teach/schedule` (teacher) and
+     `/students/{student}/quran-progress` (admin), and linking either one from
+     here would 403 for most viewers of this page, so no link is offered. --}}
+<td>—</td></tr>@endforeach</tbody></table></div>
 </div></div>
 @endsection

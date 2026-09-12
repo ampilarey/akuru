@@ -5,7 +5,6 @@ namespace Tests\Feature\Hifz;
 use App\Domains\Hifz\Models\HifzMistake;
 use App\Domains\Hifz\Models\HifzSessionRecord;
 use App\Domains\Hifz\Services\HifzMistakeCounterService;
-use App\Domains\Identity\Models\User;
 use App\Enums\Hifz\HifzMistakeType;
 use Database\Seeders\HifzDemoSeeder;
 use Database\Seeders\RoleSeeder;
@@ -27,22 +26,30 @@ class HifzMistakeCountTest extends TestCase
         $this->seed(HifzDemoSeeder::class);
     }
 
+    /**
+     * F5 (ADR-025): this asserted through `hifz.mistakes.store`, whose only
+     * caller was the Blade session editor. The editor and its route are gone —
+     * the engine records mistakes through `QuranMistakeMark` /
+     * `DeriveHarakaMistakeAction` — so the counter is now exercised where it
+     * still runs: over the legacy `hifz_mistakes` rows the reports read.
+     */
     public function test_mistake_saving_updates_haraka_counts(): void
     {
         $record = HifzSessionRecord::first();
-        $teacher = User::where('email', 'teacher@akuru.edu.mv')->first();
-        $teacher->markEmailAsVerified();
 
-        $this->actingAs($teacher)->postJson(route('hifz.mistakes.store'), [
+        $mistake = HifzMistake::create([
             'hifz_session_record_id' => $record->id,
-            'mistake_type' => 'haraka',
+            'student_id' => $record->student_id,
+            'teacher_id' => $record->teacher_id,
+            'mistake_type' => HifzMistakeType::Haraka,
             'severity' => 'minor',
             'surah_number' => 1,
             'ayah_number' => 1,
             'word_number' => 1,
-        ])->assertOk();
+        ]);
 
-        $record->refresh();
+        $record = app(HifzMistakeCounterService::class)->afterMistakeChange($mistake);
+
         $this->assertGreaterThanOrEqual(1, $record->haraka_mistakes);
         $this->assertGreaterThanOrEqual(1, $record->mistake_count);
     }

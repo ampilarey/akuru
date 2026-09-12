@@ -38,6 +38,8 @@ use App\Domains\Courses\Components\Arabic\Http\Controllers\LearnArabicReportCont
 use App\Domains\Courses\Components\Clubs\Http\Controllers\ClubController;
 use App\Domains\Courses\Components\Quran\Http\Controllers\CatalogQuranReferenceController;
 use App\Domains\Courses\Components\Quran\Http\Controllers\LearnQuranController;
+use App\Domains\Courses\Components\Quran\Http\Controllers\QuranMushafController;
+use App\Domains\Courses\Components\Quran\Http\Controllers\QuranPageController;
 use App\Domains\Courses\Components\Quran\Http\Controllers\TeachQuranMilestoneController;
 use App\Domains\Courses\Components\Quran\Http\Controllers\TeachQuranSessionController;
 use App\Domains\Courses\Components\Quran\Http\Controllers\TeachRecitationController;
@@ -281,6 +283,19 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
     Route::get('/teach/quran-sessions/{session}', [TeachQuranSessionController::class, 'show'])->name('teach.quran-sessions.show')->whereNumber('session');
     Route::post('/teach/quran-sessions/{session}/records', [TeachQuranSessionController::class, 'storeRecord'])->name('teach.quran-sessions.records.store')->whereNumber('session');
     Route::post('/teach/quran-session-records/{record}/review', [TeachQuranSessionController::class, 'review'])->name('teach.quran-sessions.records.review')->whereNumber('record');
+    // Mushaf editorial (F5). These were `hifz.quran.*` and moved with the
+    // dataset; `QuranMushafPolicy` still decides, so authorization is unchanged
+    // and the routes deliberately sit outside the catalog role group, which
+    // would have shut out the Hifz dean the policy is written for.
+    Route::get('/quran/mushafs', [QuranMushafController::class, 'index'])->name('quran.mushafs.index');
+    Route::get('/quran/mushafs/create', [QuranMushafController::class, 'create'])->name('quran.mushafs.create');
+    Route::post('/quran/mushafs', [QuranMushafController::class, 'store'])->name('quran.mushafs.store');
+    Route::get('/quran/mushafs/{mushaf}', [QuranMushafController::class, 'show'])->name('quran.mushafs.show')->whereNumber('mushaf');
+    Route::post('/quran/mushafs/{mushaf}/approve', [QuranMushafController::class, 'approve'])->name('quran.mushafs.approve')->whereNumber('mushaf');
+    Route::post('/quran/mushafs/{mushaf}/lock', [QuranMushafController::class, 'lock'])->name('quran.mushafs.lock')->whereNumber('mushaf');
+    Route::post('/quran/mushafs/{mushaf}/import-ayah', [QuranMushafController::class, 'importAyah'])->name('quran.mushafs.import-ayah')->whereNumber('mushaf');
+    Route::get('/quran/mushafs/{mushaf}/pages/{pageNumber}', [QuranPageController::class, 'show'])->name('quran.pages.show')->whereNumber('mushaf')->whereNumber('pageNumber');
+    Route::post('/quran/mushafs/{mushaf}/pages/{page}/positions', [QuranPageController::class, 'storePosition'])->name('quran.pages.positions.store')->whereNumber('mushaf')->whereNumber('page');
     Route::get('/learn/catalog', [LearnCatalogController::class, 'index'])->name('learn.catalog');
     Route::post('/learn/courses/{course}/enroll', [LearnCatalogController::class, 'enroll'])->name('learn.courses.enroll')->whereNumber('course');
     Route::get('/learn/courses/{course}', [LearnCourseController::class, 'show'])->name('learn.courses.show')->whereNumber('course');

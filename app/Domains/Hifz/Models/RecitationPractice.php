@@ -46,13 +46,10 @@ class RecitationPractice extends Model
         return $this->belongsTo(Student::class);
     }
 
-    /**
-     * Get the surah that was practiced
+    /*
+     * F5: the `surah()` relation crossed into Courses\\Components\\Quran
+     * (rule 3). `surah_id` is untouched; no caller read the relation.
      */
-    public function surah()
-    {
-        return $this->belongsTo(Surah::class);
-    }
 
     /**
      * Get the teacher who evaluated

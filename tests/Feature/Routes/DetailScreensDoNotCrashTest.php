@@ -74,7 +74,9 @@ function unresolvedDetailScreens(): array
 {
     return [
         // Scalars: there is no row to point at, so nothing to build.
-        'hifz/quran/mushafs/{mushaf}/pages/{pageNumber}' => 'page number is a scalar, not a row',
+        // (The mushaf page screen was a second entry here. F5 moved it to
+        // `quran/mushafs/{mushaf}/pages/{pageNumber}` and it is now declared in
+        // `detailDeclaredParams()` with a real page row, so it is swept.)
         'payments/ref/{merchant_reference}/status' => 'string reference, not a row',
 
         // Family-facing detail screens are no longer listed here at all:
@@ -132,6 +134,13 @@ function detailDeclaredParams(): array
             'session' => $s['offering_session'],
         ],
         'catalog/player/{lesson}' => fn (array $s): array => ['lesson' => $s['lesson']],
+        // Mushaf page mapping (F5). `{pageNumber}` is a scalar the route looks
+        // up against the mushaf, so reflection cannot resolve it and the pair
+        // has to be declared together.
+        'quran/mushafs/{mushaf}/pages/{pageNumber}' => fn (array $s): array => [
+            'mushaf' => $s['mushaf'],
+            'pageNumber' => $s['mushaf_page'],
+        ],
     ];
 }
 
@@ -223,12 +232,25 @@ function detailSeededIds(): array
         ->where('id', $lessonId)
         ->update(['current_revision_id' => $revisionId]);
 
+    // `HifzDemoSeeder` builds a mushaf and an ayah but no `quran_pages` row, so
+    // the page screen would answer 404 — and a sweep that passes on a 404 has
+    // proved only that the route did not throw.
+    $mushaf = \App\Domains\Courses\Components\Quran\Models\QuranMushaf::query()->first();
+    if ($mushaf !== null) {
+        \App\Domains\Courses\Components\Quran\Models\QuranPage::query()->firstOrCreate(
+            ['quran_mushaf_id' => $mushaf->id, 'page_number' => 1],
+            ['pdf_page_number' => 1],
+        );
+    }
+
     return [
         'course' => (int) $course->id,
         'club' => (int) $club->id,
         'offering' => (int) $offering,
         'lesson' => (int) $lessonId,
         'offering_session' => (int) $offeringSessionId,
+        'mushaf' => (int) ($mushaf?->id ?? 0),
+        'mushaf_page' => 1,
     ];
 }
 

@@ -43,8 +43,11 @@ class HifzEnrollment extends Model
         return $this->belongsTo(User::class, 'supervisor_id');
     }
 
-    public function currentSurah(): BelongsTo
-    {
-        return $this->belongsTo(Surah::class, 'current_surah_id');
-    }
+    /*
+     * F5: the Qur'an dataset (`surahs`, `quran_*`) now belongs to
+     * Courses\Components\Quran, so Hifz cannot declare Eloquent relations to
+     * it without importing another domain's models (rule 3). The foreign-key
+     * columns are untouched — nothing was dropped (rule 9) — and readers go
+     * through the `QuranReferenceReader` support contract instead.
+     */
 }

@@ -3,16 +3,16 @@
 namespace Database\Seeders;
 
 use App\Domains\Academics\Models\ClassRoom;
+use App\Domains\Courses\Components\Quran\Models\QuranAyah;
+use App\Domains\Courses\Components\Quran\Models\QuranMushaf;
+use App\Domains\Courses\Components\Quran\Models\QuranWord;
+use App\Domains\Courses\Components\Quran\Models\Surah;
 use App\Domains\Hifz\Models\HifzEnrollment;
 use App\Domains\Hifz\Models\HifzMilestone;
 use App\Domains\Hifz\Models\HifzMistake;
 use App\Domains\Hifz\Models\HifzProgram;
 use App\Domains\Hifz\Models\HifzSession;
 use App\Domains\Hifz\Models\HifzSessionRecord;
-use App\Domains\Hifz\Models\QuranAyah;
-use App\Domains\Hifz\Models\QuranMushaf;
-use App\Domains\Hifz\Models\QuranWord;
-use App\Domains\Hifz\Models\Surah;
 use App\Domains\Identity\Models\User;
 use App\Domains\People\Models\ParentGuardian;
 use App\Domains\People\Models\Student;

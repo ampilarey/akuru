@@ -45,22 +45,14 @@ class QuranProgress extends Model
         return $this->belongsTo(Teacher::class);
     }
 
-    /**
-     * Get the surah information
+    /*
+     * F5: `surah()` joined `Hifz\\Models\\Surah`, which now belongs to
+     * Courses\\Components\\Quran — Hifz may not import it (rule 3). The
+     * `surah_number` column still carries the reference, and `surah_name` /
+     * `surah_name_arabic` are already denormalised onto this row, so nothing
+     * that read this model needed the join. `recitationPractices()` went with
+     * it: it filtered on `$this->surah?->id` and had no callers.
      */
-    public function surah()
-    {
-        return $this->belongsTo(Surah::class, 'surah_number', 'index');
-    }
-
-    /**
-     * Get recitation practices for this progress
-     */
-    public function recitationPractices()
-    {
-        return $this->hasMany(RecitationPractice::class, 'student_id', 'student_id')
-            ->where('surah_id', $this->surah?->id);
-    }
 
     // Helper methods
     public function getProgressPercentageAttribute()

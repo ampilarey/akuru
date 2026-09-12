@@ -3,10 +3,10 @@
 use App\Domains\Courses\Actions\ResolveActivityDefinitionAction;
 use App\Domains\Courses\Actions\SaveActivityAction;
 use App\Domains\Courses\Actions\SaveEngineCourseAction;
+use App\Domains\Courses\Components\Quran\Models\QuranAyah;
+use App\Domains\Courses\Components\Quran\Models\QuranMushaf;
+use App\Domains\Courses\Components\Quran\Models\Surah;
 use App\Domains\Courses\Models\CourseSubject;
-use App\Domains\Hifz\Models\QuranAyah;
-use App\Domains\Hifz\Models\QuranMushaf;
-use App\Domains\Hifz\Models\Surah;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Validation\ValidationException;
 

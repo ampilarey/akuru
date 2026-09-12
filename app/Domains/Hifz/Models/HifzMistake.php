@@ -33,18 +33,11 @@ class HifzMistake extends Model
         return $this->belongsTo(Student::class);
     }
 
-    public function quranPage(): BelongsTo
-    {
-        return $this->belongsTo(QuranPage::class);
-    }
-
-    public function quranAyah(): BelongsTo
-    {
-        return $this->belongsTo(QuranAyah::class);
-    }
-
-    public function quranWord(): BelongsTo
-    {
-        return $this->belongsTo(QuranWord::class);
-    }
+    /*
+     * F5: the Qur'an dataset (`surahs`, `quran_*`) now belongs to
+     * Courses\Components\Quran, so Hifz cannot declare Eloquent relations to
+     * it without importing another domain's models (rule 3). The foreign-key
+     * columns are untouched — nothing was dropped (rule 9) — and readers go
+     * through the `QuranReferenceReader` support contract instead.
+     */
 }

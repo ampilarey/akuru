@@ -29,18 +29,11 @@ class HifzRouteNamesTest extends TestCase
             'hifz.enrollments.index',
             'hifz.enrollments.create',
             'hifz.enrollments.store',
-            'hifz.sessions.index',
-            'hifz.sessions.create',
-            'hifz.sessions.edit',
-            'hifz.sessions.update',
-            'hifz.sessions.records.bulk',
-            'hifz.sessions.review',
-            'hifz.session-records.update',
-            'hifz.session-records.review',
-            'hifz.session-records.quran-page',
-            'hifz.students.history',
-            'hifz.mistakes.store',
-            'hifz.mistakes.destroy',
+            // F5 (ADR-025): `hifz.sessions.*`, `hifz.session-records.*`,
+            // `hifz.students.history` and `hifz.mistakes.*` are gone — the
+            // three-lane session sheet lives on the engine now
+            // (`teach.quran-sessions.*`). `hifz.quran.*` moved with the Qur'an
+            // dataset and is registered below as `quran.*`.
             'hifz.milestones.index',
             'hifz.milestones.store',
             'hifz.milestones.supervisor-review',
@@ -53,20 +46,35 @@ class HifzRouteNamesTest extends TestCase
             'hifz.reports.teacher-completion',
             'hifz.reports.milestones',
             'hifz.reports.export',
-            'hifz.quran.mushafs.index',
-            'hifz.quran.mushafs.create',
-            'hifz.quran.mushafs.store',
-            'hifz.quran.mushafs.show',
-            'hifz.quran.mushafs.approve',
-            'hifz.quran.mushafs.lock',
-            'hifz.quran.mushafs.import-ayah',
-            'hifz.quran.pages.show',
-            'hifz.quran.words.index',
-            'hifz.quran.pages.positions.store',
         ];
 
         foreach ($names as $name) {
             $this->assertTrue(Route::has($name), "Missing route: {$name}");
+        }
+    }
+
+    public function test_mushaf_editorial_route_names_moved_to_the_engine(): void
+    {
+        $moved = [
+            'quran.mushafs.index',
+            'quran.mushafs.create',
+            'quran.mushafs.store',
+            'quran.mushafs.show',
+            'quran.mushafs.approve',
+            'quran.mushafs.lock',
+            'quran.mushafs.import-ayah',
+            'quran.pages.show',
+            'quran.pages.positions.store',
+        ];
+
+        foreach ($moved as $name) {
+            $this->assertTrue(Route::has($name), "Missing route: {$name}");
+        }
+
+        // The old names must not survive alongside the new ones: two live
+        // systems over one dataset is exactly what F5 exists to end.
+        foreach (['hifz.quran.mushafs.index', 'hifz.sessions.index', 'hifz.mistakes.store'] as $retired) {
+            $this->assertFalse(Route::has($retired), "Retired route still registered: {$retired}");
         }
     }
 }

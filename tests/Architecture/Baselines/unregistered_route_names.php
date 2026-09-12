@@ -2,16 +2,14 @@
 
 // route('name') calls whose name is registered by no route.
 // Each throws RouteNotFoundException the moment its call site is reached.
-// All four sit in code nothing currently calls — verified, not assumed — so
-// they are latent rather than live. Baseline may only shrink; never add to it.
-// Baseline count: 4
+// Both sit in code nothing currently calls — verified, not assumed — so they
+// are latent rather than live. Baseline may only shrink; never add to it.
+// Baseline count: 2
 
 return [
-    // RecitationPracticeController is not routed at all — no entry in
-    // app/Domains/Hifz/routes.php or routes/. Dead controller. Hifz is frozen
-    // (rule 7), and deleting it is a scope change, not a route change.
-    'recitation-practices.index <- app/Domains/Hifz/Http/Controllers/RecitationPracticeController.php',
-    'recitation-practices.show <- app/Domains/Hifz/Http/Controllers/RecitationPracticeController.php',
+    // (F5 deleted RecitationPracticeController, which held the other two
+    // entries: it read the Qur'an dataset, was routed nowhere, and the engine
+    // covers recitation through `teach.recitations.*`.)
 
     // EventRegistration's QR url builder. Nothing calls it and the model has
     // no $appends, so it never fires during serialisation. Fixing it means

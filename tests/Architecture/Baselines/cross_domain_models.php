@@ -2,7 +2,7 @@
 
 // PHASE_0_CHECKLIST §0.5 rule 1: cross-domain Models imports.
 // Baseline may only shrink when violations are fixed — never grow.
-// Baseline count: 74
+// Baseline count: 71
 
 return [
     'app/Domains/Academics/Http/Controllers/AnnouncementController.php',
@@ -35,7 +35,6 @@ return [
     'app/Domains/Hifz/Http/Controllers/DeanHifzDashboardController.php',
     'app/Domains/Hifz/Http/Controllers/HifzEnrollmentController.php',
     'app/Domains/Hifz/Http/Controllers/HifzProgramController.php',
-    'app/Domains/Hifz/Http/Controllers/HifzSessionRecordController.php',
     'app/Domains/Hifz/Http/Controllers/QuranProgressController.php',
     'app/Domains/Hifz/Models/HifzAssignment.php',
     'app/Domains/Hifz/Models/HifzEnrollment.php',
@@ -44,13 +43,11 @@ return [
     'app/Domains/Hifz/Models/HifzProgram.php',
     'app/Domains/Hifz/Models/HifzSession.php',
     'app/Domains/Hifz/Models/HifzSessionRecord.php',
-    'app/Domains/Hifz/Models/QuranMushaf.php',
     'app/Domains/Hifz/Models/QuranProgress.php',
     'app/Domains/Hifz/Models/RecitationPractice.php',
     'app/Domains/Hifz/Services/HifzReportService.php',
     'app/Domains/Hifz/Services/HifzScopeService.php',
     'app/Domains/Hifz/Services/HifzSessionService.php',
-    'app/Domains/Hifz/Services/QuranMushafImportService.php',
     'app/Domains/Identity/Models/User.php',
     'app/Domains/Notifications/Notifications/NewAdmissionApplication.php',
     'app/Domains/Notifications/Notifications/NewContactMessage.php',

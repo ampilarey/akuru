@@ -3,8 +3,8 @@
 use App\Domains\Courses\Actions\EnrollUnifiedStudentInOfferingAction;
 use App\Domains\Courses\Actions\SaveEngineCourseAction;
 use App\Domains\Courses\Components\Quran\Models\QuranSessionRecord;
+use App\Domains\Courses\Components\Quran\Models\Surah;
 use App\Domains\Courses\Models\CourseSubject;
-use App\Domains\Hifz\Models\Surah;
 use App\Domains\Identity\Models\User;
 use App\Domains\Offerings\Models\AttendanceRecord;
 use App\Domains\Offerings\Models\CourseOffering;

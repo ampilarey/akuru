@@ -1,9 +1,9 @@
 <?php
 
 use App\Domains\Courses\Components\Quran\Actions\ListQuranReferenceAction;
-use App\Domains\Hifz\Models\QuranAyah;
-use App\Domains\Hifz\Models\QuranMushaf;
-use App\Domains\Hifz\Models\Surah;
+use App\Domains\Courses\Components\Quran\Models\QuranAyah;
+use App\Domains\Courses\Components\Quran\Models\QuranMushaf;
+use App\Domains\Courses\Components\Quran\Models\Surah;
 use App\Support\Contracts\QuranReferenceReader;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;

@@ -13,16 +13,14 @@
 @foreach($programs as $program)
 <div class="card p-4 mb-4 flex justify-between items-center">
     <div><h3 class="font-semibold">{{ $program->name }}</h3></div>
+    {{-- F5: session recording moved to the engine (`/teach/schedule` →
+         the halaqa session sheet). This dashboard keeps the roll-up only. --}}
     <div class="flex gap-2">
-        @if($todaySession && $todaySession->hifz_program_id === $program->id)
-        <a href="{{ route('hifz.sessions.edit', $todaySession) }}" class="btn btn-primary">Continue Today's Session</a>
-        @else
-        <form method="POST" action="{{ route('hifz.sessions.create') }}">@csrf<input type="hidden" name="hifz_program_id" value="{{ $program->id }}"><button class="btn btn-primary">Start Today's Session</button></form>
-        @endif
+        <a href="{{ route('teach.schedule') }}" class="btn btn-primary">Open today's schedule</a>
     </div>
 </div>
 @endforeach
 @endif
-<a href="{{ route('hifz.sessions.index') }}" class="text-brandMaroon-600">View all sessions →</a>
+<a href="{{ route('teach.schedule') }}" class="text-brandMaroon-600">View all sessions on the engine schedule →</a>
 </div></div>
 @endsection

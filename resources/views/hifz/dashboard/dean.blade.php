@@ -26,7 +26,7 @@
 <div class="flex flex-wrap gap-2">
 <a href="{{ route('hifz.programs.index') }}" class="btn btn-primary">Programs</a>
 <a href="{{ route('hifz.reports.index') }}" class="btn btn-secondary">Reports</a>
-<a href="{{ route('hifz.quran.mushafs.index') }}" class="btn btn-secondary">Quran Source</a>
+<a href="{{ route('quran.mushafs.index') }}" class="btn btn-secondary">Quran Source</a>
 </div>
 </div></div>
 @endsection
