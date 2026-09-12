@@ -6636,6 +6636,77 @@ default, which is worth stating: nothing was relying on the wrong behaviour.
 practice by 28.1's snapshot fix and the pinning path, but not separately
 asserted end to end.
 
+### SPEC §11.7: the seat lock was correct, and nothing tested it
+
+§11.7 is unusually prescriptive about verification:
+
+> Seat limits must be enforced at the database level, not only in application
+> code. Do not use unsafe count-then-insert logic without a lock.
+>
+> **Required test:** Simulate two concurrent enrollments against one remaining
+> seat. Exactly one must succeed. The other must fail gracefully.
+
+**The implementation is right.** `EnforceSeatLimitAction` takes
+`lockForUpdate()` on the offering row *and* on the occupancy count, inside a
+transaction — exactly §11.7's "row lock on the offering row" option.
+
+**The test guarding it was not.** `OfferingPinAndSeatsTest` has a case named
+"enforces offering seat limits inside a lock" which enrols one student, then a
+second, **sequentially**. Nothing about it is concurrent. It proves the limit
+is applied; it proves nothing about the lock.
+
+Verified that claim rather than asserting it: **deleting every
+`lockForUpdate()` from the action left the entire suite green.** The safety
+property §11.7 cares about had no test at all.
+
+#### A correction to my own first attempt
+
+My replacement was, at first, no better. I wrote a test called "gives the last
+seat to exactly one of two concurrent enrolments" — and
+`EnforceSeatLimitAction::execute()` opens *and commits* its own transaction, so
+calling it twice in a row is sequential by construction. I ran the same
+lock-removal check against it: **all four of my new tests still passed.** I had
+reproduced the exact flaw I had just written up.
+
+The honest fix was to aim at what would actually break. The suite now asserts
+that both statements are issued `FOR UPDATE`, read from the query log. Remove
+the lock and that test fails immediately, while the others stay green — which
+is the discrimination that was missing.
+
+True parallel verification needs a second process blocking on the first, which
+a single-threaded test cannot hold open without deadlocking itself. That
+belongs in an integration harness, and is recorded here rather than pretended:
+**§11.7's "two concurrent enrolments" is still not literally simulated.** What
+is now guaranteed is that the lock cannot be removed unnoticed.
+
+**Cleared, not faulted:** the occupying-status list excludes cancelled,
+suspended, failed and rejected, as §11.7 requires, and an offering with no seat
+limit is correctly unbounded. Both now have tests.
+
+**1,499 tests green** (5 new).
+
+#### Environment recovery, recorded because it cost most of a turn
+
+The container restart took MySQL, `vendor/`, `node_modules`, `.env` and the
+Playwright install with it. `composer install` could not rebuild `vendor`
+because `api.github.com` and `codeload.github.com` return **403** from the
+egress proxy.
+
+What unblocked it: **apt works** — the block is GitHub-specific — so MariaDB
+installed cleanly. And only **phpstan** is dist-only through the blocked API,
+so `composer update` minus `larastan` restores a working Pest and Pint.
+
+One consequence worth knowing for next time: that leaves **Pint drifted to
+1.32.1 against the lock's 1.25.1**, and it then reports ~170 pre-existing files
+including `bootstrap/app.php` and a dozen migrations nobody touched. **Do not
+run `pint` in write mode in a recovered container** — it would reformat the
+repo to the wrong standard. Lint single files, and let CI's locked version be
+the judge.
+
+Also: every test warns `file_get_contents(.env)` after a restart until `.env`
+is recreated from `.env.example`. Harmless, and CI shows it too, but it turns
+every test's status from "passed" to "warning" and hides real ones.
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**.
