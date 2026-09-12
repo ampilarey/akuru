@@ -12,7 +12,7 @@ function conversionCourse(array $overrides = []): Course
 {
     return Course::factory()->create(array_merge([
         'title' => 'W1 Urgency Lab',
-        'slug' => 'w1-urgency-lab-'.fake()->unique()->numerify('###'),
+        'slug' => 'w1-urgency-lab-'.uniqueFixtureSuffix(),
         'status' => 'open',
         'seats' => 25,
         'fee' => 800,

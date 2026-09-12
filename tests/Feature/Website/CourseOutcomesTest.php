@@ -14,7 +14,7 @@ function outcomesCourse(array $overrides = []): Course
 {
     return Course::factory()->create(array_merge([
         'title' => 'W13 Outcomes Course',
-        'slug' => 'w13-outcomes-'.fake()->unique()->numerify('###'),
+        'slug' => 'w13-outcomes-'.uniqueFixtureSuffix(),
         'status' => 'open',
         'body' => '<p>Course body copy.</p>',
         'cover_image' => 'courses/w13.jpg',

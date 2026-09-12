@@ -6546,6 +6546,47 @@ requirements into completion is §27 work, and §27's larger question (whether
 enrollment completion should weigh assessments at all) is an owner decision
 that is still open.
 
+### A flaky fixture pattern, swept and then guarded
+
+PR #290 went red in CI on a commit whose only changes were in an unrelated
+domain, and which passed locally:
+
+```
+Duplicate entry 'ARB101' for key 'subjects.subjects_code_unique'
+```
+
+The cause, written out because it is genuinely counter-intuitive:
+**`fake()->unique()` returns a *fresh* `UniqueGenerator` on every call.** Each
+one has its own empty memory, so it guarantees uniqueness only *within* a
+single call — which is to say, never. A fixture written as
+`fake()->unique()->numerify('###')` against a globally unique column is three
+random digits: a thousand possible values, and a birthday collision waiting.
+
+Those fixtures had been flaky since they were written. Adding tests elsewhere
+shifted the random sequence and the coin finally landed badly.
+
+**Corrected count:** I first reported eight remaining occurrences. There were
+**seven**, across six files under `tests/Feature/Website`, all building a
+`courses.slug` — which is `unique()`.
+
+Rather than repeat `static $counter` in six places, all of them now call one
+shared `uniqueFixtureSuffix()`, and the three helpers patched in the emergency
+fix (`makeSubject`, `makeRoomRow`, `makeStaffProfile`) were collapsed onto it
+too. One implementation, one explanation, instead of four copies drifting.
+
+**And a guard, because the API will keep looking correct.** A new architecture
+test fails if `fake()->unique()` appears anywhere under `tests/`, naming the
+file and line. Verified it bites: reintroducing the pattern in one file turns
+it red and points at the exact line. Without it this returns the next time
+someone reaches for the obvious-looking method — the guard is the actual fix;
+the seven replacements are just cleanup.
+
+The cost of not fixing this is not the occasional red build. It is that a suite
+which fails once a fortnight for no visible reason trains people to re-run CI
+instead of reading it.
+
+**1,476 tests green** (1 new guard).
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**.
