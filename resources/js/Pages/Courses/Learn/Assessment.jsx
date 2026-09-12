@@ -55,6 +55,20 @@ export default function Assessment({ assessment, enrollment, attempt }) {
         setAnswers((current) => ({ ...current, [questionId]: value }));
     };
 
+    // Arrange questions had no control here at all, while `blankAnswers` seeded
+    // an `order` from the presented option order — so the player submitted an
+    // answer the student was never shown and could not change. Same movement
+    // the activity player has used all along.
+    const moveItem = (questionId, order, index, delta) => {
+        const next = [...order];
+        const target = index + delta;
+        if (target < 0 || target >= next.length) {
+            return;
+        }
+        [next[index], next[target]] = [next[target], next[index]];
+        setAnswer(questionId, { order: next });
+    };
+
     return (
         <AppShell title={assessment.title}>
             {remaining !== null && !submitted && (
@@ -132,6 +146,30 @@ export default function Assessment({ assessment, enrollment, attempt }) {
                                             </label>
                                         </li>
                                     ))}
+                                </ul>
+                            )}
+                            {snapshot.pattern === 'arrange' && (
+                                <ul className="space-y-2">
+                                    {(current.order || (snapshot.options || []).map((o) => o.id)).map((id, position) => {
+                                        const option = (snapshot.options || []).find((o) => o.id === id) || { id, label: id };
+                                        const order = current.order || (snapshot.options || []).map((o) => o.id);
+
+                                        return (
+                                            <li key={id} className="flex items-center justify-between gap-2 rounded-lg border p-2 text-sm">
+                                                <span>{position + 1}. {option.label}</span>
+                                                {!submitted && (
+                                                    <span className="flex gap-2">
+                                                        <button type="button" className="btn-secondary" onClick={() => moveItem(snapshot.question_id, order, position, -1)}>
+                                                            {t.move_up || 'Up'}
+                                                        </button>
+                                                        <button type="button" className="btn-secondary" onClick={() => moveItem(snapshot.question_id, order, position, 1)}>
+                                                            {t.move_down || 'Down'}
+                                                        </button>
+                                                    </span>
+                                                )}
+                                            </li>
+                                        );
+                                    })}
                                 </ul>
                             )}
                             {snapshot.pattern === 'text_input' && (
