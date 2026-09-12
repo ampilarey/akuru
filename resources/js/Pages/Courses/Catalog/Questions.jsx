@@ -13,7 +13,10 @@ const SAMPLE_CORRECT = {
     mcq_single: JSON.stringify(['a']),
     mcq_multiple: JSON.stringify(['a', 'b']),
     true_false: JSON.stringify(['true']),
-    matching: JSON.stringify(['1']),
+    // §17 Pattern 3: a matching answer key is a MAP of left id => right value,
+    // not a selection. The old sample was ['1'] — a single id — which encoded
+    // the mis-modelling that routed matching through Pattern 1.
+    matching: JSON.stringify({ 1: 'Alif', 2: 'Baa' }, null, 2),
     arrange: JSON.stringify(['1', '2']),
 };
 

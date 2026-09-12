@@ -5918,6 +5918,62 @@ across courses"; both `lessons` and `course_modules` have `deleted_at` **and**
 the `SoftDeletes` trait (the §29 trap was a column without the trait); and §13
 does not ask for lesson delete, so its absence is correct rather than a gap.
 
+### SPEC §17: Pattern 3 was half a pattern, and matching was mis-routed because of it
+
+§17 lists six examples under Pattern 3, "Drag / Arrange Interaction":
+
+> Match pairs · Arrange words · Arrange steps · Sentence builder · Ordering
+> process · Sort items into categories
+
+Four are **orderings**. Two are **mappings**. Only the ordering half was built —
+`scoreArrange()` compared `correct_order` against the student's list — so "match
+pairs" and "sort items into categories" could not be built at all.
+
+`QuestionType::Matching` was routed to **Pattern 1** instead, where
+`scoreSelection` compares an *unordered set of ids*. So a student who picked
+every correct right-hand item and paired them all wrongly **scored full marks**.
+
+**§17 answered the design question I was going to bring to the owner.** It says:
+"All activity types must use 4 base patterns. New activity types should be added
+through **configuration** of these patterns, not through new hardcoded code
+paths." A fifth `ActivityPattern::Matching` was therefore the one option ruled
+out. Mapping is now a configuration of Pattern 3, and Matching maps to it.
+
+**No new field, and no change to existing questions.** A mapping's answer key is
+an object (`left id => right value`); an ordering's is a list. The shape tells
+them apart, so every existing arrange question scores exactly as before.
+
+**One thing the design had to get right:** the student's snapshot strips
+`correct_answer`, so the client cannot derive the right-hand column from it —
+and must not be handed the key in order to. The targets are computed on the
+server and sorted, because the order the key happens to be written in would
+otherwise hint at the pairing. The right-hand column is the *question*; the
+pairing is the answer.
+
+Blank selections are ignored rather than counted as answers — keeping them would
+fail a pairing that is in fact complete. Scoring is all-or-nothing, matching how
+ordering and selection already behave; partial credit across all four patterns
+is a separate decision, and making only this one generous would be the
+inconsistent choice.
+
+The authoring sample in `Catalog/Questions.jsx` shipped a matching
+`correct_answer` of `['1']` — a selection. That encoded the mis-modelling, and
+is now a map.
+
+**1,384 tests green** (10 new). **Walked in a browser**:
+
+```
+ok   the matching question offers one select per item (2)
+ok   the right-hand column is shown
+ok   the answer key is not sent to an unsubmitted attempt
+ok   the correct pairing scored full marks (6/6)
+```
+
+**A correction to my own walk, not the code:** the leak assertion first failed
+because `/correct_answer/` matches the substring inside
+`"show_correct_answers":false`, a settings field name. The server was stripping
+the key correctly all along. The check is now anchored on `"correct_answer":`.
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**.
