@@ -3,13 +3,17 @@
 Ranked by **harm > wrong data > blocked task > confusion > cosmetic**.  
 Evidence is a pilot section, a `file:line` on current `main` (after #86–#93), or a merged PR.
 
-Re-checked 2026-08-26 against merged `main` and Round 3 (`docs/PILOT_REHEARSAL.md`). Round 2 items that landed in #86–#92 are in **Fixed on main** at the bottom — not dropped, not still claimed open.
+Re-checked 2026-08-26 against merged `main` and Round 3 (`docs/PILOT_REHEARSAL.md`);
+the owner-decision list below re-audited against `main` on **2026-09-12**. Round 2 items that landed in #86–#92 are in **Fixed on main** at the bottom — not dropped, not still claimed open.
 
 ---
 
-## Decisions only the owner can make (consolidated 2026-09-10)
+## Decisions only the owner can make (consolidated 2026-09-10, re-audited 2026-09-12)
 
-The agent-buildable backlog is empty. Everything below was raised during
+The agent-buildable backlog is empty. **Re-audited 2026-09-12** — item 6 was
+wrong (all seven Wave 4 features ship), item 9 was materially overstated, and
+the audit itself uncovered a live defect, now fixed (see "Found by the
+2026-09-12 audit" below). Everything below was raised during
 autonomous sessions, deliberately **not** decided, and scattered across STATUS
 sections — collected here so there is one list to work from. Each is phrased as
 a question with a default, so "do nothing" is always a legible choice.
@@ -37,13 +41,20 @@ a question with a default, so "do nothing" is always a legible choice.
 
 **Product scope**
 
-6. **Wave 4 — does the Institute actually run these?** E8 pick-up (~1wk),
-   E15 lost & found (~3d), E16 physical lending (~2wk), E17 interest groups
-   (~1wk), E18 gate arrivals (~1wk **+ hardware decision**), E19 sensitive
-   information (~1wk **+ privacy policy**), E21 work showcase (~1–2wk).
-   Verified against the code on 2026-09-10: all seven genuinely unbuilt.
-   **≈7½–8½ weeks, and the whole remaining feature backlog.** Default: build
-   none of them.
+6. ~~**Wave 4 — does the Institute actually run these?**~~ **All seven are
+   built** (re-verified against `main` on 2026-09-12: routes, models,
+   migrations and feature tests for each). E8 pick-up, E15 lost & found,
+   E16 physical lending, E17 interest groups, E18 gate arrivals, E19 sensitive
+   information, E21 work showcase.
+
+   This entry said "Verified against the code on 2026-09-10: all seven
+   genuinely unbuilt" and priced them at ≈7½–8½ weeks. That was already wrong
+   when written for some of them and wrong for all seven within days, and it
+   is the worst kind of stale: it asked the owner to decide whether to fund
+   work that already existed. Two decisions **do** survive it, and they are
+   about operating the features rather than building them: **E18 needs the
+   hardware decision** (what scans at the gate) and **E19 needs the privacy
+   policy** that governs who may read a sensitive note.
 7. **`docs/APPSHELL_NAV_IA.md`** — accept / accept with edits / reject. The nav
    wrap is still live. See top-five item 2. Now measured in a browser: ~90
    links across **eleven rows**, roughly the top quarter of a 1200px viewport,
@@ -61,12 +72,26 @@ a question with a default, so "do nothing" is always a legible choice.
 
 **Security and permissions**
 
-9. **The Hifz module has no role guard at all.** `app/Domains/Hifz/routes.php`
-   is declared under `['auth', 'trackActivity']` — milestones, sessions,
-   mistakes, enrolments, every dashboard, the mushaf admin. Needs a role matrix
-   per screen, which is a product decision. Nothing is exposed today (ADR-021,
-   no live Hifz users). Recommended to settle as part of the §2b migration the
-   freeze is waiting for.
+9. **The Hifz module declares no role guard on its routes** —
+   `app/Domains/Hifz/routes.php` is still `['auth', 'trackActivity']` and
+   nothing else. **Narrowed twice since this was written.** F5 (ADR-029) took
+   sessions, session records, mistakes and the mushaf admin out of that file
+   entirely; what is left is the hub, five dashboards, programmes, enrolments,
+   milestones and reports.
+
+   And the remaining surface is **not** the open door the sentence implies.
+   `tests/Feature/Hifz/HifzCrossRoleAccessTest.php` now sweeps every
+   parameterless Hifz GET as two different families in the same halaqa and
+   pins what actually happens: every controller either authorizes explicitly or
+   scopes its query through `HifzScopeService`, the reports are gated on
+   `view_hifz_reports`, and the one controller that does neither
+   (`HifzHubController`) is a redirect ending in `abort(403)`. No screen showed
+   one family the other's child.
+
+   So the role matrix is still a product decision worth taking — a parent can
+   load `/hifz/supervisor` and see a supervisor-shaped page scoped to their own
+   children, which is confusing — but it is a **tidiness** decision, not an
+   exposure. Default: leave the routes as they are and keep the test.
 10. **`admin` is granted `Permission::all()`, identical to `super_admin`**,
     while the comment directly above it in `RoleSeeder` says "most permissions
     (school operations, not system-level)". The code and its comment disagree;
@@ -98,11 +123,44 @@ a question with a default, so "do nothing" is always a legible choice.
 
 ---
 
+## Found by the 2026-09-12 audit
+
+### Two guardian↔student pivots, and the product wrote the wrong one — **fixed**
+
+`guardian_student` is the live pivot: every notification listener (absence SMS,
+behaviour SMS, exam results, report cards) and eleven People actions — the
+collection policy, financial responsibility, guardian access — read it.
+`student_parent` is a second pivot that **nothing in the application wrote**.
+
+`User::schoolChildren()` read the dead one, through
+`ParentGuardian::students()`. Its only caller,
+`ParentHifzDashboardController`, turns an empty child list into `abort(403)` —
+so **every parent the product itself had linked was refused their own child's
+Hifz dashboard**. `HifzScopeService::parentChildIds()` had the same bug, so
+`canAccessStudent()` refused them a second time.
+
+It looked like it worked because `HifzDemoSeeder` was the single writer of
+`student_parent`: the demo parent could open the screen and nobody else could.
+
+Fixed by adding `ParentGuardian::children()` over `guardian_student` and
+pointing both readers and the seeder at it. `students()` is marked deprecated
+rather than deleted, and the table is left populated — rule 9 does not drop a
+populated table in the deploy that stops using it. Removing it is a Deploy-3
+cleanup item.
+
+**Found by a positive control, not by the guard.** The cross-role test asserts
+that no family sees another's child; that assertion passed while every parent
+screen was 403ing, because a page nobody can load leaks nothing. The assertion
+that caught it is the one requiring each caller to have seen *their own* child
+somewhere — without it the whole sweep was vacuous for parents.
+
+---
+
 ## Top five (remaining)
 
 1. **Staging staff login** — seed passwords 302 back to login; no SSH from this environment. Blocks any judgement that `test.akuru.edu.mv` is a school.
 1b. ~~**Nothing merged since 2026-08 has been walked in a browser**~~ — **partly closed 2026-09-10 (STATUS §5bu, §5bv).** The core daily loop is now walked **locally**, end to end, in Chromium: a teacher generates a register, fills it, marks a pupil absent and submits; the absence lands on the admin absence list; the homework and the absence both reach the family portal. That walk found a real defect (nested translation lines editable in neither language, fixed in #234). **Still open:** nothing has been walked on `test.akuru.edu.mv` itself, which is a separate question about the deployment rather than the code. See decision 1 above.
-2. **AppShell nav IA** — **proposed, awaiting decision.** 83 wrapping `<Link href=` in `AppShell.jsx` (74 at the IA proposal, plus Glossary, admin Events, portal Event signup, Certificates, Completions, Performance, Home, Meetings, Overview). C3 extends `/catalog/reviews` (already linked). D1 adds Home. D2 adds Meetings. D3 adds Overview. Proposal in `docs/APPSHELL_NAV_IA.md` (PR #98): grouped by role and frequency. **Do not implement** until Accept / Accept with edits / Reject. The wrap is still live.
+2. **AppShell nav IA** — **proposed, awaiting decision.** **105** wrapping `<Link href=` in `AppShell.jsx` — 83 when this line was written, 74 at the IA proposal, plus Glossary, admin Events, portal Event signup, Certificates, Completions, Performance, Home, Meetings, Overview. It grows with every slice that adds a screen, which is itself the argument. C3 extends `/catalog/reviews` (already linked). D1 adds Home. D2 adds Meetings. D3 adds Overview. Proposal in `docs/APPSHELL_NAV_IA.md` (PR #98): grouped by role and frequency. **Do not implement** until Accept / Accept with edits / Reject. The wrap is still live.
 3. **Parent notified column shows — on excused rows** — column exists (#86); SMS body is not in the portal.
 4. ~~Shared Add-term form on every year card~~ — **fixed** (#13).
 5. ~~Exam schedule form defaults wander~~ — **fixed** (#19), along with the
@@ -176,7 +234,7 @@ still leaves cards draft without a `queue:listen`/`queue:work` worker running.
 
 ### 11. AppShell nav is unusable as navigation
 
-**Severity:** confusion / blocked. 50+ wrapping links, duplicate “Report cards” / “Awards”. Logout **is** present (POST next to the name). `GET /logout` remains 405. Round 3 ranked #2. **Proposed, awaiting decision** — `docs/APPSHELL_NAV_IA.md` (PR #98). Shell unchanged until the owner confirms.
+**Severity:** confusion / blocked. **105** wrapping links as of 2026-09-12 (“50+” when this was written), duplicate “Report cards” / “Awards”. Logout **is** present (POST next to the name). `GET /logout` remains 405. Round 3 ranked #2. **Proposed, awaiting decision** — `docs/APPSHELL_NAV_IA.md` (PR #98). Shell unchanged until the owner confirms.
 
 ### 12. Seeder still inserts duplicate Extra year names
 
@@ -241,7 +299,7 @@ defect family as #19. See **Fixed on main**.
 ## Explicitly not defects
 
 - **Payroll off** — `PAYROLL_ENABLED=false` and settings `payroll.enabled` — by design (S5.6).
-- **Hifz frozen** — rule 7; no behaviour change this cycle.
+- ~~**Hifz frozen**~~ — the rule 7 freeze **ended with F5** (ADR-029, 2026-09-12): §2b is complete, the Qur'an dataset belongs to `Courses\Components\Quran`, and the four Blade controllers that read it are deleted. What remains of the Blade app (hub, five dashboards, programmes, enrolments, milestones, reports) touches no dataset model and is ordinary code again.
 - **Qur’an dual-write off** — `QURAN_HALAQA_DUAL_WRITE` default false; A.4 is dual-write only.
 - **BML Pay now untested** — sandbox, not a product lie by itself; Rule 12 still requires webhook confirmation.
 - **UNVERIFIED slices** (S2.1 rooms, S2.4–S2.5, S2.9–S2.10, S3.5, S3.7, S4.4–S4.5, S5.*, 1A.2–2.5, Arabic A, Qur’an A) — absence of a walk is not a recorded functional bug.

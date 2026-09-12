@@ -4975,6 +4975,77 @@ deleted teacher profile deserves a line in the deploy log even when it was a
 duplicate. No database checked had any duplicates, so in practice this only adds
 an index (rule 9: nothing dropped or renamed).
 
+### Every parent was locked out of their child's Hifz dashboard, and the doc that would have said so was wrong
+
+Two pieces of work, one cause. `docs/KNOWN_ISSUES.md` had gone stale in the way
+CLAUDE.md already warns about for `EDUPAGE_FEATURES_PLAN.md`, so it was audited
+against `main` — and the audit found a live defect.
+
+**The doc corrections.** Owner-decision **item 6** asked whether to fund
+≈7½–8½ weeks of Wave 4 work — E8, E15, E16, E17, E18, E19, E21 — and said
+"Verified against the code on 2026-09-10: all seven genuinely unbuilt". **All
+seven ship**: routes, models, migrations and feature tests for each. Asking the
+owner to decide whether to build something that exists is the most expensive
+kind of wrong a planning document can be. Two decisions inside it do survive,
+and both are about *operating* the features rather than building them: E18's
+hardware choice and E19's privacy policy.
+
+Owner-decision **item 9** — "The Hifz module has no role guard at all" — was
+overstated. F5 removed sessions, session records, mistakes and the mushaf admin
+from that route file; what remains is guarded, and the new test below proves
+it. The AppShell link counts were stale in three places (105 now, recorded as
+83 and "50+"), and "Hifz frozen" under *Explicitly not defects* ended with F5.
+
+**The defect the audit found.** There are **two guardian↔student pivots**.
+`guardian_student` is the live one — every notification listener and eleven
+People actions read it. `student_parent` is read by
+`ParentGuardian::students()` and **written by nothing in the application**.
+
+`User::schoolChildren()` read the dead pivot. Its only caller,
+`ParentHifzDashboardController`, turns an empty child list into `abort(403)`,
+so **every parent the product itself had linked was refused their own child's
+Hifz progress**. `HifzScopeService::parentChildIds()` had the same bug, refusing
+them a second time in `canAccessStudent()`. It looked like it worked because
+`HifzDemoSeeder` was the only writer `student_parent` ever had: the demo parent
+could open the screen and nobody else could.
+
+Fixed by adding `ParentGuardian::children()` over `guardian_student` and
+pointing both readers and the seeder at it. `students()` is deprecated rather
+than deleted and the table stays populated — rule 9 does not drop a populated
+table in the deploy that stops using it. Dropping it belongs to Deploy 3.
+
+**How it was found, which matters more than the bug.**
+`tests/Feature/Hifz/HifzCrossRoleAccessTest.php` sweeps every parameterless
+Hifz GET as two families in the same halaqa and asserts no family sees the
+other's child. That assertion **passed while every parent screen was 403ing** —
+a page nobody can load leaks nothing. What caught it was the positive control
+added alongside it: every caller must have seen *their own* child somewhere.
+Without that line the sweep was vacuous for half its cast and would have
+shipped looking green.
+
+```
+$ php artisan test tests/Feature/Hifz/HifzCrossRoleAccessTest.php
+Every caller must have seen their own child somewhere, or the leak check above
+proved nothing. Saw: {"a student":[...],"b student":[...]}
+Failed asserting that actual size 2 matches expected size 4.
+```
+
+Two of four callers — both parents — were missing.
+
+**Walked in a browser** as the seeded parent, after a fresh seed:
+
+```
+PASS  signed in as the seeded parent
+PASS  the hub does not refuse a parent — status 200
+PASS  the hub lands the parent on the parent dashboard — /en/hifz/parent
+PASS  the dashboard names a child rather than 403ing
+```
+
+`guardian_student=14 student_parent=0` after the seeder fix — the demo now
+links families the same way the product does.
+
+1,218 tests green.
+
 ## 6. Out of scope (unchanged)
 
 Hifz behaviour frozen. Deploy 3 not executed. Track B leftovers B1–B4 merged (#102–#105). Phase 3 C1–C3 merged (#106–#108). D1–D3 portal composition merged (#109–#111). W1.1–W1.6 merged (#112–#117). W2.1–W2.5 merged (#118, #119, #121, #124, #126). W3 prayer times is this PR (#128). After merge: **Phase E complete**.
