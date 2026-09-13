@@ -1004,6 +1004,9 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::post('courses/{course}/assessments', [CatalogAssessmentController::class, 'store'])->name('catalog.courses.assessments.store')->whereNumber('course');
         Route::put('courses/{course}/assessments/{assessment}', [CatalogAssessmentController::class, 'update'])->name('catalog.courses.assessments.update')->whereNumber('course')->whereNumber('assessment');
         Route::post('courses/{course}/assessments/{assessment}/questions', [CatalogAssessmentController::class, 'attach'])->name('catalog.courses.assessments.questions.attach')->whereNumber('course')->whereNumber('assessment');
+        // SPEC §21 "Position": the order was fixed at attach time and could
+        // never be changed.
+        Route::post('courses/{course}/assessments/{assessment}/questions/reorder', [CatalogAssessmentController::class, 'reorderQuestions'])->name('catalog.courses.assessments.questions.reorder')->whereNumber('course')->whereNumber('assessment');
         Route::delete('courses/{course}/assessments/{assessment}/questions/{question}', [CatalogAssessmentController::class, 'detach'])->name('catalog.courses.assessments.questions.detach')->whereNumber('course')->whereNumber('assessment')->whereNumber('question');
         Route::get('courses/{course}/activities/export', [CatalogActivityController::class, 'export'])->name('catalog.courses.activities.export')->whereNumber('course');
         Route::get('courses/{course}/activities', [CatalogActivityController::class, 'index'])->name('catalog.courses.activities.index')->whereNumber('course');

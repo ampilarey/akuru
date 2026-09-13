@@ -7422,6 +7422,81 @@ source of truth that does not exist yet: a teacher's approval, a payment, a
 date, an attendance record. Module- and offering-level storage are also still
 unbuilt.
 
+### SPEC §21: "required" meant nothing, and question order could never change
+
+§21's table is complete, and its hardest requirement genuinely works: the
+attempt snapshot really does isolate a running attempt from an edited bank
+question — `QuestionBankTest` has pinned that since the bank was built.
+
+Two of the five pivot fields were inert.
+
+**`is_required` was read by nothing.** It is stored, defaulted to true, and
+copied into every snapshot by `BuildAssessmentSnapshotsAction`:
+
+```php
+$snapshot['is_required'] = (bool) $row->is_required;
+```
+
+and then no reader anywhere — not the submit path, not the scorer, not the
+player. A search across the app finds readers for `ContentBlock`'s
+`is_required` and for the lesson-glossary pivot's, and **none at all** for this
+one. So "required" meant nothing: a student could submit with every required
+question blank, be scored zero on them, and learn of it only from the mark. The
+attach form did not send the field either — the controller has always read it
+with a default of true — so it was unsettable as well as unenforced.
+
+**`position` could never change.** `BuildAssessmentSnapshotsAction` orders every
+attempt by it, and the only writer was `max(position) + 1` at attach time. No
+reorder route, no control, no other writer — so the order questions happened to
+be attached in was the order every student sat them in, permanently. An author
+who attached the final question before the warm-up had to detach everything and
+re-attach it in sequence.
+
+**Three judgements, each written into the code.**
+
+- **An expired attempt is not held hostage.** §31's rule is that time running
+  out scores what was in hand rather than throwing it away; refusing a late
+  submission over a blank question would strand the student on a page they can
+  no longer act on. The gate applies only while the clock is still running.
+- **An empty pairing is unanswered.** The player seeds `{pairs: {}}` for a
+  mapping question, so an untouched matching question arrives *looking* like an
+  answer. It is not one.
+- **Which answers count is the scorer's question.** `ScoreAssessmentSnapshotsAction`
+  reads `selected_ids`, `order`, `pairs` and `text`; an answer is present here
+  exactly when one of those carries something. Two definitions of "answered"
+  would be worse than none.
+
+**The refusal is rendered.** A server refusal the page does not draw is the
+invisible refusal the §13 lesson player had — HTTP 200 and a button that appears
+to do nothing. The player now shows the message and marks which questions are
+required, because refusing is only fair if the page says what it is refusing
+over.
+
+**Reordering does not disturb an attempt already under way**, and §21's own
+snapshot rule is what makes that true. A test pins it.
+
+**Verification.** Revert-check: removing the required gate turns 1 test red;
+neutering the reorder write turns another red.
+
+**Walked in a browser**, two accounts:
+
+| Step | Result |
+|---|---|
+| Student opens the paper | `1. Name the marfu case marker` **REQUIRED**, `2. Optional: anything to add?` unmarked |
+| Submits with the required one blank | refused: *"Answer the required questions first: Name the marfu case marker."* |
+| Answers it and submits | **scored · 10/20** |
+| Author opens the assessment | rows read **REQUIRED** / **OPTIONAL**, each with Up / Down / Remove |
+| Moves the first question down | order swaps and persists |
+
+**1,654 tests green** (8 new), architecture suite green, `npm run build` clean.
+
+**One existing test corrected, transparently.** `StudentDashboardTest`'s fixture
+submits an empty attempt to reach the teacher-marking path, and its question was
+attached with the default `is_required = true`. The new gate refused it —
+correctly. The fixture now attaches the question as optional, with a comment
+saying why: the claim under test is about the mark, not about whether the
+question had to be answered.
+
 ### SPEC §20 part two: the bank's form, and the reason behind the right answer
 
 The attachment slice fixed what a question can *carry*. This closes the three

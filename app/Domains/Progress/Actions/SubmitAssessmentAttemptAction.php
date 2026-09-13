@@ -2,6 +2,7 @@
 
 namespace App\Domains\Progress\Actions;
 
+use App\Domains\Courses\Actions\ListUnansweredRequiredQuestionsAction;
 use App\Domains\Courses\Actions\ResolveAssessmentSettingsAction;
 use App\Domains\Courses\Actions\ScoreAssessmentSnapshotsAction;
 use App\Domains\Progress\Enums\AssessmentAttemptStatus;
@@ -45,6 +46,26 @@ class SubmitAssessmentAttemptAction
         // when time ran out. Refusing outright would punish a slow connection
         // exactly as hard as cheating.
         $scoredAnswers = $deadline['expired'] ? ($attempt->answers ?? []) : $answers;
+
+        // SPEC §21's "Is required", enforced for the first time. It was stored,
+        // snapshotted, and read by nothing — so a student could submit with
+        // every required question blank, be scored zero on them, and never be
+        // told they had skipped anything.
+        //
+        // Deliberately **not** applied to an expired attempt. §31's rule above
+        // is that time running out scores what was in hand rather than throwing
+        // it away; refusing a late submission for a blank question would strand
+        // the student on a page they can no longer act on.
+        if (! $deadline['expired']) {
+            $missing = app(ListUnansweredRequiredQuestionsAction::class)
+                ->execute($attempt->snapshots ?? [], $scoredAnswers);
+
+            if ($missing !== []) {
+                throw ValidationException::withMessages([
+                    'answers' => ['Answer the required questions first: '.implode(', ', $missing).'.'],
+                ]);
+            }
+        }
 
         $result = app(ScoreAssessmentSnapshotsAction::class)->execute(
             $attempt->snapshots ?? [],

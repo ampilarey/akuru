@@ -102,6 +102,11 @@ function dashboardTenPointQuestion(int $assessmentId): void
         'assessment_id' => $assessmentId,
         'question_id' => $question->id,
         'points_override' => 10,
+        // Not required: these tests submit an empty attempt to reach the
+        // teacher-marking path, and §21's required gate now (correctly)
+        // refuses that. The dashboard claim under test is about the mark, not
+        // about whether the question had to be answered.
+        'is_required' => false,
     ]);
 }
 
