@@ -445,6 +445,54 @@ the four messages — its own slice, with its own walk.
 this path goes through `SmsSenderInterface`, which binds to `LogSmsSender`
 unless `APP_ENV=production` and `SMS_LIVE` are both explicitly set.
 
+> **Mostly fixed (2026-09-13, same day) — and it was worse than this entry
+> knew.** Reading `RecordManualPaymentAction` turned up a user-visible cost the
+> structural complaint above does not mention. Its own docblock promises:
+>
+> > the payment is created confirmed with provider "manual" and flows through
+> > the **SAME PaymentConfirmed listeners** as a webhook confirmation — one
+> > money→access path for every kind of money.
+>
+> Access kept that promise. **Telling the family did not**, because the four
+> notices were not listeners at all. So **paying by card got an email and an
+> SMS; handing cash over at the office got silence** — the enrollment activated
+> either way and nobody told the parent. It landed on exactly the families
+> least likely to be watching an account online.
+>
+> **Fixed** — `Finance\Listeners\SendPaymentConfirmationNotices` now handles
+> `PaymentConfirmed`, and `PaymentService` no longer knows any notification
+> channel exists (its `SmsSenderInterface` dependency is gone). Three further
+> things came with it:
+>
+> - **The sends are deferred to after commit.** `PaymentConfirmed` fires
+>   *inside* the payment transaction so a failed activation rolls back with the
+>   money. Notifications must not share that: an SMTP timeout is not a reason
+>   to un-confirm a payment, and a mail send inside a transaction held it open
+>   for the length of a network call.
+> - **A rule 3 violation went with it.** The admin SMS resolved recipients with
+>   `Identity\Models\User::role(...)` from inside a Finance service. That is now
+>   `Identity\Actions\ListAdminMobileNumbersAction`.
+> - **A message defect this made visible was fixed rather than shipped.** The
+>   course name came from `$payment->items`, which only legacy consolidated
+>   payments have, so engine and manual payments read *"Payment received for
+>   Yusuf **– .** Pending admin approval."* Nobody had seen it because those
+>   payments sent no SMS at all.
+>
+> **What is left, and why.** §41 says *Notifications* should own the listener,
+> and it still lives in Finance. Two things block the move and neither was
+> worth forcing on the way past: `PaymentConfirmed` carries an Eloquent
+> `Payment` (the house pattern for cross-domain events is scalars — compare
+> `InvoiceIssued`), and both Mailables take a `Payment` and render from it, so a
+> Notifications listener would have to import `Finance\Models\Payment` — the
+> exact rule 3 violation §41 is about. Reshaping the event would touch three
+> existing listeners on the money→access path. **The remaining step is to give
+> the Mailables scalars and move the listener across.**
+>
+> **Also still open:** the free-enrollment path.
+> `CourseRegistrationController:1314` still queues `FreeEnrollmentConfirmedMail`
+> from a controller. That one needs the logic lifted out of a 1,300-line
+> controller first (rule 5), which is its own job.
+
 ---
 
 ## Explicitly not defects

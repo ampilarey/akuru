@@ -7677,6 +7677,91 @@ one produced an audit. §33's five other headings — User Management, Course
 Management, Offering Management, Course Builder, Academic / Training Management
 — are inventories of CRUD that mostly exists and still need their own pass.
 
+### KNOWN_ISSUES #24: pay by card and you are told; pay cash and you are not
+
+Filed one slice earlier as a structural complaint — §41 says "enrollment code
+must not directly call notification implementation classes", and four
+enrollment notices were private methods on `PaymentService`, called by hand on
+the line after it fired `PaymentConfirmed`. Reading the code to fix it turned
+up the cost, which the entry had not known.
+
+`RecordManualPaymentAction`'s own docblock promises:
+
+> the payment is created confirmed with provider "manual" and flows through the
+> **SAME PaymentConfirmed listeners** as a webhook confirmation — one
+> money→access path for every kind of money.
+
+**Access kept that promise. Telling the family did not**, because the notices
+were not listeners. So an admin recording cash at the office activated the
+enrollment exactly like a card payment and then **told nobody** — no email, no
+SMS. The admin saw "Manual payment recorded — enrollment updated"; the parent
+saw nothing at all. It fell on precisely the families least likely to be
+watching an account online.
+
+That is why this shipped as a defect fix rather than a refactor.
+
+`Finance\Listeners\SendPaymentConfirmationNotices` now handles
+`PaymentConfirmed`, and `PaymentService` no longer knows any notification
+channel exists — its `SmsSenderInterface` dependency is gone entirely. Three
+further things came with it:
+
+- **Deferred to after commit.** `PaymentConfirmed` fires *inside* the payment
+  transaction on purpose, so a failed activation rolls back with the money.
+  Notifications must not share that property: an SMTP timeout is not a reason
+  to un-confirm a payment, and a mail send inside a transaction held it open
+  for the length of a network call. `DB::afterCommit()` defers inside a
+  transaction and runs immediately outside one, which is right in both cases.
+  Deliberately **not queued** — the textbook answer, but this deployment's
+  worker is a known operator gap (#8), and a confirmation waiting on a worker
+  nobody runs is worse than one sent inline.
+- **A rule 3 violation went with it.** The admin SMS resolved recipients with
+  `Identity\Models\User::role(...)` from inside a Finance service. That is now
+  `Identity\Actions\ListAdminMobileNumbersAction`, which returns plain strings.
+- **A message defect this made visible was fixed, not shipped.** The course
+  name came from `$payment->items`, which only legacy consolidated payments
+  have, so engine and manual payments read *"Payment received for Yusuf **– .**
+  Pending admin approval."* Nobody had seen the dangling dash because those
+  payments sent no SMS at all. Making them send one made it legible.
+
+#### Verification
+
+Three tests written **before** the fix and confirmed failing against it —
+`assertQueued`, not `assertSent`, because `EnrollmentConfirmedMail implements
+ShouldQueue` and Laravel queues it even though the call site says `->send()`.
+That is pre-existing and unchanged, but worth recording: this email has always
+needed a worker.
+
+**Walked in Chrome** at `127.0.0.1:8125`, as an admin, through the real form:
+
+| Step | Result |
+|---|---|
+| `/admin/enrollments/8` → amount 250, method **Cash**, note, Record payment | flash "Manual payment recorded — enrollment updated." |
+| Payment status | **Confirmed** |
+| SMS to the parent's mobile | "Akuru: Payment received for … – *course name*. Pending admin approval." |
+| `EnrollmentConfirmedMail` | queued |
+| `AdminNewEnrollmentMail` | queued |
+
+Before this slice that same walk produced **none of the last three**. The SMS
+went through `LogSmsSender`, so the live-SMS kill-switch is intact.
+
+**One honest correction to my own work:** the first attempt at removing the
+five dead private methods used a brace-matching script that walked back too
+far and silently deleted two live ones as well — `recordPaymentCompletedFunnel`
+and `finalizeDeferredEnrollment`, the second of which is a safety net on the
+money path. **The full suite caught it (17 failures)**; it was redone with
+exact boundaries and the method list diffed before and after.
+
+**1,779 tests green** (3 new), arch green, Pint clean.
+
+**Left open, deliberately.** §41 wants the listener in *Notifications*, and it
+is in Finance. `PaymentConfirmed` carries an Eloquent `Payment`, and both
+Mailables take a `Payment` and render from it — so a Notifications listener
+would have to import `Finance\Models\Payment`, the exact rule 3 violation §41
+is about, and reshaping the event would touch three existing listeners on the
+money→access path. The remaining step (give the Mailables scalars, then move
+the listener) and the free-enrollment path still mailing from
+`CourseRegistrationController:1314` are both recorded in KNOWN_ISSUES #24.
+
 ### SPEC §43 + §53: one invariant the spec states twice, tested from neither side
 
 **§43 "Suggested Database Tables" has no defect, and this says so plainly

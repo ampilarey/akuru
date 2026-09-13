@@ -10,13 +10,10 @@ use App\Domains\Finance\Events\PaymentConfirmed;
 use App\Domains\Finance\Models\Payment;
 use App\Domains\Finance\Models\PaymentItem;
 use App\Domains\Identity\Models\User;
-use App\Domains\Notifications\Contracts\SmsSenderInterface;
 use App\Domains\Website\Actions\RecordFunnelEventAction;
-use App\Mail\EnrollmentConfirmedMail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 
 class PaymentService
@@ -24,9 +21,10 @@ class PaymentService
     /** Payment statuses considered final (no further state changes expected). */
     private const FINAL_STATUSES = ['confirmed', 'failed', 'cancelled', 'expired', 'paid'];
 
+    // No SMS sender any more: sending is a listener's job (§41), so this
+    // service no longer knows any notification channel exists.
     public function __construct(
         protected PaymentProviderInterface $provider,
-        protected SmsSenderInterface $sms,
     ) {}
 
     /**
@@ -137,14 +135,17 @@ class PaymentService
                     $this->finalizeDeferredEnrollment($payment->fresh());
                 }
 
-                // P4.2: money→access happens HERE, before any notification —
-                // domains activate enrollments / grant access by listening,
-                // inside this transaction (a failed listener rolls back with
-                // the payment), so the mails below render the granted state.
+                // P4.2: money→access happens HERE — domains activate
+                // enrollments / grant access by listening, inside this
+                // transaction (a failed listener rolls back with the payment).
+                //
+                // §41: the confirmation notices are listeners on this same
+                // event now (`SendPaymentConfirmationNotices`), deferred to
+                // after commit, rather than four hand-calls on the next line.
+                // That is why an admin recording cash now reaches the family:
+                // `RecordManualPaymentAction` fires this event too.
                 event(new PaymentConfirmed($payment->fresh()));
 
-                $this->sendConfirmationEmail($payment->fresh());
-                $this->notifyAdminsPaymentConfirmed($payment);
                 app(RecordInvoiceReceiptAction::class)->fromConfirmedPayment($payment->fresh());
                 $this->recordPaymentCompletedFunnel($payment->fresh());
             } elseif (in_array($providerStatus, ['failed', 'cancelled', 'declined'], true)) {
@@ -220,14 +221,17 @@ class PaymentService
                     $this->finalizeDeferredEnrollment($payment->fresh());
                 }
 
-                // P4.2: money→access happens HERE, before any notification —
-                // domains activate enrollments / grant access by listening,
-                // inside this transaction (a failed listener rolls back with
-                // the payment), so the mails below render the granted state.
+                // P4.2: money→access happens HERE — domains activate
+                // enrollments / grant access by listening, inside this
+                // transaction (a failed listener rolls back with the payment).
+                //
+                // §41: the confirmation notices are listeners on this same
+                // event now (`SendPaymentConfirmationNotices`), deferred to
+                // after commit, rather than four hand-calls on the next line.
+                // That is why an admin recording cash now reaches the family:
+                // `RecordManualPaymentAction` fires this event too.
                 event(new PaymentConfirmed($payment->fresh()));
 
-                $this->sendConfirmationEmail($payment->fresh());
-                $this->notifyAdminsPaymentConfirmed($payment);
                 app(RecordInvoiceReceiptAction::class)->fromConfirmedPayment($payment->fresh());
                 $this->recordPaymentCompletedFunnel($payment->fresh());
             } else {
@@ -279,127 +283,6 @@ class PaymentService
                 ->createEnrollmentForConfirmedPayment($payment);
         } catch (\Throwable $e) {
             Log::error('PaymentService: deferred enrollment creation failed', [
-                'payment_id' => $payment->id,
-                'error' => $e->getMessage(),
-            ]);
-        }
-    }
-
-    /**
-     * Dispatch enrollment confirmation notifications (email + SMS).
-     * Both are silently skipped if no contact is on file.
-     */
-    private function sendConfirmationEmail(Payment $payment): void
-    {
-        $payment->loadMissing(['user', 'items.course', 'items.enrollment', 'student']);
-        $this->sendConfirmationEmailNotification($payment);
-        $this->sendConfirmationSms($payment);
-        $this->sendAdminNewEnrollmentNotification($payment);
-    }
-
-    private function sendAdminNewEnrollmentNotification(Payment $payment): void
-    {
-        $adminEmail = config('mail.admin_notification_address')
-            ?? config('mail.from.address');
-
-        if (! $adminEmail) {
-            return;
-        }
-
-        try {
-            Mail::to($adminEmail)->queue(new \App\Mail\AdminNewEnrollmentMail($payment));
-        } catch (\Throwable $e) {
-            Log::warning('AdminNewEnrollmentMail: failed to queue', [
-                'payment_id' => $payment->id,
-                'error' => $e->getMessage(),
-            ]);
-        }
-    }
-
-    private function sendConfirmationEmailNotification(Payment $payment): void
-    {
-        try {
-            $user = $payment->user;
-            if (! $user) {
-                return;
-            }
-            $emailContact = $user->contacts()->where('type', 'email')->whereNotNull('verified_at')->first();
-            $toAddress = $emailContact?->value ?? $user->email ?? null;
-            // Also try unverified email contacts (user may not have verified yet)
-            if (! $toAddress) {
-                $toAddress = $user->contacts()->where('type', 'email')->first()?->value;
-            }
-            if (! $toAddress) {
-                return;
-            }
-            Mail::to($toAddress)->send(new EnrollmentConfirmedMail($payment));
-        } catch (\Throwable $e) {
-            Log::warning('EnrollmentConfirmedMail: failed to send', [
-                'payment_id' => $payment->id,
-                'error' => $e->getMessage(),
-            ]);
-        }
-    }
-
-    private function sendConfirmationSms(Payment $payment): void
-    {
-        try {
-            $user = $payment->user;
-            if (! $user) {
-                return;
-            }
-            $mobileContact = $user->contacts()->where('type', 'mobile')->first();
-            if (! $mobileContact?->value) {
-                return;
-            }
-
-            $student = $payment->student;
-            $studentName = $student?->first_name ?? $user->name ?? 'Student';
-            $courses = $payment->items->map(fn ($i) => $i->course?->title)->filter()->implode(', ');
-            $ref = $payment->local_id ?? $payment->merchant_reference;
-
-            $message = "Akuru: Payment received for {$studentName} – {$courses}. Pending admin approval.";
-
-            $this->sms->sendSms($mobileContact->value, $message);
-        } catch (\Throwable $e) {
-            Log::warning('EnrollmentConfirmedSms: failed to send', [
-                'payment_id' => $payment->id,
-                'error' => $e->getMessage(),
-            ]);
-        }
-    }
-
-    private function notifyAdminsPaymentConfirmed(Payment $payment): void
-    {
-        try {
-            $payment->loadMissing(['user', 'items.enrollment.course']);
-            $payer = $payment->user;
-            $payerName = $payer?->name ?? 'Unknown';
-
-            $admins = \App\Domains\Identity\Models\User::role(['super_admin', 'admin'])->get();
-
-            foreach ($payment->items as $item) {
-                $enrollment = $item->enrollment;
-                if (! $enrollment) {
-                    continue;
-                }
-                $enrollment->loadMissing('course');
-                $courseName = $enrollment->course?->title ?? 'Unknown';
-                $amount = number_format((float) ($payment->amount ?? 0), 2);
-                $currency = $payment->currency ?? 'MVR';
-                $message = "[Akuru] Payment confirmed: {$payerName} → {$courseName} ({$currency} {$amount})";
-
-                foreach ($admins as $admin) {
-                    $adminMobile = $admin->contacts()->where('type', 'mobile')->value('value')
-                        ?? $admin->phone
-                        ?? null;
-                    if ($adminMobile) {
-                        $this->sms->sendSms($adminMobile, $message);
-                    }
-                }
-            }
-        } catch (\Throwable $e) {
-            Log::warning('notifyAdminsPaymentConfirmed: failed', [
                 'payment_id' => $payment->id,
                 'error' => $e->getMessage(),
             ]);
