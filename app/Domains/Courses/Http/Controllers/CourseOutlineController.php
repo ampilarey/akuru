@@ -53,6 +53,37 @@ class CourseOutlineController extends Controller
     }
 
     /**
+     * SPEC §26 "Pass quiz first", stored at §26's lesson level and listed by
+     * §13 as the lesson's own "Unlock rule".
+     *
+     * A dedicated endpoint beside the completion-rule one, for the same
+     * reason: the outline builds lessons and toggles flags, and there is no
+     * general lesson edit form to hang this on.
+     */
+    public function setUnlockRule(Request $request, int $course, Lesson $lesson): RedirectResponse
+    {
+        abort_unless($request->user()?->can('courses.manage'), 403);
+        $data = $request->validate([
+            'mode' => ['nullable', 'string', 'max:40'],
+            'assessment_id' => ['nullable', 'integer', 'exists:assessments,id'],
+        ]);
+
+        app(SaveLessonAction::class)->execute([
+            'course_module_id' => $lesson->course_module_id,
+            'title' => $lesson->title,
+            'slug' => $lesson->slug,
+            'description' => $lesson->description,
+            'position' => $lesson->position,
+            'is_preview' => $lesson->is_preview,
+            'unlock_rule' => ($data['mode'] ?? '') === ''
+                ? null
+                : ['mode' => $data['mode'], 'assessment_id' => $data['assessment_id'] ?? 0],
+        ], $lesson);
+
+        return redirect()->route('catalog.courses.outline', $course)->with('success', 'Unlock rule updated.');
+    }
+
+    /**
      * SPEC §12 Module Management: **"Edit modules"**. There was a create and a
      * delete and nothing in between, so a module's title was whatever was
      * typed first — a typo in a heading every student sees was permanent

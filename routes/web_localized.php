@@ -1027,6 +1027,8 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::post('courses/{course}/lessons/{lesson}/preview', [CourseOutlineController::class, 'togglePreview'])->name('catalog.courses.lessons.preview')->whereNumber('course');
         // SPEC §13 Lesson Management: "Set completion rules."
         Route::post('courses/{course}/lessons/{lesson}/completion-rule', [CourseOutlineController::class, 'setCompletionRule'])->name('catalog.courses.lessons.completion-rule')->whereNumber('course');
+        // SPEC §26 "Pass quiz first" at §26's lesson level (§13's "Unlock rule").
+        Route::post('courses/{course}/lessons/{lesson}/unlock-rule', [CourseOutlineController::class, 'setUnlockRule'])->name('catalog.courses.lessons.unlock-rule')->whereNumber('course');
         Route::post('courses/{course}/lessons/{lesson}/glossary', [CourseOutlineController::class, 'attachGlossary'])->name('catalog.courses.lessons.glossary.attach')->whereNumber('course');
         Route::delete('courses/{course}/lessons/{lesson}/glossary/{glossaryItem}', [CourseOutlineController::class, 'detachGlossary'])->name('catalog.courses.lessons.glossary.detach')->whereNumber('course')->whereNumber('glossaryItem');
         Route::get('player/{lesson}', [LessonPlayerController::class, 'show'])->name('catalog.player.show')->whereNumber('lesson');

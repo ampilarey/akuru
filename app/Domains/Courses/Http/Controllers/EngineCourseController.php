@@ -30,7 +30,7 @@ class EngineCourseController extends Controller
             'canPublish' => (bool) $request->user()?->can('courses.publish'),
             'unlockModes' => array_map(
                 fn (UnlockMode $mode) => ['value' => $mode->value, 'label' => $mode->label()],
-                UnlockMode::cases(),
+                UnlockMode::courseLevelCases(),
             ),
         ]);
     }

@@ -4,6 +4,7 @@ namespace App\Domains\Courses\Actions;
 
 use App\Domains\Courses\Enums\LessonCompletionMode;
 use App\Domains\Courses\Enums\LessonStatus;
+use App\Domains\Courses\Enums\UnlockMode;
 use App\Domains\Courses\Models\CourseModule;
 use App\Domains\Courses\Models\Lesson;
 use Illuminate\Support\Str;
@@ -49,6 +50,10 @@ class SaveLessonAction
             'completion_rule' => array_key_exists('completion_rule', $data)
                 ? $this->completionRule($data['completion_rule'])
                 : ($lesson?->completion_rule),
+            // SPEC §13 "Unlock rule" / §26's lesson-level JSON settings.
+            'unlock_rule' => array_key_exists('unlock_rule', $data)
+                ? $this->unlockRule($data['unlock_rule'])
+                : ($lesson?->unlock_rule),
             'created_by' => $data['created_by'] ?? null,
         ];
 
@@ -62,6 +67,40 @@ class SaveLessonAction
         $lesson->save();
 
         return $lesson->refresh();
+    }
+
+    /**
+     * SPEC §26's lesson-level unlock rule, or null to inherit the course's.
+     *
+     * Only `pass_assessment` is stored here: `all_open` and `sequential` are
+     * course-level decisions, and the other eight rules §26 lists are not
+     * built. An unrecognised mode is refused rather than stored, on the same
+     * principle — a lesson whose rule nothing enforces would assert a
+     * requirement on screen that is never checked.
+     *
+     * @return array{mode: string, assessment_id: int}|null
+     */
+    private function unlockRule(mixed $given): ?array
+    {
+        $mode = is_array($given) ? ($given['mode'] ?? null) : $given;
+        if ($mode === null || $mode === '' || $mode === 'inherit') {
+            return null;
+        }
+
+        if ((string) $mode !== UnlockMode::PassAssessment->value) {
+            throw ValidationException::withMessages([
+                'unlock_rule' => 'That unlock rule is not available at lesson level.',
+            ]);
+        }
+
+        $assessmentId = (int) (is_array($given) ? ($given['assessment_id'] ?? 0) : 0);
+        if ($assessmentId < 1) {
+            throw ValidationException::withMessages([
+                'unlock_rule' => 'Choose which assessment must be passed first.',
+            ]);
+        }
+
+        return ['mode' => UnlockMode::PassAssessment->value, 'assessment_id' => $assessmentId];
     }
 
     /**

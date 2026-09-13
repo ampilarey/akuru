@@ -27,6 +27,12 @@ class ListCourseOutlineAction
                 'workflow_status' => $course->workflow_status?->value ?? $course->workflow_status,
             ],
             'glossaryItems' => app(ListGlossaryItemsAction::class)->execute()->values(),
+            // SPEC §26 "Pass quiz first" names *which* assessment, so the
+            // control needs the course's published ones.
+            'assessments' => app(ListPublishedAssessmentsAction::class)->execute()
+                ->filter(fn (array $row): bool => (int) ($row['course_id'] ?? 0) === (int) $course->id)
+                ->values()
+                ->all(),
             'modules' => $modules->map(fn (CourseModule $module) => [
                 'id' => $module->id,
                 'title' => $module->title,
@@ -47,6 +53,10 @@ class ListCourseOutlineAction
                     // SPEC §13 lists "Completion rule" as a lesson field, and
                     // a rule that is stored but never shown cannot be checked.
                     'completion_rule' => app(EvaluateLessonCompletionAction::class)->mode($lesson)->value,
+                    // SPEC §26's lesson-level unlock rule (§13's "Unlock
+                    // rule"). Shown so an author can see which lessons are
+                    // gated and on what.
+                    'unlock_rule' => is_array($lesson->unlock_rule) ? $lesson->unlock_rule : null,
                     'revision_number' => $lesson->currentRevision?->revision_number,
                     'glossary' => $lesson->glossaryItems->map(fn ($item) => $item->toPayload(
                         (int) $item->pivot->position,

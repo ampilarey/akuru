@@ -63,13 +63,27 @@ class AuthorizeLessonAccessAction
         $allOpen = app(ResolveCourseUnlockModeAction::class)
             ->execute($lesson->course) === UnlockMode::AllOpen;
 
+        // SPEC §26 "Pass quiz first", stored on the lesson (§13's "Unlock
+        // rule" field). Worked out here and handed over as a fact, because
+        // Progress must not know what an assessment is (rule 3).
+        $prerequisite = app(EvaluateLessonPrerequisiteAction::class)
+            ->execute($lesson, $this->studentIdForEnrollment($enrollmentId));
+
         return app(LessonUnlockEvaluator::class)->execute(
             $lesson->id,
             $requiredIds,
             $completed,
             $lesson->is_preview && $lesson->current_revision_id !== null,
             $allOpen,
+            $prerequisite['met'],
         );
+    }
+
+    private function studentIdForEnrollment(int $enrollmentId): ?int
+    {
+        $id = CourseEnrollment::query()->whereKey($enrollmentId)->value('unified_student_id');
+
+        return $id === null ? null : (int) $id;
     }
 
     /**
