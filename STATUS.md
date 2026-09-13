@@ -7677,6 +7677,67 @@ one produced an audit. §33's five other headings — User Management, Course
 Management, Offering Management, Course Builder, Academic / Training Management
 — are inventories of CRUD that mostly exists and still need their own pass.
 
+### LIBRARY_PLAN §13.7: the Institute could not say what it owed
+
+§11, §12 and §13 were the last unaudited L-track sections. §11's writer portal
+and §12's editorial workflow are built, and the one gap in each is a vocabulary
+nuance rather than a defect — `LibraryItemStatus` carries six of §12.3's twelve
+names, and unpublishing sets `Draft` rather than a distinct `Unpublished`,
+though `published_at` is preserved so nothing is lost. §37's MVP asks for
+"publish/unpublish"; the button exists, works, and toggles correctly.
+
+**§13.7 named two figures that did not exist anywhere.** `grep -i liabilit`
+across `app/` and `resources/js/` returned two unrelated code comments:
+
+> **13.7 Reports:** … payment reconciliation, **gift card liabilities, wallet
+> balance liabilities**, discount usage …
+
+Those are accounting numbers, not dashboards. Every unspent gift card and every
+laari of wallet credit is an obligation to hand over goods later, against money
+either already taken or never taken at all — an admin-issued card is a gift the
+Institute funds itself. **A school that cannot say what it owes cannot close its
+books**, and this one had issued cards and wallet credit with no way to total
+them.
+
+#### The one way it could be wrong
+
+Redemption **moves** value: `RedeemGiftCardAction` zeroes the card and credits
+the wallet inside a single transaction. A report that summed face values, or
+counted redeemed cards, would show the same money owed twice the moment a card
+was used — and it would look like growth.
+
+So the gift-card side counts **balance, not face value**, and only statuses that
+can still be spent (`active`, `partially_used`). It also excludes a card whose
+`expires_at` has passed **before anyone flips its status**, because that flip
+happens lazily on the next redemption attempt and a report that waited for it
+would overstate the debt. Whether an expired card should still be honoured is a
+§24 policy question the owner has not answered; until then an unclaimable card
+is not a liability, and the code says so where the decision lives.
+
+The screen shows two figures and a total rather than one number, for the same
+reason: an admin reconciling the books needs to see that the total did **not**
+change when value moved.
+
+#### Verification
+
+**Seven tests, and the revert-checks are independent.** Counting face value and
+dropping the status filter fails three (including the double-count test);
+ignoring expiry fails the expiry test alone. Each guard was confirmed to fire
+on its own rather than as a group.
+
+**Walked in Chrome**, and this is the evidence worth reading — an admin issued a
+500 card, a wallet held 75, then the card was redeemed through the real
+**My Wallet** form:
+
+| | Gift cards | Wallets | **Total owed** |
+|---|---|---|---|
+| Before redeeming | 500.00 | 75.00 | **575.00** |
+| After redeeming | 0.00 | 575.00 | **575.00** |
+
+The 500 moved and the total did not budge, which is the whole property.
+
+**1,813 tests green** (7 new), arch green, Pint clean, assets rebuilt.
+
 ### The follow-up to that leak: six other readers, and why they were fine
 
 Promised when the media fix shipped — check whether anything *else* wraps

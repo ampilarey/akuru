@@ -5,6 +5,7 @@ namespace App\Domains\Commerce\Http\Controllers;
 use App\Domains\Commerce\Actions\CreditWalletAction;
 use App\Domains\Commerce\Actions\IssueGiftCardAction;
 use App\Domains\Commerce\Actions\ListGiftCardsAction;
+use App\Domains\Commerce\Actions\ResolveStoredValueLiabilityAction;
 use App\Domains\Commerce\Actions\SaveDiscountCodeAction;
 use App\Domains\Commerce\Models\DiscountCode;
 use App\Http\Controllers\Controller;
@@ -25,6 +26,10 @@ class AdminCommerceController extends Controller
         abort_unless($request->user()?->can('commerce.manage'), 403);
 
         return Inertia::render('Commerce/Admin', [
+            // §13.7: what the Institute owes in stored value. An accounting
+            // figure, not a nicety — every unspent gift card and every laari
+            // of wallet credit is an obligation to hand over goods later.
+            'liability' => app(ResolveStoredValueLiabilityAction::class)->execute(),
             'gift_cards' => app(ListGiftCardsAction::class)->execute(),
             'discount_codes' => DiscountCode::query()->orderByDesc('id')->limit(200)->get()
                 ->map(fn (DiscountCode $code) => [
