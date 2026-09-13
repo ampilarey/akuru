@@ -2,6 +2,7 @@
 
 namespace App\Domains\Admissions\Http\Controllers;
 
+use App\Domains\Courses\Actions\SuspendEnrollmentAction;
 use App\Domains\Courses\Models\Course;
 use App\Domains\Courses\Models\CourseEnrollment;
 use App\Domains\Finance\Actions\ListManualPaymentMethodsAction;
@@ -10,9 +11,12 @@ use App\Domains\Finance\Models\Payment;
 use App\Domains\Notifications\Contracts\SmsSenderInterface;
 use App\Http\Controllers\Controller;
 use App\Mail\EnrollmentStatusMail;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 
 class AdminEnrollmentController extends Controller
 {
@@ -82,6 +86,39 @@ class AdminEnrollmentController extends Controller
         $this->sendRejectionSms($enrollment);
 
         return back()->with('success', 'Enrollment rejected and student notified.');
+    }
+
+    /**
+     * SPEC §23's sixth status. It had no writer anywhere in the app, which made
+     * §23's own seat rule — "Cancelled/suspended enrollments should not count
+     * as active seats" — a rule about something that could not happen.
+     *
+     * Deliberately not an SMS: activate and reject tell the student because a
+     * decision was made about their application. A suspension is usually the
+     * opening of a conversation the office is already having with them, and a
+     * automated message is the wrong way to start it. The rule this slice is
+     * enforcing is about the seat, not about notification.
+     */
+    public function suspend(CourseEnrollment $enrollment)
+    {
+        try {
+            app(SuspendEnrollmentAction::class)->execute($enrollment);
+        } catch (ValidationException $e) {
+            return back()->with('error', $e->validator->errors()->first());
+        }
+
+        return back()->with('success', 'Enrollment suspended. The seat is released and their record is kept.');
+    }
+
+    public function reinstate(CourseEnrollment $enrollment)
+    {
+        try {
+            app(SuspendEnrollmentAction::class)->reinstate($enrollment);
+        } catch (ValidationException $e) {
+            return back()->with('error', $e->validator->errors()->first());
+        }
+
+        return back()->with('success', 'Enrollment reinstated.');
     }
 
     public function export(Request $request)
@@ -185,7 +222,7 @@ class AdminEnrollmentController extends Controller
 
             app(SmsSenderInterface::class)->sendSms($mobile, $message);
         } catch (\Throwable $e) {
-            \Illuminate\Support\Facades\Log::error('Enrollment activation SMS failed: '.$e->getMessage());
+            Log::error('Enrollment activation SMS failed: '.$e->getMessage());
         }
     }
 
@@ -208,7 +245,7 @@ class AdminEnrollmentController extends Controller
 
             app(SmsSenderInterface::class)->sendSms($mobile, $message);
         } catch (\Throwable $e) {
-            \Illuminate\Support\Facades\Log::error('Enrollment rejection SMS failed: '.$e->getMessage());
+            Log::error('Enrollment rejection SMS failed: '.$e->getMessage());
         }
     }
 
@@ -288,7 +325,7 @@ class AdminEnrollmentController extends Controller
         return back()->with('success', 'Manual payment recorded — enrollment updated.');
     }
 
-    private function paymentsQuery(Request $request): \Illuminate\Database\Eloquent\Builder
+    private function paymentsQuery(Request $request): Builder
     {
         $query = Payment::with(['user', 'student', 'items.course', 'refunds'])
             ->latest();

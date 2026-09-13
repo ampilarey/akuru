@@ -18,6 +18,11 @@ class EnforceSeatLimitAction
      * row locks hold until the occupying row exists.
      *
      * @param  list<string>  $occupyingStatuses
+     * @param  bool  $respectSoftDeletes  Skip rows the occupancy table has soft-deleted.
+     *                                    This counts with the query builder rather than
+     *                                    Eloquent — deliberately, for the row locks — and
+     *                                    the query builder knows nothing about `SoftDeletes`.
+     *                                    A removed enrolment held its seat forever.
      * @return array{outcome: string, row: object, waitlist_position: int|null, taken: int, limit: int|null}
      */
     public function execute(
@@ -30,6 +35,7 @@ class EnforceSeatLimitAction
         ?string $waitlistEnabledColumn = null,
         string $fullMessage = 'No remaining seats.',
         string $waitlistStatus = 'waitlisted',
+        bool $respectSoftDeletes = false,
     ): array {
         return DB::transaction(function () use (
             $resourceTable,
@@ -41,6 +47,7 @@ class EnforceSeatLimitAction
             $waitlistEnabledColumn,
             $fullMessage,
             $waitlistStatus,
+            $respectSoftDeletes,
         ): array {
             $row = DB::table($resourceTable)->where('id', $resourceId)->lockForUpdate()->first();
             if ($row === null) {
@@ -55,6 +62,7 @@ class EnforceSeatLimitAction
             $taken = (int) DB::table($occupancyTable)
                 ->where($foreignKey, $resourceId)
                 ->whereIn('status', $occupyingStatuses)
+                ->when($respectSoftDeletes, fn ($query) => $query->whereNull('deleted_at'))
                 ->lockForUpdate()
                 ->count();
 
@@ -74,6 +82,7 @@ class EnforceSeatLimitAction
                 $waitlisted = (int) DB::table($occupancyTable)
                     ->where($foreignKey, $resourceId)
                     ->where('status', $waitlistStatus)
+                    ->when($respectSoftDeletes, fn ($query) => $query->whereNull('deleted_at'))
                     ->lockForUpdate()
                     ->count();
 
