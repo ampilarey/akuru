@@ -32,6 +32,7 @@
                             'active'   => 'bg-green-100 text-green-800',
                             'pending'  => 'bg-amber-100 text-amber-800',
                             'rejected' => 'bg-red-100 text-red-800',
+                            'suspended' => 'bg-amber-100 text-amber-800',
                             default    => 'bg-gray-100 text-gray-700',
                         };
                     @endphp
@@ -159,6 +160,30 @@
                     <button type="submit" class="bg-red-600 text-white text-sm py-2 px-4 rounded hover:bg-red-700"
                             onclick="return confirm('Reject this enrollment?')">
                         Reject enrollment
+                    </button>
+                </form>
+            @endif
+            {{-- SPEC §23's sixth status. It had no writer anywhere, which made
+                 §23's own seat rule — "Cancelled/suspended enrollments should
+                 not count as active seats" — a rule about something that could
+                 not happen. Suspension is the reversible one: the seat is
+                 released, the record is kept. --}}
+            @if($enrollment->status === 'suspended')
+                <form method="POST" action="{{ route('admin.enrollments.reinstate', $enrollment) }}">
+                    @csrf
+                    @method('PATCH')
+                    <button type="submit" class="btn-secondary text-sm"
+                            onclick="return confirm('Reinstate this enrollment? It needs a free seat on the offering.')">
+                        Reinstate enrollment
+                    </button>
+                </form>
+            @elseif(in_array($enrollment->status, ['pending', 'approved', 'active', 'completed'], true))
+                <form method="POST" action="{{ route('admin.enrollments.suspend', $enrollment) }}">
+                    @csrf
+                    @method('PATCH')
+                    <button type="submit" class="bg-amber-600 text-white text-sm py-2 px-4 rounded hover:bg-amber-700"
+                            onclick="return confirm('Suspend this enrollment? The seat is released and their record is kept.')">
+                        Suspend enrollment
                     </button>
                 </form>
             @endif

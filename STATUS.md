@@ -7422,6 +7422,90 @@ source of truth that does not exist yet: a teacher's approval, a payment, a
 date, an attendance record. Module- and offering-level storage are also still
 unbuilt.
 
+### SPEC §23: a seat rule written about a status the database could not hold
+
+§23's `course_enrollments` table carries most of what the section names, the
+seat limit is enforced with proper `lockForUpdate()` row locking, and
+`CancelEnrollmentAction` already frees a seat. Two things did not hold.
+
+**`suspended` was not a status the database could store.** §23 lists six —
+Active, Pending payment, Pending approval, **Suspended**, Completed, Cancelled —
+and the enum held `pending`, `approved`, `rejected`, `active`, `completed`,
+`cancelled`. (The two "pending" cases are folded into one `pending` plus a
+separate `payment_status` column, which is a fair reading.) The word
+`suspended` appears **nowhere in the codebase at all**.
+
+That matters more than a missing enum value usually would, because §23's own
+seat rule is written about it:
+
+> Cancelled/**suspended** enrollments should not count as active seats.
+
+A rule written about a status the database cannot hold has never once been
+exercised.
+
+**A soft-deleted enrolment held its seat forever.** `EnforceSeatLimitAction`
+counts through the **query builder** — deliberately, because it needs
+`lockForUpdate()` — and the query builder knows nothing about `SoftDeletes`.
+`course_enrollments` soft-deletes under §29, so any removed row kept occupying
+a place nobody could see or free.
+
+**Access needed no new guard, and the reason is worth recording.** Every reader
+— `AuthorizeLessonAccessAction`, `AuthorizeAssessmentAccessAction`,
+`ListStudentDashboardAction`, `SyncEnrollmentProgressAction` — asks for
+`['active', 'approved', 'completed']` **by name** rather than excluding a
+deny-list. A status they do not name is denied by construction. An allow-list
+is safe to extend the vocabulary around; a deny-list would have needed a change
+in four places and would have failed open if one were missed.
+
+**Two judgements written into the code.**
+
+- **Reinstating competes for a seat.** The seat was released while suspended, so
+  coming back has to find one free — otherwise reinstating would put an offering
+  over its own limit, which is the thing §23's rule exists to prevent.
+- **Reinstating returns to `active`, not to whatever it was before.** The
+  previous status is recorded nowhere, and inventing a column to remember it
+  would be a bigger change than this rule needs. An admin can see and undo
+  `active`; a guess stored in a new column is invisible.
+
+**Suspension is deliberately not an SMS.** Activate and reject notify because a
+decision was made about an application. A suspension is usually the opening of
+a conversation the office is already having, and an automated message is the
+wrong way to start it.
+
+**Verification.** Revert-check: dropping `respectSoftDeletes` turns the
+soft-delete seat test red; the suspension tests fail at the migration without
+the enum value.
+
+**Walked in a browser** as an admin, on a one-seat offering:
+
+| Step | Result |
+|---|---|
+| Open the enrolment | actions read Activate / Reject / **Suspend** |
+| Click Suspend | *"Enrollment suspended. The seat is released and their record is kept."*, badge reads **Suspended** |
+| Actions now | Activate / Reject / **Reinstate** — Suspend is gone |
+| Seat check after suspension | `ReserveOfferingSeatAction` succeeds on the previously full offering |
+| Database | `status = suspended`, `deleted_at` null, student and progress untouched |
+| Click Reinstate | *"Enrollment reinstated."*, status back to `active`, actions flip back |
+
+The "reinstate refuses when the seat has been taken" case is covered by a test
+rather than the walk — reproducing it in a browser needs a second student to
+take the freed seat first, which the test does directly.
+
+**1,680 tests green** (7 new), architecture suite green, `npm run build` clean.
+
+**What §23 still lacks, recorded not fixed (rule 1).** Three columns the section
+names are absent: **`access_starts_at`**, **`access_ends_at`** and
+**`certificate_issued_at`**. The first two are a real feature — time-limited
+access — and wiring them means teaching `AuthorizeLessonAccessAction` about a
+window; that is its own slice, and adding the columns without it would create
+exactly the storable-but-unenforced field this sweep keeps removing.
+`certificate_issued_at` duplicates `issued_certificates.issued_at`, so whether
+it should exist at all is a single-source-of-truth question (rule 11) rather
+than a gap. Separately, `enrollment_type` is a bare `varchar(20)` with no enum
+and only `free` and `paid` ever written; §23 names five types and defers three
+of them ("paid later", "trial later", "group later"), so there is nothing yet to
+validate against.
+
 ### SPEC §32: two throttles missing, and a 500 on the endpoint they guard
 
 **Three of §32's five throttles were already enforced, and enforced well.**

@@ -481,6 +481,9 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::get('/{enrollment}', [AdminEnrollmentController::class, 'show'])->name('admin.enrollments.show');
         Route::patch('/{enrollment}/activate', [AdminEnrollmentController::class, 'activate'])->name('admin.enrollments.activate');
         Route::patch('/{enrollment}/reject', [AdminEnrollmentController::class, 'reject'])->name('admin.enrollments.reject');
+        // SPEC §23's sixth enrollment status, which had no writer at all.
+        Route::patch('/{enrollment}/suspend', [AdminEnrollmentController::class, 'suspend'])->name('admin.enrollments.suspend');
+        Route::patch('/{enrollment}/reinstate', [AdminEnrollmentController::class, 'reinstate'])->name('admin.enrollments.reinstate');
     });
 
     // Admin payment refunds (P4.3 — money-sensitive, tighter than the payments listing)
