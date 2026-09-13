@@ -140,6 +140,47 @@ a question with a default, so "do nothing" is always a legible choice.
 
 ## Found by the 2026-09-12 audit
 
+### A salary deduction decided by a substring of a free-text note — **fixed (2026-09-13)**
+
+**Severity: P1 — wrong money, on a payslip.**
+
+`leave_types.paid` is a boolean. `ApproveStaffLeaveAction` had it in hand and
+spent it writing an English sentence into `staff_attendance.remarks`
+("Approved unpaid leave"), and `CountUnpaidLeaveDaysAction` read it back with
+`where('remarks', 'like', '%unpaid%')->count()`. That count multiplies
+`basic_salary / working_days` onto a payslip.
+
+Three failures, all confirmed by tests that fail against the old code:
+
+1. **A half day cost a whole day's pay.** `'Half-day unpaid leave'` matches
+   `%unpaid%`, and `count()` counts rows. The half that `CountLeaveDaysAction`
+   and the leave ledger are both careful about was dropped at the only point
+   where it cost money. On a 10,000 salary: **454.55 deducted instead of
+   227.27.**
+2. **The platform is trilingual.** A remark in Dhivehi or Arabic never matched,
+   so unpaid leave silently became paid.
+3. **Any note containing the word deducted a day** — including one saying the
+   leave was *not* unpaid — and editing a note changed someone's salary.
+
+This was the **only** place in the application where business logic read a
+free-text field with `LIKE` (the one other match is a CLI search).
+
+Fixed by carrying the fact: `staff_attendance.leave_paid` and
+`leave_day_fraction`, written by the approval action and read by the counter
+(rule 11). Additive migration + exact backfill — the four strings were
+machine-written, so half-days recover precisely — then the reader switched
+(rule 9). `remarks` keeps every word it had and is a note for a human again.
+
+Walked in Chromium (2026-09-13) with `PAYROLL_ENABLED` on locally: a half-day
+unpaid leave gives Aishath Shifa gross **10,000.00**, net **9,072.73** on
+`/en/hr/payroll`. Before the fix, net was 8,845.45.
+
+**Still open (owner question, not a defect):** `CountLeaveDaysAction` counts
+**calendar** days, so leave spanning a weekend or a public holiday spends
+entitlement on days nobody works. The system knows its holidays —
+`calendar_days` and `AutoFillHolidayStaffAttendanceAction` — but no spec says
+whether leave is counted in calendar or working days, so this was not changed.
+
 ### Two percent fee adjustments billed a family minus 200 — **fixed (2026-09-13)**
 
 **Severity: P1 — wrong money, on an invoice a parent receives.**

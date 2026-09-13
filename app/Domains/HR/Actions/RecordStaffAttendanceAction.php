@@ -48,6 +48,8 @@ class RecordStaffAttendanceAction implements StaffAttendanceWriterInterface
             'minutes_late' => $dto->minutesLate,
             'marked_by' => $dto->markedBy,
             'remarks' => $dto->remarks,
+            'leave_paid' => $dto->leavePaid,
+            'leave_day_fraction' => $dto->leaveDayFraction,
         ];
 
         if ($existing === null) {

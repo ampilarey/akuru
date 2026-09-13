@@ -7677,6 +7677,99 @@ one produced an audit. §33's five other headings — User Management, Course
 Management, Offering Management, Course Builder, Academic / Training Management
 — are inventories of CRUD that mostly exists and still need their own pass.
 
+### The computed-number audit, done as one pass
+
+Two P1s in a row (#345 grades, #346 discounts) were enough to stop finding them
+one at a time. This is the whole class swept at once: every place the system
+turns stored rows into a number a person acts on — percentages, averages,
+balances, deductions, seat counts.
+
+**What was sound, so nobody re-derives it:**
+
+| Checked | Verdict |
+|---|---|
+| `MaldivesPayrollCalculator::tax()` | Correct marginal brackets. Traced 120,000 against 0/8/15% bands → 6,200. |
+| `ResolveDiscountAction` | Capped twice — `max_discount_amount`, then `min($off, $orderAmount)`. Cannot go negative. |
+| `EnforceSeatLimitAction` | Row locks held across the occupancy insert; soft-deleted rows excluded. |
+| `CalculateCourseProgressAction` | Guarded at `$totalRequired < 1`. |
+| `ComposeCatalogReportsAction::scores` | Filters `max_score > 0` before dividing. |
+| `SaveReadingProgressAction` | Guarded at `$totalPages > 0`. |
+| `ListClassAttendanceAction` | Coherent: excused sits in the denominator, part-lessons applied at read time, both numbers returned so a moved figure can be explained. |
+| `LeaveBalanceCalculator` | Sums an append-only ledger. |
+
+**Two defects found.**
+
+#### A salary deduction decided by a substring of a free-text note
+
+`leave_types.paid` is a boolean. `ApproveStaffLeaveAction` had it in hand and
+spent it writing an English sentence into `staff_attendance.remarks` —
+`'Approved unpaid leave'` — and `CountUnpaidLeaveDaysAction` read it back:
+
+```php
+->where('remarks', 'like', '%unpaid%')->count();
+```
+
+That count multiplies `basic_salary / working_days` onto a payslip. A boolean
+crossed a sentence and came back as money. Three failures, each pinned by a test
+that fails against the old code:
+
+1. **A half day cost a whole day's pay.** `'Half-day unpaid leave'` matches
+   `%unpaid%` and `count()` counts rows. `CountLeaveDaysAction` returns 0.5 and
+   the ledger records 0.5; the half was dropped at the one point where it cost
+   money. On a 10,000 salary that is **454.55 instead of 227.27**.
+2. **The platform is trilingual.** A remark in Dhivehi or Arabic never matched,
+   so unpaid leave silently became paid.
+3. **Any note containing the word deducted a day** — including one saying the
+   leave was *not* unpaid — and editing a note changed a salary.
+
+A grep confirms this was the **only** business logic in the application reading
+a free-text field with `LIKE`; the one other match is a CLI search.
+
+The fix carries the fact: `staff_attendance.leave_paid` and
+`leave_day_fraction` (rule 11). Additive migration → exact backfill → reader
+switched (rule 9's three steps, in one deploy per ADR-021). The backfill is
+exact because the four remark strings were machine-written, so half-days recover
+precisely; a hand-typed `on_leave` remark containing "unpaid" is backfilled to a
+full unpaid day, which is what it counted as yesterday. Nothing is dropped —
+`remarks` keeps every word and goes back to being a note a human reads.
+
+#### An unguarded division on the super-admin dashboard
+
+`checkStorageHealth()` divides `disk_free_space()` by `disk_total_space()`. Both
+return `false` when the call fails — an unreadable mount, an `open_basedir`
+restriction — and `false` is `0`, so `0/0` is a `DivisionByZeroError`: a 500 on
+the dashboard instead of the health line it was asked for. `getDatabaseSize()`
+immediately above already wraps its call; this one did not. It now returns
+`'unknown'`.
+
+No test: the failure needs `disk_free_space` itself to fail, which is not
+reachable from a test without mocking a builtin. Said here rather than faked.
+
+#### Walked in Chromium (2026-09-13)
+
+Payroll is behind a feature flag that ships **off**, so the walk needed
+`PAYROLL_ENABLED` set locally — worth stating, because it means no browser
+evidence for payroll exists in the default configuration.
+
+`/en/hr/payroll?year=2026&month=8`, one half-day of unpaid leave on a 10,000
+salary:
+
+| Staff | Gross | Net |
+|---|---|---|
+| Aishath Shifa | 10000.00 | **9072.73** |
+
+Before the fix, net read 8,845.45.
+
+1,833 tests green, architecture suite green, Pint clean.
+
+#### Noted, not fixed: calendar days vs working days
+
+`CountLeaveDaysAction` counts **calendar** days, so leave spanning a weekend or
+a public holiday spends entitlement on days nobody works. The system knows its
+holidays — `calendar_days`, `AutoFillHolidayStaffAttendanceAction` — so the
+information is there. No spec says which basis the Institute uses, and choosing
+one is policy, not a fix. **Owner decision.**
+
 ### The same defect in the money: two discounts, one negative invoice
 
 The grades finding suggested a question worth asking of every computed number in

@@ -84,6 +84,12 @@ class ApproveStaffLeaveAction
                     remarks: $type->paid
                         ? ($halfDay ? 'Half-day leave' : 'Approved leave')
                         : ($halfDay ? 'Half-day unpaid leave' : 'Approved unpaid leave'),
+                    // The two facts payroll needs, carried as facts. They used
+                    // to exist only inside the sentence above, which
+                    // `CountUnpaidLeaveDaysAction` then had to read back with a
+                    // substring match to work out what to deduct.
+                    leavePaid: (bool) $type->paid,
+                    leaveDayFraction: $halfDay ? 0.5 : 1.0,
                 ));
             }
 
