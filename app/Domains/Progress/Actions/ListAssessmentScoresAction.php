@@ -18,7 +18,7 @@ class ListAssessmentScoresAction
      *
      * @param  list<int>  $assessmentIds
      * @param  list<int>  $studentIds
-     * @return array<int, array<int, array{score: float|null, max_score: float|null, status: string|null, is_final: bool, is_absent: bool, is_exempt: bool}>>
+     * @return array<int, array<int, array{score: float|null, max_score: float|null, status: string|null, is_final: bool, is_absent: bool, is_exempt: bool, feedback: string|null}>>
      */
     public function execute(array $assessmentIds, array $studentIds): array
     {
@@ -54,6 +54,17 @@ class ListAssessmentScoresAction
                     'is_final' => $attempt->status === AssessmentAttemptStatus::Scored,
                     'is_absent' => false,
                     'is_exempt' => false,
+                    // SPEC §24 lists "Teacher feedback" among what a student's
+                    // dashboard must show. `ReviewAttemptAction` has been
+                    // writing it and only the teacher's own review screen ever
+                    // read it back, so a comment written *to* a student was
+                    // visible on the assessment page and nowhere they would
+                    // think to look.
+                    //
+                    // Unlike the score it is never hidden: §19's `show_results`
+                    // is about the mark, and a teacher who wrote a comment
+                    // meant it to be read.
+                    'feedback' => $attempt->feedback,
                 ];
             }
         }
