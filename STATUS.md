@@ -7677,6 +7677,76 @@ one produced an audit. §33's five other headings — User Management, Course
 Management, Offering Management, Course Builder, Academic / Training Management
 — are inventories of CRUD that mostly exists and still need their own pass.
 
+### SPEC §51: two Writing requirements, in a section that is otherwise built
+
+§51 is largely done, and the audit says so before it says anything else. Its
+own acceptance criteria (§51.23) were checked one by one: letters and harakas
+are admin-managed through real CRUD routes (#3), the AI side has
+`AiPrediction`, `TrainingSample`, `AiModelVersion` and
+`ActivateAiModelVersionAction` (#9, #12, #13), and the pronunciation feature
+flag is threaded through so the platform runs with AI off (#14). §51.8's other
+eight normalization options are all implemented and applied.
+
+Two of §51.6's "Writing" requirements did not hold.
+
+**§51.8 lists "Remove tatweel ـ" and nothing implemented it** — not
+`NormalizeTextAnswerAction`, not the settings validator, not
+`SaveActivityAction`'s flag list. Tatweel (U+0640, the kashida) is a
+decorative letter-stretcher with **no phonetic value**, and it arrives without
+being typed: Arabic keyboards produce it and it survives a copy-paste out of
+justified text. A student answering مـحـمـد was marked wrong against محمد for
+characters that mean nothing.
+
+It is applied **before** `strip_tashkeel`, deliberately: a haraka can sit on a
+tatweel, so removing the stretcher first leaves the mark on the letter it
+belongs to and a haraka question still sees it. A test pins that.
+
+**§51.6 lists "Handwriting canvas" beside "Handwriting image upload"**, and
+§51.23 #8 requires "Handwriting/canvas submissions are saved for teacher
+review". The upload half has worked since §36 gave teacher-marked activities a
+`file` kind that accepts images. **The canvas did not exist** — and it is the
+half that matters for a child practising letterforms on a tablet, who has no
+image to upload because the writing has not happened anywhere else yet.
+
+It is a submission **kind**, not a new activity pattern, because §51.6 is
+emphatic: Arabic skills "must be implemented using the general platform
+activity system. Do not create a separate Arabic exercise engine." The canvas
+exports a PNG and posts through **§36's existing attempt-upload endpoint** —
+one route, one MIME allowlist, one server-owned attachment list (rule 11). The
+component takes a callback and does not know the URL; a test asserts it
+contains no route of its own.
+
+Three details the drawing surface gets right because a tablet is the target:
+it scales for `devicePixelRatio` (an unscaled canvas draws blurry strokes at
+the wrong coordinates on a high-DPI screen), it fills white rather than leaving
+alpha (a transparent PNG turns black in some viewers, and a teacher would open
+a black square with black ink in it), and Save stays disabled until something
+is actually drawn (a blank upload is indistinguishable from a student who drew
+nothing on purpose).
+
+**An existing test caught the change, correctly.** `AnswerNormalizationTest`
+pins the normalization flag count, so adding one failed it at 8 → 9. That
+count is pinned rather than derived on purpose — deriving it from `flags()`
+would pass however many reached the screen, including none — so a new flag is
+*meant* to land there and be decided rather than absorbed. Bumped with the
+reason recorded.
+
+A second guard was added for a drift this slice nearly repeated:
+`SaveActivityAction` hardcodes its own normalization list rather than deriving
+it from `NormalizeTextAnswerAction::flags()`, so a flag added to the
+normalizer is silently dropped on the way in — an author ticks a box the
+normalizer never sees. A test now compares the two lists.
+
+Walked in Chrome at `127.0.0.1:8901` (2026-09-13): a `canvas` activity shows
+the drawing surface and **no file picker**, Save is disabled until a stroke is
+drawn and enabled after, and the saved PNG comes back listed and rendered as
+`handwriting.png`.
+
+**Recorded, not built (rule 1, §51.22).** §51.23 #11 "Admin can retrain in
+batches" has no implementation anywhere. That is Module B, which §51.22 places
+after the general system is stable and CLAUDE.md rule 8 gates by phase — so it
+is noted rather than started.
+
 ### SPEC §11.7: access with no time dimension
 
 Most of §11 holds up, and it was checked field by field rather than assumed.

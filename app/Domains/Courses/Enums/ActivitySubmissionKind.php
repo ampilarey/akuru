@@ -29,6 +29,28 @@ enum ActivitySubmissionKind: string
     case Written = 'written';
     case File = 'file';
     case Audio = 'audio';
+    /**
+     * SPEC §51.6 "Writing" lists two ways to hand in handwriting:
+     *
+     *   > Handwriting canvas · Handwriting image upload
+     *
+     * and §51.23's acceptance criteria require "Handwriting/canvas submissions
+     * are saved for teacher review".
+     *
+     * The **upload** half has worked since §36 gave this enum a `file` kind
+     * that accepts images. The **canvas** — drawing the letter in the browser
+     * — did not exist at all, and it is the half that matters for a child
+     * practising Arabic letterforms on a tablet, who has no image to upload
+     * because the writing has not happened anywhere else yet.
+     *
+     * It is a submission *kind* rather than a separate activity pattern
+     * because §51.6 is emphatic that Arabic skills "must be implemented using
+     * the general platform activity system. Do not create a separate Arabic
+     * exercise engine." A canvas exports a PNG and travels the same attempt-
+     * media path as every other upload (rule 11) — the only difference is
+     * where the pixels come from.
+     */
+    case Canvas = 'canvas';
 
     public static function fromValue(mixed $value): self
     {
@@ -55,6 +77,10 @@ enum ActivitySubmissionKind: string
                 ContentBlockType::Download,
                 ContentBlockType::Audio,
             ],
+            // A canvas exports an image and nothing else. Narrow on purpose,
+            // the same way `audio` is: a PDF handed to a handwriting exercise
+            // is not the thing the exercise asked for.
+            self::Canvas => [ContentBlockType::Image],
         };
     }
 
@@ -97,6 +123,18 @@ enum ActivitySubmissionKind: string
             self::Written => 'Written response',
             self::File => 'File upload',
             self::Audio => 'Audio recording',
+            self::Canvas => 'Handwriting',
         };
+    }
+
+    /**
+     * Whether the student draws rather than picks a file.
+     *
+     * The distinction lives here, not in the page, so the player does not have
+     * to know which kinds happen to be drawable.
+     */
+    public function isCanvas(): bool
+    {
+        return $this === self::Canvas;
     }
 }
