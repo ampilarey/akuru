@@ -7677,6 +7677,67 @@ one produced an audit. §33's five other headings — User Management, Course
 Management, Offering Management, Course Builder, Academic / Training Management
 — are inventories of CRUD that mostly exists and still need their own pass.
 
+### SPEC §11.7: access with no time dimension
+
+Most of §11 holds up, and it was checked field by field rather than assumed.
+§11.4's six-state workflow is complete (fixed in an earlier sweep, with `closed`
+kept rather than dropped per rule 9). `course_offering_sessions` carries every
+one of §11.5's eighteen fields and `SessionType` has all seven of its session
+types. `attendance_records` carries every §11.6 field, and `AttendanceStatus`
+and `AttendanceMode` match §11.6's five statuses and three modes exactly.
+
+§11.7 did not. It lists ten fields `course_enrollments` should include, and
+**"Access starts at" and "Access ends at" existed nowhere** — not on the
+enrolment, not anywhere else. So access to a course had **no time dimension at
+all**: `AuthorizeLessonAccessAction` gated on enrolment status and §26's unlock
+rules and nothing else. An enrolment could not begin later and could not run
+out.
+
+The offering's own `starts_at` / `ends_at` cannot stand in, and it is worth
+being precise about why. Those are the **cohort's** dates. §11.7 puts the
+window on the **enrolment** because a student who joins late, transfers in, or
+whose paid access is for a fixed term has a window of their own.
+
+**The tenth field is deliberately still absent.** "Certificate issued at"
+already lives on `issued_certificates`, which carries `enrollment_id`,
+`issued_at` and `revoked_at`. A copy on the enrolment would be a second source
+of truth for one fact (rule 11), and it is the copy that would rot: revoking a
+certificate would leave a stale issue date behind. A test pins the absence so
+a later reader does not "fix" it.
+
+**What shipped.** Two nullable columns, `ResolveEnrollmentAccessWindowAction`,
+enforcement in `AuthorizeLessonAccessAction`, and a control on the enrolment
+admin screen. Three decisions worth naming:
+
+- **Null means unbounded at that end** — which is exactly what every row
+  created before this holds, so no backfill was needed and no existing student
+  lost access.
+- **The refusal says which end failed.** "Not yet" and "expired" are different
+  facts leading to different actions — wait, or go and pay — and one flat "no
+  access" would be the same invisible refusal this codebase produced in §36's
+  upload and §6.3's recorder.
+- **A window that ends before it starts is refused** at the point of saving.
+  That is not a narrow window, it is one nothing can satisfy, and a student
+  locked out by a typo cannot tell that from a deliberate block.
+
+Staff are untouched: `courses.manage` short-circuits before any enrolment is
+looked for, so a window on one student's enrolment cannot close the author's
+preview. A test pins that too.
+
+Walked in Chrome at `127.0.0.1:8901` (2026-09-13):
+
+| State | Lesson | Message |
+|---|---|---|
+| No window | **200** | — |
+| Window ended 2026-09-01 | **403** | "Your access to this course ended on Tue, Sep 1, 2026 5:00 PM." |
+
+**A correction on the walk itself.** The first run reported the reason as
+missing — a silent refusal. It was not: the error page renders the message
+uppercased by CSS, and my assertion was sentence-case against Playwright's
+rendered `innerText`. The feature was right and the check was wrong. Re-run
+case-insensitively, and after clearing a window an earlier pass had left
+behind, all three states are as above.
+
 ### SPEC §8: one role that did not exist, and one that could do nothing
 
 §8 names seven roles. Six existed. The two failures are different shapes.

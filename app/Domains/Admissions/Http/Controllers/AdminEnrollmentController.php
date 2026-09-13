@@ -2,6 +2,7 @@
 
 namespace App\Domains\Admissions\Http\Controllers;
 
+use App\Domains\Courses\Actions\ResolveEnrollmentAccessWindowAction;
 use App\Domains\Courses\Actions\SuspendEnrollmentAction;
 use App\Domains\Courses\Models\Course;
 use App\Domains\Courses\Models\CourseEnrollment;
@@ -119,6 +120,34 @@ class AdminEnrollmentController extends Controller
         }
 
         return back()->with('success', 'Enrollment reinstated.');
+    }
+
+    /**
+     * SPEC §11.7's "Access starts at" / "Access ends at".
+     *
+     * Neither existed anywhere, so a student's access to a course had no time
+     * dimension: `AuthorizeLessonAccessAction` gated on enrolment status and
+     * §26's unlock rules and nothing else. An enrolment could not begin later
+     * and could not run out.
+     *
+     * Null at either end means unbounded there, which is what every row
+     * created before this holds — so clearing a field is a real operation, not
+     * a way of leaving it alone.
+     */
+    public function setAccessWindow(Request $request, CourseEnrollment $enrollment)
+    {
+        try {
+            $enrollment->update(
+                app(ResolveEnrollmentAccessWindowAction::class)->validated($request->only([
+                    'access_starts_at',
+                    'access_ends_at',
+                ]))
+            );
+        } catch (ValidationException $e) {
+            return back()->with('error', $e->validator->errors()->first());
+        }
+
+        return back()->with('success', 'Access window saved.');
     }
 
     public function export(Request $request)
