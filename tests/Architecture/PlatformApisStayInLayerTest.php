@@ -26,23 +26,6 @@
  *
  * Filesystem only: no database, no HTTP, no fixture.
  */
-/**
- * Comments are stripped before scanning, which is not a nicety. The sibling
- * `FOREIGN_KEY_CHECKS` guard in this suite once failed on the two files that
- * *quoted the old code in order to explain it*: a guard that cannot tell
- * documentation from instruction punishes writing the explanation down, and
- * the note explaining why a rule exists is the first thing to go.
- *
- * `//` is only treated as a comment when it does not follow a `:`, so the `//`
- * in a `https://` URL survives.
- */
-function stripJsComments(string $source): string
-{
-    $source = (string) preg_replace('#/\*.*?\*/#s', '', $source);
-
-    return (string) preg_replace('#(?<!:)//[^\n]*#', '', $source);
-}
-
 it('keeps browser-only APIs inside the platform layer', function () {
     // §6.4's list — audio recording, file picking, download handling, device
     // capability detection, storage helpers — as the APIs that implement them.

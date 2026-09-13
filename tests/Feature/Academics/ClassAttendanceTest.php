@@ -204,7 +204,11 @@ it('submits the register grid and keeps portal attendance to own children', func
             ->component('Portal/Attendance')
             ->has('rows', 1)
             ->where('rows.0.student_id', $mine->id)
-            ->where('rows.0.guardian_notified', true)
+            // KNOWN_ISSUES #17: the boolean became a three-state answer, so
+            // "sent", "not sent" and "no message is sent for this status" are
+            // no longer the same dash. The claim is unchanged — this absence
+            // was notified.
+            ->where('rows.0.notification_state', 'notified')
         );
 
     $this->withoutLocalizationMiddleware()

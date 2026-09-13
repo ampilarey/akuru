@@ -275,7 +275,39 @@ about which year it hits. See **Fixed on main**.
 
 ### 17. Parent notified column shows — on excused rows
 
-**Severity:** confusion. Column exists (#86). Round 3 step 3: visible row was **—** (excused / no SMS receipt). SMS body is not in the portal; local/staging sends are log + `sms_receipts` only.
+**Fixed (2026-09-13)** — the boolean became three states, and reading the
+sender turned up a second defect this entry did not know about.
+
+The column rendered `guardian_notified ? 'Yes' : '—'` over
+`status === 'absent' && receipt exists`, so one dash stood for four facts:
+**present** (nothing is ever sent), **excused** (deliberately not sent — the
+guardian excused it themselves, which is the case this entry was filed about),
+**late** (sent or not, depending on the school's `notify` setting), and
+**absent with no receipt** — a message that should have gone and did not.
+Only the last is a problem, and it looked exactly like the other three.
+
+The second defect: `=== 'absent'` means a **late** row whose SMS genuinely was
+sent was shown to the parent as **not** sent. The school sent the message and
+the portal denied it. `RecordClassAttendanceAction::maybeNotify()` notifies on
+`Late` too when the setting is `absent_and_late`.
+
+`ResolveAttendanceNotificationStateAction` now returns `notified` /
+`not_sent` / `not_applicable`, and reads the **same setting the sender reads**
+so the portal's answer cannot drift from what the school actually does
+(rule 11). Only `not_sent` is highlighted; the other two are quiet, because
+they are not problems.
+
+Walked in Chrome (2026-09-13), four rows for one child:
+
+| Date | Status | Column |
+|---|---|---|
+| 2026-09-04 | present | Not applicable |
+| 2026-09-03 | excused | Not applicable |
+| 2026-09-02 | absent | **Not sent** |
+| 2026-09-01 | absent | Sent |
+
+Still true, and unchanged by this: the SMS **body** is not in the portal, and
+local/staging sends are log + `sms_receipts` only.
 
 ### 18. Vite HMR blank Inertia pages on this VM
 

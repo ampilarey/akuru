@@ -110,7 +110,8 @@ it('records a fake absence send with channel, number, body, and timestamp and ma
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
             ->component('Portal/Attendance')
-            ->where('rows.0.guardian_notified', true)
+            // KNOWN_ISSUES #17: boolean → three states. Same claim.
+            ->where('rows.0.notification_state', 'notified')
             ->where('rows.0.status', 'absent')
         );
 });
