@@ -7677,6 +7677,56 @@ one produced an audit. §33's five other headings — User Management, Course
 Management, Offering Management, Course Builder, Academic / Training Management
 — are inventories of CRUD that mostly exists and still need their own pass.
 
+### SPEC §9: nine fields the pivot must support, five of them unreachable
+
+**This section also corrects a claim I made in #317 the same day.** That PR said
+"No spec asks for verification at all." That is wrong. **§9 asks for every one
+of these fields by name** — "Consent status · Verification status ·
+`verified_at` · `created_by` · Notes" — so migration `1A.7` was implementing §9,
+not adding speculative scaffolding. I had consulted `docs/S1_SPEC.md`, a phase
+build-spec, and not the product spec it serves. KNOWN_ISSUES #23 now carries the
+correction inline rather than being quietly edited.
+
+The **observation** in #317 held: nothing wrote those columns. Reading §9
+properly turned up two things that entry did not know.
+
+**First, the columns were unreadable as well as unwritten.** `withPivot`
+declared four of the nine fields on both `Student::guardians()` and
+`ParentGuardian::children()`. A write to `consent_status` **landed in the
+database and read back as NULL** through the relation, because the relation did
+not know the column existed. My own first version of this slice looked broken
+for exactly that reason: `updateExistingPivot` returned `1`, the row in MySQL
+said `granted`, and `$guardian->pivot->consent_status` said NULL. So even a
+correct write would have looked like it had done nothing — which is probably
+why nobody noticed the fields were inert.
+
+**Second, §9 names Sponsor** among its five example relationship types, and the
+enum had Father, Mother, Guardian, Grandfather, Grandmother, Uncle, Aunt and
+Other. A sponsor pays for a child without standing in a parent's place, which
+is the distinction `financial_responsible` exists for; folding it into `other`
+loses the one fact anybody looks it up for.
+
+**What shipped.** `GuardianConsentStatus` (not asked / granted / refused /
+withdrawn — "not asked" is a different fact from "refused", and a school that
+cannot tell them apart will either spam a family or go silent on one) and
+`GuardianVerificationStatus` (not checked / verified / rejected).
+`RecordGuardianLinkPolicyAction` writes them, stamping `verified_at` when a link
+becomes verified and **clearing it** when it goes back — a timestamp left behind
+claims somebody checked a link that nobody has. `created_by` is written at
+attach time, where the answer is known, and never overwritten afterwards
+because a later editor is not the person who made the link. Both `withPivot`
+lists now carry all nine. A control on the student's Guardians tab.
+
+**Verification is a record, not a gate — deliberately, and pinned by a test.**
+`/portal/children` still filters on nothing but the signed-in guardian's own
+links. Every link created before this slice is `unverified`, so filtering the
+portal on that column would hide **every** child from **every** parent
+overnight. That remains the owner's call and still needs a backfill.
+
+Walked in Chrome at `127.0.0.1:8901` (2026-09-13): the Guardians tab offers
+Not asked / Granted / Refused / Withdrawn and Not checked / Verified / Rejected,
+Save persists all three, and "Checked 2026-09-13" appears beside the status.
+
 ### SPEC §44 + §45: the route that relied on the button being hidden
 
 §45 says "Backend must enforce permissions." §44 says "All actions must use

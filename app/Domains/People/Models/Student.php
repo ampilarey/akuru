@@ -88,10 +88,24 @@ class Student extends Model
             ->withTimestamps();
     }
 
+    /**
+     * SPEC §9 lists nine things this pivot must support. `withPivot` declared
+     * four of them, so **`consent_status`, `verification_status`, `verified_at`,
+     * `created_by` and `notes` never came back through the relation at all** —
+     * a write to those columns landed in the database and then read back as
+     * NULL through `$student->guardians->first()->pivot`.
+     *
+     * That is the unreachable half of the defect: the columns were not only
+     * unwritten, they were unreadable, so even a correct write would have
+     * looked like it had done nothing.
+     */
     public function guardians(): BelongsToMany
     {
         return $this->belongsToMany(ParentGuardian::class, 'guardian_student', 'student_id', 'guardian_id')
-            ->withPivot('relationship', 'is_primary', 'can_pickup', 'financial_responsible')
+            ->withPivot(
+                'relationship', 'is_primary', 'can_pickup', 'financial_responsible',
+                'consent_status', 'verification_status', 'verified_at', 'created_by', 'notes',
+            )
             ->withTimestamps();
     }
 

@@ -8,6 +8,7 @@ use App\Domains\People\Actions\DetachGuardianAction;
 use App\Domains\People\Actions\ListEmergencyContactsAction;
 use App\Domains\People\Actions\ListStudentFormOptionsAction;
 use App\Domains\People\Actions\ListStudentsAction;
+use App\Domains\People\Actions\RecordGuardianLinkPolicyAction;
 use App\Domains\People\Actions\RemoveEmergencyContactAction;
 use App\Domains\People\Actions\SaveCustomFieldValuesAction;
 use App\Domains\People\Actions\SaveEmergencyContactAction;
@@ -15,7 +16,9 @@ use App\Domains\People\Actions\SaveStudentAction;
 use App\Domains\People\Enums\ConsentPersonType;
 use App\Domains\People\Enums\ConsentType;
 use App\Domains\People\Enums\CustomFieldEntityType;
+use App\Domains\People\Enums\GuardianConsentStatus;
 use App\Domains\People\Enums\GuardianRelationship;
+use App\Domains\People\Enums\GuardianVerificationStatus;
 use App\Domains\People\Enums\StudentStatus;
 use App\Domains\People\Models\Consent;
 use App\Domains\People\Models\CustomFieldDefinition;
@@ -170,6 +173,10 @@ class StudentDirectoryController extends Controller
                 'is_primary' => (bool) $guardian->pivot->is_primary,
                 'can_pickup' => (bool) $guardian->pivot->can_pickup,
                 'financial_responsible' => (bool) $guardian->pivot->financial_responsible,
+                // SPEC §9's other four. Serialised through the Action so the
+                // labels and the "unknown"/"unverified" fallbacks are decided
+                // in one place rather than twice.
+                ...app(RecordGuardianLinkPolicyAction::class)->serialize($student, $guardian),
             ]),
             'availableGuardians' => ParentGuardian::query()
                 ->orderBy('last_name')
@@ -208,6 +215,10 @@ class StudentDirectoryController extends Controller
             'emergencyContacts' => app(ListEmergencyContactsAction::class)->execute((int) $student->id),
             'documents' => [],
             'behaviorRecords' => app(ListBehaviorRecordsAction::class)->execute(['student_id' => $student->id]),
+            // SPEC §9's consent and verification vocabularies, so the screen
+            // never spells the labels for itself.
+            'consentStatuses' => $options['consentStatuses'],
+            'verificationStatuses' => $options['verificationStatuses'],
         ]);
     }
 
@@ -273,6 +284,12 @@ class StudentDirectoryController extends Controller
             'is_primary' => ['sometimes', 'boolean'],
             'can_pickup' => ['sometimes', 'boolean'],
             'financial_responsible' => ['sometimes', 'boolean'],
+            // SPEC §9's remaining fields. Optional at attach time — "not asked,
+            // not checked" is the honest starting state for a link somebody has
+            // only just created.
+            'consent_status' => ['sometimes', Rule::enum(GuardianConsentStatus::class)],
+            'verification_status' => ['sometimes', Rule::enum(GuardianVerificationStatus::class)],
+            'notes' => ['sometimes', 'nullable', 'string', 'max:5000'],
         ]);
 
         app(AttachGuardianAction::class)->execute(
@@ -282,11 +299,42 @@ class StudentDirectoryController extends Controller
             (bool) ($data['is_primary'] ?? false),
             (bool) ($data['can_pickup'] ?? true),
             (bool) ($data['financial_responsible'] ?? false),
+            array_intersect_key($data, array_flip(['consent_status', 'verification_status', 'notes'])),
+            (int) $request->user()->id,
         );
 
         return redirect()
             ->route('people.students.show', ['student' => $student, 'tab' => 'guardians'])
             ->with('success', 'Guardian attached.');
+    }
+
+    /**
+     * SPEC §9's consent status, verification status, `verified_at` and notes —
+     * four of the nine fields the pivot "must support" that nothing could write
+     * until this slice, so every link in the database read `unknown` /
+     * `unverified` with a NULL timestamp from the day it was created.
+     *
+     * Verification is a **record**, not a gate: `/portal/children` is still
+     * scoped to the guardian's own links and nothing filters on this column.
+     */
+    public function updateGuardianPolicy(Request $request, Student $student, ParentGuardian $guardian): RedirectResponse
+    {
+        $data = $request->validate([
+            'consent_status' => ['sometimes', Rule::enum(GuardianConsentStatus::class)],
+            'verification_status' => ['sometimes', Rule::enum(GuardianVerificationStatus::class)],
+            'notes' => ['sometimes', 'nullable', 'string', 'max:5000'],
+        ]);
+
+        app(RecordGuardianLinkPolicyAction::class)->execute(
+            $student,
+            $guardian,
+            $data,
+            (int) $request->user()->id,
+        );
+
+        return redirect()
+            ->route('people.students.show', ['student' => $student, 'tab' => 'guardians'])
+            ->with('success', 'Guardian record updated.');
     }
 
     public function detachGuardian(Student $student, ParentGuardian $guardian): RedirectResponse

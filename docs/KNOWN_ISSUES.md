@@ -322,6 +322,31 @@ link + the portal filtering on it), or drop the three unread columns in a
 cleanup deploy. Either is fine; leaving a control-shaped column that controls
 nothing is the thing to avoid.
 
+> **Correction (2026-09-13, same day).** The sentence "No spec asks for
+> verification at all" above is **wrong**, and the paragraph it sits in is
+> wrong with it. **SPEC §9 "Parent-Child Relationship" asks for every one of
+> these fields by name** — "Consent status · Verification status · `verified_at`
+> · `created_by` · Notes" — so migration `1A.7` was implementing §9, not adding
+> speculative scaffolding. That was found by reading §9 in the §6–§9 sweep,
+> one section later. `docs/S1_SPEC.md` is a phase build-spec and does not
+> override the product spec; consulting only the former was the mistake.
+>
+> The **observation** still held: nothing wrote those columns. Two further
+> things turned out to be true that this entry did not know, both now fixed:
+>
+> - `withPivot` declared four of the nine fields, so the other five **never
+>   came back through the relation at all**. A write landed in the database and
+>   read back as NULL — they were unreadable as well as unwritten.
+> - §9 also names **Sponsor** among its relationship types, and the enum had
+>   every one but that.
+>
+> **Fixed** — `RecordGuardianLinkPolicyAction`, the widened `withPivot` on both
+> sides, `created_by` written at attach time, and a control on the student's
+> Guardians tab. What this entry got right and the fix keeps: **verification is
+> a record, not a gate.** `/portal/children` still filters on nothing but the
+> guardian's own links. Turning it into an access rule remains the owner's
+> call, and still needs a backfill for every link created before this.
+
 ---
 
 ## Explicitly not defects

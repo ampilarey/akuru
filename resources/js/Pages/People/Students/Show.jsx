@@ -14,6 +14,79 @@ const tabs = [
     { id: 'behavior', label: 'Behavior' },
 ];
 
+/**
+ * SPEC §9 "Parent-Child Relationship" lists nine things the `guardian_student`
+ * pivot must support. Four were written from the day the table shipped;
+ * **consent status, verification status, `verified_at` and notes were written
+ * by nobody**, so every link in the database read "not asked / not checked"
+ * with a NULL timestamp from the moment it was created.
+ *
+ * Verification here is a **record of whether staff have checked this adult is
+ * this child's guardian** — not an access gate. `/portal/children` is still
+ * scoped to the signed-in guardian's own links and nothing filters on this
+ * column; making it a gate would hide every child from every parent overnight,
+ * because every existing link is unverified.
+ */
+function GuardianRow({ student, guardian, consentStatuses, verificationStatuses }) {
+    const [consent, setConsent] = useState(guardian.consent_status || 'unknown');
+    const [verification, setVerification] = useState(guardian.verification_status || 'unverified');
+    const [notes, setNotes] = useState(guardian.notes || '');
+
+    const save = () => router.put(
+        `/people/students/${student.id}/guardians/${guardian.guardian_id ?? guardian.id}`,
+        { consent_status: consent, verification_status: verification, notes },
+        { preserveScroll: true },
+    );
+
+    return (
+        <tr className="border-t align-top">
+            <td className="px-3 py-2">{guardian.name}</td>
+            <td className="px-3 py-2">{guardian.relationship}</td>
+            <td className="px-3 py-2 text-xs">
+                {guardian.is_primary ? 'primary ' : ''}
+                {guardian.can_pickup ? 'pickup ' : ''}
+                {guardian.financial_responsible ? 'financial' : ''}
+            </td>
+            <td className="px-3 py-2">
+                <select className="form-input" value={consent} onChange={(e) => setConsent(e.target.value)} aria-label="Consent status">
+                    {consentStatuses.map((option) => (
+                        <option key={option.value} value={option.value}>{option.label}</option>
+                    ))}
+                </select>
+            </td>
+            <td className="px-3 py-2">
+                <select className="form-input" value={verification} onChange={(e) => setVerification(e.target.value)} aria-label="Verification status">
+                    {verificationStatuses.map((option) => (
+                        <option key={option.value} value={option.value}>{option.label}</option>
+                    ))}
+                </select>
+                {/* §9 pairs the status with `verified_at`, so the date is shown
+                    beside it rather than hidden in the database. */}
+                {guardian.verified_at && (
+                    <p className="mt-1 text-xs text-gray-600">Checked {String(guardian.verified_at).slice(0, 10)}</p>
+                )}
+            </td>
+            <td className="px-3 py-2 text-end">
+                <input
+                    className="form-input mb-2"
+                    placeholder="Notes"
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
+                    aria-label="Guardian link notes"
+                />
+                <button type="button" className="btn-secondary" onClick={save}>Save</button>
+                <button
+                    type="button"
+                    className="ms-3 text-red-700 hover:underline"
+                    onClick={() => router.delete(`/people/students/${student.id}/guardians/${guardian.id}`)}
+                >
+                    Detach
+                </button>
+            </td>
+        </tr>
+    );
+}
+
 export default function Show({
     student,
     tab,
@@ -23,6 +96,8 @@ export default function Show({
     emergencyContacts = [],
     availableGuardians,
     relationships,
+    consentStatuses = [],
+    verificationStatuses = [],
     statusHistory,
     consents,
     consentTypes = [],
@@ -234,29 +309,20 @@ export default function Show({
                                     <th className="px-3 py-2">Name</th>
                                     <th className="px-3 py-2">Relationship</th>
                                     <th className="px-3 py-2">Flags</th>
+                                    <th className="px-3 py-2">Consent</th>
+                                    <th className="px-3 py-2">Verification</th>
                                     <th className="px-3 py-2"></th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {guardians.map((guardian) => (
-                                    <tr key={guardian.id} className="border-t">
-                                        <td className="px-3 py-2">{guardian.name}</td>
-                                        <td className="px-3 py-2">{guardian.relationship}</td>
-                                        <td className="px-3 py-2 text-xs">
-                                            {guardian.is_primary ? 'primary ' : ''}
-                                            {guardian.can_pickup ? 'pickup ' : ''}
-                                            {guardian.financial_responsible ? 'financial' : ''}
-                                        </td>
-                                        <td className="px-3 py-2 text-end">
-                                            <button
-                                                type="button"
-                                                className="text-red-700 hover:underline"
-                                                onClick={() => router.delete(`/people/students/${student.id}/guardians/${guardian.id}`)}
-                                            >
-                                                Detach
-                                            </button>
-                                        </td>
-                                    </tr>
+                                    <GuardianRow
+                                        key={guardian.id}
+                                        student={student}
+                                        guardian={guardian}
+                                        consentStatuses={consentStatuses}
+                                        verificationStatuses={verificationStatuses}
+                                    />
                                 ))}
                             </tbody>
                         </table>

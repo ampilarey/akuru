@@ -732,6 +732,11 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::put('students/{student}/custom-fields', [StudentDirectoryController::class, 'updateCustomFields'])->name('people.students.custom-fields.update');
         Route::post('students/{student}/guardians', [StudentDirectoryController::class, 'attachGuardian'])->name('people.students.guardians.attach');
         Route::delete('students/{student}/guardians/{guardian}', [StudentDirectoryController::class, 'detachGuardian'])->name('people.students.guardians.detach');
+        // SPEC §9's consent status, verification status, `verified_at` and
+        // notes — four of the nine fields the pivot "must support" that nothing
+        // could write, so every link read `unknown` / `unverified` from the day
+        // it was created.
+        Route::put('students/{student}/guardians/{guardian}', [StudentDirectoryController::class, 'updateGuardianPolicy'])->name('people.students.guardians.policy');
         // Emergency contacts: the table shipped in August and nothing has ever
         // written to it or read it.
         Route::post('students/{student}/emergency-contacts', [StudentDirectoryController::class, 'storeEmergencyContact'])->name('people.students.emergency-contacts.store');
