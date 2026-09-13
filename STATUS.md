@@ -7677,6 +7677,59 @@ one produced an audit. §33's five other headings — User Management, Course
 Management, Offering Management, Course Builder, Academic / Training Management
 — are inventories of CRUD that mostly exists and still need their own pass.
 
+### PHASE_0 §0.5 rule 4: the half of a day-one gate that never shipped
+
+The per-phase build specs were the last unswept documents. `PHASE_0_CHECKLIST.md`
+turns out to be the best-maintained file in the repo — every box is either
+ticked with an audit note or explicitly marked *"pending operator"*, including
+two that are still open and correctly attributed (the staging smoke and the
+staging deploy). §0.6 even records a cleanup whose **premise was wrong** and
+says so rather than quietly dropping it.
+
+§0.5 lists six architecture tests as **CI-blocking from day one**. Five exist.
+Rule 4 has two halves and only one shipped:
+
+> Controllers don't use `DB::` facade **and have no `private function` business
+> logic (heuristic: max method length)** — enforce on NEW controllers only at
+> first; legacy controllers get a baseline ignore-list that may only shrink.
+
+The `DB::` half has been enforced since Phase 0. **The length half was never
+written** — in a rule marked day-one, and named twice more: ROADMAP §6's gate
+table says "thin controllers", and SPEC §41 lists "controllers contain business
+logic that should be in actions/services" among the four things the suite must
+fail CI on. That makes three documents asking for one gate that did not exist.
+
+**What it protects is CLAUDE.md rule 5** — authorize → validate into DTO → call
+Action → return response. A long controller method is the measurable shadow of
+that rule breaking, and the cost is not tidiness: it is that a rule ends up
+somewhere no test can reach. This session moved logic out of a controller twice
+for exactly that reason — the free-enrollment notices (64 lines of mail
+composition) and the "which enrolments are free" filter, an inline
+`array_filter` quietly deciding a rule 12 question.
+
+**Threshold 40 lines**, chosen from the data rather than taste: the 95th
+percentile of the codebase's 1,116 controller methods (median 13, p90 31). It
+flags the top 5%, which is what a heuristic for "this is doing an Action's work"
+should do.
+
+**The baseline records each method's current length.** 58 entries. A listed
+method that *grows* fails too — otherwise a 45-line method could become 300 and
+still count as known — and one that drops below the threshold has to leave the
+list, so the count stays honest. `CourseRegistrationController::enroll` heads it
+at 180 lines, in the file this session already took 64 lines out of.
+
+#### Verification
+
+**Revert-check, all three assertions, each fired on its own:** a new 48-line
+method fails the first and names it; rewriting a baseline length so a method
+appears to have grown fails the second with *"was 50, now 86"*; a stale entry
+fails the third and asks for the count to be corrected.
+
+**No browser walk:** one test and a generated baseline, no `app/` or
+`resources/` change.
+
+**1,823 tests green** (1 new), arch green, Pint clean.
+
 ### ROADMAP §3.4: the backfill that was never written, and is named mandatory
 
 The one piece of genuinely missing code on the go-live list. ROADMAP §3.4 says
