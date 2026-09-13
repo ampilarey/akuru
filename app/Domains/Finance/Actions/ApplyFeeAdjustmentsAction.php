@@ -32,11 +32,21 @@ class ApplyFeeAdjustmentsAction
             ->values();
 
         foreach ($adjustments as $adjustment) {
-            $base = $this->matchingSubtotal($invoice, $adjustment);
-            if ($adjustment->basis === FeeAdjustmentBasis::Fixed) {
-                $already = $invoice->lines->sum(fn ($line) => (float) $line->discount_amount);
-                $base = max(0, $base - $already);
-            }
+            // A discount comes off what is still owed, not off the original
+            // bill. This ran for fixed adjustments only, so two approved
+            // percent adjustments — a 60% scholarship and a 60% staff-child
+            // rate, both perfectly ordinary — each took their cut of the full
+            // gross and the invoice came to **minus 200**.
+            //
+            // `$already` is every discount on the invoice, not just the ones
+            // this adjustment's item types would have matched, because the
+            // adjustment lines carry no `fee_item_id` and cannot be attributed
+            // back to a type. With mixed scopes that under-discounts rather
+            // than over-discounts, which is the direction to err in, and it is
+            // the trade the fixed branch was already making.
+            $already = $invoice->lines->sum(fn ($line) => (float) $line->discount_amount);
+            $base = max(0, $this->matchingSubtotal($invoice, $adjustment) - $already);
+
             if ($base <= 0) {
                 continue;
             }
