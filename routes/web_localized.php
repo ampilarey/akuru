@@ -427,8 +427,30 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
     // PUT and DELETE both answered **500** to anyone who reached them. Nothing
     // in the UI links to them, so this removes three dead routes rather than a
     // working feature; the editing screens are a separate piece of work.
+    //
+    // SPEC §45 "Backend must enforce permissions", §44 "Do not rely only on
+    // frontend button hiding".
+    //
+    // Reading is for everyone signed in — that is what a noticeboard is for,
+    // and `/portal/announcements` is the audience-targeted reader. **Writing
+    // was too.** `store` was `auth`-only with no check in the controller body,
+    // so any signed-in account — a pupil, a parent — could post a school-wide
+    // announcement, `type: emergency` and `priority: urgent` included, at any
+    // audience or class.
+    //
+    // This is the same defect, in the same file, as the students/teachers block
+    // twenty lines above ("Any signed-in account — a parent, a pupil — could
+    // therefore list, create, edit and delete students and teachers"), and it
+    // got the same guard. That slice fixed three route groups and walked past
+    // this one.
+    // Writing first, so `announcements/create` is matched before the
+    // `announcements/{announcement}` wildcard `show` would swallow it.
+    Route::middleware(['role:super_admin|admin|headmaster|supervisor'])->group(function () {
+        Route::resource('announcements', AnnouncementController::class)
+            ->only(['create', 'store']);
+    });
     Route::resource('announcements', AnnouncementController::class)
-        ->only(['index', 'create', 'store', 'show']);
+        ->only(['index', 'show']);
 
     // E-Learning routes
     Route::get('/e-learning', [ELearningController::class, 'index'])->name('e-learning.index');
