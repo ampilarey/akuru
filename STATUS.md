@@ -7677,6 +7677,69 @@ one produced an audit. §33's five other headings — User Management, Course
 Management, Offering Management, Course Builder, Academic / Training Management
 — are inventories of CRUD that mostly exists and still need their own pass.
 
+### The same defect in the money: two discounts, one negative invoice
+
+The grades finding suggested a question worth asking of every computed number in
+the system rather than just the one: *is the divisor doing what the sentence
+says?* Walking the money paths the same way — invoice totals, line discounts,
+wallet and payroll arithmetic — turned up one more, in the same shape and with
+the same reach.
+
+`ApplyFeeAdjustmentsAction` reduced the base by the discounts already on the
+invoice **for fixed adjustments only**:
+
+```php
+$base = $this->matchingSubtotal($invoice, $adjustment);
+if ($adjustment->basis === FeeAdjustmentBasis::Fixed) {
+    $already = $invoice->lines->sum(fn ($line) => (float) $line->discount_amount);
+    $base = max(0, $base - $already);   // ← percent never got here
+}
+```
+
+So two approved percent adjustments each took their cut of the full gross:
+
+| | Before | After |
+|---|---|---|
+| Subtotal | 1000.00 | 1000.00 |
+| Scholarship 60% | 600.00 | 600.00 |
+| Staff-child 60% | 600.00 | 240.00 *(60% of the 400 that is left)* |
+| **Total** | **−200.00** | **160.00** |
+
+Neither adjustment is exotic — a school that employs parents issues both. And a
+negative invoice is not a rounding complaint: it is a bill saying the school
+owes the family money, and it flows into arrears and collections as a negative,
+understating what the class actually owes.
+
+**Why no test caught it:** the existing fixture has three adjustments but only
+two that are valid on the invoice date — one percent, one fixed. The second
+percent adjustment sits outside its validity window. The stacking case was never
+run.
+
+The fix applies the same remaining-base rule to both bases, which is what the
+fixed branch already assumed. The `$already` sum is invoice-wide rather than
+scoped to the adjustment's item types, because adjustment lines carry no
+`fee_item_id` to attribute back; with mixed scopes that under-discounts rather
+than over-discounts, and it is the imprecision the fixed branch already lived
+with. Said in the code rather than left for a reader to discover.
+
+Two tests: the arithmetic (840 / 160), and the invariant stated independently of
+it — three 90% adjustments still cannot make a total negative.
+
+#### Walked in Chromium (2026-09-13)
+
+`/en/finance/invoices` — Fatima Yoosuf carries both adjustments:
+
+| Invoice | Student | Total |
+|---|---|---|
+| INV-1-1-2026-02 | Fatima Yoosuf | **240.00** |
+| INV-1-10-2026-02 | Ahmed Naseem | 1500.00 |
+| INV-1-11-2026-02 | Aminath Rishfa | 1500.00 |
+
+Her subtotal is 1500 with discounts of 900 + 360. Before the fix the two
+discounts were 900 + 900 and the row read **−300.00**.
+
+1,830 tests green, architecture suite green, Pint clean.
+
 ### S3_SPEC §S3.3: 90 out of 100 was a fail
 
 The S3 sweep found the specs' usual shape — every table, action and screen S3

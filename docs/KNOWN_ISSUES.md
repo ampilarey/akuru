@@ -140,6 +140,45 @@ a question with a default, so "do nothing" is always a legible choice.
 
 ## Found by the 2026-09-12 audit
 
+### Two percent fee adjustments billed a family minus 200 — **fixed (2026-09-13)**
+
+**Severity: P1 — wrong money, on an invoice a parent receives.**
+
+`ApplyFeeAdjustmentsAction` reduced the base by the discounts already on the
+invoice **for fixed adjustments only**. Percent adjustments each computed
+against the full gross, so two approved ones stacked past 100%:
+
+| | Before | After |
+|---|---|---|
+| Subtotal | 1000.00 | 1000.00 |
+| Scholarship 60% | 600.00 | 600.00 |
+| Staff-child 60% | 600.00 | 240.00 *(60% of the 400 that is left)* |
+| **Total** | **−200.00** | **160.00** |
+
+Neither adjustment is exotic. A school that employs parents issues both.
+
+A negative invoice is not a rounding complaint: it is a bill saying the school
+owes the family money, and it feeds arrears and collections totals as a
+negative, understating what the class actually owes.
+
+The existing test used one valid percent adjustment and one fixed — the second
+percent adjustment in the fixture sat outside its validity window — so the case
+was never exercised.
+
+The fix applies the same remaining-base rule to both bases, which is what the
+fixed branch already assumed. `$already` counts every discount on the invoice
+rather than only those the adjustment's item types would have matched, because
+adjustment lines carry no `fee_item_id` and cannot be attributed back to a type;
+with mixed scopes that under-discounts rather than over-discounts, which is the
+direction to err in, and it is the trade the fixed branch was already making.
+
+Two tests: the stacking arithmetic (840 / 160), and the invariant on its own —
+three 90% adjustments still cannot make the total negative.
+
+Walked in Chromium (2026-09-13), `/en/finance/invoices`: Fatima Yoosuf, with
+both adjustments, **240.00** against 1500.00 for her classmates. Before the fix
+her row read **−300.00**.
+
 ### Every term grade was deflated by the part of the year that had not happened — **fixed (2026-09-13)**
 
 **Severity: P1 — wrong data (grades), on report cards parents download.**
