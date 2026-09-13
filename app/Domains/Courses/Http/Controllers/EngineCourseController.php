@@ -88,7 +88,23 @@ class EngineCourseController extends Controller
      */
     public function decide(Request $request, int $course): RedirectResponse
     {
-        abort_unless($request->user()?->can('courses.manage'), 403);
+        // SPEC §8.4 gives all three outcomes — approve, reject, request changes
+        // — to Dean/Supervisor, and §8.3's Course Creator does not review at
+        // all. `courses.publish` is what separates the two: §8.3 says a creator
+        // "should not publish courses directly unless permission is granted",
+        // so it is the permission a reviewer has and a creator does not.
+        //
+        // Checking it on the whole endpoint, not only on approval, is the
+        // point. Reviewing is one job: without this a creator could send
+        // somebody else's course back to draft, which is §8.4's work and none
+        // of §8.3's. The browser walk for this slice is what surfaced it —
+        // adding `course_creator` to the catalog group had quietly handed them
+        // Reject and Request changes.
+        abort_unless(
+            $request->user()?->can('courses.manage') && $request->user()?->can('courses.publish'),
+            403,
+        );
+
         $data = $request->validate([
             'decision' => ['required', Rule::enum(CourseReviewDecision::class)],
             'comment' => ['nullable', 'string', 'max:5000'],

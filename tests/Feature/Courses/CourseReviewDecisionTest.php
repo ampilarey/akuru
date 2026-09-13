@@ -108,16 +108,39 @@ it('lets an approval be silent, because it says nothing is wrong', function () {
     expect(app(RecordCourseReviewDecisionAction::class)->forCourse($course->id)[0]['comment'])->toBeNull();
 });
 
-it('keeps publishing behind courses.publish', function () {
-    // The transition is still the authority. A reviewer who cannot publish
-    // cannot approve, and no decision is recorded for a move that was refused.
+it('keeps reviewing behind courses.publish', function () {
+    // This asserted a 302-with-errors when it was written: the endpoint let
+    // anyone with `courses.manage` in, and `TransitionCourseWorkflowAction`
+    // refused the publish at the end. The §8 sweep tightened it to a 403 at the
+    // door, because §8.4 gives *all three* review outcomes to Dean/Supervisor
+    // and §8.3's Course Creator — who holds `courses.manage` and not
+    // `courses.publish` — does not review at all. Reviewing is one job.
+    //
+    // The claim the test makes is unchanged and is the one that matters:
+    // nothing moves and nothing is recorded.
     $admin = reviewAdmin(['courses.manage']);
     $course = courseInReview(reviewAdmin());
 
     $this->actingAs($admin)
         ->withoutLocalizationMiddleware()
         ->post('/catalog/courses/'.$course->id.'/review-decision', ['decision' => 'approved'])
-        ->assertSessionHasErrors('workflow_status');
+        ->assertForbidden();
+
+    expect($course->fresh()->workflow_status)->toBe(CourseWorkflowStatus::InReview);
+    expect(app(RecordCourseReviewDecisionAction::class)->forCourse($course->id))->toHaveCount(0);
+});
+
+it('still refuses an approval the transition would reject, if the door is passed', function () {
+    // The 403 above is the outer guard. `TransitionCourseWorkflowAction` is
+    // still the authority underneath it, and this pins that directly rather
+    // than through a route — so the inner rule cannot quietly rot behind the
+    // outer one.
+    $reviewer = reviewAdmin();
+    $course = courseInReview($reviewer);
+
+    expect(fn () => app(RecordCourseReviewDecisionAction::class)->execute(
+        $course, Decision::Approved, [], $reviewer->id, canPublish: false,
+    ))->toThrow(\Illuminate\Validation\ValidationException::class);
 
     expect($course->fresh()->workflow_status)->toBe(CourseWorkflowStatus::InReview);
     expect(app(RecordCourseReviewDecisionAction::class)->forCourse($course->id))->toHaveCount(0);

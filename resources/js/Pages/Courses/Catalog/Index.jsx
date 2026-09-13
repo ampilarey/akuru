@@ -150,8 +150,16 @@ export default function Index({ rows, subjects, canPublish, unlockModes = [], de
                                     {row.workflow_status === 'draft' && (
                                         <button type="button" className="btn-secondary" onClick={() => router.post(`/catalog/courses/${row.id}/transition`, { workflow_status: 'in_review' })}>Submit review</button>
                                     )}
-                                    {row.workflow_status === 'in_review' && (
+                                    {/* §8.4 gives reviewing to Dean/Supervisor; §8.3's
+                                        Course Creator does not review at all, and
+                                        `courses.publish` is what separates them. The
+                                        server checks the same thing — this only avoids
+                                        offering a control that would 403. */}
+                                    {row.workflow_status === 'in_review' && canPublish && (
                                         <ReviewDecision row={row} decisions={decisions} canPublish={canPublish} />
+                                    )}
+                                    {row.workflow_status === 'in_review' && !canPublish && (
+                                        <span className="text-xs text-gray-500">Waiting for review</span>
                                     )}
                                     {row.workflow_status === 'published' && (
                                         <button type="button" className="btn-secondary" onClick={() => router.post(`/catalog/courses/${row.id}/transition`, { workflow_status: 'archived' })}>Archive</button>

@@ -970,7 +970,21 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::post('bank-statements/lines/{line}/ignore', [BankStatementController::class, 'ignore'])->name('finance.bank-statements.ignore')->whereNumber('line');
     });
 
-    Route::prefix('catalog')->middleware(['role:super_admin|admin|headmaster'])->group(function () {
+    // SPEC §8.4 "Dean / Supervisor" — "Review submitted courses · Approve
+    // courses · Reject courses · Request changes · Review assessments · Review
+    // course offerings where needed · View academic reports" — and §8.3
+    // "Course Creator", which manages modules, lessons, content blocks,
+    // activities, assessments, the question bank and glossary.
+    //
+    // Both were missing from this group, so §8.4's role answered **403 to every
+    // one of its own duties** and §8.3's role did not exist at all. That also
+    // left #316's §35 approve/reject control on a screen the supervisor could
+    // not open — reachable by everyone except the role §35 is named after.
+    //
+    // The permission check inside each controller is unchanged and still the
+    // real gate; `course_creator` holds `courses.manage` without
+    // `courses.publish`, which is §8.3's "should not publish courses directly".
+    Route::prefix('catalog')->middleware(['role:super_admin|admin|headmaster|supervisor|course_creator'])->group(function () {
         Route::get('glossary/export', [GlossaryController::class, 'export'])->name('catalog.glossary.export');
         Route::get('glossary', [GlossaryController::class, 'index'])->name('catalog.glossary.index');
         Route::post('glossary', [GlossaryController::class, 'store'])->name('catalog.glossary.store');
