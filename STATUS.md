@@ -7677,6 +7677,93 @@ one produced an audit. §33's five other headings — User Management, Course
 Management, Offering Management, Course Builder, Academic / Training Management
 — are inventories of CRUD that mostly exists and still need their own pass.
 
+### SPEC §42: nine interfaces of ten, and the missing one had a bill attached
+
+§42 "Interface Binding and Replaceability" is short and mechanical:
+
+> Bind key services to interfaces in the Laravel service container so
+> implementations are swappable. Required service interfaces include: Media
+> storage · Video provider · Notification channel · Payment gateway ·
+> Certificate renderer · **Settings repository** · File URL signer · Course
+> progress calculator · Unlock rule evaluator · Completion rule evaluator.
+
+Checked one at a time, **nine of the ten existed and were bound**. Two are read
+generously and the reason is written into the test rather than left for a
+reader to guess: *video provider* is `VideoConferencingInterface` (live
+sessions), because lesson-content video is an embed allow-list and not a
+provider SDK, so there is nothing yet for an interface to swap; *notification
+channel* is one interface per channel (`SmsSenderInterface`,
+`PushSenderInterface`) plus Laravel's own Mail contract, which satisfies §42's
+purpose without a generic channel abstraction nobody asked for.
+
+**Settings was the tenth, and it did not exist.** That absence was not
+cosmetic. **Ten call sites across four other domains** — Academics,
+ExamsGrades, Finance, HR — read `DB::table('settings')` directly:
+
+| Domain | Actions reading the table directly |
+|---|---|
+| Academics | `ResolveAttendanceSettingsAction`, `ResolveNotificationSettingsAction`, `ResolveRegisterLockDaysAction`, `ListBehaviorRecordsAction` |
+| ExamsGrades | `ResolveExamSettingsAction` |
+| Finance | `ResolveFinanceSettingsAction`, `MarkDefaultedPaymentPlansAction` |
+| HR | `ResolveHrSettingsAction`, `ResolveHrChecklistSettingsAction`, `ResolvePayrollSettingsAction` |
+
+So **five domains knew one table's name, its two column names and its storage
+shape**, and none of them could have survived that shape changing. That is
+rule 3's boundary in spirit if not in letter — it is not a `Models\*` import,
+which is exactly why `DomainBoundariesTest` never saw it, and the coupling is
+the same either way. It is also the precise failure §42 exists to prevent.
+
+`SettingsRepositoryInterface` now owns the reads (`get`, `many`, and typed
+`getString`/`getInt`/`getBool`), `DatabaseSettingsRepository` implements it,
+and `SettingsServiceProvider` binds it as a singleton. All ten call sites take
+it by **constructor injection**, matching the house style and, more to the
+point, making the binding genuinely swappable in a test — `app()` inside a
+method would have satisfied the letter of §42 and not its purpose.
+
+One behaviour decision is recorded in the implementation rather than made
+silently: `many()` treats an **absent** key as taking the default and passes a
+**stored empty string through as an empty string**, because that is what all
+ten call sites already did. Folding "empty means unset" into the repository
+would have been a quiet behaviour change across four domains, which is not
+something a refactor gets to decide. The typed getters are stricter, and may
+be: they are new and have no callers to surprise.
+
+#### Verification
+
+`RequiredServiceInterfacesTest` has two tests. The first **resolves each of
+the nine from the container** rather than checking a file exists on disk — an
+interface that exists but is not bound is not swappable, which is the whole
+point of §42. The second pins the boundary: no file outside
+`app/Domains/Settings/` may contain `DB::table('settings')`.
+
+**Revert-check:** removing the container binding fails the first;
+reintroducing a single direct read fails the second. Both were confirmed red
+before being restored.
+
+The DB-touching cases live in `tests/Feature/Settings/SettingsRepositoryTest.php`,
+not in the Architecture suite, which is deliberately database-free and has no
+`RefreshDatabase`.
+
+**Walked in Chrome** at `127.0.0.1:8123` (2026-09-13), across every domain
+whose Actions changed:
+
+| Step | Result |
+|---|---|
+| `/academics/attendance-policy` renders through the new repository | 200 |
+| Save late-marks 3, part-lesson 25 min, notify *absences and late arrivals* | flash: "Attendance policy saved." |
+| Hard reload — values must come back **through the repository**, not the form | `3`, `25`, `absent_and_late` |
+| `/academics/behavior`, `/students`, `/portal/behavior`, `/portal/staff-check-in`, `/admin/settings` | 200, no console errors |
+| `/hr/payroll` | **403 "Payroll is disabled"** |
+
+That 403 is correct and pre-existing, not a regression: payroll is gated on
+**both** `config('payroll.enabled')` (an env kill-switch, default off) **and**
+the `payroll.enabled` settings row. To prove the database half is genuinely
+live through the new repository rather than always falling through to
+defaults, the row was flipped with the config forced on: row `1` → enabled
+`true`, row `0` → enabled `false`.
+
+**1,769 tests green**, arch green, Pint clean.
+
 ### SPEC §52: the feature flag that did not exist
 
 §52 is in good order, and the audit checked it rather than assuming. **§52.2's

@@ -3,19 +3,21 @@
 namespace App\Domains\Finance\Actions;
 
 use App\Domains\Finance\Enums\InvoiceMonthlyMode;
-use Illuminate\Support\Facades\DB;
+use App\Domains\Settings\Contracts\SettingsRepositoryInterface;
 
 class ResolveFinanceSettingsAction
 {
+    public function __construct(private SettingsRepositoryInterface $settings) {}
+
     /**
      * @return array{monthly_mode: InvoiceMonthlyMode, reminder_days: int}
      */
     public function execute(): array
     {
-        $rows = DB::table('settings')
-            ->whereIn('key', ['finance.invoice_monthly_mode', 'finance.invoice_reminder_days'])
-            ->pluck('value', 'key');
-
+        $rows = collect($this->settings->many(array_fill_keys([
+            'finance.invoice_monthly_mode',
+            'finance.invoice_reminder_days',
+        ], null)));
         $mode = InvoiceMonthlyMode::tryFrom((string) ($rows['finance.invoice_monthly_mode'] ?? 'per_month'))
             ?? InvoiceMonthlyMode::PerMonth;
 

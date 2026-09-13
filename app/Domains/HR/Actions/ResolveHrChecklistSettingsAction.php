@@ -2,18 +2,21 @@
 
 namespace App\Domains\HR\Actions;
 
-use Illuminate\Support\Facades\DB;
+use App\Domains\Settings\Contracts\SettingsRepositoryInterface;
 
 class ResolveHrChecklistSettingsAction
 {
+    public function __construct(private SettingsRepositoryInterface $settings) {}
+
     /**
      * @return array{onboarding: list<string>, offboarding: list<string>}
      */
     public function execute(): array
     {
-        $rows = DB::table('settings')
-            ->whereIn('key', ['hr.onboarding_items', 'hr.offboarding_items'])
-            ->pluck('value', 'key');
+        $rows = collect($this->settings->many(array_fill_keys([
+            'hr.onboarding_items',
+            'hr.offboarding_items',
+        ], null)));
 
         return [
             'onboarding' => $this->decode($rows['hr.onboarding_items'] ?? null, [

@@ -3,11 +3,14 @@
 namespace App\Domains\Academics\Actions;
 
 use App\Domains\Academics\Models\BehaviorRecord;
+use App\Domains\Settings\Contracts\SettingsRepositoryInterface;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 class ListBehaviorRecordsAction
 {
+    public function __construct(private SettingsRepositoryInterface $settings) {}
+
     /**
      * @param  array{student_id?: int|null, student_ids?: list<int>|null, academic_year_id?: int|null, parent_visible?: bool|null}  $filters
      * @return Collection<int, array<string, mixed>>
@@ -53,7 +56,7 @@ class ListBehaviorRecordsAction
      */
     public function categories(): array
     {
-        $value = DB::table('settings')->where('key', 'behavior_categories')->value('value');
+        $value = $this->settings->get('behavior_categories');
         $decoded = is_string($value) ? json_decode($value, true) : null;
 
         return is_array($decoded) && $decoded !== [] ? array_values($decoded) : ['conduct', 'homework', 'other'];

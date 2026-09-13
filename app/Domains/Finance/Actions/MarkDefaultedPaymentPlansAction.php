@@ -6,15 +6,17 @@ use App\Domains\Finance\Enums\InstallmentStatus;
 use App\Domains\Finance\Enums\PaymentPlanStatus;
 use App\Domains\Finance\Models\PaymentPlan;
 use App\Domains\Finance\Models\PaymentPlanInstallment;
+use App\Domains\Settings\Contracts\SettingsRepositoryInterface;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\DB;
 
 class MarkDefaultedPaymentPlansAction
 {
+    public function __construct(private SettingsRepositoryInterface $settings) {}
+
     public function execute(?string $asOf = null): int
     {
         $today = $asOf ?? now('Indian/Maldives')->toDateString();
-        $days = (int) (DB::table('settings')->where('key', 'finance.plan_default_days')->value('value') ?? 14);
+        $days = (int) ($this->settings->get('finance.plan_default_days') ?? 14);
         $cutoff = Carbon::parse($today, 'Indian/Maldives')->subDays(max(0, $days))->toDateString();
 
         PaymentPlanInstallment::query()
