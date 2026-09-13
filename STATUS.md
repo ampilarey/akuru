@@ -7677,6 +7677,43 @@ one produced an audit. §33's five other headings — User Management, Course
 Management, Offering Management, Course Builder, Academic / Training Management
 — are inventories of CRUD that mostly exists and still need their own pass.
 
+### The follow-up to that leak: six other readers, and why they were fine
+
+Promised when the media fix shipped — check whether anything *else* wraps
+`ReadPrivateMediaAction` with a blanket permission. **Nothing does**, and the
+reason is worth more than the answer.
+
+Seven call sites can hand a caller the bytes of a private file. Six of them
+never had the problem, and **not because their permissions are stricter**:
+
+| Caller | How it scopes |
+|---|---|
+| `ReadListedFoundItemPhotoAction` | resolves the media id from the found-item record |
+| `ReadStudentWorkPhotoAction` | from the student-work record, filtered to students the viewer may see |
+| `ServeMaterialFileAction` | from the teaching material, plus a register permission and a class relationship |
+| `FoundItemController` | reads through the action above |
+| `ServeRecitationAudioAction` | from the recitation submission — its `courses.manage`/teacher grant is deliberate and documented (whoever may mark a recitation may hear it) and reaches recitations only |
+| `PredictIsolatedSoundAction` | server-side scoring; the bytes never leave the process |
+
+They resolve the media id **from the record that owns it**. *"Give me the photo
+of found-item 12"* cannot be pivoted into *"give me file 12"* — only *"give me
+file 12"* can. `ServeCatalogMediaAction` is the one that legitimately takes an
+id straight from the route, which is precisely why it needed an allow-list and
+precisely why it was the one that went wrong.
+
+That is the structural lesson rather than the patch, so the call-site list is
+pinned with the sentence that says how each one scopes. A new caller is not
+assumed to be a bug — it is assumed to need reading.
+
+#### Verification
+
+**Revert-check:** adding a `ReadPrivateMediaAction` reference to an unlisted
+file fails the test and names it.
+
+**No browser walk:** one test file, no `app/` or `resources/` change.
+
+**1,806 tests green** (1 new), arch green, Pint clean.
+
 ### Security: a course permission that read every private file in the school
 
 Found while auditing LIBRARY_PLAN §36, which says the uploaded PDF original
