@@ -21,6 +21,7 @@ pest()->extend(Tests\TestCase::class)
     ->in('Architecture');
 
 require_once __DIR__.'/Support/UniqueFixtureHelpers.php';
+require_once __DIR__.'/Support/SourceReadingHelpers.php';
 require_once __DIR__.'/Support/PeopleTestHelpers.php';
 require_once __DIR__.'/Support/AcademicsTestHelpers.php';
 require_once __DIR__.'/Support/FinanceTestHelpers.php';

@@ -3,7 +3,7 @@
 namespace App\Domains\Portal\Http\Controllers;
 
 use App\Domains\Academics\Actions\ListClassAttendanceAction;
-use App\Domains\Notifications\Actions\AbsenceWasNotifiedAction;
+use App\Domains\Notifications\Actions\ResolveAttendanceNotificationStateAction;
 use App\Domains\People\Actions\ListGuardianChildrenAction;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
@@ -30,10 +30,24 @@ class PortalAttendanceController extends Controller
             : collect();
 
         if ($studentId) {
-            $notified = app(AbsenceWasNotifiedAction::class);
-            $rows = $rows->map(function (array $row) use ($notified) {
-                $row['guardian_notified'] = ($row['status'] ?? null) === 'absent'
-                    && $notified->execute((int) $row['student_id'], (string) $row['date']);
+            // KNOWN_ISSUES #17. This was a boolean, and its `—` stood for four
+            // different facts: nothing is sent for this status, the guardian
+            // excused it themselves, a late message the school does send, and
+            // an absence message that should have gone and did not. Only the
+            // last is a problem, and it looked exactly like the other three.
+            //
+            // The old condition was also plainly wrong for `late`: it tested
+            // `=== 'absent'`, so a late SMS the school genuinely sent was shown
+            // to the parent as not sent.
+            $state = app(ResolveAttendanceNotificationStateAction::class);
+            $rows = $rows->map(function (array $row) use ($state) {
+                $resolved = $state->execute(
+                    (int) $row['student_id'],
+                    (string) $row['date'],
+                    $row['status'] ?? null,
+                );
+                $row['notification_state'] = $resolved;
+                $row['notification_label'] = $state->label($resolved);
 
                 return $row;
             });

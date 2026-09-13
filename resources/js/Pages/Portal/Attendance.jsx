@@ -37,8 +37,22 @@ export default function Attendance({ children, studentId, rows, summary }) {
                                 <td className="px-3 py-2">{row.date}</td>
                                 <td className="px-3 py-2">{row.class_name}</td>
                                 <td className="px-3 py-2 uppercase">{row.status}</td>
+                                {/* KNOWN_ISSUES #17. This was `guardian_notified ? 'Yes' : '—'`,
+                                    and the dash stood for four different facts — nothing is
+                                    sent for this status, the guardian excused it themselves,
+                                    a late message that was sent, and an absence message that
+                                    should have gone and did not. Only the last is a problem,
+                                    and it looked exactly like the other three. */}
                                 <td className="px-3 py-2">
-                                    {row.guardian_notified ? 'Yes' : '—'}
+                                    {row.notification_state === 'not_sent' ? (
+                                        <span className="rounded bg-amber-100 px-2 py-0.5 text-amber-900">
+                                            {row.notification_label}
+                                        </span>
+                                    ) : (
+                                        <span className={row.notification_state === 'notified' ? '' : 'text-gray-500'}>
+                                            {row.notification_label}
+                                        </span>
+                                    )}
                                 </td>
                             </tr>
                         ))}
