@@ -7677,6 +7677,58 @@ one produced an audit. §33's five other headings — User Management, Course
 Management, Offering Management, Course Builder, Academic / Training Management
 — are inventories of CRUD that mostly exists and still need their own pass.
 
+### LIBRARY_PLAN §15–§16, §30: the commerce rules, and the one holding by accident
+
+Second pass through the L-track, this time the money sections. **Most of it is
+right, and the audit says so before it says anything else.**
+
+| Rule | State |
+|---|---|
+| §16.2 wallet is **payment, not discount** — writer earns from the full sale value | **Correct.** `RecordWriterEarningForPurchaseAction` earns from `$paid` whichever way it was funded, splits `wallet_amount`/`bml_amount` for reporting, and implements all three §21 funding models (shared / akuru-funded / writer-funded) |
+| §30.4 **no wallet-to-wallet transfer in MVP** | **Correct by absence** — there is no transfer path anywhere in Commerce |
+| Gift card redemption | **Careful money code**: codes stored as SHA-256, `lockForUpdate`, re-verified under the lock, expiry flip deliberately outside the transaction so a refusal does not roll it back |
+| §30.4 "repeated failed redemptions" detection | **Not built** — and not urgent, which is worth saying rather than inflating: `POST my-wallet/redeem` is `throttle:10,1` and codes are `AKG-XXXX-XXXX-XXXX`, around 62 bits. Guessing is not the threat here |
+| §15.3 gift card **purchase** flow | **Unbuilt.** Gift cards are admin-issued only; no payment in the system carries `payable_type = 'gift_card'` |
+
+**§15.4 is the finding, and it is the inverse of this session's usual one.**
+The plan writes it in capitals, and CLAUDE.md rule 12 repeats it:
+
+> **CRITICAL RULE:** discount codes can NEVER be used to buy gift cards
+> (abuse: 50% code buys MVR 1000 card for 500, spends 1000).
+
+Nothing enforces it. Not `ResolveDiscountAction` — which receives an amount and
+**cannot see what is being bought** — and not its two callers, neither of which
+mentions §15.4.
+
+It holds today only because §15.3 does not exist: you cannot discount a gift
+card purchase because you cannot purchase a gift card. That is sequencing, not
+enforcement, and it expires the moment somebody builds the flow the plan asks
+for. Everywhere else this session the defect was a control that controls
+nothing; here it is **a rule with nothing to control — yet.**
+
+So rather than invent a runtime branch for a flow that does not exist (which
+would be the dead-control shape again), the **call sites** are pinned. Only the
+course checkout and the library checkout may resolve a discount, each named
+with what it buys. A third caller fails the test, and whoever adds it has to
+state there what they are discounting — and if the answer is a gift card, the
+answer is no. A second test records that no payment treats a gift card as its
+payable, so §15.3's arrival is itself the trigger to re-read §15.4.
+
+#### Verification
+
+**Revert-check, both:** adding a `ResolveDiscountAction` reference to a third
+file fails the first; adding `'payable_type' => 'gift_card'` anywhere fails the
+second.
+
+`config/morph-map.php` aliases `gift_card` and that is **correct** — ADR-005
+requires an alias for every polymorphic model whether or not anything points at
+it yet. An alias is not a purchase path, and the test says so where a reader
+would otherwise wonder.
+
+**No browser walk:** tests and docs only, no `app/` or `resources/` change.
+
+**1,795 tests green** (2 new), arch green, Pint clean.
+
 ### LIBRARY_PLAN §9.4: two columns for a preview nobody could turn on
 
 The L-track had never been swept in this pass, and §9's protected reader is the
