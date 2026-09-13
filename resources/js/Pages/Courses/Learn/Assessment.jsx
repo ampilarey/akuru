@@ -309,6 +309,17 @@ export default function Assessment({ assessment, enrollment, attempt, mediaShowU
                             {snapshot.correct_answer && (
                                 <p className="mt-2 text-sm text-green-700">Correct: {(snapshot.correct_answer || []).join(', ')}</p>
                             )}
+                            {/* §20 gives a question an `explanation`, and §21
+                                requires the snapshot to carry it "if needed".
+                                It does: the server strips it at attempt start
+                                and puts it back exactly when §19's "Show/hide
+                                correct answers" is on and the attempt is
+                                scored. Nothing drew it — so a student was shown
+                                the right answer and withheld the reason, which
+                                is the half that teaches. */}
+                            {snapshot.explanation && (
+                                <p className="mt-1 text-sm text-gray-700">{snapshot.explanation}</p>
+                            )}
                         </section>
                     );
                 })}

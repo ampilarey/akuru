@@ -3,6 +3,7 @@
 namespace App\Domains\Courses\Http\Controllers;
 
 use App\Domains\Courses\Actions\ListCourseSubjectsAction;
+use App\Domains\Courses\Actions\ListEngineCoursesAction;
 use App\Domains\Courses\Actions\ListQuestionsAction;
 use App\Domains\Courses\Actions\NormalizeTextAnswerAction;
 use App\Domains\Courses\Actions\SaveQuestionAction;
@@ -13,6 +14,7 @@ use App\Domains\ExamsGrades\Actions\ListStandardsAction;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -30,6 +32,19 @@ class CatalogQuestionController extends Controller
                 'question_type',
             ]))->values(),
             'subjects' => app(ListCourseSubjectsAction::class)->execute()->values(),
+            // §20 lists "Course ID nullable" on a question, and `index` has
+            // always accepted a `course_id` filter — with no control on the
+            // page able to set one, and no list to pick from. A bank meant to
+            // be reusable across courses could not say which course a question
+            // came from, nor be narrowed to one.
+            'courses' => app(ListEngineCoursesAction::class)->execute()
+                ->map(fn (array $course): array => ['id' => $course['id'], 'title' => $course['title']])
+                ->values(),
+            'filters' => [
+                'subject_id' => $request->input('subject_id', ''),
+                'course_id' => $request->input('course_id', ''),
+                'question_type' => $request->input('question_type', ''),
+            ],
             'standards' => app(ListStandardsAction::class)->execute()->values(),
             'types' => array_map(fn (QuestionType $type) => $type->value, QuestionType::cases()),
             // SPEC §18 applies to "auto-marked text input" only. Which types
@@ -93,33 +108,69 @@ class CatalogQuestionController extends Controller
     }
 
     /**
+     * CLAUDE.md rule 5: "authorize → validate into DTO → call Action".
+     *
+     * This built its array entirely out of `$request->input()` with **no
+     * `validate()` call anywhere on the save path** — the same defect §19's
+     * assessment form had. `SaveQuestionAction` rejects an unknown type and an
+     * empty text, and everything else was trusted: `difficulty` silently
+     * coerced to `medium` on any unrecognised value, and `subject_id` and
+     * `course_id` were cast to int and stored whether or not the row existed.
+     * `course_id` has a foreign key, so a bad one surfaced as a 500; `subject_id`
+     * did not, so a bad one was simply kept.
+     *
+     * Casting is not validating. An input silently turned into something valid
+     * is the failure mode that leaves an author certain they set a thing they
+     * did not.
+     *
      * @return array<string, mixed>
      */
     private function payload(Request $request): array
     {
+        $validated = $request->validate([
+            'subject_id' => ['nullable', 'integer', 'exists:course_subjects,id'],
+            'course_id' => ['nullable', 'integer', 'exists:courses,id'],
+            'question_type' => ['required', Rule::enum(QuestionType::class)],
+            'title' => ['nullable', 'string', 'max:255'],
+            'question_text' => ['required', 'string'],
+            'secondary_text' => ['nullable', 'string'],
+            'explanation' => ['nullable', 'string'],
+            'difficulty' => ['nullable', 'in:easy,medium,hard'],
+            'skill_tag' => ['nullable', 'string', 'max:255'],
+            'video_url' => ['nullable', 'string', 'max:500'],
+            'video_title' => ['nullable', 'string', 'max:255'],
+            'remove_attachment' => ['nullable', 'integer', 'min:0'],
+        ]);
+
         return [
-            'subject_id' => $request->filled('subject_id') ? (int) $request->input('subject_id') : null,
+            'subject_id' => $validated['subject_id'] ?? null,
+            // §20 names a "Category ID nullable" and nothing in the system
+            // defines what a question category *is* — no table, no foreign key,
+            // and the same unanchored column on `glossary_items`. Passing it
+            // through unvalidated is deliberate: giving it a control would mean
+            // choosing a meaning for it, which is a decision, not a cleanup.
             'category_id' => $request->filled('category_id') ? (int) $request->input('category_id') : null,
-            'course_id' => $request->filled('course_id') ? (int) $request->input('course_id') : null,
-            'question_type' => (string) $request->input('question_type', ''),
-            'title' => $request->input('title'),
-            'question_text' => (string) $request->input('question_text', ''),
-            'secondary_text' => $request->input('secondary_text'),
-            'explanation' => $request->input('explanation'),
+            'course_id' => $validated['course_id'] ?? null,
+            'question_type' => (string) $validated['question_type'],
+            'title' => $validated['title'] ?? null,
+            'question_text' => (string) $validated['question_text'],
+            'secondary_text' => $validated['secondary_text'] ?? null,
+            'explanation' => $validated['explanation'] ?? null,
+            // Shapes, not scalars: `SaveQuestionAction` owns what a valid
+            // options array or normalization setting is, and already refuses
+            // the malformed ones (§18's `ValidateNormalizationSettingsAction`).
             'options' => $request->input('options'),
             'correct_answer' => $request->input('correct_answer'),
             'acceptable_answers' => $request->input('acceptable_answers'),
             'normalization_settings' => $request->input('normalization_settings'),
-            'difficulty' => (string) $request->input('difficulty', 'medium'),
-            'skill_tag' => $request->input('skill_tag'),
+            'difficulty' => (string) ($validated['difficulty'] ?? 'medium'),
+            'skill_tag' => $validated['skill_tag'] ?? null,
             'standard_ids' => $request->input('standard_ids', []),
             // §20's fourth attachment kind. A reference, not an upload — it
             // shares §15's YouTube/Vimeo allowlist.
-            'video_url' => $request->input('video_url'),
-            'video_title' => $request->input('video_title'),
-            'remove_attachment' => $request->filled('remove_attachment')
-                ? (int) $request->input('remove_attachment')
-                : null,
+            'video_url' => $validated['video_url'] ?? null,
+            'video_title' => $validated['video_title'] ?? null,
+            'remove_attachment' => $validated['remove_attachment'] ?? null,
         ];
     }
 }
