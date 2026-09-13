@@ -169,7 +169,9 @@ it('migrates class quizzes and assignments onto the engine and verifies remainin
         ->and($engineAttempt->feedback)->toBe('MashaAllah');
 
     $engineAssignment = Assessment::query()->where('legacy_assignment_id', $assignment->id)->sole();
-    expect($engineAssignment->assessment_type)->toBe('assignment')
+    // `assessment_type` is cast to `AssessmentType` since the §19 slice — the
+    // stored value is unchanged, the returned type is richer.
+    expect($engineAssignment->assessment_type->value)->toBe('assignment')
         ->and($engineAssignment->requires_teacher_marking)->toBeTrue();
 
     expect(config('morph-map'))->toHaveKeys(['quiz', 'quiz_question', 'quiz_attempt', 'assignment', 'assignment_submission', 'assessment', 'class_room']);

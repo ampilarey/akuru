@@ -3,8 +3,11 @@
 namespace App\Domains\Courses\Actions;
 
 use App\Domains\Courses\Enums\AssessmentStatus;
+use App\Domains\Courses\Enums\AssessmentType;
 use App\Domains\Courses\Models\Assessment;
 use App\Domains\Courses\Models\Course;
+use App\Domains\Courses\Models\CourseModule;
+use App\Domains\Courses\Models\Lesson;
 use Illuminate\Validation\ValidationException;
 
 class SaveAssessmentAction
@@ -52,11 +55,20 @@ class SaveAssessmentAction
             'classroom_id' => $classroomId,
             'academic_year_id' => $this->nullableId($data['academic_year_id'] ?? $assessment?->academic_year_id),
             'term_id' => $this->nullableId($data['term_id'] ?? $assessment?->term_id),
-            'course_module_id' => $data['course_module_id'] ?? null,
-            'lesson_id' => $data['lesson_id'] ?? null,
+            // An assessment attached to another course's module or lesson is
+            // not a validation nicety: §19 hangs Module ID and Lesson ID off
+            // the assessment, and every reader assumes they are inside
+            // `course_id`. Nothing checked it.
+            'course_module_id' => $this->moduleInCourse($data['course_module_id'] ?? null, $courseId),
+            'lesson_id' => $this->lessonInCourse($data['lesson_id'] ?? null, $courseId),
             'title' => $title,
             'description' => $data['description'] ?? null,
-            'assessment_type' => (string) ($data['assessment_type'] ?? 'lesson_quiz'),
+            // SPEC §19's eleven types, as an enum rather than whatever string
+            // arrived. The vocabulary lived as a hardcoded array in a
+            // controller and nothing validated against it, so any string was
+            // storable — and `assessment_type` is what §19's reporting and the
+            // §34–§37 dashboards group by.
+            'assessment_type' => $this->assessmentType($data['assessment_type'] ?? null, $assessment),
             'status' => $status,
             'time_limit_minutes' => $data['time_limit_minutes'] ?? null,
             'passing_score' => $data['passing_score'] ?? null,
@@ -82,6 +94,65 @@ class SaveAssessmentAction
         $assessment->save();
 
         return $assessment->fresh();
+    }
+
+    private function assessmentType(mixed $given, ?Assessment $assessment): AssessmentType
+    {
+        if ($given === null || $given === '') {
+            return $assessment?->assessment_type instanceof AssessmentType
+                ? $assessment->assessment_type
+                : AssessmentType::LessonQuiz;
+        }
+
+        $type = AssessmentType::tryFrom((string) $given);
+        if ($type === null) {
+            throw ValidationException::withMessages([
+                'assessment_type' => 'That is not one of the assessment types SPEC §19 defines.',
+            ]);
+        }
+
+        return $type;
+    }
+
+    /**
+     * `$courseId` is nullable because an assessment attaches to a **class or a
+     * course, not both** — a classroom assessment has no course at all. With
+     * no course there is nothing for a module to belong to, so there is
+     * nothing to check: the ownership rule is about keeping a module inside
+     * its own course, not about inventing one.
+     */
+    private function moduleInCourse(mixed $moduleId, ?int $courseId): ?int
+    {
+        $id = $this->nullableId($moduleId);
+        if ($id === null || $courseId === null) {
+            return $id;
+        }
+
+        $belongs = CourseModule::query()->where('id', $id)->where('course_id', $courseId)->exists();
+        if (! $belongs) {
+            throw ValidationException::withMessages([
+                'course_module_id' => 'That module belongs to a different course.',
+            ]);
+        }
+
+        return $id;
+    }
+
+    private function lessonInCourse(mixed $lessonId, ?int $courseId): ?int
+    {
+        $id = $this->nullableId($lessonId);
+        if ($id === null || $courseId === null) {
+            return $id;
+        }
+
+        $belongs = Lesson::query()->where('id', $id)->where('course_id', $courseId)->exists();
+        if (! $belongs) {
+            throw ValidationException::withMessages([
+                'lesson_id' => 'That lesson belongs to a different course.',
+            ]);
+        }
+
+        return $id;
     }
 
     private function nullableId(mixed $value): ?int

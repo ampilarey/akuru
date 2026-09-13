@@ -35,7 +35,13 @@ export default function Assessments({ course, assessments, questions, types }) {
             >
                 <input className="form-input" placeholder="Title" value={form.data.title} onChange={(e) => form.setData('title', e.target.value)} />
                 <select className="form-input" value={form.data.assessment_type} onChange={(e) => form.setData('assessment_type', e.target.value)}>
-                    {types.map((type) => <option key={type} value={type}>{type}</option>)}
+                    {/* §19's eleven types, now served from the enum that owns
+                        them rather than a hardcoded controller array. */}
+                    {types.map((type) => (
+                        typeof type === 'string'
+                            ? <option key={type} value={type}>{type}</option>
+                            : <option key={type.value} value={type.value}>{type.label}</option>
+                    ))}
                 </select>
                 <select className="form-input" value={form.data.status} onChange={(e) => form.setData('status', e.target.value)}>
                     <option value="draft">draft</option>
