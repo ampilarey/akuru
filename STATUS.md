@@ -7677,6 +7677,92 @@ one produced an audit. §33's five other headings — User Management, Course
 Management, Offering Management, Course Builder, Academic / Training Management
 — are inventories of CRUD that mostly exists and still need their own pass.
 
+### SPEC §43 + §53: one invariant the spec states twice, tested from neither side
+
+**§43 "Suggested Database Tables" has no defect, and this says so plainly
+rather than manufacturing one.** All 48 suggested tables were checked against
+the live schema. Seven names are absent, and every one is a deliberate,
+documented choice rather than a gap:
+
+| §43 name | Reality |
+|---|---|
+| `system_settings` | `settings` — one table, now behind §42's repository |
+| `student_submissions` | the `activity_attempts` row itself (`answers`, `status`, `submitted_at`) |
+| `teacher_feedback` | columns on that same row (`feedback`, `reviewed_by`, `reviewed_at`) |
+| `quran_recitation_reviews` | columns on `quran_recitation_submissions` (`reviewed_by`, `review_note`) |
+| `quran_surahs` | `surahs` — **rule 11 forbids a parallel Quran dataset** |
+| `arabic_handwriting_attempts` | §43 marks it "optional later"; §51.6 forbids a separate Arabic engine, so §51's canvas rides §36's attempt-upload path |
+| `arabic_skill_reports` | §43 marks it "optional later" |
+
+The real §43 risk is the opposite one — *parallel* tables — so that was checked
+too. Three guardian-link tables (`guardian_student`, `student_guardians`,
+`student_parent`) and two Quran progress tables (`quran_memorization_progress`,
+`quran_progress`) exist, with only `guardian_student` populated. All four
+empties are documented migration states, not accidents: the guardian tables are
+the legacy pair written by `LinkGuardianDualWriteAction` during unification with
+Deploy 3 cleanup still pending, and `quran_progress` is the frozen Hifz Blade
+app's table, named as legacy in the docblock of the model that replaces it.
+
+**§53 "Testing Scope" is where the gap was.** It lists nine Phase 1A areas.
+Eight have coverage. Two things did not:
+
+**Area 9, Inertia shared props, had no test at all.**
+`HandleInertiaRequests::share()` runs on **every Inertia response in the
+application**, and nothing asserted what it returns. `auth.user.id` appeared
+once, incidentally, inside a logout test; `auth.linked_accounts` had its own
+feature test; `locale_urls` was checked by the i18n preview. The `rtl` direction
+flag and the `auth.can` permissions summary — two of §53's four named items —
+were asserted nowhere.
+
+**The invariant §53 states twice was tested from neither side.** Area 3 says
+"reordering draft blocks does not corrupt historical completed progress"; area
+7 says "completed lesson remains completed after draft block edit/reorder";
+§28.6 says it a third time as a rule. `BlockRequiredStatusTest` proves a later
+edit cannot change what a published revision *requires*, and
+`LessonProgressTest` proves progress cannot be recorded without a revision id —
+but **nothing walked a student's completed progress row through an edit.** That
+is the load-bearing claim of the whole revision design, and its failure would be
+silent and retrospective: an author reorders two draft blocks months later and
+the damage lands on a completion a student already earned.
+
+**Everything was behaving correctly**, which is the reason to pin it rather than
+a reason not to. That is the fourth section in a row where the code was right
+and nothing held it there.
+
+#### Verification
+
+Six tests across two files. The completion is driven **through the student's own
+routes** (enroll, then `learn.lessons.complete`) rather than by calling the
+Action, so what is pinned is the path a person actually takes.
+
+**Revert-check, four failure modes, each separately confirmed red:**
+
+| Injected change | Caught by |
+|---|---|
+| `auth.user` widened by one key (`created_at`) | the exact-key-count assertion |
+| `rtl` narrowed to Arabic only, dropping Dhivehi | the per-locale direction test |
+| `auth.can.operations_manage` hard-coded `true` | the not-granted half of the permissions test |
+| reorder "keeps the revision in step with the draft" — reopening progress and touching the snapshot | both invariant tests |
+
+The `auth.user` key set is pinned **exactly**, not loosely: it is
+`->only(['id', 'name', 'email'])` today, and widening it to `$request->user()`
+— a one-word edit that reads like a simplification — would serialize the whole
+users row into the payload of every page the application renders. An assertion
+that merely checked `id` was present would not notice.
+
+The guest branch is tested by calling `share()` directly, and the test says
+why: **there is no guest-reachable Inertia page.** The public site and login are
+Blade and every Inertia route sits behind `auth` or a role, so that branch
+cannot be reached through a URL today — but `share()` dereferences the user five
+times, and the day one Inertia page becomes public a single missing `?` would
+500 it rather than render it logged-out.
+
+**No browser walk:** this slice adds tests only — no `app/`, `routes/` or
+`resources/` change. The shared props were verified across `en`/`dv`/`ar` and as
+a guest before any test was written.
+
+**1,776 tests green** (6 new), arch green, Pint clean.
+
 ### SPEC §40 + §41: three of the four architecture tests §41 demands by name
 
 **§40 is in good order and the audit says so first.** "Build notification-ready
