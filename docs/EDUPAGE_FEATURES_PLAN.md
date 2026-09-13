@@ -65,6 +65,13 @@ track is **nothing** — E10d closed the last item the same day. E8, E15, E16,
 E17, E18 and E21 shipped that day
 (PRs #241–#247), each with tests and a browser walk.
 
+**E19 too, confirmed 2026-09-13** — the last row still carrying an estimate.
+It is built, guarded on both role and permission, logs every read, archives
+rather than deletes, has no export by design, and has ten tests. That makes
+**seventeen** rows this document has recorded as missing work that had already
+shipped. **The whole E track is done.** The "owner-gated" line in the
+dependency block below is out of date for the same reason.
+
 ---
 
 ## ⚠ Correction, 2026-09-10 — this plan disagreed with the code eight more times
@@ -414,11 +421,43 @@ control hardware; card/QR readers are a separate purchase. Do not build the
 software until the hardware question is answered, or it will be a manual log
 nobody fills.
 
-### E19. Student sensitive information — ~1 week + privacy decision
-Health and welfare notes on a pupil, visible only to authorised staff. Needs a
+### E19. Student sensitive information — ~~~1 week + privacy decision~~
+**⚠ ALREADY BUILT — and the four questions below were all answered in the
+code, not skipped.** Corrected 2026-09-13, the **17th** row this plan has
+recorded as missing work that had already shipped. The estimate and the
+"decide first" advice below are void; the reasoning is kept because it was
+right, and the build honoured it.
+
+| What this row said needed deciding | What the code does |
+|---|---|
+| Who may read | `role:super_admin\|headmaster` **and** `can:sensitive.read` on the route group — with a comment in `routes/web_localized.php:564` naming the `RoleSeeder` blanket `Permission::all()` trap that would otherwise have undone it |
+| Who may write | `can:sensitive.write` on store/update/archive separately, and only the note's author may edit their own note |
+| Retention | `archived_at`/`archived_by` — archive, never delete; plus `review_on` → `needs_review` when past, surfaced on screen as "due to be looked at again" |
+| Whether it is exportable | **No export route**, deliberately, against the repo's blanket "every listing gets CSV export" convention |
+
+`StudentSensitiveNote`, `SensitiveNoteView`, `ListSensitiveNotesAction`,
+`SaveSensitiveNoteAction`, `ArchiveSensitiveNoteAction`,
+`ListSensitiveNoteViewsAction`, `SensitiveNoteController`, four routes,
+`People/Sensitive/Index.jsx`, and **ten tests** in
+`tests/Feature/People/SensitiveNotesTest.php`.
+
+It also does something this row did not think to ask for: **every read is
+logged**, including the one that finds nothing, because `$viewerId` is a
+required argument on the read action — there is no way to look without leaving
+a trace. The access log renders on the same screen as the notes.
+
+**How this correction was found.** A session picked this row up as the next
+slice and began writing a test to pin the missing CSV export. That test already
+existed — `it('exposes no export route and no family-facing route')` — carrying
+the same reasoning, that the convention is deliberately not followed here
+because "somebody exported it" is the incident. The row cost a real audit
+before it cost a duplicate test; read the code first, as the correction
+sections above keep saying.
+
+~~Health and welfare notes on a pupil, visible only to authorised staff. Needs a
 policy decision before a schema: who may read, who may write, retention, and
 whether it is exportable. This is the one module where building first and
-deciding later is actively wrong.
+deciding later is actively wrong.~~
 
 ### E20. Competences / values tracking — ~2 weeks
 **⚠ ALREADY BUILT** — `competencies` + `competency_assessments`, `CompetencyController`, 5 routes. The "defer until a curriculum names the list" advice below is void.
@@ -530,7 +569,8 @@ E6 sign-ups   ──▶ uses Finance for fees; E5's request engine already exist
                   and may cover part of it — check before building
 E7 switcher   ──▶ the role-routing bug is separable and still open
 E10 attendance depth, E13 materials ──▶ any order, no cross-dependencies
-E8, E15–E19, E21 ──▶ owner-gated (see below)
+E8, E15–E19, E21 ──▶ OUT OF DATE: all shipped (E8/E15–E18/E21 in #241–#247;
+                     E19 confirmed built 2026-09-13). Nothing is owner-gated.
 E11 (calendar half only) ──▶ room booking already ships
 ```
 The app-shell slice can land before or after E1; E1 is its home tab either way.
