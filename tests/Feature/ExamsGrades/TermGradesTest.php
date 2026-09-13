@@ -183,12 +183,25 @@ it('treats absent as zero unless the exclude setting is on, and skips exempt', f
     $aisha = $grades->firstWhere('student_id', $ctx['a']->id);
     $bilal = $grades->firstWhere('student_id', $ctx['b']->id);
 
+    // Aisha was absent for the Final (80) and scored 10/10 on the Quiz (20).
+    // Absent counts as zero by default, so the Final still occupies its share:
+    // 0×0.8 + 100×0.2 = 20.
+    //
+    // Bilal was *exempt* from the Final and also scored 10/10 on the Quiz. He
+    // sat everything he was required to sit and got full marks, so his term is
+    // 100 — the Final's 80 comes out of the divisor, not just the numerator.
+    //
+    // This test used to assert 20.0 for both, which is to say it recorded that
+    // `is_exempt` did nothing at all.
     expect((float) $aisha->weighted_percent)->toBe(20.0)
-        ->and((float) $bilal->weighted_percent)->toBe(20.0);
+        ->and((float) $bilal->weighted_percent)->toBe(100.0);
 
+    // And the setting has to do something too: with exclude-absent on, Aisha's
+    // Final leaves the divisor the same way Bilal's did. This line also used to
+    // assert 20.0 — the same number as with the setting off.
     DB::table('settings')->where('key', 'exams_exclude_absent')->update(['value' => '1']);
     $again = app(ComputeTermGradesAction::class)->execute($ctx['class']->id, $ctx['subject']->id, $ctx['term']->id);
-    expect((float) $again->firstWhere('student_id', $ctx['a']->id)->weighted_percent)->toBe(20.0);
+    expect((float) $again->firstWhere('student_id', $ctx['a']->id)->weighted_percent)->toBe(100.0);
 });
 
 it('recomputes rank after a mark correction', function () {
@@ -269,4 +282,60 @@ it('tells the gradebook when no weight scheme is saved', function () {
             ->component('ExamsGrades/Gradebook/Index')
             ->where('missing_weights', true)
         );
+});
+
+it('keeps the components breakdown adding up to the term percent', function () {
+    // S3.4 calls components json "per-exam breakdown for transparency". If the
+    // parts do not add up to the whole, the breakdown explains a number the
+    // pupil did not get — and renormalising the divisor is exactly the sort of
+    // change that can break that quietly.
+    $ctx = termSetup();
+    $final = app(SaveExamAction::class)->execute([
+        'academic_year_id' => $ctx['year']->id,
+        'term_id' => $ctx['term']->id,
+        'class_id' => $ctx['class']->id,
+        'subject_id' => $ctx['subject']->id,
+        'exam_type_id' => $ctx['final']->id,
+        'name' => 'Final',
+        'exam_date' => '2026-08-24',
+        'max_marks' => 100,
+    ], null, $ctx['admin']->id);
+    $quiz = app(SaveExamAction::class)->execute([
+        'academic_year_id' => $ctx['year']->id,
+        'term_id' => $ctx['term']->id,
+        'class_id' => $ctx['class']->id,
+        'subject_id' => $ctx['subject']->id,
+        'exam_type_id' => $ctx['quiz']->id,
+        'name' => 'Quiz',
+        'exam_date' => '2026-08-10',
+        'max_marks' => 10,
+        'confirm_same_day' => true,
+    ], null, $ctx['admin']->id);
+
+    app(TransitionExamStatusAction::class)->execute($final, ExamStatus::MarksEntry, $ctx['admin']->id);
+    app(TransitionExamStatusAction::class)->execute($quiz, ExamStatus::MarksEntry, $ctx['admin']->id);
+    // Aisha sits both; Bilal is exempt from the Final, so his divisor shrinks.
+    app(SaveExamMarkAction::class)->execute($final, $ctx['a']->id, ['marks' => 60], $ctx['admin']->id);
+    app(SaveExamMarkAction::class)->execute($quiz, $ctx['a']->id, ['marks' => 8], $ctx['admin']->id);
+    app(SaveExamMarkAction::class)->execute($final, $ctx['b']->id, ['is_exempt' => true], $ctx['admin']->id);
+    app(SaveExamMarkAction::class)->execute($quiz, $ctx['b']->id, ['marks' => 8], $ctx['admin']->id);
+    publishExam($final, $ctx['admin']);
+    publishExam($quiz, $ctx['admin']);
+
+    $grades = app(ComputeTermGradesAction::class)->execute($ctx['class']->id, $ctx['subject']->id, $ctx['term']->id);
+
+    foreach ($grades as $row) {
+        $components = collect($row->components);
+        $counted = $components->where('weighted', '!==', null)->filter(fn ($c) => $c['weighted'] !== null);
+
+        expect(round($counted->sum('weighted'), 2))
+            ->toBe(round((float) $row->weighted_percent, 2))
+            ->and(round($counted->sum('effective_share'), 2))
+            ->toBe(100.0);
+    }
+
+    // Aisha sat everything: 60×0.8 + 80×0.2 = 64. Bilal sat only the quiz, so
+    // its 20 becomes the whole divisor and his 8/10 is 80.
+    expect((float) $grades->firstWhere('student_id', $ctx['a']->id)->weighted_percent)->toBe(64.0)
+        ->and((float) $grades->firstWhere('student_id', $ctx['b']->id)->weighted_percent)->toBe(80.0);
 });

@@ -61,10 +61,19 @@ it('saves a usable scheme over HTTP and fills term percent grade rank on a repor
     $grades = app(ComputeTermGradesAction::class)->execute($class->id, $subject->id, $term->id);
     $row = $grades->firstWhere('student_id', $student->id);
 
+    // 90/100 on the only published exam of the term is 90% for the term.
+    //
+    // This used to assert 36.0 and grade 'E' — a fail — because the Final's
+    // default weight is 40 and the scheme's other 60 belongs to exam types
+    // that have no published exam yet. That share was scored as nothing rather
+    // than taken out of the divisor, so every pupil in every partly-examined
+    // term was deflated by however much of the year had not happened.
+    // `ComputeTermGradesAction::student()` now renormalises to the share that
+    // actually counted (S3_SPEC §S3.3).
     expect($row)->not->toBeNull()
         ->and($row->weighted_percent)->not->toBeNull()
-        ->and((float) $row->weighted_percent)->toBe(36.0)
-        ->and($row->grade)->toBe('E')
+        ->and((float) $row->weighted_percent)->toBe(90.0)
+        ->and($row->grade)->toBe('A')
         ->and($row->rank)->toBe(1);
 
     $this->withoutLocalizationMiddleware()
@@ -77,9 +86,9 @@ it('saves a usable scheme over HTTP and fills term percent grade rank on a repor
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
             ->where('missing_weights', false)
-            ->where('rows.0.term.grade', 'E')
+            ->where('rows.0.term.grade', 'A')
             ->where('rows.0.term.rank', 1)
-            ->where('rows.0.term.weighted_percent', fn ($percent) => (float) $percent === 36.0)
+            ->where('rows.0.term.weighted_percent', fn ($percent) => (float) $percent === 90.0)
         );
 
     $cards = app(GenerateReportCardsAction::class)->execute(
@@ -97,9 +106,11 @@ it('saves a usable scheme over HTTP and fills term percent grade rank on a repor
         app(\App\Domains\ExamsGrades\Actions\AssembleReportCardDataAction::class)->execute($cards->first()->fresh(['template', 'comments'])),
     );
 
+    // The end of the chain, and the reason this mattered: the report card a
+    // parent downloads. It used to read 36 and E for a child who scored 90/100.
     expect($html)->toContain('Fatima Yoosuf')
-        ->and($html)->toContain('36')
-        ->and($html)->toContain('>E<')
+        ->and($html)->toContain('90')
+        ->and($html)->toContain('>A<')
         ->and($html)->toContain('>1<')
         ->and($html)->not->toContain('<td></td>');
 });

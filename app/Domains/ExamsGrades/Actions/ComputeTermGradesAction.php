@@ -119,6 +119,29 @@ class ComputeTermGradesAction
     }
 
     /**
+     * One student's weighted percent, **over the share that actually counted
+     * for them**.
+     *
+     * S3_SPEC §S3.3: *"exempt excluded from averages, absent counts as 0
+     * unless setting says exclude."* Excluding something from an average means
+     * taking it out of the divisor as well. This used to accumulate
+     * `$usedShare` and then test it only for zero, so an excluded exam's weight
+     * was silently scored as nothing — which is the same arithmetic as scoring
+     * zero, and made both `is_exempt` and the `exams_exclude_absent` setting
+     * inert.
+     *
+     * A pupil exempted from an 80%-weight final who scored full marks on the
+     * 20% quiz was given **20%** for the term, ranked last in the class, and
+     * sent home on a report card.
+     *
+     * Renormalising to `$usedShare` also handles the case nobody filed: a
+     * scheme that gives weight to an exam type with no published exam this
+     * term. Its share was simply lost, deflating every pupil in the class. You
+     * can only be graded on what exists.
+     *
+     * When nothing is excluded `$usedShare` is 100 and the factor is 1, which
+     * is why this changes no ordinary term.
+     *
      * @param  Collection<int, Exam>  $exams
      * @param  array<int, float>  $shares
      * @param  Collection<int, ExamMark>  $studentMarks
@@ -126,8 +149,7 @@ class ComputeTermGradesAction
      */
     private function student(Collection $exams, array $shares, Collection $studentMarks, bool $excludeAbsent): array
     {
-        $components = [];
-        $weighted = 0.0;
+        $counted = [];
         $usedShare = 0.0;
 
         foreach ($exams as $exam) {
@@ -148,22 +170,43 @@ class ComputeTermGradesAction
             }
 
             if ($percent !== null) {
-                $weighted += $percent * ($share / 100);
                 $usedShare += $share;
             }
 
+            $counted[] = compact('exam', 'share', 'absent', 'exempt', 'excluded', 'raw', 'percent');
+        }
+
+        // The factor that turns "share of the whole scheme" into "share of what
+        // counted for this pupil".
+        $factor = $usedShare > 0 ? 100 / $usedShare : 0.0;
+
+        $components = [];
+        $weighted = 0.0;
+
+        foreach ($counted as $row) {
+            // `share` stays the scheme's number so the breakdown still shows
+            // what the scheme says; `effective_share` is what it was worth
+            // here, and the effective shares of the counted exams sum to 100.
+            $effective = $row['percent'] !== null ? $row['share'] * $factor : 0.0;
+            $contribution = $row['percent'] !== null ? $row['percent'] * ($effective / 100) : null;
+
+            if ($contribution !== null) {
+                $weighted += $contribution;
+            }
+
             $components[] = [
-                'exam_id' => $exam->id,
-                'exam_type_id' => $exam->exam_type_id,
-                'name' => $exam->name,
-                'share' => round($share, 2),
-                'max_marks' => (float) $exam->max_marks,
-                'marks' => $raw !== null ? (float) $raw : null,
-                'is_absent' => $absent,
-                'is_exempt' => $exempt,
-                'excluded' => $excluded,
-                'percent' => $percent !== null ? round($percent, 2) : null,
-                'weighted' => $percent !== null ? round($percent * ($share / 100), 2) : null,
+                'exam_id' => $row['exam']->id,
+                'exam_type_id' => $row['exam']->exam_type_id,
+                'name' => $row['exam']->name,
+                'share' => round($row['share'], 2),
+                'effective_share' => round($effective, 2),
+                'max_marks' => (float) $row['exam']->max_marks,
+                'marks' => $row['raw'] !== null ? (float) $row['raw'] : null,
+                'is_absent' => $row['absent'],
+                'is_exempt' => $row['exempt'],
+                'excluded' => $row['excluded'],
+                'percent' => $row['percent'] !== null ? round($row['percent'], 2) : null,
+                'weighted' => $contribution !== null ? round($contribution, 2) : null,
             ];
         }
 

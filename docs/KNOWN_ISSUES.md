@@ -140,6 +140,50 @@ a question with a default, so "do nothing" is always a legible choice.
 
 ## Found by the 2026-09-12 audit
 
+### Every term grade was deflated by the part of the year that had not happened — **fixed (2026-09-13)**
+
+**Severity: P1 — wrong data (grades), on report cards parents download.**
+
+S3_SPEC §S3.3: *"exempt excluded from averages, absent counts as 0 unless
+setting says exclude."* Excluding something from an average means taking it out
+of the **divisor** too. `ComputeTermGradesAction::student()` accumulated
+`$usedShare` and then tested it only for zero, so an excluded exam's weight was
+scored as nothing — arithmetically identical to scoring zero.
+
+Three consequences, in increasing order of how often they happen:
+
+1. **`is_exempt` did nothing.** A pupil exempted from an 80%-weight final who
+   scored full marks on the 20% quiz was given **20%** for the term.
+2. **The `exams_exclude_absent` setting did nothing.** With it on or off, an
+   absent pupil got the same number.
+3. **The ordinary case.** A scheme gives weight to exam types that have not
+   happened yet — the default scheme puts 40 on the Final, 30 on the Midterm,
+   10 quiz, 10 assignment, 5 practical, 5 oral. Publish the Final and nothing
+   else, and every pupil in the class is multiplied by 0.4. **90/100 became
+   36% and grade E — a fail.**
+
+The repo's own tests recorded all three as correct, with the grade letter next
+to them: `WeightSchemePersistTest` asserted `36.0`, `'E'`, and a report card
+containing `>E<` for a child who scored 90.
+
+`student()` now renormalises to the share that actually counted. When nothing is
+excluded the factor is 1, which is why no ordinary fully-examined term changes.
+Components carry `effective_share` alongside the scheme's `share`, and a test
+pins that the breakdown still sums to the term percent — S3.4 calls that json
+"per-exam breakdown for transparency", and parts that do not add up to the whole
+explain a number the pupil did not get.
+
+Walked in Chromium (2026-09-13), `/en/exams/gradebook` for Grade 5 / Quran
+Memorization / Term 1, one published Final out of six weighted types:
+
+| Pupil | Mark | Term % | Grade | Rank |
+|---|---|---|---|---|
+| Fatima Yoosuf | 90.00 | **90.00** | **A** | 1 |
+| Hussain Shareef | 55.00 | 55.00 | C | 2 |
+| Aisha Mohamed | 30.00 | 30.00 | E | 3 |
+
+Before the fix those three read 36.00, 22.00 and 12.00 — all grade **E**.
+
 ### Two guardian↔student pivots, and the product wrote the wrong one — **fixed**
 
 `guardian_student` is the live pivot: every notification listener (absence SMS,
