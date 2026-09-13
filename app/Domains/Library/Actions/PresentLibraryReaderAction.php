@@ -76,6 +76,13 @@ class PresentLibraryReaderAction
                 ->where('library_item_id', $item->id)
                 ->where('page_number', $page)
                 ->exists(),
+            // §9.1: the reader's own note on this page, so the box arrives
+            // holding what they last wrote rather than empty.
+            'note' => $userId === null ? null : LibraryBookmark::query()
+                ->where('user_id', $userId)
+                ->where('library_item_id', $item->id)
+                ->where('page_number', $page)
+                ->value('note'),
         ];
     }
 }

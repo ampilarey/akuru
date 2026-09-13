@@ -190,4 +190,6 @@ return [
     'next in' => 'next in',
     'Free preview of :count pages' => 'ހިލޭ ބަލާލެވޭ :count ޞަފްޙާ.',
     'Get the full item' => 'ފުރިހަމަ ފޮތް ހޯދާ',
+    'Your private note on this page' => 'މި ޞަފްޙާގެ ޒާތީ ނޯޓު',
+    'Save note' => 'ނޯޓު ރައްކާކުރޭ',
 ];
