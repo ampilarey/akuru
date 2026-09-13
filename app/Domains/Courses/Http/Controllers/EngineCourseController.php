@@ -4,8 +4,10 @@ namespace App\Domains\Courses\Http\Controllers;
 
 use App\Domains\Courses\Actions\ListCourseSubjectsAction;
 use App\Domains\Courses\Actions\ListEngineCoursesAction;
+use App\Domains\Courses\Actions\RecordCourseReviewDecisionAction;
 use App\Domains\Courses\Actions\SaveEngineCourseAction;
 use App\Domains\Courses\Actions\TransitionCourseWorkflowAction;
+use App\Domains\Courses\Enums\CourseReviewDecision;
 use App\Domains\Courses\Enums\CourseWorkflowStatus;
 use App\Domains\Courses\Enums\UnlockMode;
 use App\Domains\Courses\Models\Course;
@@ -23,8 +25,27 @@ class EngineCourseController extends Controller
     {
         abort_unless($request->user()?->can('courses.manage'), 403);
 
+        $rows = app(ListEngineCoursesAction::class)->execute()->values();
+
+        // SPEC §34 "View supervisor comments" and §35 "View courses submitted
+        // for review". Both belong on the screen the creator and the supervisor
+        // already work from — the transition buttons are here — rather than
+        // behind another nav link.
+        $decisions = app(RecordCourseReviewDecisionAction::class)
+            ->forCourses($rows->pluck('id')->map(fn ($id): int => (int) $id)->all());
+
         return Inertia::render('Courses/Catalog/Index', [
-            'rows' => app(ListEngineCoursesAction::class)->execute()->values(),
+            'rows' => $rows->map(fn (array $row): array => $row + [
+                'review_decisions' => $decisions[$row['id']] ?? [],
+            ])->values(),
+            'decisions' => array_map(
+                fn (CourseReviewDecision $decision): array => [
+                    'value' => $decision->value,
+                    'label' => $decision->label(),
+                    'requires_comment' => $decision->requiresComment(),
+                ],
+                CourseReviewDecision::cases(),
+            ),
             'subjects' => app(ListCourseSubjectsAction::class)->execute()->values(),
             'statuses' => array_map(fn (CourseWorkflowStatus $status) => $status->value, CourseWorkflowStatus::cases()),
             'canPublish' => (bool) $request->user()?->can('courses.publish'),
@@ -54,6 +75,35 @@ class EngineCourseController extends Controller
         );
 
         return redirect()->route('catalog.courses.index')->with('success', 'Course updated.');
+    }
+
+    /**
+     * SPEC §35 "Approve courses · Reject courses · Request changes", and the
+     * other half of §34's "View supervisor comments".
+     *
+     * The workflow already moved a course; what it never did was record **why**.
+     * "Return draft" bounced a course back with no comment, no reviewer and no
+     * date, so a creator was told nothing and the supervisor's actual review
+     * was discarded the moment the button was pressed.
+     */
+    public function decide(Request $request, int $course): RedirectResponse
+    {
+        abort_unless($request->user()?->can('courses.manage'), 403);
+        $data = $request->validate([
+            'decision' => ['required', Rule::enum(CourseReviewDecision::class)],
+            'comment' => ['nullable', 'string', 'max:5000'],
+            'academic_year_id' => ['nullable', 'integer'],
+        ]);
+
+        app(RecordCourseReviewDecisionAction::class)->execute(
+            Course::query()->findOrFail($course),
+            CourseReviewDecision::from($data['decision']),
+            $data,
+            (int) $request->user()->id,
+            (bool) $request->user()?->can('courses.publish'),
+        );
+
+        return redirect()->route('catalog.courses.index')->with('success', 'Review recorded.');
     }
 
     public function transition(Request $request, int $course): RedirectResponse

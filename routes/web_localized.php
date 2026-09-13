@@ -1013,6 +1013,10 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::post('courses', [EngineCourseController::class, 'store'])->name('catalog.courses.store');
         Route::put('courses/{course}', [EngineCourseController::class, 'update'])->name('catalog.courses.update')->whereNumber('course');
         Route::post('courses/{course}/transition', [EngineCourseController::class, 'transition'])->name('catalog.courses.transition')->whereNumber('course');
+        // SPEC §35 "Approve courses · Reject courses · Request changes" and
+        // §34 "View supervisor comments". `transition` moves a course and
+        // records no reason; this records the reason and moves it.
+        Route::post('courses/{course}/review-decision', [EngineCourseController::class, 'decide'])->name('catalog.courses.review-decision')->whereNumber('course');
         Route::get('courses/{course}/assessments/export', [CatalogAssessmentController::class, 'export'])->name('catalog.courses.assessments.export')->whereNumber('course');
         Route::get('courses/{course}/assessments', [CatalogAssessmentController::class, 'index'])->name('catalog.courses.assessments.index')->whereNumber('course');
         Route::post('courses/{course}/assessments', [CatalogAssessmentController::class, 'store'])->name('catalog.courses.assessments.store')->whereNumber('course');

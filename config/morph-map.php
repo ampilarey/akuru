@@ -79,6 +79,10 @@ return [
     'offering_repin_event' => \App\Domains\Offerings\Models\OfferingRepinEvent::class,
     'course_subject' => \App\Domains\Courses\Models\CourseSubject::class,
     'course_enrollment' => \App\Domains\Courses\Models\CourseEnrollment::class,
+    // SPEC §35's review decisions. Registered in the same slice as the model
+    // (ADR-005): nothing is polymorphic here yet, and the alias exists so that
+    // the day something does point at one, the FQCN never reaches the database.
+    'course_review_decision' => \App\Domains\Courses\Models\CourseReviewDecision::class,
     'course_plan' => \App\Domains\Academics\Models\CoursePlan::class,
     'dashboard_analytics' => \App\Domains\Settings\Models\DashboardAnalytics::class,
     'daily_content' => \App\Domains\Website\Models\DailyContent::class,

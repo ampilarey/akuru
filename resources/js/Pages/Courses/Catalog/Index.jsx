@@ -1,7 +1,59 @@
 import { router, useForm } from '@inertiajs/react';
+import { Fragment, useState } from 'react';
 import AppShell from '../../../Layouts/AppShell';
 
-export default function Index({ rows, subjects, canPublish, unlockModes = [] }) {
+/**
+ * SPEC §35 "Dean / Supervisor Dashboard" names three outcomes — approve,
+ * reject, request changes — and §34 "Course Creator Dashboard" names the other
+ * half of the same thing: "View supervisor comments".
+ *
+ * The buttons here used to be "Publish" and "Return draft". **Return draft
+ * carried no reason at all**: no comment, no reviewer, no date, and no
+ * distinction between a rejection and a request for changes. A creator whose
+ * course was bounced back was told nothing, and the supervisor's actual review
+ * — the only part of the exchange with any content in it — was discarded the
+ * instant the button was pressed.
+ */
+function ReviewDecision({ row, decisions, canPublish }) {
+    const [decision, setDecision] = useState('changes_requested');
+    const [comment, setComment] = useState('');
+    const chosen = decisions.find((option) => option.value === decision);
+
+    // Approving is the one decision that says nothing is wrong, so it is the
+    // one that may be silent.
+    const blocked = (chosen?.requires_comment ?? true) && comment.trim() === '';
+
+    return (
+        <div className="space-y-2">
+            <select className="form-input" value={decision} onChange={(e) => setDecision(e.target.value)} aria-label="Review decision">
+                {decisions
+                    .filter((option) => option.value !== 'approved' || canPublish)
+                    .map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+            </select>
+            <input
+                className="form-input"
+                placeholder={chosen?.requires_comment ? 'Why? (required)' : 'Comment (optional)'}
+                value={comment}
+                onChange={(e) => setComment(e.target.value)}
+                aria-label="Review comment"
+            />
+            <button
+                type="button"
+                className="btn-primary"
+                disabled={blocked}
+                onClick={() => router.post(
+                    `/catalog/courses/${row.id}/review-decision`,
+                    { decision, comment },
+                    { preserveScroll: true },
+                )}
+            >
+                Record review
+            </button>
+        </div>
+    );
+}
+
+export default function Index({ rows, subjects, canPublish, unlockModes = [], decisions = [] }) {
     const form = useForm({
         title: '',
         title_dv: '',
@@ -61,7 +113,8 @@ export default function Index({ rows, subjects, canPublish, unlockModes = [] }) 
                             <tr><td className="px-3 py-4 text-gray-500" colSpan={5}>No engine courses yet.</td></tr>
                         )}
                         {rows.map((row) => (
-                            <tr key={row.id} className="border-t">
+                            <Fragment key={row.id}>
+                            <tr className="border-t">
                                 <td className="px-3 py-2">
                                     <a className="text-[#7C2D37] hover:underline" href={`/catalog/courses/${row.id}/outline`}>{row.title}</a>
                                     <a className="ms-3 text-xs text-[#7C2D37] hover:underline" href={`/catalog/courses/${row.id}/activities`}>Activities</a>
@@ -97,17 +150,33 @@ export default function Index({ rows, subjects, canPublish, unlockModes = [] }) 
                                     {row.workflow_status === 'draft' && (
                                         <button type="button" className="btn-secondary" onClick={() => router.post(`/catalog/courses/${row.id}/transition`, { workflow_status: 'in_review' })}>Submit review</button>
                                     )}
-                                    {row.workflow_status === 'in_review' && canPublish && (
-                                        <button type="button" className="btn-secondary" onClick={() => router.post(`/catalog/courses/${row.id}/transition`, { workflow_status: 'published' })}>Publish</button>
-                                    )}
                                     {row.workflow_status === 'in_review' && (
-                                        <button type="button" className="btn-secondary" onClick={() => router.post(`/catalog/courses/${row.id}/transition`, { workflow_status: 'draft' })}>Return draft</button>
+                                        <ReviewDecision row={row} decisions={decisions} canPublish={canPublish} />
                                     )}
                                     {row.workflow_status === 'published' && (
                                         <button type="button" className="btn-secondary" onClick={() => router.post(`/catalog/courses/${row.id}/transition`, { workflow_status: 'archived' })}>Archive</button>
                                     )}
                                 </td>
                             </tr>
+                            {(row.review_decisions || []).length > 0 && (
+                                /* §34 "View supervisor comments". Every round, newest
+                                   first — a creator who has been through two of them
+                                   needs both, not only the latest verdict. */
+                                <tr className="bg-[#F9F4EE]">
+                                    <td className="px-3 pb-3 text-sm" colSpan={5}>
+                                        <ul className="space-y-1">
+                                            {row.review_decisions.map((decision) => (
+                                                <li key={decision.id}>
+                                                    <span className="font-medium">{decision.decision_label}</span>
+                                                    {decision.created_at ? ` · ${decision.created_at.slice(0, 10)}` : ''}
+                                                    {decision.comment ? ` — ${decision.comment}` : ''}
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </td>
+                                </tr>
+                            )}
+                            </Fragment>
                         ))}
                     </tbody>
                 </table>
