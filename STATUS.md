@@ -7677,6 +7677,84 @@ one produced an audit. §33's five other headings — User Management, Course
 Management, Offering Management, Course Builder, Academic / Training Management
 — are inventories of CRUD that mostly exists and still need their own pass.
 
+### ROADMAP §3.4: the backfill that was never written, and is named mandatory
+
+The one piece of genuinely missing code on the go-live list. ROADMAP §3.4 says
+every existing course becomes a course **plus one auto-created offering**, with
+`course_enrollments` repointed. The 1B audit recorded on 2026-08-27 that the
+backfill was **not written** — justified then by ADR-021 (no real data) — and
+that it *"becomes mandatory before first real use"*, the same trigger that
+reactivates rule 9 in full. §3.4 calls it the third instance of the
+skipped-migration-half pattern.
+
+Three consequences were left behind, and this closes all three:
+
+1. Offerings were created **lazily** on the next enrolment, so a course nobody
+   had enrolled in since the split had none at all.
+2. `course_enrollments.course_offering_id` stayed **null** on legacy rows.
+3. The lazy creator **copied none of the legacy columns**, which is *why* the
+   public site still reads `courses.seats` and `enrollment_deadline`, and why
+   §3.5's column drop is blocked.
+
+**This is the backfill step of rule 9's three deploys and only that.** It writes
+the offering side and leaves every read exactly where it is. No test here
+asserts a changed screen — asserting one would mean the slice had done
+something it must not.
+
+Two decisions worth reading:
+
+- **Self-learning, not face-to-face.** §3.4's parenthetical says "face-to-face
+  or as appropriate"; the appropriate mode is the one the live read path looks
+  for. `DefaultSelfLearningOfferingAction` — which checkout uses to find an
+  offering and its price override — filters on `self_learning`. A face-to-face
+  backfill would satisfy the sentence and leave checkout still finding nothing.
+- **Never overwrites.** Column copying only fills values that are still null, so
+  a re-run cannot revert a seat limit an admin has since corrected on the
+  offering. That failure would be silent and would oversell a class.
+
+Offerings are created through the existing `EnsureSelfLearningOfferingAction`
+rather than a second creator (rule 11).
+
+#### Verification — captured gate output
+
+`offerings:verify-backfill` follows `students:verify-unification` deliberately,
+down to refusing `--backfill` on production: same class of risk, same
+vocabulary. Run against this environment's database:
+
+```
+$ php artisan offerings:verify-backfill
+Courses with no offering: 13
+Enrollments with no course_offering_id: 3
+offerings:verify-backfill FAILED — ROADMAP §3.4 is not complete.
+
+$ php artisan offerings:verify-backfill --backfill
+Backfill: 13 offering(s) created, 10 filled from course columns, 3 enrollment(s) repointed.
+Courses with no offering: 0
+Enrollments with no course_offering_id: 0
+offerings:verify-backfill OK — every course has an offering and every enrollment points at one.
+
+$ php artisan offerings:verify-backfill --backfill      # second run
+Backfill: 0 offering(s) created, 0 filled from course columns, 0 enrollment(s) repointed.
+offerings:verify-backfill OK
+```
+
+The second run's three zeros are the idempotency evidence — that is what makes
+it safe to rehearse on a restored dump, which is how rule 9 says to do it.
+
+**Walked in Chrome after the backfill**, to prove reads are unchanged rather
+than assert it: `/en/courses` (the page that still reads the legacy columns),
+`/learn`, `/catalog/courses`, `/admin/enrollments` all 200 with **no console
+errors**, and `/catalog/offerings` lists the backfilled rows.
+
+**Revert-check:** removing the null-guard on column copying fails both the
+idempotency test and the do-not-overwrite test.
+
+**1,822 tests green** (8 new), arch green, Pint clean.
+
+**What this does not do.** Reads still branch on a nullable column; the read
+switch is the next deploy and §3.5's column drop the one after. This removes
+one of the four blockers on the go-live list — the only one that was code.
+
 ### ROADMAP §5: the Blade rule that has held on its own, and the count nobody kept
 
 `docs/ROADMAP.md` had never been swept in this pass, and CLAUDE.md lists it
