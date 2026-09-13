@@ -1,6 +1,7 @@
 import { router, usePage } from '@inertiajs/react';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import AppShell from '../../Layouts/AppShell';
+import { createRecorder, describeRecordingFailure, recordingSupport } from '../../Platform';
 
 export default function Practice({ letters, harakas, attempts, ai_enabled: aiEnabled }) {
     const { flash = {}, i18n } = usePage().props;
@@ -10,7 +11,7 @@ export default function Practice({ letters, harakas, attempts, ai_enabled: aiEna
     const [recording, setRecording] = useState(false);
     const [blob, setBlob] = useState(null);
     const recorderRef = useRef(null);
-    const chunksRef = useRef([]);
+    const [recorderError, setRecorderError] = useState(null);
 
     // §52.9 step 4: the student replays before submitting. The object URL is
     // created from the blob and revoked whenever the blob is replaced or
@@ -31,27 +32,36 @@ export default function Practice({ letters, harakas, attempts, ai_enabled: aiEna
         return () => URL.revokeObjectURL(url);
     }, [blob]);
 
+    // SPEC §6.3/§6.4: recording goes through the platform layer, so a Capacitor
+    // native plugin can replace it behind the same interface and no browser API
+    // is called from a page component.
+    const support = useMemo(() => recordingSupport(), []);
+
     const startRecording = async () => {
+        setRecorderError(null);
+        const recorder = createRecorder();
         try {
-            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            const recorder = new MediaRecorder(stream);
-            chunksRef.current = [];
-            recorder.ondataavailable = (e) => chunksRef.current.push(e.data);
-            recorder.onstop = () => {
-                setBlob(new Blob(chunksRef.current, { type: recorder.mimeType || 'audio/webm' }));
-                stream.getTracks().forEach((track) => track.stop());
-            };
-            recorder.start();
+            await recorder.start();
             recorderRef.current = recorder;
             setRecording(true);
-        } catch {
+        } catch (error) {
+            // The old code was `} catch { setRecording(false); }` — a denied
+            // microphone, an insecure (non-https) context or a browser without
+            // MediaRecorder all made Record do nothing at all, with nothing
+            // said. §6.3: "Avoid browser-only APIs without fallbacks."
+            setRecorderError(describeRecordingFailure(error?.reason, t));
             setRecording(false);
         }
     };
 
-    const stopRecording = () => {
-        recorderRef.current?.stop();
+    const stopRecording = async () => {
         setRecording(false);
+        try {
+            setBlob(await recorderRef.current?.stop());
+        } catch (error) {
+            setRecorderError(describeRecordingFailure(error?.reason, t));
+        }
+        recorderRef.current = null;
     };
 
     const submit = () => {
@@ -80,8 +90,24 @@ export default function Practice({ letters, harakas, attempts, ai_enabled: aiEna
                     </select>
                 </div>
                 <p className="mb-4 text-6xl" dir="rtl">{letter?.char}{haraka?.symbol}</p>
+                {/* §6.3 "Avoid browser-only APIs without fallbacks." Said before
+                    the button is pressed when the environment cannot record at
+                    all, and after it when the attempt itself failed. Either way
+                    the student is told something they can act on. */}
+                {!support.supported && (
+                    <p className="mb-4 rounded border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900">
+                        {describeRecordingFailure(support.reason, t)}
+                    </p>
+                )}
+                {recorderError && (
+                    <p className="mb-4 rounded border border-red-300 bg-red-50 p-3 text-sm text-red-800">{recorderError}</p>
+                )}
                 <div className="flex justify-center gap-3">
-                    {!recording && !blob && <button type="button" className="btn-primary" onClick={startRecording}>{t.pronounce_record || 'Record'}</button>}
+                    {!recording && !blob && (
+                        <button type="button" className="btn-primary" disabled={!support.supported} onClick={startRecording}>
+                            {t.pronounce_record || 'Record'}
+                        </button>
+                    )}
                     {recording && <button type="button" className="bg-red-600 text-white rounded px-4 py-2" onClick={stopRecording}>{t.pronounce_stop || 'Stop'}</button>}
                     {blob && !recording && <button type="button" className="btn-primary" onClick={startRecording}>{t.pronounce_rerecord || 'Record again'}</button>}
                     {blob && !recording && <button type="button" className="btn-secondary" onClick={submit}>{t.pronounce_submit || 'Submit recording'}</button>}

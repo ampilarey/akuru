@@ -7677,6 +7677,85 @@ one produced an audit. §33's five other headings — User Management, Course
 Management, Offering Management, Course Builder, Academic / Training Management
 — are inventories of CRUD that mostly exists and still need their own pass.
 
+### SPEC §6.3 / §6.4: the platform abstraction layer that did not exist
+
+Most of §6 holds up, and it is worth saying so. All eleven components §6.1
+names as "must be React" are React — lesson player, student dashboard, course
+builder, content block builder, drag-and-drop reordering, audio recorder,
+activity player, assessment player, offering builder, session schedule manager,
+teacher review. §6.2's PWA is real: `manifest.webmanifest` and `sw.js` exist
+**and are wired in**, via `partials/pwa.blade.php`, included by all three
+layouts — the Inertia root among them. Neither is a file sitting unreferenced.
+
+§6.3 and §6.4 did not hold.
+
+> Keep web/native differences behind a single platform abstraction layer.
+> **Do not scatter browser/native detection logic across components.**
+> Audio recording must use a **replaceable recorder interface**... A Capacitor
+> native audio plugin can replace it later behind the same interface.
+>
+> §6.4: Create a small frontend platform abstraction layer... **Do not spread
+> platform-specific logic through React components.**
+
+**The layer did not exist.** `resources/js/` held `Components/CustomFields.jsx`
+and nothing else, and `navigator.mediaDevices.getUserMedia()` plus
+`new MediaRecorder(stream)` were called from inside
+`Pages/Pronunciation/Practice.jsx`. There was no interface for a native plugin
+to replace: the seam §6.3 describes had nowhere to be.
+
+**The silent failure was worse than the misplacement.** The page read:
+
+```js
+} catch {
+    setRecording(false);
+}
+```
+
+So a denied microphone, an insecure (non-https) context, or a browser without
+`MediaRecorder` all produced a Record button that did **nothing at all** —
+nothing shown, nothing to act on, indistinguishable from a broken page. §6.3's
+"avoid browser-only APIs **without fallbacks**" is exactly this case, and it is
+the same taxonomy as §36's invisible upload refusal: a guard that is right and
+silent.
+
+An insecure context is not exotic here. It is how the app is reached over a LAN
+or plain http, which is how it is being run today.
+
+**What shipped.** `resources/js/Platform/` with `createRecorder()` as the seam
+a Capacitor plugin swaps at (`start` / `stop` / `cancel`), `recordingSupport()`
+for capability detection **before** the button is offered, and
+`classifyRecorderError()` / `describeRecordingFailure()` turning each failure
+into a sentence naming what to do — blocked microphone, no device, needs https,
+unsupported browser. The stream is released on both `stop` and `cancel`,
+because a microphone left live after a recording is both a privacy problem and
+a recording light that never goes out.
+
+**Only one file had strayed**, which is precisely when this rule is worth
+writing down: the cost of keeping it is currently zero, and §36's audio upload
+— shipped earlier the same day, by me — is the sort of second entry point that
+starts the scatter §6.3 warns about.
+`PlatformApisStayInLayerTest` is a **placement** rule, not a ban: these APIs
+belong in `Platform/`, and anywhere else under `resources/js/` they fail.
+
+It strips comments before scanning, and that is not a nicety. The
+`FOREIGN_KEY_CHECKS` guard in this same suite once failed on the two files that
+**quoted the old code in order to explain it** — and this guard did the same
+thing on its first run, catching the comment that explains the fix. A guard
+that cannot tell documentation from instruction punishes writing the
+explanation down.
+
+Walked in Chrome at `127.0.0.1:8901` (2026-09-13), both paths:
+
+| Case | Record button | Message |
+|---|---|---|
+| Microphone available | enabled | none |
+| No microphone | enabled, press fails | **"No microphone was found. Connect one and try again."** |
+
+Before the fix the second row showed nothing whatsoever. The case actually
+exercised was `NotFoundError` — headless Chromium has no audio input device —
+rather than a user-denied `NotAllowedError`; both run the same classify-and-
+describe path, and only the first was reachable in this environment.
+
 ### SPEC §7: a course language nothing read, so every block spoke the UI's
 
 §7's two sentences are the whole finding:
