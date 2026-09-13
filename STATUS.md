@@ -7677,6 +7677,75 @@ one produced an audit. §33's five other headings — User Management, Course
 Management, Offering Management, Course Builder, Academic / Training Management
 — are inventories of CRUD that mostly exists and still need their own pass.
 
+### S3_SPEC §S3.3: 90 out of 100 was a fail
+
+The S3 sweep found the specs' usual shape — every table, action and screen S3
+names exists, and S3.4's rank ties, historical rosters and idempotent recompute
+are all really there. Then one line of arithmetic turned out to be wrong in a way
+that reached a report card.
+
+S3_SPEC §S3.3: *"exempt excluded from averages, absent counts as 0 unless
+setting says exclude."* Excluding something from an average means taking it out
+of the **divisor** as well. `ComputeTermGradesAction::student()` accumulated
+`$usedShare` and then used it only for a `<= 0` guard — a renormalisation
+written halfway. An excluded exam's weight was scored as nothing, which is the
+same arithmetic as scoring zero.
+
+Three consequences, in increasing order of how often they happen:
+
+1. **`is_exempt` did nothing.** A pupil exempted from an 80%-weight final who
+   scored full marks on the 20% quiz was given **20%** for the term.
+2. **The `exams_exclude_absent` setting did nothing.** On or off, an absent
+   pupil got the same number. A per-school setting, recorded in an ADR, inert.
+3. **The ordinary case — and this is the one.** The default scheme spreads
+   weight across six exam types: Final 40, Midterm 30, quiz 10, assignment 10,
+   practical 5, oral 5. Publish the Final and nothing else, which is what the
+   middle of a term looks like, and every pupil in the class is multiplied by
+   0.4. **90/100 became 36% and grade E.**
+
+#### The tests said it was right
+
+This is the part worth recording. All three behaviours were pinned by existing
+tests, with the grade letter written next to them:
+
+- `TermGradesTest` asserted `20.0` for **both** the absent pupil and the exempt
+  one — which is to say it recorded that `is_exempt` does nothing — and then
+  asserted `20.0` again after switching the exclude-absent setting on.
+- `WeightSchemePersistTest` asserted `36.0`, `'E'`, and a rendered report card
+  **containing `>E<`**, for a child who scored 90 on the only exam of the term.
+
+A green suite is not evidence that the arithmetic is right; it is evidence that
+the arithmetic has not changed. These tests were doing their job — they were
+just told the wrong answer.
+
+#### The fix
+
+`student()` renormalises to the share that actually counted. When nothing is
+excluded `$usedShare` is 100 and the factor is 1, which is why no ordinary
+fully-examined term moves — the existing 82.0 three-exam case is untouched.
+
+Components now carry `effective_share` beside the scheme's `share`, and a new
+test pins that the counted components' `weighted` values still sum to the term
+percent and their effective shares to 100. S3.4 calls that json "per-exam
+breakdown for transparency"; parts that do not add up to the whole explain a
+number the pupil did not get.
+
+#### Walked in Chromium (2026-09-13)
+
+`/en/exams/gradebook` for Grade 5 / Quran Memorization / Term 1, one published
+Final against the six-type default scheme:
+
+| Pupil | Mark | Term % | Grade | Rank |
+|---|---|---|---|---|
+| Fatima Yoosuf | 90.00 | **90.00** | **A** | 1 |
+| Hussain Shareef | 55.00 | 55.00 | C | 2 |
+| Aisha Mohamed | 30.00 | 30.00 | E | 3 |
+
+Before the fix those read 36.00, 22.00 and 12.00 — all grade **E**, a class in
+which nobody passes.
+
+1,828 tests green, architecture suite green, Pint clean.
+
 ### The thin-controllers gate charged for comments, and this repo has learned that three times
 
 Follow-up to #341, and the fastest a gate here has ever been caught being wrong:
