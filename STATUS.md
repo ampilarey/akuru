@@ -7422,6 +7422,87 @@ source of truth that does not exist yet: a teacher's approval, a payment, a
 date, an attendance record. Module- and offering-level storage are also still
 unbuilt.
 
+### SPEC §33 Reports: six computed, scattered across three screens; three unread
+
+§33's "Admin Dashboard → Reports" names ten:
+
+> Total students · Active enrollments · Course completion · Offering
+> completion · Lesson completion · Attendance reports · Assessment scores ·
+> Pending reviews · Certificates issued · Payment reports later
+
+**Six were already computed, and computed correctly** — and lived in three
+unrelated places with no way to see them together:
+
+| §33 report | Where it lived |
+|---|---|
+| Course completion | `/catalog/reports/completions` |
+| Offering completion | same screen, second summary |
+| Lesson completion | same screen, per-student columns |
+| Attendance | same screen, `attendance_percent` |
+| Pending reviews | `/catalog/reviews` |
+| Certificates issued | `/catalog/certificates` |
+
+**Three had no reader at all** — total students, active enrollments, assessment
+scores — though every one was a count or an existing Action away.
+`CountStudentsAction` existed and was used by the academics side;
+`ListScoredAttemptsAction` had been feeding the teacher review report all along;
+active enrollments is a `where` clause.
+
+So the defect was not a missing calculation. It was a missing **place**: §33
+asks a single question and the answer was spread across three screens and three
+absences. This slice composes and computes nothing new.
+
+**Three judgements written into the figures.**
+
+- **"Total students" is deliberately unfiltered.** It is the roll of the
+  institute; filtering it by course would make it a different number wearing the
+  same label.
+- **A suspended enrolment is not active.** §23's new vocabulary, read here —
+  which is the whole reason suspension releases a seat. A test pins it.
+- **Attendance is `—`, not `0%`, where no offering schedules sessions.** §24's
+  "where applicable" carried into §33's figure: zero would read as "nobody
+  turned up", which is a different and much worse claim.
+
+§33's tenth report is its own deferral ("Payment reports later"), and the page
+says so rather than leaving an administrator to wonder whether it is missing or
+broken.
+
+**Verification.** Revert-check: counting `suspended` as active, and returning 0
+instead of null for attendance, each turn a test red.
+
+**Walked in a browser** as an admin:
+
+| Tile | Value |
+|---|---|
+| Total students | **15** |
+| Active enrolments | **1** |
+| Assessment scores | **80%** from 1 marked attempt |
+| Average attendance | **—** (no sessions scheduled) |
+| Pending reviews / Certificates | 0 / 0, with "Nothing waiting" and "None revoked" |
+| Course completion table | `Nahw Foundations · 1 enrolled · 0 completed · 0%` |
+
+CSV export returns **200 `text/csv`**, the nav link resolves, and the deferral
+note renders.
+
+**1,687 tests green** (7 new), architecture suite green, `npm run build` clean.
+
+#### A guard fired on this work, correctly
+
+`AppShellNavIaProposalTest` pins the exact number of `<Link href=` in
+`AppShell.jsx`, because the nav IA is an open owner decision and the shell must
+not be redesigned underneath it. Adding the Reports link took it 105 → 106. The
+test's own comments show the convention — bump the count and record why — and
+this is the "otherwise unreachable screen" case the allowance exists for. Worth
+saying plainly though: **it also makes the nav one link worse**, which is
+KNOWN_ISSUES P3 #11 and still the owner's call.
+
+**Still unswept in this section (rule 1).** §33's other five headings — User
+Management, Course Management, Offering Management, Course Builder, Academic /
+Training Management — are inventories of CRUD that mostly exists, and each
+needs its own audit against the screens. §34 (Course Creator), §35 (Dean /
+Supervisor), §36 (Teacher / Reviewer) and §37 (Parent, which §33 itself defers)
+are untouched.
+
 ### SPEC §23: a seat rule written about a status the database could not hold
 
 §23's `course_enrollments` table carries most of what the section names, the

@@ -51,6 +51,7 @@ use App\Domains\Courses\Http\Controllers\CatalogQuestionController;
 use App\Domains\Courses\Http\Controllers\CatalogQuranOversightController;
 use App\Domains\Courses\Http\Controllers\CatalogReviewController;
 use App\Domains\Courses\Http\Controllers\CourseCertificateController;
+use App\Domains\Courses\Http\Controllers\CatalogReportsController;
 use App\Domains\Courses\Http\Controllers\CourseCompletionReportController;
 use App\Domains\Courses\Http\Controllers\CourseLevelController;
 use App\Domains\Courses\Http\Controllers\CourseOutlineController;
@@ -950,6 +951,11 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::put('certificates/{template}', [CourseCertificateController::class, 'update'])->name('catalog.certificates.update')->whereNumber('template');
         Route::get('certificates/{certificate}/download', [CourseCertificateController::class, 'download'])->name('catalog.certificates.download')->whereNumber('certificate');
         Route::post('certificates/{certificate}/revoke', [CourseCertificateController::class, 'revoke'])->name('catalog.certificates.revoke')->whereNumber('certificate');
+        // SPEC §33 "Admin Dashboard → Reports": the ten reports the section
+        // names, in one place. Six were computed and scattered across three
+        // screens; three had no reader at all.
+        Route::get('reports/export', [CatalogReportsController::class, 'export'])->name('catalog.reports.export');
+        Route::get('reports', [CatalogReportsController::class, 'index'])->name('catalog.reports.index');
         Route::get('reports/completions/export', [CourseCompletionReportController::class, 'export'])->name('catalog.reports.completions.export');
         Route::get('reports/completions', [CourseCompletionReportController::class, 'index'])->name('catalog.reports.completions');
         Route::get('subjects/export', [CourseSubjectController::class, 'export'])->name('catalog.subjects.export');

@@ -34,8 +34,13 @@ it('does not change AppShell.jsx as part of the IA proposal', function () {
     // that would otherwise be unreachable is the bump it is meant to allow.
     // 87 → 88: +My day (E1b), the teacher's home.
     // 88 → 89: +Absences (E10b), the office's morning list.
+    // 105 → 106: +Reports (§33), the admin reports hub. Six of §33's ten
+    //   reports were computed and scattered across three screens and three had
+    //   no reader at all, so the page is exactly the "otherwise unreachable"
+    //   case this allowance exists for. It also makes the nav one link worse,
+    //   which is KNOWN_ISSUES P3 #11 and still the owner's call.
     $linkCount = substr_count($shell, '<Link href=');
-    expect($linkCount)->toBe(105);
+    expect($linkCount)->toBe(106);
 });
 
 it('does not register a product route for the proposal document', function () {
