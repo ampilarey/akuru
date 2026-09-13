@@ -12,6 +12,55 @@ function exportHref(filters) {
     return qs ? `/catalog/reviews/export?${qs}` : '/catalog/reviews/export';
 }
 
+/**
+ * SPEC §36 asks the teacher to "open student submissions", "play audio/voice
+ * submissions" and "view uploaded files". All three were answered with
+ * `JSON.stringify(row.answers)` inside a collapsed `<details>` — which is not
+ * opening a submission, and plays nothing.
+ *
+ * The raw JSON stays, below, because activities score in shapes this cannot
+ * render and a teacher looking at a disputed mark should still be able to see
+ * exactly what was recorded.
+ */
+function Submission({ answers }) {
+    const attachments = Array.isArray(answers?.attachments) ? answers.attachments : [];
+    const text = typeof answers?.text === 'string' ? answers.text.trim() : '';
+
+    return (
+        <div className="mb-3">
+            {text !== '' && (
+                <blockquote className="mb-3 whitespace-pre-wrap rounded border-s-4 border-[#7C2D37] bg-[#F9F4EE] p-3 text-sm">
+                    {text}
+                </blockquote>
+            )}
+            {attachments.length > 0 && (
+                <ul className="mb-3 space-y-2">
+                    {attachments.map((file) => (
+                        <li key={file.id} className="rounded border bg-white p-2 text-sm">
+                            <a className="text-[#7C2D37] hover:underline" href={`/catalog/media/${file.id}`}>
+                                {file.original_name || `File ${file.id}`}
+                            </a>
+                            {(file.mime || '').startsWith('audio/') && (
+                                <audio className="mt-2 w-full" controls preload="none" src={`/catalog/media/${file.id}`} />
+                            )}
+                            {(file.mime || '').startsWith('image/') && (
+                                <img className="mt-2 max-h-64 rounded" src={`/catalog/media/${file.id}`} alt={file.original_name || 'Upload'} />
+                            )}
+                        </li>
+                    ))}
+                </ul>
+            )}
+            {text === '' && attachments.length === 0 && (
+                <p className="mb-3 text-sm text-gray-500">Nothing written and nothing uploaded.</p>
+            )}
+            <details>
+                <summary className="cursor-pointer text-xs text-gray-500">Raw submission</summary>
+                <pre className="mt-2 overflow-x-auto rounded bg-[#F9F4EE] p-3 text-xs">{JSON.stringify(answers, null, 2)}</pre>
+            </details>
+        </div>
+    );
+}
+
 function ReviewRow({ row }) {
     const form = useForm({
         kind: row.kind,
@@ -29,10 +78,7 @@ function ReviewRow({ row }) {
             <h2 className="mb-1 font-medium">{row.title} <span className="text-xs uppercase text-gray-500">{row.kind}</span></h2>
             <p className="mb-1 text-sm text-gray-700">{row.student_name || 'Student'} · {row.course_title || 'Course'}{waiting ? ` · waiting ${waiting}` : ''}</p>
             <p className="mb-3 text-sm text-gray-600">{row.prompt || 'Teacher-marked submission'}</p>
-            <details className="mb-3">
-                <summary className="cursor-pointer text-sm text-[#7C2D37]">Submission</summary>
-                <pre className="mt-2 overflow-x-auto rounded bg-[#F9F4EE] p-3 text-xs">{JSON.stringify(row.answers, null, 2)}</pre>
-            </details>
+            <Submission answers={row.answers} />
             <form
                 onSubmit={(e) => {
                     e.preventDefault();

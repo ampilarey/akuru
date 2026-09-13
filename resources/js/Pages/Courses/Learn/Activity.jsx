@@ -33,6 +33,79 @@ function isMapping(activity) {
     return Array.isArray(activity.data?.targets) && activity.data.targets.length > 0;
 }
 
+/**
+ * SPEC §36 asks the teacher to "play audio/voice submissions" and "view
+ * uploaded files". Neither was possible, because a teacher-marked activity had
+ * no way to take a file at all: `submission_kind` was stored and never read,
+ * and this page rendered a `<textarea>` whichever kind the author chose.
+ *
+ * The upload posts straight to the server rather than riding along in
+ * `answers`, so the media id is minted where the file is stored and the client
+ * never gets to name one of its own.
+ */
+function Attachments({ activity, attachments, submitted }) {
+    // A refusal the student cannot see is worse than one they can act on: the
+    // browser walk for this slice uploaded a file the MIME allowlist rejected,
+    // and the page answered "Nothing uploaded yet" with no reason given. The
+    // guard was right and silent, which is indistinguishable from broken.
+    const error = usePage().props.errors?.file;
+
+    const upload = (file) => {
+        if (!file) {
+            return;
+        }
+        const body = new FormData();
+        body.append('file', file);
+        router.post(`/learn/activities/${activity.id}/upload`, body, { preserveScroll: true, forceFormData: true });
+    };
+
+    return (
+        <section className="mb-4 rounded-lg border bg-white p-4">
+            <p className="mb-2 text-sm font-medium">{activity.submission?.label || 'Upload'}</p>
+            {!submitted && (
+                <input
+                    type="file"
+                    className="form-input mb-3"
+                    accept={activity.submission?.accept || undefined}
+                    aria-label={activity.submission?.label || 'Upload a file'}
+                    onChange={(e) => upload(e.target.files?.[0])}
+                />
+            )}
+            {error && <p className="mb-3 rounded border border-red-300 bg-red-50 p-2 text-sm text-red-800">{error}</p>}
+            {attachments.length === 0 && <p className="text-sm text-gray-500">Nothing uploaded yet.</p>}
+            <ul className="space-y-2">
+                {attachments.map((file) => (
+                    <li key={file.id} className="rounded border p-2 text-sm">
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                            <a className="text-[#7C2D37] hover:underline" href={`/learn/media/${file.id}`}>
+                                {file.original_name || `File ${file.id}`}
+                            </a>
+                            {!submitted && (
+                                <button
+                                    type="button"
+                                    className="btn-secondary"
+                                    onClick={() => router.delete(
+                                        `/learn/activities/${activity.id}/attachments/${file.id}`,
+                                        { preserveScroll: true },
+                                    )}
+                                >
+                                    Remove
+                                </button>
+                            )}
+                        </div>
+                        {(file.mime || '').startsWith('audio/') && (
+                            <audio className="mt-2 w-full" controls preload="none" src={`/learn/media/${file.id}`} />
+                        )}
+                        {(file.mime || '').startsWith('image/') && (
+                            <img className="mt-2 max-h-64 rounded" src={`/learn/media/${file.id}`} alt={file.original_name || 'Upload'} />
+                        )}
+                    </li>
+                ))}
+            </ul>
+        </section>
+    );
+}
+
 export default function Activity({ activity, enrollment, attempt }) {
     const t = usePage().props.i18n?.learn || {};
     const [answers, setAnswers] = useState(() => initialAnswers(activity, attempt));
@@ -151,12 +224,31 @@ export default function Activity({ activity, enrollment, attempt }) {
                 </ul>
             )}
             {activity.pattern === 'teacher_marked' && (
-                <textarea
-                    className="form-input mb-4 min-h-32"
-                    value={answers.text || ''}
-                    onChange={(e) => setAnswers({ ...answers, text: e.target.value })}
-                    disabled={submitted}
-                />
+                <>
+                    {(activity.submission?.accepts_text ?? true) && (
+                        <textarea
+                            className="form-input mb-4 min-h-32"
+                            value={answers.text || ''}
+                            onChange={(e) => setAnswers({ ...answers, text: e.target.value })}
+                            disabled={submitted}
+                        />
+                    )}
+                    {activity.submission?.accepts_uploads && (
+                        /* Read from the attempt, never from local `answers` state.
+                           The browser walk for this slice uploaded a file, the server
+                           stored it, and the list still read "Nothing uploaded yet":
+                           `useState` seeds once on mount, and Inertia's redirect back
+                           re-renders the same component instance rather than remounting
+                           it. Attachments are server-owned anyway — `reconcile()` lets a
+                           client drop one and never add one — so a local copy of them
+                           was only ever a way to be wrong. */
+                        <Attachments
+                            activity={activity}
+                            attachments={attempt?.answers?.attachments || []}
+                            submitted={submitted}
+                        />
+                    )}
+                </>
             )}
             {activity.data.correct_ids && (
                 <p className="mb-3 text-sm text-green-700">Correct: {(activity.data.correct_ids || []).join(', ')}</p>

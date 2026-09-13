@@ -95,6 +95,17 @@ export default function Activities({ course, activities, patterns, skills = [], 
                 <input className="form-input" type="number" min="1" placeholder="Ayah end" value={form.data.ayah_end} onChange={(e) => form.setData('ayah_end', e.target.value)} />
                 <input className="form-input" type="number" min="1" placeholder="Max score" value={form.data.max_score} onChange={(e) => form.setData('max_score', e.target.value)} />
                 <textarea className="form-input md:col-span-2 min-h-32 font-mono text-xs" value={form.data.data} onChange={(e) => form.setData('data', e.target.value)} />
+                {form.data.pattern === 'teacher_marked' && (
+                    /* §36 "Play audio/voice submissions · View uploaded files". The kind
+                       was already storable; until this slice nothing read it, so saying
+                       what the choices are was pointless. Now it decides what the
+                       student is shown and what the reviewer can play. */
+                    <p className="md:col-span-2 text-xs text-gray-600">
+                        <code>submission_kind</code>: <code>written</code> (text box),
+                        {' '}<code>file</code> (image, PDF, document or audio upload),
+                        {' '}<code>audio</code> (recording only — the reviewer plays it).
+                    </p>
+                )}
                 <textarea className="form-input md:col-span-2 min-h-24 font-mono text-xs" value={form.data.settings} onChange={(e) => form.setData('settings', e.target.value)} />
                 <label className="flex items-center gap-2 text-sm">
                     <input type="checkbox" checked={form.data.is_required} onChange={(e) => form.setData('is_required', e.target.checked)} />

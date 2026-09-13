@@ -7422,6 +7422,159 @@ source of truth that does not exist yet: a teacher's approval, a payment, a
 date, an attendance record. Module- and offering-level storage are also still
 unbuilt.
 
+### SPEC §33 Reports: six computed, scattered across three screens; three unread
+
+§33's "Admin Dashboard → Reports" names ten:
+
+> Total students · Active enrollments · Course completion · Offering
+> completion · Lesson completion · Attendance reports · Assessment scores ·
+> Pending reviews · Certificates issued · Payment reports later
+
+**Six were already computed, and computed correctly** — and lived in three
+unrelated places with no way to see them together:
+
+| §33 report | Where it lived |
+|---|---|
+| Course completion | `/catalog/reports/completions` |
+| Offering completion | same screen, second summary |
+| Lesson completion | same screen, per-student columns |
+| Attendance | same screen, `attendance_percent` |
+| Pending reviews | `/catalog/reviews` |
+| Certificates issued | `/catalog/certificates` |
+
+**Three had no reader at all** — total students, active enrollments, assessment
+scores — though every one was a count or an existing Action away.
+`CountStudentsAction` existed and was used by the academics side;
+`ListScoredAttemptsAction` had been feeding the teacher review report all along;
+active enrollments is a `where` clause.
+
+So the defect was not a missing calculation. It was a missing **place**: §33
+asks a single question and the answer was spread across three screens and three
+absences. This slice composes and computes nothing new.
+
+**Three judgements written into the figures.**
+
+- **"Total students" is deliberately unfiltered.** It is the roll of the
+  institute; filtering it by course would make it a different number wearing the
+  same label.
+- **A suspended enrolment is not active.** §23's new vocabulary, read here —
+  which is the whole reason suspension releases a seat. A test pins it.
+- **Attendance is `—`, not `0%`, where no offering schedules sessions.** §24's
+  "where applicable" carried into §33's figure: zero would read as "nobody
+  turned up", which is a different and much worse claim.
+
+§33's tenth report is its own deferral ("Payment reports later"), and the page
+says so rather than leaving an administrator to wonder whether it is missing or
+broken.
+
+**Verification.** Revert-check: counting `suspended` as active, and returning 0
+instead of null for attendance, each turn a test red.
+
+**Walked in a browser** as an admin:
+
+| Tile | Value |
+|---|---|
+| Total students | **15** |
+| Active enrolments | **1** |
+| Assessment scores | **80%** from 1 marked attempt |
+| Average attendance | **—** (no sessions scheduled) |
+| Pending reviews / Certificates | 0 / 0, with "Nothing waiting" and "None revoked" |
+| Course completion table | `Nahw Foundations · 1 enrolled · 0 completed · 0%` |
+
+CSV export returns **200 `text/csv`**, the nav link resolves, and the deferral
+note renders.
+
+**1,687 tests green** (7 new), architecture suite green, `npm run build` clean.
+
+#### A guard fired on this work, correctly
+
+`AppShellNavIaProposalTest` pins the exact number of `<Link href=` in
+`AppShell.jsx`, because the nav IA is an open owner decision and the shell must
+not be redesigned underneath it. Adding the Reports link took it 105 → 106. The
+test's own comments show the convention — bump the count and record why — and
+this is the "otherwise unreachable screen" case the allowance exists for. Worth
+saying plainly though: **it also makes the nav one link worse**, which is
+KNOWN_ISSUES P3 #11 and still the owner's call.
+
+**Still unswept in this section (rule 1).** §33's other five headings — User
+Management, Course Management, Offering Management, Course Builder, Academic /
+Training Management — are inventories of CRUD that mostly exists, and each
+needs its own audit against the screens. §34 (Course Creator), §35 (Dean /
+Supervisor), §36 (Teacher / Reviewer) and §37 (Parent, which §33 itself defers)
+are untouched.
+
+### SPEC §36: three abilities resting on a submission kind nothing read
+
+§36 lists thirteen things a teacher/instructor/reviewer must be able to do.
+Nine hold up: assigned offerings, session schedules (`/teach/schedule`),
+enrolled students, attendance, pending submissions (`/catalog/reviews`), score,
+written feedback. Three did not, and they fail together:
+
+> Open student submissions · Play audio/voice submissions · View uploaded files
+
+All three rested on something the student side could not produce.
+`SaveActivityAction` **validated and stored** `submission_kind` for a
+teacher-marked activity, accepting `written` or `file` — and **nothing read
+it**. The player rendered a `<textarea>` whichever kind the author chose, no
+route accepted a file against an attempt, and the reviewer's answer to all
+three §36 lines was a collapsed `<details>` containing
+`JSON.stringify(row.answers)`.
+
+So an author could set `file`, the value round-tripped through the database
+intact, and the student was still shown a text box. The same three-link chain
+as §20 and §22 — upload, render, serve — where fixing any one link alone leaves
+the column as dead as it was. The old allowlist also had no `audio`, though §36
+names it explicitly.
+
+A second, smaller bug sat on the same line. `in_array($data['submission_kind']
+?? 'written', …) ? $data['submission_kind'] : 'written'` guards the `in_array`
+and then reads the key back **unguarded**, so saving a teacher-marked activity
+without a `submission_kind` — which every caller in the codebase does — raised
+"Undefined array key".
+
+**What shipped.** `ActivitySubmissionKind` (`written` / `file` / `audio`) as
+the read side, borrowing `ContentBlockType`'s MIME allowlists and §30 size caps
+rather than keeping a second copy (rule 11). `ListCourseActivitiesAction` sends
+the resolved flags to the player, so the browser holds no second opinion about
+what is allowed. `POST /learn/activities/{activity}/upload` and
+`DELETE …/attachments/{media}` store and remove a file against the attempt,
+inside the existing `answers` JSON — no new column, because `answers` is
+already the record of what was handed in. `Reviews.jsx` plays audio, shows
+images, links files, and keeps the raw JSON beneath as the fallback for shapes
+it cannot draw.
+
+**Attachments are server-owned.** The browser posts the whole `answers` object
+back on every autosave and submit, so `AttachAttemptMediaAction::reconcile()`
+is the invariant: a client may drop an attachment and may never add one. A
+client naming an id it did not upload gets it silently dropped, which is
+covered by a test rather than left to good manners.
+
+**The browser walk earned its place twice.** First it uploaded a file the MIME
+allowlist correctly refused, and the page answered "Nothing uploaded yet" with
+**no reason given** — a guard that is right and silent is indistinguishable
+from a broken feature, so the refusal is now rendered. Then, with a real
+`audio/mpeg` file that the server genuinely stored, the list *still* read
+"Nothing uploaded yet": `useState` seeds once on mount and Inertia's redirect
+back re-renders the same component instance rather than remounting it. The
+attachment list now reads from the `attempt` prop. **Neither defect was
+reachable from the test suite** — nine Pest tests passed against the version
+with both bugs in it.
+
+Walked in Chrome at `127.0.0.1:8901` (2026-09-13): student sees a file input
+and no text box on an `audio` activity → upload lands with a playable
+`<audio>` and the filename → submit carries it → teacher at `/catalog/reviews`
+sees the recording, plays it, and `GET /catalog/media/1` returns `200
+audio/mpeg`. Earlier attempts from the failed-upload walks correctly read
+"Nothing written and nothing uploaded" beside it.
+
+**Still open in §36 (rule 1, recorded not built).** Three abilities have no
+storage at all: **upload correction audio**, **mark passed/failed** and
+**request resubmission**. `activity_attempts` and `assessment_attempts` carry
+`score`, `feedback`, `reviewed_by`, `reviewed_at` and nothing else, and both
+status enums are `in_progress` / `submitted` / `scored` — there is no returned
+or resubmit state, and no pass/fail column. That is a migration plus a widened
+`ReviewAttemptAction`, and it is its own slice.
+
 ### SPEC §23: a seat rule written about a status the database could not hold
 
 §23's `course_enrollments` table carries most of what the section names, the
