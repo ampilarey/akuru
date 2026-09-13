@@ -2,6 +2,7 @@
 
 namespace App\Domains\Offerings\Providers;
 
+use App\Domains\Offerings\Console\VerifyOfferingBackfillCommand;
 use App\Domains\Offerings\Contracts\VideoConferencingInterface;
 use App\Domains\Offerings\Services\BigBlueButtonVideoConferencing;
 use App\Domains\Offerings\Services\NullVideoConferencing;
@@ -34,6 +35,12 @@ class OfferingsServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
-        //
+        if ($this->app->runningInConsole()) {
+            // ROADMAP §3.4's gate, registered the same way People registers
+            // the unification one — same class of risk, same vocabulary.
+            $this->commands([
+                VerifyOfferingBackfillCommand::class,
+            ]);
+        }
     }
 }
