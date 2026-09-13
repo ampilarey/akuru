@@ -42,6 +42,8 @@ const ARABIC_FLAGS = ['strip_tashkeel', 'normalize_alef', 'normalize_hamza', 'ta
 export default function Questions({
     rows,
     subjects,
+    courses = [],
+    filters = {},
     standards,
     types,
     textInputTypes = [],
@@ -54,6 +56,11 @@ export default function Questions({
         secondary_text: '',
         question_type: 'mcq_single',
         subject_id: '',
+        // §20 lists "Course ID nullable". A bank is reusable across courses,
+        // which is precisely why a question needs to be able to say where it
+        // came from.
+        course_id: '',
+        explanation: '',
         difficulty: 'medium',
         skill_tag: '',
         options: SAMPLE_OPTIONS.mcq_single,
@@ -86,6 +93,8 @@ export default function Questions({
             secondary_text: row.secondary_text || '',
             question_type: row.question_type,
             subject_id: row.subject_id || '',
+            course_id: row.course_id || '',
+            explanation: row.explanation || '',
             difficulty: row.difficulty || 'medium',
             skill_tag: row.skill_tag || '',
             options: JSON.stringify(row.options || [], null, 2),
@@ -143,9 +152,37 @@ export default function Questions({
 
     return (
         <AppShell title="Question bank">
-            <div className="mb-4 flex justify-end">
+            {/* `index` has accepted subject/course/type filters since the bank
+                was built, and no control on the page could set one — the
+                mirror image of a column nothing writes. A bank you cannot
+                narrow stops being usable at a few hundred questions. */}
+            <form method="get" className="mb-4 flex flex-wrap items-end gap-3">
+                <label className="text-sm">
+                    <span className="block text-xs text-gray-600">Subject</span>
+                    <select className="form-input" name="subject_id" defaultValue={filters.subject_id || ''}>
+                        <option value="">Any subject</option>
+                        {subjects.map((subject) => <option key={subject.id} value={subject.id}>{subject.name_en}</option>)}
+                    </select>
+                </label>
+                <label className="text-sm">
+                    <span className="block text-xs text-gray-600">Course</span>
+                    <select className="form-input" name="course_id" defaultValue={filters.course_id || ''}>
+                        <option value="">Any course</option>
+                        {courses.map((course) => <option key={course.id} value={course.id}>{course.title}</option>)}
+                    </select>
+                </label>
+                <label className="text-sm">
+                    <span className="block text-xs text-gray-600">Type</span>
+                    <select className="form-input" name="question_type" defaultValue={filters.question_type || ''}>
+                        <option value="">Any type</option>
+                        {types.map((type) => <option key={type} value={type}>{type}</option>)}
+                    </select>
+                </label>
+                <button type="submit" className="btn-secondary">Filter</button>
+                <a className="btn-secondary" href="/catalog/questions">Clear</a>
+                <span className="ms-auto" />
                 <a className="btn-secondary" href="/catalog/questions/export">Export CSV</a>
-            </div>
+            </form>
             <form
                 onSubmit={(e) => {
                     e.preventDefault();
@@ -184,6 +221,13 @@ export default function Questions({
                 <select className="form-input" value={form.data.subject_id} onChange={(e) => form.setData('subject_id', e.target.value)}>
                     <option value="">Any subject</option>
                     {subjects.map((subject) => <option key={subject.id} value={subject.id}>{subject.name_en}</option>)}
+                </select>
+                {/* §20: "Course ID nullable". A question may belong to a course
+                    or to none — a bank is reusable, so "none" is the norm and
+                    not an omission. */}
+                <select className="form-input" value={form.data.course_id} onChange={(e) => form.setData('course_id', e.target.value)}>
+                    <option value="">No course (reusable)</option>
+                    {courses.map((course) => <option key={course.id} value={course.id}>{course.title}</option>)}
                 </select>
                 <select className="form-input" value={form.data.difficulty} onChange={(e) => form.setData('difficulty', e.target.value)}>
                     <option value="easy">easy</option>
@@ -253,6 +297,16 @@ export default function Questions({
                         )}
                     </fieldset>
                 )}
+                {/* §20 lists "Explanation nullable", §21 requires the snapshot
+                    to carry it, and the assessment page now draws it once marks
+                    and answers are shown. There was no control to write one, so
+                    every question in the bank explained nothing. */}
+                <textarea
+                    className="form-input md:col-span-2 min-h-16"
+                    placeholder="Explanation — shown after marking, when the assessment reveals correct answers (optional)"
+                    value={form.data.explanation}
+                    onChange={(e) => form.setData('explanation', e.target.value)}
+                />
                 <input className="form-input" placeholder="Skill tag" value={form.data.skill_tag} onChange={(e) => form.setData('skill_tag', e.target.value)} />
                 {/* §20 "Question Attachments": audio, image, PDF, video
                     reference. The upload existed; what was attached was never

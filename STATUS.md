@@ -7422,6 +7422,70 @@ source of truth that does not exist yet: a teacher's approval, a payment, a
 date, an attendance record. Module- and offering-level storage are also still
 unbuilt.
 
+### SPEC §20 part two: the bank's form, and the reason behind the right answer
+
+The attachment slice fixed what a question can *carry*. This closes the three
+§20 fields that slice recorded and deliberately left, plus the rule-5 gap.
+
+**Rule 5.** `CatalogQuestionController::payload()` built its array entirely out
+of `$request->input()` with **no `validate()` call anywhere on the save path** —
+the same defect §19's assessment form had, in the same shape.
+`SaveQuestionAction` refuses an unknown type and an empty text; everything else
+was trusted:
+
+- `difficulty` was **cast**, not checked: `in_array($d, ['easy','medium','hard']) ? $d : 'medium'`,
+  so any typo was silently stored as `medium` and the author was told the
+  question saved.
+- `subject_id` was cast to int and stored whether or not the subject existed —
+  there is **no foreign key on that column** — so a question filed under a
+  deleted subject got a confirmation and a row pointing nowhere. `course_id`
+  does have a key, so a bad one surfaced as a 500 instead.
+
+Casting is not validating, and an input silently turned into something valid is
+the failure that leaves an author certain they set a thing they did not.
+
+**`explanation` was unreachable at both ends, which is why it went unnoticed.**
+§20 lists it. §21 requires the snapshot to carry it. And the server already puts
+it back into the student's payload at exactly the right moment —
+`StartAssessmentAttemptAction::serialize()` strips it only when `includeKeys` is
+false, and `LearnAssessmentController` re-fetches with keys when the attempt is
+`scored` and §19's "Show/hide correct answers" is on. So the plumbing for
+"reveal the reasoning after marking" was complete and had **no control to write
+one and no branch to draw one**. A student was shown the right answer and
+withheld the reason, which is the half that teaches.
+
+**`course_id` and the filters were one gap from two sides.** §20 lists "Course
+ID nullable"; `index` has accepted `subject_id`, `course_id` and
+`question_type` filters since the bank was built; and no control could set any
+of them, nor was a course list ever sent. A field with no control and a filter
+with no control — the mirror image of a column nothing writes. A bank you
+cannot narrow stops being usable at a few hundred questions.
+
+**`category_id` left alone, deliberately.** §20 names it and **nothing in the
+system defines what a question category is**: no table, no foreign key, and the
+identical unanchored column on `glossary_items`. Giving it a control means
+choosing a meaning for it, which is a decision rather than a cleanup — the same
+reasoning that left §26's eight unbuilt rules alone.
+
+**Verification.** Revert-check: undoing the validation, the `filters` payload
+and the player's explanation branch turns **4 of the 7** new tests red.
+
+**Walked in a browser**, two accounts:
+
+| Step | Result |
+|---|---|
+| Bank loads | three filter controls present |
+| Filter to `true_false` | *"No questions yet."* |
+| Filter to `mcq_single` | the question, and the control still reads `mcq_single` |
+| Edit a question | explanation loads, course picker reads `11` |
+| Create a question with a course and an explanation | saved; reopening shows both |
+| Student opens a scored assessment with answers revealed | **"Correct: b"** *and* "The subject of a verbal sentence follows the verb and is marked with damma." |
+
+**1,646 tests green** (7 new), architecture suite green, `npm run build` clean.
+
+**§20 is now complete** against the section as written, with `category_id` the
+single recorded exception and its reason stated.
+
 ### SPEC §25: the progress row said a lesson was done, and nothing else
 
 **Most of §25 is cleared, not faulted, and that is worth saying first.** The
