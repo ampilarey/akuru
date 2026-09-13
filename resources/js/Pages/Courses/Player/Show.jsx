@@ -295,6 +295,50 @@ function BlockView({ block, mediaShowUrl, glossary = [], onSelectTerm = () => {}
     );
 }
 
+/**
+ * SPEC §22 "Glossary Media": audio, image, example audio, diagram — all through
+ * the centralized media system.
+ *
+ * The four columns exist, are fillable, are validated against `media_files`,
+ * and `GlossaryItem::toPayload()` sends every one of them to this page. Nothing
+ * drew them, so a term's **pronunciation recording** — the thing an Arabic
+ * vocabulary entry most needs, and the first item §22 lists — was invisible.
+ * (Nothing uploaded one either; both ends were shut.)
+ */
+function TermMedia({ item, mediaShowUrl }) {
+    const audio = item.audio_media_id;
+    const exampleAudio = item.example_audio_media_id;
+    const image = item.image_media_id;
+    const diagram = item.diagram_media_id;
+
+    if (!audio && !exampleAudio && !image && !diagram) {
+        return null;
+    }
+
+    return (
+        <div className="mt-2 space-y-2">
+            {audio && (
+                <label className="block text-xs text-gray-600">
+                    Pronunciation
+                    <audio className="w-full" controls preload="none" src={mediaSrc(mediaShowUrl, audio)} />
+                </label>
+            )}
+            {exampleAudio && (
+                <label className="block text-xs text-gray-600">
+                    Example
+                    <audio className="w-full" controls preload="none" src={mediaSrc(mediaShowUrl, exampleAudio)} />
+                </label>
+            )}
+            {image && (
+                <img className="max-h-56 w-full object-contain" src={mediaSrc(mediaShowUrl, image)} alt={item.term || ''} />
+            )}
+            {diagram && (
+                <img className="max-h-56 w-full object-contain" src={mediaSrc(mediaShowUrl, diagram)} alt={`${item.term || ''} diagram`} />
+            )}
+        </div>
+    );
+}
+
 function FlashcardView({ cards, title, direction }) {
     const [index, setIndex] = useState(0);
     const [showBack, setShowBack] = useState(false);
@@ -356,6 +400,7 @@ export default function Show({ snapshot, mediaShowUrl = '/catalog/media', canCom
                             {selected.example_translation && locale === 'en' ? ` — ${selected.example_translation}` : ''}
                         </p>
                     )}
+                    <TermMedia item={selected} mediaShowUrl={mediaShowUrl} />
                     <button type="button" className="mt-2 text-xs text-[#7C2D37] hover:underline" onClick={() => setSelected(null)}>Close</button>
                 </aside>
             )}
@@ -382,7 +427,10 @@ export default function Show({ snapshot, mediaShowUrl = '/catalog/media', canCom
                                     {item.term_ar && <span className="ms-2 text-sm font-normal" dir="rtl">{item.term_ar}</span>}
                                     {item.is_required && <span className="ms-2 text-xs uppercase text-amber-800">required</span>}
                                 </dt>
-                                <dd className="text-sm text-gray-700" dir="auto">{meaningFor(item, locale) || descriptionFor(item, locale) || '—'}</dd>
+                                <dd className="text-sm text-gray-700" dir="auto">
+                                    {meaningFor(item, locale) || descriptionFor(item, locale) || '—'}
+                                    <TermMedia item={item} mediaShowUrl={mediaShowUrl} />
+                                </dd>
                             </div>
                         ))}
                     </dl>

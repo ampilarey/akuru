@@ -31,11 +31,27 @@ class SaveGlossaryItemAction
             'example_text_ar' => $this->nullableString($data['example_text_ar'] ?? null),
             'tags' => $this->tags($data['tags'] ?? null),
             'level_id' => $this->nullableInt($data['level_id'] ?? null),
-            'audio_media_id' => $this->nullableInt($data['audio_media_id'] ?? null),
-            'image_media_id' => $this->nullableInt($data['image_media_id'] ?? null),
-            'example_audio_media_id' => $this->nullableInt($data['example_audio_media_id'] ?? null),
-            'diagram_media_id' => $this->nullableInt($data['diagram_media_id'] ?? null),
         ];
+
+        // SPEC §22 "Glossary Media". The four columns were fillable, validated
+        // and sent to the player, and **nothing ever uploaded one** — the admin
+        // form had no file input, so there was no way to obtain a media id to
+        // put in them. The validation guarded a door nobody could reach.
+        //
+        // A slot the caller does not mention keeps whatever it had: an edit
+        // that says nothing about the audio must not delete the audio. Clearing
+        // is a separate signal, not an empty upload.
+        $media = app(StoreGlossaryMediaAction::class);
+        foreach (StoreGlossaryMediaAction::SLOTS as $slot => $kind) {
+            if (array_key_exists($slot, $data)) {
+                $payload[$slot] = $this->nullableInt($data[$slot]);
+            }
+        }
+        $payload = array_merge(
+            $payload,
+            $media->cleared($data),
+            $media->execute($data, $this->nullableInt($data['created_by'] ?? null) ?? $item?->created_by),
+        );
 
         if ($item === null) {
             $payload['created_by'] = $this->nullableInt($data['created_by'] ?? null);
