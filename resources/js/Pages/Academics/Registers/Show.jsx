@@ -25,7 +25,9 @@ export default function Show({
     notes,
     canSubmit,
     attendanceMode = 'per_lesson',
-    attendanceStatuses = ['present', 'absent', 'late', 'excused', 'left_early'],
+    // No 'excused': that comes from approving a guardian's note, and the
+    // writer rejects one that does not (KNOWN_ISSUES #15).
+    attendanceStatuses = ['present', 'absent', 'late', 'left_early'],
     roster = [],
     marks = [],
 }) {

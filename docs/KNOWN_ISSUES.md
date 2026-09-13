@@ -267,7 +267,42 @@ about which year it hits. See **Fixed on main**.
 
 ### 15. Teacher grid offers `excused` / `left_early`
 
-**Severity:** confusion. Excuse is supposed to come from an approved note (Round 1 step 2).
+**`excused` fixed (2026-09-13). `left_early` is not a defect** — see below.
+
+Filed as confusion; it was quiet. S2_SPEC §S2.4 says an excusal comes from
+approving a guardian's note, which flips the matching absent rows and **links
+`absence_note_id`**. The grid offered `excused` as a fourth button and the write
+path took it, note or no note. Three things then followed from one mis-click:
+
+- `RecordClassAttendanceAction::maybeNotify()` notifies on absent (and on late,
+  by setting) and stays **quiet on excused** — so the family is never told the
+  child is missing;
+- since #17's fix the portal reads the same rule and shows such a row as **"Not
+  applicable"** — the product telling the parent no message was due;
+- `ListClassAttendanceAction::unexcused()` excludes excused rows, so the child
+  also drops out of the chronic-absence list.
+
+A missing child, invisible from three directions.
+
+The rule now lives in the **writer**: `RecordClassAttendanceAction` rejects
+`Excused` without an `absenceNoteId`. Every route into `class_attendance` goes
+through `AttendanceWriterInterface` — `AttendanceWriterTest` pins that — so the
+register grid, the daily grid, a CSV import and a future device are all covered
+by one check. `AttendanceStatus::teacherSettable()` is what the two grids
+render; taking the button away is the cosmetic half, and this repo has already
+learned once (SPEC §44/§45) that a route relying on a hidden button is not
+guarded.
+
+Walked in Chromium (2026-09-13), logged in as `teacher@akuru.edu.mv`:
+
+- register `/en/academics/registers/1` status options are now
+  `present, absent, late, left_early`;
+- `PUT` of `status: excused` straight at the route returns **422**: *"An absence
+  is excused by approving the guardian's note, not by marking it excused here."*
+
+**`left_early` stays.** It is a status S2_SPEC §S2.4 lists, no rule says it must
+come from elsewhere, and a child who left early is a fact only the teacher in
+the room knows. Removing it would be a product decision, not a defect fix.
 
 ### 16. Taught summary vs plan topic
 

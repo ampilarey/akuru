@@ -125,7 +125,7 @@ class TeacherRegisterController extends Controller
             'notes' => $lessonLog->notes,
             'canSubmit' => $this->canSubmit($request, $lessonLog),
             'attendanceMode' => $settings['mode']->value,
-            'attendanceStatuses' => array_map(fn (AttendanceStatus $status) => $status->value, AttendanceStatus::cases()),
+            'attendanceStatuses' => array_map(fn (AttendanceStatus $status) => $status->value, AttendanceStatus::teacherSettable()),
             'roster' => $perLesson ? app(ListClassRosterAction::class)->execute((int) $lessonLog->classroom_id) : collect(),
             'marks' => $perLesson
                 ? app(ListClassAttendanceAction::class)->execute([
