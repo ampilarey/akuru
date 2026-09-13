@@ -2,7 +2,9 @@
 
 namespace App\Domains\People\Actions;
 
+use App\Domains\People\Enums\GuardianConsentStatus;
 use App\Domains\People\Enums\GuardianRelationship;
+use App\Domains\People\Enums\GuardianVerificationStatus;
 use App\Domains\People\Enums\StudentStatus;
 use App\Domains\People\Models\ParentGuardian;
 use Illuminate\Support\Facades\DB;
@@ -39,6 +41,16 @@ class ListStudentFormOptionsAction
                 ->values(),
             'statuses' => array_map(fn (StudentStatus $status) => $status->value, StudentStatus::cases()),
             'relationships' => array_map(fn (GuardianRelationship $rel) => $rel->value, GuardianRelationship::cases()),
+            // SPEC §9's consent and verification statuses. Sent as value/label
+            // pairs so the screen never spells "Not asked" for itself.
+            'consentStatuses' => array_map(
+                fn (GuardianConsentStatus $status) => ['value' => $status->value, 'label' => $status->label()],
+                GuardianConsentStatus::cases(),
+            ),
+            'verificationStatuses' => array_map(
+                fn (GuardianVerificationStatus $status) => ['value' => $status->value, 'label' => $status->label()],
+                GuardianVerificationStatus::cases(),
+            ),
         ];
     }
 }

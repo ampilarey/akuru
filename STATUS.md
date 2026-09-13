@@ -7677,6 +7677,128 @@ one produced an audit. §33's five other headings — User Management, Course
 Management, Offering Management, Course Builder, Academic / Training Management
 — are inventories of CRUD that mostly exists and still need their own pass.
 
+### SPEC §7: a course language nothing read, so every block spoke the UI's
+
+§7's two sentences are the whole finding:
+
+> Each course may have its own course language.
+>
+> **The platform UI language and course content language are separate
+> concepts.**
+
+with §7's own worked example: *"A user may use the UI in Dhivehi. The course
+may be Arabic."*
+
+Most of §7 holds up. EN/DV/AR exist from day one, the shell is RTL-safe,
+`TranslationParityTest` already guards against new untranslated strings, and
+§15.3's per-block `direction` / `language` / `align` / `font` settings are
+implemented properly and read by the player.
+
+**The default was the defect.** §15.3's `language` setting defaults to `auto`,
+and the player resolved `auto` to nothing:
+
+```js
+const language = s.language && s.language !== 'auto' ? s.language : undefined;
+```
+
+No `lang` attribute means the block inherits the page's — and the page's is the
+**UI** language. So §7's example produced Arabic text marked up as Dhivehi, on
+every block an author had not tagged by hand, which is the default state of
+every block. The two concepts §7 says are separate were one.
+
+`courses.language` has been storable and settable since the course table
+shipped — the catalog screen offers EN/DV/AR/Mixed — and **nothing read it**
+except a query scope with no callers. The same taxonomy as §36's
+`submission_kind`: a column the schema offers, the UI writes, and no reader
+consults.
+
+**What shipped.** `ResolveCourseContentLanguageAction`, and `auto` now falls
+back to the course's own language. Three judgement calls:
+
+- **`mixed` resolves to null.** A course that is deliberately more than one
+  language has no single honest answer, and guessing one is worse than leaving
+  the browser its per-block heuristic.
+- **`courses.language` is a plain string column with no enum**, so only a value
+  a browser understands is ever sent as a `lang`.
+- **Direction is untouched.** §15.3 blesses `auto` for direction explicitly and
+  the browser's first-strong-character heuristic is the right answer there.
+
+**Read live, not frozen into the snapshot**, and a test pins that. Course
+language is course metadata — what language a lesson is *in*, not what it
+*says* — so §28.6's concern (published content must not change under a student)
+does not reach it, and freezing it would need a backfill of every revision
+published before this slice.
+
+**Two controllers render one page**, and both had the bug:
+`LessonPlayerController` (author preview) and `LearnLessonController` (the
+student player — the one §7's example is actually about). Fixing only the
+preview would have left the real case broken while a single-controller test
+passed, so `CourseLanguageReachesPlayerTest` walks every controller that
+renders `Courses/Player/Show` and fails if one of them omits the prop. It also
+asserts the page file still exists, so a rename cannot make the guard pass
+vacuously.
+
+Walked in Chrome at `127.0.0.1:8901` (2026-09-13), running §7's example
+directly — an Arabic course opened with the UI in each locale:
+
+| UI | `<html lang>` | block `lang` |
+|---|---|---|
+| English | `en` | `ar` |
+| **Dhivehi** | `dv` | `ar` |
+
+Before the fix the block carried no `lang` at all and inherited the first
+column.
+
+### SPEC §9: nine fields the pivot must support, five of them unreachable
+
+**This section also corrects a claim I made in #317 the same day.** That PR said
+"No spec asks for verification at all." That is wrong. **§9 asks for every one
+of these fields by name** — "Consent status · Verification status ·
+`verified_at` · `created_by` · Notes" — so migration `1A.7` was implementing §9,
+not adding speculative scaffolding. I had consulted `docs/S1_SPEC.md`, a phase
+build-spec, and not the product spec it serves. KNOWN_ISSUES #23 now carries the
+correction inline rather than being quietly edited.
+
+The **observation** in #317 held: nothing wrote those columns. Reading §9
+properly turned up two things that entry did not know.
+
+**First, the columns were unreadable as well as unwritten.** `withPivot`
+declared four of the nine fields on both `Student::guardians()` and
+`ParentGuardian::children()`. A write to `consent_status` **landed in the
+database and read back as NULL** through the relation, because the relation did
+not know the column existed. My own first version of this slice looked broken
+for exactly that reason: `updateExistingPivot` returned `1`, the row in MySQL
+said `granted`, and `$guardian->pivot->consent_status` said NULL. So even a
+correct write would have looked like it had done nothing — which is probably
+why nobody noticed the fields were inert.
+
+**Second, §9 names Sponsor** among its five example relationship types, and the
+enum had Father, Mother, Guardian, Grandfather, Grandmother, Uncle, Aunt and
+Other. A sponsor pays for a child without standing in a parent's place, which
+is the distinction `financial_responsible` exists for; folding it into `other`
+loses the one fact anybody looks it up for.
+
+**What shipped.** `GuardianConsentStatus` (not asked / granted / refused /
+withdrawn — "not asked" is a different fact from "refused", and a school that
+cannot tell them apart will either spam a family or go silent on one) and
+`GuardianVerificationStatus` (not checked / verified / rejected).
+`RecordGuardianLinkPolicyAction` writes them, stamping `verified_at` when a link
+becomes verified and **clearing it** when it goes back — a timestamp left behind
+claims somebody checked a link that nobody has. `created_by` is written at
+attach time, where the answer is known, and never overwritten afterwards
+because a later editor is not the person who made the link. Both `withPivot`
+lists now carry all nine. A control on the student's Guardians tab.
+
+**Verification is a record, not a gate — deliberately, and pinned by a test.**
+`/portal/children` still filters on nothing but the signed-in guardian's own
+links. Every link created before this slice is `unverified`, so filtering the
+portal on that column would hide **every** child from **every** parent
+overnight. That remains the owner's call and still needs a backfill.
+
+Walked in Chrome at `127.0.0.1:8901` (2026-09-13): the Guardians tab offers
+Not asked / Granted / Refused / Withdrawn and Not checked / Verified / Rejected,
+Save persists all three, and "Checked 2026-09-13" appears beside the status.
+
 ### SPEC §44 + §45: the route that relied on the button being hidden
 
 §45 says "Backend must enforce permissions." §44 says "All actions must use

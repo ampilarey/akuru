@@ -52,8 +52,13 @@ class ParentGuardian extends Model
      */
     public function children(): BelongsToMany
     {
+        // SPEC §9's other five, which `withPivot` never declared on either side
+        // of this relation — see the note on `Student::guardians()`.
         return $this->belongsToMany(Student::class, 'guardian_student', 'guardian_id', 'student_id')
-            ->withPivot('relationship', 'is_primary', 'can_pickup', 'financial_responsible')
+            ->withPivot(
+                'relationship', 'is_primary', 'can_pickup', 'financial_responsible',
+                'consent_status', 'verification_status', 'verified_at', 'created_by', 'notes',
+            )
             ->withTimestamps();
     }
 
