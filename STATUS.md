@@ -31,21 +31,21 @@ Legend — **CODE:** implementation in repo (models/migrations/actions/routes/pa
 | S1.1c read switch | Yes. Dual-write still on. | `UnifiedStudentReadSwitchTest`. | UNVERIFIED in a browser. Staging enrollments with null `student()` noted in archive. | Posted enrollment id still legacy RS. |
 | S1.2 custom fields | Yes. Admin CRUD + student profile fields. Directory create/edit added. | `CustomFieldsTest`, `StudentDirectoryCrudTest`. | Walked **create** (#95): Add student → show → class picker. | Course-only nullables supported. Status only via `ChangeStudentStatusAction`. |
 | S1.3 consent | Yes. Ledger + profile tab. | `ConsentTest`. | UNVERIFIED. | |
-| S1.4 staff profiles | Yes. Inertia `people.staff.*`. | `StaffProfileTest`. | UNVERIFIED. | `teachers` row ≠ Spatie role `teacher` (mitigated for seed: `EnsureTeacherRowAction` in `UserSeeder`, #87). |
+| S1.4 staff profiles | Yes. Inertia `people.staff.*`. | `StaffProfileTest`. | Walked **locally** 2026-09-13: screen renders, but no row was planted for it — a load, not a data check (§5cm). | `teachers` row ≠ Spatie role `teacher` (mitigated for seed: `EnsureTeacherRowAction` in `UserSeeder`, #87). |
 | S1.5 years/terms/classes | Yes. Years/classes/roster/promotion. | `AcademicYearBackboneTest`, `YearClassUniquenessTest`. | Walked **partial** (R1 S1, R2 S1, R3 S1). Create unique year/class **validated** (#91); first R3 pass hid errors, follow-up paints `errors.name`. Year seeders `firstOrCreate` by name. Class teacher can be assigned on an existing class (show page). Picker identity_key **omits class** (#90) **and student number** (blank / PIL-01 vs PIL-99 still flag). | `ActivateAcademicYearAction` will not close the current year for you. |
 | S2.0 unify-verify gate | Yes. `scripts/pull-deploy-test.sh`. | `PullDeployTestScriptTest`. | Staging evidence **not pasted**. First #15 deploy used pre-pull script (archive). | Operator-only to confirm a gated deploy log. |
-| S2.1 rooms | Yes. CRUD + CSV. | `RoomCrudTest`. | UNVERIFIED. | |
+| S2.1 rooms | Yes. CRUD + CSV. | `RoomCrudTest`. | Walked **locally** 2026-09-13: screen shows a row planted for it (§5cm). | |
 | S2.2 timetable conflicts | Yes. Additive year/room/validity + checker. | `TimetableConflictSaveTest`. | UNVERIFIED as a lone task. | |
 | S2.3 timetable builder | Yes. Week grid. | `TimetableBuilderTest`. | Walked **partial** (R2 S1): seeder grid shown; extra-period drag **did not persist**. | |
-| S2.4 room bookings | Yes. | `RoomBookingTest`. | UNVERIFIED. | |
-| S2.5 calendar days | Yes. | `CalendarDayTest`. | UNVERIFIED. | |
+| S2.4 room bookings | Yes. | `RoomBookingTest`. | Walked **locally** 2026-09-13: screen shows a row planted for it (§5cm). | |
+| S2.5 calendar days | Yes. | `CalendarDayTest`. | Walked **locally** 2026-09-13: screen shows a row planted for it (§5cm). | |
 | S2 event/elective registration | Yes. Min/max seats, waitlist, parent confirm, second round. Reuses 1B.2 `EnforceSeatLimitAction` (no second limiter). | `EventRegistrationTest` (lock reject, waitlist, parent confirm, second-round promote, portal 403). | Walked **#103**: admin create 1-seat elective → parent register/confirm → second child waitlisted → second round promotes. | Portal `/portal/events`; admin `/academics/events`. Occupying statuses: pending, confirmed, pending_parent. |
 | 2 leftover — class quiz/assignment → engine | Yes. `assessments.classroom_id` XOR `course_id`; additive `legacy_*` ids; `assessments:verify-legacy-migration`. | `LegacyAssessmentMigrationTest` (XOR attach, remaining counts, roster 403, class CSV). | Walked **#104**: Grade 5 A class show lists migrated quiz + assignment; roster student opens player. | Legacy tables kept (rule 9 / ROADMAP §3.5). Engine stays subject-ignorant. |
 | S2.6 class register | Yes. Today, generate, fill, submit. | `ClassRegisterTest`. | Walked **ok** for fill+submit (R2 S2, R3 S2). Teacher login **lands on Today** (#88). Fill grid **Number + DOB** (#90). Generate flash names already-existing registers (#91). Cold `DatabaseSeeder` now includes `PilotRehearsalSeeder` (#87). | Unfilled still hides today’s remaining periods until they are late. |
 | S2.7 class attendance | Yes. Writer + daily grid. | `ClassAttendanceTest`. | Walked **partial** with S2.6 (R2 S2). School in **per-lesson** mode; daily store rejects. | `excused` still on the teacher grid. |
 | S2.8 absence notes | Yes. Portal submit + teacher approve → excused. | `AbsenceNoteTest`. | Walked **ok** (R2 S4, R3 S4). Date not defaulted. Attachment/period not in the form. | |
-| S2.9 behavior | Yes. | `BehaviorRecordTest`. | UNVERIFIED. | |
-| S2.10 requests / leave | Yes. | `SchoolRequestTest`. | UNVERIFIED. | |
+| S2.9 behavior | Yes. | `BehaviorRecordTest`. | Walked **locally** 2026-09-13: screen shows a row planted for it (§5cm). | |
+| S2.10 requests / leave | Yes. | `SchoolRequestTest`. | Walked **locally** 2026-09-13: screen shows a row planted for it (§5cm). | |
 | S3.1 grading foundations | Yes. Scales, types, weights UI. | `GradingFoundationsTest` including HTTP store. | Weights form now saves a year scheme (#96): numeric defaults summing to 100. | Previously walked **fail** (R2/R3 JSON zeros). |
 | S3.2 exams | Yes. Status machine, schedule. | `ExamSchedulingTest`. | Walked **ok** (R2 S5) schedule → published. Easy to schedule the wrong class (form defaults). | |
 | S3.3 marks | Yes. Grid + CSV. | `ExamMarksTest`. | Walked **ok** (R2 S5) 15/15. PIL numbers **on this grid**. | |
@@ -69,20 +69,20 @@ Legend — **CODE:** implementation in repo (models/migrations/actions/routes/pa
 | W2.4 subscriptions | Yes. `daily_content_subscriptions` + `daily_content_deliveries` (no `academic_year_id` — website operational log, like `leads`); SMS/email/push schema; `daily-content:deliver` every 15 min Indian/Maldives; token + STOP unsubscribe. | `DailyContentSubscriptionTest`; `PublicRouteNamesTest`. | Walked **#124**: student Ahmed Hassan opted in SMS ayah+hadith 06:00; `daily-content:deliver` logged SMS to **+9607772434** (permalink `/en/daily/ayah/2026-08-27`, STOP, no Arabic; LogSmsSender `env=local`); second run delivered 0; token unsubscribe paused immediately; admin `/admin/public-site/daily-subscriptions` SMS **0 active / 1 paused**, CSV `daily-subscriptions.csv`. | Opt-in only; push stored not sent. Empty days skip with no delivery row so a later publish can still send. Website uses Identity Actions + `SmsSenderInterface` only. No AppShell link (wrap stays 83). Seed users have no mobile — walk contact is **dev-DB only**. |
 | W2.5 research posts | Yes. Reuses `posts.type` (`article`/`news`/`research`) — no parallel `post_type`. Additive `authors` JSON, `abstract`, `citation_note`, `pdf_document_id` → `media_files`. Public `/research` + `/instructors/{slug}`; admin `/admin/public-site/research`; CSV on both listings. | `ResearchPostTest`; `PublicMediaTest`; `PublicRouteNamesTest`. | Walked **#126**: admin saved **W25 Walk: Dhivehi Tafsir Methods** (`w25-walk-dhivehi-tafsir`) with Ustadha W25 Walk + Dr External Scholar + PDF; guest `/en/research` lists 2026 authors + abstract + CSV; permalink ScholarlyArticle + Download PDF `research-pdfs/`; instructor page shows Ijazah + the paper; `/en/articles/{slug}` and `/en/news/{slug}` **404**; articles/news indexes do not leak the title; sitemap has `/en/research` + permalink. | Free front door only (no paywall). Spec said `pdf_document_id` / `post_type`; implemented as `media_files` FK and existing `type`. L1 library migration deferred. No AppShell link (wrap stays 83). Instructor + PDF are **dev-DB only**. |
 | W3 prayer times | Yes. New `PrayerTimes` domain: 366-day categories, islands, times (minutes since midnight), recipient groups, broadcasts + recipients. `PrayerTimeProviderInterface`; `prayer:import` (366-row gate); leap-year resolver; versioned cache; Haversine nearest-island. Public Blade `/prayer-times` + `GET /api/v1/prayer-times` + homepage widget. Admin Blade `/admin/prayer-times/*` (`prayer.manage`). SMS preview → confirm → queue via `SmsSenderInterface`; S1 `prayer_reminders` consent; STOP keyword. | `PrayerTimesTest`; `ConsentTest`; `PublicRouteNamesTest`; morph-map; architecture. | Walked **this PR** 2026-08-27: `/en/prayer-times` 200 Malé · 14 Rabi' al-awwal 1448 AH · Fajr **09:00** (synthetic); `/dv/prayer-times` 200; homepage widget; API JSON 200; sitemap includes `prayer-times`; admin islands (Malé + Hulhumalé + Hithadhoo) + CSV `prayer-islands.csv`; import page; SMS preview included=1 cost=0.40 MVR; confirm queued; `queue:work --once` sent=1 `LogSmsSender env=local` to **+9607772434**; STOP → next preview included=0 `no_consent`. | **CODE + TESTED + USABLE.** Spec said Inertia; public/admin UI is Blade (public site still Blade). `salat.db` is **not** in the repo — seeder is a synthetic 366-day fixture (Fajr 09:00 is not Bake&Grill Malé). Admin role still lands on `/portal/overview` (D3), so the super-admin Blade prayer box was **not walked** (no super_admin seed user). No AppShell link (wrap stays 83). Walk phone/consent are **dev-DB only**. Rule 10 exemption: no `academic_year_id`. |
-| S3.5 standards | Yes. | `StandardsTest`. | UNVERIFIED. | |
+| S3.5 standards | Yes. | `StandardsTest`. | Walked **locally** 2026-09-13: screen shows a row planted for it (§5cm). | |
 | S3.6 report cards | Yes. Templates, queued HTML via `HtmlDocumentRenderer`. | `ReportCardsTest` Content-Type HTML; ADR-012 HTML decision. | Walked **honest HTML** (R3 S5) plus ADR-012 citation (#97). Queue worker required. | HTML is the supported output (ADR-012 amended). |
-| S3.7 awards / docs | Yes. HTML certificates/ID cards. | `AwardsDocumentsTest`. | UNVERIFIED. | Also HTML, not PDF (`AwardController`). |
+| S3.7 awards / docs | Yes. HTML certificates/ID cards. | `AwardsDocumentsTest`. | Walked **locally** 2026-09-13: screen shows a row planted for it (§5cm). | Also HTML, not PDF (`AwardController`). |
 | S4.1 finance schema | Yes. Year/term on invoices, receipts. | `FinanceSchemaTest`. | UNVERIFIED as a user task. | |
 | S4.2 fee structures | Yes. | `FeeStructureTest`. | UNVERIFIED (structure was **seeded** for the walk). | Default seed now includes pilot fees via `PilotRehearsalSeeder` (#87). |
 | S4.3 invoice generation | Yes. Generate/issue/arrears. | `InvoiceGenerationTest`. | Walked **ok** on Pilot year (R3 S6): admin lists **all statuses** (`draftsOnly=false`, #91); sent rows visible. Period defaults from year’s term (`ResolveDefaultTermPeriodAction`). Issue SMS is **log** outside production (#86). | Extra year tab can still look empty if that year has no invoices. |
-| S4.4 payment plans | Yes. | `PaymentPlanTest`. | UNVERIFIED. | |
-| S4.5 adjustments | Yes. | `FeeAdjustmentTest`. | UNVERIFIED. | |
+| S4.4 payment plans | Yes. | `PaymentPlanTest`. | Walked **locally** 2026-09-13: screen renders, but no row was planted for it — a load, not a data check (§5cm). | |
+| S4.5 adjustments | Yes. | `FeeAdjustmentTest`. | Walked **locally** 2026-09-13: screen shows a row planted for it (§5cm). | |
 | S4.6 payment + portal | Yes. Webhook + parent Fees. | `PaymentPortalTest`. | Walked **partial** (R2 S6): parent saw 3 invoices + Pay now. BML **not** exercised. | |
-| S5.1 staff attendance | Yes. | `StaffAttendanceTest`. | UNVERIFIED. | |
-| S5.2 leave | Yes. | `LeaveManagementTest`. | UNVERIFIED. | |
-| S5.3 contracts | Yes. | `ContractsComplianceTest`. | UNVERIFIED. | |
-| S5.4 recruitment | Yes. Public `/careers`. | `RecruitmentTest`. | UNVERIFIED. | |
-| S5.5 performance/CPD | Yes. | `PerformanceTest`. | UNVERIFIED. | |
+| S5.1 staff attendance | Yes. | `StaffAttendanceTest`. | Walked **locally** 2026-09-13: screen shows a row planted for it (§5cm). | |
+| S5.2 leave | Yes. | `LeaveManagementTest`. | Walked **locally** 2026-09-13: screen shows a row planted for it (§5cm). | |
+| S5.3 contracts | Yes. | `ContractsComplianceTest`. | Walked **locally** 2026-09-13: screen shows a row planted for it (§5cm). | |
+| S5.4 recruitment | Yes. Public `/careers`. | `RecruitmentTest`. | Walked **locally** 2026-09-13: screen shows a row planted for it (§5cm). | |
+| S5.5 performance/CPD | Yes. | `PerformanceTest`. | Walked **locally** 2026-09-13: screen shows a row planted for it (§5cm). | |
 | S5.6 payroll | Yes. **Flagged off** (`PAYROLL_ENABLED` + `payroll.enabled`). | `PayrollTest` (turns the flag on). | UNVERIFIED; default **off** is by design. | |
 | 1A.1 auth/roles | Yes (Phase 0 + S1). | Auth tests, `RoleLandingTest`. | Walked login **ok locally** (R2/R3). Teacher `/dashboard` → Today (#88). Parent/student `/dashboard` → composed `/portal/home` (D1). Admin/headmaster `/dashboard` → `/portal/overview` (D3 #111). Staging login **fail**. | |
 | 1A.2–1A.7 course engine | Yes. Catalog, outline, text/media blocks, glossary term bank + lesson attach, `/learn`, portal learning. | Matching `tests/Feature/Courses/*` including `GlossaryTest`. | Glossary walked (#102). Rest of 1A still UNVERIFIED. | `glossary_items` / `lesson_glossary_items` (SPEC §22). |
@@ -4182,6 +4182,81 @@ my hand-rolled one was wrong twice over; and my own walk assertion expected a
 server validation message the browser's `max` attribute prevents from ever
 being requested — the property worth asserting was that a nonsense value never
 persists, whichever layer stops it.
+
+## 5cm. Twenty screens asked whether they show their own data (2026-09-13)
+
+§5cl swept all 116 staff screens for server errors and blank shells and found
+none. That answered "does the page answer". It could not answer the failure
+this project actually keeps hitting — *"CI-green slices still left empty
+grids"*: a screen that loads perfectly and shows nothing, because the read path
+and the write path disagree about a filter, a year, or a column.
+
+So this plants **one distinctive row per slice** and asks each screen whether
+that exact string came back.
+
+- `database/seeders/SmokeMarkerSeeder.php` — every marker starts `SMOKE-` and is
+  unique. Never part of `DatabaseSeeder`; run on purpose, idempotent.
+- `scripts/smoke/sweep.mjs` — signs in, visits each screen, and looks for the
+  planted string. Configurable base URL, credentials and Chromium path, so it
+  runs against staging the day staging has a login.
+
+```
+$ php artisan db:seed --class=SmokeMarkerSeeder
+$ node scripts/smoke/sweep.mjs
+
+S2.1  rooms             200   shows its row                               /en/academics/rooms
+S2.4  room bookings     200   shows its row                               /en/academics/bookings
+S2.5  calendar days     200   shows its row                               /en/academics/calendar
+S2.9  behaviour         200   shows its row                               /en/academics/behavior
+S2.10 requests          200   shows its row                               /en/academics/requests
+S3.5  standards         200   shows its row                               /en/exams/standards
+S3.7  awards            200   shows its row                               /en/exams/awards
+S4.2  fee structures    200   shows its row                               /en/finance/fee-structures
+S4.5  adjustments       200   shows its row                               /en/finance/adjustments
+S5.1  staff attendance  200   shows its row                               /en/hr/attendance
+S5.2  leave balances    200   shows its row                               /en/hr/leave-balances
+S5.3  contracts         200   shows its row                               /en/hr/contracts
+S5.5  cpd               200   shows its row                               /en/hr/cpd
+S5.5  observations      200   shows its row                               /en/hr/observations
+S5.4  careers (public)  200   shows its row                               /en/careers
+S1.3  consent           200   renders (no seeded row for this screen)     /en/people/students
+S1.4  staff profiles    200   renders (no seeded row for this screen)     /en/people/staff
+S4.4  payment plans     200   renders (no seeded row for this screen)     /en/finance/payment-plans
+S5.2  leave types       200   renders (no seeded row for this screen)     /en/hr/leave-types
+S5.5  appraisals        200   renders (no seeded row for this screen)     /en/hr/appraisals
+
+20/20 screens showed what was planted for them.
+```
+
+### Two things the first run got wrong, both mine
+
+**Three false negatives.** Rooms, bookings and behaviour came back "missing"
+until I looked at the pages: several of these screens are **inline-edit grids**
+whose cells are `<input value="...">`, and `innerText` returns nothing for
+those. The data was on the page the whole time. The sweep now reads input values
+alongside text — and that is worth more than any of the passes, because a
+smoke harness with silent false negatives is worse than none.
+
+**One 500, and it was my seed.** `/en/finance/fee-structures` threw on
+`"all_students" is not a valid backing value for FeeStructureAppliesTo` — the
+valid values are `class` and `all_classes`. My invalid row, not a defect. Said
+here rather than quietly corrected, because a verification pass that reports its
+own mistakes as findings is worth nothing.
+
+### What this does and does not establish
+
+**Does:** fifteen screens demonstrably render a row that exists in the database,
+under a real login, in Chromium. That is strictly stronger than 200, and it is
+the specific evidence §2's UNVERIFIED rows were missing.
+
+**Does not:** prove a person can *create* the record through the form. Rows were
+planted in the database, not typed into the UI. The create paths have Pest
+coverage, and several have been walked individually in earlier slices, but "the
+screen shows it" and "a user can make one" are different claims and this is only
+the first. The five rows marked "renders" got a load check, not a data check.
+
+**Staging is still unwalked.** The sweep takes `SMOKE_BASE_URL`, so the day the
+staging login works this is one command, not a new project.
 
 ## 5cl. Every staff screen walked, and a guard so it stays that way (2026-09-11)
 
