@@ -86,6 +86,17 @@ class SaveLibraryItemAction
             'reading_time' => $data['reading_time'] ?? null,
         ];
 
+        // §9.4 free preview. Written only when the caller says something about
+        // it, so an edit form that does not carry these fields cannot silently
+        // switch a preview off.
+        if (array_key_exists('preview_enabled', $data)) {
+            $payload['preview_enabled'] = (bool) $data['preview_enabled'];
+        }
+        if (array_key_exists('preview_pages', $data)) {
+            $pages = (int) $data['preview_pages'];
+            $payload['preview_pages'] = $pages > 0 ? $pages : null;
+        }
+
         // L7: research citations ride the same writer.
         if (array_key_exists('citations', $data)) {
             $payload['citations'] = $data['citations'] !== '' ? $data['citations'] : null;
