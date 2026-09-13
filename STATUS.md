@@ -7422,6 +7422,82 @@ source of truth that does not exist yet: a teacher's approval, a payment, a
 date, an attendance record. Module- and offering-level storage are also still
 unbuilt.
 
+### SPEC §22: a vocabulary bank that could not hold a pronunciation
+
+§22 gives a glossary item four media slots and one rule:
+
+> Glossary items may have: Audio · Image · Example audio · Diagram
+> All media must use the centralized media system.
+
+Everything **around** those four columns was built, and built well. They exist
+on the table. The model is fillable for them. `SaveGlossaryItemAction` writes
+them. `GlossaryController` validates all four against `media_files` — this is
+one of the better controllers in the app, with no rule-5 gap at all. And
+`GlossaryItem::toPayload()` sends every one of them to the lesson player.
+
+**Nothing ever uploaded one, and nothing ever drew one.** The admin form had no
+file input of any kind, so there was no way to obtain a `media_files` id to put
+in those columns — the `exists:media_files,id` rules guarded a door nobody could
+reach. The player's term panel drew term, transliteration, meaning, description
+and example, and no media.
+
+For a bank whose first listed use is **Arabic vocabulary**, that is the wrong
+half to be missing. The pronunciation recording is what a term most needs, and
+§22 lists it first.
+
+**A third gate was shut behind those two.** `ServeCatalogMediaAction` admitted a
+student only for media inside a *lesson content block*, and glossary media hangs
+off the **term**, reached through `lesson_glossary_items`. So even a page that
+drew the audio would have drawn a 403 — exactly as it did for §20's question
+attachments before that slice. Three links, each hiding the next; fixing any one
+alone would have left the column as dead as it was.
+
+**Each slot is typed, which makes this simpler than §20.** A question attachment
+can be any of four kinds; a glossary slot knows what it takes. §30's per-kind
+mimes and caps already live on `ContentBlockType`, so `StoreGlossaryMediaAction`
+maps slots onto those rather than starting a third table of "which mimes count
+as audio" (rule 11). A diagram is an image — §22 lists it separately because it
+means something different to a reader, not because it is a different file.
+
+**Two rules about absence, stated in code.** A slot the caller does not mention
+keeps what it had: an edit that says nothing about the audio must not delete the
+audio. And clearing needs a signal of its own (`clear_media`), because removing
+a recording has to be possible without replacing it, and an empty upload already
+means "leave it alone".
+
+**Verification.** Revert-check: removing the upload and the serve gate turns
+**4 of the 6** new tests red.
+
+**Walked in a browser**, two accounts:
+
+| Step | Result |
+|---|---|
+| Author opens a term | four file inputs, and "Attached" against the slot that has one |
+| Bank list | Media column reads "Pronunciation audio" |
+| Student opens the lesson | the term's `<audio>` renders, `src=/learn/media/1` |
+| Same file fetched as that student | **200 audio/x-wav, 4044 bytes**, and the element decodes (`readyState: 1`, `duration: 0.5`) |
+| Same file as a non-enrolled user | **403** |
+| Author ticks Remove and saves | Media column becomes "—" |
+
+One honest note on that walk: the first pass reported a **403 for the enrolled
+student**, and the cause was the walk itself — an earlier step had already
+ticked Remove, so the term genuinely no longer had that recording. The gate was
+right and the script was out of order. Re-attaching gave the 200 above. Worth
+recording because "the fix does not work" and "the fixture moved underneath you"
+look identical from the outside.
+
+**1,660 tests green** (6 new), architecture suite green, `npm run build` clean.
+
+**What §22 still lacks, recorded not fixed.** The `category_id` column is the
+same unanchored field §20 has, with no table and no foreign key behind it —
+left alone for the same reason. `lesson_glossary_items.position` is stored and
+ordered by, and has no reorder control, which is §21's `position` problem in a
+second place; it belongs with a glossary-ordering slice rather than here (rule
+1). And the free-typed **glossary content block** (`{entries: [{term,
+definition}]}`) is a separate path that never touches the term bank at all —
+two glossaries in one product is a single-source-of-truth question for the
+owner, not a cleanup.
+
 ### SPEC §21: "required" meant nothing, and question order could never change
 
 §21's table is complete, and its hardest requirement genuinely works: the

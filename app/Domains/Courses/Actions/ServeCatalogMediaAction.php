@@ -4,7 +4,9 @@ namespace App\Domains\Courses\Actions;
 
 use App\Domains\Courses\Models\ContentBlock;
 use App\Domains\Courses\Models\CourseEnrollment;
+use App\Domains\Courses\Models\GlossaryItem;
 use App\Domains\Courses\Models\Lesson;
+use App\Domains\Courses\Models\LessonGlossaryItem;
 use App\Domains\Courses\Models\LessonRevision;
 use App\Domains\Media\Actions\ReadPrivateMediaAction;
 use App\Domains\People\Actions\ResolveStudentForUserAction;
@@ -67,6 +69,21 @@ class ServeCatalogMediaAction
         return $this->lessonsUseMedia($lessonIds, $mediaId);
     }
 
+    /**
+     * @param  list<int>  $lessonIds
+     */
+    private function lessonTermsUseMedia(array $lessonIds, int $mediaId): bool
+    {
+        return GlossaryItem::query()
+            ->whereIn('id', LessonGlossaryItem::query()->whereIn('lesson_id', $lessonIds)->select('glossary_item_id'))
+            ->where(function ($query) use ($mediaId): void {
+                foreach (array_keys(StoreGlossaryMediaAction::SLOTS) as $slot) {
+                    $query->orWhere($slot, $mediaId);
+                }
+            })
+            ->exists();
+    }
+
     private function attemptsUseMedia(int $studentId, int $mediaId): bool
     {
         $media = app(ResolveQuestionMediaAction::class);
@@ -90,6 +107,15 @@ class ServeCatalogMediaAction
         }
 
         if (ContentBlock::query()->whereIn('lesson_id', $lessonIds)->where('data->media_id', $mediaId)->exists()) {
+            return true;
+        }
+
+        // SPEC §22's glossary media hangs off the **term**, reached through
+        // `lesson_glossary_items` — never off a content block. So this check,
+        // which only knew about blocks, would have refused a student the
+        // pronunciation recording for a term on the very lesson they were
+        // reading, exactly as it refused §20's question audio before that slice.
+        if ($this->lessonTermsUseMedia($lessonIds, $mediaId)) {
             return true;
         }
 

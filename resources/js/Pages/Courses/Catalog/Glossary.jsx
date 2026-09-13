@@ -21,7 +21,22 @@ const EMPTY = {
     tags: '',
     subject_id: '',
     level_id: '',
+    // SPEC §22 "Glossary Media". The four columns were fillable, validated
+    // against `media_files` and sent to the player — and the form had no file
+    // input at all, so there was no way to obtain an id to put in them.
+    audio_file: null,
+    example_audio_file: null,
+    image_file: null,
+    diagram_file: null,
+    clear_media: [],
 };
+
+const MEDIA_SLOTS = [
+    { slot: 'audio_media_id', field: 'audio_file', label: 'Pronunciation audio', accept: 'audio/*' },
+    { slot: 'example_audio_media_id', field: 'example_audio_file', label: 'Example audio', accept: 'audio/*' },
+    { slot: 'image_media_id', field: 'image_file', label: 'Image', accept: 'image/*' },
+    { slot: 'diagram_media_id', field: 'diagram_file', label: 'Diagram', accept: 'image/*' },
+];
 
 export default function Glossary({ rows, subjects = [], levels = [] }) {
     const [editingId, setEditingId] = useState(null);
@@ -48,7 +63,23 @@ export default function Glossary({ rows, subjects = [], levels = [] }) {
             tags: (row.tags || []).join(', '),
             subject_id: row.subject_id || '',
             level_id: row.level_id || '',
+            audio_file: null,
+            example_audio_file: null,
+            image_file: null,
+            diagram_file: null,
+            clear_media: [],
         });
+    };
+
+    const editingRow = rows.find((row) => row.id === editingId) || null;
+    const toggleClear = (slot, on) => {
+        const next = new Set(form.data.clear_media || []);
+        if (on) {
+            next.add(slot);
+        } else {
+            next.delete(slot);
+        }
+        form.setData('clear_media', Array.from(next));
     };
 
     const cancelEdit = () => {
@@ -64,11 +95,17 @@ export default function Glossary({ rows, subjects = [], levels = [] }) {
             <form
                 onSubmit={(e) => {
                     e.preventDefault();
-                    if (editingId) {
-                        form.put(`/catalog/glossary/${editingId}`, { preserveScroll: true, onSuccess: cancelEdit });
-                    } else {
-                        form.post('/catalog/glossary', { preserveScroll: true });
-                    }
+                    // A multipart PUT is not parsed by PHP, so an edit that
+                    // carries a file has to be a POST with `_method` spoofing —
+                    // the same shape the question bank needed once it grew an
+                    // upload. `form.transform(...)` returns undefined in
+                    // @inertiajs/react v3, so the two statements stay apart.
+                    form.transform((data) => (editingId ? { ...data, _method: 'put' } : data));
+                    form.post(editingId ? `/catalog/glossary/${editingId}` : '/catalog/glossary', {
+                        preserveScroll: true,
+                        forceFormData: true,
+                        onSuccess: () => { if (editingId) cancelEdit(); },
+                    });
                 }}
                 className="mb-4 grid gap-3 rounded-lg border bg-white p-4 md:grid-cols-3"
             >
@@ -97,6 +134,39 @@ export default function Glossary({ rows, subjects = [], levels = [] }) {
                     <option value="">Any level</option>
                     {levels.map((level) => <option key={level.id} value={level.id}>{level.name_en}</option>)}
                 </select>
+                {/* §22 "Glossary Media": audio, image, example audio, diagram,
+                    all through the centralized media system. Each slot is typed,
+                    so §30's mime list and size cap for that kind apply. */}
+                <fieldset className="md:col-span-3 rounded-lg border bg-[#F9F4EE] p-3">
+                    <legend className="px-1 text-xs font-medium uppercase tracking-wide text-gray-600">Media</legend>
+                    <div className="grid gap-3 md:grid-cols-4">
+                        {MEDIA_SLOTS.map(({ slot, field, label, accept }) => (
+                            <label key={slot} className="text-sm">
+                                <span className="block text-xs text-gray-600">{label}</span>
+                                <input
+                                    className="form-input"
+                                    type="file"
+                                    accept={accept}
+                                    onChange={(e) => form.setData(field, e.target.files?.[0] || null)}
+                                />
+                                {editingRow?.[slot] && (
+                                    <span className="mt-1 flex items-center gap-2 text-xs text-gray-600">
+                                        <span>Attached</span>
+                                        <label className="flex items-center gap-1">
+                                            <input
+                                                type="checkbox"
+                                                checked={(form.data.clear_media || []).includes(slot)}
+                                                onChange={(e) => toggleClear(slot, e.target.checked)}
+                                            />
+                                            Remove
+                                        </label>
+                                    </span>
+                                )}
+                                {form.errors[field] && <span className="text-xs text-red-600">{form.errors[field]}</span>}
+                            </label>
+                        ))}
+                    </div>
+                </fieldset>
                 <div className="md:col-span-3 flex flex-wrap gap-2">
                     <button type="submit" className="btn-primary" disabled={form.processing}>{editingId ? 'Update term' : 'Save term'}</button>
                     {editingId && (
@@ -113,6 +183,7 @@ export default function Glossary({ rows, subjects = [], levels = [] }) {
                             <th className="px-3 py-2">DV / AR</th>
                             <th className="px-3 py-2">Meaning</th>
                             <th className="px-3 py-2">Tags</th>
+                            <th className="px-3 py-2">Media</th>
                             <th className="px-3 py-2"></th>
                         </tr>
                     </thead>
@@ -130,6 +201,9 @@ export default function Glossary({ rows, subjects = [], levels = [] }) {
                                 </td>
                                 <td className="px-3 py-2">{row.meaning_primary || '—'}</td>
                                 <td className="px-3 py-2">{(row.tags || []).join(', ') || '—'}</td>
+                                <td className="px-3 py-2 text-xs text-gray-600">
+                                    {MEDIA_SLOTS.filter(({ slot }) => row[slot]).map(({ label }) => label).join(', ') || '—'}
+                                </td>
                                 <td className="px-3 py-2 text-end">
                                     <button type="button" className="text-sm text-[#7C2D37] hover:underline" onClick={() => startEdit(row)}>Edit</button>
                                     {' · '}
