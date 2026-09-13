@@ -8,6 +8,8 @@ use App\Domains\Courses\Components\Quran\Console\ImportQuranTranslationsCommand;
 use App\Domains\Courses\Gradebook\ClassroomAssessmentGradeItemProvider;
 use App\Domains\Courses\Listeners\ActivateEnrollmentOnPaymentConfirmed;
 use App\Domains\Courses\Listeners\CancelEnrollmentOnPaymentRefunded;
+use App\Domains\Courses\Models\Lesson;
+use App\Domains\Courses\Observers\LessonOwnershipObserver;
 use App\Domains\ExamsGrades\Contracts\GradeItemProvider;
 use App\Domains\Finance\Events\PaymentConfirmed;
 use App\Domains\Finance\Events\PaymentRefunded;
@@ -35,6 +37,14 @@ class CoursesServiceProvider extends ServiceProvider
         // confirmation only; a full refund takes the enrollment back.
         Event::listen(PaymentConfirmed::class, ActivateEnrollmentOnPaymentConfirmed::class);
         Event::listen(PaymentRefunded::class, CancelEnrollmentOnPaymentRefunded::class);
+
+        // SPEC §14: `lesson_id` is the source of truth and the denormalized
+        // `content_blocks.course_id` / `course_module_id` "must be synced
+        // automatically ... Use a model observer or service method to
+        // guarantee this." An observer, not a call inside SaveLessonAction,
+        // because a guarantee that lives in one Action is only as good as
+        // every future caller remembering it.
+        Lesson::observe(LessonOwnershipObserver::class);
 
         if ($this->app->runningInConsole()) {
             $this->commands([ImportQuranTranslationsCommand::class]);

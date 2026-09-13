@@ -1,4 +1,4 @@
-import { router, useForm } from '@inertiajs/react';
+import { router, useForm, usePage } from '@inertiajs/react';
 import { useEffect, useRef, useState } from 'react';
 import AppShell from '../../../Layouts/AppShell';
 
@@ -229,6 +229,12 @@ function LessonGlossaryForm({ courseId, lesson, glossaryItems }) {
 }
 
 export default function Outline({ course, modules, glossaryItems = [] }) {
+    // §12's "delete draft modules if safe" refusal names exactly what is in
+    // the way ("still has 1 lessons, 2 content blocks"). It was never rendered,
+    // so clicking Delete module on a module the server refuses did nothing
+    // visible — a refused button indistinguishable from a broken one, the same
+    // gap the §13 walk found on the lesson player.
+    const moduleError = usePage().props.errors?.module;
     const moduleForm = useForm({ title: '' });
     const lessonForm = useForm({
         course_module_id: modules[0]?.id || '',
@@ -439,7 +445,7 @@ export default function Outline({ course, modules, glossaryItems = [] }) {
                                     className="text-xs text-red-700"
                                     onClick={() => {
                                         if (window.confirm(`Delete the empty module "${module.title}"?`)) {
-                                            router.delete(`/catalog/courses/${course.id}/modules/${module.id}`);
+                                            router.delete(`/catalog/courses/${course.id}/modules/${module.id}`, { preserveScroll: true });
                                         }
                                     }}
                                 >
@@ -447,6 +453,9 @@ export default function Outline({ course, modules, glossaryItems = [] }) {
                                 </button>
                             )}
                         </div>
+                        {moduleError && module.lessons.length === 0 && (
+                            <p className="mb-2 rounded border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{moduleError}</p>
+                        )}
                         {module.lessons.length === 0 && <p className="text-sm text-gray-500">No lessons yet.</p>}
                         {module.lessons.map((lesson) => (
                             <div key={lesson.id} className="mb-3 border-t pt-3">

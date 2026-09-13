@@ -7124,6 +7124,83 @@ left-to-right for every enrolled student.
 
 **1,566 tests green** (10 new), arch green, build clean.
 
+#### A CI-only failure that was the test's fault, not the code's
+
+#301's first CI run went **red on Pest while the same suite was green
+locally**, and the diff had every value correct:
+
+```
+-    'direction' => 'rtl'          ← local (MariaDB)
++    'font' => 'arabic'            ← CI (MySQL 8)
+     'align' => 'end'
+     'language' => 'ar'
+```
+
+Only the **key order** differed. MariaDB stores JSON as text and preserves
+insertion order; **MySQL 8 stores a native JSON type and normalizes object
+keys, sorted by key length then lexicographically** — `font`(4), `align`(5),
+`language`(8), `direction`(9), exactly the CI order. `toBe()` on an
+associative array is order-sensitive.
+
+**Any test asserting a JSON column's exact array shape is engine-dependent**,
+and this container's MariaDB (installed during the rebuild, since the real
+dependency set could not be restored) cannot catch it. Assert sorted, or
+assert keys individually. Fixed with a `settingsByKey()` helper that documents
+the reason in place.
+
+### SPEC §14: the sync guarantee that did not exist, and the code relying on it anyway
+
+§14 states this as a guarantee, not a preference:
+
+> Content blocks belong to lessons. `lesson_id` is the source of truth.
+> `course_id` and `module_id` on `content_blocks` are denormalized for query
+> performance only. Whenever a lesson is moved to another module or course,
+> the related `content_blocks.course_id` and `content_blocks.module_id` must
+> be **synced automatically**. Use a model observer or service method to
+> guarantee this. **No code may rely on `content_blocks.course_id` or
+> `content_blocks.module_id` unless this sync guarantee exists.**
+
+It did not exist. Blocks took both ids from the lesson at creation and never
+looked again. Verified by probe before fixing: a lesson moved from module 1 to
+module 2 left its block on module 1 — `STALE => true`.
+
+And code **did** rely on it, which is what §14's last sentence forbids.
+`DeleteCourseModuleAction` implements §12's "delete draft modules if safe" by
+counting dependents, and `content_blocks.course_module_id` is one of the three
+tables counted. Stale ids make that wrong in both directions:
+
+- a module a lesson moved **out** of still counts that lesson's blocks, so it
+  can never be deleted — refusing on blocks that are not its own;
+- blocks that moved **in** are not counted, so the check can allow a delete the
+  database then refuses with a RESTRICT violation the admin sees as a 500.
+
+**An observer, not a call inside `SaveLessonAction`.** §14 asks for a
+guarantee, and one that lives in a single Action is only as good as every
+future caller remembering it. The observer fires only when the lesson actually
+changed course or module, so an ordinary title edit costs nothing, and a test
+asserts a direct `$lesson->save()` is covered too.
+
+**Progress rows are deliberately not re-synced.**
+`student_lesson_progress.course_module_id` records what happened while the
+lesson was in that module; rewriting it would falsify history. The walk shows
+this working: the vacated module now refuses deletion naming **only progress
+records**, because its blocks correctly left with the lesson.
+
+#### Two things the work corrected in itself
+
+- **My first test modelled an impossible state.** It simulated drift with
+  `course_module_id = 99999` and hit a foreign key — dangling ids are already
+  prevented. The real drift is a **valid but wrong** module id, which is
+  exactly what a move produces, and that is what the test now does.
+- **The walk found the same invisible-refusal gap as §13.** Clicking "Delete
+  module" on a module the server refuses did nothing visible — a refused
+  button indistinguishable from a broken one. The outline now renders
+  `errors.module`: *"This module still has 1 progress records. Move or delete
+  those first (SPEC §12)."*
+
+**1,578 tests green** (12 new), arch green, build clean. Revert-check:
+unhooking the observer turns 6 of the 12 red.
+
 #### A process mistake worth recording
 
 The §13 slice was pushed as PR #300 **stacked on the unmerged §10 commit**
