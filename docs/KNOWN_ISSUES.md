@@ -294,6 +294,34 @@ defect family as #19. See **Fixed on main**.
 
 **Evidence:** Round 2 step 1. Admin still lands on Blade dashboard (allowed, Round 3).
 
+### 23. `guardian_student` carries a verification gate that gates nothing
+
+**Severity:** confusion, latent trap. Found by the 2026-09-13 §37 audit.
+
+Migration `2026_08_25_000031_s1a7_guardian_student_policy` added
+`verification_status` (default `'unverified'`), `consent_status` (default
+`'unknown'`), `verified_at`, `created_by` and `notes` to `guardian_student`.
+**Nothing in the codebase reads or writes any of them.** `grep` finds exactly
+two hits, both inside that migration.
+
+So every guardian↔student link in the database says `unverified` forever, while
+`/portal/children` lists the child regardless. The column looks like an access
+control and is not one — which is worse than no column, because a schema reader
+concludes guardian links are verified-gated when they are not.
+
+**Why this is recorded rather than fixed.** Enforcing the flag today would hide
+**every** child from **every** parent, since nothing can mark a link verified —
+a regression, not a fix. Building the verification workflow instead would be
+inventing policy: `docs/S1_SPEC.md` defines this pivot as `relationship`,
+`is_primary`, `can_pickup`, `financial_responsible` and asks only that
+"guardians see their own children only", which `ListGuardianChildrenAction`
+already does correctly. No spec asks for verification at all.
+
+**The owner's call, two ways out:** wire the flag up (admin control to verify a
+link + the portal filtering on it), or drop the three unread columns in a
+cleanup deploy. Either is fine; leaving a control-shaped column that controls
+nothing is the thing to avoid.
+
 ---
 
 ## Explicitly not defects
