@@ -2,10 +2,11 @@
 
 namespace App\Domains\Identity\Http\Controllers;
 
+use App\Domains\Identity\Actions\DeleteUserAccountAction;
 use App\Domains\Identity\Models\User;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 class AdminUserController extends Controller
 {
@@ -32,37 +33,50 @@ class AdminUserController extends Controller
         return view('admin.users.index', compact('users'));
     }
 
+    /**
+     * SPEC §29: "Historical student data must remain intact."
+     *
+     * This method used to disable foreign key checks, hard-delete the user's
+     * enrolments with a query-builder delete that bypasses `SoftDeletes`,
+     * hard-delete their `payments` rows against rule 12, and hard-delete the
+     * account. Progress, attempts, attendance and certificates were left
+     * orphaned rather than removed, because with the keys off the cascades
+     * never fired.
+     *
+     * The rule now lives in `DeleteUserAccountAction`, which deactivates an
+     * account that anything depends on and hard-deletes only what §29 allows.
+     */
     public function destroy(Request $request, User $user)
     {
-        // Prevent deleting yourself or other super admins
-        if ($user->id === auth()->id()) {
-            return back()->with('error', 'You cannot delete your own account.');
-        }
-
-        if ($user->hasRole('super_admin')) {
-            return back()->with('error', 'Super admin accounts cannot be deleted.');
-        }
-
         $name = $user->name;
 
-        // Get student IDs for cascade
-        $studentIds = DB::table('registration_students')
-            ->where('user_id', $user->id)
-            ->pluck('id');
-
-        DB::statement('SET FOREIGN_KEY_CHECKS=0;');
-        DB::table('user_contacts')->where('user_id', $user->id)->delete();
-        $userMorph = (new User)->getMorphClass();
-        DB::table('model_has_roles')->where('model_id', $user->id)->where('model_type', $userMorph)->delete();
-        DB::table('model_has_permissions')->where('model_id', $user->id)->where('model_type', $userMorph)->delete();
-        if ($studentIds->isNotEmpty()) {
-            DB::table('course_enrollments')->whereIn('student_id', $studentIds)->delete();
+        try {
+            $result = app(DeleteUserAccountAction::class)->execute($user, auth()->id());
+        } catch (ValidationException $e) {
+            return back()->with('error', $e->validator->errors()->first());
         }
-        DB::table('registration_students')->where('user_id', $user->id)->delete();
-        DB::table('payments')->where('user_id', $user->id)->delete();
-        $user->delete();
-        DB::statement('SET FOREIGN_KEY_CHECKS=1;');
 
-        return back()->with('success', "User \"{$name}\" has been deleted.");
+        if ($result['deleted']) {
+            return back()->with('success', "User \"{$name}\" has been deleted.");
+        }
+
+        return back()->with('success', sprintf(
+            'User "%s" has been deactivated and can no longer sign in. Their history is kept: %s.',
+            $name,
+            $this->describe($result['blocked_by']),
+        ));
+    }
+
+    /**
+     * @param  array<string, int>  $counts
+     */
+    private function describe(array $counts): string
+    {
+        $parts = [];
+        foreach ($counts as $table => $count) {
+            $parts[] = $count.' '.str_replace('_', ' ', $table);
+        }
+
+        return implode(', ', $parts);
     }
 }
