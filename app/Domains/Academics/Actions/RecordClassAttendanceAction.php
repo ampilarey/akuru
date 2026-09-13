@@ -9,6 +9,7 @@ use App\Domains\Academics\Events\StudentMarkedAbsent;
 use App\Domains\Academics\Models\ClassAttendance;
 use App\Domains\Academics\Models\LessonLog;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 class RecordClassAttendanceAction implements AttendanceWriterInterface
 {
@@ -16,6 +17,8 @@ class RecordClassAttendanceAction implements AttendanceWriterInterface
 
     public function record(StudentAttendanceDTO $dto): ClassAttendance
     {
+        $this->guardExcused($dto);
+
         $query = ClassAttendance::query()
             ->where('student_id', $dto->studentId)
             ->whereDate('date', $dto->date);
@@ -58,6 +61,36 @@ class RecordClassAttendanceAction implements AttendanceWriterInterface
         $this->maybeNotify($row, $dto);
 
         return $row->refresh();
+    }
+
+    /**
+     * An excusal is the record of an approved absence note, so it must carry
+     * the note it came from (S2_SPEC §S2.4, KNOWN_ISSUES #15).
+     *
+     * The rule lives here rather than in the grids because every route into
+     * `class_attendance` — the register grid, the daily grid, a CSV import, a
+     * future biometric device — passes through this one writer, which
+     * `AttendanceWriterTest` pins as the only one. Taking `excused` off the
+     * teacher's buttons is the cosmetic half.
+     *
+     * What it prevents is quiet: an excused row sends the family no message
+     * (`maybeNotify` below), tells them in the portal that none was due, and
+     * drops the child out of `unexcused()`. A missing child would be invisible
+     * from three directions, on one mis-click.
+     */
+    private function guardExcused(StudentAttendanceDTO $dto): void
+    {
+        if ($dto->status !== AttendanceStatus::Excused) {
+            return;
+        }
+
+        if ($dto->absenceNoteId !== null) {
+            return;
+        }
+
+        throw ValidationException::withMessages([
+            'attendance' => 'An absence is excused by approving the guardian\'s note, not by marking it excused here.',
+        ]);
     }
 
     private function refreshCounts(int $lessonLogId): void

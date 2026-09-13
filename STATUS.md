@@ -7677,6 +7677,79 @@ one produced an audit. §33's five other headings — User Management, Course
 Management, Offering Management, Course Builder, Academic / Training Management
 — are inventories of CRUD that mostly exists and still need their own pass.
 
+### KNOWN_ISSUES #15: the fourth button that made a missing child invisible
+
+Filed as **confusion** — *"Teacher grid offers `excused` / `left_early`"*, with
+one line of reasoning: excuse is supposed to come from an approved note. That is
+right, and it undersells it.
+
+S2_SPEC §S2.4 says where an excusal comes from: approving an `absence_note` with
+`affects_attendance=true` flips the matching absent rows to excused **and links
+`absence_note_id`**. The register grid offered `excused` as a fourth button,
+`RecordRegisterAttendanceAction` never sets `absenceNoteId`, and the writer took
+it anyway. Verified against the code before fixing: an excused mark with a null
+note was written without complaint.
+
+Three consequences followed from one mis-click, and all three are silent:
+
+- `RecordClassAttendanceAction::maybeNotify()` notifies on absent and (by
+  setting) late, and is **quiet on excused** — the family is never told;
+- since the #17 fix the portal reads that same rule and labels such a row **"Not
+  applicable"**, actively telling the parent no message was due;
+- `ListClassAttendanceAction::unexcused()` excludes excused rows, so the child
+  drops out of the chronic-absence list too.
+
+A child missing from school, invisible from three directions, because a button
+sat next to the right one.
+
+#### Where the rule went
+
+`RecordClassAttendanceAction::guardExcused()` — `Excused` requires an
+`absenceNoteId`, or it is a `ValidationException` on the `attendance` key.
+
+That is the **writer**, not the grid, and that is the point. Every route into
+`class_attendance` passes through `AttendanceWriterInterface`, which
+`AttendanceWriterTest` already pins as the only writer — so the register grid,
+the daily grid, a CSV import and S2.4's future biometric device are covered by
+one check. `ApproveAbsenceNoteAction` already passed `absenceNoteId: $note->id`,
+so the legitimate path needed no change at all.
+
+`AttendanceStatus::teacherSettable()` is the single list the two grids render.
+Taking the button off the page is the cosmetic half; this repo learned once
+already (SPEC §44/§45) that a route relying on a hidden button is not guarded.
+
+**`left_early` stays.** The entry named it too, but S2_SPEC §S2.4 lists it as a
+status, nothing says it must come from elsewhere, and a child who left early is
+a fact only the teacher in the room has. Removing it is a product decision.
+
+#### Walked in Chromium (2026-09-13)
+
+Logged in as `teacher@akuru.edu.mv`, generated today's registers, opened
+`/en/academics/registers/1`:
+
+| Check | Result |
+|---|---|
+| Status options on the grid | `present, absent, late, left_early` — no `excused` |
+| `PUT` `status: excused` straight at the route | **422** — *"An absence is excused by approving the guardian's note, not by marking it excused here."* |
+
+Both halves, because only the second one is the guard.
+
+1,827 tests green, architecture suite green, Pint clean.
+
+#### Noted, not fixed: the thin-controllers gate counts comment lines
+
+While making this change, the gate merged an hour earlier (#341) failed on
+`TeacherRegisterController::show — was 55, now 57`: a **two-line explanatory
+comment**, not logic. That is a false positive, and the wrong incentive — a gate
+that charges for documentation will get less documentation.
+
+The fix is to count code lines rather than raw span, stripping comments and
+blank lines; `stripPhpComments()` already exists in
+`tests/Support/SourceReadingHelpers.php` from the SDK gate. It would change all
+58 baseline numbers, so it is its own slice (rule 1). Here the comment was
+simply dropped — it was redundant with `AttendanceStatus::teacherSettable()`'s
+own docblock.
+
 ### S1_SPEC §S1.5: the backbone rule, enforced by a code-review checklist
 
 Rule 10 of `CLAUDE.md` is one sentence:

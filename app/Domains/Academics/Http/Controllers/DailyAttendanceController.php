@@ -37,7 +37,7 @@ class DailyAttendanceController extends Controller
                 ->when($year, fn ($query) => $query->where('academic_year_id', $year->id))
                 ->orderBy('name')
                 ->get(['id', 'name', 'section', 'academic_year_id']),
-            'statuses' => array_map(fn (AttendanceStatus $status) => $status->value, AttendanceStatus::cases()),
+            'statuses' => array_map(fn (AttendanceStatus $status) => $status->value, AttendanceStatus::teacherSettable()),
             'roster' => $class ? app(ListClassRosterAction::class)->execute($class->id) : collect(),
             'marks' => $class
                 ? app(ListClassAttendanceAction::class)->execute([
