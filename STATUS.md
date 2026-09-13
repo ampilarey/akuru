@@ -7677,6 +7677,81 @@ one produced an audit. §33's five other headings — User Management, Course
 Management, Offering Management, Course Builder, Academic / Training Management
 — are inventories of CRUD that mostly exists and still need their own pass.
 
+### SPEC §52: the feature flag that did not exist
+
+§52 is in good order, and the audit checked it rather than assuming. **§52.2's
+"Critical Haraka Rule" is implemented exactly as written** —
+`PredictIsolatedSoundAction` keeps `is_letter_match` and `is_haraka_match`
+apart and returns `wrong_haraka` as a verdict distinct from `wrong_letter`,
+which is §52.2's worked example (`بَ` expected, `بِ` read → letter correct,
+haraka wrong, **haraka mistake**). `quran_mistake_marks`,
+`quran_memorization_progress` and `quran_revision_schedules` all exist; the
+student screen plays both the submission audio **and the teacher's correction
+audio**; and `RecitationSubmissionStatus::NeedsRepeat` carries §52.29's
+"students can see corrections and resubmit".
+
+That correction-audio finding is worth naming, because it bears on §36: **the
+Qur'an component already does the thing the general engine cannot.** §36's
+"upload correction audio" is recorded in STATUS as having no storage anywhere —
+and here is a working precedent for it, one component over.
+
+**§52.27 asks for a feature flag and there was none.**
+
+> The Qur'an/Hifz module should be feature-flagged.
+> `QURAN_HIFZ_MODULE_ENABLED=false`
+> **The main platform must work even if the Qur'an/Hifz module is disabled.**
+
+`config/quran.php` held `halaqa_dual_write` and `translation_source`, and
+`QURAN_HIFZ_MODULE_ENABLED` appeared nowhere in the codebase. So §52.29's last
+acceptance criterion could not be tested, because the module could not be
+disabled.
+
+The sharper point: **§51's module *is* flagged.** `AI_PRONUNCIATION_ENABLED`
+is threaded through the Pronunciation domain and read by the practice screen.
+§52 asks for the same thing one section later and got nothing.
+
+**Defaulted `true`, not `false`.** §52.27's example shows the env line an
+operator writes to switch the module off, not the shipped default — and this
+module is built, live and linked from the nav. Shipping `false` would switch
+off working features on every deployment the moment it merged, which is a
+regression wearing a spec-compliance badge.
+
+**The flag decides by controller namespace, not by a list of route names.**
+The module's 57 routes are declared inline throughout `routes/web_localized.php`
+rather than in one group, so a hand-kept name list would go stale the moment
+somebody added a route — the exact defect this session has fixed repeatedly. A
+namespace cannot drift away from the module it belongs to. 404, not 403: a
+disabled module is not a permission problem, and "forbidden" invites somebody
+to go hunting for the permission that would let them in.
+
+**The drift guard immediately earned itself.** It enumerates every route whose
+URI mentions quran/recitation/hifz and fails on any the flag does not decide —
+and it found two the namespace rule missed, each needing a real judgement
+rather than a blanket addition:
+
+- `students/{student}/quran-progress` **is** module surface (it renders
+  `quran_progress` rows) → covered.
+- `e-learning/quran` **is not** (it lists *courses* whose subject is Qur'an,
+  and courses are the main platform) → recorded in `EXAMINED_NOT_MODULE` with
+  the reason, so the decision is visible rather than inferred from an absence.
+
+**A mistake made and caught while writing this.** Covering the student tab by
+*class* would have matched every other `StudentController` method by prefix and
+taken the entire student directory down with the module. `EXTRA_ACTIONS` now
+matches `Controller@method` whole, and a test opens `/students` with the flag
+off to prove the directory survives.
+
+Walked in Chrome at `127.0.0.1:8901` and `:8902` (2026-09-13), the same six
+screens either side of the flag:
+
+| | `/catalog/quran` | `/learn/quran` | `/teach/recitations` | `/catalog/courses` | `/catalog/reports` | `/students` |
+|---|---|---|---|---|---|---|
+| Flag **on** | 200 | 200 | 200 | 200 | 200 | 200 |
+| Flag **off** | **404** | **404** | **404** | 200 | 200 | 200 |
+
+The right-hand three are §52.29's actual claim, and they are the reason the
+flag is worth having.
+
 ### SPEC §51: two Writing requirements, in a section that is otherwise built
 
 §51 is largely done, and the audit says so before it says anything else. Its
