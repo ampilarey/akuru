@@ -3,25 +3,24 @@
 namespace App\Domains\Academics\Actions;
 
 use App\Domains\Academics\Enums\AttendanceMode;
-use Illuminate\Support\Facades\DB;
+use App\Domains\Settings\Contracts\SettingsRepositoryInterface;
 
 class ResolveAttendanceSettingsAction
 {
+    public function __construct(private SettingsRepositoryInterface $settings) {}
+
     /**
      * @return array{mode: AttendanceMode, notify: string, chronic_threshold: int, tardies_per_absence: int, part_lesson_minutes: int}
      */
     public function execute(): array
     {
-        $rows = DB::table('settings')
-            ->whereIn('key', [
-                'attendance_mode',
-                'attendance_notify',
-                'attendance_chronic_threshold',
-                'attendance_tardies_per_absence',
-                'attendance_part_lesson_minutes',
-            ])
-            ->pluck('value', 'key');
-
+        $rows = collect($this->settings->many(array_fill_keys([
+            'attendance_mode',
+            'attendance_notify',
+            'attendance_chronic_threshold',
+            'attendance_tardies_per_absence',
+            'attendance_part_lesson_minutes',
+        ], null)));
         $mode = AttendanceMode::tryFrom((string) ($rows['attendance_mode'] ?? config('academics.attendance_mode', 'per_lesson')))
             ?? AttendanceMode::PerLesson;
 

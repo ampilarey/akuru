@@ -2,18 +2,22 @@
 
 namespace App\Domains\ExamsGrades\Actions;
 
-use Illuminate\Support\Facades\DB;
+use App\Domains\Settings\Contracts\SettingsRepositoryInterface;
 
 class ResolveExamSettingsAction
 {
+    public function __construct(private SettingsRepositoryInterface $settings) {}
+
     /**
      * @return array{max_per_class_per_day: int, exclude_absent: bool, compute_rank: bool}
      */
     public function execute(): array
     {
-        $rows = DB::table('settings')
-            ->whereIn('key', ['exams_max_per_class_per_day', 'exams_exclude_absent', 'exams_compute_rank'])
-            ->pluck('value', 'key');
+        $rows = collect($this->settings->many(array_fill_keys([
+            'exams_max_per_class_per_day',
+            'exams_exclude_absent',
+            'exams_compute_rank',
+        ], null)));
 
         return [
             'max_per_class_per_day' => max(1, (int) ($rows['exams_max_per_class_per_day'] ?? 1)),

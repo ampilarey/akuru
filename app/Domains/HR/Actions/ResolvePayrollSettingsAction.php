@@ -2,20 +2,22 @@
 
 namespace App\Domains\HR\Actions;
 
-use Illuminate\Support\Facades\DB;
+use App\Domains\Settings\Contracts\SettingsRepositoryInterface;
 use Illuminate\Validation\ValidationException;
 
 class ResolvePayrollSettingsAction
 {
+    public function __construct(private SettingsRepositoryInterface $settings) {}
+
     /**
      * @return array{enabled: bool, rules: array<string, mixed>}
      */
     public function execute(): array
     {
-        $rows = DB::table('settings')
-            ->whereIn('key', ['payroll.enabled', 'payroll.rules'])
-            ->pluck('value', 'key');
-
+        $rows = collect($this->settings->many(array_fill_keys([
+            'payroll.enabled',
+            'payroll.rules',
+        ], null)));
         $rules = json_decode((string) ($rows['payroll.rules'] ?? ''), true);
         if (! is_array($rules)) {
             $rules = [

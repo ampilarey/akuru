@@ -2,7 +2,7 @@
 
 namespace App\Domains\Academics\Actions;
 
-use Illuminate\Support\Facades\DB;
+use App\Domains\Settings\Contracts\SettingsRepositoryInterface;
 
 /**
  * S2 notification policy toggles (spec "Notifications added in S2").
@@ -13,14 +13,18 @@ use Illuminate\Support\Facades\DB;
  */
 class ResolveNotificationSettingsAction
 {
+    public function __construct(private SettingsRepositoryInterface $settings) {}
+
     /**
      * @return array{behavior_notify_parents: bool, admin_daily_digest: bool, family_daily_digest: bool}
      */
     public function execute(): array
     {
-        $rows = DB::table('settings')
-            ->whereIn('key', ['behavior_notify_parents', 'admin_daily_digest', 'family_daily_digest'])
-            ->pluck('value', 'key');
+        $rows = collect($this->settings->many(array_fill_keys([
+            'behavior_notify_parents',
+            'admin_daily_digest',
+            'family_daily_digest',
+        ], null)));
 
         return [
             'behavior_notify_parents' => $this->flag($rows['behavior_notify_parents'] ?? null),
