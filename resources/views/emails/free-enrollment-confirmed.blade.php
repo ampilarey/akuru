@@ -23,7 +23,7 @@
     <h1>Akuru Institute</h1>
   </div>
   <div class="body">
-    <p>Dear {{ $enrollment->creator?->name ?? 'Student' }},</p>
+    <p>Dear {{ $notice->enrolledByName }},</p>
     <p>Thank you — your enrollment request has been <strong>received</strong> and is now <strong>pending admin approval</strong>.</p>
     <p style="color:#555;font-size:13px;">You will receive another notification once your enrollment is approved. This usually takes 1–2 business days.</p>
 
@@ -32,20 +32,20 @@
     <div style="background:#f9f7f4; border-radius:6px; padding:16px; margin:16px 0;">
       <div class="detail-row">
         <span class="label">Course</span>
-        <span>{{ $enrollment->course?->title ?? '—' }}</span>
+        <span>{{ $notice->courseTitle }}</span>
       </div>
       <div class="detail-row">
         <span class="label">Student</span>
-        <span>{{ $enrollment->student?->full_name ?? '—' }}</span>
+        <span>{{ $notice->studentName }}</span>
       </div>
       <div class="detail-row">
         <span class="label">Fee</span>
         <span style="color:#059669; font-weight:600;">Free</span>
       </div>
-      @if($enrollment->enrolled_at)
+      @if($notice->enrolledAtLabel)
       <div class="detail-row">
         <span class="label">Date</span>
-        <span>{{ $enrollment->enrolled_at->format('d M Y') }}</span>
+        <span>{{ $notice->enrolledAtLabel }}</span>
       </div>
       @endif
     </div>
