@@ -7575,6 +7575,69 @@ status enums are `in_progress` / `submitted` / `scored` — there is no returned
 or resubmit state, and no pass/fail column. That is a migration plus a widened
 `ReviewAttemptAction`, and it is its own slice.
 
+### SPEC §34 + §35: four abilities resting on a record nobody kept
+
+These two sections are one defect seen from both ends.
+
+§35 "Dean / Supervisor Dashboard" names eight abilities. Five hold up — the
+review queue is the catalog list filtered, assessments and content are
+reviewable through the builder, offering setup is admin-side, and academic /
+training reports are §33's hub. Three did not:
+
+> Approve courses · **Reject courses** · **Request changes**
+
+§34 "Course Creator Dashboard" names ten. Nine hold up — create, modules,
+lessons, content blocks, media, glossary, activities, assessments, submit for
+review. One did not:
+
+> **View supervisor comments**
+
+The workflow itself was never the problem. `draft → in_review → published →
+archived` is enforced properly, publishing is gated on `courses.publish`, and
+the catalog screen has the buttons: "Submit review", "Publish", "Return draft",
+"Archive".
+
+**"Return draft" carried no reason at all.** No comment, no reviewer, no date,
+and no distinction between a rejection and a request for changes. A creator
+whose course was bounced back was told nothing, and the supervisor's actual
+review — the only part of the exchange with any content in it — was discarded
+the instant the button was pressed. Four abilities across two sections rested
+on a record that was never kept.
+
+Not a broken calculation and not a missing screen. A **missing record**.
+
+**What shipped.** `course_review_decisions`, additive and append-only: a later
+decision is a new row, never an edit, so a creator who has been through two
+rounds sees both. It carries `academic_year_id` (rule 10) and its model is
+registered in `config/morph-map.php` in the same slice (ADR-005) — the guard
+in `MorphMapConfigTest` caught the omission, correctly, before the commit.
+
+`CourseReviewDecision` (the enum) keeps three outcomes while the status column
+keeps four states: reject and request-changes both land in `draft`, because
+that is the only way back the workflow has and forking the column for a
+difference that is not about state would be worse. The difference is what the
+creator is told, so it lives in the decision.
+
+**An approval may be silent; a refusal may not.** `requiresComment()` is false
+only for `approved`. Re-creating "sent back with nothing said" behind a
+nullable column would have been a poor joke.
+
+`RecordCourseReviewDecisionAction` does the record and the transition together
+so the two cannot drift: the transition stays the authority on what may move
+where and who may publish, and if it refuses, **nothing is written** — covered
+by a test that checks a reviewer without `courses.publish` leaves no decision
+behind.
+
+No new nav link. Both halves live on `/catalog/courses`, where the buttons
+already were and where the creator already works, so the nav stays at the 106
+links §33 left it at.
+
+Walked in Chrome at `127.0.0.1:8901` (2026-09-13): Submit review → the row
+offers Approved / Rejected / Changes requested → **Record review is disabled
+while the comment is empty** and enables on typing → the course returns to
+`draft` with "Changes requested · 2026-09-13 — Lesson 3 has no assessment."
+shown beneath it, which is §34's "View supervisor comments" in one line.
+
 ### SPEC §23: a seat rule written about a status the database could not hold
 
 §23's `course_enrollments` table carries most of what the section names, the
