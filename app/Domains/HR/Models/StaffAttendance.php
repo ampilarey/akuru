@@ -17,6 +17,8 @@ class StaffAttendance extends Model
         'check_in',
         'check_out',
         'status',
+        'leave_paid',
+        'leave_day_fraction',
         'source',
         'minutes_late',
         'marked_by',
@@ -28,6 +30,8 @@ class StaffAttendance extends Model
         return [
             'date' => 'date',
             'status' => StaffAttendanceStatus::class,
+            'leave_paid' => 'boolean',
+            'leave_day_fraction' => 'float',
             'source' => StaffAttendanceSource::class,
         ];
     }

@@ -313,3 +313,88 @@ it('lets staff open only their own payslip document', function () {
         ->get(route('hr.payslips.document', $payslip))
         ->assertForbidden();
 });
+
+/**
+ * Whether leave was paid decided a salary deduction by travelling through an
+ * English sentence.
+ *
+ * `ApproveStaffLeaveAction` has `leave_types.paid` in hand and spent it writing
+ * "Approved unpaid leave" into `staff_attendance.remarks`;
+ * `CountUnpaidLeaveDaysAction` read it back with `LIKE '%unpaid%'` and counted
+ * rows. That count multiplies `basic_salary / working_days` onto a payslip.
+ */
+function unpaidLeaveStaff(): object
+{
+    enablePayroll();
+    makeYear(['is_current' => true, 'status' => 'active', 'start_date' => '2026-01-01', 'end_date' => '2026-12-31']);
+    $staff = makeStaffProfile();
+    app(SaveStaffContractAction::class)->execute([
+        'staff_profile_id' => $staff->id,
+        'contract_type' => StaffContractType::Permanent->value,
+        'start_date' => '2026-01-01',
+        'basic_salary' => 10000,
+    ]);
+
+    return $staff;
+}
+
+it('charges a half day of unpaid leave as half a day of pay', function () {
+    // `CountLeaveDaysAction` returns 0.5 for a half day and the ledger records
+    // 0.5, but the payroll counter counted *rows* — and 'Half-day unpaid leave'
+    // matches '%unpaid%' just as well as the whole-day string. So the one place
+    // the half actually cost money charged a full day.
+    $staff = unpaidLeaveStaff();
+
+    app(ApproveStaffLeaveAction::class)->execute([
+        'staff_profile_id' => $staff->id,
+        'leave_type_id' => LeaveType::query()->where('code', 'unpaid')->value('id'),
+        'from_date' => '2026-08-03',
+        'to_date' => '2026-08-03',
+        'half_day' => true,
+    ]);
+
+    expect(app(\App\Domains\HR\Actions\CountUnpaidLeaveDaysAction::class)->execute($staff->id, 2026, 8))
+        ->toBe(0.5);
+});
+
+it('does not deduct pay because somebody typed the word unpaid in a note', function () {
+    // Paid leave, with a remark that happens to contain the word — including a
+    // note saying the opposite. Under the old reading this cost a day's salary.
+    $staff = unpaidLeaveStaff();
+
+    app(ApproveStaffLeaveAction::class)->execute([
+        'staff_profile_id' => $staff->id,
+        'leave_type_id' => LeaveType::query()->where('code', 'annual')->value('id'),
+        'from_date' => '2026-08-10',
+        'to_date' => '2026-08-10',
+    ]);
+
+    \App\Domains\HR\Models\StaffAttendance::query()
+        ->where('staff_profile_id', $staff->id)
+        ->whereDate('date', '2026-08-10')
+        ->update(['remarks' => 'Checked with HR: this is annual leave, not unpaid.']);
+
+    expect(app(\App\Domains\HR\Actions\CountUnpaidLeaveDaysAction::class)->execute($staff->id, 2026, 8))
+        ->toBe(0.0);
+});
+
+it('still deducts when the note is not in English', function () {
+    // The platform is trilingual. A remark in Dhivehi never matched '%unpaid%',
+    // so unpaid leave silently became paid leave.
+    $staff = unpaidLeaveStaff();
+
+    app(ApproveStaffLeaveAction::class)->execute([
+        'staff_profile_id' => $staff->id,
+        'leave_type_id' => LeaveType::query()->where('code', 'unpaid')->value('id'),
+        'from_date' => '2026-08-17',
+        'to_date' => '2026-08-17',
+    ]);
+
+    \App\Domains\HR\Models\StaffAttendance::query()
+        ->where('staff_profile_id', $staff->id)
+        ->whereDate('date', '2026-08-17')
+        ->update(['remarks' => 'މުސާރަ ނުލިބޭ ޗުއްޓީ']);
+
+    expect(app(\App\Domains\HR\Actions\CountUnpaidLeaveDaysAction::class)->execute($staff->id, 2026, 8))
+        ->toBe(1.0);
+});

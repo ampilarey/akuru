@@ -262,6 +262,16 @@ class DashboardController extends Controller
         $path = storage_path();
         $free = disk_free_space($path);
         $total = disk_total_space($path);
+
+        // Both return false when the call fails — an unreadable mount, or an
+        // open_basedir restriction. `false` is 0, and 0/0 is a
+        // DivisionByZeroError, which is a 500 on the super-admin dashboard
+        // rather than the health line it was asked for. `getDatabaseSize()`
+        // right above already wraps its call; this one did not.
+        if ($total === false || $free === false || $total <= 0) {
+            return 'unknown';
+        }
+
         $used_percentage = 100 - (($free / $total) * 100);
 
         if ($used_percentage > 90) {
