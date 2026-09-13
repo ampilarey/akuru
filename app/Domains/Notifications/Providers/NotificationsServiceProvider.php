@@ -4,6 +4,7 @@ namespace App\Domains\Notifications\Providers;
 
 use App\Domains\Academics\Events\BehaviorRecordLogged;
 use App\Domains\Academics\Events\StudentMarkedAbsent;
+use App\Domains\Admissions\Events\FreeEnrollmentConfirmed;
 use App\Domains\ExamsGrades\Events\ExamResultsPublished;
 use App\Domains\ExamsGrades\Events\ReportCardsPublished;
 use App\Domains\Finance\Events\InvoiceIssued;
@@ -15,6 +16,7 @@ use App\Domains\Notifications\Listeners\NotifyExamResultsPublished;
 use App\Domains\Notifications\Listeners\NotifyReportCardsPublished;
 use App\Domains\Notifications\Listeners\SendAbsenceSms;
 use App\Domains\Notifications\Listeners\SendBehaviorParentSms;
+use App\Domains\Notifications\Listeners\SendFreeEnrollmentNotices;
 use App\Domains\Notifications\Listeners\SendInvoiceGuardianNotice;
 use App\Domains\Notifications\Listeners\SendPaymentConfirmationNotices;
 use App\Domains\Notifications\Services\LogSmsSender;
@@ -48,5 +50,6 @@ class NotificationsServiceProvider extends ServiceProvider
         // SPEC §41's worked example: Finance describes the confirmed payment,
         // Notifications is what tells people about it.
         Event::listen(PaymentNoticeReady::class, SendPaymentConfirmationNotices::class);
+        Event::listen(FreeEnrollmentConfirmed::class, SendFreeEnrollmentNotices::class);
     }
 }

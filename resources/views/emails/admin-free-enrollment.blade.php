@@ -25,28 +25,21 @@
     <div style="background:#ecfdf5; border-radius:6px; padding:16px; margin-bottom:20px;">
       <div class="row">
         <span class="label">Course</span>
-        <span>{{ $enrollment->course?->title ?? '—' }}</span>
+        <span>{{ $notice->courseTitle }}</span>
       </div>
       <div class="row">
         <span class="label">Student</span>
-        <span>{{ $enrollment->student?->full_name ?? '—' }}</span>
+        <span>{{ $notice->studentName }}</span>
       </div>
       <div class="row">
         <span class="label">Enrolled by</span>
-        <span>{{ $user->name ?? '—' }}</span>
+        <span>{{ $notice->payerName }}</span>
       </div>
       <div class="row">
         <span class="label">Contact</span>
-        <span>
-          @php
-            $contact = $user->mobile
-                ?? $user->contacts()->where('type','mobile')->value('value')
-                ?? $user->email
-                ?? $user->contacts()->where('type','email')->value('value')
-                ?? '—';
-          @endphp
-          {{ $contact }}
-        </span>
+        {{-- Resolved once in the DTO, not here: this ran two database
+             queries from inside a queued email template. --}}
+        <span>{{ $notice->bestContact() }}</span>
       </div>
       <div class="row">
         <span class="label">Date</span>

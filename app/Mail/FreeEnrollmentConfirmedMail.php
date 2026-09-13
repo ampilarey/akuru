@@ -2,7 +2,7 @@
 
 namespace App\Mail;
 
-use App\Domains\Courses\Models\CourseEnrollment;
+use App\Domains\Admissions\DTOs\FreeEnrollmentNoticeData;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
@@ -14,12 +14,12 @@ class FreeEnrollmentConfirmedMail extends Mailable implements ShouldQueue
 {
     use Queueable, SerializesModels;
 
-    public function __construct(public readonly CourseEnrollment $enrollment) {}
+    public function __construct(public readonly FreeEnrollmentNoticeData $notice) {}
 
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Enrollment confirmed — '.($this->enrollment->course?->title ?? 'Akuru Institute'),
+            subject: 'Enrollment confirmed — '.$this->notice->courseTitle,
         );
     }
 

@@ -7677,6 +7677,61 @@ one produced an audit. §33's five other headings — User Management, Course
 Management, Offering Management, Course Builder, Academic / Training Management
 — are inventories of CRUD that mostly exists and still need their own pass.
 
+### KNOWN_ISSUES #24 part three: every enrollment notice is a listener now
+
+The last piece of §41's worked example. The free-enrollment half stayed in
+`CourseRegistrationController`, which held two `protected` methods that queued
+two Mailables and sent an SMS — mail composed inside a controller, which is
+rule 5 as well as §41.
+
+`AnnounceFreeEnrollmentsAction` now holds the rule and raises
+`Admissions\Events\FreeEnrollmentConfirmed` after commit;
+`Notifications\Listeners\SendFreeEnrollmentNotices` sends. Both Mailables take
+`Admissions\DTOs\FreeEnrollmentNoticeData`, so nothing outside Admissions holds
+an enrollment or a user model in order to send a notice. **The controller lost
+64 lines and gained one Action call.**
+
+**What was worth moving is the rule, not the mail.** An enrollment is announced
+when its `payment_status` is `not_required`; a paid one waits for its webhook,
+because rule 12 says access and announcements follow confirmed money and never
+the creation of a row. That lived in a controller as an inline `array_filter`.
+A test now pins the **silence** for a paid enrollment, which is the half that
+would fail quietly and the half nobody would notice for months.
+
+Two more database queries came out of a queued Blade template — the same defect
+as the paid admin mail — and three `catch (\Throwable) {}` blocks commented
+"non-critical" became logged warnings. A family that never received their
+confirmation used to leave no trace at all.
+
+#### Verification
+
+**The architecture suite caught a real mistake of mine mid-slice.** The first
+version of the Action type-hinted `Identity\Models\User`, a new cross-domain
+model import. Rule 1 and rule 2 both went red and named the file. The fix was
+`Identity\Actions\ResolveUserNoticeContactAction` — deliberately *not*
+`ReadVerifiedUserContactsAction`, which returns verified contacts only: that is
+the right rule for proving identity and the wrong one here, because a family
+registering for the first time has verified nothing yet, and a confirmation
+that skips them is the exact failure this whole thread has been about.
+
+**Five tests, one of which is the one that matters:** the last drives the real
+public routes — `courses.register.enroll`, then the OTP confirm — with a free
+course, and asserts both mails are queued at the end. The Action tests pin the
+rule; that one pins the **wiring**, which is what a controller refactor breaks.
+
+**Revert-check:** announcing paid enrollments too fails the rule-12 silence
+test; putting a `Mail::to` back in the controller fails the no-Mailable guard.
+
+**No Chrome walk, and the reason is stated rather than skipped.** The public
+registration is a multi-step OTP flow and no free course exists in the seed, so
+driving it in a browser would have meant seeding a course and reading an OTP out
+of the database — a worse test than the HTTP one above, which goes through the
+same routes and asserts the outcome. Both rendered emails were checked directly:
+subjects, course title, and the admin contact line that used to be two queries
+in a template.
+
+**1,786 tests green** (5 new), arch green, Pint clean.
+
 ### KNOWN_ISSUES #24 part two: the email that said "Payment Received" over an empty table
 
 The follow-on recorded when #24 shipped: give the Mailables scalars so the

@@ -524,6 +524,32 @@ unless `APP_ENV=production` and `SMS_LIVE` are both explicitly set.
 > `CourseRegistrationController:1314` still queues `FreeEnrollmentConfirmedMail`
 > from a controller. That one needs the logic lifted out of a 1,300-line
 > controller first (rule 5), which is its own job.
+>
+> > **Closed (2026-09-13).** `AnnounceFreeEnrollmentsAction` now holds the rule
+> > and raises `Admissions\Events\FreeEnrollmentConfirmed` after commit;
+> > `Notifications\Listeners\SendFreeEnrollmentNotices` sends. Both Mailables
+> > take `Admissions\DTOs\FreeEnrollmentNoticeData`, so nothing outside
+> > Admissions holds an enrollment or a user model to send a notice.
+> >
+> > The controller lost 64 lines and now calls one Action. **It names no
+> > Mailable anywhere**, and a test asserts that, because "just one more
+> > notification where the enrollment is created" is exactly how this comes
+> > back.
+> >
+> > Which enrollments qualify was the part worth moving, not the mail: an
+> > enrollment is announced when `payment_status` is `not_required`, and a paid
+> > one waits for its webhook (rule 12 — never announce before confirmation).
+> > That rule was sitting in a controller as an inline `array_filter`. A test
+> > now pins the silence for a paid enrollment, which is the half that would
+> > fail quietly.
+> >
+> > Two more database queries came out of a queued Blade template, the same
+> > defect as the paid admin mail, and three `catch (\Throwable) {}` blocks
+> > commented "non-critical" became logged warnings — a family that never
+> > received their confirmation used to leave no trace at all.
+> >
+> > **With this, every enrollment notice in the system is a listener.** §41's
+> > worked example is closed.
 
 ---
 

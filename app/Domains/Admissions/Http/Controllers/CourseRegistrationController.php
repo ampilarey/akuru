@@ -2,6 +2,7 @@
 
 namespace App\Domains\Admissions\Http\Controllers;
 
+use App\Domains\Admissions\Actions\AnnounceFreeEnrollmentsAction;
 use App\Domains\Admissions\Models\RegistrationFlow;
 use App\Domains\Admissions\Services\Enrollment\EnrollmentService;
 use App\Domains\Courses\Models\Course;
@@ -993,16 +994,13 @@ class CourseRegistrationController extends PublicRegistrationController
             return redirect()->route('my.enrollments')->with('info', $msg);
         }
 
-        // Free enrollments notify now; paid ones notify from the webhook once
-        // the money is real (rule 12 — never announce before confirmation).
-        $freeCreated = array_values(array_filter(
-            $result->createdEnrollments,
-            fn ($enrollment) => $enrollment->payment_status === 'not_required'
-        ));
-        if (! empty($freeCreated)) {
-            $this->sendFreeEnrollmentStudentNotifications($user, $freeCreated);
-            $this->notifyAdminFreeEnrollment($user, $freeCreated);
-        }
+        // Free enrollments announce now; paid ones announce from the webhook
+        // once the money is real (rule 12 — never announce before
+        // confirmation). Which enrollments qualify, and telling anyone about
+        // them, both belong in the Action: §41 says enrollment code must not
+        // call notification classes, and rule 5 says a controller does not hold
+        // the rule either.
+        app(AnnounceFreeEnrollmentsAction::class)->execute((int) $user->id, $result->createdEnrollments);
 
         // Paid courses: redirect to BML for the consolidated payment.
         if ($result->hasPaymentsPending()) {
@@ -1297,59 +1295,5 @@ class CourseRegistrationController extends PublicRegistrationController
             'pending_selected_course_ids', 'pending_term_id', 'pending_flow',
             'pending_payment_ref', 'enrollments',
         ]);
-    }
-
-    protected function sendFreeEnrollmentStudentNotifications(\App\Domains\Identity\Models\User $user, $enrollments): void
-    {
-        foreach (collect($enrollments)->filter() as $enrollment) {
-            $enrollment->loadMissing(['course', 'student']);
-
-            // Email
-            $emailAddress = $user->email
-                ?? $user->contacts()->where('type', 'email')->value('value');
-
-            if ($emailAddress) {
-                try {
-                    \Illuminate\Support\Facades\Mail::to($emailAddress)
-                        ->queue(new \App\Mail\FreeEnrollmentConfirmedMail($enrollment));
-                } catch (\Throwable) {
-                    // non-critical
-                }
-            }
-
-            // SMS
-            $mobile = $user->mobile
-                ?? $user->contacts()->where('type', 'mobile')->value('value');
-
-            if ($mobile) {
-                try {
-                    app(\App\Domains\Notifications\Contracts\SmsSenderInterface::class)->sendSms(
-                        $mobile,
-                        "Akuru: Enrollment received for {$enrollment->course?->title}. Pending approval."
-                    );
-                } catch (\Throwable) {
-                    // non-critical
-                }
-            }
-        }
-    }
-
-    protected function notifyAdminFreeEnrollment(\App\Domains\Identity\Models\User $user, $enrollments): void
-    {
-        $adminEmail = config('mail.admin_notification_address')
-            ?? config('mail.from.address');
-
-        if (! $adminEmail) {
-            return;
-        }
-
-        foreach (collect($enrollments)->filter() as $enrollment) {
-            try {
-                \Illuminate\Support\Facades\Mail::to($adminEmail)
-                    ->queue(new \App\Mail\AdminFreeEnrollmentMail($user, $enrollment));
-            } catch (\Throwable) {
-                // non-critical
-            }
-        }
     }
 }
