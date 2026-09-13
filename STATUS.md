@@ -7677,6 +7677,73 @@ one produced an audit. §33's five other headings — User Management, Course
 Management, Offering Management, Course Builder, Academic / Training Management
 — are inventories of CRUD that mostly exists and still need their own pass.
 
+### SPEC §44 + §45: the route that relied on the button being hidden
+
+§45 says "Backend must enforce permissions." §44 says "All actions must use
+backend policies and permissions" and, in its own bold, **"Do not rely only on
+frontend button hiding."** Both are claims about *every* write route, and
+nothing checked them.
+
+**The audit.** 399 write routes (POST/PUT/PATCH/DELETE). A first pass over
+controller bodies flagged 66, but that detector was wrong in both directions:
+this codebase puts rules in Actions (rule 5), so `SwitchAccountAction`,
+`SaveWriterItemAction`, `AdvancePickupNoticeAction`,
+`RespondToMessagePollAction` and `SubmitResearchReviewAction` all guard
+correctly where a controller-body grep cannot see it — and a class-level
+fallback then *hid* per-method gaps, because `HifzMilestoneController::approve`
+calls `$this->authorize()` while `store` does not. Every candidate was read
+individually, and the ones that could not be settled by reading were probed
+with real requests as a plain signed-in user.
+
+Almost everything held up. `exams/gradebook/compute` calls a custom
+`authorizeClassSubject()` helper; Hifz writes are gated by FormRequests
+(`recommend_hifz_milestones`); `teach/*`, `forms`, `academics/materials` all
+answered **403** to a plain account; `api/notifications/*` pass `Auth::id()` and
+are self-scoped; `SmsApiController::send` checks an API key.
+
+**One route did not.** `POST /announcements` was `auth`-only with no check in
+the controller body, so **any signed-in account — a pupil, a parent — could
+post a school-wide announcement**, `type: emergency` and `priority: urgent`
+included, at any audience or class. The screen was admin-only. The route was
+not. That is exactly the frontend-button-hiding §44 forbids.
+
+It is the same defect, in the same file, as the students/teachers block twenty
+lines above it, which an earlier slice had already fixed with this comment:
+*"Any signed-in account — a parent, a pupil — could therefore list, create,
+edit and delete students and teachers through these."* That slice fixed three
+route groups and walked past the fourth.
+
+On an empty test database the unguarded route **500s** rather than inserting,
+because `School::first()?->id ?? 1` falls back to a school id that does not
+exist and the foreign key refuses it. On any real deployment, which has a
+school row, it inserts. So the defect read as a crash and was not one.
+
+**What shipped.** `create` and `store` move behind
+`role:super_admin|admin|headmaster|supervisor` — the same guard the
+students/teachers block got — registered *before* `show`, so
+`announcements/create` is not swallowed by the `announcements/{announcement}`
+wildcard. `index` and `show` stay open to everyone signed in, because that is
+what a noticeboard is for.
+
+**`WriteRoutesAreGuardedTest` is the part that matters.** A person reading
+route definitions missed this once already; a test will not. It pins every
+write route against `Baselines/unguarded_write_routes.php`, which may only
+shrink, and which fails just as loudly on a **stale** entry — a guard added
+without deleting the note that says it is missing is how the next reader gets
+misled.
+
+The test is honest about its own limits, and the baseline says so entry by
+entry: the detector cannot follow a guard into an Action, so a route in the
+baseline is **not** asserted unsafe. Sixty-one entries, each with its reason,
+and the fourteen that were read in full are marked `READ:`. The claim is only
+that **the set cannot grow silently** — a new unguarded write route has to be
+looked at and written down before it can merge.
+
+Walked in Chrome at `127.0.0.1:8901` (2026-09-13): a pupil gets `200` on
+`/announcements` and **`403` on `/announcements/create`**; an admin gets `200`
+on both. Revert-checked — with the guard removed, all three new tests fail,
+including the architecture test, which is the whole point of it.
+
 ### SPEC §23: a seat rule written about a status the database could not hold
 
 §23's `course_enrollments` table carries most of what the section names, the
