@@ -83,6 +83,10 @@ class ListCourseActivitiesAction
             'label' => $kind->label(),
             'accepts_uploads' => $kind->acceptsUploads(),
             'accepts_text' => $kind === ActivitySubmissionKind::Written,
+            // SPEC §51.6's "Handwriting canvas". The player is told to draw
+            // rather than to offer a file picker; the upload path underneath
+            // is the same one every other attachment takes (rule 11).
+            'is_canvas' => $kind->isCanvas(),
             'accept' => implode(',', $kind->allowedMimes()),
             'max_bytes' => $kind->maxBytes(),
         ];

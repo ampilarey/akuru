@@ -188,5 +188,11 @@ it('offers the modes and switches to the builder', function () {
         ->assertInertia(fn ($page) => $page
             ->where('textInputTypes', ['fill_blank', 'short_answer'])
             ->where('normalizationModes', ['strict', 'lenient'])
-            ->has('normalizationFlags', 8));
+            // 8 → 9: SPEC §51.8's `strip_tatweel`, which the section listed
+            // ("Remove tatweel ـ") and nothing implemented. The count is
+            // pinned rather than derived on purpose — deriving it from
+            // `flags()` would pass however many flags reached the screen,
+            // including none — so adding one is meant to land here and be
+            // decided rather than absorbed.
+            ->has('normalizationFlags', 9));
 });

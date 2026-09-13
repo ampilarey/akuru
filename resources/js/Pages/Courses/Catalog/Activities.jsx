@@ -103,7 +103,8 @@ export default function Activities({ course, activities, patterns, skills = [], 
                     <p className="md:col-span-2 text-xs text-gray-600">
                         <code>submission_kind</code>: <code>written</code> (text box),
                         {' '}<code>file</code> (image, PDF, document or audio upload),
-                        {' '}<code>audio</code> (recording only — the reviewer plays it).
+                        {' '}<code>audio</code> (recording only — the reviewer plays it),
+                        {' '}<code>canvas</code> (§51.6 handwriting — the student draws, the reviewer sees the image).
                     </p>
                 )}
                 <textarea className="form-input md:col-span-2 min-h-24 font-mono text-xs" value={form.data.settings} onChange={(e) => form.setData('settings', e.target.value)} />

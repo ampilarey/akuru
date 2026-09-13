@@ -1,6 +1,7 @@
 import { router, usePage } from '@inertiajs/react';
 import { useMemo, useState } from 'react';
 import AppShell from '../../../Layouts/AppShell';
+import HandwritingCanvas from '../../../Components/HandwritingCanvas';
 
 function initialAnswers(activity, attempt) {
     if (attempt?.answers) {
@@ -62,7 +63,15 @@ function Attachments({ activity, attachments, submitted }) {
     return (
         <section className="mb-4 rounded-lg border bg-white p-4">
             <p className="mb-2 text-sm font-medium">{activity.submission?.label || 'Upload'}</p>
-            {!submitted && (
+            {/* SPEC §51.6 lists "Handwriting canvas" and "Handwriting image
+                upload" as two ways to hand in the same thing. The upload half
+                shipped with §36; this is the other, and it posts through the
+                very same endpoint — the canvas just exports a PNG, so there is
+                one upload path and one MIME allowlist (rule 11). */}
+            {!submitted && activity.submission?.is_canvas && (
+                <HandwritingCanvas onExport={upload} />
+            )}
+            {!submitted && !activity.submission?.is_canvas && (
                 <input
                     type="file"
                     className="form-input mb-3"

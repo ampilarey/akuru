@@ -186,6 +186,12 @@ class SaveActivityAction
                 'normalize_hamza' => (bool) ($settings['normalize']['normalize_hamza'] ?? false),
                 'normalize_alef' => (bool) ($settings['normalize']['normalize_alef'] ?? false),
                 'taa_marbuta' => (bool) ($settings['normalize']['taa_marbuta'] ?? false),
+                // SPEC §51.8 "Remove tatweel ـ". This list is hardcoded rather
+                // than derived from `NormalizeTextAnswerAction::flags()`, so
+                // a flag added there is silently dropped here — which is how a
+                // setting an author ticks can fail to reach the normalizer.
+                // Pinned by a test that compares the two.
+                'strip_tatweel' => (bool) ($settings['normalize']['strip_tatweel'] ?? false),
             ],
         ];
     }

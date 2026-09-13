@@ -62,6 +62,19 @@ class NormalizeTextAnswerAction
         'normalize_alef' => false,
         'normalize_hamza' => false,
         'taa_marbuta' => false,
+        // SPEC §51.8 lists "Remove tatweel ـ" among the normalization options
+        // and nothing implemented it, in either this Action or the settings
+        // validator.
+        //
+        // Off by default like every other Arabic switch, because §18 and
+        // §51.8 both say Arabic normalization must not be global. But it is
+        // the option most likely to be wanted: tatweel (U+0640, the kashida)
+        // is a purely decorative letter-stretcher with no phonetic value, and
+        // it arrives without being typed — Arabic keyboards produce it and it
+        // survives a copy-paste out of justified text. A student answering
+        // مـحـمـد was marked wrong against محمد for characters that mean
+        // nothing.
+        'strip_tatweel' => false,
     ];
 
     /**
@@ -91,6 +104,13 @@ class NormalizeTextAnswerAction
         }
         if ($on['case_insensitive']) {
             $text = mb_strtolower($text);
+        }
+        // SPEC §51.8 "Remove tatweel ـ". Before stripping tashkeel rather than
+        // after, because a haraka may sit on a tatweel: removing the stretcher
+        // first leaves the mark attached to the letter it belongs to, so a
+        // question that checks harakas still sees them.
+        if ($on['strip_tatweel']) {
+            $text = str_replace("\u{0640}", '', $text);
         }
         if ($on['strip_tashkeel']) {
             $text = (string) preg_replace('/[\x{064B}-\x{065F}\x{0670}]/u', '', $text);
