@@ -263,6 +263,9 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
     Route::get('/portal/performance/export', [PortalPerformanceController::class, 'export'])->name('portal.performance.export');
     Route::get('/portal/performance', [PortalPerformanceController::class, 'index'])->name('portal.performance');
     Route::get('/learn', [LearnDashboardController::class, 'index'])->name('learn.dashboard');
+    // SPEC §24 "Certificates". Every §39 route sat behind `courses.manage`, so
+    // the student the certificate was issued to could not open it.
+    Route::get('/learn/certificates/{certificate}', [LearnDashboardController::class, 'certificate'])->name('learn.certificates.show')->whereNumber('certificate');
     Route::get('/learn/schedule', [LearnScheduleController::class, 'index'])->name('learn.schedule');
     Route::get('/learn/arabic-report', [LearnArabicReportController::class, 'index'])->name('learn.arabic-report');
     Route::get('/learn/quran', [LearnQuranController::class, 'index'])->name('learn.quran');

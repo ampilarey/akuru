@@ -7422,6 +7422,102 @@ source of truth that does not exist yet: a teacher's approval, a payment, a
 date, an attendance record. Module- and offering-level storage are also still
 unbuilt.
 
+### SPEC §24: the student dashboard showed five of the twelve things it names
+
+§24 lists what the student dashboard must show:
+
+> Enrolled courses/offerings · Continue learning · Upcoming sessions ·
+> Current progress · Completed lessons · Pending lessons ·
+> Pending assessments · Scores · Attendance where applicable ·
+> Teacher feedback · Certificates · Access/payment status later
+
+**Five were served.** The card rendered `40% · 3 · active` — that middle figure
+is `completed_lessons`, interpolated with **no label at all**, and since
+nothing sent a total, the one question a student actually has ("how much is
+left?") was both unlabelled and unanswerable.
+
+Six were absent, and every one of them was absent while the machinery behind it
+existed and worked:
+
+| §24 item | What was already built and running |
+|---|---|
+| Pending lessons | lesson counts, per-lesson progress |
+| Pending assessments | `assessments` + full attempt statuses |
+| Scores | `ListAssessmentScoresAction`, feeding teacher reports |
+| Attendance | `GetOfferingAttendancePercentAction`, **including its null answer for "no sessions"** — §24's "where applicable", already correct |
+| Teacher feedback | `ReviewAttemptAction` has stored comments since the review slice; only the teacher's own screen ever read one back |
+| Certificates | §39 issues, renders, numbers, verifies and revokes them |
+
+Nothing in this slice computes anything new. It composes Actions that were
+already right and already had no reader.
+
+**The certificate one is the sharpest.** Every §39 route sits behind
+`role:super_admin|admin|headmaster` **and** `courses.manage`. So the system
+issued a certificate *to* a student, told them on the course page that they had
+earned it, printed its number — and gave them no way to open it. The rendered
+document's only readers were administrators.
+
+`ServeStudentCertificateAction` is the narrowest gate that fixes it: the
+certificate must be **this user's own** and **not revoked**. Revocation is the
+whole point of that column — a withdrawn certificate that still downloads was
+never withdrawn — and it is why this could not be the staff download with a
+widened role, which deliberately has no such check because an administrator may
+need to look at a revoked row. Someone else's certificate returns **404, not
+403**: a 403 would confirm the id exists and belongs to somebody.
+
+**The trap this slice had to avoid.** §19's `show_results` decides whether a
+student sees a mark at all, and an earlier slice fixed a teacher's unpublished
+marks being shown anyway. Adding scores one screen further out is exactly how
+that gets quietly undone. `ListAssessmentScoresAction` must *not* apply the
+setting — a teacher report runs through the same Action and would be blanked —
+so the hiding happens in `SummarizeEnrollmentWorkAction`, on the Courses side
+where `ResolveAssessmentSettingsAction` lives, the same way
+`StartAssessmentAttemptAction::serialize()` does it for the assessment page. A
+test pins it. Feedback is deliberately **not** hidden with the mark: §19's
+switch is about the score, and a teacher who wrote a comment meant it read.
+
+Two smaller judgements, written into the code:
+
+- **A submitted attempt is not "pending".** It is on the teacher's desk, not the
+  student's, so it reports as *awaiting marking* rather than counting as work
+  owed. A draft assessment counts for nobody.
+- **A revoked certificate leaves the dashboard** rather than showing as
+  revoked. The student has no action to take on one, and listing it invites a
+  question the dashboard cannot answer. Staff keep the full history.
+
+**One thing the walk caught.** The new offering line rendered the raw enum
+`self_learning`, and the course learning page had been humanising the same
+value in JSX with `replaceAll('_', ' ')` — which can produce "face to face" and
+can never produce "Face-to-face". `DeliveryMode::label()` now names them once
+and both screens read it.
+
+**Verification.** Revert-check: dropping the `show_results` guard and the
+certificate ownership/revocation checks turns **2 of the 6** new tests red.
+
+**Walked in a browser**, two accounts, local `akuru_walk`:
+
+| Step | Result |
+|---|---|
+| Student opens `/learn` | **200**, stats read `0 / 4 · 4 left · 1 due · —` |
+| A marked assessment | `8 / 10` |
+| One never opened | *Not started* |
+| One with `show_results` off | *"Marks not published"* — a reason, not a blank |
+| Teacher feedback block | both comments rendered |
+| Certificates section | present, with **Open** and **Verify AKU-2026-B5AB9A** |
+| Student opens their certificate | **200 text/html**, the document names them |
+| Another signed-in user opens it | **403** (no student profile; another *student* gets 404) |
+| Student completes a lesson, returns | `1 / 4 · 3 left`, progress **0% → 25%** |
+| Offering line, both screens | "Self-paced", not `self_learning` |
+
+**1,632 tests green** (6 new), architecture suite green, `npm run build` clean.
+
+**What §24 still lacks, recorded not fixed (rule 1).** "Access/payment status"
+is the one item §24 itself defers ("later") and the one thing not added. The
+enrolment `status` still renders as a raw value (`active`) — pre-existing, and
+it belongs with the wider untranslated-strings pass rather than here. Feedback
+is collected from assessment attempts only; `ReviewAttemptAction` writes it for
+activity attempts too, and those comments still have no student-facing reader.
+
 ### SPEC §20: the question attachments nobody could see
 
 §20 gives a question four attachment kinds and one rule about them:

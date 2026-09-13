@@ -2,6 +2,7 @@
 
 namespace App\Domains\Offerings\Actions;
 
+use App\Domains\Offerings\Enums\DeliveryMode;
 use App\Domains\Offerings\Models\CourseOffering;
 
 /**
@@ -34,6 +35,11 @@ class DescribeOfferingAction
             'delivery_mode' => $offering->delivery_mode instanceof \BackedEnum
                 ? $offering->delivery_mode->value
                 : $offering->delivery_mode,
+            // The wording belongs to the enum, not to each screen: two pages
+            // humanising `self_learning` independently is two wordings.
+            'delivery_mode_label' => $offering->delivery_mode instanceof DeliveryMode
+                ? $offering->delivery_mode->label()
+                : (string) $offering->delivery_mode,
             'status' => $offering->status instanceof \BackedEnum
                 ? $offering->status->value
                 : $offering->status,

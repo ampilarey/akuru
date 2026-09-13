@@ -22,7 +22,7 @@ export default function Show({
                 {offering && (
                     <span className="ms-2">
                         · {offering.title}
-                        <span className="ms-1 text-gray-500">({(offering.delivery_mode || '').replaceAll('_', ' ')})</span>
+                        <span className="ms-1 text-gray-500">({offering.delivery_mode_label || offering.delivery_mode})</span>
                     </span>
                 )}
             </p>
