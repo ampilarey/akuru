@@ -5,6 +5,7 @@ namespace App\Domains\Courses\Http\Controllers;
 use App\Domains\Courses\Actions\AttachAssessmentQuestionAction;
 use App\Domains\Courses\Actions\ListCourseAssessmentsAction;
 use App\Domains\Courses\Actions\ListQuestionsAction;
+use App\Domains\Courses\Actions\ReorderAssessmentQuestionsAction;
 use App\Domains\Courses\Actions\SaveAssessmentAction;
 use App\Domains\Courses\Enums\AssessmentStatus;
 use App\Domains\Courses\Enums\AssessmentType;
@@ -73,6 +74,27 @@ class CatalogAssessmentController extends Controller
         ]);
 
         return back()->with('success', 'Question attached.');
+    }
+
+    /**
+     * SPEC §21's **Position**. `BuildAssessmentSnapshotsAction` has always
+     * ordered attempts by it and nothing could ever change it, so the order
+     * questions were attached in was the order every student sat them in.
+     */
+    public function reorderQuestions(Request $request, int $course, int $assessment): RedirectResponse
+    {
+        abort_unless($request->user()?->can('courses.manage'), 403);
+        Course::query()->findOrFail($course);
+        Assessment::query()->where('course_id', $course)->findOrFail($assessment);
+
+        $data = $request->validate([
+            'question_ids' => ['required', 'array', 'min:1'],
+            'question_ids.*' => ['integer'],
+        ]);
+
+        app(ReorderAssessmentQuestionsAction::class)->execute($assessment, $data['question_ids']);
+
+        return back()->with('success', 'Question order saved.');
     }
 
     public function detach(Request $request, int $course, int $assessment, int $question): RedirectResponse

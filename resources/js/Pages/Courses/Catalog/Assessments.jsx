@@ -16,7 +16,26 @@ export default function Assessments({ course, assessments, questions, types }) {
         assessment_id: assessments[0]?.id || '',
         question_id: questions[0]?.id || '',
         points_override: 1,
+        // SPEC §21's "Is required". The controller has always read it — with a
+        // default of true — and no control ever sent it, so every attached
+        // question was silently required and nothing enforced it either.
+        is_required: true,
     });
+
+    // §21's "Position". Attaching assigned max+1 and nothing could ever change
+    // it, so the order questions happened to be attached in was the order every
+    // student sat them in. Moving one posts the whole list, which is what
+    // `ReorderAssessmentQuestionsAction` requires — a partial list would
+    // renumber some rows and leave the rest colliding.
+    const moveQuestion = (assessmentId, items, index, delta) => {
+        const ids = items.map((item) => item.question_id);
+        const target = index + delta;
+        if (target < 0 || target >= ids.length) {
+            return;
+        }
+        [ids[index], ids[target]] = [ids[target], ids[index]];
+        router.post(`/catalog/courses/${course.id}/assessments/${assessmentId}/questions/reorder`, { question_ids: ids }, { preserveScroll: true });
+    };
 
     return (
         <AppShell title={`Assessments — ${course.title}`}>
@@ -86,6 +105,14 @@ export default function Assessments({ course, assessments, questions, types }) {
                     {questions.map((row) => <option key={row.id} value={row.id}>{row.title || row.question_text}</option>)}
                 </select>
                 <input className="form-input" type="number" min="1" value={attachForm.data.points_override} onChange={(e) => attachForm.setData('points_override', e.target.value)} />
+                <label className="flex items-center gap-2 text-sm">
+                    <input
+                        type="checkbox"
+                        checked={attachForm.data.is_required}
+                        onChange={(e) => attachForm.setData('is_required', e.target.checked)}
+                    />
+                    Required
+                </label>
                 <button type="submit" className="btn-primary" disabled={attachForm.processing || assessments.length === 0 || questions.length === 0}>Attach question</button>
             </form>
             <div className="space-y-3">
@@ -97,16 +124,39 @@ export default function Assessments({ course, assessments, questions, types }) {
                             <span className="text-sm text-gray-600">max {row.max_score}</span>
                         </div>
                         <ul className="space-y-1 text-sm">
-                            {row.questions.map((item) => (
-                                <li key={item.question_id} className="flex items-center justify-between gap-2 border-t pt-2">
-                                    <span>{item.question.question_text} · {item.points_override || 1} pts</span>
-                                    <button
-                                        type="button"
-                                        className="btn-secondary"
-                                        onClick={() => router.delete(`/catalog/courses/${course.id}/assessments/${row.id}/questions/${item.question_id}`)}
-                                    >
-                                        Remove
-                                    </button>
+                            {row.questions.map((item, index) => (
+                                <li key={item.question_id} className="flex flex-wrap items-center justify-between gap-2 border-t pt-2">
+                                    <span>
+                                        {index + 1}. {item.question.question_text} · {item.points_override || 1} pts
+                                        {item.is_required
+                                            ? <span className="ms-2 text-xs uppercase text-amber-800">required</span>
+                                            : <span className="ms-2 text-xs uppercase text-gray-400">optional</span>}
+                                    </span>
+                                    <span className="flex gap-2">
+                                        <button
+                                            type="button"
+                                            className="btn-secondary"
+                                            aria-label={`Move ${item.question.question_text} up`}
+                                            onClick={() => moveQuestion(row.id, row.questions, index, -1)}
+                                        >
+                                            Up
+                                        </button>
+                                        <button
+                                            type="button"
+                                            className="btn-secondary"
+                                            aria-label={`Move ${item.question.question_text} down`}
+                                            onClick={() => moveQuestion(row.id, row.questions, index, 1)}
+                                        >
+                                            Down
+                                        </button>
+                                        <button
+                                            type="button"
+                                            className="btn-secondary"
+                                            onClick={() => router.delete(`/catalog/courses/${course.id}/assessments/${row.id}/questions/${item.question_id}`)}
+                                        >
+                                            Remove
+                                        </button>
+                                    </span>
                                 </li>
                             ))}
                         </ul>

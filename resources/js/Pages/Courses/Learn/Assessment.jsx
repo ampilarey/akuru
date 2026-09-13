@@ -111,6 +111,11 @@ function formatRemaining(seconds) {
 
 export default function Assessment({ assessment, enrollment, attempt, mediaShowUrl = '/learn/media' }) {
     const t = usePage().props.i18n?.learn || {};
+    // The server now refuses a submit that leaves a §21-required question
+    // blank. A refusal the page does not render is the same invisible refusal
+    // the §13 lesson player had — HTTP 200 and a button that appears to do
+    // nothing.
+    const submitError = usePage().props.errors?.answers;
     const submitted = attempt && attempt.status !== 'in_progress';
     const [answers, setAnswers] = useState(() => blankAnswers(attempt?.snapshots || [], attempt?.answers || {}));
 
@@ -207,7 +212,18 @@ export default function Assessment({ assessment, enrollment, attempt, mediaShowU
                     const current = answers[snapshot.question_id] || {};
                     return (
                         <section key={snapshot.question_id} className="rounded-lg border bg-white p-4">
-                            <h2 className="mb-2 font-medium">{index + 1}. {snapshot.question_text}</h2>
+                            <h2 className="mb-2 font-medium">
+                                {index + 1}. {snapshot.question_text}
+                                {/* §21's "Is required" reached the snapshot and
+                                    was drawn nowhere and enforced nowhere, so a
+                                    student could submit every required question
+                                    blank and only learn of it from the mark.
+                                    Submitting is now refused — which is only
+                                    fair if the page says which ones matter. */}
+                                {snapshot.is_required && (
+                                    <span className="ms-2 text-xs uppercase text-amber-800">{t.required || 'required'}</span>
+                                )}
+                            </h2>
                             {/* §20 lists "Secondary text" as a field of its own
                                 and §21 requires the snapshot to carry it. It
                                 was stored, snapshotted, and drawn nowhere — a
@@ -324,6 +340,11 @@ export default function Assessment({ assessment, enrollment, attempt, mediaShowU
                     );
                 })}
             </div>
+            {submitError && (
+                <p role="alert" className="mt-4 rounded-lg border border-red-300 bg-red-50 p-3 text-sm text-red-900">
+                    {submitError}
+                </p>
+            )}
             <div className="mt-4 flex flex-wrap gap-3">
                 <button
                     type="button"
