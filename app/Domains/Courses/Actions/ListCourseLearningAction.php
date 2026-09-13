@@ -8,6 +8,7 @@ use App\Domains\Courses\Models\Course;
 use App\Domains\Courses\Models\CourseEnrollment;
 use App\Domains\Courses\Models\CourseModule;
 use App\Domains\Courses\Models\Lesson;
+use App\Domains\Offerings\Actions\DescribeOfferingAction;
 use App\Domains\Offerings\Actions\ListUpcomingSessionsForOfferingsAction;
 use App\Domains\People\Actions\ResolveStudentForUserAction;
 use App\Domains\Progress\Actions\ListLessonProgressAction;
@@ -56,7 +57,7 @@ class ListCourseLearningAction
             // was, so a student enrolled in one of several batches could not
             // tell from this screen which one they were looking at.
             'offering' => $enrollment?->course_offering_id
-                ? app(\App\Domains\Offerings\Actions\DescribeOfferingAction::class)
+                ? app(DescribeOfferingAction::class)
                     ->execute((int) $enrollment->course_offering_id)
                 : null,
             // SPEC §24: "Certificate eligibility status". The engine for this
@@ -90,6 +91,11 @@ class ListCourseLearningAction
                         'title' => $lesson->title,
                         'is_preview' => $lesson->is_preview,
                         'status' => $row['status'] ?? 'not_started',
+                        // §25: what the lesson was completed with, frozen at
+                        // completion. Only the headline figures reach the
+                        // client; the per-activity breakdown stays on the row.
+                        'score' => $row['score_summary']['score'] ?? null,
+                        'max_score' => $row['score_summary']['max_score'] ?? null,
                         'unlocked' => $lesson->is_preview || ($enrollment !== null && $auth->isUnlocked($lesson, $enrollment->id)),
                     ];
                 })->values(),

@@ -46,11 +46,26 @@ class StartOrCompleteLessonProgressAction
         $recorded = app(RecordLessonProgressAction::class)->execute([
             'enrollment_id' => $enrollment->id,
             'course_id' => $lesson->course_id,
+            // SPEC §25 lists `course offering ID nullable` on the progress row
+            // and says offering progress "should be calculated in the context
+            // of that offering". The column existed, the writer accepted it,
+            // and this — its only caller — never sent it, so **every** row was
+            // null even for a student enrolled through an offering. A progress
+            // record that cannot say which batch it belongs to is not a record
+            // of that batch.
+            'course_offering_id' => $enrollment->course_offering_id,
             'course_module_id' => $lesson->course_module_id,
             'lesson_id' => $lesson->id,
             'lesson_revision_id' => $lesson->current_revision_id,
             'student_id' => $enrollment->unified_student_id,
             'status' => $status,
+            // §25's `score_summary`, written for the first time. Only on
+            // completion: "how did they do" is a question about a finished
+            // lesson, and rewriting it on every page open would churn the row
+            // and lose the figure the completion was actually judged on.
+            'score_summary' => $status === 'completed'
+                ? app(SummarizeLessonScoreAction::class)->execute($lesson, (int) $enrollment->id)
+                : null,
         ]);
 
         app(SyncEnrollmentProgressAction::class)->execute($enrollment->fresh());
