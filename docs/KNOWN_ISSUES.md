@@ -488,6 +488,38 @@ unless `APP_ENV=production` and `SMS_LIVE` are both explicitly set.
 > existing listeners on the money→access path. **The remaining step is to give
 > the Mailables scalars and move the listener across.**
 >
+> > **Done (2026-09-13), and it uncovered a third defect.** The Mailables now
+> > take `Finance\DTOs\PaymentNoticeData`, so
+> > `Notifications\Listeners\SendPaymentConfirmationNotices` sends and Finance
+> > only describes: `RaisePaymentNoticeReady` builds the DTO and raises
+> > `PaymentNoticeReady` after commit. Nothing in Notifications names a Finance
+> > model — only its Event and its DTO, both of which rule 3 permits. §41's
+> > worked example is now arranged as written, and `PaymentConfirmed` keeps its
+> > strict in-transaction money→access semantics untouched.
+> >
+> > Giving "which courses is this payment for?" a single owner is what exposed
+> > the third defect. All three notices asked `$payment->items`, and **only the
+> > legacy consolidated payments have item rows.** Engine checkout payments
+> > point at the enrollment; manual payments carry `course_id`. So for both, the
+> > confirmation email rendered a **Course/Status table with a heading and no
+> > rows** under the words "Payment Received", and the admin email's subject read
+> > "— Unknown course". That was live for **every engine checkout payer**, not
+> > only the manual ones this entry is about — it simply had not been noticed,
+> > because the SMS half of it only became visible when manual payments started
+> > sending at all. `BuildPaymentNoticeDataAction` resolves items → payable →
+> > `course_id`, and the view no longer prints a table when there is nothing to
+> > put in it.
+> >
+> > Two DB queries also came out of a queued Blade template
+> > (`admin-new-enrollment` was calling `$user->contacts()->where(...)` while
+> > rendering).
+> >
+> > **Deliberately unchanged:** the admin SMS still fires only for payments with
+> > item rows. That restriction was an accident of the old query rather than a
+> > decision, but widening it starts sending admins an SMS for every engine
+> > checkout, and who gets woken up is the owner's call. `hasItemisedCourses` on
+> > the DTO holds the audience where it was and says what it is waiting for.
+>
 > **Also still open:** the free-enrollment path.
 > `CourseRegistrationController:1314` still queues `FreeEnrollmentConfirmedMail`
 > from a controller. That one needs the logic lifted out of a 1,300-line

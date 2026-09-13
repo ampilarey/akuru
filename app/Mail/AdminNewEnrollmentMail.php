@@ -2,7 +2,7 @@
 
 namespace App\Mail;
 
-use App\Domains\Finance\Models\Payment;
+use App\Domains\Finance\DTOs\PaymentNoticeData;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
@@ -13,14 +13,16 @@ class AdminNewEnrollmentMail extends Mailable
 {
     use Queueable, SerializesModels;
 
-    public function __construct(public readonly Payment $payment) {}
+    public function __construct(public readonly PaymentNoticeData $notice) {}
 
     public function envelope(): Envelope
     {
-        $course = $this->payment->items->first()?->course?->title ?? 'Unknown course';
-        $student = $this->payment->student?->full_name ?? $this->payment->user?->name ?? 'Unknown';
+        // `courses` resolves items, then the enrollment, then the §38 course
+        // column — so an engine or manual payment no longer reads
+        // "[New enrollment] Yusuf — Unknown course".
+        $course = $this->notice->courses[0]['title'] ?? 'Unknown course';
 
-        return new Envelope(subject: "[New enrollment] {$student} — {$course}");
+        return new Envelope(subject: "[New enrollment] {$this->notice->studentName} — {$course}");
     }
 
     public function content(): Content

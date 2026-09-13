@@ -8,6 +8,7 @@ use App\Domains\ExamsGrades\Events\ExamResultsPublished;
 use App\Domains\ExamsGrades\Events\ReportCardsPublished;
 use App\Domains\Finance\Events\InvoiceIssued;
 use App\Domains\Finance\Events\InvoiceReminderDue;
+use App\Domains\Finance\Events\PaymentNoticeReady;
 use App\Domains\Notifications\Contracts\PushSenderInterface;
 use App\Domains\Notifications\Contracts\SmsSenderInterface;
 use App\Domains\Notifications\Listeners\NotifyExamResultsPublished;
@@ -15,6 +16,7 @@ use App\Domains\Notifications\Listeners\NotifyReportCardsPublished;
 use App\Domains\Notifications\Listeners\SendAbsenceSms;
 use App\Domains\Notifications\Listeners\SendBehaviorParentSms;
 use App\Domains\Notifications\Listeners\SendInvoiceGuardianNotice;
+use App\Domains\Notifications\Listeners\SendPaymentConfirmationNotices;
 use App\Domains\Notifications\Services\LogSmsSender;
 use App\Domains\Notifications\Services\NullPushSender;
 use App\Domains\Notifications\Services\SmsGatewayService;
@@ -42,5 +44,9 @@ class NotificationsServiceProvider extends ServiceProvider
         Event::listen(ReportCardsPublished::class, NotifyReportCardsPublished::class);
         Event::listen(InvoiceIssued::class, [SendInvoiceGuardianNotice::class, 'handleIssued']);
         Event::listen(InvoiceReminderDue::class, [SendInvoiceGuardianNotice::class, 'handleReminder']);
+
+        // SPEC §41's worked example: Finance describes the confirmed payment,
+        // Notifications is what tells people about it.
+        Event::listen(PaymentNoticeReady::class, SendPaymentConfirmationNotices::class);
     }
 }
