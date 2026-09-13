@@ -7422,6 +7422,93 @@ source of truth that does not exist yet: a teacher's approval, a payment, a
 date, an attendance record. Module- and offering-level storage are also still
 unbuilt.
 
+### SPEC §29: the admin screen that erased a student's history with the keys off
+
+**Most of §29 is cleared, and that matters to the finding.** All eight tables
+§29 names carry `deleted_at`; all eight models carry the `SoftDeletes` trait;
+`DeleteCourseAction` and `DeleteCourseModuleAction` already count dependants and
+degrade to a soft delete rather than destroying anything; club membership
+removal goes through `CancelEnrollmentAction`, which cancels. Somebody built
+§29 properly.
+
+**One path did the opposite of all of it**, reachable from an ordinary admin
+screen (`admin/users`, super-admin only), and did it with the safety rails
+switched off:
+
+```php
+DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+DB::table('course_enrollments')->whereIn('student_id', $studentIds)->delete();
+DB::table('registration_students')->where('user_id', $user->id)->delete();
+DB::table('payments')->where('user_id', $user->id)->delete();
+$user->delete();
+DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+```
+
+Four problems, each bad on its own:
+
+1. **`DB::table(...)->delete()` bypasses `SoftDeletes` entirely.**
+   `CourseEnrollment` carries the trait — added precisely so §29 would hold —
+   and a query-builder delete never consults it. The enrolments were **gone**,
+   not soft-deleted.
+2. **Foreign key checks were disabled**, so the `student_lesson_progress →
+   course_enrollments` cascade never fired. Progress rows, attempts, attendance
+   and issued certificates were left **orphaned**, pointing at enrolment ids
+   that no longer exist — worse than either deleting or keeping them, because
+   nothing downstream can tell the difference.
+3. **`payments` rows were destroyed.** Rule 12: money tables are append-only —
+   reversals, never deletes. A deleted payment is a reconciliation that can
+   never be done again.
+4. `users` has **no `deleted_at`**, so the account went hard too.
+
+§29's last line is "Historical student data must remain intact." This was the
+one place in the app that could violate every clause of it at once.
+
+**The fix uses something that already existed and already worked.**
+`users.is_active` is enforced at password login, OTP login, account linking and
+account switching — four places, all checked. So there is a real "this person
+can no longer sign in" that costs nobody their history, and deactivation is the
+honest meaning of "remove this user" once anything depends on them. A hard
+delete stays available for exactly what §29 permits — an account with no
+student activity and no dependent records — and it now runs **with the foreign
+keys watching**, so if the dependant list is ever incomplete the database
+refuses rather than the application silently orphaning rows.
+
+One subtlety worth recording: `course_enrollments` carries **both** the unified
+`unified_student_id` and the legacy `student_id`, and the S1.1 read switch means
+either may be the populated one on an older row. Counting only the unified id
+would have let a real roster be deleted. A test pins both.
+
+**Verification.** Revert-check: removing the deactivate branch turns **2 of the
+7** new tests red.
+
+**Walked in a browser** as a super admin:
+
+| Step | Result |
+|---|---|
+| Delete a student who has an enrolment | *"User "Ahmed Hassan" has been deactivated and can no longer sign in. Their history is kept: 1 course enrollments."* |
+| Database after | enrolment **kept**, student row **kept**, `users.is_active = 0` |
+| That account tries to sign in | refused — *"Your account is inactive. Please contact support."* |
+| Delete a throwaway account with nothing attached | *"User "Throwaway Account" has been deleted."* — the row is gone |
+
+**1,667 tests green** (7 new), architecture suite green, `npm run build` clean.
+
+**Two guards that fired on my own work, both correctly.**
+
+`BaselineArchitectureTest` went red with *"Rule 4: fixed violators — remove from
+baseline"*: `AdminUserController` was a known `DB::` -in-controller violator and
+is no longer one. The baseline "may only shrink", so it had to be edited and its
+count corrected from 3 to 2 — the test doing exactly its job.
+
+And my own new guard — that neither file contains `FOREIGN_KEY_CHECKS` — failed
+first time, because both files **quote the old code in order to explain it**. It
+now strips comments via `token_get_all` before checking. A guard that cannot
+tell documentation from instruction would punish writing the explanation down.
+
+**Recorded not fixed (rule 1).** Two console commands, `ClearNonAdminUsers` and
+`LocalClearRegistrationCommand`, also delete registration students in bulk.
+They are developer tooling rather than a product path, and whether they need the
+same guard — or an `APP_ENV` refusal — is its own slice.
+
 ### SPEC §22: a vocabulary bank that could not hold a pronunciation
 
 §22 gives a glossary item four media slots and one rule:
