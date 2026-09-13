@@ -396,6 +396,57 @@ nothing is the thing to avoid.
 
 ---
 
+### 24. Enrollment confirmation is sent by the code that confirms it, which is the one example §41 gives of what not to do
+
+**Severity:** confusion, structural. Found by the 2026-09-13 §41 audit.
+
+SPEC §41 "Domain Boundary Enforcement" does not leave this to interpretation —
+it is the worked example the section ends on:
+
+> Cross-domain side effects must use events/listeners.
+>
+> - Enrollment should dispatch an enrollment-created event.
+> - Notifications should listen to that event.
+> - **Enrollment code must not directly call notification implementation
+>   classes.**
+
+The codebase does this well almost everywhere else. Eight domain events exist
+(`PaymentConfirmed`, `PaymentRefunded`, `InvoiceIssued`, `InvoiceReminderDue`,
+`StudentMarkedAbsent`, `BehaviorRecordLogged`, `ExamResultsPublished`,
+`ReportCardsPublished`) and the Notifications domain listens to five of them
+through proper listeners. The pattern is understood and in use.
+
+**Enrollment is the exception, and it is the one §41 names.** There is no
+enrollment event of any kind — `EnrollmentCreated`, `EnrollmentConfirmed`,
+nothing. Instead:
+
+- `Finance/Services/Payment/PaymentService.php` builds and sends four
+  notifications itself: `Mail::to(...)->send(new EnrollmentConfirmedMail(...))`,
+  `AdminNewEnrollmentMail`, a confirmation SMS, and an admin notice — reaching
+  into `App\Mail\*` and `App\Domains\Identity\Models\User` directly.
+- `Admissions/Http/Controllers/CourseRegistrationController.php:1314` queues
+  `FreeEnrollmentConfirmedMail` **from a controller**, which is rule 5 as well.
+
+So the first item on §40's list of notifications — "Enrollment confirmation" —
+is wired the one way §41 says not to wire it, and the recipient logic (verified
+email contact, then unverified, then `user->email`) lives in the payment
+service where nobody looking for notification behaviour would find it.
+
+**Why this is recorded rather than fixed.** It is a real refactor with real
+behavioural edges, not a tidy-up: `Mail::send` (synchronous) and `Mail::queue`
+are both in use and the difference is observable; the sends sit inside payment
+confirmation, so moving them changes what happens when a send throws relative
+to the payment transaction; and rule 12 puts BML webhook confirmation on this
+path. Doing it properly means an `EnrollmentConfirmed` event, listeners in
+Notifications, and a decision about queueing and failure handling for each of
+the four messages — its own slice, with its own walk.
+
+**Not a safety issue.** The live-SMS kill-switch is unaffected: every SMS on
+this path goes through `SmsSenderInterface`, which binds to `LogSmsSender`
+unless `APP_ENV=production` and `SMS_LIVE` are both explicitly set.
+
+---
+
 ## Explicitly not defects
 
 - **Payroll off** — `PAYROLL_ENABLED=false` and settings `payroll.enabled` — by design (S5.6).

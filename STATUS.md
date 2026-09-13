@@ -7677,6 +7677,93 @@ one produced an audit. §33's five other headings — User Management, Course
 Management, Offering Management, Course Builder, Academic / Training Management
 — are inventories of CRUD that mostly exists and still need their own pass.
 
+### SPEC §40 + §41: three of the four architecture tests §41 demands by name
+
+**§40 is in good order and the audit says so first.** "Build notification-ready
+structure … do not overbuild notifications in Phase 1" is satisfied at both
+ends: the Notifications domain has in-app (`UserNotification`,
+`ListUserNotificationsAction`, `MarkUserNotificationsReadAction`), preferences,
+templates, threads with polls, SMS receipts and push devices; SMS and push each
+sit behind an interface; email goes through Laravel's Mail contract. Nothing
+here is missing and nothing needed building.
+
+**§41 is where the gap was, and it is an enforcement gap, not a code one.**
+§41 names four things the architecture suite *must* fail CI on. Checked one by
+one:
+
+| §41 requirement | Enforced by |
+|---|---|
+| A domain imports another domain's Eloquent models | `BaselineArchitectureTest` rule 1 |
+| A domain uses another domain's internal classes | `BaselineArchitectureTest` rule 2 |
+| Controllers contain business logic | rule 4 (DB facade) — **and it was not scanning `app/Http/Controllers/`** |
+| **External SDK classes used directly in domain business logic** | **nothing** |
+
+The fourth had no test at all. The code complied anyway — every SDK call and
+every outbound HTTP call already sat in a `Services/` wrapper implementing a
+bound interface (`WebPImageService`, `BigBlueButtonVideoConferencing`,
+`BmlPaymentProvider`, `SmsGatewayService`) — which is precisely the shape this
+sweep keeps finding: **correct code, unenforced.** An architecture rule nobody
+checks is a comment.
+
+`SdksStayBehindInterfacesTest` closes it. Two design choices worth stating:
+
+- **The SDK list is derived, not typed out.** Namespaces come from
+  `vendor/composer/installed.json` filtered to the root `composer.json`
+  requires, so `composer require some/payment-sdk` is covered the day it lands.
+  Every hand-maintained inventory in this repo has drifted.
+- **The `Http` facade is in scope.** Every integration this project actually
+  has — BML, Dhiraagu, BigBlueButton — is raw HTTP with no SDK package at all.
+  A rule watching only composer packages would have watched nothing that
+  matters here. Framework and infrastructure packages (`Illuminate`, `Inertia`,
+  `Spatie\Permission`, Tinker, Breeze) are excluded with the reason for each
+  written into the test.
+
+It found **one real violation**, baselined rather than fixed, and the reason is
+recorded: `SmsApiController::send()` forwards to the upstream SMS provider with
+its own `Http::` client, its own headers, timeout and error mapping —
+duplicating `SmsGatewayService::sendViaHttpGateway()` in the same domain, so
+two places now know the provider's wire format. It is **not** a safety hole:
+`LiveSms::allowed()` gates both methods and the blocked path goes through
+`SmsSenderInterface`. It is not fixed here because the endpoint returns the
+provider's raw JSON while the wrapper returns a normalised shape — changing
+that changes a published API's response, which is a contract decision, not
+something an enforcement slice does on the way past.
+
+The controller scanner was also widened to cover `app/Http/Controllers/`.
+Nothing was hiding there (two files, neither touches `DB::`), but nothing was
+stopping the next one either.
+
+#### Verification
+
+**Revert-check, both directions.** Adding `use GuzzleHttp\Client;` to a Courses
+Action turns the test red and names the file. Adding a *comment* that merely
+mentions `Http::` and `GuzzleHttp\` leaves it green — `stripPhpComments()`
+(tokenizer, not regex, so `//` inside strings survives) now joins
+`stripJsComments()` in `tests/Support/SourceReadingHelpers.php`. That check
+matters: this codebase has broken three source-scanning tests on the comment
+that *explained the fix*, and a check which punishes writing the reason down
+gets the reason deleted.
+
+**No browser walk, and that is stated rather than staged.** This slice touches
+`tests/` and `docs/` only — not one line of `app/`, `routes/` or `resources/`.
+There is no screen to walk because nothing a user can reach changed. The
+definition of done asks for a browser walk when a person's task changes; here
+the deliverable is that CI now refuses something it used to allow, and the
+revert-check above is the evidence for that.
+
+**1,770 tests green** (1 new), arch green, Pint clean.
+
+**Recorded, not built (rule 1).** §41's own closing example — "Enrollment
+should dispatch an enrollment-created event. Notifications should listen to
+that event. Enrollment code must not directly call notification implementation
+classes" — is the one place the codebase does the opposite. Eight domain events
+exist and Notifications listens to five; **there is no enrollment event of any
+kind**, and `PaymentService` sends four enrollment notifications itself while
+`CourseRegistrationController:1314` queues a fifth from a controller. Filed as
+**KNOWN_ISSUES #24** with the behavioural edges that make it its own slice
+(sync `Mail::send` vs `queue`, failure handling relative to the payment
+transaction, rule 12's webhook path).
+
 ### SPEC §42: nine interfaces of ten, and the missing one had a bill attached
 
 §42 "Interface Binding and Replaceability" is short and mechanical:

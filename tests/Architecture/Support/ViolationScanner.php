@@ -168,8 +168,18 @@ final class ViolationScanner
      */
     private static function controllerFiles(): array
     {
-        $paths = self::phpFilesUnder(base_path('app/Domains'));
+        // `app/Http/Controllers/` as well as the domains' own: SPEC §41 asks
+        // CI to fail when "controllers contain business logic", and a rule
+        // that stopped at the domain folders left the app-level controllers
+        // outside it entirely. Nothing was hiding there — but nothing was
+        // stopping the next one either.
+        $paths = array_merge(
+            self::phpFilesUnder(base_path('app/Domains')),
+            self::phpFilesUnder(base_path('app/Http/Controllers')),
+        );
+
         $paths = array_values(array_filter($paths, fn (string $path) => str_contains($path, '/Http/Controllers/')));
+        sort($paths);
 
         return $paths;
     }
