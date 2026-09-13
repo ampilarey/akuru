@@ -21,6 +21,13 @@ return Application::configure(basePath: dirname(__DIR__))
             \App\Http\Middleware\SetLocale::class,
             \App\Http\Middleware\SecurityHeaders::class,
             \App\Http\Middleware\ConvertEnroll403ToRedirect::class,
+            // SPEC §52.27: the Qur'an/Hifz module is feature-flagged, and
+            // §52.29 requires the platform to work with it disabled. Applied
+            // to the whole web group because the module's 57 routes are
+            // declared inline throughout the routes file rather than in one
+            // group; the middleware decides by controller namespace, which
+            // cannot drift the way a route-name list would.
+            \App\Http\Middleware\EnsureQuranModuleEnabled::class,
         ]);
 
         // Register Laravel Localization middleware aliases
