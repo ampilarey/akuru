@@ -85,9 +85,45 @@ function DiscountForm() {
     );
 }
 
-export default function Admin({ gift_cards, discount_codes }) {
+function LiabilityPanel({ liability }) {
+    // §13.7. Two figures and a total rather than one number: redemption MOVES
+    // value from a card to a wallet, so an admin reconciling the books needs to
+    // see that the total did not change when it did.
+    if (!liability) return null;
+
+    const money = (n) => `${Number(n).toFixed(2)} MVR`;
+
+    return (
+        <div className="mb-6 rounded-lg border bg-white p-4">
+            <h2 className="mb-1 text-lg font-semibold">Stored value owed</h2>
+            <p className="mb-3 text-sm text-gray-600">
+                What the Institute owes in goods it has already been paid for, or has given away.
+            </p>
+            <div className="grid gap-3 sm:grid-cols-3">
+                <div className="rounded border p-3">
+                    <div className="text-xs uppercase text-gray-500">Gift cards</div>
+                    <div className="text-xl font-semibold">{money(liability.gift_cards)}</div>
+                    <div className="text-xs text-gray-500">{liability.gift_card_count} still spendable</div>
+                </div>
+                <div className="rounded border p-3">
+                    <div className="text-xs uppercase text-gray-500">Wallets</div>
+                    <div className="text-xl font-semibold">{money(liability.wallets)}</div>
+                    <div className="text-xs text-gray-500">{liability.wallet_count} with a balance</div>
+                </div>
+                <div className="rounded border border-[#7C2D37] p-3">
+                    <div className="text-xs uppercase text-gray-500">Total owed</div>
+                    <div className="text-xl font-semibold text-[#7C2D37]">{money(liability.total)}</div>
+                    <div className="text-xs text-gray-500">Redeeming a card moves value here, it does not add any.</div>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+export default function Admin({ gift_cards, discount_codes, liability }) {
     return (
         <AppShell title="Commerce admin">
+            <LiabilityPanel liability={liability} />
             <GiftCardForm />
             <CreditForm />
             <DiscountForm />
