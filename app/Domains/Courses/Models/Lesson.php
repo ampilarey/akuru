@@ -28,6 +28,8 @@ class Lesson extends Model
         'is_preview',
         // SPEC §13 lists "Completion rule" among a lesson's fields.
         'completion_rule',
+        // SPEC §13 "Unlock rule"; §26 stores it as JSON at lesson level.
+        'unlock_rule',
         'created_by',
         'published_at',
     ];
@@ -37,6 +39,7 @@ class Lesson extends Model
         return [
             'is_preview' => 'boolean',
             'completion_rule' => 'array',
+            'unlock_rule' => 'array',
             'published_at' => 'datetime',
             'status' => LessonStatus::class,
         ];

@@ -7342,6 +7342,86 @@ showed raw slugs — and creating one stored
 
 **1,600 tests green** (11 new), arch green, build clean.
 
+### SPEC §26: the lesson level, and the rule three sections were waiting on
+
+§26 says where unlock rules live:
+
+> Unlock rules should be stored in JSON settings at **course, module, lesson,
+> or offering level**.
+>
+> Create an `UnlockRuleEvaluator` service. Do not scatter unlock logic across
+> controllers or React components.
+
+Only the **course** level existed, carrying two of §26's eleven rules. This
+adds the **lesson** level and the third rule, **"Pass quiz first"**.
+
+**Three sections were pointing at this one missing column.** §13 lists
+"Unlock rule" among a lesson's own fields. §26 asks for lesson-level storage
+outright. And §19's `settings.lock_next_lesson` is the same idea written badly
+— a bare boolean, written by two Actions, read by nothing, and **unable to say
+which quiz**. Naming the assessment is what makes the rule enforceable, and is
+why the §19 slice deliberately added no control for that boolean.
+
+#### The evaluator stays ignorant, which is the design
+
+§26 wants one service, and rule 3 wants it not to know what a quiz is.
+`LessonUnlockEvaluator` lives in Progress, so the prerequisite arrives as a
+plain `$prerequisiteMet` bool — exactly the shape `$allOpen` already had.
+Courses answers the question in `EvaluateLessonPrerequisiteAction`, reading
+attempts through Progress's own Action, so no model crosses either way. A test
+asserts the evaluator's source never contains the word `Assessment`.
+
+Three judgement calls, each written into the code:
+
+- **A submitted attempt does not unlock.** §27's lesson: a provisional
+  auto-score is not a mark a teacher has agreed to, and unlocking on it opens
+  a lesson a later marking could close again.
+- **A deleted prerequisite lets the rule lapse, not bite.** Locking every
+  student out because an author deleted the quiz punishes them for someone
+  else's edit.
+- **The passing bar is read exactly as the rest of the codebase reads it** —
+  as a percentage when `passing_score > max_score`, which
+  `TeacherReviewReportTest` pins as deliberate for legacy rows. A lesson must
+  not unlock on a different definition of "passed" than the report shows.
+
+#### A design mistake the existing tests caught
+
+Adding `PassAssessment` to the shared `UnlockMode` enum **leaked a
+lesson-level rule into the course-level picker** — `EngineCourseController`
+maps `UnlockMode::cases()` into the course settings form, so a course could
+suddenly claim "pass a quiz first" with no quiz named. `CourseUnlockModeTest`
+went red on exactly that, and `label()` threw an `UnhandledMatchError` for the
+new case.
+
+Split into `courseLevelCases()` and `lessonLevelCases()`, with a test that
+pins the split. That test existed because the §26 slice wrote it to stop
+exactly this kind of drift, and it did its job on the author of the next
+slice.
+
+#### Verification
+
+**Revert-check:** removing the `! $prerequisiteMet` guard turns 5 of the 13
+new tests red.
+
+**Walked in a browser**, two accounts:
+
+| Step | Result |
+|---|---|
+| Author picks *"Needs a pass in: Gate quiz"* on the outline | stored as `{mode: pass_assessment, assessment_id: 2}` |
+| Student opens the gated lesson | **403** |
+| A scored 8/10 is recorded | — |
+| Student opens it again | **200**, lesson renders |
+
+The course is `all_open`, so nothing but the lesson's own rule could have
+locked it — which is the case §26's lesson level exists for.
+
+**1,614 tests green** (13 new), arch green, build clean.
+
+**§26 now stands at 3 of 11 rules**, and the remaining eight each need a
+source of truth that does not exist yet: a teacher's approval, a payment, a
+date, an attendance record. Module- and offering-level storage are also still
+unbuilt.
+
 #### A process mistake worth recording
 
 The §13 slice was pushed as PR #300 **stacked on the unmerged §10 commit**

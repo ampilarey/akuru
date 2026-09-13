@@ -1,9 +1,15 @@
 <?php
 
+use App\Domains\Courses\Actions\AuthorizeLessonAccessAction;
+use App\Domains\Courses\Actions\PublishLessonAction;
 use App\Domains\Courses\Actions\ResolveCourseUnlockModeAction;
+use App\Domains\Courses\Actions\SaveContentBlockAction;
+use App\Domains\Courses\Actions\SaveCourseModuleAction;
 use App\Domains\Courses\Actions\SaveEngineCourseAction;
+use App\Domains\Courses\Actions\SaveLessonAction;
 use App\Domains\Courses\Enums\UnlockMode;
 use App\Domains\Courses\Models\Course;
+use App\Domains\Courses\Models\CourseEnrollment;
 use App\Domains\Courses\Models\CourseSubject;
 use App\Domains\Progress\Actions\EvaluateLessonUnlockAction;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -164,25 +170,25 @@ it('honours the course mode through the real access check, not just the evaluato
         'subject_id' => CourseSubject::query()->value('id'),
         'created_by' => $admin->id,
     ]);
-    $module = app(\App\Domains\Courses\Actions\SaveCourseModuleAction::class)->execute([
+    $module = app(SaveCourseModuleAction::class)->execute([
         'course_id' => $course->id, 'title' => 'Unit', 'created_by' => $admin->id,
     ]);
 
     $lessons = [];
     foreach (['First', 'Second'] as $title) {
-        $lesson = app(\App\Domains\Courses\Actions\SaveLessonAction::class)->execute([
+        $lesson = app(SaveLessonAction::class)->execute([
             'course_module_id' => $module->id, 'title' => $title, 'created_by' => $admin->id,
         ]);
-        app(\App\Domains\Courses\Actions\SaveContentBlockAction::class)->execute([
+        app(SaveContentBlockAction::class)->execute([
             'lesson_id' => $lesson->id, 'type' => 'text',
             'data' => ['body' => $title], 'settings' => ['direction' => 'auto'],
         ]);
-        app(\App\Domains\Courses\Actions\PublishLessonAction::class)->execute($lesson, $admin->id);
+        app(PublishLessonAction::class)->execute($lesson, $admin->id);
         $lessons[] = $lesson->refresh();
     }
 
     $student = makeStudent(['first_name' => 'Unlock', 'last_name' => 'Student']);
-    $enrollment = \App\Domains\Courses\Models\CourseEnrollment::query()->create([
+    $enrollment = CourseEnrollment::query()->create([
         'course_id' => $course->id,
         'student_id' => makeRegistrationStudent()->id,
         'unified_student_id' => $student->id,
@@ -192,7 +198,7 @@ it('honours the course mode through the real access check, not just the evaluato
         'progress_percentage' => 0,
     ]);
 
-    $auth = app(\App\Domains\Courses\Actions\AuthorizeLessonAccessAction::class);
+    $auth = app(AuthorizeLessonAccessAction::class);
     $second = $lessons[1];
 
     // Nothing completed: sequential keeps the second lesson shut.
@@ -204,10 +210,21 @@ it('honours the course mode through the real access check, not just the evaluato
 });
 
 it('names only the rules it actually implements', function () {
-    // §26 lists eleven. Two need no data the evaluator lacks; the other nine
-    // each need a quiz result, an approval, a payment or a date. An enum case
-    // that silently behaved like sequential would be worse than its absence,
+    // §26 lists eleven. Three are built; the other eight each need a teacher's
+    // approval, a payment, a date or an attendance record. An enum case that
+    // silently behaved like sequential would be worse than its absence,
     // because a course could claim to require teacher approval and not.
     expect(array_map(fn (UnlockMode $m) => $m->value, UnlockMode::cases()))
-        ->toBe(['all_open', 'sequential']);
+        ->toBe(['all_open', 'sequential', 'pass_assessment']);
+});
+
+it('keeps "pass a quiz first" out of the course-level picker', function () {
+    // §26 stores unlock rules "at course, module, lesson, or offering level",
+    // and "pass quiz first" names a specific assessment — a statement about
+    // one lesson, not about a whole course. Adding the case without this split
+    // leaked it into the course picker, and this test is what caught it.
+    expect(array_map(fn (UnlockMode $m) => $m->value, UnlockMode::courseLevelCases()))
+        ->toBe(['all_open', 'sequential'])
+        ->and(array_map(fn (UnlockMode $m) => $m->value, UnlockMode::lessonLevelCases()))
+        ->toBe(['pass_assessment']);
 });

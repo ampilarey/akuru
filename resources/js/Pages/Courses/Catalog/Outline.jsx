@@ -228,7 +228,7 @@ function LessonGlossaryForm({ courseId, lesson, glossaryItems }) {
     );
 }
 
-export default function Outline({ course, modules, glossaryItems = [] }) {
+export default function Outline({ course, modules, glossaryItems = [], assessments = [] }) {
     // §12's "delete draft modules if safe" refusal names exactly what is in
     // the way ("still has 1 lessons, 2 content blocks"). It was never rendered,
     // so clicking Delete module on a module the server refuses did nothing
@@ -543,6 +543,26 @@ export default function Outline({ course, modules, glossaryItems = [] }) {
                                         offered — §26's lesson, that a rule an admin
                                         can pick and the engine ignores is worse than
                                         no rule at all. */}
+                                    {/* SPEC §26 "Pass quiz first" at lesson level
+                                        (§13's "Unlock rule"). Only the rules the
+                                        evaluator enforces are offered. */}
+                                    <select
+                                        className="form-input ms-2 inline-block w-auto text-xs"
+                                        aria-label={`Unlock rule for ${lesson.title}`}
+                                        value={lesson.unlock_rule?.assessment_id ? String(lesson.unlock_rule.assessment_id) : ''}
+                                        onChange={(e) => router.post(
+                                            `/catalog/courses/${course.id}/lessons/${lesson.id}/unlock-rule`,
+                                            e.target.value
+                                                ? { mode: 'pass_assessment', assessment_id: e.target.value }
+                                                : { mode: '' },
+                                            { preserveScroll: true },
+                                        )}
+                                    >
+                                        <option value="">Unlocks with the course rule</option>
+                                        {assessments.map((a) => (
+                                            <option key={a.id} value={a.id}>Needs a pass in: {a.title}</option>
+                                        ))}
+                                    </select>
                                     <select
                                         className="form-input ms-2 inline-block w-auto text-xs"
                                         aria-label="Completion rule"

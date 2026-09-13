@@ -23,6 +23,12 @@ interface LessonUnlockEvaluator
      *                         `UnlockMode` enum: Progress does not need to know
      *                         how a course spells its unlock settings, only
      *                         whether the sequence applies (rule 3).
+     * @param  bool  $prerequisiteMet  SPEC §26's "Pass quiz first", answered
+     *                                 before the call for the same reason
+     *                                 `$allOpen` is: Progress must not know
+     *                                 what an assessment is. Courses works it
+     *                                 out in EvaluateLessonPrerequisiteAction
+     *                                 and hands the answer over as a fact.
      */
     public function execute(
         int $lessonId,
@@ -30,5 +36,6 @@ interface LessonUnlockEvaluator
         array $completedLessonIds,
         bool $isPreview = false,
         bool $allOpen = false,
+        bool $prerequisiteMet = true,
     ): bool;
 }
