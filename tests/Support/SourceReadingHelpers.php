@@ -32,3 +32,37 @@ if (! function_exists('stripJsComments')) {
         return (string) preg_replace('#(?<!:)//[^\n]*#', '', $source);
     }
 }
+
+if (! function_exists('stripPhpComments')) {
+    /**
+     * The same rule for PHP, via the tokenizer rather than a regex: PHP source
+     * is full of `//` inside strings, and a regex would eat those too.
+     *
+     * String literals are deliberately kept. A class name or a facade call
+     * spelled inside a string is still a reference — often a deliberately
+     * dynamic one — and a source check that ignored strings would miss exactly
+     * the cases worth catching.
+     */
+    function stripPhpComments(string $source): string
+    {
+        $out = '';
+
+        foreach (token_get_all($source) as $token) {
+            if (is_array($token)) {
+                if ($token[0] === T_COMMENT || $token[0] === T_DOC_COMMENT) {
+                    // Keep the newlines so reported line numbers stay usable.
+                    $out .= str_repeat("\n", substr_count($token[1], "\n"));
+
+                    continue;
+                }
+                $out .= $token[1];
+
+                continue;
+            }
+
+            $out .= $token;
+        }
+
+        return $out;
+    }
+}
