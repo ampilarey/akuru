@@ -2,7 +2,7 @@
 
 namespace App\Mail;
 
-use App\Domains\Finance\Models\Payment;
+use App\Domains\Finance\DTOs\PaymentNoticeData;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
@@ -14,7 +14,7 @@ class EnrollmentConfirmedMail extends Mailable implements ShouldQueue
 {
     use Queueable, SerializesModels;
 
-    public function __construct(public Payment $payment) {}
+    public function __construct(public PaymentNoticeData $notice) {}
 
     public function envelope(): Envelope
     {

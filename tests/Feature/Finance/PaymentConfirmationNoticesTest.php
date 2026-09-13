@@ -2,8 +2,10 @@
 
 use App\Domains\Courses\Models\Course;
 use App\Domains\Courses\Models\CourseEnrollment;
+use App\Domains\Finance\Actions\BuildPaymentNoticeDataAction;
 use App\Domains\Finance\Actions\RecordManualPaymentAction;
 use App\Domains\Finance\Enums\PaymentMethod;
+use App\Domains\Finance\Models\Payment;
 use App\Domains\Identity\Models\User;
 use App\Domains\Notifications\Contracts\SmsSenderInterface;
 use App\Mail\AdminNewEnrollmentMail;
@@ -155,4 +157,71 @@ it('sends the confirmation SMS through the sender contract, never a mail class',
         // which nobody saw because manual payments sent no SMS at all.
         ->and($sent[0][1])->toContain($course->title)
         ->and($sent[0][1])->not->toContain(' – .');
+});
+
+it('names the course on a payment that has no item rows', function () {
+    // The defect this slice is really about. Only the legacy consolidated
+    // payments carry `payment_items`. Engine checkout payments point at the
+    // enrollment; manual payments carry `course_id`. Every notice asked
+    // `$payment->items`, so for both of those the SMS read "… for Yusuf – ."
+    // and the confirmation email rendered a Course/Status table with a heading
+    // and no rows, under the words "Payment Received".
+    //
+    // It was live for every engine checkout payer, not only the manual ones.
+    ['payer' => $payer, 'course' => $course, 'enrollment' => $enrollment] = manualPaymentEnrollment();
+
+    app(RecordManualPaymentAction::class)->execute(
+        'course_enrollment',
+        $enrollment->id,
+        $payer->id,
+        250.0,
+        null,
+        $payer->id,
+        PaymentMethod::Cash->value,
+        ['course_id' => $course->id],
+    );
+
+    $payment = Payment::query()->where('provider', 'manual')->latest('id')->firstOrFail();
+
+    expect($payment->items()->count())->toBe(0);
+
+    $notice = app(BuildPaymentNoticeDataAction::class)->execute($payment);
+
+    expect($notice->courses)->toHaveCount(1)
+        ->and($notice->courses[0]['title'])->toBe($course->title)
+        ->and($notice->courseList())->toBe($course->title);
+
+    // And it reaches the email, which is where the empty table was.
+    $html = (new EnrollmentConfirmedMail($notice))->render();
+
+    expect($html)->toContain($course->title);
+});
+
+it('renders no course table at all when a payment is not for a course', function () {
+    // An empty list is legitimate — a payment need not be for a course. The
+    // old view still printed the table head, so "Payment Received" arrived
+    // above an empty Course/Status grid, which reads as a failure.
+    $notice = new App\Domains\Finance\DTOs\PaymentNoticeData(
+        paymentId: 1,
+        payerName: 'Parent',
+        payerEmail: 'p@example.test',
+        payerMobile: null,
+        studentName: 'Yusuf',
+        courses: [],
+        amount: 250.0,
+        currency: 'MVR',
+        reference: 'REF1',
+        localId: null,
+        paidAtLabel: '01 Jan 2026, 09:00',
+        receiptUrl: '/payments/1/receipt',
+    );
+
+    $html = (new EnrollmentConfirmedMail($notice))->render();
+
+    expect($html)->not->toContain('<th>Course</th>')
+        ->and($html)->not->toContain('courses above')
+        ->and($html)->toContain('250.00 MVR');
+
+    // The SMS says one sentence rather than trailing a dash into nothing.
+    expect($notice->courseList())->toBe('');
 });

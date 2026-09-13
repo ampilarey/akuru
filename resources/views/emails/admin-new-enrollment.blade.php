@@ -25,41 +25,34 @@
     <div style="background:#eff6ff; border-radius:6px; padding:16px; margin-bottom:20px;">
       <div class="row">
         <span class="label">Course</span>
-        <span>{{ $payment->items->first()?->course?->title ?? '—' }}</span>
+        <span>{{ $notice->courseList() ?: '—' }}</span>
       </div>
       <div class="row">
         <span class="label">Student</span>
-        <span>{{ $payment->student?->full_name ?? '—' }}</span>
+        <span>{{ $notice->studentName }}</span>
       </div>
       <div class="row">
         <span class="label">Enrolled by</span>
-        <span>{{ $payment->user?->name ?? '—' }}</span>
+        <span>{{ $notice->payerName }}</span>
       </div>
       <div class="row">
         <span class="label">Contact</span>
-        <span>
-          @php
-            $user = $payment->user;
-            $contact = $user?->mobile
-                ?? $user?->contacts()->where('type','mobile')->value('value')
-                ?? $user?->email
-                ?? $user?->contacts()->where('type','email')->value('value')
-                ?? '—';
-          @endphp
-          {{ $contact }}
-        </span>
+        {{-- Resolved in the DTO, not here: this ran two database queries
+             from inside a queued email template. Mobile before email, as
+             before. --}}
+        <span>{{ $notice->payerMobile ?? $notice->payerEmail ?? '—' }}</span>
       </div>
       <div class="row">
         <span class="label">Amount</span>
-        <span>{{ number_format($payment->amount, 2) }} {{ $payment->currency }}</span>
+        <span>{{ $notice->amountLabel() }}</span>
       </div>
       <div class="row">
         <span class="label">Payment ref</span>
-        <span>{{ $payment->merchant_reference ?? $payment->local_id ?? '—' }}</span>
+        <span>{{ $notice->reference ?? $notice->localId ?? '—' }}</span>
       </div>
       <div class="row">
         <span class="label">Date</span>
-        <span>{{ $payment->created_at?->format('d M Y, H:i') }}</span>
+        <span>{{ $notice->paidAtLabel }}</span>
       </div>
     </div>
 

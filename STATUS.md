@@ -7677,6 +7677,68 @@ one produced an audit. §33's five other headings — User Management, Course
 Management, Offering Management, Course Builder, Academic / Training Management
 — are inventories of CRUD that mostly exists and still need their own pass.
 
+### KNOWN_ISSUES #24 part two: the email that said "Payment Received" over an empty table
+
+The follow-on recorded when #24 shipped: give the Mailables scalars so the
+listener can move to Notifications, where §41 asks for it. Done — and giving
+one question a single owner turned up **a third defect, older and wider than
+the one #24 was filed about.**
+
+**All three notices asked `$payment->items`. Only the legacy consolidated
+payments have item rows.** Engine checkout payments carry
+`payable_type = course_enrollment`; manual payments carry `course_id`; neither
+has a single item. So for both:
+
+- the confirmation email rendered a **Course/Status table with a heading and no
+  rows**, directly under the words "Payment Received";
+- the admin email's subject read **"[New enrollment] Yusuf — Unknown course"**;
+- the SMS read **"… for Yusuf – ."** (fixed in #24 when it became visible).
+
+That was live for **every engine checkout payer**, not only the manual ones
+#24 is about. It had simply never been looked at, because the SMS half only
+became visible when manual payments started sending anything at all.
+`BuildPaymentNoticeDataAction` is now the one place that answers it — items,
+then the payable enrollment, then the §38 `course_id` column — and the view no
+longer prints a table when there is nothing to put in it.
+
+**§41's worked example is now arranged as written.** `PaymentNoticeData` is a
+Finance DTO; `RaisePaymentNoticeReady` builds it and raises `PaymentNoticeReady`
+after commit; `Notifications\Listeners\SendPaymentConfirmationNotices` sends.
+Nothing in Notifications names a Finance model — only its Event and its DTO,
+both of which rule 3 permits. `PaymentConfirmed` keeps its strict
+in-transaction money→access semantics, untouched.
+
+Two database queries also came out of a queued Blade template on the way:
+`admin-new-enrollment` was calling `$user->contacts()->where(...)` while
+rendering.
+
+**Deliberately unchanged, and this is the same judgement the previous slice
+made out loud.** The admin SMS still fires only for payments with item rows.
+That restriction was an accident of the old query rather than a decision — but
+widening it would start sending admins an SMS for every engine checkout, and
+who gets woken up at night is the owner's call, not a refactor's.
+`hasItemisedCourses` on the DTO holds the audience exactly where it was, says
+on its face that it is storage shape rather than merit, and names what it is
+waiting for.
+
+#### Verification
+
+**Revert-check, each half separately.** Restricting course resolution back to
+`items` fails the two new tests and the SMS test; forcing the table to render
+unconditionally fails the empty-list test and nothing else — the two concerns
+are tested apart, one against the resolver and one against the view.
+
+**Walked in Chrome** at `127.0.0.1:8125`, recording cash on a third enrollment
+through the real admin form. Flash, payment **Confirmed**, and then:
+
+| | Before | After |
+|---|---|---|
+| Parent SMS | *(nothing sent at all)* → after #24: "… – ." | "… for Third Parent – *course*. Pending admin approval." |
+| Parent email course table | heading, **no rows** | one row, "Pending approval" |
+| Admin email subject | "— Unknown course" | "— *course name*" |
+
+**1,781 tests green** (2 new), arch green, Pint clean.
+
 ### E19: the seventeenth row, and the E track is finished
 
 **No code in this slice, and that is the finding.** `EDUPAGE_FEATURES_PLAN.md`
