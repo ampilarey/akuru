@@ -7422,6 +7422,102 @@ source of truth that does not exist yet: a teacher's approval, a payment, a
 date, an attendance record. Module- and offering-level storage are also still
 unbuilt.
 
+### SPEC §20: the question attachments nobody could see
+
+§20 gives a question four attachment kinds and one rule about them:
+
+> Questions may have: Audio · Image · PDF · Video reference
+> All attachments must go through the centralized media system.
+
+Half of that shipped, and the half that shipped was the half nobody sees. The
+bank has a file input; `SaveQuestionAction` funnels it through
+`StorePrivateMediaAction`, so the bytes really do land in the central media
+system; §21's snapshot copied the reference faithfully into every attempt.
+
+Then **nothing rendered it**. `attachments` appears in three PHP files and
+**zero React ones**. `audio` and `image` are two of §20's twelve question
+types, and both showed the student the question text and nothing else. An
+audio question with no audio is not a hard question; it is an unanswerable
+one, and it looks like an ordinary page — the same family as the missing
+`arrange` control, the dead `form.transform().post()` chains, and the routes
+pointing at absent controller methods. **HTTP 200, and a page the user cannot
+use.**
+
+Four separate links of that chain were broken, and each hid the next:
+
+| Link | State before |
+|---|---|
+| Author uploads a file | worked |
+| §21 snapshot carries it | worked |
+| Player draws it | **no React file mentions `attachments`** |
+| Media route serves it to the student | **403** — `ServeCatalogMediaAction` admitted a student only for media inside a *lesson* content block |
+| Upload is type- and size-checked | **neither** — the one upload path in the app passing no allowed-mime list and no cap |
+| Editing preserves it | **no** — `attachments` defaulted to `[]` and the controller payload never sends the key |
+
+That last row could not fire, which is its own finding: `PUT
+catalog/questions/{question}` and its controller method both existed and **no
+screen called them**. The bank was write-once — a typo was permanent, and an
+attachment could never be taken off.
+
+**What the slice reuses rather than reinvents.** §30's per-kind mime lists and
+size caps already live on `ContentBlockType` (Image 5MB, Audio 20MB, Video
+200MB, PDF 25MB). `ResolveQuestionMediaAction` answers "which kind is this
+mime" in those terms instead of starting a second table, and the save path now
+passes `allowedMimes()` and `maxBytes()` to the media store. The video
+reference shares §15's YouTube/Vimeo allowlist, extracted from
+`ValidateContentBlockDataAction`'s private method into
+`NormalizeVideoEmbedUrlAction` so there is one answer to "which hosts may we
+frame" (rule 11).
+
+**The serve gate widens by the narrowest thing that works.** A student may read
+a media file when it appears in **their own attempt's snapshot** — not when it
+appears in the question bank. A question detached from the assessment after the
+attempt began is still on that student's paper; an attachment swapped
+afterwards must not retroactively open a file they were never shown.
+`ListStudentAttemptSnapshotsAction` hands Courses the raw snapshots and Courses
+reads them with its own resolver, because the attachment's shape is
+`SnapshotQuestionAction`'s to define (rule 3, spelled without an import).
+
+**A legacy shape, surfaced rather than swallowed.** The Blade quiz migration
+writes `{path, kind}` — a filesystem path that never entered the media system
+at all, which is exactly what §20 forbids. Those resolve with a null
+`media_id` and the player says the attachment is unavailable, instead of the
+question quietly losing its picture. Migrating those paths into `MediaFile`
+rows needs the files to exist and is not this slice.
+
+**Verification.** Revert-check: undoing the serve gate, the §30 limits, the
+snapshot resolution and the edit-preserves-attachments fix turns **5 of the 11**
+new tests red. A new architecture guard,
+`tests/Architecture/QuestionMediaRendersTest.php`, is the sibling of
+`AnswerControlsExistTest`: it fails if any kind in
+`ResolveQuestionMediaAction::KINDS` has no branch in the assessment player.
+
+**Walked in a browser**, two accounts, local `akuru_walk`:
+
+| Step | Result |
+|---|---|
+| Student opens a class assessment with an audio question | **200** |
+| `<audio>` rendered, `src=/learn/media/2` | `readyState: 4`, `duration: 0.4` — it decodes |
+| Same file fetched directly as that student | **200 audio/x-wav** (was 403) |
+| Same file fetched as a different signed-in user | **403** |
+| Secondary text shown above the player | yes — §20's field, drawn nowhere before |
+| Author opens the bank, clicks **Edit** | form loads the question, attachments listed by kind and filename |
+| Author adds `youtube.com/watch?v=…` | stored as `https://www.youtube.com/embed/…`, iframe renders on the student page |
+| Author clicks **Remove** on one attachment | it goes, the others stay |
+
+**1,626 tests green** (12 new), architecture suite green, `npm run build` clean.
+
+**What §20 still lacks, recorded not fixed (rule 1).**
+`CatalogQuestionController::payload()` still has **no `validate()` call** — the
+same rule-5 defect §19 had, so `difficulty` silently coerces and
+`subject_id`/`category_id`/`course_id` are unchecked. §20's `category_id`,
+`course_id` and `explanation` still have no control, and `explanation` is
+additionally displayed nowhere at all: it is stripped from the student's
+snapshot at attempt start and never added back after marking. The index
+accepts `subject_id`/`course_id`/`question_type` filters that no control on the
+page can set. Each is a field with no control rather than a control with no
+field, and they belong to a §20 part-two slice.
+
 #### A process mistake worth recording
 
 The §13 slice was pushed as PR #300 **stacked on the unmerged §10 commit**

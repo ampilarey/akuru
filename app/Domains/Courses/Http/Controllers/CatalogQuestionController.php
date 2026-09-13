@@ -113,6 +113,13 @@ class CatalogQuestionController extends Controller
             'difficulty' => (string) $request->input('difficulty', 'medium'),
             'skill_tag' => $request->input('skill_tag'),
             'standard_ids' => $request->input('standard_ids', []),
+            // §20's fourth attachment kind. A reference, not an upload — it
+            // shares §15's YouTube/Vimeo allowlist.
+            'video_url' => $request->input('video_url'),
+            'video_title' => $request->input('video_title'),
+            'remove_attachment' => $request->filled('remove_attachment')
+                ? (int) $request->input('remove_attachment')
+                : null,
         ];
     }
 }

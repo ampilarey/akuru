@@ -59,6 +59,11 @@ class LearnAssessmentController extends Controller
                 'classroom_id' => $access['classroom_id'],
             ],
             'attempt' => $attempt,
+            // SPEC §20's question attachments are private media. The same id is
+            // served to an author at `/catalog/media` and to a student here, so
+            // the prefix is a prop exactly as it is in the lesson player rather
+            // than a URL frozen into the snapshot.
+            'mediaShowUrl' => '/learn/media',
         ]);
     }
 

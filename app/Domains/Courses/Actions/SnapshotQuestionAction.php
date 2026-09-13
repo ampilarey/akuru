@@ -34,6 +34,13 @@ class SnapshotQuestionAction
             'acceptable_answers' => $question->acceptable_answers,
             'normalization_settings' => $question->normalization_settings,
             'attachments' => $question->attachments,
+            // SPEC §21 asks a snapshot to carry "media references or resolved
+            // media metadata where appropriate". The raw `attachments` array
+            // was the reference and nothing resolved it, so the player had a
+            // list of media ids and no idea whether one was a sound or a PDF.
+            // Resolving here rather than in the client keeps the mime→kind
+            // mapping in the one place §30 already defines it.
+            'media' => app(ResolveQuestionMediaAction::class)->execute($question->attachments),
             'difficulty' => $question->difficulty,
             'skill_tag' => $question->skill_tag,
             'snapshotted_at' => now()->toIso8601String(),
