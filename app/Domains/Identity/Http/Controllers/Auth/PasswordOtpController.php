@@ -2,6 +2,7 @@
 
 namespace App\Domains\Identity\Http\Controllers\Auth;
 
+use App\Domains\Identity\Models\User;
 use App\Domains\Identity\Models\UserContact;
 use App\Domains\Identity\Services\ContactNormalizer;
 use App\Domains\Identity\Services\OtpService;
@@ -11,6 +12,7 @@ use App\Http\Requests\Auth\ResetPasswordRequest;
 use App\Http\Requests\Auth\VerifyResetOtpRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 class PasswordOtpController extends Controller
@@ -33,8 +35,20 @@ class PasswordOtpController extends Controller
 
         // ── National ID / Passport → child or adult account lookup ───────────
         if (! str_contains($identifier, '@') && ! preg_match('/^\+?[\d\s\-]+$/', $identifier)) {
-            $targetUser = \App\Domains\Identity\Models\User::whereRaw('LOWER(national_id) = ?', [strtolower($identifier)])->first()
-                       ?? \App\Domains\Identity\Models\User::whereRaw('LOWER(passport) = ?', [strtolower($identifier)])->first();
+            // The passport lookup that used to sit here queried
+            // `users.passport`, and **that column does not exist** — passport
+            // lives on `students`, `registration_students` and `staff_profiles`.
+            // Because PHP only evaluates the right-hand side of `??` when the
+            // left is null, every identifier that was *not* a matching national
+            // ID reached it and returned a 500 from a public, unauthenticated
+            // endpoint. A wrong guess crashed "forgot password".
+            //
+            // It is removed rather than repointed: on those three tables
+            // `passport` is cast `encrypted`, so `LOWER(passport) = ?` could
+            // never match a value anyway. Making passport reset actually work
+            // needs a blind index or a decrypt-and-scan, which is a design
+            // decision rather than a repair.
+            $targetUser = User::whereRaw('LOWER(national_id) = ?', [strtolower($identifier)])->first();
 
             if ($targetUser) {
                 $studentProfile = $targetUser->student;
@@ -63,7 +77,7 @@ class PasswordOtpController extends Controller
                 if ($resetContact) {
                     try {
                         $this->otpService->send($resetContact, 'password_reset');
-                    } catch (\Illuminate\Validation\ValidationException $e) {
+                    } catch (ValidationException $e) {
                         return back()->withErrors(['identifier' => $e->errors()['contact'][0] ?? 'Too many requests.'])->withInput();
                     }
                 }
@@ -100,7 +114,7 @@ class PasswordOtpController extends Controller
         if ($contact) {
             try {
                 $this->otpService->send($contact, 'password_reset');
-            } catch (\Illuminate\Validation\ValidationException $e) {
+            } catch (ValidationException $e) {
                 return back()->withErrors(['identifier' => $e->errors()['contact'][0] ?? 'Too many requests.'])->withInput();
             }
         }
@@ -134,7 +148,7 @@ class PasswordOtpController extends Controller
 
         try {
             $this->otpService->verify($contact, 'password_reset', $request->input('code'));
-        } catch (\Illuminate\Validation\ValidationException $e) {
+        } catch (ValidationException $e) {
             return back()->withErrors(['code' => $e->errors()['code'][0] ?? 'Invalid verification code.']);
         }
 
@@ -165,7 +179,7 @@ class PasswordOtpController extends Controller
         // Resolve which user's password to reset
         if ($userId) {
             // Child account: reset the child's password directly
-            $user = \App\Domains\Identity\Models\User::find($userId);
+            $user = User::find($userId);
         } elseif ($contactId) {
             // Normal account: resolve via contact
             $contact = UserContact::find($contactId);

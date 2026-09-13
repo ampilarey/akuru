@@ -7422,6 +7422,83 @@ source of truth that does not exist yet: a teacher's approval, a payment, a
 date, an attendance record. Module- and offering-level storage are also still
 unbuilt.
 
+### SPEC §32: two throttles missing, and a 500 on the endpoint they guard
+
+**Three of §32's five throttles were already enforced, and enforced well.**
+`LoginRequest::ensureIsNotRateLimited()` caps login at five attempts keyed by
+identifier **and** IP — §32's "per IP address" and "per account identifier"
+together. `OtpService` caps sends and verification attempts per contact using
+§32's own numbers, which an earlier slice already corrected in `config/otp.php`
+(3 per 15 minutes, 60-second cooldown) after finding the hardcoded values were
+nearly double the spec's.
+
+Two were missing, and they share a shape: limited **per target**, or not at all,
+where §32 also asks for **per IP**.
+
+**Registration had no limit of any kind** — no middleware on the route, no
+`RateLimiter` in the controller. `unique:users,email` answers "does this address
+already have an account?" on every attempt, so an unthrottled endpoint is both
+an open account-creation firehose and a free enumeration oracle.
+
+**Password reset and OTP request were limited per contact, which cannot see the
+attack that matters.** `PasswordOtpController::sendOtp` looks a user up by
+national ID, passport, email or phone **before** `OtpService` is reached — so
+every probe uses a different contact and never touches the per-contact counter.
+That left an unlimited "does this national ID exist?" oracle, and §32's per-IP
+limit is exactly what closes it.
+
+The limiters are **named** rather than `throttle:10,60` written into the route,
+because §32 requires the numbers be "configurable in system settings" and a
+literal in a route file is a deploy. `config/auth-throttle.php` follows
+`config/otp.php`'s pattern. Login is deliberately left alone: a second limiter
+over `LoginRequest`'s would make the lockout message disagree with the lockout.
+
+#### The §32 test found a 500 on the endpoint it was hardening
+
+Writing the per-IP reset test surfaced this, two lines into the same method:
+
+```php
+$targetUser = User::whereRaw('LOWER(national_id) = ?', [$id])->first()
+           ?? User::whereRaw('LOWER(passport) = ?', [$id])->first();
+```
+
+**`users.passport` does not exist.** Passport lives on `students`,
+`registration_students` and `staff_profiles`. And because PHP evaluates the
+right-hand side of `??` only when the left is null, *every identifier that was
+not a matching national ID* reached it — so a wrong guess on "forgot password"
+returned a **500 from a public, unauthenticated endpoint**.
+
+It is removed rather than repointed, and the reason is worth recording: on all
+three tables that do have the column, `passport` is cast **`encrypted`**, so
+`LOWER(passport) = ?` could never match a value anyway. Making passport-based
+reset actually work needs a blind index or a decrypt-and-scan — a design
+decision, not a repair.
+
+**Verification.** Revert-check: removing the throttles and restoring the
+passport lookup turns **4 of the 6** new tests red.
+
+**Walked in a browser:**
+
+| Step | Result |
+|---|---|
+| `forgot-password` with an unknown national ID | **302** — previously a 500 |
+| 13 reset requests, each a *different* identifier | `302 ×9` then **`429 ×4`** |
+| 13 registrations from one IP | `302 ×9` then **`429 ×4`** |
+
+One walk artifact worth noting rather than hiding: the first registration run
+showed `302` then twelve `419`s. A successful registration logs the user in and
+rotates the session, so the CSRF token went stale — not a defect. Re-running
+with a fresh token per attempt (and a duplicate email, so no login occurs) gave
+the sequence above.
+
+**1,673 tests green** (6 new), architecture suite green, `npm run build` clean.
+
+**Recorded not fixed.** §32's "OTP abuse event logging for admin review" exists
+(`OtpAbuseController`, `recordAbuse`) but logs only OTP events; the new per-IP
+refusals are not recorded there. Whether a blocked registration or reset burst
+belongs in the same admin review screen is a product question rather than a
+defect.
+
 ### SPEC §29: the admin screen that erased a student's history with the keys off
 
 **Most of §29 is cleared, and that matters to the finding.** All eight tables
