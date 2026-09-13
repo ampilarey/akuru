@@ -7677,6 +7677,94 @@ one produced an audit. §33's five other headings — User Management, Course
 Management, Offering Management, Course Builder, Academic / Training Management
 — are inventories of CRUD that mostly exists and still need their own pass.
 
+### S1_SPEC §S1.5: the backbone rule, enforced by a code-review checklist
+
+Rule 10 of `CLAUDE.md` is one sentence:
+
+> Any new table recording something that happens in time (attendance, marks,
+> invoices, sessions) carries `academic_year_id` (and `term_id` where relevant).
+
+`S1_SPEC.md` §S1.5 calls it *"a standing rule for S2+"*, and S1's Definition of
+Done says how it is to be kept: *"documented in ROADMAP risk notes and enforced
+in **code review checklist**."* That is a human remembering. Nothing failed CI
+when one was forgotten — and that is the whole taxonomy this sweep keeps
+finding: a rule with nothing to enforce it.
+
+It was forgotten, and not by disagreement. It was forgotten **inside slices that
+got it right two tables away**:
+
+- `pickup_notices` and `pickup_windows` are created **forty lines apart in one
+  migration** (E8, 2026-09-11). The notice carries `academic_year_id`. The
+  window — a row per date, which is as time-scoped as a table gets — does not.
+- `term_grades` and `competency_assessments` come from one migration (S3.4). The
+  first carries `term_id` **and** `academic_year_id`. The second got `term_id`
+  alone: the exact shape rule 10's parenthetical rules out, since a term already
+  belongs to a year.
+- `report_cards` (S3.6) is the same miss, and `course_enrollments` — the most
+  reported-on table in the system — has carried `term_id` with no year since
+  February.
+
+#### The gate
+
+`tests/Architecture/AcademicBackboneTest.php`, filesystem only, no database.
+
+Two signals, both read off the create-migration, both narrow on purpose:
+
+1. **A business date column** — a `date`/`dateTime` column named `date`, `day`,
+   or `*_date`. Lifecycle timestamps (`created_at`, `sent_at`, `published_at`,
+   `verified_at`) are deliberately *not* counted: nearly every table has one,
+   and "when the row was touched" is not "the day the thing happened".
+2. **A `term_id`** — rule 10's own parenthetical.
+
+**23 tables already carry the backbone**, so this writes down the existing
+convention rather than retrofitting an aspiration.
+
+One correctness detail worth naming, because reading it wrong would have made
+the gate lie: the scan stops at `function down(`. `invoices` gained
+`academic_year_id` in S4.1 and its rollback drops it again, so a naive read of
+the whole file concludes the column is not there.
+
+#### The baseline, and the difference between an exemption and a miss
+
+`tests/Architecture/Baselines/tables_without_academic_backbone.php` holds 29
+entries, each with a reason a reader can check, in three groups that are **not**
+equivalent:
+
+- **Not year-scoped** (13) — a profile (`students`, `staff_profiles`), a
+  catalogue entry (`courses` — the offering carries the schedule), website
+  content (`announcements`, `daily_contents`), telemetry
+  (`dashboard_analytics`), or a child whose parent carries it
+  (`payment_plan_installments` → `payment_plans` → `invoices`). Permanent.
+- **Superseded** (9) — pre-unification tables whose replacements carry the
+  backbone: `attendance` → `class_attendance`, `grades` → `term_grades`,
+  `quran_progress` → `quran_hifz_assignments`. These leave when the old screens
+  are retired, which is an IA decision, not a "while you are there" (rule 1).
+- **A miss** (7) — `course_enrollments`, `competency_assessments`,
+  `report_cards`, `pickup_windows`, `absence_notes`, `lesson_observations`,
+  `cpd_records`. The rule applies and the column is simply absent.
+
+The misses are **recorded, not fixed here**. Adding the column to a populated
+table is rule 9's three deploys — additive migration, backfill from
+`terms.academic_year_id` or the row's own date, then switch the writers — which
+is its own slice each, not a line in a test's changelog. Recording them is what
+makes them visible: the list may only shrink, so each one can only leave by
+being fixed.
+
+#### Verification
+
+All three failure branches were revert-checked independently:
+
+- a new migration creating a table with a `date` column and no
+  `academic_year_id` → fails, naming the table, its signal and its migration;
+- a baseline entry for a table that no longer exists → *"no such table is
+  created any more"*;
+- adding `academic_year_id` to `cpd_records` via a later `Schema::table()` →
+  *"cpd_records — now carries academic_year_id"*, i.e. the entry must be
+  deleted.
+
+1,824 tests green, architecture suite green, Pint clean. Test-only slice: no
+application code and no schema changed.
+
 ### PHASE_0 §0.5 rule 4: the half of a day-one gate that never shipped
 
 The per-phase build specs were the last unswept documents. `PHASE_0_CHECKLIST.md`
