@@ -4,8 +4,11 @@ namespace App\Domains\Finance\Providers;
 
 use App\Domains\Finance\Contracts\BankStatementParserInterface;
 use App\Domains\Finance\Contracts\PaymentProviderInterface;
+use App\Domains\Finance\Events\PaymentConfirmed;
+use App\Domains\Finance\Listeners\SendPaymentConfirmationNotices;
 use App\Domains\Finance\Services\ConfiguredCsvBankStatementParser;
 use App\Domains\Finance\Services\Payment\PaymentService;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 
 class FinanceServiceProvider extends ServiceProvider
@@ -32,6 +35,11 @@ class FinanceServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
-        //
+        // SPEC §41: "Cross-domain side effects must use events/listeners …
+        // must not directly call notification implementation classes." These
+        // four notices used to be private methods on PaymentService, called by
+        // hand after it fired the event — so `RecordManualPaymentAction`, which
+        // fires the same event, activated enrollments and told nobody.
+        Event::listen(PaymentConfirmed::class, SendPaymentConfirmationNotices::class);
     }
 }
