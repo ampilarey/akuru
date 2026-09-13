@@ -2,6 +2,7 @@
 
 namespace App\Domains\Admissions\Http\Controllers;
 
+use App\Domains\Courses\Actions\ActivateEnrollmentAction;
 use App\Domains\Courses\Actions\ResolveEnrollmentAccessWindowAction;
 use App\Domains\Courses\Actions\SuspendEnrollmentAction;
 use App\Domains\Courses\Models\Course;
@@ -68,10 +69,14 @@ class AdminEnrollmentController extends Controller
 
     public function activate(CourseEnrollment $enrollment)
     {
-        $enrollment->update([
-            'status' => 'active',
-            'enrolled_at' => $enrollment->enrolled_at ?? now(),
-        ]);
+        try {
+            app(ActivateEnrollmentAction::class)->execute($enrollment);
+        } catch (ValidationException $e) {
+            // Same shape as suspend/reinstate below: this screen is Blade and
+            // does not render a validation bag, so a thrown seat refusal would
+            // look to the admin like the button did nothing.
+            return back()->with('error', $e->validator->errors()->first());
+        }
 
         $this->notifyUser($enrollment, 'active');
         $this->sendActivationSms($enrollment);

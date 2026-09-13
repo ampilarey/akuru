@@ -140,6 +140,51 @@ a question with a default, so "do nothing" is always a legible choice.
 
 ## Found by the 2026-09-12 audit
 
+### A full class could be oversold from the admin screen — **fixed (2026-09-13)**
+
+**Severity: P1 — wrong data (a class over its own limit), one click deep.**
+
+`AdminEnrollmentController::activate()` was `$enrollment->update(['status' =>
+'active'])`: no Action, no seat check. `rejected`, `cancelled` and `suspended`
+are not occupying statuses, the Blade screen offers "Activate enrolment" on
+anything not already active, and one click moved a row into an occupying status
+without consulting the limit.
+
+`SuspendEnrollmentAction::reinstate()` **already did the check**, with a comment
+explaining why. The same crossing was guarded on one route into `active` and not
+on the other.
+
+`ActivateEnrollmentAction` (Courses) now charges only the crossing — a `pending`
+enrolment already holds its seat and must not be charged twice, or every
+activation on an exactly-full class would be refused. Both paths now reserve and
+save in one transaction, which `EnforceSeatLimitAction`'s docblock requires and
+`reinstate()` was not doing.
+
+### An abandoned checkout burned a discount code for good — **fixed (2026-09-13)**
+
+**Severity: P2 — a family loses a discount they never used.**
+
+`RecordDiscountRedemptionAction`'s docblock describes `RELEASED` as the state
+for a failed payment, *"so usage limits never leak from abandoned checkouts
+forever"*. **Nothing ever wrote it** — `transition()` was only ever called with
+`'confirmed'`, and there is no payment-failed event in the system.
+
+`ResolveDiscountAction` counts pending and confirmed against `usage_limit` and
+`per_user_limit`, so opening checkout and closing the tab spent the code, and a
+100-use code ran out after 100 attempts.
+
+`akuru:prune-expired` now releases the pending redemptions of the enrolments it
+cancels and deletes. Confirmed ones are left alone.
+
+### The admin enrolment screen could not show a refusal — **fixed (2026-09-13)**
+
+**Severity: P3 — confusion, but it hid the two fixes above.**
+
+`admin/enrollments/show.blade.php` rendered `session('success')` and not
+`session('error')`. `suspend()` and `reinstate()` have returned
+`back()->with('error', ...)` since they shipped, so a refused action redirected
+to a page that said nothing. Found by walking the seat fix, not by reading.
+
 ### A salary deduction decided by a substring of a free-text note — **fixed (2026-09-13)**
 
 **Severity: P1 — wrong money, on a payslip.**
