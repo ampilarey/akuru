@@ -7677,6 +7677,45 @@ one produced an audit. §33's five other headings — User Management, Course
 Management, Offering Management, Course Builder, Academic / Training Management
 — are inventories of CRUD that mostly exists and still need their own pass.
 
+### E19: the seventeenth row, and the E track is finished
+
+**No code in this slice, and that is the finding.** `EDUPAGE_FEATURES_PLAN.md`
+listed E19 "Student sensitive information" as *"~1 week + privacy decision"*,
+not started, with the warning that "this is the one module where building first
+and deciding later is actively wrong". It was picked up as the next slice.
+
+It is built, and the four questions that row says must be decided first were
+each answered in the code rather than skipped:
+
+| What the row said needed deciding | What the code does |
+|---|---|
+| Who may read | `role:super_admin\|headmaster` **and** `can:sensitive.read` on the group — with a comment naming the `RoleSeeder` blanket `Permission::all()` trap that would otherwise have undone it |
+| Who may write | `can:sensitive.write` on store/update/archive separately, and only a note's author may edit it |
+| Retention | archive, never delete (`archived_at`/`archived_by`), plus `review_on` → `needs_review` when past, rendered as "due to be looked at again" |
+| Whether it is exportable | **no export route**, deliberately |
+
+It also does something the row did not think to ask for: **every read is
+logged**, including the one that finds nothing, because `$viewerId` is a
+required argument on the read action — there is no way to look without leaving
+a trace. The access log renders beside the notes. Ten tests, all green.
+
+**How far this got before the truth surfaced.** The planned slice was a test
+pinning the deliberate absence of a CSV export, since the repo convention is
+that every listing gets one and sensitive welfare notes on children are the one
+table where an export *is* the incident. That test already existed —
+`it('exposes no export route and no family-facing route')` — carrying the same
+reasoning almost word for word. The row cost a full audit before it nearly cost
+a duplicate test.
+
+So the deliverable is a documentation correction: the E19 row, the "what
+remains on this track" summary, and the dependency block's "owner-gated" line.
+That makes **seventeen** rows this plan has recorded as missing work that had
+already shipped, every one in the same direction. **The E track is done.**
+
+CLAUDE.md already says to verify every row against the code before starting a
+slice. This is the second time in one session that doing so saved the work —
+and the first time it nearly didn't.
+
 ### KNOWN_ISSUES #24: pay by card and you are told; pay cash and you are not
 
 Filed one slice earlier as a structural complaint — §41 says "enrollment code
