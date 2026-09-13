@@ -7677,6 +7677,76 @@ one produced an audit. §33's five other headings — User Management, Course
 Management, Offering Management, Course Builder, Academic / Training Management
 — are inventories of CRUD that mostly exists and still need their own pass.
 
+### Security: a course permission that read every private file in the school
+
+Found while auditing LIBRARY_PLAN §36, which says the uploaded PDF original
+"is never exposed". Storage is right — `disk: local`, `visibility: private`,
+and no Library route serves it. The leak was somewhere else entirely.
+
+`GET /learn/media/{id}` and `/catalog/media/{id}` serve private files through
+`ServeCatalogMediaAction`. The **student** half is a careful allow-list: a
+preview lesson, the student's own attempt snapshots, or a lesson on a course
+they are enrolled in. The **staff** half was one line —
+
+```php
+$allowed = $user->can('courses.manage') || $this->studentMayView(...);
+```
+
+— and `ReadPrivateMediaAction` behind it is `MediaFile::find($id)` with no
+scope at all. So a *Courses* permission spent as **"may read every private file
+in the application, by id"**.
+
+Twelve callers reach `StorePrivateMediaAction`. Besides course media that is:
+children's Qur'an recitation recordings, children's pronunciation attempts,
+students' uploaded submissions, students' work photographs, lost-property
+photographs, class materials, and the Library's paid PDF originals — the one
+file §36 says must never be exposed, and the reason the protected reader exists.
+
+`courses.manage` is held by super_admin, admin, headmaster, supervisor **and
+course_creator**. SPEC §8 deliberately withholds `courses.publish` from a course
+creator, so the intent to keep that role narrow was already on the record;
+handing it every child's recording in the school was not that.
+
+**Confirmed before it was fixed**: a user holding only `courses.manage` fetched
+an unrelated private audio file and got **200**, not 403.
+
+#### The fix, and what had to keep working
+
+The staff path is an allow-list now, covering exactly what staff legitimately
+open here: **catalog media** (content blocks, published revisions, §22 glossary
+terms, §20 question attachments) and **submission attachments** — what a student
+handed in.
+
+That second one is the reason this needed care rather than a one-line
+tightening. `Reviews.jsx` plays and opens student submissions through this same
+endpoint, and those files are referenced by no lesson, glossary or question —
+narrowing to catalog media alone would have broken teacher review, which
+`SubmissionUploadsRenderTest` pins. Qur'an recitation review is unaffected: it
+has its own endpoint and never came through here, which was checked rather than
+assumed.
+
+**The architecture suite caught a real mistake on the way.** The first version
+reached for `Progress\Models\ActivityAttempt` from inside a Courses action, and
+`Phase1ABoundariesTest` failed by name. Attempts belong to Progress, so the
+question is now asked through `Progress\Actions\AnyAttemptUsesMediaAction` —
+which is also the only place that needs to know attachments live in
+`answers->attachments` keyed by `id`. That is the second time this session the
+arch tests have caught me adding the very cross-domain import the rule exists to
+prevent.
+
+#### Verification
+
+Three new tests: the leak (an unrelated private file now 403s), the thing that
+must keep working (catalog media still 200s for a manager), and a signed-in
+account with no course permission at all.
+
+**31 tests across every surface that touches this endpoint** — submission
+uploads, activity submission media, question attachments, glossary media,
+media content blocks — all still green, which is the evidence that the
+allow-list narrowed without breaking.
+
+**1,805 tests green**, arch green, Pint clean.
+
 ### LIBRARY_PLAN §9.1: a note My Library could display and no reader could write
 
 §9.1 asks for "private notes", §10 groups them as "Notes & Bookmarks", and §29

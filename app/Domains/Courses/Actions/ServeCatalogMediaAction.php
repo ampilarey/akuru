@@ -8,11 +8,46 @@ use App\Domains\Courses\Models\GlossaryItem;
 use App\Domains\Courses\Models\Lesson;
 use App\Domains\Courses\Models\LessonGlossaryItem;
 use App\Domains\Courses\Models\LessonRevision;
+use App\Domains\Courses\Models\Question;
 use App\Domains\Media\Actions\ReadPrivateMediaAction;
 use App\Domains\People\Actions\ResolveStudentForUserAction;
+use App\Domains\Progress\Actions\AnyAttemptUsesMediaAction;
 use App\Domains\Progress\Actions\ListStudentAttemptSnapshotsAction;
 use Illuminate\Contracts\Auth\Authenticatable;
 
+/**
+ * Who may be handed a private file through `/learn/media/{id}` and
+ * `/catalog/media/{id}`.
+ *
+ * The student half has always been a careful allow-list. **The staff half was
+ * one line** — `$user->can('courses.manage')` — and `ReadPrivateMediaAction`
+ * behind it is `MediaFile::find($id)` with no scope, so a *Courses* permission
+ * spent as "may read every private file in the application".
+ *
+ * Twelve callers reach `StorePrivateMediaAction`. Besides course media that
+ * meant children's Qur'an recitations, children's pronunciation attempts,
+ * students' work photographs, lost-property photographs, class materials, and
+ * the Library's paid PDF originals — the last being the one file
+ * LIBRARY_PLAN §36 says must never be exposed, and the reason the protected
+ * reader exists at all. `courses.manage` is held by super_admin, admin,
+ * headmaster, supervisor **and course_creator**; SPEC §8 deliberately withholds
+ * `courses.publish` from a course creator, so the intent to keep that role
+ * narrow is already on the record.
+ *
+ * The staff path is now an allow-list too, and it covers exactly the two things
+ * staff legitimately open here:
+ *
+ *  1. **Catalog media** — a file referenced by any lesson's content blocks or
+ *     published revisions, by a glossary term (§22), or by a question (§20).
+ *     This is what a catalog manager sees while building.
+ *  2. **A submission attachment** — what a student handed in. `Reviews.jsx`
+ *     plays and opens these, so narrowing to catalog media alone would have
+ *     broken teacher review, which `SubmissionUploadsRenderTest` pins.
+ *
+ * Everything else is refused. Qur'an recitation review is unaffected: it has
+ * its own endpoint (`recitations/{submission}/audio/{kind}`) and never came
+ * through here.
+ */
 class ServeCatalogMediaAction
 {
     /**
@@ -22,14 +57,57 @@ class ServeCatalogMediaAction
     {
         abort_unless($user !== null, 403);
 
-        $allowed = (method_exists($user, 'can') && $user->can('courses.manage'))
-            || $this->studentMayView($mediaId, (int) $user->getAuthIdentifier());
+        $userId = (int) $user->getAuthIdentifier();
+
+        $allowed = $this->studentMayView($mediaId, $userId)
+            || (method_exists($user, 'can')
+                && $user->can('courses.manage')
+                && $this->staffMayView($mediaId));
+
         abort_unless($allowed, 403);
 
         $file = app(ReadPrivateMediaAction::class)->execute($mediaId);
         abort_if($file === null, 404);
 
         return $file;
+    }
+
+    /**
+     * Course media, or something a student handed in. Not "any file".
+     */
+    private function staffMayView(int $mediaId): bool
+    {
+        $lessonIds = Lesson::query()->pluck('id')->all();
+
+        if ($this->lessonsUseMedia($lessonIds, $mediaId)) {
+            return true;
+        }
+
+        if ($this->questionsUseMedia($mediaId)) {
+            return true;
+        }
+
+        // Through Progress's own Action: attempts and their answers belong to
+        // Progress, and a Courses action holding `ActivityAttempt` is rule 3's
+        // boundary — `Phase1ABoundariesTest` caught exactly that here.
+        return app(AnyAttemptUsesMediaAction::class)->execute($mediaId);
+    }
+
+    /**
+     * §20 question attachments, which an author must be able to open while
+     * building a bank — and which no lesson references.
+     */
+    private function questionsUseMedia(int $mediaId): bool
+    {
+        $media = app(ResolveQuestionMediaAction::class);
+
+        foreach (Question::query()->whereNotNull('attachments')->pluck('attachments') as $attachments) {
+            if (in_array($mediaId, $media->mediaIds($attachments), true)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private function studentMayView(int $mediaId, int $userId): bool
