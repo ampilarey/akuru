@@ -7638,6 +7638,45 @@ while the comment is empty** and enables on typing → the course returns to
 `draft` with "Changes requested · 2026-09-13 — Lesson 3 has no assessment."
 shown beneath it, which is §34's "View supervisor comments" in one line.
 
+### SPEC §37: audited, not built — and that is the section's own instruction
+
+§37 opens with "Parent dashboard **can ship later**" and lists seven things it
+should show *when built* (child courses/offerings, progress, attendance,
+scores, teacher feedback, certificates, payment status). Building them would be
+future-phase work, which rule 1 forbids. So this was an audit.
+
+§37 has exactly one requirement that is **not** deferred:
+
+> The relationship model must already exist in Phase 1.
+
+**It does, and it is correct.** `parent_guardians` is the rich profile,
+`guardian_student` is the pivot (`relationship`, `is_primary`, `can_pickup`,
+`financial_responsible`), `ListGuardianChildrenAction` scopes strictly to the
+signed-in guardian's own links, `/portal/children` renders them, and the route
+sits behind `auth`. That matches `docs/S1_SPEC.md`'s "guardian sees children
+list in Portal (read-only this phase)" and "guardians see their own children
+only". Nothing to fix.
+
+**One finding, recorded as KNOWN_ISSUES #23 rather than built.** Migration
+`2026_08_25_000031_s1a7_guardian_student_policy` added `verification_status`
+(default `'unverified'`), `consent_status` (default `'unknown'`), `verified_at`,
+`created_by` and `notes` to the pivot, and **nothing reads or writes any of
+them** — `grep` finds two hits, both inside that migration. Every link says
+`unverified` forever while the portal shows the child anyway, so the column
+looks like an access control and is not one.
+
+It is recorded rather than fixed because both fixes are wrong to take
+unilaterally: enforcing the flag today would hide **every** child from **every**
+parent, since nothing can mark a link verified, and building a verification
+workflow would be inventing policy no spec asks for. S1_SPEC defines this pivot
+without any verification concept. The owner chooses: wire it up, or drop the
+three unread columns in a cleanup deploy.
+
+**§33–§37 sweep closed.** Four sections produced code (§33, §34, §35, §36) and
+one produced an audit. §33's five other headings — User Management, Course
+Management, Offering Management, Course Builder, Academic / Training Management
+— are inventories of CRUD that mostly exists and still need their own pass.
+
 ### SPEC §23: a seat rule written about a status the database could not hold
 
 §23's `course_enrollments` table carries most of what the section names, the
