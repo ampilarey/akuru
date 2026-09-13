@@ -40,6 +40,18 @@ class AuthorizeLessonAccessAction
         }
 
         abort_unless($enrollment !== null, 403);
+
+        // SPEC §11.7's access window. Until this slice access had no time
+        // dimension at all — status and §26's unlock rules and nothing else —
+        // so an enrolment could neither begin later nor run out.
+        //
+        // The message names *which* end failed. "Not yet" and "expired" lead
+        // to different actions (wait, or go and pay), and one flat refusal
+        // would be the same invisible no this codebase produced in §36's
+        // upload and §6.3's recorder.
+        $window = app(ResolveEnrollmentAccessWindowAction::class)->execute($enrollment);
+        abort_unless($window['open'], 403, (string) $window['message']);
+
         abort_unless($this->isUnlocked($lesson, $enrollment->id), 403, 'This lesson is locked.');
 
         return ['lesson' => $lesson, 'enrollment' => $enrollment, 'via' => 'enrollment'];

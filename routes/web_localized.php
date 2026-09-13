@@ -512,6 +512,9 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         // SPEC §23's sixth enrollment status, which had no writer at all.
         Route::patch('/{enrollment}/suspend', [AdminEnrollmentController::class, 'suspend'])->name('admin.enrollments.suspend');
         Route::patch('/{enrollment}/reinstate', [AdminEnrollmentController::class, 'reinstate'])->name('admin.enrollments.reinstate');
+        // SPEC §11.7's "Access starts at" / "Access ends at", which existed
+        // nowhere — so access to a course had no time dimension at all.
+        Route::patch('/{enrollment}/access-window', [AdminEnrollmentController::class, 'setAccessWindow'])->name('admin.enrollments.access-window');
     });
 
     // Admin payment refunds (P4.3 — money-sensitive, tighter than the payments listing)

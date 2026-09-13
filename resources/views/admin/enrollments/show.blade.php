@@ -189,6 +189,36 @@
             @endif
         </div>
 
+        {{-- SPEC §11.7 lists "Access starts at" and "Access ends at" among the
+             ten fields course_enrollments should include. Neither existed
+             anywhere, so access to a course had no time dimension at all:
+             status and §26's unlock rules decided everything, and an enrolment
+             could neither begin later nor run out.
+
+             Blank means unbounded at that end — which is what every enrolment
+             created before this holds, so clearing a field is a real operation
+             rather than a way of leaving it alone. --}}
+        <div class="mt-6 border-t pt-4">
+            <h3 class="text-sm font-semibold text-gray-800 mb-2">Access window</h3>
+            <p class="text-xs text-gray-600 mb-2">Leave blank for no limit at that end.</p>
+            <form method="POST" action="{{ route('admin.enrollments.access-window', $enrollment) }}"
+                  class="flex flex-wrap items-end gap-2">
+                @csrf
+                @method('PATCH')
+                <label class="text-xs text-gray-700">
+                    <span class="block">Starts</span>
+                    <input type="datetime-local" name="access_starts_at" class="form-input text-sm"
+                           value="{{ $enrollment->access_starts_at?->format('Y-m-d\TH:i') }}">
+                </label>
+                <label class="text-xs text-gray-700">
+                    <span class="block">Ends</span>
+                    <input type="datetime-local" name="access_ends_at" class="form-input text-sm"
+                           value="{{ $enrollment->access_ends_at?->format('Y-m-d\TH:i') }}">
+                </label>
+                <button type="submit" class="btn-secondary text-sm">Save access window</button>
+            </form>
+        </div>
+
         {{-- P4.4: record money received outside the gateway (cash / transfer). --}}
         @if(auth()->user()?->can('payments.record') && in_array($enrollment->payment_status, ['pending', 'required'], true))
             <div class="mt-6 border-t pt-4">

@@ -24,6 +24,11 @@ class CourseEnrollment extends Model
         'enrollment_type',
         'progress_percentage',
         'enrolled_at',
+        // SPEC §11.7's access window. Null at either end means unbounded
+        // there, which is what every row created before the window existed
+        // holds — so nothing needed backfilling.
+        'access_starts_at',
+        'access_ends_at',
         'completed_at',
         'created_by_user_id',
         'payment_status',
@@ -34,6 +39,8 @@ class CourseEnrollment extends Model
     {
         return [
             'enrolled_at' => 'datetime',
+            'access_starts_at' => 'datetime',
+            'access_ends_at' => 'datetime',
             'completed_at' => 'datetime',
             'progress_percentage' => 'integer',
         ];
