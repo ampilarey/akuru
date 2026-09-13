@@ -7677,6 +7677,44 @@ one produced an audit. §33's five other headings — User Management, Course
 Management, Offering Management, Course Builder, Academic / Training Management
 — are inventories of CRUD that mostly exists and still need their own pass.
 
+### ROADMAP §5: the Blade rule that has held on its own, and the count nobody kept
+
+`docs/ROADMAP.md` had never been swept in this pass, and CLAUDE.md lists it
+first in the document map. §5's opening line is also in CLAUDE.md's own
+Conventions, stated twice:
+
+> **All new UIs**: Inertia + React. No new Blade screens. Existing Blade pages
+> keep running until their replacement ships.
+
+**It has held.** No Blade view has been added since the tree was imported —
+checked by listing additions under `resources/views/**/*.blade.php` across every
+commit since, not by reading the rule and assuming. 219 remain, all pre-existing.
+
+So this pins correct behaviour rather than fixing a defect, and the reason is
+the shape of what a violation would cost. A Blade page gets no `AppShell`: no
+navigation, no `auth.can` permissions summary, no `rtl` flag, and none of the
+Inertia shared props that `InertiaSharedPropsTest` pins because every page
+depends on them. Dhivehi and Arabic readers notice first. That is not a
+stylistic preference, and it is exactly the kind of thing that arrives once,
+quietly, in a hurry.
+
+**The list may only shrink, and that direction is the useful one.** ROADMAP
+keeps existing Blade running "until their replacement ships", so deleting an
+entry *is* a migration landing. Nothing was counting those. **219 is now the
+Blade→Inertia number §5 implies and nobody was tracking**, and the test asks
+whoever retires a screen to correct it.
+
+#### Verification
+
+**Revert-check, both directions.** A new `.blade.php` fails and names it; a
+deleted one fails the other assertion and asks for the count to be corrected —
+the two are separate expectations, checked separately rather than as a pair.
+
+**No browser walk:** one test and a generated baseline; no `app/` or
+`resources/` change.
+
+**1,814 tests green** (1 new), arch green, Pint clean.
+
 ### LIBRARY_PLAN §13.7: the Institute could not say what it owed
 
 §11, §12 and §13 were the last unaudited L-track sections. §11's writer portal
