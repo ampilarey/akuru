@@ -101,6 +101,21 @@ a question with a default, so "do nothing" is always a legible choice.
     every permission-granting migration no-ops its role grants on a
     migrate-only database — meaning **role changes cannot be shipped by deploy
     at all**. Moving role creation into a migration touches the role matrix.
+
+    **Partly acted on, 2026-09-13 (§8 sweep).** Migration
+    `2026_09_13_000005` now `firstOrCreate`s two of them: `course_creator`,
+    which SPEC §8.3 names and which did not exist at all, and `supervisor`,
+    whose §8.4 duties all answered 403 because the role held no `courses.`
+    permission and was absent from the `/catalog` route group. On every
+    existing deployment `supervisor` is already there, so that half is a no-op
+    and the role matrix does not move; it matters only on a migrate-only
+    database, where the grant would otherwise have silently done nothing and
+    left §8.4 as broken as it was found.
+
+    **Still open, and still yours:** `admin`, `teacher`, `student`, `parent`
+    and `headmaster` remain seeder-only. `SpecRolesExistTest` carries an
+    expectation that **fails when this is fixed**, pointing back here, so the
+    note cannot rot into a false claim.
 12. **A supervisor can grant a place on a paid course.** The admissions group is
     guarded by role alone, while the money endpoints next door also require
     `can:payments.refund` / `can:payments.record`. Tightening it changes who can

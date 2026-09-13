@@ -7677,6 +7677,78 @@ one produced an audit. §33's five other headings — User Management, Course
 Management, Offering Management, Course Builder, Academic / Training Management
 — are inventories of CRUD that mostly exists and still need their own pass.
 
+### SPEC §8: one role that did not exist, and one that could do nothing
+
+§8 names seven roles. Six existed. The two failures are different shapes.
+
+**§8.3 Course Creator did not exist at all.** The section lists nine things it
+manages and one rule:
+
+> Course creators should **not publish courses directly** unless permission is
+> granted.
+
+The rule was enforceable the whole time — `TransitionCourseWorkflowAction`
+refuses `Published` without `courses.publish` — but **no role held
+`courses.manage` without `courses.publish`**. To let somebody build a course
+you had to make them `admin` (108 permissions, publish included) or
+`headmaster` (79). The one shape §8.3 describes was not available.
+
+**§8.4 Dean / Supervisor existed and could do none of its eight duties.** The
+role held 33 permissions and **not one of them began `courses.`**, and the
+`/catalog` route group did not list the role either. Every §8.4 duty — review
+submitted courses, approve, reject, request changes, review assessments, review
+offerings, view academic reports — answered **403**. Probed directly, all four
+screens refused it.
+
+That is not only a role-table problem. **PR #316 put §35's approve / reject /
+request-changes control on `/catalog/courses`, a screen the supervisor could
+not open.** The feature I shipped this morning was reachable by everyone except
+the role §35 is named after.
+
+**The grants, and why each.** `course_creator` gets `courses.manage` and
+deliberately **not** `courses.publish` — §8.3's rule expressed as the absence
+of a permission rather than a special case in code, so "unless permission is
+granted" means exactly what it says. `supervisor` gets both, because §8.4's
+"Approve courses" *is* publishing: an approval moves the course to `Published`
+and `RecordCourseReviewDecisionAction` refuses that without the right, so a
+supervisor who may approve but may not publish could approve nothing.
+
+**No `dean` role was invented.** §8.4 is one heading covering both words, and
+`supervisor` is the name already in the database, the seeder and the route
+middleware.
+
+**A migration, not a seeder**, for the reason
+`2026_09_10_000010_seeder_only_route_permissions` sets out: the deploy script
+runs `migrate --force` and never `db:seed`. Both roles are `firstOrCreate`d
+rather than assigned-if-present — on a fresh, migrate-only database
+`supervisor` does not exist yet, so an assign-if-exists would have silently
+done nothing and left §8.4 exactly as broken as it was found.
+
+**The browser walk caught something I was about to introduce.** Adding
+`course_creator` to the catalog group quietly handed them **Reject** and
+**Request changes** — those land in `draft`, so they need no publish right and
+sailed past every check. §8.4 gives all three outcomes to the supervisor and
+§8.3's creator does not review at all, not even somebody else's course. The
+`decide` endpoint now requires `courses.publish` for the whole review, not only
+for approval, because reviewing is one job. One test from #316 had to change
+with it — it asserted a 302-with-errors and now asserts a 403 — and a second
+test was added pinning the inner `TransitionCourseWorkflowAction` rule directly
+so it cannot rot behind the outer guard.
+
+Walked in Chrome at `127.0.0.1:8901` (2026-09-13):
+
+| | `/catalog/courses` etc. | Review control |
+|---|---|---|
+| supervisor (before) | **403 on all four** | — |
+| supervisor (after) | 200 on all four | Approved / Rejected / Changes requested |
+| course_creator | 200 on all four | none — "Waiting for review" |
+
+**Recorded, not fixed (rule 1).** `admin`, `teacher`, `student`, `parent` and
+`headmaster` are still seeder-only, which is KNOWN_ISSUES item 11 — an existing
+owner-decision entry, now updated in place rather than duplicated.
+`SpecRolesExistTest` carries an expectation that **fails when that is fixed**
+and names the entry, so the note cannot rot into a false claim.
+
 ### SPEC §6.3 / §6.4: the platform abstraction layer that did not exist
 
 Most of §6 holds up, and it is worth saying so. All eleven components §6.1
