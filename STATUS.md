@@ -7677,6 +7677,78 @@ one produced an audit. §33's five other headings — User Management, Course
 Management, Offering Management, Course Builder, Academic / Training Management
 — are inventories of CRUD that mostly exists and still need their own pass.
 
+### SPEC §7: a course language nothing read, so every block spoke the UI's
+
+§7's two sentences are the whole finding:
+
+> Each course may have its own course language.
+>
+> **The platform UI language and course content language are separate
+> concepts.**
+
+with §7's own worked example: *"A user may use the UI in Dhivehi. The course
+may be Arabic."*
+
+Most of §7 holds up. EN/DV/AR exist from day one, the shell is RTL-safe,
+`TranslationParityTest` already guards against new untranslated strings, and
+§15.3's per-block `direction` / `language` / `align` / `font` settings are
+implemented properly and read by the player.
+
+**The default was the defect.** §15.3's `language` setting defaults to `auto`,
+and the player resolved `auto` to nothing:
+
+```js
+const language = s.language && s.language !== 'auto' ? s.language : undefined;
+```
+
+No `lang` attribute means the block inherits the page's — and the page's is the
+**UI** language. So §7's example produced Arabic text marked up as Dhivehi, on
+every block an author had not tagged by hand, which is the default state of
+every block. The two concepts §7 says are separate were one.
+
+`courses.language` has been storable and settable since the course table
+shipped — the catalog screen offers EN/DV/AR/Mixed — and **nothing read it**
+except a query scope with no callers. The same taxonomy as §36's
+`submission_kind`: a column the schema offers, the UI writes, and no reader
+consults.
+
+**What shipped.** `ResolveCourseContentLanguageAction`, and `auto` now falls
+back to the course's own language. Three judgement calls:
+
+- **`mixed` resolves to null.** A course that is deliberately more than one
+  language has no single honest answer, and guessing one is worse than leaving
+  the browser its per-block heuristic.
+- **`courses.language` is a plain string column with no enum**, so only a value
+  a browser understands is ever sent as a `lang`.
+- **Direction is untouched.** §15.3 blesses `auto` for direction explicitly and
+  the browser's first-strong-character heuristic is the right answer there.
+
+**Read live, not frozen into the snapshot**, and a test pins that. Course
+language is course metadata — what language a lesson is *in*, not what it
+*says* — so §28.6's concern (published content must not change under a student)
+does not reach it, and freezing it would need a backfill of every revision
+published before this slice.
+
+**Two controllers render one page**, and both had the bug:
+`LessonPlayerController` (author preview) and `LearnLessonController` (the
+student player — the one §7's example is actually about). Fixing only the
+preview would have left the real case broken while a single-controller test
+passed, so `CourseLanguageReachesPlayerTest` walks every controller that
+renders `Courses/Player/Show` and fails if one of them omits the prop. It also
+asserts the page file still exists, so a rename cannot make the guard pass
+vacuously.
+
+Walked in Chrome at `127.0.0.1:8901` (2026-09-13), running §7's example
+directly — an Arabic course opened with the UI in each locale:
+
+| UI | `<html lang>` | block `lang` |
+|---|---|---|
+| English | `en` | `ar` |
+| **Dhivehi** | `dv` | `ar` |
+
+Before the fix the block carried no `lang` at all and inherited the first
+column.
+
 ### SPEC §9: nine fields the pivot must support, five of them unreachable
 
 **This section also corrects a claim I made in #317 the same day.** That PR said

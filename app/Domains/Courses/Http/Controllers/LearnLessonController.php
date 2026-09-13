@@ -3,6 +3,7 @@
 namespace App\Domains\Courses\Http\Controllers;
 
 use App\Domains\Courses\Actions\AuthorizeLessonAccessAction;
+use App\Domains\Courses\Actions\ResolveCourseContentLanguageAction;
 use App\Domains\Courses\Actions\ResolvePublishedLessonAction;
 use App\Domains\Courses\Actions\StartOrCompleteLessonProgressAction;
 use App\Domains\Offerings\Actions\ResolveOfferingPinAction;
@@ -35,6 +36,10 @@ class LearnLessonController extends Controller
             'mediaShowUrl' => '/learn/media',
             'canComplete' => $access['enrollment'] !== null,
             'completeUrl' => '/learn/lessons/'.$lesson.'/complete',
+            // SPEC §7. The student-facing half of the same fix — this is the
+            // screen §7's example is actually about, where someone reading the
+            // UI in Dhivehi opens an Arabic course.
+            'courseLanguage' => app(ResolveCourseContentLanguageAction::class)->forLesson($lesson),
         ]);
     }
 

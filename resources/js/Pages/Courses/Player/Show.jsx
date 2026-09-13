@@ -138,11 +138,29 @@ const BLOCK_FONTS = {
     arabic: '"Noto Naskh Arabic", "Amiri", serif',
 };
 
-function blockTextProps(block) {
+/**
+ * SPEC §7: "Each course may have its own course language" and "**The platform
+ * UI language and course content language are separate concepts.**"
+ *
+ * `auto` used to resolve to `undefined` — no `lang` attribute at all — so a
+ * block inherited the page's, and the page's is the **UI** language. §7's own
+ * example (a Dhivehi UI reading an Arabic course) therefore produced Arabic
+ * text marked up as Dhivehi on every block an author had not tagged by hand,
+ * which is the default. The two concepts were one.
+ *
+ * `auto` now falls back to the course's own language. `mixed` stays
+ * unresolved on purpose: a course that is deliberately more than one language
+ * has no single honest answer.
+ *
+ * Direction is untouched. §15.3 blesses `auto` for direction explicitly, and
+ * the browser's first-strong-character heuristic is the right answer there.
+ */
+function blockTextProps(block, courseLanguage) {
     const s = block.settings || {};
     const direction = s.direction || 'auto';
     const align = s.align || 'start';
-    const language = s.language && s.language !== 'auto' ? s.language : undefined;
+    const explicit = s.language && s.language !== 'auto' ? s.language : undefined;
+    const language = explicit || courseLanguage || undefined;
     const style = { textAlign: align };
     if (BLOCK_FONTS[s.font]) {
         style.fontFamily = BLOCK_FONTS[s.font];
@@ -150,9 +168,9 @@ function blockTextProps(block) {
     return { dir: direction, lang: language, style };
 }
 
-function BlockView({ block, mediaShowUrl, glossary = [], onSelectTerm = () => {} }) {
+function BlockView({ block, mediaShowUrl, glossary = [], onSelectTerm = () => {}, courseLanguage = null }) {
     const direction = block.settings?.direction || 'auto';
-    const textProps = blockTextProps(block);
+    const textProps = blockTextProps(block, courseLanguage);
     const src = block.data?.media_id ? mediaSrc(mediaShowUrl, block.data.media_id) : null;
 
     if (block.type === 'rich_text') {
@@ -364,7 +382,16 @@ function FlashcardView({ cards, title, direction }) {
     );
 }
 
-export default function Show({ snapshot, mediaShowUrl = '/catalog/media', canComplete = false, completeUrl = null }) {
+export default function Show({
+    snapshot,
+    mediaShowUrl = '/catalog/media',
+    canComplete = false,
+    completeUrl = null,
+    // SPEC §7. Null for a `mixed` course, or one whose language is not one the
+    // browser can be told about — in which case `auto` stays the browser's own
+    // per-block guess, which is the honest answer.
+    courseLanguage = null,
+}) {
     const t = usePage().props.i18n?.learn || {};
     const locale = usePage().props.locale || 'en';
     const glossary = snapshot.glossary || [];
@@ -412,6 +439,7 @@ export default function Show({ snapshot, mediaShowUrl = '/catalog/media', canCom
                         mediaShowUrl={mediaShowUrl}
                         glossary={glossary}
                         onSelectTerm={setSelected}
+                        courseLanguage={courseLanguage}
                     />
                 ))}
             </div>
