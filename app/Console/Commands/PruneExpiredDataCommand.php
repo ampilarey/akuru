@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Domains\Commerce\Actions\RecordDiscountRedemptionAction;
 use App\Domains\Courses\Models\CourseEnrollment;
 use App\Domains\Identity\Models\Otp;
 use App\Domains\Identity\Models\OtpAbuseEvent;
@@ -45,7 +46,14 @@ class PruneExpiredDataCommand extends Command
         $draftCount = $draftQuery->count();
         $this->line("Stale draft enrollments to delete: {$draftCount}");
         if (! $dryRun) {
+            // Read the ids before deleting: the redemption points at the
+            // enrolment, and once the row is gone there is nothing left to
+            // match it to.
+            $draftIds = (clone $draftQuery)->pluck('id')->map(fn ($id): int => (int) $id)->all();
             $draftQuery->delete();
+            $released = app(RecordDiscountRedemptionAction::class)
+                ->releaseAbandoned('course_enrollment', $draftIds);
+            $this->line("Discount redemptions released from stale drafts: {$released}");
         }
 
         // --- Stale pending-payment enrollments (older than 24 h, never paid) ---
@@ -66,7 +74,16 @@ class PruneExpiredDataCommand extends Command
         $pendingCount = $pendingQuery->count();
         $this->line("Stale pending-payment enrollments to cancel: {$pendingCount}");
         if (! $dryRun) {
+            $pendingIds = (clone $pendingQuery)->pluck('id')->map(fn ($id): int => (int) $id)->all();
             $pendingQuery->update(['status' => 'cancelled']);
+
+            // Cancelling frees the seat automatically, because `cancelled` is
+            // not an occupying status. The discount slot was not freed by
+            // anything at all — `'released'` had no writer in the codebase —
+            // so an abandoned checkout burned a use of the code for good.
+            $released = app(RecordDiscountRedemptionAction::class)
+                ->releaseAbandoned('course_enrollment', $pendingIds);
+            $this->line("Discount redemptions released from stale pending enrollments: {$released}");
         }
 
         // --- Library reading events past their retention window (L2b, §30.3) ---

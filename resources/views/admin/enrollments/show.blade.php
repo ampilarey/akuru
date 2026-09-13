@@ -13,6 +13,14 @@
         <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">{{ session('success') }}</div>
     @endif
 
+    {{-- This screen rendered only the success banner. `suspend()` and
+         `reinstate()` have returned `back()->with('error', ...)` since they
+         shipped, and `activate()` now does too — so a refused action redirected
+         here and said nothing at all. The admin saw the button do nothing. --}}
+    @if(session('error'))
+        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">{{ session('error') }}</div>
+    @endif
+
     <div class="card p-6 mb-6">
         <h1 class="text-xl font-bold text-gray-900 mb-4">Enrollment Details</h1>
         <dl class="grid grid-cols-2 gap-x-6 gap-y-3 text-sm">

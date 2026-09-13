@@ -4,6 +4,7 @@ namespace App\Domains\Courses\Actions;
 
 use App\Domains\Courses\Models\CourseEnrollment;
 use App\Domains\Offerings\Actions\ReserveOfferingSeatAction;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 /**
@@ -81,14 +82,22 @@ class SuspendEnrollmentAction
         // The seat was released while suspended, so it has to be available
         // again — reinstating into a full offering would put the offering over
         // its own limit, which is exactly what §23's rule exists to prevent.
-        if ($enrollment->course_offering_id) {
-            app(ReserveOfferingSeatAction::class)
-                ->execute((int) $enrollment->course_offering_id);
-        }
+        //
+        // In one transaction: `EnforceSeatLimitAction` locks the offering row
+        // and counts the occupying enrolments, and its own docblock says the
+        // occupancy must be written before that lock is released. The check and
+        // the status change used to be two statements, so two admins
+        // reinstating at once could both pass a count of one free seat.
+        return DB::transaction(function () use ($enrollment): CourseEnrollment {
+            if ($enrollment->course_offering_id) {
+                app(ReserveOfferingSeatAction::class)
+                    ->execute((int) $enrollment->course_offering_id);
+            }
 
-        $enrollment->status = 'active';
-        $enrollment->save();
+            $enrollment->status = 'active';
+            $enrollment->save();
 
-        return $enrollment->refresh();
+            return $enrollment->refresh();
+        });
     }
 }

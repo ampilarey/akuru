@@ -7677,6 +7677,103 @@ one produced an audit. §33's five other headings — User Management, Course
 Management, Offering Management, Course Builder, Academic / Training Management
 — are inventories of CRUD that mostly exists and still need their own pass.
 
+### The state-machine audit: one rule, two doors, one of them unguarded
+
+Same method as the computed-number pass, applied to every status a record can
+move through — exams, offerings, courses, registers, payroll periods, report
+cards, enrolments, redemptions. The shape to look for is a rule enforced on one
+route into a state and not on its sibling.
+
+**Sound:** `TransitionExamStatusAction` (allowed-next list, unlock demands a
+reason, every move audited), `TransitionOfferingStatusAction`,
+`TransitionCourseWorkflowAction`, `SaveExamMarkAction` (marks only in
+`marks_entry`/`review`), `PruneExpiredDataCommand`'s refusal to cancel a
+confirmed-payment enrolment.
+
+**Three defects, all on the same screen's blast radius.**
+
+#### 1. A full class could be oversold from the admin screen
+
+`AdminEnrollmentController::activate()` was three lines:
+
+```php
+$enrollment->update(['status' => 'active', 'enrolled_at' => ...]);
+```
+
+No Action, no seat check. The statuses that occupy a seat are `active`,
+`approved`, `pending`, `completed` — so `rejected`, `cancelled` and `suspended`
+do not. The Blade screen offers **"Activate enrolment" on anything not already
+active, a rejected one included**, and one click moved the row into an occupying
+status without consulting the limit.
+
+What makes this worth writing down: **`SuspendEnrollmentAction::reinstate()`, in
+the Courses domain, already does the check** — with a comment explaining exactly
+why. The same crossing (a non-occupying status into `active`) was guarded on the
+suspend→active route and unguarded on the reject→active one. The codebase knew
+the rule; one of the two doors was never fitted with it.
+
+`ActivateEnrollmentAction` now charges **only the crossing**: activating a
+`pending` enrolment moves between two occupying statuses and must not be charged
+a second seat, or every activation on an exactly-full class would be refused.
+
+Also hardened while here: `reinstate()` reserved the seat and saved the status as
+two statements. `EnforceSeatLimitAction`'s own docblock says the occupancy must
+be written before the lock is released, so two admins reinstating at once could
+both pass a count of one free seat. Both paths are now one transaction.
+
+#### 2. An abandoned checkout burned a discount code for good
+
+`RecordDiscountRedemptionAction`'s docblock describes three states: *"PENDING at
+checkout, CONFIRMED when the payment confirms, RELEASED if the payment fails —
+so usage limits never leak from abandoned checkouts forever."*
+
+**Nothing ever wrote `released`.** `transition()` was only ever called with
+`'confirmed'`, and there is no payment-failed event in the system at all. Grep
+confirms it.
+
+`ResolveDiscountAction` counts pending **and** confirmed against `usage_limit`
+and `per_user_limit`. So a family who opened checkout and closed the tab spent
+their only use of the code, and a code limited to 100 uses ran out after 100
+*attempts*.
+
+`akuru:prune-expired` — which already cancels stale pending enrolments and
+deletes stale drafts — now releases their redemptions. Only pending ones: a
+confirmed redemption means the school was paid, and handing that slot back would
+let one purchase use a code twice. Draft ids are read **before** the delete,
+because once the enrolment row is gone there is nothing left to match.
+
+#### 3. The screen could not show the refusal
+
+Found by walking #1 rather than by reading: the activation was correctly
+refused, and **nothing appeared on the page**. `show.blade.php` renders
+`session('success')` and not `session('error')` — so `suspend()` and
+`reinstate()`, which have returned `back()->with('error', ...)` since they
+shipped, have been failing silently on this screen all along. My fix would have
+joined them.
+
+One banner, three actions fixed. This is the pilot-rehearsal lesson again: the
+tests were green for a refusal the user could not see.
+
+#### Walked in Chromium (2026-09-13)
+
+`/en/admin/enrollments/2` — a rejected enrolment on an offering with one seat,
+already taken:
+
+| Step | Result |
+|---|---|
+| "Activate enrolment" shown on a rejected enrolment | yes — it always was |
+| Click it | **"This offering has no remaining seats."** |
+| Status after | still Rejected |
+
+Before this change: status Active, and the offering over its limit.
+
+1,839 tests green, architecture suite green, Pint clean.
+
+**Caught by the arch tests again:** the new Action was first written in
+Admissions, importing `Courses\Models\CourseEnrollment` — rule 3. It lives in
+Courses now, next to `SuspendEnrollmentAction`, which is where the controller
+already reaches for its siblings.
+
 ### The computed-number audit, done as one pass
 
 Two P1s in a row (#345 grades, #346 discounts) were enough to stop finding them

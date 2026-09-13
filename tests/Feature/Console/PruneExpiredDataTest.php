@@ -136,3 +136,98 @@ it('never cancels an enrolment whose payment was confirmed', function () {
     expect($confirmed->fresh()->status)->toBe('pending')
         ->and($unpaid->fresh()->status)->toBe('cancelled');
 });
+
+/**
+ * `'released'` is the status `RecordDiscountRedemptionAction`'s own docblock
+ * describes — *"RELEASED if the payment fails — so usage limits never leak from
+ * abandoned checkouts forever"* — and **nothing in the codebase ever wrote it**.
+ * `transition()` was only ever called with `'confirmed'`, and there is no
+ * payment-failed event at all.
+ *
+ * `ResolveDiscountAction` counts pending **and** confirmed against both
+ * `usage_limit` and `per_user_limit`. So a family who opened checkout and
+ * closed the tab burned their only use of the code, and a code limited to 100
+ * uses ran out after 100 attempts rather than 100 purchases.
+ */
+function abandonedCheckoutCourse(): App\Domains\Courses\Models\Course
+{
+    return App\Domains\Courses\Models\Course::factory()->create([
+        'workflow_status' => 'published',
+        'status' => 'open',
+    ]);
+}
+
+function abandonedCheckoutDiscount(): App\Domains\Commerce\Models\DiscountCode
+{
+    return App\Domains\Commerce\Models\DiscountCode::query()->create([
+        'code' => 'WELCOME10',
+        'name' => 'Welcome 10%',
+        'discount_type' => 'percentage',
+        'discount_value' => 10,
+        'status' => 'active',
+        'per_user_limit' => 1,
+        'can_use_with_wallet' => true,
+    ]);
+}
+
+it('gives a discount slot back when an abandoned checkout is pruned', function () {
+    $course = abandonedCheckoutCourse();
+    $buyer = App\Domains\Identity\Models\User::factory()->create();
+    $discount = abandonedCheckoutDiscount();
+
+    $enrollment = CourseEnrollment::query()->create([
+        'course_id' => $course->id,
+        'student_id' => makeRegistrationStudent()->id,
+        'status' => 'pending',
+        'payment_status' => 'pending',
+        'enrollment_type' => 'self_learning',
+        'progress_percentage' => 0,
+    ]);
+    CourseEnrollment::query()->whereKey($enrollment->id)->update(['created_at' => now()->subDays(3)]);
+
+    app(App\Domains\Commerce\Actions\RecordDiscountRedemptionAction::class)
+        ->execute($discount->id, $buyer->id, 'course_enrollment', $enrollment->id, 50.0);
+
+    // The code is spent as far as this buyer is concerned, and stays spent
+    // forever unless something releases it.
+    expect(fn () => app(App\Domains\Commerce\Actions\ResolveDiscountAction::class)
+        ->execute('WELCOME10', $buyer->id, 500.0))
+        ->toThrow(Illuminate\Validation\ValidationException::class);
+
+    $this->artisan('akuru:prune-expired')->assertExitCode(0);
+
+    expect($enrollment->fresh()->status)->toBe('cancelled');
+
+    $resolved = app(App\Domains\Commerce\Actions\ResolveDiscountAction::class)
+        ->execute('WELCOME10', $buyer->id, 500.0);
+
+    expect($resolved['amount_discounted'])->toBe(50.0);
+});
+
+it('does not release a redemption whose payment landed', function () {
+    // A confirmed redemption means the school was paid. Handing that slot back
+    // would let the code be used twice for one purchase.
+    $course = abandonedCheckoutCourse();
+    $buyer = App\Domains\Identity\Models\User::factory()->create();
+    $discount = abandonedCheckoutDiscount();
+
+    $enrollment = CourseEnrollment::query()->create([
+        'course_id' => $course->id,
+        'student_id' => makeRegistrationStudent()->id,
+        'status' => 'pending',
+        'payment_status' => 'confirmed',
+        'enrollment_type' => 'self_learning',
+        'progress_percentage' => 0,
+    ]);
+    CourseEnrollment::query()->whereKey($enrollment->id)->update(['created_at' => now()->subDays(3)]);
+
+    app(App\Domains\Commerce\Actions\RecordDiscountRedemptionAction::class)
+        ->execute($discount->id, $buyer->id, 'course_enrollment', $enrollment->id, 50.0);
+    app(App\Domains\Commerce\Actions\RecordDiscountRedemptionAction::class)
+        ->transition('course_enrollment', $enrollment->id, 'confirmed');
+
+    $this->artisan('akuru:prune-expired')->assertExitCode(0);
+
+    expect(App\Domains\Commerce\Models\DiscountRedemption::query()
+        ->where('purchase_id', $enrollment->id)->value('status'))->toBe('confirmed');
+});
