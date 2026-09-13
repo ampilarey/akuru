@@ -35,7 +35,9 @@ class LibraryReaderController extends Controller
         if ($reader['requires_login']) {
             return redirect()->guest(route('login'));
         }
-        if (! $reader['can_read']) {
+        // §9.4: a preview is not access, so `can_read` stays false — but it is
+        // a legitimate page to serve, and the redirect used to swallow it.
+        if (! $reader['can_read'] && ! ($reader['is_preview'] ?? false)) {
             return redirect()->route('public.library.show', $slug);
         }
 

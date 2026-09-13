@@ -188,4 +188,6 @@ return [
     'Daily reminders' => 'Daily reminders',
     'Change island' => 'Change island',
     'next in' => 'next in',
+    'Free preview of :count pages' => 'معاينة مجانية من :count صفحة.',
+    'Get the full item' => 'احصل على النسخة الكاملة',
 ];

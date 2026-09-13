@@ -7677,6 +7677,79 @@ one produced an audit. §33's five other headings — User Management, Course
 Management, Offering Management, Course Builder, Academic / Training Management
 — are inventories of CRUD that mostly exists and still need their own pass.
 
+### LIBRARY_PLAN §9.4: two columns for a preview nobody could turn on
+
+The L-track had never been swept in this pass, and §9's protected reader is the
+plan's own "most important module". Audited claim by claim, it holds up well:
+access is decided on **every** page request, content is HTML rather than a PDF
+URL, the watermark is dynamic and per-reader, text selection is off, and there
+is real abuse detection with rapid-page and multi-session signals feeding an
+admin alert queue.
+
+**§9.4's preview was the hole.** `library_items.preview_enabled` and
+`preview_pages` shipped with the L1 foundation migration on 2026-08-27 and
+**nothing has ever read or written either one** — not `ResolveLibraryAccessAction`
+(which the code itself calls "the ONE access decision"), not the reader, not the
+admin form. §37 lists "free preview" in the MVP's public surface. So the
+platform sells books nobody can sample, and the schema says otherwise.
+
+That is this codebase's signature defect once more — a control that controls
+nothing — and it is the fourth instance this session after §36's
+`submission_kind`, §9's `withPivot`, and #23's verification columns.
+
+**Where the cap lives is the whole design.** `preview_pages` comes back from
+the access decision as an **allowance**, never as `can_read`: a previewer is not
+granted the item, only a first-N-pages window. `PresentLibraryReaderAction`
+clamps the requested page against that allowance **server-side**, because the
+page number arrives from the query string and a cap enforced in the view or the
+controller would be no cap at all. Everything that forgets the allowance
+therefore fails closed — it shows nothing, rather than the whole book.
+
+Three smaller decisions, each written down where it applies:
+
+- **A sample writes no reading progress.** Progress is the record of reading
+  something you own; writing it would put an unbought book into "continue
+  reading" and count its pages toward a completion the reader cannot reach.
+- **Preview requires a signed-in reader.** §9.2 wants a per-reader watermark
+  and a logged reading event on every delivered page, and neither means
+  anything without a person attached — an anonymous preview would be the one
+  page in the system handed out with nobody's name on it.
+- **`total_pages` still reports the real length**, and a new `readable_pages`
+  drives the navigation, so a sample reads "2 of 210" rather than "2 of 2".
+
+#### Verification
+
+**Revert-check, both halves.** Clamping against the whole item instead of the
+allowance fails the cap test; ignoring `preview_enabled` (or letting a null
+allowance mean "some") fails the fail-closed test. Seven tests, including the
+one that matters most: a four-page book with a two-page preview, asked for page
+3 and then page 400.
+
+**Walked in Chrome** at `127.0.0.1:8125`, as a reader who had not bought it:
+
+| Asked for | Served |
+|---|---|
+| page 1 | **PAGE ONE** — preview banner shown, watermark carries the reader's name |
+| page 2 | **PAGE TWO** |
+| page 3 | **PAGE TWO** — clamped |
+| page 400 | **PAGE TWO** — clamped |
+
+Then the same account with an access grant: pages 1, 3 and 4 all served in
+full, and no preview banner. The paid pages were never reachable by typing a
+number into the URL, which is the only way this feature could have gone wrong.
+
+**1,793 tests green** (7 new), arch green, Pint clean. Trilingual strings added
+to all three locales, so the parity test stayed green rather than gaining a
+baseline entry.
+
+**Recorded, not built (rule 1).** §9.2 also lists "disable right-click" and
+"disable print on protected content". Neither exists: there is no `contextmenu`
+handler, and the reader carries `print-color-adjust: exact`, which makes the
+watermark print *better* rather than blocking printing. Whether that is the
+intent — §3 is explicit that the promise is "copying is restricted", not
+prevented, and a printed page carrying the reader's name is arguably the better
+outcome — is a product call, not a refactor's.
+
 ### KNOWN_ISSUES #24 part three: every enrollment notice is a listener now
 
 The last piece of §41's worked example. The free-enrollment half stayed in

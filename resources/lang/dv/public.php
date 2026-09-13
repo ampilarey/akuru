@@ -188,4 +188,6 @@ return [
     'Daily reminders' => 'Daily reminders',
     'Change island' => 'Change island',
     'next in' => 'next in',
+    'Free preview of :count pages' => 'ހިލޭ ބަލާލެވޭ :count ޞަފްޙާ.',
+    'Get the full item' => 'ފުރިހަމަ ފޮތް ހޯދާ',
 ];

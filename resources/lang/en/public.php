@@ -379,6 +379,8 @@ return [
     'Page' => 'Page',
     'Previous' => 'Previous',
     'Next' => 'Next',
+    'Free preview of :count pages' => 'Free preview of :count pages — read this much for free.',
+    'Get the full item' => 'Get the full item',
     'Bookmark this page' => 'Bookmark this page',
     'Remove bookmark' => 'Remove bookmark',
     'This item has no reader pages yet.' => 'This item has no reader pages yet.',

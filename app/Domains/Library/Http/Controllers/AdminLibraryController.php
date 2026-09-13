@@ -236,6 +236,11 @@ class AdminLibraryController extends Controller
             'body' => 'nullable|string',
             'citations' => 'nullable|string|max:20000',
             'page_count' => 'nullable|integer|min:1',
+            // §9.4: admin sets the preview allowance. Bounded, because
+            // `preview_pages` is the only thing standing between a sample and
+            // the whole item.
+            'preview_enabled' => 'nullable|boolean',
+            'preview_pages' => 'nullable|integer|min:1|max:1000',
             'reading_time' => 'nullable|integer|min:1',
             'tags' => 'nullable|array',
             'tags.*' => 'string|max:60',
