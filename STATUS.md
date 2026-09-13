@@ -7677,6 +7677,70 @@ one produced an audit. §33's five other headings — User Management, Course
 Management, Offering Management, Course Builder, Academic / Training Management
 — are inventories of CRUD that mostly exists and still need their own pass.
 
+### The thin-controllers gate charged for comments, and this repo has learned that three times
+
+Follow-up to #341, and the fastest a gate here has ever been caught being wrong:
+within the hour, the very next slice (#343) failed on
+`TeacherRegisterController::show — was 55, now 57`. The two lines were **an
+explanatory comment**. No logic moved into the controller; the method got a note
+saying why it renders the list it renders.
+
+That is the wrong incentive in the most literal way. A gate that charges for
+documentation gets less documentation — and the comment is the first thing to
+go, because dropping it is the cheapest way to make the test pass. Which is what
+I did in #343, and the reason this slice exists.
+
+`tests/Support/SourceReadingHelpers.php` already carries this lesson in its own
+docblock, learned three times before this: the `FOREIGN_KEY_CHECKS` guard failed
+on the two files that quoted the old code **in order to explain it**;
+`PlatformApisStayInLayerTest` did the same on its first run; and so did the
+KNOWN_ISSUES #17 assertion, on the JSX comment explaining the boolean it
+replaced. *"A check that cannot tell documentation from instruction punishes
+writing the explanation down."* The thin-controllers gate made it four.
+
+#### What changed
+
+`controllerMethodLengths()` now strips comments with the same
+`stripPhpComments()` helper and counts only lines that still have something on
+them. Blank lines are free too: a method spaced out for readability is not a
+method doing too much.
+
+Stripping first also makes the brace counting sounder — a `{` inside a comment
+used to shift the depth. A brace inside a string literal still can, because the
+helper deliberately keeps strings, and that is the trade a percentile-based
+heuristic can afford.
+
+**Threshold 40 → 36**, because the measure moved and the rationale is
+unchanged: 36 is the 95th percentile of the same 1,116 methods under the new
+count (median 11, p90 26, against 13/31/40 before). The gate still flags the top
+5%; it is not looser, it is measuring the right thing.
+
+#### What that did to the list
+
+**58 entries → 50.** Eleven methods leave because the old measure was punishing
+their comments and whitespace. Three join — `PortalPerformanceController::export`
+and the two `PublicSite` exports — because they are dense, sat just under the old
+40, and are over the new 36. That is the threshold moving with the percentile,
+not the metric flattering anyone.
+
+This is the one recomputation the "may only shrink" rule permits, and only
+because the unit changed. Every number in the file is now a code length, and
+from here it can only go down.
+
+#### Verification
+
+The exact change that failed an hour ago — a two-line comment on
+`TeacherRegisterController::show` — was re-applied and the gate **passes**. All
+three assertions were revert-checked again under the new measure:
+
+- a new 45-code-line controller method → *"over 36 lines of code and are not in
+  the baseline"*;
+- a baselined entry rewritten downward → *"`CheckoutController::start` — was 20,
+  now 86"*;
+- an entry for a method that does not exist → *"— gone"*.
+
+1,827 tests green, architecture suite green, Pint clean. Test-only.
+
 ### KNOWN_ISSUES #15: the fourth button that made a missing child invisible
 
 Filed as **confusion** — *"Teacher grid offers `excused` / `left_early`"*, with

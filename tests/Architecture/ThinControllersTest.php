@@ -24,10 +24,22 @@
  * controller) and the "which enrollments are free" filter, which was an inline
  * `array_filter` deciding a rule 12 question.
  *
- * **Threshold: 40 lines.** That is the 95th percentile of the 1,116 controller
- * methods here (median 13, p90 31), so it flags the top 5% rather than
- * legislating a style. It is a heuristic for "this method is doing work an
+ * **Threshold: 36 lines of code.** That is the 95th percentile of the 1,116
+ * controller methods here (median 11, p90 26), so it flags the top 5% rather
+ * than legislating a style. It is a heuristic for "this method is doing work an
  * Action should own".
+ *
+ * **Lines of code, not lines of file.** The first version of this gate counted
+ * the method's raw span, and within the hour it failed a change whose only
+ * addition was a **two-line explanatory comment** —
+ * `TeacherRegisterController::show — was 55, now 57`. That is the wrong
+ * incentive in the most literal way: a gate that charges for documentation gets
+ * less documentation. `tests/Support/SourceReadingHelpers.php` already carries
+ * this lesson, learned three times before ("a check that cannot tell
+ * documentation from instruction punishes writing the explanation down"), so
+ * this one now strips comments with the same helper and counts only lines that
+ * still have something on them. Blank lines are free too — a method spaced out
+ * for readability is not a method doing too much.
  *
  * **The baseline records each method's current length, and it may only go
  * down.** A listed method that grows fails too — otherwise a 45-line method
@@ -38,7 +50,7 @@
  */
 it('keeps controllers thin, and lets the known long ones only get shorter', function () {
     $baseline = require __DIR__.'/Baselines/long_controller_methods.php';
-    $threshold = 40;
+    $threshold = 36;
 
     $current = controllerMethodLengths();
 
@@ -49,13 +61,14 @@ it('keeps controllers thin, and lets the known long ones only get shorter', func
     sort($new);
 
     expect($new)->toBeEmpty(
-        "These controller methods are over {$threshold} lines and are not in the baseline:\n  "
-        .implode("\n  ", array_map(fn ($k) => $k.' ('.$tooLong[$k].' lines)', $new))
+        "These controller methods are over {$threshold} lines of code and are not in the baseline:\n  "
+        .implode("\n  ", array_map(fn ($k) => $k.' ('.$tooLong[$k].' lines of code)', $new))
         ."\n\nCLAUDE.md rule 5: a controller authorizes, validates into a DTO, calls an "
         .'Action and returns a response. A method this long is doing work an Action should '
         ."own — and a rule that lives in a controller is a rule no test can reach.\n\n"
         .'Move the body into an Action. If it genuinely belongs here, add it to '
-        .'tests/Architecture/Baselines/long_controller_methods.php with its length.'
+        .'tests/Architecture/Baselines/long_controller_methods.php with its code length. '
+        .'Comments and blank lines are not counted, so explaining the method costs nothing.'
     );
 
     // 2. A baselined method may not grow.
@@ -93,12 +106,19 @@ it('keeps controllers thin, and lets the known long ones only get shorter', func
 });
 
 /**
- * Every controller method and how many lines it spans, keyed
+ * Every controller method and how many **lines of code** it contains, keyed
  * `path/to/Controller.php::method`.
  *
- * Brace-counted rather than parsed: a real parser would be better, and this is
- * a heuristic gate whose threshold is a percentile, so exactness is not what it
- * trades on.
+ * Comments are stripped first (`stripPhpComments()` keeps the newlines, so the
+ * line numbering survives) and blank lines are not counted. What is left is the
+ * work the method actually does — which is what the threshold is about.
+ *
+ * Stripping first also makes the brace counting sounder: a `{` inside a comment
+ * used to shift the depth. A brace inside a string literal still can, since the
+ * helper deliberately keeps strings — this is a heuristic gate whose threshold
+ * is a percentile, so exactness is not what it trades on.
+ *
+ * Brace-counted rather than parsed, for the same reason.
  *
  * @return array<string, int>
  */
@@ -120,22 +140,28 @@ function controllerMethodLengths(): array
             continue;
         }
 
-        $lines = file($file->getPathname());
+        $lines = explode("\n", stripPhpComments(file_get_contents($file->getPathname())));
         $start = null;
         $name = null;
         $depth = 0;
         $opened = false;
+        $code = 0;
 
-        foreach ($lines as $i => $line) {
+        foreach ($lines as $line) {
             if ($start === null && preg_match('/(public|protected|private)\s+function\s+(\w+)\s*\(/', $line, $m)) {
-                $start = $i;
+                $start = true;
                 $name = $m[2];
                 $depth = 0;
                 $opened = false;
+                $code = 0;
             }
 
             if ($start === null) {
                 continue;
+            }
+
+            if (trim($line) !== '') {
+                $code++;
             }
 
             $depth += substr_count($line, '{') - substr_count($line, '}');
@@ -144,7 +170,7 @@ function controllerMethodLengths(): array
             }
 
             if ($opened && $depth <= 0) {
-                $lengths[$path.'::'.$name] = $i - $start + 1;
+                $lengths[$path.'::'.$name] = $code;
                 $start = null;
             }
         }
