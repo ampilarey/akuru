@@ -1009,6 +1009,11 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::delete('courses/{course}/activities/{activity}', [CatalogActivityController::class, 'destroy'])->name('catalog.courses.activities.destroy')->whereNumber('course')->whereNumber('activity');
         Route::get('courses/{course}/outline', [CourseOutlineController::class, 'show'])->name('catalog.courses.outline')->whereNumber('course');
         Route::post('courses/{course}/modules', [CourseOutlineController::class, 'storeModule'])->name('catalog.courses.modules.store')->whereNumber('course');
+        // SPEC §12 Module Management: edit, reorder, publish/unpublish. Only
+        // create and delete existed.
+        Route::put('courses/{course}/modules/{module}', [CourseOutlineController::class, 'updateModule'])->name('catalog.courses.modules.update')->whereNumber('course')->whereNumber('module');
+        Route::post('courses/{course}/modules/reorder', [CourseOutlineController::class, 'reorderModules'])->name('catalog.courses.modules.reorder')->whereNumber('course');
+        Route::post('courses/{course}/modules/{module}/status', [CourseOutlineController::class, 'publishModule'])->name('catalog.courses.modules.status')->whereNumber('course')->whereNumber('module');
         // SPEC §12 "Delete draft modules if safe". Refuses readably rather than
         // letting the RESTRICT foreign keys surface as a 500.
         Route::delete('courses/{course}/modules/{module}', [CourseOutlineController::class, 'destroyModule'])

@@ -235,6 +235,21 @@ export default function Outline({ course, modules, glossaryItems = [] }) {
     // visible — a refused button indistinguishable from a broken one, the same
     // gap the §13 walk found on the lesson player.
     const moduleError = usePage().props.errors?.module;
+
+    // §12 "Reorder modules". `position` was set once at creation and never
+    // changed, so the order modules were typed in was the order students saw.
+    // The server refuses a list that does not name every module exactly once,
+    // so the whole order is always sent.
+    const moveModule = (module, delta) => {
+        const ids = modules.map((m) => m.id);
+        const from = ids.indexOf(module.id);
+        const to = from + delta;
+        if (from < 0 || to < 0 || to >= ids.length) {
+            return;
+        }
+        ids.splice(to, 0, ids.splice(from, 1)[0]);
+        router.post(`/catalog/courses/${course.id}/modules/reorder`, { order: ids }, { preserveScroll: true });
+    };
     const moduleForm = useForm({ title: '' });
     const lessonForm = useForm({
         course_module_id: modules[0]?.id || '',
@@ -430,11 +445,74 @@ export default function Outline({ course, modules, glossaryItems = [] }) {
                     {blockForm.errors.file && <p className="mt-1 text-xs text-red-600">{blockForm.errors.file}</p>}
                 </form>
             </div>
+            {/* §12's module refusals — "delete draft modules if safe", and
+                "add a lesson before publishing" — name exactly what is in the
+                way, and were never rendered at all: the button did nothing
+                visible, which is indistinguishable from a broken one. Shown
+                once above the list because the server does not say which
+                module it refused, and attaching it to one would be a guess. */}
+            {moduleError && (
+                <p className="mb-3 rounded border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{moduleError}</p>
+            )}
             <div className="space-y-4">
                 {modules.map((module) => (
                     <section key={module.id} className="rounded-lg border bg-white p-4">
                         <div className="mb-2 flex flex-wrap items-center justify-between gap-3">
-                            <h2 className="font-medium">{module.title}</h2>
+                            <h2 className="font-medium">
+                                {module.title}
+                                <span className="ms-2 text-xs uppercase tracking-wide text-gray-500">{module.status || 'draft'}</span>
+                            </h2>
+                            {/* SPEC §12 Module Management. Only create and
+                                delete existed: no edit, no reorder, and no way
+                                to change a status that nothing ever wrote. */}
+                            <div className="flex flex-wrap items-center gap-2">
+                                <button
+                                    type="button"
+                                    aria-label={`Rename module ${module.title}`}
+                                    className="text-xs text-[#7C2D37] hover:underline"
+                                    onClick={() => {
+                                        const title = window.prompt('Module title', module.title);
+                                        if (title === null || title.trim() === '') {
+                                            return;
+                                        }
+                                        router.put(
+                                            `/catalog/courses/${course.id}/modules/${module.id}`,
+                                            { title: title.trim(), description: module.description || '' },
+                                            { preserveScroll: true },
+                                        );
+                                    }}
+                                >
+                                    Rename
+                                </button>
+                                <button
+                                    type="button"
+                                    className="text-xs text-[#7C2D37] hover:underline disabled:text-gray-400"
+                                    disabled={modules.indexOf(module) === 0}
+                                    onClick={() => moveModule(module, -1)}
+                                >
+                                    ↑ Move up
+                                </button>
+                                <button
+                                    type="button"
+                                    className="text-xs text-[#7C2D37] hover:underline disabled:text-gray-400"
+                                    disabled={modules.indexOf(module) === modules.length - 1}
+                                    onClick={() => moveModule(module, 1)}
+                                >
+                                    ↓ Move down
+                                </button>
+                                <button
+                                    type="button"
+                                    aria-label={`${module.status === 'published' ? 'Unpublish' : 'Publish'} module ${module.title}`}
+                                    className="text-xs text-[#7C2D37] hover:underline"
+                                    onClick={() => router.post(
+                                        `/catalog/courses/${course.id}/modules/${module.id}/status`,
+                                        { status: module.status === 'published' ? 'draft' : 'published' },
+                                        { preserveScroll: true },
+                                    )}
+                                >
+                                    {module.status === 'published' ? 'Unpublish' : 'Publish'}
+                                </button>
+                            </div>
                             {/* §12 "Delete draft modules if safe". Offered only
                                 when the module is empty: the server refuses
                                 otherwise, and a button that always fails is
@@ -453,9 +531,6 @@ export default function Outline({ course, modules, glossaryItems = [] }) {
                                 </button>
                             )}
                         </div>
-                        {moduleError && module.lessons.length === 0 && (
-                            <p className="mb-2 rounded border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{moduleError}</p>
-                        )}
                         {module.lessons.length === 0 && <p className="text-sm text-gray-500">No lessons yet.</p>}
                         {module.lessons.map((lesson) => (
                             <div key={lesson.id} className="mb-3 border-t pt-3">

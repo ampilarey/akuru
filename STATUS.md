@@ -7201,6 +7201,73 @@ records**, because its blocks correctly left with the lesson.
 **1,578 tests green** (12 new), arch green, build clean. Revert-check:
 unhooking the observer turns 6 of the 12 red.
 
+### SPEC §12: two of five module capabilities, and a status column nothing could write
+
+§12 lists five things a course creator must be able to do — create, edit,
+delete draft if safe, reorder, publish/unpublish. **Two worked.** There was a
+create route and a delete route and nothing in between.
+
+The status one looked implemented, which is what made it worth finding.
+`course_modules.status` is `varchar(20) NOT NULL DEFAULT 'draft'`,
+`SaveCourseModuleAction` read `$data['status'] ?? 'draft'` — and **no caller
+ever passed one**; the controller validated `title` and `description` only. So
+every module ever created was permanently draft, the column was decoration,
+and `DeleteCourseModuleAction`'s refusal ("Only a draft module can be
+deleted") named a condition nothing could fail.
+
+`position` had the same shape: assigned once at creation as
+`max(position) + 1` and never changed. An author who added Unit 3 before
+noticing Unit 2 was missing could not fix the order — and §12's delete only
+works on an empty draft module, so once a module held a lesson its place was
+frozen.
+
+**Publishing an empty module is refused**; §12's own sequence puts content
+before publication, and a published empty module is a heading a student can
+open to find nothing. **Unpublishing is deliberately not blocked by having
+lessons** — taking a module back to draft is how an author fixes something
+students should not be seeing, and a rule that forbade it when the module has
+content would forbid it exactly when it matters. Publishing is gated on
+`courses.publish`, not `courses.manage`: "depending on permissions" is §12's
+own wording.
+
+#### The walk caught a bug this slice introduced
+
+`SaveCourseModuleAction` recomputes `position` as `max(position) + 1` whenever
+none is passed. That was harmless while nothing could edit a module — and
+became a **silent reorder** the moment §12's edit path existed: renaming a
+module sent it to the bottom of the course. **No test would have caught it**,
+because every test that edits a module passes a position. The browser walk
+showed `["Unit 1","Unit 2"]` becoming `["Unit 2","Unit One renamed"]` after a
+rename.
+
+Fixed by keeping the existing position on edit, and the walk now asserts a
+rename leaves the order unchanged.
+
+#### A collision only the full suite could show
+
+`ModuleManagementTest` declared `moduleCourse()`, which `DeleteCourseModuleTest`
+already declares. **Pest loads every test file into one scope**, so this is a
+fatal — and it does not appear when the new file runs alone, only when the
+suite runs. Helpers renamed, and the reason written into the file. Worth
+remembering: a green single-file run says nothing about name collisions.
+
+#### Verification
+
+**Walked in a browser**, all four §12 capabilities end to end:
+
+| Step | Result |
+|---|---|
+| Rename | `Unit 1` → `Unit One`, **order unchanged** |
+| Publish the empty module | refused: *"Add a lesson before publishing this module…"* |
+| Publish the module with a lesson | `Unit 2` → **PUBLISHED** |
+| Move down | order swaps |
+
+**1,589 tests green** (11 new), arch green, build clean.
+
+**Still missing from §12's field list, recorded not fixed:** `unlock_rule`,
+`available_from`, `updated_by`. The unlock rule is the same deferral §13 and
+§26 already carry — a per-module/per-lesson unlock rule is its own slice.
+
 #### A process mistake worth recording
 
 The §13 slice was pushed as PR #300 **stacked on the unmerged §10 commit**

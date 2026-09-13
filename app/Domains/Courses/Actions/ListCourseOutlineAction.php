@@ -30,6 +30,12 @@ class ListCourseOutlineAction
             'modules' => $modules->map(fn (CourseModule $module) => [
                 'id' => $module->id,
                 'title' => $module->title,
+                // SPEC §12 lists Description and Status among a module's
+                // fields. Neither reached the screen, so neither could be
+                // checked or changed — the status especially, since nothing
+                // could write it either.
+                'description' => $module->description,
+                'status' => $module->status?->value ?? $module->status,
                 'position' => $module->position,
                 'lessons' => $module->lessons->map(fn (Lesson $lesson) => [
                     'id' => $lesson->id,

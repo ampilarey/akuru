@@ -9,13 +9,16 @@ use App\Domains\Courses\Actions\DetachLessonGlossaryItemAction;
 use App\Domains\Courses\Actions\DuplicateContentBlockAction;
 use App\Domains\Courses\Actions\ListCourseOutlineAction;
 use App\Domains\Courses\Actions\NormalizeBlockTextSettingsAction;
+use App\Domains\Courses\Actions\PublishCourseModuleAction;
 use App\Domains\Courses\Actions\PublishLessonAction;
 use App\Domains\Courses\Actions\ReorderContentBlocksAction;
+use App\Domains\Courses\Actions\ReorderCourseModulesAction;
 use App\Domains\Courses\Actions\SaveContentBlockAction;
 use App\Domains\Courses\Actions\SaveCourseModuleAction;
 use App\Domains\Courses\Actions\SaveLessonAction;
 use App\Domains\Courses\Actions\StoreMediaContentBlockAction;
 use App\Domains\Courses\Enums\ContentBlockType;
+use App\Domains\Courses\Enums\ModuleStatus;
 use App\Domains\Courses\Models\ContentBlock;
 use App\Domains\Courses\Models\Course;
 use App\Domains\Courses\Models\CourseModule;
@@ -24,6 +27,7 @@ use App\Domains\Courses\Models\Lesson;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -46,6 +50,69 @@ class CourseOutlineController extends Controller
         ]) + ['course_id' => $course, 'created_by' => $request->user()?->id]);
 
         return redirect()->route('catalog.courses.outline', $course)->with('success', 'Module saved.');
+    }
+
+    /**
+     * SPEC §12 Module Management: **"Edit modules"**. There was a create and a
+     * delete and nothing in between, so a module's title was whatever was
+     * typed first — a typo in a heading every student sees was permanent
+     * unless the module happened to be empty and could be deleted.
+     */
+    public function updateModule(Request $request, int $course, CourseModule $module): RedirectResponse
+    {
+        abort_unless($request->user()?->can('courses.manage'), 403);
+
+        app(SaveCourseModuleAction::class)->execute($request->validate([
+            'title' => ['required', 'string', 'max:255'],
+            'description' => ['nullable', 'string'],
+        ]) + ['course_id' => $module->course_id], $module);
+
+        return redirect()->route('catalog.courses.outline', $course)->with('success', 'Module updated.');
+    }
+
+    /**
+     * SPEC §12 Module Management: **"Reorder modules"**. `position` was set
+     * once at creation and never changed, so the order modules were typed in
+     * was the order students saw, permanently.
+     */
+    public function reorderModules(Request $request, int $course): RedirectResponse
+    {
+        abort_unless($request->user()?->can('courses.manage'), 403);
+
+        $data = $request->validate([
+            'order' => ['required', 'array', 'min:1'],
+            'order.*' => ['required', 'integer'],
+        ]);
+
+        app(ReorderCourseModulesAction::class)->execute($course, $data['order']);
+
+        return redirect()->route('catalog.courses.outline', $course)->with('success', 'Modules reordered.');
+    }
+
+    /**
+     * SPEC §12 Module Management: **"Publish/unpublish modules depending on
+     * permissions."** Nothing could change a module's status, so every module
+     * was permanently draft.
+     *
+     * `courses.publish` rather than `courses.manage` — "depending on
+     * permissions" is §12's own wording, and publishing is what the separate
+     * permission exists for.
+     */
+    public function publishModule(Request $request, int $course, CourseModule $module): RedirectResponse
+    {
+        abort_unless($request->user()?->can('courses.publish'), 403);
+
+        $data = $request->validate([
+            'status' => ['required', Rule::enum(ModuleStatus::class)],
+        ]);
+
+        app(PublishCourseModuleAction::class)->execute(
+            $module,
+            ModuleStatus::from($data['status']),
+            $request->user()?->id,
+        );
+
+        return redirect()->route('catalog.courses.outline', $course)->with('success', 'Module status updated.');
     }
 
     /**
