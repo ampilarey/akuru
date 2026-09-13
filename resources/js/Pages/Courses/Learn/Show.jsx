@@ -124,6 +124,16 @@ export default function Show({
                                         {lesson.title}
                                         {lesson.is_preview && <span className="ms-2 text-xs uppercase text-gray-500">{t.preview || 'preview'}</span>}
                                         <span className="ms-2 text-xs uppercase text-gray-500">{lesson.status}</span>
+                                        {/* §25's `score_summary`, frozen when the
+                                            lesson was completed. Showing it is
+                                            what stops the column being written
+                                            and never read — the defect this
+                                            slice is fixing, one step later. */}
+                                        {lesson.score !== null && lesson.score !== undefined && (
+                                            <span className="ms-2 text-xs text-gray-700">
+                                                {lesson.score}{lesson.max_score ? ` / ${lesson.max_score}` : ''}
+                                            </span>
+                                        )}
                                     </span>
                                     {lesson.unlocked ? (
                                         <a className="text-[#7C2D37] hover:underline" href={`/learn/lessons/${lesson.id}`}>{t.open || 'Open'}</a>

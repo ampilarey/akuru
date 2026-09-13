@@ -22,6 +22,12 @@ class ListLessonProgressAction
                 'status' => $row->status instanceof \BackedEnum ? $row->status->value : (string) $row->status,
                 'started_at' => $row->started_at?->toIso8601String(),
                 'completed_at' => $row->completed_at?->toIso8601String(),
+                // SPEC §25's `score_summary`, which was written to accept a
+                // value nothing sent and, once something did, would have been
+                // a column nothing read. The whole point of freezing it on the
+                // row is that a student can look back at what a lesson was
+                // completed with.
+                'score_summary' => $row->score_summary,
             ])
             ->all();
     }

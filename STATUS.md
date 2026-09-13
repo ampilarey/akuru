@@ -7422,6 +7422,99 @@ source of truth that does not exist yet: a teacher's approval, a payment, a
 date, an attendance record. Module- and offering-level storage are also still
 unbuilt.
 
+### SPEC §25: the progress row said a lesson was done, and nothing else
+
+**Most of §25 is cleared, not faulted, and that is worth saying first.** The
+course progress formula is exactly what §25 specifies; it is covered by the
+unit tests §25 explicitly demands ("Unit tests must cover this calculation");
+offering context really is applied — `SyncEnrollmentProgressAction` folds
+required sessions into the denominator for a student enrolled through an
+offering, which is §25's "Offering Progress" working; and all four progress
+statuses exist.
+
+Two of the fields §25 names on `student_lesson_progress` were dead, in the
+shape this codebase keeps producing:
+
+| Field | State |
+|---|---|
+| `course_offering_id` | column exists · model fillable · `RecordLessonProgressAction` accepts it · **its only caller never passed it**, so every row was null |
+| `score_summary` | column exists · cast to array · written as `$data['score_summary'] ?? $row->score_summary` — **accepting a value nobody has ever sent** |
+
+So every progress row in the system recorded that a lesson was finished, and
+nothing about how or which batch it belonged to. §25 is explicit that offering
+progress is computed "in the context of that offering"; a row that cannot name
+the batch is not a record of that batch.
+
+**Why §25 stores the score instead of deriving it.** The same argument §21
+makes for snapshotting a question: the row is a record of what happened. An
+activity re-attempted, re-marked or deleted afterwards must not silently
+rewrite a lesson a student completed in March. A test pins it — a teacher
+raising a mark from 4 to 9 moves the live attempt and leaves the completion
+record at 4.
+
+**And a reader, deliberately in the same slice.** A column written and never
+read is the same defect one step later, which would have been an absurd way to
+fix this one. The course learning page now shows what each lesson was completed
+with, and `ListLessonProgressAction` carries the summary out.
+
+Three states, kept distinct: a lesson with no activities stores **null** (a
+lesson of pure reading has no score, and `{score: null}` on every row would
+make the column look populated while saying nothing); a lesson with attempts
+stores the per-activity breakdown plus totals; and `in_progress` never rewrites
+a summary, so reopening a finished lesson does not churn the row.
+
+**The migration is a repair, not a rule-9 dance.** It copies `course_offering_id`
+from the enrolment that already owns each row — idempotent, touching only nulls,
+creating and dropping nothing. Rule 9 guards dropping or renaming a *populated*
+column; this populates one that has never held anything. Rows whose enrolment
+has no offering stay null, which is what "nullable" means here.
+
+**Verification.** Revert-check: undoing the two writes turns **4 of the 7** new
+tests red. The backfill was run against a **pre-existing walk row** written
+before this slice — `course_offering_id` NULL → 1 — so the repair is evidenced
+rather than assumed.
+
+**Walked in a browser**, local `akuru_walk`, completing lessons as a student:
+
+| Lesson | Row on the course page |
+|---|---|
+| Alphabet — no activities | `COMPLETED` and no score, correctly |
+| Harakat — activity submitted empty | `COMPLETED 0 / 10` |
+| First words — activity answered correctly | `COMPLETED 10 / 10` |
+| Sentences — untouched | `NOT_STARTED` |
+
+The stored summary reads
+`{"activities":[{"activity_id":2,"title":"Name the haraka","is_required":true,"status":"scored","score":0,"max_score":10,"attempt_number":1}],"score":0,"max_score":10,"percent":0,"recorded_at":…}`
+with `course_offering_id` set.
+
+**1,639 tests green** (7 new), architecture suite green, `npm run build` clean.
+
+#### A defect this slice found and did not fix (rule 1)
+
+`SaveActivityAction` crashes on a teacher-marked activity created without
+`submission_kind`:
+
+```php
+'submission_kind' => in_array($data['submission_kind'] ?? 'written', ['written', 'file'], true)
+    ? $data['submission_kind']   // ← undefined array key when it was absent
+    : 'written',
+```
+
+The `?? 'written'` guards the `in_array` test and not the branch that reads the
+key, so the default path is the one that throws. Reachable from any caller that
+omits the field — the test fixture here hit it immediately. One line to fix, in
+a file this slice otherwise does not touch, so it is recorded rather than
+corrected here.
+
+**What §25 still lacks, recorded not fixed.** `LessonProgressStatus::Failed`
+exists and **nothing writes it**. §25 says "Failed if applicable", and what
+makes a lesson failed rather than incomplete is a real decision — exhausted
+retakes on a required activity is the obvious candidate, but no rule anywhere
+says a student may stop trying at lesson level. Inventing one would be a policy
+choice dressed as a cleanup, so it stays an owner question. The per-activity
+breakdown inside `score_summary` is stored and only its totals are surfaced;
+showing the breakdown is a screen, not a data question.
+
 ### SPEC §24: the student dashboard showed five of the twelve things it names
 
 §24 lists what the student dashboard must show:
