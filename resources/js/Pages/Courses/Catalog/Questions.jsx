@@ -1,4 +1,5 @@
 import { useForm } from '@inertiajs/react';
+import { useState } from 'react';
 import AppShell from '../../../Layouts/AppShell';
 
 const SAMPLE_OPTIONS = {
@@ -47,9 +48,10 @@ export default function Questions({
     normalizationFlags = [],
     normalizationModes = [],
 }) {
-    const form = useForm({
+    const blank = {
         title: '',
         question_text: '',
+        secondary_text: '',
         question_type: 'mcq_single',
         subject_id: '',
         difficulty: 'medium',
@@ -62,7 +64,55 @@ export default function Questions({
         normalization_settings: {},
         standard_ids: [],
         file: null,
-    });
+        // §20's "Video reference" — a link, not an upload.
+        video_url: '',
+        video_title: '',
+    };
+    const form = useForm(blank);
+
+    // The `PUT catalog/questions/{question}` route and its controller method
+    // both existed and **nothing on this page called them**: the bank was
+    // write-once, so a typo was permanent and an attachment could never be
+    // taken off. §21's snapshot rule exists precisely so that editing a bank
+    // question is safe for attempts already under way — the guarantee was in
+    // place and the door was locked.
+    const [editing, setEditing] = useState(null);
+    const editRow = (row) => {
+        setEditing(row.id);
+        form.setData({
+            ...blank,
+            title: row.title || '',
+            question_text: row.question_text || '',
+            secondary_text: row.secondary_text || '',
+            question_type: row.question_type,
+            subject_id: row.subject_id || '',
+            difficulty: row.difficulty || 'medium',
+            skill_tag: row.skill_tag || '',
+            options: JSON.stringify(row.options || [], null, 2),
+            correct_answer: JSON.stringify(row.correct_answer || [], null, 2),
+            acceptable_answers: (row.acceptable_answers || []).join('\n'),
+            normalization_settings: row.normalization_settings || {},
+            standard_ids: (row.standard_ids || []).map(String),
+        });
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+    const editingRow = rows.find((row) => row.id === editing) || null;
+
+    const submit = (extra = {}) => {
+        const url = editing ? `/catalog/questions/${editing}` : '/catalog/questions';
+        // `form.transform(...)` returns undefined in @inertiajs/react v3, so the
+        // two statements must stay apart — see InertiaFormTransformTest.
+        form.transform((data) => (editing ? { ...data, ...extra, _method: 'put' } : { ...data, ...extra }));
+        form.post(url, {
+            preserveScroll: true,
+            forceFormData: true,
+            onSuccess: () => {
+                if (!editing) {
+                    form.reset();
+                }
+            },
+        });
+    };
 
     const isTextInput = textInputTypes.includes(form.data.question_type);
     const settings = form.data.normalization_settings || {};
@@ -99,10 +149,22 @@ export default function Questions({
             <form
                 onSubmit={(e) => {
                     e.preventDefault();
-                    form.post('/catalog/questions', { preserveScroll: true, forceFormData: true });
+                    submit();
                 }}
                 className="mb-4 grid gap-3 rounded-lg border bg-white p-4 md:grid-cols-2"
             >
+                <p className="md:col-span-2 text-sm font-medium">
+                    {editing ? `Editing question #${editing}` : 'New question'}
+                    {editing && (
+                        <button
+                            type="button"
+                            className="ms-3 text-xs text-[#7C2D37] hover:underline"
+                            onClick={() => { setEditing(null); form.reset(); }}
+                        >
+                            Cancel and start a new one
+                        </button>
+                    )}
+                </p>
                 <input className="form-input" placeholder="Title (optional)" value={form.data.title} onChange={(e) => form.setData('title', e.target.value)} />
                 <select
                     className="form-input"
@@ -129,6 +191,16 @@ export default function Questions({
                     <option value="hard">hard</option>
                 </select>
                 <textarea className="form-input md:col-span-2 min-h-20" placeholder="Question text" value={form.data.question_text} onChange={(e) => form.setData('question_text', e.target.value)} />
+                {/* §20 names "Secondary text" as a field of its own — the
+                    passage, transliteration or stem a question hangs off. The
+                    column, the model, the payload and §21's snapshot all
+                    carried it; there was no control to type it into. */}
+                <textarea
+                    className="form-input md:col-span-2 min-h-16"
+                    placeholder="Secondary text — passage, transliteration or context shown with the question (optional)"
+                    value={form.data.secondary_text}
+                    onChange={(e) => form.setData('secondary_text', e.target.value)}
+                />
                 <textarea className="form-input min-h-24 font-mono text-xs" value={form.data.options} onChange={(e) => form.setData('options', e.target.value)} />
                 <textarea className="form-input min-h-24 font-mono text-xs" value={form.data.correct_answer} onChange={(e) => form.setData('correct_answer', e.target.value)} />
                 {/* §18: "For auto-marked text input, comparison must be
@@ -182,7 +254,51 @@ export default function Questions({
                     </fieldset>
                 )}
                 <input className="form-input" placeholder="Skill tag" value={form.data.skill_tag} onChange={(e) => form.setData('skill_tag', e.target.value)} />
-                <input className="form-input" type="file" onChange={(e) => form.setData('file', e.target.files?.[0] || null)} />
+                {/* §20 "Question Attachments": audio, image, PDF, video
+                    reference. The upload existed; what was attached was never
+                    shown back, so an author could not tell whether a file had
+                    landed, which one it was, or take a wrong one off again. */}
+                <fieldset className="md:col-span-2 rounded-lg border bg-[#F9F4EE] p-3">
+                    <legend className="px-1 text-xs font-medium uppercase tracking-wide text-gray-600">
+                        Attachments
+                    </legend>
+                    {editingRow && (editingRow.attachments || []).length > 0 && (
+                        <ul className="mb-2 space-y-1 text-sm">
+                            {(editingRow.attachments || []).map((attachment, index) => (
+                                <li key={index} className="flex flex-wrap items-center gap-2">
+                                    <span>
+                                        {attachment.kind || attachment.mime || 'attachment'}
+                                        {attachment.original_name ? ` · ${attachment.original_name}` : ''}
+                                        {attachment.embed_url ? ` · ${attachment.embed_url}` : ''}
+                                    </span>
+                                    <button
+                                        type="button"
+                                        className="btn-secondary"
+                                        onClick={() => submit({ remove_attachment: index })}
+                                    >
+                                        Remove
+                                    </button>
+                                </li>
+                            ))}
+                        </ul>
+                    )}
+                    <div className="grid gap-2 md:grid-cols-3">
+                        <label className="text-sm">
+                            <span className="text-xs text-gray-600">Upload audio, image, PDF or video</span>
+                            <input className="form-input" type="file" onChange={(e) => form.setData('file', e.target.files?.[0] || null)} />
+                        </label>
+                        <label className="text-sm">
+                            <span className="text-xs text-gray-600">Or reference a video (YouTube / Vimeo)</span>
+                            <input className="form-input" placeholder="https://…" value={form.data.video_url} onChange={(e) => form.setData('video_url', e.target.value)} />
+                        </label>
+                        <label className="text-sm">
+                            <span className="text-xs text-gray-600">Video label (optional)</span>
+                            <input className="form-input" value={form.data.video_title} onChange={(e) => form.setData('video_title', e.target.value)} />
+                        </label>
+                    </div>
+                    {form.errors.file && <p className="mt-1 text-xs text-red-600">{form.errors.file}</p>}
+                    {form.errors.video_url && <p className="mt-1 text-xs text-red-600">{form.errors.video_url}</p>}
+                </fieldset>
                 {standards.length > 0 && (
                     <select
                         className="form-input md:col-span-2"
@@ -195,7 +311,9 @@ export default function Questions({
                         ))}
                     </select>
                 )}
-                <button type="submit" className="btn-primary" disabled={form.processing}>Save question</button>
+                <button type="submit" className="btn-primary" disabled={form.processing}>
+                    {editing ? 'Save changes' : 'Save question'}
+                </button>
                 {form.errors.question_text && <span className="text-xs text-red-600">{form.errors.question_text}</span>}
                 {form.errors.question_type && <span className="text-xs text-red-600">{form.errors.question_type}</span>}
             </form>
@@ -207,11 +325,13 @@ export default function Questions({
                             <th className="px-3 py-2">Type</th>
                             <th className="px-3 py-2">Pattern</th>
                             <th className="px-3 py-2">Difficulty</th>
+                            <th className="px-3 py-2">Attachments</th>
+                            <th className="px-3 py-2" />
                         </tr>
                     </thead>
                     <tbody>
                         {rows.length === 0 && (
-                            <tr><td className="px-3 py-4 text-gray-500" colSpan={4}>No questions yet.</td></tr>
+                            <tr><td className="px-3 py-4 text-gray-500" colSpan={6}>No questions yet.</td></tr>
                         )}
                         {rows.map((row) => (
                             <tr key={row.id} className="border-t">
@@ -219,6 +339,12 @@ export default function Questions({
                                 <td className="px-3 py-2">{row.question_type}</td>
                                 <td className="px-3 py-2">{row.pattern}</td>
                                 <td className="px-3 py-2">{row.difficulty}</td>
+                                <td className="px-3 py-2">
+                                    {(row.attachments || []).map((a) => a.kind || a.mime).filter(Boolean).join(', ') || '—'}
+                                </td>
+                                <td className="px-3 py-2">
+                                    <button type="button" className="btn-secondary" onClick={() => editRow(row)}>Edit</button>
+                                </td>
                             </tr>
                         ))}
                     </tbody>

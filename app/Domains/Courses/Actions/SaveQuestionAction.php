@@ -37,18 +37,51 @@ class SaveQuestionAction
             $question = Question::query()->where('legacy_assignment_id', (int) $data['legacy_assignment_id'])->first();
         }
 
-        $attachments = is_array($data['attachments'] ?? null) ? $data['attachments'] : [];
+        $attachments = is_array($data['attachments'] ?? null)
+            ? array_values(array_filter($data['attachments'], 'is_array'))
+            : ($question?->attachments ?? []);
+        $media = app(ResolveQuestionMediaAction::class);
+
         $file = $data['file'] ?? null;
         if ($file instanceof UploadedFile) {
+            // SPEC §30 sets the allowed mimes and a size cap **per kind of
+            // media**, and both already live on `ContentBlockType`. This call
+            // passed neither, so a question attachment was the one upload path
+            // in the app with no type check and no size limit at all — a 400MB
+            // `.exe` was a valid question attachment.
+            $kind = $media->assertSupportedMime(
+                (string) ($file->getMimeType() ?: $file->getClientMimeType()),
+            );
+
             $stored = app(StorePrivateMediaAction::class)->execute(
                 $file,
                 isset($data['created_by']) ? (int) $data['created_by'] : null,
+                $kind->allowedMimes(),
+                $kind->maxBytes(),
             );
             $attachments[] = [
                 'media_id' => $stored['id'],
                 'mime' => $stored['mime'],
+                'kind' => $kind->value,
                 'original_name' => $stored['original_name'],
             ];
+        }
+
+        // §20's fourth attachment kind is a "Video reference", not an upload.
+        // It shares §15's host allowlist rather than carrying its own.
+        $videoUrl = trim((string) ($data['video_url'] ?? ''));
+        if ($videoUrl !== '') {
+            $attachments[] = [
+                'embed_url' => app(NormalizeVideoEmbedUrlAction::class)->execute($videoUrl, 'video_url'),
+                'kind' => 'video',
+                'original_name' => $data['video_title'] ?? null,
+            ];
+        }
+
+        if (isset($data['remove_attachment'])) {
+            $index = (int) $data['remove_attachment'];
+            unset($attachments[$index]);
+            $attachments = array_values($attachments);
         }
 
         $payload = [

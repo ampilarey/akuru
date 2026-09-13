@@ -8,6 +8,7 @@ use App\Domains\Courses\Models\Lesson;
 use App\Domains\Courses\Models\LessonRevision;
 use App\Domains\Media\Actions\ReadPrivateMediaAction;
 use App\Domains\People\Actions\ResolveStudentForUserAction;
+use App\Domains\Progress\Actions\ListStudentAttemptSnapshotsAction;
 use Illuminate\Contracts\Auth\Authenticatable;
 
 class ServeCatalogMediaAction
@@ -44,6 +45,19 @@ class ServeCatalogMediaAction
             return false;
         }
 
+        // SPEC §20 lets a question carry audio, an image or a PDF, and §21
+        // freezes those references into the attempt. This check only knew about
+        // lesson content blocks, so a student sitting an audio question was
+        // refused the audio — the one file the question is about.
+        //
+        // The attempt's own snapshot is the evidence, not the question bank:
+        // a question detached from the assessment after the attempt started is
+        // still on that student's paper, and a swapped attachment must not
+        // retroactively open a file they were never shown.
+        if ($this->attemptsUseMedia((int) $student['id'], $mediaId)) {
+            return true;
+        }
+
         $courseIds = CourseEnrollment::query()
             ->where('unified_student_id', $student['id'])
             ->whereIn('status', ['active', 'approved', 'completed'])
@@ -51,6 +65,19 @@ class ServeCatalogMediaAction
         $lessonIds = Lesson::query()->whereIn('course_id', $courseIds)->pluck('id')->all();
 
         return $this->lessonsUseMedia($lessonIds, $mediaId);
+    }
+
+    private function attemptsUseMedia(int $studentId, int $mediaId): bool
+    {
+        $media = app(ResolveQuestionMediaAction::class);
+
+        foreach (app(ListStudentAttemptSnapshotsAction::class)->execute($studentId) as $snapshot) {
+            if (in_array($mediaId, $media->mediaIds($snapshot['attachments'] ?? null), true)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**

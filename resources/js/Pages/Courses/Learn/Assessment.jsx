@@ -34,6 +34,74 @@ function blankAnswers(snapshots, existing) {
     return next;
 }
 
+/**
+ * SPEC §20 "Question Attachments": audio, image, PDF, video reference — all
+ * through the centralized media system.
+ *
+ * The uploads reached the media system and the snapshot carried them; nothing
+ * here drew them, so `audio` and `image` questions — two of §20's twelve types
+ * — showed their text and nothing else. Mirrors the lesson player's markup so a
+ * sound file behaves the same wherever a student meets it.
+ */
+function QuestionMedia({ media, mediaShowUrl }) {
+    if (!media || media.length === 0) {
+        return null;
+    }
+
+    return (
+        <div className="mb-3 space-y-3">
+            {media.map((item, index) => {
+                const src = item.media_id ? `${mediaShowUrl}/${item.media_id}` : null;
+                const label = item.name || '';
+
+                if (item.embed_url) {
+                    return (
+                        <iframe
+                            key={`embed-${index}`}
+                            className="aspect-video w-full rounded border-0"
+                            src={item.embed_url}
+                            title={label || 'Question video'}
+                            allow="fullscreen"
+                        />
+                    );
+                }
+                if (!src) {
+                    // A legacy row that never entered the media system. Saying so
+                    // beats drawing a broken tag and letting the student wonder
+                    // whether their connection dropped.
+                    return (
+                        <p key={`missing-${index}`} className="text-sm text-amber-700">
+                            An attachment for this question is unavailable{label ? `: ${label}` : '.'}
+                        </p>
+                    );
+                }
+                if (item.kind === 'image') {
+                    return <img key={src} src={src} alt={label} className="max-h-96 w-full object-contain" />;
+                }
+                if (item.kind === 'audio') {
+                    return <audio key={src} className="w-full" controls src={src} preload="metadata" />;
+                }
+                if (item.kind === 'video') {
+                    return <video key={src} className="w-full" controls src={src} preload="metadata" />;
+                }
+                if (item.kind === 'pdf') {
+                    return (
+                        <a key={src} className="inline-block text-sm text-[#7C2D37] hover:underline" href={src}>
+                            {label || 'Open PDF'}
+                        </a>
+                    );
+                }
+
+                return (
+                    <a key={src} className="inline-block text-sm text-[#7C2D37] hover:underline" href={src}>
+                        {label || 'Open attachment'}
+                    </a>
+                );
+            })}
+        </div>
+    );
+}
+
 function formatRemaining(seconds) {
     const m = Math.floor(seconds / 60);
     const s = seconds % 60;
@@ -41,7 +109,7 @@ function formatRemaining(seconds) {
     return `${m}:${String(s).padStart(2, '0')}`;
 }
 
-export default function Assessment({ assessment, enrollment, attempt }) {
+export default function Assessment({ assessment, enrollment, attempt, mediaShowUrl = '/learn/media' }) {
     const t = usePage().props.i18n?.learn || {};
     const submitted = attempt && attempt.status !== 'in_progress';
     const [answers, setAnswers] = useState(() => blankAnswers(attempt?.snapshots || [], attempt?.answers || {}));
@@ -140,6 +208,15 @@ export default function Assessment({ assessment, enrollment, attempt }) {
                     return (
                         <section key={snapshot.question_id} className="rounded-lg border bg-white p-4">
                             <h2 className="mb-2 font-medium">{index + 1}. {snapshot.question_text}</h2>
+                            {/* §20 lists "Secondary text" as a field of its own
+                                and §21 requires the snapshot to carry it. It
+                                was stored, snapshotted, and drawn nowhere — a
+                                passage or a transliteration a question depends
+                                on, invisible to the person answering it. */}
+                            {snapshot.secondary_text && (
+                                <p className="mb-2 whitespace-pre-line text-sm text-gray-700">{snapshot.secondary_text}</p>
+                            )}
+                            <QuestionMedia media={snapshot.media} mediaShowUrl={mediaShowUrl} />
                             {snapshot.pattern === 'selection' && (
                                 <ul className="space-y-2">
                                     {(snapshot.options || []).map((option) => (

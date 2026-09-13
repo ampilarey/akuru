@@ -256,53 +256,10 @@ class ValidateContentBlockDataAction
 
     private function normalizeEmbedUrl(string $url): string
     {
-        $parts = parse_url($url);
-        if (($parts['scheme'] ?? '') !== 'https') {
-            throw ValidationException::withMessages([
-                'data' => 'Video embeds must use https.',
-            ]);
-        }
-
-        $host = strtolower((string) ($parts['host'] ?? ''));
-        $allowed = [
-            'youtube.com',
-            'www.youtube.com',
-            'm.youtube.com',
-            'youtu.be',
-            'vimeo.com',
-            'www.vimeo.com',
-            'player.vimeo.com',
-        ];
-        if (! in_array($host, $allowed, true)) {
-            throw ValidationException::withMessages([
-                'data' => 'Only YouTube or Vimeo embeds are allowed.',
-            ]);
-        }
-
-        if (in_array($host, ['youtu.be'], true)) {
-            $id = trim((string) ($parts['path'] ?? ''), '/');
-
-            return $id !== '' ? 'https://www.youtube.com/embed/'.$id : $url;
-        }
-
-        if (str_contains($host, 'youtube.com')) {
-            parse_str($parts['query'] ?? '', $query);
-            if (! empty($query['v'])) {
-                return 'https://www.youtube.com/embed/'.$query['v'];
-            }
-            if (str_starts_with((string) ($parts['path'] ?? ''), '/embed/')) {
-                return 'https://www.youtube.com'.($parts['path'] ?? '');
-            }
-        }
-
-        if (in_array($host, ['vimeo.com', 'www.vimeo.com'], true)) {
-            $id = trim((string) ($parts['path'] ?? ''), '/');
-            if (ctype_digit($id)) {
-                return 'https://player.vimeo.com/video/'.$id;
-            }
-        }
-
-        return $url;
+        // The allowlist moved to `NormalizeVideoEmbedUrlAction` when SPEC §20
+        // gave questions a "Video reference" attachment: two copies of "which
+        // hosts may we frame" would drift the first time one was widened.
+        return app(NormalizeVideoEmbedUrlAction::class)->execute($url, 'data');
     }
 
     /**
