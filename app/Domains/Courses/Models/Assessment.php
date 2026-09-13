@@ -3,6 +3,7 @@
 namespace App\Domains\Courses\Models;
 
 use App\Domains\Courses\Enums\AssessmentStatus;
+use App\Domains\Courses\Enums\AssessmentType;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -40,6 +41,9 @@ class Assessment extends Model
     {
         return [
             'status' => AssessmentStatus::class,
+            // SPEC §19's eleven types. The column held whatever string the
+            // unvalidated controller passed through.
+            'assessment_type' => AssessmentType::class,
             'randomize_questions' => 'boolean',
             'show_results' => 'boolean',
             'show_correct_answers' => 'boolean',

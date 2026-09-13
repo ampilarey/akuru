@@ -6,11 +6,14 @@ use App\Domains\Courses\Actions\AttachAssessmentQuestionAction;
 use App\Domains\Courses\Actions\ListCourseAssessmentsAction;
 use App\Domains\Courses\Actions\ListQuestionsAction;
 use App\Domains\Courses\Actions\SaveAssessmentAction;
+use App\Domains\Courses\Enums\AssessmentStatus;
+use App\Domains\Courses\Enums\AssessmentType;
 use App\Domains\Courses\Models\Assessment;
 use App\Domains\Courses\Models\Course;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -26,10 +29,11 @@ class CatalogAssessmentController extends Controller
             'course' => ['id' => $courseModel->id, 'title' => $courseModel->title],
             'assessments' => app(ListCourseAssessmentsAction::class)->execute($courseModel)->values(),
             'questions' => app(ListQuestionsAction::class)->execute()->values(),
-            'types' => [
-                'lesson_quiz', 'module_test', 'placement_test', 'final_exam',
-                'listening', 'speaking', 'reading', 'writing', 'practical', 'mixed', 'assignment',
-            ],
+            // SPEC §19's eleven types, served from the enum that now owns
+            // them. This was a hardcoded array here, and nothing validated
+            // against it — so the list was advisory and any string was
+            // storable.
+            'types' => AssessmentType::options(),
         ]);
     }
 
@@ -100,19 +104,57 @@ class CatalogAssessmentController extends Controller
     /**
      * @return array<string, mixed>
      */
+    /**
+     * CLAUDE.md rule 5: "Thin controllers. authorize → **validate into DTO** →
+     * call Action."
+     *
+     * This method authorized and then built an array entirely out of
+     * `$request->input()` / `boolean()` / `filled()` — **no `validate()` call
+     * anywhere on the assessment save path**. So a negative time limit, a
+     * negative retake limit, an arbitrary `assessment_type`, an arbitrary
+     * `status`, and a module or lesson from a different course all reached the
+     * Action, and whatever it did not reject was stored.
+     *
+     * Deliberately **not** validated: `passing_score` against `max_score`.
+     * Legacy rows carry a passing score expressed as a percentage on a
+     * small-max quiz, and `TeacherReviewReportTest` pins a reader that treats
+     * `passing_score > max_score` as a percent on purpose. Forbidding it here
+     * would break that reading, and choosing between the two meanings is a
+     * decision, not a cleanup.
+     *
+     * @return array<string, mixed>
+     */
     private function payload(Request $request, int $courseId): array
     {
+        $data = $request->validate([
+            'title' => ['required', 'string', 'max:255'],
+            'description' => ['nullable', 'string'],
+            'assessment_type' => ['nullable', Rule::enum(AssessmentType::class)],
+            'status' => ['nullable', Rule::enum(AssessmentStatus::class)],
+            'course_module_id' => ['nullable', 'integer', 'exists:course_modules,id'],
+            'lesson_id' => ['nullable', 'integer', 'exists:lessons,id'],
+            // A zero or negative time limit is not "no limit" — it is an
+            // assessment that is over before it starts.
+            'time_limit_minutes' => ['nullable', 'integer', 'min:1'],
+            'passing_score' => ['nullable', 'integer', 'min:0'],
+            'retake_limit' => ['nullable', 'integer', 'min:0'],
+            'randomize_questions' => ['nullable', 'boolean'],
+            'show_results' => ['nullable', 'boolean'],
+            'show_correct_answers' => ['nullable', 'boolean'],
+            'requires_teacher_marking' => ['nullable', 'boolean'],
+        ]);
+
         return [
             'course_id' => $courseId,
-            'course_module_id' => $request->filled('course_module_id') ? (int) $request->input('course_module_id') : null,
-            'lesson_id' => $request->filled('lesson_id') ? (int) $request->input('lesson_id') : null,
-            'title' => (string) $request->input('title', ''),
-            'description' => $request->input('description'),
-            'assessment_type' => (string) $request->input('assessment_type', 'lesson_quiz'),
-            'status' => (string) $request->input('status', 'draft'),
-            'time_limit_minutes' => $request->filled('time_limit_minutes') ? (int) $request->input('time_limit_minutes') : null,
-            'passing_score' => $request->filled('passing_score') ? (int) $request->input('passing_score') : null,
-            'retake_limit' => $request->filled('retake_limit') ? (int) $request->input('retake_limit') : null,
+            'course_module_id' => $data['course_module_id'] ?? null,
+            'lesson_id' => $data['lesson_id'] ?? null,
+            'title' => $data['title'],
+            'description' => $data['description'] ?? null,
+            'assessment_type' => $data['assessment_type'] ?? null,
+            'status' => $data['status'] ?? 'draft',
+            'time_limit_minutes' => $data['time_limit_minutes'] ?? null,
+            'passing_score' => $data['passing_score'] ?? null,
+            'retake_limit' => $data['retake_limit'] ?? null,
             'randomize_questions' => $request->boolean('randomize_questions'),
             'show_results' => $request->boolean('show_results', true),
             'show_correct_answers' => $request->boolean('show_correct_answers'),

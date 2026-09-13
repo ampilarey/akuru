@@ -7268,6 +7268,80 @@ remembering: a green single-file run says nothing about name collisions.
 `available_from`, `updated_by`. The unlock rule is the same deferral §13 and
 §26 already carry — a per-module/per-lesson unlock rule is its own slice.
 
+### SPEC §19: mostly cleared, and an assessment form that validated nothing
+
+Most of §19 is **cleared, not faulted**, and that is the headline. The
+`assessments` table carries every field the section names. Retake limits are
+enforced at attempt start (`assertRetakesAvailable`). Time limits resolve to a
+real deadline, and a late submit keeps only the answers saved before it expired
+rather than silently accepting them. `randomize_questions` is applied when
+snapshots are built. An in-progress attempt is returned rather than duplicated,
+which is §19's "Resume incomplete attempt if allowed". Someone built this
+carefully.
+
+What was wrong is the way an assessment is **created**.
+
+`CatalogAssessmentController::payload()` built its array entirely out of
+`$request->input()` / `boolean()` / `filled()` — **no `validate()` call
+anywhere on the save path**. Rule 5 asks for "authorize → validate into DTO →
+call Action"; this authorized and then trusted. A negative time limit, a
+negative retake limit, an arbitrary status and an arbitrary type all reached
+the Action, and whatever it did not itself reject was stored.
+
+And §19's **eleven assessment types lived as a hardcoded array inside that
+controller**, with `SaveAssessmentAction` storing
+`(string) ($data['assessment_type'] ?? 'lesson_quiz')`. The list on screen was
+advisory — any string at all was storable, and `assessment_type` is what §19's
+reporting and the §34–§37 dashboards group by. It is an enum now, which is the
+repo's own convention, and the controller serves the list from it so screen and
+validator cannot drift.
+
+**An assessment could also be attached to another course's module or lesson.**
+§19 hangs Module ID and Lesson ID off the assessment and every reader assumes
+they sit inside `course_id`; nothing checked it.
+
+#### Deliberately not fixed, and why
+
+`passing_score` is **not** validated against `max_score`. Legacy rows express
+a passing score as a percentage on a small-max quiz, and
+`TeacherReviewReportTest` pins a reader that treats `passing_score > max_score`
+as a percent **on purpose**. Forbidding it on save would break that reading,
+and choosing between the two meanings is a decision, not a cleanup. A test now
+records that this is allowed deliberately.
+
+**`settings.lock_next_lesson` is written in two Actions and read by nothing.**
+§19's "Lock next lesson until passed" is stored and never enforced, and on the
+assessment side it cannot even be set — the controller never passes `settings`,
+and `SaveAssessmentAction`'s ternary reads
+`$data['settings']['lock_next_lesson']` only in the branch where
+`$data['settings']` is *not* an array. No control was added for it, on §26's
+principle: an option an admin can pick and the engine ignores is worse than no
+option. It needs the unlock-rule slice that §13 and §26 already defer.
+
+#### Two mistakes of mine in this slice
+
+- **I typed `int $courseId` on the ownership checks.** `course_id` is nullable
+  — §19 attaches an assessment to a class *or* a course, not both, so a
+  classroom assessment has no course. Four tests went red with a `TypeError`.
+  With no course there is nothing for a module to belong to, so the check is
+  skipped rather than invented.
+- **One existing assertion changed**, transparently:
+  `LegacyAssessmentMigrationTest` asserted `assessment_type` was the raw string
+  `'assignment'`. The cast now returns the enum — same stored value, richer
+  type — so it compares `->value`.
+
+#### Verification
+
+**Revert-check:** replacing `$request->validate([...])` with `$request->all()`
+turns the two form-level tests red and leaves the nine Action-level ones green.
+
+**Walked in a browser:** the type select now reads **"Lesson quiz / Module test
+/ … / Assignment-based assessment"** — eleven proper labels where it previously
+showed raw slugs — and creating one stored
+`type=speaking (Speaking assessment)`.
+
+**1,600 tests green** (11 new), arch green, build clean.
+
 #### A process mistake worth recording
 
 The §13 slice was pushed as PR #300 **stacked on the unmerged §10 commit**
