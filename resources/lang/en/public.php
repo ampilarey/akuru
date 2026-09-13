@@ -418,4 +418,6 @@ return [
     'Daily reminders' => 'Daily reminders',
     'Change island' => 'Change island',
     'next in' => 'next in',
+    'Your private note on this page' => 'Your private note on this page',
+    'Save note' => 'Save note',
 ];

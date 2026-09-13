@@ -190,4 +190,6 @@ return [
     'next in' => 'next in',
     'Free preview of :count pages' => 'معاينة مجانية من :count صفحة.',
     'Get the full item' => 'احصل على النسخة الكاملة',
+    'Your private note on this page' => 'ملاحظتك الخاصة على هذه الصفحة',
+    'Save note' => 'حفظ الملاحظة',
 ];

@@ -7677,6 +7677,69 @@ one produced an audit. §33's five other headings — User Management, Course
 Management, Offering Management, Course Builder, Academic / Training Management
 — are inventories of CRUD that mostly exists and still need their own pass.
 
+### LIBRARY_PLAN §9.1: a note My Library could display and no reader could write
+
+§9.1 asks for "private notes", §10 groups them as "Notes & Bookmarks", and §29
+adds the rule that "private notes never exposed to writers". The obvious
+conclusion from the table list — §34 names `library_notes` and
+`library_highlights`, neither of which exists — is that the feature is unbuilt.
+
+**It was one text input short of complete.** Reading the code rather than the
+table list:
+
+| Layer | State before |
+|---|---|
+| `library_bookmarks.note` column | exists |
+| `LibraryBookmark::$fillable` | includes `note` |
+| `ToggleLibraryBookmarkAction` | has always taken a `$note` argument |
+| `LibraryReaderController::bookmark` | has always validated `note`, max 500 |
+| `ListMyLibraryAction` | reads it back |
+| `my.blade.php` | **renders it when present** |
+| The reader's bookmark form | posts a page number **and nothing else** |
+
+So My Library had a place to display something no reader could ever fill —
+this session's "missing place rather than missing calculation" shape, inverted:
+every calculation was in place and the *input* was missing. Six layers deep,
+and the gap was the last inch.
+
+**The trap worth naming.** `ToggleLibraryBookmarkAction` deletes the row when
+one already exists, which is right for a button labelled "Remove bookmark" and
+quietly wrong for saving a note: a reader annotating a page they had bookmarked
+would have lost the bookmark. So the note got its own verb —
+`SaveLibraryPageNoteAction` — and the button still toggles. An empty note
+clears the text and **keeps** the bookmark, because clearing what you wrote is
+not un-bookmarking and the button beside it already does that.
+
+**A note is reading**, so the note route runs the same access gate the page
+does. Without it, an account that cannot open page 9 of a paid item could still
+annotate it.
+
+#### Verification
+
+**Revert-check, three of the seven fire**, and they are the three that would
+have failed silently: routing the note through the toggle loses the bookmark
+(two tests), and dropping the gate lets a non-purchaser annotate a paid item.
+The privacy test — one reader's note invisible to another on the same item —
+is §29's rule at its weakest point.
+
+**Walked in Chrome** at `127.0.0.1:8125`: typed a note on page 1, reloaded and
+the box came back holding it, then opened **My Library** and the note was
+there — rendered by the Blade that could already do it and had never been given
+anything to show.
+
+**1,802 tests green** (7 new), arch green, Pint clean, strings in all three
+locales.
+
+**Recorded, not built (rule 1).** §9.1 also asks for **private highlights**, and
+§34 names a `library_highlights` table. That one is not merely unbuilt — it
+**conflicts with §9.2**, which requires text selection to be disabled in the
+reader, and the reader does exactly that (`select-none`). You cannot highlight
+what you cannot select. Whoever wants highlights has to decide which of the two
+§9 sub-sections wins; that is a product call, not a refactor's. §34's separate
+`library_notes` table is also still unbuilt — deliberately, since `note` on the
+bookmark row already carries §9.1's requirement and rule 11 prefers one home to
+two.
+
 ### LIBRARY_PLAN §15–§16, §30: the commerce rules, and the one holding by accident
 
 Second pass through the L-track, this time the money sections. **Most of it is

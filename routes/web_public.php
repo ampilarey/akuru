@@ -62,6 +62,7 @@ Route::post('library/{slug}/checkout', [LibraryCheckoutController::class, 'check
 Route::get('library/{slug}/payment-return', [LibraryCheckoutController::class, 'paymentReturn'])->name('public.library.payment-return');
 Route::post('library/{slug}/progress', [LibraryReaderController::class, 'progress'])->name('public.library.progress')->middleware('throttle:60,1');
 Route::post('library/{slug}/bookmark', [LibraryReaderController::class, 'bookmark'])->name('public.library.bookmark')->middleware('throttle:30,1');
+Route::post('library/{slug}/note', [LibraryReaderController::class, 'note'])->name('public.library.note')->middleware('throttle:30,1');
 Route::get('library/{slug}', [PublicLibraryController::class, 'show'])->name('public.library.show');
 
 Route::get('research/export', [ResearchPostController::class, 'export'])->name('public.research.export');

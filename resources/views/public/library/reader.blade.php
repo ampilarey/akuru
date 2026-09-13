@@ -30,6 +30,22 @@
         @endif
     </div>
 
+    @auth
+        {{-- §9.1 private notes. Everything behind this box already existed —
+             the column, the action argument, the controller's validation, and
+             My Library's rendering of it. There was simply nowhere to type. --}}
+        <form method="POST" action="{{ route('public.library.note', $reader['slug']) }}" class="mt-4">
+            @csrf
+            <input type="hidden" name="page" value="{{ $reader['page'] }}">
+            <label class="block text-sm text-gray-600 mb-1" for="reader-note">
+                {{ __('public.Your private note on this page') }}
+            </label>
+            <textarea id="reader-note" name="note" rows="2" maxlength="500"
+                      class="w-full rounded border px-3 py-2 text-sm">{{ $reader['note'] }}</textarea>
+            <button type="submit" class="btn-secondary mt-2 text-sm">{{ __('public.Save note') }}</button>
+        </form>
+    @endauth
+
     <div class="mt-4 flex items-center justify-between">
         <div>
             @if($reader['page'] > 1)

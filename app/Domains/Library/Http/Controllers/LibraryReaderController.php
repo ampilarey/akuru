@@ -6,6 +6,8 @@ use App\Domains\Library\Actions\DetectLibraryReadingAbuseAction;
 use App\Domains\Library\Actions\ListMyLibraryAction;
 use App\Domains\Library\Actions\PresentLibraryReaderAction;
 use App\Domains\Library\Actions\RecordLibraryReadingEventAction;
+use App\Domains\Library\Actions\ResolveLibraryAccessAction;
+use App\Domains\Library\Actions\SaveLibraryPageNoteAction;
 use App\Domains\Library\Actions\SaveReadingProgressAction;
 use App\Domains\Library\Actions\ToggleLibraryBookmarkAction;
 use App\Domains\Library\Models\LibraryItem;
@@ -97,6 +99,34 @@ class LibraryReaderController extends Controller
         $item = LibraryItem::query()->where('slug', $slug)->where('status', 'published')->firstOrFail();
 
         app(ToggleLibraryBookmarkAction::class)->execute(
+            (int) $request->user()->id,
+            $item->id,
+            (int) $data['page'],
+            $data['note'] ?? null,
+        );
+
+        return back();
+    }
+
+    /**
+     * §9.1 private notes. Separate from `bookmark()` because that one toggles:
+     * saving a note on an already-bookmarked page must not delete the bookmark.
+     */
+    public function note(Request $request, string $slug): RedirectResponse
+    {
+        abort_unless($request->user() !== null, 403);
+        $data = $request->validate([
+            'page' => 'required|integer|min:1',
+            'note' => 'nullable|string|max:500',
+        ]);
+        $item = LibraryItem::query()->where('slug', $slug)->where('status', 'published')->firstOrFail();
+
+        // A note is reading, so it needs the same gate the page did — otherwise
+        // somebody who cannot open page 9 can still annotate it.
+        $gate = app(ResolveLibraryAccessAction::class)->execute($item, (int) $request->user()->id);
+        abort_unless($gate['can_read'] || $gate['preview_pages'] > 0, 403);
+
+        app(SaveLibraryPageNoteAction::class)->execute(
             (int) $request->user()->id,
             $item->id,
             (int) $data['page'],
