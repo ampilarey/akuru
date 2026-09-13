@@ -318,6 +318,11 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
     Route::get('/learn/activities/{activity}', [LearnActivityController::class, 'show'])->name('learn.activities.show')->whereNumber('activity');
     Route::post('/learn/activities/{activity}/autosave', [LearnActivityController::class, 'autosave'])->name('learn.activities.autosave')->whereNumber('activity');
     Route::post('/learn/activities/{activity}/submit', [LearnActivityController::class, 'submit'])->name('learn.activities.submit')->whereNumber('activity');
+    // SPEC §36 "Play audio/voice submissions · View uploaded files". The
+    // submission kind was storable and unreadable until this slice: no route
+    // accepted a file against an attempt, so the teacher had nothing to open.
+    Route::post('/learn/activities/{activity}/upload', [LearnActivityController::class, 'upload'])->name('learn.activities.upload')->whereNumber('activity')->middleware('throttle:30,1');
+    Route::delete('/learn/activities/{activity}/attachments/{media}', [LearnActivityController::class, 'removeAttachment'])->name('learn.activities.attachments.destroy')->whereNumber('activity')->whereNumber('media');
     Route::get('/learn/assessments/{assessment}', [LearnAssessmentController::class, 'show'])->name('learn.assessments.show')->whereNumber('assessment');
     Route::post('/learn/assessments/{assessment}/autosave', [LearnAssessmentController::class, 'autosave'])->name('learn.assessments.autosave')->whereNumber('assessment');
     Route::post('/learn/assessments/{assessment}/submit', [LearnAssessmentController::class, 'submit'])->name('learn.assessments.submit')->whereNumber('assessment');

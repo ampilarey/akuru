@@ -7503,6 +7503,78 @@ needs its own audit against the screens. §34 (Course Creator), §35 (Dean /
 Supervisor), §36 (Teacher / Reviewer) and §37 (Parent, which §33 itself defers)
 are untouched.
 
+### SPEC §36: three abilities resting on a submission kind nothing read
+
+§36 lists thirteen things a teacher/instructor/reviewer must be able to do.
+Nine hold up: assigned offerings, session schedules (`/teach/schedule`),
+enrolled students, attendance, pending submissions (`/catalog/reviews`), score,
+written feedback. Three did not, and they fail together:
+
+> Open student submissions · Play audio/voice submissions · View uploaded files
+
+All three rested on something the student side could not produce.
+`SaveActivityAction` **validated and stored** `submission_kind` for a
+teacher-marked activity, accepting `written` or `file` — and **nothing read
+it**. The player rendered a `<textarea>` whichever kind the author chose, no
+route accepted a file against an attempt, and the reviewer's answer to all
+three §36 lines was a collapsed `<details>` containing
+`JSON.stringify(row.answers)`.
+
+So an author could set `file`, the value round-tripped through the database
+intact, and the student was still shown a text box. The same three-link chain
+as §20 and §22 — upload, render, serve — where fixing any one link alone leaves
+the column as dead as it was. The old allowlist also had no `audio`, though §36
+names it explicitly.
+
+A second, smaller bug sat on the same line. `in_array($data['submission_kind']
+?? 'written', …) ? $data['submission_kind'] : 'written'` guards the `in_array`
+and then reads the key back **unguarded**, so saving a teacher-marked activity
+without a `submission_kind` — which every caller in the codebase does — raised
+"Undefined array key".
+
+**What shipped.** `ActivitySubmissionKind` (`written` / `file` / `audio`) as
+the read side, borrowing `ContentBlockType`'s MIME allowlists and §30 size caps
+rather than keeping a second copy (rule 11). `ListCourseActivitiesAction` sends
+the resolved flags to the player, so the browser holds no second opinion about
+what is allowed. `POST /learn/activities/{activity}/upload` and
+`DELETE …/attachments/{media}` store and remove a file against the attempt,
+inside the existing `answers` JSON — no new column, because `answers` is
+already the record of what was handed in. `Reviews.jsx` plays audio, shows
+images, links files, and keeps the raw JSON beneath as the fallback for shapes
+it cannot draw.
+
+**Attachments are server-owned.** The browser posts the whole `answers` object
+back on every autosave and submit, so `AttachAttemptMediaAction::reconcile()`
+is the invariant: a client may drop an attachment and may never add one. A
+client naming an id it did not upload gets it silently dropped, which is
+covered by a test rather than left to good manners.
+
+**The browser walk earned its place twice.** First it uploaded a file the MIME
+allowlist correctly refused, and the page answered "Nothing uploaded yet" with
+**no reason given** — a guard that is right and silent is indistinguishable
+from a broken feature, so the refusal is now rendered. Then, with a real
+`audio/mpeg` file that the server genuinely stored, the list *still* read
+"Nothing uploaded yet": `useState` seeds once on mount and Inertia's redirect
+back re-renders the same component instance rather than remounting it. The
+attachment list now reads from the `attempt` prop. **Neither defect was
+reachable from the test suite** — nine Pest tests passed against the version
+with both bugs in it.
+
+Walked in Chrome at `127.0.0.1:8901` (2026-09-13): student sees a file input
+and no text box on an `audio` activity → upload lands with a playable
+`<audio>` and the filename → submit carries it → teacher at `/catalog/reviews`
+sees the recording, plays it, and `GET /catalog/media/1` returns `200
+audio/mpeg`. Earlier attempts from the failed-upload walks correctly read
+"Nothing written and nothing uploaded" beside it.
+
+**Still open in §36 (rule 1, recorded not built).** Three abilities have no
+storage at all: **upload correction audio**, **mark passed/failed** and
+**request resubmission**. `activity_attempts` and `assessment_attempts` carry
+`score`, `feedback`, `reviewed_by`, `reviewed_at` and nothing else, and both
+status enums are `in_progress` / `submitted` / `scored` — there is no returned
+or resubmit state, and no pass/fail column. That is a migration plus a widened
+`ReviewAttemptAction`, and it is its own slice.
+
 ### SPEC §23: a seat rule written about a status the database could not hold
 
 §23's `course_enrollments` table carries most of what the section names, the

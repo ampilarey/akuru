@@ -26,6 +26,11 @@ class SubmitActivityAttemptAction
 
         app(SaveActivityAttemptAction::class)->assertRetakesAvailable($activityId, $enrollmentId, $settings);
 
+        // §36: the files the student uploaded are carried into the submitted
+        // attempt, and only the ones actually uploaded. Reconciling before
+        // scoring means the frozen answers and the teacher's view agree.
+        $answers = app(AttachAttemptMediaAction::class)->reconcile($activityId, $enrollmentId, $answers);
+
         $result = app(ScoreActivityAnswersAction::class)->execute($definition, $answers);
         $status = ActivityAttemptStatus::from($result['status']);
         $now = now();

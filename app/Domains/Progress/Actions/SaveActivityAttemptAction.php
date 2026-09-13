@@ -24,6 +24,11 @@ class SaveActivityAttemptAction
     ): array {
         $this->assertRetakesAvailable($activityId, $enrollmentId, $settings);
 
+        // §36: uploaded files are server-owned. The browser posts the whole
+        // `answers` object back, so without this a client could name any media
+        // id and have a teacher handed a link to it.
+        $answers = app(AttachAttemptMediaAction::class)->reconcile($activityId, $enrollmentId, $answers);
+
         $attempt = ActivityAttempt::query()
             ->where('enrollment_id', $enrollmentId)
             ->where('activity_id', $activityId)

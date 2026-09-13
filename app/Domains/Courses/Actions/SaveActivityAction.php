@@ -4,6 +4,7 @@ namespace App\Domains\Courses\Actions;
 
 use App\Domains\Courses\Components\Arabic\Actions\ListArabicReferenceAction;
 use App\Domains\Courses\Enums\ActivityPattern;
+use App\Domains\Courses\Enums\ActivitySubmissionKind;
 use App\Domains\Courses\Models\Activity;
 use App\Domains\Courses\Models\Course;
 use App\Support\Contracts\QuranReferenceReader;
@@ -65,9 +66,13 @@ class SaveActivityAction
             ActivityPattern::Arrange => $this->arrangeData($data),
             ActivityPattern::TeacherMarked => [
                 'prompt' => trim((string) ($data['prompt'] ?? '')),
-                'submission_kind' => in_array($data['submission_kind'] ?? 'written', ['written', 'file'], true)
-                    ? $data['submission_kind']
-                    : 'written',
+                // Two bugs in one line before this. The `?? 'written'` guarded
+                // the `in_array` but not the branch that read the key back, so
+                // saving a teacher-marked activity without a `submission_kind`
+                // — which every caller in the codebase does — raised "Undefined
+                // array key". And the allowlist had no `audio`, though §36 asks
+                // the teacher to "play audio/voice submissions".
+                'submission_kind' => ActivitySubmissionKind::fromValue($data['submission_kind'] ?? null)->value,
             ],
         };
     }
