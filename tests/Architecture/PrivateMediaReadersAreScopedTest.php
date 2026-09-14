@@ -90,3 +90,73 @@ it('pins every caller that can read a private file', function () {
         .'Then add the file here with the sentence that says how it scopes.'
     );
 });
+
+/**
+ * The same question for **generated documents**, which are a different action
+ * and were therefore invisible to the case above.
+ *
+ * `ReadGeneratedDocumentAction` is `Document::findOrFail($id)` with no scope —
+ * the same unscoped-by-design shape as `ReadPrivateMediaAction`, holding
+ * report cards, certificates, transfer certificates and ID cards. It had no
+ * gate, and one of its callers had exactly the defect the case above exists to
+ * prevent: `AwardController::download` bound `{award}` and then read
+ * `?document_id=` straight from the query string, so any `exams.manage` holder
+ * could fetch **any** generated document in the application by id, another
+ * class's report cards included. The route parameter made it look scoped and
+ * scoped nothing.
+ *
+ * It now resolves the document from the record that owns it, which is what the
+ * other five callers were already doing.
+ */
+it('pins every caller that can read a generated document', function () {
+    $allowed = [
+        // Resolves from the certificate record.
+        'app/Domains/Courses/Actions/ServeStudentCertificateAction.php',
+        // Resolves from the certificate the route binds.
+        'app/Domains/Courses/Http/Controllers/CourseCertificateController.php',
+        // Resolves from the report card, after the published/ownership checks
+        // in the action itself.
+        'app/Domains/ExamsGrades/Actions/DownloadPublishedReportCardAction.php',
+        // Resolves from the report card the route binds.
+        'app/Domains/ExamsGrades/Http/Controllers/ReportCardController.php',
+        // **The one that used to take the id from the query string.** Now
+        // reads `certificate_document_id` off the bound StudentAward.
+        'app/Domains/ExamsGrades/Http/Controllers/AwardController.php',
+    ];
+
+    $callers = [];
+
+    $files = new RecursiveIteratorIterator(
+        new RecursiveDirectoryIterator(base_path('app'), FilesystemIterator::SKIP_DOTS)
+    );
+
+    foreach ($files as $file) {
+        if (! $file->isFile() || $file->getExtension() !== 'php') {
+            continue;
+        }
+
+        $path = str_replace(base_path().'/', '', $file->getPathname());
+
+        if (str_ends_with($path, 'Actions/ReadGeneratedDocumentAction.php')) {
+            continue;
+        }
+
+        $source = stripPhpComments((string) file_get_contents($file->getPathname()));
+
+        if (str_contains($source, 'ReadGeneratedDocumentAction')) {
+            $callers[] = $path;
+        }
+    }
+
+    sort($callers);
+    sort($allowed);
+
+    expect($callers)->toBe($allowed,
+        "Something new can read a generated document:\n  "
+        .implode("\n  ", array_diff($callers, $allowed))
+        ."\n\nThese are report cards, certificates, transfer certificates and ID cards — "
+        ."a child's marks and a family's documents.\n\nResolve the document id from the "
+        .'record that owns it. A document id taken from the request is the defect that '
+        .'was found here; a route parameter beside it does not make it scoped.'
+    );
+});
