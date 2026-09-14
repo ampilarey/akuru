@@ -2,6 +2,7 @@
 
 namespace App\Domains\People\Http\Controllers;
 
+use App\Domains\People\Actions\SyncTeacherRowStatusAction;
 use App\Domains\People\Enums\EmploymentType;
 use App\Domains\People\Enums\StaffStatus;
 use App\Domains\People\Models\StaffProfile;
@@ -88,6 +89,10 @@ class StaffDirectoryController extends Controller
         $data = $this->validated($request);
         $profile = StaffProfile::query()->create($data);
 
+        // A profile created as `ended` — a record entered after the fact —
+        // must not leave a teacher row reading active.
+        app(SyncTeacherRowStatusAction::class)->execute($profile);
+
         return redirect()
             ->route('people.staff.show', $profile)
             ->with('success', 'Staff profile created.');
@@ -96,6 +101,10 @@ class StaffDirectoryController extends Controller
     public function update(Request $request, StaffProfile $staffProfile): RedirectResponse
     {
         $staffProfile->update($this->validated($request, $staffProfile->id));
+
+        // Ending somebody's employment here is how it is ended anywhere: there
+        // is no other screen that writes a staff status.
+        app(SyncTeacherRowStatusAction::class)->execute($staffProfile->refresh());
 
         return redirect()
             ->route('people.staff.show', $staffProfile)

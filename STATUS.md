@@ -4304,6 +4304,78 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5do. Employment could not be ended anywhere in the product (2026-09-14)
+
+The teacher half of §5dn, chased on the same reasoning — and it found something
+bigger than the cascade I went looking for, **including a correction to §5dm**.
+
+**What I expected to find.** `staff_profiles.status` (`active` / `on_leave` /
+`ended`) and `teachers.status` (`active` / `inactive` / `terminated`) are two
+records of the same fact, and nothing reconciles them. That much was right.
+
+**What the walk found instead.** There is **no screen anywhere that changes
+either of them.** `teachers.status` is written once, at creation, always
+`'active'` — `TeacherController::store` and `EnsureTeacherRowAction` both
+hardcode it and nothing updates it. And `people.staff.update` exists, is
+routed, and validates a status, but **no form in the application posts to it**:
+the staff index creates profiles with `status` hardcoded and not exposed, and
+the show page printed the status as text. I only learned this by trying to end
+an employment in a browser and finding no control to do it with.
+
+So every staff status in the system is `active` for ever, and that makes
+**four** `where('status', 'active')` filters inert — `ListActiveTeachersAction`,
+the meeting-slot picker, the teacher-contact list, and the staff counter from
+§5dm. All four are correct code guarding a column that could not move, which is
+why nothing ever failed and nobody noticed.
+
+**Correcting §5dm.** That entry said the dashboard's **Teachers** tile
+"included staff whose employment had ended". That was true of the *query* and
+false of the *data*: no employment could end. The count it shipped is still the
+right one and the student half of that slice was demonstrably wrong, but the
+teacher half was a theoretical defect described as a live one. This slice is
+what makes the claim true rather than merely well-intentioned.
+
+**What shipped.**
+
+- `SyncTeacherRowStatusAction` reconciles the teacher row from the staff
+  profile. Only `ended` deactivates; **`on_leave` deliberately does not**, and
+  the exclusion is a test, for the §5dn reason — a teacher on leave is exactly
+  the one a school must keep finding in a picker in order to arrange cover.
+  Restoring is symmetric, so ending employment is not a one-way trap, and it
+  only ever touches a row it previously set to `terminated`.
+- **The missing form.** `People/Staff/Show` now edits employment type and
+  status. The controller has been sending `employmentTypes` and `statuses` to
+  that page all along and the page never used them — the form was intended and
+  never built. Without it this slice would have been plumbing with no tap, and
+  could not have been walked at all.
+- `ListClassTeacherOptionsAction` splits into `everyone()` (naming, including
+  leavers) and `assignable($keep)` (choosing). The one list answered both
+  questions, which was harmless only while the status could not change. The
+  `$keep` argument is the lesson from the lesson-material picker: **a `<select>`
+  that does not contain its own current value silently changes that value on
+  the next save**, so a class whose teacher has left keeps showing that teacher
+  until somebody deliberately picks another.
+
+**Five tests**, four of which fail with the sync removed; the `on_leave` one
+passes either way because it asserts unchanged behaviour.
+
+**Walked in Chromium (2026-09-14)**, and the walk earned its place twice — it
+found the missing form, and then it caught me reading my own keep-rule as a
+failure:
+
+| step | class-teacher picker |
+|---|---|
+| before | Ustadh Mohamed, Ustadh Ibrahim Naseer, Ustadha Aishath Shifa |
+| after ending Ustadh Mohamed's employment, no class holding him | **two names** — he is gone |
+| after ending it, with Grade 5 still holding him | **three names** — he is kept, and the class-teacher column still reads *Ustadh Mohamed* rather than blank |
+
+The middle row is the fix; the last row is the fix not breaking an existing
+assignment. My first walk showed only the last case and I briefly read it as the
+cascade failing, until the database said `terminated` and the fixture turned out
+to be a class in another academic year.
+
+Full suite **1941 passed**.
+
 ## 5dn. A pupil who left the school stayed on the register (2026-09-14)
 
 **Not on any list.** The known backlog was empty after §5dm, so this came from

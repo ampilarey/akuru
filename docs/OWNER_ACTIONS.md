@@ -187,8 +187,8 @@ grants is **full** rather than scoped to finishing a registration.
 
 ## What is *not* on this list
 
-The agent-buildable backlog is empty. Of the 25 numbered defects in
-`KNOWN_ISSUES.md`, **nineteen are fixed**, two are explicitly not defects
+The agent-buildable backlog is empty. Of the 26 numbered defects in
+`KNOWN_ISSUES.md`, **twenty are fixed**, two are explicitly not defects
 (`left_early`, Vite HMR), and the remainder are the decisions above. The
 EduPage parity track was verified row by row on 2026-09-14: **all 22 rows have
 their code**, and a test now pins that so the plan cannot drift into claiming
@@ -208,6 +208,14 @@ pupil marked withdrawn stayed on the class register, where the grid defaults
 every row to *present*, so they were recorded as attending lessons they were
 not at and their guardian could be texted about absences from a school the
 family had left. Nobody had filed it, and no test caught it.
+
+Then **#26**, from following the same reasoning to staff: **no screen in the
+product could end somebody's employment.** The update route existed and
+validated a status; no form posted to it, and the teacher row's status was
+written once at creation and never again. Four "still employed" filters were
+guarding a column that could not move. That one was found by trying to do it in
+a browser and looking for the button — not by reading the code, which looks
+correct.
 
 The right reading is: there is nothing left that somebody has already written
 down — which is the point at which item 7 above, walking the real deployment,
