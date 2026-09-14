@@ -1,5 +1,6 @@
 import { router, useForm } from '@inertiajs/react';
 import AppShell from '../../../Layouts/AppShell';
+import FormErrors from '../../../Components/FormErrors';
 
 export default function Index({ status, statuses, notes }) {
     return (
@@ -34,6 +35,7 @@ function NoteCard({ note }) {
                     <input className="form-input" placeholder="Review notes" value={form.data.review_notes} onChange={(e) => form.setData('review_notes', e.target.value)} />
                     <button type="button" className="btn-primary" onClick={() => form.post(`/academics/absence-notes/${note.id}/approve`)}>Approve</button>
                     <button type="button" className="btn-secondary" onClick={() => form.post(`/academics/absence-notes/${note.id}/reject`)}>Reject</button>
+                    <FormErrors errors={form.errors} />
                 </form>
             )}
         </section>

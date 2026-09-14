@@ -1,6 +1,7 @@
 import { router, useForm, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 import AppShell from '../../Layouts/AppShell';
+import FormErrors from '../../Components/FormErrors';
 
 function VersionForm() {
     const form = useForm({
@@ -25,6 +26,7 @@ function VersionForm() {
             <input className="form-input" placeholder="Samples" value={form.data.training_sample_count} onChange={(e) => form.setData('training_sample_count', e.target.value)} />
             <input className="form-input" placeholder="Letter acc (0–1)" value={form.data.validation_letter_accuracy} onChange={(e) => form.setData('validation_letter_accuracy', e.target.value)} />
             <button type="submit" className="btn-primary" disabled={form.processing}>Register version</button>
+            <FormErrors errors={form.errors} />
         </form>
     );
 }

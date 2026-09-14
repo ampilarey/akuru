@@ -1,5 +1,6 @@
 import { useForm } from '@inertiajs/react';
 import AppShell from '../../../Layouts/AppShell';
+import FormErrors from '../../../Components/FormErrors';
 
 export default function Index({ requests, types, canReview, teacherId, leaveTypes = [] }) {
     const form = useForm({
@@ -53,6 +54,7 @@ export default function Index({ requests, types, canReview, teacherId, leaveType
                     <input className="form-input w-full" value={form.data.reason} onChange={(e) => form.setData('reason', e.target.value)} />
                 </label>
                 <button type="submit" className="btn-primary justify-self-start">Submit request</button>
+                <FormErrors errors={form.errors} />
             </form>
 
             <div className="grid gap-3">
@@ -88,6 +90,7 @@ function RequestCard({ item, canReview }) {
                     </select>
                     <input className="form-input" placeholder="Notes" value={review.data.review_notes} onChange={(e) => review.setData('review_notes', e.target.value)} />
                     <button type="submit" className="btn-primary">Review</button>
+                    <FormErrors errors={review.errors} />
                 </form>
             )}
         </section>

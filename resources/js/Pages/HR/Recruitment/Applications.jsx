@@ -1,5 +1,6 @@
 import { router, useForm } from '@inertiajs/react';
 import AppShell from '../../../Layouts/AppShell';
+import FormErrors from '../../../Components/FormErrors';
 
 export default function Applications({ postings, statuses, rows }) {
     const form = useForm({
@@ -30,6 +31,7 @@ export default function Applications({ postings, statuses, rows }) {
                 <input className="form-input" placeholder="Email" value={form.data.email} onChange={(e) => form.setData('email', e.target.value)} />
                 <input className="form-input" placeholder="Mobile" value={form.data.mobile} onChange={(e) => form.setData('mobile', e.target.value)} />
                 <button type="submit" className="btn-primary" disabled={form.processing}>Record application</button>
+                <FormErrors errors={form.errors} />
             </form>
             <div className="overflow-x-auto rounded-lg border bg-white">
                 <table className="min-w-full text-sm">

@@ -4183,6 +4183,100 @@ server validation message the browser's `max` attribute prevents from ever
 being requested — the property worth asserting was that a nonsense value never
 persists, whichever layer stops it.
 
+## 5co. The silent-form list is empty (2026-09-14)
+
+§5cn found 28 Inertia pages that submit a form and never mention `errors`, fixed
+two, and left a gate with 26. This clears the rest.
+
+**All 92 pages that submit a form can now report what came back.** The baseline
+file stays, holding an empty array, because the gate's job from here is to keep
+it that way.
+
+### One component rather than 26 hand-written blocks
+
+`resources/js/Components/FormErrors.jsx` — renders nothing when there is nothing
+to say, so it is safe to drop into any form unconditionally.
+
+It is deliberately **not** the best pattern, and says so in its own docblock: the
+pages that already reported errors put each message beside the field it belongs
+to (`<Field error={form.errors.x}>` in Academics), which is better wherever
+there are labelled fields to hang them on. This component is for the rest —
+compact inline grids and toolbars with nowhere to put a per-field message, where
+the real choice was between a list and nothing at all.
+
+Placement was mechanical for the 24 pages with a `<form>`: immediately before
+the closing tag, with the form variable read from the enclosing block, so
+`letterForm` / `harakahForm` / `createForm` / `carryForm` each got their own.
+
+### The two with no form at all
+
+- **`Portal/Homework.jsx`** — ticking homework is a checkbox, not a form. A
+  refused post had nowhere to land: the box sprang back and the child was not
+  told why. The message now sits under the item whose tick failed.
+- **`Portal/Meetings.jsx`** — booking is a button. A slot taken a second earlier
+  by another parent came back refused with nothing on screen.
+
+Those two are the sharpest version of the defect: not a form that swallows its
+errors, but an action with no form to put them in.
+
+### Verified in Chromium, and how far that goes
+
+Submitting the first form on a page with nothing filled in, and looking for a
+message:
+
+| Page | Result |
+|---|---|
+| `Courses/Taxonomy/Levels` | *"The name en field is required."* |
+| `Courses/Taxonomy/Audiences` | *"The name en field is required."* |
+| `People/Staff/Index` | *"The user id field is required."* |
+| `Pronunciation/Admin` | *"The version name field is required."* |
+| `HR/Performance/Cpd` (§5cn) | *"The hours field must be a number."* |
+
+**Five of 26 were walked.** The other 21 use the same component in the same
+position, the build passes and the gate passes — which is construction, not
+evidence, and is the honest description of them.
+
+One page needed checking rather than assuming: `Finance/Receipts/Manual` showed
+no message, and that is because its form arrives with **valid defaults** (an
+invoice, an amount, a method), so an empty submit genuinely succeeds —
+"Receipt recorded." My check was wrong, not the page.
+
+### Three pages I broke doing it, and the gate that now catches them
+
+The mechanical insertion put `<FormErrors errors={form.errors} />` into three
+**filter** forms — plain GET forms, submitted with `router.get`, with no
+`useForm` anywhere in the component. `ReferenceError: form is not defined`,
+which in React blanks the entire page: `/academics/requests`,
+`/hr/leave-balances` and `/catalog/reviews`.
+
+**Nothing caught it.** `npm run build` does no scope analysis; the PHP suite
+never loads a page; and the gate above is satisfied by the word `errors`
+appearing, so a page can be broken and still pass a check that only reads for a
+string. CI was green on the pull request at the time.
+
+They were found by loading the screens in a browser after a container restart
+forced a rebuild of the local environment — which is to say, by luck, one step
+away from merging three blank screens.
+
+So the gate now reads the reference the other way as well: every `<FormErrors
+errors={X}>` must name a `useForm` **declared in the same component**.
+Revert-checked by pointing one at a name that does not exist; it fails and names
+the file and the variable. The three filter forms had no errors to show at all,
+so the element was deleted rather than repointed.
+
+### And a seeder that made the system look broken
+
+The same restart re-seeded the database, and the sweep came back **14/20** with
+five HR screens "not showing their rows". The screens were fine.
+`SmokeMarkerSeeder` read `StaffProfile::query()->first()`, found none in a fresh
+`migrate:fresh --seed`, and skipped the entire HR block **in silence** — so it
+planted nothing and the sweep faithfully reported nothing. The seeder now makes
+a staff profile if there is none, and says so out loud if it cannot.
+
+Twice in one slice, a verification tool reported the system as broken and itself
+as fine. That direction of error is the expensive one: it costs an investigation
+each time, and the third time it will be believed.
+
 ## 5cn. Can a person actually make one? (2026-09-13)
 
 §5cm answered *"does the screen show a row that exists"*. That is weaker than

@@ -1,6 +1,7 @@
 import { useForm } from '@inertiajs/react';
 import { Fragment, useState } from 'react';
 import AppShell from '../../../Layouts/AppShell';
+import FormErrors from '../../../Components/FormErrors';
 
 const blank = (record) => ({
     attendance_status: '',
@@ -112,6 +113,7 @@ function RecordForm({ sessionId, row, surahs, options, onDone }) {
             <div>
                 <button type="submit" className="btn-primary" disabled={form.processing}>Save record</button>
             </div>
+            <FormErrors errors={form.errors} />
         </form>
     );
 }

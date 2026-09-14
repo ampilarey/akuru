@@ -1,4 +1,5 @@
 import { router, useForm } from '@inertiajs/react';
+import FormErrors from '../../Components/FormErrors';
 import AppShell from '../../Layouts/AppShell';
 
 export default function Meetings({ children = [], slots = [], bookings = [], csvUrl = '/portal/meetings/export' }) {
@@ -12,6 +13,10 @@ export default function Meetings({ children = [], slots = [], bookings = [], csv
                 <p className="text-sm text-gray-600">Book a published parent-teacher meeting slot for a linked child.</p>
                 <a className="btn-secondary" href={csvUrl}>Export CSV</a>
             </div>
+
+            {/* Booking is a button, not a form — a slot taken a second earlier
+                by another parent came back refused with nothing on screen. */}
+            <FormErrors errors={form.errors} className="mb-4" />
 
             {bookings.length > 0 && (
                 <section className="mb-6 rounded-lg border bg-white p-4">

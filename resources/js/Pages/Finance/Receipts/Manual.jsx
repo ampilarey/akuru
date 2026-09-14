@@ -1,5 +1,6 @@
 import { useForm } from '@inertiajs/react';
 import AppShell from '../../../Layouts/AppShell';
+import FormErrors from '../../../Components/FormErrors';
 
 export default function Manual({ invoices, methods }) {
     const form = useForm({
@@ -28,6 +29,7 @@ export default function Manual({ invoices, methods }) {
                     {methods.map((method) => <option key={method} value={method}>{method}</option>)}
                 </select>
                 <button type="submit" className="btn-primary" disabled={form.processing}>Record cash / transfer</button>
+                <FormErrors errors={form.errors} />
             </form>
         </AppShell>
     );

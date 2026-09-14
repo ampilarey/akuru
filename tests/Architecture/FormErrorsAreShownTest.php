@@ -81,6 +81,72 @@ it('makes a page that submits a form able to show what came back', function () {
 });
 
 /**
+ * …and the thing it shows has to exist.
+ *
+ * Clearing the baseline was largely mechanical, and the mechanism put
+ * `<FormErrors errors={form.errors} />` into three **filter** forms — plain GET
+ * forms with no `useForm` anywhere in the component. `ReferenceError: form is
+ * not defined`, which in React blanks the whole page.
+ *
+ * Nothing caught it. The build does no scope analysis, the PHP suite never
+ * loads a page, and the assertion above is satisfied by the word `errors`
+ * appearing — a page can be broken and still pass a gate that only reads for a
+ * string. It was found by loading the screens in a browser.
+ *
+ * So this reads the reference the other way: every `<FormErrors errors={X}>`
+ * must name a `useForm` declared in the same component. Components are
+ * delimited by top-level `function` declarations, which is how every page here
+ * is written.
+ */
+it('points FormErrors at a form that exists in the same component', function () {
+    $offenders = [];
+
+    $files = new RecursiveIteratorIterator(
+        new RecursiveDirectoryIterator(resource_path('js/Pages'), FilesystemIterator::SKIP_DOTS)
+    );
+
+    foreach ($files as $file) {
+        if (! $file->isFile() || $file->getExtension() !== 'jsx') {
+            continue;
+        }
+
+        $lines = explode("\n", stripJsComments(file_get_contents($file->getPathname())));
+        $path = str_replace(base_path().'/', '', $file->getPathname());
+
+        $bounds = [];
+        foreach ($lines as $index => $line) {
+            if (preg_match('/^(export default )?function \w+/', $line)) {
+                $bounds[] = $index;
+            }
+        }
+        $bounds[] = count($lines);
+
+        for ($i = 0; $i < count($bounds) - 1; $i++) {
+            $block = implode("\n", array_slice($lines, $bounds[$i], $bounds[$i + 1] - $bounds[$i]));
+
+            preg_match_all('/const\s+(\w+)\s*=\s*useForm/', $block, $declared);
+            preg_match_all('/<FormErrors errors=\{(\w+)\.errors\}/', $block, $used);
+
+            foreach (array_unique($used[1]) as $variable) {
+                if (! in_array($variable, $declared[1], true)) {
+                    $offenders[] = $path.' — `'.$variable.'` is not a useForm in this component';
+                }
+            }
+        }
+    }
+
+    sort($offenders);
+
+    expect($offenders)->toBeEmpty(
+        "These <FormErrors> point at something that does not exist where they stand:\n  "
+        .implode("\n  ", $offenders)
+        ."\n\nThat is a ReferenceError, which blanks the page. A filter form that "
+        .'submits with `router.get` has no errors to show — delete the element rather '
+        .'than pointing it at a form from another component.'
+    );
+});
+
+/**
  * Every Inertia page that posts a form, and whether it mentions `errors`.
  *
  * @return array<string, bool>

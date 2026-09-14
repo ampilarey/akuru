@@ -1,5 +1,6 @@
 import { useForm } from '@inertiajs/react';
 import AppShell from '../../Layouts/AppShell';
+import FormErrors from '../../Components/FormErrors';
 
 export default function Appraisals({ staff, appraisals, observations, cpd }) {
     return (
@@ -90,6 +91,7 @@ function AppraisalRow({ row }) {
                     >
                         <input className="form-input" placeholder="Comment" value={form.data.staff_comment} onChange={(e) => form.setData('staff_comment', e.target.value)} />
                         <button type="submit" className="btn-secondary" disabled={form.processing}>Acknowledge</button>
+                        <FormErrors errors={form.errors} />
                     </form>
                 )}
             </td>

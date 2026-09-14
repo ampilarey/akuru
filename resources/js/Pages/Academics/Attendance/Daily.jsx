@@ -1,6 +1,7 @@
 import { router, useForm } from '@inertiajs/react';
 import { useState } from 'react';
 import AppShell from '../../../Layouts/AppShell';
+import FormErrors from '../../../Components/FormErrors';
 
 export default function Daily({ yearId, classId, date, mode, years, classes, statuses, roster, marks }) {
     const existing = Object.fromEntries(marks.map((mark) => [String(mark.student_id), mark]));
@@ -101,6 +102,7 @@ export default function Daily({ yearId, classId, date, mode, years, classes, sta
                         </tbody>
                     </table>
                     <button type="submit" className="btn-primary" disabled={mode !== 'daily' || form.processing}>Save daily attendance</button>
+                    <FormErrors errors={form.errors} />
                 </form>
             )}
         </AppShell>

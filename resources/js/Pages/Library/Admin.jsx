@@ -1,6 +1,7 @@
 import { router, useForm } from '@inertiajs/react';
 import { useState } from 'react';
 import AppShell from '../../Layouts/AppShell';
+import FormErrors from '../../Components/FormErrors';
 
 function ApplicationsQueue({ applications }) {
     const [notes, setNotes] = useState({});
@@ -255,6 +256,7 @@ function ItemForm({ categories, options }) {
                 <input className="form-input" type="file" accept="application/pdf" onChange={(e) => form.setData('pdf', e.target.files[0] ?? null)} />
             </label>
             <button type="submit" className="btn-primary self-end" disabled={form.processing}>Save item</button>
+            <FormErrors errors={form.errors} />
         </form>
     );
 }
@@ -272,6 +274,7 @@ function CategoryForm() {
         >
             <input className="form-input" placeholder="New category" value={form.data.name} onChange={(e) => form.setData('name', e.target.value)} />
             <button type="submit" className="btn-secondary" disabled={form.processing}>Add</button>
+            <FormErrors errors={form.errors} />
         </form>
     );
 }

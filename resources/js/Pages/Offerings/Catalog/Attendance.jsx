@@ -1,5 +1,6 @@
 import { useForm, usePage } from '@inertiajs/react';
 import AppShell from '../../../Layouts/AppShell';
+import FormErrors from '../../../Components/FormErrors';
 
 export default function Attendance({ session, roster, statuses, modes }) {
     const t = usePage().props.i18n?.learn || {};
@@ -38,6 +39,7 @@ export default function Attendance({ session, roster, statuses, modes }) {
                 >
                     Mark all {form.data.status}
                 </button>
+                <FormErrors errors={form.errors} />
             </form>
             <ul className="space-y-2 rounded-lg border bg-white p-4 text-sm">
                 {roster.length === 0 && <li className="text-gray-500">No enrollments on this offering.</li>}
