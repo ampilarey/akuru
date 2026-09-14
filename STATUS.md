@@ -102,8 +102,8 @@ Legend — **CODE:** implementation in repo (models/migrations/actions/routes/pa
 | S5.5 performance/CPD | Yes. | `PerformanceTest`. | Walked **locally** 2026-09-13: screen shows a row planted for it (§5cm). | |
 | S5.6 payroll | Yes. **Flagged off** (`PAYROLL_ENABLED` + `payroll.enabled`). | `PayrollTest` (turns the flag on). | UNVERIFIED; default **off** is by design. | |
 | 1A.1 auth/roles | Yes (Phase 0 + S1). | Auth tests, `RoleLandingTest`. | Walked login **ok locally** (R2/R3). Teacher `/dashboard` → Today (#88). Parent/student `/dashboard` → composed `/portal/home` (D1). Admin/headmaster `/dashboard` → `/portal/overview` (D3 #111). Staging login **fail**. | |
-| 1A.2–1A.7 course engine | Yes. Catalog, outline, text/media blocks, glossary term bank + lesson attach, `/learn`, portal learning. | Matching `tests/Feature/Courses/*` including `GlossaryTest`. | Glossary walked (#102). Rest of 1A still UNVERIFIED. | `glossary_items` / `lesson_glossary_items` (SPEC §22). |
-| 1B.1–1B.6 offerings/PWA | Yes. Offerings, pin/seats, sessions, extra blocks, unlock/completion, PWA/i18n. | Matching Offerings/Progress/Pwa tests. | UNVERIFIED. | 1B.5 tests the 2/3 = 66 formula. **1B.5's "evaluators" are one hardcoded policy each** — sequential unlock, required-lessons+sessions completion — now behind contracts with a single implementation (ADR-022). No per-course strategy config exists; ROADMAP §2a describes the target, not `main`. **1B audit (2026-08-27):** seat limits, pinning, sessions (§2d L1), PWA all verified solid; but §3.4's split **backfill was never written** — offerings are created lazily, legacy enrollments keep `course_offering_id = null`, and the public site still reads legacy `courses.seats`/`enrollment_deadline`. Backfill is mandatory before first real use (see ROADMAP §3.4 as-built note). |
+| 1A.2–1A.7 course engine | Yes. Catalog, outline, text/media blocks, glossary term bank + lesson attach, `/learn`, portal learning. | Matching `tests/Feature/Courses/*` including `GlossaryTest`. | Glossary walked (#102). **Catalog, glossary, levels and audiences each show a planted row** (§5ds sweep) and **a student took a lesson end to end** — `/learn`, the course page, the published block and the completion, 7/7 (§5dt, `scripts/smoke/learn.mjs`). The outline **editor**, activities and assessments remain UNVERIFIED. | `glossary_items` / `lesson_glossary_items` (SPEC §22). |
+| 1B.1–1B.6 offerings/PWA | Yes. Offerings, pin/seats, sessions, extra blocks, unlock/completion, PWA/i18n. | Matching Offerings/Progress/Pwa tests. | **1B.1 offerings shows a planted row** (§5ds sweep, 2026-09-14). Pin/seats, sessions, unlock/completion and PWA remain UNVERIFIED. | 1B.5 tests the 2/3 = 66 formula. **1B.5's "evaluators" are one hardcoded policy each** — sequential unlock, required-lessons+sessions completion — now behind contracts with a single implementation (ADR-022). No per-course strategy config exists; ROADMAP §2a describes the target, not `main`. **1B audit (2026-08-27):** seat limits, pinning, sessions (§2d L1), PWA all verified solid; but §3.4's split **backfill was never written** — offerings are created lazily, legacy enrollments keep `course_offering_id = null`, and the public site still reads legacy `courses.seats`/`enrollment_deadline`. Backfill is mandatory before first real use (see ROADMAP §3.4 as-built note). |
 | 2.1–2.5 activities | Yes. Four patterns, bank, assessment player, review, session polish. Class quizzes/assignments migrate onto the same engine. Unified gradebook via `GradeItemContract`. | Matching Courses/Progress tests + `LegacyAssessmentMigrationTest` + `UnifiedGradebookTest`. | Quiz/assignment migration walked **#104**. Unified gradebook walked this PR. Rest of 2.x still UNVERIFIED. | **Phase 2 audit (2026-08-27):** scoring covers all four patterns (teacher-marked short-circuits to review); review loop + standards-tied question bank verified; rule 6 holds behaviourally. **Deviations:** `Courses/Components/` was never created — Arabic/Quran code lives in `Courses/Models`+`Actions`, so rule 3's Components clause guards an empty set (correction point: Phase F, which creates `Components/Quran` and moves Arabic in the same slice — FQCN moves need morph-map + baseline updates together). Spec §43 `student_submissions`/`teacher_feedback` replaced by attempt `answers` json + review fields (recorded, fine). See ROADMAP §2a as-built notes. |
 | Arabic A.1–A.3 | Yes. Letters/harakas, skill tag, reports. | `ArabicReferenceTest`, `ArabicSkillActivityTest`, `ArabicSkillReportTest`. | UNVERIFIED. | No AI (rule 8). **Audited 2026-08-27: PASS** — tables + `NormalizeTextAnswerAction` (spec normalization) + reports verified; skill metadata rides the four activity patterns (placement caveat = Phase 2 Components note). |
 | Qur’an A.1–A.4 | Yes. Read actions, recitation metadata, mapping, dual-write **off**. | Matching Courses/Offerings tests. | UNVERIFIED. | No Hifz dashboard change. `QURAN_HALAQA_DUAL_WRITE` default false. **Audited 2026-08-27: PASS** — rule 11 held (no parallel Quran source tables; reads via `QuranReferenceReader` contract, Hifz implements as owner; `quran_translations` is planned new data, not duplication); mapping tables morph-aliased; dual-write env-flagged default-off per rule 9 with tests. Hifz freeze verified: 3 recent commits are pure additions (read actions/contract impls/bindings), compliant with ADR-021 scope-discipline freeze. |
@@ -4303,6 +4303,131 @@ walk returned a header row and nothing else for circulation, student work and
 pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
+
+## 5dt. A student took a lesson — the learner path, walked at last (2026-09-14)
+
+§5ds reached the screens that **administer** the course engine. This is the
+other side: a student signs in, finds the course they are enrolled on, opens a
+lesson, reads what the teacher published, and marks it complete — and the run
+checks the database recorded it.
+
+**Why it had never been walked: there was nothing to walk.** The local database
+held **zero** course modules, zero lessons, zero content blocks, zero published
+revisions and zero enrolments. And **zero of fifteen students were linked to a
+login**, so `ResolveStudentForUserAction` answered null for the seeded student
+account and the whole learner path was unreachable to anybody walking a seeded
+app — the operator walking staging included.
+
+`SmokeMarkerSeeder::learner()` builds the missing course, and
+`scripts/smoke/learn.mjs` walks it. **7/7 steps pass**, no console or server
+errors:
+
+| step | |
+|---|---|
+| signs in as `student@akuru.edu.mv` | ok |
+| their course is on `/learn` | ok |
+| the course is in the learner catalog | ok |
+| the course page is reachable from `/learn` | `/learn/courses/20` |
+| the course page names the lesson | ok |
+| the lesson shows what was published | `/learn/lessons/8` |
+| marking it complete is accepted | ok |
+
+Verified in the database afterwards: `student_lesson_progress` holds one row,
+`status = completed`, tied to the enrolment, the lesson **and the revision the
+student actually read**.
+
+### Three fixture faults, each of which looked like a defect first
+
+Worth recording, because each cost a diagnosis and the pattern is the same —
+**a fixture written by raw insert bypasses the code that would have made it
+valid:**
+
+1. **`/catalog/offerings` answered HTTP 500** (§5ds). `delivery_mode` is a
+   varchar behind a PHP-enum cast, so the database took `'online'` and the
+   screen threw on read.
+2. **The lesson rendered empty.** The block was inserted raw as
+   `type: 'text', data: {html: …}`, and a `text` block's normalised shape is
+   `{body: …}` — only `rich_text` carries `html`. The player was right. The
+   fixture now goes through **`SaveContentBlockAction`**, so a planted marker
+   cannot have a shape the application would refuse.
+3. **The learner catalog was empty** while `/learn` showed the course. Two
+   different columns say "published": `status`, which the public site reads,
+   and `workflow_status`, which `ListPublishedCoursesAction` filters on.
+
+A fourth was the walk's own shortcut rather than the fixture's: the script
+looked for a lesson link on `/learn` and reported a failure, when the dashboard
+links to the **course**, and the lesson hangs off that. It now follows the route
+a student actually takes.
+
+### What this does and does not license
+
+It proves the round trip — published revision → enrolled student's screen →
+progress recorded against that revision. It says nothing about the outline
+editor, activities, assessments, unlock rules, seats, pinning or the PWA. One
+lesson, one block, one student. The §2 rows keep their UNVERIFIED text for
+everything else.
+
+### Two findings left standing, not fixed here
+
+- **No seed data links a pupil to a login.** The marker seeder now links one,
+  on the `makeStaffProfile()` precedent, and says so in the console. The real
+  fix belongs in the demo seeders, and it matters beyond this walk: anybody
+  exploring a seeded app as a student hits the same wall.
+- **A course enrolment still requires the legacy `student_id`.**
+  `course_enrollments.student_id` is NOT NULL and points at
+  `registration_students`, which a seeded database has **none** of, so no
+  People-side pupil could be enrolled on anything without creating a legacy row
+  first. The seeder creates one, as the real registration flow does. This is
+  the concrete shape of the Deploy 3 cleanup the owner list has been carrying.
+
+## 5ds. The sweep reached the course engine for the first time (2026-09-14)
+
+**Twenty screens had markers planted for them and every one was S-track.** That
+is why those §2 rows moved while 1A, 1B, 2, Arabic A and Qur'an A stayed
+UNVERIFIED: the course engine — the larger half of the product, and the half
+the public funnel sells — had **never had a marker planted in it at all**.
+
+Five more screens now do: `catalog/courses`, `catalog/glossary`,
+`catalog/offerings`, `catalog/levels`, `catalog/audiences`.
+
+**Why a marker and not "does it show rows".** A seeded database already has
+courses, levels and audiences, so a sweep asking whether the page shows
+*something* would have passed on all three and proved nothing about whether
+*this* row reaches the screen. Every marker is a distinctive `SMOKE-` string,
+same as the S-track.
+
+### It found a 500 on its first run, and the 500 was mine
+
+`/en/catalog/offerings` answered **HTTP 500**. `course_offerings.delivery_mode`
+is a **varchar** carrying a PHP-enum cast, so the database accepted the
+`'online'` my fixture wrote, and the screen then threw
+*"online is not a valid backing value for DeliveryMode"* on read.
+
+A defect in the fixture, not the page — checked before it was written up as
+one. Two things are worth keeping from it:
+
+- **The marker earned its place immediately.** Five minutes into the C-track's
+  first sweep, something went red. It happened to be my row, but a page that
+  500s on one bad row is exactly the class of failure this sweep exists to
+  catch, and nothing else in the suite would have shown it.
+- **The column is a varchar behind an enum cast**, so the database will accept
+  any string and the screen will 500 on it. Not fixed here and not filed as a
+  defect — no code path writes an invalid mode — but it is the reason a
+  hand-written row can take a screen down.
+
+**25/25 screens now show what was planted for them.**
+
+### What moved in §2, and what deliberately did not
+
+Two rows gained a citation: **1A.2–1A.7** (catalog, glossary, levels and
+audiences show their planted rows) and **1B.1–1B.6** (offerings does).
+
+Both rows keep the rest of their UNVERIFIED text, and the wording says which
+half moved. What this proves is that **the admin catalog screens read what was
+written** — it says nothing about the outline editor, the blocks, `/learn`, the
+learner path, pinning, seats, sessions, unlock or the PWA. Those stay
+UNVERIFIED because nothing has walked them, and writing anything stronger here
+would be the overclaim this document has already had to correct eighteen times.
 
 ## 5dr. The one recovery offered to a family who may have just paid was a dead end (2026-09-14)
 
