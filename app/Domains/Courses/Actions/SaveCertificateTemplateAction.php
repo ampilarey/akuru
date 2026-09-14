@@ -4,6 +4,7 @@ namespace App\Domains\Courses\Actions;
 
 use App\Domains\Courses\Enums\CertificateKind;
 use App\Domains\Courses\Models\CertificateTemplate;
+use App\Support\Html\HtmlSanitizer;
 use Illuminate\Validation\ValidationException;
 
 class SaveCertificateTemplateAction
@@ -45,6 +46,26 @@ class SaveCertificateTemplateAction
         return $template->refresh();
     }
 
+    /**
+     * The certificate body, sanitised through the shared allowlist.
+     *
+     * This was `strip_tags($body, '<p><br><strong><em><h1><h2><h3><span>')`,
+     * which is the exact mistake `ValidateContentBlockDataAction` documents in
+     * a comment written when it was fixed there: **`strip_tags` removes
+     * disallowed tags and keeps every attribute on the ones it allows.** So
+     * `<p onmouseover="…">` and `<h1 onclick="…">` came through untouched, and
+     * `documents/course-certificate.blade.php` renders the stored value with
+     * `{!! $body_html !!}` into an HTML document (ADR-012 — HTML is the
+     * production output, not PDF).
+     *
+     * Certificate templates are writable by `course_creator`, the lowest
+     * content-authoring role, and a certificate is opened by admins, students
+     * and families. That is a privilege escalation, not a formatting bug.
+     *
+     * `<span>` is no longer in the allowlist and is unwrapped rather than
+     * dropped, so its text survives. Nothing is lost: a `<span>` is only ever
+     * useful with `style` or `class`, and the sanitiser strips both.
+     */
     private function sanitizedBody(mixed $html): ?string
     {
         $body = trim((string) ($html ?? ''));
@@ -52,7 +73,7 @@ class SaveCertificateTemplateAction
             return null;
         }
 
-        $clean = strip_tags($body, '<p><br><strong><em><h1><h2><h3><span>');
+        $clean = app(HtmlSanitizer::class)->clean($body, HtmlSanitizer::PROFILE_CMS);
 
         return $clean === '' ? null : $clean;
     }
