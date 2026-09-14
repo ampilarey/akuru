@@ -425,6 +425,39 @@ and payments will wait for the signed webhook. That is the correct direction
 under rule 12 — the webhook is the authority — but it is a behaviour change
 worth watching on the first real transaction.
 
+### Any signed-in session could take an account over permanently — **fixed (2026-09-14)**
+
+**Severity: P1 — account takeover.** Found by auditing the
+`unguarded_write_routes` baseline's own reasons, entry by entry.
+
+`POST account/set-password` changed the current user's password **without
+asking for the old one**, while `ProfileController` requires `current_password`
+on the app's other password route. One door locked, the other not.
+
+The dashboard only offers that screen to an account with no usable password.
+The **route** offered it to everybody — SPEC §44/§45 again, *"do not rely only
+on frontend button hiding"*, the same class as the entry already in this file
+about a route that relied on a hidden button.
+
+So session access — a stolen cookie, an unlocked shared device, an XSS
+anywhere — became **permanent takeover**: the attacker sets a new password
+having never known the old one, and the owner is locked out.
+
+**Fixed** — `current_password` is required unless `force_password_change` is
+set, which is the genuine "no usable password" state:
+`AccountResolverService` creates OTP-only accounts with a random 40-character
+hash nobody holds and sets the flag. Those accounts cannot supply a current
+password and are not asked for one. The form renders the field exactly when
+the validation will demand it, so the screen never becomes uncompletable.
+
+**And the banner that offers it never rendered.** `$hasPassword` was
+`! empty($user->password)`; `users.password` is NOT NULL and OTP accounts
+carry that random hash, so it was **always true**. The "Set a password for
+easier login" prompt was dead UI — the feature was unreachable through its own
+entry point, which is presumably why nobody noticed the route was open. Both
+halves came from the same root: `force_password_change` is the flag that
+records the state, and neither the banner nor the route consulted it.
+
 ## Top five (remaining)
 
 1. **Staging staff login** — seed passwords 302 back to login; no SSH from this environment. Blocks any judgement that `test.akuru.edu.mv` is a school.

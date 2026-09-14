@@ -20,6 +20,18 @@
 
             <form method="POST" action="{{ route('account.set-password.store') }}">
                 @csrf
+                {{-- Asked for only when the account already has a password the
+                     owner knows. An OTP-only account carries a random hash
+                     nobody has, so demanding it there would lock the very
+                     people this screen exists for out of it. --}}
+                @if($needsCurrentPassword ?? true)
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Current password <span class="text-red-500">*</span></label>
+                    <input type="password" name="current_password" autocomplete="current-password" required
+                           class="w-full rounded-md border-gray-300 shadow-sm focus:border-brandMaroon-500 focus:ring-brandMaroon-500">
+                    <p class="text-xs text-gray-500 mt-1">Changing a password you already have needs the old one.</p>
+                </div>
+                @endif
                 <div class="mb-4">
                     <label class="block text-sm font-medium text-gray-700 mb-1">New password <span class="text-red-500">*</span></label>
                     <input type="password" name="password" autocomplete="new-password" required minlength="8"
