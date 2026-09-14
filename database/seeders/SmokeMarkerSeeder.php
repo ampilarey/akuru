@@ -4,6 +4,9 @@ namespace Database\Seeders;
 
 use App\Domains\Academics\Models\AcademicYear;
 use App\Domains\Academics\Models\ClassRoom;
+use App\Domains\Courses\Actions\PublishLessonAction;
+use App\Domains\Courses\Actions\SaveContentBlockAction;
+use App\Domains\Courses\Models\Lesson;
 use App\Domains\People\Models\StaffProfile;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
@@ -58,6 +61,7 @@ class SmokeMarkerSeeder extends Seeder
         $this->standards();
         $this->awards($year, $studentId);
         $this->catalog();
+        $this->learner($admin);
         $this->recruitment();
         $this->requests($admin);
         $this->finance($year, $studentId, $admin);
@@ -238,7 +242,27 @@ class SmokeMarkerSeeder extends Seeder
         $categoryId = (int) DB::table('course_categories')->orderBy('id')->value('id');
 
         DB::table('course_offerings')->where('title', 'SMOKE-Offering')->delete();
-        DB::table('courses')->where('title', 'SMOKE-Course')->delete();
+
+        // The course is this seeder's own row, so it clears what hangs off it
+        // before removing it. `learner()` plants a module, a lesson, a content
+        // block, a published revision and an enrolment against this course, and
+        // the second run of the seeder failed on the foreign key until this was
+        // here — "every insert deletes its own marker first" has to mean the
+        // marker *and its children*.
+        $staleCourseIds = DB::table('courses')->where('title', 'SMOKE-Course')->pluck('id');
+
+        if ($staleCourseIds->isNotEmpty()) {
+            $staleLessonIds = DB::table('lessons')->whereIn('course_id', $staleCourseIds)->pluck('id');
+
+            DB::table('course_enrollments')->whereIn('course_id', $staleCourseIds)->delete();
+            DB::table('content_blocks')->whereIn('course_id', $staleCourseIds)->delete();
+            DB::table('lessons')->whereIn('id', $staleLessonIds)->update(['current_revision_id' => null]);
+            DB::table('lesson_revisions')->whereIn('lesson_id', $staleLessonIds)->delete();
+            DB::table('lessons')->whereIn('id', $staleLessonIds)->delete();
+            DB::table('course_modules')->whereIn('course_id', $staleCourseIds)->delete();
+        }
+
+        DB::table('courses')->whereIn('id', $staleCourseIds)->delete();
 
         $courseId = DB::table('courses')->insertGetId([
             'course_category_id' => $categoryId,
@@ -248,6 +272,13 @@ class SmokeMarkerSeeder extends Seeder
             'body' => 'Planted by SmokeMarkerSeeder.',
             'cover_image' => '',
             'status' => 'open',
+            // Two different columns say "published" here. `status` is what the
+            // public site reads; `workflow_status` is what the **learner**
+            // catalog filters on (`ListPublishedCoursesAction`). Setting only
+            // the first left /learn/catalog empty while /learn showed the
+            // course, which reads like a broken catalog until you find the
+            // second column.
+            'workflow_status' => 'published',
             'created_at' => now(), 'updated_at' => now(),
         ]);
 
@@ -284,6 +315,159 @@ class SmokeMarkerSeeder extends Seeder
         DB::table('audiences')->where('name_en', 'SMOKE-Audience')->delete();
         DB::table('audiences')->insert([
             'name_en' => 'SMOKE-Audience', 'slug' => 'smoke-audience', 'sort_order' => 99, 'active' => 1,
+            'created_at' => now(), 'updated_at' => now(),
+        ]);
+    }
+
+    /**
+     * A course a student can actually open — the learner path.
+     *
+     * `$this->catalog()` plants rows in the screens that *administer* the
+     * course engine. This plants what a **student** sees, which nothing ever
+     * had: before this the local database held **zero** modules, zero lessons,
+     * zero content blocks, zero published revisions and zero enrolments. The
+     * §2 rows for the outline, the blocks and `/learn` could not have been
+     * walked, because there was nothing to walk.
+     *
+     * The lesson is published through `PublishLessonAction` rather than by
+     * writing `snapshot_json` here. The player reads the **published
+     * revision**, not the live blocks, so a hand-written snapshot would verify
+     * the player against a fixture the application could never have produced —
+     * and would skip the publish path entirely, which is the half most likely
+     * to be wrong.
+     */
+    private function learner(?object $admin): void
+    {
+        $courseId = (int) DB::table('courses')->where('title', 'SMOKE-Course')->value('id');
+
+        if ($courseId === 0) {
+            return;
+        }
+
+        DB::table('content_blocks')->where('course_id', $courseId)->delete();
+        DB::table('lesson_revisions')->whereIn(
+            'lesson_id',
+            DB::table('lessons')->where('course_id', $courseId)->pluck('id')
+        )->delete();
+        DB::table('lessons')->where('course_id', $courseId)->delete();
+        DB::table('course_modules')->where('course_id', $courseId)->delete();
+
+        $moduleId = DB::table('course_modules')->insertGetId([
+            'course_id' => $courseId, 'title' => 'SMOKE-Module', 'position' => 1,
+            'status' => 'published', 'created_by' => $admin?->id,
+            'created_at' => now(), 'updated_at' => now(),
+        ]);
+
+        $lessonId = DB::table('lessons')->insertGetId([
+            'course_id' => $courseId, 'course_module_id' => $moduleId,
+            'title' => 'SMOKE-Lesson', 'slug' => 'smoke-lesson', 'position' => 1,
+            'status' => 'draft', 'created_by' => $admin?->id,
+            'created_at' => now(), 'updated_at' => now(),
+        ]);
+
+        // Written through the authoring action, not inserted raw. The first
+        // version of this did a raw insert with `data: {html: ...}` on a
+        // `text` block, and the player showed an empty lesson — because a
+        // `text` block's normalised shape is `{body: ...}` and only
+        // `rich_text` carries `html`. That looked exactly like a player defect
+        // for as long as it took to read the validator.
+        //
+        // `SaveContentBlockAction` runs `ValidateContentBlockDataAction`, so a
+        // marker planted here cannot have a shape the application would refuse
+        // — which is the whole point of a fixture that is meant to prove the
+        // screen works.
+        app(SaveContentBlockAction::class)->execute([
+            'lesson_id' => $lessonId,
+            'type' => 'text',
+            'position' => 1,
+            'title' => 'SMOKE-Block',
+            'data' => ['body' => 'SMOKE-Lesson-Body'],
+            'is_required' => true,
+            'created_by' => $admin?->id,
+        ]);
+
+        app(PublishLessonAction::class)->execute(Lesson::query()->findOrFail($lessonId), $admin?->id);
+
+        // The enrolment the player checks. `unified_student_id` is what
+        // AuthorizeLessonAccessAction matches on, resolved from the student
+        // linked to the seeded student login.
+        $studentUserId = (int) DB::table('users')->where('email', 'student@akuru.edu.mv')->value('id');
+        $unifiedStudentId = (int) DB::table('students')->where('user_id', $studentUserId)->value('id');
+
+        if ($unifiedStudentId === 0 && $studentUserId > 0) {
+            // **Nothing links a pupil to a login in the seeded data** — all
+            // fifteen students had `user_id` null, so
+            // `ResolveStudentForUserAction` answered null for the student
+            // login and the entire learner path was unreachable to anybody
+            // walking a seeded app. That includes the operator walking
+            // staging, which is the one gate everything else waits on.
+            //
+            // Linked rather than invented, for the same reason
+            // `makeStaffProfile()` attaches to the seeded teacher: the pupil
+            // who opens the lesson should be somebody the rest of the app
+            // already knows about, on a class roster, with attendance and a
+            // report card.
+            $unifiedStudentId = (int) DB::table('students')
+                ->whereNull('user_id')
+                ->orderBy('id')
+                ->value('id');
+
+            if ($unifiedStudentId > 0) {
+                DB::table('students')->where('id', $unifiedStudentId)->update([
+                    'user_id' => $studentUserId,
+                    'updated_at' => now(),
+                ]);
+                $this->command?->info("Linked student #{$unifiedStudentId} to student@akuru.edu.mv — nothing else had.");
+            }
+        }
+
+        if ($unifiedStudentId === 0) {
+            $this->command?->warn('No student row for student@akuru.edu.mv — the learner enrolment was skipped.');
+
+            return;
+        }
+
+        DB::table('course_enrollments')
+            ->where('course_id', $courseId)
+            ->where('unified_student_id', $unifiedStudentId)
+            ->delete();
+
+        // `course_enrollments.student_id` is **NOT NULL** and still points at
+        // the legacy `registration_students` row, while `unified_student_id`
+        // is the People one. That is the S1.1 dual-write era showing: an
+        // enrolment cannot exist for a People-side pupil alone, and a seeded
+        // database has **zero** `registration_students`, so there was no pupil
+        // anywhere who could be enrolled on anything.
+        //
+        // The legacy row is created here rather than the column forced,
+        // because that is what the real registration flow does. It is also the
+        // concrete shape of the Deploy 3 cleanup that STATUS has been carrying
+        // as a proposal: until `student_id` can go, this pairing is the only
+        // way to enrol anybody.
+        $pupil = DB::table('students')->where('id', $unifiedStudentId)->first();
+        $legacyId = (int) ($pupil->legacy_registration_student_id ?? 0);
+
+        if ($legacyId === 0) {
+            $legacyId = (int) DB::table('registration_students')->insertGetId([
+                'first_name' => $pupil->first_name,
+                'last_name' => $pupil->last_name,
+                'dob' => $pupil->date_of_birth ?? '2012-01-01',
+                'created_at' => now(), 'updated_at' => now(),
+            ]);
+
+            DB::table('students')->where('id', $unifiedStudentId)->update([
+                'legacy_registration_student_id' => $legacyId,
+                'updated_at' => now(),
+            ]);
+        }
+
+        DB::table('course_enrollments')->insert([
+            'course_id' => $courseId,
+            'student_id' => $legacyId,
+            'unified_student_id' => $unifiedStudentId,
+            'status' => 'active',
+            'enrolled_at' => now(),
+            'created_by_user_id' => $admin?->id,
             'created_at' => now(), 'updated_at' => now(),
         ]);
     }
