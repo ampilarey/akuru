@@ -37,6 +37,28 @@ class CheckoutController extends Controller
     /**
      * Start payment: validate terms acceptance, create registration + payment, redirect to BML.
      */
+    /**
+     * The registration students this person may check out for: themselves and
+     * their own children. Taken from the relations the rest of the app already
+     * uses, so this introduces no new policy.
+     *
+     * @return list<int>
+     */
+    private function registrationStudentIdsFor(?\App\Domains\Identity\Models\User $user): array
+    {
+        if ($user === null) {
+            return [];
+        }
+
+        $ids = $user->guardianStudents()->pluck('registration_students.id')->all();
+
+        if ($own = $user->registrationStudentProfile()->value('id')) {
+            $ids[] = $own;
+        }
+
+        return array_values(array_unique(array_map('intval', $ids)));
+    }
+
     public function start(Request $request, Course $course)
     {
         $request->validate([
@@ -54,14 +76,39 @@ class CheckoutController extends Controller
         }
 
         $user = $request->user();
+
+        // **Scoped to the payer, not merely to the course.**
+        //
+        // `enrollment_id` was checked against `$course->id` and nothing else,
+        // and the transaction below does
+        // `$enrollment->update(['payment_status' => 'pending', 'payment_id' => ...])`.
+        // So a signed-in visitor could pass a stranger's enrolment id on the
+        // same course and repoint that enrolment's payment at their own —
+        // leaving somebody else mid-checkout attached to a payment they do not
+        // control, and pending if it was abandoned. Enrolment ids are
+        // sequential integers.
+        //
+        // `student_id` was `exists:registration_students,id`, which says the
+        // row exists and nothing about whose it is.
+        //
+        // The set of students a person may act for is the app's own rule, not
+        // a new one: themselves (`registrationStudentProfile`) and their
+        // children (`guardianStudents`).
+        $mine = $this->registrationStudentIdsFor($user);
+
         $studentId = $request->input('student_id');
+        if ($studentId !== null && ! in_array((int) $studentId, $mine, true)) {
+            abort(403);
+        }
+
         $enrollmentId = $request->input('enrollment_id');
 
-        $payment = DB::transaction(function () use ($course, $user, $studentId, $enrollmentId, $fee) {
+        $payment = DB::transaction(function () use ($course, $user, $studentId, $enrollmentId, $fee, $mine) {
             $enrollment = null;
             if ($enrollmentId) {
                 $enrollment = CourseEnrollment::where('id', $enrollmentId)
                     ->where('course_id', $course->id)
+                    ->whereIn('student_id', $mine)
                     ->firstOrFail();
             }
             if (! $enrollment && $studentId) {

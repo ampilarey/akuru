@@ -4278,6 +4278,50 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5dd. Sweeping for the shape itself (2026-09-14)
+
+Most of the day's findings are one shape: **an identifier taken from the
+request where the owning record was available.** §5cu (a transaction id),
+§5cz (a user id), §5dc (a document id). So rather than wait for the next one,
+a sweep for the shape.
+
+131 controller sites read an `*_id` from the request, which is far too many to
+gate — most are list filters (`academic_year_id`, `class_id`) and entirely
+proper. The dangerous subset is narrower and mechanical: **a method that binds
+a route model *and* reads an id from the request**, which is §5dc exactly.
+That is four methods.
+
+| Method | Verdict |
+|---|---|
+| `ClassDirectoryController::update` | the id is the **new value** being assigned, not a lookup. Fine. |
+| `PaymentController::returnByPayment` | the untrusted hint from §5cu, safe since the identity check. |
+| `CourseController::update` (public site) | sets a syllabus media file on a course; admin-level content. Fine. |
+| **`CheckoutController::start`** | **the defect.** |
+
+`enrollment_id` was checked against the bound course and nothing else, and the
+transaction repoints that enrolment: `payment_status => 'pending'` and
+`payment_id` at the caller's own payment. A signed-in visitor could take a
+stranger's enrolment id on the same course — sequential integers — and leave
+that family mid-checkout attached to a payment they do not control, pending
+forever if it was abandoned. `student_id` was `exists:registration_students,id`,
+which says the row exists and nothing about whose it is.
+
+Scoped to what the app already defines as a person's own students:
+`registrationStudentProfile` and `guardianStudents`. **No new policy** — the
+rule was already in the model; nothing had asked it here.
+
+P2 rather than P1: nothing about the other family is disclosed, the cost is
+disruption. Two of the three cases fail against the old code.
+
+### Two false starts, both mine
+
+The happy-path case failed twice before it passed, and neither time was the
+app's fault: first the route is `payments/course/{course}/start` rather than
+the `courses/{course}/checkout/start` I assumed, and then `Course` binds by
+**slug**, not id, so the id gave a 404. Both were caught only because the
+legitimate case is written alongside the refusals — a 404 makes "refused"
+tests pass just as happily as a working guard does.
+
 ## 5dc. The same question, on the path the gate could not see (2026-09-14)
 
 Turning from writes to reads: who can see whose records.
