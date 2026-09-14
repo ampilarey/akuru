@@ -4278,6 +4278,45 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5dg. The seventeenth time, and I quoted it (2026-09-14)
+
+CLAUDE.md on the EduPage plan: *"verify every row against the code before
+starting a slice — it has been wrong 16 times across two audits, always
+recording as missing work that already shipped."* The document repeats the
+warning itself: *"Do not quote a total from this document without re-checking
+the slice against the codebase first. That is exactly how the first version
+went wrong."*
+
+**It was wrong a seventeenth time, and I quoted it without re-checking.** Twice,
+to the owner, as the reason to ask for a decision.
+
+The claim — *"the family-facing core is now just E1 + E2 + E3"* — sat in the
+plan and had been copied into STATUS.md's closing section. It is contradicted
+by **the plan's own corrections table a few hundred lines above it**, which
+already records E1's family half, E2 and E3 as shipped.
+
+Verified against the code rather than either document:
+
+| | Proof |
+|---|---|
+| E1 | `ComposePortalHomeAction`; routes `portal.home` and `portal.teacher` (the teacher half was E1b); `PortalHomeTest`, `TeacherHomeTest` |
+| E2 | `Message`, `MessageParticipant`, `MessagePoll`; six `portal.messages.*` routes; `MessageThreadTest`, `MessagePollTest`, `PortalMessagesPageTest` |
+| E3 | `PortalHomeworkController`; `portal.homework` + `portal.homework.tick`; `PortalHomeworkPageTest` |
+
+Both documents corrected, and
+`tests/Feature/Docs/EduPageRemainingIsHonestTest.php` now pins the routes that
+disprove the claim — so if somebody deletes the portal home, the test fails
+rather than the estimate quietly becoming right again. It also asserts neither
+document carries the sentence.
+
+**What it cannot do** is catch a differently-worded wrong claim, and I would
+rather say that than imply the document is now trustworthy. What it stops is
+*this* claim, which had already survived two audits looking for exactly this
+failure.
+
+The correction that matters for planning: **no decision blocks the family-facing
+core, because there is nothing left to start.**
+
 ## 5df. Indexing what is queried, and leaving the rest alone (2026-09-14)
 
 A change of gear, and something go-live needs that requires no decision from
@@ -11972,8 +12011,15 @@ browser walk and its own PR. The plan's gating notes were respected in design
 rather than used to defer: E18 carries `source` so a card reader is a binding
 and not a rewrite, E19 fails closed on every question the policy has not
 answered, and E16 is named Circulation so it never merges with the L-track
-Library. **The family-facing core that remains is E1 + E2 + E3**, and only
-E1's teachers-or-not decision blocks starting.
+Library. **Corrected 2026-09-14: the family-facing core ships.** The sentence
+that used to close this section named E1, E2 and E3 as the remaining work and
+said E1's teachers-or-not decision blocked starting. All three are built:
+`portal.home` and `portal.teacher` (E1, both halves), `portal.messages.*` (E2,
+six routes), `portal.homework` and its tick (E3), each with feature tests. It
+had been copied from `docs/EDUPAGE_FEATURES_PLAN.md`, where it contradicted
+that document's own corrections table — the seventeenth time it has recorded
+shipped work as missing. **No decision blocks anything here, because there is
+nothing left to start.** See §5dg.
 
 **Operator:** apply branch protection (`docs/BRANCH_PROTECTION.md`). Confirm or reject `docs/migrations/s11-deploy-3-cleanup-proposal.md`.
 
