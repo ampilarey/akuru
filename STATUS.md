@@ -4232,14 +4232,68 @@ Worth saying what the ids are doing there: they are read from the database at
 run time, not hardcoded, so the check follows the seed rather than rotting the
 first time somebody re-seeds.
 
+### Then the records that were missing, and the trap they sprang
+
+The note above said the sensitive tables were empty and that planting them was
+the next thing rather than a clean bill of health. Planting them turned up no
+defect in the app and one in the probe — which is the more useful of the two.
+
+`SmokeMarkerSeeder` now plants a **published report card with a real document**
+for two different children, and two message threads, one of which the guardian
+is deliberately not in.
+
+The first attempt planted report cards with `document_id` null, and the probe
+reported a tidy **404 on another family's card**. That looked like the rule
+working. It was not.
+`DownloadPublishedReportCardAction` checks the document *before* it checks whose
+child it is:
+
+```php
+if ($card->status !== ReportCardStatus::Published || ! $card->document_id) {
+    throw new HttpException(404, 'Report card is not available.');
+}
+// … the "is this your child" check is below this line
+```
+
+So the route refused **everybody**, the child's own mother included, and the
+probe called that a pass.
+
+**A refusal only proves a rule if the same request succeeds for the person
+entitled to it.** The script is now built on pairs: own record and the
+equivalent one belonging to somebody else. A pair whose own half fails is
+reported as *inconclusive* and counted as a problem, never as a pass.
+
+With documents attached, the pair is real:
+
+```
+  parent   ok   report card:    own 200, theirs 403
+  parent   ok   message thread: own 200, theirs 403
+  parent   403  /en/people/students/2, /en/students/2, …/edit, …/quran-progress (refused)
+  parent   403  /en/exams/report-cards/2/download (refused)
+
+Every family saw their own records, and nobody else's.
+```
+
+### A fixture gap worth naming
+
+The pairs first ran for the student role too and came back inconclusive twice.
+That was the probe's mistake — those records belong to the **guardian's** family
+— but chasing it turned up something real: **the seeded `student@akuru.edu.mv`
+has no `students` row at all.** It is a login with nothing behind it, which is
+why every person-scoped record refuses it.
+
+The app is behaving correctly. The fixture is not a student. It is the same
+shape as the `teachers` row ≠ Spatie `teacher` role gap already recorded in §2,
+which `EnsureTeacherRowAction` mitigates for seeds — and nobody has done the
+equivalent for students. Pairs are now scoped to the role that owns them, and
+the student is swept for leakage only, which is the question it can answer.
+
 ### What it is not
 
-Two roles and one guardian. A school with siblings across families, or a
-guardian with children in different classes, would exercise more of the pivot
-than this does. And the sensitive tables that would make the richest targets —
-report cards, payslips, receipts, message threads — are **empty in the default
-seed**, so those routes answer 404 rather than proving anything. That is the
-next thing to plant, not a clean bill of health for them.
+One guardian. A school with siblings across families, or a guardian with
+children in different classes, would exercise more of the pivot than this does.
+Payslips and receipts are still unplanted — payroll ships flag-off and the
+receipt needs an invoice — so those routes remain untested rather than clean.
 
 ## 5cp. The check that was missing (2026-09-14)
 

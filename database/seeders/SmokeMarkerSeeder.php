@@ -7,6 +7,7 @@ use App\Domains\Academics\Models\ClassRoom;
 use App\Domains\People\Models\StaffProfile;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 /**
  * One distinctive row per slice that `STATUS.md` §2 records as **UNVERIFIED**,
@@ -61,6 +62,7 @@ class SmokeMarkerSeeder extends Seeder
         $this->finance($year, $studentId, $admin);
         $this->consent($studentId, $admin);
         $this->ownData($year, $studentId, $admin);
+        $this->sensitiveRecords($year, $studentId, $admin);
 
         // A default `migrate:fresh --seed` leaves `staff_profiles` empty, and
         // this used to skip the whole HR block in silence — so the sweep
@@ -237,6 +239,120 @@ class SmokeMarkerSeeder extends Seeder
                 'parent_visible' => 1, 'requires_followup' => 0,
                 'created_at' => now(), 'updated_at' => now(),
             ]);
+        }
+    }
+
+    /**
+     * The records a family would mind most: a report card, a receipt, a
+     * private message thread — one belonging to the guardian's own child and
+     * one to somebody else's.
+     *
+     * These tables are **empty in the default seed**, which is why
+     * `own-data.mjs` could not probe them: a route asked for a row that does
+     * not exist answers 404, and a 404 proves nothing about who may read it.
+     * An empty table is the easiest way for a privacy check to look clean.
+     *
+     * Payroll is included for the same reason and is the sharpest case — a
+     * payslip is the one record in this system that an ordinary member of staff
+     * must not be able to read about a colleague.
+     */
+    private function sensitiveRecords(AcademicYear $year, int $studentId, ?object $admin): void
+    {
+        $other = (int) DB::table('students')->where('id', '!=', $studentId)->value('id');
+        $term = (int) DB::table('terms')->where('academic_year_id', $year->id)->value('id');
+        $class = (int) DB::table('class_student')->where('student_id', $studentId)->value('class_id');
+
+        if ($term > 0 && $class > 0) {
+            $templateId = DB::table('report_card_templates')->where('name', 'SMOKE-Template')->value('id')
+                ?? DB::table('report_card_templates')->insertGetId([
+                    'name' => 'SMOKE-Template',
+                    'sections' => json_encode(['grades_table']),
+                    'active' => 1, 'created_at' => now(), 'updated_at' => now(),
+                ]);
+
+            foreach ([$studentId, $other] as $id) {
+                if ($id <= 0) {
+                    continue;
+                }
+
+                // **With a document.** `DownloadPublishedReportCardAction`
+                // checks `document_id` *before* it checks whose child this is,
+                // so a card with no document refuses everybody — and a privacy
+                // probe against one proves nothing at all. The first version
+                // of this seeder planted cards without documents and the probe
+                // reported a clean 404 for another family's card, which was
+                // the route declining to answer rather than the rule working.
+                $path = 'smoke/report-card-'.$id.'.html';
+                Storage::disk('local')->put($path, '<p>SMOKE report card for student '.$id.'</p>');
+
+                $documentId = DB::table('documents')->where('media_path', $path)->value('id')
+                    ?? DB::table('documents')->insertGetId([
+                        'documentable_type' => 'report_card', 'documentable_id' => $id,
+                        'media_path' => $path, 'document_type' => 'other',
+                        'title' => 'SMOKE report card', 'uploaded_by' => $admin?->id,
+                        'created_at' => now(), 'updated_at' => now(),
+                    ]);
+
+                DB::table('report_cards')->updateOrInsert(
+                    ['student_id' => $id, 'term_id' => $term],
+                    [
+                        'class_id' => $class, 'template_id' => $templateId, 'status' => 'published',
+                        'document_id' => $documentId,
+                        'generated_at' => now(), 'published_at' => now(),
+                        'created_at' => now(), 'updated_at' => now(),
+                    ]
+                );
+            }
+        }
+
+        // A receipt against whichever invoice exists, so the document route has
+        // something real to refuse.
+        $invoiceId = (int) DB::table('invoices')->value('id');
+        if ($invoiceId > 0) {
+            DB::table('receipts')->updateOrInsert(
+                ['receipt_number' => 'SMOKE-RCPT-1'],
+                [
+                    'invoice_id' => $invoiceId, 'amount' => 100, 'method' => 'cash',
+                    'received_by' => $admin?->id, 'received_at' => now(),
+                    'created_at' => now(), 'updated_at' => now(),
+                ]
+            );
+        }
+
+        // A thread between staff and one guardian. The other family must not
+        // be able to open it.
+        $guardianUserId = (int) DB::table('user_contacts')
+            ->where('value', 'parent@akuru.edu.mv')->value('user_id');
+
+        if ($guardianUserId > 0 && $admin !== null) {
+            $threadId = DB::table('message_threads')->where('subject', 'SMOKE-Thread')->value('id')
+                ?? DB::table('message_threads')->insertGetId([
+                    'subject' => 'SMOKE-Thread', 'created_by' => $admin->id,
+                    'reply_policy' => 'all', 'last_message_at' => now(),
+                    'created_at' => now(), 'updated_at' => now(),
+                ]);
+
+            foreach ([[$admin->id, 'staff'], [$guardianUserId, 'guardian']] as [$userId, $role]) {
+                DB::table('message_participants')->updateOrInsert(
+                    ['message_thread_id' => $threadId, 'user_id' => $userId],
+                    ['role' => $role, 'created_at' => now(), 'updated_at' => now()]
+                );
+            }
+
+            // And one the guardian is deliberately **not** in. Without it the
+            // only thread in the database is one they are allowed to read, and
+            // "can they open a thread that is not theirs" has nothing to ask.
+            $otherThreadId = DB::table('message_threads')->where('subject', 'SMOKE-Thread-Not-Mine')->value('id')
+                ?? DB::table('message_threads')->insertGetId([
+                    'subject' => 'SMOKE-Thread-Not-Mine', 'created_by' => $admin->id,
+                    'reply_policy' => 'all', 'last_message_at' => now(),
+                    'created_at' => now(), 'updated_at' => now(),
+                ]);
+
+            DB::table('message_participants')->updateOrInsert(
+                ['message_thread_id' => $otherThreadId, 'user_id' => $admin->id],
+                ['role' => 'staff', 'created_at' => now(), 'updated_at' => now()]
+            );
         }
     }
 
