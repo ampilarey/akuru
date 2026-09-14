@@ -188,11 +188,12 @@ grants is **full** rather than scoped to finishing a registration.
 ## What is *not* on this list
 
 The agent-buildable backlog is empty. Of the 24 numbered defects in
-`KNOWN_ISSUES.md`, sixteen are fixed, two are explicitly not defects
+`KNOWN_ISSUES.md`, seventeen are fixed, two are explicitly not defects
 (`left_early`, Vite HMR), and the remainder are the decisions above. The
 EduPage parity track was verified row by row on 2026-09-14: **all 22 rows have
 their code**, and a test now pins that so the plan cannot drift into claiming
 otherwise for an eighteenth time.
 
-Two small code items remain and need nothing from you: the taught-summary /
-plan-topic confusion (#16) and the Blade dashboard counters (#22).
+One small code item remains and needs nothing from you: the Blade dashboard
+counters (#22). The taught-summary / plan-topic confusion (#16) was fixed on
+2026-09-14.

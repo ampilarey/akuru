@@ -133,7 +133,10 @@ it('submits a register, marks the plan topic taught, and rejects a locked log', 
     );
 
     expect($submitted->status)->toBe(LessonLogStatus::Submitted)
-        ->and($submitted->taught_summary)->toBe('Alif Baa')
+        // The title is not copied onto the log: it belongs to the topic, and
+        // the log points at the topic. This used to read 'Alif Baa'.
+        ->and($submitted->taught_summary)->toBeNull()
+        ->and($submitted->plan_topic_id)->toBe($topic->id)
         ->and($submitted->homework)->toBe('Page 3')
         ->and($topic->fresh()->is_completed)->toBeTrue();
 

@@ -43,14 +43,22 @@ class SubmitRegisterAction
             $topic->is_completed = true;
             $topic->save();
 
-            if ($summary === '') {
-                $summary = $topic->title;
+            // The topic's title lives on the topic (rule 11). It used to be
+            // copied into the log whenever the box was left empty, so
+            // re-opening the register showed the teacher a summary they had
+            // never written — which is precisely what taught them to type the
+            // title in themselves (KNOWN_ISSUES #16). A summary that only
+            // repeats the title adds nothing the topic does not already say,
+            // so it is dropped rather than stored twice. Rows written before
+            // this keep their copy; nothing reads the column expecting one.
+            if ($summary !== '' && $this->repeatsTheTitle($summary, (string) $topic->title)) {
+                $summary = '';
             }
         }
 
         $log->fill([
             'plan_topic_id' => $topicId,
-            'taught_summary' => $summary,
+            'taught_summary' => $summary === '' ? null : $summary,
             'homework' => $this->nullableString($data['homework'] ?? null),
             // A due date with no homework is meaningless, so it is dropped
             // rather than left dangling on an empty box.
@@ -93,6 +101,26 @@ class SubmitRegisterAction
                 'status' => 'This register is locked.',
             ]);
         }
+    }
+
+    /**
+     * Whether a typed summary says anything the topic's title does not.
+     *
+     * Deliberately forgiving: a teacher who retypes the title will not
+     * reproduce its spacing or its capitals exactly, and "Sun and moon
+     * letters." is the same answer as "Sun and moon letters". Anything longer
+     * than the title survives untouched — this only drops the echo.
+     */
+    private function repeatsTheTitle(string $summary, string $title): bool
+    {
+        return $this->normalise($summary) === $this->normalise($title);
+    }
+
+    private function normalise(string $value): string
+    {
+        $collapsed = (string) preg_replace('/\s+/u', ' ', trim($value));
+
+        return mb_strtolower(trim($collapsed, " .,:;-\u{2013}\u{2014}"));
     }
 
     private function nullableString(mixed $value): ?string
