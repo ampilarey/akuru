@@ -4278,6 +4278,49 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5de. Two lists meant to agree, with nothing making them (2026-09-14)
+
+The adjacent seam to §5dd: request data written straight into the database.
+Four sites in the whole app, which is a good sign in itself.
+
+`ProfileController` writes `$request->validated()` — exactly the keys the rules
+named, so the two lists cannot drift. Not a problem, not flagged.
+
+The other three are `QuranProgressController`, writing `$request->all()`. **And
+the honest size of this is small**: every field the form uses *is* validated, so
+what slipped through was the three `$fillable` columns the validation never
+mentions — `date_completed`, `last_revision_date`, `revision_count` — writable
+by staff who could already write the row. Filed as hygiene, not a severity.
+
+Worth closing because it does not stay small by itself: the next column added
+to that model becomes writable there the moment it is added, and nothing would
+say so. `WritesUseValidatedDataTest` now fails on `$request->all()` reaching a
+write, and deliberately allows `validated()`.
+
+CLAUDE.md rule 7's freeze has expired by its own terms (§2b, ADR-029), so this
+is ordinary code. It is a correctness fix rather than a refactor: screens,
+routes and behaviour untouched.
+
+### The trap in the rewrite
+
+`create($request->all())` → `create($data)` is **not** always
+behaviour-preserving, and one of the three sites proved it.
+`updateProgress` does:
+
+    $request->merge(['student_id' => $student->id, 'teacher_id' => $teacher->id]);
+    QuranProgress::create($request->all());
+
+Those two ids are in `all()` and **absent from the validated array**, so the
+naive rewrite would have written two nulls and quietly broken the screen. They
+are set on `$data` instead, and the gate's failure message says to look for a
+`merge()` after validation before making this change.
+
+That site is also the best scoped of the three — student from the route
+binding, teacher from the signed-in user — where `store()` and `update()` take
+both from the request body. Noted rather than changed: an admin recording on
+behalf of a teacher is a legitimate use of those screens, and narrowing it is a
+product decision.
+
 ## 5dd. Sweeping for the shape itself (2026-09-14)
 
 Most of the day's findings are one shape: **an identifier taken from the
