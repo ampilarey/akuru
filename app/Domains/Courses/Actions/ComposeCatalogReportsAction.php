@@ -78,10 +78,15 @@ class ComposeCatalogReportsAction
         $rows = collect($completions['rows'] ?? []);
 
         return [
-            // §33 "Total students". Unfiltered on purpose: this is the roll of
-            // the institute, not of a course, and filtering it by course would
-            // make it a different number wearing the same label.
-            'students' => app(CountStudentsAction::class)->execute(),
+            // §33 "Total students". Not filtered by course on purpose: this is
+            // the roll of the institute, not of a course, and narrowing it by
+            // course would make it a different number wearing the same label.
+            //
+            // It *is* filtered by status, which this line used not to be. The
+            // comment said "the roll" while the query counted every row the
+            // table had ever held, so graduated, transferred and withdrawn
+            // pupils were reported as the institute's students.
+            'students' => app(CountStudentsAction::class)->onTheRoll(),
 
             // §33 "Active enrollments". §23's vocabulary: `suspended`,
             // `cancelled` and `rejected` are not active, and a `completed`

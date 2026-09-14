@@ -4304,6 +4304,81 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5dm. "Students" was one word for two numbers, and the dashboard showed the wrong one (2026-09-14)
+
+KNOWN_ISSUES **#22**, the last entry on the agent-buildable list, filed as a
+cosmetic complaint — *"the counters are institute-wide, not Grade 5 A"*.
+Auditing the screen found the numbers were also **wrong**, which outranks
+cosmetics on this document's own severity ladder.
+
+**The defect.** `Student::count()` and `Teacher::count()` count every row. A
+tile headed **Students** included pupils who had graduated, transferred or
+withdrawn, and applicants who had never started; one headed **Teachers**
+included staff whose employment had ended. "28 students" was the number of
+student *records*. `ComposeCatalogReportsAction` (§33) made the same call under
+a comment reading *"this is the roll of the institute"* — the label and the
+query disagreed **in writing**, which is how it survived a read.
+
+**Why not just add a `where`.** Because there are two legitimate questions and
+one of them wants the old answer. The homepage's **students taught** is a
+cumulative claim about the Institute's history; filtering it to today's roll
+would *undersell* every cohort that has finished. So the distinction is named
+instead of applied uniformly:
+
+| method | asked by |
+|---|---|
+| `onTheRoll()` / `teaching()` | supervisor dashboard, §33 catalog totals |
+| `everEnrolled()` / `everEmployed()` | homepage "students taught" |
+
+The vague `CountStudentsAction::execute()` is **deleted** rather than kept as a
+default, so no caller can ask the ambiguous question by accident. Tiles are now
+headed **Students on the roll** and **Teachers on staff**, because "Students"
+is true of either number.
+
+**Found in the same file and fixed with it: eleven values computed and thrown
+away.** The super-admin dashboard queried `total_students`, `total_teachers`,
+`active_quran_students`, `total_assignments`, `total_announcements`,
+`sms_usage_today`, `student_growth`, `quran_progress_stats`, `attendance_rate`,
+`recent_activities` and `sms_gateway_status` on every load and rendered none of
+them. Verified before deleting: the one view that renders this page reads
+twelve `$stats` keys and one `$metrics` key, with no partial, include or
+dynamic lookup.
+
+One was worse than wasted. `getOverallAttendanceRate()` returned a hardcoded
+**85.5** with `// Placeholder` beside it — an invented figure in a variable
+called `attendance_rate`, waiting for somebody to put it on a screen in good
+faith. **It has never been displayed**, and saying otherwise would be the
+overclaim; it is deleted rather than left lying there.
+`getStudentGrowthMetrics()` went with it and was wrong independently:
+`whereMonth` with no `whereYear` counts that month in *every* year, so each
+January it compared January-of-all-time to December-of-all-time.
+
+**Rule 3, incidentally.** Dropping those four helpers removed four cross-domain
+`Models\*` imports from `Portal\DashboardController`; it now asks People's own
+counting actions. Both architecture baselines **shrank** — which is how the
+baseline tests found the change at all: they fail on stale entries as well as
+new ones, so a fix that is not recorded is a failure.
+
+**Five tests** (`CountingPeopleTest`), each asserting the two counts give
+*different* answers on one fixture — a test that only checked the roll would
+pass just as happily if the homepage's claim had been quietly shrunk too.
+Revert-checked: three of the five fail on the old unfiltered count.
+
+**Walked in Chromium (2026-09-14)** against 15 students and 3 teachers with one
+graduate and one terminated teacher planted, so the old code would have read
+15/3:
+
+| screen | result |
+|---|---|
+| `/en/dashboard` as `supervisor@akuru.edu.mv` | **Students on the roll 14**, **Teachers on staff 2** |
+| `/en/dashboard` as `admin@akuru.edu.mv` | every remaining tile renders; no console error, no 5xx |
+
+Full suite **1931 passed**, architecture 60 passed.
+
+**Still an IA decision, deliberately not taken:** whether this screen should be
+class-scoped at all, which is what #22 actually asked. A wrong number is a
+defect; choosing which correct number to show is not.
+
 ## 5dl. The register stopped asking a question it had already answered (2026-09-14)
 
 KNOWN_ISSUES **#16**, the last agent-buildable entry on that list, and a defect

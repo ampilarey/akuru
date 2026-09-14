@@ -59,7 +59,6 @@ return [
     'app/Domains/People/Http/Controllers/StudentDirectoryController.php::validatedStudent' => 56,
     'app/Domains/People/Http/Controllers/TeacherController.php::store' => 75,
     'app/Domains/People/Http/Controllers/TeacherController.php::update' => 70,
-    'app/Domains/Portal/Http/Controllers/DashboardController.php::superAdminDashboard' => 45,
     'app/Domains/Portal/Http/Controllers/PortalAttendanceController.php::index' => 38,
     'app/Domains/Portal/Http/Controllers/PortalHomeController.php::export' => 75,
     'app/Domains/Portal/Http/Controllers/PortalPerformanceController.php::export' => 37,

@@ -8,16 +8,16 @@
     <div class="col-md-4">
         <div class="card">
             <div class="card-body">
-                <h6 class="text-muted mb-1">Students</h6>
-                <p class="h3 mb-0">{{ $stats['total_students'] }}</p>
+                <h6 class="text-muted mb-1">Students on the roll</h6>
+                <p class="h3 mb-0">{{ $stats['students_on_roll'] }}</p>
             </div>
         </div>
     </div>
     <div class="col-md-4">
         <div class="card">
             <div class="card-body">
-                <h6 class="text-muted mb-1">Teachers</h6>
-                <p class="h3 mb-0">{{ $stats['total_teachers'] }}</p>
+                <h6 class="text-muted mb-1">Teachers on staff</h6>
+                <p class="h3 mb-0">{{ $stats['teachers_teaching'] }}</p>
             </div>
         </div>
     </div>

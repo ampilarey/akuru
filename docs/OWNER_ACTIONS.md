@@ -188,12 +188,20 @@ grants is **full** rather than scoped to finishing a registration.
 ## What is *not* on this list
 
 The agent-buildable backlog is empty. Of the 24 numbered defects in
-`KNOWN_ISSUES.md`, seventeen are fixed, two are explicitly not defects
+`KNOWN_ISSUES.md`, **eighteen are fixed**, two are explicitly not defects
 (`left_early`, Vite HMR), and the remainder are the decisions above. The
 EduPage parity track was verified row by row on 2026-09-14: **all 22 rows have
 their code**, and a test now pins that so the plan cannot drift into claiming
 otherwise for an eighteenth time.
 
-One small code item remains and needs nothing from you: the Blade dashboard
-counters (#22). The taught-summary / plan-topic confusion (#16) was fixed on
-2026-09-14.
+Both of the small code items are done: the taught-summary / plan-topic
+confusion (#16) and the dashboard counters (#22), both on 2026-09-14.
+
+**Read "the backlog is empty" carefully.** It means the *known* list is clear,
+not that the code is. Both of those entries were filed as judgement calls about
+intended behaviour and turned out to be defects on inspection, and #22 in
+particular was filed as cosmetic while the numbers on the screen were wrong.
+Every audit run this week has found something in code that had passing tests.
+The right reading is: there is nothing left that somebody has already written
+down — which is the point at which item 7 above, walking the real deployment,
+becomes the only way to find the next thing.

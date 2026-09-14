@@ -101,7 +101,11 @@ class ComposeHomepageTrustAction
         // A tiny computed count reads worse than no number (a hero saying
         // "9 students" undersells) — hold it back until it clears the
         // display floor. A manual override always shows: the operator chose it.
-        $count = app(CountStudentsAction::class)->execute();
+        // "Students taught" is a cumulative claim, so it counts everyone the
+        // Institute has ever enrolled rather than today's roll — a school that
+        // graduated three cohorts has taught them, and saying otherwise every
+        // August would be the wrong kind of modest.
+        $count = app(CountStudentsAction::class)->everEnrolled();
         $floor = $settings->execute('trust.students_min_display', '');
         $minimum = $this->isPresent($floor) ? max((int) $floor, 1) : self::DEFAULT_STUDENTS_MIN_DISPLAY;
 
