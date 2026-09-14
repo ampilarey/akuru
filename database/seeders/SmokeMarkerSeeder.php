@@ -7,6 +7,7 @@ use App\Domains\Academics\Models\ClassRoom;
 use App\Domains\Courses\Actions\PublishLessonAction;
 use App\Domains\Courses\Actions\SaveContentBlockAction;
 use App\Domains\Courses\Models\Lesson;
+use App\Domains\People\Actions\EnsureLegacyStudentForUnifiedAction;
 use App\Domains\People\Models\StaffProfile;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
@@ -444,22 +445,13 @@ class SmokeMarkerSeeder extends Seeder
         // concrete shape of the Deploy 3 cleanup that STATUS has been carrying
         // as a proposal: until `student_id` can go, this pairing is the only
         // way to enrol anybody.
-        $pupil = DB::table('students')->where('id', $unifiedStudentId)->first();
-        $legacyId = (int) ($pupil->legacy_registration_student_id ?? 0);
-
-        if ($legacyId === 0) {
-            $legacyId = (int) DB::table('registration_students')->insertGetId([
-                'first_name' => $pupil->first_name,
-                'last_name' => $pupil->last_name,
-                'dob' => $pupil->date_of_birth ?? '2012-01-01',
-                'created_at' => now(), 'updated_at' => now(),
-            ]);
-
-            DB::table('students')->where('id', $unifiedStudentId)->update([
-                'legacy_registration_student_id' => $legacyId,
-                'updated_at' => now(),
-            ]);
-        }
+        // Through People's own action rather than a hand-rolled insert. The
+        // first version of this built the legacy row here and set the link
+        // itself, duplicating `EnsureLegacyStudentForUnifiedAction`, which
+        // already existed and does it better — it reuses a legacy row already
+        // attached to the same login instead of making a second one. One
+        // definition of "pair a unified pupil with a legacy row" (rule 11).
+        $legacyId = app(EnsureLegacyStudentForUnifiedAction::class)->execute($unifiedStudentId);
 
         DB::table('course_enrollments')->insert([
             'course_id' => $courseId,

@@ -4304,6 +4304,50 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5du. The seeded student login is now somebody (2026-09-14)
+
+§5dt left two findings standing rather than fixed. This closes the first, which
+was the one blocking other people rather than just this session's walk.
+
+**`UserSeeder` creates `student@akuru.edu.mv` and stops.** Two lines above it
+the teacher gets a `teachers` row from `EnsureTeacherRowAction`; the student got
+nothing, and `PilotRehearsalSeeder` then created all fifteen pupils with
+`user_id` **explicitly null**. So `ResolveStudentForUserAction` answered null
+for that login and everything keyed on *which pupil is this?* was unreachable —
+`/learn`, lesson access, a course enrolment, the pupil's own progress.
+
+Nothing failed while it was broken. A seeder that quietly links nobody makes
+the feature look **absent** rather than unseeded, which is the same shape as the
+HR profiles the marker seeder already had to work around — and it is why the
+learner path had never been walked by anyone.
+
+**The fix is one line where the pupils are made**, plus the care around it: the
+login attaches to the **first pilot pupil**, somebody the rest of the seed
+already knows — on the class roster, with attendance, marks and a guardian —
+rather than a child invented for the purpose. Re-running the seeder cannot move
+the login to a second pupil, and that is asserted rather than assumed.
+
+**Proved from nothing, which is the actual claim:** `migrate:fresh --seed`,
+then the marker seeder, then the walk — **7/7 steps**, and the full sweep still
+**25/25**. Before this the same sequence on a clean database could not have
+signed a student in to anything.
+
+### And a duplicate of my own, deleted
+
+§5dt's seeder built the legacy `registration_students` row by hand and set
+`legacy_registration_student_id` itself. **`EnsureLegacyStudentForUnifiedAction`
+already existed** and does it better — it reuses a legacy row already attached
+to the same login instead of making a second one. That is exactly the rule 11
+failure this session has been finding in other people's code, shipped in mine
+about an hour earlier, and it is now one definition again.
+
+### Still standing
+
+The second §5dt finding is unchanged: **a course enrolment still requires the
+legacy `student_id`** pointing at `registration_students`. The seeder pairs them
+through the action above; removing the requirement is the Deploy 3 cleanup on
+the owner's list.
+
 ## 5dt. A student took a lesson — the learner path, walked at last (2026-09-14)
 
 §5ds reached the screens that **administer** the course engine. This is the

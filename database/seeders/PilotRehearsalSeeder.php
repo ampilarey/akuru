@@ -55,6 +55,8 @@ class PilotRehearsalSeeder extends Seeder
 
     public const CLASS_TEACHER_EMAIL = 'teacher@akuru.edu.mv';
 
+    public const STUDENT_EMAIL = 'student@akuru.edu.mv';
+
     public function run(): void
     {
         $school = School::query()->first();
@@ -209,6 +211,7 @@ class PilotRehearsalSeeder extends Seeder
         );
 
         $students = $this->students($school->id);
+        $this->linkStudentLogin($students);
         $assign = app(AssignStudentToClassAction::class);
         foreach ($students as $student) {
             $assign->execute($class, $student->id, '2026-01-05');
@@ -299,6 +302,46 @@ class PilotRehearsalSeeder extends Seeder
         }
 
         return $students;
+    }
+
+    /**
+     * Give the seeded student login a pupil to be.
+     *
+     * `UserSeeder` creates `student@akuru.edu.mv` and stops there, while the
+     * teacher two lines above it gets a `teachers` row from
+     * `EnsureTeacherRowAction`. The asymmetry meant **all fifteen pupils had
+     * `user_id` null**, so `ResolveStudentForUserAction` answered null for that
+     * login and everything keyed on "which pupil is this?" was unreachable:
+     * `/learn`, lesson access, a course enrolment, the pupil's own progress.
+     *
+     * Anybody exploring a seeded app as a student hit that wall, which includes
+     * the operator walking staging — the one gate the rest of the go-live list
+     * waits on.
+     *
+     * Attached to the first pilot pupil rather than to a new invented child, so
+     * the person who logs in is somebody the rest of the seed already knows: on
+     * the class roster, with attendance, marks and a guardian.
+     *
+     * @param  list<Student>  $students
+     */
+    private function linkStudentLogin(array $students): void
+    {
+        $user = User::query()->where('email', self::STUDENT_EMAIL)->first();
+        $pupil = $students[0] ?? null;
+
+        if ($user === null || $pupil === null) {
+            return;
+        }
+
+        $this->verifiedEmail($user);
+
+        // Only if nobody has claimed it, so re-running the seeder cannot move
+        // the login from one child to another.
+        $claimed = Student::query()->where('user_id', $user->id)->exists();
+
+        if (! $claimed && $pupil->user_id === null) {
+            $pupil->forceFill(['user_id' => $user->id])->save();
+        }
     }
 
     /**
