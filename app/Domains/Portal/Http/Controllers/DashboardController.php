@@ -2,15 +2,15 @@
 
 namespace App\Domains\Portal\Http\Controllers;
 
-use App\Domains\Academics\Legacy\Models\Assignment;
-use App\Domains\Academics\Models\Announcement;
 use App\Domains\Hifz\Models\QuranProgress;
-use App\Domains\People\Models\Student;
-use App\Domains\People\Models\Teacher;
+// People's own counting actions rather than People's models: asking the owning
+// domain the question is what rule 3 is for, and it is also the only place the
+// difference between "on the roll" and "ever enrolled" is written down.
+use App\Domains\People\Actions\CountStudentsAction;
+use App\Domains\People\Actions\CountTeachersAction;
 use App\Domains\Portal\Actions\ComposeDashboardPrayerAction;
 use App\Domains\Portal\Actions\ResolveDashboardLandingAction;
 use App\Http\Controllers\Controller;
-use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
@@ -90,15 +90,30 @@ class DashboardController extends Controller
 
     private function superAdminDashboard()
     {
+        // Eleven values used to be computed here and thrown away: this page's
+        // view reads twelve `$stats` keys and exactly one `$metrics` key
+        // (`system_health`), and nothing else — no partial, no include, no
+        // dynamic lookup. `total_students`, `total_teachers`,
+        // `active_quran_students`, `total_assignments`, `total_announcements`,
+        // `sms_usage_today`, `student_growth`, `quran_progress_stats`,
+        // `attendance_rate`, `recent_activities` and `sms_gateway_status` were
+        // queried on every load of the admin landing page and rendered nowhere.
+        //
+        // One of them was worse than wasted. `getOverallAttendanceRate()`
+        // returned a hardcoded **85.5** with `// Placeholder` beside it: an
+        // invented figure sitting in a variable called `attendance_rate`,
+        // waiting for somebody to put it on a screen. It has never been
+        // displayed — that is luck, not design — and it is gone rather than
+        // left for the next person to wire up in good faith.
+        //
+        // `getStudentGrowthMetrics()` goes with it, and was wrong in its own
+        // right: `whereMonth` with no `whereYear` counts that month in *every*
+        // year, so "this month against last month" compared two multi-year
+        // totals and, each January, compared January to a December that
+        // included every December on record.
         $stats = [
             'total_users' => \App\Domains\Identity\Models\User::count(),
-            'total_students' => Student::count(),
-            'total_teachers' => Teacher::count(),
-            'active_quran_students' => Student::whereHas('quranProgress')->count(),
-            'total_assignments' => Assignment::count(),
-            'total_announcements' => Announcement::count(),
             'database_size' => $this->getDatabaseSize(),
-            'sms_usage_today' => $this->getSmsUsageToday(),
             // Course & enrollment stats
             'total_courses' => \App\Domains\Courses\Models\Course::count(),
             'open_courses' => \App\Domains\Courses\Models\Course::where('status', 'open')->count(),
@@ -113,12 +128,7 @@ class DashboardController extends Controller
         ];
 
         $metrics = [
-            'student_growth' => $this->getStudentGrowthMetrics(),
-            'quran_progress_stats' => $this->getQuranProgressStats(),
-            'attendance_rate' => $this->getOverallAttendanceRate(),
-            'recent_activities' => $this->getRecentActivities(),
             'system_health' => $this->getSystemHealth(),
-            'sms_gateway_status' => $this->getSmsGatewayStatus(),
         ];
 
         // Recent enrollments (last 10)
@@ -152,68 +162,29 @@ class DashboardController extends Controller
         return redirect()->route('portal.teacher');
     }
 
+    /**
+     * KNOWN_ISSUES #22 was filed against this screen as a cosmetic complaint —
+     * the counters are institute-wide rather than "Grade 5 A". Auditing it
+     * turned up something worse than cosmetics: the two numbers were wrong.
+     *
+     * `Student::count()` and `Teacher::count()` count every row, so a tile
+     * headed **Students** included pupils who had graduated, transferred or
+     * withdrawn, and one headed **Teachers** included staff whose employment
+     * had ended. A supervisor reading "28 students" was reading the number of
+     * student records, which is not a fact about the school.
+     *
+     * Whether this screen should instead be scoped to a class remains the IA
+     * decision it was filed as; a wrong number is not.
+     */
     private function supervisorDashboard()
     {
         $stats = [
-            'total_students' => Student::count(),
-            'total_teachers' => Teacher::count(),
+            'students_on_roll' => app(CountStudentsAction::class)->onTheRoll(),
+            'teachers_teaching' => app(CountTeachersAction::class)->teaching(),
             'quran_progress_today' => QuranProgress::whereDate('created_at', today())->count(),
         ];
 
         return view('dashboard.supervisor', compact('stats'));
-    }
-
-    // Helper methods for advanced metrics
-
-    private function getStudentGrowthMetrics()
-    {
-        $currentMonth = Carbon::now()->month;
-        $lastMonth = Carbon::now()->subMonth()->month;
-
-        return [
-            'current_month' => Student::whereMonth('created_at', $currentMonth)->count(),
-            'last_month' => Student::whereMonth('created_at', $lastMonth)->count(),
-            'growth_rate' => $this->calculateGrowthRate(
-                Student::whereMonth('created_at', $lastMonth)->count(),
-                Student::whereMonth('created_at', $currentMonth)->count()
-            ),
-        ];
-    }
-
-    private function getQuranProgressStats()
-    {
-        return [
-            'total_progress_records' => QuranProgress::count(),
-            'completed_surahs' => QuranProgress::where('status', 'completed')->count(),
-            'in_progress_surahs' => QuranProgress::where('status', 'in_progress')->count(),
-            'average_accuracy' => QuranProgress::avg('accuracy_percentage') ?? 0,
-        ];
-    }
-
-    private function getOverallAttendanceRate()
-    {
-        // This would need to be implemented based on your attendance system
-        return 85.5; // Placeholder
-    }
-
-    private function getRecentActivities()
-    {
-        return [
-            'new_students' => Student::where('created_at', '>=', Carbon::now()->subDays(7))->count(),
-            'new_assignments' => Assignment::where('created_at', '>=', Carbon::now()->subDays(7))->count(),
-            'quran_progress_updates' => QuranProgress::where('updated_at', '>=', Carbon::now()->subDays(7))->count(),
-        ];
-    }
-
-    // Utility methods
-
-    private function calculateGrowthRate($oldValue, $newValue)
-    {
-        if ($oldValue == 0) {
-            return $newValue > 0 ? 100 : 0;
-        }
-
-        return round((($newValue - $oldValue) / $oldValue) * 100, 2);
     }
 
     // Super Admin specific methods
@@ -229,17 +200,6 @@ class DashboardController extends Controller
             ', [$dbName]);
 
             return $size[0]->size_mb ?? 0;
-        } catch (\Exception $e) {
-            return 0;
-        }
-    }
-
-    private function getSmsUsageToday()
-    {
-        try {
-            // This would connect to SMS Gateway API to get usage
-            // For now, return placeholder
-            return 0;
         } catch (\Exception $e) {
             return 0;
         }

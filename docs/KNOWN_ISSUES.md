@@ -868,7 +868,58 @@ defect family as #19. See **Fixed on main**.
 
 ### 22. Blade counters (28 students / 3 teachers) are not “Grade 5 A”
 
+**Fixed (2026-09-14) — and it was not the cosmetic entry it was filed as.**
+
 **Evidence:** Round 2 step 1. Admin still lands on Blade dashboard (allowed, Round 3).
+
+Filed as a presentation complaint: the supervisor dashboard shows
+institute-wide counters where the tester expected class context. Auditing the
+screen found the numbers were also **wrong**.
+
+`Student::count()` and `Teacher::count()` count every row. A tile headed
+**Students** included pupils who had `graduated`, `transferred` or `withdrawn`,
+and applicants who had never started; one headed **Teachers** included staff
+whose employment had `terminated`. "28 students" was the number of student
+*records*, which is not a fact about the school. `ComposeCatalogReportsAction`
+(§33) made the same call under a comment reading *"this is the roll of the
+institute"* — the label and the query disagreed **in writing**.
+
+The fix names the distinction rather than filtering everywhere, because there
+are genuinely two questions:
+
+| Question | Who asks it |
+|---|---|
+| `onTheRoll()` / `teaching()` | the supervisor dashboard, the §33 catalog totals |
+| `everEnrolled()` / `everEmployed()` | the homepage's *students taught* — a cumulative claim, where today's roll would **undersell** every finished cohort |
+
+The ambiguous `CountStudentsAction::execute()` is gone, so no caller can ask the
+vague question by accident. The tiles are now headed **Students on the roll**
+and **Teachers on staff**, since "Students" is true of either number.
+
+**Found while auditing the same screen, and fixed with it:** the super-admin
+dashboard computed **eleven** values no view reads — verified against the only
+view that renders it, which reads twelve `$stats` keys and one `$metrics` key,
+with no partial, include or dynamic lookup. One of them was
+`getOverallAttendanceRate()`, returning a hardcoded **85.5** with
+`// Placeholder` beside it: an invented figure in a variable called
+`attendance_rate`, waiting for somebody to wire it up in good faith. It has
+never been displayed — luck, not design — and it is now deleted rather than
+left lying there. `getStudentGrowthMetrics()` went with it and was wrong in its
+own right: `whereMonth` with no `whereYear` compares that month across *every*
+year.
+
+Removing them also took four cross-domain `Models\*` imports out of
+`Portal\DashboardController` (rule 3): it now asks People's own counting
+actions instead. Both architecture baselines shrank accordingly.
+
+**Still an IA decision, and deliberately not taken here:** whether this screen
+should be scoped to a class at all. A wrong number is a defect; the choice of
+which correct number to show is not.
+
+Walked in Chromium (2026-09-14) as `supervisor@akuru.edu.mv`, against a
+database of 15 students and 3 teachers with one graduate and one terminated
+teacher planted: the tiles read **14** and **2**. The admin dashboard was
+walked too — every remaining tile renders, no console or server error.
 
 ### 23. `guardian_student` carries a verification gate that gates nothing
 
