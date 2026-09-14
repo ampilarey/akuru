@@ -458,6 +458,45 @@ entry point, which is presumably why nobody noticed the route was open. Both
 halves came from the same root: `force_password_change` is the flag that
 records the state, and neither the banner nor the route consulted it.
 
+### The same phone number was also enough to get signed in as them — **fixed (2026-09-14)**
+
+**Severity: P0 — session takeover.** The second door, found by auditing the
+rest of the same controller after the first.
+
+`enroll` and `continueForm` both did `Auth::login()` straight off
+`session('pending_user_id')` — which `start` writes when the code is **sent**,
+from a phone number in a public request body. The `hasVerifiedContact()` check
+came **after** the login and returned a redirect, and **a redirect does not
+undo a login**.
+
+Demonstrated: POST `start` with a victim's number, POST `enroll`, and the
+session is authenticated as them while the screen says *"Please verify your
+contact first."*
+
+Same scope as the first: only accounts whose contact is not yet verified, since
+`start` short-circuits a verified one.
+
+**Fixed** — one `verifiedPendingUser()` helper, used by both, which returns the
+pending account only if this session entered its code, and **does not sign
+anyone in**. Starting a session is left to each caller, after its own checks.
+Fixing one door and not the other is how a door stays open, so both went
+together.
+
+### `resume` is a 24-hour magic link — **recorded, no change**
+
+`courses/register/resume?flow=<uuid>` calls `Auth::login()` for the flow's
+owner, and `RegistrationFlow::findResumable` matches on UUID alone when the
+caller is anonymous. So the UUID is a bearer token that grants a full session.
+
+**Not filed as a defect.** It is a random v4 UUID, it expires after 24 hours,
+and it is never sent by SMS or email — it lives only in the returning visitor's
+own URL. That is an ordinary resume-link design with a shorter life than most.
+
+**Worth an owner's eye anyway**, because it is not written down anywhere: the
+link is not single-use, it survives in browser history, and the session it
+grants is a full one rather than a restricted "finish your registration" scope.
+Narrowing any of those is a product decision, not a defect fix.
+
 ### A phone number was enough to claim somebody's account — **fixed (2026-09-14)**
 
 **Severity: P0 — account takeover with no credential at all.** The open
