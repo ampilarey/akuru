@@ -100,11 +100,20 @@ const courseHref = (await hrefs()).find((href) => /\/learn\/courses\/\d+/.test(h
 check('the course page is reachable from /learn', Boolean(courseHref), courseHref ?? 'no /learn/courses/N link');
 
 let lessonHref = null;
+let activityHref = null;
 
 if (courseHref) {
     const course = await body(new URL(courseHref, BASE).pathname);
     check('the course page names the lesson', course.status === 200 && course.text.includes('SMOKE-Lesson'));
-    lessonHref = (await hrefs()).find((href) => /\/learn\/lessons\/\d+/.test(href));
+
+    // Both are collected here because both hang off the **course** page.
+    // An earlier version looked for the activity on the lesson and reported a
+    // failure that was only its own assumption — the second time this script
+    // has guessed the route wrong, which is itself worth knowing about the
+    // information architecture.
+    const links = await hrefs();
+    lessonHref = links.find((href) => /\/learn\/lessons\/\d+/.test(href));
+    activityHref = links.find((href) => /\/learn\/activities\/\d+/.test(href));
 }
 
 if (!lessonHref) {
@@ -120,6 +129,31 @@ if (!lessonHref) {
         check('marking it complete is accepted', true);
     } else {
         check('marking it complete is accepted', false, 'no complete button');
+    }
+}
+
+// The activity. Reading a lesson is the passive half; this is the half where a
+// student does something and the system marks it.
+if (!activityHref) {
+    check('an activity is reachable from the course', false, 'no /learn/activities/N link');
+} else {
+    const activity = await body(new URL(activityHref, BASE).pathname);
+    check('the activity shows its question', activity.status === 200 && activity.text.includes('SMOKE-Question'), activityHref);
+
+    // Answer it the way a student does: pick the option, press submit.
+    const option = page.locator('label:has-text("SMOKE-Right"), input[value="a"]').first();
+    if (await option.count()) {
+        await option.click();
+        const submit = page.locator('button:has-text("Submit"), button[type=submit]').first();
+        if (await submit.count()) {
+            await submit.click();
+            await page.waitForLoadState('networkidle');
+            check('the answer is accepted', true);
+        } else {
+            check('the answer is accepted', false, 'no submit button');
+        }
+    } else {
+        check('the answer is accepted', false, 'no option to choose');
     }
 }
 

@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Domains\Academics\Models\AcademicYear;
 use App\Domains\Academics\Models\ClassRoom;
 use App\Domains\Courses\Actions\PublishLessonAction;
+use App\Domains\Courses\Actions\SaveActivityAction;
 use App\Domains\Courses\Actions\SaveContentBlockAction;
 use App\Domains\Courses\Models\Lesson;
 use App\Domains\People\Actions\EnsureLegacyStudentForUnifiedAction;
@@ -388,6 +389,35 @@ class SmokeMarkerSeeder extends Seeder
         ]);
 
         app(PublishLessonAction::class)->execute(Lesson::query()->findOrFail($lessonId), $admin?->id);
+
+        // One activity, so the walk can go past reading and actually answer
+        // something. `selection` is the simplest of the four base patterns and
+        // the only one that can be marked without a teacher, which is what
+        // makes it walkable end to end by a student alone.
+        //
+        // Through `SaveActivityAction` for the same reason the content block
+        // goes through its own action: the shape it validates is the shape the
+        // player expects, and a raw insert is how this seeder produced an empty
+        // lesson once already.
+        DB::table('activities')->where('course_id', $courseId)->delete();
+
+        app(SaveActivityAction::class)->execute([
+            'course_id' => $courseId,
+            'course_module_id' => $moduleId,
+            'lesson_id' => $lessonId,
+            'title' => 'SMOKE-Activity',
+            'pattern' => 'selection',
+            'max_score' => 1,
+            'data' => [
+                'prompt' => 'SMOKE-Question: which letter is a sun letter?',
+                'options' => [
+                    ['id' => 'a', 'label' => 'SMOKE-Right'],
+                    ['id' => 'b', 'label' => 'SMOKE-Wrong'],
+                ],
+                'correct_ids' => ['a'],
+            ],
+            'created_by' => $admin?->id,
+        ]);
 
         // The enrolment the player checks. `unified_student_id` is what
         // AuthorizeLessonAccessAction matches on, resolved from the student
