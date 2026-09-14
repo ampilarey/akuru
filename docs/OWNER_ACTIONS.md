@@ -183,12 +183,31 @@ Three properties nobody had written down, for you to accept or narrow: it is
 **not single-use**, it **survives in browser history**, and the session it
 grants is **full** rather than scoped to finishing a registration.
 
+### 15. What a hifz enrolment should say when a pupil leaves
+
+`hifz_enrollments.status` is `active` / `paused` / `completed` / `transferred`.
+**None of those means "left the Institute"**, and there is no screen that sets
+any of them: the enrolment controller can create but not update.
+
+Since #27 the consequences are contained — a pupil who leaves stops generating
+halaqa work and stops being counted — but the row still reads `active`, which
+is wrong on any report that reads it directly.
+
+**Pick one:** reuse `transferred`, which today most naturally means moved to
+another halaqa rather than gone from the school; **or** add a fifth value,
+which is a one-line widening of a DB enum (additive, safe) plus the screen that
+sets it. Either way it needs a way to end an enrolment, which does not exist.
+
+Left undecided rather than guessed, because naming it wrongly is worse than the
+gap: a report that says `transferred` when the family emigrated is a sentence
+somebody will act on.
+
 ---
 
 ## What is *not* on this list
 
-The agent-buildable backlog is empty. Of the 26 numbered defects in
-`KNOWN_ISSUES.md`, **twenty are fixed**, two are explicitly not defects
+The agent-buildable backlog is empty. Of the 27 numbered defects in
+`KNOWN_ISSUES.md`, **twenty-one are fixed**, two are explicitly not defects
 (`left_early`, Vite HMR), and the remainder are the decisions above. The
 EduPage parity track was verified row by row on 2026-09-14: **all 22 rows have
 their code**, and a test now pins that so the plan cannot drift into claiming
@@ -216,6 +235,12 @@ written once at creation and never again. Four "still employed" filters were
 guarding a column that could not move. That one was found by trying to do it in
 a browser and looking for the button — not by reading the code, which looks
 correct.
+
+And then **#27**, the same shape a third time: a hifz enrolment could not end
+either, so a withdrawn pupil kept being given halaqa work every day and kept
+being counted. Three status columns in one afternoon whose non-default values
+no code path could reach. That is now a pattern rather than three accidents,
+and item 15 below is the piece of it only you can settle.
 
 The right reading is: there is nothing left that somebody has already written
 down — which is the point at which item 7 above, walking the real deployment,

@@ -65,6 +65,23 @@ class Student extends Model
         'status' => StudentStatus::class,
     ];
 
+    /**
+     * Pupils currently on the roll — **the one definition of that** (rule 11).
+     *
+     * `prospective` is outside it because an applicant has not started;
+     * `inactive` because the status exists to record somebody who has stopped
+     * attending without formally leaving; and `graduated` / `transferred` /
+     * `withdrawn` because they have gone.
+     *
+     * Every question of the form "is this person still one of our pupils" goes
+     * through here, so the answer cannot differ between a count on a dashboard
+     * and a filter that decides whose halaqa work gets generated.
+     */
+    public function scopeOnTheRoll($query)
+    {
+        return $query->where('status', StudentStatus::Active->value);
+    }
+
     // Relationships
     public function user()
     {

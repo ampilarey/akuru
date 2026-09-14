@@ -4304,6 +4304,66 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5dp. A halaqa kept generating work for a child who had left (2026-09-14)
+
+Third pass of the same audit, and the **third** status column today whose
+non-default values turned out to be unreachable.
+
+**The defect.** A hifz enrolment outlives the pupil. `hifz_enrollments.status`
+is `active` / `paused` / `completed` / `transferred` — **no value means "left
+the school"** — and `HifzEnrollmentController` has `index`, `create` and
+`store` and nothing else. `store` does not even accept a status; it relies on
+the column default. So an enrolment reads `active` for ever once it is made.
+
+Withdrawing a pupil therefore left `HifzSessionService` creating a session
+record for them **every day a halaqa met**, and the dean's *active students*
+card counting them indefinitely. Confirmed with a probe before designing
+anything: pupil `withdrawn`, enrolment `active`, count unchanged.
+
+**What shipped, and what deliberately did not.**
+
+The school's own roll does move — §5dn made a withdrawal come off the class
+register the same day — so the roll is asked at the two points that matter:
+where work is generated, and where people are counted.
+
+- `Student::scopeOnTheRoll()` is now **the one definition** of "still a pupil"
+  (rule 11). `CountStudentsAction::onTheRoll()` from §5dm delegates to it
+  rather than repeating the predicate, so a dashboard count and a filter
+  deciding whose halaqa work gets generated cannot drift apart.
+- `ListStudentIdsOnTheRollAction` is its bulk form, for callers holding a list
+  of ids. It is **not** interchangeable with
+  `Academics\ListStudentsOnActiveRosterAction`, which answers a different
+  question — active *class placement* in the current year — and needs an
+  academic year to exist before it can answer at all.
+- `HifzSessionService` skips a pupil who is not on the roll. Hifz asks through
+  People's action rather than importing its model, so no new cross-domain
+  `Models\*` import (rule 3) and no baseline growth.
+- The dean's card counts **distinct pupils on the roll**, not enrolment rows.
+  A pupil in two programmes is one student; the label says students.
+
+**The enrolment row is left alone, on purpose.** Choosing which of its four
+words describes a departure — or adding a fifth, which would mean widening a DB
+enum — is a vocabulary decision for the owner. A guard that stops generating
+work needs no such decision, and `test_the_enrolment_row_is_left_alone` pins
+that so the gap is deliberate rather than forgotten. **Added to
+`docs/OWNER_ACTIONS.md` as item 15.**
+
+**Four tests.** The session-record one fails with the guard removed; it also
+asserts the **happy path first** — a pupil on the roll *does* get a record —
+because a guard that refused everybody would otherwise pass the refusal half
+just as happily. That is the standing lesson from five vacuous probes this
+session.
+
+**Walked in Chromium (2026-09-14)** on `/en/hifz/dean`, with a three-pupil
+halaqa planted:
+
+| | Active Students card |
+|---|---|
+| before | **3** |
+| after withdrawing one of the three | **2** — with the enrolment row still `active` |
+
+Full suite **1945 passed**.
+
 ## 5do. Employment could not be ended anywhere in the product (2026-09-14)
 
 The teacher half of §5dn, chased on the same reasoning — and it found something
