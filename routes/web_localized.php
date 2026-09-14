@@ -748,6 +748,7 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::post('students/{student}/consents', [StudentConsentController::class, 'store'])->name('people.students.consents.store');
 
         Route::get('staff', [StaffDirectoryController::class, 'index'])->name('people.staff.index');
+        Route::get('staff/export', [StaffDirectoryController::class, 'export'])->name('people.staff.export');
         Route::post('staff', [StaffDirectoryController::class, 'store'])->name('people.staff.store');
         Route::get('staff/{staffProfile}', [StaffDirectoryController::class, 'show'])->name('people.staff.show');
         Route::put('staff/{staffProfile}', [StaffDirectoryController::class, 'update'])->name('people.staff.update');
