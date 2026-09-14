@@ -4183,6 +4183,70 @@ server validation message the browser's `max` attribute prevents from ever
 being requested — the property worth asserting was that a nonsense value never
 persists, whichever layer stops it.
 
+## 5cr. The lesson that reached exactly one file (2026-09-14)
+
+`ReserveOfferingSeatAction` carries a comment written after something bit
+somebody:
+
+> *`course_enrollments` soft-deletes (§29), and this counts through the query
+> builder for the row locks — which knows nothing about the trait. A
+> soft-deleted enrolment was holding its seat forever.*
+
+It stayed in that one file. A sweep of **every** `DB::table()` read against a
+soft-deleting table — ten tables, found from the migrations rather than listed —
+turned up three more places it had not reached.
+
+### What was wrong
+
+**A deleted assessment stayed on offer.**
+`ListPublishedAssessmentsAction` reads `assessments` raw, and `assessments`
+soft-deletes. It feeds three pickers — the course outline, the offering list and
+the certificate-issue options — so an assessment somebody had deleted was still
+attachable in all three.
+
+**A withdrawn student was unified as Active.**
+`UnifyStudentsAction::createFromRegistration` and `DualWriteCourseStudentAction`
+both decide a unified student's status from
+`course_enrollments.status = 'active'`, through the query builder. A student
+whose only enrolment had been withdrawn — soft-deleted, not removed — came out
+of the backfill as `Active` rather than `Prospective`.
+
+That is the S1 backfill: the one that runs **once, against real data**, gated by
+a verification script. Its whole job is to get each person's record right.
+
+### The gate
+
+`tests/Architecture/SoftDeletesSurviveRawReadsTest.php`. Every raw **read** of a
+soft-deleting table must mention `deleted_at` or be baselined with a reason.
+Writes are not checked — an `insert()` is not a visibility question. The table
+list comes from the migrations, so a table that gains `softDeletes()` tomorrow
+is covered tomorrow.
+
+**13 baselined, each with its own reason**, and they are mostly one idea: *a
+historical record has to keep naming the thing it was about.* A certificate
+issued for a course that was later deleted must still verify and still print
+that course's name, or deleting a course silently invalidates every certificate
+ever issued under it. The backfill's own reads are there too, in the other
+direction — a soft-deleted enrolment still carries a foreign key that has to be
+repointed, and a verification count that ignored deleted rows could pass while
+unmapped rows remained.
+
+One entry is flagged rather than settled: `ListDeletedCoursesAction` counts the
+enrolments a deleted course holds, and that count includes soft-deleted
+enrolments, which may overstate what restoring the course would bring back.
+Written down rather than changed.
+
+### Also checked, and clean
+
+| Audit | Result |
+|---|---|
+| Rule 12 — append-only ledgers | No `update`/`delete`/`increment` anywhere on `wallet_transactions`, `leave_ledger` or `writer_earnings`. Reversals only. |
+| ADR-005 — morph map | `morph-map:verify` OK: no FQCNs in morph columns, `notifications.type` clean. |
+| Notification wiring | All ten domain events have a registered listener, and each is dispatched from exactly one Action. |
+
+Revert-checked: removing the guard from `ListPublishedAssessmentsAction` fails
+both the new gate (naming the file and line) and the new behaviour test.
+
 ## 5cq. Does a family see their own child, and only their own? (2026-09-14)
 
 The three sweeps so far ask whether a screen throws (§5cp), whether it shows a

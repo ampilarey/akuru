@@ -27,9 +27,13 @@ class DualWriteCourseStudentAction
         $passport = $this->plain($rs->passport);
 
         if ($student === null) {
+            // As in UnifyStudentsAction: soft-deleted enrolments are invisible
+            // to the trait and visible to this query, so a withdrawn student
+            // was created as Active rather than Prospective.
             $hasActiveEnrollment = DB::table('course_enrollments')
                 ->where('student_id', $rs->id)
                 ->where('status', 'active')
+                ->whereNull('deleted_at')
                 ->exists();
 
             $student = new Student;
