@@ -4278,6 +4278,37 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5dh. All 22 parity rows, checked against the code (2026-09-14)
+
+§5dg found the seventeenth wrong row, so the sensible next move was to stop
+trusting the other twenty-one either.
+
+Every row E1–E22, verified against registered routes and defined classes rather
+than against either document. **All 22 hold.** Route counts where they exist
+are healthy — E5 thirteen, E16 twelve, E11 and E17 ten apiece — and no row is
+missing a class the plan names.
+
+So the parity track has nothing left that this document can honestly call
+unbuilt, and §5dg's correction was the last outstanding claim rather than one
+of several.
+
+### What the check is worth, stated plainly
+
+It proves **artifacts exist**: routes registered, classes defined. That is
+precisely the failure mode this document has — a row called unbuilt while its
+controller sits in the tree — and it catches a feature being deleted.
+
+It does **not** prove a row works end to end, meets its acceptance criteria, or
+that a family can complete the task in a browser. Those live in each slice's
+feature tests and in the browser walk the definition of done requires. **A pass
+here is not "E-whatever is done."** Saying otherwise would be the same overclaim
+the plan has made seventeen times, in a newer place.
+
+Committed as `tests/Feature/Docs/EduPageParityRowsExistTest.php`, and checked
+for vacuousness by renaming a class in the list and watching it fail — three
+audits have now fixed these rows by hand and left nothing behind to stop the
+next drift.
+
 ## 5dg. The seventeenth time, and I quoted it (2026-09-14)
 
 CLAUDE.md on the EduPage plan: *"verify every row against the code before
