@@ -4183,6 +4183,64 @@ server validation message the browser's `max` attribute prevents from ever
 being requested — the property worth asserting was that a nonsense value never
 persists, whichever layer stops it.
 
+## 5cq. Does a family see their own child, and only their own? (2026-09-14)
+
+The three sweeps so far ask whether a screen throws (§5cp), whether it shows a
+row that exists (§5cm), and whether a person can create one (§5cn). None of them
+asks the question a parent would care about most — and it is a question this
+codebase has already got wrong once: a `courses.manage` holder could fetch
+**any** private media file by id, children's Qur'an recitations included
+(KNOWN_ISSUES, fixed in #336).
+
+`scripts/smoke/own-data.mjs` asks it in two halves, and the second is the one
+that matters:
+
+1. **Own data is there** — the portal shows the marker planted on the guardian's
+   own child.
+2. **Nobody else's is** — the marker planted on another family's child appears
+   on no page, and neither does that child's name. *A privacy check that only
+   looks for the right row passes just as happily on a page listing the whole
+   school.*
+
+Then the direct approach: ask for another family's records **by id**, which is
+what an id in a URL invites.
+
+`SmokeMarkerSeeder` plants `JOURNEY-MINE` on the guardian's child and
+`JOURNEY-OTHER` on somebody else's, both `parent_visible` on purpose — a note
+the portal is supposed to withhold proves nothing about whether it withholds.
+
+```
+guardian's child: Fatima Yoosuf (#1)   someone else's: Hussain Shareef (#2)
+
+  parent   ok   /en/portal/home … /en/portal/meetings   (9 screens, no leak)
+  parent   403  /en/people/students/2 (refused)
+  parent   403  /en/students/2 (refused)
+  parent   403  /en/students/2/edit (refused)
+  parent   403  /en/students/2/quran-progress (refused)
+
+  student  ok   … same nine screens, no leak
+  student  403  … same four records, refused
+
+No family saw another family.
+```
+
+**Nothing found.** Eighteen portal screens across two roles show their own
+person's data and nobody else's, and eight attempts to open another family's
+record by id were refused.
+
+Worth saying what the ids are doing there: they are read from the database at
+run time, not hardcoded, so the check follows the seed rather than rotting the
+first time somebody re-seeds.
+
+### What it is not
+
+Two roles and one guardian. A school with siblings across families, or a
+guardian with children in different classes, would exercise more of the pivot
+than this does. And the sensitive tables that would make the richest targets —
+report cards, payslips, receipts, message threads — are **empty in the default
+seed**, so those routes answer 404 rather than proving anything. That is the
+next thing to plant, not a clean bill of health for them.
+
 ## 5cp. The check that was missing (2026-09-14)
 
 Three pages shipped blank in §5co because a `ReferenceError` in a React
