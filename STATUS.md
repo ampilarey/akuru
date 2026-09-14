@@ -4363,10 +4363,32 @@ reasons say what is missing without guessing at whether it was deliberate:
   recorded.
 - **`invoices`** — `cancelled`. An invoice can be drafted, issued and paid, and
   **never cancelled**.
-- **`hifz_session_records.attendance_status`** — `late`, `excused`. A halaqa
-  register records present or absent and nothing else, while the class register
-  next door has four statuses and a rule about who may set `excused`
-  (KNOWN_ISSUES #15).
+- **`hifz_session_records.attendance_status`** — `late`, `excused`, and
+  **corrected within the hour of first writing it down.** The first draft of
+  this entry said *"a halaqa register records present or absent and nothing
+  else"*. That is wrong. **Nothing writes this column at all**, not even its
+  default: `HifzSessionService` creates the row without it, and the live halaqa
+  register is no longer here — F5 (ADR-029) moved sessions to
+  `Courses\Components\Quran`, which writes `QuranSessionRecord` and offering
+  attendance and **does** accept all four values.
+
+  The real defect is on the reading side, and it is sharper than the one I
+  claimed: three places still read this column — `HifzScoringService`'s absent
+  check, `ListHifzSessionRecordsAction`, and the dean dashboard's **Absent
+  Today** card, which is therefore **permanently 0**.
+
+  Not fixed here: pointing those reads at the live source is Qur'an **A.4b**,
+  which this document already gates on an operator confirming the dual-write.
+  Doing it now would be running a gate that has not run.
+
+  How it was caught: the finding said late and excused were unwritable, and a
+  grep for `attendance_status` immediately turned up
+  `in:present,late,absent,excused` in two validators. That looked like the gate
+  producing a false positive, and chasing *that* is what showed both validators
+  belong to a different table — and that this one has no writer at all. **The
+  gate was right and my sentence about it was wrong**, which is a distinction
+  worth keeping: a check that reports a true fact you then describe carelessly
+  is still a check that worked.
 - **`quizzes`** — `closed`, `archived`; **`quiz_attempts`** — `graded`.
 - **`hifz_assignments`** — `completed`, `missed`, `cancelled`;
   **`hifz_sessions`** — `completed`, `reviewed`; **`hifz_enrollments`** —

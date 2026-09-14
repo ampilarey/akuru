@@ -79,9 +79,20 @@ it('can write every value its status columns allow', function () {
         'hifz_enrollments.status' => ['paused', 'transferred'],
         'hifz_sessions.status' => ['completed', 'reviewed'],
 
-        // A halaqa register records present or absent and nothing else, while
-        // the class register next door has four statuses and a rule about who
-        // may set `excused` (KNOWN_ISSUES #15).
+        // Worse than unwritable: **nothing writes this column at all**, not
+        // even its default. `HifzSessionService` creates the row without it,
+        // and the live halaqa register is no longer here — F5 (ADR-029) moved
+        // sessions to `Courses\Components\Quran`, which writes
+        // `QuranSessionRecord` and offering attendance and does accept all
+        // four values.
+        //
+        // Three readers still read this one: `HifzScoringService`'s absent
+        // check, `ListHifzSessionRecordsAction`, and the dean dashboard's
+        // **Absent Today** card — which is therefore permanently 0.
+        //
+        // Not fixed here. Pointing those reads at the live source is Qur'an
+        // **A.4b**, which STATUS already gates on an operator confirming the
+        // dual-write; doing it now would be running a gate that has not run.
         'hifz_session_records.attendance_status' => ['late', 'excused'],
 
         // An invoice can be drafted, issued and paid. It cannot be cancelled.
