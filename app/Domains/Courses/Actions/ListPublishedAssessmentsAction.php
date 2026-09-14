@@ -24,6 +24,19 @@ class ListPublishedAssessmentsAction
     {
         return DB::table('assessments')
             ->where('status', 'published')
+            // \`assessments\` soft-deletes (§29) and this counts through the
+            // query builder, which knows nothing about the trait. A deleted
+            // assessment stayed on offer in all three pickers this feeds: the
+            // course outline, the offering list, and the certificate-issue
+            // options. \`ReserveOfferingSeatAction\` carries the same note about
+            // \`course_enrollments\`; the lesson did not travel.
+            ->whereNull('deleted_at')
+            // \`assessments\` soft-deletes (§29) and this counts through the
+            // query builder, which knows nothing about the trait. A deleted
+            // assessment stayed on offer in all three pickers this feeds: the
+            // course outline, the offering list, and the certificate-issue
+            // options. \`ReserveOfferingSeatAction\` carries the same note about
+            // \`course_enrollments\`; the lesson did not travel.
             ->orderBy('title')
             ->get(['id', 'course_id', 'title'])
             ->map(fn ($row): array => [

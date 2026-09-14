@@ -338,9 +338,15 @@ class UnifyStudentsAction
 
     private function createFromRegistration(RegistrationStudent $rs, StudentUnificationReport $report): void
     {
+        // A withdrawn enrolment is soft-deleted, not removed, and this read
+        // goes through the query builder — which does not apply the trait. So a
+        // student whose only enrolment had been deleted was unified as
+        // **Active** rather than Prospective, in the one backfill that runs
+        // against real data and is gated by a verification script.
         $hasActiveEnrollment = DB::table('course_enrollments')
             ->where('student_id', $rs->id)
             ->where('status', 'active')
+            ->whereNull('deleted_at')
             ->exists();
 
         $status = $hasActiveEnrollment ? StudentStatus::Active : StudentStatus::Prospective;
