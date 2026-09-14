@@ -12,10 +12,29 @@
     @if (!empty($ref))
         <p class="text-sm text-gray-500 mb-6">Reference: <code>{{ $ref }}</code></p>
     @endif
+    {{--
+        This used to offer "resume your registration", linking to
+        `courses.register.resume`. That link could never work: `registration_flows`
+        has two readers and no writer anywhere in the application, so the resume
+        route always answers "No active registration found. Please start again
+        from a course page." A family who may have just paid was being sent to a
+        dead end and told to start over.
+
+        What replaces it is what actually happens. The bank's webhook is the
+        authority on payment (rule 12), and confirming a payment activates the
+        enrolment inside that same transaction — `PaymentConfirmed` is what
+        domains listen to. So a lost return reference costs the family nothing
+        and asks nothing of them.
+    --}}
+    <p class="text-gray-600 mb-4">
+        <strong>If you completed the payment, it will still be confirmed.</strong>
+        The bank notifies us directly, and your enrolment is activated when it does —
+        this page only means the reference did not come back in your browser.
+    </p>
     <p class="text-gray-600 mb-8">
-        If you completed a payment, please
-        <a href="{{ route('courses.register.resume') }}" class="text-blue-600 underline">resume your registration</a>
-        or contact us for assistance.
+        Check <a href="{{ route('my.enrollments') }}" class="text-blue-600 underline">your enrolments</a>
+        in a few minutes. If the course has not appeared, contact us with the reference above
+        and we will find the payment.
     </p>
     <a href="{{ route('public.courses.index') }}" class="inline-block bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700">
         Back to Courses
