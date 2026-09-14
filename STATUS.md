@@ -4304,6 +4304,53 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5dx. Money turns into access — the whole chain, under the config that goes live (2026-09-14)
+
+§5dw walked the funnel as far as a **free** course. This covers the part it
+could not reach, as far as it can be reached without BML: a correctly signed
+webhook arriving at a system configured the way the owner is about to configure
+it, and a student getting in.
+
+**Both halves were already tested, and only the halves:**
+
+| test | posts | asserts |
+|---|---|---|
+| `BmlWebhookSignatureTest` | a correctly signed callback | the **payment** is confirmed — and stops |
+| `BmlWebhookTest` | **no signature at all** (relying on `BML_WEBHOOK_ALLOW_UNSIGNED=true` in `phpunit.xml`) | the **enrolment** activates |
+
+So the combination that actually goes live — *secret configured, unsigned
+refused, correctly signed callback arrives, student gets in* — was covered by
+**neither**. That is precisely the configuration `docs/OWNER_ACTIONS.md` item 2
+asks the owner to switch on, and nothing had ever run it end to end.
+
+**The same shape as four other findings today:** two halves each covered, the
+join between them untested.
+
+**What the new test asserts, and why it asserts a lesson rather than a column.**
+Rule 12 makes the webhook the authority, and `PaymentService` says in its own
+comment that *"money→access happens HERE"*. Checking `status = 'active'` tests a
+column; checking that the student can **open a lesson they were locked out of a
+moment earlier** tests the sentence. The locked-out assertion comes first, so
+the test cannot pass on a system that lets everybody in.
+
+The second case is the mirror: a **wrong** signature leaves the payment pending,
+the enrolment pending, and the student still locked out.
+
+**Revert-checked** by unregistering `ActivateEnrollmentOnPaymentConfirmed` —
+the first test fails, the second still passes, which is right: the second is
+about the door, not the till.
+
+### What this does and does not de-risk
+
+It does **not** make BML's scheme correct. If BML signs something other than
+HMAC-`sha256` over the raw body under `X-BML-Signature`, this test passes and
+production still rejects every genuine callback. **Owner item 2's second line —
+confirm the scheme with BML in writing — remains the thing that matters**, and
+this only proves the chain is sound *given* that assumption.
+
+What it does de-risk: the first real payment now exercises a path that has been
+run end to end, rather than two paths that were each run half way.
+
 ## 5dw. A stranger enrolled themselves — the public funnel, walked (2026-09-14)
 
 The path real people arrive on, and the one money eventually comes through.
