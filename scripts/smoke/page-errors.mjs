@@ -16,8 +16,16 @@
  *
  *   node scripts/smoke/page-errors.mjs
  *
- * Environment: SMOKE_BASE_URL, SMOKE_USER, SMOKE_PASSWORD, SMOKE_CHROMIUM
- * (as `sweep.mjs`), plus SMOKE_ONLY to filter to routes containing a string.
+ * **It sweeps as every seeded role at once.** The first version signed in as
+ * `admin` alone, and said so in its own limitations: *"a screen that works for
+ * admin and throws for a parent would pass this sweep."* A portal page is
+ * exactly where a role-specific runtime error would live, and those are the
+ * pages families use. The six contexts run concurrently, so six roles cost
+ * little more wall-clock than one.
+ *
+ * Environment: SMOKE_BASE_URL, SMOKE_PASSWORD, SMOKE_CHROMIUM (as `sweep.mjs`),
+ * SMOKE_ONLY to filter to routes containing a string, and SMOKE_ACCOUNTS to
+ * override the `role:email,role:email` list.
  *
  * **Routes come from `php artisan route:list`, fresh on every run**, so a screen
  * added tomorrow is swept tomorrow without anybody remembering to add it to a
@@ -36,9 +44,23 @@ import { execFileSync } from 'node:child_process';
 import { chromium } from 'playwright';
 
 const BASE = process.env.SMOKE_BASE_URL ?? 'http://127.0.0.1:8000';
-const USER = process.env.SMOKE_USER ?? 'admin@akuru.edu.mv';
 const PASSWORD = process.env.SMOKE_PASSWORD ?? 'password';
 const ONLY = process.env.SMOKE_ONLY ?? '';
+
+// The six roles `UserSeeder` creates. A 403 for one of them is usually the
+// system working; a runtime error for one of them is never.
+const ACCOUNTS = (process.env.SMOKE_ACCOUNTS ?? [
+  'admin:admin@akuru.edu.mv',
+  'headmaster:headmaster@akuru.edu.mv',
+  'supervisor:supervisor@akuru.edu.mv',
+  'teacher:teacher@akuru.edu.mv',
+  'student:student@akuru.edu.mv',
+  'parent:parent@akuru.edu.mv',
+].join(',')).split(',').map((pair) => {
+  const [role, email] = pair.split(':');
+
+  return { role, email };
+});
 
 const routes = JSON.parse(execFileSync('php', ['artisan', 'route:list', '--json'], { maxBuffer: 32 * 1024 * 1024 }))
   .filter((route) => route.method.includes('GET'))
@@ -51,79 +73,117 @@ const routes = JSON.parse(execFileSync('php', ['artisan', 'route:list', '--json'
   .filter((uri, index, all) => all.indexOf(uri) === index)
   .sort();
 
-console.log(`${routes.length} screens to look at.\n`);
+console.log(`${routes.length} screens × ${ACCOUNTS.length} roles.\n`);
 
 const browser = await chromium.launch(
   process.env.SMOKE_CHROMIUM ? { executablePath: process.env.SMOKE_CHROMIUM } : {}
 );
-const page = await (await browser.newContext()).newPage();
 
-const errors = [];
-page.on('pageerror', (error) => errors.push(String(error).split('\n')[0].slice(0, 140)));
+/**
+ * One role's pass over every screen.
+ *
+ * Runs in its own browser context so the six sessions cannot share a cookie
+ * jar — which would silently sweep the same role six times and report a clean
+ * bill of health for five roles nobody looked at.
+ */
+async function sweepAs({ role, email }) {
+  const context = await browser.newContext();
+  const page = await context.newPage();
 
-await page.goto(`${BASE}/en/login`, { waitUntil: 'domcontentloaded' });
-await page.fill('input[name="identifier"]', USER);
-await page.fill('input[name="password"]', PASSWORD);
-await page.click('button[type="submit"]');
-await page.waitForLoadState('domcontentloaded');
+  const errors = [];
+  page.on('pageerror', (error) => errors.push(String(error).split('\n')[0].slice(0, 140)));
 
-if (page.url().includes('/login')) {
-  console.error(`Could not sign in as ${USER}. Every page below would be the login screen, so stopping.`);
-  await browser.close();
-  process.exit(1);
-}
+  await page.goto(`${BASE}/en/login`, { waitUntil: 'domcontentloaded' });
+  await page.fill('input[name="identifier"]', email);
+  await page.fill('input[name="password"]', PASSWORD);
+  await page.click('button[type="submit"]');
+  await page.waitForLoadState('domcontentloaded');
 
-const broken = [];
-const serverErrors = [];
-let looked = 0;
+  if (page.url().includes('/login')) {
+    await context.close();
 
-for (const route of routes) {
-  errors.length = 0;
-  let status = 'nav';
-  try {
-    const response = await page.goto(BASE + route, { waitUntil: 'domcontentloaded' });
-    status = response ? response.status() : 'nav';
-    // Long enough for Inertia to mount and throw, short enough to sweep the
-    // whole app. A late error lands in the next route's bucket rather than
-    // being lost — misattributed, but still surfaced.
-    await page.waitForTimeout(250);
-  } catch {
-    // A navigation cancelled by the page's own redirect is not a defect; the
-    // §5cl sweep spent eight of its eleven flags on exactly that.
-    continue;
+    return { role, signedIn: false, looked: 0, denied: 0, broken: [], serverErrors: [] };
   }
 
-  if (status !== 200) {
-    if (status >= 500) {
-      serverErrors.push(`${status}  ${route}`);
+  const broken = [];
+  const serverErrors = [];
+  let looked = 0;
+  let denied = 0;
+
+  for (const [index, route] of routes.entries()) {
+    // A heartbeat, because six roles printing every route would interleave into
+    // noise and printing nothing leaves an hour-long run indistinguishable from
+    // a hung one. The single-role version learned this the expensive way; the
+    // multi-role version re-learned it by being silent for twenty minutes.
+    if (index > 0 && index % 50 === 0) {
+      process.stdout.write(`  ${role.padEnd(11)} ${index}/${routes.length}…\n`);
     }
-    process.stdout.write(`  ${status} ${route}\n`);
-    continue;
+
+    errors.length = 0;
+    let status = 'nav';
+    try {
+      const response = await page.goto(BASE + route, { waitUntil: 'domcontentloaded' });
+      status = response ? response.status() : 'nav';
+      // Long enough for Inertia to mount and throw, short enough to sweep the
+      // whole app. A late error lands in the next route's bucket rather than
+      // being lost — misattributed, but still surfaced.
+      await page.waitForTimeout(250);
+    } catch {
+      // A navigation cancelled by the page's own redirect is not a defect; the
+      // §5cl sweep spent eight of its eleven flags on exactly that.
+      continue;
+    }
+
+    if (status !== 200) {
+      if (status >= 500) {
+        serverErrors.push(`${status}  ${route}`);
+        process.stdout.write(`  ${role.padEnd(11)} ${status} ${route}\n`);
+      } else {
+        denied++;
+      }
+      continue;
+    }
+
+    looked++;
+    if (errors.length > 0) {
+      broken.push(`${route}\n      ${errors[0]}`);
+      process.stdout.write(`  ${role.padEnd(11)} JS! ${route} — ${errors[0]}\n`);
+    }
   }
 
-  looked++;
-  if (errors.length > 0) {
-    broken.push(`${route}\n      ${errors[0]}`);
-    process.stdout.write(`  JS! ${route} — ${errors[0]}\n`);
-  } else {
-    process.stdout.write(`  ok  ${route}\n`);
-  }
+  await context.close();
+  process.stdout.write(`  ${role.padEnd(11)} done — ${looked} loaded, ${denied} denied, ${broken.length} broken\n`);
+
+  return { role, signedIn: true, looked, denied, broken, serverErrors };
 }
+
+const results = await Promise.all(ACCOUNTS.map(sweepAs));
 
 await browser.close();
 
-console.log(`${looked} screens loaded.`);
+console.log('');
+let failures = 0;
 
-if (serverErrors.length > 0) {
-  console.log(`\n${serverErrors.length} returned a server error:`);
-  serverErrors.forEach((line) => console.log('  ' + line));
+for (const result of results) {
+  if (! result.signedIn) {
+    console.log(`${result.role.padEnd(11)} COULD NOT SIGN IN — nothing was checked for this role`);
+    failures++;
+    continue;
+  }
+
+  console.log(
+    `${result.role.padEnd(11)} ${String(result.looked).padStart(3)} loaded, ` +
+    `${String(result.denied).padStart(3)} denied, ` +
+    `${result.broken.length} runtime error(s), ${result.serverErrors.length} server error(s)`
+  );
+
+  failures += result.broken.length + result.serverErrors.length;
+
+  for (const line of [...result.broken, ...result.serverErrors]) {
+    console.log('    ' + line);
+  }
 }
 
-if (broken.length > 0) {
-  console.log(`\n${broken.length} threw a runtime error in the browser:`);
-  broken.forEach((line) => console.log('  ' + line));
-} else {
-  console.log('\nNo runtime errors.');
-}
+console.log(failures === 0 ? '\nNo runtime or server errors for any role.' : `\n${failures} problem(s).`);
 
-process.exit(broken.length + serverErrors.length > 0 ? 1 : 0);
+process.exit(failures > 0 ? 1 : 0);
