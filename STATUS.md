@@ -4241,6 +4241,42 @@ no message, and that is because its form arrives with **valid defaults** (an
 invoice, an amount, a method), so an empty submit genuinely succeeds —
 "Receipt recorded." My check was wrong, not the page.
 
+### Three pages I broke doing it, and the gate that now catches them
+
+The mechanical insertion put `<FormErrors errors={form.errors} />` into three
+**filter** forms — plain GET forms, submitted with `router.get`, with no
+`useForm` anywhere in the component. `ReferenceError: form is not defined`,
+which in React blanks the entire page: `/academics/requests`,
+`/hr/leave-balances` and `/catalog/reviews`.
+
+**Nothing caught it.** `npm run build` does no scope analysis; the PHP suite
+never loads a page; and the gate above is satisfied by the word `errors`
+appearing, so a page can be broken and still pass a check that only reads for a
+string. CI was green on the pull request at the time.
+
+They were found by loading the screens in a browser after a container restart
+forced a rebuild of the local environment — which is to say, by luck, one step
+away from merging three blank screens.
+
+So the gate now reads the reference the other way as well: every `<FormErrors
+errors={X}>` must name a `useForm` **declared in the same component**.
+Revert-checked by pointing one at a name that does not exist; it fails and names
+the file and the variable. The three filter forms had no errors to show at all,
+so the element was deleted rather than repointed.
+
+### And a seeder that made the system look broken
+
+The same restart re-seeded the database, and the sweep came back **14/20** with
+five HR screens "not showing their rows". The screens were fine.
+`SmokeMarkerSeeder` read `StaffProfile::query()->first()`, found none in a fresh
+`migrate:fresh --seed`, and skipped the entire HR block **in silence** — so it
+planted nothing and the sweep faithfully reported nothing. The seeder now makes
+a staff profile if there is none, and says so out loud if it cannot.
+
+Twice in one slice, a verification tool reported the system as broken and itself
+as fine. That direction of error is the expensive one: it costs an investigation
+each time, and the third time it will be believed.
+
 ## 5cn. Can a person actually make one? (2026-09-13)
 
 §5cm answered *"does the screen show a row that exists"*. That is weaker than

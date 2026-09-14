@@ -61,11 +61,46 @@ class SmokeMarkerSeeder extends Seeder
         $this->finance($year, $studentId, $admin);
         $this->consent($studentId, $admin);
 
+        // A default `migrate:fresh --seed` leaves `staff_profiles` empty, and
+        // this used to skip the whole HR block in silence — so the sweep
+        // afterwards reported five HR screens as not showing their rows, and
+        // the screens were fine. A seeder that quietly plants nothing makes the
+        // thing it is checking look broken, which is the worst direction for
+        // the error to run.
+        $staff ??= $this->makeStaffProfile();
+
         if ($staff !== null) {
             $this->hr($year, $staff, $admin);
+        } else {
+            $this->command?->warn('No staff profile and none could be made — the five HR markers were skipped.');
         }
 
         $this->command?->info('Smoke markers seeded. Run: node scripts/smoke/sweep.mjs');
+    }
+
+    /**
+     * The HR screens need somebody to have a profile. Attached to the seeded
+     * teacher rather than invented from nothing, so the rows the sweep plants
+     * belong to a person the rest of the app already knows about.
+     */
+    private function makeStaffProfile(): ?StaffProfile
+    {
+        $userId = DB::table('users')->where('email', 'teacher@akuru.edu.mv')->value('id')
+            ?? DB::table('users')->value('id');
+
+        if ($userId === null) {
+            return null;
+        }
+
+        return StaffProfile::query()->create([
+            'user_id' => $userId,
+            'first_name' => 'Smoke',
+            'last_name' => 'Marker',
+            'gender' => 'female',
+            'joined_date' => '2026-01-01',
+            'employment_type' => 'full_time',
+            'status' => 'active',
+        ]);
     }
 
     private function rooms(AcademicYear $year, ?object $admin): void

@@ -90,7 +90,7 @@ function RequestCard({ item, canReview }) {
                     </select>
                     <input className="form-input" placeholder="Notes" value={review.data.review_notes} onChange={(e) => review.setData('review_notes', e.target.value)} />
                     <button type="submit" className="btn-primary">Review</button>
-                    <FormErrors errors={form.errors} />
+                    <FormErrors errors={review.errors} />
                 </form>
             )}
         </section>

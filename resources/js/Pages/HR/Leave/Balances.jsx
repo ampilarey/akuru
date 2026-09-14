@@ -29,7 +29,6 @@ export default function Balances({ filters, years, staff, leaveTypes, rows }) {
                         {years.map((year) => <option key={year.id} value={year.id}>{year.name}</option>)}
                     </select>
                     <button type="submit" className="btn-secondary">Filter</button>
-                    <FormErrors errors={form.errors} />
                 </form>
                 <a className="btn-secondary" href={`/hr/leave-balances/export?academic_year_id=${filters.academic_year_id || ''}`}>Export CSV</a>
             </div>
