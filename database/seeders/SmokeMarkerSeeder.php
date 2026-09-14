@@ -60,6 +60,7 @@ class SmokeMarkerSeeder extends Seeder
         $this->requests($admin);
         $this->finance($year, $studentId, $admin);
         $this->consent($studentId, $admin);
+        $this->ownData($year, $studentId, $admin);
 
         // A default `migrate:fresh --seed` leaves `staff_profiles` empty, and
         // this used to skip the whole HR block in silence — so the sweep
@@ -206,6 +207,37 @@ class SmokeMarkerSeeder extends Seeder
             'applies_to' => 'all_items', 'status' => 'approved', 'approved_by' => $admin?->id,
             'created_at' => now(), 'updated_at' => now(),
         ]);
+    }
+
+    /**
+     * A marker on the guardian's own child and a matching one on somebody
+     * else's, so `scripts/smoke/own-data.mjs` can tell "the portal shows my
+     * child" from "the portal shows every child".
+     *
+     * The second marker is the half that matters. A privacy check that only
+     * looks for the right row passes just as happily on a page that lists the
+     * whole school.
+     */
+    private function ownData(AcademicYear $year, int $studentId, ?object $admin): void
+    {
+        $other = (int) DB::table('students')->where('id', '!=', $studentId)->value('id');
+
+        foreach ([[$studentId, 'JOURNEY-MINE'], [$other, 'JOURNEY-OTHER']] as [$id, $marker]) {
+            if ($id <= 0) {
+                continue;
+            }
+
+            DB::table('behavior_records')->where('category', $marker)->delete();
+            DB::table('behavior_records')->insert([
+                'student_id' => $id, 'academic_year_id' => $year->id, 'type' => 'compliment',
+                'category' => $marker, 'description' => $marker.' note',
+                'date' => now()->toDateString(), 'recorded_by' => $admin?->id,
+                // Visible to families on purpose: a note the portal is supposed
+                // to withhold proves nothing about whether it withholds.
+                'parent_visible' => 1, 'requires_followup' => 0,
+                'created_at' => now(), 'updated_at' => now(),
+            ]);
+        }
     }
 
     private function consent(int $studentId, ?object $admin): void
