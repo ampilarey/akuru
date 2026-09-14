@@ -61,8 +61,8 @@ it('writes every CSV row through the escaping helper', function () {
         "These write a CSV row without escaping it:\n  "
         .implode("\n  ", $offenders)
         ."\n\nA cell starting `=`, `+`, `-`, `@`, tab or CR is a formula to Excel, "
-        ."LibreOffice and Sheets, and almost every column in these exports is text "
-        ."somebody typed. Use App\\Support\\Csv::put(\$handle, \$row) instead — it "
+        .'LibreOffice and Sheets, and almost every column in these exports is text '
+        .'somebody typed. Use App\\Support\\Csv::put($handle, $row) instead — it '
         .'escapes each cell and leaves genuine numbers alone.'
     );
 });
