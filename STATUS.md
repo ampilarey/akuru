@@ -4304,6 +4304,60 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5dw. A stranger enrolled themselves — the public funnel, walked (2026-09-14)
+
+The path real people arrive on, and the one money eventually comes through.
+**Nothing had ever walked it.** `sweep.mjs` checks staff screens and
+`learn.mjs` checks a student who is already enrolled; both start from a login
+that already exists. This one starts from nobody.
+
+`scripts/smoke/register.mjs` — **13/13 steps**, no console or server errors:
+
+| | |
+|---|---|
+| course page → checkout | offers the registration form |
+| `register/start` | accepted, redirects to the code screen |
+| first OTP | read from `sms_receipts`, accepted |
+| `register/continue` | the review step, accepted |
+| `enroll/confirm` | terms ticked, code **sent**, second OTP accepted |
+| `register/complete` | reached |
+
+**The funnel is longer than it looks: six screens and two OTP rounds.** It was
+not obvious from the routes, and each wrong assumption cost a run.
+
+**Verified in the database, which is the part that matters.** A real
+`course_enrollments` row exists — course 12, `payment_status = not_required`
+(free course), `status = pending`, carrying **both** `unified_student_id` and
+the legacy `student_id`. So the S1.1 dual-write pairing works through the real
+funnel, not just through the fixture that §5du had to build by hand.
+
+**Where it stops: money.** A paid course hands off to BML, which is not
+reachable from here. Nothing below the free path is walked — and under rule 12
+the webhook, not this journey, is what confirms a payment anyway.
+
+### Three wrong assumptions, all mine, all in the walker
+
+The app was right every time. Recording them because the pattern is now
+unmistakable — **a walk that constructs its route instead of following it is
+testing the walker**:
+
+1. **"Read the newest SMS receipt."** Every registration also texts the school,
+   so the newest row is routinely a staff notification. The walk reported *"no
+   code found"*, which looks exactly like the OTP never being sent. Two earlier
+   runs had passed only because the ordering fell the other way — a false green
+   before the false red.
+2. **"The confirm page has an OTP field."** It has two steps: tick the terms,
+   press **Send OTP** (disabled until ticked), *then* the field exists. The walk
+   ticked the box, looked for the field, found nothing, and fell silent.
+3. **"Fill the form and submit."** The first screen's submit stays disabled
+   until two choices are made at the top; an earlier version checked *every*
+   radio on the page, set contradictory answers, and waited on a button that
+   could never enable.
+
+That is three in one slice, on top of two in the previous two. The countermeasure
+is the same each time and is now written into the scripts: **follow links and
+read state, never assert where a thing ought to be.**
+
 ## 5dv. An attempt now says which year it happened in (2026-09-14)
 
 The walk from §5dt was extended one step — past reading a lesson to
