@@ -1131,6 +1131,41 @@ unless `APP_ENV=production` and `SMS_LIVE` are both explicitly set.
 > > **With this, every enrollment notice in the system is a listener.** §41's
 > > worked example is closed.
 
+### 25. A pupil who left the school stayed on the class register
+
+**Fixed (2026-09-14) — found by audit, never filed.** It is numbered here so
+the record exists, not because anybody reported it.
+
+`students.status` and `class_student.status` record the same fact and nothing
+reconciled them. `PromoteStudentsAction` moves both together at the end of a
+year (S1_SPEC §121), but the mid-year path had no equivalent: marking a child
+**withdrawn** in the student directory left their roster row `active`, and
+`SaveStudentAction` only closes a placement when the *class* changes.
+
+**Severity: harm, not cosmetic.** The register grid defaults every row to
+**present**, so a withdrawn pupil left on it is recorded as attending lessons
+they were not at. Marking them absent instead sends their guardian an absence
+SMS about a school the family has left. Seventeen readers key off
+`class_student.status` and none consults the pupil's standing, so the same
+child stayed on the homework list, the timetable and the meeting-slot list —
+and nobody could see the disagreement, because no screen shows a roster row's
+pupil status beside it.
+
+`ChangeStudentStatusAction` now raises `StudentStatusChanged` after its
+transaction commits and Academics closes the placement in its own listener —
+the roster is Academics' table, so a cascade inside the People action would be
+People writing another domain's rows (rule 3).
+
+The three departure statuses (`graduated`, `transferred`, `withdrawn`) are
+exactly the three the promotion path already pairs with closing a placement, so
+no policy is invented. **`inactive` is deliberately excluded**, and that
+exclusion is one of the tests: it records a pupil who has stopped attending
+without leaving, which is the case where a school needs them on the register in
+order to chase it.
+
+`left_at` takes the effective date the office gave rather than today's, and
+rows already closed are not touched. **No backfill** — see STATUS §5dn.
+
 ---
 
 ## Explicitly not defects

@@ -187,8 +187,8 @@ grants is **full** rather than scoped to finishing a registration.
 
 ## What is *not* on this list
 
-The agent-buildable backlog is empty. Of the 24 numbered defects in
-`KNOWN_ISSUES.md`, **eighteen are fixed**, two are explicitly not defects
+The agent-buildable backlog is empty. Of the 25 numbered defects in
+`KNOWN_ISSUES.md`, **nineteen are fixed**, two are explicitly not defects
 (`left_early`, Vite HMR), and the remainder are the decisions above. The
 EduPage parity track was verified row by row on 2026-09-14: **all 22 rows have
 their code**, and a test now pins that so the plan cannot drift into claiming
@@ -202,6 +202,13 @@ not that the code is. Both of those entries were filed as judgement calls about
 intended behaviour and turned out to be defects on inspection, and #22 in
 particular was filed as cosmetic while the numbers on the screen were wrong.
 Every audit run this week has found something in code that had passing tests.
+
+**Proof, the same day:** with the list empty, an audit turned up **#25** — a
+pupil marked withdrawn stayed on the class register, where the grid defaults
+every row to *present*, so they were recorded as attending lessons they were
+not at and their guardian could be texted about absences from a school the
+family had left. Nobody had filed it, and no test caught it.
+
 The right reading is: there is nothing left that somebody has already written
 down — which is the point at which item 7 above, walking the real deployment,
 becomes the only way to find the next thing.
