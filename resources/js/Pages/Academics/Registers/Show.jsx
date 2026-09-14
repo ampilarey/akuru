@@ -54,6 +54,10 @@ export default function Show({
         notes: notes || '',
     });
     const unlock = useForm({ reason: '' });
+    // What the register will say was taught. When a topic is picked the title
+    // is the answer, so the box below stops being the place to write it
+    // (KNOWN_ISSUES #16) — it asks for what the title leaves out instead.
+    const chosenTopic = topics.find((topic) => String(topic.id) === String(form.data.plan_topic_id)) || null;
 
     return (
         <AppShell title="Class register">
@@ -94,15 +98,31 @@ export default function Show({
                             </option>
                         ))}
                     </select>
+                    {chosenTopic && (
+                        <span className="mt-1 block text-xs text-gray-500">
+                            This register will read “{chosenTopic.title}”, and submitting marks that topic taught on the plan.
+                        </span>
+                    )}
                 </Field>
-                <Field label="What was taught" error={form.errors.taught_summary}>
+                <Field
+                    label={chosenTopic ? 'Anything the topic title leaves out (optional)' : 'What was taught'}
+                    error={form.errors.taught_summary}
+                >
                     <textarea
                         className="form-input w-full"
                         rows={3}
                         value={form.data.taught_summary}
                         onChange={(e) => form.setData('taught_summary', e.target.value)}
+                        placeholder={chosenTopic
+                            ? 'Leave blank unless the lesson went somewhere the title does not cover.'
+                            : ''}
                         disabled={!canSubmit}
                     />
+                    {chosenTopic && (
+                        <span className="mt-1 block text-xs text-gray-500">
+                            No need to type “{chosenTopic.title}” again — a note that only repeats the title is dropped.
+                        </span>
+                    )}
                 </Field>
                 <Field label="Homework">
                     <textarea

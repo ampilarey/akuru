@@ -766,7 +766,41 @@ the room knows. Removing it would be a product decision, not a defect fix.
 
 ### 16. Taught summary vs plan topic
 
-**Severity:** confusion / twice. Picking “Sun and moon letters” still invites typing the same title (R1/R2 step 2).
+**Fixed (2026-09-14)** — the second field stopped asking the question the first
+one had already answered, and a copy the teacher never wrote stopped appearing
+in it.
+
+**Severity:** confusion / twice. Picking “Sun and moon letters” still invited
+typing the same title (R1/R2 step 2).
+
+Two fields, one under the other: a **Plan topic** select, and a textarea
+labelled **What was taught**. Choosing a topic answers the second question as
+well as the first, but the empty box below still read as a question, so it got
+the same words typed into it — twice, by people who knew the form.
+
+The form then taught the habit back. When the box was left empty
+`SubmitRegisterAction` copied the topic's title into `taught_summary`, so
+re-opening the register showed a summary the teacher had never written, sitting
+in the box as if that were where titles go.
+
+Both halves are gone:
+
+- The title stays on the topic (rule 11). Nothing reads `taught_summary`
+  expecting a copy — no screen displays the column outside this form — so
+  dropping the copy changes no reader. Rows written before today keep theirs.
+- With a topic picked, the box is labelled **“Anything the topic title leaves
+  out (optional)”** and says what the register will read; a summary that only
+  repeats the title is dropped rather than stored beside it. Only an exact
+  repeat goes — case, spacing and a trailing full stop are forgiven, and
+  anything with more in it survives whole.
+
+With no topic picked nothing changes: the label is still *What was taught*, and
+one of the two is still required.
+
+Walked in Chromium (2026-09-14) on `/en/academics/registers/1`: picking the
+topic relabelled the box and showed *“This register will read “Sun and moon
+letters””*; submitting with the title typed in anyway, then reloading, gave an
+empty box and the topic marked **(taught)** on the plan.
 
 ### 17. Parent notified column shows — on excused rows
 

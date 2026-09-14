@@ -2570,6 +2570,15 @@ statuses, #16 taught-summary vs plan topic, #22 Blade counters) are judgement
 calls about intended behaviour rather than defects, and I have not guessed at
 them.
 
+> **Superseded (2026-09-14).** Two of those three were defects after all and
+> are fixed: **#15** on 2026-09-13 (the writer rejects `Excused` without an
+> absence note — see "the fourth button that made a missing child invisible"
+> below) and **#16** in §5dl above (the register no longer asks for the title it
+> was just given). Filing
+> them as "judgement calls about intended behaviour" is how they sat untouched
+> across two rounds — the intended behaviour was legible in both cases, and
+> calling a defect a question is a way of not fixing it.
+
 ## 5be. SECURITY — the legacy /students and /teachers routes had no role guard (2026-09-10)
 
 - **The hole.** `Route::resource('students', ...)` and
@@ -4294,6 +4303,55 @@ walk returned a header row and nothing else for circulation, student work and
 pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
+
+## 5dl. The register stopped asking a question it had already answered (2026-09-14)
+
+KNOWN_ISSUES **#16**, the last agent-buildable entry on that list, and a defect
+this repo had recorded twice without acting on: picking the plan topic **“Sun
+and moon letters”** still invited typing the same title into the box below it.
+
+**Why it kept happening.** Two fields sat one under the other — a **Plan topic**
+select and a textarea labelled **What was taught**. The select answers both
+questions, but an empty box with a question above it is a question, so it got
+the same words. The form then confirmed the habit: with the box left empty,
+`SubmitRegisterAction` copied the topic's title into `taught_summary`, so
+re-opening the register showed the teacher a summary they had never written,
+sitting in the box as if that were where titles go.
+
+**What changed.**
+
+- The title stays on the topic (rule 11). Checked before removing the copy:
+  **no screen displays `taught_summary`** outside this form — not Today, not the
+  portal, not a report — so no reader loses anything. `ListUnfilledRegisters`
+  counts by `status`, not by the summary, so an unwritten summary does not make
+  a register look unfilled. Rows written before today keep their copy.
+- With a topic picked the box is labelled **“Anything the topic title leaves out
+  (optional)”**, the select carries *“This register will read “…”, and submitting
+  marks that topic taught on the plan”*, and a summary that only repeats the
+  title is dropped rather than stored beside it. Case, spacing and a trailing
+  full stop are forgiven; anything with more in it survives whole.
+- With no topic picked nothing changes — the label is still *What was taught*,
+  and one of the two is still required.
+
+**Five tests** (`RegisterTopicIsNotRetypedTest`), and the two that matter were
+**verified by reverting the fix**: on the old action, "the title is not copied"
+and "the echo is dropped" both fail. The existing assertion in
+`ClassRegisterTest` that expected `taught_summary === 'Alif Baa'` was the old
+behaviour written down, and now expects `null` with the reason beside it.
+
+**Walked in Chromium (2026-09-14)** on `/en/academics/registers/1`, admin login,
+against built assets:
+
+| Step | What the form said |
+|---|---|
+| before picking | `What was taught` — an empty box |
+| after picking | `Anything the topic title leaves out (optional)` · *This register will read “Sun and moon letters”* |
+| submitted the echo anyway, reloaded | box **empty**, topic shows **(taught)** |
+
+Full suite green. What this does **not** do: it does not surface the taught
+record anywhere a family or a head of department can read it — the column is
+still write-only, which is a gap worth naming rather than a defect this entry
+fixes.
 
 ## 5dk. All four sweeps green, and one document for the owner (2026-09-14)
 
