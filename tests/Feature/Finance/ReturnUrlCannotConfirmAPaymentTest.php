@@ -195,3 +195,58 @@ it('leaves a transaction id already on the payment alone', function () {
 
     expect($payment->fresh()->bml_transaction_id)->toBe('BML-TXN-MINE');
 });
+
+it('closes the same hole on the by-id return route, which is the easier one to walk', function () {
+    // `payments/return/{payment}` is a second copy of the same pattern: it
+    // writes `bml_transaction_id` from the query string and calls
+    // finalizeByReference. It is the *more* convenient handle of the two —
+    // route-model binding means an attacker walks integer ids instead of
+    // needing to know a merchant reference.
+    //
+    // It is closed because the identity check lives in the service rather than
+    // in the controller that #362 was found through. Had that fix gone into
+    // PaymentController::return, this route would still be open, and nothing
+    // would have said so.
+    $paid = bmlReturnPayment(['status' => 'confirmed', 'confirmed_at' => now()]);
+    $unpaid = bmlReturnPayment();
+
+    fakeBmlReturningOtherPayments(['BML-TXN-REAL' => $paid->merchant_reference]);
+
+    $this->withoutLocalizationMiddleware()
+        ->get('/payments/return/'.$unpaid->id.'?transactionId=BML-TXN-REAL')
+        ->assertOk();
+
+    expect($unpaid->fresh()->status)->toBe('pending')
+        ->and($unpaid->fresh()->confirmed_at)->toBeNull();
+});
+
+it('still finalises its own payment through the by-id return route', function () {
+    $payment = bmlReturnPayment();
+
+    fakeBmlReturningOtherPayments(['BML-TXN-MINE' => $payment->merchant_reference]);
+
+    $this->withoutLocalizationMiddleware()
+        ->get('/payments/return/'.$payment->id.'?transactionId=BML-TXN-MINE')
+        ->assertOk();
+
+    expect($payment->fresh()->status)->toBe('confirmed');
+});
+
+it('leaks no amount or name from the sessionless status endpoints', function () {
+    // Both are public and keyed by walkable identifiers, which is defensible
+    // only because of what they do not say. Pinned, because a later "helpful"
+    // addition to the payload is exactly how that stops being true.
+    $payment = bmlReturnPayment(['amount' => 4500, 'status' => 'confirmed', 'paid_at' => now()]);
+
+    foreach ([
+        '/payments/status/'.$payment->id,
+        '/payments/ref/'.$payment->merchant_reference.'/status',
+    ] as $route) {
+        $body = $this->withoutLocalizationMiddleware()->get($route)->assertOk()->getContent();
+
+        expect($body)->not->toContain('4500')
+            ->and($body)->not->toContain('user_id')
+            ->and($body)->not->toContain('student')
+            ->and($body)->toContain('confirmed');
+    }
+});
