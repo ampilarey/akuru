@@ -63,6 +63,7 @@ class SmokeMarkerSeeder extends Seeder
         $this->consent($studentId, $admin);
         $this->ownData($year, $studentId, $admin);
         $this->sensitiveRecords($year, $studentId, $admin);
+        $this->payslips($admin);
 
         // A default `migrate:fresh --seed` leaves `staff_profiles` empty, and
         // this used to skip the whole HR block in silence — so the sweep
@@ -354,6 +355,90 @@ class SmokeMarkerSeeder extends Seeder
                 ['role' => 'staff', 'created_at' => now(), 'updated_at' => now()]
             );
         }
+    }
+
+    /**
+     * Two payslips, for two different members of staff, each with a document.
+     *
+     * A payslip is the single record in this system that an ordinary colleague
+     * must not be able to read — and it was the last of the sensitive tables
+     * left empty, so `own-data.mjs` had nothing to ask about it. Payroll ships
+     * flag-off, which is why nothing else creates these; the rows are inserted
+     * directly rather than by running payroll, because the question here is who
+     * may **read** one, not how one is calculated.
+     *
+     * `PayslipDocumentController` checks ownership *before* it checks the
+     * document — the opposite order to the report-card route that made the
+     * earlier probe vacuous — but the owner still needs a document to get a
+     * 200, so both halves of the pair need one.
+     */
+    private function payslips(?object $admin): void
+    {
+        $staff = StaffProfile::query()->orderBy('id')->take(2)->get();
+
+        if ($staff->count() < 2) {
+            $staff->push($this->makeSecondStaffProfile());
+            $staff = $staff->filter();
+        }
+
+        if ($staff->count() < 2) {
+            $this->command?->warn('Fewer than two staff profiles — the payslip pair was skipped.');
+
+            return;
+        }
+
+        $periodId = DB::table('payroll_periods')->where('year', 2026)->where('month', 8)->value('id')
+            ?? DB::table('payroll_periods')->insertGetId([
+                'year' => 2026, 'month' => 8, 'status' => 'draft',
+                'processed_by' => $admin?->id, 'created_at' => now(), 'updated_at' => now(),
+            ]);
+
+        foreach ($staff as $profile) {
+            $path = 'smoke/payslip-'.$profile->id.'.html';
+            Storage::disk('local')->put($path, '<p>SMOKE payslip for staff '.$profile->id.'</p>');
+
+            $documentId = DB::table('documents')->where('media_path', $path)->value('id')
+                ?? DB::table('documents')->insertGetId([
+                    'documentable_type' => 'payslip', 'documentable_id' => $profile->id,
+                    'media_path' => $path, 'document_type' => 'other',
+                    'title' => 'SMOKE payslip', 'uploaded_by' => $admin?->id,
+                    'created_at' => now(), 'updated_at' => now(),
+                ]);
+
+            DB::table('payslips')->updateOrInsert(
+                ['payroll_period_id' => $periodId, 'staff_profile_id' => $profile->id],
+                [
+                    'basic_salary' => 10000, 'gross' => 10000, 'net_pay' => 10000,
+                    'employee_pension' => 0, 'employer_pension' => 0, 'tax_withheld' => 0,
+                    'unpaid_leave_deduction' => 0, 'document_id' => $documentId,
+                    'status' => 'draft', 'created_at' => now(), 'updated_at' => now(),
+                ]
+            );
+        }
+    }
+
+    /**
+     * A second member of staff, so "can one colleague read another's payslip"
+     * has two people to ask about.
+     */
+    private function makeSecondStaffProfile(): ?StaffProfile
+    {
+        $taken = StaffProfile::query()->pluck('user_id');
+        $userId = DB::table('user_contacts')
+            ->whereIn('value', ['teacher.quran@akuru.edu.mv', 'headmaster@akuru.edu.mv', 'supervisor@akuru.edu.mv'])
+            ->whereNotIn('user_id', $taken)
+            ->value('user_id');
+
+        if ($userId === null) {
+            return null;
+        }
+
+        return StaffProfile::query()->create([
+            'user_id' => $userId,
+            'first_name' => 'Smoke', 'last_name' => 'Colleague',
+            'gender' => 'male', 'joined_date' => '2026-01-01',
+            'employment_type' => 'full_time', 'status' => 'active',
+        ]);
     }
 
     private function consent(int $studentId, ?object $admin): void

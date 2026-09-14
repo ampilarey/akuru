@@ -4288,12 +4288,40 @@ which `EnsureTeacherRowAction` mitigates for seeds — and nobody has done the
 equivalent for students. Pairs are now scoped to the role that owns them, and
 the student is swept for leakage only, which is the question it can answer.
 
+### The payslip, which is the sharpest one
+
+A payslip is the single record here that an ordinary colleague must not be able
+to read, and it was the last sensitive table left empty — so the probe had
+nothing to ask about it. Payroll ships flag-off, which is why nothing else
+creates one; `SmokeMarkerSeeder` now inserts a period and **two payslips, for
+two different members of staff, each with a document**. The rows go in directly
+rather than by running payroll, because the question is who may *read* one, not
+how one is calculated.
+
+Probed as an ordinary **teacher** rather than a headmaster, who holds
+`hr.manage` and is supposed to see both:
+
+```
+  teacher  ok   colleague's payslip: own 200, theirs 403
+```
+
+Both halves. The teacher's own payslip is served; the colleague's is refused.
+
+Worth noting the contrast with the report card, because it is the reason that
+one was vacuous: `PayslipDocumentController` checks **ownership first** and the
+document second, which is the safer order. `DownloadPublishedReportCardAction`
+does it the other way round, so a card with no document refuses everybody. Both
+end up correct; only one of them is correct for the right reason at every step.
+
 ### What it is not
 
-One guardian. A school with siblings across families, or a guardian with
-children in different classes, would exercise more of the pivot than this does.
-Payslips and receipts are still unplanted — payroll ships flag-off and the
-receipt needs an invoice — so those routes remain untested rather than clean.
+One guardian and one pair of colleagues. A school with siblings across families,
+or a guardian with children in different classes, would exercise more of the
+pivot than this does.
+
+**Receipts are still unplanted** — a receipt needs an invoice, and the default
+seed has none — so `finance/receipts/{receipt}/document` remains untested rather
+than clean.
 
 ## 5cp. The check that was missing (2026-09-14)
 

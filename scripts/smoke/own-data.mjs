@@ -61,7 +61,7 @@ if (!mineId || mineId === '0') {
 
 // Ids for the planted records, read the same way — from the database, so the
 // probe follows the seed rather than rotting when somebody re-seeds.
-const [mineReportCard, otherReportCard, mineThread, notMineThread] = execFileSync('php', [
+const [mineReportCard, otherReportCard, mineThread, notMineThread, myPayslip, colleaguePayslip] = execFileSync('php', [
   'artisan', 'tinker', '--execute',
   `echo (int) DB::table('report_cards')->where('student_id', ${mineId})->value('id');
    echo '|';
@@ -69,7 +69,15 @@ const [mineReportCard, otherReportCard, mineThread, notMineThread] = execFileSyn
    echo '|';
    echo (int) DB::table('message_threads')->where('subject', 'SMOKE-Thread')->value('id');
    echo '|';
-   echo (int) DB::table('message_threads')->where('subject', 'SMOKE-Thread-Not-Mine')->value('id');`,
+   echo (int) DB::table('message_threads')->where('subject', 'SMOKE-Thread-Not-Mine')->value('id');
+   echo '|';
+   // The teacher's own payslip, and a colleague's. Resolved through the
+   // teacher's user id so the pair follows the seed.
+   $teacherUser = (int) DB::table('user_contacts')->where('value', 'teacher@akuru.edu.mv')->value('user_id');
+   $mineStaff = (int) DB::table('staff_profiles')->where('user_id', $teacherUser)->value('id');
+   echo (int) DB::table('payslips')->where('staff_profile_id', $mineStaff)->value('id');
+   echo '|';
+   echo (int) DB::table('payslips')->where('staff_profile_id', '!=', $mineStaff)->value('id');`,
 ], { encoding: 'utf8' }).trim().split('\n').pop().split('|');
 
 console.log(`guardian's child: ${mineName} (#${mineId})   someone else's: ${otherName} (#${otherId})`);
@@ -111,6 +119,15 @@ const PAIRS = [
     mine: `/en/portal/messages/${mineThread}`,
     theirs: `/en/portal/messages/${notMineThread}`,
   },
+  {
+    // The sharpest record in the system: one member of staff reading a
+    // colleague's salary. Probed as an ordinary teacher rather than a
+    // headmaster, who holds `hr.manage` and is supposed to see both.
+    as: 'teacher',
+    what: "colleague's payslip",
+    mine: `/en/hr/payslips/${myPayslip}/document`,
+    theirs: `/en/hr/payslips/${colleaguePayslip}/document`,
+  },
 ];
 
 // Staff-only records, which no family should reach at all. There is no "mine"
@@ -139,7 +156,11 @@ let failures = 0;
 // person-scoped record refuses them — correctly, and uninformatively. It is
 // swept for leakage on the portal screens, which is what it can answer, and
 // the gap is recorded in STATUS rather than papered over here.
-for (const [role, email] of [['parent', 'parent@akuru.edu.mv'], ['student', 'student@akuru.edu.mv']]) {
+for (const [role, email] of [
+  ['parent', 'parent@akuru.edu.mv'],
+  ['student', 'student@akuru.edu.mv'],
+  ['teacher', 'teacher@akuru.edu.mv'],
+]) {
   const context = await browser.newContext();
   const page = await context.newPage();
 
@@ -156,7 +177,10 @@ for (const [role, email] of [['parent', 'parent@akuru.edu.mv'], ['student', 'stu
     continue;
   }
 
-  for (const route of PORTAL) {
+  // A teacher is staff: seeing other people's children is their job, so the
+  // leakage half of this script does not apply to them. They are here for the
+  // payslip pair.
+  for (const route of (role === 'teacher' ? [] : PORTAL)) {
     const response = await page.goto(BASE + route, { waitUntil: 'domcontentloaded' }).catch(() => null);
     const status = response ? response.status() : 'nav';
     if (status !== 200) {
