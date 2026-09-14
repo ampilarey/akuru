@@ -184,3 +184,54 @@ it('does not show the set-password screen before the code is entered', function 
         ->get('/courses/register/set-password')
         ->assertRedirect(route('courses.register.otp'));
 });
+
+it('does not sign anybody in as the account they merely named', function () {
+    // The second door, found by auditing the rest of the same controller.
+    // `enroll` called `Auth::login()` straight off `pending_user_id` and only
+    // then checked `hasVerifiedContact()` — and a redirect does not undo a
+    // login. Two POSTs and somebody else's mobile number produced a session as
+    // them, while the screen said "Please verify your contact first".
+    funnelSms();
+    $victim = funnelAccount(contactVerified: false);
+
+    startFunnelAs();
+
+    test()->withoutLocalizationMiddleware()
+        ->post('/courses/register/enroll', ['course_ids' => [1]]);
+
+    expect(auth()->id())->toBeNull();
+});
+
+it('does not sign anybody in through the continue screen either', function () {
+    // Same shape, same controller, one method along. Fixed together because
+    // fixing one and not the other is how a door stays open.
+    funnelSms();
+    funnelAccount(contactVerified: false);
+
+    startFunnelAs();
+
+    test()->withoutLocalizationMiddleware()
+        ->get('/courses/register/continue');
+
+    expect(auth()->id())->toBeNull();
+});
+
+it('signs the real owner in once they have entered the code', function () {
+    $log = funnelSms();
+    $owner = funnelAccount(contactVerified: false);
+
+    startFunnelAs();
+    preg_match('/\b(\d{6})\b/', $log->sent[0]['body'] ?? '', $found);
+
+    test()->withoutLocalizationMiddleware()
+        ->post('/courses/register/verify', ['code' => $found[1]]);
+
+    postSetPassword([
+        'first_name' => 'Aishath', 'last_name' => 'Real', 'national_id' => 'A123456',
+        'password' => 'my-own-choice-99', 'password_confirmation' => 'my-own-choice-99',
+    ]);
+
+    // The other half of the pair: the funnel must still end with the owner
+    // signed in, or the fix has simply broken registration.
+    expect(auth()->id())->toBe($owner->id);
+});

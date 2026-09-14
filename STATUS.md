@@ -4278,6 +4278,47 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5da. The same phone number also got you signed in as them (2026-09-14)
+
+Having found one door in this controller, I read the rest of it. There was a
+second.
+
+`enroll` and `continueForm` both did `Auth::login()` straight off
+`session('pending_user_id')`, and only then checked `hasVerifiedContact()`.
+**A redirect does not undo a login.** So the same two POSTs — `start` with
+somebody's mobile number, then `enroll` — left the session authenticated as
+them, while the screen said *"Please verify your contact first."* Confirmed by
+running it: `AUTHED_AS` came back as the victim's id.
+
+§5cz's fix did not cover this. It guarded the password write; this is a
+different verb on the same rotten input.
+
+Fixed with one `verifiedPendingUser()` helper used by both: it returns the
+pending account only when this session entered its code, and **it does not sign
+anyone in** — starting a session is left to each caller, after its own checks.
+Both were done together, because fixing one door and not the other is how a
+door stays open.
+
+Two of the three new cases fail against the old code; the third is the happy
+path, which must pass either way or the fix is just breakage.
+
+### `resume` — looked worse than it is, recorded rather than changed
+
+`courses/register/resume?flow=<uuid>` calls `Auth::login()` for the flow's
+owner, and `findResumable` matches on UUID alone for an anonymous caller. A
+bearer token that grants a session.
+
+Checked before reacting: random v4 UUID, **24-hour expiry**, and never sent by
+SMS or email — it lives only in the returning visitor's own URL. That is an
+ordinary resume link, with a shorter life than most.
+
+Recorded in KNOWN_ISSUES rather than changed, with the three things about it
+nobody had written down: it is not single-use, it survives in browser history,
+and the session it grants is **full** rather than scoped to finishing a
+registration. Narrowing any of those is a product decision. This is the second
+time today that reading a scary-looking route carefully was the right move
+rather than fixing it — the first being `PUT storage/{path}`.
+
 ## 5cz. A phone number was enough to claim somebody's account (2026-09-14)
 
 §5cy left an open question and a next step: *get the legitimate returning-user

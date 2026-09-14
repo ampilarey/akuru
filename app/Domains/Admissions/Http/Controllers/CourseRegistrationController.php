@@ -523,18 +523,17 @@ class CourseRegistrationController extends PublicRegistrationController
 
     public function continueForm(Request $request): View|RedirectResponse
     {
-        $user = $request->user();
+        $user = $request->user() ?: $this->verifiedPendingUser();
         if (! $user) {
-            $userId = session('pending_user_id');
-            if (! $userId) {
-                return redirect()->route('public.courses.index')->with('error', 'Session expired.');
-            }
-            $user = \App\Domains\Identity\Models\User::findOrFail($userId);
-            Auth::login($user);
+            return redirect()->route('public.courses.index')->with('error', 'Session expired.');
         }
 
         if (! $user->hasVerifiedContact()) {
             return redirect()->route('public.courses.index')->with('error', 'Please verify your contact first.');
+        }
+
+        if (! $request->user()) {
+            Auth::login($user);
         }
 
         $courseIds = session('pending_selected_course_ids', []);
@@ -592,17 +591,15 @@ class CourseRegistrationController extends PublicRegistrationController
 
     public function enroll(Request $request): RedirectResponse
     {
-        $user = $request->user();
+        $user = $request->user() ?: $this->verifiedPendingUser();
         if (! $user) {
-            $userId = session('pending_user_id');
-            if (! $userId) {
-                return redirect()->route('public.courses.index')->with('error', 'Session expired. Please start again.');
-            }
-            $user = \App\Domains\Identity\Models\User::findOrFail($userId);
-            Auth::login($user);
+            return redirect()->route('public.courses.index')->with('error', 'Session expired. Please start again.');
         }
         if (! $user->hasVerifiedContact()) {
             return redirect()->route('public.courses.index')->with('error', 'Please verify your contact first.');
+        }
+        if (! $request->user()) {
+            Auth::login($user);
         }
 
         $flow = $request->input('flow', 'adult');
@@ -1301,6 +1298,31 @@ class CourseRegistrationController extends PublicRegistrationController
         session(['otp_verified_user_id' => $user->id]);
 
         return redirect()->route('courses.register.set-password');
+    }
+
+    /**
+     * The funnel's pending account — but only if *this* session actually
+     * entered its code.
+     *
+     * `enroll` and `continueForm` both used to do `Auth::login()` straight off
+     * `session('pending_user_id')`, which `start` writes when the code is
+     * **sent**, from a phone number in a public request body. So two POSTs and
+     * somebody else's mobile number produced a signed-in session as them: the
+     * `hasVerifiedContact()` check that follows fired afterwards and returned a
+     * redirect, which does not undo a login.
+     *
+     * Returns the user without signing them in. Deciding to start a session is
+     * the caller's, after its own checks.
+     */
+    protected function verifiedPendingUser(): ?\App\Domains\Identity\Models\User
+    {
+        $userId = (int) session('pending_user_id');
+
+        if ($userId === 0 || ! $this->otpWasVerifiedFor($userId)) {
+            return null;
+        }
+
+        return \App\Domains\Identity\Models\User::find($userId);
     }
 
     /**
