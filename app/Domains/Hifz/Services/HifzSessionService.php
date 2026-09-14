@@ -8,6 +8,7 @@ use App\Domains\Hifz\Models\HifzSession;
 use App\Domains\Hifz\Models\HifzSessionRecord;
 use App\Domains\Identity\Models\User;
 use App\Domains\Offerings\Actions\MirrorHalaqaSessionAction;
+use App\Domains\People\Actions\ListStudentIdsOnTheRollAction;
 use App\Domains\People\Models\Teacher;
 use App\Enums\Hifz\HifzSessionStatus;
 use Carbon\Carbon;
@@ -35,7 +36,26 @@ class HifzSessionService
             ->where('teacher_id', $teacher->id)
             ->get();
 
+        // A hifz enrolment outlives the pupil. `hifz_enrollments.status` is
+        // `active` / `paused` / `completed` / `transferred`, it has no value
+        // meaning "left the school", and `HifzEnrollmentController` has no
+        // update path at all — index, create, store and nothing else — so an
+        // enrolment reads `active` for ever once it is made.
+        //
+        // The school's own record does move: a pupil marked withdrawn comes
+        // off the class register the same day. So the roll is asked here
+        // rather than trusting the enrolment, and today's halaqa work is not
+        // generated for a child who has gone. The enrolment row is left alone:
+        // choosing which of its four words describes a departure is the
+        // owner's call, not this guard's.
+        $present = app(ListStudentIdsOnTheRollAction::class)
+            ->execute($enrollments->pluck('student_id'));
+
         foreach ($enrollments as $enrollment) {
+            if (! in_array((int) $enrollment->student_id, $present, true)) {
+                continue;
+            }
+
             HifzSessionRecord::firstOrCreate(
                 [
                     'hifz_session_id' => $session->id,

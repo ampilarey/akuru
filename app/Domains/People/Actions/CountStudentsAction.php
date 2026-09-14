@@ -2,7 +2,6 @@
 
 namespace App\Domains\People\Actions;
 
-use App\Domains\People\Enums\StudentStatus;
 use App\Domains\People\Models\Student;
 
 /**
@@ -24,9 +23,9 @@ use App\Domains\People\Models\Student;
  *    the right one for the homepage's "students taught", where counting only
  *    today's roll would *undersell* every year that has finished.
  *
- * `prospective` is deliberately outside the roll: an applicant has not started.
- * `inactive` is outside it too — the status exists to say somebody has stopped
- * attending without having formally left.
+ * Which statuses count as "on the roll" is defined once, on
+ * `Student::scopeOnTheRoll()`, so this count and every filter that decides
+ * whether somebody is still a pupil cannot drift apart (rule 11).
  */
 class CountStudentsAction
 {
@@ -35,9 +34,7 @@ class CountStudentsAction
      */
     public function onTheRoll(): int
     {
-        return Student::query()
-            ->where('status', StudentStatus::Active->value)
-            ->count();
+        return Student::query()->onTheRoll()->count();
     }
 
     /**

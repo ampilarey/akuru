@@ -1131,6 +1131,30 @@ unless `APP_ENV=production` and `SMS_LIVE` are both explicitly set.
 > > **With this, every enrollment notice in the system is a listener.** §41's
 > > worked example is closed.
 
+### 27. A halaqa kept generating work for a child who had left
+
+**Fixed (2026-09-14) — found by audit, never filed.** Third pass of the same
+sweep, and the third status column that day whose non-default values were
+unreachable.
+
+`hifz_enrollments.status` is `active` / `paused` / `completed` / `transferred`
+— **no value means "left the school"** — and `HifzEnrollmentController` has
+`index`, `create` and `store` and nothing else, with `store` not even accepting
+a status. So an enrolment reads `active` for ever.
+
+Withdrawing a pupil left `HifzSessionService` creating a session record for
+them **every day a halaqa met**, and the dean's *active students* card counting
+them indefinitely.
+
+The school's roll does move (#25), so it is now asked where work is generated
+and where people are counted. `Student::scopeOnTheRoll()` is the single
+definition of "still a pupil"; `ListStudentIdsOnTheRollAction` is its bulk form;
+Hifz asks through People's action rather than importing its model (rule 3).
+
+**Left deliberately:** the enrolment row itself. See the owner item below.
+
+See STATUS §5dp.
+
 ### 26. Employment could not be ended anywhere in the product
 
 **Fixed (2026-09-14) — found by audit, never filed.** The teacher half of #25,
