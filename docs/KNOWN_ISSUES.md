@@ -372,6 +372,59 @@ value is safe; and it sweeps **React as well as Blade** — it had never been
 able to see `dangerouslySetInnerHTML`, and the new UI is React. Those four
 sites were checked and are sound.
 
+### The return URL could confirm a payment nobody paid for — **fixed (2026-09-14)**
+
+**Severity: P0 — real money.** Found by auditing CLAUDE.md rule 12 clause by
+clause: *"Access to paid anything depends on BML **webhook** confirmation,
+never the return URL."*
+
+`GET payments/bml/return` carries the middleware `['web']` and nothing else —
+no auth, no signature, no ownership check, every value from the query string.
+It did not set the payment's status directly, and the controller even said so
+(*"Finalize server-side; ignores return URL state entirely"*). But it wrote
+`bml_transaction_id` from `?transactionId=`, and `finalizeByReference` then
+asked BML about **that** id and confirmed the payment if the answer was
+"completed".
+
+`BmlPaymentProvider::queryStatus` returned its own argument back as the
+result's `merchantReference`, so the answer always agreed with the question,
+and nothing compared the two. The verification was genuinely server-side. It
+verified the wrong transaction.
+
+**The attack:**
+
+1. Start a real checkout and abandon it — a pending payment now exists with
+   `bml_transaction_id` null.
+2. `GET /payments/bml/return?ref=<own ref>&transactionId=<T>`, where `T` is any
+   completed BML transaction, **most easily one of the payer's own earlier
+   purchases**.
+3. The id is stored, BML is asked about it, BML says "completed", the payment
+   is confirmed, `PaymentConfirmed` fires, the enrolment activates, a receipt
+   is written and the family is notified.
+
+Pay once, then confirm everything afterwards for free.
+
+**Fixed** — `queryStatus` now reads BML's own merchant reference out of the
+response (`localId`, exactly as the signed-webhook path already did), and
+`PaymentService::finalizeByReference` refuses any result that does not name
+this payment. A result naming no payment is refused too: the field used to be
+whatever we passed in, so "missing" and "matching" were indistinguishable.
+The transaction id from the redirect is kept as an untrusted *hint* about
+which question to ask, which is all it ever was. `queryStatus` also
+`rawurlencode()`s the reference before interpolating it into the API path.
+
+**A test was encoding the bug.** `PublicPaidCheckoutTest`'s fake provider
+answered `merchantReference: $merchantReference` — the question repeated back
+as the answer, mirroring the real provider. A fake that always agrees cannot
+express the disagreement the bug lived in, so the reconcile test passed
+throughout. It now looks up the payment that actually holds the id.
+
+**Operator note.** If BML's get-transaction response does not carry a merchant
+reference field, return-URL finalisation will now decline rather than confirm,
+and payments will wait for the signed webhook. That is the correct direction
+under rule 12 — the webhook is the authority — but it is a behaviour change
+worth watching on the first real transaction.
+
 ## Top five (remaining)
 
 1. **Staging staff login** — seed passwords 302 back to login; no SSH from this environment. Blocks any judgement that `test.akuru.edu.mv` is a school.

@@ -289,7 +289,10 @@ class BmlPaymentProvider implements PaymentProviderInterface
 
         try {
             $pathTemplate = config('bml.paths.get_transaction', '/v2/transactions/{reference}');
-            $path = str_replace('{reference}', $merchantReference, $pathTemplate);
+            // Encoded: this reference can reach us from BML's redirect query
+            // string, and interpolating it raw would let `../` or a `?` rewrite
+            // which endpoint we call.
+            $path = str_replace('{reference}', rawurlencode($merchantReference), $pathTemplate);
             Log::info('BML queryStatus request', ['url' => $baseUrl.$path]);
             $response = Http::withHeaders(array_merge(
                 $this->authHeaders($apiKey, $appId ?? ''),
@@ -312,7 +315,25 @@ class BmlPaymentProvider implements PaymentProviderInterface
             $providerRef = $data['id'] ?? $data['transactionId'] ?? null;
             $isConfirmed = in_array(strtolower((string) $status), ['completed', 'success', 'confirmed', 'true'], true);
 
-            return new PaymentVerificationResult(true, $merchantReference, $providerRef, $status, $data, null, $isConfirmed);
+            // **BML's own merchant reference, not the one we asked about.**
+            //
+            // This used to echo `$merchantReference` straight back, which made
+            // the field worthless as an identity check: the answer always
+            // agreed with the question. Since the argument can be a transaction
+            // id that arrived in the redirect query string, "we verified it
+            // server-side" was verifying *some* transaction rather than *this*
+            // payment. `PaymentService::finalizeByReference` now compares this
+            // value and refuses a mismatch.
+            //
+            // Read exactly as `verifyCallback` reads it from a signed webhook,
+            // because it is the same field in the same payload.
+            $merchantRef = $data['localId']
+                ?? $data['reference']
+                ?? $data['merchantReference']
+                ?? $data['merchant_reference']
+                ?? null;
+
+            return new PaymentVerificationResult(true, $merchantRef, $providerRef, $status, $data, null, $isConfirmed);
         } catch (\Throwable $e) {
             Log::warning('BML queryStatus failed', ['ref' => $merchantReference, 'error' => $e->getMessage()]);
 

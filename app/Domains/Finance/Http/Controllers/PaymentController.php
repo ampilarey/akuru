@@ -101,10 +101,23 @@ class PaymentController extends Controller
             return view('payments.return-missing', ['ref' => $ref]);
         }
 
-        // Store BML-appended query params for debugging
+        // Store BML-appended query params for debugging. Written, never read
+        // for a decision — nothing outside this line and the model's casts
+        // touches the column.
         $payment->update(['redirect_return_payload' => $request->query->all()]);
 
-        // Pre-set BML transaction id if present
+        // **A hint, and nothing more.** This route is `['web']` only: no auth,
+        // no signature, no ownership check, every value from the query string.
+        // BML knows transactions by their own id rather than our merchant
+        // reference, so the id is genuinely needed to ask BML about this
+        // payment — but it is an *untrusted* pointer to the question, never
+        // the answer.
+        //
+        // What makes that safe is on the other side:
+        // `PaymentService::finalizeByReference` compares the merchant
+        // reference BML returns against this payment and refuses a mismatch.
+        // Without that check, replaying any completed transaction id here
+        // confirmed this payment — see the comment there.
         $bmlTransactionId = $request->query('transactionId') ?? $request->query('transaction_id');
         if ($bmlTransactionId && ! $payment->bml_transaction_id) {
             $payment->update(['bml_transaction_id' => $bmlTransactionId]);

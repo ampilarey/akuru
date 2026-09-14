@@ -4278,6 +4278,59 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5cu. The return URL chose the question, which is the same as giving the answer (2026-09-14)
+
+Auditing CLAUDE.md **rule 12** clause by clause. Clause 3 (discounts never buy
+gift cards) has `DiscountsNeverBuyGiftCardsTest`. Clause 2 (ledgers
+append-only) has no gate but no violations — `wallet_transactions`,
+`gift_card_transactions`, `leave_ledger` and `receipts` take no updates or
+deletes anywhere. **Clause 1 had a P0.**
+
+> *"Access to paid anything depends on BML **webhook** confirmation, never the
+> return URL."*
+
+`GET payments/bml/return` is `['web']` and nothing else: no auth, no signature,
+no ownership check, every value from the query string. It did not set status
+directly — the controller said so in a comment, *"Finalize server-side; ignores
+return URL state entirely"* — but it wrote `bml_transaction_id` from
+`?transactionId=`, and `finalizeByReference` asked BML about **that** id.
+
+`queryStatus` echoed its own argument back as the result's `merchantReference`,
+so the answer always agreed with the question and nothing compared them. The
+check was server-side and it verified the wrong transaction.
+
+**Abandon a checkout, then replay any completed transaction id — most easily
+one of your own earlier purchases — and the pending payment confirms.**
+Enrolment activates, receipt is written, family is notified, no money moved.
+Pay once, get everything after it free.
+
+Fixed by making the answer identify itself: `queryStatus` reads BML's own
+`localId` (as the signed-webhook path already did) and `finalizeByReference`
+refuses a result that does not name this payment. A result naming *no* payment
+is refused as well — the field used to be whatever we passed in, so "missing"
+and "matching" looked identical. The redirect's transaction id stays as an
+untrusted hint about which question to ask, which is all it ever was, and is
+now `rawurlencode()`d before it reaches the API path.
+
+### A test was holding the bug in place
+
+`PublicPaidCheckoutTest`'s fake provider answered
+`merchantReference: $merchantReference` — the question repeated back as the
+answer, faithfully mirroring the real provider. **A fake that always agrees
+cannot express the disagreement the bug lived in**, so the reconcile test went
+green throughout. It now looks up the payment that actually holds the id, and
+`grep` confirms no other fake in the suite does the same thing.
+
+Two of the five new cases fail against the old code, checked by removing the
+guard and re-running. One of the three that still passes is deliberate: *"it
+still confirms a payment from its own transaction"* — without it, "refuse
+everything" would satisfy the attack case and break every real payment.
+
+**Operator note.** If BML's get-transaction response carries no merchant
+reference, return-URL finalisation now declines rather than confirms and
+payments wait for the webhook. Correct under rule 12 — the webhook is the
+authority — but worth watching on the first real transaction.
+
 ## 5ct. The gate was green and its own declaration was the hole (2026-09-14)
 
 A sweep of every `{!! !!}` in the Blade views — 24 sinks — asking not "is this
