@@ -8,6 +8,7 @@ use App\Domains\ExamsGrades\Actions\SaveWeightSchemeAction;
 use App\Domains\ExamsGrades\Models\AssessmentWeightScheme;
 use App\Domains\ExamsGrades\Models\ExamType;
 use App\Http\Controllers\Controller;
+use App\Support\Csv;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -88,9 +89,9 @@ class WeightSchemeController extends Controller
 
         return response()->streamDownload(function () use ($rows): void {
             $out = fopen('php://output', 'w');
-            fputcsv($out, ['id', 'academic_year_id', 'class_id', 'subject_id', 'weights']);
+            Csv::put($out, ['id', 'academic_year_id', 'class_id', 'subject_id', 'weights']);
             foreach ($rows as $row) {
-                fputcsv($out, [
+                Csv::put($out, [
                     $row->id,
                     $row->academic_year_id,
                     $row->class_id,

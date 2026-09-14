@@ -9,6 +9,7 @@ use App\Domains\Academics\Actions\SaveMeetingSlotAction;
 use App\Domains\Academics\Enums\MeetingSlotStatus;
 use App\Domains\Academics\Models\MeetingSlot;
 use App\Http\Controllers\Controller;
+use App\Support\Csv;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -90,12 +91,12 @@ class MeetingSlotController extends Controller
 
         return response()->streamDownload(function () use ($rows): void {
             $out = fopen('php://output', 'w');
-            fputcsv($out, [
+            Csv::put($out, [
                 'id', 'date', 'start', 'end', 'title', 'teacher', 'class', 'status',
                 'capacity', 'booked', 'students',
             ]);
             foreach ($rows as $row) {
-                fputcsv($out, [
+                Csv::put($out, [
                     $row['id'],
                     $row['date'],
                     $row['start_time'],

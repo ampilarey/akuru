@@ -5,6 +5,7 @@ namespace App\Domains\Identity\Http\Controllers;
 use App\Domains\Identity\Actions\DeleteUserAccountAction;
 use App\Domains\Identity\Models\User;
 use App\Http\Controllers\Controller;
+use App\Support\Csv;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
@@ -38,10 +39,10 @@ class AdminUserController extends Controller
 
         return response()->streamDownload(function () use ($users): void {
             $handle = fopen('php://output', 'w');
-            fputcsv($handle, ['id', 'name', 'roles', 'contacts', 'active', 'created_at']);
+            Csv::put($handle, ['id', 'name', 'roles', 'contacts', 'active', 'created_at']);
 
             foreach ($users as $user) {
-                fputcsv($handle, [
+                Csv::put($handle, [
                     $user->id,
                     $user->name,
                     $user->roles->pluck('name')->implode(' '),

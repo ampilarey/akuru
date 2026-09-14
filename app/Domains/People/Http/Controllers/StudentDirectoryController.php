@@ -27,6 +27,7 @@ use App\Domains\People\Models\EmergencyContact;
 use App\Domains\People\Models\ParentGuardian;
 use App\Domains\People\Models\Student;
 use App\Http\Controllers\Controller;
+use App\Support\Csv;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -86,10 +87,10 @@ class StudentDirectoryController extends Controller
 
         return response()->streamDownload(function () use ($students): void {
             $handle = fopen('php://output', 'w');
-            fputcsv($handle, ['id', 'student_number', 'first_name', 'last_name', 'national_id', 'status', 'class']);
+            Csv::put($handle, ['id', 'student_number', 'first_name', 'last_name', 'national_id', 'status', 'class']);
 
             foreach ($students as $student) {
-                fputcsv($handle, [
+                Csv::put($handle, [
                     $student->id,
                     $student->student_id,
                     $student->first_name,

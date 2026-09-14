@@ -6,6 +6,7 @@ use App\Domains\Courses\Actions\ListCourseSubjectsAction;
 use App\Domains\Courses\Actions\SaveCourseSubjectAction;
 use App\Domains\Courses\Models\CourseSubject;
 use App\Http\Controllers\Controller;
+use App\Support\Csv;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -46,9 +47,9 @@ class CourseSubjectController extends Controller
 
         return response()->streamDownload(function () use ($rows): void {
             $out = fopen('php://output', 'w');
-            fputcsv($out, ['id', 'parent_id', 'name_en', 'slug', 'active']);
+            Csv::put($out, ['id', 'parent_id', 'name_en', 'slug', 'active']);
             foreach ($rows as $row) {
-                fputcsv($out, [$row['id'], $row['parent_id'], $row['name_en'], $row['slug'], $row['active'] ? '1' : '0']);
+                Csv::put($out, [$row['id'], $row['parent_id'], $row['name_en'], $row['slug'], $row['active'] ? '1' : '0']);
             }
             fclose($out);
         }, 'course-subjects.csv', ['Content-Type' => 'text/csv; charset=UTF-8']);

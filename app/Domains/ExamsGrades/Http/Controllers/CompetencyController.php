@@ -7,6 +7,7 @@ use App\Domains\ExamsGrades\Actions\SaveCompetencyAction;
 use App\Domains\ExamsGrades\Actions\SaveCompetencyAssessmentAction;
 use App\Domains\ExamsGrades\Models\Competency;
 use App\Http\Controllers\Controller;
+use App\Support\Csv;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -80,9 +81,9 @@ class CompetencyController extends Controller
 
         return response()->streamDownload(function () use ($rows): void {
             $out = fopen('php://output', 'w');
-            fputcsv($out, ['id', 'subject_id', 'name', 'sort_order']);
+            Csv::put($out, ['id', 'subject_id', 'name', 'sort_order']);
             foreach ($rows as $row) {
-                fputcsv($out, [$row->id, $row->subject_id, $row->name, $row->sort_order]);
+                Csv::put($out, [$row->id, $row->subject_id, $row->name, $row->sort_order]);
             }
             fclose($out);
         }, 'competencies.csv', ['Content-Type' => 'text/csv; charset=UTF-8']);

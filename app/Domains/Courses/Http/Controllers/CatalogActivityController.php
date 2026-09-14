@@ -9,6 +9,7 @@ use App\Domains\Courses\Components\Quran\Actions\ListQuranReferenceAction;
 use App\Domains\Courses\Models\Activity;
 use App\Domains\Courses\Models\Course;
 use App\Http\Controllers\Controller;
+use App\Support\Csv;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -76,9 +77,9 @@ class CatalogActivityController extends Controller
 
         return response()->streamDownload(function () use ($rows): void {
             $handle = fopen('php://output', 'w');
-            fputcsv($handle, ['id', 'title', 'pattern', 'activity_type', 'max_score', 'passing_score', 'is_required']);
+            Csv::put($handle, ['id', 'title', 'pattern', 'activity_type', 'max_score', 'passing_score', 'is_required']);
             foreach ($rows as $row) {
-                fputcsv($handle, [
+                Csv::put($handle, [
                     $row['id'],
                     $row['title'],
                     $row['pattern'],

@@ -8,6 +8,7 @@ use App\Domains\Courses\Components\Arabic\Actions\SaveArabicLetterAction;
 use App\Domains\Courses\Components\Arabic\Models\ArabicHarakah;
 use App\Domains\Courses\Components\Arabic\Models\ArabicLetter;
 use App\Http\Controllers\Controller;
+use App\Support\Csv;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -68,12 +69,12 @@ class CatalogArabicReferenceController extends Controller
 
         return response()->streamDownload(function () use ($payload): void {
             $handle = fopen('php://output', 'w');
-            fputcsv($handle, ['kind', 'id', 'key_name', 'glyph', 'display_name', 'is_active']);
+            Csv::put($handle, ['kind', 'id', 'key_name', 'glyph', 'display_name', 'is_active']);
             foreach ($payload['letters'] as $row) {
-                fputcsv($handle, ['letter', $row['id'], $row['key_name'], $row['arabic_character'], $row['display_name'], $row['is_active'] ? 'yes' : 'no']);
+                Csv::put($handle, ['letter', $row['id'], $row['key_name'], $row['arabic_character'], $row['display_name'], $row['is_active'] ? 'yes' : 'no']);
             }
             foreach ($payload['harakas'] as $row) {
-                fputcsv($handle, ['harakah', $row['id'], $row['key_name'], $row['symbol'], $row['display_name'], $row['is_active'] ? 'yes' : 'no']);
+                Csv::put($handle, ['harakah', $row['id'], $row['key_name'], $row['symbol'], $row['display_name'], $row['is_active'] ? 'yes' : 'no']);
             }
             fclose($handle);
         }, 'arabic-reference.csv', ['Content-Type' => 'text/csv']);

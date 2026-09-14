@@ -5,6 +5,7 @@ namespace App\Domains\Academics\Http\Controllers;
 use App\Domains\Academics\Actions\SavePeriodAction;
 use App\Domains\Academics\Models\Period;
 use App\Http\Controllers\Controller;
+use App\Support\Csv;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -57,10 +58,10 @@ class PeriodDirectoryController extends Controller
 
         return response()->streamDownload(function () use ($periods): void {
             $handle = fopen('php://output', 'w');
-            fputcsv($handle, ['id', 'name', 'start_time', 'end_time', 'order', 'is_break', 'is_active']);
+            Csv::put($handle, ['id', 'name', 'start_time', 'end_time', 'order', 'is_break', 'is_active']);
 
             foreach ($periods as $period) {
-                fputcsv($handle, [
+                Csv::put($handle, [
                     $period->id,
                     $period->name,
                     $this->time($period->start_time),

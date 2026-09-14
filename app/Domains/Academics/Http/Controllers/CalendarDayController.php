@@ -7,6 +7,7 @@ use App\Domains\Academics\Enums\CalendarDayType;
 use App\Domains\Academics\Models\AcademicYear;
 use App\Domains\Academics\Models\CalendarDay;
 use App\Http\Controllers\Controller;
+use App\Support\Csv;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -84,10 +85,10 @@ class CalendarDayController extends Controller
 
         return response()->streamDownload(function () use ($rows): void {
             $handle = fopen('php://output', 'w');
-            fputcsv($handle, ['id', 'date', 'type', 'title', 'title_arabic', 'title_dhivehi', 'affects_timetable', 'is_public', 'event_id', 'notes']);
+            Csv::put($handle, ['id', 'date', 'type', 'title', 'title_arabic', 'title_dhivehi', 'affects_timetable', 'is_public', 'event_id', 'notes']);
 
             foreach ($rows as $row) {
-                fputcsv($handle, [
+                Csv::put($handle, [
                     $row->id,
                     $row->date?->toDateString(),
                     $row->type->value,

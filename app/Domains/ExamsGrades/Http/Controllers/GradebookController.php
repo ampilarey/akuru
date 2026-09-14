@@ -7,6 +7,7 @@ use App\Domains\ExamsGrades\Actions\ComputeTermGradesAction;
 use App\Domains\ExamsGrades\Actions\ListExamCatalogAction;
 use App\Domains\ExamsGrades\Actions\ListGradebookAction;
 use App\Http\Controllers\Controller;
+use App\Support\Csv;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -74,7 +75,7 @@ class GradebookController extends Controller
 
         return response()->streamDownload(function () use ($book, $items): void {
             $out = fopen('php://output', 'w');
-            fputcsv($out, array_merge(
+            Csv::put($out, array_merge(
                 ['student_id', 'name'],
                 array_map(fn (array $item): string => $item['label'], $items),
                 ['percent', 'grade', 'point', 'rank'],
@@ -85,7 +86,7 @@ class GradebookController extends Controller
                     $cell = $row['items'][$item['key']] ?? null;
                     $scores[] = $this->csvCell($cell);
                 }
-                fputcsv($out, array_merge(
+                Csv::put($out, array_merge(
                     [
                         $row['student_id'],
                         $row['name'],

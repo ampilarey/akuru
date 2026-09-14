@@ -4,6 +4,7 @@ namespace App\Domains\Portal\Http\Controllers;
 
 use App\Domains\Academics\Actions\ListAnnouncementsForUserAction;
 use App\Http\Controllers\Controller;
+use App\Support\Csv;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -31,9 +32,9 @@ class PortalAnnouncementController extends Controller
 
         return response()->streamDownload(function () use ($rows): void {
             $out = fopen('php://output', 'w');
-            fputcsv($out, ['published_on', 'expires_on', 'priority', 'type', 'title', 'content']);
+            Csv::put($out, ['published_on', 'expires_on', 'priority', 'type', 'title', 'content']);
             foreach ($rows as $row) {
-                fputcsv($out, [
+                Csv::put($out, [
                     $row['published_on'],
                     $row['expires_on'],
                     $row['priority'],

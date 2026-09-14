@@ -9,6 +9,7 @@ use App\Domains\Academics\Models\Period;
 use App\Domains\Academics\Models\Room;
 use App\Domains\Academics\Models\RoomBooking;
 use App\Http\Controllers\Controller;
+use App\Support\Csv;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
@@ -112,10 +113,10 @@ class RoomBookingController extends Controller
 
         return response()->streamDownload(function () use ($rows): void {
             $handle = fopen('php://output', 'w');
-            fputcsv($handle, ['id', 'date', 'title', 'title_arabic', 'title_dhivehi', 'room_id', 'period_id', 'start', 'end', 'notes']);
+            Csv::put($handle, ['id', 'date', 'title', 'title_arabic', 'title_dhivehi', 'room_id', 'period_id', 'start', 'end', 'notes']);
 
             foreach ($rows as $row) {
-                fputcsv($handle, [
+                Csv::put($handle, [
                     $row->id,
                     $row->date?->toDateString(),
                     $row->title,

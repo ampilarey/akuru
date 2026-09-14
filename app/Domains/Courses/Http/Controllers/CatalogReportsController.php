@@ -4,6 +4,7 @@ namespace App\Domains\Courses\Http\Controllers;
 
 use App\Domains\Courses\Actions\ComposeCatalogReportsAction;
 use App\Http\Controllers\Controller;
+use App\Support\Csv;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -38,19 +39,19 @@ class CatalogReportsController extends Controller
 
         return response()->streamDownload(function () use ($payload): void {
             $out = fopen('php://output', 'w');
-            fputcsv($out, ['report', 'label', 'value', 'detail']);
+            Csv::put($out, ['report', 'label', 'value', 'detail']);
 
             foreach ($payload['totals'] as $key => $value) {
-                fputcsv($out, ['total', str_replace('_', ' ', (string) $key), $value ?? '—', '']);
+                Csv::put($out, ['total', str_replace('_', ' ', (string) $key), $value ?? '—', '']);
             }
-            fputcsv($out, ['scores', 'attempts scored', $payload['scores']['count'], '']);
-            fputcsv($out, ['scores', 'average percent', $payload['scores']['average_percent'] ?? '—', '']);
-            fputcsv($out, ['reviews', 'pending', $payload['pendingReviews']['count'], $payload['pendingReviews']['oldest'] ?? '']);
-            fputcsv($out, ['certificates', 'issued', $payload['certificates']['issued'], '']);
-            fputcsv($out, ['certificates', 'revoked', $payload['certificates']['revoked'], '']);
+            Csv::put($out, ['scores', 'attempts scored', $payload['scores']['count'], '']);
+            Csv::put($out, ['scores', 'average percent', $payload['scores']['average_percent'] ?? '—', '']);
+            Csv::put($out, ['reviews', 'pending', $payload['pendingReviews']['count'], $payload['pendingReviews']['oldest'] ?? '']);
+            Csv::put($out, ['certificates', 'issued', $payload['certificates']['issued'], '']);
+            Csv::put($out, ['certificates', 'revoked', $payload['certificates']['revoked'], '']);
 
             foreach ($payload['byCourse'] as $row) {
-                fputcsv($out, [
+                Csv::put($out, [
                     'course_completion',
                     $row['title'] ?? '',
                     ($row['completed'] ?? 0).'/'.($row['enrolled'] ?? 0),
@@ -58,7 +59,7 @@ class CatalogReportsController extends Controller
                 ]);
             }
             foreach ($payload['byOffering'] as $row) {
-                fputcsv($out, [
+                Csv::put($out, [
                     'offering_completion',
                     $row['title'] ?? '',
                     ($row['completed'] ?? 0).'/'.($row['enrolled'] ?? 0),

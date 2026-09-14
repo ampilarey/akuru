@@ -7,6 +7,7 @@ use App\Domains\HR\Actions\SaveLeaveTypeAction;
 use App\Domains\HR\Enums\LeaveTypeCode;
 use App\Domains\HR\Models\LeaveType;
 use App\Http\Controllers\Controller;
+use App\Support\Csv;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -52,9 +53,9 @@ class LeaveTypeController extends Controller
 
         return response()->streamDownload(function () use ($rows): void {
             $out = fopen('php://output', 'w');
-            fputcsv($out, ['code', 'name', 'days_per_year', 'carry_over_max', 'paid', 'active']);
+            Csv::put($out, ['code', 'name', 'days_per_year', 'carry_over_max', 'paid', 'active']);
             foreach ($rows as $row) {
-                fputcsv($out, [
+                Csv::put($out, [
                     $row['code'],
                     $row['name'],
                     $row['days_per_year'],

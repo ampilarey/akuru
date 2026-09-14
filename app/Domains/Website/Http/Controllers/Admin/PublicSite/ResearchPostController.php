@@ -8,6 +8,7 @@ use App\Domains\Website\Actions\PresentResearchPostAction;
 use App\Domains\Website\Actions\SaveResearchPostAction;
 use App\Domains\Website\Models\Post;
 use App\Http\Controllers\Controller;
+use App\Support\Csv;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
@@ -33,9 +34,9 @@ class ResearchPostController extends Controller
 
         return response()->streamDownload(function () use ($rows): void {
             $out = fopen('php://output', 'w');
-            fputcsv($out, ['id', 'title', 'slug', 'year', 'authors', 'published_at', 'is_published', 'pdf_url']);
+            Csv::put($out, ['id', 'title', 'slug', 'year', 'authors', 'published_at', 'is_published', 'pdf_url']);
             foreach ($rows as $row) {
-                fputcsv($out, [
+                Csv::put($out, [
                     $row['id'],
                     $row['title'],
                     $row['slug'],

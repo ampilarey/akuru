@@ -8,6 +8,7 @@ use App\Domains\Academics\Actions\SaveFoundItemAction;
 use App\Domains\Academics\Models\FoundItem;
 use App\Domains\Media\Actions\ReadPrivateMediaAction;
 use App\Http\Controllers\Controller;
+use App\Support\Csv;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response as HttpResponse;
@@ -94,9 +95,9 @@ class FoundItemController extends Controller
 
         return response()->streamDownload(function () use ($items): void {
             $out = fopen('php://output', 'w');
-            fputcsv($out, ['found_at', 'title', 'description', 'location', 'held_at', 'status', 'returned_at', 'returned_to']);
+            Csv::put($out, ['found_at', 'title', 'description', 'location', 'held_at', 'status', 'returned_at', 'returned_to']);
             foreach ($items as $item) {
-                fputcsv($out, [
+                Csv::put($out, [
                     $item['found_at'], $item['title'], $item['description'], $item['location'],
                     $item['held_at'], $item['status'], $item['returned_at'], $item['returned_to'],
                 ]);

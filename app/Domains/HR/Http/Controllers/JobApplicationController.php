@@ -8,6 +8,7 @@ use App\Domains\HR\Actions\ListJobPostingsAction;
 use App\Domains\HR\Actions\SaveJobApplicationAction;
 use App\Domains\HR\Enums\JobApplicationStatus;
 use App\Http\Controllers\Controller;
+use App\Support\Csv;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -63,9 +64,9 @@ class JobApplicationController extends Controller
 
         return response()->streamDownload(function () use ($rows): void {
             $out = fopen('php://output', 'w');
-            fputcsv($out, ['name', 'email', 'job_title', 'status']);
+            Csv::put($out, ['name', 'email', 'job_title', 'status']);
             foreach ($rows as $row) {
-                fputcsv($out, [$row['name'], $row['email'], $row['job_title'], $row['status']]);
+                Csv::put($out, [$row['name'], $row['email'], $row['job_title'], $row['status']]);
             }
             fclose($out);
         }, 'job-applications.csv', ['Content-Type' => 'text/csv; charset=UTF-8']);

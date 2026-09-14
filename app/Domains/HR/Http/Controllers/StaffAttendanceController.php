@@ -13,6 +13,7 @@ use App\Domains\HR\Enums\StaffAttendanceSource;
 use App\Domains\HR\Enums\StaffAttendanceStatus;
 use App\Domains\People\Actions\ListStaffProfilesAction;
 use App\Http\Controllers\Controller;
+use App\Support\Csv;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -125,9 +126,9 @@ class StaffAttendanceController extends Controller
 
         return response()->streamDownload(function () use ($rows): void {
             $out = fopen('php://output', 'w');
-            fputcsv($out, ['staff_profile_id', 'staff_number', 'staff_name', 'department', 'date', 'status', 'source', 'minutes_late', 'remarks']);
+            Csv::put($out, ['staff_profile_id', 'staff_number', 'staff_name', 'department', 'date', 'status', 'source', 'minutes_late', 'remarks']);
             foreach ($rows as $row) {
-                fputcsv($out, [
+                Csv::put($out, [
                     $row['staff_profile_id'],
                     $row['staff_number'],
                     $row['staff_name'],

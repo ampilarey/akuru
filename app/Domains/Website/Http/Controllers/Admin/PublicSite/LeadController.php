@@ -4,6 +4,7 @@ namespace App\Domains\Website\Http\Controllers\Admin\PublicSite;
 
 use App\Domains\Website\Actions\ListLeadsAction;
 use App\Http\Controllers\Controller;
+use App\Support\Csv;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -26,9 +27,9 @@ class LeadController extends Controller
 
         return response()->streamDownload(function () use ($rows): void {
             $out = fopen('php://output', 'w');
-            fputcsv($out, ['id', 'course_id', 'course_title', 'name', 'mobile', 'email', 'source', 'status', 'notes', 'created_at']);
+            Csv::put($out, ['id', 'course_id', 'course_title', 'name', 'mobile', 'email', 'source', 'status', 'notes', 'created_at']);
             foreach ($rows as $row) {
-                fputcsv($out, [
+                Csv::put($out, [
                     $row['id'],
                     $row['course_id'],
                     $row['course_title'],

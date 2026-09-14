@@ -8,6 +8,7 @@ use App\Domains\Academics\Actions\ListPortalMeetingSlotsAction;
 use App\Domains\People\Actions\ListGuardianChildrenAction;
 use App\Domains\People\Actions\ResolveStudentForUserAction;
 use App\Http\Controllers\Controller;
+use App\Support\Csv;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -68,9 +69,9 @@ class PortalMeetingController extends Controller
 
         return response()->streamDownload(function () use ($board): void {
             $out = fopen('php://output', 'w');
-            fputcsv($out, ['student', 'date', 'start', 'end', 'teacher', 'title', 'status']);
+            Csv::put($out, ['student', 'date', 'start', 'end', 'teacher', 'title', 'status']);
             foreach ($board['bookings'] as $row) {
-                fputcsv($out, [
+                Csv::put($out, [
                     $row['student_name'],
                     $row['date'],
                     $row['start_time'],

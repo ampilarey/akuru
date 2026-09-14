@@ -10,6 +10,7 @@ use App\Domains\Finance\Enums\InvoiceStatus;
 use App\Domains\Finance\Models\BankStatementLine;
 use App\Domains\Finance\Models\Invoice;
 use App\Http\Controllers\Controller;
+use App\Support\Csv;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -133,9 +134,9 @@ class BankStatementController extends Controller
 
         return response()->streamDownload(function () use ($payload): void {
             $handle = fopen('php://output', 'w');
-            fputcsv($handle, ['posted_on', 'description', 'reference', 'amount', 'match_status', 'invoice_number', 'note']);
+            Csv::put($handle, ['posted_on', 'description', 'reference', 'amount', 'match_status', 'invoice_number', 'note']);
             foreach ($payload['lines'] as $row) {
-                fputcsv($handle, [
+                Csv::put($handle, [
                     $row['posted_on'],
                     $row['description'],
                     $row['reference'],

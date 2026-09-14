@@ -6,6 +6,7 @@ use App\Domains\ExamsGrades\Actions\SaveExamTypeAction;
 use App\Domains\ExamsGrades\Enums\ExamTypeCode;
 use App\Domains\ExamsGrades\Models\ExamType;
 use App\Http\Controllers\Controller;
+use App\Support\Csv;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -51,9 +52,9 @@ class ExamTypeController extends Controller
 
         return response()->streamDownload(function () use ($rows): void {
             $out = fopen('php://output', 'w');
-            fputcsv($out, ['id', 'name', 'name_arabic', 'name_dhivehi', 'code', 'default_weight', 'counts_toward_final', 'active']);
+            Csv::put($out, ['id', 'name', 'name_arabic', 'name_dhivehi', 'code', 'default_weight', 'counts_toward_final', 'active']);
             foreach ($rows as $row) {
-                fputcsv($out, [
+                Csv::put($out, [
                     $row->id,
                     $row->name,
                     $row->name_arabic,

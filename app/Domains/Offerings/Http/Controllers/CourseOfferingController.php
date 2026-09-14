@@ -7,6 +7,7 @@ use App\Domains\Offerings\Actions\PinOfferingContentAction;
 use App\Domains\Offerings\Actions\SaveCourseOfferingAction;
 use App\Domains\Offerings\Models\CourseOffering;
 use App\Http\Controllers\Controller;
+use App\Support\Csv;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -69,9 +70,9 @@ class CourseOfferingController extends Controller
 
         return response()->streamDownload(function () use ($payload): void {
             $out = fopen('php://output', 'w');
-            fputcsv($out, ['id', 'course_title', 'title', 'delivery_mode', 'audience', 'level', 'status', 'pin_mode']);
+            Csv::put($out, ['id', 'course_title', 'title', 'delivery_mode', 'audience', 'level', 'status', 'pin_mode']);
             foreach ($payload['rows'] as $row) {
-                fputcsv($out, [
+                Csv::put($out, [
                     $row['id'], $row['course_title'], $row['title'], $row['delivery_mode'],
                     // SPEC §10.5/§10.6: which batch this is, in the export an
                     // admin actually reads.

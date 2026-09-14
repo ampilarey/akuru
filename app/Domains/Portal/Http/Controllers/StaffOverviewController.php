@@ -4,6 +4,7 @@ namespace App\Domains\Portal\Http\Controllers;
 
 use App\Domains\Portal\Actions\ComposeStaffOverviewAction;
 use App\Http\Controllers\Controller;
+use App\Support\Csv;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -28,10 +29,10 @@ class StaffOverviewController extends Controller
 
         return response()->streamDownload(function () use ($payload): void {
             $out = fopen('php://output', 'w');
-            fputcsv($out, ['section', 'label', 'detail', 'status', 'count', 'rate']);
+            Csv::put($out, ['section', 'label', 'detail', 'status', 'count', 'rate']);
 
             foreach ($payload['unfilled'] as $row) {
-                fputcsv($out, [
+                Csv::put($out, [
                     'unfilled',
                     $row['class_name'] ?? '',
                     trim(($row['subject_name'] ?? '').' '.($row['period_name'] ?? '')),
@@ -41,7 +42,7 @@ class StaffOverviewController extends Controller
                 ]);
             }
             foreach ($payload['ungraded'] as $row) {
-                fputcsv($out, [
+                Csv::put($out, [
                     'ungraded',
                     $row['name'] ?? '',
                     trim(($row['class_name'] ?? '').' '.($row['subject_name'] ?? '')),
@@ -51,7 +52,7 @@ class StaffOverviewController extends Controller
                 ]);
             }
             foreach ($payload['fillRates'] as $row) {
-                fputcsv($out, [
+                Csv::put($out, [
                     'fill_rate',
                     $row['teacher_name'] ?: ('Teacher #'.($row['teacher_id'] ?? '')),
                     '',
@@ -61,7 +62,7 @@ class StaffOverviewController extends Controller
                 ]);
             }
             foreach ($payload['planAdherence'] as $row) {
-                fputcsv($out, [
+                Csv::put($out, [
                     'plan_adherence',
                     $row['title'] ?? '',
                     '',

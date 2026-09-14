@@ -15,6 +15,7 @@ use App\Domains\Circulation\Models\BookTitle;
 use App\Domains\Circulation\Support\Code39;
 use App\Domains\People\Actions\SearchRosterCandidatesAction;
 use App\Http\Controllers\Controller;
+use App\Support\Csv;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response as HttpResponse;
@@ -60,10 +61,10 @@ class CirculationController extends Controller
 
         return response()->streamDownload(function () use ($titles): void {
             $handle = fopen('php://output', 'w');
-            fputcsv($handle, ['id', 'title', 'author', 'isbn', 'classification', 'loan_days', 'total_copies', 'available', 'on_loan', 'soonest_back']);
+            Csv::put($handle, ['id', 'title', 'author', 'isbn', 'classification', 'loan_days', 'total_copies', 'available', 'on_loan', 'soonest_back']);
 
             foreach ($titles as $row) {
-                fputcsv($handle, [
+                Csv::put($handle, [
                     $row['id'],
                     $row['title'],
                     $row['author'],

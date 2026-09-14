@@ -12,6 +12,7 @@ use App\Domains\Courses\Enums\AssessmentType;
 use App\Domains\Courses\Models\Assessment;
 use App\Domains\Courses\Models\Course;
 use App\Http\Controllers\Controller;
+use App\Support\Csv;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -115,9 +116,9 @@ class CatalogAssessmentController extends Controller
 
         return response()->streamDownload(function () use ($rows): void {
             $handle = fopen('php://output', 'w');
-            fputcsv($handle, ['id', 'title', 'assessment_type', 'status', 'max_score', 'retake_limit']);
+            Csv::put($handle, ['id', 'title', 'assessment_type', 'status', 'max_score', 'retake_limit']);
             foreach ($rows as $row) {
-                fputcsv($handle, [$row['id'], $row['title'], $row['assessment_type'], $row['status'], $row['max_score'], $row['retake_limit']]);
+                Csv::put($handle, [$row['id'], $row['title'], $row['assessment_type'], $row['status'], $row['max_score'], $row['retake_limit']]);
             }
             fclose($handle);
         }, 'course-'.$course.'-assessments.csv', ['Content-Type' => 'text/csv']);

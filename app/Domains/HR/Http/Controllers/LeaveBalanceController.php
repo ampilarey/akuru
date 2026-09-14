@@ -10,6 +10,7 @@ use App\Domains\HR\Actions\ListLeaveBalancesAction;
 use App\Domains\HR\Actions\ListLeaveTypesAction;
 use App\Domains\People\Actions\ListStaffProfilesAction;
 use App\Http\Controllers\Controller;
+use App\Support\Csv;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -101,9 +102,9 @@ class LeaveBalanceController extends Controller
 
         return response()->streamDownload(function () use ($rows): void {
             $out = fopen('php://output', 'w');
-            fputcsv($out, ['staff_name', 'leave_type', 'entitled', 'carried', 'adjusted', 'balance']);
+            Csv::put($out, ['staff_name', 'leave_type', 'entitled', 'carried', 'adjusted', 'balance']);
             foreach ($rows as $row) {
-                fputcsv($out, [
+                Csv::put($out, [
                     $row['staff_name'],
                     $row['leave_type'],
                     $row['entitled_days'],

@@ -4,6 +4,7 @@ namespace App\Domains\Portal\Http\Controllers;
 
 use App\Domains\Courses\Actions\ListStudentPerformanceReportAction;
 use App\Http\Controllers\Controller;
+use App\Support\Csv;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -28,7 +29,7 @@ class PortalPerformanceController extends Controller
 
         return response()->streamDownload(function () use ($payload): void {
             $out = fopen('php://output', 'w');
-            fputcsv($out, [
+            Csv::put($out, [
                 'student',
                 'relationship',
                 'course',
@@ -42,7 +43,7 @@ class PortalPerformanceController extends Controller
             ]);
             foreach ($payload['students'] as $student) {
                 foreach ($student['rows'] as $row) {
-                    fputcsv($out, [
+                    Csv::put($out, [
                         $student['name'],
                         $student['relationship'],
                         $row['course_title'],

@@ -8,6 +8,7 @@ use App\Domains\Courses\Components\Quran\Actions\RecommendQuranMilestoneAction;
 use App\Domains\People\Actions\ResolveTeacherForUserAction;
 use App\Http\Controllers\Controller;
 use App\Support\Contracts\HalaqaMilestoneWriter;
+use App\Support\Csv;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -31,9 +32,9 @@ class TeachQuranMilestoneController extends Controller
         if ($request->query('format') === 'csv') {
             return response()->streamDownload(function () use ($payload): void {
                 $handle = fopen('php://output', 'w');
-                fputcsv($handle, ['id', 'program', 'student', 'type', 'title', 'status', 'recommended_at']);
+                Csv::put($handle, ['id', 'program', 'student', 'type', 'title', 'status', 'recommended_at']);
                 foreach ($payload['rows'] as $row) {
-                    fputcsv($handle, [
+                    Csv::put($handle, [
                         $row['id'],
                         $row['program_name'],
                         $row['student_name'],

@@ -12,6 +12,7 @@ use App\Domains\Courses\Enums\CourseWorkflowStatus;
 use App\Domains\Courses\Enums\UnlockMode;
 use App\Domains\Courses\Models\Course;
 use App\Http\Controllers\Controller;
+use App\Support\Csv;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -147,9 +148,9 @@ class EngineCourseController extends Controller
 
         return response()->streamDownload(function () use ($rows): void {
             $out = fopen('php://output', 'w');
-            fputcsv($out, ['id', 'title', 'slug', 'subject_name', 'workflow_status']);
+            Csv::put($out, ['id', 'title', 'slug', 'subject_name', 'workflow_status']);
             foreach ($rows as $row) {
-                fputcsv($out, [$row['id'], $row['title'], $row['slug'], $row['subject_name'], $row['workflow_status']]);
+                Csv::put($out, [$row['id'], $row['title'], $row['slug'], $row['subject_name'], $row['workflow_status']]);
             }
             fclose($out);
         }, 'engine-courses.csv', ['Content-Type' => 'text/csv; charset=UTF-8']);

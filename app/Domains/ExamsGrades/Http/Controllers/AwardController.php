@@ -11,6 +11,7 @@ use App\Domains\ExamsGrades\Actions\SaveAwardAction;
 use App\Domains\ExamsGrades\Models\Award;
 use App\Domains\Media\Actions\ReadGeneratedDocumentAction;
 use App\Http\Controllers\Controller;
+use App\Support\Csv;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -113,9 +114,9 @@ class AwardController extends Controller
 
         return response()->streamDownload(function () use ($rows): void {
             $out = fopen('php://output', 'w');
-            fputcsv($out, ['student', 'award', 'level', 'date']);
+            Csv::put($out, ['student', 'award', 'level', 'date']);
             foreach ($rows as $row) {
-                fputcsv($out, [$row['student_name'], $row['award'], $row['level'], $row['awarded_date']]);
+                Csv::put($out, [$row['student_name'], $row['award'], $row['level'], $row['awarded_date']]);
             }
             fclose($out);
         }, 'student-awards.csv', ['Content-Type' => 'text/csv; charset=UTF-8']);

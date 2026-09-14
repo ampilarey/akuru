@@ -10,6 +10,7 @@ use App\Domains\PrayerTimes\Actions\SavePrayerBroadcastAction;
 use App\Domains\PrayerTimes\Models\PrayerBroadcast;
 use App\Domains\PrayerTimes\Models\PrayerRecipientGroup;
 use App\Http\Controllers\Controller;
+use App\Support\Csv;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -33,9 +34,9 @@ class BroadcastController extends Controller
 
         return response()->streamDownload(function () use ($rows): void {
             $out = fopen('php://output', 'w');
-            fputcsv($out, ['id', 'mode', 'status', 'island', 'date_from', 'date_to', 'sent', 'failed', 'estimated_cost', 'created_at']);
+            Csv::put($out, ['id', 'mode', 'status', 'island', 'date_from', 'date_to', 'sent', 'failed', 'estimated_cost', 'created_at']);
             foreach ($rows as $row) {
-                fputcsv($out, $row);
+                Csv::put($out, $row);
             }
             fclose($out);
         }, 'prayer-broadcasts.csv', ['Content-Type' => 'text/csv; charset=UTF-8']);

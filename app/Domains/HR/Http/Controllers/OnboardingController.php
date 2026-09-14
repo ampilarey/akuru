@@ -8,6 +8,7 @@ use App\Domains\HR\Actions\ToggleOnboardingItemAction;
 use App\Domains\HR\Enums\OnboardingKind;
 use App\Domains\People\Actions\ListStaffProfilesAction;
 use App\Http\Controllers\Controller;
+use App\Support\Csv;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -76,9 +77,9 @@ class OnboardingController extends Controller
 
         return response()->streamDownload(function () use ($rows): void {
             $out = fopen('php://output', 'w');
-            fputcsv($out, ['staff_name', 'kind', 'item', 'done']);
+            Csv::put($out, ['staff_name', 'kind', 'item', 'done']);
             foreach ($rows as $row) {
-                fputcsv($out, [$row['staff_name'], $row['kind'], $row['item'], $row['done'] ? '1' : '0']);
+                Csv::put($out, [$row['staff_name'], $row['kind'], $row['item'], $row['done'] ? '1' : '0']);
             }
             fclose($out);
         }, 'staff-checklists.csv', ['Content-Type' => 'text/csv; charset=UTF-8']);

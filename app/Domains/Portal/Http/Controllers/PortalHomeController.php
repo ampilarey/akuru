@@ -4,6 +4,7 @@ namespace App\Domains\Portal\Http\Controllers;
 
 use App\Domains\Portal\Actions\ComposePortalHomeAction;
 use App\Http\Controllers\Controller;
+use App\Support\Csv;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -30,7 +31,7 @@ class PortalHomeController extends Controller
 
         return response()->streamDownload(function () use ($payload): void {
             $out = fopen('php://output', 'w');
-            fputcsv($out, [
+            Csv::put($out, [
                 'section',
                 'student',
                 'relationship',
@@ -41,7 +42,7 @@ class PortalHomeController extends Controller
             ]);
             foreach ($payload['students'] as $student) {
                 $summary = $student['attendance_summary'] ?? [];
-                fputcsv($out, [
+                Csv::put($out, [
                     'attendance',
                     $student['name'],
                     $student['relationship'],
@@ -51,7 +52,7 @@ class PortalHomeController extends Controller
                     '',
                 ]);
                 foreach ($student['exams'] as $exam) {
-                    fputcsv($out, [
+                    Csv::put($out, [
                         'exam',
                         $student['name'],
                         $student['relationship'],
@@ -62,7 +63,7 @@ class PortalHomeController extends Controller
                     ]);
                 }
                 foreach ($student['invoices'] as $invoice) {
-                    fputcsv($out, [
+                    Csv::put($out, [
                         'invoice',
                         $student['name'],
                         $student['relationship'],
@@ -73,7 +74,7 @@ class PortalHomeController extends Controller
                     ]);
                 }
                 foreach ($student['courses'] as $course) {
-                    fputcsv($out, [
+                    Csv::put($out, [
                         'course',
                         $student['name'],
                         $student['relationship'],
@@ -84,7 +85,7 @@ class PortalHomeController extends Controller
                     ]);
                 }
                 foreach ($student['hifz'] as $row) {
-                    fputcsv($out, [
+                    Csv::put($out, [
                         'hifz',
                         $student['name'],
                         $student['relationship'],

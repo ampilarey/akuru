@@ -8,6 +8,7 @@ use App\Domains\Courses\Components\Quran\Actions\ServeRecitationAudioAction;
 use App\Domains\Media\Actions\StorePrivateMediaAction;
 use App\Domains\People\Actions\ResolveTeacherForUserAction;
 use App\Http\Controllers\Controller;
+use App\Support\Csv;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -31,9 +32,9 @@ class TeachRecitationController extends Controller
         if ($request->query('format') === 'csv') {
             return response()->streamDownload(function () use ($payload): void {
                 $handle = fopen('php://output', 'w');
-                fputcsv($handle, ['id', 'student', 'surah', 'from', 'to', 'mode', 'status', 'submitted_at', 'mistakes']);
+                Csv::put($handle, ['id', 'student', 'surah', 'from', 'to', 'mode', 'status', 'submitted_at', 'mistakes']);
                 foreach ($payload['rows'] as $row) {
-                    fputcsv($handle, [
+                    Csv::put($handle, [
                         $row['id'],
                         $row['student']['name'] ?? '',
                         $row['surah'] ?? '',

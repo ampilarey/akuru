@@ -20,6 +20,7 @@ use App\Domains\Library\Enums\LibraryContentType;
 use App\Domains\Library\Models\LibraryItem;
 use App\Domains\Library\Models\LibraryReadingAlert;
 use App\Http\Controllers\Controller;
+use App\Support\Csv;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -42,9 +43,9 @@ class AdminLibraryController extends Controller
         if ($request->query('format') === 'csv') {
             return response()->streamDownload(function () use ($items): void {
                 $out = fopen('php://output', 'w');
-                fputcsv($out, ['id', 'title', 'type', 'access', 'status', 'category', 'published_at']);
+                Csv::put($out, ['id', 'title', 'type', 'access', 'status', 'category', 'published_at']);
                 foreach ($items as $row) {
-                    fputcsv($out, [
+                    Csv::put($out, [
                         $row['id'],
                         $row['title'],
                         $row['content_type'],
@@ -138,9 +139,9 @@ class AdminLibraryController extends Controller
 
         return response()->streamDownload(function () use ($report): void {
             $out = fopen('php://output', 'w');
-            fputcsv($out, ['writer', 'pending', 'available', 'paid', 'refunded']);
+            Csv::put($out, ['writer', 'pending', 'available', 'paid', 'refunded']);
             foreach ($report['writers'] as $row) {
-                fputcsv($out, [$row['writer'], $row['pending'], $row['available'], $row['paid'], $row['refunded']]);
+                Csv::put($out, [$row['writer'], $row['pending'], $row['available'], $row['paid'], $row['refunded']]);
             }
             fclose($out);
         }, 'writer-earnings.csv', ['Content-Type' => 'text/csv; charset=UTF-8']);
@@ -293,9 +294,9 @@ class AdminLibraryController extends Controller
 
         return response()->streamDownload(function () use ($payload): void {
             $handle = fopen('php://output', 'w');
-            fputcsv($handle, ['signal', 'reader', 'item', 'observed', 'threshold', 'detail', 'raised_at', 'reviewed_at', 'outcome']);
+            Csv::put($handle, ['signal', 'reader', 'item', 'observed', 'threshold', 'detail', 'raised_at', 'reviewed_at', 'outcome']);
             foreach ($payload['alerts'] as $row) {
-                fputcsv($handle, [
+                Csv::put($handle, [
                     $row['signal'], $row['reader'], $row['item_title'],
                     $row['observed'], $row['threshold'], $row['detail'],
                     $row['raised_at'], $row['reviewed_at'], $row['outcome'],

@@ -7,6 +7,7 @@ use App\Domains\Courses\Components\Quran\Actions\ReviewQuranSessionRecordAction;
 use App\Domains\Courses\Components\Quran\Actions\SaveQuranSessionRecordAction;
 use App\Domains\People\Actions\ResolveTeacherForUserAction;
 use App\Http\Controllers\Controller;
+use App\Support\Csv;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -28,10 +29,10 @@ class TeachQuranSessionController extends Controller
         if ($request->query('format') === 'csv') {
             return response()->streamDownload(function () use ($payload): void {
                 $handle = fopen('php://output', 'w');
-                fputcsv($handle, ['student', 'attendance', 'new_result', 'new_score', 'recent_result', 'recent_score', 'old_result', 'old_score', 'mistakes', 'overall']);
+                Csv::put($handle, ['student', 'attendance', 'new_result', 'new_score', 'recent_result', 'recent_score', 'old_result', 'old_score', 'mistakes', 'overall']);
                 foreach ($payload['roster'] as $row) {
                     $record = $row['record'] ?? [];
-                    fputcsv($handle, [
+                    Csv::put($handle, [
                         $row['student_name'],
                         $row['status'],
                         $record['new_result'] ?? '',

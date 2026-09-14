@@ -11,6 +11,7 @@ use App\Domains\ExamsGrades\Actions\SaveReportCardCommentAction;
 use App\Domains\ExamsGrades\Models\ReportCard;
 use App\Domains\Media\Actions\ReadGeneratedDocumentAction;
 use App\Http\Controllers\Controller;
+use App\Support\Csv;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -141,9 +142,9 @@ class ReportCardController extends Controller
 
         return response()->streamDownload(function () use ($rows): void {
             $out = fopen('php://output', 'w');
-            fputcsv($out, ['student', 'class', 'term', 'status', 'generated_at', 'published_at']);
+            Csv::put($out, ['student', 'class', 'term', 'status', 'generated_at', 'published_at']);
             foreach ($rows as $row) {
-                fputcsv($out, [
+                Csv::put($out, [
                     $row['student_name'],
                     $row['class_name'],
                     $row['term_name'],

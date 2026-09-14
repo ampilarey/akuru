@@ -8,6 +8,7 @@ use App\Domains\Academics\Actions\UnlockRegisterAction;
 use App\Domains\Academics\Models\AcademicYear;
 use App\Domains\Academics\Models\LessonLog;
 use App\Http\Controllers\Controller;
+use App\Support\Csv;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -77,10 +78,10 @@ class RegisterReportController extends Controller
 
         return response()->streamDownload(function () use ($rows): void {
             $handle = fopen('php://output', 'w');
-            fputcsv($handle, ['id', 'date', 'status', 'class', 'subject', 'teacher_id', 'period']);
+            Csv::put($handle, ['id', 'date', 'status', 'class', 'subject', 'teacher_id', 'period']);
 
             foreach ($rows as $row) {
-                fputcsv($handle, [
+                Csv::put($handle, [
                     $row['id'],
                     $row['date'],
                     $row['status'],

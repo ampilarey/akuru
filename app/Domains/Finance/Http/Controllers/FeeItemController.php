@@ -8,6 +8,7 @@ use App\Domains\Finance\Enums\FeeFrequency;
 use App\Domains\Finance\Enums\FeeItemType;
 use App\Domains\Finance\Models\FeeItem;
 use App\Http\Controllers\Controller;
+use App\Support\Csv;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -75,9 +76,9 @@ class FeeItemController extends Controller
 
         return response()->streamDownload(function () use ($rows): void {
             $out = fopen('php://output', 'w');
-            fputcsv($out, ['name', 'amount', 'type', 'frequency', 'mandatory', 'active']);
+            Csv::put($out, ['name', 'amount', 'type', 'frequency', 'mandatory', 'active']);
             foreach ($rows as $row) {
-                fputcsv($out, [
+                Csv::put($out, [
                     $row['name'],
                     $row['default_amount'],
                     $row['type'],

@@ -8,6 +8,7 @@ use App\Domains\Academics\Actions\RejectAbsenceNoteAction;
 use App\Domains\Academics\Enums\AbsenceNoteStatus;
 use App\Domains\Academics\Models\AbsenceNote;
 use App\Http\Controllers\Controller;
+use App\Support\Csv;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -67,9 +68,9 @@ class AbsenceNoteReviewController extends Controller
 
         return response()->streamDownload(function () use ($rows): void {
             $handle = fopen('php://output', 'w');
-            fputcsv($handle, ['id', 'date', 'student', 'type', 'status', 'reason', 'affects_attendance']);
+            Csv::put($handle, ['id', 'date', 'student', 'type', 'status', 'reason', 'affects_attendance']);
             foreach ($rows as $row) {
-                fputcsv($handle, [
+                Csv::put($handle, [
                     $row['id'],
                     $row['date'],
                     $row['student_name'],

@@ -4,6 +4,7 @@ namespace App\Domains\Website\Http\Controllers\Admin\PublicSite;
 
 use App\Domains\Website\Actions\ListDailyContentSubscriptionsAction;
 use App\Http\Controllers\Controller;
+use App\Support\Csv;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -28,7 +29,7 @@ class DailySubscriptionController extends Controller
 
         return response()->streamDownload(function () use ($rows): void {
             $out = fopen('php://output', 'w');
-            fputcsv($out, [
+            Csv::put($out, [
                 'id',
                 'user_id',
                 'channel',
@@ -42,7 +43,7 @@ class DailySubscriptionController extends Controller
                 'unsubscribe_reason',
             ]);
             foreach ($rows as $row) {
-                fputcsv($out, [
+                Csv::put($out, [
                     $row['id'],
                     $row['user_id'],
                     $row['channel'],

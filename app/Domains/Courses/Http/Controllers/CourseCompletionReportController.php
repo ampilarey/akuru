@@ -4,6 +4,7 @@ namespace App\Domains\Courses\Http\Controllers;
 
 use App\Domains\Courses\Actions\ListOfferingCompletionReportAction;
 use App\Http\Controllers\Controller;
+use App\Support\Csv;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -28,7 +29,7 @@ class CourseCompletionReportController extends Controller
 
         return response()->streamDownload(function () use ($payload): void {
             $out = fopen('php://output', 'w');
-            fputcsv($out, [
+            Csv::put($out, [
                 'student',
                 'course',
                 'offering',
@@ -40,7 +41,7 @@ class CourseCompletionReportController extends Controller
                 'completed_at',
             ]);
             foreach ($payload['rows'] as $row) {
-                fputcsv($out, [
+                Csv::put($out, [
                     $row['student_name'],
                     $row['course_title'],
                     $row['offering_title'],

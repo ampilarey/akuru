@@ -7,6 +7,7 @@ use App\Domains\Hifz\Models\HifzSession;
 use App\Domains\Hifz\Services\HifzReportService;
 use App\Domains\Hifz\Services\HifzScopeService;
 use App\Http\Controllers\Controller;
+use App\Support\Csv;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -89,9 +90,9 @@ class HifzReportController extends Controller
             $handle = fopen('php://output', 'w');
 
             if ($type === 'sessions') {
-                fputcsv($handle, ['Date', 'Program', 'Teacher', 'Status']);
+                Csv::put($handle, ['Date', 'Program', 'Teacher', 'Status']);
                 HifzSession::with(['program', 'teacher.user'])->latest('session_date')->take(500)->each(function ($s) use ($handle) {
-                    fputcsv($handle, [$s->session_date, $s->program->name, $s->teacher?->full_name, $s->status->value]);
+                    Csv::put($handle, [$s->session_date, $s->program->name, $s->teacher?->full_name, $s->status->value]);
                 });
             }
 

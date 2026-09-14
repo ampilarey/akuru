@@ -9,6 +9,7 @@ use App\Domains\Academics\Enums\TermStatus;
 use App\Domains\Academics\Models\AcademicYear;
 use App\Domains\Academics\Models\Term;
 use App\Http\Controllers\Controller;
+use App\Support\Csv;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -33,7 +34,7 @@ class AcademicYearController extends Controller
 
         return response()->streamDownload(function () use ($years): void {
             $handle = fopen('php://output', 'w');
-            fputcsv($handle, ['year_id', 'year', 'year_status', 'year_start', 'year_end', 'term', 'term_status', 'term_start', 'term_end']);
+            Csv::put($handle, ['year_id', 'year', 'year_status', 'year_start', 'year_end', 'term', 'term_status', 'term_start', 'term_end']);
 
             foreach ($years as $year) {
                 $terms = $year->termRecords;
@@ -43,13 +44,13 @@ class AcademicYearController extends Controller
                 // the stream, which arrives as a truncated download rather
                 // than an error page. Caught by the test asserting the body.
                 if ($terms->isEmpty()) {
-                    fputcsv($handle, [$year->id, $year->name, $year->status?->value, $year->start_date?->toDateString(), $year->end_date?->toDateString(), '', '', '', '']);
+                    Csv::put($handle, [$year->id, $year->name, $year->status?->value, $year->start_date?->toDateString(), $year->end_date?->toDateString(), '', '', '', '']);
 
                     continue;
                 }
 
                 foreach ($terms as $term) {
-                    fputcsv($handle, [
+                    Csv::put($handle, [
                         $year->id, $year->name, $year->status?->value,
                         $year->start_date?->toDateString(), $year->end_date?->toDateString(),
                         $term->name, $term->status?->value,

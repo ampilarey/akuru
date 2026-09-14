@@ -8,6 +8,7 @@ use App\Domains\Academics\Enums\BehaviorType;
 use App\Domains\Academics\Models\AcademicYear;
 use App\Domains\Academics\Models\BehaviorRecord;
 use App\Http\Controllers\Controller;
+use App\Support\Csv;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -76,9 +77,9 @@ class BehaviorRecordController extends Controller
 
         return response()->streamDownload(function () use ($rows): void {
             $handle = fopen('php://output', 'w');
-            fputcsv($handle, ['id', 'date', 'student', 'type', 'category', 'points', 'parent_visible', 'description']);
+            Csv::put($handle, ['id', 'date', 'student', 'type', 'category', 'points', 'parent_visible', 'description']);
             foreach ($rows as $row) {
-                fputcsv($handle, [
+                Csv::put($handle, [
                     $row['id'],
                     $row['date'],
                     $row['student_name'],

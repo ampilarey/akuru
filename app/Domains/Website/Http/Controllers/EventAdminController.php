@@ -12,6 +12,7 @@ use App\Domains\Website\Actions\RegisterForEventAction;
 use App\Domains\Website\Actions\SaveEventAction;
 use App\Domains\Website\Models\Event;
 use App\Http\Controllers\Controller;
+use App\Support\Csv;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -113,14 +114,14 @@ class EventAdminController extends Controller
 
         return response()->streamDownload(function () use ($rows): void {
             $out = fopen('php://output', 'w');
-            fputcsv($out, [
+            Csv::put($out, [
                 'id', 'title', 'title_dv', 'title_ar', 'location', 'start_date', 'end_date',
                 'type', 'status', 'registration_type', 'min_attendees', 'max_attendees',
                 'occupying', 'waitlisted', 'waitlist_enabled', 'requires_parent_confirmation',
                 'is_elective', 'second_round_opens_at',
             ]);
             foreach ($rows as $row) {
-                fputcsv($out, [
+                Csv::put($out, [
                     $row['id'], $row['title'], $row['title_dv'], $row['title_ar'], $row['location'],
                     $row['start_date'], $row['end_date'], $row['type'], $row['status'],
                     $row['registration_type'], $row['min_attendees'], $row['max_attendees'],
@@ -140,9 +141,9 @@ class EventAdminController extends Controller
 
         return response()->streamDownload(function () use ($rows): void {
             $out = fopen('php://output', 'w');
-            fputcsv($out, ['id', 'student_id', 'student_name', 'email', 'status', 'waitlist_position', 'source', 'created_at']);
+            Csv::put($out, ['id', 'student_id', 'student_name', 'email', 'status', 'waitlist_position', 'source', 'created_at']);
             foreach ($rows as $row) {
-                fputcsv($out, [
+                Csv::put($out, [
                     $row['id'], $row['student_id'], $row['student_name'], $row['email'],
                     $row['status'], $row['waitlist_position'], $row['registration_source'], $row['created_at'],
                 ]);

@@ -6,6 +6,7 @@ use App\Domains\ExamsGrades\Actions\ListExamCatalogAction;
 use App\Domains\ExamsGrades\Actions\SaveReportCardTemplateAction;
 use App\Domains\ExamsGrades\Models\ReportCardTemplate;
 use App\Http\Controllers\Controller;
+use App\Support\Csv;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -73,9 +74,9 @@ class ReportCardTemplateController extends Controller
 
         return response()->streamDownload(function () use ($rows): void {
             $out = fopen('php://output', 'w');
-            fputcsv($out, ['name', 'sections', 'active']);
+            Csv::put($out, ['name', 'sections', 'active']);
             foreach ($rows as $row) {
-                fputcsv($out, [$row->name, implode('|', $row->sections ?? []), $row->active ? '1' : '0']);
+                Csv::put($out, [$row->name, implode('|', $row->sections ?? []), $row->active ? '1' : '0']);
             }
             fclose($out);
         }, 'report-card-templates.csv', ['Content-Type' => 'text/csv; charset=UTF-8']);

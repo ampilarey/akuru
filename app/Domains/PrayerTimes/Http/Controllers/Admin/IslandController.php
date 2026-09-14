@@ -5,6 +5,7 @@ namespace App\Domains\PrayerTimes\Http\Controllers\Admin;
 use App\Domains\PrayerTimes\Actions\ListPrayerIslandsAction;
 use App\Domains\Settings\Actions\GetSettingAction;
 use App\Http\Controllers\Controller;
+use App\Support\Csv;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -28,9 +29,9 @@ class IslandController extends Controller
 
         return response()->streamDownload(function () use ($rows): void {
             $out = fopen('php://output', 'w');
-            fputcsv($out, ['id', 'name_latin', 'name', 'atoll_latin', 'offset_minutes', 'latitude', 'longitude', 'is_active']);
+            Csv::put($out, ['id', 'name_latin', 'name', 'atoll_latin', 'offset_minutes', 'latitude', 'longitude', 'is_active']);
             foreach ($rows as $row) {
-                fputcsv($out, [
+                Csv::put($out, [
                     $row->id,
                     $row->nameEn,
                     $row->nameDv,

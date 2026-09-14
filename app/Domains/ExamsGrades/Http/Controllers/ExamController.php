@@ -10,6 +10,7 @@ use App\Domains\ExamsGrades\Actions\TransitionExamStatusAction;
 use App\Domains\ExamsGrades\Enums\ExamStatus;
 use App\Domains\ExamsGrades\Models\Exam;
 use App\Http\Controllers\Controller;
+use App\Support\Csv;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -89,9 +90,9 @@ class ExamController extends Controller
 
         return response()->streamDownload(function () use ($rows): void {
             $out = fopen('php://output', 'w');
-            fputcsv($out, ['id', 'name', 'class_id', 'subject_id', 'exam_date', 'status', 'max_marks', 'room_id']);
+            Csv::put($out, ['id', 'name', 'class_id', 'subject_id', 'exam_date', 'status', 'max_marks', 'room_id']);
             foreach ($rows as $row) {
-                fputcsv($out, [
+                Csv::put($out, [
                     $row['id'],
                     $row['name'],
                     $row['class_id'],

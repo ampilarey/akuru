@@ -7,6 +7,7 @@ use App\Domains\Forms\Actions\SaveFormAction;
 use App\Domains\Forms\Enums\FormFieldType;
 use App\Domains\Forms\Models\Form;
 use App\Http\Controllers\Controller;
+use App\Support\Csv;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -70,7 +71,7 @@ class FormAdminController extends Controller
 
         return response()->streamDownload(function () use ($payload, $fields, $anonymous): void {
             $out = fopen('php://output', 'w');
-            fputcsv($out, array_merge(
+            Csv::put($out, array_merge(
                 $anonymous ? ['submitted_at'] : ['respondent', 'submitted_at'],
                 array_map(fn (array $f): string => $f['label'], $fields),
             ));
@@ -80,7 +81,7 @@ class FormAdminController extends Controller
 
                     return is_array($value) ? implode('; ', $value) : $value;
                 }, $fields);
-                fputcsv($out, array_merge(
+                Csv::put($out, array_merge(
                     $anonymous ? [$row['submitted_at']] : [$row['respondent'] ?? '', $row['submitted_at']],
                     $answers,
                 ));

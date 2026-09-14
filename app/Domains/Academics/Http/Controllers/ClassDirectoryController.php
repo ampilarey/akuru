@@ -12,6 +12,7 @@ use App\Domains\Courses\Actions\ListClassroomAssessmentsAction;
 use App\Domains\People\Actions\ListClassTeacherOptionsAction;
 use App\Domains\People\Actions\SearchRosterCandidatesAction;
 use App\Http\Controllers\Controller;
+use App\Support\Csv;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -44,10 +45,10 @@ class ClassDirectoryController extends Controller
 
         return response()->streamDownload(function () use ($classes, $teacherNames): void {
             $handle = fopen('php://output', 'w');
-            fputcsv($handle, ['id', 'name', 'section', 'capacity', 'class_teacher']);
+            Csv::put($handle, ['id', 'name', 'section', 'capacity', 'class_teacher']);
 
             foreach ($classes as $class) {
-                fputcsv($handle, [
+                Csv::put($handle, [
                     $class->id,
                     $class->name,
                     $class->section,
@@ -179,9 +180,9 @@ class ClassDirectoryController extends Controller
 
         return response()->streamDownload(function () use ($rows): void {
             $handle = fopen('php://output', 'w');
-            fputcsv($handle, ['id', 'title', 'assessment_type', 'status', 'max_score', 'legacy_quiz_id', 'legacy_assignment_id']);
+            Csv::put($handle, ['id', 'title', 'assessment_type', 'status', 'max_score', 'legacy_quiz_id', 'legacy_assignment_id']);
             foreach ($rows as $row) {
-                fputcsv($handle, [
+                Csv::put($handle, [
                     $row['id'],
                     $row['title'],
                     $row['assessment_type'],
