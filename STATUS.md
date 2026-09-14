@@ -4278,6 +4278,60 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5cz. A phone number was enough to claim somebody's account (2026-09-14)
+
+§5cy left an open question and a next step: *get the legitimate returning-user
+path passing first, because a refusal proves nothing until the matching success
+does.* Doing that resolved it. **The attack works.**
+
+`setPassword` writes a password, a name, a date of birth and a national ID onto
+`session('pending_user_id')`. `start` — public POST, phone number from the
+request body — writes that session key **when the code is sent**, not when it
+is entered. `setPassword` checked only that the key was present.
+
+POST `start` with a victim's number, skip `verify`, POST `set-password`.
+Demonstrated end to end: password overwritten, `name` became "Attacker X",
+`national_id` became "A999999". The code went to the victim and was never
+needed.
+
+**Scope, by running it rather than reading it.** A **verified** contact is safe
+— `start` short-circuits it to the checkout login screen without writing the
+session keys, now pinned because it is load-bearing. An **unverified** contact
+was fully claimable: every account `AccountResolverService` creates before its
+owner first signs in, which at go-live is every bulk-imported parent and
+student.
+
+Fixed by recording `otp_verified_user_id` in `verify()` and requiring it in
+`setPassword` and the form. Compared against the user id rather than read as a
+boolean, so proof for one account cannot authorise writing to another, and
+consumed on use so one verification cannot authorise two writes.
+
+### Three attempts said this was safe
+
+1. The victim's contact stored as `9995678`; the app stores `+9609995678`. The
+   lookup missed, the funnel created a **brand-new user**, and the attack
+   "failed" against an account that did not exist.
+2. No OTP could be sent at all — `LogSmsSender` had no `sendOtp` (§5cy).
+3. Both faults at once.
+
+Each reported the system as safe. **What exposed all three was the happy-path
+case**, which never passed while any of them were true. That is the same lesson
+`scripts/smoke/own-data.mjs` already carries in its header about pairs, met
+again from the other direction — and the fourth time this session that a probe
+called the system fine because the probe was broken.
+
+### Two gates pushed back, and both were right
+
+`ThinControllersTest` refused the new guard because `setPassword` was already
+106 lines: *"the method is accumulating exactly the logic this gate exists to
+move out."* So the account-claim logic moved into an Action (rule 5) and the
+method shrank rather than grew.
+
+`BaselineArchitectureTest` then refused that Action in **Admissions**, because
+it imports `Identity\Models\User` (rule 3). It lives in **Identity** now. Both
+gates turned a security patch into a smaller controller and a correctly-placed
+Action, which is what they are for.
+
 ## 5cy. The interface that did not declare what its callers called (2026-09-14)
 
 Found sideways. Trying to drive the public registration funnel in a test to
