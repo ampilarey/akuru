@@ -8,6 +8,7 @@ use App\Domains\Admissions\Services\Enrollment\EnrollmentService;
 use App\Domains\Courses\Models\Course;
 use App\Domains\Finance\Models\Payment;
 use App\Domains\Finance\Services\Payment\PaymentService;
+use App\Domains\Identity\Actions\ClaimAccountWithPasswordAction;
 use App\Domains\Identity\Models\UserContact;
 use App\Domains\Identity\Services\AccountResolverService;
 use App\Domains\Identity\Services\ContactNormalizer;
@@ -324,7 +325,7 @@ class CourseRegistrationController extends PublicRegistrationController
         $user = $contact->user;
 
         if ($user->force_password_change) {
-            return redirect()->route('courses.register.set-password');
+            return $this->sendToSetPassword($user);
         }
 
         Auth::login($user);
@@ -362,6 +363,11 @@ class CourseRegistrationController extends PublicRegistrationController
             return redirect()->route('public.courses.index')->with('error', 'Session expired.');
         }
 
+        if (! $this->otpWasVerifiedFor((int) session('pending_user_id'))) {
+            return redirect()->route('courses.register.otp')
+                ->with('error', 'Please enter the verification code first.');
+        }
+
         return view('courses.register-set-password');
     }
 
@@ -370,6 +376,15 @@ class CourseRegistrationController extends PublicRegistrationController
         $userId = session('pending_user_id');
         if (! $userId) {
             return redirect()->route('public.courses.index')->with('error', 'Session expired.');
+        }
+
+        // Knowing a phone number is not authentication. `pending_user_id` says
+        // *which* account the funnel is about; it does not say anybody proved
+        // they own it, because `start` sets it when the code is sent rather
+        // than when it is entered.
+        if (! $this->otpWasVerifiedFor((int) $userId)) {
+            return redirect()->route('courses.register.otp')
+                ->with('error', 'Please enter the verification code first.');
         }
 
         $request->validate([
@@ -392,31 +407,11 @@ class CourseRegistrationController extends PublicRegistrationController
             return back()->withErrors(['passport' => 'Please enter your passport number.'])->withInput();
         }
 
-        $user = \App\Domains\Identity\Models\User::findOrFail($userId);
+        $user = app(ClaimAccountWithPasswordAction::class)->execute((int) $userId, $request->all());
 
-        $user->update([
-            'name' => trim($request->first_name.' '.$request->last_name),
-            'gender' => $request->gender,
-            'date_of_birth' => $request->dob,
-            'national_id' => $request->id_type === 'national_id' ? strtoupper(trim($request->national_id)) : null,
-            'passport' => $request->id_type === 'passport' ? strtoupper(trim($request->passport)) : null,
-            'password' => Hash::make($request->password),
-            'force_password_change' => false,
-        ]);
-
-        // Save optional email contact
-        if ($request->filled('email')) {
-            $emailNorm = $this->normalizer->normalizeEmail($request->email);
-            $emailExists = $user->contacts()->where('type', 'email')->where('value', $emailNorm)->exists();
-            if (! $emailExists) {
-                $user->contacts()->create([
-                    'type' => 'email',
-                    'value' => $emailNorm,
-                    'is_primary' => false,
-                    'verified_at' => null,
-                ]);
-            }
-        }
+        // Spent. One verification authorises one password write, so a second
+        // POST cannot reuse it.
+        session()->forget('otp_verified_user_id');
 
         Auth::login($user);
 
@@ -1288,12 +1283,47 @@ class CourseRegistrationController extends PublicRegistrationController
         return redirect()->route('public.courses.index')->with('error', $error);
     }
 
+    /**
+     * Hand the funnel to the set-password screen, recording that the code was
+     * actually entered for this account.
+     *
+     * **The only place `otp_verified_user_id` is ever written.** `setPassword`
+     * writes a password, a name, a date of birth and a national ID onto
+     * `pending_user_id` — and `start` puts an existing account's id there the
+     * moment the code is *sent*, on a public route, from a phone number in the
+     * request body. Without this, anyone who knew the number of an account
+     * whose contact was not yet verified could skip verification and claim it:
+     * the code went to the owner and was never needed. Bulk-imported parent
+     * accounts are exactly that shape before their first login.
+     */
+    protected function sendToSetPassword(\App\Domains\Identity\Models\User $user): RedirectResponse
+    {
+        session(['otp_verified_user_id' => $user->id]);
+
+        return redirect()->route('courses.register.set-password');
+    }
+
+    /**
+     * Did *this* session enter the code for *this* account?
+     *
+     * Compared against the user id rather than read as a boolean, so a flag
+     * left over from verifying one account cannot authorise writing to
+     * another.
+     */
+    protected function otpWasVerifiedFor(int $userId): bool
+    {
+        return (int) session('otp_verified_user_id') === $userId;
+    }
+
     protected function clearPendingSession(): void
     {
         session()->forget([
             'pending_contact_id', 'pending_user_id', 'pending_course_id',
             'pending_selected_course_ids', 'pending_term_id', 'pending_flow',
             'pending_payment_ref', 'enrollments',
+            // Proof of one verification must not outlive the funnel run it
+            // belongs to.
+            'otp_verified_user_id',
         ]);
     }
 }

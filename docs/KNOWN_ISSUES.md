@@ -458,32 +458,47 @@ entry point, which is presumably why nobody noticed the route was open. Both
 halves came from the same root: `force_password_change` is the flag that
 records the state, and neither the banner nor the route consulted it.
 
-### Open question: the registration funnel's set-password step never checks that the code was entered
+### A phone number was enough to claim somebody's account — **fixed (2026-09-14)**
 
-**Status: recorded, not resolved.** Raised 2026-09-14 while auditing
-`unguarded_write_routes`, whose entry for this route reads *"OTP-proved"*.
+**Severity: P0 — account takeover with no credential at all.** The open
+question recorded earlier the same day, now resolved: **the attack works.**
 
-`CourseRegistrationController::setPassword` sets a password on
-`session('pending_user_id')` and checks only that the value is present. It does
-**not** check that `courses/register/verify` ever succeeded. `start` — a public
-POST — writes `pending_user_id` on the returning-user branch at the moment the
-OTP is *sent*.
+`CourseRegistrationController::setPassword` writes a password, a name, a date
+of birth and a national ID onto `session('pending_user_id')`.
+`courses/register/start` is a public POST that takes a phone number from the
+request body; on the returning-user branch it resolves that number to an
+existing account and writes `pending_user_id` **when the code is sent**, before
+anybody has entered anything. `setPassword` checked only that the value was
+present.
 
-**What is established:** the sequencing above, by reading. Also that `start`
-**short-circuits an already-verified contact** to the checkout login screen
-without setting the session keys, which blocks the worst reading of this
-against any account whose contact is verified.
+So: POST `start` with a victim's mobile number, skip `verify` entirely, POST
+`set-password`. Demonstrated end to end — password overwritten, `name` became
+"Attacker X", `national_id` became "A999999". **The code went to the victim's
+phone and was never needed.**
 
-**What is not established:** whether an account with an *unverified* contact
-can be claimed this way in practice. Attempts to drive the funnel end to end in
-a test did not reach a takeover, **and did not reach a clean legitimate run
-either** — so the model of the flow is still wrong somewhere and neither result
-means anything yet. A green security test nobody can explain is worse than
-none, so none was shipped.
+**Scope, established by running it:**
 
-**Next step:** get the legitimate returning-user path passing first. Until an
-honest happy path runs, a refusal proves nothing — the same lesson
-`scripts/smoke/own-data.mjs` carries about pairs.
+- An account whose contact is **already verified** is safe. `start`
+  short-circuits it to the checkout login screen without writing the session
+  keys. Now pinned by a test, because it is load-bearing.
+- An account whose contact is **not yet verified** was fully claimable. That is
+  every account `AccountResolverService` creates (`verified_at => null`) before
+  its owner first signs in — **at go-live, every bulk-imported parent and
+  student**.
+
+**Fixed** — `verify()` records `otp_verified_user_id` for the account whose
+code was actually entered, and `setPassword` and the form both refuse without
+it. Compared against the user id rather than read as a boolean, so proof for
+one account cannot authorise writing to another, and consumed on use so one
+verification cannot authorise a second write.
+
+**Three earlier attempts reported this as safe.** The first stored the victim's
+contact unnormalised (`9995678` where the app stores `+9609995678`), so the
+lookup missed and the funnel created a brand-new user — the attack "failed"
+against an account that did not exist. The second could not send an OTP at all
+(`LogSmsSender` had no `sendOtp`). The third had both faults at once. What
+exposed all three was insisting on a **passing happy path** before believing
+any refusal: until a legitimate run works, a refusal proves nothing.
 
 ### OTP login could not send a code anywhere except live-SMS production — **fixed (2026-09-14)**
 
