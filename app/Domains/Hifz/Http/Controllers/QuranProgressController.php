@@ -42,7 +42,7 @@ class QuranProgressController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
+        $data = $request->validate([
             'student_id' => 'required|exists:students,id',
             'teacher_id' => 'required|exists:teachers,id',
             'surah_name' => 'required|string',
@@ -57,7 +57,7 @@ class QuranProgressController extends Controller
             'teacher_notes_arabic' => 'nullable|string',
         ]);
 
-        QuranProgress::create($request->all());
+        QuranProgress::create($data);
 
         return redirect()->route('quran-progress.index')
             ->with('success', 'Quran progress recorded successfully!');
@@ -80,7 +80,7 @@ class QuranProgressController extends Controller
 
     public function update(Request $request, QuranProgress $quranProgress)
     {
-        $request->validate([
+        $data = $request->validate([
             'student_id' => 'required|exists:students,id',
             'teacher_id' => 'required|exists:teachers,id',
             'surah_name' => 'required|string',
@@ -95,7 +95,7 @@ class QuranProgressController extends Controller
             'teacher_notes_arabic' => 'nullable|string',
         ]);
 
-        $quranProgress->update($request->all());
+        $quranProgress->update($data);
 
         return redirect()->route('quran-progress.index')
             ->with('success', 'Quran progress updated successfully!');
@@ -111,7 +111,7 @@ class QuranProgressController extends Controller
 
     public function updateProgress(Request $request, Student $student)
     {
-        $request->validate([
+        $data = $request->validate([
             'surah_name' => 'required|string',
             'surah_name_arabic' => 'required|string',
             'surah_number' => 'required|integer|min:1|max:114',
@@ -129,12 +129,19 @@ class QuranProgressController extends Controller
             return redirect()->back()->withErrors(['teacher' => 'Teacher profile required to record progress.']);
         }
 
-        $request->merge([
-            'student_id' => $student->id,
-            'teacher_id' => $teacher->id,
-        ]);
+        // Set on the validated data rather than merged back into the request.
+        // This used to `merge()` and then write `$request->all()`; writing the
+        // validated array instead means anything merged after validation would
+        // silently not be written, so the two ids are put where the write can
+        // see them.
+        //
+        // Note this is the **best** scoped of the three: the student comes from
+        // the route binding and the teacher from the signed-in user, rather
+        // than from the request body as `store()` and `update()` take them.
+        $data['student_id'] = $student->id;
+        $data['teacher_id'] = $teacher->id;
 
-        QuranProgress::create($request->all());
+        QuranProgress::create($data);
 
         return redirect()->back()
             ->with('success', 'Quran progress updated successfully!');
