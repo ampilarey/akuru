@@ -59,10 +59,54 @@ const CHECKS = [
   ['S5.4  careers (public)', '/en/careers',                'SMOKE-Vacancy'],
 ];
 
-const browser = await chromium.launch(
-  process.env.SMOKE_CHROMIUM ? { executablePath: process.env.SMOKE_CHROMIUM } : {}
-);
-const page = await (await browser.newContext()).newPage();
+/**
+ * Refuse everything that is not this application.
+ *
+ * Without this the sweep hangs. Pages ask for Google Fonts, bunny.net and
+ * Chromium's own autofill endpoint; in a sandbox with no route to them each
+ * request waits for its timeout, and a run that should take two minutes
+ * produces no output for forty. One run here logged **313** failed outbound
+ * connections before it was killed.
+ *
+ * It is also the right behaviour regardless of sandbox: a smoke sweep should
+ * measure this application, not a font CDN's availability, and should give the
+ * same answer on a train.
+ */
+async function blockOffsiteRequests(context, base) {
+  const host = new URL(base).host;
+
+  await context.route('**/*', (route) => {
+    const url = route.request().url();
+    const local = url.startsWith('data:') || url.startsWith('blob:') || new URL(url).host === host;
+
+    return local ? route.continue() : route.abort();
+  });
+}
+
+/**
+ * Chromium's own background traffic, which `context.route()` cannot touch
+ * because it is not a page request.
+ *
+ * The autofill service alone accounted for most of **1,172** failed outbound
+ * connections in one run here. Each waits for its timeout, so a sweep that
+ * should take two minutes produced no output for forty and had to be killed.
+ * With these flags the login page loads in ~500ms.
+ */
+const HERMETIC_ARGS = [
+  '--disable-background-networking',
+  '--disable-component-update',
+  '--disable-features=AutofillServerCommunication,OptimizationHints,Translate,MediaRouter,InterestFeedContentSuggestions',
+  '--no-first-run',
+  '--no-default-browser-check',
+];
+
+const browser = await chromium.launch({
+  ...(process.env.SMOKE_CHROMIUM ? { executablePath: process.env.SMOKE_CHROMIUM } : {}),
+  args: HERMETIC_ARGS,
+});
+const context = await browser.newContext();
+await blockOffsiteRequests(context, BASE);
+const page = await context.newPage();
 
 const jsErrors = [];
 page.on('pageerror', (e) => jsErrors.push(String(e).slice(0, 160)));

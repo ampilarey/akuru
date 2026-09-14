@@ -4278,6 +4278,149 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5dj. The smoke sweeps were seven times slower than they needed to be (2026-09-14)
+
+Asked to push harder, I went for the biggest unexamined gap: the definition of
+done requires a screen to be **walked in a browser**, and most of the app's
+routes never have been. `scripts/smoke/page-errors.mjs` exists for exactly
+that.
+
+It ran for **forty minutes and printed nothing**, so I called it stalled and
+went looking for the cause.
+
+**That characterisation was wrong, and the evidence arrived later.** The
+original run was still going in the background and finished on its own at
+around fifty minutes — with results *identical* to the fixed version. It was
+not stalled. It was pathologically slow, and quiet while it worked.
+
+### Two causes, both outside the application
+
+1. **Page requests to the open internet.** Google Fonts, bunny.net. Each waits
+   for a timeout that never comes in a sandbox with no route out. One run
+   logged **313** failed outbound connections before it was killed.
+2. **Chromium's own background traffic**, which `context.route()` cannot touch
+   because it is not a page request — `content-autofill.googleapis.com` above
+   all. That accounted for most of **1,172** failures in the next run, which is
+   how I found it: blocking page requests alone barely helped.
+
+Fixed in all four sweeps: request interception that aborts anything not on the
+app's own host, plus launch flags for the browser's own services
+(`--disable-background-networking`, `--disable-component-update`,
+`AutofillServerCommunication` and friends).
+
+**A page load went from stalling for seconds to ~500ms, and the whole sweep
+from ~50 minutes to ~7.** This is also simply the right behaviour for a smoke
+sweep: it should measure this application, not a font CDN's availability, and
+should give the same answer on a train.
+
+The accidental benefit of my wrong diagnosis: the slow run and the fast run are
+**two independent executions**, and they agree exactly — which is better
+corroboration of the numbers below than one run would have been.
+
+### What the sweep then found
+
+**265 routes × 6 roles = 1,590 page loads. Zero runtime errors. Zero server
+errors.**
+
+| role | loaded | denied |
+|---|---|---|
+| admin | 256 | 9 |
+| headmaster | 237 | 28 |
+| supervisor | 209 | 56 |
+| teacher | 129 | 136 |
+| student | 106 | 159 |
+| parent | 109 | 156 |
+
+The denial counts are the shape you would want — a parent reaching 109 of 265
+screens and a student 106, against admin's 256.
+
+**What this is not.** It proves every screen renders without throwing for every
+role, twice over. It does not prove a screen shows the right rows, which is `sweep.mjs`'s
+job, nor that a person can complete a task, which is `create-sweep.mjs`'s. The
+gap between "no errors" and "walked" is still real, and this closes the first
+half of it across the whole app for the first time.
+
+## 5di. Measuring the fix before believing it (2026-09-14)
+
+Report card generation ran a `where(student_id)->first()` per student and then
+`updateOrCreate`. Replacing that with one keyed lookup for the class is the
+obvious fix, and I wrote it, and wrote a query-count test, and the test passed.
+
+**Then I measured it, and it was nearly worthless.** 25.75 queries per student
+before, 24.75 after: the fix saved **one query in twenty-five**, and my test's
+threshold of 40 would have passed either way. A green test asserting a property
+the code did not have.
+
+The dominant cost was elsewhere — `AssembleReportCardDataAction` fetches the
+**term, the academic year, the class and the template for every card**. A
+generation run is one class and one term, so those four rows are identical on
+every card in it: a class of 30 asked for the same four rows 120 times.
+
+Memoised per run, keyed by id so an instance reused across two classes cannot
+serve one class's row to the other, with the assembler held for the life of the
+generating action. A queued single-card render gets a fresh instance and loses
+nothing.
+
+**25.75 → 21.75 queries per student.** Four saved, about 16%; for a 500-pupil
+school roughly 2,000 queries a run. This is the operation the operator notes
+already single out as needing a queue worker, which is a reason to make it
+cheaper rather than to stop looking at it.
+
+What remains at 21.75 is genuinely per-student — student row, grades, subjects,
+competencies, comments, behaviour, attendance, awards — and is not pretended
+otherwise.
+
+### The threshold is measured, not guessed
+
+It sits at **24**: below the 25.75 the old code cost, above the 21.75 the new
+one costs. Verified by reverting both fixes and watching it fail with the real
+number in its message. A guard set above the value it guards against proves
+nothing, which is what my first draft did at 40 — and the only reason I noticed
+is that I printed the numbers instead of trusting the tick.
+
+Also fixed in passing: `BulkScheduleExamsAction` fetched each subject's name one
+query at a time inside its loop; now one `whereIn` for the lot.
+
+### A git mistake worth recording
+
+Mid-slice I reset this branch to `origin/main` while **#375 was still open on
+it**, and force-pushed — which dropped that PR's only commit and left it
+showing work it did not contain. Recovered by cherry-picking the commit back
+from the reflog. The habit that caused it is rebasing onto main out of reflex
+after every merge; the branch is only safe to reset once the PR riding on it
+has actually merged.
+
+## 5dh. All 22 parity rows, checked against the code (2026-09-14)
+
+§5dg found the seventeenth wrong row, so the sensible next move was to stop
+trusting the other twenty-one either.
+
+Every row E1–E22, verified against registered routes and defined classes rather
+than against either document. **All 22 hold.** Route counts where they exist
+are healthy — E5 thirteen, E16 twelve, E11 and E17 ten apiece — and no row is
+missing a class the plan names.
+
+So the parity track has nothing left that this document can honestly call
+unbuilt, and §5dg's correction was the last outstanding claim rather than one
+of several.
+
+### What the check is worth, stated plainly
+
+It proves **artifacts exist**: routes registered, classes defined. That is
+precisely the failure mode this document has — a row called unbuilt while its
+controller sits in the tree — and it catches a feature being deleted.
+
+It does **not** prove a row works end to end, meets its acceptance criteria, or
+that a family can complete the task in a browser. Those live in each slice's
+feature tests and in the browser walk the definition of done requires. **A pass
+here is not "E-whatever is done."** Saying otherwise would be the same overclaim
+the plan has made seventeen times, in a newer place.
+
+Committed as `tests/Feature/Docs/EduPageParityRowsExistTest.php`, and checked
+for vacuousness by renaming a class in the list and watching it fail — three
+audits have now fixed these rows by hand and left nothing behind to stop the
+next drift.
+
 ## 5dg. The seventeenth time, and I quoted it (2026-09-14)
 
 CLAUDE.md on the EduPage plan: *"verify every row against the code before

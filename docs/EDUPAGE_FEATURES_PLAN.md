@@ -641,5 +641,25 @@ shipped. Remaining, on verified ground:
 - Everything else is either built, half-built (E11's calendar), or gated on a
   decision the Institute has not made.
 
+## Verification of 2026-09-14 — all 22 rows
+
+Every row E1–E22 was checked against the code, not against this document.
+**All 22 have their routes registered and their classes defined.** There is no
+row left that this document can honestly call unbuilt.
+
+`tests/Feature/Docs/EduPageParityRowsExistTest.php` is that check, committed,
+so the eighteenth drift fails in CI rather than waiting for a fourth audit.
+
+**What that test proves and what it does not.** It proves the artifacts exist —
+routes registered, classes defined. That is exactly the failure this document
+keeps having: a row described as unbuilt while its controller sits in the tree.
+It does **not** prove a row works end to end, meets its acceptance criteria, or
+that a family can complete the task in a browser. Those belong to each slice's
+own feature tests and to the walk CLAUDE.md's definition of done requires.
+
+**So do not read a green test here as "E-whatever is done."** That is the same
+shape of overclaim this document has made seventeen times, and the test exists
+to end that habit rather than relocate it.
+
 Do not quote a total from this document without re-checking the slice against
 the codebase first. That is exactly how the first version went wrong.
