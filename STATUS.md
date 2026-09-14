@@ -4278,6 +4278,43 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5db. Every session the app starts, and what was proved first (2026-09-14)
+
+The generalisation of §5cz and §5da. Both were `Auth::login()` calls whose
+**problem was upstream**, and in both the call itself looked entirely ordinary:
+a user object, fetched a few lines above, signed in. So: every place the
+application starts a session, one at a time.
+
+Eleven calls, ten distinct sites. **All of them check out.**
+
+| Site | What was proved |
+|---|---|
+| `LoginRequest` | the submitted password, behind the login throttle |
+| `checkoutLogin` | `Hash::check`, rate-limited, with a failure message that does not reveal whether the account exists |
+| `OtpLoginController` | immediately after `OtpService::verify()` |
+| `CourseRegistration::verify` (both branches) | the same, for the funnel's contact |
+| `RegisteredUserController` | the account this request just created |
+| `setPassword`, `enroll`, `continueForm` | `otp_verified_user_id` for this exact id — §5cz and §5da |
+| `SwitchAccountAction` | a verified link re-read from the database, session id regenerated |
+| `resume` | a 24-hour UUID; recorded in KNOWN_ISSUES, not changed |
+
+No new defect. What the sweep argues for is the gate: **nothing in the code
+makes anybody ask what authorised a login**, and that is exactly how two P0s
+survived in a controller somebody had read before.
+
+`SessionsAreEarnedTest` requires every session start to be declared with the
+**proof** rather than the intent — *"the user just registered"* is a story,
+*"`Hash::check` against the submitted password"* is a fact the next reader can
+verify. Keyed by method where a file has several, because
+`CourseRegistrationController` starts sessions six times for five different
+reasons, and one entry per file would let the safest cover the rest — which is
+precisely how `RawHtmlRendersAreDeclaredTest` hid a live XSS until §5ct made it
+per-sink.
+
+Checked twice for vacuousness: dumped what it discovers (ten keys covering all
+eleven calls — the two in `verify` collapse correctly and the entry says so),
+then added an undeclared `Auth::loginUsingId()` and watched it fail.
+
 ## 5da. The same phone number also got you signed in as them (2026-09-14)
 
 Having found one door in this controller, I read the rest of it. There was a
