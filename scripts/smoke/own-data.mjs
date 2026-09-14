@@ -19,7 +19,16 @@
  *     listing the whole school.
  *
  * Then the direct approach: ask for another family's records **by id**, which
- * is what an id in a URL invites. A 200 there is the finding.
+ * is what an id in a URL invites.
+ *
+ * **Each of those is a pair, and that is the important part.** A refusal only
+ * proves a rule if the same request succeeds for the person entitled to it.
+ * The first version of this script probed only the refusal, and reported a
+ * clean 404 on another family's report card — which turned out to be the route
+ * declining to serve a card that had no document attached. It refused
+ * everybody, including the child's own mother, and the probe called that a
+ * pass. A pair where both halves fail is reported as **inconclusive**, never as
+ * a pass.
  *
  *   php artisan db:seed --class=SmokeMarkerSeeder
  *   node scripts/smoke/own-data.mjs
@@ -50,7 +59,21 @@ if (!mineId || mineId === '0') {
   process.exit(1);
 }
 
-console.log(`guardian's child: ${mineName} (#${mineId})   someone else's: ${otherName} (#${otherId})\n`);
+// Ids for the planted records, read the same way — from the database, so the
+// probe follows the seed rather than rotting when somebody re-seeds.
+const [mineReportCard, otherReportCard, mineThread, notMineThread] = execFileSync('php', [
+  'artisan', 'tinker', '--execute',
+  `echo (int) DB::table('report_cards')->where('student_id', ${mineId})->value('id');
+   echo '|';
+   echo (int) DB::table('report_cards')->where('student_id', ${otherId})->value('id');
+   echo '|';
+   echo (int) DB::table('message_threads')->where('subject', 'SMOKE-Thread')->value('id');
+   echo '|';
+   echo (int) DB::table('message_threads')->where('subject', 'SMOKE-Thread-Not-Mine')->value('id');`,
+], { encoding: 'utf8' }).trim().split('\n').pop().split('|');
+
+console.log(`guardian's child: ${mineName} (#${mineId})   someone else's: ${otherName} (#${otherId})`);
+console.log(`their report card: #${otherReportCard}   a thread they are not in: #${notMineThread}\n`);
 
 const PORTAL = [
   '/en/portal/home',
@@ -64,13 +87,47 @@ const PORTAL = [
   '/en/portal/meetings',
 ];
 
-// Records belonging to another family, asked for by id.
-const DIRECT = [
+// Pairs: the record this person is entitled to, and the equivalent one that
+// belongs to somebody else. Both halves are needed — see the note at the top.
+//
+// The report card and the message thread are the sharpest of these: a report
+// card is a child's marks, and a thread is a private conversation between a
+// school and one family. Both sat unprobed until SmokeMarkerSeeder started
+// planting them, because an empty table answers 404 and a 404 proves nothing.
+const PAIRS = [
+  {
+    // `as` because these records belong to the guardian's family. Handing them
+    // to another role tests nothing about that role — the first run did exactly
+    // that and reported two inconclusive pairs for the student, which was the
+    // probe's mistake rather than the app's.
+    as: 'parent',
+    what: 'report card',
+    mine: `/en/portal/report-cards/${mineReportCard}/download`,
+    theirs: `/en/portal/report-cards/${otherReportCard}/download`,
+  },
+  {
+    as: 'parent',
+    what: 'message thread',
+    mine: `/en/portal/messages/${mineThread}`,
+    theirs: `/en/portal/messages/${notMineThread}`,
+  },
+];
+
+// Staff-only records, which no family should reach at all. There is no "mine"
+// half here because there is no version of these a parent is entitled to.
+const STAFF_ONLY = [
   `/en/people/students/${otherId}`,
   `/en/students/${otherId}`,
   `/en/students/${otherId}/edit`,
   `/en/students/${otherId}/quran-progress`,
+  `/en/exams/report-cards/${otherReportCard}/download`,
 ];
+
+async function statusOf(page, route) {
+  const response = await page.goto(BASE + route, { waitUntil: 'domcontentloaded' }).catch(() => null);
+
+  return response ? response.status() : 'nav';
+}
 
 const browser = await chromium.launch(
   process.env.SMOKE_CHROMIUM ? { executablePath: process.env.SMOKE_CHROMIUM } : {}
@@ -78,6 +135,10 @@ const browser = await chromium.launch(
 
 let failures = 0;
 
+// The seeded student login has no `students` row behind it, so every
+// person-scoped record refuses them — correctly, and uninformatively. It is
+// swept for leakage on the portal screens, which is what it can answer, and
+// the gap is recorded in STATUS rather than papered over here.
 for (const [role, email] of [['parent', 'parent@akuru.edu.mv'], ['student', 'student@akuru.edu.mv']]) {
   const context = await browser.newContext();
   const page = await context.newPage();
@@ -120,12 +181,32 @@ for (const [role, email] of [['parent', 'parent@akuru.edu.mv'], ['student', 'stu
     }
   }
 
-  for (const route of DIRECT) {
-    const response = await page.goto(BASE + route, { waitUntil: 'domcontentloaded' }).catch(() => null);
-    const status = response ? response.status() : 'nav';
+  for (const { as: owner, what, mine, theirs } of PAIRS) {
+    if (owner !== role) {
+      continue;
+    }
+
+    const mineStatus = await statusOf(page, mine);
+    const theirsStatus = await statusOf(page, theirs);
+
+    if (mineStatus !== 200) {
+      // Not a pass and not a failure: the refusal below is unproven, because
+      // the route refused the person who is entitled to it too.
+      console.log(`  ${role.padEnd(8)} ?    ${what}: own is ${mineStatus}, so "${theirsStatus} on theirs" proves nothing`);
+      failures++;
+    } else if (theirsStatus === 200) {
+      failures++;
+      console.log(`  ${role.padEnd(8)} OPEN ${what}: own 200, ANOTHER FAMILY'S ALSO 200 — ${theirs}`);
+    } else {
+      console.log(`  ${role.padEnd(8)} ok   ${what}: own 200, theirs ${theirsStatus}`);
+    }
+  }
+
+  for (const route of STAFF_ONLY) {
+    const status = await statusOf(page, route);
     if (status === 200) {
       failures++;
-      console.log(`  ${role.padEnd(8)} OPEN ${status} ${route} — another family's record`);
+      console.log(`  ${role.padEnd(8)} OPEN ${status} ${route} — staff-only record`);
     } else {
       console.log(`  ${role.padEnd(8)} ${status}  ${route} (refused)`);
     }
@@ -138,7 +219,7 @@ for (const [role, email] of [['parent', 'parent@akuru.edu.mv'], ['student', 'stu
 await browser.close();
 
 console.log(failures === 0
-  ? 'No family saw another family.'
-  : `${failures} problem(s) — read every line above before dismissing any of them.`);
+  ? 'Every family saw their own records, and nobody else\'s.'
+  : `${failures} problem(s) — an inconclusive pair counts, because a refusal nobody can pass is not a rule.`);
 
 process.exit(failures > 0 ? 1 : 0);
