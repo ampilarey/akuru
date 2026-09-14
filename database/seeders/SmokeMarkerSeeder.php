@@ -57,6 +57,7 @@ class SmokeMarkerSeeder extends Seeder
         $this->behaviour($year, $studentId, $admin);
         $this->standards();
         $this->awards($year, $studentId);
+        $this->catalog();
         $this->recruitment();
         $this->requests($admin);
         $this->finance($year, $studentId, $admin);
@@ -215,6 +216,74 @@ class SmokeMarkerSeeder extends Seeder
         DB::table('student_awards')->insert([
             'student_id' => $studentId, 'award_id' => $awardId, 'academic_year_id' => $year->id,
             'awarded_date' => now()->toDateString(),
+            'created_at' => now(), 'updated_at' => now(),
+        ]);
+    }
+
+    /**
+     * The course engine's own catalog screens.
+     *
+     * Everything above this belongs to the S-track. The C-track — 1A catalog,
+     * 1B offerings, the glossary and the taxonomy behind them — is the larger
+     * half of the product and **no marker had ever been planted in it**, which
+     * is why those §2 rows stayed UNVERIFIED while the S-track rows moved.
+     *
+     * A seeded database already has courses, levels and audiences, so a sweep
+     * looking for "some rows" would have passed on all three while proving
+     * nothing about whether *this* row reaches the screen. Hence a distinctive
+     * marker in each, the same as everywhere else here.
+     */
+    private function catalog(): void
+    {
+        $categoryId = (int) DB::table('course_categories')->orderBy('id')->value('id');
+
+        DB::table('course_offerings')->where('title', 'SMOKE-Offering')->delete();
+        DB::table('courses')->where('title', 'SMOKE-Course')->delete();
+
+        $courseId = DB::table('courses')->insertGetId([
+            'course_category_id' => $categoryId,
+            'title' => 'SMOKE-Course',
+            'slug' => 'smoke-course',
+            'short_desc' => 'Planted by SmokeMarkerSeeder.',
+            'body' => 'Planted by SmokeMarkerSeeder.',
+            'cover_image' => '',
+            'status' => 'open',
+            'created_at' => now(), 'updated_at' => now(),
+        ]);
+
+        DB::table('course_offerings')->insert([
+            'course_id' => $courseId,
+            'title' => 'SMOKE-Offering',
+            'slug' => 'smoke-offering',
+            // `delivery_mode` is a varchar carrying a PHP-enum cast, so the
+            // database accepts anything and the screen 500s on read. The first
+            // version of this marker said 'online', which is not a
+            // `DeliveryMode` case, and the sweep reported /catalog/offerings as
+            // HTTP 500 — a defect in the fixture, not the page. Checked before
+            // it was written up as one.
+            'delivery_mode' => 'self_learning',
+            'status' => 'draft',
+            'level_id' => DB::table('course_levels')->orderBy('id')->value('id'),
+            'audience_id' => DB::table('audiences')->orderBy('id')->value('id'),
+            'created_at' => now(), 'updated_at' => now(),
+        ]);
+
+        DB::table('glossary_items')->where('term', 'SMOKE-Term')->delete();
+        DB::table('glossary_items')->insert([
+            'term' => 'SMOKE-Term',
+            'meaning_primary' => 'Planted by SmokeMarkerSeeder.',
+            'created_at' => now(), 'updated_at' => now(),
+        ]);
+
+        DB::table('course_levels')->where('name_en', 'SMOKE-Level')->delete();
+        DB::table('course_levels')->insert([
+            'name_en' => 'SMOKE-Level', 'slug' => 'smoke-level', 'sort_order' => 99, 'active' => 1,
+            'created_at' => now(), 'updated_at' => now(),
+        ]);
+
+        DB::table('audiences')->where('name_en', 'SMOKE-Audience')->delete();
+        DB::table('audiences')->insert([
+            'name_en' => 'SMOKE-Audience', 'slug' => 'smoke-audience', 'sort_order' => 99, 'active' => 1,
             'created_at' => now(), 'updated_at' => now(),
         ]);
     }

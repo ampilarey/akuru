@@ -57,6 +57,19 @@ const CHECKS = [
   ['S5.5  cpd',              '/en/hr/cpd',                 'SMOKE-CPD'],
   ['S5.5  observations',     '/en/hr/observations',        'SMOKE-Observation'],
   ['S5.4  careers (public)', '/en/careers',                'SMOKE-Vacancy'],
+
+  // The C-track. Everything above is the S-track, which is how those §2 rows
+  // moved while 1A/1B/2 stayed UNVERIFIED — no marker had ever been planted in
+  // the course engine, the larger half of the product.
+  //
+  // A seeded database already has courses, levels and audiences, so "does the
+  // page show rows" would have passed on all three and proved nothing about
+  // whether *this* row reaches the screen.
+  ['1A.2  catalog courses',  '/en/catalog/courses',        'SMOKE-Course'],
+  ['1A.6  glossary',         '/en/catalog/glossary',       'SMOKE-Term'],
+  ['1B.1  offerings',        '/en/catalog/offerings',      'SMOKE-Offering'],
+  ['1A.2  levels',           '/en/catalog/levels',         'SMOKE-Level'],
+  ['1A.2  audiences',        '/en/catalog/audiences',      'SMOKE-Audience'],
 ];
 
 /**

@@ -102,8 +102,8 @@ Legend — **CODE:** implementation in repo (models/migrations/actions/routes/pa
 | S5.5 performance/CPD | Yes. | `PerformanceTest`. | Walked **locally** 2026-09-13: screen shows a row planted for it (§5cm). | |
 | S5.6 payroll | Yes. **Flagged off** (`PAYROLL_ENABLED` + `payroll.enabled`). | `PayrollTest` (turns the flag on). | UNVERIFIED; default **off** is by design. | |
 | 1A.1 auth/roles | Yes (Phase 0 + S1). | Auth tests, `RoleLandingTest`. | Walked login **ok locally** (R2/R3). Teacher `/dashboard` → Today (#88). Parent/student `/dashboard` → composed `/portal/home` (D1). Admin/headmaster `/dashboard` → `/portal/overview` (D3 #111). Staging login **fail**. | |
-| 1A.2–1A.7 course engine | Yes. Catalog, outline, text/media blocks, glossary term bank + lesson attach, `/learn`, portal learning. | Matching `tests/Feature/Courses/*` including `GlossaryTest`. | Glossary walked (#102). Rest of 1A still UNVERIFIED. | `glossary_items` / `lesson_glossary_items` (SPEC §22). |
-| 1B.1–1B.6 offerings/PWA | Yes. Offerings, pin/seats, sessions, extra blocks, unlock/completion, PWA/i18n. | Matching Offerings/Progress/Pwa tests. | UNVERIFIED. | 1B.5 tests the 2/3 = 66 formula. **1B.5's "evaluators" are one hardcoded policy each** — sequential unlock, required-lessons+sessions completion — now behind contracts with a single implementation (ADR-022). No per-course strategy config exists; ROADMAP §2a describes the target, not `main`. **1B audit (2026-08-27):** seat limits, pinning, sessions (§2d L1), PWA all verified solid; but §3.4's split **backfill was never written** — offerings are created lazily, legacy enrollments keep `course_offering_id = null`, and the public site still reads legacy `courses.seats`/`enrollment_deadline`. Backfill is mandatory before first real use (see ROADMAP §3.4 as-built note). |
+| 1A.2–1A.7 course engine | Yes. Catalog, outline, text/media blocks, glossary term bank + lesson attach, `/learn`, portal learning. | Matching `tests/Feature/Courses/*` including `GlossaryTest`. | Glossary walked (#102). **Catalog, glossary, levels and audiences each show a planted row** (§5ds sweep, 2026-09-14) — that is the admin catalog screens reading what was written, not the learner path. Outline, blocks and `/learn` remain UNVERIFIED. | `glossary_items` / `lesson_glossary_items` (SPEC §22). |
+| 1B.1–1B.6 offerings/PWA | Yes. Offerings, pin/seats, sessions, extra blocks, unlock/completion, PWA/i18n. | Matching Offerings/Progress/Pwa tests. | **1B.1 offerings shows a planted row** (§5ds sweep, 2026-09-14). Pin/seats, sessions, unlock/completion and PWA remain UNVERIFIED. | 1B.5 tests the 2/3 = 66 formula. **1B.5's "evaluators" are one hardcoded policy each** — sequential unlock, required-lessons+sessions completion — now behind contracts with a single implementation (ADR-022). No per-course strategy config exists; ROADMAP §2a describes the target, not `main`. **1B audit (2026-08-27):** seat limits, pinning, sessions (§2d L1), PWA all verified solid; but §3.4's split **backfill was never written** — offerings are created lazily, legacy enrollments keep `course_offering_id = null`, and the public site still reads legacy `courses.seats`/`enrollment_deadline`. Backfill is mandatory before first real use (see ROADMAP §3.4 as-built note). |
 | 2.1–2.5 activities | Yes. Four patterns, bank, assessment player, review, session polish. Class quizzes/assignments migrate onto the same engine. Unified gradebook via `GradeItemContract`. | Matching Courses/Progress tests + `LegacyAssessmentMigrationTest` + `UnifiedGradebookTest`. | Quiz/assignment migration walked **#104**. Unified gradebook walked this PR. Rest of 2.x still UNVERIFIED. | **Phase 2 audit (2026-08-27):** scoring covers all four patterns (teacher-marked short-circuits to review); review loop + standards-tied question bank verified; rule 6 holds behaviourally. **Deviations:** `Courses/Components/` was never created — Arabic/Quran code lives in `Courses/Models`+`Actions`, so rule 3's Components clause guards an empty set (correction point: Phase F, which creates `Components/Quran` and moves Arabic in the same slice — FQCN moves need morph-map + baseline updates together). Spec §43 `student_submissions`/`teacher_feedback` replaced by attempt `answers` json + review fields (recorded, fine). See ROADMAP §2a as-built notes. |
 | Arabic A.1–A.3 | Yes. Letters/harakas, skill tag, reports. | `ArabicReferenceTest`, `ArabicSkillActivityTest`, `ArabicSkillReportTest`. | UNVERIFIED. | No AI (rule 8). **Audited 2026-08-27: PASS** — tables + `NormalizeTextAnswerAction` (spec normalization) + reports verified; skill metadata rides the four activity patterns (placement caveat = Phase 2 Components note). |
 | Qur’an A.1–A.4 | Yes. Read actions, recitation metadata, mapping, dual-write **off**. | Matching Courses/Offerings tests. | UNVERIFIED. | No Hifz dashboard change. `QURAN_HALAQA_DUAL_WRITE` default false. **Audited 2026-08-27: PASS** — rule 11 held (no parallel Quran source tables; reads via `QuranReferenceReader` contract, Hifz implements as owner; `quran_translations` is planned new data, not duplication); mapping tables morph-aliased; dual-write env-flagged default-off per rule 9 with tests. Hifz freeze verified: 3 recent commits are pure additions (read actions/contract impls/bindings), compliant with ADR-021 scope-discipline freeze. |
@@ -4303,6 +4303,55 @@ walk returned a header row and nothing else for circulation, student work and
 pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
+
+## 5ds. The sweep reached the course engine for the first time (2026-09-14)
+
+**Twenty screens had markers planted for them and every one was S-track.** That
+is why those §2 rows moved while 1A, 1B, 2, Arabic A and Qur'an A stayed
+UNVERIFIED: the course engine — the larger half of the product, and the half
+the public funnel sells — had **never had a marker planted in it at all**.
+
+Five more screens now do: `catalog/courses`, `catalog/glossary`,
+`catalog/offerings`, `catalog/levels`, `catalog/audiences`.
+
+**Why a marker and not "does it show rows".** A seeded database already has
+courses, levels and audiences, so a sweep asking whether the page shows
+*something* would have passed on all three and proved nothing about whether
+*this* row reaches the screen. Every marker is a distinctive `SMOKE-` string,
+same as the S-track.
+
+### It found a 500 on its first run, and the 500 was mine
+
+`/en/catalog/offerings` answered **HTTP 500**. `course_offerings.delivery_mode`
+is a **varchar** carrying a PHP-enum cast, so the database accepted the
+`'online'` my fixture wrote, and the screen then threw
+*"online is not a valid backing value for DeliveryMode"* on read.
+
+A defect in the fixture, not the page — checked before it was written up as
+one. Two things are worth keeping from it:
+
+- **The marker earned its place immediately.** Five minutes into the C-track's
+  first sweep, something went red. It happened to be my row, but a page that
+  500s on one bad row is exactly the class of failure this sweep exists to
+  catch, and nothing else in the suite would have shown it.
+- **The column is a varchar behind an enum cast**, so the database will accept
+  any string and the screen will 500 on it. Not fixed here and not filed as a
+  defect — no code path writes an invalid mode — but it is the reason a
+  hand-written row can take a screen down.
+
+**25/25 screens now show what was planted for them.**
+
+### What moved in §2, and what deliberately did not
+
+Two rows gained a citation: **1A.2–1A.7** (catalog, glossary, levels and
+audiences show their planted rows) and **1B.1–1B.6** (offerings does).
+
+Both rows keep the rest of their UNVERIFIED text, and the wording says which
+half moved. What this proves is that **the admin catalog screens read what was
+written** — it says nothing about the outline editor, the blocks, `/learn`, the
+learner path, pinning, seats, sessions, unlock or the PWA. Those stay
+UNVERIFIED because nothing has walked them, and writing anything stronger here
+would be the overclaim this document has already had to correct eighteen times.
 
 ## 5dr. The one recovery offered to a family who may have just paid was a dead end (2026-09-14)
 
