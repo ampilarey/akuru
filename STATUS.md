@@ -4183,6 +4183,68 @@ server validation message the browser's `max` attribute prevents from ever
 being requested — the property worth asserting was that a nonsense value never
 persists, whichever layer stops it.
 
+## 5cs. Three more audits: two clean, one gap (2026-09-14)
+
+### The arch test S1_SPEC names, and why it is not written
+
+`S1_SPEC.md` §S1.1 says status changes go through `ChangeStudentStatusAction`
+and adds a parenthetical: *"(arch-test: `status` column not mass-assignable)."*
+No such test exists.
+
+**The rule itself holds.** `status` is absent from `Student::$fillable`,
+`ChangeStudentStatusAction` writes with `forceFill`, and every caller —
+`SaveStudentAction`, `StudentController`, `PromoteStudentsAction` — goes through
+it.
+
+The gate is missing, and I did not write it, which needs a reason. **88 of 246
+models list `status` in `$fillable`.** A blanket rule would be a baseline of 88
+entries about statuses that are ordinary attributes with no transition rule —
+noise, not a gate.
+
+The narrow version — *a status with a dedicated transition Action must not be
+mass-assignable* — would catch `Exam`, `CourseOffering`, `CourseEnrollment`,
+`ReportCard`, `LessonLog` and `PayrollPeriod`. But checking reachability first:
+
+- `SaveCourseOfferingAction` **already unsets** `status` from the payload and
+  routes it through `TransitionOfferingStatusAction` (the fix earlier in this
+  branch), and says so in a comment.
+- `SaveExamAction` sets `status` only on create, and refuses edits to a locked
+  exam outright.
+
+So the mass-assignable `status` is a **latent risk, not a live defect**, and
+removing it from `$fillable` would mean rewriting those create paths to
+`forceFill` — a speculative refactor across six models for a hole nothing
+currently reaches. Recorded here instead, so the next person who adds a
+`->update($request->validated())` on one of those models knows what they are
+stepping into.
+
+### CSV exports: 20 of 92 staff listings have none
+
+CLAUDE.md: *"every listing gets CSV export."* Counting `*.index` route names
+against `*.export` ones — **from `route:list --json`, because the table output
+truncates long names and the first attempt reported three false gaps on exactly
+that** — gives 20.
+
+Most are not lists: `admin.settings` and `academics.attendance-policy` are
+forms, `academics.gate` is a live arrivals screen, `people.custom-fields` and
+`academics.absence-types` are configuration, `admin.pages` and `admin.courses`
+are content editors.
+
+The glaring one is **`people.staff`**: the student directory has had an export
+since S1.1 and the staff directory is the same shape of list, so the only way to
+take a staff roll off the system was to copy it off the screen. Now exported,
+with a link on the page.
+
+**Deliberately not the whole serialiser.** `national_id` and `date_of_birth` are
+on the screen behind a login; a spreadsheet leaves the building. The CSV carries
+who, what they do, and whether they are still here — and a test pins that the
+other two stay out.
+
+Still without an export, and genuinely lists: `academics.classes`,
+`academics.years`, `academics.plans`, `academics.work`, `academics.pickup`,
+`circulation`, `admin.users`. `people.sensitive` is left alone on purpose — an
+export of sensitive notes makes exfiltration a single click.
+
 ## 5cr. The lesson that reached exactly one file (2026-09-14)
 
 `ReserveOfferingSeatAction` carries a comment written after something bit

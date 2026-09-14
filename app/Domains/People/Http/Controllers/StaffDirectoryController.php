@@ -11,6 +11,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class StaffDirectoryController extends Controller
 {
@@ -22,6 +23,51 @@ class StaffDirectoryController extends Controller
                 ->orderBy('first_name')
                 ->get()
                 ->map(fn (StaffProfile $profile) => $this->serialize($profile)),
+        ]);
+    }
+
+    /**
+     * CLAUDE.md's standing rule: *"every listing gets CSV export."*
+     *
+     * The student directory has had one since S1.1; the staff directory is the
+     * same shape of list and never got one, so the only way to take a staff
+     * roll off the system was to copy it off the screen. Found by counting
+     * `*.index` routes against `*.export` routes: 20 of 92 staff listings have
+     * no export, and most of the rest are settings forms rather than lists.
+     *
+     * Deliberately **not** the whole serialiser. `national_id` and
+     * `date_of_birth` are on the screen behind a login; a spreadsheet leaves
+     * the building. The columns here are the ones a staff roll needs — who,
+     * what they do, and whether they are still here.
+     */
+    public function export(): StreamedResponse
+    {
+        $staff = StaffProfile::query()
+            ->orderBy('last_name')
+            ->orderBy('first_name')
+            ->get();
+
+        return response()->streamDownload(function () use ($staff): void {
+            $handle = fopen('php://output', 'w');
+            fputcsv($handle, ['id', 'staff_number', 'first_name', 'last_name', 'department', 'designation', 'employment_type', 'status', 'joined_date']);
+
+            foreach ($staff as $profile) {
+                fputcsv($handle, [
+                    $profile->id,
+                    $profile->staff_number,
+                    $profile->first_name,
+                    $profile->last_name,
+                    $profile->department,
+                    $profile->designation,
+                    $profile->employment_type?->value,
+                    $profile->status?->value,
+                    $profile->joined_date?->toDateString(),
+                ]);
+            }
+
+            fclose($handle);
+        }, 'staff.csv', [
+            'Content-Type' => 'text/csv',
         ]);
     }
 

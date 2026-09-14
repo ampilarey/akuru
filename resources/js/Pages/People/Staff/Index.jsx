@@ -16,6 +16,9 @@ export default function Index({ staff }) {
 
     return (
         <AppShell title="Staff profiles">
+            <div className="mb-4 flex justify-end">
+                <a className="btn-secondary" href="/people/staff/export">Export CSV</a>
+            </div>
             <form
                 onSubmit={(e) => {
                     e.preventDefault();
