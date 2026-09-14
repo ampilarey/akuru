@@ -1,105 +1,124 @@
 <?php
 
 /**
- * Every `{!! … !!}` in a Blade view is declared.
+ * Every place the app renders HTML without escaping it is declared, one entry
+ * per sink, with the write path that makes it safe.
  *
- * Blade escapes `{{ }}` and does not escape `{!! !!}`, so each of these is a
- * deliberate decision to render HTML as HTML. Some are fine — a QR code the
- * system generated, a certificate body an admin composed for a PDF. Others are
- * author-written content on the public site, and those are only safe if
- * something sanitised them on the way in.
+ * Blade escapes `{{ }}` and does not escape `{!! !!}`; React escapes everything
+ * except `dangerouslySetInnerHTML`. Each of these is a deliberate decision to
+ * render HTML as HTML, and **both surfaces are swept** — the Blade-only version
+ * of this gate could not see the four React sinks at all, and the new UI is
+ * React. Some are fine — a QR code or a barcode the system generated. Others are author-written content, and those are only safe
+ * if something sanitised them on the way in.
  *
- * Nothing did. `PageController` validated `body` as `required|string` and the
- * public page rendered it raw, on a surface an anonymous visitor sees and a
- * `supervisor` can author.
+ * Originally nothing did: `PageController` validated `body` as
+ * `required|string` and the public page rendered it raw, on a surface an
+ * anonymous visitor sees and a `supervisor` can author. Every authored surface
+ * now sanitises on write, and this keeps the list honest.
  *
- * Every authored surface now sanitises on write. What this test does is keep
- * the list honest: a new `{!! !!}` cannot be added without somebody saying
- * which kind it is, and a surface cannot quietly stop being sanitised.
+ * ## Why this became one entry per sink (2026-09-14)
+ *
+ * It used to be keyed by **file**, with one justification each, and that is
+ * how a live hole stayed green for months. `documents/course-certificate.blade.php`
+ * has two sinks of different kinds — a template body somebody authors and a QR
+ * SVG we generate — and its single declaration read *"system-generated:
+ * template body and QR svg"*. True of the QR. False of the body, which
+ * `course_creator` writes through `SaveCertificateTemplateAction` and which was
+ * sanitised with `strip_tags($body, '<p><br>…')` — a call that removes
+ * disallowed tags and keeps **every attribute** on the ones it allows, so
+ * `<p onmouseover="…">` reached the rendered certificate intact.
+ *
+ * The declaration was doing the work of the analysis, and it was wrong. Two
+ * things changed as a result:
+ *
+ *  - **One entry per sink**, so a second kind of content cannot shelter behind
+ *    the first one's reason.
+ *  - **The reason must name the writer** — an Action or controller calling
+ *    `HtmlSanitizer` — rather than asserting that the value is safe. A claim
+ *    cannot be checked by the next reader; a file name can.
+ *
+ * `StripTagsIsNotASanitiserTest` is the gate that would have caught the
+ * underlying bug, and exists now for that reason.
  *
  * Filesystem only. No database, no HTTP.
  */
-it('declares every raw HTML render in a Blade view', function () {
-    /**
-     * Each entry says why the raw render is acceptable.
-     *
-     * `sanitised on write` — the stored value has been through
-     * `HtmlSanitizer`, so every reader of it is safe rather than each render
-     * site having to remember.
-     *
-     * `system-generated` — the application composed the markup itself; no user
-     * input reaches it.
-     *
-     * `UNSANITISED` — a known gap, kept explicit so it is not mistaken for
-     * something already handled. These are internal-facing surfaces; the
-     * public-site ones were closed first because their audience is anonymous
-     * and their authoring role is broader.
-     */
-    $declared = [
-        'admin/public-site/pages/show.blade.php' => 'sanitised on write (PageController)',
-        'public/page/show.blade.php' => 'sanitised on write (PageController)',
-        'public/courses/show.blade.php' => 'sanitised on write (Admin PublicSite CourseController)',
+it('declares every raw HTML render, in Blade and in React', function () {
+    $declared = require __DIR__.'/Baselines/raw_html_renders.php';
 
-        'documents/course-certificate.blade.php' => 'system-generated: template body and QR svg',
-        'documents/id-card.blade.php' => 'system-generated: QR svg',
+    $found = rawHtmlRenderSites();
 
-        'public/research/show.blade.php' => 'sanitised on write (SaveResearchPostAction)',
-        'public/articles/show.blade.php' => 'sanitised on write (SaveResearchPostAction — same posts table)',
-        'public/news/show.blade.php' => 'sanitised on write (SaveResearchPostAction — same posts table)',
-        'public/about/index.blade.php' => 'sanitised on write (PageController)',
-        'public/events/show.blade.php' => 'sanitised on write (SaveEventAction); requirements is an array, iterated and escaped',
-        'announcements/index.blade.php' => 'sanitised on write (AnnouncementController, 3 locales)',
-        'announcements/show.blade.php' => 'sanitised on write (AnnouncementController, 3 locales)',
+    $new = array_values(array_diff(array_keys($found), array_keys($declared)));
+    sort($new);
 
-        // Library items are the lowest-privilege authored HTML in the app:
-        // written by approved writers, and any authed user may apply to be one.
-        // Both the admin and writer paths funnel through SaveLibraryItemAction,
-        // and the reader's pages are chunked from the same sanitised body.
-        'public/library/show.blade.php' => 'sanitised on write (SaveLibraryItemAction)',
-        'public/library/reader.blade.php' => 'sanitised on write (pages chunked from the sanitised item body)',
+    expect($new)->toBeEmpty(
+        "These render a value without escaping it and are not declared:\n  "
+        .implode("\n  ", array_map(fn ($k) => $k.'  —  '.$found[$k], $new))
+        ."\n\nUse `{{ }}` unless the value is genuinely HTML. If it is, add the line to "
+        ."tests/Architecture/Baselines/raw_html_renders.php with one of:\n"
+        ."  - sanitised on write — NAME the Action or controller calling HtmlSanitizer\n"
+        ."  - system-generated — the application composed the markup; no user input reaches it\n"
+        ."  - UNSANITISED — a known gap, named so it is not mistaken for handled\n"
+        .'A reason that asserts safety without naming a write path is how the certificate '
+        .'hole stayed green; see this file\'s header.'
+    );
 
-        // Not a gap and not sanitised: a legacy screen whose columns
-        // (subjects.description_arabic / _dhivehi) are written by nothing but
-        // DemoDataCommand. There is no user-facing path to reach them.
-        'e-learning/show.blade.php' => 'no write path: legacy screen, seed-only columns',
-    ];
+    $stale = array_values(array_diff(array_keys($declared), array_keys($found)));
+    sort($stale);
 
+    expect($stale)->toBeEmpty(
+        "These declarations no longer match a raw render — delete them:\n  "
+        .implode("\n  ", $stale)
+        ."\n\nThe list may only shrink. If an expression was merely reworded, "
+        .'re-point the entry; if the sink is gone, delete it.'
+    );
+});
+
+/**
+ * `<file> :: <expression>` => the whole line, for every unescaped render.
+ *
+ * Keyed by expression rather than line number: a line number breaks whenever
+ * somebody edits the line above, which trains people to re-point the baseline
+ * without reading it.
+ *
+ * @return array<string, string>
+ */
+function rawHtmlRenderSites(): array
+{
     // Blade's own helpers are markup the framework emits, not authored content.
-    $frameworkHelpers = '/csrf_field|method_field|->links\(\)|json_encode|@json|Js::|Str::markdown/';
+    $frameworkHelpers = '/csrf_field|method_field|->links\(\)|@json|Js::|Str::markdown/';
 
-    $root = resource_path('views');
-    $found = [];
+    $sites = [];
 
-    $files = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($root));
-    foreach ($files as $file) {
-        if (! $file->isFile() || ! str_ends_with($file->getFilename(), '.blade.php')) {
-            continue;
-        }
+    foreach ([
+        [resource_path('views'), '.blade.php', '/\{!!(.+?)!!\}/'],
+        // The Blade sweep alone would miss the new UI entirely.
+        [resource_path('js'), '.jsx', '/dangerouslySetInnerHTML=\{\{\s*__html:(.+?)\}\}/'],
+    ] as [$root, $extension, $pattern]) {
+        $files = new RecursiveIteratorIterator(
+            new RecursiveDirectoryIterator($root, FilesystemIterator::SKIP_DOTS)
+        );
 
-        $source = (string) file_get_contents($file->getPathname());
-        preg_match_all('/\{!!(.+?)!!\}/s', $source, $matches);
-
-        foreach ($matches[1] as $expression) {
-            if (preg_match($frameworkHelpers, $expression)) {
+        foreach ($files as $file) {
+            if (! $file->isFile() || ! str_ends_with($file->getFilename(), $extension)) {
                 continue;
             }
-            $found[] = str_replace($root.'/', '', $file->getPathname());
+
+            $label = str_replace($root.'/', '', $file->getPathname());
+
+            foreach (file($file->getPathname()) as $line) {
+                if (preg_match($frameworkHelpers, $line) || ! preg_match_all($pattern, $line, $found)) {
+                    continue;
+                }
+
+                foreach ($found[1] as $expression) {
+                    $key = $label.' :: '.trim(preg_replace('/\s+/', ' ', $expression));
+                    $sites[$key] = trim(preg_replace('/\s+/', ' ', $line));
+                }
+            }
         }
     }
 
-    $found = array_values(array_unique($found));
-    sort($found);
-    $known = array_keys($declared);
-    sort($known);
+    ksort($sites);
 
-    expect($found)->toBe(
-        $known,
-        "The set of Blade views rendering raw HTML changed.\n"
-        ."Every one must be declared with why it is acceptable:\n"
-        ."  - sanitised on write (preferred: the stored value is safe for every reader)\n"
-        ."  - system-generated (no user input reaches it)\n"
-        ."  - UNSANITISED (a known gap, named so it is not mistaken for handled)\n"
-        ."Found:\n  ".implode("\n  ", $found)
-        ."\nDeclared:\n  ".implode("\n  ", $known)
-    );
-});
+    return $sites;
+}
