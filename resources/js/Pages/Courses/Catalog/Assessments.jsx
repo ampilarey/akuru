@@ -1,5 +1,6 @@
 import { router, useForm } from '@inertiajs/react';
 import AppShell from '../../../Layouts/AppShell';
+import FormErrors from '../../../Components/FormErrors';
 
 export default function Assessments({ course, assessments, questions, types }) {
     const form = useForm({
@@ -90,6 +91,7 @@ export default function Assessments({ course, assessments, questions, types }) {
                     Needs teacher marking
                 </label>
                 <button type="submit" className="btn-primary" disabled={form.processing}>Save assessment</button>
+                <FormErrors errors={form.errors} />
             </form>
             <form
                 onSubmit={(e) => {
@@ -114,6 +116,7 @@ export default function Assessments({ course, assessments, questions, types }) {
                     Required
                 </label>
                 <button type="submit" className="btn-primary" disabled={attachForm.processing || assessments.length === 0 || questions.length === 0}>Attach question</button>
+                <FormErrors errors={attachForm.errors} />
             </form>
             <div className="space-y-3">
                 {assessments.length === 0 && <p className="text-sm text-gray-500">No assessments yet.</p>}

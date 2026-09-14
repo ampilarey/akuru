@@ -1,5 +1,6 @@
 import { useForm } from '@inertiajs/react';
 import AppShell from '../../../Layouts/AppShell';
+import FormErrors from '../../../Components/FormErrors';
 
 export default function Audiences({ rows }) {
     const form = useForm({ name_en: '', name_dv: '', name_ar: '' });
@@ -20,6 +21,7 @@ export default function Audiences({ rows }) {
                 <input className="form-input" placeholder="Name (DV)" value={form.data.name_dv} onChange={(e) => form.setData('name_dv', e.target.value)} />
                 <input className="form-input" placeholder="Name (AR)" value={form.data.name_ar} onChange={(e) => form.setData('name_ar', e.target.value)} />
                 <button type="submit" className="btn-primary" disabled={form.processing}>Save audience</button>
+                <FormErrors errors={form.errors} />
             </form>
             <div className="overflow-x-auto rounded-lg border bg-white">
                 <table className="min-w-full text-sm">

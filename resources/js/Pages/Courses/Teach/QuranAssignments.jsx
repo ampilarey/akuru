@@ -1,5 +1,6 @@
 import { router, useForm } from '@inertiajs/react';
 import AppShell from '../../../Layouts/AppShell';
+import FormErrors from '../../../Components/FormErrors';
 
 function CreateForm({ targets, options, reference, surahs }) {
     const form = useForm({
@@ -68,6 +69,7 @@ function CreateForm({ targets, options, reference, surahs }) {
                     <option key={haraka.id} value={haraka.id}>{haraka.symbol} {haraka.display_name}</option>
                 ))}
             </select>
+            <FormErrors errors={form.errors} />
         </form>
     );
 }

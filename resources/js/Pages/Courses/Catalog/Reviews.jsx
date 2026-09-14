@@ -1,5 +1,6 @@
 import { useForm } from '@inertiajs/react';
 import AppShell from '../../../Layouts/AppShell';
+import FormErrors from '../../../Components/FormErrors';
 
 function exportHref(filters) {
     const params = new URLSearchParams();
@@ -90,6 +91,7 @@ function ReviewRow({ row }) {
                 <input className="form-input" type="number" min="1" value={form.data.max_score} onChange={(e) => form.setData('max_score', e.target.value)} aria-label="Max score" />
                 <input className="form-input md:col-span-2" placeholder="Feedback" value={form.data.feedback} onChange={(e) => form.setData('feedback', e.target.value)} />
                 <button type="submit" className="btn-primary" disabled={form.processing}>Score and release</button>
+                <FormErrors errors={form.errors} />
             </form>
         </article>
     );
@@ -159,6 +161,7 @@ export default function Reviews({
                 </select>
                 <input className="form-input" type="number" min="1" max="100" name="threshold" defaultValue={filters.threshold || 50} aria-label="Weakness threshold percent" />
                 <button type="submit" className="btn-secondary">Filter</button>
+                <FormErrors errors={form.errors} />
             </form>
 
             <h2 className="mb-2 text-sm font-medium">Pending review</h2>

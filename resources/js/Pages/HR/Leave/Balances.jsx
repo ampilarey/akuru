@@ -1,5 +1,6 @@
 import { router, useForm } from '@inertiajs/react';
 import AppShell from '../../../Layouts/AppShell';
+import FormErrors from '../../../Components/FormErrors';
 
 export default function Balances({ filters, years, staff, leaveTypes, rows }) {
     const createForm = useForm({
@@ -28,6 +29,7 @@ export default function Balances({ filters, years, staff, leaveTypes, rows }) {
                         {years.map((year) => <option key={year.id} value={year.id}>{year.name}</option>)}
                     </select>
                     <button type="submit" className="btn-secondary">Filter</button>
+                    <FormErrors errors={form.errors} />
                 </form>
                 <a className="btn-secondary" href={`/hr/leave-balances/export?academic_year_id=${filters.academic_year_id || ''}`}>Export CSV</a>
             </div>
@@ -49,6 +51,7 @@ export default function Balances({ filters, years, staff, leaveTypes, rows }) {
                     {years.map((year) => <option key={year.id} value={year.id}>{year.name}</option>)}
                 </select>
                 <button type="submit" className="btn-primary" disabled={createForm.processing}>Open entitlement</button>
+                <FormErrors errors={createForm.errors} />
             </form>
 
             <form
@@ -66,6 +69,7 @@ export default function Balances({ filters, years, staff, leaveTypes, rows }) {
                     {years.map((year) => <option key={`to-${year.id}`} value={year.id}>To {year.name}</option>)}
                 </select>
                 <button type="submit" className="btn-secondary" disabled={carryForm.processing}>Carry over</button>
+                <FormErrors errors={carryForm.errors} />
             </form>
 
             <div className="overflow-x-auto rounded-lg border bg-white">
@@ -117,6 +121,7 @@ function BalanceRow({ row }) {
                     <input className="form-input w-20" placeholder="+/-" value={form.data.days} onChange={(e) => form.setData('days', e.target.value)} />
                     <input className="form-input w-32" placeholder="Reason" value={form.data.reason} onChange={(e) => form.setData('reason', e.target.value)} />
                     <button type="submit" className="btn-secondary" disabled={form.processing}>Save</button>
+                    <FormErrors errors={form.errors} />
                 </form>
             </td>
         </tr>

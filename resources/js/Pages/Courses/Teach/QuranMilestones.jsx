@@ -1,5 +1,6 @@
 import { router, useForm } from '@inertiajs/react';
 import AppShell from '../../../Layouts/AppShell';
+import FormErrors from '../../../Components/FormErrors';
 
 function RecommendForm({ targets, options }) {
     const form = useForm({
@@ -48,6 +49,7 @@ function RecommendForm({ targets, options }) {
             <input className="form-input" type="number" min="1" max="30" placeholder="Juz #" value={form.data.juz_number} onChange={(e) => form.setData('juz_number', e.target.value)} />
             <input className="form-input" type="number" min="1" placeholder="Page #" value={form.data.page_number} onChange={(e) => form.setData('page_number', e.target.value)} />
             <input className="form-input" placeholder="Note" value={form.data.note} onChange={(e) => form.setData('note', e.target.value)} />
+            <FormErrors errors={form.errors} />
         </form>
     );
 }

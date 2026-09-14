@@ -1,5 +1,6 @@
 import { useForm } from '@inertiajs/react';
 import AppShell from '../../../Layouts/AppShell';
+import FormErrors from '../../../Components/FormErrors';
 
 export default function Postings({ rows, statuses }) {
     const form = useForm({
@@ -34,6 +35,7 @@ export default function Postings({ rows, statuses }) {
                     Public
                 </label>
                 <button type="submit" className="btn-primary" disabled={form.processing}>Save posting</button>
+                <FormErrors errors={form.errors} />
             </form>
             <div className="overflow-x-auto rounded-lg border bg-white">
                 <table className="min-w-full text-sm">

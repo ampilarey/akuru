@@ -1,5 +1,6 @@
 import { router, useForm, usePage } from '@inertiajs/react';
 import AppShell from '../../../Layouts/AppShell';
+import FormErrors from '../../../Components/FormErrors';
 
 export default function Sessions({ offering, types, sessions, programs = [], halaqa = null, halaqa_sessions = [], dual_write_enabled = false }) {
     const t = usePage().props.i18n?.learn || {};
@@ -40,6 +41,7 @@ export default function Sessions({ offering, types, sessions, programs = [], hal
                 <input className="form-input" placeholder="Meeting URL" value={form.data.online_meeting_url} onChange={(e) => form.setData('online_meeting_url', e.target.value)} />
                 <input className="form-input" placeholder="Teacher user id" value={form.data.teacher_user_id} onChange={(e) => form.setData('teacher_user_id', e.target.value)} />
                 <button type="submit" className="btn-primary" disabled={form.processing}>Save session</button>
+                <FormErrors errors={form.errors} />
             </form>
             <form
                 onSubmit={(e) => {
@@ -71,6 +73,7 @@ export default function Sessions({ offering, types, sessions, programs = [], hal
                 {halaqa?.last_synced_at && (
                     <p className="text-sm text-gray-600">Last sync: {halaqa.last_synced_at}</p>
                 )}
+                <FormErrors errors={halaqaForm.errors} />
             </form>
             <div className="overflow-x-auto rounded-lg border bg-white">
                 <table className="min-w-full text-sm">

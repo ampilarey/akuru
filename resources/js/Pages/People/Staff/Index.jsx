@@ -1,5 +1,6 @@
 import { Link, useForm } from '@inertiajs/react';
 import AppShell from '../../../Layouts/AppShell';
+import FormErrors from '../../../Components/FormErrors';
 
 export default function Index({ staff }) {
     const form = useForm({
@@ -29,6 +30,7 @@ export default function Index({ staff }) {
                 <input className="form-input" placeholder="Department" value={form.data.department || ''} onChange={(e) => form.setData('department', e.target.value)} />
                 <input className="form-input" placeholder="Designation" value={form.data.designation || ''} onChange={(e) => form.setData('designation', e.target.value)} />
                 <button type="submit" className="btn-primary">Create profile</button>
+                <FormErrors errors={form.errors} />
             </form>
             <div className="overflow-x-auto rounded-lg border bg-white">
                 <table className="min-w-full text-sm">

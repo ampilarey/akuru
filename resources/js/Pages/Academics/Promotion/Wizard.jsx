@@ -1,5 +1,6 @@
 import { useForm } from '@inertiajs/react';
 import AppShell from '../../../Layouts/AppShell';
+import FormErrors from '../../../Components/FormErrors';
 
 export default function Wizard({ years, sourceYearId, targetYearId, sourceClasses, targetClasses, report }) {
     const form = useForm({
@@ -43,6 +44,7 @@ export default function Wizard({ years, sourceYearId, targetYearId, sourceClasse
                     <button type="button" className="btn-secondary" onClick={() => form.post('/academics/promotion/dry-run')}>Dry-run</button>
                     <button type="button" className="btn-primary" onClick={() => form.post('/academics/promotion')}>Confirm promotion</button>
                 </div>
+                <FormErrors errors={form.errors} />
             </form>
 
             {report && (

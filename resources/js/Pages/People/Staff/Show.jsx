@@ -1,5 +1,6 @@
 import { useForm, router } from '@inertiajs/react';
 import AppShell from '../../../Layouts/AppShell';
+import FormErrors from '../../../Components/FormErrors';
 
 export default function Show({ staff }) {
     const form = useForm({
@@ -30,6 +31,7 @@ export default function Show({ staff }) {
                 <input className="form-input" placeholder="Institution" value={form.data.institution} onChange={(e) => form.setData('institution', e.target.value)} />
                 <input className="form-input w-28" placeholder="Year" value={form.data.year} onChange={(e) => form.setData('year', e.target.value)} />
                 <button type="submit" className="btn-primary">Add qualification</button>
+                <FormErrors errors={form.errors} />
             </form>
 
             <div className="overflow-x-auto rounded-lg border bg-white">

@@ -1,5 +1,6 @@
 import { useForm, usePage } from '@inertiajs/react';
 import AppShell from '../../Layouts/AppShell';
+import FormErrors from '../../Components/FormErrors';
 
 function GiftCardForm() {
     const flash = usePage().props.flash || {};
@@ -26,6 +27,7 @@ function GiftCardForm() {
                 <input className="form-input" type="email" placeholder="Recipient email" value={form.data.recipient_email} onChange={(e) => form.setData('recipient_email', e.target.value)} />
                 <input className="form-input" type="date" value={form.data.expires_at} onChange={(e) => form.setData('expires_at', e.target.value)} />
                 <button type="submit" className="btn-primary" disabled={form.processing}>Issue</button>
+                <FormErrors errors={form.errors} />
             </form>
         </div>
     );
@@ -48,6 +50,7 @@ function CreditForm() {
                 <input className="form-input" type="number" step="0.01" min="0.01" placeholder="Amount (MVR)" value={form.data.amount} onChange={(e) => form.setData('amount', e.target.value)} />
                 <input className="form-input" placeholder="Reason" value={form.data.description} onChange={(e) => form.setData('description', e.target.value)} />
                 <button type="submit" className="btn-primary" disabled={form.processing}>Credit</button>
+                <FormErrors errors={form.errors} />
             </form>
         </div>
     );
@@ -80,6 +83,7 @@ function DiscountForm() {
                 <input className="form-input" type="number" placeholder="Per-user limit" value={form.data.per_user_limit} onChange={(e) => form.setData('per_user_limit', e.target.value)} />
                 <input className="form-input" type="number" step="0.01" placeholder="Min order" value={form.data.minimum_order_amount} onChange={(e) => form.setData('minimum_order_amount', e.target.value)} />
                 <input className="form-input" placeholder="Name" value={form.data.name} onChange={(e) => form.setData('name', e.target.value)} />
+                <FormErrors errors={form.errors} />
             </form>
         </div>
     );

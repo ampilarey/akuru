@@ -1,5 +1,6 @@
 import { useForm } from '@inertiajs/react';
 import AppShell from '../../../Layouts/AppShell';
+import FormErrors from '../../../Components/FormErrors';
 
 export default function ArabicReference({ letters, harakas }) {
     const letterForm = useForm({
@@ -34,6 +35,7 @@ export default function ArabicReference({ letters, harakas }) {
                 <input className="form-input" placeholder="Display name" value={letterForm.data.display_name} onChange={(e) => letterForm.setData('display_name', e.target.value)} />
                 <input className="form-input" type="number" value={letterForm.data.sort_order} onChange={(e) => letterForm.setData('sort_order', e.target.value)} />
                 <button type="submit" className="btn-primary" disabled={letterForm.processing}>Save letter</button>
+                <FormErrors errors={letterForm.errors} />
             </form>
             <div className="mb-6 overflow-x-auto rounded-lg border bg-white">
                 <table className="min-w-full text-sm">
@@ -67,6 +69,7 @@ export default function ArabicReference({ letters, harakas }) {
                 <input className="form-input" placeholder="Display name" value={harakahForm.data.display_name} onChange={(e) => harakahForm.setData('display_name', e.target.value)} />
                 <input className="form-input" type="number" value={harakahForm.data.sort_order} onChange={(e) => harakahForm.setData('sort_order', e.target.value)} />
                 <button type="submit" className="btn-primary" disabled={harakahForm.processing}>Save harakah</button>
+                <FormErrors errors={harakahForm.errors} />
             </form>
             <div className="overflow-x-auto rounded-lg border bg-white">
                 <table className="min-w-full text-sm">

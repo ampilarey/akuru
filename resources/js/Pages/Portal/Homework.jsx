@@ -1,5 +1,6 @@
 import { useForm } from '@inertiajs/react';
 import AppShell from '../../Layouts/AppShell';
+import FormErrors from '../../Components/FormErrors';
 
 function Item({ item, studentId, canTick }) {
     const form = useForm({ student_id: studentId, done: !item.is_done });
@@ -35,6 +36,10 @@ function Item({ item, studentId, canTick }) {
                     <p className={`mt-1 whitespace-pre-wrap text-sm ${item.is_done ? 'text-gray-400 line-through' : 'text-gray-800'}`}>
                         {item.homework}
                     </p>
+                    {/* The tick is a checkbox rather than a form, so a refused
+                        post had nowhere at all to land: the box simply sprang
+                        back and the child was not told why. */}
+                    <FormErrors errors={form.errors} className="mt-1" />
                     {(item.materials || []).length > 0 && (
                         <div className="mt-2 rounded border border-[#E7DBC9] bg-[#FBF7F1] p-2">
                             <p className="text-xs font-semibold text-gray-600">What you need</p>
