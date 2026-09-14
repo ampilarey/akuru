@@ -19,9 +19,20 @@ class ListPendingReviewsAction
     {
         $courseId = $this->positiveInt($filters['course_id'] ?? null);
 
+        // `academic_year_id` was in this method's signature and in nothing
+        // else: the filter was documented, accepted and silently dropped, so a
+        // caller narrowing a review queue to one year got every year back.
+        //
+        // It could not have worked before now anyway —
+        // `AuthorizeActivityAccessAction` wrote a hardcoded null, so no attempt
+        // carried a year to filter on. Both halves are fixed together, because
+        // fixing either alone leaves the other looking correct.
+        $yearId = $this->positiveInt($filters['academic_year_id'] ?? null);
+
         $activities = ActivityAttempt::query()
             ->where('status', ActivityAttemptStatus::Submitted)
             ->when($courseId, fn (Builder $query) => $query->where('course_id', $courseId))
+            ->when($yearId, fn (Builder $query) => $query->where('academic_year_id', $yearId))
             ->orderBy('submitted_at')
             ->get()
             ->map(fn (ActivityAttempt $attempt): array => app(SaveActivityAttemptAction::class)->serialize($attempt) + [
@@ -31,6 +42,7 @@ class ListPendingReviewsAction
         $assessments = AssessmentAttempt::query()
             ->where('status', AssessmentAttemptStatus::Submitted)
             ->when($courseId, fn (Builder $query) => $query->where('course_id', $courseId))
+            ->when($yearId, fn (Builder $query) => $query->where('academic_year_id', $yearId))
             ->orderBy('submitted_at')
             ->get()
             ->map(fn (AssessmentAttempt $attempt): array => app(StartAssessmentAttemptAction::class)->serialize($attempt, includeKeys: true) + [

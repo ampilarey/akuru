@@ -2,6 +2,7 @@
 
 namespace App\Domains\Courses\Actions;
 
+use App\Domains\Academics\Actions\ResolveAcademicYearForDateAction;
 use App\Domains\Academics\Actions\StudentIsOnClassRosterAction;
 use App\Domains\Courses\Enums\AssessmentStatus;
 use App\Domains\Courses\Models\Assessment;
@@ -53,7 +54,18 @@ class AuthorizeAssessmentAccessAction
             'classroom_id' => null,
             'enrollment_id' => $enrollment->id,
             'student_id' => (int) $student['id'],
-            'academic_year_id' => null,
+            // The course branch had the same hardcoded null as the activity
+            // path. The branch above it already resolves a year from the
+            // assessment; this one now resolves today's, for the same rule 10
+            // reason.
+            'academic_year_id' => $this->currentAcademicYearId(),
         ];
+    }
+
+    private function currentAcademicYearId(): ?int
+    {
+        $year = app(ResolveAcademicYearForDateAction::class)->execute();
+
+        return isset($year['id']) ? (int) $year['id'] : null;
     }
 }

@@ -104,7 +104,7 @@ Legend — **CODE:** implementation in repo (models/migrations/actions/routes/pa
 | 1A.1 auth/roles | Yes (Phase 0 + S1). | Auth tests, `RoleLandingTest`. | Walked login **ok locally** (R2/R3). Teacher `/dashboard` → Today (#88). Parent/student `/dashboard` → composed `/portal/home` (D1). Admin/headmaster `/dashboard` → `/portal/overview` (D3 #111). Staging login **fail**. | |
 | 1A.2–1A.7 course engine | Yes. Catalog, outline, text/media blocks, glossary term bank + lesson attach, `/learn`, portal learning. | Matching `tests/Feature/Courses/*` including `GlossaryTest`. | Glossary walked (#102). **Catalog, glossary, levels and audiences each show a planted row** (§5ds sweep) and **a student took a lesson end to end** — `/learn`, the course page, the published block and the completion, 7/7 (§5dt, `scripts/smoke/learn.mjs`). The outline **editor**, activities and assessments remain UNVERIFIED. | `glossary_items` / `lesson_glossary_items` (SPEC §22). |
 | 1B.1–1B.6 offerings/PWA | Yes. Offerings, pin/seats, sessions, extra blocks, unlock/completion, PWA/i18n. | Matching Offerings/Progress/Pwa tests. | **1B.1 offerings shows a planted row** (§5ds sweep, 2026-09-14). Pin/seats, sessions, unlock/completion and PWA remain UNVERIFIED. | 1B.5 tests the 2/3 = 66 formula. **1B.5's "evaluators" are one hardcoded policy each** — sequential unlock, required-lessons+sessions completion — now behind contracts with a single implementation (ADR-022). No per-course strategy config exists; ROADMAP §2a describes the target, not `main`. **1B audit (2026-08-27):** seat limits, pinning, sessions (§2d L1), PWA all verified solid; but §3.4's split **backfill was never written** — offerings are created lazily, legacy enrollments keep `course_offering_id = null`, and the public site still reads legacy `courses.seats`/`enrollment_deadline`. Backfill is mandatory before first real use (see ROADMAP §3.4 as-built note). |
-| 2.1–2.5 activities | Yes. Four patterns, bank, assessment player, review, session polish. Class quizzes/assignments migrate onto the same engine. Unified gradebook via `GradeItemContract`. | Matching Courses/Progress tests + `LegacyAssessmentMigrationTest` + `UnifiedGradebookTest`. | Quiz/assignment migration walked **#104**. Unified gradebook walked this PR. Rest of 2.x still UNVERIFIED. | **Phase 2 audit (2026-08-27):** scoring covers all four patterns (teacher-marked short-circuits to review); review loop + standards-tied question bank verified; rule 6 holds behaviourally. **Deviations:** `Courses/Components/` was never created — Arabic/Quran code lives in `Courses/Models`+`Actions`, so rule 3's Components clause guards an empty set (correction point: Phase F, which creates `Components/Quran` and moves Arabic in the same slice — FQCN moves need morph-map + baseline updates together). Spec §43 `student_submissions`/`teacher_feedback` replaced by attempt `answers` json + review fields (recorded, fine). See ROADMAP §2a as-built notes. |
+| 2.1–2.5 activities | Yes. Four patterns, bank, assessment player, review, session polish. Class quizzes/assignments migrate onto the same engine. Unified gradebook via `GradeItemContract`. | Matching Courses/Progress tests + `LegacyAssessmentMigrationTest` + `UnifiedGradebookTest`. | Quiz/assignment migration walked **#104**. Unified gradebook walked. **A student answered a `selection` activity and the engine scored it** — 9/9 (§5dv, `scripts/smoke/learn.mjs`); that walk found the attempt was being written with no academic year. The other three patterns, the assessment player and the review loop remain UNVERIFIED. | **Phase 2 audit (2026-08-27):** scoring covers all four patterns (teacher-marked short-circuits to review); review loop + standards-tied question bank verified; rule 6 holds behaviourally. **Deviations:** `Courses/Components/` was never created — Arabic/Quran code lives in `Courses/Models`+`Actions`, so rule 3's Components clause guards an empty set (correction point: Phase F, which creates `Components/Quran` and moves Arabic in the same slice — FQCN moves need morph-map + baseline updates together). Spec §43 `student_submissions`/`teacher_feedback` replaced by attempt `answers` json + review fields (recorded, fine). See ROADMAP §2a as-built notes. |
 | Arabic A.1–A.3 | Yes. Letters/harakas, skill tag, reports. | `ArabicReferenceTest`, `ArabicSkillActivityTest`, `ArabicSkillReportTest`. | UNVERIFIED. | No AI (rule 8). **Audited 2026-08-27: PASS** — tables + `NormalizeTextAnswerAction` (spec normalization) + reports verified; skill metadata rides the four activity patterns (placement caveat = Phase 2 Components note). |
 | Qur’an A.1–A.4 | Yes. Read actions, recitation metadata, mapping, dual-write **off**. | Matching Courses/Offerings tests. | UNVERIFIED. | No Hifz dashboard change. `QURAN_HALAQA_DUAL_WRITE` default false. **Audited 2026-08-27: PASS** — rule 11 held (no parallel Quran source tables; reads via `QuranReferenceReader` contract, Hifz implements as owner; `quran_translations` is planned new data, not duplication); mapping tables morph-aliased; dual-write env-flagged default-off per rule 9 with tests. Hifz freeze verified: 3 recent commits are pure additions (read actions/contract impls/bindings), compliant with ADR-021 scope-discipline freeze. |
 | Hifz (frozen) | Legacy Blade exists. | `HifzAuthorizationTest` etc. | UNVERIFIED this week. Out of scope to change. | Rule 7. |
@@ -4303,6 +4303,50 @@ walk returned a header row and nothing else for circulation, student work and
 pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
+
+## 5dv. An attempt now says which year it happened in (2026-09-14)
+
+The walk from §5dt was extended one step — past reading a lesson to
+**answering something** — and the step found a defect that reading the code
+would not have.
+
+**What the walk added.** `SmokeMarkerSeeder` plants a `selection` activity
+(the simplest of the four base patterns, and the only one markable without a
+teacher), and `learn.mjs` now picks the right option and submits it. **9/9
+steps.** The attempt comes back `status = scored`, `score = 1` of
+`max_score = 1`, with the chosen answer recorded — the engine marked it.
+
+**And `academic_year_id` was null.** That looked like the fixture's fault, since
+the seeded enrolment carries no term. It was not:
+`AuthorizeActivityAccessAction` returned **a hardcoded `null`**, and so did one
+branch of `AuthorizeAssessmentAccessAction`. Both tables carry the column that
+rule 10 requires of anything recording something that happens in time, and
+**every attempt ever written was yearless.**
+
+**The other half was on the reading side.** `ListPendingReviewsAction` accepts
+an `academic_year_id` filter, documents it in its signature — and **silently
+drops it**. A caller narrowing a review queue to one year got every year back.
+
+Neither half could have been caught by the other: with no year on any row the
+filter had nothing to narrow, and with no filter the empty column was never
+read. That is why both survived, and why they are fixed together.
+
+The year now comes from `ResolveAcademicYearForDateAction` — Academics' own
+answer to "which year is this date in" (rule 3), rather than a second reading
+of the table here.
+
+**Two tests, both failing with either half reverted.** One asserts the stamp,
+the other that asking for a different year returns nothing — which is the
+assertion that would have passed vacuously before, since the filter was ignored
+and the column empty.
+
+### The walk guessed the route wrong again
+
+The activity is reachable from the **course** page, not the lesson; the script
+looked on the lesson and reported a failure that was its own assumption. Second
+time in two slices. Worth saying plainly rather than quietly fixing: a walk that
+asserts where a thing *should* be is testing the walker's mental model, and the
+only cure is to follow links rather than construct them.
 
 ## 5du. The seeded student login is now somebody (2026-09-14)
 
