@@ -71,6 +71,10 @@ export default function Index({ yearId, years, types, categories, records, canMa
                             <th className="px-3 py-2">Student</th>
                             <th className="px-3 py-2">Type</th>
                             <th className="px-3 py-2">Category</th>
+                            {/* The description is required on save, is already in the
+                                props, and was displayed nowhere — a teacher had to
+                                export the CSV to read back what they had written. */}
+                            <th className="px-3 py-2">Note</th>
                             <th className="px-3 py-2">Visible</th>
                             <th className="px-3 py-2"></th>
                         </tr>
@@ -82,6 +86,7 @@ export default function Index({ yearId, years, types, categories, records, canMa
                                 <td className="px-3 py-2">{row.student_name}</td>
                                 <td className="px-3 py-2">{row.type}</td>
                                 <td className="px-3 py-2">{row.category}</td>
+                                <td className="px-3 py-2">{row.description}</td>
                                 <td className="px-3 py-2">{row.parent_visible ? 'yes' : 'no'}</td>
                                 <td className="px-3 py-2">
                                     {canManage && (

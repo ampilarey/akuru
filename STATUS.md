@@ -4183,6 +4183,82 @@ server validation message the browser's `max` attribute prevents from ever
 being requested — the property worth asserting was that a nonsense value never
 persists, whichever layer stops it.
 
+## 5cn. Can a person actually make one? (2026-09-13)
+
+§5cm answered *"does the screen show a row that exists"*. That is weaker than
+what §2's UNVERIFIED rows are really asking, because the rows it looked for were
+planted in the database. `scripts/smoke/create-sweep.mjs` types into the real
+form, clicks the real button, and **reloads the page before looking**.
+
+The reload is the whole design, and it earned its place immediately: without it,
+all seven screens in the first run reported success. Three of those were the
+form still holding what had been typed. A create-sweep without a reload reports
+that every form works, always.
+
+```
+$ node scripts/smoke/create-sweep.mjs
+
+S2.1  rooms            created through the form, and the row is there after a reload
+S2.5  calendar days    created through the form, and the row is there after a reload
+S2.9  behaviour        created through the form, and the row is there after a reload
+S3.5  standards        created through the form, and the row is there after a reload
+S5.5  cpd              created through the form, and the row is there after a reload
+S5.5  observations     created through the form, and the row is there after a reload
+
+6/6 screens created a record through their own form.
+```
+
+### What it found: a form that refuses in silence
+
+Typing a non-numeric value into the CPD screen's **Hours** box and pressing Save
+produced **nothing at all**. No row, no message, and the typed values still
+sitting in the boxes. From the user's side that is indistinguishable from a save
+that worked and a table that has not refreshed.
+
+`Cpd.jsx` never mentions `errors`. **Nor do 27 other pages that submit a form**
+— out of 92 that do.
+
+And the same shape had already been fixed twice this week from the other
+direction: `AdminEnrollmentController::suspend()` and `reinstate()` were
+returning `back()->with('error', ...)` to a Blade screen that rendered only the
+success banner (§5co / #348). Three instances, two directions, one defect.
+
+So: `tests/Architecture/FormErrorsAreShownTest.php`, with a baseline that may
+only shrink. A page "submits" if it calls `form.post/put/patch/delete`; it
+"shows errors" if the word `errors` appears at all — deliberately the loosest
+possible test, because the house styles differ (`<Field error={form.errors.x}>`
+in Academics, inline `{form.errors.x && …}` elsewhere) and the gate is about
+whether the page *can* speak, not how.
+
+**26 entries**, down from 28: `Cpd.jsx` and `Observations.jsx` were fixed here,
+being the two this sweep proved reachable. Walked after the fix — the CPD form
+now says *"The hours field must be a number."*
+
+### What it found: a note nobody could read back
+
+The behaviour screen's only free-text field is **description**. It is `required`
+on save, it is in `ListBehaviorRecordsAction`'s output, it is in the CSV export —
+and the table rendered Date, Student, Type, Category, Visible. A teacher had to
+export a spreadsheet to read back the note they had just written.
+
+That is the taxonomy this sweep keeps finding written the other way round: not a
+column nobody writes, but **a column nobody displays**. The table now has a Note
+column, which is also why the behaviour row of the sweep above passes.
+
+### One thing about the harness itself
+
+Two runs reported all six screens refusing their own forms with "field is
+required". The cause was a `catch {}` in my own script swallowing a
+`ReferenceError` — so every field silently failed to fill and every form was
+submitted empty. The catch now prints. A verification tool that hides its own
+failures reports the system as broken and itself as fine, which is the worst
+possible direction for the error to run.
+
+### Still not established
+
+That every screen's create path works — six were driven, not ninety-two. And
+nothing here has been run against staging.
+
 ## 5cm. Twenty screens asked whether they show their own data (2026-09-13)
 
 §5cl swept all 116 staff screens for server errors and blank shells and found

@@ -37,6 +37,11 @@ export default function Observations({ staff, classes, subjects, rows }) {
                 </select>
                 <input className="form-input md:col-span-3" placeholder="Summary" value={form.data.summary} onChange={(e) => form.setData('summary', e.target.value)} />
                 <button type="submit" className="btn-primary" disabled={form.processing}>Save observation</button>
+                {Object.keys(form.errors).length > 0 && (
+                    <ul className="md:col-span-4 list-disc ps-5 text-xs text-red-600">
+                        {Object.entries(form.errors).map(([field, message]) => <li key={field}>{message}</li>)}
+                    </ul>
+                )}
             </form>
             <div className="overflow-x-auto rounded-lg border bg-white">
                 <table className="min-w-full text-sm">
