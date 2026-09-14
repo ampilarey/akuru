@@ -4304,6 +4304,57 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5dr. The one recovery offered to a family who may have just paid was a dead end (2026-09-14)
+
+Found by following §5dq's `registration_flows.status → completed` finding to
+ask the obvious next question: *who writes this table at all?*
+
+**Nobody.** `registration_flows` has two readers — `findResumable()` and
+`latestActiveForUser()` — and **no writer anywhere in the application**.
+Nothing constructs a `RegistrationFlow`, so `courses/register/resume` always
+falls through to *"No active registration found. Please start again from a
+course page."*
+
+**Where that was being offered is what makes it a defect rather than dead
+code.** When BML's return loses its reference, the family lands on
+`payments/return-missing`, which said:
+
+> If you completed a payment, please **resume your registration** or contact us
+> for assistance.
+
+A family who may have just paid, on the money path, sent to a link that cannot
+work and told to start over.
+
+**What replaces it is what actually happens.** The bank's webhook is the
+authority on payment (rule 12), and confirming a payment activates the
+enrolment **inside that same transaction** — `PaymentConfirmed` is the event
+domains listen to, verified in `PaymentService` before writing the copy. So a
+lost return reference costs the family nothing and asks nothing of them. The
+page now says so and points at their enrolments.
+
+**Three tests**, and the page one fails on the old copy. The third is a grep:
+nothing may create a `RegistrationFlow`. That is deliberate — the new wording
+is only true while the table stays unwritten, so the day somebody builds the
+resume feature the test fails and sends them back to this page. The two have to
+move together, and a comment would not have made that happen.
+
+**This corrects `docs/OWNER_ACTIONS.md` item 14**, written earlier the same day.
+It asked the owner to accept or narrow the security properties of the resume
+magic link — not single-use, survives in browser history, grants a full
+session. That was a decision request about a feature that **cannot function**.
+The real question is whether to build resume or delete the route and the table,
+and item 14 now says that instead.
+
+**Walked in Chromium (2026-09-14)** on `/payments/bml/return` — note the route
+is not under the `/en` prefix, which is how the first walk got a 404 and is
+worth knowing before anyone tests it by hand:
+
+| | |
+|---|---|
+| resume link | **gone** |
+| *"If you completed the payment, it will still be confirmed"* | shown |
+| link to `my-enrollments` | present |
+
 ## 5dq. A gate for the defect §5dm, §5do and §5dp all turned out to be (2026-09-14)
 
 Three slices in one afternoon were the same defect in different clothes, and

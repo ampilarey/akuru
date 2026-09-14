@@ -173,15 +173,31 @@ regardless.
 it, plus a backfill for every existing link) **or drop the columns.** Enforcing
 it today without a backfill would hide every child from every parent.
 
-### 14. The `resume` magic link
+### 14. The `resume` magic link — build it or delete it
 
-`courses/register/resume?flow=<uuid>` signs you in as the flow's owner. It is a
-random v4 UUID, expires in 24 hours, and is never sent by SMS or email — an
-ordinary resume link, and **not** filed as a defect.
+**Rewritten the same day it was written.** This item used to ask you to accept
+or narrow three security properties of `courses/register/resume?flow=<uuid>`:
+that it is not single-use, that it survives in browser history, and that the
+session it grants is full rather than scoped. That was a decision request about
+a feature that **does not function**.
 
-Three properties nobody had written down, for you to accept or narrow: it is
-**not single-use**, it **survives in browser history**, and the session it
-grants is **full** rather than scoped to finishing a registration.
+`registration_flows` has two readers and **no writer anywhere in the
+application**. Nothing creates a flow, so the route always answers *"No active
+registration found. Please start again from a course page."* There is nothing
+to resume and nothing to secure.
+
+The real question is which way to close the gap:
+
+- **Build it** — persist the registration journey so a family can come back to
+  a half-finished enrolment. Then the three properties above become live
+  questions and this item comes back as it was written.
+- **Delete it** — drop the route, the model and the table. It is the honest
+  option if nobody wants resume, and it removes a security surface that exists
+  only on paper.
+
+Either way, `payments/return-missing` no longer offers the link (STATUS §5dr),
+because it was sending families who may have just paid to a dead end. It now
+tells them the webhook will confirm the payment without them, which is true.
 
 ### 15. What a hifz enrolment should say when a pupil leaves
 

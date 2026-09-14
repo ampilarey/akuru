@@ -219,6 +219,14 @@ function statusGateSources(): array
  */
 function statusGateStripComments(string $source): string
 {
+    // Blade's own comment syntax, and not an afterthought: the first version of
+    // this function handled `/* */`, `//` and `#` and missed `{{-- --}}`, so a
+    // Blade comment naming `registration_flows` pulled that template into the
+    // table's scope and the word "completed" in its visible copy then vouched
+    // for a value nothing writes. The gate caught it on the next run — one
+    // commit after this function was written to prevent exactly that.
+    $source = preg_replace('/\{\{--.*?--\}\}/s', ' ', $source) ?? $source;
+
     $source = preg_replace('!/\*.*?\*/!s', ' ', $source) ?? $source;
     $source = preg_replace('/^\s*\/\/.*$/m', ' ', $source) ?? $source;
 
