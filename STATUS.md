@@ -4278,6 +4278,57 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5dj. The smoke sweeps could not run here at all (2026-09-14)
+
+Asked to push harder, I went for the biggest unexamined gap: the definition of
+done requires a screen to be **walked in a browser**, and most of the app's
+routes never have been. `scripts/smoke/page-errors.mjs` exists for exactly
+that.
+
+It ran for **forty minutes and printed nothing.** Not slow — stalled.
+
+### Two causes, both outside the application
+
+1. **Page requests to the open internet.** Google Fonts, bunny.net. Each waits
+   for a timeout that never comes in a sandbox with no route out. One run
+   logged **313** failed outbound connections before it was killed.
+2. **Chromium's own background traffic**, which `context.route()` cannot touch
+   because it is not a page request — `content-autofill.googleapis.com` above
+   all. That accounted for most of **1,172** failures in the next run, which is
+   how I found it: blocking page requests alone barely helped.
+
+Fixed in all four sweeps: request interception that aborts anything not on the
+app's own host, plus launch flags for the browser's own services
+(`--disable-background-networking`, `--disable-component-update`,
+`AutofillServerCommunication` and friends).
+
+**A page that would not load now loads in ~500ms.** This is also simply the
+right behaviour for a smoke sweep: it should measure this application, not a
+font CDN's availability, and should give the same answer on a train.
+
+### What the sweep then found
+
+**265 routes × 6 roles = 1,590 page loads. Zero runtime errors. Zero server
+errors.**
+
+| role | loaded | denied |
+|---|---|---|
+| admin | 256 | 9 |
+| headmaster | 237 | 28 |
+| supervisor | 209 | 56 |
+| teacher | 129 | 136 |
+| student | 106 | 159 |
+| parent | 109 | 156 |
+
+The denial counts are the shape you would want — a parent reaching 109 of 265
+screens and a student 106, against admin's 256.
+
+**What this is not.** It proves every screen renders without throwing for every
+role. It does not prove a screen shows the right rows, which is `sweep.mjs`'s
+job, nor that a person can complete a task, which is `create-sweep.mjs`'s. The
+gap between "no errors" and "walked" is still real, and this closes the first
+half of it across the whole app for the first time.
+
 ## 5di. Measuring the fix before believing it (2026-09-14)
 
 Report card generation ran a `where(student_id)->first()` per student and then
