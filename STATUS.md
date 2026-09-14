@@ -4278,6 +4278,52 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5cx. Auditing the other baselines' reasons, and a P1 in the first one (2026-09-14)
+
+§5cw's lesson generalised: **which other baselines assert safety they never
+checked?** Starting with the security-relevant one — `unguarded_write_routes`,
+61 routes exempted from SPEC §45's "backend must enforce permissions".
+
+That file is better written than mine was: it marks which entries were
+actually **READ** and which are assertions. So the unmarked ones are precisely
+the list to verify. Most held up, and several undersold themselves —
+`portal/pickup/request` claims "guardian-scoped in the Action" and in fact
+checks `GuardianMayCollectStudentAction` (`can_pickup`, stricter than "is a
+guardian") **and** a PIN.
+
+### `account/set-password` — "your own password"
+
+True, and the wrong question. It changed the current user's password **without
+asking for the old one**, while `ProfileController` requires `current_password`
+on the app's other password route. One door locked, the other not.
+
+The dashboard only offers that screen to an account with no usable password.
+The route offered it to everybody — SPEC §44/§45 again, *"do not rely only on
+frontend button hiding"*, which this repo already has a KNOWN_ISSUES entry
+about. Session access — a stolen cookie, an unlocked shared device, an XSS
+anywhere — became **permanent takeover**: a new password set by someone who
+never knew the old one, and the owner locked out.
+
+Fixed by requiring `current_password` unless `force_password_change` is set,
+which is the genuine "no usable password" state: `AccountResolverService`
+creates OTP-only accounts with a random 40-character hash nobody holds. The
+form now renders the field exactly when validation will demand it — otherwise
+the screen becomes uncompletable, which is its own way of being broken.
+
+### The banner never rendered, which is probably why nobody noticed
+
+`$hasPassword = ! empty($user->password)`. `users.password` is NOT NULL and
+those OTP accounts carry a random hash, so it was **always true** and the "Set
+a password for easier login" prompt showed to nobody. Confirmed against the
+dev database: 0 of 10 users have a null or empty password.
+
+Both halves, one root: `force_password_change` is the flag that records the
+state, and **neither the banner nor the route consulted it**. The feature was
+unreachable through its own entry point while its route stood open to the
+whole world — the two failures hid each other.
+
+Three of the seven new cases fail against the old code.
+
 ## 5cw. Auditing my own baseline, and finding the same mistake in it (2026-09-14)
 
 §5cv shipped 121 reasons for 121 public routes. They were **generated per

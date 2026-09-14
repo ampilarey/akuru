@@ -68,7 +68,15 @@ class DashboardController extends Controller
         $pendingEnrollments = $enrollments->whereIn('status', ['pending', 'pending_payment']);
         $openCourses = \App\Domains\Courses\Models\Course::where('status', 'open')->latest()->take(4)->get();
 
-        $hasPassword = ! empty($user->password);
+        // `users.password` is NOT NULL and an OTP-only account is created with
+        // a random 40-character hash (AccountResolverService), so
+        // `! empty($user->password)` was **always true** and the "Set a
+        // password for easier login" banner this feeds never rendered for
+        // anybody. The feature was unreachable through its own entry point.
+        //
+        // `force_password_change` is the flag that actually records "there is
+        // a password here but nobody knows it".
+        $hasPassword = ! $user->force_password_change;
 
         return view('dashboard.public-user', compact(
             'user',
