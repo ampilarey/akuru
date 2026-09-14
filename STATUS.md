@@ -4241,12 +4241,49 @@ Worth stating plainly: **this found nothing.** The app was clean. What it buys
 is that the next `ReferenceError` fails a command rather than waiting for a
 container restart and a lucky glance.
 
+### Then the same sweep as everybody (2026-09-14)
+
+The limitation above — *"one role; a screen that works for `admin` and throws
+for a parent would pass"* — was the obvious next thing, and a portal page is
+exactly where a role-specific runtime error would live. Those are the pages
+families use.
+
+Each of the six seeded roles now sweeps in **its own browser context**,
+concurrently, so six roles cost little more wall-clock than one. Own context
+matters: a shared cookie jar would sweep the same session six times and report a
+clean bill of health for five roles nobody looked at.
+
+```
+265 screens × 6 roles.
+
+admin       252 loaded,  13 denied, 0 runtime error(s), 0 server error(s)
+headmaster  237 loaded,  28 denied, 0 runtime error(s), 0 server error(s)
+supervisor  209 loaded,  56 denied, 0 runtime error(s), 0 server error(s)
+teacher     129 loaded, 136 denied, 0 runtime error(s), 0 server error(s)
+student     106 loaded, 159 denied, 0 runtime error(s), 0 server error(s)
+parent      109 loaded, 156 denied, 0 runtime error(s), 0 server error(s)
+
+No runtime or server errors for any role.
+```
+
+**1,042 page loads. Nothing broken anywhere.**
+
+The denial counts are the other half of the picture, and they read the way they
+should: a parent reaches 109 of 265 screens and a student 106, against the
+admin's 252. Permissions are doing real work rather than being nominal — which
+is a thing this repo had asserted in Pest and never watched happen.
+
+Second time running: **the multi-role version was silent too.** The per-route
+"ok" line was dropped to stop six sweeps interleaving into noise, and the run
+then said nothing for twenty minutes. There is now a heartbeat every 50 routes
+per role. The single-role version learned this the expensive way; the multi-role
+version re-learned it the same afternoon.
+
 ### What it still is not
 
-One role. A screen that works for `admin` and throws for a parent would pass
-this sweep, and the 403 rows above are exactly the screens a second pass as
-`super_admin`, a teacher and a parent would cover. And it runs against local,
-not staging.
+Local, not staging. And a screen that loads without throwing can still be wrong
+— this is the floor, not the ceiling: §5cm asks whether a screen shows its data
+and §5cn whether a person can create a record.
 
 ## 5co. The silent-form list is empty (2026-09-14)
 
