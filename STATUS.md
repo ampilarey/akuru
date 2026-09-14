@@ -4304,6 +4304,74 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5dn. A pupil who left the school stayed on the register (2026-09-14)
+
+**Not on any list.** The known backlog was empty after §5dm, so this came from
+auditing rather than reading — specifically from generalising §5dm's defect
+(*a population defined by the wrong query*) to the next population along.
+
+**The defect.** `students.status` and `class_student.status` record the same
+fact and **nothing reconciled them.** `PromoteStudentsAction` moves both
+together at the end of a year — S1_SPEC §121 spells that pairing out — but the
+mid-year path had no equivalent. Marking a child **withdrawn** in the student
+directory left their roster row `active`, and `SaveStudentAction` only closes a
+placement when the *class* changes, not when the pupil leaves.
+
+Seventeen readers key off `class_student.status` and not one of them consults
+the pupil's standing, so a withdrawn child stayed on the register grid, the
+homework list, the timetable and the meeting-slot list.
+
+**Why that is not cosmetic.** The register grid defaults every row to
+**present**. A withdrawn pupil left on it is recorded as having attended a
+lesson they were not at, every day, until somebody notices. Marking them absent
+instead sends their guardian an **absence SMS about a school the family has
+left**. And neither outcome is visible to the person who marked the child
+withdrawn, because no screen shows a roster row's pupil status beside it.
+
+**The fix, and what it deliberately does not do.** `ChangeStudentStatusAction`
+— the only writer of `students.status`, since the column is not fillable — now
+raises `StudentStatusChanged` after its transaction commits, and Academics
+closes the placement in its own listener. The roster is Academics' table, so a
+cascade written inside the People action would be People writing another
+domain's rows (rule 3); this follows the path `StudentMarkedAbsent` →
+`SendAbsenceSms` already takes.
+
+Three of the six statuses are departures — `graduated`, `transferred`,
+`withdrawn` — and they are exactly the three `PromoteStudentsAction` already
+pairs with closing a placement, so this invents no policy. **`inactive` is
+deliberately excluded and that exclusion is a test**: it records a pupil who
+has stopped attending without leaving, which is the case where a school needs
+them on the register in order to chase it.
+
+`left_at` takes the **effective date the office gave**, not today's, so a
+withdrawal recorded a week late still ends when it ended. Rows already closed
+are not touched, so a re-admission that ends again cannot overwrite the first
+departure's date.
+
+**No backfill.** Placements left open by a withdrawal before today stay open —
+closing them retroactively would write dates nobody chose, and there are no
+real students on any deployment to backfill (ADR-021).
+
+**Five tests, and the revert check caught one of mine.** With the listener
+unregistered, four of the five fail. The fifth — "closes the placement for
+every way of leaving" — **passed without the fix**, because Pest's `toContain`
+is variadic: the failure message I passed as a second argument was being
+checked as a second needle, which an array of ids never contains, so
+`not->toContain($id, $message)` passes whatever the roster holds. Rewritten to
+assert the whole roster. This is the fifth vacuous probe I have caught in this
+session by reverting the fix, and the first where the vacuity was in the
+assertion API rather than the fixture.
+
+**Walked in Chromium (2026-09-14)** on `/en/academics/registers/2`, admin login,
+a class of 15:
+
+| | grid |
+|---|---|
+| before | **15 pupils**, including Hawwa Zahir |
+| after withdrawing Hawwa with effective date 2026-09-10 | **14 pupils**, and her placement reads `left`, `left_at = 2026-09-10` |
+
+Full suite **1936 passed**.
+
 ## 5dm. "Students" was one word for two numbers, and the dashboard showed the wrong one (2026-09-14)
 
 KNOWN_ISSUES **#22**, the last entry on the agent-buildable list, filed as a
