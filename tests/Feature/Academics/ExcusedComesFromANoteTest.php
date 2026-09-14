@@ -59,6 +59,11 @@ function excusedTestSmsFake(): object
 
             return ['success' => true, 'driver' => 'log'];
         }
+
+        public function sendOtp(string $phoneNumber, string $otp): array
+        {
+            return $this->sendSms($phoneNumber, "Code: {$otp}", ['type' => 'otp']);
+        }
     };
 
     app()->instance(App\Domains\Notifications\Contracts\SmsSenderInterface::class, $fake);

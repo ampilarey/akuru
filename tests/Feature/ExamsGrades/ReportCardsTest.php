@@ -42,6 +42,11 @@ function reportSetup(): array
         {
             return ['success' => true];
         }
+
+        public function sendOtp(string $phoneNumber, string $otp): array
+        {
+            return $this->sendSms($phoneNumber, "Code: {$otp}", ['type' => 'otp']);
+        }
     });
 
     $admin = reportAdmin();

@@ -4278,6 +4278,61 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5cy. The interface that did not declare what its callers called (2026-09-14)
+
+Found sideways. Trying to drive the public registration funnel in a test to
+check a §5cx suspicion, the funnel would not proceed — and the reason was not
+the funnel.
+
+`OtpService::dispatchCode` calls `$this->smsGateway->sendOtp(...)`.
+`SmsSenderInterface` declared only `sendSms`. `SmsGatewayService` happened to
+have `sendOtp` too, so the **live** driver worked. `LogSmsSender` implemented
+the interface faithfully and nothing more, so it did not.
+
+`LogSmsSender` is the binding whenever live SMS is off — **local, staging, and
+any production without `SMS_LIVE`**. Every mobile OTP threw, `send()` caught
+it, deleted the code it had just written, and showed *"Unable to send
+verification code."*
+
+Verified directly rather than inferred: `app(SmsSenderInterface::class)` is
+`LogSmsSender` here, and `method_exists($it, 'sendOtp')` is **false**.
+
+**The failure is the contract's, not the implementation's.** The one class that
+obeyed the interface was the one that broke, and the one that worked did so by
+accident of carrying a method nobody had written down. Rule 4 asks for SMS
+behind a domain-owned interface; an interface that does not declare what its
+consumers call is not one.
+
+Fixed by declaring `sendOtp` and implementing it on `LogSmsSender` via
+`sendSms`, so the code reaches the log and `sms_receipts` — which is how
+somebody signs in on an environment with no handset.
+`SmsSenderContractIsCompleteTest` fails on any method called through the
+interface that it does not declare; three of the four new cases fail against
+the old code, the gate among them.
+
+Eight existing test fakes had to gain the method, which is the interface doing
+its job — and a reminder that all eight were previously free to be wrong in
+the same way the real driver was.
+
+### On P0 #1, stated carefully
+
+That entry records **password** login on staging 302ing back with seed
+passwords. This breaks **OTP** login. It does not explain the recorded symptom
+and is not claimed as its fix. It does mean OTP login on `test.akuru.edu.mv`
+could not have worked either, so staging should be retested on **both** paths
+rather than on the assumption that the password symptom is the whole story.
+
+### What was not shipped
+
+The §5cx suspicion that started this — the funnel's set-password step never
+checking that the code was entered — is **recorded in KNOWN_ISSUES and not
+resolved**. The sequencing is real by reading, and `start` short-circuits
+verified contacts, which blocks the worst version. But the end-to-end test
+reached neither a takeover nor a clean legitimate run, so the model is still
+wrong somewhere and neither outcome means anything. A green security test
+nobody can explain is worse than no test, so it was deleted rather than
+shipped.
+
 ## 5cx. Auditing the other baselines' reasons, and a P1 in the first one (2026-09-14)
 
 §5cw's lesson generalised: **which other baselines assert safety they never

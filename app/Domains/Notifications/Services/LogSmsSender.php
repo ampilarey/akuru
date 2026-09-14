@@ -59,6 +59,26 @@ class LogSmsSender implements SmsSenderInterface
         ];
     }
 
+    /**
+     * The code reaches the log and `sms_receipts` rather than a handset, which
+     * is exactly what a non-production environment needs: somebody testing the
+     * login can read the code out of the log.
+     *
+     * Its absence is what broke OTP login everywhere live SMS is off. Wording
+     * mirrors `SmsGatewayService::sendOtp` so the two drivers send the same
+     * message.
+     *
+     * @return array<string, mixed>
+     */
+    public function sendOtp(string $phoneNumber, string $otp): array
+    {
+        return $this->sendSms(
+            $phoneNumber,
+            "Your Akuru Institute verification code is: {$otp}. Valid for 10 minutes. Do not share this code.",
+            ['type' => 'otp', 'sender_id' => 'AKURU'],
+        );
+    }
+
     public function checkHealth(): bool
     {
         return true;

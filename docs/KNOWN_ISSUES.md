@@ -458,6 +458,66 @@ entry point, which is presumably why nobody noticed the route was open. Both
 halves came from the same root: `force_password_change` is the flag that
 records the state, and neither the banner nor the route consulted it.
 
+### Open question: the registration funnel's set-password step never checks that the code was entered
+
+**Status: recorded, not resolved.** Raised 2026-09-14 while auditing
+`unguarded_write_routes`, whose entry for this route reads *"OTP-proved"*.
+
+`CourseRegistrationController::setPassword` sets a password on
+`session('pending_user_id')` and checks only that the value is present. It does
+**not** check that `courses/register/verify` ever succeeded. `start` — a public
+POST — writes `pending_user_id` on the returning-user branch at the moment the
+OTP is *sent*.
+
+**What is established:** the sequencing above, by reading. Also that `start`
+**short-circuits an already-verified contact** to the checkout login screen
+without setting the session keys, which blocks the worst reading of this
+against any account whose contact is verified.
+
+**What is not established:** whether an account with an *unverified* contact
+can be claimed this way in practice. Attempts to drive the funnel end to end in
+a test did not reach a takeover, **and did not reach a clean legitimate run
+either** — so the model of the flow is still wrong somewhere and neither result
+means anything yet. A green security test nobody can explain is worse than
+none, so none was shipped.
+
+**Next step:** get the legitimate returning-user path passing first. Until an
+honest happy path runs, a refusal proves nothing — the same lesson
+`scripts/smoke/own-data.mjs` carries about pairs.
+
+### OTP login could not send a code anywhere except live-SMS production — **fixed (2026-09-14)**
+
+**Severity: P0-class — a login path that does not work.**
+
+`OtpService::dispatchCode` called `$this->smsGateway->sendOtp(...)`.
+`SmsSenderInterface` declared only `sendSms`. `SmsGatewayService` happened to
+have `sendOtp` as well, so the **live** driver worked — and `LogSmsSender`,
+which implemented the interface faithfully and nothing more, did not have it.
+
+`LogSmsSender` is the binding whenever live SMS is off: **local, staging, and
+any production without `SMS_LIVE`.** So every mobile OTP threw
+`Call to undefined method`, `OtpService::send` caught it, deleted the code it
+had just written, and rendered *"Unable to send verification code. Please try
+again."*
+
+Verified directly: `app(SmsSenderInterface::class)` resolves to `LogSmsSender`
+locally and `method_exists($it, 'sendOtp')` is **false**.
+
+**Fixed** — `sendOtp` is declared on the interface and implemented on
+`LogSmsSender`, which routes it through `sendSms` so the code lands in the log
+and in `sms_receipts`. That is what a non-production environment needs: whoever
+is testing a login reads the code out of the log.
+`SmsSenderContractIsCompleteTest` now fails on any method called through the
+interface that the interface does not declare.
+
+**Bearing on P0 #1 (staging staff login), stated carefully.** That entry
+records *password* login with seed passwords 302ing back, and this defect
+breaks *OTP* login. It does not explain the recorded symptom and is **not**
+being claimed as its fix. What it does mean is that OTP login on
+`test.akuru.edu.mv` could not have worked either, so the next person testing
+staging should retest **both** paths rather than assuming the password symptom
+is the whole story.
+
 ## Top five (remaining)
 
 1. **Staging staff login** — seed passwords 302 back to login; no SSH from this environment. Blocks any judgement that `test.akuru.edu.mv` is a school.
