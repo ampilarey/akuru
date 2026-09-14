@@ -4183,6 +4183,71 @@ server validation message the browser's `max` attribute prevents from ever
 being requested — the property worth asserting was that a nonsense value never
 persists, whichever layer stops it.
 
+## 5cp. The check that was missing (2026-09-14)
+
+Three pages shipped blank in §5co because a `ReferenceError` in a React
+component is invisible to every check this repo has: `npm run build` does no
+scope analysis, the PHP suite never loads a page, and an architecture gate that
+reads source for a string is satisfied by a broken file. **CI was green.** They
+were found by opening the screens by hand after a container restart — by luck.
+
+`scripts/smoke/page-errors.mjs` is the check that was missing. It loads every
+screen and listens for uncaught errors.
+
+- **Routes come from `php artisan route:list`, fresh on every run**, so a screen
+  added tomorrow is swept tomorrow without anybody remembering to add it to a
+  list. Parameterised routes are skipped (an invented id tests the 404 page), as
+  are exports and non-HTML endpoints.
+- Exits non-zero, so it can gate a deploy.
+- `SMOKE_ONLY=hr` narrows it while iterating.
+
+### What the harness got wrong first
+
+**It was silent.** The first version printed only a summary, and a full sweep of
+265 screens against `artisan serve` takes the better part of an hour — long
+enough that a silent run is indistinguishable from a hung one. Two attempts were
+spent discovering that rather than discovering anything about the app. It now
+prints every route as it goes.
+
+That is the third time in two slices that the verification tooling, not the
+system, was the thing at fault — and the pattern is always the same shape: the
+tool cannot tell "nothing wrong" from "nothing happened".
+
+### The first full run
+
+```
+265 screens to look at.
+...
+250 screens loaded.
+
+No runtime errors.
+```
+
+**250 screens, zero runtime errors** — including the three that were blank
+yesterday. The fifteen that did not load are all deliberate and were checked one
+by one:
+
+| Not 200 | Why |
+|---|---|
+| `admin/settings`, `admin/users`, `admin/users/otp-abuse` | 403 — `super_admin` only, and the sweep signs in as `admin` |
+| `hifz/parent`, `hifz/student`, `hifz/teacher` | 403 — role-scoped dashboards |
+| `hr/payroll` | 403 — deliberate, the same one §5cl recorded |
+| `people/sensitive` | 403 — needs `students.view-sensitive` |
+| `manifest.webmanifest`, `sw.js`, `offline.html` | 404 under `/en/` — PWA assets, served unprefixed |
+| `payments/bml/return` | 404 without a payment reference — rule 12's return URL, which by design decides nothing |
+| `inertia-test` | 404 — a dev route |
+
+Worth stating plainly: **this found nothing.** The app was clean. What it buys
+is that the next `ReferenceError` fails a command rather than waiting for a
+container restart and a lucky glance.
+
+### What it still is not
+
+One role. A screen that works for `admin` and throws for a parent would pass
+this sweep, and the 403 rows above are exactly the screens a second pass as
+`super_admin`, a teacher and a parent would cover. And it runs against local,
+not staging.
+
 ## 5co. The silent-form list is empty (2026-09-14)
 
 §5cn found 28 Inertia pages that submit a form and never mention `errors`, fixed
