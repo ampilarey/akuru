@@ -625,8 +625,19 @@ shipped. Remaining, on verified ground:
   question its policy has not answered, and grants `admin` nothing; E16 is
   named Circulation, in its own domain, so it can never merge with the L-track
   Library.)*
-- **The family-facing core is now just E1 + E2 + E3** (tiles, message threads,
-  homework list) ≈ **4–6 weeks**. E4, E9 and E22 were in that line and are done.
+- **The family-facing core ships.** E1, E2 and E3 are all built — corrected
+  2026-09-14, and corrected in this document's own signature way: the line
+  that used to sit here named those three as the remaining work, while the
+  corrections table a few hundred lines above already recorded all three as
+  shipped. E1's family half is `ComposePortalHomeAction` and its teacher half
+  was built as E1b (`portal.home`, `portal.teacher`); E2 is `Message` with
+  threads, participants, replies and polls (six `portal.messages.*` routes);
+  E3 is the homework reader and its tick (`portal.homework`,
+  `portal.homework.tick`). Each has feature tests. **That was the seventeenth
+  time this document recorded shipped work as missing** — CLAUDE.md's count
+  said sixteen — and it had been copied into STATUS.md, from where it was
+  quoted as fact. `tests/Feature/Docs/EduPageRemainingIsHonestTest.php` pins
+  the routes that disprove it.
 - Everything else is either built, half-built (E11's calendar), or gated on a
   decision the Institute has not made.
 
