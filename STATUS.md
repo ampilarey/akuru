@@ -4278,14 +4278,20 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
-## 5dj. The smoke sweeps could not run here at all (2026-09-14)
+## 5dj. The smoke sweeps were seven times slower than they needed to be (2026-09-14)
 
 Asked to push harder, I went for the biggest unexamined gap: the definition of
 done requires a screen to be **walked in a browser**, and most of the app's
 routes never have been. `scripts/smoke/page-errors.mjs` exists for exactly
 that.
 
-It ran for **forty minutes and printed nothing.** Not slow — stalled.
+It ran for **forty minutes and printed nothing**, so I called it stalled and
+went looking for the cause.
+
+**That characterisation was wrong, and the evidence arrived later.** The
+original run was still going in the background and finished on its own at
+around fifty minutes — with results *identical* to the fixed version. It was
+not stalled. It was pathologically slow, and quiet while it worked.
 
 ### Two causes, both outside the application
 
@@ -4302,9 +4308,14 @@ app's own host, plus launch flags for the browser's own services
 (`--disable-background-networking`, `--disable-component-update`,
 `AutofillServerCommunication` and friends).
 
-**A page that would not load now loads in ~500ms.** This is also simply the
-right behaviour for a smoke sweep: it should measure this application, not a
-font CDN's availability, and should give the same answer on a train.
+**A page load went from stalling for seconds to ~500ms, and the whole sweep
+from ~50 minutes to ~7.** This is also simply the right behaviour for a smoke
+sweep: it should measure this application, not a font CDN's availability, and
+should give the same answer on a train.
+
+The accidental benefit of my wrong diagnosis: the slow run and the fast run are
+**two independent executions**, and they agree exactly — which is better
+corroboration of the numbers below than one run would have been.
 
 ### What the sweep then found
 
@@ -4324,7 +4335,7 @@ The denial counts are the shape you would want — a parent reaching 109 of 265
 screens and a student 106, against admin's 256.
 
 **What this is not.** It proves every screen renders without throwing for every
-role. It does not prove a screen shows the right rows, which is `sweep.mjs`'s
+role, twice over. It does not prove a screen shows the right rows, which is `sweep.mjs`'s
 job, nor that a person can complete a task, which is `create-sweep.mjs`'s. The
 gap between "no errors" and "walked" is still real, and this closes the first
 half of it across the whole app for the first time.
