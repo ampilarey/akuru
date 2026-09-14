@@ -602,6 +602,35 @@ is read from that record. Five of the six callers were already doing this.
 it lasted: it was reachable only by typing it. That also made the fix safe —
 no screen could break.
 
+### A signed-in visitor could repoint somebody else's enrolment at their own payment — **fixed (2026-09-14)**
+
+**Severity: P2 — unauthorised mutation / disruption.** Found by sweeping for
+the shape behind most of the day's findings: **an identifier taken from the
+request where the owning record was available.**
+
+`CheckoutController::start` binds `{course}` and then takes `enrollment_id`
+and `student_id` from the request. `enrollment_id` was checked against the
+bound course and **nothing else**, and the transaction does:
+
+    $enrollment->update(['payment_status' => 'pending', 'payment_id' => $payment->id]);
+
+So any signed-in visitor could pass a stranger's enrolment id on the same
+course and repoint that enrolment's payment at their own — leaving somebody
+else mid-checkout attached to a payment they do not control, and stuck pending
+if it was abandoned. Enrolment ids are sequential integers.
+
+`student_id` was validated as `exists:registration_students,id`, which says the
+row exists and nothing about whose it is, so an enrolment could also be created
+for a stranger.
+
+**Fixed** — both are scoped to the students the payer may act for, which is the
+app's own rule rather than a new one: themselves
+(`registrationStudentProfile`) and their children (`guardianStudents`).
+
+**Not a disclosure.** Nothing about the other family is returned; the cost is
+disruption of their checkout, and a stranger enrolled on a course. Recorded at
+P2 for that reason.
+
 ## Top five (remaining)
 
 1. **Staging staff login** — seed passwords 302 back to login; no SSH from this environment. Blocks any judgement that `test.akuru.edu.mv` is a school.
