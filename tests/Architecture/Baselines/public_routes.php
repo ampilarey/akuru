@@ -34,6 +34,20 @@
  *    They are fine; the point is that being fine is invisible, and that is
  *    exactly how the payment bug stayed hidden.
  *
+ * ## A correction to this file, made the day after it shipped
+ *
+ * These reasons were first generated per category and then checked one at a
+ * time, and **five of them were wrong or misleading**, which is the same
+ * mistake `RawHtmlRendersAreDeclaredTest` was strengthened over the day
+ * before: a declaration that asserts safety instead of naming a mechanism.
+ *
+ * The worst was `payments/return/{payment}`, filed as *"platform route with no
+ * per-person data"*. It writes `bml_transaction_id` from the query string and
+ * calls `finalizeByReference` — the #362 pattern exactly, and reachable by
+ * walking integer ids rather than guessing a merchant reference. A reason
+ * written from a route's neighbourhood rather than from its handler is worth
+ * less than no reason at all, because it stops the next person looking.
+ *
  * ## Not listed: Inertia's devtools
  *
  * `_inertia/devtools/entries` shows up in `php artisan route:list` on a
@@ -66,7 +80,7 @@ return [
     'POST courses/{course}/syllabus' => 'Public site content. No per-person data; nothing here reads the session.',
     'POST courses/{course}/waitlist' => 'Public site content. No per-person data; nothing here reads the session.',
     'POST daily/sms-opt-out' => 'Public site content. No per-person data; nothing here reads the session.',
-    'GET daily/unsubscribe/{token}' => 'Public site content. No per-person data; nothing here reads the session.',
+    'GET daily/unsubscribe/{token}' => 'THE TOKEN IS THE CREDENTIAL. Acts on one subscriber\'s row and must work from an SMS or email with no login — that is what one-click unsubscribe means. Returns only the channel, and 404s on an unknown token.',
     'GET daily/{type}' => 'Public site content. No per-person data; nothing here reads the session.',
     'GET daily/{type}/{date}' => 'Public site content. No per-person data; nothing here reads the session.',
     'GET daily/{type}/{date}/card.png' => 'Public site content. No per-person data; nothing here reads the session.',
@@ -77,7 +91,7 @@ return [
     'POST funnel-events' => 'Public site content. No per-person data; nothing here reads the session.',
     'GET gallery' => 'Public site content. No per-person data; nothing here reads the session.',
     'GET gallery/{gallery}' => 'Public site content. No per-person data; nothing here reads the session.',
-    'GET instructors/{slug}' => 'Public site content. No per-person data; nothing here reads the session.',
+    'GET instructors/{slug}' => 'A named person\'s public profile — deliberately about someone, published for that purpose. Not session data.',
     'GET library' => 'Public site content. No per-person data; nothing here reads the session.',
     'GET library/export' => 'Public site content. No per-person data; nothing here reads the session.',
     'GET news' => 'Public site content. No per-person data; nothing here reads the session.',
@@ -169,9 +183,9 @@ return [
     'POST login' => 'Platform route with no per-person data.',
     'GET manifest.webmanifest' => 'Platform route with no per-person data.',
     'GET offline.html' => 'Platform route with no per-person data.',
-    'GET payments/ref/{merchant_reference}/status' => 'Platform route with no per-person data.',
-    'GET payments/return/{payment}' => 'Platform route with no per-person data.',
-    'GET payments/status/{payment}' => 'Platform route with no per-person data.',
+    'GET payments/ref/{merchant_reference}/status' => 'Sessionless polling for the processing page. Emits exactly four fields — status, confirmed, paid_at, merchant_reference — and no amount, payer or course. Defensible only because of what it omits, so the payload is pinned by a test.',
+    'GET payments/return/{payment}' => 'BROWSER REDIRECT, NOT AN AUTHORITY — **the same pattern as payments/bml/return, and the easier one to walk**, because route-model binding takes any payment by integer id rather than needing a merchant reference. It writes bml_transaction_id from the query string and calls finalizeByReference, so it was vulnerable to the #362 replay too. It is closed because the identity check lives in PaymentService rather than in the controller the bug was found through; a controller-level fix would have left this route open and silent.',
+    'GET payments/status/{payment}' => 'As above, keyed by payment id, which is trivially walkable. Emits status, confirmed and paid_at only; pinned by the same test.',
     'POST register' => 'Platform route with no per-person data.',
     'GET storage/{path}' => 'Platform route with no per-person data.',
     'PUT storage/{path}' => 'Platform route with no per-person data.',

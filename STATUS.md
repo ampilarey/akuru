@@ -4278,6 +4278,50 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5cw. Auditing my own baseline, and finding the same mistake in it (2026-09-14)
+
+§5cv shipped 121 reasons for 121 public routes. They were **generated per
+category and not all verified** — which is precisely the fault §5ct was written
+about, one slice earlier: *a declaration that asserts safety instead of naming
+a mechanism.* Going back through them one at a time found five wrong or
+misleading, and one that mattered.
+
+### `payments/return/{payment}` — filed as "no per-person data"
+
+It writes `bml_transaction_id` from the query string and calls
+`finalizeByReference`. **It is the §5cu pattern, and the easier of the two to
+exploit**: route-model binding takes any payment by integer id, so there is no
+merchant reference to learn — an attacker walks ids.
+
+Confirmed by removing the §5cu guard and re-running: the by-id route confirms
+an unpaid payment just as the ref-based one did. It is closed today only
+because the identity check went into `PaymentService` rather than into the
+controller the bug was found through. **A controller-level fix would have
+shipped, read as complete, and left this route open.**
+
+The gap in §5cu was in the tests, not the fix: three cases now cover the by-id
+route, two of which fail against the old code.
+
+### The other four
+
+- The two sessionless status endpoints are sound, but "no per-person data" was
+  a guess. They emit exactly `status`, `confirmed`, `paid_at` and the
+  reference — no amount, payer or course — and that payload is now **pinned by
+  a test**, because a later helpful addition is exactly how it would stop being
+  true.
+- `daily/unsubscribe/{token}` acts on one subscriber's row; the token *is* the
+  credential, which is what one-click unsubscribe means. "Nothing here reads
+  the session" was true and beside the point.
+- `instructors/{slug}` is a named person's profile, published deliberately.
+
+### The lesson, which is about me
+
+A reason written from a route's neighbourhood rather than from its handler is
+**worth less than no reason at all**, because it stops the next person looking.
+That is the certificate declaration again — *"system-generated: template body
+and QR svg"* — reproduced in my own work one PR later, and caught only by
+going back to check claims I had already shipped.
+
 ## 5cv. 123 routes need no session, and none of them had been justified (2026-09-14)
 
 The follow-on from §5cu: if a public route could confirm a payment, **what else
