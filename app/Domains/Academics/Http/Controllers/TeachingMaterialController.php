@@ -10,6 +10,7 @@ use App\Domains\Academics\Actions\SaveTeachingMaterialAction;
 use App\Domains\Academics\Models\TeachingMaterial;
 use App\Domains\Academics\Models\TeachingMaterialFile;
 use App\Http\Controllers\Controller;
+use App\Support\Csv;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -49,10 +50,10 @@ class TeachingMaterialController extends Controller
 
         return response()->streamDownload(function () use ($materials): void {
             $handle = fopen('php://output', 'w');
-            fputcsv($handle, ['id', 'title', 'subject', 'tags', 'author', 'body']);
+            Csv::put($handle, ['id', 'title', 'subject', 'tags', 'author', 'body']);
 
             foreach ($materials as $material) {
-                fputcsv($handle, [
+                Csv::put($handle, [
                     $material['id'],
                     $material['title'],
                     $material['subject'] ?? '',

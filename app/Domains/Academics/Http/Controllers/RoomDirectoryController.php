@@ -6,6 +6,7 @@ use App\Domains\Academics\Actions\SaveRoomAction;
 use App\Domains\Academics\Enums\RoomType;
 use App\Domains\Academics\Models\Room;
 use App\Http\Controllers\Controller;
+use App\Support\Csv;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -60,10 +61,10 @@ class RoomDirectoryController extends Controller
 
         return response()->streamDownload(function () use ($rooms): void {
             $handle = fopen('php://output', 'w');
-            fputcsv($handle, ['id', 'name', 'name_arabic', 'name_dhivehi', 'building', 'capacity', 'type', 'bookable', 'active']);
+            Csv::put($handle, ['id', 'name', 'name_arabic', 'name_dhivehi', 'building', 'capacity', 'type', 'bookable', 'active']);
 
             foreach ($rooms as $room) {
-                fputcsv($handle, [
+                Csv::put($handle, [
                     $room->id,
                     $room->name,
                     $room->name_arabic,

@@ -9,6 +9,7 @@ use App\Domains\Website\Actions\SaveDailyContentAction;
 use App\Domains\Website\Enums\DailyContentStatus;
 use App\Domains\Website\Models\DailyContent;
 use App\Http\Controllers\Controller;
+use App\Support\Csv;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -126,9 +127,9 @@ class DailyContentController extends Controller
 
         return response()->streamDownload(function () use ($rows): void {
             $out = fopen('php://output', 'w');
-            fputcsv($out, ['id', 'content_type', 'publish_date', 'status', 'theme_tag', 'approved_by', 'attribution', 'hadith_collection', 'hadith_number']);
+            Csv::put($out, ['id', 'content_type', 'publish_date', 'status', 'theme_tag', 'approved_by', 'attribution', 'hadith_collection', 'hadith_number']);
             foreach ($rows as $row) {
-                fputcsv($out, [
+                Csv::put($out, [
                     $row['id'],
                     $row['content_type'],
                     $row['publish_date'],

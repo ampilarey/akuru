@@ -9,6 +9,7 @@ use App\Domains\Academics\Actions\ReassignStudentWorkAction;
 use App\Domains\Academics\Actions\SaveStudentWorkAction;
 use App\Domains\People\Actions\SearchRosterCandidatesAction;
 use App\Http\Controllers\Controller;
+use App\Support\Csv;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response as HttpResponse;
@@ -44,10 +45,10 @@ class StudentWorkController extends Controller
 
         return response()->streamDownload(function () use ($rows): void {
             $handle = fopen('php://output', 'w');
-            fputcsv($handle, ['id', 'student', 'student_number', 'title', 'note', 'done_on', 'uploaded_by', 'hidden', 'times_moved']);
+            Csv::put($handle, ['id', 'student', 'student_number', 'title', 'note', 'done_on', 'uploaded_by', 'hidden', 'times_moved']);
 
             foreach ($rows as $row) {
-                fputcsv($handle, [
+                Csv::put($handle, [
                     $row['id'],
                     $row['student'],
                     $row['student_number'],

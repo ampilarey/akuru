@@ -13,6 +13,7 @@ use App\Domains\Finance\Enums\FeeStructureAppliesTo;
 use App\Domains\Finance\Enums\FeeStructureStatus;
 use App\Domains\Finance\Models\FeeStructure;
 use App\Http\Controllers\Controller;
+use App\Support\Csv;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -112,9 +113,9 @@ class FeeStructureController extends Controller
 
         return response()->streamDownload(function () use ($rows): void {
             $out = fopen('php://output', 'w');
-            fputcsv($out, ['name', 'applies_to', 'class_ids', 'status', 'item_count']);
+            Csv::put($out, ['name', 'applies_to', 'class_ids', 'status', 'item_count']);
             foreach ($rows as $row) {
-                fputcsv($out, [
+                Csv::put($out, [
                     $row['name'],
                     $row['applies_to'],
                     implode('|', $row['class_ids'] ?? []),

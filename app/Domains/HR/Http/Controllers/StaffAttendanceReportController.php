@@ -6,6 +6,7 @@ use App\Domains\Academics\Actions\ListAcademicYearsAction;
 use App\Domains\HR\Actions\ReportStaffAttendanceAction;
 use App\Domains\People\Actions\ListStaffProfilesAction;
 use App\Http\Controllers\Controller;
+use App\Support\Csv;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -46,9 +47,9 @@ class StaffAttendanceReportController extends Controller
 
         return response()->streamDownload(function () use ($rows, $headers): void {
             $out = fopen('php://output', 'w');
-            fputcsv($out, $headers);
+            Csv::put($out, $headers);
             foreach ($rows as $row) {
-                fputcsv($out, array_map(fn (string $key) => $row[$key] ?? '', $headers));
+                Csv::put($out, array_map(fn (string $key) => $row[$key] ?? '', $headers));
             }
             fclose($out);
         }, 'staff-attendance-'.$kind.'.csv', ['Content-Type' => 'text/csv; charset=UTF-8']);

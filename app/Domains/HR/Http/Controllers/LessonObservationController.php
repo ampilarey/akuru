@@ -8,6 +8,7 @@ use App\Domains\HR\Actions\ListLessonObservationsAction;
 use App\Domains\HR\Actions\SaveLessonObservationAction;
 use App\Domains\People\Actions\ListStaffProfilesAction;
 use App\Http\Controllers\Controller;
+use App\Support\Csv;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -52,9 +53,9 @@ class LessonObservationController extends Controller
 
         return response()->streamDownload(function () use ($rows): void {
             $out = fopen('php://output', 'w');
-            fputcsv($out, ['staff_name', 'date', 'class_name', 'subject_name', 'summary']);
+            Csv::put($out, ['staff_name', 'date', 'class_name', 'subject_name', 'summary']);
             foreach ($rows as $row) {
-                fputcsv($out, [$row['staff_name'], $row['date'], $row['class_name'], $row['subject_name'], $row['summary']]);
+                Csv::put($out, [$row['staff_name'], $row['date'], $row['class_name'], $row['subject_name'], $row['summary']]);
             }
             fclose($out);
         }, 'lesson-observations.csv', ['Content-Type' => 'text/csv; charset=UTF-8']);

@@ -5,6 +5,7 @@ namespace App\Domains\Courses\Http\Controllers;
 use App\Domains\Courses\Actions\ListTeacherReviewReportsAction;
 use App\Domains\Progress\Actions\ReviewAttemptAction;
 use App\Http\Controllers\Controller;
+use App\Support\Csv;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -30,7 +31,7 @@ class CatalogReviewController extends Controller
 
         return response()->streamDownload(function () use ($payload): void {
             $out = fopen('php://output', 'w');
-            fputcsv($out, [
+            Csv::put($out, [
                 'section',
                 'student',
                 'course',
@@ -47,7 +48,7 @@ class CatalogReviewController extends Controller
                 'waiting_hours',
             ]);
             foreach ($payload['rows'] as $row) {
-                fputcsv($out, [
+                Csv::put($out, [
                     'pending_review',
                     $row['student_name'] ?? '',
                     $row['course_title'] ?? '',
@@ -65,7 +66,7 @@ class CatalogReviewController extends Controller
                 ]);
             }
             foreach ($payload['weaknesses'] as $row) {
-                fputcsv($out, [
+                Csv::put($out, [
                     'weakness',
                     $row['student_name'],
                     $row['course_title'],
@@ -83,7 +84,7 @@ class CatalogReviewController extends Controller
                 ]);
             }
             foreach ($payload['revisions'] as $row) {
-                fputcsv($out, [
+                Csv::put($out, [
                     'revision',
                     $row['student_name'],
                     $row['course_title'],

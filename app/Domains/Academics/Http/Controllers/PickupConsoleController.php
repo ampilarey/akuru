@@ -7,6 +7,7 @@ use App\Domains\Academics\Actions\ListPickupNoticesAction;
 use App\Domains\Academics\Actions\OpenPickupWindowAction;
 use App\Domains\Academics\Models\PickupNotice;
 use App\Http\Controllers\Controller;
+use App\Support\Csv;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -52,11 +53,11 @@ class PickupConsoleController extends Controller
 
         return response()->streamDownload(function () use ($lists): void {
             $handle = fopen('php://output', 'w');
-            fputcsv($handle, ['list', 'id', 'student', 'student_number', 'guardian', 'status', 'note', 'requested_at', 'sent_at', 'collected_at']);
+            Csv::put($handle, ['list', 'id', 'student', 'student_number', 'guardian', 'status', 'note', 'requested_at', 'sent_at', 'collected_at']);
 
             foreach (['waiting', 'left'] as $which) {
                 foreach ($lists[$which] as $row) {
-                    fputcsv($handle, [
+                    Csv::put($handle, [
                         $which,
                         $row['id'],
                         $row['student'],

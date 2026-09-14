@@ -13,6 +13,7 @@ use App\Domains\Courses\Models\CertificateTemplate;
 use App\Domains\Courses\Models\IssuedCertificate;
 use App\Domains\Media\Actions\ReadGeneratedDocumentAction;
 use App\Http\Controllers\Controller;
+use App\Support\Csv;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -121,7 +122,7 @@ class CourseCertificateController extends Controller
 
         return response()->streamDownload(function () use ($rows): void {
             $out = fopen('php://output', 'w');
-            fputcsv($out, [
+            Csv::put($out, [
                 'certificate_number',
                 'status',
                 'student',
@@ -131,7 +132,7 @@ class CourseCertificateController extends Controller
                 'public_id',
             ]);
             foreach ($rows as $row) {
-                fputcsv($out, [
+                Csv::put($out, [
                     $row['certificate_number'],
                     $row['status'],
                     $row['student_name'],

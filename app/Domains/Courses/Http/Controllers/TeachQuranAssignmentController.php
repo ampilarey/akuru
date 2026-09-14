@@ -8,6 +8,7 @@ use App\Domains\Courses\Components\Quran\Actions\SaveQuranAssignmentAction;
 use App\Domains\Courses\Components\Quran\Models\QuranHifzAssignment;
 use App\Domains\People\Actions\ResolveTeacherForUserAction;
 use App\Http\Controllers\Controller;
+use App\Support\Csv;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
@@ -37,9 +38,9 @@ class TeachQuranAssignmentController extends Controller
         if ($request->query('format') === 'csv') {
             return response()->streamDownload(function () use ($payload): void {
                 $handle = fopen('php://output', 'w');
-                fputcsv($handle, ['id', 'student', 'teacher', 'type', 'surah', 'from', 'to', 'due', 'status']);
+                Csv::put($handle, ['id', 'student', 'teacher', 'type', 'surah', 'from', 'to', 'due', 'status']);
                 foreach ($payload['rows'] as $row) {
-                    fputcsv($handle, [
+                    Csv::put($handle, [
                         $row['id'],
                         $row['student']['name'] ?? '',
                         $row['teacher'] ?? '',

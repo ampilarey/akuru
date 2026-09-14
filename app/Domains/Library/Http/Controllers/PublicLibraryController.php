@@ -6,6 +6,7 @@ use App\Domains\Library\Actions\ListLibraryCategoriesAction;
 use App\Domains\Library\Actions\ListLibraryItemsAction;
 use App\Domains\Library\Actions\PresentLibraryItemAction;
 use App\Http\Controllers\Controller;
+use App\Support\Csv;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -35,9 +36,9 @@ class PublicLibraryController extends Controller
 
         return response()->streamDownload(function () use ($rows): void {
             $out = fopen('php://output', 'w');
-            fputcsv($out, ['id', 'title', 'type', 'access', 'category', 'authors', 'published_at']);
+            Csv::put($out, ['id', 'title', 'type', 'access', 'category', 'authors', 'published_at']);
             foreach ($rows as $row) {
-                fputcsv($out, [
+                Csv::put($out, [
                     $row['id'],
                     $row['title'],
                     $row['content_type'],

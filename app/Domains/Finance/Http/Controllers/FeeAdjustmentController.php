@@ -12,6 +12,7 @@ use App\Domains\Finance\Enums\FeeAdjustmentStatus;
 use App\Domains\Finance\Enums\FeeAdjustmentType;
 use App\Domains\Finance\Enums\FeeItemType;
 use App\Http\Controllers\Controller;
+use App\Support\Csv;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -83,9 +84,9 @@ class FeeAdjustmentController extends Controller
 
         return response()->streamDownload(function () use ($rows): void {
             $out = fopen('php://output', 'w');
-            fputcsv($out, ['student', 'type', 'basis', 'value', 'applies_to', 'status']);
+            Csv::put($out, ['student', 'type', 'basis', 'value', 'applies_to', 'status']);
             foreach ($rows as $row) {
-                fputcsv($out, [
+                Csv::put($out, [
                     $row['student_name'],
                     $row['type'],
                     $row['basis'],

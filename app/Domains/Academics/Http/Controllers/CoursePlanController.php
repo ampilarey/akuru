@@ -12,6 +12,7 @@ use App\Domains\Academics\Models\ClassRoom;
 use App\Domains\Academics\Models\CoursePlan;
 use App\Domains\Academics\Models\Subject;
 use App\Http\Controllers\Controller;
+use App\Support\Csv;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -51,10 +52,10 @@ class CoursePlanController extends Controller
 
         return response()->streamDownload(function () use ($plans, $classes, $subjects, $years): void {
             $handle = fopen('php://output', 'w');
-            fputcsv($handle, ['id', 'title', 'subject', 'class', 'academic_year', 'status', 'topics', 'topics_completed']);
+            Csv::put($handle, ['id', 'title', 'subject', 'class', 'academic_year', 'status', 'topics', 'topics_completed']);
 
             foreach ($plans as $plan) {
-                fputcsv($handle, [
+                Csv::put($handle, [
                     $plan->id,
                     $plan->title,
                     $subjects[$plan->subject_id] ?? '',

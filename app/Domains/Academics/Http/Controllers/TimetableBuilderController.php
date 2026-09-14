@@ -16,6 +16,7 @@ use App\Domains\Academics\Models\SubstitutionRequest;
 use App\Domains\Academics\Models\TeacherAbsence;
 use App\Domains\Academics\Models\Timetable;
 use App\Http\Controllers\Controller;
+use App\Support\Csv;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -191,10 +192,10 @@ class TimetableBuilderController extends Controller
 
         return response()->streamDownload(function () use ($rows): void {
             $handle = fopen('php://output', 'w');
-            fputcsv($handle, ['id', 'day', 'period_id', 'start', 'end', 'class_id', 'subject_id', 'teacher_id', 'room_id']);
+            Csv::put($handle, ['id', 'day', 'period_id', 'start', 'end', 'class_id', 'subject_id', 'teacher_id', 'room_id']);
 
             foreach ($rows as $row) {
-                fputcsv($handle, [
+                Csv::put($handle, [
                     $row->id,
                     $row->day_of_week,
                     $row->period_id,

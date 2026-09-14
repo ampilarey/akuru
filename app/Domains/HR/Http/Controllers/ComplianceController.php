@@ -5,6 +5,7 @@ namespace App\Domains\HR\Http\Controllers;
 use App\Domains\HR\Actions\ExpiringDocumentsReportAction;
 use App\Domains\HR\Actions\NotifyExpiringDocumentsAction;
 use App\Http\Controllers\Controller;
+use App\Support\Csv;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -42,9 +43,9 @@ class ComplianceController extends Controller
 
         return response()->streamDownload(function () use ($rows): void {
             $out = fopen('php://output', 'w');
-            fputcsv($out, ['staff_name', 'title', 'document_type', 'expires_at', 'days_until']);
+            Csv::put($out, ['staff_name', 'title', 'document_type', 'expires_at', 'days_until']);
             foreach ($rows as $row) {
-                fputcsv($out, [
+                Csv::put($out, [
                     $row['staff_name'],
                     $row['title'],
                     $row['document_type'],

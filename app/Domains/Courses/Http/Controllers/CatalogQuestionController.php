@@ -12,6 +12,7 @@ use App\Domains\Courses\Enums\QuestionType;
 use App\Domains\Courses\Models\Question;
 use App\Domains\ExamsGrades\Actions\ListStandardsAction;
 use App\Http\Controllers\Controller;
+use App\Support\Csv;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -92,9 +93,9 @@ class CatalogQuestionController extends Controller
 
         return response()->streamDownload(function () use ($rows): void {
             $handle = fopen('php://output', 'w');
-            fputcsv($handle, ['id', 'question_type', 'pattern', 'title', 'question_text', 'difficulty']);
+            Csv::put($handle, ['id', 'question_type', 'pattern', 'title', 'question_text', 'difficulty']);
             foreach ($rows as $row) {
-                fputcsv($handle, [
+                Csv::put($handle, [
                     $row['id'],
                     $row['question_type'],
                     $row['pattern'],

@@ -13,6 +13,7 @@ use App\Domains\Finance\Models\Payment;
 use App\Domains\Notifications\Contracts\SmsSenderInterface;
 use App\Http\Controllers\Controller;
 use App\Mail\EnrollmentStatusMail;
+use App\Support\Csv;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -190,7 +191,7 @@ class AdminEnrollmentController extends Controller
         $callback = function () use ($enrollments) {
             $handle = fopen('php://output', 'w');
 
-            fputcsv($handle, [
+            Csv::put($handle, [
                 'ID', 'Course', 'Student Name', 'Enrolled By (Mobile/Email)',
                 'Status', 'Payment Status', 'Amount (MVR)', 'Payment Ref',
                 'Enrolled At', 'Created At',
@@ -202,7 +203,7 @@ class AdminEnrollmentController extends Controller
                 $email = $user?->email ?? $user?->contacts()->where('type', 'email')->value('value') ?? '';
                 $contact = $mobile ?: $email;
 
-                fputcsv($handle, [
+                Csv::put($handle, [
                     $e->id,
                     $e->course?->title ?? '',
                     $e->student?->full_name ?? '',
@@ -297,9 +298,9 @@ class AdminEnrollmentController extends Controller
 
         return response()->streamDownload(function () use ($payments): void {
             $out = fopen('php://output', 'w');
-            fputcsv($out, ['id', 'reference', 'payer', 'student', 'amount', 'currency', 'status', 'provider', 'refunded_total', 'created_at']);
+            Csv::put($out, ['id', 'reference', 'payer', 'student', 'amount', 'currency', 'status', 'provider', 'refunded_total', 'created_at']);
             foreach ($payments as $payment) {
-                fputcsv($out, [
+                Csv::put($out, [
                     $payment->id,
                     $payment->local_id ?? $payment->merchant_reference,
                     $payment->user?->name ?? '',

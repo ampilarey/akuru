@@ -5,6 +5,7 @@ namespace App\Domains\Finance\Http\Controllers;
 use App\Domains\Academics\Actions\ListAcademicYearsAction;
 use App\Domains\Finance\Actions\ListArrearsAction;
 use App\Http\Controllers\Controller;
+use App\Support\Csv;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -34,9 +35,9 @@ class ArrearsController extends Controller
 
         return response()->streamDownload(function () use ($rows): void {
             $out = fopen('php://output', 'w');
-            fputcsv($out, ['number', 'student', 'class_id', 'guardian', 'due_date', 'balance', 'days', 'bucket']);
+            Csv::put($out, ['number', 'student', 'class_id', 'guardian', 'due_date', 'balance', 'days', 'bucket']);
             foreach ($rows as $row) {
-                fputcsv($out, [
+                Csv::put($out, [
                     $row['invoice_number'],
                     $row['student_name'],
                     $row['class_id'],

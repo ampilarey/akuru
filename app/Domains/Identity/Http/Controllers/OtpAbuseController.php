@@ -4,6 +4,7 @@ namespace App\Domains\Identity\Http\Controllers;
 
 use App\Domains\Identity\Actions\ListOtpAbuseEventsAction;
 use App\Http\Controllers\Controller;
+use App\Support\Csv;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -30,7 +31,7 @@ class OtpAbuseController extends Controller
         return response()->streamDownload(function () use ($rows): void {
             $handle = fopen('php://output', 'w');
             foreach ($rows as $row) {
-                fputcsv($handle, $row);
+                Csv::put($handle, $row);
             }
             fclose($handle);
         }, 'otp-abuse-events.csv', ['Content-Type' => 'text/csv']);

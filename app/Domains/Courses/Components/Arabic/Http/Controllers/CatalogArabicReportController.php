@@ -4,6 +4,7 @@ namespace App\Domains\Courses\Components\Arabic\Http\Controllers;
 
 use App\Domains\Courses\Components\Arabic\Actions\ListArabicSkillReportAction;
 use App\Http\Controllers\Controller;
+use App\Support\Csv;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -21,9 +22,9 @@ class CatalogArabicReportController extends Controller
         if ($request->query('format') === 'csv') {
             return response()->streamDownload(function () use ($payload): void {
                 $handle = fopen('php://output', 'w');
-                fputcsv($handle, ['activity_id', 'title', 'skill', 'letter', 'harakah', 'attempts', 'average_score']);
+                Csv::put($handle, ['activity_id', 'title', 'skill', 'letter', 'harakah', 'attempts', 'average_score']);
                 foreach ($payload['rows'] as $row) {
-                    fputcsv($handle, [
+                    Csv::put($handle, [
                         $row['activity_id'],
                         $row['title'],
                         $row['skill'],

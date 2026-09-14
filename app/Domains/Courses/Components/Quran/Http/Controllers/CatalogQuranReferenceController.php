@@ -4,6 +4,7 @@ namespace App\Domains\Courses\Components\Quran\Http\Controllers;
 
 use App\Domains\Courses\Components\Quran\Actions\ListQuranReferenceAction;
 use App\Http\Controllers\Controller;
+use App\Support\Csv;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -32,9 +33,9 @@ class CatalogQuranReferenceController extends Controller
 
         return response()->streamDownload(function () use ($payload): void {
             $handle = fopen('php://output', 'w');
-            fputcsv($handle, ['kind', 'id', 'surah_number', 'ayah_number', 'arabic_name', 'english_name', 'text']);
+            Csv::put($handle, ['kind', 'id', 'surah_number', 'ayah_number', 'arabic_name', 'english_name', 'text']);
             foreach ($payload['surahs'] as $row) {
-                fputcsv($handle, [
+                Csv::put($handle, [
                     'surah',
                     $row['id'],
                     $row['index'],
@@ -45,7 +46,7 @@ class CatalogQuranReferenceController extends Controller
                 ]);
             }
             foreach ($payload['ayahs'] as $row) {
-                fputcsv($handle, [
+                Csv::put($handle, [
                     'ayah',
                     $row['id'],
                     $row['surah_number'],

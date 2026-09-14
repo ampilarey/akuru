@@ -9,6 +9,7 @@ use App\Domains\HR\Actions\SaveAppraisalCycleAction;
 use App\Domains\HR\Enums\AppraisalStatus;
 use App\Domains\People\Actions\ListStaffProfilesAction;
 use App\Http\Controllers\Controller;
+use App\Support\Csv;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -70,9 +71,9 @@ class AppraisalController extends Controller
 
         return response()->streamDownload(function () use ($rows): void {
             $out = fopen('php://output', 'w');
-            fputcsv($out, ['staff_name', 'cycle_name', 'status']);
+            Csv::put($out, ['staff_name', 'cycle_name', 'status']);
             foreach ($rows as $row) {
-                fputcsv($out, [$row['staff_name'], $row['cycle_name'], $row['status']]);
+                Csv::put($out, [$row['staff_name'], $row['cycle_name'], $row['status']]);
             }
             fclose($out);
         }, 'appraisals.csv', ['Content-Type' => 'text/csv; charset=UTF-8']);

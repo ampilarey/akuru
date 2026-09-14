@@ -9,6 +9,7 @@ use App\Domains\ExamsGrades\Actions\SaveStandardAction;
 use App\Domains\ExamsGrades\Actions\TagStandardAction;
 use App\Domains\ExamsGrades\Models\Standard;
 use App\Http\Controllers\Controller;
+use App\Support\Csv;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -83,9 +84,9 @@ class StandardController extends Controller
 
         return response()->streamDownload(function () use ($rows): void {
             $out = fopen('php://output', 'w');
-            fputcsv($out, ['code', 'title', 'exams_tagged', 'topics_tagged', 'covered']);
+            Csv::put($out, ['code', 'title', 'exams_tagged', 'topics_tagged', 'covered']);
             foreach ($rows as $row) {
-                fputcsv($out, [$row['code'], $row['title'], $row['exams_tagged'], $row['topics_tagged'], $row['covered'] ? '1' : '0']);
+                Csv::put($out, [$row['code'], $row['title'], $row['exams_tagged'], $row['topics_tagged'], $row['covered'] ? '1' : '0']);
             }
             fclose($out);
         }, 'standards-coverage.csv', ['Content-Type' => 'text/csv; charset=UTF-8']);

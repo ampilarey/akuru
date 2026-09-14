@@ -4,6 +4,7 @@ namespace App\Domains\Website\Http\Controllers\Admin\PublicSite;
 
 use App\Domains\Website\Actions\ComposeCourseFunnelReportAction;
 use App\Http\Controllers\Controller;
+use App\Support\Csv;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -27,7 +28,7 @@ class FunnelController extends Controller
 
         return response()->streamDownload(function () use ($rows): void {
             $out = fopen('php://output', 'w');
-            fputcsv($out, [
+            Csv::put($out, [
                 'course_id',
                 'course_title',
                 'course_view',
@@ -42,7 +43,7 @@ class FunnelController extends Controller
                 'decision',
             ]);
             foreach ($rows as $row) {
-                fputcsv($out, [
+                Csv::put($out, [
                     $row['course_id'],
                     $row['course_title'],
                     $row['counts']['course_view'],

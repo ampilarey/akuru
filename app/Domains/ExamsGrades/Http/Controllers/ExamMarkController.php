@@ -8,6 +8,7 @@ use App\Domains\ExamsGrades\Actions\ListExamMarksAction;
 use App\Domains\ExamsGrades\Actions\SaveExamMarkAction;
 use App\Domains\ExamsGrades\Models\Exam;
 use App\Http\Controllers\Controller;
+use App\Support\Csv;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -87,9 +88,9 @@ class ExamMarkController extends Controller
 
         return response()->streamDownload(function () use ($grid): void {
             $out = fopen('php://output', 'w');
-            fputcsv($out, ['student_id', 'student_number', 'name', 'marks', 'is_absent', 'is_exempt', 'remarks']);
+            Csv::put($out, ['student_id', 'student_number', 'name', 'marks', 'is_absent', 'is_exempt', 'remarks']);
             foreach ($grid['rows'] as $row) {
-                fputcsv($out, [
+                Csv::put($out, [
                     $row['student_id'],
                     $row['student_number'],
                     $row['name'],

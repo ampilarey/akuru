@@ -5,6 +5,7 @@ namespace App\Domains\HR\Actions;
 use App\Domains\HR\Enums\PayslipStatus;
 use App\Domains\HR\Models\Payslip;
 use App\Domains\People\Actions\ListStaffProfilesAction;
+use App\Support\Csv;
 
 class ExportPayrollBankCsvAction
 {
@@ -18,10 +19,10 @@ class ExportPayrollBankCsvAction
             ->get();
 
         $out = fopen('php://temp', 'r+');
-        fputcsv($out, ['staff_profile_id', 'staff_name', 'staff_number', 'net_pay']);
+        Csv::put($out, ['staff_profile_id', 'staff_name', 'staff_number', 'net_pay']);
         foreach ($rows as $row) {
             $profile = $staff->get($row->staff_profile_id);
-            fputcsv($out, [
+            Csv::put($out, [
                 $row->staff_profile_id,
                 $profile ? trim(($profile->first_name ?? '').' '.($profile->last_name ?? '')) : '',
                 $profile?->staff_number ?? '',

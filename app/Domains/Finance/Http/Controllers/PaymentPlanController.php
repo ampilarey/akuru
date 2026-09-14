@@ -8,6 +8,7 @@ use App\Domains\Finance\Actions\ListPaymentPlansAction;
 use App\Domains\Finance\Enums\InvoiceStatus;
 use App\Domains\Finance\Models\Invoice;
 use App\Http\Controllers\Controller;
+use App\Support\Csv;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -71,9 +72,9 @@ class PaymentPlanController extends Controller
 
         return response()->streamDownload(function () use ($rows): void {
             $out = fopen('php://output', 'w');
-            fputcsv($out, ['invoice', 'student', 'total', 'paid', 'status', 'installments']);
+            Csv::put($out, ['invoice', 'student', 'total', 'paid', 'status', 'installments']);
             foreach ($rows as $row) {
-                fputcsv($out, [
+                Csv::put($out, [
                     $row['invoice_number'],
                     $row['student_name'],
                     $row['total_amount'],

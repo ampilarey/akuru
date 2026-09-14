@@ -7,6 +7,7 @@ use App\Domains\People\Enums\StaffStatus;
 use App\Domains\People\Models\StaffProfile;
 use App\Domains\People\Models\StaffQualification;
 use App\Http\Controllers\Controller;
+use App\Support\Csv;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -49,10 +50,10 @@ class StaffDirectoryController extends Controller
 
         return response()->streamDownload(function () use ($staff): void {
             $handle = fopen('php://output', 'w');
-            fputcsv($handle, ['id', 'staff_number', 'first_name', 'last_name', 'department', 'designation', 'employment_type', 'status', 'joined_date']);
+            Csv::put($handle, ['id', 'staff_number', 'first_name', 'last_name', 'department', 'designation', 'employment_type', 'status', 'joined_date']);
 
             foreach ($staff as $profile) {
-                fputcsv($handle, [
+                Csv::put($handle, [
                     $profile->id,
                     $profile->staff_number,
                     $profile->first_name,

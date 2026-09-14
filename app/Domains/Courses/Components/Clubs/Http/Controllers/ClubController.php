@@ -7,6 +7,7 @@ use App\Domains\Courses\Components\Clubs\Actions\AddClubMemberAction;
 use App\Domains\Courses\Components\Clubs\Actions\ListClubRosterAction;
 use App\Domains\Courses\Components\Clubs\Actions\ListClubsAction;
 use App\Http\Controllers\Controller;
+use App\Support\Csv;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -81,9 +82,9 @@ class ClubController extends Controller
 
         return response()->streamDownload(function () use ($members): void {
             $out = fopen('php://output', 'w');
-            fputcsv($out, ['name', 'student_number', 'on_roll']);
+            Csv::put($out, ['name', 'student_number', 'on_roll']);
             foreach ($members as $member) {
-                fputcsv($out, [$member['name'], $member['student_number'], $member['on_roll'] ? 'yes' : 'no']);
+                Csv::put($out, [$member['name'], $member['student_number'], $member['on_roll'] ? 'yes' : 'no']);
             }
             fclose($out);
         }, 'club-roster.csv', ['Content-Type' => 'text/csv']);

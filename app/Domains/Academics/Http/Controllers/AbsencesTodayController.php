@@ -5,6 +5,7 @@ namespace App\Domains\Academics\Http\Controllers;
 use App\Domains\Academics\Actions\ListAbsencesForDayAction;
 use App\Domains\Academics\Actions\ListClassesForYearAction;
 use App\Http\Controllers\Controller;
+use App\Support\Csv;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -37,10 +38,10 @@ class AbsencesTodayController extends Controller
 
         return response()->streamDownload(function () use ($payload): void {
             $handle = fopen('php://output', 'w');
-            fputcsv($handle, ['date', 'student_number', 'student', 'class', 'periods_missed', 'periods', 'note_status', 'reason', 'unexplained']);
+            Csv::put($handle, ['date', 'student_number', 'student', 'class', 'periods_missed', 'periods', 'note_status', 'reason', 'unexplained']);
 
             foreach ($payload['students'] as $row) {
-                fputcsv($handle, [
+                Csv::put($handle, [
                     $payload['date'],
                     $row['student_number'],
                     $row['student_name'],

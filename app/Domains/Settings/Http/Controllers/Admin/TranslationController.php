@@ -7,6 +7,7 @@ use App\Domains\Settings\Actions\SaveTranslationOverrideAction;
 use App\Domains\Settings\Actions\SuggestTranslationAction;
 use App\Http\Controllers\Controller;
 use App\Support\Contracts\MachineTranslatorInterface;
+use App\Support\Csv;
 use App\Support\Translation\NullMachineTranslator;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -56,10 +57,10 @@ class TranslationController extends Controller
 
         return response()->streamDownload(function () use ($data, $locale) {
             $out = fopen('php://output', 'w');
-            fputcsv($out, ['group', 'key', 'english', "file_{$locale}", "override_{$locale}", 'suspect']);
+            Csv::put($out, ['group', 'key', 'english', "file_{$locale}", "override_{$locale}", 'suspect']);
             foreach ($data['groups'] as $group) {
                 foreach ($group['items'] as $item) {
-                    fputcsv($out, [
+                    Csv::put($out, [
                         $group['group'],
                         $item['key'],
                         $item['en'],

@@ -6,6 +6,7 @@ use App\Domains\Settings\Actions\ListFeatureWalkthroughAction;
 use App\Domains\Settings\Actions\ListOperatorChecklistAction;
 use App\Domains\Settings\Actions\ToggleOperatorCheckAction;
 use App\Http\Controllers\Controller;
+use App\Support\Csv;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -34,11 +35,11 @@ class OperationsController extends Controller
 
         return response()->streamDownload(function () use ($data) {
             $out = fopen('php://output', 'w');
-            fputcsv($out, ['section', 'item_key', 'label', 'where', 'checked', 'checked_by', 'checked_at']);
+            Csv::put($out, ['section', 'item_key', 'label', 'where', 'checked', 'checked_by', 'checked_at']);
             foreach ($data['sections'] as $section) {
                 foreach ($section['items'] as $item) {
                     $state = $data['checked'][$item['key']] ?? null;
-                    fputcsv($out, [
+                    Csv::put($out, [
                         $section['title'],
                         $item['key'],
                         $item['label'],
@@ -66,11 +67,11 @@ class OperationsController extends Controller
 
         return response()->streamDownload(function () use ($data) {
             $out = fopen('php://output', 'w');
-            fputcsv($out, ['section', 'item_key', 'label', 'checked', 'checked_by', 'checked_at']);
+            Csv::put($out, ['section', 'item_key', 'label', 'checked', 'checked_by', 'checked_at']);
             foreach ($data['sections'] as $section) {
                 foreach ($section['items'] as $item) {
                     $state = $data['checked'][$item['key']] ?? null;
-                    fputcsv($out, [
+                    Csv::put($out, [
                         $section['title'],
                         $item['key'],
                         $item['label'],

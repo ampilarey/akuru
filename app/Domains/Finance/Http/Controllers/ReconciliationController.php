@@ -4,6 +4,7 @@ namespace App\Domains\Finance\Http\Controllers;
 
 use App\Domains\Finance\Actions\ListReconciliationAction;
 use App\Http\Controllers\Controller;
+use App\Support\Csv;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -39,9 +40,9 @@ class ReconciliationController extends Controller
 
         return response()->streamDownload(function () use ($report): void {
             $out = fopen('php://output', 'w');
-            fputcsv($out, ['receipt', 'payment', 'invoice', 'method', 'amount', 'received_at', 'invoice_balance']);
+            Csv::put($out, ['receipt', 'payment', 'invoice', 'method', 'amount', 'received_at', 'invoice_balance']);
             foreach ($report['rows'] as $row) {
-                fputcsv($out, [
+                Csv::put($out, [
                     $row['receipt_number'],
                     $row['payment_reference'],
                     $row['invoice_number'],

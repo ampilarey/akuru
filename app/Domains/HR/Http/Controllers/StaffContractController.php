@@ -8,6 +8,7 @@ use App\Domains\HR\Enums\StaffContractStatus;
 use App\Domains\HR\Enums\StaffContractType;
 use App\Domains\People\Actions\ListStaffProfilesAction;
 use App\Http\Controllers\Controller;
+use App\Support\Csv;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -59,9 +60,9 @@ class StaffContractController extends Controller
 
         return response()->streamDownload(function () use ($rows): void {
             $out = fopen('php://output', 'w');
-            fputcsv($out, ['staff_name', 'type', 'start_date', 'end_date', 'basic_salary', 'status']);
+            Csv::put($out, ['staff_name', 'type', 'start_date', 'end_date', 'basic_salary', 'status']);
             foreach ($rows as $row) {
-                fputcsv($out, [
+                Csv::put($out, [
                     $row['staff_name'],
                     $row['contract_type'],
                     $row['start_date'],

@@ -9,6 +9,7 @@ use App\Domains\Finance\Actions\IssueInvoicesAction;
 use App\Domains\Finance\Actions\ListDraftInvoicesAction;
 use App\Domains\Finance\Actions\ListFeeStructuresAction;
 use App\Http\Controllers\Controller;
+use App\Support\Csv;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -95,9 +96,9 @@ class InvoiceController extends Controller
 
         return response()->streamDownload(function () use ($rows): void {
             $out = fopen('php://output', 'w');
-            fputcsv($out, ['number', 'student', 'period', 'due_date', 'total', 'status']);
+            Csv::put($out, ['number', 'student', 'period', 'due_date', 'total', 'status']);
             foreach ($rows as $row) {
-                fputcsv($out, [
+                Csv::put($out, [
                     $row['invoice_number'],
                     $row['student_name'],
                     $row['period_key'],

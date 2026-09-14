@@ -6,6 +6,7 @@ use App\Domains\ExamsGrades\Actions\SaveGradeScaleAction;
 use App\Domains\ExamsGrades\Enums\GradeScaleType;
 use App\Domains\ExamsGrades\Models\GradeScale;
 use App\Http\Controllers\Controller;
+use App\Support\Csv;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -51,9 +52,9 @@ class GradeScaleController extends Controller
 
         return response()->streamDownload(function () use ($rows): void {
             $out = fopen('php://output', 'w');
-            fputcsv($out, ['id', 'name', 'type', 'is_default', 'active', 'bands']);
+            Csv::put($out, ['id', 'name', 'type', 'is_default', 'active', 'bands']);
             foreach ($rows as $row) {
-                fputcsv($out, [
+                Csv::put($out, [
                     $row->id,
                     $row->name,
                     $row->type->value,

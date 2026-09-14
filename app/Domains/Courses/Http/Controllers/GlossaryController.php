@@ -10,6 +10,7 @@ use App\Domains\Courses\Enums\ContentBlockType;
 use App\Domains\Courses\Models\CourseLevel;
 use App\Domains\Courses\Models\GlossaryItem;
 use App\Http\Controllers\Controller;
+use App\Support\Csv;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -70,14 +71,14 @@ class GlossaryController extends Controller
 
         return response()->streamDownload(function () use ($rows): void {
             $out = fopen('php://output', 'w');
-            fputcsv($out, [
+            Csv::put($out, [
                 'id', 'term', 'term_dv', 'term_ar', 'transliteration',
                 'meaning_primary', 'meaning_secondary', 'meaning_dv', 'meaning_ar',
                 'description', 'example_text', 'example_translation', 'tags',
                 'subject_id', 'level_id',
             ]);
             foreach ($rows as $row) {
-                fputcsv($out, [
+                Csv::put($out, [
                     $row['id'],
                     $row['term'],
                     $row['term_dv'],

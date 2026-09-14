@@ -11,6 +11,7 @@ use App\Domains\Academics\Models\SchoolRequest;
 use App\Domains\HR\Actions\ListLeaveTypesAction;
 use App\Domains\People\Actions\ResolveStaffProfileForUserAction;
 use App\Http\Controllers\Controller;
+use App\Support\Csv;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -131,9 +132,9 @@ class SchoolRequestController extends Controller
 
         return response()->streamDownload(function () use ($rows): void {
             $handle = fopen('php://output', 'w');
-            fputcsv($handle, ['id', 'type', 'status', 'reason', 'requester_id', 'reviewed_at']);
+            Csv::put($handle, ['id', 'type', 'status', 'reason', 'requester_id', 'reviewed_at']);
             foreach ($rows as $row) {
-                fputcsv($handle, [
+                Csv::put($handle, [
                     $row->id,
                     $row->type?->value,
                     $row->status?->value,

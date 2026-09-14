@@ -12,6 +12,7 @@ use App\Domains\Offerings\Actions\SaveOfferingSessionAction;
 use App\Domains\Offerings\Actions\SyncHalaqaDualWriteAction;
 use App\Domains\Offerings\Models\CourseOfferingSession;
 use App\Http\Controllers\Controller;
+use App\Support\Csv;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -156,9 +157,9 @@ class OfferingSessionController extends Controller
 
         return response()->streamDownload(function () use ($payload): void {
             $out = fopen('php://output', 'w');
-            fputcsv($out, ['id', 'title', 'session_type', 'starts_at', 'location_name', 'is_required']);
+            Csv::put($out, ['id', 'title', 'session_type', 'starts_at', 'location_name', 'is_required']);
             foreach ($payload['sessions'] as $row) {
-                fputcsv($out, [$row['id'], $row['title'], $row['session_type'], $row['starts_at'], $row['location_name'], $row['is_required'] ? 'yes' : 'no']);
+                Csv::put($out, [$row['id'], $row['title'], $row['session_type'], $row['starts_at'], $row['location_name'], $row['is_required'] ? 'yes' : 'no']);
             }
             fclose($out);
         }, 'offering-sessions.csv', ['Content-Type' => 'text/csv; charset=UTF-8']);

@@ -6,6 +6,7 @@ use App\Domains\HR\Actions\ListCpdRecordsAction;
 use App\Domains\HR\Actions\SaveCpdRecordAction;
 use App\Domains\People\Actions\ListStaffProfilesAction;
 use App\Http\Controllers\Controller;
+use App\Support\Csv;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -47,9 +48,9 @@ class CpdRecordController extends Controller
 
         return response()->streamDownload(function () use ($rows): void {
             $out = fopen('php://output', 'w');
-            fputcsv($out, ['staff_name', 'title', 'provider', 'hours', 'date']);
+            Csv::put($out, ['staff_name', 'title', 'provider', 'hours', 'date']);
             foreach ($rows as $row) {
-                fputcsv($out, [$row['staff_name'], $row['title'], $row['provider'], $row['hours'], $row['date']]);
+                Csv::put($out, [$row['staff_name'], $row['title'], $row['provider'], $row['hours'], $row['date']]);
             }
             fclose($out);
         }, 'cpd-records.csv', ['Content-Type' => 'text/csv; charset=UTF-8']);

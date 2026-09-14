@@ -9,6 +9,7 @@ use App\Domains\Academics\Enums\AttendanceStatus;
 use App\Domains\Academics\Models\AcademicYear;
 use App\Domains\Academics\Models\ClassRoom;
 use App\Http\Controllers\Controller;
+use App\Support\Csv;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -63,9 +64,9 @@ class AttendanceReportController extends Controller
 
         return response()->streamDownload(function () use ($rows, $headers): void {
             $handle = fopen('php://output', 'w');
-            fputcsv($handle, $headers);
+            Csv::put($handle, $headers);
             foreach ($rows as $row) {
-                fputcsv($handle, array_map(fn ($key) => $row[$key] ?? '', $headers));
+                Csv::put($handle, array_map(fn ($key) => $row[$key] ?? '', $headers));
             }
             fclose($handle);
         }, 'attendance-'.$kind.'.csv', ['Content-Type' => 'text/csv']);

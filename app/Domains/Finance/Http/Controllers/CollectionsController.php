@@ -5,6 +5,7 @@ namespace App\Domains\Finance\Http\Controllers;
 use App\Domains\Academics\Actions\ListAcademicYearsAction;
 use App\Domains\Finance\Actions\ListCollectionsAction;
 use App\Http\Controllers\Controller;
+use App\Support\Csv;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -34,9 +35,9 @@ class CollectionsController extends Controller
 
         return response()->streamDownload(function () use ($rows): void {
             $out = fopen('php://output', 'w');
-            fputcsv($out, ['class_id', 'month', 'billed', 'collected', 'invoices']);
+            Csv::put($out, ['class_id', 'month', 'billed', 'collected', 'invoices']);
             foreach ($rows as $row) {
-                fputcsv($out, [$row['class_id'], $row['month'], $row['billed'], $row['collected'], $row['invoice_count']]);
+                Csv::put($out, [$row['class_id'], $row['month'], $row['billed'], $row['collected'], $row['invoice_count']]);
             }
             fclose($out);
         }, 'collections.csv', ['Content-Type' => 'text/csv; charset=UTF-8']);
