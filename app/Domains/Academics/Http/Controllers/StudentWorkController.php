@@ -14,6 +14,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response as HttpResponse;
 use Inertia\Inertia;
 use Inertia\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /** The staff side of E21. Thin (rule 5). */
 class StudentWorkController extends Controller
@@ -27,6 +28,40 @@ class StudentWorkController extends Controller
             'matches' => $query === '' ? [] : app(SearchRosterCandidatesAction::class)->execute($query, 12),
             'work' => app(ListStudentWorkAction::class)->execute(),
         ]);
+    }
+
+    /**
+     * CLAUDE.md: *"every listing gets CSV export."*
+     *
+     * The photographs themselves are private media and stay behind
+     * `work/{work}/photo`; this is the log of what was photographed, for whom,
+     * by whom — including `times_moved`, which is the column somebody auditing
+     * a mis-assigned photo would come here for.
+     */
+    public function export(ListStudentWorkAction $list): StreamedResponse
+    {
+        $rows = $list->execute(limit: 5000);
+
+        return response()->streamDownload(function () use ($rows): void {
+            $handle = fopen('php://output', 'w');
+            fputcsv($handle, ['id', 'student', 'student_number', 'title', 'note', 'done_on', 'uploaded_by', 'hidden', 'times_moved']);
+
+            foreach ($rows as $row) {
+                fputcsv($handle, [
+                    $row['id'],
+                    $row['student'],
+                    $row['student_number'],
+                    $row['title'],
+                    $row['note'],
+                    $row['done_on'],
+                    $row['uploaded_by'],
+                    $row['hidden'] ? 'yes' : 'no',
+                    $row['times_moved'],
+                ]);
+            }
+
+            fclose($handle);
+        }, 'student-work.csv', ['Content-Type' => 'text/csv']);
     }
 
     public function store(Request $request, SaveStudentWorkAction $save): RedirectResponse

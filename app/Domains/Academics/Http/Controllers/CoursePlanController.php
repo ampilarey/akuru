@@ -17,9 +17,59 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class CoursePlanController extends Controller
 {
+    /**
+     * CLAUDE.md: *"every listing gets CSV export."*
+     *
+     * One row per plan, with how far through its topics it is — the question a
+     * supervisor actually asks of this screen at the end of a term.
+     *
+     * **Carries `index()`'s scoping, not just its permission check.** A teacher
+     * without `registers.manage` sees only their own plans on screen; an export
+     * that quietly handed them everybody's would make the CSV a way around the
+     * filter rather than a copy of it.
+     */
+    public function export(Request $request): StreamedResponse
+    {
+        abort_unless($request->user()?->can('registers.fill') || $request->user()?->can('registers.manage'), 403);
+
+        $canManage = (bool) $request->user()?->can('registers.manage');
+        $teacherId = app(ResolveTeacherIdForUserAction::class)->execute($request->user()?->id);
+
+        $plans = CoursePlan::query()
+            ->with('topics')
+            ->when(! $canManage && $teacherId, fn ($query) => $query->where('teacher_id', $teacherId))
+            ->orderByDesc('id')
+            ->get();
+
+        $classes = ClassRoom::query()->pluck('name', 'id');
+        $subjects = Subject::query()->pluck('name', 'id');
+        $years = AcademicYear::query()->pluck('name', 'id');
+
+        return response()->streamDownload(function () use ($plans, $classes, $subjects, $years): void {
+            $handle = fopen('php://output', 'w');
+            fputcsv($handle, ['id', 'title', 'subject', 'class', 'academic_year', 'status', 'topics', 'topics_completed']);
+
+            foreach ($plans as $plan) {
+                fputcsv($handle, [
+                    $plan->id,
+                    $plan->title,
+                    $subjects[$plan->subject_id] ?? '',
+                    $classes[$plan->classroom_id] ?? '',
+                    $years[$plan->academic_year_id] ?? $plan->academic_year,
+                    $plan->status?->value,
+                    $plan->topics->count(),
+                    $plan->topics->where('is_completed', true)->count(),
+                ]);
+            }
+
+            fclose($handle);
+        }, 'course-plans.csv', ['Content-Type' => 'text/csv']);
+    }
+
     public function index(Request $request): Response
     {
         abort_unless($request->user()?->can('registers.fill') || $request->user()?->can('registers.manage'), 403);

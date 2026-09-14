@@ -14,9 +14,54 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 use RuntimeException;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class AcademicYearController extends Controller
 {
+    /**
+     * CLAUDE.md: *"every listing gets CSV export."* The backbone every
+     * time-scoped record in the system hangs off (rule 10), with each year's
+     * terms flattened one per row — a year with no terms still appears, since
+     * an empty year is exactly the thing somebody would be checking for.
+     */
+    public function export(): StreamedResponse
+    {
+        $years = AcademicYear::query()
+            ->with('termRecords')
+            ->orderByDesc('start_date')
+            ->get();
+
+        return response()->streamDownload(function () use ($years): void {
+            $handle = fopen('php://output', 'w');
+            fputcsv($handle, ['year_id', 'year', 'year_status', 'year_start', 'year_end', 'term', 'term_status', 'term_start', 'term_end']);
+
+            foreach ($years as $year) {
+                $terms = $year->termRecords;
+
+                // `->value` on both: these columns are backed enums, and
+                // handing an enum object to fputcsv is a fatal error *inside*
+                // the stream, which arrives as a truncated download rather
+                // than an error page. Caught by the test asserting the body.
+                if ($terms->isEmpty()) {
+                    fputcsv($handle, [$year->id, $year->name, $year->status?->value, $year->start_date?->toDateString(), $year->end_date?->toDateString(), '', '', '', '']);
+
+                    continue;
+                }
+
+                foreach ($terms as $term) {
+                    fputcsv($handle, [
+                        $year->id, $year->name, $year->status?->value,
+                        $year->start_date?->toDateString(), $year->end_date?->toDateString(),
+                        $term->name, $term->status?->value,
+                        $term->start_date?->toDateString(), $term->end_date?->toDateString(),
+                    ]);
+                }
+            }
+
+            fclose($handle);
+        }, 'academic-years.csv', ['Content-Type' => 'text/csv']);
+    }
+
     public function index(): Response
     {
         return Inertia::render('Academics/Years/Index', [

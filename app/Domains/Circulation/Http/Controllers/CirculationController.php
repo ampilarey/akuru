@@ -20,6 +20,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response as HttpResponse;
 use Inertia\Inertia;
 use Inertia\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
  * Circulation — physical lending. Thin (rule 5).
@@ -39,6 +40,45 @@ class CirculationController extends Controller
             'titles' => app(ListCirculationAction::class)->execute($query),
             'overdue' => app(ListLoansAction::class)->outstanding(overdueOnly: true),
         ]);
+    }
+
+    /**
+     * CLAUDE.md: *"every listing gets CSV export."*
+     *
+     * The stock take. Every title with its copy counts, so a librarian can
+     * reconcile the shelf against the system once a year without reading 50
+     * rows off a screen — and `soonest_back` comes along, because a title with
+     * nothing available is a different problem depending on whether it is back
+     * on Thursday or has been out since March.
+     *
+     * Not limited to the 50 rows `index()` shows: an export of the first page
+     * of a stock list is not a stock list.
+     */
+    public function export(Request $request, ListCirculationAction $list): StreamedResponse
+    {
+        $titles = $list->execute(trim((string) $request->query('q', '')), limit: 5000);
+
+        return response()->streamDownload(function () use ($titles): void {
+            $handle = fopen('php://output', 'w');
+            fputcsv($handle, ['id', 'title', 'author', 'isbn', 'classification', 'loan_days', 'total_copies', 'available', 'on_loan', 'soonest_back']);
+
+            foreach ($titles as $row) {
+                fputcsv($handle, [
+                    $row['id'],
+                    $row['title'],
+                    $row['author'],
+                    $row['isbn'],
+                    $row['classification'],
+                    $row['loan_days'],
+                    $row['total'],
+                    $row['available'],
+                    $row['on_loan'],
+                    $row['soonest_back'],
+                ]);
+            }
+
+            fclose($handle);
+        }, 'circulation.csv', ['Content-Type' => 'text/csv']);
     }
 
     public function show(Request $request, BookTitle $title): Response

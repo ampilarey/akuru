@@ -4245,6 +4245,39 @@ Still without an export, and genuinely lists: `academics.classes`,
 `circulation`, `admin.users`. `people.sensitive` is left alone on purpose — an
 export of sensitive notes makes exfiltration a single click.
 
+**All seven now shipped** (2026-09-14). `people.sensitive` remains the one
+deliberate absence, and the convention is met everywhere a screen genuinely
+lists something.
+
+Each export carries the **scoping of the screen it copies**, which is the part
+that is easy to get wrong: `academics.classes` takes the year in the URL,
+`academics.pickup` takes the day, `admin.users` takes the search and role
+filter, and `academics.plans` carries `index()`'s teacher filter — a teacher
+without `registers.manage` exports their own plans and nobody else's, pinned by
+its own test. An export that ignored that would be a way *around* the filter
+rather than a copy of it.
+
+Two judgement calls, both following the staff export's precedent: the user
+roster carries contacts but not `national_id`, `address` or `date_of_birth`
+(an account roster with no way to reach the holder is not a roster; identity
+documents in a spreadsheet are a different thing); and the student-work export
+is the *log* of what was photographed, never the photographs, which stay behind
+their private-media route.
+
+**The suite caught a real defect in my own new code.** `AcademicYearController`
+handed `$year->status` — a backed enum — to `fputcsv`, which is a fatal error
+*inside* the stream, so it arrives as a truncated download rather than an error
+page. The test asserting the body found it; a test asserting only the status
+code would not have, because the 200 header is already on the wire before the
+callback runs.
+
+**Walked in a browser, all seven**, signed in and clicking through: page
+renders, the link is there, and the CSV comes back with rows in it. The first
+walk returned a header row and nothing else for circulation, student work and
+pick-up — empty tables, not broken readers, but indistinguishable from the
+outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
+the walk is a real answer rather than a hopeful one.
+
 ## 5cr. The lesson that reached exactly one file (2026-09-14)
 
 `ReserveOfferingSeatAction` carries a comment written after something bit

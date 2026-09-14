@@ -141,6 +141,9 @@ export default function Index({ q = '', matches = [], work = [] }) {
 
     return (
         <AppShell title="Student work">
+            <div className="mb-4 flex justify-end">
+                <a className="btn-secondary" href="/academics/work/export">Export CSV</a>
+            </div>
             <UploadForm matches={matches} q={query} onSearch={search} />
 
             <h2 className="mb-2 text-sm font-semibold">Photographed ({work.length})</h2>

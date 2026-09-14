@@ -21,6 +21,45 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ClassDirectoryController extends Controller
 {
+    /**
+     * CLAUDE.md: *"every listing gets CSV export."* This list is how a school
+     * checks its own shape at the start of a year — which classes exist, who
+     * teaches each, and how many places each holds.
+     *
+     * Scoped to the year on screen, so the export matches what was being
+     * looked at rather than every class the school has ever had.
+     */
+    public function export(Request $request): StreamedResponse
+    {
+        $yearId = $request->integer('academic_year_id') ?: AcademicYear::query()
+            ->where('status', 'active')
+            ->value('id');
+
+        $teacherNames = app(ListClassTeacherOptionsAction::class)->execute()->pluck('name', 'id');
+
+        $classes = ClassRoom::query()
+            ->when($yearId, fn ($query) => $query->where('academic_year_id', $yearId))
+            ->orderBy('name')
+            ->get();
+
+        return response()->streamDownload(function () use ($classes, $teacherNames): void {
+            $handle = fopen('php://output', 'w');
+            fputcsv($handle, ['id', 'name', 'section', 'capacity', 'class_teacher']);
+
+            foreach ($classes as $class) {
+                fputcsv($handle, [
+                    $class->id,
+                    $class->name,
+                    $class->section,
+                    $class->capacity,
+                    $class->class_teacher_id ? ($teacherNames[$class->class_teacher_id] ?? '') : '',
+                ]);
+            }
+
+            fclose($handle);
+        }, 'classes.csv', ['Content-Type' => 'text/csv']);
+    }
+
     public function index(Request $request): Response
     {
         $yearId = $request->integer('academic_year_id') ?: AcademicYear::query()

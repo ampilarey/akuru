@@ -349,6 +349,7 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
     Route::put('academics/registers/{lessonLog}', [TeacherRegisterController::class, 'update'])->name('academics.registers.update');
     Route::post('academics/registers/{lessonLog}/unlock', [RegisterReportController::class, 'unlock'])->name('academics.registers.unlock');
 
+    Route::get('academics/plans/export', [CoursePlanController::class, 'export'])->name('academics.plans.export');
     Route::get('academics/plans', [CoursePlanController::class, 'index'])->name('academics.plans.index');
     Route::post('academics/plans', [CoursePlanController::class, 'store'])->name('academics.plans.store');
     Route::post('academics/plans/{coursePlan}/topics', [CoursePlanController::class, 'storeTopic'])->name('academics.plans.topics.store');
@@ -491,6 +492,7 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
 
     // Admin user management (super_admin only)
     Route::prefix('admin/users')->middleware(['role:super_admin'])->group(function () {
+        Route::get('export', [\App\Domains\Identity\Http\Controllers\AdminUserController::class, 'export'])->name('admin.users.export');
         Route::get('/', [\App\Domains\Identity\Http\Controllers\AdminUserController::class, 'index'])->name('admin.users.index');
         // SPEC §32: "OTP abuse event logging for admin review." Declared before
         // the {user} delete route is irrelevant (different verb), but kept next
@@ -548,6 +550,7 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
     // admin/library: the L-track Library is a digital reader and bookstore,
     // and the plan asks for the two never to be confused in code or nav.
     Route::prefix('circulation')->middleware(['role:super_admin|admin|headmaster|supervisor'])->group(function () {
+        Route::get('export', [CirculationController::class, 'export'])->name('circulation.export');
         Route::get('/', [CirculationController::class, 'index'])->name('circulation.index');
         Route::post('titles', [CirculationController::class, 'storeTitle'])->name('circulation.titles.store');
         Route::get('titles/{title}', [CirculationController::class, 'show'])->name('circulation.titles.show')->whereNumber('title');
@@ -763,6 +766,7 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
     });
 
     Route::prefix('academics')->middleware(['role:super_admin|admin|headmaster|supervisor'])->group(function () {
+        Route::get('years/export', [AcademicYearController::class, 'export'])->name('academics.years.export');
         Route::get('years', [AcademicYearController::class, 'index'])->name('academics.years.index');
         Route::post('years', [AcademicYearController::class, 'store'])->name('academics.years.store');
         Route::post('years/{academicYear}/terms', [AcademicYearController::class, 'storeTerm'])->name('academics.years.terms.store');
@@ -770,6 +774,7 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::post('years/{academicYear}/activate', [AcademicYearController::class, 'activate'])->name('academics.years.activate');
         Route::post('years/{academicYear}/close', [AcademicYearController::class, 'close'])->name('academics.years.close');
 
+        Route::get('classes/export', [ClassDirectoryController::class, 'export'])->name('academics.classes.export');
         Route::get('classes', [ClassDirectoryController::class, 'index'])->name('academics.classes.index');
         Route::post('classes', [ClassDirectoryController::class, 'store'])->name('academics.classes.store');
         Route::get('classes/{classRoom}', [ClassDirectoryController::class, 'show'])->name('academics.classes.show');
@@ -817,6 +822,7 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
 
         // E8 student pick-up — the office console. Releasing a child, so every
         // gate lives in the Actions rather than here.
+        Route::get('pickup/export', [PickupConsoleController::class, 'export'])->name('academics.pickup.export');
         Route::get('pickup', [PickupConsoleController::class, 'index'])->name('academics.pickup.index');
         Route::post('pickup/open', [PickupConsoleController::class, 'open'])->name('academics.pickup.open');
         Route::post('pickup/close', [PickupConsoleController::class, 'close'])->name('academics.pickup.close');
@@ -841,6 +847,7 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
 
         // E21 student work showcase. Reassignment is a first-class verb, not
         // an edit form — wrong-parent is the documented failure mode.
+        Route::get('work/export', [StudentWorkController::class, 'export'])->name('academics.work.export');
         Route::get('work', [StudentWorkController::class, 'index'])->name('academics.work.index');
         Route::post('work', [StudentWorkController::class, 'store'])->name('academics.work.store');
         Route::post('work/{work}/reassign', [StudentWorkController::class, 'reassign'])->name('academics.work.reassign')->whereNumber('work');

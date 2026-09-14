@@ -49,6 +49,9 @@ export default function Console({ date, is_open, waiting = [], left = [] }) {
 
     return (
         <AppShell title="Student pick-up">
+            <div className="mb-4 flex justify-end">
+                <a className="btn-secondary" href={`/academics/pickup/export?date=${form.data.date}`}>Export CSV</a>
+            </div>
             <div className="mb-4 flex flex-wrap items-center gap-3">
                 <input
                     type="date"
