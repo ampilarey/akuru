@@ -4278,6 +4278,63 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5cv. 123 routes need no session, and none of them had been justified (2026-09-14)
+
+The follow-on from §5cu: if a public route could confirm a payment, **what else
+is public?** Every route with no `auth` middleware, one at a time — 123 of the
+app's 878.
+
+### Four checked hard, all sound
+
+- **`PUT storage/{path}`** and its GET twin, registered by Laravel's
+  `'serve' => true` on the `local` disk, which is rooted at
+  `storage_path('app/private')` — where recitations, report cards, payslips
+  and student work photos live, and carrying **no middleware at all**. Tried
+  both live against the dev server: 403 and 403, and no file written. Laravel
+  refuses to serve a private-visibility disk. Alarming to read, correct in
+  fact.
+- **`POST api/v2/sms/send`**, unauthenticated and unthrottled in the route
+  table. The key check is in the controller and fails closed — an unset key
+  returns false rather than matching an empty header — and compares with
+  `hash_equals`.
+- **`POST api/deploy/test-pull`**. Requires a ≥16-character secret, an
+  allow-listed host, and `hash_equals`; 404s rather than 401s when either is
+  missing.
+- **`POST otp/verify` has no route throttle** while `otp/request` and
+  `otp/resend` do. Not a defect: `OtpService::verify` rate-limits per contact
+  *and* caps attempts per code, which is the right key. The route throttle on
+  `request` is the per-IP complement for an attack spread across contacts.
+
+Also checked: `/inertia-test` is deploy tooling with its own test, not cruft;
+`api/user` is `auth:sanctum` and my first filter was too crude to see it.
+
+### What shipped instead of a fix
+
+`PublicRoutesAreDeclaredTest` and a 121-entry baseline. Not a fix, because
+there was nothing to fix — the point is that **nobody had ever had to say why
+any of these were public**, so a route joining the set looked exactly like one
+that always belonged there. That is precisely how `payments/bml/return` hid.
+
+The baseline sorts them into four kinds, and one of them is the reason the
+gate earns its keep:
+
+- public content, verified by protocol (webhooks), authentication itself —
+  all self-evident once written down;
+- **guarded in the handler** — 18 routes whose safety is an
+  `abort_unless($request->user(), 403)` several files away. `my-wallet` is the
+  clearest: a public route, a correct guard, and nothing in the routing table
+  that could tell you so.
+
+Checked for vacuousness by adding a public route and confirming it fails, then
+removing it.
+
+**One thing the audit corrected rather than assumed.** Inertia's
+`_inertia/devtools/entries` appears in `php artisan route:list` on a developer
+machine and **not** in the test environment — the package registers it outside
+production. A debug endpoint on the public site would be a real exposure; the
+gate reads registered routes rather than a CLI listing, which is what shows
+the difference.
+
 ## 5cu. The return URL chose the question, which is the same as giving the answer (2026-09-14)
 
 Auditing CLAUDE.md **rule 12** clause by clause. Clause 3 (discounts never buy
