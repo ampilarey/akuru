@@ -29,6 +29,11 @@ function fakeS2Sms(): object
 
             return ['success' => true];
         }
+
+        public function sendOtp(string $phoneNumber, string $otp): array
+        {
+            return $this->sendSms($phoneNumber, "Code: {$otp}", ['type' => 'otp']);
+        }
     };
 
     app()->instance(SmsSenderInterface::class, $fake);

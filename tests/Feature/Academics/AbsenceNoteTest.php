@@ -30,6 +30,11 @@ it('approving an absence note excuses matching absent rows via the writer', func
         {
             return ['success' => true];
         }
+
+        public function sendOtp(string $phoneNumber, string $otp): array
+        {
+            return $this->sendSms($phoneNumber, "Code: {$otp}", ['type' => 'otp']);
+        }
     });
 
     app(AttendanceWriterInterface::class)->record(new StudentAttendanceDTO(
