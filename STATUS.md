@@ -4278,6 +4278,53 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5df. Indexing what is queried, and leaving the rest alone (2026-09-14)
+
+A change of gear, and something go-live needs that requires no decision from
+anybody: foreign keys with no index.
+
+593 `*_id` columns exist. Setting aside `national_id` — an identity document,
+not a key, and my first pass counted it — and the morph columns, which are
+indexed as the second half of a `(type, id)` composite, **34 appear in no index
+at all**.
+
+Indexing all 34 is the easy answer and the wrong one. Every index is paid for
+on every insert, and these are the tables that take the most writes. So each
+one added here is backed by an actual `where()` on that column **in code that
+touches that table**.
+
+### The measurement that corrected me
+
+My first count was `where('<column>'` across the whole app, which said
+`attendance_records.student_id` was filtered 78 times. It is not: that is the
+count of `student_id` **anywhere**, and per-table it is 2. Counting properly —
+only files that mention the model or table — changed the answer for most of the
+list.
+
+It also overturned the assumption I started with. `attendance_records` is the
+highest-volume table in a school system, so I expected it to be the prize. Its
+genuinely hot filters — `enrollment_id`, `course_offering_session_id`,
+`course_offering_id` — **were already indexed**. Only `student_id` was not.
+
+### Twelve added, twenty deliberately not
+
+Added, on the tables that grow per student per event and on the lesson player's
+read path: `assessment_attempts.course_id`, `activity_attempts.course_id` and
+`.student_id`, `attendance_records.student_id`, `activities.lesson_id`,
+`assessments.term_id` and `.course_module_id`, plus five moderate ones each
+with a filter in code.
+
+**Left bare: the twenty that are never filtered**, including several that read
+as obviously hot by name — `attendance_records.academic_year_id`,
+`course_enrollments.term_id`, `issued_certificates.enrollment_id`. An index for
+a query nobody writes is a cost with no reader. If one appears later it belongs
+in that slice, with the query that justifies it.
+
+Additive only (rule 9): nothing added, changed or dropped, no data moved.
+Rolled back and re-applied to check `down()` is real rather than decorative.
+The accompanying test asserts the indexes exist — a schema assertion, not a
+benchmark, since timing anything against a seeded fixture measures the fixture.
+
 ## 5de. Two lists meant to agree, with nothing making them (2026-09-14)
 
 The adjacent seam to §5dd: request data written straight into the database.
