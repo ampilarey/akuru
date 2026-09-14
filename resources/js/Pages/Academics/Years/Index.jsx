@@ -82,6 +82,9 @@ export default function Index({ years }) {
 
     return (
         <AppShell title="Academic years">
+            <div className="mb-4 flex justify-end">
+                <a className="btn-secondary" href="/academics/years/export">Export CSV</a>
+            </div>
             <form
                 onSubmit={(e) => {
                     e.preventDefault();

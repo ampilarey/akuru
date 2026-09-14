@@ -14,6 +14,13 @@
         {{-- SPEC §32's admin review surface. Not in the nav bar: a list of who
              has been hammering the OTP endpoints should take a decision to
              open, the same call made for the library's reading alerts. --}}
+        {{-- CLAUDE.md: "every listing gets CSV export." Carries the search and
+             role filter, so the download is a copy of the list on screen. --}}
+        <a href="{{ route('admin.users.export', request()->only('search', 'role')) }}"
+           style="font-size:.78rem;color:rgba(255,255,255,.75);text-decoration:none;display:flex;align-items:center;gap:.375rem"
+           onmouseover="this.style.color='white'" onmouseout="this.style.color='rgba(255,255,255,.75)'">
+            Export CSV
+        </a>
         <a href="{{ route('admin.users.otp-abuse') }}"
            style="font-size:.78rem;color:rgba(255,255,255,.75);text-decoration:none;display:flex;align-items:center;gap:.375rem"
            onmouseover="this.style.color='white'" onmouseout="this.style.color='rgba(255,255,255,.75)'">

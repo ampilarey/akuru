@@ -11,6 +11,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
  * The office console. Thin (rule 5): every gate lives in the Actions, because
@@ -29,6 +30,49 @@ class PickupConsoleController extends Controller
             'waiting' => $lists['waiting'],
             'left' => $lists['left'],
         ]);
+    }
+
+    /**
+     * CLAUDE.md: *"every listing gets CSV export."*
+     *
+     * A day's release log: who asked for each child, who released them, and
+     * when. Both halves of the console in one file with a `list` column, since
+     * "waiting" and "left" are the same records at different moments and
+     * splitting them into two downloads would make the day harder to read, not
+     * easier.
+     *
+     * Scoped to the date on screen, like `index()` — this console is one day's
+     * work by design, and an export of every pick-up ever would be a different
+     * thing entirely.
+     */
+    public function export(Request $request): StreamedResponse
+    {
+        $date = (string) $request->query('date', now()->toDateString());
+        $lists = app(ListPickupNoticesAction::class)->execute($date);
+
+        return response()->streamDownload(function () use ($lists): void {
+            $handle = fopen('php://output', 'w');
+            fputcsv($handle, ['list', 'id', 'student', 'student_number', 'guardian', 'status', 'note', 'requested_at', 'sent_at', 'collected_at']);
+
+            foreach (['waiting', 'left'] as $which) {
+                foreach ($lists[$which] as $row) {
+                    fputcsv($handle, [
+                        $which,
+                        $row['id'],
+                        $row['student'],
+                        $row['student_number'],
+                        $row['guardian'],
+                        $row['status'],
+                        $row['note'],
+                        $row['requested_at'],
+                        $row['sent_at'],
+                        $row['collected_at'],
+                    ]);
+                }
+            }
+
+            fclose($handle);
+        }, 'pickup-'.$date.'.csv', ['Content-Type' => 'text/csv']);
     }
 
     public function open(Request $request, OpenPickupWindowAction $window): RedirectResponse

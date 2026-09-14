@@ -64,6 +64,7 @@ class SmokeMarkerSeeder extends Seeder
         $this->ownData($year, $studentId, $admin);
         $this->sensitiveRecords($year, $studentId, $admin);
         $this->payslips($admin);
+        $this->dailyLists($year, $studentId, $admin);
 
         // A default `migrate:fresh --seed` leaves `staff_profiles` empty, and
         // this used to skip the whole HR block in silence — so the sweep
@@ -121,6 +122,52 @@ class SmokeMarkerSeeder extends Seeder
             'room_id' => $roomId, 'academic_year_id' => $year->id, 'date' => now()->toDateString(),
             'start_time' => '09:00:00', 'end_time' => '10:00:00', 'title' => 'SMOKE-Booking',
             'booked_by' => $admin?->id, 'created_at' => now(), 'updated_at' => now(),
+        ]);
+    }
+
+    /**
+     * The three screens whose exports came back as a header row and nothing
+     * else on the first browser walk: circulation, student work, pick-up.
+     *
+     * An empty table answers 200 and produces a well-formed CSV with no rows
+     * in it, which is indistinguishable from a reader that silently returns
+     * nothing. These markers make the difference visible.
+     *
+     * `student_work.photo_media_id` is NOT NULL, so the marker carries a
+     * media row of its own rather than being forced past the constraint.
+     */
+    private function dailyLists(AcademicYear $year, int $studentId, ?object $admin): void
+    {
+        DB::table('book_titles')->where('title', 'SMOKE-Book')->delete();
+        DB::table('book_titles')->insert([
+            'title' => 'SMOKE-Book', 'author' => 'SMOKE-Author', 'isbn' => '9990000000001',
+            'classification' => '297', 'language' => 'dv', 'loan_days' => 14,
+            'created_at' => now(), 'updated_at' => now(),
+        ]);
+
+        DB::table('pickup_notices')->where('note', 'SMOKE-Pickup')->delete();
+        DB::table('pickup_notices')->insert([
+            'academic_year_id' => $year->id, 'student_id' => $studentId,
+            'guardian_user_id' => $admin?->id, 'date' => now()->toDateString(),
+            'status' => 'requested', 'requested_at' => now(), 'note' => 'SMOKE-Pickup',
+            'created_at' => now(), 'updated_at' => now(),
+        ]);
+
+        DB::table('student_work')->where('title', 'SMOKE-Work')->delete();
+        DB::table('media_files')->where('original_name', 'SMOKE-Work.jpg')->delete();
+
+        $mediaId = DB::table('media_files')->insertGetId([
+            'disk' => 'local', 'path' => 'smoke/work.jpg', 'original_name' => 'SMOKE-Work.jpg',
+            'mime' => 'image/jpeg', 'size' => 1024, 'uploaded_by' => $admin?->id,
+            'visibility' => 'private', 'process_status' => 'pending',
+            'created_at' => now(), 'updated_at' => now(),
+        ]);
+
+        DB::table('student_work')->insert([
+            'academic_year_id' => $year->id, 'student_id' => $studentId,
+            'photo_media_id' => $mediaId, 'uploaded_by' => $admin?->id,
+            'title' => 'SMOKE-Work', 'note' => 'SMOKE-Work-Note', 'done_on' => now()->toDateString(),
+            'created_at' => now(), 'updated_at' => now(),
         ]);
     }
 

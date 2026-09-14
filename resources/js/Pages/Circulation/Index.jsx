@@ -79,6 +79,9 @@ export default function Index({ q = '', titles = [], overdue = [] }) {
 
     return (
         <AppShell title="Circulation">
+            <div className="mb-4 flex justify-end">
+                <a className="btn-secondary" href={`/circulation/export?q=${encodeURIComponent(q ?? '')}`}>Export CSV</a>
+            </div>
             <p className="mb-4 text-sm text-gray-600">
                 Physical books and textbooks on shelves. The digital Library is a different
                 thing entirely — this is the one with labels on it.

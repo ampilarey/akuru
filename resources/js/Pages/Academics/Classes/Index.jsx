@@ -13,6 +13,9 @@ export default function Index({ years, yearId, classes, teachers = [] }) {
 
     return (
         <AppShell title="Classes">
+            <div className="mb-4 flex justify-end">
+                <a className="btn-secondary" href={`/academics/classes/export?academic_year_id=${yearId || ''}`}>Export CSV</a>
+            </div>
             <div className="mb-4 flex flex-wrap gap-2">
                 {years.map((year) => (
                     <button

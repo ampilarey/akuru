@@ -23,6 +23,9 @@ export default function Index({ plans, teacherId, canManage, years, classes, sub
 
     return (
         <AppShell title="Teaching plans">
+            <div className="mb-4 flex justify-end">
+                <a className="btn-secondary" href="/academics/plans/export">Export CSV</a>
+            </div>
             <form
                 onSubmit={(e) => {
                     e.preventDefault();
