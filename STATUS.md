@@ -4304,6 +4304,109 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5dq. A gate for the defect §5dm, §5do and §5dp all turned out to be (2026-09-14)
+
+Three slices in one afternoon were the same defect in different clothes, and
+that makes it a class rather than three accidents:
+
+| column | what was wrong |
+|---|---|
+| `teachers.status` | written **once**, at creation, always `active`; nothing could change it |
+| `staff_profiles.status` | a route and validation that accepted `ended`, and **no form that posted to it** |
+| `hifz_enrollments.status` | four values, and a controller with `index`, `create`, `store` and no update path |
+
+Each was guarded by correct-looking filters — `where('status', 'active')` in
+four places for the teachers one — that could never exclude anybody, because
+the column could not move. **Nothing failed. No test noticed.** All three were
+found by trying to do the thing in a browser and looking for the button.
+
+`StatusValuesAreWritableTest` is the check for it. For every `enum` status
+column, every value other than the default must appear somewhere in the code
+that touches that table — as a literal, an enum case, a member of an
+`in:a,b,c` validation list, or a form option.
+
+**What it claims, precisely.** It is deliberately permissive: a mention is not
+a write, so a value can pass here and still be unwritable in practice. The one
+thing it says soundly is the one that matters — *nothing anywhere so much as
+names this value, so nothing can possibly write it* — and all three of the
+defects above are caught by it.
+
+**Comments are stripped first**, and that is not a detail: without it the gate
+is silenced by writing a sentence about the value, **including the sentence
+explaining why it is missing**. Two columns reappeared in the results once
+comment-stripping was added, having been hidden by prose written earlier the
+same day — mine.
+
+**Verified in both directions** rather than trusted: removing
+`hifz_enrollments.status` from the baseline fails with *"named nowhere in the
+code that touches their table"*, and adding a reachable value (`invoices.paid`)
+fails with *"now reachable — delete them from the baseline"*. The baseline may
+only shrink.
+
+**One false positive found and thrown away before it became a claim.** The
+first draft searched for quoted literals only, and reported
+`teacher_absences.status → rejected` as unwritable. It is not:
+`SubstitutionRequestController::absencesUpdate` validates
+`in:pending,approved,rejected` and saves it, so the word is there but not in
+quotes of its own. Had that shipped it would have been a defect report about
+working code — the same shape as the five vacuous probes this session, pointing
+the other way.
+
+### What the gate found: nineteen values nothing can write
+
+The baseline is not a list of exceptions so much as an audit result. Several
+read as capabilities nobody has built rather than values nobody wants, and the
+reasons say what is missing without guessing at whether it was deliberate:
+
+- **`admission_applications`** — `reviewed`, `interviewed`, `waitlisted`. An
+  application can be created and decided; none of the stages between can be
+  recorded.
+- **`invoices`** — `cancelled`. An invoice can be drafted, issued and paid, and
+  **never cancelled**.
+- **`hifz_session_records.attendance_status`** — `late`, `excused`, and
+  **corrected within the hour of first writing it down.** The first draft of
+  this entry said *"a halaqa register records present or absent and nothing
+  else"*. That is wrong. **Nothing writes this column at all**, not even its
+  default: `HifzSessionService` creates the row without it, and the live halaqa
+  register is no longer here — F5 (ADR-029) moved sessions to
+  `Courses\Components\Quran`, which writes `QuranSessionRecord` and offering
+  attendance and **does** accept all four values.
+
+  The real defect is on the reading side, and it is sharper than the one I
+  claimed: three places still read this column — `HifzScoringService`'s absent
+  check, `ListHifzSessionRecordsAction`, and the dean dashboard's **Absent
+  Today** card, which is therefore **permanently 0**.
+
+  Not fixed here: pointing those reads at the live source is Qur'an **A.4b**,
+  which this document already gates on an operator confirming the dual-write.
+  Doing it now would be running a gate that has not run.
+
+  How it was caught: the finding said late and excused were unwritable, and a
+  grep for `attendance_status` immediately turned up
+  `in:present,late,absent,excused` in two validators. That looked like the gate
+  producing a false positive, and chasing *that* is what showed both validators
+  belong to a different table — and that this one has no writer at all. **The
+  gate was right and my sentence about it was wrong**, which is a distinction
+  worth keeping: a check that reports a true fact you then describe carelessly
+  is still a check that worked.
+- **`quizzes`** — `closed`, `archived`; **`quiz_attempts`** — `graded`.
+- **`hifz_assignments`** — `completed`, `missed`, `cancelled`;
+  **`hifz_sessions`** — `completed`, `reviewed`; **`hifz_enrollments`** —
+  `paused`, `transferred` (OWNER_ACTIONS item 15).
+- **`registration_flows`** — `completed`. A flow is started and abandoned;
+  nothing marks one finished. The `resume` link (OWNER_ACTIONS item 14) reads
+  this table.
+- **`assignments`** — `closed`; **`assignment_submissions`** — `returned`; the
+  legacy module behind #184's dead code.
+- **`recitation_practices`** — `needs_revision`.
+
+**None of these is fixed here, and the gate does not pretend otherwise.** Each
+is a missing path, some of them a screen's worth of work and some of them a
+product decision; what changes today is that they are written down, counted,
+and cannot grow in silence.
+
+Full suite **1946 passed**.
+
 ## 5dp. A halaqa kept generating work for a child who had left (2026-09-14)
 
 Third pass of the same audit, and the **third** status column today whose

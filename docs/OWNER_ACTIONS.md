@@ -239,8 +239,25 @@ correct.
 And then **#27**, the same shape a third time: a hifz enrolment could not end
 either, so a withdrawn pupil kept being given halaqa work every day and kept
 being counted. Three status columns in one afternoon whose non-default values
-no code path could reach. That is now a pattern rather than three accidents,
-and item 15 below is the piece of it only you can settle.
+no code path could reach. That is now a pattern rather than three accidents, so
+there is a test for it (`StatusValuesAreWritableTest`), and **it found sixteen
+more values across nine other tables that nothing can write** — recorded in
+STATUS §5dq rather than fixed, because several are a screen's worth of work and
+some are decisions.
+
+Two are worth your eye now, whatever you decide about the rest.
+
+**An invoice cannot be cancelled.** It can be drafted, issued and paid, and
+there is no way back.
+
+**The Hifz dean dashboard's "Absent Today" card is permanently 0.** It reads
+`hifz_session_records.attendance_status`, which nothing writes any more: F5
+(ADR-029) moved the live halaqa register to the Qur'an component, which records
+attendance somewhere else. Two other readers have the same problem. The fix is
+the Qur'an **A.4b** switch, which is already waiting on you to confirm the
+dual-write — so this is one more reason to do that, not a new job.
+
+Item 15 below is the piece of the same pattern that only you can settle.
 
 The right reading is: there is nothing left that somebody has already written
 down — which is the point at which item 7 above, walking the real deployment,
