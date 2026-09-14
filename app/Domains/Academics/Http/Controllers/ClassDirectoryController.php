@@ -36,7 +36,9 @@ class ClassDirectoryController extends Controller
             ->where('status', 'active')
             ->value('id');
 
-        $teacherNames = app(ListClassTeacherOptionsAction::class)->execute()->pluck('name', 'id');
+        // Naming, not choosing: a class whose teacher has since left still
+        // needs that teacher's name in the export.
+        $teacherNames = app(ListClassTeacherOptionsAction::class)->everyone()->pluck('name', 'id');
 
         $classes = ClassRoom::query()
             ->when($yearId, fn ($query) => $query->where('academic_year_id', $yearId))
@@ -67,13 +69,20 @@ class ClassDirectoryController extends Controller
             ->where('status', 'active')
             ->value('id');
 
-        $teachers = app(ListClassTeacherOptionsAction::class)->execute();
-        $teacherNames = $teachers->pluck('name', 'id');
-
         $classes = ClassRoom::query()
             ->when($yearId, fn ($query) => $query->where('academic_year_id', $yearId))
             ->orderBy('name')
-            ->get()
+            ->get();
+
+        // Names for every class on screen, including teachers who have left —
+        // and a picker that offers the ones who have not, plus whoever each
+        // class already has, so opening the page cannot silently drop an
+        // assignment on the next save.
+        $options = app(ListClassTeacherOptionsAction::class);
+        $teacherNames = $options->everyone()->pluck('name', 'id');
+        $teachers = $options->assignable($classes->pluck('class_teacher_id'));
+
+        $classes = $classes
             ->map(fn (ClassRoom $class) => [
                 'id' => $class->id,
                 'name' => $class->name,
@@ -151,9 +160,13 @@ class ClassDirectoryController extends Controller
     public function show(Request $request, ClassRoom $classRoom): Response
     {
         $query = trim($request->string('q')->toString());
-        $teachers = app(ListClassTeacherOptionsAction::class)->execute();
+        $options = app(ListClassTeacherOptionsAction::class);
+        // The picker keeps this class's current teacher whatever became of
+        // them; the name is looked up from the full list so a leaver is still
+        // named rather than blanked.
+        $teachers = $options->assignable([$classRoom->class_teacher_id]);
         $teacher = $classRoom->class_teacher_id
-            ? $teachers->firstWhere('id', $classRoom->class_teacher_id)
+            ? $options->everyone()->firstWhere('id', $classRoom->class_teacher_id)
             : null;
 
         return Inertia::render('Academics/Classes/Show', [

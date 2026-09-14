@@ -1131,6 +1131,38 @@ unless `APP_ENV=production` and `SMS_LIVE` are both explicitly set.
 > > **With this, every enrollment notice in the system is a listener.** §41's
 > > worked example is closed.
 
+### 26. Employment could not be ended anywhere in the product
+
+**Fixed (2026-09-14) — found by audit, never filed.** The teacher half of #25,
+chased on the same reasoning, and larger than the cascade it was looking for.
+
+`staff_profiles.status` and `teachers.status` are two records of the same fact
+and nothing reconciled them — but the real finding is that **no screen changed
+either of them.** `teachers.status` is written once at creation, always
+`'active'`; and `people.staff.update` exists, is routed and validates a status,
+while **no form in the application posted to it**. Found only by trying to end
+an employment in a browser and looking for the control.
+
+So every staff status was `active` for ever, which made **four**
+`where('status', 'active')` filters inert: `ListActiveTeachersAction`, the
+meeting-slot picker, the teacher-contact list, and the staff counter from #22.
+Correct code guarding a column that could not move.
+
+**This also corrects #22's own claim** that the Teachers tile "included staff
+whose employment had ended" — true of the query, false of the data. The count
+is right either way; the justification was overstated, and this is what makes
+it true.
+
+Shipped: `SyncTeacherRowStatusAction` (only `ended` deactivates; `on_leave`
+deliberately does not, and that is a test); the **missing employment form** on
+the staff profile page, which the controller had been feeding
+`employmentTypes` and `statuses` for all along; and
+`ListClassTeacherOptionsAction` split into `everyone()` for naming and
+`assignable($keep)` for choosing, where `$keep` stops a `<select>` that lacks
+its own current value from silently clearing an assignment on the next save.
+
+See STATUS §5do.
+
 ### 25. A pupil who left the school stayed on the class register
 
 **Fixed (2026-09-14) — found by audit, never filed.** It is numbered here so
