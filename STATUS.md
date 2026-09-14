@@ -20,6 +20,23 @@ Hifz untouched until Phase F. Deploy 3 not executed. Track B leftovers B1–B4 a
 
 ## 2. Phase / slice table
 
+**Browser evidence, 2026-09-14.** All four smoke sweeps ran green in one
+session for the first time — they had been unusable in this environment until
+the hermetic fix (§5dj):
+
+| sweep | question it answers | result |
+|---|---|---|
+| `page-errors.mjs` | does every screen render without throwing, for every role? | **265 routes × 6 roles, 1,590 loads, 0 runtime and 0 server errors** — twice, on two independent runs |
+| `sweep.mjs` | does each screen **show** the row planted for it? | **20/20** |
+| `create-sweep.mjs` | can a person **create** a record through the form? | **6/6**, each surviving a reload |
+| `own-data.mjs` | does a family see their own records and nobody else's? | every pair correct; report card, message thread and payslip each 200 for the owner and 403 for a stranger |
+
+Read the columns below against that. `sweep.mjs` raises a row from UNVERIFIED
+to *seen in a browser*; only `create-sweep.mjs` reaches the USABLE bar of "a
+person completed the task", and it covers six screens. **Rows not named by a
+sweep stay UNVERIFIED** — the sweeps cover the twenty screens
+`SmokeMarkerSeeder` plants for, not the whole app.
+
 Legend — **CODE:** implementation in repo (models/migrations/actions/routes/pages). **TESTED:** Pest coverage of the slice’s behaviour, not merely that a class constructs. **USABLE:** a person can complete the task in a browser (or staging), with a citation; otherwise UNVERIFIED.
 
 | Slice | CODE | TESTED | USABLE | Notes / known holes |
@@ -30,7 +47,7 @@ Legend — **CODE:** implementation in repo (models/migrations/actions/routes/pa
 | S1.1b backfill | Yes. `UnifyStudentsAction`, `students:verify-unification`. | `UnifiedStudentBackfillTest`, representative seeder test. | Staging verify **red** (collisions + orphan guardians, archive 2026-08-25). Representative gate **green** (ADR-021). | `--backfill` refused on `APP_ENV=production`. |
 | S1.1c read switch | Yes. Dual-write still on. | `UnifiedStudentReadSwitchTest`. | UNVERIFIED in a browser. Staging enrollments with null `student()` noted in archive. | Posted enrollment id still legacy RS. |
 | S1.2 custom fields | Yes. Admin CRUD + student profile fields. Directory create/edit added. | `CustomFieldsTest`, `StudentDirectoryCrudTest`. | Walked **create** (#95): Add student → show → class picker. | Course-only nullables supported. Status only via `ChangeStudentStatusAction`. |
-| S1.3 consent | Yes. Ledger + profile tab. | `ConsentTest`. | UNVERIFIED. | |
+| S1.3 consent | Yes. Ledger + profile tab. | `ConsentTest`. | Shows its seeded row in a browser (`sweep.mjs`, 2026-09-14). | |
 | S1.4 staff profiles | Yes. Inertia `people.staff.*`. | `StaffProfileTest`. | Walked **locally** 2026-09-13: screen renders, but no row was planted for it — a load, not a data check (§5cm). | `teachers` row ≠ Spatie role `teacher` (mitigated for seed: `EnsureTeacherRowAction` in `UserSeeder`, #87). |
 | S1.5 years/terms/classes | Yes. Years/classes/roster/promotion. | `AcademicYearBackboneTest`, `YearClassUniquenessTest`. | Walked **partial** (R1 S1, R2 S1, R3 S1). Create unique year/class **validated** (#91); first R3 pass hid errors, follow-up paints `errors.name`. Year seeders `firstOrCreate` by name. Class teacher can be assigned on an existing class (show page). Picker identity_key **omits class** (#90) **and student number** (blank / PIL-01 vs PIL-99 still flag). | `ActivateAcademicYearAction` will not close the current year for you. |
 | S2.0 unify-verify gate | Yes. `scripts/pull-deploy-test.sh`. | `PullDeployTestScriptTest`. | Staging evidence **not pasted**. First #15 deploy used pre-pull script (archive). | Operator-only to confirm a gated deploy log. |
@@ -73,7 +90,7 @@ Legend — **CODE:** implementation in repo (models/migrations/actions/routes/pa
 | S3.6 report cards | Yes. Templates, queued HTML via `HtmlDocumentRenderer`. | `ReportCardsTest` Content-Type HTML; ADR-012 HTML decision. | Walked **honest HTML** (R3 S5) plus ADR-012 citation (#97). Queue worker required. | HTML is the supported output (ADR-012 amended). |
 | S3.7 awards / docs | Yes. HTML certificates/ID cards. | `AwardsDocumentsTest`. | Walked **locally** 2026-09-13: screen shows a row planted for it (§5cm). | Also HTML, not PDF (`AwardController`). |
 | S4.1 finance schema | Yes. Year/term on invoices, receipts. | `FinanceSchemaTest`. | UNVERIFIED as a user task. | |
-| S4.2 fee structures | Yes. | `FeeStructureTest`. | UNVERIFIED (structure was **seeded** for the walk). | Default seed now includes pilot fees via `PilotRehearsalSeeder` (#87). |
+| S4.2 fee structures | Yes. | `FeeStructureTest`. | Shows its seeded row in a browser (`sweep.mjs`, 2026-09-14) — still seeded rather than created by hand. | Default seed now includes pilot fees via `PilotRehearsalSeeder` (#87). |
 | S4.3 invoice generation | Yes. Generate/issue/arrears. | `InvoiceGenerationTest`. | Walked **ok** on Pilot year (R3 S6): admin lists **all statuses** (`draftsOnly=false`, #91); sent rows visible. Period defaults from year’s term (`ResolveDefaultTermPeriodAction`). Issue SMS is **log** outside production (#86). | Extra year tab can still look empty if that year has no invoices. |
 | S4.4 payment plans | Yes. | `PaymentPlanTest`. | Walked **locally** 2026-09-13: screen renders, but no row was planted for it — a load, not a data check (§5cm). | |
 | S4.5 adjustments | Yes. | `FeeAdjustmentTest`. | Walked **locally** 2026-09-13: screen shows a row planted for it (§5cm). | |
@@ -4277,6 +4294,48 @@ walk returned a header row and nothing else for circulation, student work and
 pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
+
+## 5dk. All four sweeps green, and one document for the owner (2026-09-14)
+
+With the sweeps runnable (§5dj), the other three were run for the first time in
+the same session as the first:
+
+| sweep | question | result |
+|---|---|---|
+| `page-errors.mjs` | does every screen render without throwing, for every role? | 265 routes × 6 roles, **1,590 loads, 0 runtime and 0 server errors** — on two independent runs |
+| `sweep.mjs` | does each screen **show** its planted row? | **20/20** |
+| `create-sweep.mjs` | can a person **create** one through the form? | **6/6**, each surviving a reload |
+| `own-data.mjs` | own records only? | every pair correct — report card, thread and payslip each 200 for the owner, 403 for a stranger |
+
+That is the whole browser-evidence set the definition of done asks for, as far
+as the seeded markers reach. **It does not reach the whole app**: twenty screens
+are planted for, six have their create path exercised, and the rest of §2's
+UNVERIFIED rows stay UNVERIFIED because nothing has actually walked them. Two
+rows moved (S1.3 consent, S4.2 fee structures) and the legend now says which
+sweep supports which claim.
+
+The privacy result is worth its own line, because it is the one that was
+vacuous when first written (§5cl): every pair now passes **both** halves — the
+owner gets 200 and the stranger 403 — so the refusals mean something.
+
+### `docs/OWNER_ACTIONS.md`
+
+Everything blocked on the owner or the server, collected into one document.
+These items were spread across `KNOWN_ISSUES.md`, `STATUS.md` and the top-five
+list, **which is why the same blocker could be written in three places and
+finished in none.**
+
+Ordered by dependency in Part 1 — staging login first, because nothing else on
+that host can be judged until somebody can sign in — and decisions in Part 2,
+each phrased so "not yet" is a legible answer. Each item says what breaks if it
+is skipped: no webhook secret means **no payment confirms**; no queue worker
+means report cards stay draft forever and the button looks broken.
+
+Two things in it are new today rather than carried over: staging must be
+retested on **both** login paths, since the SMS-contract defect (§5cy) means OTP
+login could not have worked there either; and the first real BML transaction
+should be watched, because return-URL finalisation now declines a provider
+result that does not name its payment (§5cu).
 
 ## 5dj. The smoke sweeps were seven times slower than they needed to be (2026-09-14)
 
