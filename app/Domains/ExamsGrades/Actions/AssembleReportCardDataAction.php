@@ -15,14 +15,46 @@ use Illuminate\Support\Facades\DB;
 class AssembleReportCardDataAction
 {
     /**
+     * Per-run memo for the rows that are the same on every card.
+     *
+     * A generation run is one class and one term, so `terms`, `academic_years`,
+     * `classes` and the template are **identical for every student in it** and
+     * were being fetched again for each one. A class of 30 asked for the same
+     * four rows 120 times.
+     *
+     * Keyed by id rather than cached flat, so an instance reused across two
+     * classes — which `renderOne` allows — cannot serve one class's row to the
+     * other. `GenerateReportCardsAction` resolves this action once for a run;
+     * a single-card render through the queue job gets a fresh instance and
+     * loses nothing.
+     *
+     * @var array<string, object|null>
+     */
+    private array $shared = [];
+
+    /**
      * @return array<string, mixed>
      */
     public function execute(ReportCard $card, string $locale = 'en'): array
     {
-        $template = $card->template ?? ReportCardTemplate::query()->findOrFail($card->template_id);
-        $term = DB::table('terms')->where('id', $card->term_id)->first();
-        $year = $term ? DB::table('academic_years')->where('id', $term->academic_year_id)->first() : null;
-        $class = DB::table('classes')->where('id', $card->class_id)->first();
+        $template = $card->template ?? $this->remember(
+            'template:'.$card->template_id,
+            fn () => ReportCardTemplate::query()->findOrFail($card->template_id),
+        );
+        $term = $this->remember(
+            'term:'.$card->term_id,
+            fn () => DB::table('terms')->where('id', $card->term_id)->first(),
+        );
+        $year = $term ? $this->remember(
+            'year:'.$term->academic_year_id,
+            fn () => DB::table('academic_years')->where('id', $term->academic_year_id)->first(),
+        ) : null;
+        $class = $this->remember(
+            'class:'.$card->class_id,
+            fn () => DB::table('classes')->where('id', $card->class_id)->first(),
+        );
+
+        // Deliberately not memoised: one row per student is the whole point.
         $student = DB::table('students')->where('id', $card->student_id)->first();
 
         $grades = TermGrade::query()
@@ -138,5 +170,17 @@ class AssembleReportCardDataAction
             'ar' => $comment->comment_arabic ?: $comment->comment,
             default => $comment->comment,
         };
+    }
+
+    /**
+     * Fetch once per instance, per id.
+     */
+    private function remember(string $key, callable $load): mixed
+    {
+        if (! array_key_exists($key, $this->shared)) {
+            $this->shared[$key] = $load();
+        }
+
+        return $this->shared[$key];
     }
 }

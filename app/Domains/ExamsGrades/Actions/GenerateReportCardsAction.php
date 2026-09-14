@@ -15,6 +15,13 @@ use Illuminate\Validation\ValidationException;
 class GenerateReportCardsAction
 {
     /**
+     * Held for the life of this action so the assembler's per-run memo of the
+     * term, year, class and template survives the loop. A queued single-card
+     * render gets a fresh instance and loses nothing by it.
+     */
+    private ?AssembleReportCardDataAction $assembler = null;
+
+    /**
      * @return Collection<int, ReportCard>
      */
     public function execute(int $classId, int $termId, ?int $templateId = null, string $locale = 'en', ?int $actorId = null, bool $queue = true): Collection
@@ -36,12 +43,23 @@ class GenerateReportCardsAction
             })
             ->pluck('student_id');
 
+        // One query for the whole class instead of one per student.
+        //
+        // This loop ran `where(student_id)->first()` per student and then
+        // `updateOrCreate`, which is a second select and a write each. A class
+        // of 30 was ~90 queries and a whole school in one sitting ran to
+        // thousands — on the operation the operator notes already single out
+        // as needing a queue worker, which is a reason to make it cheaper
+        // rather than to leave it.
+        $existingByStudent = ReportCard::query()
+            ->where('term_id', $termId)
+            ->whereIn('student_id', $studentIds)
+            ->get()
+            ->keyBy('student_id');
+
         $cards = collect();
         foreach ($studentIds as $studentId) {
-            $existing = ReportCard::query()
-                ->where('student_id', $studentId)
-                ->where('term_id', $termId)
-                ->first();
+            $existing = $existingByStudent->get($studentId);
 
             if ($existing?->status === ReportCardStatus::Published) {
                 continue;
@@ -77,7 +95,7 @@ class GenerateReportCardsAction
             throw ValidationException::withMessages(['status' => 'Published report cards cannot be regenerated.']);
         }
 
-        $payload = app(AssembleReportCardDataAction::class)->execute($card, $locale);
+        $payload = ($this->assembler ??= app(AssembleReportCardDataAction::class))->execute($card, $locale);
         $html = app(DocumentRendererInterface::class)->render('report-card', $payload);
         $document = app(StoreGeneratedDocumentAction::class)->execute(
             $card->getMorphClass(),

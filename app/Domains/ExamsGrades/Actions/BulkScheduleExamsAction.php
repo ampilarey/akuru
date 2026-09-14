@@ -28,17 +28,22 @@ class BulkScheduleExamsAction
             throw ValidationException::withMessages(['name' => 'Name is required.']);
         }
 
+        // One query for every subject named, rather than one per subject.
+        $names = DB::table('subjects')
+            ->whereIn('id', array_map('intval', $subjectIds))
+            ->pluck('name', 'id');
+
         $created = [];
         foreach ($subjectIds as $subjectId) {
-            $subject = DB::table('subjects')->where('id', (int) $subjectId)->first();
-            if ($subject === null) {
+            $subjectName = $names[(int) $subjectId] ?? null;
+            if ($subjectName === null) {
                 throw ValidationException::withMessages(['subject_ids' => "Unknown subject {$subjectId}."]);
             }
 
             $created[] = app(SaveExamAction::class)->execute([
                 ...$data,
                 'subject_id' => (int) $subjectId,
-                'name' => $name.' — '.$subject->name,
+                'name' => $name.' — '.$subjectName,
             ], null, $actorId);
         }
 
