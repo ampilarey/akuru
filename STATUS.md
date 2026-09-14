@@ -4278,6 +4278,56 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5di. Measuring the fix before believing it (2026-09-14)
+
+Report card generation ran a `where(student_id)->first()` per student and then
+`updateOrCreate`. Replacing that with one keyed lookup for the class is the
+obvious fix, and I wrote it, and wrote a query-count test, and the test passed.
+
+**Then I measured it, and it was nearly worthless.** 25.75 queries per student
+before, 24.75 after: the fix saved **one query in twenty-five**, and my test's
+threshold of 40 would have passed either way. A green test asserting a property
+the code did not have.
+
+The dominant cost was elsewhere — `AssembleReportCardDataAction` fetches the
+**term, the academic year, the class and the template for every card**. A
+generation run is one class and one term, so those four rows are identical on
+every card in it: a class of 30 asked for the same four rows 120 times.
+
+Memoised per run, keyed by id so an instance reused across two classes cannot
+serve one class's row to the other, with the assembler held for the life of the
+generating action. A queued single-card render gets a fresh instance and loses
+nothing.
+
+**25.75 → 21.75 queries per student.** Four saved, about 16%; for a 500-pupil
+school roughly 2,000 queries a run. This is the operation the operator notes
+already single out as needing a queue worker, which is a reason to make it
+cheaper rather than to stop looking at it.
+
+What remains at 21.75 is genuinely per-student — student row, grades, subjects,
+competencies, comments, behaviour, attendance, awards — and is not pretended
+otherwise.
+
+### The threshold is measured, not guessed
+
+It sits at **24**: below the 25.75 the old code cost, above the 21.75 the new
+one costs. Verified by reverting both fixes and watching it fail with the real
+number in its message. A guard set above the value it guards against proves
+nothing, which is what my first draft did at 40 — and the only reason I noticed
+is that I printed the numbers instead of trusting the tick.
+
+Also fixed in passing: `BulkScheduleExamsAction` fetched each subject's name one
+query at a time inside its loop; now one `whereIn` for the lot.
+
+### A git mistake worth recording
+
+Mid-slice I reset this branch to `origin/main` while **#375 was still open on
+it**, and force-pushed — which dropped that PR's only commit and left it
+showing work it did not contain. Recovered by cherry-picking the commit back
+from the reflog. The habit that caused it is rebasing onto main out of reflex
+after every merge; the branch is only safe to reset once the PR riding on it
+has actually merged.
+
 ## 5dh. All 22 parity rows, checked against the code (2026-09-14)
 
 §5dg found the seventeenth wrong row, so the sensible next move was to stop
