@@ -572,6 +572,36 @@ being claimed as its fix. What it does mean is that OTP login on
 staging should retest **both** paths rather than assuming the password symptom
 is the whole story.
 
+### An exams account could read any generated document by id — **fixed (2026-09-14)**
+
+**Severity: P1 — wrong data / privacy.** Found by asking the question
+`PrivateMediaReadersAreScopedTest` asks, on the path that gate cannot see.
+
+`exams.awards.download` bound `{award}` — the award **template** — and then
+read `?document_id=` straight from the query string, ignoring the binding:
+
+    $documentId = $request->integer('document_id');
+    $file = app(ReadGeneratedDocumentAction::class)->execute($documentId);
+
+`exams.manage` is held by teachers and exam staff. Any of them could pass any
+document id and receive its contents: **another class's report cards**, anybody's
+certificates, transfer certificates, ID cards — every generated document in the
+application. The route parameter made it look scoped and scoped nothing.
+
+This is #336's lesson on a second path. That fix pinned every caller of
+`ReadPrivateMediaAction`; documents go through `ReadGeneratedDocumentAction`
+and had no equivalent gate, so the same mistake was free to reappear — and had.
+
+**Fixed** — the route binds the issued award (`StudentAward`, which is what
+actually carries `certificate_document_id`; the old binding could never have
+helped, since an `Award` is a template and holds no document) and the document
+is read from that record. Five of the six callers were already doing this.
+`PrivateMediaReadersAreScopedTest` now pins the document path too.
+
+**Nothing in the frontend ever linked to this route**, which is presumably why
+it lasted: it was reachable only by typing it. That also made the fix safe —
+no screen could break.
+
 ## Top five (remaining)
 
 1. **Staging staff login** — seed passwords 302 back to login; no SSH from this environment. Blocks any judgement that `test.akuru.edu.mv` is a school.

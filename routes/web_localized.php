@@ -939,7 +939,7 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::post('awards/issue', [AwardController::class, 'issue'])->name('exams.awards.issue');
         Route::get('awards/id-card', [AwardController::class, 'idCard'])->name('exams.awards.id-card');
         Route::get('awards/transfer', [AwardController::class, 'transfer'])->name('exams.awards.transfer');
-        Route::get('awards/{award}/download', [AwardController::class, 'download'])->name('exams.awards.download');
+        Route::get('awards/issued/{studentAward}/download', [AwardController::class, 'download'])->name('exams.awards.download')->whereNumber('studentAward');
     });
 
     Route::prefix('finance')->middleware(['role:super_admin|admin|headmaster'])->group(function () {

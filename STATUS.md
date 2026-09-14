@@ -4278,6 +4278,47 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5dc. The same question, on the path the gate could not see (2026-09-14)
+
+Turning from writes to reads: who can see whose records.
+`PrivateMediaReadersAreScopedTest` already asks this well for private media —
+recitations, work photographs, Library originals — and its header carries the
+structural lesson from #336:
+
+> *the one that legitimately takes an id straight from the route ... is exactly
+> why it needs an allow-list and why it is the one that went wrong.*
+
+It pins callers of `ReadPrivateMediaAction`. **Generated documents go through
+`ReadGeneratedDocumentAction`** — report cards, certificates, transfer
+certificates, ID cards — and had no equivalent gate. So the same mistake was
+free to reappear there, and had.
+
+`AwardController::download` bound `{award}` and then read `?document_id=`
+straight from the query string, ignoring the binding entirely. `exams.manage`
+is held by teachers and exam staff; any of them could pass any document id and
+get its contents — **another class's report cards included**. The route
+parameter made it look scoped and scoped nothing.
+
+The binding could never have helped even in principle: a certificate belongs to
+a **`StudentAward`** (the issue), and `Award` is the template, which holds no
+document at all. The route was bound to the wrong noun.
+
+Fixed by binding the issued award and reading `certificate_document_id` off it
+— which is what the other five callers already did — and the gate now pins the
+document path as well as the media path.
+
+**Nothing in the frontend ever linked to this route.** That is presumably why
+it lasted, and it also made the fix safe: no screen could break. Two of the
+three new cases fail against the old code.
+
+### A fixture bug worth recording
+
+The first run had `Storage::fake('local')` inside the helper that creates a
+document, so **each call wiped the file the previous call had made** and the
+action returned empty contents — the "serves only its own certificate" case
+failed for a reason that had nothing to do with the app. Faked once instead.
+Fifth time this session that the probe, not the system, was the broken thing.
+
 ## 5db. Every session the app starts, and what was proved first (2026-09-14)
 
 The generalisation of §5cz and §5da. Both were `Auth::login()` calls whose

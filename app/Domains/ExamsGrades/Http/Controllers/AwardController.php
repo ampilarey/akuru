@@ -9,6 +9,7 @@ use App\Domains\ExamsGrades\Actions\ListAwardsAction;
 use App\Domains\ExamsGrades\Actions\ListExamCatalogAction;
 use App\Domains\ExamsGrades\Actions\SaveAwardAction;
 use App\Domains\ExamsGrades\Models\Award;
+use App\Domains\ExamsGrades\Models\StudentAward;
 use App\Domains\Media\Actions\ReadGeneratedDocumentAction;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
@@ -92,16 +93,36 @@ class AwardController extends Controller
         ]);
     }
 
-    public function download(Request $request, Award $award): HttpResponse
+    /**
+     * One issued award's certificate.
+     *
+     * This used to bind `{award}` — the award *template* — and then read
+     * `?document_id=` **straight from the query string**, ignoring the binding
+     * entirely. `exams.manage` is held by teachers and exam staff, so any of
+     * them could pass any document id and receive its contents: another
+     * class's report cards, anybody's certificates, every generated document
+     * in the application. The route parameter made it look scoped and scoped
+     * nothing.
+     *
+     * That is the shape `PrivateMediaReadersAreScopedTest` was written about
+     * after #336 — *"the one that legitimately takes an id straight from the
+     * route ... is exactly why it needs an allow-list and why it is the one
+     * that went wrong"* — on the documents path, which that gate cannot see.
+     *
+     * The document now comes from the record that owns it. A certificate
+     * belongs to a `StudentAward` (the issue), not to an `Award` (the
+     * template), which is also why the old binding could never have helped.
+     */
+    public function download(Request $request, StudentAward $studentAward): HttpResponse
     {
         abort_unless($request->user()?->can('exams.manage'), 403);
-        $documentId = $request->integer('document_id');
-        abort_unless($documentId, 404);
-        $file = app(ReadGeneratedDocumentAction::class)->execute($documentId);
+        abort_unless($studentAward->certificate_document_id, 404);
+
+        $file = app(ReadGeneratedDocumentAction::class)->execute((int) $studentAward->certificate_document_id);
 
         return response($file['contents'], 200, [
             'Content-Type' => $file['mime'],
-            'Content-Disposition' => 'inline; filename="award-'.$award->id.'.html"',
+            'Content-Disposition' => 'inline; filename="award-'.$studentAward->id.'.html"',
         ]);
     }
 
