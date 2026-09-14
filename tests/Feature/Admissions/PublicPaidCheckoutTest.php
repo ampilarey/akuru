@@ -36,14 +36,35 @@ function fakeLegacyBmlProvider(): void
             );
         }
 
-        public function queryStatus(string $merchantReference): ?PaymentVerificationResult
+        /**
+         * This used to answer `merchantReference: $reference` — the question
+         * repeated back as the answer, which is exactly what the real
+         * `BmlPaymentProvider` did and exactly why a payment could be
+         * confirmed by replaying somebody else's transaction id. A fake that
+         * always agrees cannot express the disagreement the bug lived in.
+         *
+         * A real gateway is asked about a transaction and says which merchant
+         * reference that transaction belongs to, so this looks it up the same
+         * way: by the payment actually holding the id.
+         */
+        public function queryStatus(string $reference): ?PaymentVerificationResult
         {
+            $belongsTo = Payment::query()
+                ->where('bml_transaction_id', $reference)
+                ->orWhere('merchant_reference', $reference)
+                ->orWhere('local_id', $reference)
+                ->value('merchant_reference');
+
+            if ($belongsTo === null) {
+                return null;
+            }
+
             return new PaymentVerificationResult(
                 verified: true,
-                merchantReference: $merchantReference,
+                merchantReference: $belongsTo,
                 providerReference: 'BML-P42',
                 status: 'completed',
-                rawPayload: [],
+                rawPayload: ['localId' => $belongsTo, 'state' => 'completed'],
                 isConfirmed: true,
             );
         }

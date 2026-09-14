@@ -116,6 +116,30 @@ class PaymentService
                 return $payment;
             }
 
+            // **Does this result describe this payment?**
+            //
+            // `$queryRef` above is `bml_transaction_id`, which can be set from
+            // BML's redirect query string — a public, unauthenticated GET.
+            // Before this check, an abandoned pending payment could be
+            // confirmed by replaying the transaction id of any completed BML
+            // transaction, including one of the payer's own earlier purchases:
+            // buy one cheap thing, then confirm everything afterwards for free.
+            //
+            // Rule 12 says access depends on webhook confirmation and never on
+            // the return URL. The return URL was not setting the status
+            // directly, but it was choosing which transaction the server-side
+            // check looked at, which is the same thing with one step in it.
+            if (! $this->resultDescribes($payment, $result)) {
+                Log::warning('PaymentService::finalizeByReference – provider result is for another payment, refusing', [
+                    'payment_id' => $payment->id,
+                    'expected' => $payment->merchant_reference,
+                    'queried' => $queryRef,
+                    'returned' => $result->merchantReference,
+                ]);
+
+                return $payment;
+            }
+
             $providerStatus = strtolower((string) ($result->status ?? ''));
             $isSuccess = $result->isPaymentSuccess();
 
@@ -163,6 +187,32 @@ class PaymentService
 
             return $payment->fresh();
         });
+    }
+
+    /**
+     * Is a provider result about this payment, and not another one?
+     *
+     * Compared against both `merchant_reference` and `local_id`, because
+     * `finalizeByReference` accepts either as the lookup key and BML's payload
+     * carries whichever we sent at initiation.
+     *
+     * A result that names **no** merchant reference is refused. That is the
+     * cautious direction and it is also the shape of the bug this closes: the
+     * field used to be whatever we passed in, so "missing" and "matching" were
+     * indistinguishable. A provider that genuinely cannot tell us which
+     * payment it is answering about cannot be allowed to confirm one; the
+     * signed webhook remains the path that grants access.
+     */
+    private function resultDescribes(Payment $payment, PaymentVerificationResult $result): bool
+    {
+        $returned = trim((string) $result->merchantReference);
+
+        if ($returned === '') {
+            return false;
+        }
+
+        return hash_equals((string) $payment->merchant_reference, $returned)
+            || hash_equals((string) $payment->local_id, $returned);
     }
 
     public function handleCallback(Request $request): void
