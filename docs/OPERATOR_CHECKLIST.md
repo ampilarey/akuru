@@ -53,9 +53,10 @@ automated** by the `library`, `peer-review` and `earnings` walks — applying,
 approving, the role grant, drafting, a changes-requested round trip,
 publication, the research gate refusing and then being satisfied, a wallet sale
 reaching the writer at the 70/30 split, and the payouts gate explaining itself.
-**§1f's money surfaces are automated too** — a manual payment activating an
-enrolment with no gateway involved, a refund to wallet, and both of its
-consequences. The device work (§4) and §1d, §1e, §1g are still by hand.
+**§1f is automated too, all four lines** — a manual payment activating an
+enrolment with no gateway involved, a refund to wallet, both of its
+consequences, and an offering price override that a family can see, including
+`0` behaving as free. The device work (§4) and §1d, §1e, §1g are still by hand.
 A walk that goes green first time deserves more suspicion than one that does
 not (STATUS §5eb).
 
@@ -144,11 +145,14 @@ sale.
 
 ### 1f. Money surfaces (Phase 4 close-out)
 
-**Partly automated as of 2026-09-15** — `scripts/smoke/money.mjs` walks the
-first three lines, 14/14: a manual payment activating an enrolment **with no
-gateway involved**, a refund to wallet, and both consequences measured rather
-than assumed — the enrolment reads *Cancelled / Refunded* and the family's
-wallet goes `500 → 750`. The **price override** line is still by hand.
+**Automated as of 2026-09-15** — `scripts/smoke/money.mjs` walks all four
+lines, 21/21: a manual payment activating an enrolment **with no gateway
+involved**, a refund to wallet, and both consequences measured rather than
+assumed — the enrolment reads *Cancelled / Refunded* and the family's wallet
+goes `500 → 750`. The price override is set through the admin form and read off
+the family's own catalog row, and `0` is proved free twice over — no price on
+the listing, and an enrolment that opens with no payment behind it. That last
+step is what found #33 (a refunded family could never enrol again).
 
 - [ ] Admin payments screen: refund a confirmed payment to **wallet**;
       expect enrollment cancelled, discount released, wallet credited,

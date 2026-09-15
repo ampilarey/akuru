@@ -657,6 +657,46 @@ class SmokeMarkerSeeder extends Seeder
             'created_by_user_id' => $admin?->id,
             'created_at' => now(), 'updated_at' => now(),
         ]);
+
+        // §1f's last line needs something to set an override *on*.
+        //
+        // Found the way the product finds it — the **lowest-id self-learning
+        // offering of this course**, which is exactly what
+        // `DefaultSelfLearningOfferingAction` reads — rather than by slug.
+        //
+        // Keying on the slug looked obvious and was wrong: saving an offering
+        // through the admin form regenerates the slug from the title, so the
+        // walk's own first save renamed the row out from under the key. The
+        // next seed then matched nothing, inserted a *second* offering, and the
+        // catalog went on reading the first one — still carrying the previous
+        // run's `0` override. The walk reported a course advertised as free
+        // that the seeder had just reset to 250, and the product was right
+        // both times. A fixture must be keyed on something the walk cannot
+        // change.
+        $offeringId = (int) DB::table('course_offerings')
+            ->where('course_id', $courseId)
+            ->where('delivery_mode', 'self_learning')
+            ->orderBy('id')
+            ->value('id');
+
+        $offering = [
+            'title' => 'SMOKE-Payable-Offering',
+            'slug' => 'smoke-payable-offering',
+            'delivery_mode' => 'self_learning',
+            'status' => 'open',
+            'pin_mode' => 'latest',
+            // Reset, not defaulted: the walk leaves an override of 0 behind,
+            // and the first thing it asserts next run is the un-overridden
+            // price.
+            'price_override' => null,
+            'updated_at' => now(),
+        ];
+
+        if ($offeringId > 0) {
+            DB::table('course_offerings')->where('id', $offeringId)->update($offering);
+        } else {
+            DB::table('course_offerings')->insert($offering + ['course_id' => $courseId, 'created_at' => now()]);
+        }
     }
 
     private function recruitment(): void

@@ -4304,6 +4304,79 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5ei. A refunded family could never enrol again (2026-09-15)
+
+§1f's last unautomated line was the offering price override. Walking it needed
+the seeded student unenrolled, which the refund in §5eh already does — so the
+walk clicked Enroll on a course the office had just set to free, and got a
+**500**.
+
+```
+SQLSTATE[23000]: Integrity constraint violation: 1062
+Duplicate entry '1-12-0' for key 'course_enrollments_student_course_term_unique'
+```
+
+**Two halves, each plausible alone.** `course_enrollments` has carried a unique
+key on `(student_id, course_id, IFNULL(term_id,0))` since the table was made.
+Both enrollment Actions decide who is already enrolled by a *different* rule —
+`whereNotIn('status', ['rejected','cancelled'])` — and insert when that finds
+nothing. The guard's generosity is deliberate and right: somebody refunded, or
+withdrawn, or rejected should be able to come back. The key does not share the
+opinion — `cancelled` was not even in the original migration's status enum — and
+neither does the soft-delete column, which keeps the row and the key with it.
+
+**Reachable three ways, none of them exotic:** a family is refunded and enrols
+again; the office removes a club member and adds them back next term; an
+application is rejected and the student applies again. Each is a white error
+screen today.
+
+**The fix is below all of them.** `CreateOrReviveEnrollmentAction` owns identity
+on the database's own key (rule 11) and both Actions go through it: no row →
+create; a rejected, cancelled or soft-deleted row → revive it; anything else →
+hand back what is there. No migration, so rule 9 is not engaged. A revived
+enrollment keeps its `progress_percentage`, because `student_lesson_progress` is
+keyed by student and lesson and survives a cancellation untouched — zeroing the
+rollup would have the catalog say 0% over lessons that are visibly finished.
+ADR-035 records the decision, including what it costs: an enrollment row now
+says what is true now, not what happened, and there is no enrollment-event log.
+
+**Five tests, and the revert-check that earned them.** Three reproduce the 500
+before the fix. The soft-delete case was written on a hypothesis, so
+`withTrashed()` was commented out and that test alone went red — the other four
+stayed green.
+
+**Found by a walk, not by a test.** `SelfLearningEnrollmentTest` has covered
+this Action since Phase 4 and enrols twice in a row; it never cancelled in
+between. The walk did, because a refund is what comes before a second attempt.
+
+### And the walk was wrong twice on the way
+
+Counted openly, as the rest of §5e does.
+
+- **Two stale reads.** The offering table is an Inertia form: the PUT resolves,
+  props come back, React repaints *after* `networkidle` has gone quiet. Reading
+  the row straight after the click caught the old price twice and reported a
+  save that had plainly worked — the very next step showed the new price on the
+  catalog. Now it polls the row until it agrees.
+- **A fixture keyed on something the walk changes.** The seeder planted the
+  offering by slug. Saving through the admin form regenerates the slug from the
+  title, so the walk's own first save renamed the row out from under the key;
+  the next seed matched nothing, inserted a *second* offering, and the catalog
+  went on reading the first — still carrying the previous run's `0`. The walk
+  reported a course advertised as free that the seeder had just reset to 250,
+  and the product was right both times. It is now found the way
+  `DefaultSelfLearningOfferingAction` finds it: lowest-id self-learning offering
+  of that course. **Run twice back to back, 21/21 both times, one offering.**
+
+**Revert-checked.** Changing `?? null` to `?: null` in
+`ListPublishedCoursesAction` — one character, and the exact mistake that
+collapses "no override" into "an override of zero" — turns the free course back
+into MVR 250 and the walk goes red on it.
+
+§1f is now fully automated. `OPERATOR_CHECKLIST` §1a, §1b, §1c and §1f are all
+covered by section 0; what remains by hand is §1d pronunciation (needs a mic),
+§1e recitation, §1g mobile, and the device work in §4.
+
 ## 5eh. The school can take money without a gateway, and give it back (2026-09-15)
 
 §1f, and the loop that matters most right now. `scripts/smoke/money.mjs`,

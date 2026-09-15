@@ -11,7 +11,10 @@
  *   3. the payment shows as confirmed on the payments screen,
  *   4. the office refunds it to the family's **wallet**,
  *   5. the enrolment is revoked and the money is in the wallet,
- *   6. the refunded filter finds it and the CSV carries the totals.
+ *   6. the refunded filter finds it and the CSV carries the totals,
+ *   7. an offering price override changes what the family is charged — and an
+ *      override of **0** makes the course free rather than falling back to the
+ *      course fee.
  *
  * ## Why steps 4–5 are one question and not two
  *
@@ -262,6 +265,137 @@ if (canRefund) {
         csv.ok() && /refund/i.test(csvBody),
         csv.ok() ? csvBody.split('\n')[0].slice(0, 200) : `HTTP ${csv.status()}`,
     );
+}
+
+// ------------------------------------------- 7. the offering price override
+//
+// §1f's last line, and the only one of its four that was still by hand.
+//
+// The chain has three links and each is separately plausible: the admin form
+// stores `price_override` (SaveCourseOfferingAction), the public listing reads
+// it through `DefaultSelfLearningOfferingAction`, and checkout reads it again
+// through the same action. The one that matters is that `0` is an *override*
+// and not an absent one — `null` means "charge the course fee" and `0.00` means
+// "this offering is free", and a single `?:` anywhere along that chain collapses
+// the two into the same thing and starts charging 250 for something advertised
+// as free.
+//
+// Run after the refund on purpose: the seeded student is enrolled on this course
+// until it is refunded, and an enrolled row shows *Open* instead of a price.
+
+const OFFERING = 'SMOKE-Payable-Offering';
+const OVERRIDE = '99';
+
+// The catalog row for this course, as the family sees it. Scoped to the row
+// carrying the course rather than searched for across the page — "250" appears
+// in several places on a listing, and a page-wide match would pass on somebody
+// else's money.
+const catalogRow = async () => {
+    await payerPage.goto(`${BASE}/en/learn/catalog`, { waitUntil: 'networkidle' });
+    const rows = await payerPage.$$eval('tr', (trs) => trs.map((tr) => tr.innerText.replace(/\s+/g, ' ').trim()));
+    return rows.find((row) => row.includes(COURSE)) ?? '';
+};
+
+const priceOf = (row) => {
+    const match = row.match(/MVR ([\d.]+)/);
+    return match ? Number(match[1]) : null;
+};
+
+const baseline = await catalogRow();
+check(
+    'with no override the catalog charges the course\'s own fee',
+    priceOf(baseline) === Number(AMOUNT),
+    baseline.slice(0, 200),
+);
+
+// Edited, not created. `DefaultSelfLearningOfferingAction` reads the *first*
+// self-learning offering of the course by id, so a walk that made a new one
+// each run would set a price nobody reads — the seeder plants exactly one and
+// resets it to "no override", which is what makes the reading above mean
+// something on the second run as well as the first.
+await staff.goto(`${BASE}/en/catalog/offerings`, { waitUntil: 'networkidle' });
+const offeringRow = staff.locator('tr', { hasText: OFFERING }).first();
+const haveOffering = (await offeringRow.count()) > 0;
+
+check(
+    'the seeded offering is on the catalog screen',
+    haveOffering,
+    haveOffering ? '' : `no row for ${OFFERING} — re-seed: php artisan db:seed --class=SmokeMarkerSeeder`,
+);
+
+const offeringRowText = async () =>
+    (await staff.locator('tr', { hasText: OFFERING }).first().innerText()).replace(/\s+/g, ' ').trim();
+
+/**
+ * The saved price, once the table agrees it was saved.
+ *
+ * This is an Inertia form, so the page never navigates: the PUT resolves, the
+ * props come back and React repaints the row some time after `networkidle` has
+ * already gone quiet. Reading the row straight after the click caught the *old*
+ * value twice and reported a save that had plainly worked — the catalog was
+ * showing the new price on the very next step — as a failure.
+ */
+const setOverride = async (value, expected) => {
+    await staff.goto(`${BASE}/en/catalog/offerings`, { waitUntil: 'networkidle' });
+    await staff.locator('tr', { hasText: OFFERING }).first().locator('button').first().click();
+
+    const field = staff.locator('input[placeholder="Price override (MVR)"]');
+    const form = staff.locator('form').filter({ has: field }).first();
+    await field.fill(value);
+    await form.locator('button[type=submit]').first().click();
+
+    for (let attempt = 0; attempt < 40; attempt += 1) {
+        if (expected.test(await offeringRowText())) {
+            break;
+        }
+        await staff.waitForTimeout(250);
+    }
+
+    return offeringRowText();
+};
+
+if (haveOffering) {
+    const saved = await setOverride(OVERRIDE, new RegExp(`MVR ${OVERRIDE}\\b`));
+
+    check(
+        'an override can be set on the offering',
+        saved.includes(`MVR ${OVERRIDE}`),
+        saved.slice(0, 200),
+    );
+
+    const overridden = await catalogRow();
+    check(
+        'and the public listing charges the override, not the course fee',
+        priceOf(overridden) === Number(OVERRIDE),
+        `${baseline.slice(0, 90)} → ${overridden.slice(0, 90)}`,
+    );
+
+    // The line the whole step exists for. `0` has to survive as a number all the
+    // way to the listing; anywhere it is treated as "empty" the family is
+    // charged the course fee for a free offering.
+    const zeroed = await setOverride('0', /MVR 0\b/);
+    check('an override of 0 saves as 0 rather than clearing', /MVR 0\b/.test(zeroed), zeroed.slice(0, 200));
+
+    const free = await catalogRow();
+    check(
+        'and a 0 override makes the course free, not 250',
+        priceOf(free) === null && /enrol/i.test(free),
+        free.slice(0, 200),
+    );
+
+    // Free on the screen and free at the till are two different claims. This is
+    // the second: the enrolment opens with no payment behind it at all.
+    if (priceOf(free) === null) {
+        await payerPage.locator('tr', { hasText: COURSE }).first().locator('button').first().click();
+        await payerPage.waitForLoadState('networkidle');
+
+        const enrolled = await catalogRow();
+        check(
+            'and enrolling at 0 opens the course with no payment taken',
+            /open/i.test(enrolled) && priceOf(enrolled) === null,
+            enrolled.slice(0, 200),
+        );
+    }
 }
 
 const width = Math.max(...results.map(([step]) => step.length));

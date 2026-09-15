@@ -20,7 +20,9 @@ class EnrollUnifiedStudentInOfferingAction
 
         $legacyId = app(EnsureLegacyStudentForUnifiedAction::class)->execute($unifiedStudentId);
 
-        return CourseEnrollment::query()->create([
+        // Same reason as `EnrollSelfLearningAction`: the guard above lets a
+        // cancelled member be added back, and the unique key does not.
+        return app(CreateOrReviveEnrollmentAction::class)->execute([
             'student_id' => $legacyId,
             'unified_student_id' => $unifiedStudentId,
             'course_id' => $courseId,
