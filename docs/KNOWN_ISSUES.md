@@ -1425,6 +1425,70 @@ listed by `grep -rln 'router\.post' resources/js/Pages/` minus those mentioning
 demonstrated is a guess, and this slice fixes the one with a proven gate behind
 it. STATUS §5ef.
 
+### 33. A refunded family could never enrol again
+
+**Fixed (2026-09-15) — found by walking §1f's price override past a refund.**
+
+`course_enrollments` has carried a unique key on
+`(student_id, course_id, IFNULL(term_id, 0))` since the table was made. Both
+enrolment Actions decide who is already enrolled by a **different** rule —
+`whereNotIn('status', ['rejected', 'cancelled'])` — and insert a new row when
+that finds nothing.
+
+The guard's generosity is deliberate and right: somebody refunded, withdrawn or
+rejected should be able to come back. The key does not share the opinion —
+`cancelled` was not even among the statuses the original migration declared —
+and neither does the soft-delete column, which keeps the row and the key with
+it (SPEC §29). So the insert that follows that decision hits a duplicate key:
+
+```
+SQLSTATE[23000]: Integrity constraint violation: 1062
+Duplicate entry '1-12-0' for key 'course_enrollments_student_course_term_unique'
+```
+
+**Three ordinary paths reach it**, each a white error screen:
+
+- a family is refunded, the listener cancels the enrolment, they enrol again;
+- the office removes a club member and adds them back next term;
+- an application is rejected and the student applies again.
+
+**The same shape as #25, #26, #27 and #31** — configured, enforced, reported on,
+and unreachable — except that here the two halves are code and schema rather
+than screen and server. Each reads as correct alone: the guard as generosity,
+the key as hygiene.
+
+`CreateOrReviveEnrollmentAction` now owns identity on the database's own key
+(rule 11), and both Actions go through it: no row → create; a rejected,
+cancelled or soft-deleted row → revive it; anything else → hand back what is
+there untouched. A revived enrolment keeps its `progress_percentage`, because
+`student_lesson_progress` is keyed by student and lesson and survives a
+cancellation. No migration, so rule 9 is not engaged. ADR-035; STATUS §5ei.
+
+**Why the tests did not have it.** `SelfLearningEnrollmentTest` has enrolled
+twice in a row since Phase 4 — it never cancelled in between, because nothing
+in a test suite refunds anybody first.
+
+---
+
+## Gates that behave well (recorded 2026-09-15)
+
+Walked deliberately, because #32 showed a gate can refuse in total silence and
+the only way to know which kind you have is to try it. Three refusals were
+exercised in the Library track and **all three tell the person what happened**:
+
+- **Payouts closed.** With `LIBRARY_PAYOUTS_ENABLED` off the writer portal does
+  not offer a Request-payout button at all — it explains instead: *"Payouts open
+  soon — earnings keep accruing and stay yours."* Told **before** pressing
+  something, which is better than `OPERATOR_CHECKLIST` §1c asks for.
+- **Empty wallet.** A reader buying a priced item with no balance is refused
+  with *"Insufficient wallet balance"* and nothing half-completes.
+- **Research without a peer review.** Now refuses *and says so* — that one was
+  #32, and it is the reason the other two were checked rather than assumed.
+
+Recorded here so the next person does not re-walk them, and so the contrast
+with #32 is on the record: same codebase, same week, gates that explain and a
+gate that did not.
+
 ---
 
 ## Explicitly not defects

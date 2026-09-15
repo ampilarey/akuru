@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Domains\Academics\Models\AcademicYear;
 use App\Domains\Academics\Models\ClassRoom;
+use App\Domains\Commerce\Actions\CreditWalletAction;
 use App\Domains\Courses\Actions\PublishLessonAction;
 use App\Domains\Courses\Actions\SaveActivityAction;
 use App\Domains\Courses\Actions\SaveContentBlockAction;
@@ -66,6 +67,8 @@ class SmokeMarkerSeeder extends Seeder
         $this->learner($admin);
         $this->recruitment();
         $this->requests($admin);
+        $this->readerWallet();
+        $this->payableEnrolment($admin);
         $this->finance($year, $studentId, $admin);
         $this->consent($studentId, $admin);
         $this->ownData($year, $studentId, $admin);
@@ -547,6 +550,153 @@ class SmokeMarkerSeeder extends Seeder
             'created_by_user_id' => $admin?->id,
             'created_at' => now(), 'updated_at' => now(),
         ]);
+    }
+
+    /**
+     * Money the reader can actually spend.
+     *
+     * L6's earnings only exist behind a **paid** sale, and the only purchase
+     * path that completes without BML is the wallet branch (§43.14) — internal
+     * money, so it grants immediately rather than waiting on a webhook. With
+     * `BML_WEBHOOK_SECRET` unset, which is the state of every environment right
+     * now (`OWNER_ACTIONS` item 2), a wallet balance is the only way anybody can
+     * buy anything at all.
+     *
+     * Topped up to a round figure rather than set: `CreditWalletAction` is the
+     * one way money enters a wallet (rule 12) and the ledger is append-only, so
+     * the seeder adds what is missing instead of writing a balance.
+     */
+    private function readerWallet(): void
+    {
+        $userId = (int) DB::table('users')->where('email', 'parent@akuru.edu.mv')->value('id');
+
+        if ($userId === 0) {
+            return;
+        }
+
+        $balance = (float) (DB::table('wallets')->where('user_id', $userId)->value('balance') ?? 0);
+        $target = 500.0;
+
+        if ($balance < $target) {
+            app(CreditWalletAction::class)->execute(
+                $userId,
+                round($target - $balance, 2),
+                'smoke_marker',
+                null,
+                'SMOKE-Wallet top-up so a reader can buy a priced library item.',
+            );
+        }
+    }
+
+    /**
+     * Something to take money for, and something to give back.
+     *
+     * §1f's money surfaces need an enrolment **awaiting payment**, and a seeded
+     * database has none — so the manual-payment and refund screens could only
+     * ever be looked at, never used. While `BML_WEBHOOK_SECRET` is unset
+     * (`OWNER_ACTIONS` item 2) a manual payment is the **only** way the school
+     * can take money at all, which makes this the least optional fixture here.
+     *
+     * Rebuilt each run rather than topped up: the walk pays it and then refunds
+     * it, and both of those are one-way. `payment_status` starts `pending`,
+     * which is what puts the *Record manual payment* form on the screen.
+     */
+    private function payableEnrolment(?object $admin): void
+    {
+        $categoryId = (int) DB::table('course_categories')->orderBy('id')->value('id');
+
+        $courseId = (int) DB::table('courses')->where('slug', 'smoke-payable')->value('id');
+        $course = [
+            'course_category_id' => $categoryId,
+            'title' => 'SMOKE-Payable-Course',
+            'short_desc' => 'Planted by SmokeMarkerSeeder for the money walk.',
+            'body' => 'Planted by SmokeMarkerSeeder for the money walk.',
+            'cover_image' => '',
+            'status' => 'open',
+            'workflow_status' => 'published',
+            'registration_fee_amount' => 250,
+            'requires_admin_approval' => 0,
+            'updated_at' => now(),
+        ];
+
+        if ($courseId > 0) {
+            DB::table('courses')->where('id', $courseId)->update($course);
+        } else {
+            $courseId = DB::table('courses')->insertGetId($course + ['slug' => 'smoke-payable', 'created_at' => now()]);
+        }
+
+        $studentUserId = (int) DB::table('users')->where('email', 'student@akuru.edu.mv')->value('id');
+        $unifiedStudentId = (int) DB::table('students')->where('user_id', $studentUserId)->value('id');
+
+        if ($unifiedStudentId === 0) {
+            return;
+        }
+
+        $legacyId = app(EnsureLegacyStudentForUnifiedAction::class)->execute($unifiedStudentId);
+
+        // Everything the previous run left behind. A refunded enrolment cannot
+        // be un-refunded, so the row is replaced rather than reset — and the
+        // payments it spawned go with it, or the walk would refund one of them
+        // a second time and report a product fault that is its own mess.
+        $stale = DB::table('course_enrollments')->where('course_id', $courseId)->pluck('id');
+        DB::table('payment_items')->whereIn('enrollment_id', $stale)->delete();
+        DB::table('course_enrollments')->whereIn('id', $stale)->delete();
+
+        $paymentIds = DB::table('payments')->where('course_id', $courseId)->pluck('id');
+        DB::table('payment_refunds')->whereIn('payment_id', $paymentIds)->delete();
+        DB::table('payment_items')->whereIn('payment_id', $paymentIds)->delete();
+        DB::table('payments')->whereIn('id', $paymentIds)->delete();
+
+        DB::table('course_enrollments')->insert([
+            'course_id' => $courseId,
+            'student_id' => $legacyId,
+            'unified_student_id' => $unifiedStudentId,
+            'status' => 'pending',
+            'payment_status' => 'pending',
+            'enrolled_at' => now(),
+            'created_by_user_id' => $admin?->id,
+            'created_at' => now(), 'updated_at' => now(),
+        ]);
+
+        // §1f's last line needs something to set an override *on*.
+        //
+        // Found the way the product finds it — the **lowest-id self-learning
+        // offering of this course**, which is exactly what
+        // `DefaultSelfLearningOfferingAction` reads — rather than by slug.
+        //
+        // Keying on the slug looked obvious and was wrong: saving an offering
+        // through the admin form regenerates the slug from the title, so the
+        // walk's own first save renamed the row out from under the key. The
+        // next seed then matched nothing, inserted a *second* offering, and the
+        // catalog went on reading the first one — still carrying the previous
+        // run's `0` override. The walk reported a course advertised as free
+        // that the seeder had just reset to 250, and the product was right
+        // both times. A fixture must be keyed on something the walk cannot
+        // change.
+        $offeringId = (int) DB::table('course_offerings')
+            ->where('course_id', $courseId)
+            ->where('delivery_mode', 'self_learning')
+            ->orderBy('id')
+            ->value('id');
+
+        $offering = [
+            'title' => 'SMOKE-Payable-Offering',
+            'slug' => 'smoke-payable-offering',
+            'delivery_mode' => 'self_learning',
+            'status' => 'open',
+            'pin_mode' => 'latest',
+            // Reset, not defaulted: the walk leaves an override of 0 behind,
+            // and the first thing it asserts next run is the un-overridden
+            // price.
+            'price_override' => null,
+            'updated_at' => now(),
+        ];
+
+        if ($offeringId > 0) {
+            DB::table('course_offerings')->where('id', $offeringId)->update($offering);
+        } else {
+            DB::table('course_offerings')->insert($offering + ['course_id' => $courseId, 'created_at' => now()]);
+        }
     }
 
     private function recruitment(): void

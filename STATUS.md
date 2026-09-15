@@ -4304,6 +4304,191 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5ei. A refunded family could never enrol again (2026-09-15)
+
+§1f's last unautomated line was the offering price override. Walking it needed
+the seeded student unenrolled, which the refund in §5eh already does — so the
+walk clicked Enroll on a course the office had just set to free, and got a
+**500**.
+
+```
+SQLSTATE[23000]: Integrity constraint violation: 1062
+Duplicate entry '1-12-0' for key 'course_enrollments_student_course_term_unique'
+```
+
+**Two halves, each plausible alone.** `course_enrollments` has carried a unique
+key on `(student_id, course_id, IFNULL(term_id,0))` since the table was made.
+Both enrollment Actions decide who is already enrolled by a *different* rule —
+`whereNotIn('status', ['rejected','cancelled'])` — and insert when that finds
+nothing. The guard's generosity is deliberate and right: somebody refunded, or
+withdrawn, or rejected should be able to come back. The key does not share the
+opinion — `cancelled` was not even in the original migration's status enum — and
+neither does the soft-delete column, which keeps the row and the key with it.
+
+**Reachable three ways, none of them exotic:** a family is refunded and enrols
+again; the office removes a club member and adds them back next term; an
+application is rejected and the student applies again. Each is a white error
+screen today.
+
+**The fix is below all of them.** `CreateOrReviveEnrollmentAction` owns identity
+on the database's own key (rule 11) and both Actions go through it: no row →
+create; a rejected, cancelled or soft-deleted row → revive it; anything else →
+hand back what is there. No migration, so rule 9 is not engaged. A revived
+enrollment keeps its `progress_percentage`, because `student_lesson_progress` is
+keyed by student and lesson and survives a cancellation untouched — zeroing the
+rollup would have the catalog say 0% over lessons that are visibly finished.
+ADR-035 records the decision, including what it costs: an enrollment row now
+says what is true now, not what happened, and there is no enrollment-event log.
+
+**Five tests, and the revert-check that earned them.** Three reproduce the 500
+before the fix. The soft-delete case was written on a hypothesis, so
+`withTrashed()` was commented out and that test alone went red — the other four
+stayed green.
+
+**Found by a walk, not by a test.** `SelfLearningEnrollmentTest` has covered
+this Action since Phase 4 and enrols twice in a row; it never cancelled in
+between. The walk did, because a refund is what comes before a second attempt.
+
+### And the walk was wrong twice on the way
+
+Counted openly, as the rest of §5e does.
+
+- **Two stale reads.** The offering table is an Inertia form: the PUT resolves,
+  props come back, React repaints *after* `networkidle` has gone quiet. Reading
+  the row straight after the click caught the old price twice and reported a
+  save that had plainly worked — the very next step showed the new price on the
+  catalog. Now it polls the row until it agrees.
+- **A fixture keyed on something the walk changes.** The seeder planted the
+  offering by slug. Saving through the admin form regenerates the slug from the
+  title, so the walk's own first save renamed the row out from under the key;
+  the next seed matched nothing, inserted a *second* offering, and the catalog
+  went on reading the first — still carrying the previous run's `0`. The walk
+  reported a course advertised as free that the seeder had just reset to 250,
+  and the product was right both times. It is now found the way
+  `DefaultSelfLearningOfferingAction` finds it: lowest-id self-learning offering
+  of that course. **Run twice back to back, 21/21 both times, one offering.**
+- **A third, and only the full fourteen-walk run could see it.** The revocation
+  check navigated to `enrolHref` — the *first* enrolment link on the admin list
+  — rather than to the payable enrolment it had just paid for. Alone, those are
+  the same row. Run after `register.mjs`, they are not: a newer enrolment sorts
+  above, and the walk read *"Enrollment #54, Smoke Applicant, SMOKE-Course,
+  Pending"* and reported the payable enrolment as un-revoked, while #53 had in
+  fact been revoked correctly. The same lesson as §5eb's six — scope the
+  locator to the row carrying the thing you are asserting about — in the one
+  place the fix had not been applied. **This is what running the walks together
+  is for; running `money` alone would never have shown it.**
+
+**Revert-checked.** Changing `?? null` to `?: null` in
+`ListPublishedCoursesAction` — one character, and the exact mistake that
+collapses "no override" into "an override of zero" — turns the free course back
+into MVR 250 and the walk goes red on it.
+
+§1f is now fully automated. `OPERATOR_CHECKLIST` §1a, §1b, §1c and §1f are all
+covered by section 0; what remains by hand is §1d pronunciation (needs a mic),
+§1e recitation, §1g mobile, and the device work in §4.
+
+## 5eh. The school can take money without a gateway, and give it back (2026-09-15)
+
+§1f, and the loop that matters most right now. `scripts/smoke/money.mjs`,
+**14/14**.
+
+**While `BML_WEBHOOK_SECRET` is unset — the state of every environment
+(`OWNER_ACTIONS` item 2) — a manual payment is the only way the school can take
+money at all**, and a refund is the only way to give it back. Neither had ever
+been walked.
+
+The office records cash received against an enrolment awaiting payment; it
+activates **with no gateway involved**; the payment shows confirmed; the office
+refunds it to the family's wallet; and both consequences land.
+
+### Both consequences, because either alone is a disaster
+
+`RefundPaymentAction` is the only way a payment is refunded — it locks the row,
+enforces the refundable remainder, **appends** a refund rather than mutating the
+payment (rule 12), credits the wallet, and fires `PaymentRefunded` *inside* the
+transaction so listeners revoke what the money bought.
+
+That join is the exact shape this session has watched break repeatedly: two
+halves each plausible alone. **A refund that returns the money and leaves the
+course open is a family being paid to keep it; a revoke without the money is
+worse.** So the walk asserts both, from the screens:
+
+```
+and the enrolment it bought is revoked   Enrollment #36 … Cancelled / Refunded
+and the money is in the family's wallet  balance 500 → 750 (expected +250)
+```
+
+**Measured, not matched** — the same correction the earnings card needed an
+hour earlier. Wallet balances accumulate across runs, so looking for "250"
+somewhere on the page would have passed whatever happened. The delta is the
+assertion and it is the same number however many times this has run.
+
+**No defect found.** The money path works both ways, and that is worth as much
+as a finding — it is the path a school would actually use next week.
+
+**Three wrong assumptions, all mine.** The payments screen shows reference /
+payer / student / amount / status — **not** the course or the receipt note, so
+looking for either found nothing on a table that was correct. The refund form
+hides behind a `<details>` and needed opening. And both money buttons raise a
+real `confirm()` dialog, which is right and would have hung the walk for ever
+without a handler.
+
+**The fixture is rebuilt, not reset.** Paying and refunding are both one-way, so
+the seeder replaces the payable enrolment each run and takes its payments and
+refunds with it — otherwise a second run refunds an already-refunded payment and
+reports a product fault that is really its own mess. The pick-up lesson, applied
+before it bit.
+
+## 5eg. A sale becomes the writer's money — §1c, and three gates that explain themselves (2026-09-15)
+
+The last uncovered Library loop, and the only one with money in it.
+`scripts/smoke/earnings.mjs`, **13/13**.
+
+A writer publishes a paid item, a reader buys it **with their wallet**, the
+sale reaches the writer at the 70/30 split, bank details save, the payouts gate
+explains itself, and the office's earnings CSV carries the balance.
+
+**Why the wallet.** `BML_WEBHOOK_SECRET` is unset on every environment
+(`OWNER_ACTIONS` item 2), so no card payment can confirm anywhere. The wallet
+branch (§43.14) is internal money, grants immediately, and accrues the writer's
+earning through the same code the webhook uses — the only purchase path that
+completes today. The seeder tops the reader up through `CreditWalletAction`,
+the one way money enters a wallet (rule 12).
+
+**The split is measured, not matched.** The earnings card is cumulative and
+this fixture accrues across runs, so looking for a bare "MVR 70" never matches.
+The walk reads pending before and after: `280 → 350`, **exactly +70 on a 100
+sale**, and by *pending* rather than available, because §24 holds it until the
+refund window closes.
+
+### Three gates, and all three explain themselves
+
+Walked on purpose, because §5ef had just found a gate that refused in **total
+silence** and the only way to know which kind you have is to try it:
+
+- **Payouts closed.** The portal does not offer the button at all and explains
+  instead — *"Payouts open soon — earnings keep accruing and stay yours."* The
+  writer is told **before** pressing something, which is better than §1c asks
+  for. The walk asserts both halves: the explanation is there, **and** no button
+  is dangled that could not work.
+- **Empty wallet.** After five runs the reader's 500 was gone, and the product
+  refused with *"Insufficient wallet balance"* rather than half-completing. A
+  fixture to top up, not a defect — the walk now says so and names the re-seed.
+- **Research without a peer review** — §5ef's finding, now fixed.
+
+Recorded in KNOWN_ISSUES so nobody re-walks them, and because the contrast is
+the point: same codebase, same week, gates that explain and one that did not.
+
+### Four wrong assumptions in the walk, all mine
+
+`page.goto` on the CSV throws *"Download is starting"* — it needs the request
+context. The payout button **only renders when payouts are enabled**, so looking
+for it was looking for the wrong thing entirely. The earnings CSV is **per
+writer**, not per item, so hunting the item title in it failed against a
+perfectly correct file. And a wallet purchase drops the reader **straight into
+the book**, so "Read online" is absent by then — the body text is the better
+proof anyway.
+
 ## 5ef. The Library editorial track, walked — and a gate that refused and told nobody (2026-09-15)
 
 The largest area with no automated coverage at all, and the first walk this

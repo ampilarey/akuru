@@ -15,7 +15,7 @@ with a `teachers` row, and a parent/student pair for portal checks.
 
 ## 0. Run the automated walks first
 
-**Do this before anything below.** Twelve scripted walks drive real browsers
+**Do this before anything below.** Fourteen scripted walks drive real browsers
 through the loops that matter — a stranger enrolling, a student taking a
 lesson, a teacher marking work, a family reporting an absence, a child being
 collected, a parent booking a meeting, somebody becoming a writer and getting
@@ -35,7 +35,7 @@ SMOKE_BASE_URL=https://test.akuru.edu.mv node scripts/smoke/all.mjs
 It exits non-zero if any walk fails and prints the full output of the failures
 only, so a green run is one screen and a red one explains itself.
 
-**Nine of the twelve write data** — they submit absence notes, request that
+**Eleven of the fourteen write data** — they submit absence notes, request that
 children be collected, book meetings and enrol people. Against a host whose
 name does not look synthetic the runner refuses to start and tells you how to
 override. `--read` runs only the three that look without touching anything
@@ -43,16 +43,20 @@ override. `--read` runs only the three that look without touching anything
 with real families on it.
 
 `node scripts/smoke/all.mjs learn review` runs named walks; `--write` runs the
-nine that change data.
+eleven that change data.
 
 **What a clean run does and does not prove.** It proves the deploy script, the
 built assets and the seeded database on that host behave like the local ones —
 which is the comparison `OWNER_ACTIONS` item 7 exists to make and that nobody
-has been able to make yet. It does **not** replace section 1: **§1a and §1b are now
-automated** by the `library` and `peer-review` walks — applying, approving, the
-role grant, drafting, a changes-requested round trip, publication, and the
-research gate refusing and then being satisfied — but **§1c earnings and
-payouts is not**, and neither is the device work.
+has been able to make yet. It does **not** replace section 1: **§1a, §1b and §1c are now
+automated** by the `library`, `peer-review` and `earnings` walks — applying,
+approving, the role grant, drafting, a changes-requested round trip,
+publication, the research gate refusing and then being satisfied, a wallet sale
+reaching the writer at the 70/30 split, and the payouts gate explaining itself.
+**§1f is automated too, all four lines** — a manual payment activating an
+enrolment with no gateway involved, a refund to wallet, both of its
+consequences, and an offering price override that a family can see, including
+`0` behaving as free. The device work (§4) and §1d, §1e, §1g are still by hand.
 A walk that goes green first time deserves more suspicion than one that does
 not (STATUS §5eb).
 
@@ -102,6 +106,12 @@ the gate can be satisfied.
 
 ### 1c. Writer earnings & payouts (L6)
 
+**Automated as of 2026-09-15** — `scripts/smoke/earnings.mjs` walks every line
+below, 13/13, buying with the **wallet** (no card payment can confirm anywhere
+while `BML_WEBHOOK_SECRET` is unset) and proving the split by measuring the
+writer's pending balance before and after: `280 → 350`, exactly +70 on a 100
+sale.
+
 - [ ] Buy a priced library item as a reader (BML sandbox or wallet).
       Expect: a writer earning appears on the writer's `/write` earnings
       card with the right split (default 70/30 unless the item or profile
@@ -134,6 +144,15 @@ the gate can be satisfied.
       (The AI opinion column only appears when the flag in §2b is on.)
 
 ### 1f. Money surfaces (Phase 4 close-out)
+
+**Automated as of 2026-09-15** — `scripts/smoke/money.mjs` walks all four
+lines, 21/21: a manual payment activating an enrolment **with no gateway
+involved**, a refund to wallet, and both consequences measured rather than
+assumed — the enrolment reads *Cancelled / Refunded* and the family's wallet
+goes `500 → 750`. The price override is set through the admin form and read off
+the family's own catalog row, and `0` is proved free twice over — no price on
+the listing, and an enrolment that opens with no payment behind it. That last
+step is what found #33 (a refunded family could never enrol again).
 
 - [ ] Admin payments screen: refund a confirmed payment to **wallet**;
       expect enrollment cancelled, discount released, wallet credited,

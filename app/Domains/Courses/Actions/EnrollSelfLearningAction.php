@@ -66,7 +66,10 @@ class EnrollSelfLearningAction
                 ]);
             }
 
-            return CourseEnrollment::query()->create(array_merge([
+            // Create, or bring back the enrollment this student already has on
+            // this course — the `$existing` check above lets a cancelled or
+            // refunded learner enrol again, and the unique key does not.
+            return app(CreateOrReviveEnrollmentAction::class)->execute(array_merge([
                 'student_id' => $legacyId,
                 'unified_student_id' => $student['id'],
                 'course_id' => $courseId,
