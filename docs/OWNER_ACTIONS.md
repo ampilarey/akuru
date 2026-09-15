@@ -58,6 +58,17 @@ they sign something else — a canonical string, a different header, a different
 digest — the signature check will reject every genuine callback and every
 payment will sit pending.
 
+**The chain below the secret is now proven** (STATUS §5dx): a correctly signed
+callback, on a host where unsigned callbacks are refused, confirms the payment
+**and** lets the student into the course they paid for. Before this, the
+signature and the enrolment were tested separately and the join between them
+was not.
+
+That does **not** make the scheme above correct — if BML signs something else,
+that test passes and your host still rejects every genuine callback. It means
+the part after the signature check is sound, so the second checkbox above is
+the one carrying the risk.
+
 **Watch on the first real transaction** (#362): return-URL finalisation now
 refuses a provider result that does not name the payment it is answering about.
 If BML's get-transaction response carries no merchant reference, finalisation
