@@ -1,8 +1,25 @@
 # ADR-025: Hifz retirement gate — Blade stays until engine parity; dataset models move with the Blade deletion
 
 Date: 2026-08-27
-Status: Accepted
+Status: **Superseded by ADR-029 (2026-09-12).** The gate below was met and the
+deletion slice has shipped. Kept for the reasoning, not as instructions.
 Phase: F5 (ROADMAP §2b, final slice)
+
+> **Read this before acting on anything below.** ADR-029 says it supersedes
+> this ADR; this ADR did not say so back, so anyone arriving here — from
+> `OPERATOR_CHECKLIST` §3, say — read a live gate over finished work. Two
+> things in it are now false:
+>
+> - **"Three legacy workflows have no engine replacement"** (Context 3) — they
+>   do. F5-P1 three-lane session records, F5-P2 §52.18 assignments and F5-P3
+>   the milestone workflow all shipped in #136–#138, each marked in its own
+>   docblock as the gate item it closes.
+> - **The gate itself** — condition 1 was walked (the walk found eight buttons
+>   that did nothing), condition 2 is captured in STATUS and was re-verified on
+>   2026-09-15, and condition 3 was given.
+>
+> What survives of the Blade app touches no dataset model. Retiring those
+> screens is an IA decision with its own parity work, not this gate.
 
 ## Context
 

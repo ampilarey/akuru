@@ -254,17 +254,54 @@ the AI opinion column beside submissions.
 
 ---
 
-## 3. F5 — Hifz retirement (ADR-025 gate)
+## 3. F5 — Hifz retirement (ADR-025 gate) — **CLOSED, nothing to do here**
 
-The old Hifz module is frozen and ready to delete once the engine-backed
-flow is verified equivalent:
+**This section is done and is kept only so nobody re-opens it.** It described a
+gate that was met and a deletion slice that has already shipped; working
+top-to-bottom through this document, an operator would otherwise spend a day on
+finished work — and the last line would have them *request a PR that merged on
+2026-09-12*.
 
-- [ ] Run the ADR-025 verification walks on the seeded representative
-      dataset (teacher assigns → student submits → teacher reviews →
-      progress/milestones match the legacy screens).
-- [ ] Capture the verify-structure script output in STATUS.md.
-- [ ] Then request the deletion slice — it is one PR (namespace removal,
-      route cleanup), pre-scoped, no behavior change.
+- [x] **ADR-025 verification walks** — run. The F5 gate walk found eight
+      buttons that did nothing, all fixed in the same slice (STATUS, "Eight
+      buttons that did nothing, found by the F5 gate walk").
+- [x] **`halaqa:verify-structure` captured in STATUS** — see "ADR-025 gate
+      condition 2". The capture is evidence rather than decoration: the gate
+      **fails before the backfill and passes after it**.
+- [x] **The deletion slice shipped** — 2026-09-12, **ADR-029**, which
+      supersedes ADR-025's gated status. The Qur'an dataset and its readers
+      moved to `Courses\Components\Quran`, mushaf editorial was ported to
+      Inertia rather than lost, and the four Blade controllers that read the
+      dataset are gone.
+
+**Re-verified 2026-09-15 on current `main`**, because the original capture is
+three days and several slices old:
+
+```
+$ php artisan db:seed --class=HifzDemoSeeder
+$ php artisan halaqa:verify-structure          # before backfill
+programs=1 unmapped=1 enrollments=0 unlinked=0 sessions=0 unmirrored=0 attendance_expected=0 missing=0
+halaqa:verify-structure FAILED — do not treat engine structure as authoritative for Hifz.
+
+$ php artisan halaqa:backfill-structure
+programs=1 mapped=1 sessions_mirrored=5 enrollments_linked=1 attendance_written=5
+
+$ php artisan halaqa:verify-structure          # after backfill
+programs=1 unmapped=0 enrollments=1 unlinked=0 sessions=5 unmirrored=0 attendance_expected=5 missing=0
+halaqa:verify-structure OK — Hifz structure fully represented on the engine.
+```
+
+Identical to the original capture, and still non-vacuous — it fails first.
+
+**`halaqa:verify-mirror` is green but says nothing**, and should not be quoted
+as evidence: it reports `links=0` because `QURAN_HALAQA_DUAL_WRITE` is off by
+design, so "every link is mirrored" is true over no links.
+
+**What is actually left is a product decision, not a gate.** The Blade
+screens that survive — hub, five dashboards, programmes, enrolments,
+milestones, reports — touch no dataset model. Retiring them is an IA decision
+with its own parity work (CLAUDE.md rule 1), and rule 7's freeze has expired by
+its own terms.
 
 ---
 
