@@ -4304,6 +4304,120 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5ek. A walk that had been wrong for forty runs, and a false green under it (2026-09-15)
+
+The fifteen-walk run after §5ej came back **14/15**. `create-sweep` reported
+the calendar screen refusing its own form:
+
+```
+S2.5  calendar days    form refused: That date already has a calendar entry for this year.
+```
+
+**The product was right and the walk was wrong**, which is the sixth time this
+session. The database said so before the write-up did: twelve `calendar_days`
+rows, every one created today by a walk run, scattered across a forty-day
+window.
+
+The date came from:
+
+```js
+// Unique per run, so re-running cannot collide with its own earlier rows.
+date: dayOffset(20 + (Number(RUN) % 40))
+```
+
+That is **a pick from forty slots, not a unique value**, under a comment
+asserting the opposite. Twelve entries in forty days put the next run at about
+one-in-three of colliding, rising with every run. **The same fault the meetings
+walk had** (§5ed) — fixed there, never looked for anywhere else. It now asks
+the screen for the last entry there is and takes the day after, so the next day
+is free however many times it has run.
+
+### And a worse one underneath it
+
+`RUN` is the marker the sweep types into each form and then looks for after a
+reload. It was:
+
+```js
+const RUN = Date.now().toString().slice(-6);
+```
+
+The last six digits of the epoch in milliseconds **repeat every 1,000
+seconds**. Two runs about sixteen minutes apart get the same marker — and the
+step then passes because the *earlier* run's row is still on the screen. That
+is a **false green**: a form reported as working without ever being tested.
+
+Every walk fault counted this session until now has been a false red — annoying,
+and self-correcting because somebody investigates. This one fails the other way,
+and nothing would have investigated it. It is the more dangerous kind and it had
+been sitting in the sweep since the sweep was written. Now base-36 time plus
+four random characters.
+
+**Revert-checked.** Pointing the walk at a date that already exists reproduces
+the exact 5/6 failure, so the refusal was genuine and the date choice was the
+whole fault. With the fix, **three consecutive runs, 6/6 each**, landing on
+2026-11-14, -15 and -16 — each taking the next free day.
+
+### The search the lesson prescribes, actually run
+
+Rather than record "worth looking elsewhere" and move on, every walk was
+grepped for the pattern. `register.mjs` had it **four more times**, on the
+fields that matter most there — the identity of the stranger enrolling:
+
+```js
+const PHONE = '9' + String(Date.now()).slice(-6);
+const EMAIL = `smoke${String(Date.now()).slice(-6)}@example.test`;
+await fill('national_id', 'A' + String(Date.now()).slice(-6));
+await reFill('national_id', 'A' + String(Date.now()).slice(-5));   // wraps every 100s
+```
+
+Phone, email and national id are exactly what the registration form checks for
+duplicates, so a wrap makes the form correctly refuse and the walk call a
+working funnel broken. The file's own header already claimed *"every run
+therefore invents a fresh number"*.
+
+The last one is worse than a wrap: it is a **second** `Date.now()` call for a
+person the review screen is supposed to be re-entering, so the national id on
+the review screen was never the one first registered. One identity is now
+computed once and used in both places.
+
+The phone stays numeric because a Maldivian mobile number is seven digits, so
+it cannot be base-36 — it is now six random digits, and the comment says
+plainly that this is one-in-a-million rather than unique, instead of claiming
+what the old one claimed.
+
+### And four more, in the walks that look for what they just made
+
+A second grep, for the other shape of the same idea — a timestamp used as a
+name:
+
+```js
+const STAMP = new Date().toISOString().replace(/[^0-9]/g, '').slice(8, 14);
+```
+
+That is **HHMMSS**, and `library`, `earnings` and `peer-review` all use it to
+build the title they then search the screen for:
+
+```js
+check('the application reaches the office queue', queue.includes(`SMOKE-Writer ${STAMP}`), ...)
+```
+
+A run at the same second on *any other day* finds the earlier run's row and
+passes. Within a day the odds are tiny, which is exactly why it would never
+have been noticed — but **a nightly scheduled run is that case by
+construction**, and section 0 of `OPERATOR_CHECKLIST` is written to be run
+routinely. All four now use the non-wrapping form.
+
+**Six false-green sites and one false-red site, from two greps.** The tally for
+this session's walk faults now reads roughly twenty-five, of which these are
+the first that would have failed *silently*.
+
+**The general lesson, recorded because it keeps costing runs:** when a walk
+fault is found, the same fault is worth *searching for* in the others rather
+than noting. "Picks a value by chance and calls it unique" was fixed in
+`meetings` six sections ago, then cost four red runs in `create-sweep`, and was
+sitting in `register` four more times and in three other walks the whole while.
+Two greps found all of them in about a minute.
+
 ## 5ej. The site blocked its own microphone, so Arabic B had no student (2026-09-15)
 
 §1d was the next line on `OPERATOR_CHECKLIST` and had been left for a person

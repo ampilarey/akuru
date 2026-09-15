@@ -36,6 +36,12 @@
  * minutes). Every run therefore invents a fresh number; re-running with a
  * fixed one will start failing on the third attempt, correctly.
  *
+ * That sentence used to be wishful. The number came from the last six digits of
+ * `Date.now()`, which repeat every 1,000 seconds, so two runs sixteen minutes
+ * apart shared a contact and the third one in that window hit the rate limit
+ * this note warns about — reported as the funnel being broken. See the identity
+ * block below, and STATUS §5ek.
+ *
  *   node scripts/smoke/register.mjs
  *
  * Environment: SMOKE_BASE_URL, SMOKE_COURSE (slug, default smoke-course),
@@ -46,8 +52,33 @@ import { execSync } from 'node:child_process';
 
 const BASE = process.env.SMOKE_BASE_URL ?? 'http://127.0.0.1:8000';
 const COURSE = process.env.SMOKE_COURSE ?? 'smoke-course';
-const PHONE = '9' + String(Date.now()).slice(-6);
-const EMAIL = `smoke${String(Date.now()).slice(-6)}@example.test`;
+/**
+ * The stranger's identity, unique per run — which the old version only looked like being.
+ *
+ * Every one of these was `String(Date.now()).slice(-6)`, and the last six digits
+ * of the epoch in milliseconds **repeat every 1,000 seconds**; the national id
+ * on the review screen used `slice(-5)`, which repeats every 100. These are the
+ * fields the registration form checks for duplicates, so a collision makes the
+ * form correctly refuse and the walk report a working screen as broken — or,
+ * worse, match a row an earlier run left behind and pass without testing
+ * anything.
+ *
+ * Found by searching the other walks after `create-sweep` turned out to have the
+ * same fault (STATUS §5ek). Base-36 time plus randomness, which does not wrap.
+ */
+const UNIQUE = () => `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`.toUpperCase();
+
+// One identity per run, fixed here rather than recomputed at each use — the
+// review screen has to re-enter the *same* person, and a second Date.now() call
+// there was quietly a different one.
+const RUN_ID = UNIQUE();
+// A Maldivian mobile number is seven digits, so this one cannot be base-36. Six
+// random digits is a one-in-a-million chance of repeating a previous run rather
+// than the old certainty of repeating one every 1,000 seconds — stated rather
+// than claimed unique, because it is not.
+const PHONE = '9' + String(Math.floor(Math.random() * 1e6)).padStart(6, '0');
+const EMAIL = `smoke${RUN_ID}@example.test`;
+const NATIONAL_ID = `A${RUN_ID}`;
 
 const results = [];
 const check = (step, ok, detail = '') => results.push([step, ok, detail]);
@@ -93,7 +124,7 @@ await fill('first_name', 'Smoke');
 await fill('last_name', 'Applicant');
 await fill('dob', '2000-05-05');
 await fill('email', EMAIL);
-await fill('national_id', 'A' + String(Date.now()).slice(-6));
+await fill('national_id', NATIONAL_ID);
 await fill('password', 'secret-password-1');
 await fill('password_confirmation', 'secret-password-1');
 
@@ -166,7 +197,7 @@ if (p.url().includes('register/continue')) {
   await reFill('first_name', 'Smoke');
   await reFill('last_name', 'Applicant');
   await reFill('dob', '2000-05-05');
-  await reFill('national_id', 'A' + String(Date.now()).slice(-5));
+  await reFill('national_id', NATIONAL_ID);
 
   for (const sel of ['select[name="gender"]:visible', 'select[name="id_type"]:visible']) {
     const el = review.locator(sel).first();

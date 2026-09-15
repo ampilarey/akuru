@@ -45,7 +45,12 @@ const PASSWORD = process.env.SMOKE_PASSWORD ?? 'password';
 // Unique per run: the loop ends in a **published** item, and publication is not
 // reversible from any screen here. A fixed title would mean the second run
 // walked past an item the first run had already put in the library.
-const STAMP = new Date().toISOString().replace(/[^0-9]/g, '').slice(8, 14);
+// Time-of-day (HHMMSS) repeats every 24 hours, and this stamp is what the walk
+// looks for to find the row it just created — so a run at the same second on
+// any other day finds the *earlier* run's row and passes without testing
+// anything. A scheduled nightly run is precisely that case. Base-36 time plus
+// randomness does not wrap (STATUS §5ek).
+const STAMP = `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`.toUpperCase();
 const TITLE = `SMOKE-Library-Item ${STAMP}`;
 const BODY = 'SMOKE-Library-Body: the sun letters assimilate the laam of the definite article.';
 const CHANGES = 'SMOKE-Changes: please add a citation for the assimilation rule.';
