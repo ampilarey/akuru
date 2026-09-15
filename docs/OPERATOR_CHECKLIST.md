@@ -15,7 +15,7 @@ with a `teachers` row, and a parent/student pair for portal checks.
 
 ## 0. Run the automated walks first
 
-**Do this before anything below.** Fifteen scripted walks drive real browsers
+**Do this before anything below.** Sixteen scripted walks drive real browsers
 through the loops that matter — a stranger enrolling, a student taking a
 lesson, a teacher marking work, a family reporting an absence, a child being
 collected, a parent booking a meeting, somebody becoming a writer and getting
@@ -36,16 +36,15 @@ SMOKE_BASE_URL=https://test.akuru.edu.mv node scripts/smoke/all.mjs
 It exits non-zero if any walk fails and prints the full output of the failures
 only, so a green run is one screen and a red one explains itself.
 
-**Twelve of the fifteen write data** — they submit absence notes, request that
-children be collected, book meetings, enrol people and hand in a recording for
-a teacher to judge. Against a host whose
-name does not look synthetic the runner refuses to start and tells you how to
-override. `--read` runs only the three that look without touching anything
+**Thirteen of the sixteen write data** — they submit absence notes, request that
+children be collected, book meetings, enrol people and hand in recordings for a
+teacher to judge. Against a host whose name does not look synthetic the runner
+refuses to start and tells you how to override. `--read` runs only the three that look without touching anything
 (`page-errors`, `sweep`, `own-data`), which is the safe choice against anything
 with real families on it.
 
 `node scripts/smoke/all.mjs learn review` runs named walks; `--write` runs the
-twelve that change data.
+thirteen that change data.
 
 **What a clean run does and does not prove.** It proves the deploy script, the
 built assets and the seeded database on that host behave like the local ones —
@@ -60,7 +59,8 @@ enrolment with no gateway involved, a refund to wallet, both of its
 consequences, and an offering price override that a family can see, including
 `0` behaving as free. **§1d is automated too** — recording through a synthetic
 microphone, the teacher’s verdict, the training sample, the export manifest and
-both role guards. The device work (§4) and §1e, §1g are still by hand.
+both role guards. **§1e is automated too**, and building the way in was what
+it took — see below. The device work (§4) and §1g are still by hand.
 A walk that goes green first time deserves more suspicion than one that does
 not (STATUS §5eb).
 
@@ -157,6 +157,19 @@ microphone** records audibly, which is §1g's line, not this one.
       page 403s without `pronunciation.manage`.
 
 ### 1e. Qur'an recitation queue (Qur'an B — AI off)
+
+**Automated as of 2026-09-15** — `scripts/smoke/recite.mjs`, 13/13.
+
+**This line could not be walked at all until now**, and not because of a bug.
+`SubmitRecitationAction` had existed since F3 — validated, tested, engine-keyed
+— and was reachable from six test files and from nothing a student could press.
+So `quran_recitation_submissions` was always empty and the queue this line asks
+you to open had nothing in it to review. F4 recorded the deferral honestly
+("needs private media upload + authenticated streaming"); both shipped
+afterwards and nothing went back for it. SPEC §52.9's manual recording mode now
+has its route, and the walk covers the whole loop: record, replay, submit, the
+teacher hears it through the authorizing audio route, marks a mistake and an
+outcome, and the student sees the verdict. STATUS §5el.
 
 - [ ] As a teacher, open the recitation review queue. Expect: byte-identical
       to the pre-AI flow — no AI column, submissions review normally.

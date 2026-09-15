@@ -76,6 +76,7 @@ class SmokeMarkerSeeder extends Seeder
         $this->payslips($admin);
         $this->dailyLists($year, $studentId, $admin);
         $this->pronunciation();
+        $this->recitations();
 
         // A default `migrate:fresh --seed` leaves `staff_profiles` empty, and
         // this used to skip the whole HR block in silence — so the sweep
@@ -944,6 +945,50 @@ class SmokeMarkerSeeder extends Seeder
 
         DB::table('training_samples')->whereIn('arabic_pronunciation_attempt_id', $attemptIds)->delete();
         DB::table('arabic_pronunciation_attempts')->whereIn('id', $attemptIds)->delete();
+        DB::table('media_files')->whereIn('id', $mediaIds)->delete();
+    }
+
+    /**
+     * §1e's preconditions, cleared for the same reason §1d's are.
+     *
+     * The recitation queue is oldest-first and reviewing is one-way, so on a
+     * second run the walk would be marking the first run's recitation while its
+     * own waited at the bottom. Clearing this student's submissions leaves the
+     * queue holding exactly what the walk is about to put in it.
+     */
+    private function recitations(): void
+    {
+        $studentUserId = (int) DB::table('users')->where('email', 'student@akuru.edu.mv')->value('id');
+        $studentId = (int) DB::table('students')->where('user_id', $studentUserId)->value('id');
+
+        if ($studentId === 0) {
+            return;
+        }
+
+        $submissionIds = DB::table('quran_recitation_submissions')
+            ->where('student_id', $studentId)
+            ->pluck('id');
+
+        if ($submissionIds->isEmpty()) {
+            return;
+        }
+
+        $mediaIds = DB::table('quran_recitation_submissions')
+            ->whereIn('id', $submissionIds)
+            ->pluck('audio_media_file_id')
+            ->merge(
+                DB::table('quran_recitation_submissions')
+                    ->whereIn('id', $submissionIds)
+                    ->pluck('correction_audio_media_file_id')
+            )
+            ->filter()
+            ->unique();
+
+        DB::table('quran_mistake_marks')->whereIn('quran_recitation_submission_id', $submissionIds)->delete();
+        DB::table('ai_predictions')->whereIn('quran_recitation_submission_id', $submissionIds)->update([
+            'quran_recitation_submission_id' => null,
+        ]);
+        DB::table('quran_recitation_submissions')->whereIn('id', $submissionIds)->delete();
         DB::table('media_files')->whereIn('id', $mediaIds)->delete();
     }
 

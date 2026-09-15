@@ -271,6 +271,11 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
     Route::get('/learn/schedule', [LearnScheduleController::class, 'index'])->name('learn.schedule');
     Route::get('/learn/arabic-report', [LearnArabicReportController::class, 'index'])->name('learn.arabic-report');
     Route::get('/learn/quran', [LearnQuranController::class, 'index'])->name('learn.quran');
+    // SPEC §52.9 manual recording mode. F4 deferred this with the note "needs
+    // private media upload + authenticated streaming"; both shipped afterwards,
+    // so the student half of the recitation loop had an Action, a queue, an
+    // audio route and no way in.
+    Route::post('/learn/quran/recitations', [LearnQuranController::class, 'store'])->name('learn.quran.recitations.store')->middleware('throttle:30,1');
     // Arabic B (§51): pronunciation practice + teacher review queue.
     Route::get('/learn/pronounce', [\App\Domains\Pronunciation\Http\Controllers\PronunciationPracticeController::class, 'index'])->name('learn.pronounce');
     Route::post('/learn/pronounce', [\App\Domains\Pronunciation\Http\Controllers\PronunciationPracticeController::class, 'store'])->name('learn.pronounce.store')->middleware('throttle:30,1');

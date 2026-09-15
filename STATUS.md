@@ -375,7 +375,9 @@ migration; no Hifz behaviour change outside it.
   additive). JSX parse-checked via esbuild (CI does not build JS).
   **Deferred, recorded:** student audio record-and-submit (§52.9 manual mode
   — needs private media upload + authenticated streaming; spec itself marks
-  student recitation submission "later"); per-guardian/i18n strings are
+  student recitation submission "later"). **Built 2026-09-15 (§5el):** both
+  named blockers shipped soon afterwards and nothing came back for this, so the
+  recitation queue had been reviewing an empty table for its whole life; per-guardian/i18n strings are
   fallback-English pending the lang-file pass; supervisor/dean share one
   oversight page until their AI-era features diverge; frozen Hifz Blade
   routes stay until F5 retirement.
@@ -4303,6 +4305,70 @@ walk returned a header row and nothing else for circulation, student work and
 pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
+
+## 5el. The recitation queue had nothing to review, and never could have (2026-09-15)
+
+§1e was the next line on `OPERATOR_CHECKLIST`. After §1d — where "needs a mic"
+turned out to be hiding a defect that switched off half a SPEC section — a line
+left for a person was worth looking at rather than trusting.
+
+**It could not be walked at all.** `quran_recitation_submissions` was empty, and
+`SubmitRecitationAction` — written, validated, engine-keyed and tested since F3
+— was called from **six test files and from nowhere in `app/` or `routes/`**.
+The student's `/learn/quran` page listed submissions under a *Submitted* column
+and offered no way to make one. So the teacher's review queue, the authorizing
+audio route, the mistake marking, the outcomes, the CSV export and the
+AI-opinion column had all been built over a table that could never receive a
+row.
+
+**And this is not a seventh defect.** The grep evidence read exactly like one,
+and the database check before the write-up is what stopped it: STATUS line 376
+records the deferral plainly — *"student audio record-and-submit (§52.9 manual
+mode — needs private media upload + authenticated streaming)"*. Unbuilt work,
+recorded as unbuilt, which is the distinction `KNOWN_ISSUES` exists to keep.
+
+**What had gone stale was the reason.** Both named blockers shipped afterwards:
+`StorePrivateMediaAction` (the teacher's correction audio already goes through
+it) and `ServeRecitationAudioAction` behind `recitations/{id}/audio/{kind}`. And
+since §5ej the microphone works at all. Nothing named in the deferral still
+blocked it, and nothing went back to check.
+
+So it is built. `POST /learn/quran/recitations` is thin (rule 5): authorize,
+validate, store the audio privately, call the Action that was already there.
+The recorder is the §6.3 platform layer `/learn/pronounce` uses, so a Capacitor
+plugin replaces both at once. Seven Pest tests cover the route — success, no
+audio, a PDF, a backwards ayah range, an unknown surah, a user with no student
+profile, and the surah list reaching the page.
+
+**Walked, 13/13, twice back to back.** The evidence worth quoting is the audio:
+
+```
+ok  the teacher can actually hear the student   HTTP 200 video/webm 19749 bytes
+ok  and the student sees the outcome and the note   … passed 1 SMOKE-Recitation verdict MU2UPDA6
+```
+
+Fetched through the authorizing route rather than read off a storage path
+(§52.9: *"Do not expose private storage paths directly"*), and the stored media
+row reads `visibility=private`. The database confirms the rest: `status=passed`,
+the note, `reviewed_at`, and one mistake mark.
+
+### A false green in my own walk, caught only by the step after it
+
+`the teacher's verdict is accepted` waited for `/reviewed/i` in the page body —
+and this screen's status-filter buttons include **"teacher reviewed"**, so it
+matched before anything had been saved. It passed while the database still read
+`status=submitted, note=NULL`.
+
+Only the next step failing — the student not seeing a note — gave it away, and
+the database check is what turned "two failures" into "one failure and one lie".
+It now asserts the row **leaving the queue**, which is a consequence rather than
+a word. The other failure was mine too: the review form is collapsed behind the
+row's Review button, so the audio player and the verdict controls did not exist
+yet when the walk looked for them.
+
+§1e is automated. What is left by hand: §1g mobile — including the one thing a
+synthetic microphone cannot answer, whether a real voice records audibly — and
+the §4 device work.
 
 ## 5ek. A walk that had been wrong for forty runs, and a false green under it (2026-09-15)
 

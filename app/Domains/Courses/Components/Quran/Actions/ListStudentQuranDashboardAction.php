@@ -21,7 +21,8 @@ class ListStudentQuranDashboardAction
      *     submissions: list<array<string, mixed>>,
      *     progress: list<array<string, mixed>>,
      *     schedules: list<array<string, mixed>>,
-     *     assignments: list<array<string, mixed>>
+     *     assignments: list<array<string, mixed>>,
+     *     surahs: list<array<string, mixed>>
      * }
      */
     public function execute(int $studentId): array
@@ -124,6 +125,17 @@ class ListStudentQuranDashboardAction
             'progress' => $progress,
             'schedules' => $schedules,
             'assignments' => $assignments,
+            // §52.9: the student chooses what they are about to recite, so the
+            // page needs the surah list. Same reference contract the rest of
+            // this Action reads through — rule 11 keeps one Qur'an dataset.
+            'surahs' => $surahs
+                ->map(fn (array $surah): array => [
+                    'id' => $surah['id'],
+                    'name' => $surah['english_name'] ?? ('Surah '.$surah['id']),
+                    'ayah_count' => $surah['ayah_count'] ?? null,
+                ])
+                ->values()
+                ->all(),
         ];
     }
 }
