@@ -126,9 +126,19 @@ if (!lessonHref) {
     if (await complete.count()) {
         await complete.click();
         await page.waitForLoadState('networkidle');
-        check('marking it complete is accepted', true);
+
+        // Assert the consequence, not the click. This was a literal
+        // `check(..., true)` — it passed whenever a Complete button existed,
+        // which is to say it tested nothing. The course page prints the
+        // enrolment's progress, and one completed lesson out of one is 100%.
+        const after = await body(new URL(courseHref, BASE).pathname);
+        check(
+            'marking it complete moves the progress bar',
+            after.text.includes('100%'),
+            (after.text.match(/\d+%/) ?? ['no percentage on the course page'])[0],
+        );
     } else {
-        check('marking it complete is accepted', false, 'no complete button');
+        check('marking it complete moves the progress bar', false, 'no complete button');
     }
 }
 
@@ -142,18 +152,55 @@ if (!activityHref) {
 
     // Answer it the way a student does: pick the option, press submit.
     const option = page.locator('label:has-text("SMOKE-Right"), input[value="a"]').first();
-    if (await option.count()) {
+    // The player disables every control once an attempt is submitted and offers
+    // no way back, so a second run without a re-seed used to spend thirty
+    // seconds inside click() and then die with a Playwright stack trace that
+    // reads like a broken browser. Say what it is, in a second.
+    //
+    // (That there is no way back is a defect in its own right: authors set
+    // `retakes_allowed` and `retake_limit`, the server creates attempt two
+    // happily, and the teacher's revision report advises retrying. No player
+    // offers a button.)
+    const enabled = (await option.count()) > 0 && await option.isEnabled().catch(() => false);
+
+    if (!enabled) {
+        check(
+            'the answer is accepted',
+            false,
+            (await option.count()) === 0
+                ? 'no option to choose'
+                : 'the option is disabled — this activity was already submitted. '
+                    + 'Re-seed first: php artisan db:seed --class=SmokeMarkerSeeder',
+        );
+    } else {
         await option.click();
         const submit = page.locator('button:has-text("Submit"), button[type=submit]').first();
         if (await submit.count()) {
             await submit.click();
-            await page.waitForLoadState('networkidle');
-            check('the answer is accepted', true);
+
+            // Assert the mark, not the click. This step used to be a literal
+            // `check(..., true)` — it passed whenever a submit button existed,
+            // which is to say it tested nothing at all. `selection` is the one
+            // pattern the engine scores itself, so the right answer must come
+            // back scored 1/1.
+            const deadline = Date.now() + 5000;
+            let marked = '';
+            while (Date.now() < deadline) {
+                marked = (await page.innerText('main')).replace(/\s+/g, ' ');
+                if (marked.includes('scored')) {
+                    break;
+                }
+                await page.waitForTimeout(100);
+            }
+
+            check(
+                'the answer is accepted and marked right',
+                marked.includes('scored') && marked.includes('1/1'),
+                marked.slice(0, 160),
+            );
         } else {
             check('the answer is accepted', false, 'no submit button');
         }
-    } else {
-        check('the answer is accepted', false, 'no option to choose');
     }
 }
 

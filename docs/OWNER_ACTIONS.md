@@ -125,14 +125,34 @@ The core daily loop is walked **locally**, end to end, and that walk found a
 real defect. What has never been exercised is the **deployment**: the deploy
 script, the built assets, the seeded database on that host.
 
-`docs/OPERATOR_CHECKLIST.md` is the walk script. Additionally, as of today:
+`docs/OPERATOR_CHECKLIST.md` is the walk script, and its **section 0 is now one
+command**:
 
-- [ ] The whole-app sweep now runs in ~7 minutes and is hermetic — it can be
-      pointed at staging:
-      `SMOKE_BASE_URL=https://test.akuru.edu.mv node scripts/smoke/page-errors.mjs`
-      Locally it reports 265 routes × 6 roles, **zero runtime or server
-      errors**. A different answer on staging is a deployment fault, and that
-      is exactly the comparison nobody has been able to make.
+```
+php artisan db:seed --class=SmokeMarkerSeeder
+SMOKE_BASE_URL=https://test.akuru.edu.mv node scripts/smoke/all.mjs
+```
+
+- [ ] Run it and record the summary in STATUS.md.
+
+**This used to name one script.** Ten had accumulated and nine of them were
+referenced nowhere an operator would look, so the item that gates the whole
+go-live path was pointing at a tenth of the evidence available. `all.mjs` runs
+the lot, exits non-zero if any fails, and prints the full output of failures
+only.
+
+What they cover: every screen loaded as six roles (265 routes, **zero runtime
+or server errors** locally), each screen showing a planted row, a family seeing
+their own child and nobody else's, a person creating records through the forms,
+a stranger enrolling themselves, a student taking a lesson, a teacher marking
+work a machine cannot mark, a family reporting an absence, a child being
+collected, and a parent booking a meeting. A different answer on staging is a
+deployment fault, and that is exactly the comparison nobody has been able to
+make.
+
+**Seven of the ten write data.** The runner refuses to start against a host
+whose name does not look synthetic; `--read` runs the three that only look.
+`test.akuru.edu.mv` is recognised as synthetic and runs everything.
 
 ---
 

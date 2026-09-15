@@ -39,7 +39,7 @@ const PASSWORD = process.env.SMOKE_PASSWORD ?? 'password';
 // a Title column — they show When / Teacher / Class / Seats — so the first
 // version of this walk marked the slots with `SMOKE-Meeting` and then looked
 // for a string no screen renders. Four failures, all of them its own. A slot
-// generated for tomorrow only is unambiguous and is what both screens print.
+// generated for one unused date is unambiguous and is what both screens print.
 const NOTES = 'SMOKE-Meeting-Note: I would like to talk about reading.';
 
 const HERMETIC_ARGS = [
@@ -93,7 +93,18 @@ async function settles(page, needle, ms = 5000) {
     return false;
 }
 
-const tomorrow = new Date(Date.now() + 86400000).toISOString().slice(0, 10);
+// A date no slot uses yet — read from the office table, not guessed.
+//
+// Two wrong fixes preceded this one. The first generated slots for *tomorrow*
+// every run, so the second run found them already there and already booked.
+// The second picked a **random** day 2–21 out, which is not a fix but a smaller
+// probability of the same bug: it duly collided on the fourth run, and the
+// collision explained both failures at once — `SaveMeetingSlotAction` will not
+// re-create slots that already exist, so there was no success flash, and the
+// first row for that date was already Booked, so there was no Book button.
+//
+// The day after the last slot anybody has is unique by construction.
+let meetingDate = null;
 
 // ------------------------------------------ the office publishes some slots
 
@@ -106,12 +117,17 @@ const teacherName = await staff
 
 check('the office has a teacher to make slots for', teacherName !== '', teacherName || 'the Teacher select is empty');
 
-await staff.fill('input[type=date]', tomorrow);
+const existingDates = (await text(staff)).match(/\d{4}-\d{2}-\d{2}/g) ?? [];
+const latest = existingDates.sort().pop();
+const base = latest && latest >= new Date().toISOString().slice(0, 10) ? latest : new Date().toISOString().slice(0, 10);
+meetingDate = new Date(Date.parse(base) + 86400000).toISOString().slice(0, 10);
+
+await staff.fill('input[type=date]', meetingDate);
 await staff.click('button:has-text("Generate slots")');
 
 const published = await settles(staff, 'Meeting slots saved.');
 check('the office generates and publishes slots', published, (await text(staff)).slice(0, 160));
-check('and they appear in the office table', (await text(staff)).includes(tomorrow), tomorrow);
+check('and they appear in the office table', (await text(staff)).includes(meetingDate), meetingDate);
 
 // ------------------------------------------------- the family books one
 
@@ -119,12 +135,19 @@ const parent = await signIn(PARENT);
 await parent.goto(`${BASE}/en/portal/meetings`, { waitUntil: 'networkidle' });
 
 const offered = await text(parent);
-check('the family is offered the slot', offered.includes(tomorrow), offered.slice(0, 200));
+check('the family is offered the slot', offered.includes(meetingDate), offered.slice(0, 200));
 check('and is told which teacher it is with', teacherName !== '' && offered.includes(teacherName), teacherName);
 
 let booked = false;
 let childName = '';
-const card = parent.locator('tr').filter({ hasText: tomorrow }).first();
+// The first **bookable** row for that date, not simply the first row. The
+// walk's subject is "can a family book a slot", not "can they book this exact
+// one", and picking by position meant a slot somebody had already taken made
+// the walk report that booking was broken.
+const card = parent.locator('tr')
+    .filter({ hasText: meetingDate })
+    .filter({ has: parent.locator('button:has-text("Book")') })
+    .first();
 const bookButton = card.locator('button:has-text("Book")').first();
 
 if (await bookButton.count()) {
@@ -152,19 +175,27 @@ if (booked) {
     // The **row**, and the child's name in its Booked cell. A `/Booked/i` over
     // the page matched the table's own column heading, so it passed before the
     // family had booked anything — one more check that passed on silence.
-    const row = staff.locator('tr').filter({ hasText: tomorrow }).first();
+    const row = staff.locator('tr').filter({ hasText: meetingDate }).first();
     const cells = await row.locator('td').allInnerTexts().catch(() => []);
 
     check(
         'the office sees who booked it',
         (cells[3] ?? '').includes(childName),
-        cells.join(' | ').slice(0, 200) || 'no row for ' + tomorrow,
+        cells.join(' | ').slice(0, 200) || 'no row for ' + meetingDate,
     );
 }
 
 // ---------------------------------------------- and the teacher? the question
 
 const teacher = await signIn(TEACHER);
+
+// Without a child's name there is nothing to look for, and `includes('')` is
+// true of every page — which turned the `/portal/teacher` check into a false
+// failure the first time `all.mjs` ran this twice. An empty marker is a broken
+// walk, so it says so once rather than poisoning three checks.
+if (childName === '') {
+    check('a child name was captured to search for', false, 'booking did not happen, so the checks below cannot mean anything');
+}
 
 // `/teach/meetings` is the answer this walk was written to ask for and now
 // gets. The other three are kept and reported: they are where a teacher would
@@ -181,7 +212,7 @@ for (const [label, path, expected] of [
     const status = response.status();
     const body = status === 200 ? await text(teacher) : '';
 
-    const sees = status === 200 && body.includes(tomorrow) && body.includes(childName);
+    const sees = childName !== '' && status === 200 && body.includes(meetingDate) && body.includes(childName);
 
     check(
         expected
@@ -189,7 +220,7 @@ for (const [label, path, expected] of [
             : `${label} is not where it shows up (recorded, not required)`,
         sees === expected,
         status === 200
-            ? (sees ? body.slice(0, 200) : `HTTP 200, nothing for ${tomorrow}`)
+            ? (sees ? body.slice(0, 200) : `HTTP 200, nothing for ${meetingDate}`)
             : `HTTP ${status}`,
     );
 }
