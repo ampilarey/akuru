@@ -75,6 +75,7 @@ class SmokeMarkerSeeder extends Seeder
         $this->sensitiveRecords($year, $studentId, $admin);
         $this->payslips($admin);
         $this->dailyLists($year, $studentId, $admin);
+        $this->pronunciation();
 
         // A default `migrate:fresh --seed` leaves `staff_profiles` empty, and
         // this used to skip the whole HR block in silence — so the sweep
@@ -899,6 +900,53 @@ class SmokeMarkerSeeder extends Seeder
      * earlier probe vacuous — but the owner still needs a document to get a
      * 200, so both halves of the pair need one.
      */
+    /**
+     * §1d's preconditions, cleared — not a marker row.
+     *
+     * The pronunciation walk records an attempt, has a teacher verify it, and
+     * has an admin approve the training sample that verdict creates. All three
+     * queues are ordered oldest-first and every one of those steps is one-way,
+     * so on a second run the walk would be reviewing the *first* run's attempt
+     * while its own sat at the bottom of the queue — and the counts it measures
+     * would drift by one each time.
+     *
+     * Clearing this student's attempts leaves the queue holding exactly what
+     * the walk is about to put in it, which is the same rule the pick-up
+     * preconditions follow: the fixture owns the state it depends on.
+     */
+    private function pronunciation(): void
+    {
+        $studentUserId = (int) DB::table('users')->where('email', 'student@akuru.edu.mv')->value('id');
+
+        if ($studentUserId === 0) {
+            return;
+        }
+
+        $attemptIds = DB::table('arabic_pronunciation_attempts')
+            ->where('student_user_id', $studentUserId)
+            ->pluck('id');
+
+        if ($attemptIds->isEmpty()) {
+            return;
+        }
+
+        // The audio each one carries, gathered before the rows naming it go.
+        $mediaIds = DB::table('arabic_pronunciation_attempts')
+            ->whereIn('id', $attemptIds)
+            ->pluck('audio_media_file_id')
+            ->merge(
+                DB::table('training_samples')
+                    ->whereIn('arabic_pronunciation_attempt_id', $attemptIds)
+                    ->pluck('audio_media_file_id')
+            )
+            ->filter()
+            ->unique();
+
+        DB::table('training_samples')->whereIn('arabic_pronunciation_attempt_id', $attemptIds)->delete();
+        DB::table('arabic_pronunciation_attempts')->whereIn('id', $attemptIds)->delete();
+        DB::table('media_files')->whereIn('id', $mediaIds)->delete();
+    }
+
     private function payslips(?object $admin): void
     {
         $staff = StaffProfile::query()->orderBy('id')->take(2)->get();

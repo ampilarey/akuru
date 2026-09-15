@@ -18,7 +18,7 @@
  *
  * ## Read-only and writing walks are separated, on purpose
  *
- * Three of these only look at screens. The other **eleven write**: they enrol a
+ * Three of these only look at screens. The other **twelve write**: they enrol a
  * stranger on a course, submit and approve an absence note, request that a
  * child be collected, book a parent-teacher meeting, and publish an article to
  * the library. That is exactly what makes them worth running — and exactly why
@@ -26,7 +26,7 @@
  *
  *   node scripts/smoke/all.mjs            every walk (the default)
  *   node scripts/smoke/all.mjs --read     the three that only look
- *   node scripts/smoke/all.mjs --write    the eleven that change data
+ *   node scripts/smoke/all.mjs --write    the twelve that change data
  *   node scripts/smoke/all.mjs learn review     just those, by name
  *
  * A writing run against a host whose name does not look synthetic asks for
@@ -109,6 +109,7 @@ const WALKS = [
     { name: 'peer-review', writes: true, asks: 'Does the research peer-review gate refuse, and can it be satisfied?' },
     { name: 'earnings', writes: true, asks: 'Does a sale become the writer\'s money, and does the payout gate say why not?' },
     { name: 'money', writes: true, asks: 'Can the school take money without a gateway, and give it back?' },
+    { name: 'pronounce', writes: true, asks: 'Can a student hand in a recording, and does a human ear decide it?' },
 ];
 
 const args = process.argv.slice(2);
@@ -138,8 +139,8 @@ const looksSynthetic = /localhost|127\.0\.0\.1|\btest\.|\bstaging\.|\bdev\./i.te
 if (selected.some((walk) => walk.writes) && !looksSynthetic && process.env.SMOKE_I_KNOW_THIS_WRITES !== 'yes') {
     console.error(`\nRefusing to run writing walks against ${BASE}.`);
     console.error('These walks submit absence notes, request that children be collected,');
-    console.error('book meetings and enrol people. On a host with real families on it that');
-    console.error('means real messages to real people.\n');
+    console.error('book meetings, enrol people and hand in recordings. On a host with');
+    console.error('real families on it that means real messages to real people.\n');
     console.error('If this host is synthetic, re-run with SMOKE_I_KNOW_THIS_WRITES=yes,');
     console.error('or use --read for the three walks that only look at screens.\n');
     process.exit(2);

@@ -4304,6 +4304,91 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5ej. The site blocked its own microphone, so Arabic B had no student (2026-09-15)
+
+§1d was the next line on `OPERATOR_CHECKLIST` and had been left for a person
+since it was written, on the grounds that it **needs a mic**. It does not:
+Chromium hands `getUserMedia` a synthetic audio stream on
+`--use-fake-device-for-media-stream` and grants the permission without asking on
+`--use-fake-ui-for-media-stream`, so the page runs the real `MediaRecorder` and
+posts a real `.webm` the server cannot tell from a person's.
+
+**The first run never got past the Record button.**
+
+```
+Permissions policy violation: microphone is not allowed in this document.
+NotAllowedError: Permission denied
+```
+
+Not the walk's flags — the app's own response header:
+
+```
+Permissions-Policy: geolocation=(), camera=(), microphone=()
+```
+
+`()` is an **empty allowlist**, not a default. It denies every origin including
+this one, and **no browser setting can override a response header**. So
+`/learn/pronounce` threw for every student, in every browser, on every
+deployment.
+
+**The blast radius is the whole student half of SPEC §51.** The recorder, the
+teacher's review queue, the training dataset, the export manifest and the model
+shelf all sit downstream of a student recording one sound. None of them could
+ever have received an attempt. Everything above them was built, tested and
+reported on.
+
+**And the message sent the student the wrong way.** A policy block throws the
+same `NotAllowedError` a visitor's own refusal throws, so it was classified as
+"denied" and the screen read *"Allow microphone access for this site and try
+again"* — a setting that was never the problem and cannot fix it.
+
+**Why it survived.** It arrived with the **E8 student-pick-up slice** (#243),
+which has nothing to do with audio — closing camera and microphone reads as
+plain hygiene in a diff about collecting children. And **no test named any of
+the six security headers**, so the value could change without a failure
+anywhere. The pronunciation feature tests post a file directly and never touch
+`getUserMedia`, so they stayed green the whole time.
+
+Fixed to `microphone=(self)`: same-origin may *ask*, the browser still prompts,
+the visitor may still refuse, cross-origin frames stay denied. Geolocation and
+camera stay `()` because nothing calls them. `recordingSupport()` now reads
+`document.permissionsPolicy`/`featurePolicy` before offering the button and
+reports a policy block as its own reason — *"This site is set up to block the
+microphone… please tell the school"* — because the two cases need opposite
+advice and only one of them is the student's to fix. ADR-036, KNOWN_ISSUES #34.
+
+**Revert-checked, both directions.** With the header back to `microphone=()` the
+walk goes red on the recording step and prints the screen's own new sentence;
+with it fixed, **17/17 twice back to back**. Three new Pest tests name the
+headers so this cannot return silently.
+
+**The sixth instance of the session's shape** — configured, enforced, reported
+on, and unreachable (#25, #26, #27, #31, #33) — and the largest. A one-line
+header in an unrelated slice switched off a whole SPEC section's student-facing
+half, and CI, the feature tests and two audits all stayed green over it.
+
+### Four walk faults on the way, all mine
+
+- **Five stale reads**, the same Inertia repaint race the money walk had: a
+  submitted recording, an accepted verdict, an approved sample and an export
+  all reported as failures while the database showed every one had worked. Now
+  routed through one `settles()` helper keyed on what each action produces.
+- **`cannotRecord` asked whether the button existed**, not whether it was
+  usable. The button is always rendered and goes `disabled` when the
+  environment cannot record — so the walk found it, clicked it, and hung for
+  thirty seconds on a screen that was explaining itself perfectly well. The
+  defect this walk exists to catch was the one case it could not report.
+- **Two locators counted placeholder rows.** An empty teacher queue still
+  renders a row, so a bare `tbody tr` count said "1 waiting" over an empty
+  queue and then timed out reading a second cell that placeholder does not
+  have. The admin screen has three tables, so the same bare count included the
+  model shelf's "No model versions registered." row. Both now scope to the row
+  carrying the control — the §5eb lesson, twice more.
+
+§1d is now automated. What is left by hand: §1e recitation, §1g mobile
+(including the one thing a fake device cannot prove — that a real voice through
+a real microphone records audibly), and the §4 device work.
+
 ## 5ei. A refunded family could never enrol again (2026-09-15)
 
 §1f's last unautomated line was the offering price override. Walking it needed
