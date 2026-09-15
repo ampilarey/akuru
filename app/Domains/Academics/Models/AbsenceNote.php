@@ -122,6 +122,29 @@ class AbsenceNote extends Model
     }
 
     /**
+     * Does approving this note excuse the register?
+     *
+     * E10c: the **type** decides, with the per-note boolean as the fallback for
+     * notes written before types existed — which is why `affects_attendance` is
+     * still written, so the two cannot drift.
+     *
+     * It lives on the model because two actions now ask the same question from
+     * opposite directions: `ApproveAbsenceNoteAction`, when the note arrives
+     * after the register, and `RecordClassAttendanceAction`, when the register
+     * arrives after the note. Two copies of this rule would be two answers to
+     * "is this absence excused" (rule 11), and they would drift the first time
+     * the policy changed.
+     */
+    public function excusesAttendance(): bool
+    {
+        if ($this->absence_type_id !== null) {
+            return (bool) AbsenceType::query()->whereKey($this->absence_type_id)->value('excuses_absence');
+        }
+
+        return (bool) $this->affects_attendance;
+    }
+
+    /**
      * Get the status badge color for UI
      */
     public function getStatusColorAttribute(): string

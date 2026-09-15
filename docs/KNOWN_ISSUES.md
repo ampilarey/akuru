@@ -1258,6 +1258,54 @@ The loop itself works, end to end, and is now walked and tested — see STATUS
 
 ---
 
+### 29. An absence the family reported in the morning was still recorded as unexcused
+
+**Fixed (2026-09-15) — found by walking the loop in the ordinary order.**
+
+`ApproveAbsenceNoteAction` excuses the register by flipping rows it finds:
+"matching absent rows → excused". That handles one order — the register is
+filled, the child is marked absent, the note arrives afterwards — and it is the
+order every test used.
+
+**The ordinary order is the other one.** A family tells the school at 7am that
+the child is ill, the office approves it at 8, and a teacher fills the 9am
+register. The approval ran against **no attendance rows at all**, and the
+absent mark written an hour later carried no note.
+
+**Severity: harm, and there was no way back from it.**
+
+- The guardian gets an absence SMS about the absence they had just reported.
+  The walk shows it on the family's own screen: the row reads `ABSENT` and the
+  notified column reads **Sent**.
+- The child joins `unexcused()`, the chronic-absence list.
+- **The office cannot correct it.** A teacher marking the row `excused` is
+  refused by `RecordClassAttendanceAction::guardExcused` (#15, correctly — an
+  excusal must carry its note), and re-approving the note throws *"This note is
+  already approved."* There is no third route.
+
+The rule now lives in the writer beside its mirror image, for the reason
+`guardExcused` already gives: every route into `class_attendance` — both grids,
+a CSV import, a future card reader — passes through that one writer. An absence
+marked for a child who has an **approved, excusing** note for that date (and
+that period, if the note names one) is recorded as excused with the note
+attached. An excusal still comes only from an approved note.
+
+`excusesAttendance()` moved onto `AbsenceNote` in the same slice: two actions
+now ask the same question from opposite directions, and two copies of the E10c
+type-or-boolean rule would be two answers to "is this absence excused"
+(rule 11).
+
+Five boundary tests ship with it, each asserting the SMS **still goes out**: a
+note that does not excuse, a note still waiting for approval, yesterday's note,
+another child's note, and a child who turned up after all. A rule that excuses
+too much is worse than the defect it replaces — an excused row is silent in
+three directions at once.
+
+Walked end to end in a browser, three actors and the failing order:
+`scripts/smoke/absence.mjs`, 13/13. STATUS §5ea.
+
+---
+
 ## Explicitly not defects
 
 - **Payroll off** — `PAYROLL_ENABLED=false` and settings `payroll.enabled` — by design (S5.6).
