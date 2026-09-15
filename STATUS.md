@@ -4304,6 +4304,53 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5dy. The paid funnel's one button dropped the customer with no explanation (2026-09-15)
+
+§5dw walked the **free** funnel. Pointing the same walk at a **paid** course
+found the last reachable defect on the money path.
+
+**The good news first, because it is the part that matters most.** A paid course
+does **not** grant access without payment: the enrolment lands `status = pending`,
+`payment_status = pending`, linked to a `payments` row `initiated` for the right
+amount with a merchant reference. Rule 12 holds through the real funnel.
+
+**The defect.** The completion page correctly offers one button — **Proceed to
+payment**. With the gateway unconfigured — *which is the state of production
+today* (`OWNER_ACTIONS` item 2) — `paymentRetry` redirects to the course list
+with *"Payment gateway not configured"*.
+
+**And nothing rendered it.** `public/layouts/public.blade.php` displayed **no
+flash messages at all**, so every `redirect()->with('error', …)` from a public
+controller showed the visitor nothing. A family finishes registering, clicks the
+only button offered, and lands on a course list with money outstanding and no
+explanation.
+
+The same shape as §5dr's dead-end resume link, on the other payment path: the
+code was right and the person was told nothing.
+
+**Fixed in the layout, not at that redirect**, because every public
+`with('error')` had the same problem. Three tests, two of which fail with the
+layout change reverted — and the third asserts the layout says **nothing** when
+there is nothing to say, so an always-rendered empty box could not make the
+other two pass.
+
+### Four assertions before one that meant anything
+
+This one is worth recording because the failure mode was mine, four times in a
+row, on the same check:
+
+1. `/payment|bank|…/` against the whole page — **"payment" appears in the course
+   list's own copy**, so it passed on silence.
+2. Added `.bg-amber-50, .text-red-600, .alert` to the selector — matched a **nav
+   element** and reported *"Log out"* as the customer's explanation.
+3. `[role=alert]` only — which is what a screen reader announces, and what the
+   fix actually adds. That one failed, correctly, and stayed failing until the
+   layout rendered the message.
+
+The lesson is the same one as the walks that guessed their own routes: **a check
+written to pass is a check that will**. Assert the specific thing the fix is
+supposed to produce, then prove it fails without it.
+
 ## 5dx. Money turns into access — the whole chain, under the config that goes live (2026-09-14)
 
 §5dw walked the funnel as far as a **free** course. This covers the part it

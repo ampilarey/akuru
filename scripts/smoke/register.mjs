@@ -207,6 +207,46 @@ if (p.url().includes('register/continue')) {
   }
 }
 
+// A paid course stops here with the money still outstanding: the enrolment is
+// `pending`, a `payments` row is `initiated`, and the page offers "Proceed to
+// payment". Whether that button leads anywhere depends on BML being configured,
+// which is exactly what OWNER_ACTIONS item 2 is about — so the walk reports
+// what a paying customer actually gets rather than assuming.
+const proceed = p.locator('a:has-text("Proceed to payment")').first();
+
+if (await proceed.count()) {
+  check('a paid course asks for payment rather than claiming to be done', true);
+
+  await proceed.click().catch(() => {});
+  await p.waitForLoadState('networkidle').catch(() => {});
+
+  const offsite = !p.url().startsWith(BASE);
+
+  if (offsite) {
+    check('the payment hand-off reaches the gateway', true, 'left the site for BML');
+  } else {
+    // Back on our own site means initiation failed. The only honest question
+    // then is whether the customer is *told* — a bare redirect to the course
+    // list, with money outstanding, is the dead end that #383 fixed on the
+    // other return path. Looked for in the alert region, not anywhere on the
+    // page: "payment" appears in the course list's own copy, so a loose match
+    // would pass on silence.
+    // `[role=alert]` only. An earlier version also matched `.bg-amber-50` and
+    // friends, which caught a nav element and reported "Log out" as the
+    // explanation — a check that passed on silence.
+    const alert = (await p.locator('[role=alert]').first()
+      .innerText().catch(() => '')).replace(/\s+/g, ' ').trim();
+
+    check(
+      'a failed hand-off tells the customer why',
+      alert.length > 0,
+      alert ? alert.slice(0, 80) : 'NO MESSAGE — dropped on ' + p.url()
+    );
+  }
+} else {
+  check('a free course finishes without asking for money', true);
+}
+
 const width = Math.max(...results.map(([s]) => s.length));
 for (const [s, ok, d] of results) console.log(`${ok ? 'ok  ' : 'FAIL'}  ${s.padEnd(width)}  ${d}`);
 console.log(problems.length ? '\nproblems: ' + problems.join(' | ') : '\nno console or server errors');

@@ -141,6 +141,31 @@
     <x-public.nav />
 
     <main class="min-h-[70vh]">
+        {{--
+            Flash messages, on every public page.
+
+            Nothing here rendered them, so a `redirect()->with('error', …)` from
+            a public controller showed the visitor **nothing**. The case that
+            found it: a paying family finishes registration, clicks the one
+            button offered — "Proceed to payment" — and, if the gateway is not
+            configured, lands back on the course list with money outstanding and
+            no explanation. `paymentRetry` sets the message; the layout dropped
+            it on the floor.
+
+            Same shape as the dead-end resume link (STATUS §5dr), on the other
+            payment path: the code was right and the person was told nothing.
+            Fixed in the layout rather than at that one redirect, because every
+            public `with('error')` had the same problem.
+        --}}
+        @foreach (['error' => 'red', 'success' => 'green', 'status' => 'blue'] as $key => $tone)
+            @if (session($key))
+                <div role="alert"
+                     class="mx-auto mt-4 max-w-3xl rounded border border-{{ $tone }}-200 bg-{{ $tone }}-50 px-4 py-3 text-sm text-{{ $tone }}-800">
+                    {{ session($key) }}
+                </div>
+            @endif
+        @endforeach
+
         @yield('content')
     </main>
     
