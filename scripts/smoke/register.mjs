@@ -78,7 +78,14 @@ const RUN_ID = UNIQUE();
 // than claimed unique, because it is not.
 const PHONE = '9' + String(Math.floor(Math.random() * 1e6)).padStart(6, '0');
 const EMAIL = `smoke${RUN_ID}@example.test`;
-const NATIONAL_ID = `A${RUN_ID}`;
+// A letter and 5–9 **digits** — `regex:/^[A-Za-z][0-9]{5,9}$/` in
+// CourseRegistrationController. The first attempt at fixing the wrapping id
+// used the base-36 value above, which is alphanumeric, and the form refused it
+// exactly as it should; the full fifteen-walk run caught that within minutes.
+// Worth recording in a change that is *about* carelessly chosen values: a value
+// has to satisfy the field before it is worth making unique. Nine digits is a
+// space of a billion, which does not wrap in any practical sense.
+const NATIONAL_ID = `A${String(Math.floor(Math.random() * 1e9)).padStart(9, '0')}`;
 
 const results = [];
 const check = (step, ok, detail = '') => results.push([step, ok, detail]);

@@ -4411,6 +4411,31 @@ routinely. All four now use the non-wrapping form.
 this session's walk faults now reads roughly twenty-five, of which these are
 the first that would have failed *silently*.
 
+### And the fix broke a walk, in a change about careless values
+
+The first attempt gave `register` a national id of `A` + the base-36 run id.
+`CourseRegistrationController` requires `regex:/^[A-Za-z][0-9]{5,9}$/` — a
+letter and **digits** — so the form refused it, correctly.
+
+It got past the first screen because that step validates only
+`['nullable','string','max:20']`; the regex lives on the **review** step, so the
+walk registered fine and was then refused at review, which is where it failed:
+
+```
+FAIL  the review step is accepted
+FAIL  the confirmation code screen appears   no otp_code field after pressing send
+```
+
+**Caught by the full fifteen-walk run within minutes**, which is the second time
+today the whole-suite run has earned its eleven minutes over a per-walk check.
+Now nine random digits — a space of a billion, and a shape the field accepts.
+`register` 14/14 twice.
+
+Worth recording plainly because of where it happened: in a commit *about*
+values chosen without checking. **A value has to satisfy the field before it is
+worth making unique**, and I reached for uniqueness first in six places without
+reading a single validation rule. Five of the six happened to be free-text.
+
 **The general lesson, recorded because it keeps costing runs:** when a walk
 fault is found, the same fault is worth *searching for* in the others rather
 than noting. "Picks a value by chance and calls it unique" was fixed in
