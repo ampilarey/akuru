@@ -4306,6 +4306,53 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5ep. `main` is not branch-protected, and never has been (2026-09-15)
+
+§5's housekeeping line: *"confirm `docs/BRANCH_PROTECTION.md` is applied on
+`main`"*. That document says an agent cannot read the protection endpoint — 403
+since 2026-08-25 — and it is still true: no `gh`, no direct API, and the GitHub
+MCP server exposes no branch-protection tool.
+
+**The answer did not need that endpoint.** Two signals, both readable with
+ordinary permissions, agree:
+
+1. `GET /repos/ampilarey/akuru/branches` reports `main` as **`"protected":
+   false`**.
+2. **#402's `mergeable_state` was `unstable`, not `blocked`,** while the
+   `quality` check was still running. A *required* check that has not reported
+   yet produces `blocked`; `unstable` means the pending check is **not
+   required**.
+
+So `main` accepts direct pushes and force pushes, and does not require CI
+before a merge.
+
+**What that means for everything built on top of it.** CLAUDE.md's merge-gate
+line reads *"`main` is branch-protected — required CI check pre-merge, no
+direct pushes"*. It is not. **Every merge gate this project runs on has been
+discipline, not mechanism** — one slice per PR, CI green before merge, no
+direct pushes to `main`. It has held, across roughly a dozen merges today
+alone, but nothing was enforcing it. ADR-027's *"read the conclusion back,
+never assume it"* turns out to be the only thing standing between a green
+merge and an unchecked one.
+
+That is not a reason to relax it. It is a reason to say out loud that the
+safety net is a habit, and to get the real one applied.
+
+**Correcting CLAUDE.md is an owner's call**, so the finding is recorded in
+`docs/BRANCH_PROTECTION.md` and `OPERATOR_CHECKLIST` §5 and flagged rather than
+edited into the governing file.
+
+**One caveat, stated so nobody over-reads it.** `protected` in the branches
+listing reflects **classic** branch protection; a repository using a **ruleset**
+could read `false` while rules were in force. Signal 2 makes that unlikely — a
+ruleset requiring `quality` would also produce `blocked` — but a repo admin
+running the `gh api` line in `BRANCH_PROTECTION.md` settles it in one command,
+and that is the only thing that closes this line properly.
+
+**Also checked:** the leftover `ci-control-main` branch (§5's last housekeeping
+line) **is still there**, at `c193789`. Deleting a remote branch is outward
+facing and irreversible, so it is reported rather than done.
+
 ## 5eo. The one deploy gate with no command, and two faults in its SQL (2026-09-15)
 
 §5's first line: run the verification query recorded in §5h; when it returns
