@@ -32,17 +32,61 @@ const BASE = process.env.SMOKE_BASE_URL ?? 'http://127.0.0.1:8000';
 const USER = process.env.SMOKE_USER ?? 'admin@akuru.edu.mv';
 const PASSWORD = process.env.SMOKE_PASSWORD ?? 'password';
 
-// Unique per run, so re-running cannot collide with its own earlier rows.
-const RUN = Date.now().toString().slice(-6);
+/**
+ * Unique per run, which the old marker only looked like being.
+ *
+ * It was `Date.now().toString().slice(-6)`, the last six digits of the epoch in
+ * milliseconds, and those **repeat every 1,000 seconds**. Two runs about
+ * sixteen minutes apart get the same marker, and then a step passes because the
+ * *earlier* run's row is still on the screen. That is a false green, which is
+ * worse than the false reds this sweep has been producing: it reports a form as
+ * working without ever testing it.
+ *
+ * Base-36 time plus four random characters, uppercased so it survives being
+ * typed into a name field and read back out of one.
+ */
+const RUN = `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`.toUpperCase();
+
 const dayOffset = (n) => {
   const d = new Date();
   d.setDate(d.getDate() + n);
   return d.toISOString().slice(0, 10);
 };
 
+/**
+ * The day after the last calendar entry there is, read off the screen.
+ *
+ * The date used to be `dayOffset(20 + (Number(RUN) % 40))` under a comment
+ * claiming re-running could not collide. It is a pick from forty slots, not a
+ * unique value: after twelve runs there were twelve entries scattered across
+ * that window and a thirteenth run had roughly a one-in-three chance of landing
+ * on one — at which point the form correctly refused a duplicate and the sweep
+ * reported a working screen as broken. **The same fault the meetings walk had**
+ * (STATUS §5ed), in a walk nobody had gone back to.
+ *
+ * Asking the screen what already exists removes the guess entirely: the next
+ * day is free however many times this has run.
+ */
+const dayAfterLastCalendarEntry = async (page) => {
+  // Scoped to the table rather than the whole body, so a date that appears in
+  // navigation or a footer cannot decide where this row goes.
+  const text = await page.locator('tbody').first().innerText().catch(() => '');
+  const dates = (text.match(/\d{4}-\d{2}-\d{2}/g) ?? []).sort();
+  const last = dates[dates.length - 1];
+
+  if (!last) {
+    return dayOffset(20);
+  }
+
+  const next = new Date(`${last}T00:00:00Z`);
+  next.setUTCDate(next.getUTCDate() + 1);
+
+  return next.toISOString().slice(0, 10);
+};
+
 const SCREENS = [
   { slice: 'S2.1  rooms',        path: '/en/academics/rooms',   button: /create room/i },
-  { slice: 'S2.5  calendar days', path: '/en/academics/calendar', button: /add|create|save/i, date: dayOffset(20 + (Number(RUN) % 40)) },
+  { slice: 'S2.5  calendar days', path: '/en/academics/calendar', button: /add|create|save/i, date: dayAfterLastCalendarEntry },
   // The first field on this form is a bare text box for a **student id** —
   // no placeholder, no picker, a number the person recording behaviour is
   // expected to know. Hence a positional hint, and hence the note in STATUS.
@@ -123,6 +167,10 @@ for (const { slice, path, button, hints = {}, byIndex = {}, date } of SCREENS) {
   await page.goto(BASE + path, { waitUntil: 'domcontentloaded' });
   await page.waitForTimeout(1000);
 
+  // Resolved here, not when SCREENS was built: a date that has to avoid what is
+  // already stored can only be chosen once the screen showing it is open.
+  const wantedDate = typeof date === 'function' ? await date(page) : date;
+
   let target = null;
   for (const b of await page.$$('button')) {
     if (button.test((await b.innerText().catch(() => '')).trim())) { target = b; break; }
@@ -146,7 +194,7 @@ for (const { slice, path, button, hints = {}, byIndex = {}, date } of SCREENS) {
         if (options.length) await control.selectOption(options[0]);
       } else if (type === 'checkbox' || type === 'radio') { /* keep the default */ }
       else if (type === 'number') await control.fill('3');
-      else if (type === 'date') await control.fill(date ?? dayOffset(0));
+      else if (type === 'date') await control.fill(wantedDate ?? dayOffset(0));
       else if (type === 'time') await control.fill('11:00');
       else if (!filledText) { await control.fill(marker); filledText = true; }
       else await control.fill('smoke');

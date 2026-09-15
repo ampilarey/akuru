@@ -47,7 +47,12 @@ const PASSWORD = process.env.SMOKE_PASSWORD ?? 'password';
 
 // Unique per run: the loop ends published, and publication is not reversible
 // from any screen here.
-const STAMP = new Date().toISOString().replace(/[^0-9]/g, '').slice(8, 14);
+// Time-of-day (HHMMSS) repeats every 24 hours, and this stamp is what the walk
+// looks for to find the row it just created — so a run at the same second on
+// any other day finds the *earlier* run's row and passes without testing
+// anything. A scheduled nightly run is precisely that case. Base-36 time plus
+// randomness does not wrap (STATUS §5ek).
+const STAMP = `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`.toUpperCase();
 const TITLE = `SMOKE-Research ${STAMP}`;
 const CITATION = `SMOKE-Citation ${STAMP}: Wright, A Grammar of the Arabic Language.`;
 const REVISE = 'SMOKE-Revise: the method section needs a sample size.';

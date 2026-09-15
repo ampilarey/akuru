@@ -50,7 +50,7 @@ const PASSWORD = process.env.SMOKE_PASSWORD ?? 'password';
 
 const COURSE = 'SMOKE-Payable-Course';
 const AMOUNT = '250';
-const RECEIPT = `SMOKE-Receipt ${new Date().toISOString().replace(/[^0-9]/g, '').slice(8, 14)}`;
+const RECEIPT = `SMOKE-Receipt ${Date.now().toString(36).toUpperCase()}`;
 const REASON = 'SMOKE-Refund: family withdrew before the course began.';
 // Who the seeded payable enrolment belongs to. The payments screen identifies a
 // payment by student, and the refund is supposed to land in *their* wallet.

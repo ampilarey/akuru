@@ -48,7 +48,12 @@ const READER = process.env.SMOKE_READER ?? 'parent@akuru.edu.mv';
 const STAFF = process.env.SMOKE_STAFF ?? 'admin@akuru.edu.mv';
 const PASSWORD = process.env.SMOKE_PASSWORD ?? 'password';
 
-const STAMP = new Date().toISOString().replace(/[^0-9]/g, '').slice(8, 14);
+// Time-of-day (HHMMSS) repeats every 24 hours, and this stamp is what the walk
+// looks for to find the row it just created — so a run at the same second on
+// any other day finds the *earlier* run's row and passes without testing
+// anything. A scheduled nightly run is precisely that case. Base-36 time plus
+// randomness does not wrap (STATUS §5ek).
+const STAMP = `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`.toUpperCase();
 const TITLE = `SMOKE-Paid ${STAMP}`;
 const PRICE = 100;
 // §22's default split is writer 70 / Akuru 30, so a 100 sale is 70 to the
