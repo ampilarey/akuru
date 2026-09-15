@@ -1,6 +1,7 @@
 import { router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 import AppShell from '../../Layouts/AppShell';
+import FormErrors from '../../Components/FormErrors';
 
 function AssignmentCard({ assignment, t }) {
     const [comment, setComment] = useState('');
@@ -52,6 +53,10 @@ export default function Review({ assignments }) {
 
     return (
         <AppShell title={t.review_title || 'Peer review'}>
+            {/* The recommendation buttons post without a form, so a refusal —
+                reviewing somebody else's assignment, or one already done — had
+                nowhere to appear. */}
+            <FormErrors errors={usePage().props.errors} className="mb-4" />
             {flash.success && <p className="mb-4 rounded bg-green-50 p-3 text-green-700">{flash.success}</p>}
             {assignments.length === 0 && <p className="text-gray-500">{t.review_empty || 'No review assignments.'}</p>}
             {assignments.map((assignment) => <AssignmentCard key={assignment.id} assignment={assignment} t={t} />)}

@@ -1389,6 +1389,44 @@ found. STATUS §5ee.
 
 ---
 
+### 32. A gate that refused and told nobody
+
+**Fixed (2026-09-15) — found by walking the peer-review refusal.**
+
+L7 (§12.2/§29) will not let an editor publish a **research** item until a peer
+reviewer has recommended accept. The gate works: the server refuses, the item
+stays `submitted`, and no review row is written.
+
+**And the screen said nothing at all.** The editor clicks *Approve & publish*,
+the POST 302s back with the validation error, and the page is unchanged — no
+message, no explanation. From the editor's side the button simply does not
+work, and nothing on the page suggests a peer reviewer is what is missing.
+
+Same shape as the public layout that carried a flash and never rendered it
+(STATUS §5dy): the message was set, carried, and dropped on the floor.
+
+**Why `FormErrors` had not already caught it.** That component was added in
+§5cn precisely for this family — *"28 of the 92 Inertia pages that submit a form
+never referenced `errors` at all"* — but it takes `form.errors`, so the pages it
+reached were the ones using `useForm`. **A bare `router.post` has no form
+object**, and four controls on the library admin page use one: deciding a writer
+application, deciding a payout, reviewing a submission, and assigning a
+reviewer. The reviewer portal and the writer portal's submit-for-review are the
+same.
+
+The three Library pages now render `usePage().props.errors`. Assigning a
+reviewer by an email nobody has, reviewing an item in the wrong state, or
+publishing research with no accept on file all say so now.
+
+**The wider gap is real and not closed here.** Roughly twenty other pages use
+`router.post`/`put`/`delete` without referencing `errors` at all. They are
+listed by `grep -rln 'router\.post' resources/js/Pages/` minus those mentioning
+`errors`. Each needs the same one-line addition, but a refusal that nobody has
+demonstrated is a guess, and this slice fixes the one with a proven gate behind
+it. STATUS §5ef.
+
+---
+
 ## Explicitly not defects
 
 - **Payroll off** — `PAYROLL_ENABLED=false` and settings `payroll.enabled` — by design (S5.6).

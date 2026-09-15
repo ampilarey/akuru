@@ -1,4 +1,4 @@
-import { router, useForm } from '@inertiajs/react';
+import { router, useForm, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 import AppShell from '../../Layouts/AppShell';
 import FormErrors from '../../Components/FormErrors';
@@ -282,6 +282,17 @@ function CategoryForm() {
 export default function Admin({ items, categories, options, sales = [], queues = { applications: [], submissions: [] }, payouts = { requests: [], writers: [] } }) {
     return (
         <AppShell title="Library admin">
+            {/* Four controls on this page post through `router.post` with no
+                form object, so a refusal had nowhere to land: the peer-review
+                gate correctly declined to publish research with no accept on
+                file, and the screen said **nothing at all** — the button simply
+                appeared not to work. Same shape as the public layout that
+                carried a flash and never rendered it (STATUS §5dy).
+
+                `FormErrors` takes `form.errors`, which is why the pages fixed
+                in §5cn were the ones using `useForm`; these have only the
+                shared `errors` prop. */}
+            <FormErrors errors={usePage().props.errors} className="mb-4" />
             <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
                 <CategoryForm />
                 <span className="flex gap-2">
