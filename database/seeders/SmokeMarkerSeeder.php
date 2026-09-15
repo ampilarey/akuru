@@ -152,6 +152,26 @@ class SmokeMarkerSeeder extends Seeder
             'created_at' => now(), 'updated_at' => now(),
         ]);
 
+        // E8's **preconditions**, reset, not just its marker row.
+        //
+        // `pickup.mjs` opens with two gates that only exist before anything has
+        // happened: a family cannot ask while pick-up is shut, and cannot ask
+        // before they have set a PIN. Both are one-way through the UI — the PIN
+        // has no unset, and the window from an earlier run is still open — so on
+        // a second run those two steps failed against a system that was working
+        // perfectly. The walk found it the first time the walks were run back to
+        // back (STATUS §5ed).
+        //
+        // Clearing them here rather than in the walk is the same rule the rest
+        // of this seeder follows: the fixture owns the state it depends on, and
+        // a walk that has to undo the last run is a walk that tests the undo.
+        DB::table('pickup_windows')->whereDate('date', now()->toDateString())->delete();
+        DB::table('pickup_pins')->whereIn(
+            'guardian_user_id',
+            DB::table('users')->where('email', 'parent@akuru.edu.mv')->pluck('id')
+        )->delete();
+
+        DB::table('pickup_notices')->whereDate('date', now()->toDateString())->delete();
         DB::table('pickup_notices')->where('note', 'SMOKE-Pickup')->delete();
         DB::table('pickup_notices')->insert([
             'academic_year_id' => $year->id, 'student_id' => $studentId,

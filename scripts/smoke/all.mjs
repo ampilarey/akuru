@@ -11,6 +11,10 @@
  * whatever `SMOKE_BASE_URL` points at and prints one table. It exits non-zero
  * if any walk fails, so it can gate a deploy.
  *
+ * **About six and a half minutes** locally, measured, of which `page-errors`
+ * is five — it loads 265 routes as six roles, which is some 1,600 page loads.
+ * Against a real web server rather than `artisan serve` it should be quicker.
+ *
  * ## Read-only and writing walks are separated, on purpose
  *
  * Three of these only look at screens. The other seven **write**: they enrol a

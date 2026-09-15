@@ -18,7 +18,7 @@ with a `teachers` row, and a parent/student pair for portal checks.
 **Do this before anything below.** Ten scripted walks drive real browsers
 through the loops that matter — a stranger enrolling, a student taking a
 lesson, a teacher marking work, a family reporting an absence, a child being
-collected, a parent booking a meeting — and they take about fifteen minutes
+collected, a parent booking a meeting — and they take about six and a half minutes
 against a host, unattended.
 
 ```
