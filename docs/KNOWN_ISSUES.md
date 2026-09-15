@@ -1306,6 +1306,43 @@ Walked end to end in a browser, three actors and the failing order:
 
 ---
 
+### 30. A teacher could not see who had booked a meeting with them
+
+**Fixed (2026-09-15) — found by walking the loop with the third actor.**
+
+`meeting_slots.teacher_id` names the teacher, and the family is shown that name
+on the slot before they book it. Both ends of a parent-teacher meeting knew
+whose meeting it was, and **the teacher had nowhere to see one**:
+
+- `/academics/meetings` — the office's screen, gated on `meetings.manage`,
+  which `admin`, `headmaster`, `supervisor` and `super_admin` hold and
+  `teacher` does not. **403.**
+- `/teach/schedule` — course sessions, from Offerings. Nothing.
+- `/portal/teacher` — the E1 teacher portal. Never mentioned meetings.
+
+`/teach/meetings` now lists the signed-in teacher's own published slots and who
+booked each one, with a CSV export. Read-only: generating, publishing and
+cancelling stay with the office.
+
+**Why this one was fixed and #28 was not.** They are the same shape — a teacher
+locked out of their own work — and the difference is whether "mine" can be
+expressed. Here it is a populated column on the row, so scoping is a `where`
+clause and no permission is widened. For the review queue, `course_instructor`
+has no rows and no writer, so somebody has to decide whether every teacher may
+read every pupil's submitted work. That is a disclosure decision and it is
+still item 16.
+
+Drafts are excluded — a meeting that may never be offered is worse than
+silence — and the list starts from **today** rather than now, so an 18:00
+meeting is still on screen at 18:05.
+
+Five tests, of which two are a pair: a teacher sees their own booking with the
+family's name on it, and a second teacher's list is asserted **empty**, because
+a page that leaks one row leaks the name on it. Walked in a browser with three
+actors: `scripts/smoke/meetings.mjs`, 11/11. STATUS §5ec.
+
+---
+
 ## Explicitly not defects
 
 - **Payroll off** — `PAYROLL_ENABLED=false` and settings `payroll.enabled` — by design (S5.6).

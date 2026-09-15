@@ -39,8 +39,15 @@ it('does not change AppShell.jsx as part of the IA proposal', function () {
     //   no reader at all, so the page is exactly the "otherwise unreachable"
     //   case this allowance exists for. It also makes the nav one link worse,
     //   which is KNOWN_ISSUES P3 #11 and still the owner's call.
+    // 106 → 107: +My meetings (`/teach/meetings`). The screen a teacher's own
+    //   parent-teacher bookings appear on, which had no screen at all — the
+    //   office's `/academics/meetings` answers 403 to a teacher, and neither
+    //   `/teach/schedule` nor `/portal/teacher` mentions meetings
+    //   (KNOWN_ISSUES #30). Unreachable without this link, which is the case
+    //   the allowance above is for. It also makes the nav one link worse,
+    //   which remains P3 #11 and the owner's call.
     $linkCount = substr_count($shell, '<Link href=');
-    expect($linkCount)->toBe(106);
+    expect($linkCount)->toBe(107);
 });
 
 it('does not register a product route for the proposal document', function () {
