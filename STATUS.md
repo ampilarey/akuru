@@ -4304,6 +4304,58 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5ee. A second go existed everywhere except where the learner could reach it (2026-09-15)
+
+The defect §5ed's runner found, by doing the one thing nobody had done: running
+a walk twice.
+
+The retake machinery was complete except for the person it is about. Authors
+set `retakes_allowed` and `retake_limit` — the authoring forms default to **3**
+for an activity and **2** for an assessment. Both submit paths enforce the
+policy. `nextNumber()` exists on both to number attempt two, and
+`SubmitActivityAttemptAction` creates it. The teacher's revision report says in
+so many words: *"Retry the weak item when retakes remain; otherwise review with
+a teacher."*
+
+**And no learner could ever start a second attempt.** Both players compute
+`submitted = attempt && attempt.status !== 'in_progress'` and disable every
+input and every button on it, permanently, with no control to begin again. A
+pupil told by their teacher to try again had nothing to press, and a policy
+three screens deep in the authoring UI could not be exercised by anybody.
+
+Same taxonomy as #25, #26, #27 and the sixteen status values in §5dq:
+**configured, enforced, reported on, unreachable.** No test caught it because
+every test asserted the server's behaviour, which was right all along.
+
+**One owner for the rule.** `ResolveRetakeStateAction` counts, and both
+`assertRetakesAvailable` methods delegate to it, so the player's *"can I try
+again?"* and the server's *"may you?"* are the same question. That matters more
+than usual here: a button offered and then refused is worse than no button. The
+two policies' existing difference is preserved rather than quietly unified —
+assessments have never had a `retakes_allowed` switch, and widening that would
+change behaviour for existing assessments, which is a decision.
+
+Activities need no new route, because submitting already creates the next
+attempt. Assessments get one, because an attempt carries question snapshots
+that have to be built when it starts.
+
+**The walk caught a bug seven passing feature tests could not see.** After
+submitting a retake, the Try again button never came back: Inertia re-renders
+the same component instance rather than remounting it, so the `retrying` flag
+survived the round trip — the second go would have been the last one anybody
+could take. The tests assert the props the controller sends, which were
+correct; only something driving a real browser sees component state. It is the
+clearest evidence this session for what the walks are for.
+
+`learn` now runs three times consecutively with no re-seed, because it uses the
+fix it found — retiring one of the three "re-seed first" messages §5ed added.
+
+**The thin-controller gate fired** on `LearnAssessmentController::show`, which
+the retake prop pushed past its baselined 42 lines. The attempt logic moved out
+rather than the number going up; `show` is now **23** lines, under the
+threshold, so the baseline lost an entry and its count went 50 → 49 — the
+direction that list is meant to move.
+
 ## 5ed. Every walk, one command — and five faults in the walks it exposed (2026-09-15)
 
 Ten walk scripts had accumulated in `scripts/smoke/` and **nine were referenced

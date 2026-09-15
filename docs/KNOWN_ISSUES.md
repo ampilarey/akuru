@@ -1343,6 +1343,52 @@ actors: `scripts/smoke/meetings.mjs`, 11/11. STATUS §5ec.
 
 ---
 
+### 31. No learner could ever retake anything
+
+**Fixed (2026-09-15) — found by running a smoke walk twice.**
+
+The retake machinery was complete except for the one person it is about:
+
+- authors set `retakes_allowed` and `retake_limit`; the authoring forms default
+  to **3** for an activity and **2** for an assessment;
+- `SaveActivityAttemptAction::assertRetakesAvailable` and
+  `StartAssessmentAttemptAction::assertRetakesAvailable` enforce the policy;
+- `nextNumber()` exists on both to number attempt two, and
+  `SubmitActivityAttemptAction` creates it;
+- the teacher's revision report says *"Retry the weak item when retakes remain;
+  otherwise review with a teacher."*
+
+**And no learner could start a second attempt.** Both players compute
+`submitted = attempt && attempt.status !== 'in_progress'` and disable every
+input and every button on it, permanently, with no control to begin again. A
+pupil told by their teacher to try again had nothing to press.
+
+Same shape as the status columns in STATUS §5dq and the same taxonomy as #25,
+#26 and #27: **configured, enforced, reported on, and unreachable.** Nobody had
+filed it and no test caught it, because every test asserted the server's
+behaviour, which was correct all along.
+
+`ResolveRetakeStateAction` now does the counting and both guards delegate to
+it, so the player's "can I try again?" and the server's "may you?" are the same
+question — a button offered and then refused is worse than no button. The
+difference between the two policies is **preserved rather than unified**:
+assessments have never had a `retakes_allowed` switch, and widening that would
+change behaviour for existing assessments, which is a decision.
+
+Activities need no new route — submitting already creates the next attempt.
+Assessments get `POST learn/assessments/{assessment}/retake`, because an
+attempt carries question snapshots that must be built when it starts.
+
+**The browser walk caught a bug seven passing feature tests could not.** After
+submitting a retake the button never came back: Inertia re-renders the same
+component instance rather than remounting it, so the `retrying` flag survived
+the round trip and the second go would have been the last one anybody could
+take. Tests assert props; only a walk sees component state. `scripts/smoke/learn.mjs`
+now runs three times consecutively without a re-seed, because it uses the fix it
+found. STATUS §5ee.
+
+---
+
 ## Explicitly not defects
 
 - **Payroll off** — `PAYROLL_ENABLED=false` and settings `payroll.enabled` — by design (S5.6).
