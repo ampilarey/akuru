@@ -136,6 +136,33 @@ if (selected.some((walk) => walk.writes) && !looksSynthetic && process.env.SMOKE
     process.exit(2);
 }
 
+/**
+ * One line per walk, from walks that do not agree on what a line looks like.
+ *
+ * The ten scripts were written at different times and end **five different
+ * ways**: six say "N/M steps passed", `sweep` says "N/M screens showed what was
+ * planted for them", `create-sweep` says "N/M screens created a record through
+ * their own form", and `page-errors` and `own-data` print a sentence with no
+ * score in it at all ("No runtime or server errors for any role.").
+ *
+ * The first version of this runner matched only the first phrasing and printed
+ * a bare `—` for four walks that had answered perfectly well. Rather than
+ * rewrite ten working scripts to satisfy the summary, the summary reads what
+ * they actually say: a count where there is one, and otherwise their own last
+ * sentence, which is the line each was written to end on.
+ */
+function summarise(out) {
+    const count = out.match(/(\d+)\/(\d+) (?:steps passed|screens )/);
+    if (count) {
+        return `${count[1]}/${count[2]}`;
+    }
+
+    const lines = out.split('\n').map((line) => line.trim()).filter(Boolean);
+    const last = lines[lines.length - 1] ?? '';
+
+    return last.length > 46 ? `${last.slice(0, 45)}…` : (last || '—');
+}
+
 function run(walk) {
     return new Promise((resolve) => {
         const started = Date.now();
@@ -149,16 +176,11 @@ function run(walk) {
         child.stderr.on('data', (chunk) => { out += chunk; });
 
         child.on('close', (code) => {
-            // Every walk ends with "N/M steps passed." — the one line worth
-            // lifting into the summary. A walk that crashed before printing it
-            // has no score, and saying so is better than inventing one.
-            const score = out.match(/(\d+)\/(\d+) steps passed\./);
-
             resolve({
                 walk,
                 code,
                 out,
-                score: score ? `${score[1]}/${score[2]}` : '—',
+                score: summarise(out),
                 seconds: Math.round((Date.now() - started) / 1000),
             });
         });
@@ -176,7 +198,7 @@ for (const walk of selected) {
     process.stdout.write(`  ${walk.name.padEnd(13)} … `);
     const result = await run(walk);
     results.push(result);
-    console.log(`${result.code === 0 ? 'ok  ' : 'FAIL'}  ${result.score.padStart(6)}  ${result.seconds}s`);
+    console.log(`${result.code === 0 ? "ok  " : "FAIL"}  ${result.score.padEnd(46)}  ${result.seconds}s`);
 }
 
 const failed = results.filter((result) => result.code !== 0);
