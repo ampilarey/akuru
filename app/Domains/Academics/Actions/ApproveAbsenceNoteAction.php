@@ -28,15 +28,11 @@ class ApproveAbsenceNoteAction
         $note->review_notes = $reviewNotes;
         $note->save();
 
-        // E10c: the type decides whether approval excuses the register. The
-        // per-note boolean stays as the fallback for notes written before
-        // types existed — it is still written, so the two cannot drift.
-        $excuses = $note->absence_type_id !== null
-            ? (bool) \App\Domains\Academics\Models\AbsenceType::query()
-                ->whereKey($note->absence_type_id)->value('excuses_absence')
-            : (bool) $note->affects_attendance;
-
-        if ($excuses) {
+        // E10c, now asked of the note itself: `RecordClassAttendanceAction`
+        // needs the same answer when the register is filled *after* the note is
+        // approved, and two copies of this rule would be two answers to "is
+        // this absence excused" (rule 11).
+        if ($note->excusesAttendance()) {
             $this->excuseMatchingAbsences($note, $reviewerId);
         }
 

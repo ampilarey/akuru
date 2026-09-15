@@ -4,8 +4,10 @@ namespace App\Domains\Academics\Actions;
 
 use App\Domains\Academics\Contracts\AttendanceWriterInterface;
 use App\Domains\Academics\DTOs\StudentAttendanceDTO;
+use App\Domains\Academics\Enums\AbsenceNoteStatus;
 use App\Domains\Academics\Enums\AttendanceStatus;
 use App\Domains\Academics\Events\StudentMarkedAbsent;
+use App\Domains\Academics\Models\AbsenceNote;
 use App\Domains\Academics\Models\ClassAttendance;
 use App\Domains\Academics\Models\LessonLog;
 use Illuminate\Support\Facades\DB;
@@ -18,6 +20,7 @@ class RecordClassAttendanceAction implements AttendanceWriterInterface
     public function record(StudentAttendanceDTO $dto): ClassAttendance
     {
         $this->guardExcused($dto);
+        $dto = $this->applyApprovedNote($dto);
 
         $query = ClassAttendance::query()
             ->where('student_id', $dto->studentId)
@@ -91,6 +94,70 @@ class RecordClassAttendanceAction implements AttendanceWriterInterface
         throw ValidationException::withMessages([
             'attendance' => 'An absence is excused by approving the guardian\'s note, not by marking it excused here.',
         ]);
+    }
+
+    /**
+     * An absence already explained is excused whichever way round it happened.
+     *
+     * `ApproveAbsenceNoteAction` covers one order: the register is filled, the
+     * child is marked absent, the note arrives afterwards and flips the row.
+     * **The other order is the ordinary one** — a family tells the school in
+     * the morning that the child is ill, the office approves it, and only then
+     * does a teacher fill the 9am register. There the approval runs against no
+     * rows at all, and the absent mark written minutes later carries no note.
+     *
+     * The consequences were not cosmetic and there was no way back from them:
+     *
+     *  - the family gets an absence SMS about an absence they reported,
+     *  - the child joins `unexcused()`, the chronic-absence list,
+     *  - the office cannot correct it. A teacher marking the row `excused` is
+     *    refused by `guardExcused` below, and re-approving the note throws
+     *    "This note is already approved."
+     *
+     * So the rule belongs here, beside its mirror image, and for the reason
+     * `guardExcused` gives: every route into `class_attendance` — both grids, a
+     * CSV import, a future card reader — passes through this one writer. An
+     * excusal still comes only from an approved note (rule 11: the note is the
+     * single source of truth for whether an absence is excused), and the note
+     * still has to say it excuses.
+     */
+    private function applyApprovedNote(StudentAttendanceDTO $dto): StudentAttendanceDTO
+    {
+        if ($dto->status !== AttendanceStatus::Absent || $dto->absenceNoteId !== null) {
+            return $dto;
+        }
+
+        $note = AbsenceNote::query()
+            ->where('student_id', $dto->studentId)
+            ->whereDate('date', $dto->date)
+            ->where('status', AbsenceNoteStatus::Approved->value)
+            // A note written for one period explains that period only; a
+            // whole-day note explains any of them. This is the same pairing
+            // `excuseMatchingAbsences` makes from the other direction.
+            ->where(fn ($query) => $query->whereNull('period_id')->orWhere('period_id', $dto->periodId))
+            ->orderByDesc('period_id')
+            ->get()
+            ->first(fn (AbsenceNote $note): bool => $note->excusesAttendance());
+
+        if ($note === null) {
+            return $dto;
+        }
+
+        return new StudentAttendanceDTO(
+            studentId: $dto->studentId,
+            classId: $dto->classId,
+            academicYearId: $dto->academicYearId,
+            date: $dto->date,
+            status: AttendanceStatus::Excused,
+            source: $dto->source,
+            markedBy: $dto->markedBy,
+            termId: $dto->termId,
+            periodId: $dto->periodId,
+            lessonLogId: $dto->lessonLogId,
+            minutesLate: $dto->minutesLate,
+            absenceNoteId: (int) $note->id,
+            remarks: $dto->remarks,
+        );
     }
 
     private function refreshCounts(int $lessonLogId): void

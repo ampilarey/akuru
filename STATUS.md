@@ -4304,6 +4304,81 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5ea. An absence the family reported was still recorded against them (2026-09-15)
+
+§5dz walked a loop and found a locked door. This walked the next one and found
+the loop itself running the wrong way round.
+
+`ApproveAbsenceNoteAction` excuses the register by flipping rows it finds:
+"matching absent rows → excused". That is one order — register first, note
+afterwards — and it is the order **every test used**.
+
+**The ordinary order is the other one.** A family tells the school at 7am that
+the child is ill, the office approves it at 8, and a teacher fills the 9am
+register. The approval ran against no attendance rows at all, and the absent
+mark written an hour later carried no note.
+
+**The harm, read off the family's own screen.** Reverting the fix and running
+the walk again, the guardian's attendance page says:
+
+```
+2026-09-15 | Grade 5 A | ABSENT | Sent
+```
+
+The family that reported the absence was texted about it. The child also joined
+`unexcused()`, the chronic-absence list. **And the office could not correct
+it**: a teacher marking the row `excused` is refused by the writer's own guard
+(#15, correctly — an excusal must carry its note), and re-approving the note
+throws "This note is already approved." There was no third route.
+
+With the fix, the same walk:
+
+```
+2026-09-15 | Grade 5 A | EXCUSED | Not applicable
+13/13 steps passed.
+```
+
+**Where the rule lives.** In the writer, beside its mirror image, for the
+reason `guardExcused` already gives: every route into `class_attendance` — both
+grids, a CSV import, a future card reader — passes through that one writer, and
+`AttendanceWriterTest` pins that. An absence marked for a child with an
+approved, excusing note for that date (and that period, if the note names one)
+is recorded as excused with the note attached. An excusal still comes only from
+an approved note.
+
+`excusesAttendance()` moved onto `AbsenceNote` in the same slice. Two actions
+now ask the same question from opposite directions, and two copies of the E10c
+type-or-boolean rule would be two answers to "is this absence excused"
+(rule 11).
+
+**Five boundary tests, each asserting the SMS still goes out**: a note that
+does not excuse, a note still waiting for approval, yesterday's note, another
+child's note, and a child who turned up after all. A rule that excuses too much
+is worse than the defect it replaces — an excused row sends no message, tells
+the family in the portal that none was due, and drops the child out of
+`unexcused()`, so a child missing for a reason nobody approved would be
+invisible from three directions.
+
+**Two false passes in the walk, caught before the write-up.** The first version
+reported **13/13 on a build where nothing had been saved.** `/EXCUSED/i`
+matched the word *Excused* in the summary line "Absent 0 · Excused 0", above a
+table that read "No attendance recorded yet" — and the register submit had
+bounced on its own validation ("Pick a plan topic or enter what was taught")
+while the walk took the 303 for success. The walk now reads the cells of the
+row for today, and waits for the register's own `SUBMITTED` badge rather than a
+redirect. A third check looked for "Yes" in a column that says **"Sent"**, so
+it passed on the broken build too.
+
+That is the same lesson as §5dy and §5dz a third time: **a check that can pass
+on silence will**, and the only reliable way to find out is to revert the fix
+and watch the walk go red.
+
+**Not a defect, recorded so nobody re-files it:** `/academics/registers/today`
+tells an admin "No teacher profile is linked to this login" and lists nothing.
+That is correct — the screen is keyed on the signed-in teacher — and it means
+the walk needs two staff logins, the office to approve and a teacher to fill
+the register, as in a real school.
+
 ## 5dz. Work a machine cannot mark, marked — the review loop, walked (2026-09-15)
 
 The last unwalked path in the course engine, and the fourth time this session
