@@ -15,11 +15,11 @@ with a `teachers` row, and a parent/student pair for portal checks.
 
 ## 0. Run the automated walks first
 
-**Do this before anything below.** Ten scripted walks drive real browsers
+**Do this before anything below.** Eleven scripted walks drive real browsers
 through the loops that matter — a stranger enrolling, a student taking a
 lesson, a teacher marking work, a family reporting an absence, a child being
-collected, a parent booking a meeting — and they take about six and a half minutes
-against a host, unattended.
+collected, a parent booking a meeting, somebody becoming a writer and getting
+published — and they take about seven minutes against a host, unattended.
 
 ```
 php artisan db:seed --class=SmokeMarkerSeeder     # plants the markers they read
@@ -35,7 +35,7 @@ SMOKE_BASE_URL=https://test.akuru.edu.mv node scripts/smoke/all.mjs
 It exits non-zero if any walk fails and prints the full output of the failures
 only, so a green run is one screen and a red one explains itself.
 
-**Seven of the ten write data** — they submit absence notes, request that
+**Eight of the eleven write data** — they submit absence notes, request that
 children be collected, book meetings and enrol people. Against a host whose
 name does not look synthetic the runner refuses to start and tells you how to
 override. `--read` runs only the three that look without touching anything
@@ -43,15 +43,17 @@ override. `--read` runs only the three that look without touching anything
 with real families on it.
 
 `node scripts/smoke/all.mjs learn review` runs named walks; `--write` runs the
-seven that change data.
+eight that change data.
 
 **What a clean run does and does not prove.** It proves the deploy script, the
 built assets and the seeded database on that host behave like the local ones —
 which is the comparison `OWNER_ACTIONS` item 7 exists to make and that nobody
-has been able to make yet. It does **not** replace section 1: no script walks
-the Library writer portal, peer review, payouts, or the device work, and a
-walk that goes green first time deserves more suspicion than one that does not
-(STATUS §5eb).
+has been able to make yet. It does **not** replace section 1: **§1a is now
+automated** by the `library` walk — applying, approving, the role grant,
+drafting, a changes-requested round trip and publication — but **§1b peer
+review and §1c earnings and payouts are not**, and neither is the device work.
+A walk that goes green first time deserves more suspicion than one that does
+not (STATUS §5eb).
 
 ---
 
@@ -61,6 +63,12 @@ CI is green everywhere, but the DoD requires each surface walked by a person
 in a browser. Tick each line only when the full loop worked by hand.
 
 ### 1a. Library writer portal (L5)
+
+**Automated as of 2026-09-15** — `scripts/smoke/library.mjs` walks every line
+below, 14/14, including the role grant and the changes-requested round trip.
+Run section 0 and these are covered; tick them from its output rather than by
+hand. They stay written out because a walk proves the path works, not that the
+screens read well to a person, and because the walk does not cover §1b or §1c.
 
 - [ ] As a plain user, open `/write` → apply as writer (agreement checkbox
       required).
