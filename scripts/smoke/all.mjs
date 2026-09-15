@@ -18,7 +18,7 @@
  *
  * ## Read-only and writing walks are separated, on purpose
  *
- * Three of these only look at screens. The other **ten write**: they enrol a
+ * Three of these only look at screens. The other **eleven write**: they enrol a
  * stranger on a course, submit and approve an absence note, request that a
  * child be collected, book a parent-teacher meeting, and publish an article to
  * the library. That is exactly what makes them worth running — and exactly why
@@ -26,7 +26,7 @@
  *
  *   node scripts/smoke/all.mjs            every walk (the default)
  *   node scripts/smoke/all.mjs --read     the three that only look
- *   node scripts/smoke/all.mjs --write    the ten that change data
+ *   node scripts/smoke/all.mjs --write    the eleven that change data
  *   node scripts/smoke/all.mjs learn review     just those, by name
  *
  * A writing run against a host whose name does not look synthetic asks for
@@ -108,6 +108,7 @@ const WALKS = [
     { name: 'library', writes: true, asks: 'Can somebody become a writer and get something published?' },
     { name: 'peer-review', writes: true, asks: 'Does the research peer-review gate refuse, and can it be satisfied?' },
     { name: 'earnings', writes: true, asks: 'Does a sale become the writer\'s money, and does the payout gate say why not?' },
+    { name: 'money', writes: true, asks: 'Can the school take money without a gateway, and give it back?' },
 ];
 
 const args = process.argv.slice(2);

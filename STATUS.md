@@ -4304,6 +4304,58 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5eh. The school can take money without a gateway, and give it back (2026-09-15)
+
+§1f, and the loop that matters most right now. `scripts/smoke/money.mjs`,
+**14/14**.
+
+**While `BML_WEBHOOK_SECRET` is unset — the state of every environment
+(`OWNER_ACTIONS` item 2) — a manual payment is the only way the school can take
+money at all**, and a refund is the only way to give it back. Neither had ever
+been walked.
+
+The office records cash received against an enrolment awaiting payment; it
+activates **with no gateway involved**; the payment shows confirmed; the office
+refunds it to the family's wallet; and both consequences land.
+
+### Both consequences, because either alone is a disaster
+
+`RefundPaymentAction` is the only way a payment is refunded — it locks the row,
+enforces the refundable remainder, **appends** a refund rather than mutating the
+payment (rule 12), credits the wallet, and fires `PaymentRefunded` *inside* the
+transaction so listeners revoke what the money bought.
+
+That join is the exact shape this session has watched break repeatedly: two
+halves each plausible alone. **A refund that returns the money and leaves the
+course open is a family being paid to keep it; a revoke without the money is
+worse.** So the walk asserts both, from the screens:
+
+```
+and the enrolment it bought is revoked   Enrollment #36 … Cancelled / Refunded
+and the money is in the family's wallet  balance 500 → 750 (expected +250)
+```
+
+**Measured, not matched** — the same correction the earnings card needed an
+hour earlier. Wallet balances accumulate across runs, so looking for "250"
+somewhere on the page would have passed whatever happened. The delta is the
+assertion and it is the same number however many times this has run.
+
+**No defect found.** The money path works both ways, and that is worth as much
+as a finding — it is the path a school would actually use next week.
+
+**Three wrong assumptions, all mine.** The payments screen shows reference /
+payer / student / amount / status — **not** the course or the receipt note, so
+looking for either found nothing on a table that was correct. The refund form
+hides behind a `<details>` and needed opening. And both money buttons raise a
+real `confirm()` dialog, which is right and would have hung the walk for ever
+without a handler.
+
+**The fixture is rebuilt, not reset.** Paying and refunding are both one-way, so
+the seeder replaces the payable enrolment each run and takes its payments and
+refunds with it — otherwise a second run refunds an already-refunded payment and
+reports a product fault that is really its own mess. The pick-up lesson, applied
+before it bit.
+
 ## 5eg. A sale becomes the writer's money — §1c, and three gates that explain themselves (2026-09-15)
 
 The last uncovered Library loop, and the only one with money in it.
