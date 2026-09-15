@@ -4304,6 +4304,56 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5eg. A sale becomes the writer's money — §1c, and three gates that explain themselves (2026-09-15)
+
+The last uncovered Library loop, and the only one with money in it.
+`scripts/smoke/earnings.mjs`, **13/13**.
+
+A writer publishes a paid item, a reader buys it **with their wallet**, the
+sale reaches the writer at the 70/30 split, bank details save, the payouts gate
+explains itself, and the office's earnings CSV carries the balance.
+
+**Why the wallet.** `BML_WEBHOOK_SECRET` is unset on every environment
+(`OWNER_ACTIONS` item 2), so no card payment can confirm anywhere. The wallet
+branch (§43.14) is internal money, grants immediately, and accrues the writer's
+earning through the same code the webhook uses — the only purchase path that
+completes today. The seeder tops the reader up through `CreditWalletAction`,
+the one way money enters a wallet (rule 12).
+
+**The split is measured, not matched.** The earnings card is cumulative and
+this fixture accrues across runs, so looking for a bare "MVR 70" never matches.
+The walk reads pending before and after: `280 → 350`, **exactly +70 on a 100
+sale**, and by *pending* rather than available, because §24 holds it until the
+refund window closes.
+
+### Three gates, and all three explain themselves
+
+Walked on purpose, because §5ef had just found a gate that refused in **total
+silence** and the only way to know which kind you have is to try it:
+
+- **Payouts closed.** The portal does not offer the button at all and explains
+  instead — *"Payouts open soon — earnings keep accruing and stay yours."* The
+  writer is told **before** pressing something, which is better than §1c asks
+  for. The walk asserts both halves: the explanation is there, **and** no button
+  is dangled that could not work.
+- **Empty wallet.** After five runs the reader's 500 was gone, and the product
+  refused with *"Insufficient wallet balance"* rather than half-completing. A
+  fixture to top up, not a defect — the walk now says so and names the re-seed.
+- **Research without a peer review** — §5ef's finding, now fixed.
+
+Recorded in KNOWN_ISSUES so nobody re-walks them, and because the contrast is
+the point: same codebase, same week, gates that explain and one that did not.
+
+### Four wrong assumptions in the walk, all mine
+
+`page.goto` on the CSV throws *"Download is starting"* — it needs the request
+context. The payout button **only renders when payouts are enabled**, so looking
+for it was looking for the wrong thing entirely. The earnings CSV is **per
+writer**, not per item, so hunting the item title in it failed against a
+perfectly correct file. And a wallet purchase drops the reader **straight into
+the book**, so "Read online" is absent by then — the body text is the better
+proof anyway.
+
 ## 5ef. The Library editorial track, walked — and a gate that refused and told nobody (2026-09-15)
 
 The largest area with no automated coverage at all, and the first walk this

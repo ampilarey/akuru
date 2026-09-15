@@ -1427,6 +1427,27 @@ it. STATUS §5ef.
 
 ---
 
+## Gates that behave well (recorded 2026-09-15)
+
+Walked deliberately, because #32 showed a gate can refuse in total silence and
+the only way to know which kind you have is to try it. Three refusals were
+exercised in the Library track and **all three tell the person what happened**:
+
+- **Payouts closed.** With `LIBRARY_PAYOUTS_ENABLED` off the writer portal does
+  not offer a Request-payout button at all — it explains instead: *"Payouts open
+  soon — earnings keep accruing and stay yours."* Told **before** pressing
+  something, which is better than `OPERATOR_CHECKLIST` §1c asks for.
+- **Empty wallet.** A reader buying a priced item with no balance is refused
+  with *"Insufficient wallet balance"* and nothing half-completes.
+- **Research without a peer review.** Now refuses *and says so* — that one was
+  #32, and it is the reason the other two were checked rather than assumed.
+
+Recorded here so the next person does not re-walk them, and so the contrast
+with #32 is on the record: same codebase, same week, gates that explain and a
+gate that did not.
+
+---
+
 ## Explicitly not defects
 
 - **Payroll off** — `PAYROLL_ENABLED=false` and settings `payroll.enabled` — by design (S5.6).

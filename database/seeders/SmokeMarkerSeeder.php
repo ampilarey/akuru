@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Domains\Academics\Models\AcademicYear;
 use App\Domains\Academics\Models\ClassRoom;
+use App\Domains\Commerce\Actions\CreditWalletAction;
 use App\Domains\Courses\Actions\PublishLessonAction;
 use App\Domains\Courses\Actions\SaveActivityAction;
 use App\Domains\Courses\Actions\SaveContentBlockAction;
@@ -66,6 +67,7 @@ class SmokeMarkerSeeder extends Seeder
         $this->learner($admin);
         $this->recruitment();
         $this->requests($admin);
+        $this->readerWallet();
         $this->finance($year, $studentId, $admin);
         $this->consent($studentId, $admin);
         $this->ownData($year, $studentId, $admin);
@@ -547,6 +549,42 @@ class SmokeMarkerSeeder extends Seeder
             'created_by_user_id' => $admin?->id,
             'created_at' => now(), 'updated_at' => now(),
         ]);
+    }
+
+    /**
+     * Money the reader can actually spend.
+     *
+     * L6's earnings only exist behind a **paid** sale, and the only purchase
+     * path that completes without BML is the wallet branch (§43.14) — internal
+     * money, so it grants immediately rather than waiting on a webhook. With
+     * `BML_WEBHOOK_SECRET` unset, which is the state of every environment right
+     * now (`OWNER_ACTIONS` item 2), a wallet balance is the only way anybody can
+     * buy anything at all.
+     *
+     * Topped up to a round figure rather than set: `CreditWalletAction` is the
+     * one way money enters a wallet (rule 12) and the ledger is append-only, so
+     * the seeder adds what is missing instead of writing a balance.
+     */
+    private function readerWallet(): void
+    {
+        $userId = (int) DB::table('users')->where('email', 'parent@akuru.edu.mv')->value('id');
+
+        if ($userId === 0) {
+            return;
+        }
+
+        $balance = (float) (DB::table('wallets')->where('user_id', $userId)->value('balance') ?? 0);
+        $target = 500.0;
+
+        if ($balance < $target) {
+            app(CreditWalletAction::class)->execute(
+                $userId,
+                round($target - $balance, 2),
+                'smoke_marker',
+                null,
+                'SMOKE-Wallet top-up so a reader can buy a priced library item.',
+            );
+        }
     }
 
     private function recruitment(): void
