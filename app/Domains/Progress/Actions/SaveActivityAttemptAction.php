@@ -91,23 +91,18 @@ class SaveActivityAttemptAction
      */
     public function assertRetakesAvailable(int $activityId, int $enrollmentId, array $settings): void
     {
-        $submittedCount = ActivityAttempt::query()
-            ->where('enrollment_id', $enrollmentId)
-            ->where('activity_id', $activityId)
-            ->whereIn('status', [ActivityAttemptStatus::Submitted, ActivityAttemptStatus::Scored])
-            ->count();
+        // Counted in one place now (rule 11). The player asks
+        // `ResolveRetakeStateAction` whether to offer a Try again button and
+        // this asks it whether to honour the press, so the two cannot disagree
+        // — and a button offered and then refused is worse than no button.
+        $state = app(ResolveRetakeStateAction::class)->forActivity($activityId, $enrollmentId, $settings);
 
-        $retakesAllowed = (bool) ($settings['retakes_allowed'] ?? true);
-        $retakeLimit = isset($settings['retake_limit']) && $settings['retake_limit'] !== ''
-            ? (int) $settings['retake_limit']
-            : null;
-
-        if (! $retakesAllowed && $submittedCount >= 1) {
+        if (! $state['allowed'] && $state['used'] >= 1) {
             throw ValidationException::withMessages([
                 'attempt' => ['Retakes are not allowed for this activity.'],
             ]);
         }
-        if ($retakeLimit !== null && $submittedCount >= $retakeLimit) {
+        if ($state['remaining'] !== null && $state['remaining'] <= 0) {
             throw ValidationException::withMessages([
                 'attempt' => ['Retake limit reached.'],
             ]);

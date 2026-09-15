@@ -161,6 +161,16 @@ if (!activityHref) {
     // `retakes_allowed` and `retake_limit`, the server creates attempt two
     // happily, and the teacher's revision report advises retrying. No player
     // offers a button.)
+    // A previous run leaves a submitted attempt, which disables the question.
+    // That used to be the end of the walk; now it is the first thing the walk
+    // exercises, because a second go is exactly what was missing. Pressing it
+    // here is what makes this script runnable twice without a re-seed.
+    const resume = page.locator('button:has-text("Try again")').first();
+    if (await resume.count()) {
+        await resume.click();
+        await page.waitForTimeout(300);
+    }
+
     const enabled = (await option.count()) > 0 && await option.isEnabled().catch(() => false);
 
     if (!enabled) {
@@ -183,21 +193,57 @@ if (!activityHref) {
             // which is to say it tested nothing at all. `selection` is the one
             // pattern the engine scores itself, so the right answer must come
             // back scored 1/1.
-            const deadline = Date.now() + 5000;
+            // Wait for the **Try again** control, not for the word "scored".
+            //
+            // On a re-run the previous attempt's "scored · 1/1" is already on
+            // the page while the retake is being answered, so polling for it
+            // matched instantly and the assertions below read the screen
+            // mid-flight. The button is the one thing that is absent during an
+            // in-progress attempt and present once the new one is marked, so
+            // it is what the wait keys on. (The same trap as a summary line
+            // reading "Excused 0" — STATUS §5ea.)
+            const deadline = Date.now() + 8000;
             let marked = '';
             while (Date.now() < deadline) {
                 marked = (await page.innerText('main')).replace(/\s+/g, ' ');
-                if (marked.includes('scored')) {
+                if (await page.locator('button:has-text("Try again")').first().count()) {
                     break;
                 }
                 await page.waitForTimeout(100);
             }
+            marked = (await page.innerText('main')).replace(/\s+/g, ' ');
 
             check(
                 'the answer is accepted and marked right',
                 marked.includes('scored') && marked.includes('1/1'),
                 marked.slice(0, 160),
             );
+
+            // And a second go is reachable — asserted on the button that the
+            // wait above already keyed on, plus that pressing it reopens the
+            // question.
+            //
+            // This is what made the walk un-re-runnable, and it was a product
+            // defect rather than a fixture problem: authors configure
+            // `retakes_allowed` and `retake_limit`, the server creates attempt
+            // two happily, the teacher's revision report advises retrying —
+            // and no player had a button, so every control stayed disabled for
+            // ever. The walk now uses the fix it found, which is also why it
+            // no longer needs a re-seed to run again.
+            const again = page.locator('button:has-text("Try again")').first();
+
+            if (await again.count()) {
+                await again.click();
+                await page.waitForTimeout(400);
+                // The control vanishes once pressed, because the attempt is
+                // open again — that is the observable difference between a
+                // frozen page and a fresh go.
+                const reopened = (await again.count()) === 0
+                    && (await page.locator('button:has-text("Submit")').first().isEnabled().catch(() => false));
+                check('a second go is offered, and opens the question again', reopened, await page.innerText('main').then((v) => v.replace(/\s+/g, ' ').slice(0, 120)));
+            } else {
+                check('a second go is offered, and opens the question again', false, 'no Try again button');
+            }
         } else {
             check('the answer is accepted', false, 'no submit button');
         }

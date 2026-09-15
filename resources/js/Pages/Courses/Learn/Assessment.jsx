@@ -109,7 +109,7 @@ function formatRemaining(seconds) {
     return `${m}:${String(s).padStart(2, '0')}`;
 }
 
-export default function Assessment({ assessment, enrollment, attempt, mediaShowUrl = '/learn/media' }) {
+export default function Assessment({ assessment, enrollment, attempt, retake = null, mediaShowUrl = '/learn/media' }) {
     const t = usePage().props.i18n?.learn || {};
     // The server now refuses a submit that leaves a §21-required question
     // blank. A refusal the page does not render is the same invisible refusal
@@ -206,6 +206,31 @@ export default function Assessment({ assessment, enrollment, attempt, mediaShowU
             )}
             {attempt?.feedback && (
                 <p className="mb-4 rounded-lg border bg-white p-3 text-sm">Teacher feedback: {attempt.feedback}</p>
+            )}
+            {/* `retake_limit` has always been configurable and enforced on the
+                server, and this page never learned of it — so once an attempt
+                existed every control was disabled for ever and nobody could
+                use a second go. The button posts rather than merely enabling
+                the form, because an assessment attempt carries question
+                snapshots that have to be built when it starts. */}
+            {submitted && retake?.can_retake && (
+                <div className="mb-4 rounded-lg border bg-white p-3 text-sm">
+                    <p className="mb-2 text-gray-700">
+                        {retake.remaining === null
+                            ? 'You can sit this again.'
+                            : `You can sit this again — ${retake.remaining} ${retake.remaining === 1 ? 'go' : 'goes'} left.`}
+                    </p>
+                    <button
+                        type="button"
+                        className="btn-secondary"
+                        onClick={() => router.post(`/learn/assessments/${assessment.id}/retake`, {}, { preserveScroll: true })}
+                    >
+                        {t.try_again || 'Try again'}
+                    </button>
+                </div>
+            )}
+            {submitted && retake && !retake.can_retake && retake.remaining === 0 && (
+                <p className="mb-4 text-sm text-gray-500">No goes left on this one.</p>
             )}
             <div className="space-y-4">
                 {(attempt?.snapshots || []).map((snapshot, index) => {
