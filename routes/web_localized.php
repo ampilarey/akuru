@@ -27,6 +27,7 @@ use App\Domains\Academics\Http\Controllers\StudentWorkController;
 use App\Domains\Academics\Http\Controllers\SubstitutionRequestController;
 use App\Domains\Academics\Http\Controllers\TeacherRegisterController;
 use App\Domains\Academics\Http\Controllers\TeachingMaterialController;
+use App\Domains\Academics\Http\Controllers\TeachMeetingController;
 use App\Domains\Academics\Http\Controllers\TimetableBuilderController;
 use App\Domains\Academics\Legacy\Http\Controllers\ELearningController;
 use App\Domains\Admissions\Http\Controllers\AdminEnrollmentController;
@@ -276,6 +277,13 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
     Route::get('/teach/pronunciation', [\App\Domains\Pronunciation\Http\Controllers\TeachPronunciationController::class, 'index'])->name('teach.pronunciation');
     Route::post('/teach/pronunciation/{attempt}/review', [\App\Domains\Pronunciation\Http\Controllers\TeachPronunciationController::class, 'review'])->name('teach.pronunciation.review')->whereNumber('attempt');
     Route::get('/teach/schedule', [TeacherScheduleController::class, 'index'])->name('teach.schedule');
+    // A teacher's own parent-teacher meetings. `/academics/meetings` is the
+    // office's screen and is gated on `meetings.manage`, which teachers do not
+    // hold — so until this existed, the person the meeting was *with* was the
+    // only one who could not see it. Scoped to their own `teacher_id`, so no
+    // permission is widened (STATUS §5ec).
+    Route::get('/teach/meetings/export', [TeachMeetingController::class, 'export'])->name('teach.meetings.export');
+    Route::get('/teach/meetings', [TeachMeetingController::class, 'index'])->name('teach.meetings');
     Route::get('/teach/recitations', [TeachRecitationController::class, 'index'])->name('teach.recitations');
     Route::post('/teach/recitations/{submission}/review', [TeachRecitationController::class, 'review'])->name('teach.recitations.review')->whereNumber('submission');
     // SPEC §36: play the student's recitation, and the teacher's correction.

@@ -4304,6 +4304,66 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5ec. The person the meeting was with was the only one who could not see it (2026-09-15)
+
+Walked the parent-teacher meeting loop. The booking half is sound — the office
+publishes slots, a family books one, and the office sees `1/1 Fatima Yoosuf`
+against it. Then the third actor:
+
+```
+FAIL  the teacher can see the booking on /teach/schedule      HTTP 200, nothing for 2026-09-16
+FAIL  the teacher can see the booking on /portal/teacher      HTTP 200, nothing for 2026-09-16
+FAIL  the teacher can see the booking on /academics/meetings  HTTP 403
+```
+
+`meeting_slots.teacher_id` names the teacher, and the family is shown that name
+on the slot **before** they book. So both ends knew whose meeting it was, and
+the teacher had nowhere to see one: `/academics/meetings` is the office's
+screen, gated on `meetings.manage` (`admin`, `headmaster`, `supervisor`,
+`super_admin` — not `teacher`), `/teach/schedule` lists course sessions, and
+`/portal/teacher` never mentioned meetings.
+
+**Fixed rather than filed, because this one is a `where` clause.** That is the
+whole difference between it and §5dz's review queue, found the same afternoon
+and left for the owner: there, `course_instructor` has no rows and no writer,
+so "my courses" cannot be expressed and somebody has to decide whether every
+teacher may read every pupil's work. Here the scope is a column on the row that
+is already populated, and a teacher seeing who booked **their own** slot needs
+nobody's decision and widens no permission.
+
+`/teach/meetings` is read-only. Generating, publishing and cancelling stay with
+the office; this answers "who is coming to see me, and when" — SPEC §36's *view
+session schedules* for the one kind of session the teacher surfaces had no
+answer for. Drafts are excluded: telling a teacher about a meeting that may
+never be offered is worse than telling them nothing. Slots are listed from
+**today**, not from now, so an 18:00 meeting is still on the screen at 18:05
+when the teacher is looking for the name of the parent sitting down in front of
+them.
+
+Five tests. The two that matter are the pair: a teacher sees their own booking
+*with the family's name on it*, and a second teacher's list is asserted
+**empty** rather than merely missing that row — a page leaking one row leaks
+the name on it. Revert-checked: dropping the `teacher_id` filter fails the
+second and nothing else, which is the point of having both.
+
+```
+ok    the teacher sees the booking on /teach/meetings
+      Ustadh Mohamed · 6 upcoming slots · 1 booked …
+      2026-09-16 18:00–18:10 Grade 5 A — Fatima Yoosuf 1/1
+
+11/11 steps passed.
+```
+
+The other three surfaces stay in the walk, reported as *not where it shows up*
+rather than deleted, so the next person to look does not re-file them.
+
+**One false pass, caught.** "The office sees the booking" was a `/Booked/i`
+over the page, and `Booked` is the office table's own **column heading** — it
+passed before the family had booked anything. It now reads the row's cells and
+looks for the child's name in the Booked column. And the walk's first version
+marked the slots with `SMOKE-Meeting`, a title **neither table renders**, then
+reported four failures for not finding it.
+
 ## 5eb. Collecting a child — the highest-stakes loop, and it holds (2026-09-15)
 
 **No defect found, which is the finding.** Recorded because "we walked it and
