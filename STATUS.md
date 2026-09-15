@@ -4304,6 +4304,72 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5ed. Every walk, one command — and five faults in the walks it exposed (2026-09-15)
+
+Ten walk scripts had accumulated in `scripts/smoke/` and **nine were referenced
+nowhere an operator would look**. `OWNER_ACTIONS` item 7 — *walk the app on
+staging*, the gate the whole go-live path waits on — named one of them.
+
+```
+Walking http://127.0.0.1:8000 — 10 of 10 walks.
+  page-errors   … ok    No runtime or server errors for any role.       269s
+  sweep         … ok    25/25                                            30s
+  own-data      … ok    Every family saw their own records, and nobod…   21s
+  create-sweep  … ok    6/6                                              30s
+  register      … ok    14/14                                            37s
+  learn         … ok    9/9                                               8s
+  review        … ok    15/15                                            12s
+  absence       … ok    13/13                                            12s
+  pickup        … ok    16/16                                            15s
+  meetings      … ok    11/11                                            11s
+10/10 walks passed against http://127.0.0.1:8000.
+```
+
+6½ minutes, measured, of which `page-errors` is four. Exits non-zero, prints
+the full output of failures only. **Seven of the ten write data**, so the runner
+refuses to start against a host whose name does not look synthetic; `--read`
+runs the three that only look.
+
+**Five of the six commits are fixes to the walks, every one found by running
+them rather than reading them.** Each had been written and verified **once, in
+isolation, on a fresh database** — which made every one correct in the only
+condition it was ever tried in.
+
+- **`learn` had two checks that asserted nothing.** `check(…, true)` twice,
+  literal unconditional passes, green whenever a button existed to click — for
+  the two steps the walk exists to make. It had been reporting 9/9 all session
+  while testing that two buttons were present. Now: completing the only lesson
+  moves the course page to **100%**, and the selection activity comes back
+  **`scored` 1/1**. Revert-checked with a stubbed `RecordLessonProgressAction`.
+- **`review` could never pass.** Its teacher-403 step asserted a green 200 and
+  failed on purpose. Fine for a person reading it once; in a runner, a walk
+  that can never go green makes every run a false alarm, and a gate nobody can
+  satisfy gets ignored along with the real failures.
+- **`meetings` picked its date by chance.** The first fix used tomorrow every
+  run; the second used a random day 2–21 out, which is not a fix but a smaller
+  probability of the same bug, and it collided on the fourth run.
+- **`pickup` tested two gates the previous run had opened.** Fixed in the
+  seeder, which was clearing the pick-up notice while leaving the two
+  preconditions that notice depends on.
+- **The runner's own summary read a format four walks do not use.**
+
+**Known limitation, stated rather than papered over.** The writing walks need a
+fresh seed each run. Three depend on state that cannot be re-established
+through the UI, and two of those are blocked by a product defect this work
+uncovered: **no learner can retake any activity or assessment** — authors
+configure `retakes_allowed` / `retake_limit`, `assertRetakesAvailable` enforces
+it, `nextNumber()` exists to number attempt two, and the teacher's revision
+report advises *"Retry the weak item when retakes remain"*, while both players
+disable every control on submit with no way back. Its own slice; fixing it also
+makes `learn` and `review` naturally re-runnable.
+
+**The lesson, stated plainly because it is now the session's most repeated
+one:** a walk that has been run once is a walk that has been tested once. Six
+of the false results this session came from a single pick-up run, two from
+`learn` asserting nothing, and three from dates and rows chosen by position or
+by luck. **The walk is the part most likely to be wrong**, and the only
+reliable way to find out is to run it again.
+
 ## 5ec. The person the meeting was with was the only one who could not see it (2026-09-15)
 
 Walked the parent-teacher meeting loop. The booking half is sound — the office
