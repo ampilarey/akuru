@@ -2,7 +2,8 @@
  * Every walk, one command, one answer.
  *
  * Ten walk scripts had accumulated in this directory and **nine of them were
- * referenced nowhere an operator would look** — not in `OPERATOR_CHECKLIST.md`,
+ * referenced nowhere an operator would look** (eleven now — `library` was
+ * written against this runner rather than beside it) — not in `OPERATOR_CHECKLIST.md`,
  * not in `OWNER_ACTIONS.md`, not in any runner. `OWNER_ACTIONS` item 7, *walk
  * the app on staging*, is the gate the whole go-live path waits on, and it
  * named exactly one of them.
@@ -17,15 +18,15 @@
  *
  * ## Read-only and writing walks are separated, on purpose
  *
- * Three of these only look at screens. The other seven **write**: they enrol a
+ * Three of these only look at screens. The other **nine write**: they enrol a
  * stranger on a course, submit and approve an absence note, request that a
- * child be collected, book a parent-teacher meeting. That is exactly what makes
- * them worth running — and exactly why nobody should discover it by pointing
- * the runner at a live school.
+ * child be collected, book a parent-teacher meeting, and publish an article to
+ * the library. That is exactly what makes them worth running — and exactly why
+ * nobody should discover it by pointing the runner at a live school.
  *
  *   node scripts/smoke/all.mjs            every walk (the default)
  *   node scripts/smoke/all.mjs --read     the three that only look
- *   node scripts/smoke/all.mjs --write    the seven that change data
+ *   node scripts/smoke/all.mjs --write    the nine that change data
  *   node scripts/smoke/all.mjs learn review     just those, by name
  *
  * A writing run against a host whose name does not look synthetic asks for
@@ -104,6 +105,8 @@ const WALKS = [
     { name: 'absence', writes: true, asks: 'Does the register believe a family who reported an absence?' },
     { name: 'pickup', writes: true, asks: 'Does a child get handed over, and only to the adult who asked?' },
     { name: 'meetings', writes: true, asks: 'Does a teacher find out who booked a meeting with them?' },
+    { name: 'library', writes: true, asks: 'Can somebody become a writer and get something published?' },
+    { name: 'peer-review', writes: true, asks: 'Does the research peer-review gate refuse, and can it be satisfied?' },
 ];
 
 const args = process.argv.slice(2);

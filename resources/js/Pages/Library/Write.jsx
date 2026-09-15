@@ -1,6 +1,7 @@
 import { router, useForm, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 import AppShell from '../../Layouts/AppShell';
+import FormErrors from '../../Components/FormErrors';
 
 function ApplyForm({ t }) {
     const form = useForm({
@@ -168,6 +169,10 @@ export default function Write({ dashboard, options, earnings = null, item_sales 
 
     return (
         <AppShell title={t.library_write_title || 'Writer portal'}>
+            {/* Submit-for-review posts without a form, so a refusal — an item
+                not in a submittable state — had nowhere to appear. The editor
+                forms below carry their own field-level errors. */}
+            <FormErrors errors={usePage().props.errors} className="mb-4" />
             {flash.success && <p className="mb-4 rounded bg-green-50 p-3 text-green-700">{flash.success}</p>}
 
             {!profile && (

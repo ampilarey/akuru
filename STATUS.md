@@ -4304,6 +4304,66 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5ef. The Library editorial track, walked — and a gate that refused and told nobody (2026-09-15)
+
+The largest area with no automated coverage at all, and the first walk this
+session whose subject was a **refusal**.
+
+**§1a, the editorial loop** (`library.mjs`, 14/14). Three actors and a role
+granted by the flow itself: a reader applies to write, the office approves and
+the applicant *becomes a writer*, the writer drafts and submits, the office asks
+for changes with a comment, the writer reads it and resubmits, the office
+approves and it reaches the public library.
+
+Two of those assertions are the point rather than decoration. The role grant is
+asserted by the portal **replacing** the application form — that is what proves
+approving somebody made them a writer, not merely wrote a row. And the
+changes-requested round trip asserts the comment **reaches the writer**: a
+status that flips without the reason arriving is a dead end dressed as a
+workflow.
+
+Every table in the L-track held **zero rows**, so an operator opening those
+screens saw empty lists everywhere and could not tell an empty table from a
+broken reader — the trap `sweep.mjs` exists for, over a whole track.
+
+**§1b, the peer-review gate** (`peer-review.mjs`, 12/12). L7 will not let an
+editor publish research until a reviewer recommends accept. The walk tries it
+early and is refused, assigns a reviewer by email (who *becomes* a reviewer),
+has them ask for revisions and then accept, and watches the same button go
+through. **The refusal is paired with the matching success on purpose** — a
+refusal alone proves only that the screen says no to everybody, which is the
+lesson `own-data.mjs` records in its own header.
+
+### The finding: the gate refused and told nobody
+
+The server was right all along — the item stayed `submitted`, no review row was
+written. **The screen said nothing.** The editor clicks *Approve & publish*, the
+POST 302s back carrying the validation error, and the page is unchanged. From
+the editor's side the button does not work, and nothing suggests a peer reviewer
+is the missing piece.
+
+`FormErrors` was added in §5cn for exactly this family, and it takes
+`form.errors` — so it reached the pages using `useForm`. **A bare `router.post`
+has no form object.** Four controls on the library admin page use one, and so do
+the reviewer portal and the writer's submit-for-review. The three Library pages
+now render `usePage().props.errors`.
+
+**Roughly twenty other pages have the same gap** and are not fixed here: a
+refusal nobody has demonstrated is a guess, and this slice fixes the one with a
+proven gate behind it. KNOWN_ISSUES #32 carries the list's recipe.
+
+### Four faults in the walks, all mine
+
+The item editor is behind a *New draft* toggle. Row locators picked elements by
+position and found ones with no buttons in them — the meetings lesson again,
+fixed the same way. The editor-comment field is a bare `<input>` with **no
+`type` attribute**, so `input[type=text]` never matched it: the walk filled
+nothing, the review saved a NULL comment, and the step checking the writer was
+told what to change went red against a product that was fine — **checked against
+the database before writing it up**. And `settles(reviewer, 'accept')` passed
+whatever happened, because the button itself reads *Recommend accept*; it keys
+on the echoed "your recommendation: accept" now.
+
 ## 5ee. A second go existed everywhere except where the learner could reach it (2026-09-15)
 
 The defect §5ed's runner found, by doing the one thing nobody had done: running
