@@ -4306,6 +4306,55 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5em. The screen parents open most scrolled sideways on a phone (2026-09-15)
+
+§1g was the last browser line and had the most honest excuse for staying
+manual: a synthetic microphone cannot prove a real voice is audible, and
+whether Chrome offers an install prompt is an engagement heuristic no test can
+assert. **Everything around those two can be**, and after §1d and §1e a
+"needs a device" label was worth testing rather than trusting.
+
+`scripts/smoke/mobile.mjs` runs the app at a real phone profile (Pixel 5,
+393px) and checks the PWA preconditions, the Dhivehi rendering, and the thing a
+person on a phone notices before anything else.
+
+**The family portal overflowed by 123px.** In English and in Dhivehi, for both
+the student and the parent account:
+
+```
+student  /en/portal/home   +123px  div.flex.gap-3.text-sm w=492
+parent   /en/portal/home   +123px  div.flex.gap-3.text-sm w=492
+```
+
+A `flex` row holding six portal links and an Export CSV button, with **no
+`flex-wrap`** — so it could not break, ran to 492px inside a 393px viewport,
+and pushed the whole page left-right under the thumb. The row *outside* it
+already wrapped, which is exactly why this survived: the markup looks
+responsive at a glance, and the unwrappable unit is one level in.
+
+It is the screen a parent opens most, and it is invisible on a desktop.
+
+**Searched rather than noted**, per §5ek's lesson: a sweep of **37 screens
+across three roles** at phone width found no other offender. One `flex-wrap`,
+one defect. The walk now measures twenty family-facing screens every run —
+in both directions, because RTL overflows the other way and a left-only check
+misses half of it.
+
+**Revert-checked.** Removing the `flex-wrap` reproduces the exact 123px on both
+accounts and names the element and its width.
+
+**The PWA side was sound**, which is worth recording because it was checked
+rather than assumed: the manifest is served as `application/manifest+json`,
+both icons return 200, the service worker reaches `activated`, and the
+precached `/offline.html` is really there. Dhivehi renders `dir=rtl lang=dv`
+with 130 Thaana characters and a resolved `Faruma, "MV Boli"` stack.
+
+**What no walk should claim**, and the checklist now says so in its own words: a
+real voice through a real microphone, and whether the install prompt appears.
+This proves the preconditions for both and stops there.
+
+Seventeen walks now, four read-only. Only §4's device work is fully by hand.
+
 ## 5el. The recitation queue had nothing to review, and never could have (2026-09-15)
 
 §1e was the next line on `OPERATOR_CHECKLIST`. After §1d — where "needs a mic"

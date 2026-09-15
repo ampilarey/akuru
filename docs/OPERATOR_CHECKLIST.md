@@ -15,12 +15,13 @@ with a `teachers` row, and a parent/student pair for portal checks.
 
 ## 0. Run the automated walks first
 
-**Do this before anything below.** Sixteen scripted walks drive real browsers
+**Do this before anything below.** Seventeen scripted walks drive real browsers
 through the loops that matter — a stranger enrolling, a student taking a
 lesson, a teacher marking work, a family reporting an absence, a child being
 collected, a parent booking a meeting, somebody becoming a writer and getting
-published, a student recording a sound for a teacher to judge — and they take
-about twelve minutes against a host, unattended.
+published, a student recording a sound for a teacher to judge, and the whole
+thing at phone width — and they take about thirteen minutes against a host,
+unattended.
 
 ```
 php artisan db:seed --class=SmokeMarkerSeeder     # plants the markers they read
@@ -36,12 +37,12 @@ SMOKE_BASE_URL=https://test.akuru.edu.mv node scripts/smoke/all.mjs
 It exits non-zero if any walk fails and prints the full output of the failures
 only, so a green run is one screen and a red one explains itself.
 
-**Thirteen of the sixteen write data** — they submit absence notes, request that
-children be collected, book meetings, enrol people and hand in recordings for a
-teacher to judge. Against a host whose name does not look synthetic the runner
-refuses to start and tells you how to override. `--read` runs only the three that look without touching anything
-(`page-errors`, `sweep`, `own-data`), which is the safe choice against anything
-with real families on it.
+**Thirteen of the seventeen write data** — they submit absence notes, request
+that children be collected, book meetings, enrol people and hand in recordings
+for a teacher to judge. Against a host whose name does not look synthetic the
+runner refuses to start and tells you how to override. `--read` runs only the
+four that look without touching anything (`page-errors`, `sweep`, `own-data`,
+`mobile`), which is the safe choice against anything with real families on it.
 
 `node scripts/smoke/all.mjs learn review` runs named walks; `--write` runs the
 thirteen that change data.
@@ -60,7 +61,10 @@ consequences, and an offering price override that a family can see, including
 `0` behaving as free. **§1d is automated too** — recording through a synthetic
 microphone, the teacher’s verdict, the training sample, the export manifest and
 both role guards. **§1e is automated too**, and building the way in was what
-it took — see below. The device work (§4) and §1g are still by hand.
+it took — see below. **§1g is partly automated** — the PWA preconditions, RTL
+and Thaana, and twenty family screens checked for sideways scroll at phone
+width; a real voice through a real microphone and the install prompt itself
+stay a person's. Only the device work (§4) is fully by hand now.
 A walk that goes green first time deserves more suspicion than one that does
 not (STATUS §5eb).
 
@@ -196,6 +200,25 @@ step is what found #33 (a refunded family could never enrol again).
       listing shows the override; `0` behaves as free.
 
 ### 1g. Mobile shell smoke (Phase 5 — browser part only)
+
+**Partly automated as of 2026-09-15** — `scripts/smoke/mobile.mjs`, 11/11, runs
+the app at a real phone profile (Pixel 5, 393px) and checks what a person on a
+phone notices first: the manifest is served and its icons load, the service
+worker reaches `activated`, the precached offline page is really there, Dhivehi
+renders right-to-left in Thaana with fonts resolved, the recorder is reachable
+and tappable, and **twenty family-facing screens do not scroll sideways** — in
+both directions, because RTL overflows the other way.
+
+**That last check found a real one.** `/portal/home` — the screen parents open
+most — overflowed by **123px** on a 393px phone, in both languages: a `flex`
+row of six links and a CSV button with no `flex-wrap`, so it could not break
+and pushed the whole page sideways under the thumb. Fixed; a sweep of 37
+screens across three roles found no others. STATUS §5em.
+
+**Two lines stay a person's job, and no walk should claim them:** whether a
+**real voice through a real microphone** records audibly, and whether the
+install prompt actually appears (browser engagement heuristics, not something
+to assert).
 
 - [ ] Open test.akuru.edu.mv on a phone browser: RTL/Thaana rendering, the
       pronunciation recorder works with the phone mic, PWA install prompt
