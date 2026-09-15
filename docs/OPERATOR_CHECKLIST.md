@@ -15,11 +15,12 @@ with a `teachers` row, and a parent/student pair for portal checks.
 
 ## 0. Run the automated walks first
 
-**Do this before anything below.** Fourteen scripted walks drive real browsers
+**Do this before anything below.** Fifteen scripted walks drive real browsers
 through the loops that matter — a stranger enrolling, a student taking a
 lesson, a teacher marking work, a family reporting an absence, a child being
 collected, a parent booking a meeting, somebody becoming a writer and getting
-published — and they take about seven minutes against a host, unattended.
+published, a student recording a sound for a teacher to judge — and they take
+about twelve minutes against a host, unattended.
 
 ```
 php artisan db:seed --class=SmokeMarkerSeeder     # plants the markers they read
@@ -35,15 +36,16 @@ SMOKE_BASE_URL=https://test.akuru.edu.mv node scripts/smoke/all.mjs
 It exits non-zero if any walk fails and prints the full output of the failures
 only, so a green run is one screen and a red one explains itself.
 
-**Eleven of the fourteen write data** — they submit absence notes, request that
-children be collected, book meetings and enrol people. Against a host whose
+**Twelve of the fifteen write data** — they submit absence notes, request that
+children be collected, book meetings, enrol people and hand in a recording for
+a teacher to judge. Against a host whose
 name does not look synthetic the runner refuses to start and tells you how to
 override. `--read` runs only the three that look without touching anything
 (`page-errors`, `sweep`, `own-data`), which is the safe choice against anything
 with real families on it.
 
 `node scripts/smoke/all.mjs learn review` runs named walks; `--write` runs the
-eleven that change data.
+twelve that change data.
 
 **What a clean run does and does not prove.** It proves the deploy script, the
 built assets and the seeded database on that host behave like the local ones —
@@ -56,7 +58,9 @@ reaching the writer at the 70/30 split, and the payouts gate explaining itself.
 **§1f is automated too, all four lines** — a manual payment activating an
 enrolment with no gateway involved, a refund to wallet, both of its
 consequences, and an offering price override that a family can see, including
-`0` behaving as free. The device work (§4) and §1d, §1e, §1g are still by hand.
+`0` behaving as free. **§1d is automated too** — recording through a synthetic
+microphone, the teacher’s verdict, the training sample, the export manifest and
+both role guards. The device work (§4) and §1e, §1g are still by hand.
 A walk that goes green first time deserves more suspicion than one that does
 not (STATUS §5eb).
 
@@ -124,6 +128,21 @@ sale.
       earnings CSV downloads.
 
 ### 1d. Pronunciation practice (Arabic B — AI off)
+
+**Automated as of 2026-09-15** — `scripts/smoke/pronounce.mjs` walks every line
+below, 17/17, including both role guards. It had been left for a person on the
+grounds that it "needs a mic"; it does not. Chromium can hand `getUserMedia` a
+synthetic audio stream (`--use-fake-device-for-media-stream`) and grant the
+permission without asking, so the page calls the real `MediaRecorder` and posts
+a real `.webm` the server cannot tell from a person's.
+
+**Walking it found that nobody could record at all.** `Permissions-Policy:
+microphone=()` is an empty allowlist — it denies every origin, this one
+included — so the Record button threw on every browser for every student, and
+the message told them to change a browser setting that cannot override a
+response header. Fixed to `microphone=(self)`; see KNOWN_ISSUES #34 and
+STATUS §5ej. A person should still confirm a **real voice through a real
+microphone** records audibly, which is §1g's line, not this one.
 
 - [ ] As a student user, open `/learn/pronounce` → allow mic → record a
       letter/haraka attempt → submit. Expect: confirmation; no AI feedback

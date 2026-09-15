@@ -1468,6 +1468,50 @@ cancellation. No migration, so rule 9 is not engaged. ADR-035; STATUS §5ei.
 twice in a row since Phase 4 — it never cancelled in between, because nothing
 in a test suite refunds anybody first.
 
+### 34. Nobody could record anything — the site blocked its own microphone
+
+**Fixed (2026-09-15) — found by automating §1d, which had been written off as
+needing a person with a mic.**
+
+`SecurityHeaders` sent:
+
+```
+Permissions-Policy: geolocation=(), camera=(), microphone=()
+```
+
+`()` is an **empty allowlist**, not a default — it denies every origin, this one
+included, and no browser setting can override a response header. So
+`getUserMedia({audio: true})` threw `NotAllowedError` on `/learn/pronounce` for
+**every student, in every browser, on every deployment**.
+
+That is the entire student surface of Arabic B (SPEC §51). The recorder, the
+teacher's review queue, the training dataset, the export manifest and the model
+shelf all sit downstream of a student recording one sound, and not one of them
+could ever have received an attempt.
+
+**And the error told them the wrong thing.** A policy block throws the same
+`NotAllowedError` a visitor's own refusal throws, so it was classified as
+"denied" and the student read *"Allow microphone access for this site and try
+again"* — advice aimed at a setting that was never the problem, and which cannot
+work.
+
+**Why it survived.** It arrived with the **E8 student-pick-up slice**, which has
+nothing to do with audio; closing camera and microphone reads as plain hygiene
+in a diff about collecting children. And **no test named any of the security
+headers**, so the value could change without a single failure. The existing
+pronunciation feature tests post a file directly and never touch `getUserMedia`,
+so they were green throughout.
+
+Fixed to `microphone=(self)` — same-origin may *ask*, the browser still prompts,
+the visitor may still refuse. Geolocation and camera stay shut. `recordingSupport()`
+now reads `document.permissionsPolicy`/`featurePolicy` and reports a policy block
+as its own reason, so the student is told it is the site's configuration and to
+tell the school. Headers now have tests. ADR-036; STATUS §5ej.
+
+**The sixth of this shape** — configured, enforced, reported on, and unreachable
+(#25, #26, #27, #31, #33). This one is the largest: a whole SPEC section's
+student-facing half, switched off by a one-line header in an unrelated slice.
+
 ---
 
 ## Gates that behave well (recorded 2026-09-15)

@@ -46,6 +46,17 @@ export const RECORDER_INSECURE = 'insecure';
 export const RECORDER_DENIED = 'denied';
 export const RECORDER_NO_DEVICE = 'no_device';
 export const RECORDER_FAILED = 'failed';
+/**
+ * The site's own `Permissions-Policy` header forbids the microphone.
+ *
+ * Distinct from `RECORDER_DENIED` because the advice is the opposite. A denied
+ * microphone is the student's to fix in their browser; a policy block is the
+ * server's, and **no browser setting can override it** — so telling a student
+ * to "allow microphone access for this site and try again" sends them to fiddle
+ * with a permission that was never the problem. That is exactly what happened
+ * while the header read `microphone=()` (STATUS §5ej).
+ */
+export const RECORDER_BLOCKED_BY_SITE = 'blocked_by_site';
 
 /**
  * Can this environment record at all? Asked before the button is offered, so a
@@ -65,6 +76,16 @@ export function recordingSupport() {
         // `isSecureContext` is what actually decides it, so it is what we say.
         const insecure = typeof window.isSecureContext === 'boolean' && !window.isSecureContext;
         return { supported: false, reason: insecure ? RECORDER_INSECURE : RECORDER_UNSUPPORTED };
+    }
+
+    // Asked before the button is offered, because a policy block throws the
+    // same `NotAllowedError` a student's own refusal does — and the two need
+    // opposite advice. `permissionsPolicy` is the current name and
+    // `featurePolicy` the one Chrome shipped first; a browser with neither
+    // tells us nothing, and silence is not a refusal.
+    const policy = document?.permissionsPolicy ?? document?.featurePolicy;
+    if (typeof policy?.allowsFeature === 'function' && !policy.allowsFeature('microphone')) {
+        return { supported: false, reason: RECORDER_BLOCKED_BY_SITE };
     }
 
     return { supported: true, reason: null };
@@ -98,6 +119,7 @@ export function describeRecordingFailure(reason, translations = {}) {
         [RECORDER_UNSUPPORTED]: 'This browser cannot record audio. Try Chrome, Edge or Safari, or upload a file instead.',
         [RECORDER_INSECURE]: 'Recording needs a secure (https) connection. Open this page over https, or upload a file instead.',
         [RECORDER_DENIED]: 'The microphone was blocked. Allow microphone access for this site and try again.',
+        [RECORDER_BLOCKED_BY_SITE]: 'This site is set up to block the microphone, so recording cannot start. This is not something you can change — please tell the school.',
         [RECORDER_NO_DEVICE]: 'No microphone was found. Connect one and try again.',
         [RECORDER_FAILED]: 'Recording could not start. Try again, or upload a file instead.',
     };
