@@ -4367,6 +4367,16 @@ Counted openly, as the rest of §5e does.
   and the product was right both times. It is now found the way
   `DefaultSelfLearningOfferingAction` finds it: lowest-id self-learning offering
   of that course. **Run twice back to back, 21/21 both times, one offering.**
+- **A third, and only the full fourteen-walk run could see it.** The revocation
+  check navigated to `enrolHref` — the *first* enrolment link on the admin list
+  — rather than to the payable enrolment it had just paid for. Alone, those are
+  the same row. Run after `register.mjs`, they are not: a newer enrolment sorts
+  above, and the walk read *"Enrollment #54, Smoke Applicant, SMOKE-Course,
+  Pending"* and reported the payable enrolment as un-revoked, while #53 had in
+  fact been revoked correctly. The same lesson as §5eb's six — scope the
+  locator to the row carrying the thing you are asserting about — in the one
+  place the fix had not been applied. **This is what running the walks together
+  is for; running `money` alone would never have shown it.**
 
 **Revert-checked.** Changing `?? null` to `?: null` in
 `ListPublishedCoursesAction` — one character, and the exact mistake that

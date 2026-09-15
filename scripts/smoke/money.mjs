@@ -128,6 +128,16 @@ check('the enrolment list names the payable course', list.includes(COURSE), list
 check('an enrolment is open to look at', Boolean(enrolHref), enrolHref ?? 'no /admin/enrollments/N link');
 
 let paid = false;
+// The payable enrolment's own page, remembered for the revocation check later.
+//
+// That check used `enrolHref` — the *first* enrolment link on the list — which
+// is only the right one while this walk runs alone. Run after `register.mjs`,
+// a newer enrolment sorts above it and the walk read a stranger's row:
+// "Enrollment #54, Smoke Applicant, SMOKE-Course, Pending" reported as the
+// payable enrolment failing to be revoked, while #53 had been revoked
+// correctly. Scoped to the row that carries the money, like everything else
+// here.
+let payableHref = null;
 
 if (enrolHref) {
     // The right enrolment, found by its course rather than by position — the
@@ -141,6 +151,7 @@ if (enrolHref) {
     check('the payable enrolment has its own page', Boolean(mine), mine ? mine[1] : 'no row for ' + COURSE);
 
     if (mine) {
+        payableHref = mine[1];
         await staff.goto(new URL(mine[1], BASE).href, { waitUntil: 'networkidle' });
         const page = await body(staff);
 
@@ -223,8 +234,8 @@ if (canRefund) {
     // without the money is worse. Both halves are plausible alone, which is
     // exactly the shape that has been breaking all session — so both are
     // asserted, from the screens rather than from the columns.
-    if (enrolHref) {
-        await staff.goto(new URL(enrolHref, BASE).href, { waitUntil: 'networkidle' });
+    if (payableHref) {
+        await staff.goto(new URL(payableHref, BASE).href, { waitUntil: 'networkidle' });
         const enrolment = await body(staff);
         check(
             'and the enrolment it bought is revoked',
