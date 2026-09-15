@@ -4304,6 +4304,69 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5eb. Collecting a child — the highest-stakes loop, and it holds (2026-09-15)
+
+**No defect found, which is the finding.** Recorded because "we walked it and
+it was fine" is worth exactly as much as the other kind, and because the walk
+now exists to catch the day it stops being true.
+
+E8 ends with a child leaving the building with somebody, so it is the one loop
+where a silent failure is not a bug report. Five steps, two actors, two
+browsers, and the state has to travel between them at every step:
+
+```
+ok    the family cannot ask before the office opens pick-up
+ok    the office opens pick-up for today
+ok    an open window alone is not enough — a PIN comes first
+ok    the family sets a PIN
+ok    and then the request form is there
+ok    the family has a child they are allowed to collect
+ok    a wrong PIN is refused
+ok    and nothing reaches the console
+ok    the right PIN is accepted
+ok    the request reaches the office console
+ok    with what the family wrote on it
+ok    the office sends the child to reception
+ok    the family is told the child is at reception
+ok    the family confirms they have them
+ok    the office sees the child has left          Left 0 → 1
+ok    and no longer waiting for departure         Waiting 2 → 1
+
+16/16 steps passed.
+```
+
+**The refusals are walked, and each is paired with the success that proves the
+check was reachable.** A wrong PIN is refused *and* files nothing; the window
+being shut hides the request form entirely; a PIN must exist before a family
+can ask at all. `own-data.mjs` records the reason in its own header: a "no"
+from a screen that says no to everybody proves nothing.
+
+**Four false failures, all the same cause, none of them the product's.** The
+first run reported 9/14. `SmokeMarkerSeeder` already plants a pick-up notice
+**for the same child** under a different guardian, so:
+
+- clicking the first *Send to reception* button on the console sent the
+  **seeded** notice, after which the family was never told, had no confirm
+  button, and nothing was ever collected — three failures manufactured by one
+  wrong click;
+- "a refused request reaches the console" was checked by looking for the
+  child's **name**, which the seeded notice put there regardless.
+
+Both are fixed by keying every console assertion on the note the family typed.
+A fifth failure was the walk checking for the request form before setting a
+PIN, which the screen correctly withholds — now walked as its own step rather
+than tripped over.
+
+And a sixth: the console never prints the word *collected*. Its headings are
+"Waiting for departure (N)" and "Left (N)", so a `/collected/i` check failed
+against a console that was working. It now reads the two counters before and
+after, which also survives the seeded notice.
+
+**Six false results in one walk against code with no defect in it.** That is
+the clearest measurement yet of the thing STATUS §5dy, §5dz and §5ea each
+recorded once: **the walk is the part most likely to be wrong**, and a run that
+goes green first time deserves more suspicion than one that does not.
+
 ## 5ea. An absence the family reported was still recorded against them (2026-09-15)
 
 §5dz walked a loop and found a locked door. This walked the next one and found
