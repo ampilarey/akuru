@@ -93,7 +93,16 @@ async function settles(page, needle, ms = 5000) {
     return false;
 }
 
-const tomorrow = new Date(Date.now() + 86400000).toISOString().slice(0, 10);
+// A **fresh** date each run, not tomorrow.
+//
+// The first version generated slots for tomorrow every time. On the second run
+// the slots already existed and the family had already booked one, so
+// "generate" found nothing new to say and the Book button was gone — the row
+// the walk matched was in the family's *Your bookings* section, not the
+// bookable table. Two failures that were re-runs, not regressions, and
+// `all.mjs` exists precisely to run these repeatedly.
+const dayOffset = 2 + Math.floor(Math.random() * 20);
+const tomorrow = new Date(Date.now() + dayOffset * 86400000).toISOString().slice(0, 10);
 
 // ------------------------------------------ the office publishes some slots
 
@@ -166,6 +175,14 @@ if (booked) {
 
 const teacher = await signIn(TEACHER);
 
+// Without a child's name there is nothing to look for, and `includes('')` is
+// true of every page — which turned the `/portal/teacher` check into a false
+// failure the first time `all.mjs` ran this twice. An empty marker is a broken
+// walk, so it says so once rather than poisoning three checks.
+if (childName === '') {
+    check('a child name was captured to search for', false, 'booking did not happen, so the checks below cannot mean anything');
+}
+
 // `/teach/meetings` is the answer this walk was written to ask for and now
 // gets. The other three are kept and reported: they are where a teacher would
 // reasonably look, and the walk should say plainly that the booking is not
@@ -181,7 +198,7 @@ for (const [label, path, expected] of [
     const status = response.status();
     const body = status === 200 ? await text(teacher) : '';
 
-    const sees = status === 200 && body.includes(tomorrow) && body.includes(childName);
+    const sees = childName !== '' && status === 200 && body.includes(tomorrow) && body.includes(childName);
 
     check(
         expected

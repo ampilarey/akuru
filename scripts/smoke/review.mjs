@@ -152,7 +152,33 @@ check(
     activityUrl ?? 'no activity on the course page showed ' + PROMPT,
 );
 
-if (activityUrl) {
+// Is there a fresh attempt to make?
+//
+// The player disables everything once an attempt is submitted, and offers no
+// way back — **which is a defect in its own right**, because authors configure
+// `retakes_allowed` / `retake_limit`, the server enforces them, and the
+// teacher's own revision report advises "retry the weak item when retakes
+// remain". There is no button.
+//
+// The consequence here is that this walk needs a clean attempt. Running it
+// twice without reseeding used to spend thirty seconds inside
+// `page.fill('textarea')` waiting for a disabled control and then die with a
+// Playwright stack trace, which reads like a broken browser rather than what it
+// is. Say it plainly and quickly instead.
+const editable = activityUrl
+    ? await student.locator('textarea').first().isEditable().catch(() => false)
+    : false;
+
+if (activityUrl && !editable) {
+    check(
+        'there is an unsubmitted attempt to walk',
+        false,
+        'the textarea is disabled — this activity was already submitted. '
+            + 'Re-seed first: php artisan db:seed --class=SmokeMarkerSeeder',
+    );
+}
+
+if (activityUrl && editable) {
     await student.fill('textarea', ANSWER);
     await student.click('button:has-text("Submit")');
     const landed = await settles(student, 'submitted');
@@ -169,13 +195,26 @@ if (activityUrl) {
 
 // ------------------------------------------------- the teacher, who may not
 
-// Recorded, not asserted green: this is the question the walk exists to ask.
+// The question the walk exists to ask, recorded as the **current** answer
+// rather than as a failure.
+//
+// It used to assert a green 200 and therefore always failed, deliberately — and
+// that made this walk permanently red, which is fine for a person reading it
+// once and useless for `all.mjs`, where a walk that can never pass makes the
+// whole run a false alarm for ever. A gate nobody can ever satisfy gets
+// ignored, and then the real failures go with it.
+//
+// So it asserts the 403 that is true today. When the owner settles
+// `OWNER_ACTIONS` item 16 and teachers gain the queue, **this step fails** and
+// has to be changed on purpose — exactly like the Pest test beside it
+// (`TeacherReviewLoopTest`), and exactly the behaviour a pinned decision wants.
 const teacher = await signIn(TEACHER);
 const teacherQueue = await teacher.goto(`${BASE}/en/catalog/reviews`, { waitUntil: 'networkidle' });
 check(
-    'a teacher can open the review queue',
-    teacherQueue.status() === 200,
-    `HTTP ${teacherQueue.status()} for ${TEACHER} — /catalog/reviews is gated on courses.manage`,
+    'a teacher is still shut out of the review queue (OWNER_ACTIONS item 16)',
+    teacherQueue.status() === 403,
+    `HTTP ${teacherQueue.status()} for ${TEACHER} — /catalog/reviews is gated on courses.manage, `
+        + 'which the teacher role does not hold. Change this step when that is decided.',
 );
 
 // ----------------------------------------------------------------- the marker
