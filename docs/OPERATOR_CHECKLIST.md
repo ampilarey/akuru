@@ -13,6 +13,48 @@ with a `teachers` row, and a parent/student pair for portal checks.
 
 ---
 
+## 0. Run the automated walks first
+
+**Do this before anything below.** Ten scripted walks drive real browsers
+through the loops that matter — a stranger enrolling, a student taking a
+lesson, a teacher marking work, a family reporting an absence, a child being
+collected, a parent booking a meeting — and they take about fifteen minutes
+against a host, unattended.
+
+```
+php artisan db:seed --class=SmokeMarkerSeeder     # plants the markers they read
+node scripts/smoke/all.mjs                        # every walk, one summary
+```
+
+Point it at the deployment with `SMOKE_BASE_URL`:
+
+```
+SMOKE_BASE_URL=https://test.akuru.edu.mv node scripts/smoke/all.mjs
+```
+
+It exits non-zero if any walk fails and prints the full output of the failures
+only, so a green run is one screen and a red one explains itself.
+
+**Seven of the ten write data** — they submit absence notes, request that
+children be collected, book meetings and enrol people. Against a host whose
+name does not look synthetic the runner refuses to start and tells you how to
+override. `--read` runs only the three that look without touching anything
+(`page-errors`, `sweep`, `own-data`), which is the safe choice against anything
+with real families on it.
+
+`node scripts/smoke/all.mjs learn review` runs named walks; `--write` runs the
+seven that change data.
+
+**What a clean run does and does not prove.** It proves the deploy script, the
+built assets and the seeded database on that host behave like the local ones —
+which is the comparison `OWNER_ACTIONS` item 7 exists to make and that nobody
+has been able to make yet. It does **not** replace section 1: no script walks
+the Library writer portal, peer review, payouts, or the device work, and a
+walk that goes green first time deserves more suspicion than one that does not
+(STATUS §5eb).
+
+---
+
 ## 1. Browser walks (definition of done — §57)
 
 CI is green everywhere, but the DoD requires each surface walked by a person
