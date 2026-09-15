@@ -1224,6 +1224,40 @@ rows already closed are not touched. **No backfill** — see STATUS §5dn.
 
 ---
 
+### 28. A teacher cannot open the teacher review queue
+
+**Open — needs a decision, see `OWNER_ACTIONS` item 16. Found 2026-09-15 by
+walking the loop.**
+
+`/catalog/reviews` renders a page titled **"Teacher review"** and answers six of
+the thirteen abilities SPEC §36 gives the *Teacher / Instructor / Reviewer*:
+view pending submissions, open student submissions, give score, give written
+feedback, mark passed/failed, request resubmission. It is gated on
+`courses.manage`, and the `teacher` role does not hold it — `admin`,
+`headmaster`, `supervisor`, `super_admin` and `course_creator` do.
+
+So a teacher can set written work through a `teacher_marked` activity and has
+no screen on which it arrives. The nav shows them the link (it is ungated, see
+#11), and it answers 403.
+
+**Why this is not a one-line fix.** `courses.manage` is the *authoring*
+permission: courses, lessons, questions, offerings, the glossary. Granting it
+to teachers hands over the whole catalog to mark one essay. The narrow
+alternative — a `courses.review` permission — runs into the queue being
+school-wide with nothing to narrow it by: **`course_instructor` is a table with
+no reader and no writer anywhere in the application**, and zero rows, so "the
+submissions on my own courses" cannot be expressed today. SPEC §36's first
+line, *view assigned offerings*, has the same nothing underneath it.
+
+Either every teacher sees every pupil's work, or course-instructor assignment
+gets built first. That is the owner's call and it is a disclosure decision, the
+same family as item 12 in `OWNER_ACTIONS`.
+
+The loop itself works, end to end, and is now walked and tested — see STATUS
+§5dz. This is the one step of that walk that fails, and it fails on purpose.
+
+---
+
 ## Explicitly not defects
 
 - **Payroll off** — `PAYROLL_ENABLED=false` and settings `payroll.enabled` — by design (S5.6).

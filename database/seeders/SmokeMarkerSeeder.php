@@ -251,25 +251,25 @@ class SmokeMarkerSeeder extends Seeder
         // the second run of the seeder failed on the foreign key until this was
         // here — "every insert deletes its own marker first" has to mean the
         // marker *and its children*.
-        $staleCourseIds = DB::table('courses')->where('title', 'SMOKE-Course')->pluck('id');
+        //
+        // It still did not, and the fix is not a longer list. **Seventeen
+        // tables carry a `course_id` foreign key** — activities, assessments,
+        // payments, leads, funnel events, testimonials, admission applications
+        // — so deleting the course means chasing every one of them and every
+        // table hanging off those in turn. The second run died first on
+        // `activities` and then, with that added, on `funnel_events`, which is
+        // written by the public registration walk and has nothing to do with
+        // this fixture.
+        //
+        // So the course is **kept and updated** rather than dropped and
+        // recreated. Its id is stable across runs, which is what everything
+        // pointing at it needed all along; only the teaching content beneath
+        // it is replaced, in `learner()`, where it is planted.
+        $courseId = (int) DB::table('courses')->where('slug', 'smoke-course')->value('id');
 
-        if ($staleCourseIds->isNotEmpty()) {
-            $staleLessonIds = DB::table('lessons')->whereIn('course_id', $staleCourseIds)->pluck('id');
-
-            DB::table('course_enrollments')->whereIn('course_id', $staleCourseIds)->delete();
-            DB::table('content_blocks')->whereIn('course_id', $staleCourseIds)->delete();
-            DB::table('lessons')->whereIn('id', $staleLessonIds)->update(['current_revision_id' => null]);
-            DB::table('lesson_revisions')->whereIn('lesson_id', $staleLessonIds)->delete();
-            DB::table('lessons')->whereIn('id', $staleLessonIds)->delete();
-            DB::table('course_modules')->whereIn('course_id', $staleCourseIds)->delete();
-        }
-
-        DB::table('courses')->whereIn('id', $staleCourseIds)->delete();
-
-        $courseId = DB::table('courses')->insertGetId([
+        $course = [
             'course_category_id' => $categoryId,
             'title' => 'SMOKE-Course',
-            'slug' => 'smoke-course',
             'short_desc' => 'Planted by SmokeMarkerSeeder.',
             'body' => 'Planted by SmokeMarkerSeeder.',
             'cover_image' => '',
@@ -281,8 +281,17 @@ class SmokeMarkerSeeder extends Seeder
             // course, which reads like a broken catalog until you find the
             // second column.
             'workflow_status' => 'published',
-            'created_at' => now(), 'updated_at' => now(),
-        ]);
+            'updated_at' => now(),
+        ];
+
+        if ($courseId > 0) {
+            DB::table('courses')->where('id', $courseId)->update($course);
+        } else {
+            $courseId = DB::table('courses')->insertGetId($course + [
+                'slug' => 'smoke-course',
+                'created_at' => now(),
+            ]);
+        }
 
         DB::table('course_offerings')->insert([
             'course_id' => $courseId,
@@ -346,12 +355,21 @@ class SmokeMarkerSeeder extends Seeder
             return;
         }
 
+        // Everything this method plants, cleared in foreign-key order so the
+        // seeder can be run again — which it could not be until now. Attempts
+        // go with the activities that own them: an attempt outliving its
+        // activity sits in the review queue naming something that no longer
+        // exists, which is a worse fixture than none.
+        $lessonIds = DB::table('lessons')->where('course_id', $courseId)->pluck('id');
+        $enrollmentIds = DB::table('course_enrollments')->where('course_id', $courseId)->pluck('id');
+
+        DB::table('activity_attempts')->where('course_id', $courseId)->delete();
+        DB::table('activities')->where('course_id', $courseId)->delete();
+        DB::table('student_lesson_progress')->whereIn('enrollment_id', $enrollmentIds)->delete();
         DB::table('content_blocks')->where('course_id', $courseId)->delete();
-        DB::table('lesson_revisions')->whereIn(
-            'lesson_id',
-            DB::table('lessons')->where('course_id', $courseId)->pluck('id')
-        )->delete();
-        DB::table('lessons')->where('course_id', $courseId)->delete();
+        DB::table('lessons')->whereIn('id', $lessonIds)->update(['current_revision_id' => null]);
+        DB::table('lesson_revisions')->whereIn('lesson_id', $lessonIds)->delete();
+        DB::table('lessons')->whereIn('id', $lessonIds)->delete();
         DB::table('course_modules')->where('course_id', $courseId)->delete();
 
         $moduleId = DB::table('course_modules')->insertGetId([
@@ -399,8 +417,6 @@ class SmokeMarkerSeeder extends Seeder
         // goes through its own action: the shape it validates is the shape the
         // player expects, and a raw insert is how this seeder produced an empty
         // lesson once already.
-        DB::table('activities')->where('course_id', $courseId)->delete();
-
         app(SaveActivityAction::class)->execute([
             'course_id' => $courseId,
             'course_module_id' => $moduleId,
@@ -415,6 +431,25 @@ class SmokeMarkerSeeder extends Seeder
                     ['id' => 'b', 'label' => 'SMOKE-Wrong'],
                 ],
                 'correct_ids' => ['a'],
+            ],
+            'created_by' => $admin?->id,
+        ]);
+
+        // And one the machine **cannot** mark. A `teacher_marked` activity is
+        // the only pattern whose attempt lands `submitted` rather than
+        // `scored`, which is what puts a row in the review queue — so it is
+        // the only fixture that can walk the loop between a student handing
+        // work in and a teacher handing a mark back.
+        app(SaveActivityAction::class)->execute([
+            'course_id' => $courseId,
+            'course_module_id' => $moduleId,
+            'lesson_id' => $lessonId,
+            'title' => 'SMOKE-Review-Activity',
+            'pattern' => 'teacher_marked',
+            'max_score' => 5,
+            'data' => [
+                'prompt' => 'SMOKE-Review-Question: write a sentence using a sun letter.',
+                'submission_kind' => 'written',
             ],
             'created_by' => $admin?->id,
         ]);

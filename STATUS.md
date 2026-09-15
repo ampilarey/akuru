@@ -4304,6 +4304,96 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5dz. Work a machine cannot mark, marked — the review loop, walked (2026-09-15)
+
+The last unwalked path in the course engine, and the fourth time this session
+that two covered halves turned out to have an untested join between them.
+
+A `teacher_marked` activity is the only pattern whose attempt lands
+`submitted` rather than `scored`. That is what puts a row in the review queue,
+so it is the only path where six of SPEC §36's thirteen teacher abilities mean
+anything: *view pending submissions · open student submissions · give score ·
+give written feedback · mark passed/failed · request resubmission*.
+
+Both ends had tests. `ActivityPatternTest` proves the engine declines to score
+a teacher-marked attempt; `CatalogReportsTest` proves the queue renders. §5dw
+fixed the queue's `academic_year_id` filter without anything ever walking the
+queue it feeds. **Nobody had taken one piece of work from a student's hands to
+a marker's and back.**
+
+**The loop works.** `scripts/smoke/review.mjs` runs three signed-in actors
+through it and `TeacherReviewLoopTest` pins the same journey server-side: the
+student writes an answer and is told it is submitted, the engine leaves it
+unscored, the marker finds it waiting *with the student's own words on the
+card*, gives 4/5 and a sentence, it leaves the queue, and the student opens the
+page they submitted on and sees both the mark and the sentence.
+
+```
+ok    the student signs in
+ok    the course page is reachable from /learn
+ok    the teacher-marked activity is reachable from the course
+ok    handing it in is accepted and says so
+ok    the engine does not mark it itself
+ok    there is no feedback yet
+FAIL  a teacher can open the review queue    HTTP 403 for teacher@akuru.edu.mv
+ok    the marker signs in
+ok    the queue opens
+ok    the submission is waiting in it
+ok    the marker can read what the student wrote
+ok    marking it is accepted
+ok    it leaves the pending queue
+ok    the student sees the mark
+ok    the student sees the written feedback
+
+14/15 steps passed.
+```
+
+**The one failure is the finding, and it fails on purpose.** `/catalog/reviews`
+is titled "Teacher review" and is gated on `courses.manage`, which the
+`teacher` role does not hold. A teacher can set written work and has no screen
+on which it arrives; the nav offers them the link and it answers 403.
+
+It is recorded rather than fixed because the fix is a decision.
+`courses.manage` is the *authoring* permission — courses, lessons, questions,
+offerings, glossary — so granting it hands over the catalog to mark an essay.
+The narrow alternative, a `courses.review` permission, meets the fact that the
+queue is school-wide with nothing to narrow it by: **`course_instructor` is a
+table with no reader and no writer anywhere in the application**, zero rows, so
+"the submissions on my own courses" cannot be expressed. §36's first line,
+*view assigned offerings*, is empty for the same reason. KNOWN_ISSUES #28,
+`OWNER_ACTIONS` item 16. The test asserting the 403 says in its own comment
+that it should fail and be changed on purpose when that is settled.
+
+**Three things found on the way, all in code this session shipped.**
+
+**The smoke seeder could not be run twice.** `catalog()` deletes and recreates
+`SMOKE-Course`, and the comment above the cleanup claims to have fixed exactly
+this — it lists what `learner()` plants and stops there. The **activities** are
+deleted later, inside `learner()`, which runs after, so run two died on
+`activities_course_id_foreign`. Adding activities to the list moved the failure
+to `funnel_events`, written by the registration walk and nothing to do with the
+fixture. **Seventeen tables carry a `course_id` foreign key.** So the course is
+now kept and updated rather than dropped and recreated — its id is stable
+across runs, which is what everything pointing at it needed — and only the
+teaching content beneath it is replaced, in `learner()`, where it is planted.
+Verified by running the seeder three times in a row.
+
+**Every failure detail the walk printed was navigation.** The shell puts ~90
+links above the content (`OWNER_ACTIONS` item 8), so `innerText('body')` spends
+its first thousand characters on the nav. Worse than useless: a substring check
+against `body` can match a menu item rather than the page — the same shape as
+the `.text-red-600` selector that matched a nav element and returned "Log out"
+in §5dy. The walk reads `main`.
+
+**And three false failures of my own, for the third time this session.** The
+walk reported that submitting did not update the screen and that marking did
+not clear the queue. Both were the script reading mid-flight: these buttons
+post over XHR, and neither `waitForLoadState('networkidle')` nor waiting on the
+POST response covers Inertia following the 302 and re-rendering. A bounded poll
+for the expected text fixed it — a timeout still fails the step, so a real
+regression is not waited away. **Checked before it was written up**, which is
+the only reason this paragraph is about a script and not about a defect.
+
 ## 5dy. The paid funnel's one button dropped the customer with no explanation (2026-09-15)
 
 §5dw walked the **free** funnel. Pointing the same walk at a **paid** course

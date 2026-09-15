@@ -229,13 +229,49 @@ Left undecided rather than guessed, because naming it wrongly is worse than the
 gap: a report that says `transferred` when the family emigrated is a sentence
 somebody will act on.
 
+### 16. Who marks the work — and whose work they can see
+
+**The one step of the review walk that fails.** `/catalog/reviews` is titled
+"Teacher review" and answers six of the thirteen abilities SPEC §36 gives a
+teacher: view pending submissions, open student submissions, give score, give
+written feedback, mark passed/failed, request resubmission.
+
+**The `teacher` role cannot open it.** It is gated on `courses.manage`, which
+`admin`, `headmaster`, `supervisor`, `super_admin` and `course_creator` hold
+and teachers do not. A teacher can set written work and has nowhere to receive
+it; the nav offers them the link and it answers 403.
+
+The loop itself is sound — a student hands work in, a marker scores it, the
+student sees the mark and the sentence — and that is now walked in a browser
+and pinned by a test (STATUS §5dz). Only the door is wrong.
+
+**Pick one:**
+
+- **Every teacher marks everything.** Add a `courses.review` permission, grant
+  it to `teacher` alongside the five roles that already have `courses.manage`,
+  and gate the three review routes on it. One migration, one afternoon. It
+  means any teacher can read any pupil's submitted work, school-wide.
+- **Teachers mark their own courses first.** Narrower and honest, but it cannot
+  be built today: `course_instructor` is a table with **no reader and no writer
+  anywhere in the application** and zero rows, so "my courses" has nothing
+  behind it. SPEC §36's first line, *view assigned offerings*, is empty for the
+  same reason. This option is the assignment screen plus the scoped query, and
+  it is the bigger job.
+
+Not guessed, because widening a permission is a disclosure and narrowing it
+later does not un-disclose anything — the same reasoning as item 12.
+
+**Do not** solve it by granting `courses.manage` to teachers. That is the
+authoring permission: courses, lessons, questions, offerings, glossary.
+
 ---
 
 ## What is *not* on this list
 
-The agent-buildable backlog is empty. Of the 27 numbered defects in
+The agent-buildable backlog is empty. Of the 28 numbered defects in
 `KNOWN_ISSUES.md`, **twenty-one are fixed**, two are explicitly not defects
-(`left_early`, Vite HMR), and the remainder are the decisions above. The
+(`left_early`, Vite HMR), and the remainder are the decisions above — including
+#28, added 2026-09-15, which is item 16. The
 EduPage parity track was verified row by row on 2026-09-14: **all 22 rows have
 their code**, and a test now pins that so the plan cannot drift into claiming
 otherwise for an eighteenth time.
