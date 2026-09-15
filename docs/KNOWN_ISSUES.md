@@ -1512,6 +1512,26 @@ tell the school. Headers now have tests. ADR-036; STATUS §5ej.
 (#25, #26, #27, #31, #33). This one is the largest: a whole SPEC section's
 student-facing half, switched off by a one-line header in an unrelated slice.
 
+### 35. The family portal scrolled sideways on a phone
+
+**Fixed (2026-09-15) — found by automating §1g at a real phone profile.**
+
+`/portal/home` overflowed its viewport by **123px** at 393px wide, in English
+and in Dhivehi, for both the student and the parent account. A `flex` row
+holding six portal links and an Export CSV button carried **no `flex-wrap`**,
+so it could not break, ran to 492px, and pushed the whole page left-right under
+the thumb.
+
+**Why it survived.** The row *outside* it already wrapped, so the markup reads
+as responsive at a glance; the unwrappable unit is one level in. And horizontal
+overflow is invisible on a desktop — the window is simply wider than the
+content, so nothing looks wrong to anyone who is not on a phone.
+
+This is the screen a parent opens most. Fixed with one `flex-wrap`; a sweep of
+37 screens across three roles at phone width found no other offender, and
+`scripts/smoke/mobile.mjs` now measures twenty family-facing screens every run,
+in both directions. STATUS §5em.
+
 ---
 
 ## Gates that behave well (recorded 2026-09-15)

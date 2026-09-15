@@ -18,14 +18,14 @@
  *
  * ## Read-only and writing walks are separated, on purpose
  *
- * Three of these only look at screens. The other **thirteen write**: they enrol a
+ * Four of these only look at screens. The other **thirteen write**: they enrol a
  * stranger on a course, submit and approve an absence note, request that a
  * child be collected, book a parent-teacher meeting, and publish an article to
  * the library. That is exactly what makes them worth running — and exactly why
  * nobody should discover it by pointing the runner at a live school.
  *
  *   node scripts/smoke/all.mjs            every walk (the default)
- *   node scripts/smoke/all.mjs --read     the three that only look
+ *   node scripts/smoke/all.mjs --read     the four that only look
  *   node scripts/smoke/all.mjs --write    the thirteen that change data
  *   node scripts/smoke/all.mjs learn review     just those, by name
  *
@@ -111,6 +111,7 @@ const WALKS = [
     { name: 'money', writes: true, asks: 'Can the school take money without a gateway, and give it back?' },
     { name: 'pronounce', writes: true, asks: 'Can a student hand in a recording, and does a human ear decide it?' },
     { name: 'recite', writes: true, asks: 'Can a student hand in a recitation, and does a teacher mark it?' },
+    { name: 'mobile', writes: false, asks: 'Does this work on a phone?' },
 ];
 
 const args = process.argv.slice(2);
@@ -143,7 +144,7 @@ if (selected.some((walk) => walk.writes) && !looksSynthetic && process.env.SMOKE
     console.error('book meetings, enrol people and hand in recordings. On a host with');
     console.error('real families on it that means real messages to real people.\n');
     console.error('If this host is synthetic, re-run with SMOKE_I_KNOW_THIS_WRITES=yes,');
-    console.error('or use --read for the three walks that only look at screens.\n');
+    console.error('or use --read for the four walks that only look at screens.\n');
     process.exit(2);
 }
 

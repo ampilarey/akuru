@@ -149,7 +149,11 @@ export default function Home({ title = 'Dashboard', students = [], csvUrl = '/po
 
             <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
                 <p className="text-sm text-gray-600">Attendance, exams, invoices, course progress, and Hifz — read from each domain's public contract.</p>
-                <div className="flex gap-3 text-sm">
+                {/* `flex-wrap` on the row outside this one is not enough: this
+                    inner group is a single unwrappable unit, so six links and a
+                    CSV button ran to 492px inside a 393px phone and pushed the
+                    whole portal sideways under the thumb (STATUS §5em). */}
+                <div className="flex flex-wrap items-center gap-3 text-sm">
                     {extras.map((section) => (
                         <a key={section.key} className="text-[#7C2D37] hover:underline" href={section.href}>{section.label}</a>
                     ))}
