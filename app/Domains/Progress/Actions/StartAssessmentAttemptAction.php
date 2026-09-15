@@ -145,11 +145,13 @@ class StartAssessmentAttemptAction
 
     public function assertRetakesAvailable(int $assessmentId, ?int $enrollmentId, mixed $retakeLimit, ?int $studentId = null): void
     {
-        $submitted = $this->scopedQuery($assessmentId, $enrollmentId, $studentId)
-            ->whereIn('status', [AssessmentAttemptStatus::Submitted, AssessmentAttemptStatus::Scored])
-            ->count();
+        // Counted in one place now (rule 11) — the same reader the player asks
+        // before offering a Try again button, so the offer and the refusal
+        // cannot disagree.
+        $state = app(ResolveRetakeStateAction::class)
+            ->forAssessment($assessmentId, $enrollmentId, $studentId, $retakeLimit);
 
-        if ($retakeLimit !== null && $submitted >= (int) $retakeLimit) {
+        if ($state['remaining'] !== null && $state['remaining'] <= 0) {
             throw ValidationException::withMessages([
                 'attempt' => ['Retake limit reached.'],
             ]);

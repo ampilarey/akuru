@@ -8,6 +8,7 @@ use App\Domains\Courses\Enums\ActivitySubmissionKind;
 use App\Domains\Media\Actions\StorePrivateMediaAction;
 use App\Domains\Progress\Actions\AttachAttemptMediaAction;
 use App\Domains\Progress\Actions\GetLatestActivityAttemptAction;
+use App\Domains\Progress\Actions\ResolveRetakeStateAction;
 use App\Domains\Progress\Actions\SaveActivityAttemptAction;
 use App\Domains\Progress\Actions\SubmitActivityAttemptAction;
 use App\Http\Controllers\Controller;
@@ -35,6 +36,15 @@ class LearnActivityController extends Controller
                 'course_id' => $access['course_id'],
             ],
             'attempt' => $attempt,
+            // The retake policy the author set, told to the person it is about.
+            // It was configured, enforced on submit and reported on in the
+            // teacher's revision list, and never reached the player — so the
+            // pupil a teacher told to try again had nothing to press.
+            'retake' => app(ResolveRetakeStateAction::class)->forActivity(
+                $activity,
+                $access['enrollment_id'],
+                is_array($settings) ? $settings : [],
+            ),
         ]);
     }
 

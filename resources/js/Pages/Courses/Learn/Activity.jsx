@@ -1,5 +1,5 @@
 import { router, usePage } from '@inertiajs/react';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import AppShell from '../../../Layouts/AppShell';
 import HandwritingCanvas from '../../../Components/HandwritingCanvas';
 
@@ -115,10 +115,47 @@ function Attachments({ activity, attachments, submitted }) {
     );
 }
 
-export default function Activity({ activity, enrollment, attempt }) {
+export default function Activity({ activity, enrollment, attempt, retake = null }) {
     const t = usePage().props.i18n?.learn || {};
     const [answers, setAnswers] = useState(() => initialAnswers(activity, attempt));
-    const submitted = attempt && attempt.status !== 'in_progress';
+
+    /**
+     * Trying again.
+     *
+     * The author sets `retakes_allowed` and `retake_limit`, the server enforces
+     * them on submit, and the teacher's revision report tells the pupil to
+     * "retry the weak item when retakes remain". There was no button: an
+     * attempt that was not `in_progress` disabled every control on this page
+     * for ever, so the policy could not be exercised by anybody.
+     *
+     * No new route is needed. `SubmitActivityAttemptAction` already creates the
+     * next attempt when there is no in-progress one, and guards it with the
+     * same reader that decided whether to show this button — so the offer and
+     * the refusal cannot disagree.
+     *
+     * The marked attempt stays on screen until the pupil chooses to start
+     * again, rather than clearing itself: the feedback is the reason they are
+     * retrying, and taking it away at the moment they act on it would be a
+     * strange thing to do.
+     */
+    const [retrying, setRetrying] = useState(false);
+
+    // Clear the flag when a **new** attempt comes back.
+    //
+    // Inertia re-renders this same component instance after the redirect
+    // rather than remounting it, so `useState` survives the round trip — the
+    // same trap the attachments list fell into. Without this, submitting a
+    // retake left `retrying` true for ever: the marked result showed with no
+    // Try again button beside it, so the second go was the last one anybody
+    // could take. The browser walk caught it; the feature tests could not,
+    // because they assert props rather than component state.
+    useEffect(() => {
+        setRetrying(false);
+    }, [attempt?.attempt_number, attempt?.status]);
+
+    const finished = attempt && attempt.status !== 'in_progress';
+    const submitted = finished && !retrying;
+    const canRetake = Boolean(finished && !retrying && retake?.can_retake);
     const items = useMemo(() => {
         const byId = Object.fromEntries((activity.data.items || []).map((item) => [item.id, item]));
         return (answers.order || []).map((id) => byId[id]).filter(Boolean);
@@ -270,6 +307,28 @@ export default function Activity({ activity, enrollment, attempt }) {
             )}
             {attempt?.feedback && (
                 <p className="mb-3 rounded-lg border bg-white p-3 text-sm">Teacher feedback: {attempt.feedback}</p>
+            )}
+            {canRetake && (
+                <div className="mb-3 rounded-lg border bg-white p-3 text-sm">
+                    <p className="mb-2 text-gray-700">
+                        {retake.remaining === null
+                            ? 'You can try this again.'
+                            : `You can try this again — ${retake.remaining} ${retake.remaining === 1 ? 'go' : 'goes'} left.`}
+                    </p>
+                    <button
+                        type="button"
+                        className="btn-secondary"
+                        onClick={() => {
+                            setRetrying(true);
+                            setAnswers(initialAnswers(activity, null));
+                        }}
+                    >
+                        {t.try_again || 'Try again'}
+                    </button>
+                </div>
+            )}
+            {finished && !retrying && retake && !retake.can_retake && retake.remaining === 0 && (
+                <p className="mb-3 text-sm text-gray-500">No goes left on this one.</p>
             )}
             <div className="flex flex-wrap gap-3">
                 <button

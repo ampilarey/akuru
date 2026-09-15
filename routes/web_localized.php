@@ -334,6 +334,11 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
     Route::get('/learn/assessments/{assessment}', [LearnAssessmentController::class, 'show'])->name('learn.assessments.show')->whereNumber('assessment');
     Route::post('/learn/assessments/{assessment}/autosave', [LearnAssessmentController::class, 'autosave'])->name('learn.assessments.autosave')->whereNumber('assessment');
     Route::post('/learn/assessments/{assessment}/submit', [LearnAssessmentController::class, 'submit'])->name('learn.assessments.submit')->whereNumber('assessment');
+    // An assessment retake has to be *started*, not merely answered again: the
+    // attempt carries question snapshots, frozen when it begins and randomised
+    // per attempt where the author asked for that. Activities need no such
+    // route — submitting creates the next attempt itself.
+    Route::post('/learn/assessments/{assessment}/retake', [LearnAssessmentController::class, 'retake'])->name('learn.assessments.retake')->whereNumber('assessment');
     Route::get('/hr/payslips/{payslip}/document', [PayslipDocumentController::class, 'show'])->name('hr.payslips.document')->whereNumber('payslip');
     Route::get('/finance/receipts/{receipt}/document', [ReceiptDocumentController::class, 'show'])->name('finance.receipts.show')->whereNumber('receipt');
 
