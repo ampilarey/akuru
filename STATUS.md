@@ -4306,6 +4306,54 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5eo. The one deploy gate with no command, and two faults in its SQL (2026-09-15)
+
+§5's first line: run the verification query recorded in §5h; when it returns
+zero, schedule the Phase 4 payload-cleanup migration.
+
+Every other gate in this repo is a command — `halaqa:verify-structure`,
+`halaqa:verify-mirror`, `students:verify-unification`, all shaped *"Fail
+unless…"*. **This one was a line of SQL inside a 14,000-line file**, to be found
+and pasted by whoever was doing the deploy. It is now
+`payments:verify-payload-drain`, same shape as its siblings: an Action with the
+logic, a command that prints the counts and lists the rows holding it up.
+
+### Writing the test found two faults in the recorded query
+
+The recorded list of settled statuses was
+`('confirmed','paid','failed','cancelled','expired')`. Inserting one payment per
+status showed:
+
+- **`paid` is not a status this column can hold.** The enum is
+  `('initiated','pending','confirmed','failed','cancelled','expired','refunded')`,
+  so that clause matched nothing. Harmless, but it is noise in a gate somebody
+  is meant to trust.
+- **`refunded` was missing, and that one bites.** A refunded payment has been
+  through confirmation and can never be confirmed again, so it is finished with
+  its payload — but the recorded query counts it as blocking. It would have
+  held the cleanup deploy open **forever** on a payment that is unambiguously
+  done, and the person running it would have had no idea why.
+
+Both are pinned by a test named after the second one.
+
+### And the answer here is green in the way that means nothing
+
+```
+payments=1 with_payload=0 blocking=0
+No payment here has ever carried a payload, so this run proves nothing
+about any other deployment.
+```
+
+Same trap as §5en's `programs=0 … OK`: **a database that never wrote the column
+answers exactly like one that has drained.** The command reports the
+denominators and says which of the two zeros it found, rather than printing OK
+and letting somebody schedule a migration on it.
+
+That is the whole reason this slice exists rather than a one-line "ran it, got
+0" note in this file. As of today every environment is in the vacuous state,
+because no real payment exists anywhere yet (ADR-021) — so **the gate cannot be
+satisfied from here at all**, and saying so is the honest outcome.
+
 ## 5en. A closed gate that still read as open (2026-09-15)
 
 With §1 of `OPERATOR_CHECKLIST` finished, §3 was next: *"F5 — Hifz retirement

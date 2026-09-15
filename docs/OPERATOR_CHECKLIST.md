@@ -323,10 +323,24 @@ Needs a machine with Android Studio / Xcode (see `docs/MOBILE.md`):
 ## 5. Deploy gates & housekeeping
 
 - [ ] **Payload-cleanup deploy** (Phase 4): the legacy
-      `enrollment_pending_payload` read path is a safety net only. Run the
-      verification query recorded in STATUS §5h; when it returns zero
-      pending-payload payments, schedule the cleanup migration (rule 9:
-      its own deploy, after the switch has been stable).
+      `enrollment_pending_payload` read path is a safety net only. It now has
+      a command rather than a line of SQL to copy out of STATUS:
+
+      ```
+      php artisan payments:verify-payload-drain
+      ```
+
+      Run it **on the deployment you are cleaning up**, not locally. It exits
+      non-zero while any payment could still arrive at the webhook and need
+      the payload, and lists the rows holding it up. When it is green,
+      schedule the cleanup migration (rule 9: its own deploy).
+
+      **Read the warning if it prints one.** A database that never had a
+      pre-P4.2 payment answers exactly like one that has drained, so the
+      command says which of the two zeros it found — *"proves nothing about
+      any other deployment"* means the gate has not really run. As of
+      2026-09-15 every environment is in that state, because no real payment
+      exists anywhere yet (ADR-021).
 - [ ] **Public checkout UX swap**: the enroll-first checkout is live behind
       the existing public flow; swapping the public entry UX is a product
       decision — walk it on test first.
