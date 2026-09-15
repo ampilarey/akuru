@@ -4306,6 +4306,113 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5eo. The one deploy gate with no command, and two faults in its SQL (2026-09-15)
+
+§5's first line: run the verification query recorded in §5h; when it returns
+zero, schedule the Phase 4 payload-cleanup migration.
+
+Every other gate in this repo is a command — `halaqa:verify-structure`,
+`halaqa:verify-mirror`, `students:verify-unification`, all shaped *"Fail
+unless…"*. **This one was a line of SQL inside a 14,000-line file**, to be found
+and pasted by whoever was doing the deploy. It is now
+`payments:verify-payload-drain`, same shape as its siblings: an Action with the
+logic, a command that prints the counts and lists the rows holding it up.
+
+### Writing the test found two faults in the recorded query
+
+The recorded list of settled statuses was
+`('confirmed','paid','failed','cancelled','expired')`. Inserting one payment per
+status showed:
+
+- **`paid` is not a status this column can hold.** The enum is
+  `('initiated','pending','confirmed','failed','cancelled','expired','refunded')`,
+  so that clause matched nothing. Harmless, but it is noise in a gate somebody
+  is meant to trust.
+- **`refunded` was missing, and that one bites.** A refunded payment has been
+  through confirmation and can never be confirmed again, so it is finished with
+  its payload — but the recorded query counts it as blocking. It would have
+  held the cleanup deploy open **forever** on a payment that is unambiguously
+  done, and the person running it would have had no idea why.
+
+Both are pinned by a test named after the second one.
+
+### And the answer here is green in the way that means nothing
+
+```
+payments=1 with_payload=0 blocking=0
+No payment here has ever carried a payload, so this run proves nothing
+about any other deployment.
+```
+
+Same trap as §5en's `programs=0 … OK`: **a database that never wrote the column
+answers exactly like one that has drained.** The command reports the
+denominators and says which of the two zeros it found, rather than printing OK
+and letting somebody schedule a migration on it.
+
+That is the whole reason this slice exists rather than a one-line "ran it, got
+0" note in this file. As of today every environment is in the vacuous state,
+because no real payment exists anywhere yet (ADR-021) — so **the gate cannot be
+satisfied from here at all**, and saying so is the honest outcome.
+
+## 5en. A closed gate that still read as open (2026-09-15)
+
+With §1 of `OPERATOR_CHECKLIST` finished, §3 was next: *"F5 — Hifz retirement
+(ADR-025 gate)"*, three unticked boxes ending in **"Then request the deletion
+slice"**.
+
+**All three were already done, and the deletion slice merged on 2026-09-12.**
+ADR-029 supersedes ADR-025's gated status; F5-P1, P2 and P3 closed the three
+gate items in #136–#138; the `halaqa:verify-structure` capture has been in this
+file since then; and rule 7 in CLAUDE.md already says the freeze expired by its
+own terms. An operator working this document top to bottom would have spent a
+day on finished work and then asked for a PR that had already merged.
+
+**ADR-025 did not know it had been superseded.** ADR-029 says it supersedes;
+ADR-025 said nothing back, so a reader arriving from the checklist — which is
+exactly how I arrived — reads a live gate and two claims that are no longer
+true:
+
+- *"Three legacy workflows have no engine replacement"* — they have, and each
+  one's docblock names the gate item it closes (`F5-P1 (ADR-025 gate item 1)`
+  and so on). Reading the ADR without checking the code would have meant
+  rebuilding three finished features. STATUS already recorded that trap once,
+  in the F5 gate-walk entry, and it caught me the same way.
+- The gate conditions themselves, all three met.
+
+Both documents now say so: §3 is marked closed with its evidence inline, and
+ADR-025 carries a supersession header.
+
+### Re-verified rather than taken on trust
+
+The original capture is three days and several slices old, so the gate was run
+again on current `main`:
+
+```
+$ php artisan db:seed --class=HifzDemoSeeder
+$ php artisan halaqa:verify-structure          # before backfill
+programs=1 unmapped=1 … halaqa:verify-structure FAILED
+$ php artisan halaqa:backfill-structure
+programs=1 mapped=1 sessions_mirrored=5 enrollments_linked=1 attendance_written=5
+$ php artisan halaqa:verify-structure          # after backfill
+programs=1 unmapped=0 enrollments=1 unlinked=0 sessions=5 unmirrored=0 attendance_expected=5 missing=0
+halaqa:verify-structure OK
+```
+
+Identical to the 2026-09-12 capture, and still non-vacuous — it fails first.
+
+**Two things worth naming.** Run against the database as it stood, the gate
+reported `programs=0 … OK`: green over nothing, because no Hifz data was
+seeded. ADR-025's phrase *"against the seeded representative dataset"* is doing
+real work, and a capture without it would have been decoration. And
+**`halaqa:verify-mirror` is green but says nothing** — `links=0`, because
+`QURAN_HALAQA_DUAL_WRITE` is off by design, so "every link is mirrored" holds
+over no links. It is recorded as not-evidence so nobody quotes it as evidence.
+
+**The pattern, for the third time today.** §1e's deferral named blockers that
+had lifted; ADR-025 named a gate that had closed; both read as live work. The
+repo's own warning about `EDUPAGE_FEATURES_PLAN` — *"verify every row against
+the code before starting a slice"* — is not specific to that file.
+
 ## 5em. The screen parents open most scrolled sideways on a phone (2026-09-15)
 
 §1g was the last browser line and had the most honest excuse for staying
