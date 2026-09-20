@@ -361,7 +361,14 @@ Needs a machine with Android Studio / Xcode (see `docs/MOBILE.md`):
       output into STATUS closes this.
 - [ ] Delete the leftover `ci-control-main` branch on GitHub (diagnostic
       control for the L7 CI incident; its PR #149 is closed — the proxy
-      could not delete the remote branch). **Still present 2026-09-15**
-      (`c193789`), confirmed by listing the repository's branches.
+      could not delete the remote branch). **Still present 2026-09-20**
+      (`c193789`), confirmed by listing the repository's branches, and
+      **deletion re-attempted and refused**: `git push origin --delete` returns
+      HTTP 403 through the agent proxy, and the GitHub MCP server exposes no
+      delete-branch tool. So this needs a person with repository access.
+
+      **Nothing is lost by deleting it.** PR #149 is closed and unmerged and
+      said "do not merge" in its own title; the branch is `main` at `a309430`
+      plus **one empty commit**, so it carries no unique content at all.
 - [ ] BML production config stays untouched until first real use; rule 9
       reactivates in full at the first real student/payment (ADR-021).
