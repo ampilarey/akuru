@@ -344,10 +344,31 @@ Needs a machine with Android Studio / Xcode (see `docs/MOBILE.md`):
 - [ ] **Public checkout UX swap**: the enroll-first checkout is live behind
       the existing public flow; swapping the public entry UX is a product
       decision — walk it on test first.
-- [ ] **Branch protection**: confirm `docs/BRANCH_PROTECTION.md` is applied
-      on `main` (required CI check, no direct pushes, no bot self-merge).
+- [ ] **Branch protection**: **checked 2026-09-15 — it is NOT applied.** Two
+      independent signals agree: the branches API reports `main` as
+      `"protected": false`, and a pull request's `mergeable_state` was
+      `unstable` rather than `blocked` while the `quality` check was still
+      running, which only happens when that check is not required.
+
+      So `main` currently accepts direct pushes and force pushes, and does not
+      require CI before merge. **Every merge gate this project runs on has been
+      discipline, not mechanism.** It has held — but `CLAUDE.md`'s merge-gate
+      line says `main` *is* branch-protected, and that is not true today.
+
+      An agent cannot apply or read the protection endpoint (403 since
+      2026-08-25, and the GitHub MCP server exposes no tool for it). A repo
+      admin applying `docs/BRANCH_PROTECTION.md` and pasting the `gh api`
+      output into STATUS closes this.
 - [ ] Delete the leftover `ci-control-main` branch on GitHub (diagnostic
       control for the L7 CI incident; its PR #149 is closed — the proxy
-      could not delete the remote branch).
+      could not delete the remote branch). **Still present 2026-09-20**
+      (`c193789`), confirmed by listing the repository's branches, and
+      **deletion re-attempted and refused**: `git push origin --delete` returns
+      HTTP 403 through the agent proxy, and the GitHub MCP server exposes no
+      delete-branch tool. So this needs a person with repository access.
+
+      **Nothing is lost by deleting it.** PR #149 is closed and unmerged and
+      said "do not merge" in its own title; the branch is `main` at `a309430`
+      plus **one empty commit**, so it carries no unique content at all.
 - [ ] BML production config stays untouched until first real use; rule 9
       reactivates in full at the first real student/payment (ADR-021).

@@ -1,22 +1,51 @@
 # Status
 
-**Verified against:** `main` after PRs **#86–#126** (`5ecc37e` W2.5 research posts).  
-**This PR:** `cursor/w3-prayer-times-063c` / **#128** — **W3 prayer times** (CODE + TESTED + USABLE).  
-**USABLE column** cites `docs/PILOT_REHEARSAL.md` (Rounds 1–3) and staging notes in the [archive](docs/STATUS_ARCHIVE.md). It is **not** inferred from code or tests.  
-**History:** per-slice append log (including Round-2 fixes 1–7) → [`docs/STATUS_ARCHIVE.md`](docs/STATUS_ARCHIVE.md).  
-**Defects:** [`docs/KNOWN_ISSUES.md`](docs/KNOWN_ISSUES.md).
+**Verified against:** `main` after PR **#402** (`ee558c8`).
+**USABLE column** cites `docs/PILOT_REHEARSAL.md` (Rounds 1–3) and staging notes in the [archive](docs/STATUS_ARCHIVE.md). It is **not** inferred from code or tests.
+**History:** per-slice append log → [`docs/STATUS_ARCHIVE.md`](docs/STATUS_ARCHIVE.md). Recent work is in the §5 sections below, newest first.
+**Defects:** [`docs/KNOWN_ISSUES.md`](docs/KNOWN_ISSUES.md). **What only a person can do:** [`docs/OWNER_ACTIONS.md`](docs/OWNER_ACTIONS.md), [`docs/OPERATOR_CHECKLIST.md`](docs/OPERATOR_CHECKLIST.md).
 
 ## 1. Honest summary
 
-Akuru on `main` has a large Laravel 12 + Inertia/React codebase: People unification (Deploy 1–2, Deploy 3 not run), academic years/classes/registers/attendance, exams/marks, HTML report cards, fees/invoices, HR/payroll (payroll **off**), a course engine with offerings and four activity patterns, and Arabic/Qur’an A-track catalog pieces. CI (pint + Pest + architecture) is the merge gate.
+*Rewritten 2026-09-20. The previous version of this section was pinned to PR
+#128 and had been wrong for roughly 275 PRs — it said "Hifz untouched until
+Phase F" (Phase F finished 2026-09-12), called Arabic and Qur'an "A-track
+catalog pieces" (both tracks are built), and described the course engine as
+"four activity patterns". A summary nobody updates is worse than no summary,
+because it is the first thing a reader believes.*
 
-What **runs for a person** is still narrower than the code. Staging `test.akuru.edu.mv` public pages return 200; **seed logins do not authenticate** (Round 1 step 0, Round 2, Round 3). This agent cannot SSH or seed staging.
+**Every codeable phase is merged.** Phase 0; S1–S5 (school backbone through
+payroll); the course engine 1A, 1B, 2+, certificates, payments, and a Phase 5
+mobile scaffold; Arabic A and B; Qur'an A and B with the F0–F5 migration
+completed and the Hifz dataset moved to `Courses/Components/Quran` (ADR-029);
+the Library L1–L7; the public-site track W1–W3; EduPage parity E1–E22. The
+agent-buildable backlog in `KNOWN_ISSUES` is empty.
 
-Local `migrate:fresh --seed` now includes `PilotRehearsalSeeder` (#87). Round 3 Chrome (stacked #86–#92, now on `main`) walked: teacher **Today** landing, fill grid **number + DOB**, **Parent Dashboard** + **Parent notified** column, absence-note approve, missing-weights **banner** + honest **HTML** (not PDF) labels, invoice **sent** rows on the Pilot year. SMS binds `LogSmsSender` unless `APP_ENV=production` **and** `SMS_LIVE` is an explicit true (#86).
+**What is verified is narrower than what is built, and in one specific way.**
+Seventeen scripted browser walks (`node scripts/smoke/all.mjs`, ~13 minutes)
+drive the loops that matter — enrolling, taking a lesson, marking work,
+reporting an absence, collecting a child, booking a meeting, publishing an
+article, taking and refunding money, recording a sound, reciting, and the whole
+app at phone width. They pass **locally**. They have **never been run against
+`test.akuru.edu.mv`**, because seed logins there still do not authenticate and
+this agent cannot SSH or seed the host. That single blocker is why
+`OWNER_ACTIONS` item 1 sits above everything else: a local run cannot tell you
+the deploy script, the built assets or the seeded database on that host are
+sound.
 
-Still blocking a real teacher: staging access, AppShell nav IA (**proposed**, `docs/APPSHELL_NAV_IA.md`, awaiting owner decision — wrap still live), parent notified still **—** on excused rows. People → Students can create a child (#95). Weights can persist a year scheme (#96). Documents are HTML by decision (ADR-012 / #97). Roster picker flags PIL-01 vs blank as one identity (#99). `/academics/gradebook` redirects to `/exams/gradebook` (#100). Class teacher can be set on an existing class; year seeders `firstOrCreate` by name. Course certificates (C1 #106), completion/performance reports (C2 #107), teacher review reports (C3 #108), composed portal home (D1 #109), parent-teacher meeting slots (D2 #110), staff overview (D3 #111), W1.1–W1.6 (#112–#117), W2.1–W2.5 (#118, #119, #121, #124, #126) are on `main`. W3 prayer times is this PR. Most catalog/HR/course-engine slices remain **UNVERIFIED**.
+**Three things are true of `main` that the gates imply are not.** It is **not
+branch-protected** — direct pushes, force pushes and merges over red CI are all
+possible; the gates are discipline, not mechanism (§5ep). **No payment can
+confirm anywhere**, because `BML_WEBHOOK_SECRET` is unset and the webhook fails
+closed. And **five flags are deliberately off**: library payouts, AI
+pronunciation, payroll, halaqa dual-write, live SMS — each waiting on a
+decision rather than on code.
 
-Hifz untouched until Phase F. Deploy 3 not executed. Track B leftovers B1–B4 are on `main` (#102–#105).
+**No real student, payment or Hifz user exists on any deployment** (ADR-021),
+so rule 9's dual-write windows and stability waits are still optional and
+`test.akuru.edu.mv` remains synthetic-only.
+
+Open blockers are in §3 below; decisions are in §4 and in `OWNER_ACTIONS`.
 
 ## 2. Phase / slice table
 
@@ -114,15 +143,25 @@ Legend — **CODE:** implementation in repo (models/migrations/actions/routes/pa
 
 ## 3. Current blockers
 
-### Agent-doable (remaining after #86–#93)
+### Agent-doable
 
-1. **AppShell nav IA** — 50+ wrapping links, duplicate labels. **Proposed, awaiting decision** in `docs/APPSHELL_NAV_IA.md` (PR #98). Do not implement until Accept / Accept with edits / Reject. The wrap is still live.
-2. **Parent notified shows — on excused** — column exists (#86); SMS body is not visible in the portal; log-only outside production.
+**Empty** — matching `KNOWN_ISSUES` ("the agent-buildable backlog is empty").
+*Corrected 2026-09-20: this heading carried two entries, and neither belonged.*
+
+- **AppShell nav IA** was listed here, but it is a **decision**, not work: the
+  proposal in `docs/APPSHELL_NAV_IA.md` says *do not implement* until Accept /
+  Accept with edits / Reject. Moved to §4 where the other decisions live. The
+  wrap is still live (~90 links, eleven rows).
+- **"Parent notified shows — on excused"** was **fixed on 2026-09-13**
+  (KNOWN_ISSUES #17). The boolean became three states, and reading the sender
+  turned up a second defect the entry did not know about — a *late* row whose
+  SMS genuinely was sent still showed `—`, so the school sent the message and
+  the portal told the parent it had not.
 
 ### Operator-only
 
 1. **Staging login / seed** — no SSH from this environment; webhook deploy only (`docs/STAGING.md`). Seed passwords 302 back to login. Someone with server access must seed (or set real passwords) and paste `students:verify-unification` + `morph-map:verify` for **current** `main`. Round 3 ranked #1.
-2. **GitHub branch protection** — docs exist (`docs/BRANCH_PROTECTION.md`); apply was 403 (archive A4).
+2. **GitHub branch protection** — **confirmed not applied, 2026-09-15** (§5ep): the branches API reports `main` as `"protected": false`, and a PR's `mergeable_state` read `unstable` rather than `blocked` with CI still running. Applying it is still 403 from an agent. Until a repo admin applies `docs/BRANCH_PROTECTION.md`, the merge gates are discipline, not mechanism — CLAUDE.md now says so.
 3. **Deploy 3 cleanup** — proposal only (`docs/migrations/s11-deploy-3-cleanup-proposal.md`). Dual-write still on. **Do not execute.**
 4. **Credential smoke / BML sandbox** — never completed on staging.
 5. **`QURAN_HALAQA_DUAL_WRITE`** — leave off until an operator confirms dual-write; no read switch.
@@ -4305,6 +4344,53 @@ walk returned a header row and nothing else for circulation, student work and
 pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
+
+## 5ep. `main` is not branch-protected, and never has been (2026-09-15)
+
+§5's housekeeping line: *"confirm `docs/BRANCH_PROTECTION.md` is applied on
+`main`"*. That document says an agent cannot read the protection endpoint — 403
+since 2026-08-25 — and it is still true: no `gh`, no direct API, and the GitHub
+MCP server exposes no branch-protection tool.
+
+**The answer did not need that endpoint.** Two signals, both readable with
+ordinary permissions, agree:
+
+1. `GET /repos/ampilarey/akuru/branches` reports `main` as **`"protected":
+   false`**.
+2. **#402's `mergeable_state` was `unstable`, not `blocked`,** while the
+   `quality` check was still running. A *required* check that has not reported
+   yet produces `blocked`; `unstable` means the pending check is **not
+   required**.
+
+So `main` accepts direct pushes and force pushes, and does not require CI
+before a merge.
+
+**What that means for everything built on top of it.** CLAUDE.md's merge-gate
+line reads *"`main` is branch-protected — required CI check pre-merge, no
+direct pushes"*. It is not. **Every merge gate this project runs on has been
+discipline, not mechanism** — one slice per PR, CI green before merge, no
+direct pushes to `main`. It has held, across roughly a dozen merges today
+alone, but nothing was enforcing it. ADR-027's *"read the conclusion back,
+never assume it"* turns out to be the only thing standing between a green
+merge and an unchecked one.
+
+That is not a reason to relax it. It is a reason to say out loud that the
+safety net is a habit, and to get the real one applied.
+
+**Correcting CLAUDE.md is an owner's call**, so the finding is recorded in
+`docs/BRANCH_PROTECTION.md` and `OPERATOR_CHECKLIST` §5 and flagged rather than
+edited into the governing file.
+
+**One caveat, stated so nobody over-reads it.** `protected` in the branches
+listing reflects **classic** branch protection; a repository using a **ruleset**
+could read `false` while rules were in force. Signal 2 makes that unlikely — a
+ruleset requiring `quality` would also produce `blocked` — but a repo admin
+running the `gh api` line in `BRANCH_PROTECTION.md` settles it in one command,
+and that is the only thing that closes this line properly.
+
+**Also checked:** the leftover `ci-control-main` branch (§5's last housekeeping
+line) **is still there**, at `c193789`. Deleting a remote branch is outward
+facing and irreversible, so it is reported rather than done.
 
 ## 5eo. The one deploy gate with no command, and two faults in its SQL (2026-09-15)
 
