@@ -66,10 +66,11 @@ has been **discipline, not mechanism**. It has held, but nothing was enforcing
 it, and ADR-027's "read the conclusion back, never assume it" is load-bearing
 rather than belt-and-braces.
 
-**`CLAUDE.md` currently states the opposite** (merge gates: *"`main` is
-branch-protected — required CI check pre-merge, no direct pushes"*). That
-line is not true today. Correcting the governing document is an owner's call,
-so it is flagged here rather than edited.
+**`CLAUDE.md` used to state the opposite** (merge gates: *"`main` is
+branch-protected — required CI check pre-merge, no direct pushes"*). That line
+now says what is true: the gates are discipline, not mechanism, and ADR-027's
+*read the conclusion back* is the only check there is. The rule itself was not
+relaxed — a gate nothing enforces is a reason to keep it, not to drop it.
 
 One caveat, stated so nobody over-reads this: `protected` in the branches
 listing reflects **classic** branch protection. If the repository used a
