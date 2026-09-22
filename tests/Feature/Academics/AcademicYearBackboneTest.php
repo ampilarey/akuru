@@ -44,11 +44,14 @@ it('enforces a single active academic year and close-after-terms', function () {
     expect($second->refresh()->status)->toBe(AcademicYearStatus::Active);
 });
 
-it('keeps legacy term columns and adds unified_term_id plus terms table', function () {
-    expect(Schema::hasColumn('academic_years', 'terms'))->toBeTrue()
+it('has the terms table and roster pivot, and has finished the term switch', function () {
+    // `unified_term_id` and the `academic_years.terms` JSON are gone
+    // (ADR-037): the FK is on `term_id` itself. `term_key` stays — it is what
+    // makes the unique key catch a second NULL-term enrolment.
+    expect(Schema::hasColumn('academic_years', 'terms'))->toBeFalse()
         ->and(Schema::hasColumn('course_enrollments', 'term_id'))->toBeTrue()
         ->and(Schema::hasColumn('course_enrollments', 'term_key'))->toBeTrue()
-        ->and(Schema::hasColumn('course_enrollments', 'unified_term_id'))->toBeTrue()
+        ->and(Schema::hasColumn('course_enrollments', 'unified_term_id'))->toBeFalse()
         ->and(Schema::hasTable('terms'))->toBeTrue()
         ->and(Schema::hasTable('class_student'))->toBeTrue();
 });

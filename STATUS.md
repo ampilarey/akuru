@@ -4345,6 +4345,72 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5er. S1.5's two unfinished switches, finished (2026-09-22)
+
+The second slice from the S1 audit (§5eq). Both are rule 9 stopping after
+deploy 1: the additive step shipped on 2026-08-23 and the switch never came.
+
+**The enrolment term.** The backbone migration added
+`course_enrollments.unified_term_id` (FK → `terms`) beside the bare `term_id`
+and backfilled it once. A month later **nothing read or wrote it** — zero
+references outside that migration. Registration still wrote `term_id` from a
+hidden form field that was never validated (`StartRegistrationRequest` had no
+rule for it), into an `int(10) unsigned` column that referenced nothing.
+`term_key`, which the spec said to drop, was never dropped — and turned out to
+be load-bearing.
+
+**The active year.** `academic_years` carried both the pre-S1 `is_current`
+and the S1.5 `status`. `ActivateAcademicYearAction` enforced "exactly one
+active year" on `status`; the staff overview, meeting-slot options, event
+registration and two register actions' fallbacks read `is_current`.
+`FeaturePackDemoSeeder` set only the flag. Any raw write to either column and
+registers and exams would disagree about which year it was.
+
+**What changed (#405, ADR-037).**
+
+- The FK goes on `term_id` itself: orphans take the Legacy term the earlier
+  backfill chose (via `unified_term_id`) or become NULL; the column is widened
+  to `bigint unsigned`; `ON DELETE RESTRICT`. `unified_term_id` is dropped —
+  never read, so "stop reading, then drop" collapses to one deploy. The
+  `academic_years.terms` JSON, replaced by the `terms` table and unread since,
+  goes with it.
+- **`term_key` stays, against the spec.** It is `IFNULL(term_id, 0)` and it is
+  the only reason `(student_id, course_id, term_key)` catches a second
+  course-only enrolment — MySQL treats NULLs as distinct in a unique index.
+  #397's `CreateOrReviveEnrollmentAction` depends on it. The migration has to
+  drop and recreate it (and the `student_id` FK that was riding on that
+  index) because MySQL will not `MODIFY` a column a generated column depends
+  on. Recorded in `S1_SPEC.md` §S1.5 as a superseded instruction.
+- `RESTRICT` rather than `SET NULL`: MariaDB refuses a nulling or cascading FK
+  on a generated column's base column (error 1901) — found by the test, not
+  the docs — and a term that still has enrolments should not be deletable
+  anyway. No screen deletes years or terms, so nothing reachable changes.
+- `StartRegistrationRequest` and the enrol validator now require
+  `term_id` to exist. An invalid term is a form error, not a foreign-key
+  exception at the OTP step.
+- **`status` is the single answer to "which year is active".** Every reader
+  asks `status`; `ListAcademicYearsAction` still emits `is_current` for the
+  two screens that read it, derived from `status`. The column stays one more
+  deploy because Blade screens and 85 test files write it; a `saving` hook on
+  `AcademicYear` keeps the two in step whichever a writer touched, so the
+  `FeaturePackDemoSeeder` shape (flag only) now means active, and the seeder
+  says `status` explicitly anyway.
+- `TermBackboneFinishedTest` (7): the FK, the dead columns gone, a bad term
+  refused at insert and at the form, the NULL-term uniqueness `term_key`
+  exists for, RESTRICT, the flag bridge both ways, and readers ignoring a
+  raw `is_current` drift. `AcademicYearBackboneTest`'s schema assertion
+  updated. Suites run: Academics, Courses, Admissions, Website, Portal,
+  Architecture — **989 passed**. Applied to the local walk database and the
+  FKs read back: `term_id->terms restrict`, no `unified_term_id`, no `terms`
+  JSON. **Walked in a browser:** years, staff overview and meeting slots all
+  land on the pilot year; a guest posting `term_id=987654` to the start form
+  is sent back with an error, not on to OTP.
+
+**Still open from the S1 audit:** the custom-fields engine has one consumer
+of the three the spec named (Admissions grew a parallel `custom_fields` JSON
+column instead); the Blade teacher screen (needs account creation on the
+React staff form first).
+
 ## 5eq. The Blade student screen put pupils on no register (2026-09-22)
 
 Found auditing S1 against `docs/S1_SPEC.md`, phase by phase after Phase 0

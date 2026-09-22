@@ -164,7 +164,7 @@ class RegisterForEventAction
             return (int) $event->academic_year_id;
         }
 
-        $current = app(ListAcademicYearsAction::class)->execute()->firstWhere('is_current', true);
+        $current = app(ListAcademicYearsAction::class)->execute()->firstWhere('status', 'active');
 
         return isset($current['id']) ? (int) $current['id'] : null;
     }

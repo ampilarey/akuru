@@ -2,6 +2,7 @@
 
 namespace App\Domains\Academics\Actions;
 
+use App\Domains\Academics\Enums\AcademicYearStatus;
 use App\Domains\Academics\Models\AcademicYear;
 use App\Domains\Academics\Models\ClassRoom;
 use App\Domains\Academics\Models\Room;
@@ -15,8 +16,8 @@ class ListMeetingSlotOptionsAction
      */
     public function execute(?int $academicYearId = null): array
     {
-        $years = AcademicYear::query()->orderByDesc('start_date')->get(['id', 'name', 'status', 'is_current']);
-        $yearId = $academicYearId ?: (int) ($years->firstWhere('is_current', true)?->id ?: $years->first()?->id);
+        $years = AcademicYear::query()->orderByDesc('start_date')->get(['id', 'name', 'status']);
+        $yearId = $academicYearId ?: (int) ($years->firstWhere('status', AcademicYearStatus::Active)?->id ?: $years->first()?->id);
 
         return [
             'yearId' => $yearId ?: null,

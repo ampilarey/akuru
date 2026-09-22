@@ -17,6 +17,11 @@ class StartRegistrationRequest extends FormRequest
             'contact_type' => ['required', 'in:mobile,email'],
             'contact_value' => ['required', 'string'],
             'course_id' => ['nullable', 'exists:courses,id'],
+            // `course_enrollments.term_id` is a real foreign key (ADR-037). The
+            // form carries the term as a hidden field and it used to go into
+            // the session unchecked; an invalid one is a form error here, not
+            // a foreign-key exception at the OTP step.
+            'term_id' => ['nullable', 'integer', 'exists:terms,id'],
         ];
     }
 
