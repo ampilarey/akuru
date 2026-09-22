@@ -38,4 +38,9 @@ class ReportCard extends Model
     {
         return $this->hasMany(ReportCardComment::class);
     }
+
+    public function revisions(): HasMany
+    {
+        return $this->hasMany(ReportCardRevision::class);
+    }
 }

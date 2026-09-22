@@ -210,6 +210,7 @@ return [
     'report' => \App\Domains\Settings\Models\Report::class,
     'report_card' => \App\Domains\ExamsGrades\Models\ReportCard::class,
     'report_card_comment' => \App\Domains\ExamsGrades\Models\ReportCardComment::class,
+    'report_card_revision' => \App\Domains\ExamsGrades\Models\ReportCardRevision::class,
     'report_card_template' => \App\Domains\ExamsGrades\Models\ReportCardTemplate::class,
     'school_request' => \App\Domains\Academics\Models\SchoolRequest::class,
     'room' => \App\Domains\Academics\Models\Room::class,

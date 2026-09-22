@@ -4345,6 +4345,52 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5ez. S3 audit, last fix: a published report card can be corrected, with a revision row (2026-09-22)
+
+The audit's D3, which I had first read as "refused by design and
+undocumented". Reading S3.6 again it is neither: its last sentence is
+*"Regeneration allowed until published; after, new version with audit"*, and
+the code shipped the first half and threw on the second — a deviation from
+the spec, not a decision. So this builds it, and ADR-038 records the shape.
+
+**What changed (#413).**
+
+- `report_card_revisions` (`2026_09_22_000004`): one row per regeneration of
+  a published card — the document it superseded, the one it produced, the
+  actor, a mandatory reason, and the backbone (rule 10). Append-only. Alias
+  `report_card_revision` registered.
+- `GenerateReportCardsAction::execute()` takes a `$reason`. Without one a
+  published card is skipped as before; with one it is re-rendered **in
+  place** — same row, same link, `status` and `published_at` untouched, so
+  the portal serves the corrected version from the moment the render lands
+  and there is no window in which a family's link answers 404. `renderOne()`
+  refuses a published card with a blank reason. The job carries the reason.
+  The superseded document stays in Media so the earlier version can be read
+  back by id.
+- The screen: *"Also regenerate published cards"* with a reason input the
+  request requires when the box is ticked; a Revisions column showing the
+  count and the last reason (from `ListReportCardsAction`, two grouped
+  queries, so the CSV gets it too).
+- Why in place and not a new row per version (ADR-038): `report_cards` is
+  unique per student and term on purpose, and every reader joins to it. Why
+  not unpublish-then-regenerate: the gap. No re-notification: a correction
+  is not a second publication; a notice can be added later without touching
+  any of this.
+- `ReportCardsTest`'s publish case now proves the second half: no reason
+  (or a blank one) throws; a class-wide run without a reason leaves the
+  published card's document alone and writes no revision; with a reason a
+  corrected comment reaches a new document, the card stays published with
+  the same `published_at`, the revision names both documents, the actor,
+  the reason, the term and the year, and the old document still exists;
+  the screen shows `revisions: 1` with the reason; the HTTP request refuses
+  the box without a reason and regenerates through it with one.
+- `exams.mjs` gained two steps after publishing: tick the box, give a
+  reason, and see "1 — SMOKE: mark corrected after unlock" on the row, still
+  published. 28 steps.
+
+**Walked in a browser** as those two steps, on a re-seeded local database
+with `queue:work` running: 28/28. No console or server errors.
+
 ## 5ey. S3 audit, second fix: the dead `grades` table, the missing overview tile, the stale DoD box (2026-09-22)
 
 Three of the S3 audit's five deviations, none of them in the engine.
@@ -4450,9 +4496,8 @@ runs straight into its options (`Year2026-2027 Pilot`, no word boundary),
 and "Year default" is an option under *Class* on the Weights screen, so an
 unanchored label match found two labels.
 
-**S3 audit, still open on my side after this:** D2, D4 and D5 went in
-§5ey; D3 — regeneration after publish is refused by design and recorded
-nowhere — is the slice after.
+**S3 audit:** D2, D4 and D5 went in §5ey; D3 in §5ez. Nothing of the
+audit is left on my side.
 
 ## 5ew. The announcements admin, the last Blade screen in S2 (2026-09-22)
 

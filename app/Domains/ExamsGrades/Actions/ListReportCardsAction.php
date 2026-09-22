@@ -39,8 +39,19 @@ class ListReportCardsAction
             ->whereIn('id', $rows->pluck('template_id')->unique())
             ->get()
             ->keyBy('id');
+        // How many times each published card has been corrected (ADR-038),
+        // and why the last time — two grouped queries, not one per row.
+        $revisions = DB::table('report_card_revisions')
+            ->whereIn('report_card_id', $rows->pluck('id'))
+            ->selectRaw('report_card_id, count(*) as n, max(id) as last_id')
+            ->groupBy('report_card_id')
+            ->get()
+            ->keyBy('report_card_id');
+        $lastReasons = DB::table('report_card_revisions')
+            ->whereIn('id', $revisions->pluck('last_id'))
+            ->pluck('reason', 'report_card_id');
 
-        return $rows->map(function (ReportCard $card) use ($students, $classes, $terms, $templates) {
+        return $rows->map(function (ReportCard $card) use ($students, $classes, $terms, $templates, $revisions, $lastReasons) {
             $student = $students[$card->student_id] ?? null;
             $class = $classes[$card->class_id] ?? null;
             $term = $terms[$card->term_id] ?? null;
@@ -59,6 +70,8 @@ class ListReportCardsAction
                 'document_id' => $card->document_id,
                 'generated_at' => $card->generated_at?->toDateTimeString(),
                 'published_at' => $card->published_at?->toDateTimeString(),
+                'revisions' => (int) ($revisions[$card->id]->n ?? 0),
+                'last_revision_reason' => $lastReasons[$card->id] ?? null,
             ];
         })->values();
     }

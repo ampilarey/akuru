@@ -49,6 +49,8 @@ class ReportCardController extends Controller
             'term_id' => ['required', 'integer'],
             'template_id' => ['nullable', 'integer'],
             'locale' => ['nullable', 'string', 'in:en,dv,ar'],
+            'regenerate_published' => ['sometimes', 'boolean'],
+            'reason' => ['required_if:regenerate_published,true', 'nullable', 'string', 'max:255'],
         ]);
 
         app(GenerateReportCardsAction::class)->execute(
@@ -57,6 +59,8 @@ class ReportCardController extends Controller
             isset($data['template_id']) ? (int) $data['template_id'] : null,
             $data['locale'] ?? 'en',
             (int) $request->user()->id,
+            true,
+            ($data['regenerate_published'] ?? false) ? ($data['reason'] ?? null) : null,
         );
 
         return redirect()
