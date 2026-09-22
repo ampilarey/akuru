@@ -101,6 +101,7 @@ function unresolvedDetailScreens(): array
         // closure, so reflection has no controller to read a model from.
         // `LegacyStudentScreensRetiredTest` loads it and pins where it lands.
         'students/{student}' => 'redirect to the React profile; covered by LegacyStudentScreensRetiredTest',
+        'teachers/{teacher}' => 'redirect to the React staff profile; covered by LegacyTeacherScreensRetiredTest',
 
         'quran-progress/{quran_progress}' => 'covered by AdminResourcePagesSmokeTest (quran-progress.show)',
         'quran-progress/{quran_progress}/edit' => 'covered by AdminResourcePagesSmokeTest (quran-progress.edit)',

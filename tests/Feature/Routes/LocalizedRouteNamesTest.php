@@ -21,13 +21,10 @@ class LocalizedRouteNamesTest extends TestCase
             'students.index',
             'students.show',
             'students.quran-progress',
+            // Same shape for teachers (2026-09-22): the two reads redirect to
+            // `people.staff.*`; the write routes are gone.
             'teachers.index',
-            'teachers.create',
-            'teachers.store',
             'teachers.show',
-            'teachers.edit',
-            'teachers.update',
-            'teachers.destroy',
             'quran-progress.index',
             'quran-progress.create',
             'quran-progress.store',

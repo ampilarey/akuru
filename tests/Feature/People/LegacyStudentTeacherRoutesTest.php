@@ -18,8 +18,10 @@ uses(RefreshDatabase::class);
  * These tests are about who is refused. The student CRUD has since been
  * retired (`LegacyStudentScreensRetiredTest`): `/students` is now a redirect
  * to the React directory, still behind the same role guard, and the write
- * routes no longer exist at all. The teacher screens remain until the React
- * staff form can create an account.
+ * routes no longer exist at all. The teacher screens followed on 2026-09-22
+ * once the React staff form could create the account
+ * (`LegacyTeacherScreensRetiredTest`); `/teachers` is a redirect now, still
+ * behind the same role guard.
  */
 function signedInWithRole(?string $role = null): User
 {
