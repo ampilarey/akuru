@@ -2,9 +2,10 @@
 
 namespace App\Domains\Website\Http\Controllers\PublicSite;
 
-use App\Domains\Admissions\Models\AdmissionApplication;
+use App\Domains\Admissions\Actions\SubmitAdmissionApplicationAction;
 use App\Domains\Courses\Models\Course;
 use App\Domains\Notifications\Notifications\NewAdmissionApplication;
+use App\Domains\People\Actions\ListCustomFieldsAction;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Notification;
@@ -32,7 +33,9 @@ class AdmissionController extends Controller
             }
         }
 
-        return view('public.admissions.create', compact('courses', 'selectedCourse'));
+        return view('public.admissions.create', compact('courses', 'selectedCourse') + [
+            'customFields' => app(ListCustomFieldsAction::class)->forAdmissionForm(),
+        ]);
     }
 
     public function store(Request $request)
@@ -52,7 +55,12 @@ class AdmissionController extends Controller
         $validated['user_agent'] = $request->userAgent();
         $validated['source'] = $validated['source'] ?? 'web';
 
-        $application = AdmissionApplication::create($validated);
+        // The S1.2 custom fields the admin flagged for this form are validated
+        // and stored with the application, or the application is not created.
+        $application = app(SubmitAdmissionApplicationAction::class)->execute(
+            $validated,
+            (array) $request->input('values', []),
+        );
 
         // Notify administrators
         $adminUsers = \App\Domains\Identity\Models\User::role('admin')->get();
@@ -89,7 +97,9 @@ class AdmissionController extends Controller
                 ->first();
         }
 
-        return view('public.admissions.apply', compact('courses', 'selectedCourse'));
+        return view('public.admissions.apply', compact('courses', 'selectedCourse') + [
+            'customFields' => app(ListCustomFieldsAction::class)->forAdmissionForm(),
+        ]);
     }
 
     public function thanks()

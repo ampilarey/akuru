@@ -5,6 +5,7 @@ namespace App\Domains\People\Http\Controllers;
 use App\Domains\Academics\Actions\ListBehaviorRecordsAction;
 use App\Domains\People\Actions\AttachGuardianAction;
 use App\Domains\People\Actions\DetachGuardianAction;
+use App\Domains\People\Actions\ListCustomFieldsAction;
 use App\Domains\People\Actions\ListEmergencyContactsAction;
 use App\Domains\People\Actions\ListStudentConsentsAction;
 use App\Domains\People\Actions\ListStudentFormOptionsAction;
@@ -20,8 +21,6 @@ use App\Domains\People\Enums\GuardianConsentStatus;
 use App\Domains\People\Enums\GuardianRelationship;
 use App\Domains\People\Enums\GuardianVerificationStatus;
 use App\Domains\People\Enums\StudentStatus;
-use App\Domains\People\Models\CustomFieldDefinition;
-use App\Domains\People\Models\CustomFieldValue;
 use App\Domains\People\Models\EmergencyContact;
 use App\Domains\People\Models\ParentGuardian;
 use App\Domains\People\Models\Student;
@@ -110,17 +109,6 @@ class StudentDirectoryController extends Controller
     {
         $canViewSensitive = (bool) $request->user()?->can('students.view-sensitive');
 
-        $definitions = CustomFieldDefinition::query()
-            ->forEntity(CustomFieldEntityType::Students)
-            ->forProfile()
-            ->get();
-
-        $values = CustomFieldValue::query()
-            ->where('entity_type', CustomFieldEntityType::Students->value)
-            ->where('entity_id', $student->id)
-            ->get()
-            ->keyBy('definition_id');
-
         $student->load(['guardians', 'emergencyContacts', 'statusHistory']);
         $options = app(ListStudentFormOptionsAction::class)->execute();
 
@@ -156,15 +144,7 @@ class StudentDirectoryController extends Controller
                     'doctor_phone' => $student->doctor_phone,
                 ] : null,
             ],
-            'customFields' => $definitions->map(fn (CustomFieldDefinition $definition) => [
-                'id' => $definition->id,
-                'key' => $definition->key,
-                'label' => $definition->localizedLabel(),
-                'field_type' => $definition->field_type->value,
-                'options' => $definition->options ?? [],
-                'required' => $definition->required,
-                'value' => $values->get($definition->id)?->rawValue(),
-            ]),
+            'customFields' => app(ListCustomFieldsAction::class)->forProfile(CustomFieldEntityType::Students, (int) $student->id),
             'guardians' => $student->guardians->map(fn (ParentGuardian $guardian) => [
                 'id' => $guardian->id,
                 'name' => $guardian->full_name,

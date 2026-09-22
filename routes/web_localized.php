@@ -787,6 +787,7 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::post('staff', [StaffDirectoryController::class, 'store'])->name('people.staff.store');
         Route::get('staff/{staffProfile}', [StaffDirectoryController::class, 'show'])->name('people.staff.show');
         Route::put('staff/{staffProfile}', [StaffDirectoryController::class, 'update'])->name('people.staff.update');
+        Route::put('staff/{staffProfile}/custom-fields', [StaffDirectoryController::class, 'updateCustomFields'])->name('people.staff.custom-fields.update');
         Route::post('staff/{staffProfile}/qualifications', [StaffDirectoryController::class, 'storeQualification'])->name('people.staff.qualifications.store');
         Route::delete('staff/{staffProfile}/qualifications/{qualification}', [StaffDirectoryController::class, 'destroyQualification'])->name('people.staff.qualifications.destroy');
 

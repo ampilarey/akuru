@@ -142,6 +142,8 @@
                         </select>
                     </div>
 
+                    @include('public.admissions._custom-fields')
+
                     <!-- Submit Button -->
                     <div class="text-center">
                         <button type="submit" class="btn-primary px-8 py-3 text-lg">

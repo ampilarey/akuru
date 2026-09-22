@@ -76,6 +76,8 @@
                                       class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brandMaroon-300 resize-none">{{ old('message') }}</textarea>
                         </div>
 
+                        @include('public.admissions._custom-fields')
+
                         <input type="hidden" name="source" value="web">
                         {{-- Honeypot --}}
                         <div class="hidden" aria-hidden="true"><input type="text" name="website" tabindex="-1" autocomplete="off"></div>

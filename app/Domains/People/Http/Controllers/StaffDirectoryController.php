@@ -2,7 +2,10 @@
 
 namespace App\Domains\People\Http\Controllers;
 
+use App\Domains\People\Actions\ListCustomFieldsAction;
+use App\Domains\People\Actions\SaveCustomFieldValuesAction;
 use App\Domains\People\Actions\SyncTeacherRowStatusAction;
+use App\Domains\People\Enums\CustomFieldEntityType;
 use App\Domains\People\Enums\EmploymentType;
 use App\Domains\People\Enums\StaffStatus;
 use App\Domains\People\Models\StaffProfile;
@@ -81,7 +84,22 @@ class StaffDirectoryController extends Controller
             'staff' => $this->serialize($staffProfile, true),
             'employmentTypes' => array_map(fn (EmploymentType $type) => $type->value, EmploymentType::cases()),
             'statuses' => array_map(fn (StaffStatus $status) => $status->value, StaffStatus::cases()),
+            // S1.2: the same engine the student profile uses, keyed `staff`.
+            'customFields' => app(ListCustomFieldsAction::class)->forProfile(CustomFieldEntityType::Staff, (int) $staffProfile->id),
         ]);
+    }
+
+    public function updateCustomFields(Request $request, StaffProfile $staffProfile): RedirectResponse
+    {
+        app(SaveCustomFieldValuesAction::class)->execute(
+            CustomFieldEntityType::Staff,
+            (int) $staffProfile->id,
+            (array) $request->input('values', []),
+        );
+
+        return redirect()
+            ->route('people.staff.show', $staffProfile)
+            ->with('success', 'Custom fields saved.');
     }
 
     public function store(Request $request): RedirectResponse

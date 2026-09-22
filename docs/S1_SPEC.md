@@ -75,6 +75,8 @@ Written automatically by a `ChangeStudentStatusAction` — never raw status upda
 
 Rules: definitions are admin-managed (Settings UI inside People admin); deleting a definition soft-deletes (values preserved); values validated against field_type + required on save via one `SaveCustomFieldValuesAction` reused by student form, staff form, admission form. Rendered automatically by one React `<CustomFields>` component.
 
+> **As built.** The student profile consumed the engine from 2026-08-23; the staff profile and the public admission form did not until **2026-09-22** (STATUS §5es), when both were wired through one read-side action (`ListCustomFieldsAction`). The admission form is still Blade, so it renders through a partial rather than the React component — same definitions, same `values[{id}]` contract, same validator. `admission_applications.custom_fields` (JSON) predates the engine and is written by nothing; values live in `custom_field_values` like everyone else's.
+
 ---
 
 ## Slice S1.3 — Consent & Privacy

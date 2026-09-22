@@ -212,6 +212,10 @@ return [
     'public/about/index.blade.php',
     'public/achievements/index.blade.php',
     'public/admissions/apply.blade.php',
+    // Not a screen: the S1.2 custom-fields partial the two admission forms
+    // above @include. It exists because those forms are still Blade; it goes
+    // when they do.
+    'public/admissions/_custom-fields.blade.php',
     'public/admissions/create.blade.php',
     'public/admissions/thanks.blade.php',
     'public/articles/index.blade.php',
