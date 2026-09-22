@@ -82,7 +82,7 @@ Legend — **CODE:** implementation in repo (models/migrations/actions/routes/pa
 | S2.0 unify-verify gate | Yes. `scripts/pull-deploy-test.sh`. | `PullDeployTestScriptTest`. | Staging evidence **not pasted**. First #15 deploy used pre-pull script (archive). | Operator-only to confirm a gated deploy log. |
 | S2.1 rooms | Yes. CRUD + CSV. | `RoomCrudTest`. | Walked **locally** 2026-09-13: screen shows a row planted for it (§5cm). | |
 | S2.2 timetable conflicts | Yes. Additive year/room/validity + checker. | `TimetableConflictSaveTest`. | UNVERIFIED as a lone task. | |
-| S2.3 timetable builder | Yes. Week grid. | `TimetableBuilderTest`. | Walked **partial** (R2 S1): seeder grid shown; extra-period drag **did not persist**. | |
+| S2.3 timetable builder | Yes. Week grid, class/teacher/room views, copy-week, copy-from-class, print, CSV, substitution overlay. | `TimetableBuilderTest` (9), `TimetableConflictCheckerTest` (17). | Walked **2026-09-22** (§5eu): placing a subject persisted with the default teacher and with a chosen one, and survived reload. The R2 "drag did not persist" does not reproduce. | |
 | S2.4 room bookings | Yes. | `RoomBookingTest`. | Walked **locally** 2026-09-13: screen shows a row planted for it (§5cm). | |
 | S2.5 calendar days | Yes. | `CalendarDayTest`. | Walked **locally** 2026-09-13: screen shows a row planted for it (§5cm). | |
 | S2 event/elective registration | Yes. Min/max seats, waitlist, parent confirm, second round. Reuses 1B.2 `EnforceSeatLimitAction` (no second limiter). | `EventRegistrationTest` (lock reject, waitlist, parent confirm, second-round promote, portal 403). | Walked **#103**: admin create 1-seat elective → parent register/confirm → second child waitlisted → second round promotes. | Portal `/portal/events`; admin `/academics/events`. Occupying statuses: pending, confirmed, pending_parent. |
@@ -192,7 +192,7 @@ Legend — **CODE:** implementation in repo (models/migrations/actions/routes/pa
 | S3.1 weights implied ready | Scales/types seed; Weights UI now posts numeric percents summing to 100 (#96). |
 | 1A / 1B / 2 / Arabic A / Qur’an A “done” | Code + Pest exist. **1A glossary** tables/CRUD/player added this slice. Other 1A/1B/2 still **USABLE UNVERIFIED**. |
 | S5.1–S5.5 “done” | Code + Pest. **UNVERIFIED**. S5.6 is honestly “done; flagged off”. |
-| S2.3 builder “done” | Page exists. R2 extra-period drag did not persist. |
+| S2.3 builder “done” | ~~Page exists. R2 extra-period drag did not persist.~~ Walked 2026-09-22: placement persists (§5eu). |
 
 Fixed enough that the old overstatement no longer applies: SMS live-bind, `DatabaseSeeder` ≠ school, Blade parent/teacher landing, fill-grid names-only, generate-0 copy, class/year 500s, invoice drafts-only list.
 
@@ -247,7 +247,7 @@ Four S2 findings I reported were **wrong**; verified against the code:
 ### Still open (not fixed here)
 
 - **S2 notifications: 1 of 5 delivered.** Only absent/late SMS exists. Missing: unfilled-register reminder (the report exists, the nudge does not), leave-decision, substitution-assignment, behavior-incident-to-parent. No admin daily digest. This is a missing sub-slice, not a defect — it needs its own slice rather than being bolted on.
-- **Timetable builder partial vs S2.1**: substitution overlay and print exist; copy-week, copy-from-class, and teacher-view/room-view tabs do not. Pilot R2 also recorded that dragging an extra period did not persist — still open.
+- ~~**Timetable builder partial vs S2.1**: substitution overlay and print exist; copy-week, copy-from-class, and teacher-view/room-view tabs do not. Pilot R2 also recorded that dragging an extra period did not persist — still open.~~ **Wrong on both counts (2026-09-22, §5eu):** all four features exist with routes, JSX and passing tests, and placement persists in a browser walk.
 - **Legacy Blade not removed** (S1 DoD line 159, S2 DoD line 91): `students.*` and `announcements` are still routed (`web_localized.php:253`). Same leftover class in both phases.
 - **`academic_years.terms` json and `course_enrollments.term_id`/`term_key` columns** still present — deliberate additive deferrals, cheap to drop now that ADR-021 applies.
 - **S2 DoD line 1** (teacher completes the loop on a phone, parent receives SMS) remains unverifiable while staging login is blocked. Walked on desktop with the log-fake sender only.
@@ -320,7 +320,7 @@ those were rejected on investigation rather than left undone.
 
 **Not attempted — needs capabilities this environment lacks**
 
-2. **Timetable builder** — the R2 drag-persist bug needs a browser to reproduce
+2. ~~**Timetable builder** — the R2 drag-persist bug needs a browser to reproduce~~ — reproduced in a browser 2026-09-22 and it does not happen (§5eu)
    (this environment cannot run the app), and copy-week / copy-from-class /
    teacher- and room-view tabs are substantial React work that should be walked
    before merging.
@@ -4344,6 +4344,53 @@ walk returned a header row and nothing else for circulation, student work and
 pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
+
+## 5eu. S2 audit: three claims the code disproves, one dead table, one dual-write (2026-09-22)
+
+S2 audited against `docs/S2_SPEC.md` the same way as Phase 0, S1: schema from
+the live database, every slice, every test gate, and the one open claim
+walked in a browser. **S2 is built to plan** — 6/6 slices, 5/5 notifications,
+7/7 test gates, the conflict engine a 17-case unit matrix, the SMS throttle
+tested for the no-guardian case. What was wrong was the paperwork and the
+edges.
+
+**Three STATUS claims the code disproves**, now struck through where they
+stood (§2 S2.3 row, §3 "builder partial", §5 item 2):
+
+- *"copy-week, copy-from-class, and teacher-view/room-view tabs do not
+  exist"* — all four exist: `academics.timetable.copy-week`,
+  `copy-from-class`, the `view` switch in `Builder.jsx`, and
+  `TimetableBuilderTest` cases for each.
+- *"extra-period drag did not persist — still open"* (pilot R2, repeated
+  three times). **Walked:** class 6, picked a subject, clicked an empty cell
+  with the teacher select untouched → 15 → 16 entries; chose the teacher
+  explicitly → 17; reloaded → 17; no JS errors. The builder defaults
+  `teacher_id` to the first teacher, so the one way `placeSlot` can silently
+  refuse (no teacher) cannot happen from the screen. It does not reproduce.
+  Walk rows removed after.
+
+Fourth of its kind this week (§5el, §5en, §5eo, §5ep): a document asserting
+work that is done, read as live work.
+
+**Two leftovers fixed (#408).**
+
+- The pre-S2 `attendance` table (0 rows) still existed, with a
+  `Student::attendance()` relation nobody called, a model and a morph alias.
+  S2.4's `class_attendance` replaced it a month ago through one writer
+  (rule 11). Dropped — the migration refuses if a row has appeared — and the
+  relation, model and alias removed.
+- `course_plans.academic_year` (string) was still **written** by
+  `SaveCoursePlanAction` beside `academic_year_id`, with a hard-coded
+  `'2024-2025'` fallback, and read by the plans screen. Deploy 2 of that
+  switch: the column is nullable, the action writes only the FK, the screen
+  and CSV take the name from the relation. The drop is a later cleanup.
+- `S2LeftoversTest` (2). Migration applied locally.
+
+**Still open from the S2 audit**, next slices: the portal absence-note form
+omits the `period_id` and `attachment` its own controller validates (S2.4
+"with attachment"); the announcements admin is still Blade (DoD line 91).
+Entering the real timetable for the active year (DoD line 89) is the
+owner's.
 
 ## 5et. The Blade teacher screen retired, once the staff form could make the account (2026-09-22)
 

@@ -3,6 +3,7 @@
 namespace App\Domains\Academics\Http\Controllers;
 
 use App\Domains\Academics\Actions\CopyPlanAction;
+use App\Domains\Academics\Actions\ListCoursePlansAction;
 use App\Domains\Academics\Actions\ResolveTeacherIdForUserAction;
 use App\Domains\Academics\Actions\SaveCoursePlanAction;
 use App\Domains\Academics\Actions\SavePlanTopicAction;
@@ -77,28 +78,7 @@ class CoursePlanController extends Controller
 
         $canManage = (bool) $request->user()?->can('registers.manage');
         $teacherId = app(ResolveTeacherIdForUserAction::class)->execute($request->user()?->id);
-
-        $plans = CoursePlan::query()
-            ->with('topics')
-            ->when(! $canManage && $teacherId, fn ($query) => $query->where('teacher_id', $teacherId))
-            ->orderByDesc('id')
-            ->get()
-            ->map(fn (CoursePlan $plan) => [
-                'id' => $plan->id,
-                'title' => $plan->title,
-                'teacher_id' => $plan->teacher_id,
-                'subject_id' => $plan->subject_id,
-                'classroom_id' => $plan->classroom_id,
-                'academic_year_id' => $plan->academic_year_id,
-                'academic_year' => $plan->academic_year,
-                'status' => $plan->status?->value,
-                'topics' => $plan->topics->map(fn ($topic) => [
-                    'id' => $topic->id,
-                    'title' => $topic->title,
-                    'order' => $topic->order,
-                    'is_completed' => $topic->is_completed,
-                ]),
-            ]);
+        $plans = app(ListCoursePlansAction::class)->execute($canManage, $teacherId);
 
         return Inertia::render('Academics/Plans/Index', [
             'plans' => $plans,

@@ -13,7 +13,6 @@ class CoursePlan extends Model
         'teacher_id',
         'subject_id',
         'classroom_id',
-        'academic_year',
         'academic_year_id',
         'term_id',
         'title',

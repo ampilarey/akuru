@@ -36,7 +36,6 @@ class MorphMap
             'App\\Models\\Announcement' => 'announcement',
             'App\\Models\\Assignment' => 'assignment',
             'App\\Models\\AssignmentSubmission' => 'assignment_submission',
-            'App\\Models\\Attendance' => 'attendance',
             'App\\Models\\ClassRoom' => 'class_room',
             'App\\Models\\ContactInquiry' => 'contact_inquiry',
             'App\\Models\\ContactMessage' => 'contact_message',

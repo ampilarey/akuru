@@ -2,7 +2,6 @@
 
 namespace App\Domains\People\Models;
 
-use App\Domains\Academics\Models\Attendance;
 use App\Domains\Academics\Models\ClassRoom;
 use App\Domains\Academics\Models\Grade;
 use App\Domains\Hifz\Models\HifzEnrollment;
@@ -139,11 +138,6 @@ class Student extends Model
     public function grades()
     {
         return $this->hasMany(Grade::class);
-    }
-
-    public function attendance()
-    {
-        return $this->hasMany(Attendance::class);
     }
 
     public function quranProgress()
