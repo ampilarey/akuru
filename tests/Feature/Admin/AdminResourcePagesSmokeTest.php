@@ -90,8 +90,10 @@ class AdminResourcePagesSmokeTest extends TestCase
         $teacher = Teacher::first();
         $this->assertNotNull($teacher, 'Expected seeded teacher for smoke test.');
 
+        // Retired Blade record; `teachers.show` redirects to the React staff
+        // directory or profile, which the helper follows.
         $this->assertRouteLoads('teachers.show', $teacher);
-        $this->assertRouteLoads('teachers.edit', $teacher);
+        $this->assertRouteLoads('people.staff.index');
     }
 
     public function test_quran_progress_detail_pages_load(): void

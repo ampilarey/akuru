@@ -2,6 +2,7 @@
 
 namespace App\Domains\People\Http\Controllers;
 
+use App\Domains\People\Actions\CreateStaffAccountAction;
 use App\Domains\People\Actions\ListCustomFieldsAction;
 use App\Domains\People\Actions\SaveCustomFieldValuesAction;
 use App\Domains\People\Actions\SyncTeacherRowStatusAction;
@@ -28,6 +29,7 @@ class StaffDirectoryController extends Controller
                 ->orderBy('first_name')
                 ->get()
                 ->map(fn (StaffProfile $profile) => $this->serialize($profile)),
+            'roles' => CreateStaffAccountAction::ROLES,
         ]);
     }
 
@@ -105,7 +107,14 @@ class StaffDirectoryController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $data = $this->validated($request);
-        $profile = StaffProfile::query()->create($data);
+
+        // No `user_id` means "make the account too" — the job the retired
+        // Blade teacher form used to be the only one doing (STATUS §5et).
+        if (empty($data['user_id'])) {
+            $data['user_id'] = app(CreateStaffAccountAction::class)->execute($data);
+        }
+
+        $profile = StaffProfile::query()->create(array_diff_key($data, array_flip(['email', 'password', 'role'])));
 
         // A profile created as `ended` — a record entered after the fact —
         // must not leave a teacher row reading active.
@@ -166,7 +175,11 @@ class StaffDirectoryController extends Controller
         }
 
         return $request->validate([
-            'user_id' => ['required', 'exists:users,id', $uniqueUser],
+            // Either an existing account or the makings of a new one.
+            'user_id' => ['required_without:email', 'nullable', 'exists:users,id', $uniqueUser],
+            'email' => ['required_without:user_id', 'nullable', 'email', 'max:255', 'unique:users,email'],
+            'password' => ['required_with:email', 'nullable', 'string', 'min:8'],
+            'role' => ['required_with:email', 'nullable', 'in:'.implode(',', CreateStaffAccountAction::ROLES)],
             'staff_number' => ['nullable', 'string', 'max:64'],
             'first_name' => ['required', 'string', 'max:255'],
             'last_name' => ['required', 'string', 'max:255'],

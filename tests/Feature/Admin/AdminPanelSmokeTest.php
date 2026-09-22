@@ -43,7 +43,6 @@ class AdminPanelSmokeTest extends TestCase
             // smoke follows redirects, so it still proves the screen loads.
             'students.index',
             'teachers.index',
-            'teachers.create',
             'hifz.hub',
             'hifz.dean.dashboard',
             'hifz.programs.index',

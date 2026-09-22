@@ -4345,6 +4345,60 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5et. The Blade teacher screen retired, once the staff form could make the account (2026-09-22)
+
+The last S1 DoD item (§5eq left it open on purpose). The Blade `/teachers`
+form outlived the React staff directory for one reason: it was the only
+screen that could create a teacher's **account** — user, password, `teacher`
+role, `teachers` row, subject links — while `people.staff.store` took an
+existing `user_id` and could not. Deleting it would have left no way to
+onboard a teacher; `/admin/users` lists and deletes accounts but does not
+create them.
+
+**Decision (owner, 2026-09-22): "new one only is enough."** The login method
+was left to me; the admin sets a password, as the Blade screen did and as
+every existing teacher already has. OTP-only onboarding would have changed
+how staff get in, which is not a change to make for tidiness.
+
+**What changed (#407).**
+
+- `Identity\CreateUserAction` takes an optional role and assigns it —
+  Identity owns `User`, so role assignment lives there rather than making
+  another domain import the model to finish the job.
+- `People\CreateStaffAccountAction`: name, email, password, phone, role →
+  user; when the role is `teacher`, `EnsureTeacherRowAction` writes the
+  `teachers` row the timetable, registers and pickers key on (single school,
+  ADR-001). Roles are limited to `teacher|supervisor|headmaster|admin`.
+- `people.staff.store` takes **either** `user_id` **or** the makings of a new
+  account (`required_without` both ways; email unique; password ≥ 8). The
+  React staff form defaults to "create a new login" with an "existing
+  account" option — the raw "User ID" box was all it had before.
+- The Blade `TeacherController` and its four views are deleted. `/teachers`
+  redirects to the directory; `/teachers/{id}` — keyed on the `teachers` row —
+  crosses through the shared user to the staff profile, or the directory if
+  there is none. Write routes are gone (405). Blade nav points at
+  `people.staff.index`.
+- **Not carried over: `teacher_subject`.** The Blade form let an admin tick
+  the subjects a teacher teaches. Nothing in the application reads that
+  pivot — checked before deciding — so it was data with no reader, and it is
+  not re-created. Subject-teacher assignment per class/year is the S1.4
+  classes screen.
+- Baselines: Blade screens −4, cross-domain models −1, non-contract −3, long
+  methods −2. `LegacyTeacherScreensRetiredTest` (6): routes gone, both
+  redirects, account + role + teachers row created and the admin's password
+  is the one that works, no teachers row for a supervisor, the three
+  refusals (non-staff role, used email, short password — and nothing created),
+  and the existing-account path. Route snapshot, both admin smokes and the
+  detail-screen sweep updated. **Walked in a browser:** `/teachers` →
+  directory, `/teachers/create` 404, staff form defaults to a new login,
+  creates "Walk Teacher" and lands on the profile; signed out, signed in as
+  that teacher with the admin-set password, landed on `/portal/teacher`; no JS
+  errors. Walk account removed after.
+
+**S1 is now closed** except the two items that are not mine: Deploy 3 of the
+student unification (operator-confirmed, `docs/migrations/s11-deploy-3-cleanup-proposal.md`)
+and any walk on `test.akuru.edu.mv` (`OWNER_ACTIONS` item 1).
+
 ## 5es. The custom-fields engine gets its other two consumers (2026-09-22)
 
 Third slice from the S1 audit (§5eq, §5er). `docs/S1_SPEC.md` §S1.2: *"one

@@ -284,9 +284,5 @@ return [
     'substitutions/requests/show.blade.php',
 
     // teachers — 4
-    'teachers/create.blade.php',
-    'teachers/edit.blade.php',
-    'teachers/index.blade.php',
-    'teachers/show.blade.php',
 
 ];

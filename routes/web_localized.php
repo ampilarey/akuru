@@ -122,7 +122,6 @@ use App\Domains\People\Http\Controllers\SensitiveNoteController;
 use App\Domains\People\Http\Controllers\StaffDirectoryController;
 use App\Domains\People\Http\Controllers\StudentConsentController;
 use App\Domains\People\Http\Controllers\StudentDirectoryController;
-use App\Domains\People\Http\Controllers\TeacherController;
 use App\Domains\Portal\Http\Controllers\DashboardController;
 use App\Domains\Portal\Http\Controllers\GuardianChildrenController;
 use App\Domains\Portal\Http\Controllers\PortalAbsenceNoteController;
@@ -428,11 +427,20 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
             ->name('students.show');
         Route::get('/students/{student}/quran-progress', [QuranProgressController::class, 'student'])->name('students.quran-progress');
 
-        // Teacher screens stay for now: `people.staff.store` takes an existing
-        // `user_id`, so this is still the only screen that creates a teacher's
-        // account, role, `teachers` row and subjects in one go. Retiring it
-        // needs that on the React staff form first (STATUS §5eq).
-        Route::resource('teachers', TeacherController::class);
+        // Teacher screens, retired the same way once `people.staff.store`
+        // could create the account itself (STATUS §5et). `/teachers/{id}` was
+        // keyed on the `teachers` row; the React profile is keyed on
+        // `staff_profiles`, so the redirect crosses through the shared user.
+        Route::get('/teachers', fn () => redirect()->route('people.staff.index'))->name('teachers.index');
+        Route::get('/teachers/{teacher}', function (int $teacher) {
+            $profileId = \App\Domains\People\Models\StaffProfile::query()
+                ->where('user_id', \App\Domains\People\Models\Teacher::query()->whereKey($teacher)->value('user_id'))
+                ->value('id');
+
+            return $profileId
+                ? redirect()->route('people.staff.show', $profileId)
+                : redirect()->route('people.staff.index');
+        })->whereNumber('teacher')->name('teachers.show');
     });
 
     // Quran Progress routes (legacy Blade screens, same block as the student
