@@ -285,6 +285,17 @@ function detailFixtureRow(string $class, User $actor): ?Model
         'LessonLog' => makeLessonLog(),
         'DailyContent' => w23Published(),
         'BookTitle' => $class::query()->create(['title' => 'A Borrowed Book']),
+        // The attachment route resolves the note; without a stored file it
+        // answers 404, which is the guard working, not the screen failing.
+        'AbsenceNote' => $class::query()->create([
+            'student_id' => makeStudent(['first_name' => 'Sweep', 'last_name' => 'Note'])->id,
+            'created_by' => $actor->id,
+            'date' => now()->toDateString(),
+            'reason' => 'Sweep fixture.',
+            'type' => 'illness',
+            'status' => 'submitted',
+            'affects_attendance' => true,
+        ]),
         'Instructor' => $class::query()->create(['name' => 'Walk Instructor', 'slug' => 'walk-instructor']),
         'Event' => $class::query()->create([
             'title' => 'Sports day',
