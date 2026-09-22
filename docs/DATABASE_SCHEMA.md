@@ -273,25 +273,6 @@ Complete database schema documentation for the Akuru Institute Learning Manageme
 - created_at, updated_at (timestamps)
 ```
 
-#### `grades` - Grade Management
-```sql
-- id (bigint, primary key)
-- student_id (bigint, foreign key → students.id)
-- subject_id (bigint, foreign key → subjects.id)
-- teacher_id (bigint, foreign key → teachers.id)
-- class_id (bigint, foreign key → classes.id)
-- assignment_id (bigint, foreign key → assignments.id, nullable)
-- quiz_id (bigint, foreign key → quizzes.id, nullable)
-- grade_type (enum: assignment, quiz, exam, practical, participation)
-- score_obtained (decimal) - Actual score
-- maximum_score (decimal) - Maximum possible score
-- percentage (decimal) - Calculated percentage
-- letter_grade (varchar, nullable) - A+, A, B+, etc.
-- comments (text, nullable)
-- grading_date (date)
-- created_at, updated_at (timestamps)
-```
-
 #### `timetables` - Class Schedules
 ```sql
 - id (bigint, primary key)
@@ -748,7 +729,6 @@ recitation_practices ←→ tajweed_feedback (1:many)
 ### Academic Management
 ```
 students ←→ attendances (1:many)
-students ←→ grades (1:many)
 classes ←→ timetables (1:many)
 assignments ←→ assignment_submissions (1:many)
 quizzes ←→ quiz_attempts (1:many)

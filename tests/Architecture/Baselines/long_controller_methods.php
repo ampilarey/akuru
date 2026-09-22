@@ -57,7 +57,6 @@ return [
     'app/Domains/Portal/Http/Controllers/PortalAttendanceController.php::index' => 38,
     'app/Domains/Portal/Http/Controllers/PortalHomeController.php::export' => 75,
     'app/Domains/Portal/Http/Controllers/PortalPerformanceController.php::export' => 37,
-    'app/Domains/Portal/Http/Controllers/StaffOverviewController.php::export' => 50,
     'app/Domains/Website/Http/Controllers/Admin/PublicSite/CourseController.php::store' => 39,
     'app/Domains/Website/Http/Controllers/Admin/PublicSite/DailySubscriptionController.php::export' => 37,
     'app/Domains/Website/Http/Controllers/Admin/PublicSite/FunnelController.php::export' => 39,

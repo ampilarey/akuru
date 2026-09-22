@@ -7,6 +7,8 @@ use App\Domains\ExamsGrades\Actions\TransitionExamStatusAction;
 use App\Domains\ExamsGrades\Enums\ExamStatus;
 use App\Domains\ExamsGrades\Enums\ExamTypeCode;
 use App\Domains\ExamsGrades\Models\ExamType;
+use App\Domains\ExamsGrades\Models\ReportCard;
+use App\Domains\ExamsGrades\Models\ReportCardTemplate;
 use App\Domains\Identity\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
@@ -77,6 +79,20 @@ it('composes staff overview from unfilled registers, ungraded exams, and plan ad
     ], null, $admin->id);
     app(TransitionExamStatusAction::class)->execute($exam, ExamStatus::MarksEntry, $admin->id);
 
+    // A report card generated but not yet published — the S3 spec's second
+    // overview tile — and one from another year, which must not be counted.
+    $student = makeStudent(['first_name' => 'Drafted', 'last_name' => 'Pupil']);
+    $template = ReportCardTemplate::query()->create(['name' => 'Plain', 'sections' => ['grades_table'], 'active' => true]);
+    ReportCard::query()->create([
+        'student_id' => $student->id, 'term_id' => $term->id, 'class_id' => $class->id,
+        'template_id' => $template->id, 'status' => 'ready',
+    ]);
+    $otherYear = makeYear(['name' => '2019-2020', 'status' => 'closed']);
+    ReportCard::query()->create([
+        'student_id' => $student->id, 'term_id' => makeTerm($otherYear)->id, 'class_id' => $class->id,
+        'template_id' => $template->id, 'status' => 'draft',
+    ]);
+
     $this->withoutLocalizationMiddleware()
         ->actingAs($admin)
         ->get(route('dashboard'))
@@ -96,6 +112,10 @@ it('composes staff overview from unfilled registers, ungraded exams, and plan ad
             ->has('ungraded', 1)
             ->where('ungraded.0.name', 'Ungraded Final')
             ->where('ungraded.0.status', ExamStatus::MarksEntry->value)
+            ->has('unpublishedReportCards', 1)
+            ->where('unpublishedReportCards.0.student_name', 'Drafted Pupil')
+            ->where('unpublishedReportCards.0.status', 'ready')
+            ->where('sections.2.key', 'unpublished_report_cards')
             ->has('fillRates', 1)
             ->where('fillRates.0.filled', 1)
             ->where('fillRates.0.total', 2)
@@ -114,6 +134,7 @@ it('composes staff overview from unfilled registers, ungraded exams, and plan ad
     expect($csv->streamedContent())->toContain('Grade 5 B')
         ->and($csv->streamedContent())->toContain('Ungraded Final')
         ->and($csv->streamedContent())->toContain('Arabic Term 1')
+        ->and($csv->streamedContent())->toContain('Drafted Pupil')
         ->and($csv->streamedContent())->toContain('Fatimat Ali');
 });
 

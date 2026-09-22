@@ -51,7 +51,6 @@ class MorphMap
             'App\\Models\\FeeItem' => 'fee_item',
             'App\\Models\\GalleryAlbum' => 'gallery_album',
             'App\\Models\\GalleryItem' => 'gallery_item',
-            'App\\Models\\Grade' => 'grade',
             'App\\Models\\HeroBanner' => 'hero_banner',
             'App\\Models\\HifzAssignment' => 'hifz_assignment',
             'App\\Models\\HifzEnrollment' => 'hifz_enrollment',

@@ -109,7 +109,6 @@ return [
     'gift_card_transaction' => \App\Domains\Commerce\Models\GiftCardTransaction::class,
     'gallery_item' => \App\Domains\Website\Models\GalleryItem::class,
     'glossary_item' => \App\Domains\Courses\Models\GlossaryItem::class,
-    'grade' => \App\Domains\Academics\Models\Grade::class,
     'grade_scale' => \App\Domains\ExamsGrades\Models\GradeScale::class,
     'hero_banner' => \App\Domains\Website\Models\HeroBanner::class,
     'hifz_assignment' => \App\Domains\Hifz\Models\HifzAssignment::class,

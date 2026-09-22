@@ -64,12 +64,22 @@ class ListReportCardsAction
     }
 
     /**
+     * Draft and ready cards — generated, or queued to be, and not yet visible
+     * to a family. Scoped to a year through its terms when asked, for the
+     * staff overview (S3 spec, *Portal additions*: "unpublished report
+     * cards" beside "ungraded exams").
+     *
      * @return Collection<int, array<string, mixed>>
      */
-    public function unpublished(): Collection
+    public function unpublished(?int $yearId = null): Collection
     {
+        $termIds = $yearId === null
+            ? null
+            : DB::table('terms')->where('academic_year_id', $yearId)->pluck('id')->all();
+
         return $this->execute()->filter(
-            fn (array $row) => in_array($row['status'], [ReportCardStatus::Draft->value, ReportCardStatus::Ready->value], true),
+            fn (array $row) => in_array($row['status'], [ReportCardStatus::Draft->value, ReportCardStatus::Ready->value], true)
+                && ($termIds === null || in_array($row['term_id'], $termIds, true)),
         )->values();
     }
 }

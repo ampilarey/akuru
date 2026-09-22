@@ -82,8 +82,8 @@ Parent/student: published exam results per term, report card download, transcrip
 
 ## Definition of Done
 - [x] Full cycle on real data: schedule term exams → enter marks (grid) → publish → term grades computed → report cards generated (trilingual templates render correctly incl. Thaana) → published to Portal → parent downloads the card (HTML, per ADR-012 — not PDF). *Scripted 2026-09-22 as `scripts/smoke/exams.mjs` (STATUS §5ex), 26/26, on top of pilot rehearsal rounds 1–2; the Thaana template is covered by `ReportCardsTest`'s DV/RTL render, not the walk.*
-- [ ] Gradebook matrix + transcript live; awards batch issue works; one ID-card template renders.
+- [x] Gradebook matrix + transcript live; awards batch issue works; one ID-card template renders. *`UnifiedGradebookTest`, `ReportCardsTest` (transcript), `AwardsDocumentsTest` (batch issue, ID card); gradebook walked in rehearsal round 2, awards and ID card walked locally 2026-09-13 (STATUS §2, S3.4 and S3.7 rows). Ticked 2026-09-22 (STATUS §5ey) — the box had been left unticked after the work shipped.*
 - [x] DocumentRendererInterface has its first production implementation (**ADR-012** recorded — HTML output; PDF is a future container-binding swap) — certificates (Phase 3) and Library invoices inherit it. *(Drafted as ADR-005; that number was taken by the morph map.)*
-- [ ] CSV export on all listings; STATUS.md updated.
+- [x] CSV export on all listings; STATUS.md updated. *Eleven `exams.*.export` routes, one per listing, each with a controller method; ticked 2026-09-22 (STATUS §5ey).*
 
 **Out of scope:** question bank, per-standard student analytics, rubrics (Phase 2 — designed to attach to class or course); school quiz/assignment migration (Phase 2); fee/invoice anything (S4); self-evaluation (backlog).
