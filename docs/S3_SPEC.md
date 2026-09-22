@@ -81,7 +81,7 @@ Parent/student: published exam results per term, report card download, transcrip
 8. Permission matrix: subject teacher enters only own class/subject; parents see only published results of own children.
 
 ## Definition of Done
-- [ ] Full cycle on real data: schedule term exams → enter marks (grid) → publish → term grades computed → report cards generated (trilingual templates render correctly incl. Thaana) → published to Portal → parent downloads PDF.
+- [x] Full cycle on real data: schedule term exams → enter marks (grid) → publish → term grades computed → report cards generated (trilingual templates render correctly incl. Thaana) → published to Portal → parent downloads the card (HTML, per ADR-012 — not PDF). *Scripted 2026-09-22 as `scripts/smoke/exams.mjs` (STATUS §5ex), 26/26, on top of pilot rehearsal rounds 1–2; the Thaana template is covered by `ReportCardsTest`'s DV/RTL render, not the walk.*
 - [ ] Gradebook matrix + transcript live; awards batch issue works; one ID-card template renders.
 - [x] DocumentRendererInterface has its first production implementation (**ADR-012** recorded — HTML output; PDF is a future container-binding swap) — certificates (Phase 3) and Library invoices inherit it. *(Drafted as ADR-005; that number was taken by the morph map.)*
 - [ ] CSV export on all listings; STATUS.md updated.

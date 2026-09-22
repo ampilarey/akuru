@@ -77,6 +77,7 @@ class SmokeMarkerSeeder extends Seeder
         $this->dailyLists($year, $studentId, $admin);
         $this->pronunciation();
         $this->recitations();
+        $this->examCycle($year);
 
         // A default `migrate:fresh --seed` leaves `staff_profiles` empty, and
         // this used to skip the whole HR block in silence — so the sweep
@@ -789,7 +790,9 @@ class SmokeMarkerSeeder extends Seeder
     private function sensitiveRecords(AcademicYear $year, int $studentId, ?object $admin): void
     {
         $other = (int) DB::table('students')->where('id', '!=', $studentId)->value('id');
-        $term = (int) DB::table('terms')->where('academic_year_id', $year->id)->value('id');
+        // The year's first real term, by id — never `SMOKE-Term`, which
+        // `examCycle()` plants after this and keeps empty of published cards.
+        $term = (int) DB::table('terms')->where('academic_year_id', $year->id)->orderBy('id')->value('id');
         $class = (int) DB::table('class_student')->where('student_id', $studentId)->value('class_id');
 
         if ($term > 0 && $class > 0) {
@@ -1070,6 +1073,47 @@ class SmokeMarkerSeeder extends Seeder
             'granted_by' => $admin?->id, 'granted_at' => now(), 'source' => 'SMOKE-Source',
             'created_at' => now(), 'updated_at' => now(),
         ]);
+    }
+
+    /**
+     * A term of the walk's own, and nothing in it.
+     *
+     * `scripts/smoke/exams.mjs` schedules an exam, enters a mark, publishes,
+     * generates report cards and publishes those — and every one of those
+     * steps refuses to happen twice. A published report card cannot be
+     * regenerated (`GenerateReportCardsAction` skips it) and `report_cards`
+     * is unique per student and term, so the second run of the walk against
+     * the real term would find nothing to publish and fail on a rule working
+     * as designed. It also cannot use Term 1, because `sensitiveRecords()`
+     * plants a *published* card there on purpose for the own-data probe.
+     *
+     * So the walk gets `SMOKE-Term`: the same year, sorted last, and emptied
+     * here on every run — its exams, marks, status audits, term grades, report
+     * cards and the documents behind them. The term row itself is kept, since
+     * enrolments may reference a term with `ON DELETE RESTRICT` (ADR-037).
+     */
+    private function examCycle(AcademicYear $year): void
+    {
+        $termId = (int) (DB::table('terms')
+            ->where('academic_year_id', $year->id)
+            ->where('name', 'SMOKE-Term')
+            ->value('id')
+            ?? DB::table('terms')->insertGetId([
+                'academic_year_id' => $year->id, 'name' => 'SMOKE-Term', 'status' => 'upcoming',
+                'start_date' => now()->subDays(30)->toDateString(), 'end_date' => now()->addDays(30)->toDateString(),
+                'sort_order' => 99, 'created_at' => now(), 'updated_at' => now(),
+            ]));
+
+        $examIds = DB::table('exams')->where('name', 'SMOKE-Exam')->pluck('id');
+        DB::table('exam_marks')->whereIn('exam_id', $examIds)->delete();
+        DB::table('exam_status_audits')->whereIn('exam_id', $examIds)->delete();
+        DB::table('exams')->whereIn('id', $examIds)->delete();
+
+        $cardIds = DB::table('report_cards')->where('term_id', $termId)->pluck('id');
+        DB::table('report_card_comments')->whereIn('report_card_id', $cardIds)->delete();
+        DB::table('documents')->where('documentable_type', 'report_card')->whereIn('documentable_id', $cardIds)->delete();
+        DB::table('report_cards')->whereIn('id', $cardIds)->delete();
+        DB::table('term_grades')->where('term_id', $termId)->delete();
     }
 
     private function hr(AcademicYear $year, StaffProfile $staff, ?object $admin): void
