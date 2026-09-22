@@ -157,9 +157,9 @@ All screens trilingual-ready (labels via existing localization), RTL-safe.
 ## Definition of Done
 
 - [ ] 3 deploys completed; `RegistrationStudent` deprecated with zero remaining read paths; verification report archived in `docs/migrations/`.
-- [ ] All S1 screens live in React; corresponding legacy Blade screens removed.
-- [ ] Backbone rule documented in ROADMAP risk notes and enforced in code review checklist: new time-scoped tables must carry year/term FKs.
+- [~] All S1 screens live in React (8/8). Legacy Blade **student** CRUD removed 2026-09-22 (STATUS §5eq) — it wrote `students.class_id` without a `class_student` row, so a pupil it created was on no register. Legacy Blade **teacher** CRUD remains: `people.staff.store` takes an existing `user_id`, so the Blade screen is still the only one that creates a teacher's account, role, `teachers` row and subjects. Retire it once the React staff form can do that.
+- [x] Backbone rule enforced in code: `tests/Architecture/AcademicBackboneTest.php` fails any new time-scoped table without `academic_year_id`, against a 29-table baseline that may only shrink (ROADMAP §3 row "Everything new"). *(Box was left unticked long after this shipped — corrected in the 2026-09-22 S1 audit.)*
 - [x] STATUS.md + **ADR-009** (retention) + **ADR-010** (promotion semantics) recorded. *(Drafted as ADR-002/003; those numbers were already taken by analytics and course-taxonomy, so the records were written at 009/010.)*
-- [ ] S2 unblocked: attendance/timetable can key on class_student + terms.
+- [x] S2 unblocked: attendance/timetable can key on class_student + terms (S2 shipped on exactly that; `class_attendance` and `timetables` carry `academic_year_id` + `term_id` FKs).
 
 **Out of scope for S1:** attendance, timetable, exams, fees (S2–S4); offerings split (§3.4, Phase 1B); HR beyond profiles (S5); any Hifz change.

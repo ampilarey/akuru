@@ -78,8 +78,10 @@ class AdminResourcePagesSmokeTest extends TestCase
         $student = Student::first();
         $this->assertNotNull($student, 'Expected seeded student for smoke test.');
 
+        // The Blade record is retired; `students.show` is a redirect to the
+        // React profile, which the helper follows.
         $this->assertRouteLoads('students.show', $student);
-        $this->assertRouteLoads('students.edit', $student);
+        $this->assertRouteLoads('people.students.show', $student);
         $this->assertRouteLoads('students.quran-progress', $student);
     }
 
@@ -170,6 +172,6 @@ class AdminResourcePagesSmokeTest extends TestCase
         User::where('id', $userId)->delete();
         \Illuminate\Support\Facades\DB::statement('SET FOREIGN_KEY_CHECKS=1');
 
-        $this->assertRouteLoads('students.index');
+        $this->assertRouteLoads('people.students.index');
     }
 }

@@ -106,6 +106,7 @@ export default function Show({
     statuses = [],
     schools = [],
     classes = [],
+    hifzProgressUrl = null,
 }) {
     const initialValues = useMemo(() => {
         const next = {};
@@ -172,6 +173,15 @@ export default function Show({
                         {item.label}
                     </Link>
                 ))}
+                {/* The retired Blade student record carried a Hifz progress
+                    tab. It is still a Blade screen (module data, no React
+                    equivalent yet), so it is a plain link rather than a tab,
+                    and it is absent when the Qur'an module is switched off. */}
+                {hifzProgressUrl && (
+                    <a href={hifzProgressUrl} className="rounded border bg-white px-3 py-1 text-sm">
+                        Qur'an progress
+                    </a>
+                )}
             </div>
 
             {tab === 'overview' && (

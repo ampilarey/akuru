@@ -69,9 +69,10 @@ class EnsureQuranModuleEnabled
      * @var list<string>
      */
     public const EXTRA_ACTIONS = [
-        // The student record's Hifz progress tab renders `quran_progress`
-        // rows, which are module data. The rest of the student record is not.
-        \App\Domains\People\Http\Controllers\StudentController::class.'@quranProgress',
+        // Empty since the legacy Blade student record was retired: its Hifz
+        // progress tab (`quran_progress` rows, module data) now lives on
+        // `Hifz\QuranProgressController@student`, covered by namespace. The
+        // list stays so the next single-action outlier has somewhere to go.
     ];
 
     /**

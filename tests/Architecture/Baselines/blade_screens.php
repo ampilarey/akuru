@@ -266,12 +266,8 @@ return [
     'quran-progress/index.blade.php',
     'quran-progress/show.blade.php',
 
-    // students — 5
-    'students/create.blade.php',
-    'students/edit.blade.php',
-    'students/index.blade.php',
+    // students — 1 (the Hifz progress tab; the CRUD screens were retired)
     'students/quran-progress.blade.php',
-    'students/show.blade.php',
 
     // substitutions — 8
     'substitutions/absences/_form.blade.php',

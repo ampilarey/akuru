@@ -109,6 +109,19 @@ class QuranProgressController extends Controller
             ->with('success', 'Quran progress deleted successfully!');
     }
 
+    /**
+     * One pupil's Hifz progress — the tab the legacy Blade student record used
+     * to carry. It lives here now because `quran_progress` is this module's
+     * data (so the §52.27 flag covers it by namespace) and the People screen
+     * that hosted it is gone; the React profile links to it instead.
+     */
+    public function student(Student $student)
+    {
+        $progress = $student->quranProgress()->with('teacher.user')->latest()->get();
+
+        return view('students.quran-progress', compact('student', 'progress'));
+    }
+
     public function updateProgress(Request $request, Student $student)
     {
         $data = $request->validate([

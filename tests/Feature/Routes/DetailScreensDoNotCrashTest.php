@@ -96,6 +96,12 @@ function unresolvedDetailScreens(): array
         // student, and pins the 403 and 404 paths.
         'recitations/{submission}/audio/{kind}' => 'covered by RecitationAudioTest (both kinds, both roles)',
 
+        // Not a screen: the retired Blade student record's URL, kept as a
+        // redirect to `people/students/{student}` for old bookmarks. It is a
+        // closure, so reflection has no controller to read a model from.
+        // `LegacyStudentScreensRetiredTest` loads it and pins where it lands.
+        'students/{student}' => 'redirect to the React profile; covered by LegacyStudentScreensRetiredTest',
+
         'quran-progress/{quran_progress}' => 'covered by AdminResourcePagesSmokeTest (quran-progress.show)',
         'quran-progress/{quran_progress}/edit' => 'covered by AdminResourcePagesSmokeTest (quran-progress.edit)',
 

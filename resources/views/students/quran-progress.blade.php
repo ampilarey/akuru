@@ -6,7 +6,7 @@
         <h2 style="font-size:1.1rem;font-weight:800;color:white;margin:0">Quran Progress</h2>
         <p style="font-size:.75rem;color:rgba(255,255,255,.65);margin:.2rem 0 0">{{ $student->full_name }}</p>
     </div>
-    <a href="{{ route('students.show', $student) }}"
+    <a href="{{ route('people.students.show', $student) }}"
        style="font-size:.78rem;color:rgba(255,255,255,.75);text-decoration:none"
        onmouseover="this.style.color='white'" onmouseout="this.style.color='rgba(255,255,255,.75)'">
         ← Back to student

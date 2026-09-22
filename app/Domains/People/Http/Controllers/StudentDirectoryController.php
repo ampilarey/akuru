@@ -6,6 +6,7 @@ use App\Domains\Academics\Actions\ListBehaviorRecordsAction;
 use App\Domains\People\Actions\AttachGuardianAction;
 use App\Domains\People\Actions\DetachGuardianAction;
 use App\Domains\People\Actions\ListEmergencyContactsAction;
+use App\Domains\People\Actions\ListStudentConsentsAction;
 use App\Domains\People\Actions\ListStudentFormOptionsAction;
 use App\Domains\People\Actions\ListStudentsAction;
 use App\Domains\People\Actions\RecordGuardianLinkPolicyAction;
@@ -13,14 +14,12 @@ use App\Domains\People\Actions\RemoveEmergencyContactAction;
 use App\Domains\People\Actions\SaveCustomFieldValuesAction;
 use App\Domains\People\Actions\SaveEmergencyContactAction;
 use App\Domains\People\Actions\SaveStudentAction;
-use App\Domains\People\Enums\ConsentPersonType;
 use App\Domains\People\Enums\ConsentType;
 use App\Domains\People\Enums\CustomFieldEntityType;
 use App\Domains\People\Enums\GuardianConsentStatus;
 use App\Domains\People\Enums\GuardianRelationship;
 use App\Domains\People\Enums\GuardianVerificationStatus;
 use App\Domains\People\Enums\StudentStatus;
-use App\Domains\People\Models\Consent;
 use App\Domains\People\Models\CustomFieldDefinition;
 use App\Domains\People\Models\CustomFieldValue;
 use App\Domains\People\Models\EmergencyContact;
@@ -198,19 +197,7 @@ class StudentDirectoryController extends Controller
                 'effective_date' => $row->effective_date?->toDateString(),
             ]),
             'consentTypes' => array_map(fn (ConsentType $type) => $type->value, ConsentType::cases()),
-            'consents' => Consent::query()
-                ->where('person_type', ConsentPersonType::Student->value)
-                ->where('person_id', $student->id)
-                ->orderByDesc('id')
-                ->get()
-                ->map(fn (Consent $consent) => [
-                    'id' => $consent->id,
-                    'consent_type' => $consent->consent_type->value,
-                    'granted' => $consent->granted,
-                    'granted_at' => $consent->granted_at?->toDateTimeString(),
-                    'revoked_at' => $consent->revoked_at?->toDateTimeString(),
-                    'source' => $consent->source->value,
-                ]),
+            'consents' => app(ListStudentConsentsAction::class)->execute((int) $student->id),
             // Loaded on this page since August and dropped before serialising:
             // the query ran on every view and the answer reached nobody.
             'emergencyContacts' => app(ListEmergencyContactsAction::class)->execute((int) $student->id),
@@ -220,6 +207,11 @@ class StudentDirectoryController extends Controller
             // never spells the labels for itself.
             'consentStatuses' => $options['consentStatuses'],
             'verificationStatuses' => $options['verificationStatuses'],
+            // The Hifz progress tab the retired Blade record used to carry.
+            // Still a Blade screen (module data, no React equivalent yet), so
+            // it is a plain link, and it is withheld when the §52.27 flag is
+            // off rather than sending somebody to a 404.
+            'hifzProgressUrl' => config('quran.module_enabled') ? route('students.quran-progress', $student) : null,
         ]);
     }
 
