@@ -52,7 +52,7 @@ return [
     'app/Domains/Identity/Http/Controllers/Auth/OtpLoginController.php::requestOtp' => 37,
     'app/Domains/Identity/Http/Controllers/Auth/PasswordOtpController.php::sendOtp' => 66,
     'app/Domains/Notifications/Http/Controllers/SmsApiController.php::send' => 60,
-    'app/Domains/People/Http/Controllers/StudentDirectoryController.php::show' => 93,
+    'app/Domains/People/Http/Controllers/StudentDirectoryController.php::show' => 76,
     'app/Domains/People/Http/Controllers/StudentDirectoryController.php::validatedStudent' => 56,
     'app/Domains/People/Http/Controllers/TeacherController.php::store' => 75,
     'app/Domains/People/Http/Controllers/TeacherController.php::update' => 70,

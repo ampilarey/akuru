@@ -4345,6 +4345,55 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5es. The custom-fields engine gets its other two consumers (2026-09-22)
+
+Third slice from the S1 audit (§5eq, §5er). `docs/S1_SPEC.md` §S1.2: *"one
+`SaveCustomFieldValuesAction` reused by student form, staff form, admission
+form."* Since 2026-08-23 it had one caller — the student profile.
+`show_in_admission_form` drove an admin **preview page** and nothing a
+visitor could see; `CustomFieldEntityType::Staff` was an enum case no screen
+read or wrote; and `admission_applications` had grown its own
+`custom_fields` JSON column, which nothing writes either.
+
+**What changed (#406).**
+
+- `People\ListCustomFieldsAction` is the engine's read side: `forAdmissionForm()`
+  and `forProfile(type, id)`, one serialized shape (options normalised to
+  `{value, label}` whichever way they were stored). The student profile now
+  reads through it too — `StudentDirectoryController::show` 93 → 76 lines.
+- **Public admission form** (`/admissions` and its `/apply` alias, both still
+  Blade): a partial renders every flagged definition by type — text, textarea,
+  number, date, select, multiselect, boolean — posting `values[{id}]`, with
+  `old()` and `field_{id}` errors. `Admissions\SubmitAdmissionApplicationAction`
+  creates the application and its values **in one transaction**, so a required
+  field left blank rolls the application back rather than leaving an orphan
+  row that has already emailed every admin. The Website controller lost its
+  `AdmissionApplication` model import (cross-domain baseline −1).
+- **Staff profile**: `customFields` prop, an "Additional fields" form using the
+  same `<CustomFields>` component as the student profile, and
+  `people.staff.custom-fields.update` through the same validator.
+- Rule 3 caught me once: the Admissions action imported `People\Enums\…`,
+  which is not a cross-domain surface. The Action accepts the string value
+  for exactly this reason, so it passes `'admission_applications'`.
+- Tests: `AdmissionFormCustomFieldsTest` (4 — render on both forms and only
+  the flagged ones, store, required-field rollback with no notification,
+  select validated against options) and `StaffCustomFieldsTest` (3 — shown
+  with value, saved and validated, student definitions kept off). Existing
+  `CustomFieldsTest`, `StudentDirectoryCrudTest`, `StaffProfileTest` and the
+  architecture suite green. **Walked in a browser** with two planted
+  definitions: both admission forms show the field, a guest submits with it
+  and lands on thanks; the staff profile shows the field, saves `TL-WALK-1`
+  and shows it back on reload; both values read back from
+  `custom_field_values`; no JS errors. Walk rows removed after.
+
+**Found on the way, not fixed here:** **nothing in the application reads
+`admission_applications`.** `Admissions\AdmissionApplicationController` is an
+empty stub (`show()` is a bare `//`) with no routes; the only readers are the
+analytics counter and the admin *email* sent on submission. So a public
+enquiry — and now its custom fields — reaches staff only as a notification.
+That is an E-track/admissions-review screen, not an S1.2 item; recorded so
+it is not mistaken for done.
+
 ## 5er. S1.5's two unfinished switches, finished (2026-09-22)
 
 The second slice from the S1 audit (§5eq). Both are rule 9 stopping after

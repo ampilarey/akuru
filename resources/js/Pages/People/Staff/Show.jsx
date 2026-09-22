@@ -1,13 +1,32 @@
 import { useForm, router } from '@inertiajs/react';
+import { useMemo, useState } from 'react';
 import AppShell from '../../../Layouts/AppShell';
+import CustomFields from '../../../Components/CustomFields';
 import FormErrors from '../../../Components/FormErrors';
 
-export default function Show({ staff, employmentTypes = [], statuses = [] }) {
+export default function Show({ staff, employmentTypes = [], statuses = [], customFields = [] }) {
     const form = useForm({
         title: '',
         institution: '',
         year: '',
     });
+
+    // S1.2 custom fields, keyed `staff` — the same engine and component the
+    // student profile uses. Values post as `values[{id}]`.
+    const initialFieldValues = useMemo(() => {
+        const next = {};
+        customFields.forEach((field) => {
+            next[field.id] = field.value ?? (field.field_type === 'multiselect' ? [] : field.field_type === 'boolean' ? false : '');
+        });
+        return next;
+    }, [customFields]);
+    const [fieldValues, setFieldValues] = useState(initialFieldValues);
+    const fieldForm = useForm({ values: fieldValues });
+    const saveFields = (e) => {
+        e.preventDefault();
+        fieldForm.transform(() => ({ values: fieldValues }));
+        fieldForm.put(`/people/staff/${staff.id}/custom-fields`, { preserveScroll: true });
+    };
 
     // The controller has always sent `employmentTypes` and `statuses` to this
     // page and the page never used them: `people.staff.update` existed, and
@@ -72,6 +91,19 @@ export default function Show({ staff, employmentTypes = [], statuses = [] }) {
                 </div>
                 <FormErrors errors={employment.errors} />
             </form>
+
+            {customFields.length > 0 && (
+                <form onSubmit={saveFields} className="mb-6 rounded-lg border bg-white p-4">
+                    <h2 className="mb-3 font-semibold">Additional fields</h2>
+                    <CustomFields
+                        fields={customFields}
+                        values={fieldValues}
+                        errors={fieldForm.errors}
+                        onChange={(id, value) => setFieldValues((prev) => ({ ...prev, [id]: value }))}
+                    />
+                    <button type="submit" className="btn-primary mt-4" disabled={fieldForm.processing}>Save fields</button>
+                </form>
+            )}
 
             <form
                 onSubmit={(e) => {
