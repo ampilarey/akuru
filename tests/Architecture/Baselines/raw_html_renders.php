@@ -67,14 +67,6 @@ return [
     "public/library/show.blade.php :: \$item['body']" => 'SaveLibraryItemAction cleans each part of `body` with PROFILE_CMS. The lowest-privilege authored HTML in the app: any authed user may apply to be a writer.',
     "public/library/reader.blade.php :: \$reader['content']" => 'The reader renders `library_item_pages.content`, which SyncLibraryItemPagesAction slices from the already-sanitised `body`. Nothing else writes those rows.',
 
-    // --- Announcements ------------------------------------------------------
-    'announcements/index.blade.php :: $announcement->content_arabic' => 'AnnouncementController::sanitize cleans all three content columns with PROFILE_CMS.',
-    'announcements/index.blade.php :: $announcement->content_dhivehi' => 'As above (Dhivehi).',
-    'announcements/index.blade.php :: $announcement->content' => 'As above (English).',
-    'announcements/show.blade.php :: $announcement->content_arabic' => 'As above (Arabic).',
-    'announcements/show.blade.php :: $announcement->content_dhivehi' => 'As above (Dhivehi).',
-    'announcements/show.blade.php :: $announcement->content' => 'As above (English).',
-
     // --- Documents ----------------------------------------------------------
     'documents/course-certificate.blade.php :: $body_html' => 'SaveCertificateTemplateAction cleans the template body with PROFILE_CMS. **This was the one live hole**: it used strip_tags with a tag allowlist, which keeps every attribute, so `<p onmouseover>` reached the rendered certificate. Fixed 2026-09-14; StripTagsIsNotASanitiserTest is the gate that stops it recurring.',
     'documents/course-certificate.blade.php :: $qr' => 'StudentNumberQr::svg() — an SVG we generate from a verification URL, not author input.',

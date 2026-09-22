@@ -88,7 +88,7 @@ Absent/late SMS (parent), unfilled-register reminder (teacher, end of day), leav
 - [ ] A teacher completes the full loop on a phone: open today's register → pick topic → mark attendance → submit → parent receives SMS for an absent student.
 - [ ] Timetable builder live with conflict blocking; current real timetable entered for the active year.
 - [ ] Unfilled-register and chronic-absence reports live; CSV exports on all listings.
-- [ ] All S2 screens React; legacy timetable/announcement Blade screens removed.
+- [x] All S2 screens React; legacy timetable/announcement Blade screens removed. *(Timetable Blade went with the S2.1 builder; the announcements admin followed on 2026-09-22, STATUS §5ew — the Blade index/create/show are gone, `/announcements` is the React admin for staff and a redirect to `/portal/announcements` for everyone else.)*
 - [x] STATUS.md updated; **ADR-011** (attendance modes + notification policy). *(Drafted as ADR-004; that number was already taken by prayer-times, so the record was written at 011.)*
 
 **Out of scope:** exam scheduling (S3), offering-session attendance (Phase 1B — separate table, shared Portal reporting), leave balances (S5). Event/elective seat-limited registration (ROADMAP §8.2) reuses `EnforceSeatLimitAction` from 1B.2.

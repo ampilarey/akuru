@@ -2,91 +2,61 @@
 
 namespace App\Domains\Academics\Http\Controllers;
 
-use App\Domains\Academics\Models\Announcement;
-use App\Domains\Settings\Models\School;
+use App\Domains\Academics\Actions\ListAnnouncementsForStaffAction;
+use App\Domains\Academics\Actions\ListClassesForYearAction;
+use App\Domains\Academics\Actions\SaveAnnouncementAction;
 use App\Http\Controllers\Controller;
-use App\Support\Html\HtmlSanitizer;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
+use Inertia\Response;
 
+/**
+ * The staff noticeboard admin (React since 2026-09-22; the Blade index,
+ * create and show screens are gone — S2 DoD "legacy announcement Blade
+ * screens removed"). Families read notices on `/portal/announcements`, so a
+ * signed-in account without a staff role is sent there.
+ */
 class AnnouncementController extends Controller
 {
-    public function index()
+    private const STAFF_ROLES = ['super_admin', 'admin', 'headmaster', 'supervisor'];
+
+    public function index(Request $request): Response|RedirectResponse
     {
-        $announcements = Announcement::with('createdBy')
-            ->where('is_published', true)
-            ->where('publish_date', '<=', now())
-            ->where(function ($query) {
-                $query->whereNull('expiry_date')
-                    ->orWhere('expiry_date', '>=', now());
-            })
-            ->latest()
-            ->get();
-
-        return view('announcements.index', compact('announcements'));
-    }
-
-    public function create()
-    {
-        return view('announcements.create');
-    }
-
-    public function store(Request $request)
-    {
-        $request->validate([
-            'title' => 'required|string|max:255',
-            'title_arabic' => 'nullable|string|max:255',
-            'title_dhivehi' => 'nullable|string|max:255',
-            'content' => 'required|string',
-            'content_arabic' => 'nullable|string',
-            'content_dhivehi' => 'nullable|string',
-            'type' => 'required|in:general,academic,quran,event,holiday,emergency',
-            'priority' => 'required|in:low,medium,high,urgent',
-            'target_audience' => 'nullable|array',
-            'target_classes' => 'nullable|array',
-            'publish_date' => 'required|date',
-            'expiry_date' => 'nullable|date|after:publish_date',
-        ]);
-
-        $announcement = Announcement::create([
-            'school_id' => School::first()?->id ?? 1,
-            'created_by' => auth()->id(),
-            'title' => $request->title,
-            'title_arabic' => $request->title_arabic,
-            'title_dhivehi' => $request->title_dhivehi,
-            // Rendered raw in announcements/index.blade.php and show.blade.php.
-            'content' => $this->cleanHtml($request->content),
-            'content_arabic' => $this->cleanHtml($request->content_arabic),
-            'content_dhivehi' => $this->cleanHtml($request->content_dhivehi),
-            'type' => $request->type,
-            'priority' => $request->priority,
-            'target_audience' => $request->target_audience,
-            'target_classes' => $request->target_classes,
-            'publish_date' => $request->publish_date,
-            'expiry_date' => $request->expiry_date,
-            'is_published' => true,
-        ]);
-
-        return redirect()->route('announcements.index')
-            ->with('success', 'Announcement created successfully!');
-    }
-
-    public function show(Announcement $announcement)
-    {
-        $announcement->load('createdBy');
-
-        return view('announcements.show', compact('announcement'));
-    }
-
-    /**
-     * Announcement bodies are rendered raw in the announcement views. Three
-     * locale columns carry the same risk, so all three go through the same door.
-     */
-    private function cleanHtml(?string $html): ?string
-    {
-        if ($html === null || trim($html) === '') {
-            return $html;
+        if (! $request->user()?->hasAnyRole(self::STAFF_ROLES)) {
+            return redirect()->route('portal.announcements');
         }
 
-        return app(HtmlSanitizer::class)->clean($html, HtmlSanitizer::PROFILE_CMS);
+        return Inertia::render('Academics/Announcements/Index', [
+            'announcements' => app(ListAnnouncementsForStaffAction::class)->execute(),
+            'types' => SaveAnnouncementAction::TYPES,
+            'priorities' => SaveAnnouncementAction::PRIORITIES,
+            'audiences' => SaveAnnouncementAction::AUDIENCES,
+            'classes' => app(ListClassesForYearAction::class)->execute()->where('is_active', true)->values(),
+        ]);
+    }
+
+    public function store(Request $request): RedirectResponse
+    {
+        $data = $request->validate([
+            'title' => ['required', 'string', 'max:255'],
+            'title_arabic' => ['nullable', 'string', 'max:255'],
+            'title_dhivehi' => ['nullable', 'string', 'max:255'],
+            'content' => ['required', 'string'],
+            'content_arabic' => ['nullable', 'string'],
+            'content_dhivehi' => ['nullable', 'string'],
+            'type' => ['required', 'in:'.implode(',', SaveAnnouncementAction::TYPES)],
+            'priority' => ['required', 'in:'.implode(',', SaveAnnouncementAction::PRIORITIES)],
+            'target_audience' => ['nullable', 'array'],
+            'target_audience.*' => ['in:'.implode(',', SaveAnnouncementAction::AUDIENCES)],
+            'target_classes' => ['nullable', 'array'],
+            'target_classes.*' => ['integer', 'exists:classes,id'],
+            'publish_date' => ['required', 'date'],
+            'expiry_date' => ['nullable', 'date', 'after:publish_date'],
+        ]);
+
+        app(SaveAnnouncementAction::class)->execute($data, (int) $request->user()->id);
+
+        return redirect()->route('announcements.index')->with('success', 'Announcement created successfully!');
     }
 }

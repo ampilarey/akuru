@@ -2,10 +2,9 @@
 
 // PHASE_0_CHECKLIST §0.5 rule 1: cross-domain Models imports.
 // Baseline may only shrink when violations are fixed — never grow.
-// Baseline count: 68
+// Baseline count: 67
 
 return [
-    'app/Domains/Academics/Http/Controllers/AnnouncementController.php',
     'app/Domains/Academics/Http/Controllers/SubstitutionRequestController.php',
     'app/Domains/Academics/Legacy/Http/Controllers/CourseController.php',
     'app/Domains/Academics/Legacy/Models/Assignment.php',

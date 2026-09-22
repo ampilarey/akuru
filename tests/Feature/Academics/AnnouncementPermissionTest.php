@@ -99,8 +99,11 @@ it('still lets staff post one', function () {
 
 it('keeps the noticeboard readable by everyone signed in', function () {
     // The guard is on writing. A noticeboard nobody may read is not a fix.
+    // Since the admin became a React screen (2026-09-22), a signed-in account
+    // without a staff role is sent to the family reader rather than shown
+    // the compose form.
     $this->actingAs(User::factory()->create())
         ->withoutLocalizationMiddleware()
         ->get('/announcements')
-        ->assertOk();
+        ->assertRedirect('/portal/announcements');
 });
