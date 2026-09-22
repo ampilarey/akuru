@@ -33,8 +33,7 @@ class ExplainEmptyTodayRegistersAction
             ];
         }
 
-        $year = AcademicYear::query()->where('status', AcademicYearStatus::Active)->first()
-            ?? AcademicYear::query()->where('is_current', true)->first();
+        $year = AcademicYear::query()->where('status', AcademicYearStatus::Active)->first();
 
         if ($year === null) {
             return [

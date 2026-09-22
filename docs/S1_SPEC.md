@@ -106,7 +106,7 @@ Existing `Teacher` model becomes a thin Academics-facing relation; teaching-spec
 
 **New `terms`:** `id, academic_year_id FK, name (Term 1 / Semester 1...), start_date, end_date, status enum(upcoming, active, closed), sort_order, timestamps` — backfill from the json column where present.
 
-**`course_enrollments`:** convert `term_id` to real FK → `terms` (verify orphan values first; orphans get a backfilled "Legacy" term per year). Drop generated `term_key` column, replace usages.
+**`course_enrollments`:** convert `term_id` to real FK → `terms` (verify orphan values first; orphans get a backfilled "Legacy" term per year). ~~Drop generated `term_key` column, replace usages.~~ **Done 2026-09-22 (ADR-037), with one deviation:** `term_key` (`IFNULL(term_id, 0)`) **stays** — it is what makes the unique key `(student_id, course_id, term_key)` catch a second course-only enrolment, since MySQL treats NULLs as distinct in a unique index. The 2026-08-23 migration had added `unified_term_id` instead and never switched to it; the FK is now on `term_id` itself, `ON DELETE RESTRICT`, and `unified_term_id` is dropped.
 
 **`classes` (alter):** add `academic_year_id FK` (backfill: all existing → current active year), `section` (nullable string, e.g. "A"), `capacity` (nullable int), `class_teacher_id` (nullable FK staff_profiles). Unique(name, section, academic_year_id).
 

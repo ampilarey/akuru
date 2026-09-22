@@ -607,6 +607,7 @@ class CourseRegistrationController extends PublicRegistrationController
         $courseValidator = Validator::make($request->all(), [
             'course_ids' => ['required', 'array', 'min:1'],
             'course_ids.*' => ['integer', 'exists:courses,id'],
+            'term_id' => ['nullable', 'integer', 'exists:terms,id'],
         ]);
         if ($courseValidator->fails()) {
             return back()->withErrors($courseValidator)->withInput();

@@ -25,7 +25,7 @@ class ComposeStaffOverviewAction
     {
         $years = app(ListAcademicYearsAction::class)->execute()->values()->all();
         if ($yearId === null) {
-            $current = collect($years)->firstWhere('is_current', true) ?? ($years[0] ?? null);
+            $current = collect($years)->firstWhere('status', 'active') ?? ($years[0] ?? null);
             $yearId = isset($current['id']) ? (int) $current['id'] : null;
         }
 

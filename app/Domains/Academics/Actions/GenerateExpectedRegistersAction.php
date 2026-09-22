@@ -149,8 +149,7 @@ class GenerateExpectedRegistersAction
             return AcademicYear::query()->find($academicYearId);
         }
 
-        return AcademicYear::query()->where('status', AcademicYearStatus::Active)->first()
-            ?? AcademicYear::query()->where('is_current', true)->first();
+        return AcademicYear::query()->where('status', AcademicYearStatus::Active)->first();
     }
 
     private function validOn(Timetable $entry, Carbon $date): bool

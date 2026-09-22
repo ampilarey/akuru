@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Domains\Academics\Enums\AcademicYearStatus;
 use App\Domains\Academics\Legacy\Models\Quiz;
 use App\Domains\Academics\Legacy\Models\QuizAttempt;
 use App\Domains\Academics\Legacy\Models\QuizQuestion;
@@ -34,6 +35,7 @@ class FeaturePackDemoSeeder extends Seeder
             [
                 'start_date' => '2024-09-01',
                 'end_date' => '2025-06-30',
+                'status' => AcademicYearStatus::Active,
                 'is_current' => true,
                 'description' => 'Academic Year 2024-2025',
             ],
