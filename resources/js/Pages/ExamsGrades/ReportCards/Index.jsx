@@ -16,6 +16,8 @@ export default function Index({ classes, terms, cards, unpublished, classId, ter
         class_id: startClass,
         term_id: startTerm,
         locale: 'en',
+        regenerate_published: false,
+        reason: '',
     });
     const publish = useForm({
         class_id: startClass,
@@ -88,6 +90,23 @@ export default function Index({ classes, terms, cards, unpublished, classId, ter
                     <option value="ar">AR</option>
                 </select>
                 <button type="submit" className="btn-primary" disabled={generate.processing}>Generate</button>
+                <label className="flex items-center gap-2 text-sm md:col-span-2">
+                    <input
+                        type="checkbox"
+                        checked={generate.data.regenerate_published}
+                        onChange={(e) => generate.setData('regenerate_published', e.target.checked)}
+                    />
+                    Also regenerate published cards (a reason is recorded against each)
+                </label>
+                {generate.data.regenerate_published && (
+                    <input
+                        className="form-input md:col-span-2"
+                        placeholder="Reason, e.g. corrected Arabic mark"
+                        value={generate.data.reason}
+                        onChange={(e) => generate.setData('reason', e.target.value)}
+                    />
+                )}
+                {generate.errors.reason && <p className="text-sm text-red-600 md:col-span-4">{generate.errors.reason}</p>}
             </form>
 
             <form
@@ -145,12 +164,13 @@ export default function Index({ classes, terms, cards, unpublished, classId, ter
                             <th className="px-3 py-2">Class</th>
                             <th className="px-3 py-2">Term</th>
                             <th className="px-3 py-2">Status</th>
+                            <th className="px-3 py-2">Revisions</th>
                             <th className="px-3 py-2">Document</th>
                         </tr>
                     </thead>
                     <tbody>
                         {cards.length === 0 && (
-                            <tr><td className="px-3 py-4 text-gray-500" colSpan={5}>No report cards yet.</td></tr>
+                            <tr><td className="px-3 py-4 text-gray-500" colSpan={6}>No report cards yet.</td></tr>
                         )}
                         {cards.map((card) => (
                             <tr key={card.id} className="border-t">
@@ -158,6 +178,9 @@ export default function Index({ classes, terms, cards, unpublished, classId, ter
                                 <td className="px-3 py-2">{card.class_name}</td>
                                 <td className="px-3 py-2">{card.term_name}</td>
                                 <td className="px-3 py-2">{card.status}</td>
+                                <td className="px-3 py-2" title={card.last_revision_reason || ''}>
+                                    {card.revisions ? `${card.revisions} — ${card.last_revision_reason}` : '—'}
+                                </td>
                                 <td className="px-3 py-2">
                                     {card.document_id ? <a className="text-[#7C2D37] underline" href={`/exams/report-cards/${card.id}/download`}>Download HTML</a> : '—'}
                                 </td>

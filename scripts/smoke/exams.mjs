@@ -12,7 +12,8 @@
  *   1. an admin saves a weight scheme if the year has none, schedules
  *      `SMOKE-Exam`, moves it into marks entry, types one mark, moves it
  *      through review to published, recomputes the gradebook, generates the
- *      term's report cards, watches the render job finish, publishes them;
+ *      term's report cards, watches the render job finish, publishes them,
+ *      then corrects a published card with a reason (ADR-038);
  *   2. a parent sees the mark on `/portal/exams` and opens the report card.
  *
  * ## The term is the walk's own
@@ -302,6 +303,32 @@ await publish.locator('select').nth(1).selectOption(termId);
 await publish.locator('button:has-text("Publish ready cards")').click();
 check('the ready cards publish', await settles(admin, 'Report cards published.'), (await text(admin)).slice(0, 160));
 check('the child\'s card is published', /\bpublished\b/.test(await rowText(admin, CHILD)), await rowText(admin, CHILD));
+
+// ------------------------------------------- 5b. correct a published card
+
+// S3.6's last sentence: "regeneration allowed until published; after, new
+// version with audit" (ADR-038). The box needs a reason, the card stays
+// published, and the row says why it was regenerated.
+await admin.goto(cardsUrl, { waitUntil: 'networkidle' });
+const again = admin.locator('form', { hasText: 'Generate' }).first();
+await again.locator('select').nth(0).selectOption(classId);
+await again.locator('select').nth(1).selectOption(termId);
+await again.locator('input[type=checkbox]').check();
+await again.locator('input[placeholder^="Reason"]').fill('SMOKE: mark corrected after unlock');
+await again.locator('button:has-text("Generate")').click();
+check('a published card regenerates with a reason', await settles(admin, 'Report cards queued.'), (await text(admin)).slice(0, 160));
+
+let revised = '';
+const revisionDeadline = Date.now() + QUEUE_WAIT * 1000;
+while (Date.now() < revisionDeadline) {
+    await admin.goto(cardsUrl, { waitUntil: 'networkidle' });
+    revised = await rowText(admin, CHILD);
+    if (revised.includes('SMOKE: mark corrected')) {
+        break;
+    }
+    await admin.waitForTimeout(1000);
+}
+check('the revision and its reason show on the row, still published', /\bpublished\b/.test(revised) && /1 — SMOKE: mark corrected/.test(revised), revised);
 
 // ----------------------------------------------------- 6. back to the parent
 

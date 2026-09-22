@@ -58,7 +58,7 @@ Rules: marks ≤ max_marks (validation); absent/exempt are mutually exclusive wi
 **New `report_cards`:** `id, student_id FK, term_id FK, class_id FK, template_id FK, status enum(draft, ready, published), document_id FK (Media) nullable, generated_at, published_at, timestamps, unique(student_id, term_id)`
 **New `report_card_comments`:** `id, report_card_id FK, comment_type enum(class_teacher, head), comment text (trilingual columns), author_id, timestamps`
 
-`GenerateReportCardsAction(class, term)`: pulls term_grades (or competency_assessments), attendance summary (S2: % by status), behavior summary (counts, parent_visible only), comments → renders PDF via `DocumentRendererInterface` (queued, per-student) → status ready. Publish action flips to published + Portal notification; parents view/download in Portal. Regeneration allowed until published; after, new version with audit.
+`GenerateReportCardsAction(class, term)`: pulls term_grades (or competency_assessments), attendance summary (S2: % by status), behavior summary (counts, parent_visible only), comments → renders PDF via `DocumentRendererInterface` (queued, per-student) → status ready. Publish action flips to published + Portal notification; parents view/download in Portal. Regeneration allowed until published; after, new version with audit. *(The second half shipped 2026-09-22 as reason-gated regeneration in place with a `report_card_revisions` row — ADR-038, STATUS §5ez.)*
 
 **Cumulative transcript:** read-only view + PDF across all years/terms for a student (from term_grades history + status history) — `GenerateTranscriptAction`. Optional GPA column if scales define grade_points.
 

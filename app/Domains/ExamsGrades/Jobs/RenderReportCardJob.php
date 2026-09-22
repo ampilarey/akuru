@@ -20,10 +20,11 @@ class RenderReportCardJob implements ShouldQueue
         public int $reportCardId,
         public string $locale = 'en',
         public ?int $actorId = null,
+        public ?string $reason = null,
     ) {}
 
     public function handle(GenerateReportCardsAction $action): void
     {
-        $action->renderOne($this->reportCardId, $this->locale, $this->actorId);
+        $action->renderOne($this->reportCardId, $this->locale, $this->actorId, $this->reason);
     }
 }

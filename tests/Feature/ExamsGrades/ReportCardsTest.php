@@ -16,6 +16,7 @@ use App\Domains\ExamsGrades\Actions\PublishReportCardsAction;
 use App\Domains\ExamsGrades\Actions\SaveReportCardCommentAction;
 use App\Domains\ExamsGrades\Enums\ReportCardStatus;
 use App\Domains\ExamsGrades\Models\ReportCard;
+use App\Domains\ExamsGrades\Models\ReportCardRevision;
 use App\Domains\ExamsGrades\Models\TermGrade;
 use App\Domains\Identity\Models\User;
 use App\Domains\Notifications\Contracts\SmsSenderInterface;
@@ -196,7 +197,7 @@ it('generates report cards with attendance and parent-visible behavior matching 
         ->and($dv)->toContain('Attendance (DV)');
 });
 
-it('publishes report cards to the portal and refuses regeneration after publish', function () {
+it('publishes report cards to the portal and regenerates a published one only with a recorded reason', function () {
     $ctx = reportSetup();
     app(GenerateReportCardsAction::class)->execute(
         $ctx['class']->id,
@@ -219,8 +220,43 @@ it('publishes report cards to the portal and refuses regeneration after publish'
     expect($card->fresh()->status)->toBe(ReportCardStatus::Published)
         ->and(DB::table('app_notifications')->where('type', 'report_cards')->count())->toBe(1);
 
+    // S3.6: "regeneration allowed until published; after, new version with
+    // audit" (ADR-038). No reason, no regeneration…
+    $firstDocument = (int) $card->fresh()->document_id;
     expect(fn () => app(GenerateReportCardsAction::class)->renderOne($card->id))
         ->toThrow(ValidationException::class);
+    expect(fn () => app(GenerateReportCardsAction::class)->renderOne($card->id, 'en', $ctx['admin']->id, '   '))
+        ->toThrow(ValidationException::class);
+    // …and a class-wide run without one still leaves the published card alone.
+    app(GenerateReportCardsAction::class)->execute($ctx['class']->id, $ctx['term']->id, null, 'en', $ctx['admin']->id, false);
+    expect((int) $card->fresh()->document_id)->toBe($firstDocument)
+        ->and(ReportCardRevision::query()->count())->toBe(0);
+
+    // With a reason: a corrected comment reaches a new document, the card
+    // stays published at the same link, and the revision says what it replaced.
+    app(SaveReportCardCommentAction::class)->execute([
+        'report_card_id' => $card->id,
+        'comment_type' => 'class_teacher',
+        'comment' => 'Excellent term, corrected.',
+    ], $ctx['admin']->id);
+    $publishedAt = $card->fresh()->published_at;
+    app(GenerateReportCardsAction::class)->execute(
+        $ctx['class']->id, $ctx['term']->id, null, 'en', $ctx['admin']->id, false, 'Arabic mark corrected after unlock',
+    );
+
+    $corrected = $card->fresh();
+    $revision = ReportCardRevision::query()->sole();
+    expect($corrected->status)->toBe(ReportCardStatus::Published)
+        ->and($corrected->published_at?->toDateTimeString())->toBe($publishedAt?->toDateTimeString())
+        ->and((int) $corrected->document_id)->not->toBe($firstDocument)
+        ->and($revision->report_card_id)->toBe($card->id)
+        ->and($revision->superseded_document_id)->toBe($firstDocument)
+        ->and($revision->document_id)->toBe((int) $corrected->document_id)
+        ->and($revision->actor_id)->toBe($ctx['admin']->id)
+        ->and($revision->reason)->toBe('Arabic mark corrected after unlock')
+        ->and($revision->term_id)->toBe($ctx['term']->id)
+        ->and($revision->academic_year_id)->toBe($ctx['year']->id)
+        ->and(DB::table('documents')->where('id', $firstDocument)->exists())->toBeTrue();
 
     $guardianUser = User::query()->findOrFail($ctx['guardian']->user_id);
     $this->withoutLocalizationMiddleware()
@@ -237,14 +273,37 @@ it('publishes report cards to the portal and refuses regeneration after publish'
         ->get(route('portal.report-cards.download', $card))
         ->assertOk();
     expect($download->headers->get('Content-Type'))->toContain('text/html')
-        ->and($download->getContent())->toContain('Aisha Ali')->toContain('Excellent term.')
+        ->and($download->getContent())->toContain('Aisha Ali')->toContain('Excellent term, corrected.')
         ->and($download->getContent())->not->toContain('%PDF');
 
     $this->withoutLocalizationMiddleware()
         ->actingAs($ctx['admin'])
         ->get(route('exams.report-cards.index'))
         ->assertOk()
-        ->assertInertia(fn (Assert $page) => $page->component('ExamsGrades/ReportCards/Index'));
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('ExamsGrades/ReportCards/Index')
+            ->where('cards.0.revisions', 1)
+            ->where('cards.0.last_revision_reason', 'Arabic mark corrected after unlock'));
+
+    // The screen's box needs its reason; without it nothing is regenerated.
+    $this->withoutLocalizationMiddleware()
+        ->actingAs($ctx['admin'])
+        ->post(route('exams.report-cards.generate'), [
+            'class_id' => $ctx['class']->id, 'term_id' => $ctx['term']->id, 'regenerate_published' => true,
+        ])
+        ->assertSessionHasErrors('reason');
+    expect(ReportCardRevision::query()->count())->toBe(1);
+
+    // Through the screen, with one (the queue is sync under test).
+    $this->withoutLocalizationMiddleware()
+        ->actingAs($ctx['admin'])
+        ->post(route('exams.report-cards.generate'), [
+            'class_id' => $ctx['class']->id, 'term_id' => $ctx['term']->id,
+            'regenerate_published' => true, 'reason' => 'Second correction',
+        ])
+        ->assertSessionHasNoErrors();
+    expect(ReportCardRevision::query()->count())->toBe(2)
+        ->and($card->fresh()->status)->toBe(ReportCardStatus::Published);
 
     $csv = $this->withoutLocalizationMiddleware()
         ->actingAs($ctx['admin'])
