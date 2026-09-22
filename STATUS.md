@@ -4345,6 +4345,71 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5eq. The Blade student screen put pupils on no register (2026-09-22)
+
+Found auditing S1 against `docs/S1_SPEC.md`, phase by phase after Phase 0
+(§5b). The spec's DoD line *"corresponding legacy Blade screens removed"* had
+sat unticked for a month, and it turned out not to be a tidiness item.
+
+**The defect.** `/students` (Blade, `People\StudentController`) still ran
+alongside `/people/students` (React), behind the same role guard and linked
+from the Blade navigation as "Students". Its `store` did
+`Student::create(['class_id' => …])` and its `update` moved `class_id` the
+same way — and neither ever wrote a `class_student` row. Every roster reader
+(`ListClassRosterAction`, `StudentIsOnClassRosterAction`,
+`ListStudentsOnActiveRosterAction`, and through them registers, attendance
+and the class page) reads `class_student`. The React path
+(`SaveStudentAction`) maintains the pivot. So an admin who added or moved a
+pupil on the Blade screen had a pupil on no register, with nothing on the
+screen to say so. Same taxonomy as #25–#34: two reachable paths, one
+silently wrong.
+
+**What changed (#404).**
+
+- `StudentController` and the four Blade CRUD views are deleted. `/students`
+  and `/students/{id}` remain as **redirects** to the React directory and
+  profile (old bookmarks, the Blade nav); `create`/`store`/`edit`/`update`/
+  `destroy` are gone rather than redirected, so a stale form gets a 405 and
+  writes nothing. Blade navigation now points at `people.students.index`.
+- The **Hifz progress tab** the Blade record carried (`quran_progress` rows,
+  module data with no React equivalent) survives at the same URL, served by
+  `Hifz\QuranProgressController@student` — the module that owns the data, and
+  under the §52.27 flag by namespace, so `EnsureQuranModuleEnabled::EXTRA_ACTIONS`
+  is empty. The React profile links to it (`hifzProgressUrl`), and withholds
+  the link when the module is off rather than sending anyone to a 404.
+- `StudentDirectoryController::show` was about to grow past its thin-controller
+  baseline for that one prop, so the consents query moved out to
+  `ListStudentConsentsAction`; `show()` is 104 → 93 lines.
+- Four architecture baselines shrank (Blade screens 219 → 215, cross-domain
+  models 70 → 69, non-contract references 159 → 157, long methods −2).
+- `LegacyStudentScreensRetiredTest` (6 tests) pins the absence of the write
+  routes, both redirects, the 405, the surviving tab and the flag-gated link.
+  `LegacyStudentTeacherRoutesTest`, both admin smokes, the route-name snapshot
+  and the module-flag test updated to the new shape. **Walked in a browser:**
+  bookmark → directory (query intact), `/students/create` 404, profile →
+  "Qur'an progress" → Hifz tab → back link → profile, no JS errors.
+
+**Not done here, on purpose: the Blade teacher screen.** `people.staff.store`
+takes an *existing* `user_id` — it creates a profile, not an account.
+`TeacherController::store` is still the only screen that creates a teacher's
+user, `teacher` role, `teachers` row and subject links in one go. Retiring
+it needs that capability on the React staff form first; that is its own
+slice (rule 1). `docs/S1_SPEC.md` DoD line 160 now says exactly this.
+
+**Also corrected in `S1_SPEC.md`:** DoD line 161 (backbone rule enforced in
+code) was unticked although `AcademicBackboneTest` and its 29-table baseline
+have been doing precisely that; line 163 (S2 unblocked) likewise. Two more
+places where the document read as more open than the code.
+
+**Still open from the S1 audit, next slices:** the enrolment term FK never
+had its read-switch (`course_enrollments.unified_term_id` backfilled once on
+2026-08-23, zero readers or writers since; `term_id` still a bare int;
+`term_key` not dropped); `academic_years` carries both `status` and
+`is_current` with five readers on the legacy flag and the single-active
+invariant enforced only on `status`; the custom-fields engine has one
+consumer of the three the spec named, and Admissions grew a parallel
+`custom_fields` json column instead.
+
 ## 5ep. `main` is not branch-protected, and never has been (2026-09-15)
 
 §5's housekeeping line: *"confirm `docs/BRANCH_PROTECTION.md` is applied on

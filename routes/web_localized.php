@@ -121,7 +121,6 @@ use App\Domains\People\Http\Controllers\CustomFieldDefinitionController;
 use App\Domains\People\Http\Controllers\SensitiveNoteController;
 use App\Domains\People\Http\Controllers\StaffDirectoryController;
 use App\Domains\People\Http\Controllers\StudentConsentController;
-use App\Domains\People\Http\Controllers\StudentController;
 use App\Domains\People\Http\Controllers\StudentDirectoryController;
 use App\Domains\People\Http\Controllers\TeacherController;
 use App\Domains\Portal\Http\Controllers\DashboardController;
@@ -407,17 +406,32 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
     Route::post('academics/requests', [SchoolRequestController::class, 'store'])->name('academics.requests.store');
     Route::post('academics/requests/{schoolRequest}/review', [SchoolRequestController::class, 'review'])->name('academics.requests.review');
 
-    // Student and teacher routes (legacy Blade screens).
+    // Legacy Blade student screens — retired (S1 DoD: "corresponding legacy
+    // Blade screens removed").
     //
-    // These sat in the `auth` group with **no role guard**, while the modern
-    // `people.*` equivalents require role:super_admin|admin|headmaster|supervisor.
-    // Any signed-in account — a parent, a pupil — could therefore list, create,
-    // edit and delete students and teachers through these, including creating
-    // user accounts with a password of their choosing. Same guard as the
-    // screens they duplicate.
+    // They duplicated `people.students.*` with one difference that mattered:
+    // the Blade `store`/`update` wrote `students.class_id` and never a
+    // `class_student` row, while every roster reader — registers, attendance,
+    // the class page — reads `class_student`. A pupil added or moved on the
+    // Blade screen was therefore on no register. The two entry points below
+    // keep old bookmarks and the Blade navigation working; everything else
+    // (`create`/`store`/`edit`/`update`/`destroy`) is gone rather than
+    // redirected, so a stale form cannot post into it.
+    //
+    // The Hifz progress tab survives: it renders `quran_progress` rows, which
+    // are module data with no React equivalent yet, so it moves to the Hifz
+    // controller that owns them (and under the §52.27 flag by namespace).
     Route::middleware(['role:super_admin|admin|headmaster|supervisor'])->group(function () {
-        Route::resource('students', StudentController::class);
-        Route::get('/students/{student}/quran-progress', [StudentController::class, 'quranProgress'])->name('students.quran-progress');
+        Route::get('/students', fn () => redirect()->route('people.students.index', request()->query()))->name('students.index');
+        Route::get('/students/{student}', fn (int $student) => redirect()->route('people.students.show', $student))
+            ->whereNumber('student')
+            ->name('students.show');
+        Route::get('/students/{student}/quran-progress', [QuranProgressController::class, 'student'])->name('students.quran-progress');
+
+        // Teacher screens stay for now: `people.staff.store` takes an existing
+        // `user_id`, so this is still the only screen that creates a teacher's
+        // account, role, `teachers` row and subjects in one go. Retiring it
+        // needs that on the React staff form first (STATUS §5eq).
         Route::resource('teachers', TeacherController::class);
     });
 

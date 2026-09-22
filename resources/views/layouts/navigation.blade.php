@@ -46,9 +46,9 @@
 
                 {{-- Students --}}
                 @if(auth()->user()->hasAnyRole(['super_admin','admin','headmaster','supervisor']))
-                <a href="{{ route('students.index') }}"
-                   style="padding:.4rem .75rem;border-radius:.375rem;font-size:.8rem;font-weight:500;text-decoration:none;transition:background .15s;{{ request()->routeIs('students.*') ? 'background:rgba(255,255,255,.18);color:white' : 'color:rgba(255,255,255,.8)' }}"
-                   onmouseover="this.style.background='rgba(255,255,255,.12)'" onmouseout="this.style.background='{{ request()->routeIs('students.*') ? 'rgba(255,255,255,.18)' : 'transparent' }}'">
+                <a href="{{ route('people.students.index') }}"
+                   style="padding:.4rem .75rem;border-radius:.375rem;font-size:.8rem;font-weight:500;text-decoration:none;transition:background .15s;{{ request()->routeIs('people.students.*') ? 'background:rgba(255,255,255,.18);color:white' : 'color:rgba(255,255,255,.8)' }}"
+                   onmouseover="this.style.background='rgba(255,255,255,.12)'" onmouseout="this.style.background='{{ request()->routeIs('people.students.*') ? 'rgba(255,255,255,.18)' : 'transparent' }}'">
                     Students
                 </a>
                 @endif
@@ -226,7 +226,7 @@
         @auth
         @if(auth()->user()->hasAnyRole(['super_admin','admin','headmaster','supervisor']))
         <a href="{{ route('admin.enrollments.index') }}" style="display:block;padding:.625rem .75rem;color:rgba(255,255,255,.85);font-size:.85rem;text-decoration:none;border-radius:.375rem" onmouseover="this.style.background='rgba(255,255,255,.1)'" onmouseout="this.style.background='transparent'">Enrollments</a>
-        <a href="{{ route('students.index') }}" style="display:block;padding:.625rem .75rem;color:rgba(255,255,255,.85);font-size:.85rem;text-decoration:none;border-radius:.375rem" onmouseover="this.style.background='rgba(255,255,255,.1)'" onmouseout="this.style.background='transparent'">Students</a>
+        <a href="{{ route('people.students.index') }}" style="display:block;padding:.625rem .75rem;color:rgba(255,255,255,.85);font-size:.85rem;text-decoration:none;border-radius:.375rem" onmouseover="this.style.background='rgba(255,255,255,.1)'" onmouseout="this.style.background='transparent'">Students</a>
         <a href="{{ route('teachers.index') }}" style="display:block;padding:.625rem .75rem;color:rgba(255,255,255,.85);font-size:.85rem;text-decoration:none;border-radius:.375rem" onmouseover="this.style.background='rgba(255,255,255,.1)'" onmouseout="this.style.background='transparent'">Teachers</a>
         @endif
         <a href="{{ route('announcements.index') }}" style="display:block;padding:.625rem .75rem;color:rgba(255,255,255,.85);font-size:.85rem;text-decoration:none;border-radius:.375rem" onmouseover="this.style.background='rgba(255,255,255,.1)'" onmouseout="this.style.background='transparent'">Announcements</a>

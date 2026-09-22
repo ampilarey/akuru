@@ -15,8 +15,11 @@ uses(RefreshDatabase::class);
  * could list, create, edit and delete students and teachers**, including
  * creating user accounts with a password of their choosing.
  *
- * These tests are about who is refused. The screens themselves are legacy Blade
- * and unchanged.
+ * These tests are about who is refused. The student CRUD has since been
+ * retired (`LegacyStudentScreensRetiredTest`): `/students` is now a redirect
+ * to the React directory, still behind the same role guard, and the write
+ * routes no longer exist at all. The teacher screens remain until the React
+ * staff form can create an account.
  */
 function signedInWithRole(?string $role = null): User
 {
@@ -61,7 +64,9 @@ it('refuses a teacher, who has their own screens', function () {
 });
 
 it('refuses a parent creating a student and a user account', function () {
-    // The worst of it: `store` creates a User with a caller-supplied password.
+    // The worst of it: `store` created a User with a caller-supplied password.
+    // The route is gone now, so this is 405 for everybody — pinned here so the
+    // refusal survives even if a write route ever returns to this URI.
     $this->withoutLocalizationMiddleware()
         ->actingAs(signedInWithRole('parent'))
         ->post('/students', [
@@ -72,7 +77,7 @@ it('refuses a parent creating a student and a user account', function () {
             'date_of_birth' => '2015-01-01',
             'gender' => 'male',
         ])
-        ->assertForbidden();
+        ->assertStatus(405);
 
     expect(User::query()->where('email', 'intruder@example.com')->exists())->toBeFalse();
 });
@@ -83,7 +88,7 @@ it('refuses a parent deleting a student', function () {
     $this->withoutLocalizationMiddleware()
         ->actingAs(signedInWithRole('parent'))
         ->delete('/students/'.$student->id)
-        ->assertForbidden();
+        ->assertStatus(405);
 
     expect($student->fresh())->not->toBeNull();
 });
@@ -93,7 +98,7 @@ it('still admits the roles that run the school', function () {
         $this->withoutLocalizationMiddleware()
             ->actingAs(signedInWithRole($role))
             ->get('/students')
-            ->assertOk();
+            ->assertRedirect('/people/students');
     }
 });
 

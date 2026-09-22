@@ -125,10 +125,9 @@ it('covers every route the module owns, by namespace rather than by a list', fun
 });
 
 it('takes only the Hifz tab of a student record, not the record', function () {
-    // EXTRA_ACTIONS matches `Controller@method` whole rather than by prefix.
-    // Listing the class instead would have taken the entire student directory
-    // down with the module, because every other method starts with the same
-    // string — a mistake made and caught while writing this.
+    // The tab now lives on `Hifz\QuranProgressController@student`, covered by
+    // namespace; the record itself is the React `people.students.show` screen,
+    // which the flag must leave alone.
     config(['quran.module_enabled' => false]);
 
     $admin = actingPeopleAdmin(['courses.manage']);
@@ -143,7 +142,7 @@ it('takes only the Hifz tab of a student record, not the record', function () {
 
     $this->actingAs($admin->fresh())
         ->withoutLocalizationMiddleware()
-        ->get('/students')
+        ->get('/people/students/'.$student->id)
         ->assertOk();
 });
 

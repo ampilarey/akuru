@@ -12,13 +12,14 @@ class LocalizedRouteNamesTest extends TestCase
         $names = [
             'locale',
             'dashboard',
+            // `students.index` and `students.show` are redirects to the
+            // React `people.students.*` screens, kept for old bookmarks and
+            // the Blade navigation. `create`/`store`/`edit`/`update`/`destroy`
+            // are deliberately gone: the Blade CRUD wrote `students.class_id`
+            // and never a `class_student` row, so a pupil it created was on no
+            // register. `LegacyStudentScreensRetiredTest` pins their absence.
             'students.index',
-            'students.create',
-            'students.store',
             'students.show',
-            'students.edit',
-            'students.update',
-            'students.destroy',
             'students.quran-progress',
             'teachers.index',
             'teachers.create',

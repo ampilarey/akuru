@@ -39,8 +39,9 @@ class AdminPanelSmokeTest extends TestCase
             'dashboard',
             'admin.enrollments.index',
             'admin.enrollments.payments',
+            // `students.index` now redirects to `people.students.index`; the
+            // smoke follows redirects, so it still proves the screen loads.
             'students.index',
-            'students.create',
             'teachers.index',
             'teachers.create',
             'hifz.hub',
