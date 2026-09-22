@@ -26,10 +26,15 @@ function NoteCard({ note }) {
     return (
         <section className="rounded-lg border bg-white p-4 text-sm">
             <div className="mb-2 flex flex-wrap justify-between gap-2">
-                <p className="font-semibold">{note.student_name} · {note.date}</p>
+                <p className="font-semibold">{note.student_name} · {note.date}{note.period_name ? ` · ${note.period_name}` : ''}</p>
                 <span className="uppercase text-xs">{note.status}</span>
             </div>
             <p className="mb-1">{note.type}: {note.reason}</p>
+            {note.attachment_url && (
+                <p className="mb-1">
+                    <a className="text-[#7C2D37] underline" href={note.attachment_url}>Open attached document</a>
+                </p>
+            )}
             {note.status === 'submitted' && (
                 <form className="mt-3 flex flex-wrap gap-2" onSubmit={(e) => e.preventDefault()}>
                     <input className="form-input" placeholder="Review notes" value={form.data.review_notes} onChange={(e) => form.setData('review_notes', e.target.value)} />

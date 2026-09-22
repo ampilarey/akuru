@@ -4345,6 +4345,48 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5ev. A reason that "needs a document" could not be sent from the portal (2026-09-22)
+
+Second S2 slice. S2.4: *"Parent submits notes from Portal with attachment
+(existing schema supports it)."* The schema did; the controller validated
+`attachment` (5 MB) and `period_id` from the day it shipped; the form posted
+neither. Round 2's S2.8 remark — *"Attachment/period not in the form"* — was
+still true a month later, and it was worse than a missing field:
+
+- E10c let an admin mark a reason `requires_evidence`. `SubmitAbsenceNoteAction`
+  then refuses a note without a document, and the form *warns* "This reason
+  needs a document attached" — with **no file input**. A guardian choosing
+  that reason had no way to comply. Configured, enforced, warned about, and
+  unreachable: the seventh of the taxonomy (#25–#34, §5eq).
+- A document that did arrive (the mobile scaffold can post one) was stored
+  and **shown to nobody**: `ListAbsenceNotesAction` passed `attachment_path`
+  and neither screen rendered it, and nothing served the file.
+
+**What changed (#409).**
+
+- Portal form: a **Lesson** picker (whole day, or one period —
+  `ListPeriodOptionsAction`, active non-break periods) and a **Document**
+  field, labelled required when the chosen reason needs one; errors from
+  either key shown. The family's list shows the lesson and links the file.
+- Review screen: lesson beside the date, "Open attached document" when there
+  is one.
+- `absence-notes/{note}/attachment` → `ServeAbsenceNoteAttachmentAction`:
+  resolved **from the note**, never from a file id (the shape
+  `PrivateMediaReadersAreScopedTest` pins); allowed to `manage_attendance` or
+  a guardian of that pupil; 404 for a missing file rather than a 500.
+- `AbsenceNoteAttachmentTest` (4): periods offered and a note stored with
+  period + file; evidence-required reason still refused without one, with
+  the error on the form; served to reviewer and guardian, refused to another
+  family and to staff without the permission; 404 when the file is gone.
+  The detail-screen sweep gained a note fixture so the new route is swept.
+  **Walked in a browser** as `parent@akuru.edu.mv`: lesson picker and file
+  field present, submitted a PDF for one period, family list shows the
+  lesson and "Document", opened it (200, `application/pdf`); as admin the
+  review card shows "Morning Assembly" and "Open attached document", opened
+  it (200). Walk note and file removed after.
+
+**Still open from S2:** announcements admin still Blade (DoD line 91).
+
 ## 5eu. S2 audit: three claims the code disproves, one dead table, one dual-write (2026-09-22)
 
 S2 audited against `docs/S2_SPEC.md` the same way as Phase 0, S1: schema from

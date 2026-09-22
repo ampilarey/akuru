@@ -212,6 +212,9 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
     Route::get('/portal/behavior', [PortalBehaviorController::class, 'index'])->name('portal.behavior');
     Route::get('/portal/absence-notes', [PortalAbsenceNoteController::class, 'index'])->name('portal.absence-notes');
     Route::post('/portal/absence-notes', [PortalAbsenceNoteController::class, 'store'])->name('portal.absence-notes.store');
+    // The note's attachment, for its reviewer or the pupil's guardian — the
+    // action decides which the caller is.
+    Route::get('/absence-notes/{absenceNote}/attachment', [\App\Domains\Academics\Http\Controllers\AbsenceNoteAttachmentController::class, 'show'])->name('absence-notes.attachment')->whereNumber('absenceNote');
     // Sign-up forms (E6a) — families answer, staff read the results.
     Route::get('/portal/forms', [PortalFormController::class, 'index'])->name('portal.forms');
     Route::post('/portal/forms/{form}/submit', [PortalFormController::class, 'submit'])->name('portal.forms.submit')->whereNumber('form');

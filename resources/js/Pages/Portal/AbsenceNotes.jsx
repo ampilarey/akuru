@@ -1,12 +1,14 @@
 import { useForm } from '@inertiajs/react';
 import AppShell from '../../Layouts/AppShell';
 
-export default function AbsenceNotes({ children, notes, types }) {
+export default function AbsenceNotes({ children, notes, types, periods = [] }) {
     const form = useForm({
         student_id: children[0]?.id || '',
         date: '',
+        period_id: '',
         reason: '',
         absence_type_id: types[0]?.id ?? '',
+        attachment: null,
     });
 
     // E10c: the school defines its own reasons, and a reason can require a
@@ -49,8 +51,31 @@ export default function AbsenceNotes({ children, notes, types }) {
                             The day will still be recorded as absent.
                         </span>
                     )}
-                    {form.errors.attachment_path && (
-                        <span className="mt-1 block text-xs text-red-600">{form.errors.attachment_path}</span>
+                </label>
+                <label className="block text-sm">
+                    <span className="mb-1 block text-gray-600">Lesson</span>
+                    <select className="form-input w-full" value={form.data.period_id} onChange={(e) => form.setData('period_id', e.target.value)}>
+                        <option value="">Whole day</option>
+                        {periods.map((period) => (
+                            <option key={period.id} value={period.id}>{period.name} ({period.start_time}–{period.end_time})</option>
+                        ))}
+                    </select>
+                </label>
+                {/* The controller has accepted a file since S2.4; the form never
+                    offered one, so a reason marked "needs a document" could not
+                    be sent from here at all (STATUS §5ev). */}
+                <label className="block text-sm md:col-span-2">
+                    <span className="mb-1 block text-gray-600">
+                        Document{chosen?.requires_evidence ? ' (required for this reason)' : ' (optional)'}
+                    </span>
+                    <input
+                        className="form-input w-full"
+                        type="file"
+                        accept="image/*,.pdf"
+                        onChange={(e) => form.setData('attachment', e.target.files?.[0] ?? null)}
+                    />
+                    {(form.errors.attachment_path || form.errors.attachment) && (
+                        <span className="mt-1 block text-xs text-red-600">{form.errors.attachment_path || form.errors.attachment}</span>
                     )}
                 </label>
                 <label className="block text-sm md:col-span-2">
@@ -66,7 +91,13 @@ export default function AbsenceNotes({ children, notes, types }) {
                     <li key={note.id} className="rounded-lg border bg-white p-3 text-sm">
                         <span className="uppercase text-xs">{note.status}</span>
                         {' · '}
-                        {note.date} · {note.student_name}: {note.reason}
+                        {note.date}{note.period_name ? ` · ${note.period_name}` : ''} · {note.student_name}: {note.reason}
+                        {note.attachment_url && (
+                            <>
+                                {' · '}
+                                <a className="text-[#7C2D37] underline" href={note.attachment_url}>Document</a>
+                            </>
+                        )}
                     </li>
                 ))}
             </ul>

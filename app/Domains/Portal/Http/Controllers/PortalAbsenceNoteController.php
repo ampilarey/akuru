@@ -3,6 +3,7 @@
 namespace App\Domains\Portal\Http\Controllers;
 
 use App\Domains\Academics\Actions\ListAbsenceNotesAction;
+use App\Domains\Academics\Actions\ListPeriodOptionsAction;
 use App\Domains\Academics\Actions\SubmitAbsenceNoteAction;
 use App\Domains\People\Actions\ListGuardianChildrenAction;
 use App\Http\Controllers\Controller;
@@ -30,6 +31,7 @@ class PortalAbsenceNoteController extends Controller
                 : app(ListAbsenceNotesAction::class)->execute(['student_ids' => $childIds]),
             // E10c: the school's own reasons, not five strings compiled in.
             'types' => app(\App\Domains\Academics\Actions\ListAbsenceTypesAction::class)->execute(),
+            'periods' => app(ListPeriodOptionsAction::class)->execute(),
         ]);
     }
 

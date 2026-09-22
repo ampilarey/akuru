@@ -27,7 +27,9 @@ class ListAbsenceNotesAction
             ->get(['id', 'first_name', 'last_name', 'student_id'])
             ->keyBy('id');
 
-        return $notes->map(function (AbsenceNote $note) use ($students) {
+        $periods = \App\Domains\Academics\Models\Period::query()->pluck('name', 'id');
+
+        return $notes->map(function (AbsenceNote $note) use ($students, $periods) {
             $student = $students[$note->student_id] ?? null;
 
             return [
@@ -42,6 +44,10 @@ class ListAbsenceNotesAction
                 'affects_attendance' => $note->affects_attendance,
                 'review_notes' => $note->review_notes,
                 'attachment_path' => $note->attachment_path,
+                // What the two screens actually show: a link, and the period
+                // by name (null = the whole day).
+                'attachment_url' => $note->attachment_path ? route('absence-notes.attachment', $note) : null,
+                'period_name' => $note->period_id ? ($periods[$note->period_id] ?? null) : null,
             ];
         })->values();
     }
