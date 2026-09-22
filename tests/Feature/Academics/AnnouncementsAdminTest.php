@@ -29,8 +29,12 @@ function staffAuthor(): User
 
 it('renders the React admin for staff, with every notice and the form options', function () {
     $author = staffAuthor();
+    // The seeded school's real id, not `1`: under CI's MySQL the auto-increment
+    // does not restart between tests, and the hard-coded id broke the FK there
+    // while passing locally.
     Announcement::query()->create([
-        'school_id' => 1, 'created_by' => $author->id, 'title' => 'Old, expired',
+        'school_id' => app(\App\Domains\Academics\Actions\ResolveDefaultSchoolIdAction::class)->execute(),
+        'created_by' => $author->id, 'title' => 'Old, expired',
         'content' => 'Gone from the portal, still here.', 'type' => 'general', 'priority' => 'low',
         'publish_date' => '2020-01-01', 'expiry_date' => '2020-02-01', 'is_published' => true,
     ]);
