@@ -4345,6 +4345,48 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5ew. The announcements admin, the last Blade screen in S2 (2026-09-22)
+
+Third S2 slice; S2 DoD line 91, *"legacy timetable/announcement Blade
+screens removed"*. The timetable Blade went with the S2.1 builder. The
+announcements admin — `announcements/{index,create,show}.blade.php` behind
+`AnnouncementController` — stayed, and its compose form offered **English
+only and no class targeting** while the controller validated Dhivehi, Arabic
+and `target_classes`. Families already read notices on
+`/portal/announcements` (React, audience-aware); staff wrote them on a Blade
+form from before the rebuild.
+
+**What changed (#410).**
+
+- One React screen, `Academics/Announcements/Index`: the form (title and
+  body in three languages, type, priority, audience, classes, publish and
+  expiry dates) above a table of **every** notice — unpublished and expired
+  included, which is what an author needs and the portal must not show
+  (`ListAnnouncementsForStaffAction`). `SaveAnnouncementAction` cleans the
+  three bodies with the CMS sanitiser and takes the school from
+  `ResolveDefaultSchoolIdAction`, so the controller no longer imports
+  Settings' `School` model (cross-domain baseline −1, twice).
+- `/announcements` is the admin for staff roles and a redirect to the portal
+  reader for everyone else; `/announcements/create` redirects to the admin,
+  still behind the role (the compose screen was the second half of the §44
+  defect); `/announcements/{id}` redirects to the portal. Both names kept
+  for the Blade navigation and bookmarks. Three Blade views deleted;
+  Blade-screen baseline −3, raw-HTML baseline −6.
+- `AnnouncementsAdminTest` (5): staff see the admin with every notice and
+  the options; a family account is redirected; a trilingual, class-targeted
+  notice is stored with its `<script>` stripped; bad type / unknown class /
+  expiry before publication refused; the old names redirect and no
+  edit/destroy route exists. `AnnouncementPermissionTest` updated (a plain
+  account is redirected, not shown the form). Admin smokes, routes, portal,
+  architecture: 138 passed here, whole suites below. **Walked in a
+  browser:** admin opens the React admin, `/announcements/create` lands on
+  it, publishes "Walk notice …", it appears in the table; the seeded parent
+  is sent to `/portal/announcements` and reads it there; no JS errors.
+  Walk notice removed.
+
+**S2 is now closed** on my side. DoD line 89's second half — the real
+timetable entered for the active year — is the owner's.
+
 ## 5ev. A reason that "needs a document" could not be sent from the portal (2026-09-22)
 
 Second S2 slice. S2.4: *"Parent submits notes from Portal with attachment

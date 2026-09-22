@@ -61,11 +61,6 @@ return [
     'analytics/dashboard.blade.php',
     'analytics/reports.blade.php',
 
-    // announcements — 3
-    'announcements/create.blade.php',
-    'announcements/index.blade.php',
-    'announcements/show.blade.php',
-
     // auth — 16
     'auth/confirm-password.blade.php',
     'auth/forgot-password.blade.php',

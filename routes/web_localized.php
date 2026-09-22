@@ -487,14 +487,20 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
     // therefore list, create, edit and delete students and teachers"), and it
     // got the same guard. That slice fixed three route groups and walked past
     // this one.
-    // Writing first, so `announcements/create` is matched before the
-    // `announcements/{announcement}` wildcard `show` would swallow it.
+    // Since 2026-09-22 (STATUS §5ew) the admin is one React screen: the form
+    // lives on `index`, so `create` redirects there — still behind the role,
+    // because the compose screen was the second half of the §44 defect. `show`
+    // was the family-facing read of one notice; that reader is
+    // `/portal/announcements`, which `index` also sends non-staff accounts to.
+    // Both names stay so the Blade navigation and old bookmarks still land.
     Route::middleware(['role:super_admin|admin|headmaster|supervisor'])->group(function () {
-        Route::resource('announcements', AnnouncementController::class)
-            ->only(['create', 'store']);
+        Route::get('announcements/create', fn () => redirect()->route('announcements.index'))->name('announcements.create');
+        Route::post('announcements', [AnnouncementController::class, 'store'])->name('announcements.store');
     });
-    Route::resource('announcements', AnnouncementController::class)
-        ->only(['index', 'show']);
+    Route::get('announcements', [AnnouncementController::class, 'index'])->name('announcements.index');
+    Route::get('announcements/{announcement}', fn () => redirect()->route('portal.announcements'))
+        ->whereNumber('announcement')
+        ->name('announcements.show');
 
     // E-Learning routes
     Route::get('/e-learning', [ELearningController::class, 'index'])->name('e-learning.index');

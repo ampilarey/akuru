@@ -102,6 +102,7 @@ function unresolvedDetailScreens(): array
         // `LegacyStudentScreensRetiredTest` loads it and pins where it lands.
         'students/{student}' => 'redirect to the React profile; covered by LegacyStudentScreensRetiredTest',
         'teachers/{teacher}' => 'redirect to the React staff profile; covered by LegacyTeacherScreensRetiredTest',
+        'announcements/{announcement}' => 'redirect to the portal noticeboard; covered by AnnouncementsAdminTest',
 
         'quran-progress/{quran_progress}' => 'covered by AdminResourcePagesSmokeTest (quran-progress.show)',
         'quran-progress/{quran_progress}/edit' => 'covered by AdminResourcePagesSmokeTest (quran-progress.edit)',

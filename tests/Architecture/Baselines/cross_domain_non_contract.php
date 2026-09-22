@@ -2,10 +2,9 @@
 
 // PHASE_0_CHECKLIST §0.5 rule 2: cross-domain non-contract references.
 // Baseline may only shrink when violations are fixed — never grow.
-// Baseline count: 152
+// Baseline count: 151
 
 return [
-    'app/Domains/Academics/Http/Controllers/AnnouncementController.php -> App\Domains\Settings\Models\School',
     'app/Domains/Academics/Http/Controllers/SubstitutionRequestController.php -> App\Domains\People\Models\Teacher',
     'app/Domains/Academics/Legacy/Http/Controllers/CourseController.php -> App\Domains\Courses\Models\Course',
     'app/Domains/Academics/Legacy/Models/Assignment.php -> App\Domains\People\Models\Student',
