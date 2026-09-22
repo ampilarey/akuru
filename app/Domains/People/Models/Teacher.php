@@ -3,7 +3,6 @@
 namespace App\Domains\People\Models;
 
 use App\Domains\Academics\Models\ClassRoom;
-use App\Domains\Academics\Models\Grade;
 use App\Domains\Academics\Models\Subject;
 use App\Domains\Academics\Models\Timetable;
 use App\Domains\Hifz\Models\HifzEnrollment;
@@ -89,11 +88,6 @@ class Teacher extends Model
     public function hifzSessions()
     {
         return $this->hasMany(HifzSession::class);
-    }
-
-    public function grades()
-    {
-        return $this->hasMany(Grade::class);
     }
 
     public function timetables()

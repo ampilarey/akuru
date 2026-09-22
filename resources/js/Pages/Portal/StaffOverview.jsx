@@ -31,6 +31,7 @@ export default function StaffOverview({
     fillRates = [],
     planAdherence = [],
     ungraded = [],
+    unpublishedReportCards = [],
     csvUrl = '/portal/overview/export',
     sections = [],
 }) {
@@ -54,9 +55,10 @@ export default function StaffOverview({
                 <a className="btn-secondary" href={csvUrl}>Export CSV</a>
             </div>
 
-            <div className="mb-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="mb-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
                 <SummaryCard label={labels.unfilled || 'Unfilled registers'} value={unfilled.length} href={hrefs.unfilled} />
                 <SummaryCard label={labels.ungraded || 'Ungraded exams'} value={ungraded.length} href={hrefs.ungraded} />
+                <SummaryCard label={labels.unpublished_report_cards || 'Unpublished report cards'} value={unpublishedReportCards.length} href={hrefs.unpublished_report_cards} />
                 <SummaryCard label={labels.fill_rates || 'Fill rate'} value={fillAverage == null ? '—' : `${fillAverage}%`} href={hrefs.fill_rates} />
                 <SummaryCard label={labels.plan_adherence || 'Plan adherence'} value={planAverage == null ? '—' : `${planAverage}%`} href={hrefs.plan_adherence} />
             </div>

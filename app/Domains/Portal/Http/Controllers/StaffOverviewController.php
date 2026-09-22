@@ -25,53 +25,15 @@ class StaffOverviewController extends Controller
     public function export(Request $request): StreamedResponse
     {
         $this->authorizeOverview($request);
-        $payload = app(ComposeStaffOverviewAction::class)->execute($this->yearId($request));
+        $composer = app(ComposeStaffOverviewAction::class);
+        $rows = $composer->csvRows($composer->execute($this->yearId($request)));
 
-        return response()->streamDownload(function () use ($payload): void {
+        return response()->streamDownload(function () use ($rows): void {
             $out = fopen('php://output', 'w');
             Csv::put($out, ['section', 'label', 'detail', 'status', 'count', 'rate']);
-
-            foreach ($payload['unfilled'] as $row) {
-                Csv::put($out, [
-                    'unfilled',
-                    $row['class_name'] ?? '',
-                    trim(($row['subject_name'] ?? '').' '.($row['period_name'] ?? '')),
-                    $row['status'] ?? '',
-                    $row['date'] ?? '',
-                    '',
-                ]);
+            foreach ($rows as $row) {
+                Csv::put($out, $row);
             }
-            foreach ($payload['ungraded'] as $row) {
-                Csv::put($out, [
-                    'ungraded',
-                    $row['name'] ?? '',
-                    trim(($row['class_name'] ?? '').' '.($row['subject_name'] ?? '')),
-                    $row['status'] ?? '',
-                    $row['exam_date'] ?? '',
-                    '',
-                ]);
-            }
-            foreach ($payload['fillRates'] as $row) {
-                Csv::put($out, [
-                    'fill_rate',
-                    $row['teacher_name'] ?: ('Teacher #'.($row['teacher_id'] ?? '')),
-                    '',
-                    '',
-                    ($row['filled'] ?? '').'/'.($row['total'] ?? ''),
-                    $row['rate'] ?? '',
-                ]);
-            }
-            foreach ($payload['planAdherence'] as $row) {
-                Csv::put($out, [
-                    'plan_adherence',
-                    $row['title'] ?? '',
-                    '',
-                    '',
-                    ($row['completed'] ?? '').'/'.($row['total'] ?? ''),
-                    $row['rate'] ?? '',
-                ]);
-            }
-
             fclose($out);
         }, 'staff-overview.csv', ['Content-Type' => 'text/csv; charset=UTF-8']);
     }

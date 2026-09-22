@@ -3,7 +3,6 @@
 namespace App\Domains\People\Models;
 
 use App\Domains\Academics\Models\ClassRoom;
-use App\Domains\Academics\Models\Grade;
 use App\Domains\Hifz\Models\HifzEnrollment;
 use App\Domains\Hifz\Models\HifzMilestone;
 use App\Domains\Hifz\Models\HifzSessionRecord;
@@ -133,11 +132,6 @@ class Student extends Model
     public function statusHistory(): HasMany
     {
         return $this->hasMany(StudentStatusHistory::class);
-    }
-
-    public function grades()
-    {
-        return $this->hasMany(Grade::class);
     }
 
     public function quranProgress()

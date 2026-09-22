@@ -4345,6 +4345,58 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5ey. S3 audit, second fix: the dead `grades` table, the missing overview tile, the stale DoD box (2026-09-22)
+
+Three of the S3 audit's five deviations, none of them in the engine.
+
+**D2 — `grades` (#412).** `S3_SPEC` opens with *"`Grade` model exists as a
+thin stub with no exam entity and no controllers"* and then builds the whole
+cycle beside it. The stub's table had **zero rows on every deployment**, and
+its only references were `Student::grades()` and `Teacher::grades()`, which
+nothing called. Dropped by `2026_09_22_000003`, which refuses if a row has
+appeared in the meantime (the `attendance` pattern, §5eu); model deleted;
+`grade` alias and the `App\Models\Grade` legacy rewrite removed from the
+morph map; two relations and their imports gone. Architecture baselines
+shrink by their own rule: cross-domain models 67 → 66, cross-domain
+non-contract 151 → 147. The `DATABASE_SCHEMA.md` section for it — which
+described a table with `class_id`, `assignment_id` and `quiz_id` that the
+migration never had — is gone too. `S3LeftoversTest` pins the table, class,
+alias and relations as absent.
+
+**A finding on the way.** `AcademicBackboneTest` scans migrations for
+`Schema::create` and `Schema::table` only, so it could not see a
+`Schema::drop`: the `attendance` entry stayed in
+`tables_without_academic_backbone.php` for a month after §5eu dropped the
+table, and the "list may only shrink" mechanism — *"a table that no longer
+exists must leave"* — was blind to exactly that case. The scan now honours
+`drop` and `dropIfExists`; both `attendance` and `grades` fell out of the
+baseline as stale, which is the mechanism working.
+
+**D4 — the tile.** S3 spec, *Portal additions*: *"Admin overview adds:
+ungraded exams, unpublished report cards."* The overview had the first and
+not the second. `ListReportCardsAction::unpublished()` takes a year now
+(through the year's terms); `ComposeStaffOverviewAction` composes a fifth
+tile, "Unpublished report cards", linking to `/exams/report-cards`, and the
+CSV gains an `unpublished_report_card` row per card. Composing the CSV rows
+moved from the controller into the action (`csvRows()`), which took
+`StaffOverviewController::export` from 50 lines to under the thin-controller
+threshold, so its baseline line is deleted rather than lowered.
+`StaffOverviewTest` adds a ready card in the year and a draft in another
+year: one counted, the other not, and the name in the CSV.
+
+**D5 — the DoD box.** Lines 85 and 87 of `S3_SPEC` were unticked for work
+that shipped weeks ago — the gradebook matrix, transcript, award batch
+issue and ID card are all tested and were walked; the eleven `exams.*.export`
+routes are one per listing. Ticked, with the evidence named on each line.
+(Line 84 was corrected in §5ex.)
+
+**Walked in a browser:** admin generates Term 1 cards for Grade 5 A (13
+pupils had none), the overview shows the tile with the count, "Open" lands
+on `/exams/report-cards` with the same count in its banner, the CSV carries
+one `unpublished_report_card` row per card; no JS or server errors.
+Migration applied locally against the seeded database. Gates: architecture
+64 passed; overview, leftovers, report cards and People suites 150 passed.
+
 ## 5ex. S3 audit, first fix: the exam cycle, walked by a script (2026-09-22)
 
 The S3 audit (Phase S3, exams and grades) found the engine itself sound and
@@ -4398,11 +4450,9 @@ runs straight into its options (`Year2026-2027 Pilot`, no word boundary),
 and "Year default" is an option under *Class* on the Weights screen, so an
 unanchored label match found two labels.
 
-**S3 audit, still open on my side:** D2 the dead `grades` table and
-`Academics\Models\Grade` (0 rows, two relations, one migration); D4 the
-overview has no "unpublished report cards" tile; D5 the rest of the DoD box
-(CSV export is done and unticked); D3 regeneration after publish is refused
-by design and recorded nowhere. Next slices, in that order.
+**S3 audit, still open on my side after this:** D2, D4 and D5 went in
+§5ey; D3 — regeneration after publish is refused by design and recorded
+nowhere — is the slice after.
 
 ## 5ew. The announcements admin, the last Blade screen in S2 (2026-09-22)
 

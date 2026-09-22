@@ -43,8 +43,6 @@ return [
     'student_status_history' => 'A row on a person\'s timeline rather than in a year\'s ledger, written by `ChangeStudentStatusAction` alongside the `class_student` rows that are year-scoped.',
 
     // ---- Superseded: the replacement carries the backbone -------------------
-    'attendance' => 'Pre-S2 Blade attendance, superseded by `class_attendance`, which carries the backbone. Leaves when those screens are retired (rule 7 / IA decision, not a "while you are there").',
-    'grades' => 'Pre-S3 Blade gradebook, superseded by `term_grades` (year + term) and `grade_items`.',
     'assignments' => 'Pre-S3 Blade assignments, superseded by the Courses engine\'s activities.',
     'teacher_absences' => 'Blade substitution module, unreferenced by any current code path; superseded by `staff_attendance`, which carries the backbone.',
     'substitution_requests' => 'Same Blade substitution module as `teacher_absences`.',

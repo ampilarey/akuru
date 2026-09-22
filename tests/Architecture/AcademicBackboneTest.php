@@ -177,7 +177,7 @@ function timeScopedTableBackbone(): array
             $source = substr($source, 0, $rollback);
         }
 
-        if (! preg_match_all("/Schema::(create|table)\(\s*'([a-z0-9_]+)'/", $source, $matches, PREG_OFFSET_CAPTURE)) {
+        if (! preg_match_all("/Schema::(create|table|drop|dropIfExists)\(\s*'([a-z0-9_]+)'/", $source, $matches, PREG_OFFSET_CAPTURE)) {
             continue;
         }
 
@@ -187,6 +187,16 @@ function timeScopedTableBackbone(): array
             $start = $matches[0][$i][1];
             $end = ($i + 1 < count($matches[0])) ? $matches[0][$i + 1][1] : strlen($source);
             $block = substr($source, $start, $end - $start);
+
+            // A table dropped by a later migration is not a table. The first
+            // version of this scan read only creates, so `attendance` stayed
+            // in the baseline for a month after the S2 clean-up dropped it —
+            // the "list may only shrink" mechanism could not see the drop.
+            if ($kind === 'drop' || $kind === 'dropIfExists') {
+                unset($created[$table], $hasYear[$table], $signals[$table]);
+
+                continue;
+            }
 
             if ($kind === 'create') {
                 $created[$table] = $relative;

@@ -2,7 +2,7 @@
 
 // PHASE_0_CHECKLIST §0.5 rule 2: cross-domain non-contract references.
 // Baseline may only shrink when violations are fixed — never grow.
-// Baseline count: 151
+// Baseline count: 147
 
 return [
     'app/Domains/Academics/Http/Controllers/SubstitutionRequestController.php -> App\Domains\People\Models\Teacher',
@@ -15,8 +15,6 @@ return [
     'app/Domains/Academics/Legacy/Models/QuizAttempt.php -> App\Domains\People\Models\Student',
     'app/Domains/Academics/Models/AbsenceNote.php -> App\Domains\People\Models\Student',
     'app/Domains/Academics/Models/ClassRoom.php -> App\Domains\People\Models\Student',
-    'app/Domains/Academics/Models/Grade.php -> App\Domains\People\Models\Student',
-    'app/Domains/Academics/Models/Grade.php -> App\Domains\People\Models\Teacher',
     'app/Domains/Academics/Models/LessonLog.php -> App\Domains\People\Models\Teacher',
     'app/Domains/Academics/Models/SubstitutionAssignment.php -> App\Domains\People\Models\Teacher',
     'app/Domains/Academics/Models/SubstitutionRequest.php -> App\Domains\People\Models\Teacher',
@@ -110,7 +108,6 @@ return [
     'app/Domains/People/Models/RegistrationStudent.php -> App\Domains\Courses\Models\CourseEnrollment',
     'app/Domains/People/Models/RegistrationStudent.php -> App\Domains\Identity\Models\User',
     'app/Domains/People/Models/Student.php -> App\Domains\Academics\Models\ClassRoom',
-    'app/Domains/People/Models/Student.php -> App\Domains\Academics\Models\Grade',
     'app/Domains/People/Models/Student.php -> App\Domains\Hifz\Models\HifzEnrollment',
     'app/Domains/People/Models/Student.php -> App\Domains\Hifz\Models\HifzMilestone',
     'app/Domains/People/Models/Student.php -> App\Domains\Hifz\Models\HifzSessionRecord',
@@ -118,7 +115,6 @@ return [
     'app/Domains/People/Models/Student.php -> App\Domains\Identity\Models\User',
     'app/Domains/People/Models/Student.php -> App\Domains\Settings\Models\School',
     'app/Domains/People/Models/Teacher.php -> App\Domains\Academics\Models\ClassRoom',
-    'app/Domains/People/Models/Teacher.php -> App\Domains\Academics\Models\Grade',
     'app/Domains/People/Models/Teacher.php -> App\Domains\Academics\Models\Subject',
     'app/Domains/People/Models/Teacher.php -> App\Domains\Academics\Models\Timetable',
     'app/Domains/People/Models/Teacher.php -> App\Domains\Hifz\Models\HifzEnrollment',
