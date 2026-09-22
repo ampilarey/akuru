@@ -4345,6 +4345,65 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5ex. S3 audit, first fix: the exam cycle, walked by a script (2026-09-22)
+
+The S3 audit (Phase S3, exams and grades) found the engine itself sound and
+five deviations. The first — **D1**, no scripted walk of the cycle — is the
+one the definition of done is built on. Every screen on the path had tests;
+the loop *schedule → marks entry → review → publish → gradebook → report
+card → parent portal* had been closed by people twice (pilot rehearsal rounds
+1 and 2) and by a script never, and `all.mjs` — the gate `OWNER_ACTIONS`
+item 7 waits on — did not know the cycle existed.
+
+**What changed (#411).**
+
+- `scripts/smoke/exams.mjs`, 26 steps, three logins. The parent signs in
+  first only to learn the child's name; the admin saves a year weight scheme
+  through the Weights form if none resolves (the seed ships none and the
+  gradebook says so on screen rather than showing zeros), schedules
+  `SMOKE-Exam` for the child's class, moves it into marks entry, types 85 on
+  the child's row and tabs away, moves it through review to published,
+  recomputes the gradebook (85.00 / 85.00 / A — 85 sits on the default
+  scale's A boundary, so the walk also proves the boundary is inclusive),
+  generates the term's report cards, waits up to `SMOKE_QUEUE_WAIT` seconds
+  for the render job and says *"is a queue worker running?"* if it never
+  arrives, publishes the ready cards; the parent then sees the exam with
+  the mark on `/portal/exams` and opens the card from `/portal/report-cards`
+  (HTTP 200, the child's name in the HTML). Registered in `all.mjs` as the
+  eighteenth walk, fourteenth writer.
+- **The term is the walk's own.** A published report card cannot be
+  regenerated and `report_cards` is unique per student and term, so against
+  a real term the second run would find nothing to publish and fail on a
+  rule that is working. It cannot use Term 1 either: `sensitiveRecords()`
+  plants a *published* card there on purpose for the own-data probe.
+  `SmokeMarkerSeeder::examCycle()` therefore plants `SMOKE-Term` (same year,
+  sorted last, `upcoming`) and empties it on every run — exams, marks,
+  status audits, term grades, report cards and the documents behind them.
+  The term row is kept (enrolments may reference a term with `ON DELETE
+  RESTRICT`, ADR-037). `sensitiveRecords()` now picks the year's first term
+  by id so it never lands in the smoke term.
+- `ExamCycleSmokeResetTest`: full seed, the marker seeder twice → one
+  `SMOKE-Term`; plant everything a run leaves behind, seed again → all of it
+  gone, the real term's published cards untouched.
+- Docs: `OPERATOR_CHECKLIST` §0 counts eighteen walks and notes the queue
+  worker; S3 DoD line 84 ticked, with its "parent downloads PDF" corrected to
+  the HTML ADR-012 actually delivers.
+
+**Walked, twice.** Locally against `artisan serve` with `queue:work`
+running: 26/26 both times, the second after a re-seed with the scheme step
+recording *"a scheme already resolves for the year"*. Run a third time
+*without* re-seeding it stops at step 7 with *"left over from an earlier
+run — re-seed first"*, as `review.mjs` does. No console or server errors. Two walk bugs found on the way, both in the walk: a label's text
+runs straight into its options (`Year2026-2027 Pilot`, no word boundary),
+and "Year default" is an option under *Class* on the Weights screen, so an
+unanchored label match found two labels.
+
+**S3 audit, still open on my side:** D2 the dead `grades` table and
+`Academics\Models\Grade` (0 rows, two relations, one migration); D4 the
+overview has no "unpublished report cards" tile; D5 the rest of the DoD box
+(CSV export is done and unticked); D3 regeneration after publish is refused
+by design and recorded nowhere. Next slices, in that order.
+
 ## 5ew. The announcements admin, the last Blade screen in S2 (2026-09-22)
 
 Third S2 slice; S2 DoD line 91, *"legacy timetable/announcement Blade

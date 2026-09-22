@@ -15,13 +15,13 @@ with a `teachers` row, and a parent/student pair for portal checks.
 
 ## 0. Run the automated walks first
 
-**Do this before anything below.** Seventeen scripted walks drive real browsers
+**Do this before anything below.** Eighteen scripted walks drive real browsers
 through the loops that matter — a stranger enrolling, a student taking a
 lesson, a teacher marking work, a family reporting an absence, a child being
 collected, a parent booking a meeting, somebody becoming a writer and getting
-published, a student recording a sound for a teacher to judge, and the whole
-thing at phone width — and they take about thirteen minutes against a host,
-unattended.
+published, a student recording a sound for a teacher to judge, an exam going
+from the schedule to a report card a parent opens, and the whole thing at
+phone width — and they take about fourteen minutes against a host, unattended.
 
 ```
 php artisan db:seed --class=SmokeMarkerSeeder     # plants the markers they read
@@ -37,15 +37,16 @@ SMOKE_BASE_URL=https://test.akuru.edu.mv node scripts/smoke/all.mjs
 It exits non-zero if any walk fails and prints the full output of the failures
 only, so a green run is one screen and a red one explains itself.
 
-**Thirteen of the seventeen write data** — they submit absence notes, request
-that children be collected, book meetings, enrol people and hand in recordings
-for a teacher to judge. Against a host whose name does not look synthetic the
+**Fourteen of the eighteen write data** — they submit absence notes, request
+that children be collected, book meetings, enrol people, hand in recordings
+for a teacher to judge and publish exam results to families. Against a host whose name does not look synthetic the
 runner refuses to start and tells you how to override. `--read` runs only the
 four that look without touching anything (`page-errors`, `sweep`, `own-data`,
 `mobile`), which is the safe choice against anything with real families on it.
 
 `node scripts/smoke/all.mjs learn review` runs named walks; `--write` runs the
-thirteen that change data.
+fourteen that change data. The `exams` walk needs a queue worker on the host
+(report cards render on the queue) and says so if none is running.
 
 **What a clean run does and does not prove.** It proves the deploy script, the
 built assets and the seeded database on that host behave like the local ones —
