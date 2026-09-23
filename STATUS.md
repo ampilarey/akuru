@@ -22,8 +22,8 @@ the Library L1–L7; the public-site track W1–W3; EduPage parity E1–E22. The
 agent-buildable backlog in `KNOWN_ISSUES` is empty.
 
 **What is verified is narrower than what is built, and in one specific way.**
-Twenty-four scripted browser walks (`node scripts/smoke/all.mjs`, ~20 minutes)
-drive the loops that matter — building a course, running an intake, enrolling, taking a lesson, sitting an assessment, earning a certificate, marking work,
+Twenty-five scripted browser walks (`node scripts/smoke/all.mjs`, ~21 minutes)
+drive the loops that matter — building a course, running an intake, enrolling, buying a course, taking a lesson, sitting an assessment, earning a certificate, marking work,
 reporting an absence, collecting a child, booking a meeting, publishing an
 article, taking and refunding money, recording a sound, reciting, an exam to a
 report card, a fee to a receipt, a staff member's month, and the whole app at
@@ -101,6 +101,7 @@ Legend — **CODE:** implementation in repo (models/migrations/actions/routes/pa
 | 3 C1 course certificates | Yes. `certificate_templates` + `issued_certificates`; admin builder; issue; public QR verify. | `CourseCertificateTest`. | Walked **#106** by hand; **scripted 2026-09-23** (`certify.mjs`, §5fj): a 100%-progress rule refuses the issue before the student finishes, allows it after; the student opens the document with its QR; a guest is told it is authentic and sees the face only; revoked, the same URL says so. | Unlocalized verify URL. Morph aliases. HTML, not PDF. |
 | 3 C2 completion + performance reports | Yes. Staff `/catalog/reports/completions`; portal `/portal/performance`. | `CourseCompletionReportTest`. | Walked **#107**: admin roster 12 rows (Unification representative course); parent Hassan sees Fatima Yoosuf performance card; CSV. | Course-only enrollments included; offering summaries empty when `course_offering_id` is null. |
 | 3 C3 teacher review reports | Yes. `/catalog/reviews` pending + weakness + revision; CSV. | `TeacherReviewReportTest`; existing `TeacherReviewTest`. | Walked **#108**: pending Mariyam Ali “Write a sentence” scored 8/10; weakness/revision for “Choose meaning” 0/10 + retry. Live walk found `passing_score` 50 on a 2-point quiz (legacy percent) falsely marking 2/2 as weak — treated as percent when passing > max. | No `course_type` branch. Threshold default 50% when no passing score. |
+| 4 P4.1–P4.4 payments | Yes. Engine checkout (wallet immediate, BML on webhook only), manual payment, refund to wallet, coupons, offering price override, approval gate, payment reports (§5 P4.x). | `EngineCoursePaymentTest`, `CheckoutPaymentTest`, `BmlWebhookTest`, `RefundPaymentTest`. | Office side walked (`money.mjs`, §1f): manual payment activates, refund revokes and credits the wallet, an override of 0 makes a course free. **The student's own purchase walked 2026-09-23** (`buy.mjs`, §5fk): the lesson is 403 before paying, a 10% coupon and the wallet enrol at once, the lesson opens, the wallet is down by 90, the office sees Active/Confirmed. | **BML itself is unwalkable anywhere** until `BML_WEBHOOK_SECRET` exists (`OWNER_ACTIONS` item 2). Payment-based unlock is ADR-022's single policy (recorded, not built). |
 | D1 composed parent/student home | Yes. `/portal/home` + CSV; parent/student `/dashboard` redirect. Reads Academics/ExamsGrades/Finance/Courses Actions and `StudentHifzSummaryReader`. | `PortalHomeTest`; `RoleLandingTest`. | Walked **#109**: parent Hassan `/en/dashboard` → `/en/portal/home` for Fatima Yoosuf (attendance 0% / 2 absent / 1 excused, Term 1 Arabic Final 70/100, three sent invoices, empty course + Hifz on seed). Student Mariyam Ali same page with course row. CSV `portal-home.csv`. | Portal new files import no other-domain Models and no `App\Domains\Hifz\`. AppShell Home link. Seed has no Hifz rows; Pest composes Hifz via a program created in the test. |
 | D2 parent-teacher meeting slots | Yes. `meeting_slots` + `meeting_bookings` (year-scoped); admin generate/publish `/academics/meetings`; portal `/portal/meetings` book/cancel + CSV. | `MeetingSlotTest`. | Walked **#110**: admin published Term 1 PTM 2026-09-03 18:00/18:30 for Grade 5 B (Fatima’s roster class) / Fatimat Ali. Parent Hassan booked 18:00 for Fatima Yoosuf; portal CSV; admin CSV shows 1/1 Fatima. | Morph aliases `meeting_slot` / `meeting_booking`. Permission `meetings.manage`. Portal files import no Models / no Hifz. AppShell Meetings (wrap 82). |
 | D3 staff overview | Yes. `/portal/overview` + CSV. Reads Academics `ListUnfilledRegistersAction` (unfilled, fill rates, plan adherence) and ExamsGrades `ListExamsAction::ungraded`. Admin/headmaster `/dashboard` redirect. | `StaffOverviewTest`; `RoleLandingTest`. | Walked **#111**: admin `/en/dashboard` → `/en/portal/overview` (2026-2027 Pilot). Unfilled Grade 5 A Quran Recitation Period 2 expected 2026-08-26; ungraded **D3 Ungraded Walk** marks_entry; fill 66.7% (Ustadha Aishath Shifa 0/1); plan Grade 5 Arabic Term 1 1/1 100%. CSV `staff-overview.csv`. Registers + Exams Open links. Parent `/portal/home`; parent `/portal/overview` **403**. | No new tables. Portal new files import Actions only, no Models / no Hifz. AppShell Overview (wrap 83). Super_admin landing stays Blade. Walk exam `D3 Ungraded Walk` was created locally (seed had none). |
@@ -4345,6 +4346,45 @@ walk returned a header row and nothing else for circulation, student work and
 pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
+
+## 5fk. Phase 4 audit: the student's own purchase, walked — the office's side already was (2026-09-23)
+
+The Phase 4 audit (SPEC §49, STATUS §5 P4.1–P4.4) against Commerce,
+Finance and the engine checkout. **Every codeable DoD line exists and is
+tested**: engine checkout with wallet (immediate) and BML (webhook only,
+rule 12), manual payment and refund, coupons, offering price override
+(including 0 = free), the approval gate, payment reports. Two findings,
+neither a defect.
+
+**D1 — the student's own purchase had never been walked.** `money.mjs`
+walks the office's side against a seeded *pending* enrolment (manual
+payment, refund, override) and `register.mjs` the stranger's free path.
+Nobody had walked a learner reading a price, entering a coupon, paying,
+and finding the course open. `scripts/smoke/buy.mjs`, 13 steps: the office
+creates a 10% coupon; the student reads their wallet, finds
+`SMOKE-Wallet-Course` at MVR 100, is shown *Preview only* with the lesson
+marked *Locked* and gets a **403** trying its URL anyway; enters the coupon
+and pays with the wallet — enrolled at once, no gateway; the same URL is
+200 with the lesson body; the wallet is down by exactly 90 and the ledger
+shows *debit purchase −90.00*; the office's enrolment list reads *Active
+Confirmed*. `SmokeMarkerSeeder::buyCycle()` keeps the course (with one
+published lesson so there is something to lock, and `requires_admin_approval`
+off — the gate is a separate, tested feature) and clears the enrolment,
+the coupon and its redemptions, topping the wallet back up by credit
+(append-only, rule 12). `BuyCycleSmokeResetTest`. Twenty-fifth walk,
+twenty-first writer.
+
+**D2 — §2 had no Phase 4 row.** P4.1–P4.4 were recorded as §5 sections and
+never as a phase-table row, so the one place that says what is verified
+did not mention payments at all. Added.
+
+**Not walkable, and said so.** BML: no environment holds a webhook secret
+(`OWNER_ACTIONS` item 2), so the gateway path is `BmlWebhookTest` and
+nothing else until the owner acts. Payment-based unlock (§53's placeholder)
+is ADR-022's single-policy decision, recorded under 1B (§5fh D3).
+
+**Walked in a browser.** `buy.mjs` 13/13 twice on a re-seeded database,
+no console or server errors.
 
 ## 5fj. Phase 3 audit: the certificate walked from rule to QR, and the rest was already walked (2026-09-23)
 
