@@ -423,7 +423,11 @@ if (haveOffering) {
     // the second: the enrolment opens with no payment behind it at all.
     if (priceOf(free) === null) {
         await payerPage.locator('tr', { hasText: COURSE }).first().locator('button').first().click();
-        await payerPage.waitForLoadState('networkidle');
+        // Wait for the enrolment to land — the course page opens with
+        // "Enrolled." — rather than for the network to go quiet: on a slower
+        // host the catalog was re-read while the post was still in flight
+        // (STATUS §5fz, second run).
+        await payerPage.waitForURL(/\/learn\/courses\/\d+/, { timeout: 10000 }).catch(() => {});
 
         const enrolled = await catalogRow();
         check(
