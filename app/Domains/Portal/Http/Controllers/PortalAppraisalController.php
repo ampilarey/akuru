@@ -6,6 +6,7 @@ use App\Domains\HR\Actions\AcknowledgeAppraisalAction;
 use App\Domains\HR\Actions\ListAppraisalsAction;
 use App\Domains\HR\Actions\ListCpdRecordsAction;
 use App\Domains\HR\Actions\ListLessonObservationsAction;
+use App\Domains\HR\Actions\SummarizeCpdHoursAction;
 use App\Domains\People\Actions\ResolveStaffProfileForUserAction;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
@@ -32,6 +33,7 @@ class PortalAppraisalController extends Controller
                 ? app(ListLessonObservationsAction::class)->execute((int) $staffId)->filter(fn ($row) => $row['shared_with_staff'])->values()
                 : collect(),
             'cpd' => $staffId ? app(ListCpdRecordsAction::class)->execute((int) $staffId)->values() : collect(),
+            'cpdSummary' => $staffId ? app(SummarizeCpdHoursAction::class)->execute((int) $staffId)->first() : null,
         ]);
     }
 

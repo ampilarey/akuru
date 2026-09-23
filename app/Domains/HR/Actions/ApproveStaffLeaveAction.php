@@ -17,7 +17,7 @@ class ApproveStaffLeaveAction
     public function __construct(private StaffAttendanceWriterInterface $writer) {}
 
     /**
-     * @param  array{staff_profile_id: int, leave_type_id: int, from_date: string, to_date: string, half_day?: bool, request_id?: int|null, marked_by?: int|null}  $data
+     * @param  array{staff_profile_id: int, leave_type_id: int, from_date: string, to_date: string, half_day?: bool, request_id?: int|null, marked_by?: int|null, document_id?: int|null}  $data
      */
     public function execute(array $data): array
     {
@@ -25,6 +25,8 @@ class ApproveStaffLeaveAction
         if ($type === null) {
             throw ValidationException::withMessages(['leave_type_id' => 'Unknown leave type.']);
         }
+
+        app(AssertLeaveDocumentAction::class)->execute((int) $type->id, isset($data['document_id']) ? (int) $data['document_id'] : null);
 
         $from = (string) $data['from_date'];
         $to = (string) ($data['to_date'] ?? $from);

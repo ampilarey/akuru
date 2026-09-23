@@ -31,6 +31,7 @@ class HandleStaffLeaveApprovalAction implements RequestTypeHandler
                 'from_date' => $from,
                 'to_date' => $to,
                 'half_day' => (bool) ($payload['half_day'] ?? false),
+                'document_id' => isset($payload['document_id']) ? (int) $payload['document_id'] : null,
                 'request_id' => (int) $request->id,
                 'marked_by' => (int) $request->reviewed_by,
             ]);

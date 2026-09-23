@@ -11,7 +11,9 @@ export default function Index({ requests, types, canReview, teacherId, leaveType
         from_date: '',
         to_date: '',
         half_day: false,
+        document: null,
     });
+    const chosenLeaveType = leaveTypes.find((type) => String(type.id) === String(form.data.leave_type_id));
 
     return (
         <AppShell title="Requests">
@@ -49,6 +51,21 @@ export default function Index({ requests, types, canReview, teacherId, leaveType
                     <input type="checkbox" checked={form.data.half_day} onChange={(e) => form.setData('half_day', e.target.checked)} />
                     Half day
                 </label>
+                {form.data.type === 'staff_leave' && (
+                    <label className="block text-sm">
+                        <span className="mb-1 block text-gray-600">
+                            Supporting document{chosenLeaveType?.requires_document ? ' (required for this leave type)' : ' (optional)'}
+                        </span>
+                        <input
+                            className="form-input w-full"
+                            type="file"
+                            name="document"
+                            accept="application/pdf,image/jpeg,image/png"
+                            onChange={(e) => form.setData('document', e.target.files?.[0] ?? null)}
+                        />
+                        <span className="mt-1 block text-xs text-gray-500">A PDF or a photo of the certificate, up to 5 MB.</span>
+                    </label>
+                )}
                 <label className="block text-sm md:col-span-3">
                     <span className="mb-1 block text-gray-600">Reason</span>
                     <input className="form-input w-full" value={form.data.reason} onChange={(e) => form.setData('reason', e.target.value)} />
@@ -76,6 +93,13 @@ function RequestCard({ item, canReview }) {
                 <span className="uppercase text-xs">{item.status}</span>
             </div>
             <p>{item.reason}</p>
+            {item.payload?.document_id && (
+                <p className="mt-1">
+                    <a className="text-[#7C2D37] underline" href={`/academics/requests/${item.id}/document`} target="_blank" rel="noreferrer">
+                        Supporting document
+                    </a>
+                </p>
+            )}
             {canReview && item.status === 'pending' && (
                 <form
                     className="mt-3 flex flex-wrap gap-2"

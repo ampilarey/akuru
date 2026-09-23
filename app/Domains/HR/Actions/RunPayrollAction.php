@@ -60,6 +60,12 @@ class RunPayrollAction
                 }
 
                 $proration = $this->proration($contract, $start, $end);
+                if ($proration <= 0.0) {
+                    // A contract that ended before the month, or starts after
+                    // it, has nothing to pay: no payslip, not a zero one — a
+                    // zero line in the bank CSV is a wrong line (S5 audit D6).
+                    continue;
+                }
                 $unpaidDays = app(CountUnpaidLeaveDaysAction::class)->execute((int) $profile->id, $year, $month);
                 $attendance = app(SummarizeStaffAttendanceMonthAction::class)->execute((int) $profile->id, $year, $month);
 

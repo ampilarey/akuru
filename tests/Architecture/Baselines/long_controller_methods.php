@@ -26,7 +26,6 @@
 // Count: 49.
 
 return [
-    'app/Domains/Academics/Http/Controllers/SchoolRequestController.php::store' => 55,
     'app/Domains/Academics/Http/Controllers/TeacherRegisterController.php::show' => 45,
     'app/Domains/Academics/Http/Controllers/TeacherRegisterController.php::update' => 48,
     'app/Domains/Academics/Http/Controllers/TimetableBuilderController.php::index' => 48,

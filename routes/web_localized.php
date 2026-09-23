@@ -23,6 +23,7 @@ use App\Domains\Academics\Http\Controllers\RegisterReportController;
 use App\Domains\Academics\Http\Controllers\RoomBookingController;
 use App\Domains\Academics\Http\Controllers\RoomDirectoryController;
 use App\Domains\Academics\Http\Controllers\SchoolRequestController;
+use App\Domains\Academics\Http\Controllers\SchoolRequestDocumentController;
 use App\Domains\Academics\Http\Controllers\StudentWorkController;
 use App\Domains\Academics\Http\Controllers\SubstitutionRequestController;
 use App\Domains\Academics\Http\Controllers\TeacherRegisterController;
@@ -409,6 +410,7 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
     Route::get('academics/requests', [SchoolRequestController::class, 'index'])->name('academics.requests.index');
     Route::post('academics/requests', [SchoolRequestController::class, 'store'])->name('academics.requests.store');
     Route::post('academics/requests/{schoolRequest}/review', [SchoolRequestController::class, 'review'])->name('academics.requests.review');
+    Route::get('academics/requests/{schoolRequest}/document', [SchoolRequestDocumentController::class, 'show'])->name('academics.requests.document')->whereNumber('schoolRequest');
 
     // Legacy Blade student screens — retired (S1 DoD: "corresponding legacy
     // Blade screens removed").
@@ -1208,6 +1210,7 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::get('observations', [LessonObservationController::class, 'index'])->name('hr.observations.index');
         Route::post('observations', [LessonObservationController::class, 'store'])->name('hr.observations.store');
         Route::get('cpd/export', [CpdRecordController::class, 'export'])->name('hr.cpd.export');
+        Route::get('cpd/summary/export', [CpdRecordController::class, 'exportSummary'])->name('hr.cpd.summary.export');
         Route::get('cpd', [CpdRecordController::class, 'index'])->name('hr.cpd.index');
         Route::post('cpd', [CpdRecordController::class, 'store'])->name('hr.cpd.store');
         Route::get('payroll/{payrollPeriod}/export', [PayrollPeriodController::class, 'export'])->name('hr.payroll.export');
