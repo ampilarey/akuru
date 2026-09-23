@@ -27,6 +27,8 @@ return [
         'no_lessons' => 'No lessons scheduled.',
     ],
     'request' => [
+        'submitted_title' => 'طلب جديد من :name',
+        'submitted_body' => 'طلب :type بخصوص :regarding: :reason',
         'decision_title' => 'تم :status طلبك',
         'decision_body' => 'تم :status طلب :type الخاص بك. :notes',
         'status' => [

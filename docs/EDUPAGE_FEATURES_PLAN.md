@@ -598,6 +598,10 @@ The app-shell slice can land before or after E1; E1 is its home tab either way.
 7. E15 lost & found / canteen: does the Institute run these services?
 8. Is the aSc timetable desktop tool still in use? If so, build import/export
    rather than a drag-drop builder.
+9. E5 approver rule: who decides a family's request — the pupil's class
+   teacher, the headmaster, or the office as today? The engine has one global
+   `requests.review`; a per-type rule is the build (STATUS §5fw). Until it is
+   set, the class teacher is told and the office decides.
 9. **E3: extend `lesson_logs.homework`, or the existing `assignments` /
    `assignment_submissions` module?** Raised by the audit; the plan below was
    written unaware the second existed.
@@ -674,5 +678,12 @@ not target a class and nothing could close a sheet — both now on the screen.
 E10a/E10b and E11b are `school-day.mjs` (STATUS §5fr). E1 is `own-data.mjs`;
 E8 `pickup.mjs`; E9 `hr.mjs`; E12 `meetings.mjs`; E13 §5bw; E14 `exams.mjs`;
 E7, E10c–d, E15–E21 were walked by hand at their PRs (STATUS §5ci, §5cj–§5ck,
-§5cb–§5ch). E5 has its HTTP tests, `hr.mjs` for the staff-leave chain, and no
-family-facing walk.
+§5cb–§5ch). E5 is `hr.mjs` for the staff-leave chain and, since 2026-09-23,
+`requests.mjs` for the family half (STATUS §5fw) — which found the family
+was offered staff leave types and refused, could not name the child, told
+nobody on filing, could be rejected without a reason, and saw a decision
+with neither date nor reason; all five fixed in that slice. Who *approves*
+a family's request is still the owner's: the acceptance line says the class
+teacher, the code gives `requests.review` to the office only, and the right
+shape is this plan's per-type approver rule, not a global teacher permission.
+Until then the class teacher is told and the office decides.

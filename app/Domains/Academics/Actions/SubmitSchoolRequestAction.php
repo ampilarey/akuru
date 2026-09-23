@@ -19,7 +19,7 @@ class SubmitSchoolRequestAction
             throw ValidationException::withMessages(['reason' => 'A reason is required.']);
         }
 
-        return SchoolRequest::query()->create([
+        $request = SchoolRequest::query()->create([
             'type' => SchoolRequestType::from((string) $data['type']),
             'requester_id' => (int) $data['requester_id'],
             'regarding_type' => $data['regarding_type'] ?? null,
@@ -30,5 +30,11 @@ class SubmitSchoolRequestAction
             'reason' => $reason,
             'status' => SchoolRequestStatus::Pending,
         ]);
+
+        // The approver's half of "both are notified" (E5). The decision half
+        // is `ReviewSchoolRequestAction`'s.
+        app(NotifyRequestSubmittedAction::class)->execute($request);
+
+        return $request;
     }
 }

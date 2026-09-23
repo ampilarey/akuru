@@ -27,6 +27,8 @@ return [
         'no_lessons' => 'No lessons scheduled.',
     ],
     'request' => [
+        'submitted_title' => ':name ގެ އައު އެދިވަޑައިގަތުމެއް',
+        'submitted_body' => ':regarding އާ ބެހޭ :type އެދިވަޑައިގަތުމެއް: :reason',
         'decision_title' => 'ތިޔަ އެދިވަޑައިގަތުން :status',
         'decision_body' => 'ތިޔަ :type އެދިވަޑައިގަތުން :status ވެއްޖެއެވެ. :notes',
         'status' => [

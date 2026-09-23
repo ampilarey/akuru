@@ -5,6 +5,7 @@ namespace App\Domains\Academics\Actions;
 use App\Domains\Academics\Enums\SchoolRequestType;
 use App\Domains\HR\Actions\AssertLeaveDocumentAction;
 use App\Domains\Media\Actions\StoreUploadedDocumentAction;
+use App\Domains\People\Actions\ListGuardianChildrenAction;
 use App\Domains\People\Actions\ResolveStaffProfileForUserAction;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Validation\ValidationException;
@@ -81,6 +82,25 @@ class BuildSchoolRequestPayloadAction
                 ],
                 'regarding_type' => 'staff_profile',
                 'regarding_id' => (int) $profile['id'],
+            ];
+        }
+
+        // A family's request is about one of their children (E5: "a parent
+        // files a leave request" — the reviewer has to know which pupil).
+        // Only a child of this guardian: the form offers the guardian's own
+        // children, and this refuses anything else the browser might send.
+        $studentId = isset($data['student_id']) && $data['student_id'] !== '' ? (int) $data['student_id'] : null;
+        if ($studentId !== null) {
+            $children = app(ListGuardianChildrenAction::class)->executeForGuardianUserId($userId)
+                ->map(fn (object $child) => (int) $child->id);
+            if (! $children->contains($studentId)) {
+                throw ValidationException::withMessages(['student_id' => 'That pupil is not one of your children.']);
+            }
+
+            return [
+                'payload' => ['student_id' => $studentId, 'from_date' => $from, 'to_date' => $to],
+                'regarding_type' => 'student',
+                'regarding_id' => $studentId,
             ];
         }
 
