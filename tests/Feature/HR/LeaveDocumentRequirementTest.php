@@ -4,6 +4,7 @@ use App\Domains\Academics\Actions\ReviewSchoolRequestAction;
 use App\Domains\Academics\Enums\SchoolRequestStatus;
 use App\Domains\Academics\Models\SchoolRequest;
 use App\Domains\HR\Actions\ApproveStaffLeaveAction;
+use App\Domains\HR\Models\LeaveType;
 use App\Domains\Identity\Models\User;
 use App\Domains\Media\Models\Document;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -23,7 +24,7 @@ it('refuses sick leave without a document, takes one with, and lets the right pe
     makeYear(['is_current' => true, 'status' => 'active', 'start_date' => '2026-01-01', 'end_date' => '2026-12-31']);
     $requester = actingPeopleAdmin(['requests.submit']);
     $staff = makeStaffProfile(['user_id' => $requester->id]);
-    $sick = leaveType('sick');
+    $sick = LeaveType::query()->where('code', 'sick')->firstOrFail();
     expect($sick->requires_document)->toBeTrue();
 
     $fields = [
@@ -82,7 +83,7 @@ it('refuses at approval too, so a payload built some other way cannot slip past'
 
     expect(fn () => app(ApproveStaffLeaveAction::class)->execute([
         'staff_profile_id' => $staff->id,
-        'leave_type_id' => leaveType('sick')->id,
+        'leave_type_id' => LeaveType::query()->where('code', 'sick')->firstOrFail()->id,
         'from_date' => '2026-09-28',
         'to_date' => '2026-09-28',
     ]))->toThrow(ValidationException::class, 'supporting document');
@@ -90,7 +91,7 @@ it('refuses at approval too, so a payload built some other way cannot slip past'
     // Annual leave never needed one.
     $result = app(ApproveStaffLeaveAction::class)->execute([
         'staff_profile_id' => $staff->id,
-        'leave_type_id' => leaveType('annual')->id,
+        'leave_type_id' => LeaveType::query()->where('code', 'annual')->firstOrFail()->id,
         'from_date' => '2026-09-28',
         'to_date' => '2026-09-28',
     ]);
