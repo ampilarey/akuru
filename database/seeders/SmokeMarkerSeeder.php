@@ -1670,7 +1670,11 @@ class SmokeMarkerSeeder extends Seeder
      */
     private function familyCycle(): void
     {
-        $threadIds = DB::table('message_threads')->where('subject', 'like', 'SMOKE-%')->pluck('id');
+        // Only this walk's threads. `SMOKE-Thread` and `SMOKE-Thread-Not-Mine`
+        // are planted above for `own-data.mjs`, and a `like 'SMOKE-%'` here
+        // swept them away a moment after they were made — the family's own
+        // thread then answered 403 and the own-data pair went inconclusive.
+        $threadIds = DB::table('message_threads')->whereIn('subject', ['SMOKE-Message', 'SMOKE-Poll'])->pluck('id');
         $pollIds = DB::table('message_polls')->whereIn('message_thread_id', $threadIds)->pluck('id');
         DB::table('message_poll_responses')->whereIn('message_poll_id', $pollIds)->delete();
         DB::table('message_polls')->whereIn('id', $pollIds)->delete();
