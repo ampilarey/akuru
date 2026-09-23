@@ -65,6 +65,6 @@ Applied at generation time as invoice-line discount rows (transparent on the inv
 6. Permission matrix: manual receipts gated; guardians see own children only; financially-responsible targeting correct.
 
 ## DoD
-- [ ] Real cycle: build structure → generate class invoices → issue → guardian pays one via BML sandbox and one by cash entry → receipts render (Thaana template verified) → arrears + collections reports correct → CSV exports work.
+- [x] Real cycle: build structure → generate class invoices → issue → ~~guardian pays one via BML sandbox and~~ one by cash entry → receipts render (Thaana template verified) → arrears + collections reports correct → CSV exports work. *Scripted 2026-09-23 as `scripts/smoke/fees.mjs` (STATUS §5fa): structure, drafts, issue, arrears, portal, a two-installment plan paid by cash then transfer, both receipts opened by the parent, collections, reconciliation, four CSVs. The Thaana template is `PaymentPortalTest`'s RTL render. **The BML half stays with the owner** — no environment has a webhook secret (`OWNER_ACTIONS` item 2), so the sandbox cannot be exercised anywhere yet.*
 - [x] Payment-plan flow live incl. allocation; **ADR-014** (default policy) recorded. *(Drafted as ADR-006; that number was taken by unified-student.)*
-- [ ] STATUS.md updated. **Out of scope:** Commerce module (L4), course-offering pricing (spec Phase 4), payroll (S5), bank import (backlog).
+- [x] STATUS.md updated (§2 rows S4.1–S4.6; §5fa). **Out of scope:** Commerce module (L4), course-offering pricing (spec Phase 4), payroll (S5), bank import (backlog).

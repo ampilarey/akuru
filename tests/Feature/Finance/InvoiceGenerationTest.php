@@ -182,5 +182,16 @@ it('generates invoices idempotently, expands monthly items, and notifies the fin
         ->streamedContent();
     expect($csv)->toContain($late->invoice_number);
 
+    // The invoices export lists every status, like the screen — not only the
+    // drafts, which is what it did once the drafts were issued (the fees
+    // walk found a header row and nothing else, STATUS §5fa).
+    $invoicesCsv = $this->withoutLocalizationMiddleware()
+        ->actingAs($admin)
+        ->get(route('finance.invoices.export', ['academic_year_id' => $year->id]))
+        ->assertOk()
+        ->assertHeader('Content-Disposition', 'attachment; filename=invoices.csv')
+        ->streamedContent();
+    expect($invoicesCsv)->toContain($late->invoice_number)->toContain('sent');
+
     expect(Invoice::query()->count())->toBe(9);
 });

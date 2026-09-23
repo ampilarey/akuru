@@ -89,9 +89,14 @@ class InvoiceController extends Controller
     {
         abort_unless($request->user()?->can('finance.manage'), 403);
 
+        // Every status, like the screen. #91 made the listing show sent and
+        // paid invoices beside the drafts; the export kept the old default
+        // and answered with a header row once the drafts were issued — which
+        // the fees walk found the first time it ran (STATUS §5fa).
         $rows = app(ListDraftInvoicesAction::class)->execute(
             $request->integer('academic_year_id') ?: null,
             $request->integer('fee_structure_id') ?: null,
+            false,
         );
 
         return response()->streamDownload(function () use ($rows): void {
@@ -108,6 +113,6 @@ class InvoiceController extends Controller
                 ]);
             }
             fclose($out);
-        }, 'draft-invoices.csv', ['Content-Type' => 'text/csv; charset=UTF-8']);
+        }, 'invoices.csv', ['Content-Type' => 'text/csv; charset=UTF-8']);
     }
 }

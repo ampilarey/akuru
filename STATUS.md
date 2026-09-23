@@ -118,12 +118,12 @@ Legend — **CODE:** implementation in repo (models/migrations/actions/routes/pa
 | S3.5 standards | Yes. | `StandardsTest`. | Walked **locally** 2026-09-13: screen shows a row planted for it (§5cm). | |
 | S3.6 report cards | Yes. Templates, queued HTML via `HtmlDocumentRenderer`. | `ReportCardsTest` Content-Type HTML; ADR-012 HTML decision. | Walked **honest HTML** (R3 S5) plus ADR-012 citation (#97). Queue worker required. | HTML is the supported output (ADR-012 amended). |
 | S3.7 awards / docs | Yes. HTML certificates/ID cards. | `AwardsDocumentsTest`. | Walked **locally** 2026-09-13: screen shows a row planted for it (§5cm). | Also HTML, not PDF (`AwardController`). |
-| S4.1 finance schema | Yes. Year/term on invoices, receipts. | `FinanceSchemaTest`. | UNVERIFIED as a user task. | |
+| S4.1 finance schema | Yes. Year/term on invoices, receipts. | `FinanceSchemaTest`. | Walked 2026-09-23 as part of `fees.mjs` (§5fa): a year-scoped invoice with two receipts. | |
 | S4.2 fee structures | Yes. | `FeeStructureTest`. | Shows its seeded row in a browser (`sweep.mjs`, 2026-09-14) — still seeded rather than created by hand. | Default seed now includes pilot fees via `PilotRehearsalSeeder` (#87). |
 | S4.3 invoice generation | Yes. Generate/issue/arrears. | `InvoiceGenerationTest`. | Walked **ok** on Pilot year (R3 S6): admin lists **all statuses** (`draftsOnly=false`, #91); sent rows visible. Period defaults from year’s term (`ResolveDefaultTermPeriodAction`). Issue SMS is **log** outside production (#86). | Extra year tab can still look empty if that year has no invoices. |
-| S4.4 payment plans | Yes. | `PaymentPlanTest`. | Walked **locally** 2026-09-13: screen renders, but no row was planted for it — a load, not a data check (§5cm). | |
+| S4.4 payment plans | Yes. | `PaymentPlanTest`. | Walked 2026-09-23 (`fees.mjs`, §5fa): a two-installment plan made through the form, cash allocated to the first, transfer completes it, the parent sees "next 100.00" in between. `sweep.mjs` now finds a planted plan (`SMOKE-INV-1`). | |
 | S4.5 adjustments | Yes. | `FeeAdjustmentTest`. | Walked **locally** 2026-09-13: screen shows a row planted for it (§5cm). | |
-| S4.6 payment + portal | Yes. Webhook + parent Fees. | `PaymentPortalTest`. | Walked **partial** (R2 S6): parent saw 3 invoices + Pay now. BML **not** exercised. | |
+| S4.6 payment + portal | Yes. Webhook + parent Fees. | `PaymentPortalTest`. | Walked 2026-09-23 (`fees.mjs`, §5fa): parent sees the invoice, the falling balance and opens both receipts; cash and transfer through the manual screen; collections, reconciliation and four CSVs. BML still **not** exercised — no webhook secret anywhere (item 2). | |
 | S5.1 staff attendance | Yes. | `StaffAttendanceTest`. | Walked **locally** 2026-09-13: screen shows a row planted for it (§5cm). | |
 | S5.2 leave | Yes. | `LeaveManagementTest`. | Walked **locally** 2026-09-13: screen shows a row planted for it (§5cm). | |
 | S5.3 contracts | Yes. | `ContractsComplianceTest`. | Walked **locally** 2026-09-13: screen shows a row planted for it (§5cm). | |
@@ -4344,6 +4344,64 @@ walk returned a header row and nothing else for circulation, student work and
 pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
+
+## 5fa. S4 audit, first fix: the fee cycle, walked by a script — and the CSV it found (2026-09-23)
+
+The S4 audit (Finance) found the engine sound and nine deviations, the
+first of which is the one the definition of done rests on: DoD line 68,
+*"real cycle: build structure → generate → issue → pay → receipts →
+arrears + collections → CSV"*, had never been walked by a script. The
+STATUS rows said UNVERIFIED (S4.1), "a load, not a data check" (S4.4) and
+"partial" (S4.6).
+
+**What changed (#414).**
+
+- `scripts/smoke/fees.mjs`, 30 steps, two logins. The admin builds
+  `SMOKE-Fees` (active, one class, 123.45 one-time), generates the drafts,
+  issues them, finds the invoice in arrears as *current* with the guardian
+  named, splits it into two installments through the plans form, records
+  the first as cash and the second as a transfer through the manual-receipt
+  screen, and reads collections, reconciliation and four CSVs. The parent
+  sees the invoice with its balance and a Pay now button, then the balance
+  fall with "next 100.00", then nothing owed and two receipts, and opens
+  the first — HTTP 200, the invoice number and the cash amount in it. "Pay
+  now" is asserted present, not pressed: **the BML half of the DoD line
+  stays with the owner** (no environment has a webhook secret, item 2).
+  Registered in `all.mjs` as the nineteenth walk, fifteenth writer.
+- **The class is the walk's own.** One active structure per class per year
+  (the pilot's covers the child's class) and generation is idempotent per
+  student, structure and period — both rules working, both fatal to a
+  second run. `SmokeMarkerSeeder::feeCycle()` enrols the child in
+  `SMOKE-Class A`, which no other structure covers, and on every run
+  removes what the walk made last time in foreign-key order: receipts and
+  their documents, plan and installments, generation log, lines, invoices,
+  structure. It also plants `SMOKE-INV-1` with a plan on it, so the sweep
+  has a payment-plan row to find (audit D7), and the receipt marker now
+  sits on that invoice instead of "whichever invoice exists" — the default
+  seed has none, so that marker had been silently skipped on every fresh
+  database.
+- **What the walk found on its first run.** Two things, one a defect. The
+  seeded 7.77% scholarship on the child applied at generation, so the
+  invoice was 113.86, not 123.45 — S4.5 working exactly as specified, and
+  the walk now asserts the discounted figure rather than the gross. And
+  **the invoices CSV exported drafts only**: #91 made the screen list every
+  status, the export kept the old default, and once the drafts were issued
+  it answered with a header row and nothing else. `InvoiceController::export`
+  now passes `draftsOnly = false` and the file is `invoices.csv`;
+  `InvoiceGenerationTest` asserts a sent invoice appears in it.
+- DoD line 68 ticked with the BML clause struck through and the reason;
+  line 70 ticked; the three §2 rows rewritten to what was walked.
+
+**Walked, three times.** 30/30, then 30/30 after a re-seed, and a third
+time *without* re-seeding it stops at step 5 with *"SMOKE-Fees already
+exists — left over from an earlier run"*, as the other walks do. No console
+or server errors.
+
+**S4 audit, still open on my side:** D3 the three finance settings no
+screen can edit; D4 plan progress on the admin invoice list; D5 the
+full-or-installment choice on Pay now; D8 per-item optional toggles; D2 the
+race test; D6 the `applicable_grades` column kept "during transition".
+Next slices, in that order.
 
 ## 5ez. S3 audit, last fix: a published report card can be corrected, with a revision row (2026-09-22)
 

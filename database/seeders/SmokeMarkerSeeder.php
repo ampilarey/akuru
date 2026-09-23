@@ -70,6 +70,7 @@ class SmokeMarkerSeeder extends Seeder
         $this->readerWallet();
         $this->payableEnrolment($admin);
         $this->finance($year, $studentId, $admin);
+        $this->feeCycle($year, $class, $studentId, $admin);
         $this->consent($studentId, $admin);
         $this->ownData($year, $studentId, $admin);
         $this->sensitiveRecords($year, $studentId, $admin);
@@ -838,9 +839,12 @@ class SmokeMarkerSeeder extends Seeder
             }
         }
 
-        // A receipt against whichever invoice exists, so the document route has
-        // something real to refuse.
-        $invoiceId = (int) DB::table('invoices')->value('id');
+        // A receipt against the planted invoice (`feeCycle()`), so the document
+        // route has something real to refuse. Before that it took "whichever
+        // invoice exists", and the default seed has none, so the marker was
+        // silently skipped on every fresh database.
+        $invoiceId = (int) (DB::table('invoices')->where('invoice_number', 'SMOKE-INV-1')->value('id')
+            ?? DB::table('invoices')->value('id'));
         if ($invoiceId > 0) {
             DB::table('receipts')->updateOrInsert(
                 ['receipt_number' => 'SMOKE-RCPT-1'],
@@ -1073,6 +1077,108 @@ class SmokeMarkerSeeder extends Seeder
             'granted_by' => $admin?->id, 'granted_at' => now(), 'source' => 'SMOKE-Source',
             'created_at' => now(), 'updated_at' => now(),
         ]);
+    }
+
+    /**
+     * The fee cycle's own class, and nothing left from the last run.
+     *
+     * `scripts/smoke/fees.mjs` builds a fee structure, generates and issues an
+     * invoice, sets up a plan, records cash and reads the receipt. Two rules
+     * stop it running against what is already there: one active structure
+     * per class per year (the pilot's covers the child's class), and
+     * generation is idempotent per student, structure and period. So the
+     * child is also enrolled in `SMOKE-Class A`, which nothing else covers,
+     * and everything the walk made last time — the structure it named
+     * `SMOKE-Fees`, its invoices, lines, generation log, plan, receipts and
+     * their documents — is removed here before it runs again.
+     *
+     * Also plants `SMOKE-INV-1` with a plan on it, so the payment-plans
+     * screen has a row for `sweep.mjs` to find (it had none — STATUS §2 said
+     * "a load, not a data check" for S4.4).
+     */
+    private function feeCycle(AcademicYear $year, ?ClassRoom $class, int $studentId, ?object $admin): void
+    {
+        if ($class === null || $studentId <= 0 || $admin === null) {
+            $this->command?->warn('No class, student or admin — the fee-cycle markers were skipped.');
+
+            return;
+        }
+
+        $classId = (int) (DB::table('classes')
+            ->where('academic_year_id', $year->id)->where('name', 'SMOKE-Class')->where('section', 'A')
+            ->value('id')
+            ?? DB::table('classes')->insertGetId([
+                'school_id' => $class->school_id, 'academic_year_id' => $year->id,
+                'name' => 'SMOKE-Class', 'section' => 'A', 'level' => $class->level, 'capacity' => 5,
+                'description' => 'The fees walk\'s own class: no other fee structure may cover it.',
+                'is_active' => 1, 'created_at' => now(), 'updated_at' => now(),
+            ]));
+        DB::table('class_student')->updateOrInsert(
+            ['class_id' => $classId, 'student_id' => $studentId],
+            [
+                'academic_year_id' => $year->id, 'enrolled_at' => now()->subDays(30)->toDateString(),
+                'left_at' => null, 'status' => 'active', 'created_at' => now(), 'updated_at' => now(),
+            ],
+        );
+
+        $structureIds = DB::table('fee_structures')->where('name', 'SMOKE-Fees')->pluck('id');
+        $invoiceIds = DB::table('invoices')
+            ->where(fn ($q) => $q->whereIn(DB::raw("JSON_EXTRACT(meta, '$.fee_structure_id')"), $structureIds->all() ?: [0])
+                ->orWhere('invoice_number', 'SMOKE-INV-1'))
+            ->pluck('id');
+        $this->forgetInvoices($invoiceIds->all());
+        DB::table('invoices')->whereIn('id', $invoiceIds)->where('invoice_number', '!=', 'SMOKE-INV-1')->delete();
+        DB::table('fee_structures')->whereIn('id', $structureIds)->delete();
+
+        // The sweep's plan: an invoice a third paid, the rest on two installments.
+        DB::table('invoices')->updateOrInsert(
+            ['invoice_number' => 'SMOKE-INV-1'],
+            [
+                'student_id' => $studentId, 'academic_year_id' => $year->id, 'invoice_type' => 'school_fees',
+                'issue_date' => now()->toDateString(), 'due_date' => now()->addDays(14)->toDateString(),
+                'status' => 'sent', 'subtotal' => 300, 'total_amount' => 300, 'paid_amount' => 100,
+                // The child's real class, not `SMOKE-Class`: collections groups
+                // by class and month, and the fees walk reads its own class's row.
+                'notes' => 'SMOKE-INV-1', 'meta' => json_encode(['class_id' => $class->id, 'period_key' => 'smoke']),
+                'created_by' => $admin->id, 'created_at' => now(), 'updated_at' => now(),
+            ],
+        );
+        $invoiceId = (int) DB::table('invoices')->where('invoice_number', 'SMOKE-INV-1')->value('id');
+        $planId = DB::table('payment_plans')->insertGetId([
+            'invoice_id' => $invoiceId, 'total_amount' => 200, 'status' => 'active',
+            'created_by' => $admin->id, 'approved_by' => $admin->id, 'created_at' => now(), 'updated_at' => now(),
+        ]);
+        foreach ([1, 2] as $sequence) {
+            DB::table('payment_plan_installments')->insert([
+                'payment_plan_id' => $planId, 'sequence' => $sequence,
+                'due_date' => now()->addMonths($sequence)->toDateString(), 'amount' => 100, 'paid_amount' => 0,
+                'status' => 'pending', 'created_at' => now(), 'updated_at' => now(),
+            ]);
+        }
+        DB::table('invoices')->where('id', $invoiceId)->update(['payment_plan_id' => $planId]);
+    }
+
+    /**
+     * Everything that hangs off an invoice, in foreign-key order. The invoice
+     * row itself is the caller's to keep or delete.
+     *
+     * @param  list<int>  $invoiceIds
+     */
+    private function forgetInvoices(array $invoiceIds): void
+    {
+        if ($invoiceIds === []) {
+            return;
+        }
+
+        $receiptIds = DB::table('receipts')->whereIn('invoice_id', $invoiceIds)->pluck('id');
+        DB::table('documents')->where('documentable_type', 'receipt')->whereIn('documentable_id', $receiptIds)->delete();
+        DB::table('receipts')->whereIn('id', $receiptIds)->delete();
+        DB::table('invoices')->whereIn('id', $invoiceIds)->update(['payment_plan_id' => null]);
+        $planIds = DB::table('payment_plans')->whereIn('invoice_id', $invoiceIds)->pluck('id');
+        DB::table('payment_plan_installments')->whereIn('payment_plan_id', $planIds)->delete();
+        DB::table('payment_plans')->whereIn('id', $planIds)->delete();
+        DB::table('invoice_generation_logs')->whereIn('invoice_id', $invoiceIds)->delete();
+        DB::table('invoice_lines')->whereIn('invoice_id', $invoiceIds)->delete();
     }
 
     /**
