@@ -55,12 +55,17 @@ class StartClassMessageThreadAction
             $recipients,
             $subject,
             $body,
-            // No reply_policy is passed: the >5 default is the whole point, and
-            // overriding it here would quietly reintroduce reply-all on a
-            // broadcast to every parent in a class.
+            // A class send is an all-parents send, and the plan's rule for
+            // those is reply-all OFF (E2, "reply-all is off by default for
+            // school-wide or all-parents sends"). This used to leave the
+            // policy to the >5 default, so a class with three guardian
+            // accounts got `all`: one family's reply reached the other two,
+            // and each saw the others by name. The family walk found it
+            // (STATUS §5fp). The size rule still governs person threads.
             [
                 'context_type' => 'class_room',
                 'context_id' => $classId,
+                'reply_policy' => 'author_only',
                 'poll' => $poll,
             ],
         );

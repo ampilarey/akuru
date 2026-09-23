@@ -74,8 +74,14 @@ class PortalMessageController extends Controller
 
         $data = $request->validate([
             'target_type' => ['required', 'in:user,class'],
-            'recipient_id' => ['required_if:target_type,user', 'integer'],
-            'class_id' => ['required_if:target_type,class', 'integer'],
+            // `nullable`, because the form posts BOTH ids whichever branch is
+            // showing — the other one as '' — and the browser turns '' into
+            // null, which `integer` refused. Every send from the screen bounced
+            // back to the form with the error on the hidden branch, until the
+            // family walk (STATUS §5fp). `required_if` still bites on the id
+            // the chosen branch needs.
+            'recipient_id' => ['nullable', 'required_if:target_type,user', 'integer'],
+            'class_id' => ['nullable', 'required_if:target_type,class', 'integer'],
             'audience' => ['nullable', 'in:guardians,students,both'],
             'subject' => ['required', 'string', 'max:200'],
             'body' => ['required', 'string', 'max:5000'],

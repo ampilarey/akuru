@@ -89,6 +89,7 @@ class SmokeMarkerSeeder extends Seeder
         $this->quranCycle();
         $this->hifzCycle();
         $this->readerCycle();
+        $this->familyCycle();
 
         // A default `migrate:fresh --seed` leaves `staff_profiles` empty, and
         // this used to skip the whole HR block in silence — so the sweep
@@ -1651,6 +1652,35 @@ class SmokeMarkerSeeder extends Seeder
             'body' => '<p>SMOKE-Primer-Page-One</p><!-- pagebreak --><p>SMOKE-Primer-Page-Two</p><!-- pagebreak --><p>SMOKE-Primer-Page-Three</p>',
         ]);
         app(\App\Domains\Library\Actions\PublishLibraryItemAction::class)->execute($item->id, (int) $approverId);
+    }
+
+    /**
+     * `family.mjs` has the teacher write `SMOKE-Homework` into today's
+     * register, the office post `SMOKE-Notice`, the family and the teacher
+     * message each other (`SMOKE-Message`, `SMOKE-Reply`) and the teacher
+     * poll the class (`SMOKE-Poll`). This plants nothing — the register is
+     * the day's own and the people are seeded — and clears what a run left,
+     * in foreign-key order: the poll answers, polls, participants and
+     * messages of the smoke threads, the notifications they raised, the
+     * notice, and the homework ticks; the homework itself is blanked on the
+     * register rather than the register deleted, which is the day's record.
+     */
+    private function familyCycle(): void
+    {
+        $threadIds = DB::table('message_threads')->where('subject', 'like', 'SMOKE-%')->pluck('id');
+        $pollIds = DB::table('message_polls')->whereIn('message_thread_id', $threadIds)->pluck('id');
+        DB::table('message_poll_responses')->whereIn('message_poll_id', $pollIds)->delete();
+        DB::table('message_polls')->whereIn('id', $pollIds)->delete();
+        DB::table('messages')->whereIn('thread_id', $threadIds)->delete();
+        DB::table('message_participants')->whereIn('message_thread_id', $threadIds)->delete();
+        DB::table('message_threads')->whereIn('id', $threadIds)->delete();
+        DB::table('user_notifications')->where(fn ($q) => $q->where('title', 'like', '%SMOKE-%')->orWhere('message', 'like', '%SMOKE-%'))->delete();
+
+        DB::table('announcements')->where('title', 'SMOKE-Notice')->delete();
+
+        $logIds = DB::table('lesson_logs')->where('homework', 'like', 'SMOKE-Homework%')->pluck('id');
+        DB::table('homework_ticks')->whereIn('lesson_log_id', $logIds)->delete();
+        DB::table('lesson_logs')->whereIn('id', $logIds)->update(['homework' => null, 'homework_due_date' => null]);
     }
 
     private function hr(AcademicYear $year, StaffProfile $staff, ?object $admin): void
