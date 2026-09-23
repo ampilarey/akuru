@@ -18,7 +18,7 @@
  *
  * ## Read-only and writing walks are separated, on purpose
  *
- * Four of these only look at screens. The other **seventeen write**: they build a course for a student, enrol a
+ * Four of these only look at screens. The other **eighteen write**: they build a course for a student, run a scheduled intake, enrol a
  * stranger on a course, submit and approve an absence note, request that a
  * child be collected, book a parent-teacher meeting, publish an article to
  * the library, publish an exam and a term's report cards to families, bill a
@@ -28,7 +28,7 @@
  *
  *   node scripts/smoke/all.mjs            every walk (the default)
  *   node scripts/smoke/all.mjs --read     the four that only look
- *   node scripts/smoke/all.mjs --write    the seventeen that change data
+ *   node scripts/smoke/all.mjs --write    the eighteen that change data
  *   node scripts/smoke/all.mjs learn review     just those, by name
  *
  * A writing run against a host whose name does not look synthetic asks for
@@ -103,6 +103,7 @@ const WALKS = [
     { name: 'create-sweep', writes: true, asks: 'Can a person make one of these records, through the form?' },
     { name: 'register', writes: true, asks: 'Can a stranger enrol themselves?' },
     { name: 'author', writes: true, asks: 'Can a person build a course and get it in front of a student?' },
+    { name: 'intake', writes: true, asks: 'Can the office run a scheduled intake, and can a student get a seat in it?' },
     { name: 'learn', writes: true, asks: 'Can a student take a lesson?' },
     { name: 'review', writes: true, asks: 'Does work a machine cannot mark come back marked?' },
     { name: 'absence', writes: true, asks: 'Does the register believe a family who reported an absence?' },

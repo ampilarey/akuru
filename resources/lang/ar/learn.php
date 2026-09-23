@@ -49,4 +49,12 @@ return [
     'pronounce_empty' => 'No attempts yet — record your first sound.',
     'pronounce_waiting' => 'waiting',
     'pronounce_done' => 'done',
+    // 1B intakes (STATUS §5fh) — first pass, needs native review.
+    'seats_unlimited' => 'مقاعد متاحة',
+    'seat_left' => 'مقعد متبقٍ',
+    'seats_left' => 'مقاعد متبقية',
+    'full' => 'مكتمل',
+    'next_session' => 'التالي',
+    'enroll_intake' => 'سجّل في هذه الدفعة',
+    'your_intake' => 'دفعتك',
 ];

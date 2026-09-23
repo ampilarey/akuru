@@ -8,6 +8,7 @@ use App\Domains\People\Actions\ResolveStudentForUserAction;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -29,12 +30,14 @@ class LearnCatalogController extends Controller
         $data = $request->validate([
             'discount_code' => 'nullable|string|max:40',
             'pay_with_wallet' => 'nullable|boolean',
+            // 1B: a chosen intake; must be one of this course's offerings.
+            'offering_id' => ['nullable', 'integer', Rule::exists('course_offerings', 'id')->where('course_id', $course)],
         ]);
 
         $result = app(StartCourseCheckoutAction::class)->execute(
             (int) $request->user()->id,
             $course,
-            null,
+            isset($data['offering_id']) ? (int) $data['offering_id'] : null,
             $data['discount_code'] ?? null,
             (bool) ($data['pay_with_wallet'] ?? false),
         );

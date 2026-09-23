@@ -49,3 +49,15 @@ Web manifest + service worker + offline page. Inertia/Blade register
 the worker instead of unregistering it. Locale switcher on AppShell.
 Faruma (Thaana) and Cairo/Amiri (Arabic) on RTL locales. Learn
 strings stay aligned EN/DV/AR. Admin i18n preview checks font classes.
+
+## Walked
+
+- SPEC §46.4 *"Admin can create at least one offering … select delivery
+  mode … sessions can be stored … Student enrollment can link to an
+  offering … Seat limits are enforced safely"*: `scripts/smoke/intake.mjs`
+  (2026-09-23, STATUS §5fh). The 1B audit found that until then **no screen
+  let a learner choose an offering** — the link existed only through the
+  actions; the learner catalog now lists a course's open intakes with seats
+  left, and enrolling names one.
+- PWA manifest: `mobile.mjs`. Unlock and completion evaluators: tested
+  (ADR-022 keeps one policy each), not walked.
