@@ -31,6 +31,7 @@ class ListFeeStructuresAction
                 'frequency' => $item->frequency?->value,
                 'due_day' => $item->due_day,
                 'is_mandatory' => $item->is_mandatory,
+                'name' => $item->feeItem?->name,
             ])->values(),
         ]);
     }

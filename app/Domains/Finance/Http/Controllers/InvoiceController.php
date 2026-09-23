@@ -8,6 +8,7 @@ use App\Domains\Finance\Actions\GenerateInvoicesAction;
 use App\Domains\Finance\Actions\IssueInvoicesAction;
 use App\Domains\Finance\Actions\ListDraftInvoicesAction;
 use App\Domains\Finance\Actions\ListFeeStructuresAction;
+use App\Domains\Finance\Actions\ResolveFinanceSettingsAction;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
 use Illuminate\Http\RedirectResponse;
@@ -35,6 +36,7 @@ class InvoiceController extends Controller
             'invoices' => app(ListDraftInvoicesAction::class)->execute($yearId ?: null, $structureId, false)->values(),
             'period_start' => $period['start_date'] ?? null,
             'period_end' => $period['end_date'] ?? null,
+            'monthlyMode' => app(ResolveFinanceSettingsAction::class)->execute()['monthly_mode']->value,
         ]);
     }
 
@@ -51,6 +53,8 @@ class InvoiceController extends Controller
             'period_end' => ['required', 'date'],
             'monthly_mode' => ['nullable', 'string'],
             'include_optional' => ['sometimes', 'boolean'],
+            'optional_item_ids' => ['sometimes', 'array'],
+            'optional_item_ids.*' => ['integer'],
         ]);
         $data['created_by'] = $request->user()->id;
 

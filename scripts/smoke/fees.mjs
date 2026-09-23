@@ -34,7 +34,8 @@
  * The BML half of the DoD line. The gateway cannot be exercised anywhere
  * until `OWNER_ACTIONS` item 2 sets a webhook secret, which is exactly why
  * the cash path gets this much attention (see money.mjs for the same
- * reasoning on course payments). "Pay now" is asserted present, not pressed.
+ * reasoning on course payments). The Pay buttons are asserted present, not
+ * pressed.
  *
  * Environment: SMOKE_BASE_URL, SMOKE_ADMIN, SMOKE_PARENT, SMOKE_PASSWORD,
  * SMOKE_CHROMIUM.
@@ -220,7 +221,7 @@ check('arrears lists it as current, with the guardian', arrears.includes(TOTAL) 
 await parent.goto(`${BASE}/en/portal/invoices`, { waitUntil: 'networkidle' });
 const owed = await rowText(parent, INVOICE);
 check('the parent sees the invoice and its balance', owed.includes(TOTAL), owed || (await text(parent)).slice(0, 160));
-check('with a Pay now button (BML itself is not pressed)', (await parent.locator('tr', { hasText: INVOICE }).locator('button:has-text("Pay now")').count()) > 0);
+check('with a button to pay it in full (BML itself is not pressed)', (await parent.locator('tr', { hasText: INVOICE }).locator(`button:has-text("Pay ${TOTAL}")`).count()) > 0);
 
 // ---------------------------------------------------------- 4. a plan
 
@@ -263,6 +264,8 @@ check('the plan shows the first installment paid', (await rowText(admin, INVOICE
 await parent.goto(`${BASE}/en/portal/invoices`, { waitUntil: 'networkidle' });
 const partly = await rowText(parent, INVOICE);
 check('the parent sees the balance fall and the next installment', partly.includes(SECOND) && /next 100\.00/.test(partly), partly);
+// The next installment is the whole balance now, so one button, not two.
+check('and one button, since the next installment is the balance', (await parent.locator('tr', { hasText: INVOICE }).locator('button:has-text("Pay ")').count()) === 1);
 
 const firstReceipt = parent.locator('tr', { hasText: INVOICE }).locator('a:has-text("Receipt")').first();
 check('with a receipt to open', (await firstReceipt.count()) > 0);
@@ -280,7 +283,7 @@ check('the plan completes', /\bcompleted\b/.test(await rowText(admin, INVOICE)),
 
 await parent.goto(`${BASE}/en/portal/invoices`, { waitUntil: 'networkidle' });
 const settled = await rowText(parent, INVOICE);
-check('the parent owes nothing and has nothing left to pay', settled.includes('0.00') && /\bcompleted\b/.test(settled) && !settled.includes('Pay now'), settled);
+check('the parent owes nothing and has nothing left to pay', settled.includes('0.00') && /\bcompleted\b/.test(settled) && !/Pay \d/.test(settled), settled);
 check('with two receipts', (await parent.locator('tr', { hasText: INVOICE }).locator('a:has-text("Receipt")').count()) === 2);
 
 // ------------------------------------------------- 6. the office's reports

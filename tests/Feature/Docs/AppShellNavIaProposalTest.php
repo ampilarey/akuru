@@ -46,8 +46,14 @@ it('does not change AppShell.jsx as part of the IA proposal', function () {
     //   (KNOWN_ISSUES #30). Unreachable without this link, which is the case
     //   the allowance above is for. It also makes the nav one link worse,
     //   which remains P3 #11 and the owner's call.
+    // 107 → 108: +Finance settings (`/finance/settings`). The three billing
+    //   settings the S4.3/S4.4 migrations seeded had no screen at all — a DBA
+    //   and the `settings` table were the only way to change how many days
+    //   after the due date a family is reminded (S4 audit D3, STATUS §5fb).
+    //   Unreachable without this link, which is the case the allowance above
+    //   is for. One link worse; still P3 #11 and the owner's call.
     $linkCount = substr_count($shell, '<Link href=');
-    expect($linkCount)->toBe(107);
+    expect($linkCount)->toBe(108);
 });
 
 it('does not register a product route for the proposal document', function () {

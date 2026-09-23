@@ -4345,6 +4345,55 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5fb. S4 audit, second fix: the billing settings get a screen, and three small spec lines (2026-09-23)
+
+Four of the S4 audit's deviations, all on screens; the engine is untouched.
+
+**D3 — three settings nobody could change (#415).** The S4.3 and S4.4
+migrations seeded `finance.invoice_monthly_mode`, `finance.invoice_reminder_days`
+and `finance.plan_default_days`; `ResolveFinanceSettingsAction` and
+`MarkDefaultedPaymentPlansAction` read them on every generation, reminder
+and defaulting run; and the admin settings page showed environment config
+only. Changing how many days after the due date a family is reminded
+meant a DBA. The eighth *configured, enforced, unreachable* — the same
+shape as the attendance policy (E10d), and the same fix:
+`SaveFinanceSettingsAction` validates every bound (mode from the enum,
+0–90 reminder days, 0–365 default days, zero reachable for both),
+`FinanceSettingsController` is two thin methods, `Finance/Settings/Index`
+says what each number moves, "Finance settings" is in the nav. The
+Invoices screen now starts on the saved monthly mode instead of a
+hard-coded `per_month`. `FinanceSettingsTest` (3): shown, saved where the
+actions read, out-of-range and unknown refused, zero kept, forbidden
+without `finance.manage`.
+
+**D4 — plan progress on the office's invoice list.** S4.4: *"invoice shows
+plan progress"*. The portal and the plans screen had it; the list the
+office works from did not. `ListDraftInvoicesAction` carries `paid_amount`
+and the plan's installments paid/total and status, eager-loaded; two
+columns on the screen. `PaymentPlanTest` reads the completed and the
+defaulted plan back off the invoice list.
+
+**D5 — the family chooses.** S4.6: *"pay-now (full / next installment)"*.
+The portal guessed: one button, the next installment whenever a plan
+existed, so a family on a plan could not clear the balance. Now "Pay next
+100.00" and "Pay 113.86" side by side while they differ, one button when
+they do not; the controller already accepted both modes.
+
+**D8 — optional items as toggles.** S4.2: *"optional items appear at
+invoice generation as toggles"*. The form had one all-or-nothing box; the
+action accepted `optional_item_ids` all along. The structure list now names
+its items, the form lists the chosen structure's optional ones with a box
+each, the request validates the ids, and `InvoiceGenerationTest` generates
+April through the screen's request with one optional item and gets two
+lines on every invoice.
+
+**Walked in a browser.** Finance settings: save 5 reminder days, reload,
+5 reads back, set it back to 3. The invoices list shows the fees walk's
+invoice as `2/2 installments · completed` and the seeded plan invoice as
+`0/2 · active`. The parent's `SMOKE-INV-1` row offers "Pay next 100.00"
+and "Pay 200.00". `fees.mjs` reran 31/31 with its buttons renamed. No
+console or server errors.
+
 ## 5fa. S4 audit, first fix: the fee cycle, walked by a script — and the CSV it found (2026-09-23)
 
 The S4 audit (Finance) found the engine sound and nine deviations, the
@@ -4397,11 +4446,9 @@ time *without* re-seeding it stops at step 5 with *"SMOKE-Fees already
 exists — left over from an earlier run"*, as the other walks do. No console
 or server errors.
 
-**S4 audit, still open on my side:** D3 the three finance settings no
-screen can edit; D4 plan progress on the admin invoice list; D5 the
-full-or-installment choice on Pay now; D8 per-item optional toggles; D2 the
-race test; D6 the `applicable_grades` column kept "during transition".
-Next slices, in that order.
+**S4 audit, still open on my side after this:** D3, D4, D5 and D8 went
+in §5fb; D2 the race test and D6 the `applicable_grades` column kept
+"during transition" are the slice after.
 
 ## 5ez. S3 audit, last fix: a published report card can be corrected, with a revision row (2026-09-22)
 

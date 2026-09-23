@@ -269,6 +269,9 @@ export default function AppShell({ title, children }) {
                         <Link href="/finance/reconciliation" className="text-[#7C2D37] hover:underline">
                             Reconciliation
                         </Link>
+                        <Link href="/finance/settings" className="text-[#7C2D37] hover:underline">
+                            Finance settings
+                        </Link>
                         <Link href="/portal/invoices" className="text-[#7C2D37] hover:underline">
                             Fees
                         </Link>

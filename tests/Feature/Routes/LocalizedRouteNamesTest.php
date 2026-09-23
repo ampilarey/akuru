@@ -213,6 +213,8 @@ class LocalizedRouteNamesTest extends TestCase
             'finance.collections.export',
             'finance.reconciliation.index',
             'finance.reconciliation.export',
+            'finance.settings.index',
+            'finance.settings.update',
             'portal.invoices',
             'portal.invoices.pay',
             'hr.attendance.index',
