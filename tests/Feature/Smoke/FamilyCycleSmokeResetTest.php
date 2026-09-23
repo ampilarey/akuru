@@ -48,6 +48,8 @@ it('clears a run\'s threads, poll, notifications, notice and ticks, blanks the h
     expect(DB::table('message_poll_responses')->where('message_poll_id', $pollId)->exists())->toBeFalse()
         ->and(DB::table('message_polls')->where('id', $pollId)->exists())->toBeFalse()
         ->and(DB::table('message_threads')->where('id', $threadId)->exists())->toBeFalse()
+        // The seeder's own threads for `own-data.mjs` are not this walk's residue.
+        ->and(DB::table('message_threads')->whereIn('subject', ['SMOKE-Thread', 'SMOKE-Thread-Not-Mine'])->count())->toBe(2)
         ->and(DB::table('messages')->where('thread_id', $threadId)->exists())->toBeFalse()
         ->and(DB::table('user_notifications')->where('title', 'like', '%SMOKE-%')->exists())->toBeFalse()
         ->and(DB::table('announcements')->where('id', $noticeId)->exists())->toBeFalse()

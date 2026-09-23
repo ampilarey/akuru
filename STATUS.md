@@ -4559,6 +4559,15 @@ stays open. The walk posts as the office.
 **Walked in a browser.** `family.mjs` 27/27 twice on a re-seeded database,
 no console or server errors.
 
+**Addendum, same day (§5ft's read-only run).** `familyCycle()` cleared
+threads by `subject like 'SMOKE-%'`, which also swept the seeder's own
+`SMOKE-Thread` / `SMOKE-Thread-Not-Mine` planted a moment earlier for
+`own-data.mjs` — so the family's own thread answered 403 and that walk's
+message-thread pair went *inconclusive*. Caught by running the read-only
+set after the writers; the cycle now names its two subjects, and
+`FamilyCycleSmokeResetTest` asserts the own-data threads survive a seed.
+`own-data.mjs` is green again.
+
 ## 5fo. L-track audit: the reader's half walked — protected reader and gift card (2026-09-23)
 
 The L-track audit (`docs/LIBRARY_PLAN.md` §37 MVP, §39 L1–L7) against
