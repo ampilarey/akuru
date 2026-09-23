@@ -69,3 +69,30 @@ it('plants only statuses the payroll model can read, so the payroll screen rende
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page->component('HR/Payroll/Index'));
 });
+
+/**
+ * Staging's first seeder run, with no teacher@ yet, had made a "Smoke
+ * Marker" profile out of admin@, and `StaffProfile::first()` kept finding
+ * that one (STATUS §5fz). The seeder now plants the HR markers on teacher@'s
+ * profile and renames its own residue so no name lookup finds it first.
+ */
+it('plants the HR markers on teacher@\'s profile and renames a stray Smoke Marker', function () {
+    $this->seed();
+    $adminId = (int) DB::table('users')->where('email', 'admin@akuru.edu.mv')->value('id');
+    $teacherId = (int) DB::table('users')->where('email', 'teacher@akuru.edu.mv')->value('id');
+    DB::table('staff_profiles')->insert([
+        'user_id' => $adminId, 'first_name' => 'Smoke', 'last_name' => 'Marker', 'gender' => 'male',
+        'joined_date' => '2026-01-01', 'employment_type' => 'full_time', 'status' => 'active',
+        'created_at' => now(), 'updated_at' => now(),
+    ]);
+
+    $this->seed(SmokeMarkerSeeder::class);
+
+    $teacherProfileId = (int) DB::table('staff_profiles')->where('user_id', $teacherId)->value('id');
+
+    expect(DB::table('staff_profiles')->where('user_id', $adminId)->value('last_name'))->toBe('Stand-in')
+        ->and(DB::table('staff_profiles')->where('first_name', 'Smoke')->where('last_name', 'Marker')->count())->toBe(1)
+        ->and(DB::table('staff_attendance')->where('remarks', 'SMOKE-Attendance')->value('staff_profile_id'))->toBe($teacherProfileId)
+        ->and(DB::table('staff_contracts')->where('staff_profile_id', $teacherProfileId)->where('status', 'active')->count())->toBe(1)
+        ->and(DB::table('staff_contracts')->where('staff_profile_id', $teacherProfileId)->where('basic_salary', 12345)->exists())->toBeTrue();
+});

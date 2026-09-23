@@ -53,10 +53,39 @@ class SmokeMarkerSeeder extends Seeder
             return;
         }
 
-        $class = ClassRoom::query()->where('academic_year_id', $year->id)->first();
         $admin = DB::table('users')->where('email', 'admin@akuru.edu.mv')->first();
-        $studentId = (int) DB::table('class_student')->where('class_id', $class?->id)->value('student_id');
-        $staff = StaffProfile::query()->first();
+
+        // The pupil the walks sign in as (student@'s), and their class — not
+        // the first class of the year and its first pupil, which are the same
+        // people on a fresh seed and not on a host with history (STATUS §5fz).
+        $loginStudentId = (int) DB::table('students')
+            ->where('user_id', (int) DB::table('users')->where('email', 'student@akuru.edu.mv')->value('id'))
+            ->value('id');
+        $loginClassId = $loginStudentId > 0
+            ? (int) DB::table('class_student')->where('student_id', $loginStudentId)->where('status', 'active')
+                ->where('academic_year_id', $year->id)->orderBy('id')->value('class_id')
+            : 0;
+        $class = ($loginClassId > 0 ? ClassRoom::query()->find($loginClassId) : null)
+            ?? ClassRoom::query()->where('academic_year_id', $year->id)->first();
+        $studentId = $loginStudentId > 0
+            ? $loginStudentId
+            : (int) DB::table('class_student')->where('class_id', $class?->id)->value('student_id');
+
+        // The staff member the walks sign in as (teacher@'s profile) when it
+        // exists. Staging's first seeder run, with no teacher@ yet, had made a
+        // profile with no user behind it, and `first()` kept finding that one:
+        // the attendance, the appraisal and the balance the hr walk read were
+        // somebody else's "Smoke Marker" (§5fz). That orphan is the seeder's
+        // own residue, and it is removed here.
+        $teacherUserId = (int) DB::table('users')->where('email', 'teacher@akuru.edu.mv')->value('id');
+        // The residue is renamed rather than deleted: its rows (attendance,
+        // appraisals) may be referenced, and "Smoke Stand-in" is no longer the
+        // name the hr walk looks up.
+        DB::table('staff_profiles')->where('first_name', 'Smoke')->where('last_name', 'Marker')
+            ->where(fn ($query) => $teacherUserId > 0 ? $query->where('user_id', '!=', $teacherUserId) : $query->whereRaw('1 = 1'))
+            ->update(['last_name' => 'Stand-in', 'updated_at' => now()]);
+        $staff = ($teacherUserId > 0 ? StaffProfile::query()->where('user_id', $teacherUserId)->first() : null)
+            ?? StaffProfile::query()->first();
 
         $this->rooms($year, $admin);
         $this->calendar($year);
@@ -104,7 +133,10 @@ class SmokeMarkerSeeder extends Seeder
         // the error to run.
         // `hrCycle()` may have just made teacher@'s profile on an empty table,
         // so look again before making one (user_id is unique).
-        $staff ??= StaffProfile::query()->first() ?? $this->makeStaffProfile();
+        $staff = ($teacherUserId > 0 ? StaffProfile::query()->where('user_id', $teacherUserId)->first() : null)
+            ?? $staff
+            ?? StaffProfile::query()->first()
+            ?? $this->makeStaffProfile();
 
         if ($staff !== null) {
             $this->hr($year, $staff, $admin);
@@ -122,11 +154,14 @@ class SmokeMarkerSeeder extends Seeder
      */
     private function makeStaffProfile(): ?StaffProfile
     {
-        $userId = DB::table('users')->where('email', 'teacher@akuru.edu.mv')->value('id')
-            ?? DB::table('users')->value('id');
+        // teacher@ only. This used to fall back to *any* user, and on a host
+        // seeded before teacher@ existed it made "Smoke Marker" out of admin@
+        // — a second Smoke Marker that every name lookup found first (§5fz).
+        // No teacher@ means no HR markers, and the warning below says so.
+        $userId = DB::table('users')->where('email', 'teacher@akuru.edu.mv')->value('id');
 
-        if ($userId === null) {
-            return null;
+        if ($userId === null || StaffProfile::query()->where('user_id', $userId)->exists()) {
+            return $userId === null ? null : StaffProfile::query()->where('user_id', $userId)->first();
         }
 
         return StaffProfile::query()->create([
@@ -1809,12 +1844,20 @@ class SmokeMarkerSeeder extends Seeder
 
     private function hr(AcademicYear $year, StaffProfile $staff, ?object $admin): void
     {
-        DB::table('staff_contracts')->where('basic_salary', 12345)->delete();
-        DB::table('staff_contracts')->insert([
-            'staff_profile_id' => $staff->id, 'contract_type' => 'permanent',
-            'start_date' => '2026-01-01', 'basic_salary' => 12345, 'status' => 'active',
-            'created_at' => now(), 'updated_at' => now(),
-        ]);
+        // One active contract per profile: `$staff` is teacher@'s profile now,
+        // and `hrCycle()` has already made sure it holds one. The marker's
+        // distinctive salary goes on that contract rather than beside it.
+        DB::table('staff_contracts')->where('basic_salary', 12345)->where('staff_profile_id', '!=', $staff->id)->delete();
+        $activeContractId = DB::table('staff_contracts')->where('staff_profile_id', $staff->id)->where('status', 'active')->value('id');
+        if ($activeContractId) {
+            DB::table('staff_contracts')->where('id', $activeContractId)->update(['basic_salary' => 12345, 'updated_at' => now()]);
+        } else {
+            DB::table('staff_contracts')->insert([
+                'staff_profile_id' => $staff->id, 'contract_type' => 'permanent',
+                'start_date' => '2026-01-01', 'basic_salary' => 12345, 'status' => 'active',
+                'created_at' => now(), 'updated_at' => now(),
+            ]);
+        }
 
         DB::table('cpd_records')->where('title', 'SMOKE-CPD')->delete();
         DB::table('cpd_records')->insert([
