@@ -134,6 +134,10 @@ async function settles(page, needle, ms = 6000) {
 
 const rowText = async (page, needle) => {
     const row = page.locator('tr', { hasText: needle }).first();
+    // Give the row a moment to be there rather than counting at once: the
+    // fourth staging run saw the saved activity's title on the page and no
+    // row for it yet (STATUS §5fz).
+    await row.waitFor({ state: 'attached', timeout: 3000 }).catch(() => {});
 
     return (await row.count()) ? (await row.innerText()).replace(/\s+/g, ' ') : '';
 };

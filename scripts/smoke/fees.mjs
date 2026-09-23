@@ -57,8 +57,11 @@ const AMOUNT = '123.45';
 const TOTAL = (Number(AMOUNT) * (1 - 0.0777)).toFixed(2);
 const SECOND = '100.00';
 const FIRST = (Number(TOTAL) - Number(SECOND)).toFixed(2);
-const today = new Date().toISOString().slice(0, 10);
-const inAMonth = new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10);
+// The school's own date, not the walker's (Indian/Maldives; STATUS §5fz).
+const TZ = process.env.SMOKE_TZ ?? 'Indian/Maldives';
+const isoDate = (date) => new Intl.DateTimeFormat('en-CA', { timeZone: TZ, year: 'numeric', month: '2-digit', day: '2-digit' }).format(date);
+const today = isoDate(new Date());
+const inAMonth = isoDate(new Date(Date.now() + 30 * 86400000));
 
 // See sweep.mjs: without this the run stalls on fonts and Chromium's own
 // background services rather than on anything this application does.

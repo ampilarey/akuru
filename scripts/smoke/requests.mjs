@@ -144,8 +144,12 @@ async function settles(page, needle, ms = 6000) {
 
 const card = (page, needle) => page.locator('section', { hasText: needle }).first();
 const cardText = async (page, needle) => ((await card(page, needle).count()) ? (await card(page, needle).innerText()).replace(/\s+/g, ' ') : '');
-const isoDaysFromNow = (days) => new Date(Date.now() + days * 86400000).toISOString().slice(0, 10);
-const today = new Date().toISOString().slice(0, 10);
+// The school's own date, not the walker's: the app keeps Indian/Maldives
+// time, and the fourth staging run, walked from a UTC host after Maldives
+// midnight, looked for yesterday's date on today's cards (STATUS §5fz).
+const TZ = process.env.SMOKE_TZ ?? 'Indian/Maldives';
+const isoDaysFromNow = (days) => new Intl.DateTimeFormat('en-CA', { timeZone: TZ, year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date(Date.now() + days * 86400000));
+const today = isoDaysFromNow(0);
 
 // Every screen is loaded fresh before a post: the flash from the last post
 // stays on the screen after Inertia re-renders, so waiting for it again would

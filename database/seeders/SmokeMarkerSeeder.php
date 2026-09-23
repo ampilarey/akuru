@@ -1843,10 +1843,19 @@ class SmokeMarkerSeeder extends Seeder
     private function schoolDayCycle(): void
     {
         DB::table('calendar_days')->whereIn('title', ['SMOKE-Sports-Day', 'SMOKE-Staff-Meeting'])->delete();
+        // `create-sweep.mjs` adds a calendar day named `MADE<run>S25` on the
+        // day after the last entry, every run. Left alone, those rows march
+        // forward into the dates this walk adds a week out (unique on date and
+        // year), and the fourth staging run's sports day was refused (§5fz).
+        DB::table('calendar_days')->where('title', 'like', 'MADE%S25')->delete();
 
         $studentId = DB::table('students')->where('user_id', DB::table('users')->where('email', 'student@akuru.edu.mv')->value('id'))->value('id');
         if ($studentId !== null) {
-            DB::table('class_attendance')->where('student_id', $studentId)->where('date', now()->toDateString())->delete();
+            // Every mark, not only today's: the lateness panel the walk reads
+            // aggregates the year, and a host walked on two different days
+            // showed the pupil late twice (fourth staging run, §5fz). Nothing
+            // but the walks writes this pupil's attendance.
+            DB::table('class_attendance')->where('student_id', $studentId)->delete();
         }
     }
 
