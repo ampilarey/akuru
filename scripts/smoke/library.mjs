@@ -131,6 +131,22 @@ async function settles(page, needle, ms = 6000) {
     return false;
 }
 
+// A status on *this* item's row. `settles(page, 'submitted')` matched the
+// word on any earlier run's row, so on a host with history it returned before
+// the click had landed and the office was asked to approve a draft that was
+// still being resubmitted (third staging run, STATUS §5fz).
+async function rowSettles(page, title, needle, ms = 6000) {
+    const deadline = Date.now() + ms;
+    while (Date.now() < deadline) {
+        if (await page.locator('tr', { hasText: title }).filter({ hasText: needle }).count()) {
+            return true;
+        }
+        await page.waitForTimeout(100);
+    }
+
+    return false;
+}
+
 const writer = await signIn(APPLICANT);
 const staff = await signIn(STAFF);
 
@@ -215,7 +231,7 @@ if (drafted) {
 
     if (await send.count()) {
         await send.click();
-        submitted = await settles(writer, 'submitted');
+        submitted = await rowSettles(writer, TITLE, 'submitted');
         check('the writer submits it for review', submitted, (await text(writer)).slice(0, 160));
     } else {
         check('the writer submits it for review', false, 'no "Submit for review" button on the draft');
@@ -256,7 +272,7 @@ if (submitted) {
     const ask = card.locator('button:has-text("Request changes")').first();
     if (await ask.count()) {
         await ask.click();
-        askedForChanges = await settles(staff, 'changes_requested');
+        askedForChanges = await rowSettles(staff, TITLE, 'changes_requested');
         check('the office can ask for changes', askedForChanges, (await text(staff)).slice(0, 160));
     } else {
         check('the office can ask for changes', false, 'no "Request changes" button on the submission');
@@ -280,7 +296,7 @@ if (askedForChanges) {
     const again = row.locator('button:has-text("Submit for review")').first();
     if (await again.count()) {
         await again.click();
-        resubmitted = await settles(writer, 'submitted');
+        resubmitted = await rowSettles(writer, TITLE, 'submitted');
         check('and can send it back', resubmitted, (await text(writer)).slice(0, 160));
     } else {
         check('and can send it back', false, 'no "Submit for review" button after changes were requested');

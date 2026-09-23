@@ -140,6 +140,10 @@ async function settles(page, needle, ms = 6000) {
 
 const rowText = async (page, needle) => {
     const row = page.locator('tr', { hasText: needle }).first();
+    // Give the row a moment to be there rather than counting at once: the
+    // third staging run counted zero programme rows and, two lines later,
+    // found the same row's View link (STATUS §5fz).
+    await row.waitFor({ state: 'attached', timeout: 3000 }).catch(() => {});
 
     return (await row.count()) ? (await row.innerText()).replace(/\s+/g, ' ') : '';
 };
