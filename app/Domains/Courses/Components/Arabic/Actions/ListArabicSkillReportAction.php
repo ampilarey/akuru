@@ -9,9 +9,10 @@ use Illuminate\Support\Collection;
 class ListArabicSkillReportAction
 {
     /**
+     * @param  int|list<int>|null  $enrollmentId  one enrolment, a student's several, or null for everyone's
      * @return array{rows: Collection<int, array<string, mixed>>, letters: Collection<int, array<string, mixed>>, harakas: Collection<int, array<string, mixed>>}
      */
-    public function execute(?int $courseId = null, ?int $enrollmentId = null): array
+    public function execute(?int $courseId = null, int|array|null $enrollmentId = null): array
     {
         $reference = app(ListArabicReferenceAction::class)->execute();
         $letters = $reference['letters']->keyBy('id');
