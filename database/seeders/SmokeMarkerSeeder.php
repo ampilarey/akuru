@@ -90,6 +90,7 @@ class SmokeMarkerSeeder extends Seeder
         $this->hifzCycle();
         $this->readerCycle();
         $this->familyCycle();
+        $this->signupCycle();
 
         // A default `migrate:fresh --seed` leaves `staff_profiles` empty, and
         // this used to skip the whole HR block in silence — so the sweep
@@ -1681,6 +1682,23 @@ class SmokeMarkerSeeder extends Seeder
         $logIds = DB::table('lesson_logs')->where('homework', 'like', 'SMOKE-Homework%')->pluck('id');
         DB::table('homework_ticks')->whereIn('lesson_log_id', $logIds)->delete();
         DB::table('lesson_logs')->whereIn('id', $logIds)->update(['homework' => null, 'homework_due_date' => null]);
+    }
+
+    /**
+     * `signup.mjs` has the office build `SMOKE-Trip` — a sign-up with a fee
+     * that a parent must confirm — the pupil answer it, the parent confirm
+     * it, and the office close it. This plants nothing and clears what a run
+     * left, in foreign-key order: the invoice the fee raised (with its lines;
+     * nothing is paid against it), the answers, the sheet.
+     */
+    private function signupCycle(): void
+    {
+        $formIds = DB::table('forms')->where('title', 'SMOKE-Trip')->pluck('id');
+        $invoiceIds = DB::table('form_responses')->whereIn('form_id', $formIds)->whereNotNull('invoice_id')->pluck('invoice_id');
+        DB::table('form_responses')->whereIn('form_id', $formIds)->delete();
+        DB::table('invoice_lines')->whereIn('invoice_id', $invoiceIds)->delete();
+        DB::table('invoices')->whereIn('id', $invoiceIds)->delete();
+        DB::table('forms')->whereIn('id', $formIds)->delete();
     }
 
     private function hr(AcademicYear $year, StaffProfile $staff, ?object $admin): void

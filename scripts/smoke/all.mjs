@@ -18,7 +18,7 @@
  *
  * ## Read-only and writing walks are separated, on purpose
  *
- * Four of these only look at screens. The other **twenty-six write**: they build a course for a student, run a scheduled intake, set and sit an assessment, issue a certificate, sell a course for wallet money, tag an Arabic skill activity, set and mark a recitation and map a halaqa, enrol a pupil in a halaqa and approve their milestone, issue and redeem a gift card and read a protected book, set homework, post a notice, message a teacher and poll a class, enrol a
+ * Four of these only look at screens. The other **twenty-seven write**: they build a course for a student, run a scheduled intake, set and sit an assessment, issue a certificate, sell a course for wallet money, tag an Arabic skill activity, set and mark a recitation and map a halaqa, enrol a pupil in a halaqa and approve their milestone, issue and redeem a gift card and read a protected book, set homework, post a notice, message a teacher and poll a class, send a trip sign-up with a fee and close it, enrol a
  * stranger on a course, submit and approve an absence note, request that a
  * child be collected, book a parent-teacher meeting, publish an article to
  * the library, publish an exam and a term's report cards to families, bill a
@@ -28,7 +28,7 @@
  *
  *   node scripts/smoke/all.mjs            every walk (the default)
  *   node scripts/smoke/all.mjs --read     the four that only look
- *   node scripts/smoke/all.mjs --write    the twenty-six that change data
+ *   node scripts/smoke/all.mjs --write    the twenty-seven that change data
  *   node scripts/smoke/all.mjs learn review     just those, by name
  *
  * A writing run against a host whose name does not look synthetic asks for
@@ -113,6 +113,7 @@ const WALKS = [
     { name: 'hifz', writes: true, asks: 'Does what survives of the Hifz app still work for the people who use it?' },
     { name: 'reader', writes: true, asks: 'Can a reader read a protected book and keep their place, and does a gift card become wallet money?' },
     { name: 'family', writes: true, asks: 'Does the daily habit work — homework, the noticeboard, a message and its reply, a class poll?' },
+    { name: 'signup', writes: true, asks: 'Does a sign-up sheet with a fee reach one class, wait for the parent, bill the family, and close?' },
     { name: 'review', writes: true, asks: 'Does work a machine cannot mark come back marked?' },
     { name: 'absence', writes: true, asks: 'Does the register believe a family who reported an absence?' },
     { name: 'pickup', writes: true, asks: 'Does a child get handed over, and only to the adult who asked?' },

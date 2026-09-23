@@ -7,14 +7,20 @@ const TYPE_LABELS = {
     multi_select: 'Choose several', yes_no: 'Yes / No', date: 'Date',
 };
 
-export default function Index({ forms = [], fieldTypes = [] }) {
+export default function Index({ forms = [], fieldTypes = [], classes = [] }) {
     const [open, setOpen] = useState(false);
     const form = useForm({
         title: '', description: '',
         fields: [{ label: '', type: 'text', options: [], required: false }],
-        target_audience: [], is_anonymous: false, requires_parent_confirmation: false,
+        target_audience: [], target_classes: [], closes_at: '',
+        is_anonymous: false, requires_parent_confirmation: false,
         fee_amount: '', is_published: true,
     });
+
+    const toggleClass = (id) => form.setData('target_classes',
+        form.data.target_classes.includes(id)
+            ? form.data.target_classes.filter((v) => v !== id)
+            : [...form.data.target_classes, id]);
 
     const setField = (i, patch) => form.setData('fields',
         form.data.fields.map((f, n) => (n === i ? { ...f, ...patch } : f)));
@@ -90,6 +96,29 @@ export default function Index({ forms = [], fieldTypes = [] }) {
                         {form.errors.fields && <span className="block text-xs text-red-600">{form.errors.fields}</span>}
                     </fieldset>
 
+                    {/* E6's acceptance is a sign-up "targeted at one class" that
+                        "closed forms reject": the action honoured both and the
+                        screen offered neither, so the office could only send a
+                        sheet to the whole school and never close it (STATUS §5fq). */}
+                    <div className="text-sm">
+                        <span className="mb-1 block text-gray-600">Only these classes (optional — blank means everyone)</span>
+                        <div className="flex max-h-28 flex-wrap gap-2 overflow-y-auto">
+                            {classes.map((c) => (
+                                <label key={c.id} className="inline-flex items-center gap-1">
+                                    <input type="checkbox" checked={form.data.target_classes.includes(c.id)} onChange={() => toggleClass(c.id)} />
+                                    {c.label}
+                                </label>
+                            ))}
+                        </div>
+                    </div>
+
+                    <label className="block text-sm">
+                        <span className="mb-1 block text-gray-600">Closes at (optional)</span>
+                        <input className="form-input w-full sm:w-64" type="datetime-local" value={form.data.closes_at}
+                            onChange={(e) => form.setData('closes_at', e.target.value)} />
+                        {form.errors.closes_at && <span className="text-xs text-red-600">{form.errors.closes_at}</span>}
+                    </label>
+
                     <label className="flex items-center gap-2 text-sm">
                         <input type="checkbox" checked={form.data.is_anonymous}
                             onChange={(e) => form.setData('is_anonymous', e.target.checked)} />
@@ -132,6 +161,7 @@ export default function Index({ forms = [], fieldTypes = [] }) {
                             <span className="ms-2 text-xs uppercase text-gray-500">
                                 {f.is_published ? (f.is_open ? 'open' : 'closed') : 'draft'}
                                 {f.is_anonymous ? ' · anonymous' : ''}
+                                {f.target_classes?.length ? ` · ${f.target_classes.length} class(es)` : ''}
                             </span>
                         </span>
                         <span className="text-xs text-gray-600">{f.responses} response{f.responses === 1 ? '' : 's'}</span>

@@ -29,6 +29,12 @@ class ListPortalInvoicesAction
             return [
                 'id' => $invoice->id,
                 'invoice_number' => $invoice->invoice_number,
+                // What it is for. An ad-hoc invoice (a trip sign-up's fee)
+                // carries its reason in `notes`; a generated fee invoice has
+                // its type. A number alone is an invoice from nowhere on a
+                // family's statement (E6c's own words; the sign-up walk,
+                // STATUS §5fq, found the statement showing only the number).
+                'description' => $invoice->notes ?: ($invoice->invoice_type?->value ?? null),
                 'student_id' => $invoice->student_id,
                 'status' => $invoice->status?->value,
                 'due_date' => $invoice->due_date?->toDateString(),
