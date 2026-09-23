@@ -22,7 +22,7 @@ the Library L1–L7; the public-site track W1–W3; EduPage parity E1–E22. The
 agent-buildable backlog in `KNOWN_ISSUES` is empty.
 
 **What is verified is narrower than what is built, and in one specific way.**
-Thirty-three scripted browser walks (`node scripts/smoke/all.mjs`, ~29 minutes)
+Thirty-four scripted browser walks (`node scripts/smoke/all.mjs`, ~30 minutes)
 drive the loops that matter — building a course, running an intake, enrolling, buying a course, taking a lesson, sitting an assessment, earning a certificate, tagging an Arabic skill activity, setting and marking a recitation, mapping a halaqa, approving a Hifz milestone, reading a protected book, redeeming a gift card, setting homework, posting a notice, messaging a teacher and polling a class, sending a trip sign-up with a fee, publishing a calendar day and marking a pupil late, double-booking a teacher and being refused, marking work,
 reporting an absence, collecting a child, booking a meeting, publishing an
 article, taking and refunding money, recording a sound, reciting, an exam to a
@@ -71,13 +71,13 @@ Legend — **CODE:** implementation in repo (models/migrations/actions/routes/pa
 
 | Slice | CODE | TESTED | USABLE | Notes / known holes |
 |---|---|---|---|---|
-| Phase 0 foundation | Yes. Domain skeleton, contracts, CI. | Architecture suite + route-name tests. | **Locally, daily:** every one of the 33 walks signs in — admin, supervisor, teacher, student, parent — and lands on the right home (`hifz.mjs` alone lands five roles). The staging notes here (2026-06-13 `/up` 200; 2026-08-23 seed login failed) are historical; **staging is the operator's to deploy and re-check** (§5ft). BML is unwalkable anywhere until its webhook secret exists (`OWNER_ACTIONS` 2). | Staging HEAD in archive is far behind current `main`. |
+| Phase 0 foundation | Yes. Domain skeleton, contracts, CI. | Architecture suite + route-name tests. | **Locally, daily:** every one of the 34 walks signs in — admin, supervisor, teacher, student, parent — and lands on the right home (`hifz.mjs` alone lands five roles). The staging notes here (2026-06-13 `/up` 200; 2026-08-23 seed login failed) are historical; **staging is the operator's to deploy and re-check** (§5ft). BML is unwalkable anywhere until its webhook secret exists (`OWNER_ACTIONS` 2). | Staging HEAD in archive is far behind current `main`. |
 | Morph-map hotfix | Yes. `config/morph-map.php`, backfill, `morph-map:verify`. | `MorphMapBackfillTest`, `MorphMapConfigTest` (CI). | Staging verify **OK** (2026-08-16, `05b8cca`). Every new polymorphic column since registers its alias in the same slice, and the arch test fails the build otherwise — the walks that create documents, certificates, found items and messages read them back by alias. | Mixed-era staging was the real test of collapse. |
 | S1.1a schema | Yes. Additive student/guardian/document columns. | `UnifiedStudentSchemaTest`. | Not a user task: the columns are what `create-sweep.mjs` (Add student), `own-data.mjs` and `signup.mjs` (the directory search) write and read. | Deploy 3 cleanup not run (owner's, `docs/migrations/s11-deploy-3-cleanup-proposal.md`). |
 | S1.1b backfill | Yes. `UnifyStudentsAction`, `students:verify-unification`. | `UnifiedStudentBackfillTest`, representative seeder test. | Staging verify **red** (collisions + orphan guardians, archive 2026-08-25). Representative gate **green** (ADR-021). | `--backfill` refused on `APP_ENV=production`. |
 | S1.1c read switch | Yes. Dual-write still on. | `UnifiedStudentReadSwitchTest`. | **Walked through its seam:** `register.mjs`, `buy.mjs` and `intake.mjs` enrol through `EnrollUnifiedStudentInOfferingAction`, which writes the legacy id beside `unified_student_id`, and the office's enrolment list and the family's own pages read the unified pupil back by name. The directory, portal and every family walk read `students`. | **What is still legacy, by design until Deploy 3:** `course_enrollments.student_id` keys `registration_students` (dual-written by `EnsureLegacyStudentForUnifiedAction`), and Admissions' `EnrollmentService` / `CourseRegistrationController` still read `RegistrationStudent` (12 files name it). Cleanup is the owner-confirmed slice in `s11-deploy-3-cleanup-proposal.md`. |
 | S1.2 custom fields | Yes. Admin CRUD + student profile fields. Directory create/edit added. | `CustomFieldsTest`, `StudentDirectoryCrudTest`. | Walked **create** (#95): Add student → show → class picker. | Course-only nullables supported. Status only via `ChangeStudentStatusAction`. |
-| S1.3 consent | Yes. Ledger + profile tab. | `ConsentTest`. | Shows its seeded row in a browser (`sweep.mjs`, 2026-09-14). | |
+| S1.3 consent | Yes. Ledger + profile tab. | `ConsentTest`, `ConsentCycleSmokeResetTest`. | Walked 2026-09-23 (`consent.mjs`, §5fv): the office grants and revokes from the pupil's Consents tab, history kept as rows, the same answer twice adds none; revoking `photo_media_use` takes the photo off the public achievements page and granting it back restores it. **The tab had been a 500 on every seeded database since 2026-09-14** — the seeder's marker row carried a source outside the enum and the sweep only ever read the directory. | No portal screen writes `ConsentSource::Portal` — families cannot self-serve consent; owner call (§5fv). |
 | S1.4 staff profiles | Yes. Inertia `people.staff.*`. | `StaffProfileTest`. | Walked **locally** 2026-09-13: screen renders, but no row was planted for it — a load, not a data check (§5cm). | `teachers` row ≠ Spatie role `teacher` (mitigated for seed: `EnsureTeacherRowAction` in `UserSeeder`, #87). |
 | S1.5 years/terms/classes | Yes. Years/classes/roster/promotion. | `AcademicYearBackboneTest`, `YearClassUniquenessTest`. | Walked **partial** (R1 S1, R2 S1, R3 S1). Create unique year/class **validated** (#91); first R3 pass hid errors, follow-up paints `errors.name`. Year seeders `firstOrCreate` by name. Class teacher can be assigned on an existing class (show page). Picker identity_key **omits class** (#90) **and student number** (blank / PIL-01 vs PIL-99 still flag). | `ActivateAcademicYearAction` will not close the current year for you. |
 | S2.0 unify-verify gate | Yes. `scripts/pull-deploy-test.sh`. | `PullDeployTestScriptTest`. | Staging evidence **not pasted**. First #15 deploy used pre-pull script (archive). | Operator-only to confirm a gated deploy log. |
@@ -4346,6 +4346,44 @@ walk returned a header row and nothing else for circulation, student work and
 pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
+
+## 5fv. S1 audit, S1.3: consent walked from the screen to the public gate — and the tab was 500 on every seeded database (2026-09-23)
+
+The one S1 row never walked as a user task: the sweep saw a seeded consent
+row in the directory listing and no one had recorded one from the screen,
+nor watched the gate S1.3 says `photo_media_use` holds over the website.
+`scripts/smoke/consent.mjs`, one office login and the public site: the
+office finds the pupil by whole name, opens the Consents tab; the public
+achievements page offers the pupil's photo while the seeded consent
+stands; the office grants a marketing consent (one row, yes, admin),
+revokes it (a second row, revoked — the first still says yes, S1.3's
+"new row on change, never an update"), revokes again (no third row — the
+same answer twice is a no-op), revokes the photo consent — and the public
+page keeps the award and the name but no longer offers the photo; grants
+it back. `SmokeMarkerSeeder::consentCycle()` clears the office's rows for
+the two types and plants the photo document; `ConsentCycleSmokeResetTest`.
+Thirty-fourth walk, thirtieth writer.
+
+**The tab was a 500.** `SmokeMarkerSeeder::consent()` had planted its
+marker row with `source = 'SMOKE-Source'`, and `consents.source` casts to
+`ConsentSource`. So `/people/students/{id}?tab=consents` threw
+`ValueError` on every seeded database from the day it was planted
+(2026-09-14, §5cm) — and nothing noticed, because `sweep.mjs` reads the
+directory for S1.3, never the tab. The row now says `admission_form`,
+which is what an enrolment-time consent would say and is not the `admin`
+the walk writes; the reset test opens the tab. A seeder defect, not an
+application one — but one that hid a screen for nine days, which is the
+lesson: a sweep that reads a listing has not walked the tab behind it.
+
+**Recorded, not built.** `ConsentSource::Portal` exists and no portal
+screen writes it: a guardian cannot grant or withdraw a consent
+themselves; the office records it for them. S1.3 names `portal` as a
+source without specifying the screen. Owner call whether families
+self-serve consent (with the minor/guardian rule S1.3 states), or it
+stays an office task on the admission form and the pupil's record.
+
+**Walked in a browser.** `consent.mjs` 19/19 twice on a re-seeded
+database, no console or server errors.
 
 ## 5fu. Regression run of the sixteen earlier writers: the payroll screen was 403 on every host, and the review walk read the wrong course (2026-09-23)
 
