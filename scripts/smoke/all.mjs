@@ -18,7 +18,7 @@
  *
  * ## Read-only and writing walks are separated, on purpose
  *
- * Four of these only look at screens. The other **thirty write**: they build a course for a student, run a scheduled intake, set and sit an assessment, issue a certificate, sell a course for wallet money, tag an Arabic skill activity, set and mark a recitation and map a halaqa, enrol a pupil in a halaqa and approve their milestone, issue and redeem a gift card and read a protected book, set homework, post a notice, message a teacher and poll a class, send a trip sign-up with a fee and close it, publish a calendar day and mark a pupil late, double-book a teacher and be refused, record and revoke a family's consent, enrol a
+ * Four of these only look at screens. The other **thirty-one write**: they build a course for a student, run a scheduled intake, set and sit an assessment, issue a certificate, sell a course for wallet money, tag an Arabic skill activity, set and mark a recitation and map a halaqa, enrol a pupil in a halaqa and approve their milestone, issue and redeem a gift card and read a protected book, set homework, post a notice, message a teacher and poll a class, send a trip sign-up with a fee and close it, publish a calendar day and mark a pupil late, double-book a teacher and be refused, record and revoke a family's consent, ask the school for a day off and be answered, enrol a
  * stranger on a course, submit and approve an absence note, request that a
  * child be collected, book a parent-teacher meeting, publish an article to
  * the library, publish an exam and a term's report cards to families, bill a
@@ -28,7 +28,7 @@
  *
  *   node scripts/smoke/all.mjs            every walk (the default)
  *   node scripts/smoke/all.mjs --read     the four that only look
- *   node scripts/smoke/all.mjs --write    the thirty that change data
+ *   node scripts/smoke/all.mjs --write    the thirty-one that change data
  *   node scripts/smoke/all.mjs learn review     just those, by name
  *
  * A writing run against a host whose name does not look synthetic asks for
@@ -117,6 +117,7 @@ const WALKS = [
     { name: 'school-day', writes: true, asks: 'Does a late mark reach the office\'s lists and the family, and does the calendar show families what is theirs?' },
     { name: 'timetable', writes: true, asks: 'Does the timetable refuse a teacher in two places at once, and let the office overrule it with a reason?' },
     { name: 'consent', writes: true, asks: 'Can the office record what a family agreed to, and does revoking it close the public gate?' },
+    { name: 'requests', writes: true, asks: 'Can a family ask the school for something and get an answer?' },
     { name: 'review', writes: true, asks: 'Does work a machine cannot mark come back marked?' },
     { name: 'absence', writes: true, asks: 'Does the register believe a family who reported an absence?' },
     { name: 'pickup', writes: true, asks: 'Does a child get handed over, and only to the adult who asked?' },

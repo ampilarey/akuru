@@ -3,6 +3,7 @@
 namespace App\Domains\Academics\Http\Controllers;
 
 use App\Domains\Academics\Actions\BuildSchoolRequestPayloadAction;
+use App\Domains\Academics\Actions\ListSchoolRequestsAction;
 use App\Domains\Academics\Actions\ResolveTeacherIdForUserAction;
 use App\Domains\Academics\Actions\ReviewSchoolRequestAction;
 use App\Domains\Academics\Actions\SubmitSchoolRequestAction;
@@ -10,6 +11,8 @@ use App\Domains\Academics\Enums\SchoolRequestStatus;
 use App\Domains\Academics\Enums\SchoolRequestType;
 use App\Domains\Academics\Models\SchoolRequest;
 use App\Domains\HR\Actions\ListLeaveTypesAction;
+use App\Domains\People\Actions\ListGuardianChildrenAction;
+use App\Domains\People\Actions\ResolveStaffProfileForUserAction;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
 use Illuminate\Http\RedirectResponse;
@@ -25,21 +28,33 @@ class SchoolRequestController extends Controller
     {
         abort_unless($request->user()?->can('requests.submit') || $request->user()?->can('requests.review'), 403);
 
+        $userId = (int) $request->user()->id;
         $canReview = (bool) $request->user()?->can('requests.review');
-        $teacherId = app(ResolveTeacherIdForUserAction::class)->execute($request->user()?->id);
+        $teacherId = app(ResolveTeacherIdForUserAction::class)->execute($userId);
+        $hasStaffProfile = app(ResolveStaffProfileForUserAction::class)->execute($userId) !== null;
 
-        $rows = SchoolRequest::query()
-            ->when(! $canReview, fn ($query) => $query->where('requester_id', $request->user()->id))
-            ->orderByDesc('id')
-            ->get()
-            ->map(fn (SchoolRequest $row) => $this->serialize($row));
+        // Only the types this person can actually file: the two leave types
+        // need a teacher or staff profile, and a family offered them was
+        // refused with "a staff profile is required" (STATUS §5fw).
+        $types = collect(SchoolRequestType::cases())
+            ->map(fn (SchoolRequestType $type) => $type->value)
+            ->filter(fn (string $type) => match ($type) {
+                SchoolRequestType::TeacherLeave->value => $teacherId !== null,
+                SchoolRequestType::StaffLeave->value => $hasStaffProfile,
+                default => true,
+            })
+            ->values()
+            ->all();
 
         return Inertia::render('Academics/Requests/Index', [
-            'requests' => $rows,
-            'types' => array_map(fn (SchoolRequestType $type) => $type->value, SchoolRequestType::cases()),
+            'requests' => app(ListSchoolRequestsAction::class)->execute($userId, $canReview),
+            'types' => $types,
             'canReview' => $canReview,
             'teacherId' => $teacherId,
             'leaveTypes' => app(ListLeaveTypesAction::class)->execute(true)->values(),
+            'children' => app(ListGuardianChildrenAction::class)->executeForGuardianUserId($userId)
+                ->map(fn (object $child) => ['id' => (int) $child->id, 'name' => trim($child->first_name.' '.$child->last_name)])
+                ->values(),
         ]);
     }
 
@@ -51,6 +66,7 @@ class SchoolRequestController extends Controller
             'type' => ['required', Rule::enum(SchoolRequestType::class)],
             'reason' => ['required', 'string', 'max:2000'],
             'teacher_id' => ['nullable', 'integer', 'exists:teachers,id'],
+            'student_id' => ['nullable', 'integer', 'exists:students,id'],
             'leave_type_id' => ['nullable', 'integer', 'exists:leave_types,id'],
             'from_date' => ['nullable', 'date'],
             'to_date' => ['nullable', 'date'],
@@ -101,7 +117,7 @@ class SchoolRequestController extends Controller
 
         return response()->streamDownload(function () use ($rows): void {
             $handle = fopen('php://output', 'w');
-            Csv::put($handle, ['id', 'type', 'status', 'reason', 'requester_id', 'reviewed_at']);
+            Csv::put($handle, ['id', 'type', 'status', 'reason', 'requester_id', 'regarding_type', 'regarding_id', 'submitted_at', 'reviewed_by', 'reviewed_at', 'review_notes']);
             foreach ($rows as $row) {
                 Csv::put($handle, [
                     $row->id,
@@ -109,25 +125,15 @@ class SchoolRequestController extends Controller
                     $row->status?->value,
                     $row->reason,
                     $row->requester_id,
+                    $row->regarding_type,
+                    $row->regarding_id,
+                    $row->created_at?->toDateTimeString(),
+                    $row->reviewed_by,
                     $row->reviewed_at?->toDateTimeString(),
+                    $row->review_notes,
                 ]);
             }
             fclose($handle);
         }, 'requests.csv', ['Content-Type' => 'text/csv']);
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    private function serialize(SchoolRequest $row): array
-    {
-        return [
-            'id' => $row->id,
-            'type' => $row->type?->value,
-            'status' => $row->status?->value,
-            'reason' => $row->reason,
-            'payload' => $row->payload,
-            'review_notes' => $row->review_notes,
-        ];
     }
 }

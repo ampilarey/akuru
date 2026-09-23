@@ -25,6 +25,8 @@ return [
         'no_lessons' => 'No lessons scheduled.',
     ],
     'request' => [
+        'submitted_title' => 'New request from :name',
+        'submitted_body' => 'A :type request about :regarding: :reason',
         'decision_title' => 'Your request was :status',
         'decision_body' => 'Your :type request was :status. :notes',
         'status' => [

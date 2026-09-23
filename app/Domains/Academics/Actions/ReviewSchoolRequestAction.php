@@ -25,6 +25,15 @@ class ReviewSchoolRequestAction
             ]);
         }
 
+        // E5: "rejected requests state a reason". Until the requests walk
+        // (STATUS §5fw) a rejection with the notes box empty went through, and
+        // the family was told "rejected." and nothing else.
+        if ($status === SchoolRequestStatus::Rejected && trim((string) $notes) === '') {
+            throw ValidationException::withMessages([
+                'review_notes' => 'Say why: a rejected request states its reason to the person who asked.',
+            ]);
+        }
+
         return DB::transaction(function () use ($request, $status, $reviewerId, $notes): SchoolRequest {
             $request->status = $status;
             $request->reviewed_by = $reviewerId;

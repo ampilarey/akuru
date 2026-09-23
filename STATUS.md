@@ -22,7 +22,7 @@ the Library L1–L7; the public-site track W1–W3; EduPage parity E1–E22. The
 agent-buildable backlog in `KNOWN_ISSUES` is empty.
 
 **What is verified is narrower than what is built, and in one specific way.**
-Thirty-four scripted browser walks (`node scripts/smoke/all.mjs`, ~30 minutes)
+Thirty-five scripted browser walks (`node scripts/smoke/all.mjs`, ~31 minutes)
 drive the loops that matter — building a course, running an intake, enrolling, buying a course, taking a lesson, sitting an assessment, earning a certificate, tagging an Arabic skill activity, setting and marking a recitation, mapping a halaqa, approving a Hifz milestone, reading a protected book, redeeming a gift card, setting homework, posting a notice, messaging a teacher and polling a class, sending a trip sign-up with a fee, publishing a calendar day and marking a pupil late, double-booking a teacher and being refused, marking work,
 reporting an absence, collecting a child, booking a meeting, publishing an
 article, taking and refunding money, recording a sound, reciting, an exam to a
@@ -71,7 +71,7 @@ Legend — **CODE:** implementation in repo (models/migrations/actions/routes/pa
 
 | Slice | CODE | TESTED | USABLE | Notes / known holes |
 |---|---|---|---|---|
-| Phase 0 foundation | Yes. Domain skeleton, contracts, CI. | Architecture suite + route-name tests. | **Locally, daily:** every one of the 34 walks signs in — admin, supervisor, teacher, student, parent — and lands on the right home (`hifz.mjs` alone lands five roles). The staging notes here (2026-06-13 `/up` 200; 2026-08-23 seed login failed) are historical; **staging is the operator's to deploy and re-check** (§5ft). BML is unwalkable anywhere until its webhook secret exists (`OWNER_ACTIONS` 2). | Staging HEAD in archive is far behind current `main`. |
+| Phase 0 foundation | Yes. Domain skeleton, contracts, CI. | Architecture suite + route-name tests. | **Locally, daily:** every one of the 35 walks signs in — admin, supervisor, teacher, student, parent — and lands on the right home (`hifz.mjs` alone lands five roles). The staging notes here (2026-06-13 `/up` 200; 2026-08-23 seed login failed) are historical; **staging is the operator's to deploy and re-check** (§5ft). BML is unwalkable anywhere until its webhook secret exists (`OWNER_ACTIONS` 2). | Staging HEAD in archive is far behind current `main`. |
 | Morph-map hotfix | Yes. `config/morph-map.php`, backfill, `morph-map:verify`. | `MorphMapBackfillTest`, `MorphMapConfigTest` (CI). | Staging verify **OK** (2026-08-16, `05b8cca`). Every new polymorphic column since registers its alias in the same slice, and the arch test fails the build otherwise — the walks that create documents, certificates, found items and messages read them back by alias. | Mixed-era staging was the real test of collapse. |
 | S1.1a schema | Yes. Additive student/guardian/document columns. | `UnifiedStudentSchemaTest`. | Not a user task: the columns are what `create-sweep.mjs` (Add student), `own-data.mjs` and `signup.mjs` (the directory search) write and read. | Deploy 3 cleanup not run (owner's, `docs/migrations/s11-deploy-3-cleanup-proposal.md`). |
 | S1.1b backfill | Yes. `UnifyStudentsAction`, `students:verify-unification`. | `UnifiedStudentBackfillTest`, representative seeder test. | Staging verify **red** (collisions + orphan guardians, archive 2026-08-25). Representative gate **green** (ADR-021). | `--backfill` refused on `APP_ENV=production`. |
@@ -92,7 +92,7 @@ Legend — **CODE:** implementation in repo (models/migrations/actions/routes/pa
 | S2.7 class attendance | Yes. Writer + daily grid. | `ClassAttendanceTest`. | Walked **partial** with S2.6 (R2 S2). School in **per-lesson** mode; daily store rejects. | `excused` still on the teacher grid. |
 | S2.8 absence notes | Yes. Portal submit + teacher approve → excused. | `AbsenceNoteTest`. | Walked **ok** (R2 S4, R3 S4). Date not defaulted. Attachment/period not in the form. | |
 | S2.9 behavior | Yes. | `BehaviorRecordTest`. | Walked **locally** 2026-09-13: screen shows a row planted for it (§5cm). | |
-| S2.10 requests / leave | Yes. | `SchoolRequestTest`. | Walked **locally** 2026-09-13: screen shows a row planted for it (§5cm). | |
+| S2.10 requests / leave | Yes. | `SchoolRequestTest`, `RequestFamilyHalfTest`. | Walked 2026-09-23: the staff half by `hr.mjs` (§5fd) and the family half by `requests.mjs` (§5fw): a parent files a request about their child, the class teacher and the office are told, a rejection must state its reason and the family sees it with its date, a second request is approved, the CSV carries both. **Before this a family was offered staff leave types and refused, could not say which child, nobody was told a request was waiting, a rejection could be empty, and a decided card showed neither date nor reason.** | Who approves a family's request (class teacher vs office) is an approver-rule the owner has not set; the office reviews today (§5fw). |
 | S3.1 grading foundations | Yes. Scales, types, weights UI. | `GradingFoundationsTest` including HTTP store. | Weights form now saves a year scheme (#96): numeric defaults summing to 100. | Previously walked **fail** (R2/R3 JSON zeros). |
 | S3.2 exams | Yes. Status machine, schedule. | `ExamSchedulingTest`. | Walked **ok** (R2 S5) schedule → published. Easy to schedule the wrong class (form defaults). | |
 | S3.3 marks | Yes. Grid + CSV. | `ExamMarksTest`. | Walked **ok** (R2 S5) 15/15. PIL numbers **on this grid**. | |
@@ -4346,6 +4346,64 @@ walk returned a header row and nothing else for circulation, student work and
 pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
+
+## 5fw. E-track audit, E5: the family's half of requests walked — and five things it could not do (2026-09-23)
+
+E5's acceptance line: *a parent files a leave request, the class teacher
+approves it, both are notified, the audit trail is complete; rejected
+requests state a reason; CSV export.* The staff half — leave, approval,
+balance, cover — is `hr.mjs` (§5fd). The family half had HTTP tests for
+the engine and no walk, and the E-track plan said so. `scripts/smoke/requests.mjs`,
+three logins: the parent files a request about their child and sees it
+pending with the child's name; the class teacher and the office are each
+told in their notification centre; the office opens it, sees who asked
+and about whom, is refused a rejection with no reason, rejects with one,
+and the card shows the decision with its date and reason; the parent
+sees the rejection and its reason and is told; files a second; the
+office approves it; the parent sees it approved and is told; the CSV
+carries both. `SmokeMarkerSeeder::requestsCycle()`;
+`RequestsCycleSmokeResetTest`. Thirty-fifth walk, thirty-first writer.
+
+**Five defects, all on the family's side of the same screen.**
+
+1. **The wrong types.** The form offered every request type to everyone
+   and defaulted to *teacher leave*; a parent who left it was refused with
+   "a staff profile is required". The index now offers the two leave
+   types only to someone with a teacher or staff profile, and the staff
+   fields (leave type, half day, certificate) only for staff leave.
+2. **No child.** `regarding` was null for every family request, so the
+   office could not tell which pupil it concerned. Families now choose
+   *Regarding* from their own children; `BuildSchoolRequestPayloadAction`
+   refuses any other pupil's id (`ListGuardianChildrenAction`, People,
+   by Action — rule 3).
+3. **Nobody told.** `NotifyRequestDecisionAction` was the only notice —
+   the *decision* half of "both are notified". Filing told no one.
+   `NotifyRequestSubmittedAction` tells everyone with `requests.review`
+   and, for a request about a pupil, the class teacher of every class the
+   pupil is active in (`classes.class_teacher_id` is a users.id) — never
+   the requester. Trilingual strings under `notifications.request`.
+4. **An empty rejection.** `review_notes` was nullable on reject; the
+   family got "rejected." and nothing else. `ReviewSchoolRequestAction`
+   now refuses a rejection with no reason, and says so.
+5. **A card with no answer.** The card was type, status, reason. It now
+   says who asked (to reviewers), about whom, when, and — once decided —
+   the decision, its date and the reviewer's reason. `ListSchoolRequestsAction`
+   carries the names in two queries for the list. The CSV grew
+   `regarding_*`, `submitted_at`, `reviewed_by`, `review_notes`.
+
+**Owner decision — who approves a family's request.** The acceptance
+line says *the class teacher*; today teachers and parents hold
+`requests.submit` only and the office (`admin`, `headmaster`,
+`supervisor`) holds `requests.review`. Giving teachers a global review
+permission would let them decide staff leave too, which is wrong; the
+right shape is the plan's *approver rule* per request type (class
+teacher / headmaster / named permission), which is a design decision
+not a fix. Until it is taken, the class teacher is **told** and the
+office decides — and the walk asserts exactly that.
+
+**Walked in a browser.** `requests.mjs` 23/23 twice on a re-seeded
+database, no console or server errors; `hr.mjs` still green on the
+reshaped form.
 
 ## 5fv. S1 audit, S1.3: consent walked from the screen to the public gate — and the tab was 500 on every seeded database (2026-09-23)
 

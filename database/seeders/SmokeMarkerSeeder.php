@@ -94,6 +94,7 @@ class SmokeMarkerSeeder extends Seeder
         $this->schoolDayCycle();
         $this->timetableCycle($year);
         $this->consentCycle($studentId, $admin);
+        $this->requestsCycle($class);
 
         // A default `migrate:fresh --seed` leaves `staff_profiles` empty, and
         // this used to skip the whole HR block in silence — so the sweep
@@ -1757,6 +1758,27 @@ class SmokeMarkerSeeder extends Seeder
      * a real class's week. Their entries are the walk's residue and go;
      * the classes stay, keyed by name and section.
      */
+    /**
+     * `scripts/smoke/requests.mjs` has the parent file two requests about
+     * the pupil and the office decide them, which tells the class teacher
+     * and the office and then the parent. This clears the requests and the
+     * notices, and makes teacher@ the class teacher of the pupil's class
+     * (`classes.class_teacher_id` is a users.id) so "the class teacher is
+     * told" has someone to be.
+     */
+    private function requestsCycle(?ClassRoom $class): void
+    {
+        DB::table('requests')->where('reason', 'like', 'SMOKE-Family-Request%')->delete();
+        DB::table('user_notifications')
+            ->where(fn ($query) => $query->where('message', 'like', '%SMOKE-Family-Request%')->orWhere('message', 'like', '%SMOKE-Rejected%'))
+            ->delete();
+
+        $teacherUserId = (int) DB::table('users')->where('email', 'teacher@akuru.edu.mv')->value('id');
+        if ($class && $teacherUserId > 0) {
+            DB::table('classes')->where('id', $class->id)->update(['class_teacher_id' => $teacherUserId]);
+        }
+    }
+
     private function timetableCycle(AcademicYear $year): void
     {
         $schoolId = DB::table('schools')->orderBy('id')->value('id');
