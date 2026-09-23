@@ -79,6 +79,7 @@ class SmokeMarkerSeeder extends Seeder
         $this->pronunciation();
         $this->recitations();
         $this->examCycle($year);
+        $this->hrCycle($year, $admin);
 
         // A default `migrate:fresh --seed` leaves `staff_profiles` empty, and
         // this used to skip the whole HR block in silence — so the sweep
@@ -86,7 +87,9 @@ class SmokeMarkerSeeder extends Seeder
         // the screens were fine. A seeder that quietly plants nothing makes the
         // thing it is checking look broken, which is the worst direction for
         // the error to run.
-        $staff ??= $this->makeStaffProfile();
+        // `hrCycle()` may have just made teacher@'s profile on an empty table,
+        // so look again before making one (user_id is unique).
+        $staff ??= StaffProfile::query()->first() ?? $this->makeStaffProfile();
 
         if ($staff !== null) {
             $this->hr($year, $staff, $admin);
@@ -1014,11 +1017,21 @@ class SmokeMarkerSeeder extends Seeder
             return;
         }
 
+        // A *paid* period with *final* payslips: the shape a period with
+        // documents on it actually has. This planted `status => 'draft'`, a
+        // value `PayrollPeriodStatus` does not have, so the first read of the
+        // row through the model — the payroll screen's period list — threw a
+        // ValueError and the screen answered 500 on every seeded database.
+        // Nothing had loaded that screen with the flag on until the HR walk
+        // did (STATUS §5fd).
         $periodId = DB::table('payroll_periods')->where('year', 2026)->where('month', 8)->value('id')
             ?? DB::table('payroll_periods')->insertGetId([
-                'year' => 2026, 'month' => 8, 'status' => 'draft',
-                'processed_by' => $admin?->id, 'created_at' => now(), 'updated_at' => now(),
+                'year' => 2026, 'month' => 8, 'status' => 'paid',
+                'processed_by' => $admin?->id, 'approved_by' => $admin?->id, 'paid_at' => now(),
+                'created_at' => now(), 'updated_at' => now(),
             ]);
+        DB::table('payroll_periods')->where('id', $periodId)->whereNotIn('status', ['open', 'processing', 'review', 'approved', 'paid', 'locked'])
+            ->update(['status' => 'paid', 'paid_at' => now()]);
 
         foreach ($staff as $profile) {
             $path = 'smoke/payslip-'.$profile->id.'.html';
@@ -1038,7 +1051,7 @@ class SmokeMarkerSeeder extends Seeder
                     'basic_salary' => 10000, 'gross' => 10000, 'net_pay' => 10000,
                     'employee_pension' => 0, 'employer_pension' => 0, 'tax_withheld' => 0,
                     'unpaid_leave_deduction' => 0, 'document_id' => $documentId,
-                    'status' => 'draft', 'created_at' => now(), 'updated_at' => now(),
+                    'status' => 'final', 'created_at' => now(), 'updated_at' => now(),
                 ]
             );
         }
@@ -1222,6 +1235,91 @@ class SmokeMarkerSeeder extends Seeder
         DB::table('term_grades')->where('term_id', $termId)->delete();
     }
 
+    /**
+     * The staff member's month, reset: the walk in `scripts/smoke/hr.mjs`.
+     *
+     * The staff actor is the seeded teacher (`teacher@akuru.edu.mv`): a login
+     * the other walks already use, with a `teachers` row so an approved leave
+     * also produces the teacher absence. Everything the walk needs is planted
+     * here — a contract, an annual entitlement, a permit that expires in 25
+     * days — and everything the last run left is removed: the leave request
+     * and what its approval wrote (ledger, on-leave rows, teacher absence,
+     * substitution suggestions), today's self check-in, the appraisal cycle,
+     * the expiry notices, and payroll period 2099-12 with its payslips.
+     *
+     * Two settings are switched on for the walk. Self check-in has no screen
+     * of its own yet (S5 audit D3) and defaults off, so a walk that checks in
+     * needs the row set. `payroll.enabled` is only half the flag — the
+     * environment's `PAYROLL_ENABLED` is the other half and stays off on
+     * every host until two parallel cycles match — so setting the row here
+     * enables nothing on its own; the walk says so when payroll is off.
+     */
+    private function hrCycle(AcademicYear $year, ?object $admin): void
+    {
+        $userId = (int) DB::table('users')->where('email', 'teacher@akuru.edu.mv')->value('id');
+        if ($userId <= 0) {
+            $this->command?->warn('No teacher@ account — the HR-cycle markers were skipped.');
+
+            return;
+        }
+
+        $profileId = (int) (DB::table('staff_profiles')->where('user_id', $userId)->value('id')
+            ?? DB::table('staff_profiles')->insertGetId([
+                'user_id' => $userId, 'first_name' => 'Smoke', 'last_name' => 'Marker', 'gender' => 'female',
+                'joined_date' => '2026-01-01', 'employment_type' => 'full_time', 'status' => 'active',
+                'created_at' => now(), 'updated_at' => now(),
+            ]));
+
+        // What the walk needs to exist.
+        if (! DB::table('staff_contracts')->where('staff_profile_id', $profileId)->where('status', 'active')->exists()) {
+            DB::table('staff_contracts')->insert([
+                'staff_profile_id' => $profileId, 'contract_type' => 'permanent',
+                'start_date' => '2026-01-01', 'basic_salary' => 9876, 'status' => 'active',
+                'created_at' => now(), 'updated_at' => now(),
+            ]);
+        }
+        $this->plantEntitlement($profileId, $year->id);
+        $permitIds = DB::table('documents')->where('title', 'SMOKE-Permit')->pluck('id');
+        DB::table('document_expiry_notices')->whereIn('document_id', $permitIds)->delete();
+        DB::table('documents')->whereIn('id', $permitIds)->delete();
+        DB::table('documents')->insert([
+            'documentable_type' => 'staff_profile', 'documentable_id' => $profileId,
+            'media_path' => 'smoke/permit.pdf', 'document_type' => 'passport', 'title' => 'SMOKE-Permit',
+            'expires_at' => now()->addDays(25)->toDateString(), 'uploaded_by' => $admin?->id,
+            'created_at' => now(), 'updated_at' => now(),
+        ]);
+
+        // What the last run left behind.
+        $requestIds = DB::table('requests')->where('reason', 'SMOKE-Leave')->pluck('id');
+        DB::table('leave_ledger')->whereIn('request_id', $requestIds)->delete();
+        foreach ($requestIds as $requestId) {
+            DB::table('substitution_requests')->where('notes', 'like', '%request #'.$requestId)->delete();
+        }
+        DB::table('teacher_absences')->where('reason', 'SMOKE-Leave')->delete();
+        DB::table('requests')->whereIn('id', $requestIds)->delete();
+        DB::table('staff_attendance')->where('staff_profile_id', $profileId)
+            ->where('status', 'on_leave')->whereDate('date', '>', now()->toDateString())->delete();
+        DB::table('staff_attendance')->where('staff_profile_id', $profileId)
+            ->whereDate('date', now()->toDateString())->where('source', 'self')->delete();
+        DB::table('appraisal_cycles')->where('name', 'SMOKE-Cycle')->delete();
+
+        $periodId = (int) DB::table('payroll_periods')->where('year', 2099)->where('month', 12)->value('id');
+        if ($periodId > 0) {
+            $payslipIds = DB::table('payslips')->where('payroll_period_id', $periodId)->pluck('id');
+            DB::table('documents')->where('documentable_type', 'payslip')->whereIn('documentable_id', $payslipIds)->delete();
+            DB::table('payslips')->whereIn('id', $payslipIds)->delete();
+            DB::table('payroll_postings')->where('year', 2099)->where('month', 12)->delete();
+            DB::table('payroll_periods')->where('id', $periodId)->delete();
+        }
+
+        foreach (['hr.staff_self_checkin' => 'hr', 'payroll.enabled' => 'payroll'] as $key => $group) {
+            DB::table('settings')->updateOrInsert(['key' => $key], [
+                'value' => '1', 'type' => 'boolean', 'group' => $group, 'label' => $key,
+                'created_at' => now(), 'updated_at' => now(),
+            ]);
+        }
+    }
+
     private function hr(AcademicYear $year, StaffProfile $staff, ?object $admin): void
     {
         DB::table('staff_contracts')->where('basic_salary', 12345)->delete();
@@ -1255,14 +1353,37 @@ class SmokeMarkerSeeder extends Seeder
             ]
         );
 
-        // 333 entitled days is not a number any real policy produces, which is
-        // the point — the balances screen either shows it or it does not.
+        $this->plantEntitlement($staff->id, $year->id);
+    }
+
+    /**
+     * 333 entitled days is not a number any real policy produces, which is
+     * the point — the balances screen either shows it or it does not.
+     *
+     * The balance is a ledger sum, not the entitlement column
+     * (`LeaveBalanceCalculator`), so an entitlement planted without its
+     * opening `entitled` ledger row shows 333 entitled and 0 to take — which
+     * is how the first HR walk got "Insufficient leave balance (0 remaining)".
+     */
+    private function plantEntitlement(int $profileId, int $yearId): void
+    {
         $typeId = (int) DB::table('leave_types')->where('code', 'annual')->value('id');
-        if ($typeId > 0) {
-            DB::table('leave_entitlements')->updateOrInsert(
-                ['staff_profile_id' => $staff->id, 'leave_type_id' => $typeId, 'academic_year_id' => $year->id],
-                ['entitled_days' => 333, 'created_at' => now(), 'updated_at' => now()]
-            );
+        if ($typeId <= 0) {
+            return;
         }
+
+        DB::table('leave_entitlements')->updateOrInsert(
+            ['staff_profile_id' => $profileId, 'leave_type_id' => $typeId, 'academic_year_id' => $yearId],
+            ['entitled_days' => 333, 'created_at' => now(), 'updated_at' => now()]
+        );
+        $entitlementId = (int) DB::table('leave_entitlements')
+            ->where('staff_profile_id', $profileId)->where('leave_type_id', $typeId)->where('academic_year_id', $yearId)
+            ->value('id');
+
+        DB::table('leave_ledger')->where('entitlement_id', $entitlementId)->where('reason', 'entitled')->delete();
+        DB::table('leave_ledger')->insert([
+            'entitlement_id' => $entitlementId, 'request_id' => null, 'days' => 333, 'reason' => 'entitled',
+            'created_at' => now(), 'updated_at' => now(),
+        ]);
     }
 }
