@@ -5,7 +5,6 @@ use App\Domains\Finance\Actions\CreatePaymentPlanAction;
 use App\Domains\Finance\Actions\MarkDefaultedPaymentPlansAction;
 use App\Domains\Finance\Enums\InstallmentStatus;
 use App\Domains\Finance\Enums\InvoiceStatus;
-use App\Domains\Finance\Enums\InvoiceType;
 use App\Domains\Finance\Enums\PaymentPlanStatus;
 use App\Domains\Finance\Models\Invoice;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -14,22 +13,6 @@ use Illuminate\Validation\ValidationException;
 use Inertia\Testing\AssertableInertia as Assert;
 
 uses(RefreshDatabase::class);
-
-function makeSchoolInvoice(int $createdBy, int $studentId, int $yearId, float $total = 1000): Invoice
-{
-    return Invoice::query()->create([
-        'invoice_number' => 'INV-PLAN-'.$studentId.'-'.$total,
-        'student_id' => $studentId,
-        'academic_year_id' => $yearId,
-        'invoice_type' => InvoiceType::SchoolFees,
-        'issue_date' => '2026-01-01',
-        'due_date' => '2026-03-01',
-        'status' => InvoiceStatus::Sent,
-        'total_amount' => $total,
-        'paid_amount' => 0,
-        'created_by' => $createdBy,
-    ]);
-}
 
 it('allocates to the oldest installment, rejects overpayment, and defaults without locking school access', function () {
     expect(Schema::hasTable('payment_plans'))->toBeTrue()

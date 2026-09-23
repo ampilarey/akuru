@@ -24,7 +24,6 @@ class ListFeeItemsAction
             'frequency' => $item->frequency?->value,
             'is_mandatory' => $item->is_mandatory,
             'is_active' => $item->is_active,
-            'applicable_grades' => $item->applicable_grades,
         ]);
     }
 }

@@ -19,7 +19,6 @@ class FeeItem extends Model
         'frequency',
         'is_mandatory',
         'is_active',
-        'applicable_grades',
     ];
 
     protected function casts(): array
@@ -30,7 +29,6 @@ class FeeItem extends Model
             'default_amount' => 'decimal:2',
             'is_mandatory' => 'boolean',
             'is_active' => 'boolean',
-            'applicable_grades' => 'array',
         ];
     }
 }

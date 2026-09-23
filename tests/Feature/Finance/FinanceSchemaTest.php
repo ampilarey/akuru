@@ -16,7 +16,7 @@ use Spatie\Permission\Models\Permission;
 
 uses(RefreshDatabase::class);
 
-it('scopes invoices to the year backbone and keeps fee-item grades during the transition', function () {
+it('scopes invoices to the year backbone and has closed the fee-item grades transition', function () {
     expect(Schema::hasColumns('invoices', [
         'academic_year_id',
         'term_id',
@@ -24,7 +24,10 @@ it('scopes invoices to the year backbone and keeps fee-item grades during the tr
         'payment_plan_id',
         'student_id',
     ]))->toBeTrue()
-        ->and(Schema::hasColumns('fee_items', ['name_arabic', 'name_dhivehi', 'applicable_grades']))->toBeTrue()
+        ->and(Schema::hasColumns('fee_items', ['name_arabic', 'name_dhivehi']))->toBeTrue()
+        // S4.1 "kept during transition"; S4.2's structures replaced it and the
+        // column was null everywhere, so the transition is closed (STATUS §5fc).
+        ->and(Schema::hasColumn('fee_items', 'applicable_grades'))->toBeFalse()
         ->and(Schema::hasTable('receipts'))->toBeTrue()
         ->and(Schema::hasColumns('receipts', [
             'invoice_id',
@@ -51,11 +54,9 @@ it('scopes invoices to the year backbone and keeps fee-item grades during the tr
         'default_amount' => 1500,
         'type' => FeeItemType::Tuition->value,
         'frequency' => FeeFrequency::Monthly->value,
-        'applicable_grades' => ['Grade 1'],
     ]);
 
-    expect($item->name_dhivehi)->toBe('ފީ')
-        ->and($item->applicable_grades)->toBe(['Grade 1']);
+    expect($item->name_dhivehi)->toBe('ފީ');
 
     expect(fn () => app(SaveFeeItemAction::class)->execute([
         'name' => 'Bad',
