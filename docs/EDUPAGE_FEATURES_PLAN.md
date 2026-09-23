@@ -669,6 +669,8 @@ E2 messaging with a class poll, E22 notifications — is `scripts/smoke/family.m
 four logins. It found that no message had ever been sendable from the compose
 screen (the hidden branch's empty id failed `integer`), and that a class thread
 named every family to every family and let a small class reply-all; both fixed
-in that slice. E1 is `own-data.mjs`; E8 `pickup.mjs`; E9 `hr.mjs`; E12
-`meetings.mjs`; E13 §5bw; E14 `exams.mjs`. The rest of E5–E22 have their HTTP
-tests and no walk yet.
+in that slice. E6 is `signup.mjs` (STATUS §5fq), which found the builder could
+not target a class and nothing could close a sheet — both now on the screen.
+E1 is `own-data.mjs`; E8 `pickup.mjs`; E9 `hr.mjs`; E12 `meetings.mjs`; E13
+§5bw; E14 `exams.mjs`. The rest of E5–E22 have their HTTP tests and no walk
+yet.

@@ -22,8 +22,8 @@ the Library L1–L7; the public-site track W1–W3; EduPage parity E1–E22. The
 agent-buildable backlog in `KNOWN_ISSUES` is empty.
 
 **What is verified is narrower than what is built, and in one specific way.**
-Thirty scripted browser walks (`node scripts/smoke/all.mjs`, ~26 minutes)
-drive the loops that matter — building a course, running an intake, enrolling, buying a course, taking a lesson, sitting an assessment, earning a certificate, tagging an Arabic skill activity, setting and marking a recitation, mapping a halaqa, approving a Hifz milestone, reading a protected book, redeeming a gift card, setting homework, posting a notice, messaging a teacher and polling a class, marking work,
+Thirty-one scripted browser walks (`node scripts/smoke/all.mjs`, ~27 minutes)
+drive the loops that matter — building a course, running an intake, enrolling, buying a course, taking a lesson, sitting an assessment, earning a certificate, tagging an Arabic skill activity, setting and marking a recitation, mapping a halaqa, approving a Hifz milestone, reading a protected book, redeeming a gift card, setting homework, posting a notice, messaging a teacher and polling a class, sending a trip sign-up with a fee, marking work,
 reporting an absence, collecting a child, booking a meeting, publishing an
 article, taking and refunding money, recording a sound, reciting, an exam to a
 report card, a fee to a receipt, a staff member's month, and the whole app at
@@ -4346,6 +4346,66 @@ walk returned a header row and nothing else for circulation, student work and
 pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
+
+## 5fq. E-track audit, E6: the sign-up sheet walked — targeting and closing reach the screen (2026-09-23)
+
+The EduPage-parity audit, E6 (`docs/EDUPAGE_FEATURES_PLAN.md`, Wave 2):
+sign-up sheets with a guardian's confirmation and a fee. E6a–c shipped with
+forty tests (§5aq–§5as) and no walk. Its acceptance line is one sentence
+— *staff build a trip sign-up targeted at one class with a fee; parents
+submit; a pupil submission stays unconfirmed until the guardian confirms
+from a parent account; invoices are raised through Finance; closed forms
+reject submissions* — and this walks that sentence. Five findings; four
+are gaps between what the action could do and what any screen offered.
+
+**D1 — the builder could not target a class, and nothing could close a
+sheet.** `SaveFormAction` honoured `target_classes` and `closes_at` from
+the first slice; `Forms/Index.jsx` sent `target_audience: []` and no
+closing time, and there was no edit screen at all, so the office could
+only send a sheet to the whole school and never close it. The builder now
+offers the classes (from Academics' `ListClassesForYearAction`, as the
+noticeboard does) and a closing time; the results page has *Close sign-up
+now*, which sends the form's own settings back with `closes_at` set to
+the moment — the frozen fields, flags and price untouched. The results
+payload carries those settings for that purpose.
+`FormBuilderTargetsAndClosesTest`.
+
+**D2 — the results table named the pupil's account, not the pupil.**
+"Who" showed the login's name; on this seed the pupil's account is
+*Ahmed Hassan* and the pupil is *Fatima Yoosuf*, which is exactly the
+confusion an office working from the table would suffer. An answer
+resolved to a pupil (E6c already did that for the invoice) is now named
+after the pupil, with the account name as the fallback.
+
+**D3 — the family's invoice list showed a number and nothing else.** E6c
+says the invoice must never appear "from nowhere on a family's
+statement", and stored `meta.source` for it — but `/portal/invoices`
+listed *ADH-1-20260923…* with no word of what it was for. The list has a
+*For* column now: the ad-hoc invoice's reason (the sheet's title), or the
+type for generated fee invoices.
+
+**D4 — the directory could not find a whole name.** `/people/students?search=Fatima Yoosuf`
+returned nobody: each name column was matched on its own. The walk typed
+the pupil's name and got an empty page. The search now also matches
+first and last name together. `StudentDirectoryFindsAWholeNameTest`.
+
+**D5 — the walk.** `scripts/smoke/signup.mjs`, 17 steps, three logins:
+the office reads the pupil's class off the directory, builds `SMOKE-Trip`
+— one yes/no question, required, aimed at that class only, MVR 15.00,
+parent's confirmation on — and sees it listed open with *1 class(es)*;
+the pupil finds it with its fee and question, answers *Yes*, and is told
+it is *Waiting for a parent to confirm* and that an invoice has been
+raised; the parent finds the answer waiting, reads what the child said,
+confirms from their own account, and finds the invoice on their Invoices
+page named for the trip at 15.00; the office reads the answer confirmed on
+the results table (*1 confirmed by a parent*), exports the CSV, closes
+the sheet; the pupil sees it *Closed* with nothing to submit.
+`SmokeMarkerSeeder::signupCycle()` plants nothing and clears the
+invoice, the answer and the sheet. `SignupCycleSmokeResetTest`.
+Thirty-first walk, twenty-seventh writer.
+
+**Walked in a browser.** `signup.mjs` 17/17 twice on a re-seeded
+database, no console or server errors.
 
 ## 5fp. E-track audit, Wave 1: the daily habit walked — and nobody could send a message (2026-09-23)
 

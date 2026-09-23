@@ -1,6 +1,24 @@
+import { router } from '@inertiajs/react';
 import AppShell from '../../Layouts/AppShell';
 
 export default function Results({ form, rows = [] }) {
+    // Closing is an update that sets `closes_at` to now and changes nothing
+    // else: the frozen fields, flags and price go back exactly as they are.
+    // Nothing on the screen could close a sheet before this (STATUS §5fq).
+    const closeNow = () => router.put(`/forms/${form.id}`, {
+        title: form.title,
+        description: form.description,
+        fields: form.fields,
+        target_audience: form.target_audience,
+        target_classes: form.target_classes,
+        is_anonymous: form.is_anonymous,
+        requires_parent_confirmation: form.requires_parent_confirmation,
+        fee_amount: form.fee_amount,
+        is_published: form.is_published,
+        opens_at: form.opens_at,
+        closes_at: new Date().toISOString(),
+    });
+
     return (
         <AppShell title={form.title}>
             <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
@@ -10,7 +28,12 @@ export default function Results({ form, rows = [] }) {
                     {form.is_anonymous ? ' · anonymous' : ''}
                     {form.is_open ? '' : ' · closed'}
                 </p>
-                <a className="btn-secondary" href={`/forms/${form.id}/export`}>Export CSV</a>
+                <span className="flex gap-2">
+                    {form.is_open && (
+                        <button type="button" className="btn-secondary" onClick={closeNow}>Close sign-up now</button>
+                    )}
+                    <a className="btn-secondary" href={`/forms/${form.id}/export`}>Export CSV</a>
+                </span>
             </div>
 
             <div className="overflow-x-auto rounded-lg border bg-white">

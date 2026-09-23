@@ -14,6 +14,7 @@ export default function Invoices({ children, studentId, invoices }) {
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">Invoice</th>
+                            <th className="px-3 py-2">For</th>
                             <th className="px-3 py-2">Due</th>
                             <th className="px-3 py-2">Balance</th>
                             <th className="px-3 py-2">Plan</th>
@@ -22,11 +23,12 @@ export default function Invoices({ children, studentId, invoices }) {
                     </thead>
                     <tbody>
                         {invoices.length === 0 && (
-                            <tr><td className="px-3 py-4 text-gray-500" colSpan={5}>No invoices.</td></tr>
+                            <tr><td className="px-3 py-4 text-gray-500" colSpan={6}>No invoices.</td></tr>
                         )}
                         {invoices.map((row) => (
                             <tr key={row.id} className="border-t">
                                 <td className="px-3 py-2">{row.invoice_number}</td>
+                                <td className="px-3 py-2">{row.description || '—'}</td>
                                 <td className="px-3 py-2">{row.due_date}</td>
                                 <td className="px-3 py-2">{row.balance}</td>
                                 <td className="px-3 py-2">{row.plan_status || '—'}{row.next_installment ? ` / next ${row.next_installment}` : ''}</td>

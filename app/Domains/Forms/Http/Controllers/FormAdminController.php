@@ -2,6 +2,7 @@
 
 namespace App\Domains\Forms\Http\Controllers;
 
+use App\Domains\Academics\Actions\ListClassesForYearAction;
 use App\Domains\Forms\Actions\ListFormResponsesAction;
 use App\Domains\Forms\Actions\SaveFormAction;
 use App\Domains\Forms\Enums\FormFieldType;
@@ -31,8 +32,11 @@ class FormAdminController extends Controller
                     'requires_parent_confirmation' => (bool) $form->requires_parent_confirmation,
                     'fee_amount' => $form->hasFee() ? (float) $form->fee_amount : null,
                     'responses' => $form->responses()->count(),
+                    'target_classes' => $form->target_classes ?? [],
                 ]),
             'fieldTypes' => array_map(fn (FormFieldType $t): string => $t->value, FormFieldType::cases()),
+            // The classes a sheet may be aimed at (E6: "targeted at one class").
+            'classes' => app(ListClassesForYearAction::class)->execute()->where('is_active', true)->values(),
         ]);
     }
 

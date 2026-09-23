@@ -40,6 +40,10 @@ class ListStudentsAction
             $query->where(function ($inner) use ($like): void {
                 $inner->where('students.first_name', 'like', $like)
                     ->orWhere('students.last_name', 'like', $like)
+                    // A whole name, typed the way people say it. Each part
+                    // matched on its own, so "Fatima Yoosuf" found nobody
+                    // while "Fatima" found her (sign-up walk, STATUS §5fq).
+                    ->orWhereRaw("CONCAT(students.first_name, ' ', students.last_name) like ?", [$like])
                     ->orWhere('students.first_name_dhivehi', 'like', $like)
                     ->orWhere('students.last_name_dhivehi', 'like', $like)
                     ->orWhere('students.first_name_arabic', 'like', $like)
