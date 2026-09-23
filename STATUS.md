@@ -22,8 +22,8 @@ the Library L1–L7; the public-site track W1–W3; EduPage parity E1–E22. The
 agent-buildable backlog in `KNOWN_ISSUES` is empty.
 
 **What is verified is narrower than what is built, and in one specific way.**
-Twenty-five scripted browser walks (`node scripts/smoke/all.mjs`, ~21 minutes)
-drive the loops that matter — building a course, running an intake, enrolling, buying a course, taking a lesson, sitting an assessment, earning a certificate, marking work,
+Twenty-six scripted browser walks (`node scripts/smoke/all.mjs`, ~22 minutes)
+drive the loops that matter — building a course, running an intake, enrolling, buying a course, taking a lesson, sitting an assessment, earning a certificate, tagging an Arabic skill activity, marking work,
 reporting an absence, collecting a child, booking a meeting, publishing an
 article, taking and refunding money, recording a sound, reciting, an exam to a
 report card, a fee to a receipt, a staff member's month, and the whole app at
@@ -136,7 +136,7 @@ Legend — **CODE:** implementation in repo (models/migrations/actions/routes/pa
 | 1A.2–1A.7 course engine | Yes. Catalog, outline, text/media blocks, glossary term bank + lesson attach, `/learn`, portal learning. | Matching `tests/Feature/Courses/*` including `GlossaryTest`, `OutlineFormsPostTheirShownParentTest`. | Glossary walked (#102). **Catalog, glossary, levels and audiences each show a planted row** (§5ds sweep); **a student took a lesson end to end** (§5dt, `learn.mjs`); **an author built a course end to end** 2026-09-23 (`author.mjs`, §5fg): course → module → lesson → text, instruction and image blocks → revision → review by the supervisor → the student enrols, reads all three, completes. **The first lesson of a new course could not be saved from the outline editor before this** — the form posted an empty module id. Activities and assessments as authoring screens remain UNVERIFIED by walk (`review.mjs` covers marking). | `glossary_items` / `lesson_glossary_items` (SPEC §22). |
 | 1B.1–1B.6 offerings/PWA | Yes. Offerings, pin/seats, sessions, extra blocks, unlock/completion, PWA/i18n. **Learners choose an intake** from the catalog since §5fh. | Matching Offerings/Progress/Pwa tests, `IntakeEnrollmentTest`. | **1B.1 offerings shows a planted row** (§5ds sweep). **Walked 2026-09-23** (`intake.mjs`, §5fh): the office creates a face-to-face intake with one seat, pins it, schedules a session; the student sees it in the catalog with its seat and next session, enrols into it, sees it named on the course page and the session on the dashboard, the catalog reads Full; the office marks them present. PWA: `mobile.mjs` reads the manifest. Unlock/completion evaluators tested, not walked. **Before §5fh no screen let a learner choose an offering at all.** | 1B.5 tests the 2/3 = 66 formula. **1B.5's "evaluators" are one hardcoded policy each** — sequential unlock, required-lessons+sessions completion — behind contracts with a single implementation (ADR-022). No per-course strategy config exists; ROADMAP §2a describes the target, not `main`. §3.4's backfill **shipped** (#340, `offerings:verify-backfill --backfill`, gate output captured in its section) as rule 9's backfill deploy; the read switch (public site off `courses.seats`/`enrollment_deadline`) and the §3.5 column drop are the two deploys still pending. |
 | 2.1–2.5 activities | Yes. Four patterns, bank, assessment player, review, session polish. Class quizzes/assignments migrate onto the same engine. Unified gradebook via `GradeItemContract`. | Matching Courses/Progress tests + `LegacyAssessmentMigrationTest` + `UnifiedGradebookTest` + `AssessmentTextKeyTest`. | Quiz/assignment migration walked **#104**. Unified gradebook walked. **A student answered a `selection` activity and the engine scored it** (§5dv, `learn.mjs`). **The teacher-marked loop** — hand in, mark, feedback seen (§5dx, `review.mjs`). **The assessment, end to end** 2026-09-23 (`assess.mjs`, §5fi): two bank questions (multiple-choice, short-answer), the builder, attach, the player, auto-marked 2/2, the attempt keeps its snapshot after the question is edited, a retake starts unscored. **That walk found a short-answer key in the builder's "correct answer" box was never read — only "other accepted answers" was** — fixed. Arrange (ordering/matching) has tests, no walk. | **Phase 2 audit (2026-08-27):** scoring covers all four patterns (teacher-marked short-circuits to review); review loop + standards-tied question bank verified; rule 6 holds behaviourally. **Deviations:** `Courses/Components/` was never created — Arabic/Quran code lives in `Courses/Models`+`Actions`, so rule 3's Components clause guards an empty set (correction point: Phase F, which creates `Components/Quran` and moves Arabic in the same slice — FQCN moves need morph-map + baseline updates together). Spec §43 `student_submissions`/`teacher_feedback` replaced by attempt `answers` json + review fields (recorded, fine). See ROADMAP §2a as-built notes. |
-| Arabic A.1–A.3 | Yes. Letters/harakas, skill tag, reports. | `ArabicReferenceTest`, `ArabicSkillActivityTest`, `ArabicSkillReportTest`. | UNVERIFIED. | No AI (rule 8). **Audited 2026-08-27: PASS** — tables + `NormalizeTextAnswerAction` (spec normalization) + reports verified; skill metadata rides the four activity patterns (placement caveat = Phase 2 Components note). |
+| Arabic A.1–A.3 | Yes. Letters/harakas, skill tag, reports. | `ArabicReferenceTest`, `ArabicSkillActivityTest`, `ArabicSkillReportTest`. | **Walked 2026-09-23** (`arabic.mjs`, §5fl): the office adds a letter, the author tags a reading activity with it on the plain selection pattern, the engine scores the student 1/1 with no teacher and no AI, and both skill reports list it — the student's under *reading* with the attempt, the office's with the letter. | No AI (rule 8). **Audited 2026-08-27: PASS** — tables + `NormalizeTextAnswerAction` (spec normalization) + reports verified; skill metadata rides the four activity patterns (placement caveat = Phase 2 Components note). |
 | Qur’an A.1–A.4 | Yes. Read actions, recitation metadata, mapping, dual-write **off**. | Matching Courses/Offerings tests. | UNVERIFIED. | No Hifz dashboard change. `QURAN_HALAQA_DUAL_WRITE` default false. **Audited 2026-08-27: PASS** — rule 11 held (no parallel Quran source tables; reads via `QuranReferenceReader` contract, Hifz implements as owner; `quran_translations` is planned new data, not duplication); mapping tables morph-aliased; dual-write env-flagged default-off per rule 9 with tests. Hifz freeze verified: 3 recent commits are pure additions (read actions/contract impls/bindings), compliant with ADR-021 scope-discipline freeze. |
 | Hifz (frozen) | Legacy Blade exists. | `HifzAuthorizationTest` etc. | UNVERIFIED this week. Out of scope to change. | Rule 7. |
 | Pilot blockers #79–#84 | On `main`: picker, AppShell logout, seed contacts, class-teacher field, periods CRUD, teacher generate-today. | Matching Pest files. | Walked in R2/R3. | |
@@ -4346,6 +4346,42 @@ walk returned a header row and nothing else for circulation, student work and
 pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
+
+## 5fl. Arabic A audit: the three slices walked as one loop, no defect (2026-09-23)
+
+The Arabic Module A audit (`docs/ARABIC_A_SPEC.md`, SPEC §51.22–51.23)
+against Courses, Progress and the Arabic reference. **Every DoD line
+exists and is tested**: `arabic_letters` / `arabic_harakas` with catalog
+CRUD and CSV (A.1); `settings.skill` on the four 2.1 patterns with
+`letter_id` / `harakah_id` validated against the reference (A.2); the
+catalog and learner skill reports read from Progress attempt Actions
+(A.3). Rule 6 holds — no subject branch in the engine, the skill and the
+letter ride as activity metadata — and rule 8 holds — nothing here calls
+AI. One finding, not a defect.
+
+**D1 — the §2 row said UNVERIFIED because the three slices had never been
+walked as one loop.** `pronounce.mjs` walks Module B's recording queue and
+the 2026-08-27 audit read the code; nobody had watched a letter travel
+from the reference, through an author's activity, to a student's mark and
+onto both reports. `scripts/smoke/arabic.mjs`, 10 steps, two logins: the
+office adds `ڽ` as `SMOKE-Letter`; the author builds `SMOKE-Arabic-Activity`
+on `SMOKE-Course` — selection pattern, skill *reading*, tagged with the new
+letter, which the builder offers as soon as it exists; the student finds it
+on the course page, is shown the prompt with the letter, picks the right
+option and is scored **1/1** by the engine, no teacher and no AI; the
+student's `/learn/arabic-report` lists it under *reading* with the attempt,
+and the office's `/catalog/arabic/reports` lists it with the letter.
+`SmokeMarkerSeeder::arabicCycle()` clears the attempt, the activity and the
+letter, leaving the seeded 28 alone. `ArabicCycleSmokeResetTest`.
+Twenty-sixth walk, twenty-second writer.
+
+**Not walked, and why.** The teacher-marked speaking/writing skills reuse
+2.4 review, which `review.mjs` walks; harakas are the same CRUD as letters
+on the same page and the same tag on the same builder, so one letter proves
+the path.
+
+**Walked in a browser.** `arabic.mjs` 10/10 twice on a re-seeded database,
+no console or server errors.
 
 ## 5fk. Phase 4 audit: the student's own purchase, walked — the office's side already was (2026-09-23)
 
