@@ -81,6 +81,7 @@ class SmokeMarkerSeeder extends Seeder
         $this->examCycle($year);
         $this->hrCycle($year, $admin);
         $this->authorCycle();
+        $this->intakeCycle();
 
         // A default `migrate:fresh --seed` leaves `staff_profiles` empty, and
         // this used to skip the whole HR block in silence — so the sweep
@@ -1362,6 +1363,46 @@ class SmokeMarkerSeeder extends Seeder
             Storage::disk($media->disk)->delete($media->path);
             DB::table('media_files')->where('id', $media->id)->delete();
         }
+    }
+
+    /**
+     * `scripts/smoke/intake.mjs` creates a scheduled offering (`SMOKE-Intake`)
+     * for a published course through the screens, a session on it, and has
+     * the student enrol into it and the office mark them present. This keeps
+     * the course — `SMOKE-Intake-Course`, kept and updated like `SMOKE-Course`
+     * for the same foreign-key reasons — and clears what a run leaves: the
+     * student's enrolment on it, the offering, its sessions and attendance.
+     */
+    private function intakeCycle(): void
+    {
+        $courseId = (int) DB::table('courses')->where('slug', 'smoke-intake-course')->value('id');
+        $course = [
+            'course_category_id' => DB::table('course_categories')->orderBy('id')->value('id'),
+            'title' => 'SMOKE-Intake-Course',
+            'short_desc' => 'Planted by SmokeMarkerSeeder for the intake walk.',
+            'body' => 'Planted by SmokeMarkerSeeder.',
+            'cover_image' => '',
+            'status' => 'open',
+            'workflow_status' => 'published',
+            'fee' => 0,
+            'registration_fee_amount' => 0,
+            'updated_at' => now(),
+        ];
+        if ($courseId > 0) {
+            DB::table('courses')->where('id', $courseId)->update($course);
+        } else {
+            $courseId = DB::table('courses')->insertGetId($course + ['slug' => 'smoke-intake-course', 'created_at' => now()]);
+        }
+
+        // What the last run left, in foreign-key order.
+        $offeringIds = DB::table('course_offerings')->where('course_id', $courseId)->where('title', 'SMOKE-Intake')->pluck('id');
+        $enrollmentIds = DB::table('course_enrollments')->where('course_id', $courseId)->pluck('id');
+        DB::table('attendance_records')->whereIn('course_offering_id', $offeringIds)->delete();
+        DB::table('course_offering_sessions')->whereIn('course_offering_id', $offeringIds)->delete();
+        DB::table('offering_repin_events')->whereIn('course_offering_id', $offeringIds)->delete();
+        DB::table('student_lesson_progress')->whereIn('enrollment_id', $enrollmentIds)->delete();
+        DB::table('course_enrollments')->whereIn('id', $enrollmentIds)->delete();
+        DB::table('course_offerings')->whereIn('id', $offeringIds)->delete();
     }
 
     private function hr(AcademicYear $year, StaffProfile $staff, ?object $admin): void

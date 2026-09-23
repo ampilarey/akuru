@@ -4,7 +4,7 @@ return [
     'nav' => 'Learn',
     'dashboard_title' => 'My learning',
     'catalog_title' => 'Learn catalog',
-    'catalog_intro' => 'Published self-learning courses.',
+    'catalog_intro' => 'Published courses. Enroll self-paced, or choose an intake where one is open.',
     'no_profile' => 'No student profile is linked to this account.',
     'not_enrolled' => 'You are not enrolled yet. Browse the learn catalog.',
     'browse' => 'Browse courses',
@@ -49,4 +49,12 @@ return [
     'pronounce_empty' => 'No attempts yet — record your first sound.',
     'pronounce_waiting' => 'waiting',
     'pronounce_done' => 'done',
+    // 1B intakes (STATUS §5fh)
+    'seats_unlimited' => 'Open seats',
+    'seat_left' => 'seat left',
+    'seats_left' => 'seats left',
+    'full' => 'Full',
+    'next_session' => 'Next',
+    'enroll_intake' => 'Enroll in this intake',
+    'your_intake' => 'Your intake',
 ];

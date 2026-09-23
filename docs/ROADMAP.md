@@ -323,6 +323,13 @@ Data migration: every existing course → course + **one auto-created offering**
 > reactivation trigger as rule 9. Third instance of the skipped-migration-half
 > pattern (with `unified_term_id` and the un-run S1 Deploy 3); the halves are
 > deferred, not done, and each is recorded where it lives.
+>
+> **Since (2026-09-12, #340).** The backfill above now exists —
+> `offerings:verify-backfill --backfill`, one offering per course, legacy
+> enrollments repointed, gate output captured in STATUS — as rule 9's
+> backfill deploy. The read switch (public site off `courses.seats` /
+> `enrollment_deadline`) and the §3.5 column drop remain the two deploys
+> still pending (STATUS §5fh).
 
 New tables (spec §43): `course_subjects` (hierarchical course taxonomy — separate from school `subjects`), `audiences`, `course_levels`, `course_modules`, `lessons`, `lesson_revisions`, `content_blocks`, `course_offerings` (`audience_id`, `level_id`), `course_offering_sessions` (incl. meeting link/provider fields for §2d live classes), `attendance_records` (offering attendance — separate table from class attendance; shared reporting contract in Portal), `activities`, `activity_attempts`, `student_submissions`, `teacher_feedback`, `assessments`, `assessment_questions`, `assessment_attempts`, `questions`, `glossary_items`, `lesson_glossary_items`, `student_lesson_progress`, `certificate_templates`, `issued_certificates`.
 

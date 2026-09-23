@@ -22,8 +22,8 @@ the Library L1–L7; the public-site track W1–W3; EduPage parity E1–E22. The
 agent-buildable backlog in `KNOWN_ISSUES` is empty.
 
 **What is verified is narrower than what is built, and in one specific way.**
-Twenty-one scripted browser walks (`node scripts/smoke/all.mjs`, ~17 minutes)
-drive the loops that matter — building a course, enrolling, taking a lesson, marking work,
+Twenty-two scripted browser walks (`node scripts/smoke/all.mjs`, ~18 minutes)
+drive the loops that matter — building a course, running an intake, enrolling, taking a lesson, marking work,
 reporting an absence, collecting a child, booking a meeting, publishing an
 article, taking and refunding money, recording a sound, reciting, an exam to a
 report card, a fee to a receipt, a staff member's month, and the whole app at
@@ -133,7 +133,7 @@ Legend — **CODE:** implementation in repo (models/migrations/actions/routes/pa
 | S5.6 payroll | Yes. **Flagged off** (`PAYROLL_ENABLED` + `payroll.enabled`). Rules and the settings-half switch on `/hr/settings` (§5fe). | `PayrollTest` (turns the flag on), `PayslipDocumentTest`, `HrSettingsTest`. | Walked 2026-09-23 with the flag on locally (`hr.mjs`, §5fd/§5fe): period 2099-12 run, approved, paid, bank CSV, locked; the staff member opens a payslip that names them, in the request language. Default **off** is by design; the walk skips these steps where it is. The seeder had been planting a period status the enum lacks, so `/hr/payroll` was 500 on every seeded database. | Payslip is HTML like every document (`AwardController` note), trilingual since §5fe. |
 | 1A.1 auth/roles | Yes (Phase 0 + S1). | Auth tests, `RoleLandingTest`. | Walked login **ok locally** (R2/R3). Teacher `/dashboard` → Today (#88). Parent/student `/dashboard` → composed `/portal/home` (D1). Admin/headmaster `/dashboard` → `/portal/overview` (D3 #111). Staging login **fail**. | |
 | 1A.2–1A.7 course engine | Yes. Catalog, outline, text/media blocks, glossary term bank + lesson attach, `/learn`, portal learning. | Matching `tests/Feature/Courses/*` including `GlossaryTest`, `OutlineFormsPostTheirShownParentTest`. | Glossary walked (#102). **Catalog, glossary, levels and audiences each show a planted row** (§5ds sweep); **a student took a lesson end to end** (§5dt, `learn.mjs`); **an author built a course end to end** 2026-09-23 (`author.mjs`, §5fg): course → module → lesson → text, instruction and image blocks → revision → review by the supervisor → the student enrols, reads all three, completes. **The first lesson of a new course could not be saved from the outline editor before this** — the form posted an empty module id. Activities and assessments as authoring screens remain UNVERIFIED by walk (`review.mjs` covers marking). | `glossary_items` / `lesson_glossary_items` (SPEC §22). |
-| 1B.1–1B.6 offerings/PWA | Yes. Offerings, pin/seats, sessions, extra blocks, unlock/completion, PWA/i18n. | Matching Offerings/Progress/Pwa tests. | **1B.1 offerings shows a planted row** (§5ds sweep, 2026-09-14). Pin/seats, sessions, unlock/completion and PWA remain UNVERIFIED. | 1B.5 tests the 2/3 = 66 formula. **1B.5's "evaluators" are one hardcoded policy each** — sequential unlock, required-lessons+sessions completion — now behind contracts with a single implementation (ADR-022). No per-course strategy config exists; ROADMAP §2a describes the target, not `main`. **1B audit (2026-08-27):** seat limits, pinning, sessions (§2d L1), PWA all verified solid; but §3.4's split **backfill was never written** — offerings are created lazily, legacy enrollments keep `course_offering_id = null`, and the public site still reads legacy `courses.seats`/`enrollment_deadline`. Backfill is mandatory before first real use (see ROADMAP §3.4 as-built note). |
+| 1B.1–1B.6 offerings/PWA | Yes. Offerings, pin/seats, sessions, extra blocks, unlock/completion, PWA/i18n. **Learners choose an intake** from the catalog since §5fh. | Matching Offerings/Progress/Pwa tests, `IntakeEnrollmentTest`. | **1B.1 offerings shows a planted row** (§5ds sweep). **Walked 2026-09-23** (`intake.mjs`, §5fh): the office creates a face-to-face intake with one seat, pins it, schedules a session; the student sees it in the catalog with its seat and next session, enrols into it, sees it named on the course page and the session on the dashboard, the catalog reads Full; the office marks them present. PWA: `mobile.mjs` reads the manifest. Unlock/completion evaluators tested, not walked. **Before §5fh no screen let a learner choose an offering at all.** | 1B.5 tests the 2/3 = 66 formula. **1B.5's "evaluators" are one hardcoded policy each** — sequential unlock, required-lessons+sessions completion — behind contracts with a single implementation (ADR-022). No per-course strategy config exists; ROADMAP §2a describes the target, not `main`. §3.4's backfill **shipped** (#340, `offerings:verify-backfill --backfill`, gate output captured in its section) as rule 9's backfill deploy; the read switch (public site off `courses.seats`/`enrollment_deadline`) and the §3.5 column drop are the two deploys still pending. |
 | 2.1–2.5 activities | Yes. Four patterns, bank, assessment player, review, session polish. Class quizzes/assignments migrate onto the same engine. Unified gradebook via `GradeItemContract`. | Matching Courses/Progress tests + `LegacyAssessmentMigrationTest` + `UnifiedGradebookTest`. | Quiz/assignment migration walked **#104**. Unified gradebook walked. **A student answered a `selection` activity and the engine scored it** — 9/9 (§5dv, `scripts/smoke/learn.mjs`); that walk found the attempt was being written with no academic year. The other three patterns, the assessment player and the review loop remain UNVERIFIED. | **Phase 2 audit (2026-08-27):** scoring covers all four patterns (teacher-marked short-circuits to review); review loop + standards-tied question bank verified; rule 6 holds behaviourally. **Deviations:** `Courses/Components/` was never created — Arabic/Quran code lives in `Courses/Models`+`Actions`, so rule 3's Components clause guards an empty set (correction point: Phase F, which creates `Components/Quran` and moves Arabic in the same slice — FQCN moves need morph-map + baseline updates together). Spec §43 `student_submissions`/`teacher_feedback` replaced by attempt `answers` json + review fields (recorded, fine). See ROADMAP §2a as-built notes. |
 | Arabic A.1–A.3 | Yes. Letters/harakas, skill tag, reports. | `ArabicReferenceTest`, `ArabicSkillActivityTest`, `ArabicSkillReportTest`. | UNVERIFIED. | No AI (rule 8). **Audited 2026-08-27: PASS** — tables + `NormalizeTextAnswerAction` (spec normalization) + reports verified; skill metadata rides the four activity patterns (placement caveat = Phase 2 Components note). |
 | Qur’an A.1–A.4 | Yes. Read actions, recitation metadata, mapping, dual-write **off**. | Matching Courses/Offerings tests. | UNVERIFIED. | No Hifz dashboard change. `QURAN_HALAQA_DUAL_WRITE` default false. **Audited 2026-08-27: PASS** — rule 11 held (no parallel Quran source tables; reads via `QuranReferenceReader` contract, Hifz implements as owner; `quran_translations` is planned new data, not duplication); mapping tables morph-aliased; dual-write env-flagged default-off per rule 9 with tests. Hifz freeze verified: 3 recent commits are pure additions (read actions/contract impls/bindings), compliant with ADR-021 scope-discipline freeze. |
@@ -4345,6 +4345,65 @@ walk returned a header row and nothing else for circulation, student work and
 pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
+
+## 5fh. Phase 1B audit and its fix: a learner can choose an intake — the scheduled offering finally has a door (2026-09-23)
+
+The 1B audit (`docs/1B_SPEC.md`, SPEC §46.3–46.4, §53's 1B list) against
+Offerings and Progress. **The engine is sound**: status transitions,
+pinning and re-pin audit, seat locks with the concurrency test, sessions
+and attendance, the six 1B block types, the unlock and completion
+evaluators, the PWA manifest — every §53 area has a test. Three findings,
+one of which is the reason the §2 row had said UNVERIFIED for a month.
+
+**D1 — no screen let a learner choose an offering.** §46.4: *"Student
+enrollment can link to an offering … Seat limits are enforced safely."*
+Both held through the actions — `EnrollSelfLearningAction` has taken an
+offering id since 1B.2 — and nothing on any screen supplied one. The
+learner catalog enrolled into the default self-learning offering; the
+admin enrolments screen shows `course_offering_id` and never sets it;
+public registration lands on the course. So every face-to-face, live,
+blended or hybrid batch the office ever created had a roster only a seeder
+or a test could fill, and a walk of the scheduled-offering loop could not
+be written — which is why none was. Now (#421): `ListOpenIntakesAction`
+(Offerings) lists a course's open scheduled offerings with the seats each
+has left — counted exactly as `ReserveOfferingSeatAction` counts them,
+same statuses, soft-deletes excluded, so what the catalog shows is what
+the lock enforces — and its next session; `ListPublishedCoursesAction`
+carries them as `intakes` with each one's own price; the learner catalog
+lists them under the course with an *Enroll in this intake* per row, *Full*
+when the seats are gone, *Your intake* once enrolled; `learn.courses.enroll`
+takes `offering_id` and refuses one that belongs to another course. Strings
+in EN/DV/AR (DV/AR first pass). `IntakeEnrollmentTest` (2): listed with
+seats and next session, enrolled into the chosen one, the course page
+names it and lists the session, the second learner sees Full and is refused
+by the seat lock, a foreign offering id is refused.
+
+**Walked: `scripts/smoke/intake.mjs`, 13 steps, two logins.** The office
+creates `SMOKE-Intake` (face-to-face, open, one seat) for the seeded
+`SMOKE-Intake-Course`, pins it with a reason, schedules `SMOKE-Session`
+for tomorrow; the student finds the intake in the catalog reading *1 seat
+left · Next: SMOKE-Session*, enrols, sees *SMOKE-Intake (Face-to-face)*
+and the session under Upcoming sessions on the course page and the
+dashboard, and the catalog now reads *Full · Your intake*; the office
+opens the session's attendance, finds the student on the roster and marks
+them present. 13/13 twice on a re-seeded database; `learn.mjs` still 7/7
+against the changed catalog. `SmokeMarkerSeeder::intakeCycle()` keeps the
+course and clears the offering, session, attendance and enrolment;
+`IntakeCycleSmokeResetTest`. Twenty-second walk, eighteenth writer.
+
+**D2 — the §2 row and ROADMAP §3.4's as-built note were stale.** Both
+said the split's backfill "was never written". It was (#340,
+`offerings:verify-backfill --backfill`, gate output captured), as rule 9's
+backfill deploy; what remains are the read switch and the §3.5 column
+drop. The row now says so; the ROADMAP note gains one line pointing at
+the record rather than being rewritten (it is an as-built history).
+
+**D3 — §53's 1B unlock list names rules the engine does not have.**
+*Offering start date required*, *date-based unlock* and the placeholders.
+`UnlockMode` carries `all_open`, `sequential` and `pass_assessment`;
+ADR-022 records the decision to keep one policy behind each contract
+until a course needs a third. Not a gap to fill by audit — the ADR is the
+answer, and it says when it stops being one.
 
 ## 5fg. Phase 1A audit and its one fix: the author's half of the course engine, walked — and the lesson nobody could add (2026-09-23)
 

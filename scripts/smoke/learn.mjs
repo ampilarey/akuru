@@ -96,7 +96,9 @@ check('the course is in the learner catalog', catalog.status === 200 && catalog.
 const hrefs = async () => page.$$eval('a', (as) => as.map((a) => a.getAttribute('href') || ''));
 
 await page.goto(`${BASE}/en/learn`, { waitUntil: 'networkidle' });
-const courseHref = (await hrefs()).find((href) => /\/learn\/courses\/\d+/.test(href));
+// The link in *this course's* row — a student enrolled on more than one
+// course (the intake walk puts them on a second) has more than one such link.
+const courseHref = await page.locator('article', { hasText: COURSE }).locator('a[href*="/learn/courses/"]').first().getAttribute('href').catch(() => null);
 check('the course page is reachable from /learn', Boolean(courseHref), courseHref ?? 'no /learn/courses/N link');
 
 let lessonHref = null;
