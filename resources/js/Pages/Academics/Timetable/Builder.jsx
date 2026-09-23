@@ -58,6 +58,14 @@ export default function Builder({
         return row ? `${row.first_name} ${row.last_name}` : `Teacher ${id}`;
     };
     const subjectName = (id) => subjects.find((item) => String(item.id) === String(id))?.name || `Subject ${id}`;
+    // The teacher and room views list one person's or one room's week across
+    // every class, and until the timetable walk (STATUS §5fs) a cell there read
+    // "Arabic Language · Ustadh Mohamed" twice with no word of *which* classes —
+    // which is the one thing those views exist to say.
+    const className = (id) => {
+        const row = classes.find((item) => String(item.id) === String(id));
+        return row ? `${row.name} ${row.section}`.trim() : `Class ${id}`;
+    };
     const roomName = (id) => rooms.find((item) => String(item.id) === String(id))?.name || '';
     const subFor = (id) => substitutions.find((item) => String(item.timetable_id) === String(id));
 
@@ -213,6 +221,7 @@ export default function Builder({
                                                 return (
                                                     <div key={entry.id} className="mb-1 rounded bg-[#F9F4EE] p-1" onClick={(event) => event.stopPropagation()}>
                                                         <div className="font-medium">{subjectName(entry.subject_id)}</div>
+                                                        {view !== 'class' && <div>{className(entry.class_id)}</div>}
                                                         <div>{teacherName(entry.teacher_id)}</div>
                                                         {entry.room_id && <div>{roomName(entry.room_id)}</div>}
                                                         {(entry.valid_from || entry.valid_until) && (
