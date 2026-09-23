@@ -84,6 +84,7 @@ class SmokeMarkerSeeder extends Seeder
         $this->intakeCycle();
         $this->assessCycle();
         $this->certifyCycle();
+        $this->buyCycle($admin);
 
         // A default `migrate:fresh --seed` leaves `staff_profiles` empty, and
         // this used to skip the whole HR block in silence — so the sweep
@@ -579,14 +580,18 @@ class SmokeMarkerSeeder extends Seeder
      */
     private function readerWallet(): void
     {
-        $userId = (int) DB::table('users')->where('email', 'parent@akuru.edu.mv')->value('id');
+        $this->topUpWallet('parent@akuru.edu.mv', 500.0, 'SMOKE-Wallet top-up so a reader can buy a priced library item.');
+    }
+
+    private function topUpWallet(string $email, float $target, string $reason): void
+    {
+        $userId = (int) DB::table('users')->where('email', $email)->value('id');
 
         if ($userId === 0) {
             return;
         }
 
         $balance = (float) (DB::table('wallets')->where('user_id', $userId)->value('balance') ?? 0);
-        $target = 500.0;
 
         if ($balance < $target) {
             app(CreditWalletAction::class)->execute(
@@ -594,9 +599,80 @@ class SmokeMarkerSeeder extends Seeder
                 round($target - $balance, 2),
                 'smoke_marker',
                 null,
-                'SMOKE-Wallet top-up so a reader can buy a priced library item.',
+                $reason,
             );
         }
+    }
+
+    /**
+     * `scripts/smoke/buy.mjs` has the student buy `SMOKE-Wallet-Course`
+     * (MVR 100) from the learner catalog with the `SMOKE-OFF` coupon and
+     * their wallet. This keeps the course — with one published lesson, so
+     * "locked before, open after" has something to lock — and clears what a
+     * run leaves: the student's enrolment on it, the coupon and its
+     * redemptions; and tops the student's wallet back up to 500. The wallet
+     * ledger is append-only (rule 12), so the top-up is a credit, never a
+     * reset, and last run's purchase stays in the history.
+     */
+    private function buyCycle(?object $admin): void
+    {
+        $courseId = (int) DB::table('courses')->where('slug', 'smoke-wallet-course')->value('id');
+        $course = [
+            'course_category_id' => DB::table('course_categories')->orderBy('id')->value('id'),
+            'title' => 'SMOKE-Wallet-Course',
+            'short_desc' => 'Planted by SmokeMarkerSeeder: MVR 100, for the purchase walk.',
+            'body' => 'Planted by SmokeMarkerSeeder.',
+            'cover_image' => '',
+            'status' => 'open',
+            'workflow_status' => 'published',
+            'fee' => 100,
+            'registration_fee_amount' => 100,
+            // The column defaults to true, which holds a paid enrolment at
+            // `pending` for the office to approve — a separate, tested gate.
+            // This walk is about the payment opening the course, so the gate
+            // is off here.
+            'requires_admin_approval' => false,
+            'updated_at' => now(),
+        ];
+        if ($courseId > 0) {
+            DB::table('courses')->where('id', $courseId)->update($course);
+        } else {
+            $courseId = DB::table('courses')->insertGetId($course + ['slug' => 'smoke-wallet-course', 'created_at' => now()]);
+        }
+
+        // Residue, in foreign-key order; then the lesson, replaced each run
+        // the way `learner()` replaces SMOKE-Course's.
+        $enrollmentIds = DB::table('course_enrollments')->where('course_id', $courseId)->pluck('id');
+        $lessonIds = DB::table('lessons')->where('course_id', $courseId)->pluck('id');
+        DB::table('student_lesson_progress')->whereIn('enrollment_id', $enrollmentIds)->delete();
+        DB::table('discount_redemptions')->where('purchase_type', 'course_enrollment')->whereIn('purchase_id', $enrollmentIds)->delete();
+        DB::table('course_enrollments')->whereIn('id', $enrollmentIds)->delete();
+        DB::table('content_blocks')->where('course_id', $courseId)->delete();
+        DB::table('lessons')->whereIn('id', $lessonIds)->update(['current_revision_id' => null]);
+        DB::table('lesson_revisions')->whereIn('lesson_id', $lessonIds)->delete();
+        DB::table('lessons')->whereIn('id', $lessonIds)->delete();
+        DB::table('course_modules')->where('course_id', $courseId)->delete();
+
+        $codeIds = DB::table('discount_codes')->where('code', 'SMOKE-OFF')->pluck('id');
+        DB::table('discount_redemptions')->whereIn('discount_code_id', $codeIds)->delete();
+        DB::table('discount_codes')->whereIn('id', $codeIds)->delete();
+
+        $moduleId = DB::table('course_modules')->insertGetId([
+            'course_id' => $courseId, 'title' => 'SMOKE-Wallet-Module', 'position' => 1,
+            'status' => 'published', 'created_by' => $admin?->id, 'created_at' => now(), 'updated_at' => now(),
+        ]);
+        $lessonId = DB::table('lessons')->insertGetId([
+            'course_id' => $courseId, 'course_module_id' => $moduleId,
+            'title' => 'SMOKE-Wallet-Lesson', 'slug' => 'smoke-wallet-lesson', 'position' => 1,
+            'status' => 'draft', 'created_by' => $admin?->id, 'created_at' => now(), 'updated_at' => now(),
+        ]);
+        app(SaveContentBlockAction::class)->execute([
+            'lesson_id' => $lessonId, 'type' => 'text', 'position' => 1, 'title' => 'SMOKE-Wallet-Block',
+            'data' => ['body' => 'SMOKE-Wallet-Lesson-Body'], 'is_required' => true, 'created_by' => $admin?->id,
+        ]);
+        app(PublishLessonAction::class)->execute(Lesson::query()->findOrFail($lessonId), $admin?->id);
+
+        $this->topUpWallet('student@akuru.edu.mv', 500.0, 'SMOKE-Wallet top-up so a student can buy a priced course.');
     }
 
     /**
