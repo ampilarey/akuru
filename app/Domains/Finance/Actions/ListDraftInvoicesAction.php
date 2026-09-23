@@ -14,7 +14,7 @@ class ListDraftInvoicesAction
      */
     public function execute(?int $yearId = null, ?int $structureId = null, bool $draftsOnly = true): Collection
     {
-        $query = Invoice::query()->with('lines')->orderBy('invoice_number');
+        $query = Invoice::query()->with(['lines', 'paymentPlan.installments'])->orderBy('invoice_number');
         if ($draftsOnly) {
             $query->where('status', InvoiceStatus::Draft->value);
         }
@@ -38,6 +38,14 @@ class ListDraftInvoicesAction
             'total_amount' => $invoice->total_amount,
             'line_count' => $invoice->lines->count(),
             'status' => $invoice->status?->value,
+            'paid_amount' => $invoice->paid_amount,
+            // S4.4: "invoice shows plan progress". The portal and the plans
+            // screen had it; the list the office works from did not.
+            'plan' => $invoice->paymentPlan === null ? null : [
+                'status' => $invoice->paymentPlan->status?->value,
+                'paid' => $invoice->paymentPlan->installments->filter(fn ($row) => $row->remaining() <= 0.009)->count(),
+                'total' => $invoice->paymentPlan->installments->count(),
+            ],
         ]);
     }
 }

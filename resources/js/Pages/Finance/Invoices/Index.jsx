@@ -1,17 +1,28 @@
 import { router, useForm } from '@inertiajs/react';
 import AppShell from '../../../Layouts/AppShell';
 
-export default function Index({ years, yearId, structures, structureId, invoices, period_start = '', period_end = '' }) {
+export default function Index({ years, yearId, structures, structureId, invoices, period_start = '', period_end = '', monthlyMode = 'per_month' }) {
     const form = useForm({
         academic_year_id: yearId || '',
         fee_structure_id: structureId || structures[0]?.id || '',
         period_start: period_start || '',
         period_end: period_end || '',
-        monthly_mode: 'per_month',
+        monthly_mode: monthlyMode,
         include_optional: false,
+        optional_item_ids: [],
     });
 
     const drafts = invoices.filter((row) => row.status === 'draft');
+    // S4.2: "optional items appear at invoice generation as toggles" — one per
+    // optional item on the chosen structure, beside the all-or-nothing box.
+    const chosen = structures.find((row) => String(row.id) === String(form.data.fee_structure_id));
+    const optionalItems = (chosen?.items || []).filter((item) => !item.is_mandatory);
+    const toggleOptional = (id) => {
+        const current = form.data.optional_item_ids.map(String);
+        form.setData('optional_item_ids', current.includes(String(id))
+            ? form.data.optional_item_ids.filter((value) => String(value) !== String(id))
+            : [...form.data.optional_item_ids, id]);
+    };
 
     const issueAll = () => {
         router.post('/finance/invoices/issue', {
@@ -61,8 +72,23 @@ export default function Index({ years, yearId, structures, structureId, invoices
                 </select>
                 <label className="flex items-center gap-2 text-sm">
                     <input type="checkbox" checked={!!form.data.include_optional} onChange={(e) => form.setData('include_optional', e.target.checked)} />
-                    Include optional items
+                    Include all optional items
                 </label>
+                {!form.data.include_optional && optionalItems.length > 0 && (
+                    <div className="flex flex-wrap gap-3 text-sm md:col-span-3">
+                        <span className="text-gray-600">Or only these:</span>
+                        {optionalItems.map((item) => (
+                            <label key={item.id} className="flex items-center gap-2">
+                                <input
+                                    type="checkbox"
+                                    checked={form.data.optional_item_ids.map(String).includes(String(item.fee_item_id))}
+                                    onChange={() => toggleOptional(item.fee_item_id)}
+                                />
+                                {item.name || `Item ${item.fee_item_id}`} ({item.amount})
+                            </label>
+                        ))}
+                    </div>
+                )}
                 <button type="submit" className="btn-primary" disabled={form.processing}>Generate drafts</button>
                 {form.errors.fee_structure_id && <span className="text-xs text-red-600">{form.errors.fee_structure_id}</span>}
             </form>
@@ -76,12 +102,14 @@ export default function Index({ years, yearId, structures, structureId, invoices
                             <th className="px-3 py-2">Period</th>
                             <th className="px-3 py-2">Due</th>
                             <th className="px-3 py-2">Total</th>
+                            <th className="px-3 py-2">Paid</th>
+                            <th className="px-3 py-2">Plan</th>
                             <th className="px-3 py-2">Status</th>
                         </tr>
                     </thead>
                     <tbody>
                         {invoices.length === 0 && (
-                            <tr><td className="px-3 py-4 text-gray-500" colSpan={6}>No invoices for this year.</td></tr>
+                            <tr><td className="px-3 py-4 text-gray-500" colSpan={8}>No invoices for this year.</td></tr>
                         )}
                         {invoices.map((row) => (
                             <tr key={row.id} className="border-t">
@@ -90,6 +118,8 @@ export default function Index({ years, yearId, structures, structureId, invoices
                                 <td className="px-3 py-2">{row.period_key}</td>
                                 <td className="px-3 py-2">{row.due_date}</td>
                                 <td className="px-3 py-2">{row.total_amount}</td>
+                                <td className="px-3 py-2">{row.paid_amount}</td>
+                                <td className="px-3 py-2">{row.plan ? `${row.plan.paid}/${row.plan.total} installments · ${row.plan.status}` : '—'}</td>
                                 <td className="px-3 py-2">{row.status}</td>
                             </tr>
                         ))}

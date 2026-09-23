@@ -144,6 +144,25 @@ it('generates invoices idempotently, expands monthly items, and notifies the fin
         ->and($cInvoice->lines)->toHaveCount(2)
         ->and((float) $cInvoice->total_amount)->toBe(5100.0);
 
+    // S4.2: "optional items appear at invoice generation as toggles" — one per
+    // item, through the screen's request, not only the all-or-nothing box
+    // (S4 audit D8). April is a fresh period, so idempotency does not bite.
+    $this->withoutLocalizationMiddleware()
+        ->actingAs($admin)
+        ->post(route('finance.invoices.generate'), [
+            'academic_year_id' => $year->id,
+            'fee_structure_id' => $structure->id,
+            'period_start' => '2026-04-01',
+            'period_end' => '2026-04-30',
+            'monthly_mode' => 'per_month',
+            'optional_item_ids' => [$trip->id],
+        ])
+        ->assertSessionHasNoErrors();
+    $april = Invoice::query()->where('meta->period_key', '2026-04')->get();
+    expect($april)->toHaveCount(3)
+        ->and($april->every(fn (Invoice $invoice) => $invoice->lines()->whereNotNull('fee_item_id')->count() === 2))->toBeTrue()
+        ->and((float) $april->first()->total_amount)->toBe(1700.0);
+
     $issued = app(IssueInvoicesAction::class)->execute($perMonth->where('student_id', $studentA->id)->pluck('id')->all());
     expect($issued->every(fn ($invoice) => $invoice->status === InvoiceStatus::Sent))->toBeTrue()
         ->and($sms->sent)->toHaveCount(3)
@@ -172,7 +191,7 @@ it('generates invoices idempotently, expands monthly items, and notifies the fin
             ->component('Finance/Invoices/Index')
             ->where('period_start', $term->start_date->toDateString())
             ->where('period_end', $term->end_date->toDateString())
-            ->has('invoices', 9)
+            ->has('invoices', 12)
         );
 
     $csv = $this->withoutLocalizationMiddleware()
@@ -193,5 +212,5 @@ it('generates invoices idempotently, expands monthly items, and notifies the fin
         ->streamedContent();
     expect($invoicesCsv)->toContain($late->invoice_number)->toContain('sent');
 
-    expect(Invoice::query()->count())->toBe(9);
+    expect(Invoice::query()->count())->toBe(12);
 });

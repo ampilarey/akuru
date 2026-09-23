@@ -101,6 +101,16 @@ it('allocates to the oldest installment, rejects overpayment, and defaults witho
             ->has('plans', 2)
         );
 
+    // S4.4: "invoice shows plan progress" — on the office's invoice list too,
+    // not only on the plans screen and the portal (S4 audit D4).
+    $rows = collect($this->withoutLocalizationMiddleware()
+        ->actingAs($admin)
+        ->get(route('finance.invoices.index', ['academic_year_id' => $year->id]))
+        ->assertOk()
+        ->viewData('page')['props']['invoices']);
+    expect($rows->firstWhere('id', $invoice->id)['plan'])->toBe(['status' => 'completed', 'paid' => 2, 'total' => 2])
+        ->and($rows->firstWhere('id', $other->id)['plan']['status'])->toBe('defaulted');
+
     $csv = $this->withoutLocalizationMiddleware()
         ->actingAs($admin)
         ->get(route('finance.payment-plans.export', ['academic_year_id' => $year->id]))

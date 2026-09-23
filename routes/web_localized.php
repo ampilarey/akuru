@@ -87,6 +87,7 @@ use App\Domains\Finance\Http\Controllers\CollectionsController;
 use App\Domains\Finance\Http\Controllers\FeeAdjustmentController;
 use App\Domains\Finance\Http\Controllers\FeeItemController;
 use App\Domains\Finance\Http\Controllers\FeeStructureController;
+use App\Domains\Finance\Http\Controllers\FinanceSettingsController;
 use App\Domains\Finance\Http\Controllers\InvoiceController;
 use App\Domains\Finance\Http\Controllers\ManualReceiptController;
 use App\Domains\Finance\Http\Controllers\PaymentPlanController;
@@ -1020,6 +1021,8 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::get('collections', [CollectionsController::class, 'index'])->name('finance.collections.index');
         Route::get('reconciliation/export', [ReconciliationController::class, 'export'])->name('finance.reconciliation.export');
         Route::get('reconciliation', [ReconciliationController::class, 'index'])->name('finance.reconciliation.index');
+        Route::get('settings', [FinanceSettingsController::class, 'index'])->name('finance.settings.index');
+        Route::put('settings', [FinanceSettingsController::class, 'update'])->name('finance.settings.update');
         // S4 backlog: bank-statement import. `confirm` writes a receipt, so the
         // controller demands `finance.record-manual-payment` on top of this
         // group's role — reading the bank's file and deciding the school has

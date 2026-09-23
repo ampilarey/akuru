@@ -32,9 +32,18 @@ export default function Invoices({ children, studentId, invoices }) {
                                 <td className="px-3 py-2">{row.plan_status || '—'}{row.next_installment ? ` / next ${row.next_installment}` : ''}</td>
                                 <td className="px-3 py-2">
                                     {Number(row.balance) > 0 && (
-                                        <form onSubmit={(e) => { e.preventDefault(); router.post(`/portal/invoices/${row.id}/pay`, { mode: row.next_installment ? 'installment' : 'full' }); }}>
-                                            <button type="submit" className="btn-primary">Pay now</button>
-                                        </form>
+                                        <span className="inline-flex flex-wrap gap-2">
+                                            {/* S4.6: "pay-now (full / next installment)" — a choice, not a
+                                                guess. A family on a plan may still clear the whole balance. */}
+                                            {row.next_installment && Number(row.next_installment) < Number(row.balance) && (
+                                                <button type="button" className="btn-primary" onClick={() => router.post(`/portal/invoices/${row.id}/pay`, { mode: 'installment' })}>
+                                                    Pay next {row.next_installment}
+                                                </button>
+                                            )}
+                                            <button type="button" className={row.next_installment && Number(row.next_installment) < Number(row.balance) ? 'btn-secondary' : 'btn-primary'} onClick={() => router.post(`/portal/invoices/${row.id}/pay`, { mode: 'full' })}>
+                                                Pay {row.balance}
+                                            </button>
+                                        </span>
                                     )}
                                     {row.receipts.map((receipt) => (
                                         <a key={receipt.id} className="ms-2 text-[#7C2D37] underline" href={`/finance/receipts/${receipt.id}/document`}>Receipt</a>
