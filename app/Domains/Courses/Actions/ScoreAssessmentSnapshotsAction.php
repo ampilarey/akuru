@@ -41,7 +41,14 @@ class ScoreAssessmentSnapshotsAction
                 'max_score' => $points,
                 'data' => [
                     'correct_ids' => $snapshot['correct_answer'] ?? [],
-                    'acceptable' => $snapshot['acceptable_answers'] ?? [],
+                    // A text question's key is what the author typed in the
+                    // builder's "correct answer" box (`correct_answer`) plus
+                    // the "other accepted answers" list. Only the list was
+                    // read, so a short-answer question with a correct answer
+                    // and no alternatives could never be scored right — the
+                    // assessment walk was marked 1/2 for typing "male"
+                    // against "Male" (Phase 2 audit D2, STATUS §5fi).
+                    'acceptable' => $this->textKeys($snapshot),
                     'correct_order' => $snapshot['correct_answer'] ?? [],
                     // SPEC §17 Pattern 3 covers mappings as well as orderings
                     // ("Match pairs", "Sort items into categories"). A matching
@@ -82,6 +89,28 @@ class ScoreAssessmentSnapshotsAction
             'status' => $needsTeacher ? 'submitted' : 'scored',
             'items' => $items,
         ];
+    }
+
+    /**
+     * Every string a text answer may match: the builder's "correct answer"
+     * (a list, or a single string on an older row) and the "other accepted
+     * answers" list. Only the second was read before.
+     *
+     * @param  array<string, mixed>  $snapshot
+     * @return list<string>
+     */
+    private function textKeys(array $snapshot): array
+    {
+        $correct = $snapshot['correct_answer'] ?? [];
+        $keys = is_array($correct) ? array_values($correct) : [$correct];
+        foreach ((array) ($snapshot['acceptable_answers'] ?? []) as $alternative) {
+            $keys[] = $alternative;
+        }
+
+        return array_values(array_filter(
+            array_map(fn ($key) => is_scalar($key) ? (string) $key : '', $keys),
+            fn (string $key) => $key !== '',
+        ));
     }
 
     /**

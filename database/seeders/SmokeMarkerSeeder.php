@@ -82,6 +82,7 @@ class SmokeMarkerSeeder extends Seeder
         $this->hrCycle($year, $admin);
         $this->authorCycle();
         $this->intakeCycle();
+        $this->assessCycle();
 
         // A default `migrate:fresh --seed` leaves `staff_profiles` empty, and
         // this used to skip the whole HR block in silence — so the sweep
@@ -1403,6 +1404,23 @@ class SmokeMarkerSeeder extends Seeder
         DB::table('student_lesson_progress')->whereIn('enrollment_id', $enrollmentIds)->delete();
         DB::table('course_enrollments')->whereIn('id', $enrollmentIds)->delete();
         DB::table('course_offerings')->whereIn('id', $offeringIds)->delete();
+    }
+
+    /**
+     * `scripts/smoke/assess.mjs` writes two bank questions (`SMOKE-Q1`,
+     * `SMOKE-Q2`), builds `SMOKE-Assessment` on `SMOKE-Course` and has the
+     * student sit it. This plants nothing and clears what a run left, in
+     * foreign-key order: attempts, the pivot, the assessment, the questions.
+     */
+    private function assessCycle(): void
+    {
+        $assessmentIds = DB::table('assessments')->where('title', 'SMOKE-Assessment')->pluck('id');
+        $questionIds = DB::table('questions')->where('question_text', 'like', 'SMOKE-Q%')->pluck('id');
+
+        DB::table('assessment_attempts')->whereIn('assessment_id', $assessmentIds)->delete();
+        DB::table('assessment_questions')->whereIn('assessment_id', $assessmentIds)->orWhereIn('question_id', $questionIds)->delete();
+        DB::table('assessments')->whereIn('id', $assessmentIds)->delete();
+        DB::table('questions')->whereIn('id', $questionIds)->delete();
     }
 
     private function hr(AcademicYear $year, StaffProfile $staff, ?object $admin): void
