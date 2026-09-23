@@ -261,11 +261,19 @@ class SmokeMarkerSeeder extends Seeder
     private function calendar(AcademicYear $year): void
     {
         DB::table('calendar_days')->where('title', 'SMOKE-Holiday')->delete();
-        DB::table('calendar_days')->insert([
-            'academic_year_id' => $year->id, 'date' => now()->addDays(3)->toDateString(),
-            'type' => 'holiday', 'title' => 'SMOKE-Holiday', 'affects_timetable' => 1,
-            'created_at' => now(), 'updated_at' => now(),
-        ]);
+        // Take the date over rather than insert beside it: `calendar_days` is
+        // unique on (date, year), and on a host with history the day three
+        // out is often already taken — `create-sweep.mjs` writes the day after
+        // the last entry, so a marker that moves forward with the calendar
+        // lands on it by the fourth seeding. Staging's fourth seed died here
+        // on a 1062 (STATUS §5fz).
+        DB::table('calendar_days')->updateOrInsert(
+            ['academic_year_id' => $year->id, 'date' => now()->addDays(3)->toDateString()],
+            [
+                'type' => 'holiday', 'title' => 'SMOKE-Holiday', 'affects_timetable' => 1,
+                'created_at' => now(), 'updated_at' => now(),
+            ],
+        );
     }
 
     private function behaviour(AcademicYear $year, int $studentId, ?object $admin): void
