@@ -22,8 +22,8 @@ the Library L1–L7; the public-site track W1–W3; EduPage parity E1–E22. The
 agent-buildable backlog in `KNOWN_ISSUES` is empty.
 
 **What is verified is narrower than what is built, and in one specific way.**
-Thirty-two scripted browser walks (`node scripts/smoke/all.mjs`, ~28 minutes)
-drive the loops that matter — building a course, running an intake, enrolling, buying a course, taking a lesson, sitting an assessment, earning a certificate, tagging an Arabic skill activity, setting and marking a recitation, mapping a halaqa, approving a Hifz milestone, reading a protected book, redeeming a gift card, setting homework, posting a notice, messaging a teacher and polling a class, sending a trip sign-up with a fee, publishing a calendar day and marking a pupil late, marking work,
+Thirty-three scripted browser walks (`node scripts/smoke/all.mjs`, ~29 minutes)
+drive the loops that matter — building a course, running an intake, enrolling, buying a course, taking a lesson, sitting an assessment, earning a certificate, tagging an Arabic skill activity, setting and marking a recitation, mapping a halaqa, approving a Hifz milestone, reading a protected book, redeeming a gift card, setting homework, posting a notice, messaging a teacher and polling a class, sending a trip sign-up with a fee, publishing a calendar day and marking a pupil late, double-booking a teacher and being refused, marking work,
 reporting an absence, collecting a child, booking a meeting, publishing an
 article, taking and refunding money, recording a sound, reciting, an exam to a
 report card, a fee to a receipt, a staff member's month, and the whole app at
@@ -82,7 +82,7 @@ Legend — **CODE:** implementation in repo (models/migrations/actions/routes/pa
 | S1.5 years/terms/classes | Yes. Years/classes/roster/promotion. | `AcademicYearBackboneTest`, `YearClassUniquenessTest`. | Walked **partial** (R1 S1, R2 S1, R3 S1). Create unique year/class **validated** (#91); first R3 pass hid errors, follow-up paints `errors.name`. Year seeders `firstOrCreate` by name. Class teacher can be assigned on an existing class (show page). Picker identity_key **omits class** (#90) **and student number** (blank / PIL-01 vs PIL-99 still flag). | `ActivateAcademicYearAction` will not close the current year for you. |
 | S2.0 unify-verify gate | Yes. `scripts/pull-deploy-test.sh`. | `PullDeployTestScriptTest`. | Staging evidence **not pasted**. First #15 deploy used pre-pull script (archive). | Operator-only to confirm a gated deploy log. |
 | S2.1 rooms | Yes. CRUD + CSV. | `RoomCrudTest`. | Walked **locally** 2026-09-13: screen shows a row planted for it (§5cm). | |
-| S2.2 timetable conflicts | Yes. Additive year/room/validity + checker. | `TimetableConflictSaveTest`. | UNVERIFIED as a lone task. | |
+| S2.2 timetable conflicts | Yes. Additive year/room/validity + checker. | `TimetableConflictSaveTest`, `TimetableTeacherViewNamesTheClassTest`. | **Walked 2026-09-23** (`timetable.mjs`, §5fs): the same teacher in the same slot of a second class is refused on the screen with *Timetable conflicts: teacher, room* and nothing saved; ticked *Allow conflict* with a reason it is placed and the cell wears its badge; the teacher view shows both classes at that hour — **now by name** (D1); removing the override empties the cell; the week exports. | The two classes are the seeder's own (`SMOKE-Class` A/B), so no real week is touched. |
 | S2.3 timetable builder | Yes. Week grid, class/teacher/room views, copy-week, copy-from-class, print, CSV, substitution overlay. | `TimetableBuilderTest` (9), `TimetableConflictCheckerTest` (17). | Walked **2026-09-22** (§5eu): placing a subject persisted with the default teacher and with a chosen one, and survived reload. The R2 "drag did not persist" does not reproduce. | |
 | S2.4 room bookings | Yes. | `RoomBookingTest`. | Walked **locally** 2026-09-13: screen shows a row planted for it (§5cm). | |
 | S2.5 calendar days | Yes. | `CalendarDayTest`. | Walked **locally** 2026-09-13: screen shows a row planted for it (§5cm). | |
@@ -4346,6 +4346,37 @@ walk returned a header row and nothing else for circulation, student work and
 pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
+
+## 5fs. S2 audit, S2.2: the conflict refusal walked — and the teacher view learns to name the class (2026-09-23)
+
+The one S2 row still marked *UNVERIFIED as a lone task*. The conflict
+engine is a seventeen-case unit matrix and the builder was walked at §5eu;
+nobody had watched the **refusal** happen on the screen, which is the
+whole point of a conflict checker. Two findings, one a defect.
+
+**D1 — the teacher and room views did not say which class.** A cell in
+those views listed the subject and the teacher for every class at that
+hour and no class at all, so a teacher double-booked across two classes
+read as the same lesson twice — the one thing those views exist to show.
+The entry already carried its class; the two views now print it.
+`TimetableTeacherViewNamesTheClassTest`.
+
+**D2 — the walk.** `scripts/smoke/timetable.mjs`, 12 steps, one login,
+against two classes that are the seeder's own (`SMOKE-Class` A and B in
+the active year, empty rosters, no timetable — no real week is touched):
+the office places a subject with a teacher into the first Monday slot of
+class A; switches to class B and places the same teacher in the same slot
+— **refused**, the red line reading *Timetable conflicts: teacher, room*,
+nothing saved; ticks *Allow conflict*, gives a reason, places it — saved,
+the cell wearing *Conflict: teacher, room*; the teacher view shows the
+teacher in both classes at that hour, by name; back in the class view,
+removing the override empties the cell; the week exports as CSV.
+`SmokeMarkerSeeder::timetableCycle()` plants the two classes once and
+clears their entries. `TimetableCycleSmokeResetTest`. Thirty-third walk,
+twenty-ninth writer.
+
+**Walked in a browser.** `timetable.mjs` 12/12 twice on a re-seeded
+database, no console or server errors.
 
 ## 5fr. E-track audit, E10/E11: the school day walked — lateness, who is not in, the family calendar (2026-09-23)
 

@@ -92,6 +92,7 @@ class SmokeMarkerSeeder extends Seeder
         $this->familyCycle();
         $this->signupCycle();
         $this->schoolDayCycle();
+        $this->timetableCycle($year);
 
         // A default `migrate:fresh --seed` leaves `staff_profiles` empty, and
         // this used to skip the whole HR block in silence — so the sweep
@@ -1709,6 +1710,32 @@ class SmokeMarkerSeeder extends Seeder
      * pupil's marks for today — the register itself is the day's record and
      * stays; `absence.mjs` re-marks it in its own run.
      */
+    /**
+     * `timetable.mjs` places one teacher in the same slot of two classes and
+     * expects the second placement refused, then allowed with a reason. The
+     * two classes are this seeder's own — `SMOKE-Class` A and B in the
+     * active year, empty rosters, no timetable — so the walk never touches
+     * a real class's week. Their entries are the walk's residue and go;
+     * the classes stay, keyed by name and section.
+     */
+    private function timetableCycle(AcademicYear $year): void
+    {
+        $schoolId = DB::table('schools')->orderBy('id')->value('id');
+        if ($schoolId === null) {
+            return;
+        }
+
+        foreach (['A', 'B'] as $section) {
+            DB::table('classes')->updateOrInsert(
+                ['name' => 'SMOKE-Class', 'section' => $section, 'academic_year_id' => $year->id],
+                ['school_id' => $schoolId, 'level' => 'Primary', 'capacity' => 20, 'is_active' => 1, 'description' => 'Planted by SmokeMarkerSeeder.', 'updated_at' => now(), 'created_at' => now()],
+            );
+        }
+
+        $classIds = DB::table('classes')->where('name', 'SMOKE-Class')->pluck('id');
+        DB::table('timetables')->whereIn('class_id', $classIds)->delete();
+    }
+
     private function schoolDayCycle(): void
     {
         DB::table('calendar_days')->whereIn('title', ['SMOKE-Sports-Day', 'SMOKE-Staff-Meeting'])->delete();
