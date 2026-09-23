@@ -4,6 +4,7 @@ namespace App\Domains\HR\Http\Controllers;
 
 use App\Domains\HR\Actions\ListCpdRecordsAction;
 use App\Domains\HR\Actions\SaveCpdRecordAction;
+use App\Domains\HR\Actions\SummarizeCpdHoursAction;
 use App\Domains\People\Actions\ListStaffProfilesAction;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
@@ -22,7 +23,24 @@ class CpdRecordController extends Controller
         return Inertia::render('HR/Performance/Cpd', [
             'staff' => app(ListStaffProfilesAction::class)->execute(['status' => 'active'])->values(),
             'rows' => app(ListCpdRecordsAction::class)->execute($request->integer('staff_profile_id') ?: null)->values(),
+            'summary' => app(SummarizeCpdHoursAction::class)->execute()->values(),
         ]);
+    }
+
+    public function exportSummary(Request $request): StreamedResponse
+    {
+        abort_unless($request->user()?->can('hr.manage'), 403);
+
+        $rows = app(SummarizeCpdHoursAction::class)->execute();
+
+        return response()->streamDownload(function () use ($rows): void {
+            $out = fopen('php://output', 'w');
+            Csv::put($out, ['staff_name', 'hours_this_year', 'records_this_year', 'hours_total', 'records_total']);
+            foreach ($rows as $row) {
+                Csv::put($out, [$row['staff_name'], $row['hours_this_year'], $row['records_this_year'], $row['hours_total'], $row['records_total']]);
+            }
+            fclose($out);
+        }, 'cpd-summary.csv', ['Content-Type' => 'text/csv; charset=UTF-8']);
     }
 
     public function store(Request $request): RedirectResponse

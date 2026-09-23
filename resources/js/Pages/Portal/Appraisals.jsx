@@ -2,7 +2,7 @@ import { useForm } from '@inertiajs/react';
 import AppShell from '../../Layouts/AppShell';
 import FormErrors from '../../Components/FormErrors';
 
-export default function Appraisals({ staff, appraisals, observations, cpd }) {
+export default function Appraisals({ staff, appraisals, observations, cpd, cpdSummary = null }) {
     return (
         <AppShell title="My performance">
             {!staff && <p className="rounded-lg border bg-white p-4 text-sm text-gray-600">No staff profile is linked to this account.</p>}
@@ -47,6 +47,12 @@ export default function Appraisals({ staff, appraisals, observations, cpd }) {
                         </table>
                     </div>
                     <h2 className="mb-2 font-medium">CPD</h2>
+                    {cpdSummary && (
+                        <p className="mb-2 text-sm text-gray-700" data-testid="cpd-summary">
+                            <strong>{cpdSummary.hours_this_year}</strong> hours this academic year across {cpdSummary.records_this_year} record{cpdSummary.records_this_year === 1 ? '' : 's'};{' '}
+                            {cpdSummary.hours_total} hours all time.
+                        </p>
+                    )}
                     <div className="overflow-x-auto rounded-lg border bg-white">
                         <table className="min-w-full text-sm">
                             <thead className="bg-[#F3EBE0] text-start">

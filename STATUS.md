@@ -126,10 +126,10 @@ Legend — **CODE:** implementation in repo (models/migrations/actions/routes/pa
 | S4.5 adjustments | Yes. | `FeeAdjustmentTest`. | Walked **locally** 2026-09-13: screen shows a row planted for it (§5cm). | |
 | S4.6 payment + portal | Yes. Webhook + parent Fees. | `PaymentPortalTest`. | Walked 2026-09-23 (`fees.mjs`, §5fa): parent sees the invoice, the falling balance and opens both receipts; cash and transfer through the manual screen; collections, reconciliation and four CSVs. BML still **not** exercised — no webhook secret anywhere (item 2). | |
 | S5.1 staff attendance | Yes. | `StaffAttendanceTest`. | Walked 2026-09-23 (`hr.mjs`, §5fd): the staff member checks in from the portal; the office sees the day present with a time, and the approved leave day on leave. | |
-| S5.2 leave | Yes. | `LeaveManagementTest`. | Walked 2026-09-23 (`hr.mjs`, §5fd): a day requested, approved, the balance 333 → 332, the absence and an open cover request on the cover register. **The cover half never worked before this** — the teacher lookup read a column nothing sets. | |
+| S5.2 leave | Yes. `requires_document` enforced at submission and approval, with an upload on the request form (§5ff). | `LeaveManagementTest`, `LeaveDocumentRequirementTest`. | Walked 2026-09-23 (`hr.mjs`, §5fd): a day requested, approved, the balance 333 → 332, the absence and an open cover request on the cover register. **The cover half never worked before this** — the teacher lookup read a column nothing sets. Sick leave walked by hand (§5ff): refused without a certificate, taken with a PDF, the reviewer opens it. | Calendar vs working days is the owner's call. |
 | S5.3 contracts | Yes. | `ContractsComplianceTest`. | Walked 2026-09-23 (`hr.mjs`, §5fd): the expiring permit on the compliance list, the notices sent, the staff member told in the portal. | |
 | S5.4 recruitment | Yes. Public `/careers`. | `RecruitmentTest`. | Walked **locally** 2026-09-13: screen shows a row planted for it (§5cm). | Not on the month-in-the-life path. |
-| S5.5 performance/CPD | Yes. | `PerformanceTest`. | Walked 2026-09-23 (`hr.mjs`, §5fd): a cycle opened, an appraisal written, acknowledged by the staff member, seen acknowledged by the office. | |
+| S5.5 performance/CPD | Yes. CPD hours per staff member, this year and all time, on the HR screen, its CSV and the portal (§5ff). | `PerformanceTest`, `CpdSummaryTest`. | Walked 2026-09-23 (`hr.mjs`, §5fd): a cycle opened, an appraisal written, acknowledged by the staff member, seen acknowledged by the office. Summary row and CSV read in a browser (§5ff). | |
 | S5.6 payroll | Yes. **Flagged off** (`PAYROLL_ENABLED` + `payroll.enabled`). Rules and the settings-half switch on `/hr/settings` (§5fe). | `PayrollTest` (turns the flag on), `PayslipDocumentTest`, `HrSettingsTest`. | Walked 2026-09-23 with the flag on locally (`hr.mjs`, §5fd/§5fe): period 2099-12 run, approved, paid, bank CSV, locked; the staff member opens a payslip that names them, in the request language. Default **off** is by design; the walk skips these steps where it is. The seeder had been planting a period status the enum lacks, so `/hr/payroll` was 500 on every seeded database. | Payslip is HTML like every document (`AwardController` note), trilingual since §5fe. |
 | 1A.1 auth/roles | Yes (Phase 0 + S1). | Auth tests, `RoleLandingTest`. | Walked login **ok locally** (R2/R3). Teacher `/dashboard` → Today (#88). Parent/student `/dashboard` → composed `/portal/home` (D1). Admin/headmaster `/dashboard` → `/portal/overview` (D3 #111). Staging login **fail**. | |
 | 1A.2–1A.7 course engine | Yes. Catalog, outline, text/media blocks, glossary term bank + lesson attach, `/learn`, portal learning. | Matching `tests/Feature/Courses/*` including `GlossaryTest`. | Glossary walked (#102). **Catalog, glossary, levels and audiences each show a planted row** (§5ds sweep) and **a student took a lesson end to end** — `/learn`, the course page, the published block and the completion, 7/7 (§5dt, `scripts/smoke/learn.mjs`). The outline **editor**, activities and assessments remain UNVERIFIED. | `glossary_items` / `lesson_glossary_items` (SPEC §22). |
@@ -4345,6 +4345,66 @@ walk returned a header row and nothing else for circulation, student work and
 pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
+
+## 5ff. S5 audit, last fix: the document a leave type requires, CPD hours added up, and the exit the payroll test forgot (2026-09-23)
+
+The three S5 deviations left, plus the one that is the owner's.
+
+**D4 — `requires_document` was decoration (#419).** S5.2: a leave type
+can require a supporting document; sick leave is seeded that way. The flag
+was saved by the leave-types form, listed as a column, and enforced
+nowhere — a sick-leave request with nothing attached was submitted and
+approved like any other. And there was no way to attach anything: the
+request form had no file input, and `document_id` in the payload was a
+column waiting for a writer. Now: the request form shows a file input for
+staff leave, with *(required for this leave type)* read off the chosen
+type; `StoreUploadedDocumentAction` (Media) keeps the upload on the private
+disk as a `documents` row on the staff profile — MIME by sniffing, PDF,
+JPEG or PNG, 5 MB; `AssertLeaveDocumentAction` (HR) refuses at
+**submission**, so the person is told before they send, and
+`ApproveStaffLeaveAction` asks again at **approval**, so a payload built
+some other way cannot slip past; the request card links the document, served
+by `SchoolRequestDocumentController` to the requester and to reviewers
+only, like the payslip and the receipt. What a request is *about* moved
+out of the controller into `BuildSchoolRequestPayloadAction`, and
+`SchoolRequestController::store` drops off the long-methods baseline
+(55 → 26 lines). `LeaveDocumentRequirementTest` (2): refused empty, refused
+a spreadsheet, taken with a PDF, opened by the right two people and not a
+third, approved; and the approval-side refusal on its own.
+
+**D5 — CPD hours nobody added up (#419).** S5.5 asked for CPD hours per
+staff member; the screen listed records and left the arithmetic to the
+reader. `SummarizeCpdHoursAction`: per active staff member, hours and
+records this academic year (the current year's date span, off the backbone
+table by query) and all time. A summary table above the records on
+`/hr/cpd` with its own CSV (rule: every listing exports), and one sentence
+on the staff member's own portal page. `CpdSummaryTest`.
+
+**D6 — the exit half of "mid-month join/exit" (#419).** Spec test 6 named
+both; only the join was tested. The exit is the same arithmetic on the
+other end — 15 of 31 days, basic 15000.90 because proration is kept to
+four places (ADR-016) — and the month after, the contract covers no day.
+`RunPayrollAction` used to produce a **zero payslip** for that month, which
+is a wrong line in the bank CSV; it now skips a contract with nothing to
+pay. Test added to `PayrollTest`.
+
+**D7 — contract renewal alerts: the owner's.** ROADMAP §S5 line 3 says
+*"contract terms, renewal alerts, and work permits/visas with expiry
+alerts"*. The permit half shipped (compliance list, notices, the walk
+proves it). Nothing alerts on a contract's `end_date`. The S5 spec itself
+never asked for it, so this is a roadmap-vs-spec gap rather than a
+deviation, and how far ahead a school wants to hear about a fixed-term
+contract ending is a policy question. **Not built; recorded here for the
+owner to decide.** If wanted, it is the compliance screen's shape with
+`staff_contracts.end_date` in place of `documents.expires_at`, one slice.
+
+**Walked in a browser.** Sick leave as the seeded teacher: the form says
+*required for this leave type*, submitting without a file is refused with
+*Sick leave needs a supporting document*, with a PDF it is submitted and
+the card links *Supporting document*; the office opens it (HTTP 200,
+`application/pdf`) and approves. `/hr/cpd` shows the summary row (*Smoke
+Colleague 83 21 83 21*) and the CSV downloads; the portal sentence renders.
+HR, Academics and Architecture suites green.
 
 ## 5fe. S5 audit, second fix: a payslip in the staff member's language, and the five HR settings get a screen (2026-09-23)
 

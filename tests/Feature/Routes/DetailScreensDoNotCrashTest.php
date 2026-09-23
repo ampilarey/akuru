@@ -318,6 +318,16 @@ function detailFixtureRow(string $class, User $actor): ?Model
             'body' => 'Body text.',
             'author_id' => $actor->id,
         ]),
+        // The supporting-document route resolves the request; with nothing
+        // attached it answers 404, which is the guard working (as for the
+        // absence note above). LeaveDocumentRequirementTest covers the file.
+        'SchoolRequest' => $class::query()->create([
+            'type' => 'staff_leave',
+            'requester_id' => $actor->id,
+            'reason' => 'Sweep fixture.',
+            'status' => 'pending',
+            'payload' => [],
+        ]),
 
         // Every enum value below was read out of its enum class rather than
         // guessed. An invented one inserts cleanly and then throws a ValueError

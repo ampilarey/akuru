@@ -2,6 +2,7 @@
 
 namespace App\Domains\Academics\Http\Controllers;
 
+use App\Domains\Academics\Actions\BuildSchoolRequestPayloadAction;
 use App\Domains\Academics\Actions\ResolveTeacherIdForUserAction;
 use App\Domains\Academics\Actions\ReviewSchoolRequestAction;
 use App\Domains\Academics\Actions\SubmitSchoolRequestAction;
@@ -9,7 +10,6 @@ use App\Domains\Academics\Enums\SchoolRequestStatus;
 use App\Domains\Academics\Enums\SchoolRequestType;
 use App\Domains\Academics\Models\SchoolRequest;
 use App\Domains\HR\Actions\ListLeaveTypesAction;
-use App\Domains\People\Actions\ResolveStaffProfileForUserAction;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
 use Illuminate\Http\RedirectResponse;
@@ -56,49 +56,18 @@ class SchoolRequestController extends Controller
             'to_date' => ['nullable', 'date'],
             'half_day' => ['sometimes', 'boolean'],
             'document_id' => ['nullable', 'integer', 'exists:documents,id'],
+            'document' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
         ]);
 
         $type = SchoolRequestType::from($data['type']);
-        $payload = [];
-        $regardingType = null;
-        $regardingId = null;
-
-        if ($type === SchoolRequestType::TeacherLeave) {
-            $teacherId = isset($data['teacher_id']) && $data['teacher_id'] !== ''
-                ? (int) $data['teacher_id']
-                : app(ResolveTeacherIdForUserAction::class)->execute($request->user()?->id);
-            abort_unless($teacherId !== null, 422, 'A teacher profile is required for leave.');
-            $payload = [
-                'teacher_id' => $teacherId,
-                'from_date' => $data['from_date'] ?? now()->toDateString(),
-                'to_date' => $data['to_date'] ?? ($data['from_date'] ?? now()->toDateString()),
-            ];
-            $regardingType = 'teacher';
-            $regardingId = $teacherId;
-        }
-
-        if ($type === SchoolRequestType::StaffLeave) {
-            $profile = app(ResolveStaffProfileForUserAction::class)->execute((int) $request->user()->id);
-            abort_unless($profile !== null, 422, 'A staff profile is required for leave.');
-            abort_unless(! empty($data['leave_type_id']), 422, 'A leave type is required.');
-            $payload = [
-                'staff_profile_id' => (int) $profile['id'],
-                'leave_type_id' => (int) $data['leave_type_id'],
-                'from_date' => $data['from_date'] ?? now()->toDateString(),
-                'to_date' => $data['to_date'] ?? ($data['from_date'] ?? now()->toDateString()),
-                'half_day' => (bool) ($data['half_day'] ?? false),
-                'document_id' => $data['document_id'] ?? null,
-            ];
-            $regardingType = 'staff_profile';
-            $regardingId = (int) $profile['id'];
-        }
+        $about = app(BuildSchoolRequestPayloadAction::class)->execute($type, (int) $request->user()->id, $data, $request->file('document'));
 
         app(SubmitSchoolRequestAction::class)->execute([
             'type' => $type->value,
             'requester_id' => (int) $request->user()->id,
-            'regarding_type' => $regardingType,
-            'regarding_id' => $regardingId,
-            'payload' => $payload,
+            'regarding_type' => $about['regarding_type'],
+            'regarding_id' => $about['regarding_id'],
+            'payload' => $about['payload'],
             'reason' => $data['reason'],
         ]);
 

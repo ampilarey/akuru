@@ -168,6 +168,33 @@ it('prorates a mid-month join and separates payroll.run from payroll.approve', f
         );
 });
 
+it('prorates a mid-month exit and pays nothing the month after', function () {
+    // S5 spec test 6 named "mid-month join/exit"; only the join was tested
+    // (S5 audit D6). The exit is the same arithmetic on the other end — and
+    // the month after, the contract covers no day, so there is no payslip
+    // rather than a zero one in the bank CSV.
+    enablePayroll();
+    makeYear(['is_current' => true, 'status' => 'active', 'start_date' => '2026-01-01', 'end_date' => '2026-12-31']);
+    $staff = makeStaffProfile();
+    app(SaveStaffContractAction::class)->execute([
+        'staff_profile_id' => $staff->id,
+        'contract_type' => StaffContractType::FixedTerm->value,
+        'start_date' => '2026-01-01',
+        'end_date' => '2026-08-15',
+        'basic_salary' => 31000,
+    ]);
+
+    $runner = actingPeopleAdmin(['payroll.run']);
+    app(RunPayrollAction::class)->execute(2026, 8, $runner->id);
+    $august = Payslip::query()->sole();
+    expect((float) $august->inputs['proration'])->toBe(round(15 / 31, 4))
+        // Proration is kept to four places (ADR-016), so the basic is 15000.90, not 15000.00.
+        ->and((float) $august->basic_salary)->toBe(round(31000 * round(15 / 31, 4), 2));
+
+    app(RunPayrollAction::class)->execute(2026, 9, $runner->id);
+    expect(Payslip::query()->count())->toBe(1);
+});
+
 it('keeps payroll screens off when the feature flag is down', function () {
     $admin = actingPeopleAdmin(['payroll.run']);
 

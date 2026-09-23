@@ -1,7 +1,7 @@
 import { useForm } from '@inertiajs/react';
 import AppShell from '../../../Layouts/AppShell';
 
-export default function Cpd({ staff, rows }) {
+export default function Cpd({ staff, rows, summary = [] }) {
     const form = useForm({
         staff_profile_id: staff[0]?.id || '',
         title: '',
@@ -36,6 +36,37 @@ export default function Cpd({ staff, rows }) {
                     </ul>
                 )}
             </form>
+            <div className="mb-4">
+                <div className="mb-2 flex items-center justify-between">
+                    <h2 className="font-medium">Hours per staff member</h2>
+                    <a className="btn-secondary" href="/hr/cpd/summary/export">Export summary CSV</a>
+                </div>
+                <div className="overflow-x-auto rounded-lg border bg-white">
+                    <table className="min-w-full text-sm" data-testid="cpd-summary">
+                        <thead className="bg-[#F3EBE0] text-start">
+                            <tr>
+                                <th className="px-3 py-2">Staff</th>
+                                <th className="px-3 py-2">Hours this year</th>
+                                <th className="px-3 py-2">Records this year</th>
+                                <th className="px-3 py-2">Hours all time</th>
+                                <th className="px-3 py-2">Records all time</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {summary.map((row) => (
+                                <tr key={row.staff_profile_id} className="border-t">
+                                    <td className="px-3 py-2">{row.staff_name}</td>
+                                    <td className="px-3 py-2">{row.hours_this_year}</td>
+                                    <td className="px-3 py-2">{row.records_this_year}</td>
+                                    <td className="px-3 py-2">{row.hours_total}</td>
+                                    <td className="px-3 py-2">{row.records_total}</td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <h2 className="mb-2 font-medium">Records</h2>
             <div className="overflow-x-auto rounded-lg border bg-white">
                 <table className="min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
