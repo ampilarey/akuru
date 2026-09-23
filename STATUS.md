@@ -22,8 +22,8 @@ the Library L1–L7; the public-site track W1–W3; EduPage parity E1–E22. The
 agent-buildable backlog in `KNOWN_ISSUES` is empty.
 
 **What is verified is narrower than what is built, and in one specific way.**
-Twenty-eight scripted browser walks (`node scripts/smoke/all.mjs`, ~24 minutes)
-drive the loops that matter — building a course, running an intake, enrolling, buying a course, taking a lesson, sitting an assessment, earning a certificate, tagging an Arabic skill activity, setting and marking a recitation, mapping a halaqa, approving a Hifz milestone, marking work,
+Twenty-nine scripted browser walks (`node scripts/smoke/all.mjs`, ~25 minutes)
+drive the loops that matter — building a course, running an intake, enrolling, buying a course, taking a lesson, sitting an assessment, earning a certificate, tagging an Arabic skill activity, setting and marking a recitation, mapping a halaqa, approving a Hifz milestone, reading a protected book, redeeming a gift card, marking work,
 reporting an absence, collecting a child, booking a meeting, publishing an
 article, taking and refunding money, recording a sound, reciting, an exam to a
 report card, a fee to a receipt, a staff member's month, and the whole app at
@@ -4346,6 +4346,43 @@ walk returned a header row and nothing else for circulation, student work and
 pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
+
+## 5fo. L-track audit: the reader's half walked — protected reader and gift card (2026-09-23)
+
+The L-track audit (`docs/LIBRARY_PLAN.md` §37 MVP, §39 L1–L7) against
+Library and Commerce. **Every MVP line exists and is tested**, and three
+walks already covered the writer's editorial loop (`library.mjs`, L5), the
+research gate (`peer-review.mjs`, L7) and the writer's money
+(`earnings.mjs`, L6 — which also buys a paid item with the wallet, L3/L4).
+Two findings, one a defect.
+
+**D1 — the reader's own half had no walk.** L2's protected reader
+(page-at-a-time, watermark, no download, progress, bookmarks, My Library)
+and L4's gift card (issued by the office, code shown once, redeemed onto
+the wallet) were `LibraryReaderTest` and `CommerceCoreTest` and nothing a
+person had watched. `scripts/smoke/reader.mjs`, 19 steps, two logins and
+a guest: the office issues a **MVR 25.00** gift card and is shown the code
+once — gone after a reload, only its hash kept (§43.19); the reader
+redeems it, the wallet is up by exactly 25.00 on a ledger row that says
+*credit gift card +25.00*, and the same code is refused a second time; a
+guest asking for the sign-in-only `SMOKE-Primer` is sent to sign in; the
+reader opens it from the item page, is served **page 1 of 3 alone**,
+watermarked with their account and time, with no download link; turns to
+page 2, bookmarks it, and My Library offers *Page 2 · 67% · Continue* and
+lists the bookmark; page 3 marks it *100% · Completed*.
+`SmokeMarkerSeeder::readerCycle()` plants the book through the Library's
+own save and publish Actions (the page split happens at save time) and
+clears progress, bookmarks and reading events; the gift card and its
+credit are money and stay (rule 12), so each run issues a fresh card.
+`ReaderCycleSmokeResetTest`. Twenty-ninth walk, twenty-fifth writer.
+
+**D2 — the redeem flash said "25", not money.** The wallet screen prints
+`MVR 25.00` for the balance and every ledger row; the flash after redeeming
+said *Gift card redeemed: 25 added to your wallet.* It now says *MVR 25.00*.
+`WalletRedeemSaysMoneyTest`.
+
+**Walked in a browser.** `reader.mjs` 19/19 twice on a re-seeded database,
+no console or server errors.
 
 ## 5fn. Hifz audit: the Blade survivors walked, and two things they did quietly (2026-09-23)
 

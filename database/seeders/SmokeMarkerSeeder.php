@@ -88,6 +88,7 @@ class SmokeMarkerSeeder extends Seeder
         $this->arabicCycle();
         $this->quranCycle();
         $this->hifzCycle();
+        $this->readerCycle();
 
         // A default `migrate:fresh --seed` leaves `staff_profiles` empty, and
         // this used to skip the whole HR block in silence — so the sweep
@@ -1615,6 +1616,41 @@ class SmokeMarkerSeeder extends Seeder
             'completed_at' => now(), 'recommended_by' => $teacherUserId, 'recommended_at' => now(), 'created_by' => $teacherUserId,
             'created_at' => now(), 'updated_at' => now(),
         ]);
+    }
+
+    /**
+     * `reader.mjs` has the student read `SMOKE-Primer` — a published,
+     * sign-in-only book of three pages — bookmark a page, and find it on
+     * their My Library; and redeem a gift card the office issues. The book
+     * is planted through the Library's own save and publish Actions, because
+     * the page split happens at save time and nothing else knows the rule.
+     * Reading progress and bookmarks are the walk's residue and go; the
+     * gift card and its wallet credit are money and stay (rule 12 — the
+     * ledger is append-only, and each run issues a fresh card).
+     */
+    private function readerCycle(): void
+    {
+        $itemIds = DB::table('library_items')->where('slug', 'smoke-primer')->pluck('id');
+        DB::table('library_bookmarks')->whereIn('library_item_id', $itemIds)->delete();
+        DB::table('library_reading_progress')->whereIn('library_item_id', $itemIds)->delete();
+        DB::table('library_reading_events')->whereIn('library_item_id', $itemIds)->delete();
+        DB::table('library_item_pages')->whereIn('library_item_id', $itemIds)->delete();
+        DB::table('library_items')->whereIn('id', $itemIds)->delete();
+
+        $approverId = DB::table('users')->where('email', 'admin@akuru.edu.mv')->value('id') ?? DB::table('users')->orderBy('id')->value('id');
+        if ($approverId === null) {
+            return;
+        }
+
+        $item = app(\App\Domains\Library\Actions\SaveLibraryItemAction::class)->execute([
+            'title' => 'SMOKE-Primer',
+            'slug' => 'smoke-primer',
+            'content_type' => 'book',
+            'access_type' => 'free_login',
+            'description' => 'Planted by SmokeMarkerSeeder.',
+            'body' => '<p>SMOKE-Primer-Page-One</p><!-- pagebreak --><p>SMOKE-Primer-Page-Two</p><!-- pagebreak --><p>SMOKE-Primer-Page-Three</p>',
+        ]);
+        app(\App\Domains\Library\Actions\PublishLibraryItemAction::class)->execute($item->id, (int) $approverId);
     }
 
     private function hr(AcademicYear $year, StaffProfile $staff, ?object $admin): void

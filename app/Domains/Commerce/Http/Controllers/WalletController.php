@@ -29,6 +29,10 @@ class WalletController extends Controller
 
         $result = app(RedeemGiftCardAction::class)->execute((int) $request->user()->id, $data['code']);
 
-        return back()->with('success', 'Gift card redeemed: '.$result['credited'].' added to your wallet.');
+        // Money reads as money everywhere else on this screen (MVR 25.00, not
+        // "25"); the reader walk (STATUS §5fo) caught the one line that did not.
+        $card = $result['gift_card'];
+
+        return back()->with('success', 'Gift card redeemed: '.$card->currency.' '.number_format((float) $result['credited'], 2).' added to your wallet.');
     }
 }
