@@ -671,6 +671,8 @@ screen (the hidden branch's empty id failed `integer`), and that a class thread
 named every family to every family and let a small class reply-all; both fixed
 in that slice. E6 is `signup.mjs` (STATUS §5fq), which found the builder could
 not target a class and nothing could close a sheet — both now on the screen.
-E1 is `own-data.mjs`; E8 `pickup.mjs`; E9 `hr.mjs`; E12 `meetings.mjs`; E13
-§5bw; E14 `exams.mjs`. The rest of E5–E22 have their HTTP tests and no walk
-yet.
+E10a/E10b and E11b are `school-day.mjs` (STATUS §5fr). E1 is `own-data.mjs`;
+E8 `pickup.mjs`; E9 `hr.mjs`; E12 `meetings.mjs`; E13 §5bw; E14 `exams.mjs`;
+E7, E10c–d, E15–E21 were walked by hand at their PRs (STATUS §5ci, §5cj–§5ck,
+§5cb–§5ch). E5 has its HTTP tests, `hr.mjs` for the staff-leave chain, and no
+family-facing walk.

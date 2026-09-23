@@ -22,8 +22,8 @@ the Library L1–L7; the public-site track W1–W3; EduPage parity E1–E22. The
 agent-buildable backlog in `KNOWN_ISSUES` is empty.
 
 **What is verified is narrower than what is built, and in one specific way.**
-Thirty-one scripted browser walks (`node scripts/smoke/all.mjs`, ~27 minutes)
-drive the loops that matter — building a course, running an intake, enrolling, buying a course, taking a lesson, sitting an assessment, earning a certificate, tagging an Arabic skill activity, setting and marking a recitation, mapping a halaqa, approving a Hifz milestone, reading a protected book, redeeming a gift card, setting homework, posting a notice, messaging a teacher and polling a class, sending a trip sign-up with a fee, marking work,
+Thirty-two scripted browser walks (`node scripts/smoke/all.mjs`, ~28 minutes)
+drive the loops that matter — building a course, running an intake, enrolling, buying a course, taking a lesson, sitting an assessment, earning a certificate, tagging an Arabic skill activity, setting and marking a recitation, mapping a halaqa, approving a Hifz milestone, reading a protected book, redeeming a gift card, setting homework, posting a notice, messaging a teacher and polling a class, sending a trip sign-up with a fee, publishing a calendar day and marking a pupil late, marking work,
 reporting an absence, collecting a child, booking a meeting, publishing an
 article, taking and refunding money, recording a sound, reciting, an exam to a
 report card, a fee to a receipt, a staff member's month, and the whole app at
@@ -4346,6 +4346,34 @@ walk returned a header row and nothing else for circulation, student work and
 pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
+
+## 5fr. E-track audit, E10/E11: the school day walked — lateness, who is not in, the family calendar (2026-09-23)
+
+The EduPage-parity audit, the three rows whose own STATUS entries still
+said *still owed: the browser walk*: E10a lateness aggregated (§5al), E10b
+who is not in today (§5ay), E11b the school calendar families can see
+(§5ax). E10c–d and E18–E21 were walked by hand at their PRs. One finding,
+not a defect.
+
+**D1 — the walk.** `scripts/smoke/school-day.mjs`, 14 steps, four logins:
+the office adds two calendar days for next week — `SMOKE-Sports-Day`, an
+event that keeps the school open and is shown to families, and
+`SMOKE-Staff-Meeting`, kept internal — and the family's calendar shows the
+first and not the second, and does **not** read the sports day as *No
+school* (that word is `affects_timetable`, stated, not implied — §5ax);
+the teacher marks the pupil twelve minutes late on today's register and
+submits; the office's who-is-not-in-today list opens and does **not** list
+a pupil who came late — the list is of children not in the building, and
+a late child on it sends the office ringing a home whose child is in
+class; the office's lateness panel has the pupil with one late mark and
+twelve minutes, and the tardies CSV downloads with them on it; the
+family's attendance page has today's row reading *late*.
+`SmokeMarkerSeeder::schoolDayCycle()` plants nothing and clears the two
+days and the pupil's marks for today. `SchoolDayCycleSmokeResetTest`.
+Thirty-second walk, twenty-eighth writer.
+
+**Walked in a browser.** `school-day.mjs` 14/14 twice on a re-seeded
+database, no console or server errors.
 
 ## 5fq. E-track audit, E6: the sign-up sheet walked — targeting and closing reach the screen (2026-09-23)
 
