@@ -1,5 +1,6 @@
 import { router, useForm } from '@inertiajs/react';
 import AppShell from '../../../Layouts/AppShell';
+import FormErrors from '../../../Components/FormErrors';
 
 const SAMPLE_DATA = {
     selection: JSON.stringify({
@@ -113,9 +114,12 @@ export default function Activities({ course, activities, patterns, skills = [], 
                     Required
                 </label>
                 <button type="submit" className="btn-primary" disabled={form.processing}>Save activity</button>
-                {form.errors.pattern && <span className="text-xs text-red-600">{form.errors.pattern}</span>}
-                {form.errors.data && <span className="text-xs text-red-600">{form.errors.data}</span>}
-                {form.errors.title && <span className="text-xs text-red-600">{form.errors.title}</span>}
+                {/* Every refusal, not a hand-picked three. The server also refuses
+                    under `settings` (a recitation range outside its surah, an
+                    unknown surah or letter) and `activity_type`; until the Qur'an A
+                    walk those came back to a silent form with the typed values
+                    still in the boxes — indistinguishable from a save (STATUS §5fm). */}
+                <FormErrors errors={form.errors} className="md:col-span-2" />
             </form>
             <div className="overflow-x-auto rounded-lg border bg-white">
                 <table className="min-w-full text-sm">

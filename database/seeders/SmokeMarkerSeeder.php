@@ -86,6 +86,7 @@ class SmokeMarkerSeeder extends Seeder
         $this->certifyCycle();
         $this->buyCycle($admin);
         $this->arabicCycle();
+        $this->quranCycle();
 
         // A default `migrate:fresh --seed` leaves `staff_profiles` empty, and
         // this used to skip the whole HR block in silence — so the sweep
@@ -279,7 +280,14 @@ class SmokeMarkerSeeder extends Seeder
     {
         $categoryId = (int) DB::table('course_categories')->orderBy('id')->value('id');
 
-        DB::table('course_offerings')->where('title', 'SMOKE-Offering')->delete();
+        // `quran.mjs` adds a session to this offering and maps it onto a halaqa
+        // session, so the offering's children go first, in foreign-key order.
+        $offeringIds = DB::table('course_offerings')->where('title', 'SMOKE-Offering')->pluck('id');
+        $sessionIds = DB::table('course_offering_sessions')->whereIn('course_offering_id', $offeringIds)->pluck('id');
+        DB::table('attendance_records')->whereIn('course_offering_id', $offeringIds)->delete();
+        DB::table('offering_halaqa_session_links')->whereIn('course_offering_session_id', $sessionIds)->delete();
+        DB::table('course_offering_sessions')->whereIn('id', $sessionIds)->delete();
+        DB::table('course_offerings')->whereIn('id', $offeringIds)->delete();
 
         // The course is this seeder's own row, so it clears what hangs off it
         // before removing it. `learner()` plants a module, a lesson, a content
@@ -1532,6 +1540,45 @@ class SmokeMarkerSeeder extends Seeder
         DB::table('activity_attempts')->whereIn('activity_id', $activityIds)->delete();
         DB::table('activities')->whereIn('id', $activityIds)->delete();
         DB::table('arabic_letters')->where('key_name', 'smoke_letter')->delete();
+    }
+
+    /**
+     * `quran.mjs` builds a recitation activity on `SMOKE-Course`, has the
+     * student hand it in and the marker score it, and links `SMOKE-Offering`
+     * to a Hifz program (Qur'an A.3). The program is this seeder's own —
+     * `SMOKE-Halaqa`, one session dated today — because a host without the
+     * demo Hifz data has no program to link, and the link picker is disabled
+     * with none. It is a legacy-table row on a synthetic host only:
+     * `halaqa:verify-structure` will list it as unmapped, which is correct,
+     * and the next seed replaces it. Session links carry the Hifz id without a
+     * foreign key (ADR-019), so they are cleared before the program is.
+     */
+    private function quranCycle(): void
+    {
+        $activityIds = DB::table('activities')->where('title', 'SMOKE-Recite-Activity')->pluck('id');
+        DB::table('activity_attempts')->whereIn('activity_id', $activityIds)->delete();
+        DB::table('activities')->whereIn('id', $activityIds)->delete();
+
+        $programIds = DB::table('hifz_programs')->where('name', 'SMOKE-Halaqa')->pluck('id');
+        $sessionIds = DB::table('hifz_sessions')->whereIn('hifz_program_id', $programIds)->pluck('id');
+        DB::table('offering_halaqa_session_links')->whereIn('hifz_session_id', $sessionIds)->delete();
+        DB::table('offering_halaqa_links')->whereIn('hifz_program_id', $programIds)->delete();
+        DB::table('hifz_sessions')->whereIn('id', $sessionIds)->delete();
+        DB::table('hifz_programs')->whereIn('id', $programIds)->delete();
+
+        $teacherId = DB::table('teachers')->orderBy('id')->value('id');
+        if ($teacherId === null) {
+            return;
+        }
+
+        $programId = DB::table('hifz_programs')->insertGetId([
+            'name' => 'SMOKE-Halaqa', 'description' => 'Planted by SmokeMarkerSeeder.', 'status' => 'active',
+            'default_teacher_id' => $teacherId, 'created_at' => now(), 'updated_at' => now(),
+        ]);
+        DB::table('hifz_sessions')->insert([
+            'hifz_program_id' => $programId, 'teacher_id' => $teacherId, 'session_date' => now()->toDateString(),
+            'title' => 'SMOKE-Halaqa-Session', 'status' => 'draft', 'created_at' => now(), 'updated_at' => now(),
+        ]);
     }
 
     private function hr(AcademicYear $year, StaffProfile $staff, ?object $admin): void

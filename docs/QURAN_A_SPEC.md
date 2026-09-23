@@ -42,3 +42,15 @@ ADR-020. Switch reads and Hifz table cleanup are not in this slice.
 ## Out of scope until Module B
 
 AI letter/haraka checking, low-confidence routing, model versions.
+
+## Walked
+
+- A.1 → A.2 → A.3 → A.4 as one loop: `scripts/smoke/quran.mjs`
+  (2026-09-23, STATUS §5fm) — the reference and its CSV; a recitation
+  activity refused past the end of its surah and saved inside it; the
+  passage heading on the player; hand-in unmarked by the engine, scored
+  by the marker; an offering linked to a Hifz program with one session
+  mapped and dual-write reported off.
+- §52.9's recording queue (F3/F4): `recite.mjs`.
+- Ayah text on the player depends on the imported dataset (ADR-023); the
+  walk reports it rather than requiring it.
