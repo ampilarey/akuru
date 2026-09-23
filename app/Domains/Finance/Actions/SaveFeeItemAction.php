@@ -35,7 +35,6 @@ class SaveFeeItemAction
             'frequency' => FeeFrequency::from((string) ($data['frequency'] ?? FeeFrequency::OneTime->value)),
             'is_mandatory' => array_key_exists('is_mandatory', $data) ? (bool) $data['is_mandatory'] : true,
             'is_active' => array_key_exists('is_active', $data) ? (bool) $data['is_active'] : true,
-            'applicable_grades' => $data['applicable_grades'] ?? null,
         ];
 
         if ($item === null) {

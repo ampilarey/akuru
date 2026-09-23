@@ -4345,6 +4345,38 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5fc. S4 audit, last fix: the lock test the spec asked for, and a transition closed (2026-09-23)
+
+The two S4 deviations left, both small.
+
+**D2 — spec test 2 (#416).** *"Allocation: … concurrent payment race (DB
+transaction + lock test)."* ADR-014's consequence says the allocator takes
+a row lock on the invoice; nothing tested it, and `PaymentPlanTest`'s two
+sequential allocations would have stayed green with every `lockForUpdate()`
+deleted. `AllocationLockTest` is the same shape as `SeatConcurrencyTest`,
+for the same reason: a single-threaded test cannot hold one transaction
+open while another blocks on it, and the action commits per call, so it
+asserts what would actually break — the invoice, plan and installment
+reads are issued `FOR UPDATE` — and a second case gives two arrivals at
+the last of the balance exactly one success. True parallel verification
+needs a second process and is recorded rather than pretended, in the test's
+own docblock. `makeSchoolInvoice()` moved from `PaymentPlanTest` to the
+shared finance helpers so both files can use it.
+
+**D6 — `fee_items.applicable_grades`.** S4.1: *"replace `applicable_grades`
+json with explicit assignment via fee structures (kept during
+transition)"*. The structures shipped in S4.2; the transition never closed.
+The column was null on every row of every deployment, written by an
+action the screen never sent it to, and read by one listing no screen
+displayed. Dropped by `2026_09_23_000001`, which refuses if any row holds
+a value (the `attendance` and `grades` pattern); gone from the model, the
+save and the list; `FinanceSchemaTest` now asserts its absence and its
+title no longer says "during the transition".
+
+**Walked in a browser.** The fee-items form saves and lists a new item
+after the column went; `fees.mjs` reran 31/31 on a re-seeded database.
+Migration applied locally. Finance and architecture suites: 159 passed.
+
 ## 5fb. S4 audit, second fix: the billing settings get a screen, and three small spec lines (2026-09-23)
 
 Four of the S4 audit's deviations, all on screens; the engine is untouched.
@@ -4446,9 +4478,8 @@ time *without* re-seeding it stops at step 5 with *"SMOKE-Fees already
 exists — left over from an earlier run"*, as the other walks do. No console
 or server errors.
 
-**S4 audit, still open on my side after this:** D3, D4, D5 and D8 went
-in §5fb; D2 the race test and D6 the `applicable_grades` column kept
-"during transition" are the slice after.
+**S4 audit:** D3, D4, D5 and D8 went in §5fb; D2 and D6 in §5fc. Nothing
+of the audit is left on my side.
 
 ## 5ez. S3 audit, last fix: a published report card can be corrected, with a revision row (2026-09-22)
 
