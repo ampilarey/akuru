@@ -82,6 +82,31 @@ async function signIn(email) {
     const context = await browser.newContext();
     await context.route('**/*', (route) => (route.request().url().startsWith(BASE) ? route.continue() : route.abort()));
     const page = await context.newPage();
+    // Read only a mounted page. On a real host the app's JavaScript can land
+    // after the network goes idle, and a read at that moment sees an empty
+    // `main` — a fifth of the first staging run's failures were that (STATUS
+    // §5fz). Bounded, so a page with nothing in it still reads as empty.
+    const mounted = async () => {
+        const deadline = Date.now() + 4000;
+        while (Date.now() < deadline) {
+            const ready = await page.evaluate(() => {
+                const main = document.querySelector('main');
+                return !document.querySelector('#app') || (main !== null && main.innerText.trim().length > 0);
+            }).catch(() => true);
+            if (ready) {
+                return;
+            }
+            await page.waitForTimeout(150);
+        }
+    };
+    for (const method of ['goto', 'reload']) {
+        const raw = page[method].bind(page);
+        page[method] = async (...args) => {
+            const response = await raw(...args);
+            await mounted();
+            return response;
+        };
+    }
     page.on('pageerror', (error) => problems.push(`${email}: page error: ${String(error).slice(0, 140)}`));
     page.on('response', (response) => {
         if (response.status() >= 500) {
