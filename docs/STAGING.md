@@ -241,3 +241,18 @@ cd ~/akuru-institute && git log -1 --oneline && git rev-parse HEAD
 ```
 
 Do **not** run production deploy unless explicitly requested.
+
+**The pull line the owner runs on the cPanel terminal** (2026-09-23, STATUS §5fy):
+
+```bash
+cd /home/akuruedu/akuru-institute && git pull origin main && composer install --no-dev --optimize-autoloader --no-interaction && php artisan migrate --force && php artisan config:cache && php artisan route:clear && php artisan view:clear && php artisan cache:clear && php artisan queue:restart
+```
+
+No `npm` on the server, on purpose: `public/build/` is committed, and a
+fresh `npm run build` locally is byte-identical to it (checked 2026-09-23).
+Vite empties `public/build/` before it builds, so a build that fails on
+shared hosting leaves no manifest and every page throws — and because the
+line is one `&&` chain, nothing after it runs either. If the site is ever
+500 straight after a pull, the first two checks are `ls public/build/manifest.json`
+and the last `.ERROR` lines of `storage/logs/laravel.log`; `git checkout -- public/build`
+restores the committed build.

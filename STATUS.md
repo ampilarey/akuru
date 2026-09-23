@@ -4347,6 +4347,28 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5fy. Production was 500 after the day's pull, and came back — cause not captured (2026-09-23)
+
+The owner pulled `main` on the production cPanel terminal in the
+afternoon and the public site answered the branded 500 page on every
+route. Locally the same `main` served every public page 200, and a fresh
+`npm run build` was byte-identical to the committed `public/build/`, so
+the code was not the cause. The pull line in use then ended in
+`npm ci && npm run build && php artisan migrate --force && …` as one
+`&&` chain, which gave two ways to reach that state without any code
+being wrong: a Vite build that fails on shared hosting after emptying
+`public/build/` (no manifest, every page throws, nothing after it runs),
+or a migration refusing by design (`2026_09_22_000002/3` stop if the dead
+`attendance`/`grades` tables still hold rows) and stranding the caches.
+
+The site came back before the diagnostic was run, so **which of those it
+was is not known**, and this entry does not pretend otherwise. What
+changed: the pull line no longer builds on the server — `public/build/`
+is committed and verified identical — and `docs/STAGING.md` now carries
+the line, the reason, and the two checks to run first if it ever
+happens again. `test.akuru.edu.mv`'s own deploy script never ran `npm`
+(`docs/STAGING.md` §"npm"); production had been doing what staging never did.
+
 ## 5fx. The thirty-five walks run as one sequence: a student's Arabic report forgot every earlier course (2026-09-23)
 
 Every walk had passed on its own or in a subset. Run as the one
