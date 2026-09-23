@@ -58,9 +58,9 @@ it('plants only statuses the payroll model can read, so the payroll screen rende
     // Every planted period casts without a ValueError…
     expect(PayrollPeriod::query()->get()->every(fn (PayrollPeriod $period) => $period->status !== null))->toBeTrue();
 
-    // …and the screen that lists them answers once payroll is on (the seeder
-    // sets the setting; the config side is the host's flag). Off, it is 403
-    // by design, and nothing would render the period at all.
+    // …and the screen that lists them answers with payroll on (the seeder
+    // sets the setting; the config side is the host's flag), which is when
+    // the period list is read and a bad status would throw.
     config()->set('payroll.enabled', true);
     $admin = actingPeopleAdmin(['hr.manage', 'payroll.run', 'payroll.approve']);
     $this->withoutLocalizationMiddleware()

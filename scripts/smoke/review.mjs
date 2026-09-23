@@ -126,13 +126,18 @@ check('the student signs in', !student.url().includes('/login'), student.url());
 // is found by opening each one and reading its prompt. There are two on this
 // course now and picking "the first /learn/activities/N link" would silently
 // walk the auto-marked one — a check that passes while testing nothing.
+//
+// Every course, not the first: the other walks enrol this student on courses
+// of their own (`intake.mjs`, `buy.mjs`, `author.mjs`), and whichever is
+// listed first on /learn is not this one's. Taking the first link walked the
+// intake course and reported the review activity missing.
 await student.goto(`${BASE}/en/learn`, { waitUntil: 'networkidle' });
-const courseHref = (await hrefs(student)).find((href) => /\/learn\/courses\/\d+/.test(href));
-check('the course page is reachable from /learn', Boolean(courseHref), courseHref ?? 'no /learn/courses/N link');
+const courseHrefs = [...new Set((await hrefs(student)).filter((href) => /\/learn\/courses\/\d+/.test(href)))];
+check('the course page is reachable from /learn', courseHrefs.length > 0, courseHrefs[0] ?? 'no /learn/courses/N link');
 
 let activityUrl = null;
 
-if (courseHref) {
+for (const courseHref of courseHrefs) {
     await student.goto(new URL(courseHref, BASE).href, { waitUntil: 'networkidle' });
     const candidates = [...new Set((await hrefs(student)).filter((href) => /\/learn\/activities\/\d+/.test(href)))];
 
@@ -143,6 +148,10 @@ if (courseHref) {
             activityUrl = url;
             break;
         }
+    }
+
+    if (activityUrl) {
+        break;
     }
 }
 

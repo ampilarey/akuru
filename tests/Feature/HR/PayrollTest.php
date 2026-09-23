@@ -195,12 +195,24 @@ it('prorates a mid-month exit and pays nothing the month after', function () {
     expect(Payslip::query()->count())->toBe(1);
 });
 
-it('keeps payroll screens off when the feature flag is down', function () {
+// The screen opens with the flag down and says so; only the writes are shut.
+// Until the hr walk's off-path was run (STATUS §5fu) the index aborted 403
+// too, so the "Payroll is disabled … HR settings" notice PR #418 put on it
+// was never reachable from a browser — every host has the flag down.
+it('shows the payroll screen switched off when the feature flag is down, and refuses to run', function () {
     $admin = actingPeopleAdmin(['payroll.run']);
 
     $this->withoutLocalizationMiddleware()
         ->actingAs($admin)
         ->get(route('hr.payroll.index'))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('HR/Payroll/Index')
+            ->where('enabled', false));
+
+    $this->withoutLocalizationMiddleware()
+        ->actingAs($admin)
+        ->post(route('hr.payroll.run'), ['year' => 2026, 'month' => 9])
         ->assertForbidden();
 });
 
@@ -214,6 +226,11 @@ it('stays off when only the settings row is enabled', function () {
     $this->withoutLocalizationMiddleware()
         ->actingAs($admin)
         ->get(route('hr.payroll.index'))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->where('enabled', false));
+    $this->withoutLocalizationMiddleware()
+        ->actingAs($admin)
+        ->post(route('hr.payroll.run'), ['year' => 2026, 'month' => 9])
         ->assertForbidden();
 });
 
