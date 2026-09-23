@@ -197,6 +197,14 @@ export default function Quran({ student, submissions, progress, schedules, assig
             {student && surahs.length > 0 && (
                 <RecitationRecorder surahs={surahs} assignments={assignments} t={t} />
             )}
+            {student && surahs.length === 0 && (
+                // Say so, rather than leave the recorder out in silence: on a
+                // host with no surah reference the student saw no way to record
+                // and no reason why (STATUS §5fz).
+                <p className="mb-4 rounded border border-amber-200 bg-amber-50 px-4 py-2 text-sm">
+                    {t.quran_no_surahs || 'Recording is not available yet: this site has no surah reference. Ask the office to load the Qur\'an data.'}
+                </p>
+            )}
 
             <h2 className="mb-2 text-lg font-semibold">{t.quran_assignments || 'My assignments'}</h2>
             <div className="mb-6 overflow-x-auto rounded-lg border bg-white">

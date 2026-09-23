@@ -57,4 +57,5 @@ return [
     'next_session' => 'Next',
     'enroll_intake' => 'Enroll in this intake',
     'your_intake' => 'Your intake',
+    'quran_no_surahs' => 'Recording is not available yet: this site has no surah reference. Ask the office to load the Qur\'an data.',
 ];
