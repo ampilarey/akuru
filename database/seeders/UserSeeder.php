@@ -7,7 +7,11 @@ use Illuminate\Database\Seeder;
 class UserSeeder extends Seeder
 {
     /**
-     * Run the database seeds.
+     * The six pilot logins, by email. `firstOrCreate` so this can run on a
+     * database that already has some of them — staging had admin@ and not
+     * teacher@, and a plain `create` stopped at the first duplicate email
+     * with nothing planted (STATUS §5fz). A user that exists is left as is,
+     * password included; only the role and the verified contact are ensured.
      */
     public function run(): void
     {
@@ -18,9 +22,8 @@ class UserSeeder extends Seeder
         }
 
         // Create Admin User
-        $admin = \App\Domains\Identity\Models\User::create([
+        $admin = \App\Domains\Identity\Models\User::firstOrCreate(['email' => 'admin@akuru.edu.mv'], [
             'name' => 'Admin User',
-            'email' => 'admin@akuru.edu.mv',
             'password' => bcrypt('password'),
             'phone' => '+960 782 0288',
             'address' => 'Malé, Maldives',
@@ -31,9 +34,8 @@ class UserSeeder extends Seeder
         $admin->assignRole('admin');
 
         // Create Headmaster User
-        $headmaster = \App\Domains\Identity\Models\User::create([
+        $headmaster = \App\Domains\Identity\Models\User::firstOrCreate(['email' => 'headmaster@akuru.edu.mv'], [
             'name' => 'Dr. Ahmed Ibrahim',
-            'email' => 'headmaster@akuru.edu.mv',
             'password' => bcrypt('password'),
             'phone' => '+960 797 2434',
             'address' => 'Malé, Maldives',
@@ -44,9 +46,8 @@ class UserSeeder extends Seeder
         $headmaster->assignRole('headmaster');
 
         // Create Teacher User
-        $teacher = \App\Domains\Identity\Models\User::create([
+        $teacher = \App\Domains\Identity\Models\User::firstOrCreate(['email' => 'teacher@akuru.edu.mv'], [
             'name' => 'Ustadh Mohamed Ali',
-            'email' => 'teacher@akuru.edu.mv',
             'password' => bcrypt('password'),
             'phone' => '+960 782 0288',
             'address' => 'Malé, Maldives',
@@ -58,9 +59,8 @@ class UserSeeder extends Seeder
         app(\App\Domains\People\Actions\EnsureTeacherRowAction::class)->execute($teacher->id, (int) $school->id);
 
         // Create Student User
-        $student = \App\Domains\Identity\Models\User::create([
+        $student = \App\Domains\Identity\Models\User::firstOrCreate(['email' => 'student@akuru.edu.mv'], [
             'name' => 'Ahmed Hassan',
-            'email' => 'student@akuru.edu.mv',
             'password' => bcrypt('password'),
             'phone' => '+960 797 2434',
             'address' => 'Malé, Maldives',
@@ -71,9 +71,8 @@ class UserSeeder extends Seeder
         $student->assignRole('student');
 
         // Create Parent User
-        $parent = \App\Domains\Identity\Models\User::create([
+        $parent = \App\Domains\Identity\Models\User::firstOrCreate(['email' => 'parent@akuru.edu.mv'], [
             'name' => 'Hassan Ahmed',
-            'email' => 'parent@akuru.edu.mv',
             'password' => bcrypt('password'),
             'phone' => '+960 782 0288',
             'address' => 'Malé, Maldives',
@@ -84,9 +83,8 @@ class UserSeeder extends Seeder
         $parent->assignRole('parent');
 
         // Create Supervisor User
-        $supervisor = \App\Domains\Identity\Models\User::create([
+        $supervisor = \App\Domains\Identity\Models\User::firstOrCreate(['email' => 'supervisor@akuru.edu.mv'], [
             'name' => 'Supervisor Ibrahim',
-            'email' => 'supervisor@akuru.edu.mv',
             'password' => bcrypt('password'),
             'phone' => '+960 797 2434',
             'address' => 'Malé, Maldives',
