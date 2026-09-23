@@ -71,11 +71,11 @@ Legend — **CODE:** implementation in repo (models/migrations/actions/routes/pa
 
 | Slice | CODE | TESTED | USABLE | Notes / known holes |
 |---|---|---|---|---|
-| Phase 0 foundation | Yes. Domain skeleton, contracts, CI. | Architecture suite + route-name tests. | Staging public `/up` `/en` 200 (2026-06-13). Auth/BML/portal/Hifz **not** credential-smoked then; 2026-08-23 seed login **failed**. | Staging HEAD in archive is far behind current `main`. |
-| Morph-map hotfix | Yes. `config/morph-map.php`, backfill, `morph-map:verify`. | `MorphMapBackfillTest`. | Staging verify **OK** (2026-08-16, `05b8cca`). Later seed login still failed. | Mixed-era staging was the real test of collapse. |
-| S1.1a schema | Yes. Additive student/guardian/document columns. | `UnifiedStudentSchemaTest`. | UNVERIFIED as a user task (schema). | Deploy 3 cleanup not run. |
+| Phase 0 foundation | Yes. Domain skeleton, contracts, CI. | Architecture suite + route-name tests. | **Locally, daily:** every one of the 33 walks signs in — admin, supervisor, teacher, student, parent — and lands on the right home (`hifz.mjs` alone lands five roles). The staging notes here (2026-06-13 `/up` 200; 2026-08-23 seed login failed) are historical; **staging is the operator's to deploy and re-check** (§5ft). BML is unwalkable anywhere until its webhook secret exists (`OWNER_ACTIONS` 2). | Staging HEAD in archive is far behind current `main`. |
+| Morph-map hotfix | Yes. `config/morph-map.php`, backfill, `morph-map:verify`. | `MorphMapBackfillTest`, `MorphMapConfigTest` (CI). | Staging verify **OK** (2026-08-16, `05b8cca`). Every new polymorphic column since registers its alias in the same slice, and the arch test fails the build otherwise — the walks that create documents, certificates, found items and messages read them back by alias. | Mixed-era staging was the real test of collapse. |
+| S1.1a schema | Yes. Additive student/guardian/document columns. | `UnifiedStudentSchemaTest`. | Not a user task: the columns are what `create-sweep.mjs` (Add student), `own-data.mjs` and `signup.mjs` (the directory search) write and read. | Deploy 3 cleanup not run (owner's, `docs/migrations/s11-deploy-3-cleanup-proposal.md`). |
 | S1.1b backfill | Yes. `UnifyStudentsAction`, `students:verify-unification`. | `UnifiedStudentBackfillTest`, representative seeder test. | Staging verify **red** (collisions + orphan guardians, archive 2026-08-25). Representative gate **green** (ADR-021). | `--backfill` refused on `APP_ENV=production`. |
-| S1.1c read switch | Yes. Dual-write still on. | `UnifiedStudentReadSwitchTest`. | UNVERIFIED in a browser. Staging enrollments with null `student()` noted in archive. | Posted enrollment id still legacy RS. |
+| S1.1c read switch | Yes. Dual-write still on. | `UnifiedStudentReadSwitchTest`. | **Walked through its seam:** `register.mjs`, `buy.mjs` and `intake.mjs` enrol through `EnrollUnifiedStudentInOfferingAction`, which writes the legacy id beside `unified_student_id`, and the office's enrolment list and the family's own pages read the unified pupil back by name. The directory, portal and every family walk read `students`. | **What is still legacy, by design until Deploy 3:** `course_enrollments.student_id` keys `registration_students` (dual-written by `EnsureLegacyStudentForUnifiedAction`), and Admissions' `EnrollmentService` / `CourseRegistrationController` still read `RegistrationStudent` (12 files name it). Cleanup is the owner-confirmed slice in `s11-deploy-3-cleanup-proposal.md`. |
 | S1.2 custom fields | Yes. Admin CRUD + student profile fields. Directory create/edit added. | `CustomFieldsTest`, `StudentDirectoryCrudTest`. | Walked **create** (#95): Add student → show → class picker. | Course-only nullables supported. Status only via `ChangeStudentStatusAction`. |
 | S1.3 consent | Yes. Ledger + profile tab. | `ConsentTest`. | Shows its seeded row in a browser (`sweep.mjs`, 2026-09-14). | |
 | S1.4 staff profiles | Yes. Inertia `people.staff.*`. | `StaffProfileTest`. | Walked **locally** 2026-09-13: screen renders, but no row was planted for it — a load, not a data check (§5cm). | `teachers` row ≠ Spatie role `teacher` (mitigated for seed: `EnsureTeacherRowAction` in `UserSeeder`, #87). |
@@ -192,8 +192,8 @@ Legend — **CODE:** implementation in repo (models/migrations/actions/routes/pa
 | S3.4 “Term grades (done)” | Computes when a weight scheme exists. Banner when missing (#89). Weights UI now persists a scheme (#96). |
 | S3.6 “Report cards (done)” | Queued **HTML**; labelled HTML (#89). %/grade fill when a scheme exists (#96). Not PDF. |
 | S3.1 weights implied ready | Scales/types seed; Weights UI now posts numeric percents summing to 100 (#96). |
-| 1A / 1B / 2 / Arabic A / Qur’an A “done” | Code + Pest exist. **1A glossary** tables/CRUD/player added this slice. Other 1A/1B/2 still **USABLE UNVERIFIED**. |
-| S5.1–S5.5 “done” | Code + Pest. **UNVERIFIED**. S5.6 is honestly “done; flagged off”. |
+| 1A / 1B / 2 / Arabic A / Qur’an A “done” | ~~Code + Pest exist. Other 1A/1B/2 still USABLE UNVERIFIED.~~ Walked 2026-09-23: `author.mjs`, `intake.mjs`, `assess.mjs`, `certify.mjs`, `buy.mjs`, `arabic.mjs`, `quran.mjs` (§5fg–§5fm), three engine defects found and fixed on the way. |
+| S5.1–S5.5 “done” | ~~Code + Pest. UNVERIFIED.~~ Walked 2026-09-23: `hr.mjs` (§5fd–§5ff). S5.6 is honestly “done; flagged off” — `PAYROLL_ENABLED` is the owner's. |
 | S2.3 builder “done” | ~~Page exists. R2 extra-period drag did not persist.~~ Walked 2026-09-22: placement persists (§5eu). |
 
 Fixed enough that the old overstatement no longer applies: SMS live-bind, `DatabaseSeeder` ≠ school, Blade parent/teacher landing, fill-grid names-only, generate-0 copy, class/year 500s, invoice drafts-only list.
@@ -4346,6 +4346,38 @@ walk returned a header row and nothing else for circulation, student work and
 pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
+
+## 5ft. The §2 table, read back: four rows that said "unverified" answered by the walks that already ran (2026-09-23)
+
+With thirty-three walks on the board, the §2 table was read row by row
+for what still said *UNVERIFIED*. Four rows did, and none of them needed
+a new walk — they needed the table to say what the existing walks
+prove, and what they cannot.
+
+- **Phase 0 foundation** said auth was never credential-smoked and a
+  2026-08-23 seed login failed. Every walk signs in, five roles between
+  them, and lands on the right home. Those notes were about **staging**,
+  which is the operator's to deploy (`test.akuru.edu.mv` has not had this
+  code) — the row says so now rather than carrying a two-month-old failure
+  as its present state.
+- **Morph-map hotfix** cited a 2026-08-16 staging verify. The live
+  guarantee is the arch test that fails the build for an unregistered
+  alias, and the walks that read documents, certificates, found items and
+  messages back by alias. Said so.
+- **S1.1a schema** said *unverified as a user task*. It is not one: the
+  columns are what Add student, the family portal and the directory search
+  write and read, and three walks do.
+- **S1.1c read switch** said *unverified in a browser*. Three walks enrol
+  through the unified seam and read the pupil back by name; what is still
+  legacy — `course_enrollments.student_id` keyed to `registration_students`,
+  twelve files naming `RegistrationStudent`, mostly Admissions — is by
+  design until the owner-confirmed Deploy 3, and the row now names it
+  instead of hiding it under "unverified".
+
+Nothing else in §2 says unverified. **What no walk can answer** stays
+with the owner: BML (webhook secret), the staging deploy, Deploy 3
+cleanup, `PAYROLL_ENABLED`, `QURAN_HALAQA_DUAL_WRITE`, the Phase 5 device
+checklist (`docs/MOBILE.md`).
 
 ## 5fs. S2 audit, S2.2: the conflict refusal walked — and the teacher view learns to name the class (2026-09-23)
 
