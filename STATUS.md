@@ -22,8 +22,8 @@ the Library L1–L7; the public-site track W1–W3; EduPage parity E1–E22. The
 agent-buildable backlog in `KNOWN_ISSUES` is empty.
 
 **What is verified is narrower than what is built, and in one specific way.**
-Twenty-six scripted browser walks (`node scripts/smoke/all.mjs`, ~22 minutes)
-drive the loops that matter — building a course, running an intake, enrolling, buying a course, taking a lesson, sitting an assessment, earning a certificate, tagging an Arabic skill activity, marking work,
+Twenty-seven scripted browser walks (`node scripts/smoke/all.mjs`, ~23 minutes)
+drive the loops that matter — building a course, running an intake, enrolling, buying a course, taking a lesson, sitting an assessment, earning a certificate, tagging an Arabic skill activity, setting and marking a recitation, mapping a halaqa, marking work,
 reporting an absence, collecting a child, booking a meeting, publishing an
 article, taking and refunding money, recording a sound, reciting, an exam to a
 report card, a fee to a receipt, a staff member's month, and the whole app at
@@ -137,7 +137,7 @@ Legend — **CODE:** implementation in repo (models/migrations/actions/routes/pa
 | 1B.1–1B.6 offerings/PWA | Yes. Offerings, pin/seats, sessions, extra blocks, unlock/completion, PWA/i18n. **Learners choose an intake** from the catalog since §5fh. | Matching Offerings/Progress/Pwa tests, `IntakeEnrollmentTest`. | **1B.1 offerings shows a planted row** (§5ds sweep). **Walked 2026-09-23** (`intake.mjs`, §5fh): the office creates a face-to-face intake with one seat, pins it, schedules a session; the student sees it in the catalog with its seat and next session, enrols into it, sees it named on the course page and the session on the dashboard, the catalog reads Full; the office marks them present. PWA: `mobile.mjs` reads the manifest. Unlock/completion evaluators tested, not walked. **Before §5fh no screen let a learner choose an offering at all.** | 1B.5 tests the 2/3 = 66 formula. **1B.5's "evaluators" are one hardcoded policy each** — sequential unlock, required-lessons+sessions completion — behind contracts with a single implementation (ADR-022). No per-course strategy config exists; ROADMAP §2a describes the target, not `main`. §3.4's backfill **shipped** (#340, `offerings:verify-backfill --backfill`, gate output captured in its section) as rule 9's backfill deploy; the read switch (public site off `courses.seats`/`enrollment_deadline`) and the §3.5 column drop are the two deploys still pending. |
 | 2.1–2.5 activities | Yes. Four patterns, bank, assessment player, review, session polish. Class quizzes/assignments migrate onto the same engine. Unified gradebook via `GradeItemContract`. | Matching Courses/Progress tests + `LegacyAssessmentMigrationTest` + `UnifiedGradebookTest` + `AssessmentTextKeyTest`. | Quiz/assignment migration walked **#104**. Unified gradebook walked. **A student answered a `selection` activity and the engine scored it** (§5dv, `learn.mjs`). **The teacher-marked loop** — hand in, mark, feedback seen (§5dx, `review.mjs`). **The assessment, end to end** 2026-09-23 (`assess.mjs`, §5fi): two bank questions (multiple-choice, short-answer), the builder, attach, the player, auto-marked 2/2, the attempt keeps its snapshot after the question is edited, a retake starts unscored. **That walk found a short-answer key in the builder's "correct answer" box was never read — only "other accepted answers" was** — fixed. Arrange (ordering/matching) has tests, no walk. | **Phase 2 audit (2026-08-27):** scoring covers all four patterns (teacher-marked short-circuits to review); review loop + standards-tied question bank verified; rule 6 holds behaviourally. **Deviations:** `Courses/Components/` was never created — Arabic/Quran code lives in `Courses/Models`+`Actions`, so rule 3's Components clause guards an empty set (correction point: Phase F, which creates `Components/Quran` and moves Arabic in the same slice — FQCN moves need morph-map + baseline updates together). Spec §43 `student_submissions`/`teacher_feedback` replaced by attempt `answers` json + review fields (recorded, fine). See ROADMAP §2a as-built notes. |
 | Arabic A.1–A.3 | Yes. Letters/harakas, skill tag, reports. | `ArabicReferenceTest`, `ArabicSkillActivityTest`, `ArabicSkillReportTest`. | **Walked 2026-09-23** (`arabic.mjs`, §5fl): the office adds a letter, the author tags a reading activity with it on the plain selection pattern, the engine scores the student 1/1 with no teacher and no AI, and both skill reports list it — the student's under *reading* with the attempt, the office's with the letter. | No AI (rule 8). **Audited 2026-08-27: PASS** — tables + `NormalizeTextAnswerAction` (spec normalization) + reports verified; skill metadata rides the four activity patterns (placement caveat = Phase 2 Components note). |
-| Qur’an A.1–A.4 | Yes. Read actions, recitation metadata, mapping, dual-write **off**. | Matching Courses/Offerings tests. | UNVERIFIED. | No Hifz dashboard change. `QURAN_HALAQA_DUAL_WRITE` default false. **Audited 2026-08-27: PASS** — rule 11 held (no parallel Quran source tables; reads via `QuranReferenceReader` contract, Hifz implements as owner; `quran_translations` is planned new data, not duplication); mapping tables morph-aliased; dual-write env-flagged default-off per rule 9 with tests. Hifz freeze verified: 3 recent commits are pure additions (read actions/contract impls/bindings), compliant with ADR-021 scope-discipline freeze. |
+| Qur’an A.1–A.4 | Yes. Read actions, recitation metadata, mapping, dual-write **off**. | Matching Courses/Offerings tests; `ActivityBuilderShowsRefusalsTest`. | **Walked 2026-09-23** (`quran.mjs`, §5fm): the reference and its CSV; a recitation activity refused past the end of its surah — **and the author now sees why** (D1: the builder swallowed every refusal but three) — then saved on ayahs 1–2; the student sees the passage heading, hands in, is not marked by the engine; the marker scores it in the ordinary queue; `SMOKE-Offering` is linked to a Hifz program, one session mapped, dual-write reported off. | No Hifz dashboard change. `QURAN_HALAQA_DUAL_WRITE` default false. **Audited 2026-08-27: PASS** — rule 11 held (no parallel Quran source tables; reads via `QuranReferenceReader` contract, Hifz implements as owner; `quran_translations` is planned new data, not duplication); mapping tables morph-aliased; dual-write env-flagged default-off per rule 9 with tests. Hifz freeze verified: 3 recent commits are pure additions (read actions/contract impls/bindings), compliant with ADR-021 scope-discipline freeze. |
 | Hifz (frozen) | Legacy Blade exists. | `HifzAuthorizationTest` etc. | UNVERIFIED this week. Out of scope to change. | Rule 7. |
 | Pilot blockers #79–#84 | On `main`: picker, AppShell logout, seed contacts, class-teacher field, periods CRUD, teacher generate-today. | Matching Pest files. | Walked in R2/R3. | |
 | Round-2 fixes #86–#92 | On `main`: SMS log-bind (#86), seeder school (#87), role landings (#88), term-grades banner + HTML label (#89), fill-grid identity (#90), generate/uniqueness/invoices (#91), DoD browser walk (#92). | Matching Pest files (SMS, seed, landings, term grades, register, uniqueness, invoices). | Walked in **Round 3**. | Records: archive Round-2 fix 1–7. |
@@ -4346,6 +4346,63 @@ walk returned a header row and nothing else for circulation, student work and
 pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
+
+## 5fm. Qur'an A audit: four slices walked, and the builder that swallowed its refusals (2026-09-23)
+
+The Qur'an Module A audit (`docs/QURAN_A_SPEC.md`, SPEC §52, ROADMAP §2b)
+against Courses, Offerings and the Quran component. **Every DoD line
+exists and is tested**: surah/ayah reads through `QuranReferenceReader`
+with the catalog page and CSV (A.1); recitation as a `teacher_marked`
+activity whose range is validated against the reader and shown on the
+player as a passage (A.2); `offering_halaqa_links` /
+`offering_halaqa_session_links` holding bare Hifz ids with labels read
+through `HalaqaReferenceReader` (A.3); dual-write behind
+`QURAN_HALAQA_DUAL_WRITE`, default off (A.4, ADR-020). Rule 11 holds — no
+parallel Quran table — and rule 8 holds. Two findings, one a defect.
+
+**D1 — the activity builder swallowed every refusal but three.**
+`Activities.jsx` rendered `pattern`, `data` and `title` errors and nothing
+else. `SaveActivityAction` also refuses under `settings` (a recitation
+range past the end of its surah, an unknown surah, letter or harakah) and
+`activity_type`, so an author asking for ayahs 1–99 of a four-ayah surah
+got a silent form with the values still in the boxes — indistinguishable
+from a save with a table that had not refreshed, the §5cn failure mode in
+the one form §5cn missed. The walk's first run failed exactly there. The
+form now renders `<FormErrors errors={form.errors} />`.
+`ActivityBuilderShowsRefusalsTest` posts the bad range through the route,
+asserts the redirect carries `settings`, and reads the source for the
+component.
+
+**D2 — the §2 row said UNVERIFIED because nothing had walked A.1–A.4.**
+`recite.mjs` walks §52.9's recording queue (F3/F4); the 2026-08-27 audit
+read the code. `scripts/smoke/quran.mjs`, 22 steps, two logins: the office
+reads Al-Ikhlas in the reference with its ayah count and exports the CSV;
+the author builds `SMOKE-Recite-Activity` on `SMOKE-Course`, is refused
+ayahs 1–99 with *Ayah range is outside the surah.*, saves 1–2; the student
+finds it, sees *Al-Ikhlas 1–2* over the prompt, hands in, and the engine
+does not mark it; the marker scores it 1/1 in `/catalog/reviews`; the
+student sees *scored · 1/1* and the feedback; the office adds an engine
+session to `SMOKE-Offering`, links the seeded `SMOKE-Halaqa` program
+(*Linked: SMOKE-Halaqa*), is told *Dual-write is off* with no sync button,
+maps the session onto the halaqa's session and finds it still mapped after
+a reload; the dean's oversight page opens.
+`SmokeMarkerSeeder::quranCycle()` clears the activity and attempts and
+re-plants the program with one session — a legacy-table row on a
+synthetic host, which `halaqa:verify-structure` will rightly list as
+unmapped — and `catalog()` now clears `SMOKE-Offering`'s sessions and
+links before the offering, which the walk's first re-seed tripped over.
+`QuranCycleSmokeResetTest`. Twenty-seventh walk, twenty-third writer.
+
+**Recorded, not walked.** The ayah text under the passage heading is the
+imported dataset's (`quran_ayahs`); this host has one ayah of Al-Fatihah
+from the W2.1 walk and none of Al-Ikhlas, so the walk asserts the heading
+and reports whether text was there rather than failing a host for not
+owning a mushaf (ADR-023: the operator imports a licensed edition). Sync
+with the flag on is `HalaqaDualWriteTest`; turning the flag on is the
+owner's (STATUS §1 item 5).
+
+**Walked in a browser.** `quran.mjs` 22/22 twice on a re-seeded database,
+no console or server errors.
 
 ## 5fl. Arabic A audit: the three slices walked as one loop, no defect (2026-09-23)
 
