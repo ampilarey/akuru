@@ -93,6 +93,7 @@ class SmokeMarkerSeeder extends Seeder
         $this->signupCycle();
         $this->schoolDayCycle();
         $this->timetableCycle($year);
+        $this->consentCycle($studentId, $admin);
 
         // A default `migrate:fresh --seed` leaves `staff_profiles` empty, and
         // this used to skip the whole HR block in silence — so the sweep
@@ -1176,14 +1177,48 @@ class SmokeMarkerSeeder extends Seeder
         ]);
     }
 
+    /**
+     * A real source, not a marker: `source` casts to `ConsentSource`, and the
+     * `SMOKE-Source` this used to plant made the pupil's Consents tab a
+     * `ValueError` 500 on every seeded database from 2026-09-14 until the
+     * consent walk opened it (STATUS §5fv) — the sweep only ever read the
+     * directory. `admission_form` is what an enrolment-time consent would
+     * say, and it is not the `admin` the walk writes, so the cycle can tell
+     * the two apart.
+     */
     private function consent(int $studentId, ?object $admin): void
     {
         DB::table('consents')->where('source', 'SMOKE-Source')->delete();
+        DB::table('consents')->where('person_type', 'student')->where('person_id', $studentId)
+            ->where('consent_type', 'photo_media_use')->where('source', 'admission_form')->delete();
         DB::table('consents')->insert([
             'person_type' => 'student', 'person_id' => $studentId,
             'consent_type' => 'photo_media_use', 'granted' => 1,
-            'granted_by' => $admin?->id, 'granted_at' => now(), 'source' => 'SMOKE-Source',
+            'granted_by' => $admin?->id, 'granted_at' => now(), 'source' => 'admission_form',
             'created_at' => now(), 'updated_at' => now(),
+        ]);
+    }
+
+    /**
+     * `scripts/smoke/consent.mjs` records a marketing consent, revokes it,
+     * revokes the photo consent and grants it back — every one an `admin`
+     * row on the pupil. The gate reads the newest row, so a revoke left
+     * behind would outrank the `SMOKE-Source` grant `consent()` re-plants;
+     * this clears the office's rows for the two types the walk touches, and
+     * plants the photo document the public achievements page offers when
+     * the consent stands (`ListPublicAchievementsAction`).
+     */
+    private function consentCycle(int $studentId, ?object $admin): void
+    {
+        DB::table('consents')->where('person_type', 'student')->where('person_id', $studentId)
+            ->whereIn('consent_type', ['photo_media_use', 'marketing_messages'])
+            ->where('source', 'admin')->delete();
+
+        DB::table('documents')->where('title', 'SMOKE-Photo')->delete();
+        DB::table('documents')->insert([
+            'documentable_type' => 'student', 'documentable_id' => $studentId,
+            'media_path' => 'smoke/photo.jpg', 'document_type' => 'photo', 'title' => 'SMOKE-Photo',
+            'uploaded_by' => $admin?->id, 'created_at' => now(), 'updated_at' => now(),
         ]);
     }
 
