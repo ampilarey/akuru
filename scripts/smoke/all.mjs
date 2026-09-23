@@ -18,7 +18,7 @@
  *
  * ## Read-only and writing walks are separated, on purpose
  *
- * Four of these only look at screens. The other **nineteen write**: they build a course for a student, run a scheduled intake, set and sit an assessment, enrol a
+ * Four of these only look at screens. The other **twenty write**: they build a course for a student, run a scheduled intake, set and sit an assessment, issue a certificate, enrol a
  * stranger on a course, submit and approve an absence note, request that a
  * child be collected, book a parent-teacher meeting, publish an article to
  * the library, publish an exam and a term's report cards to families, bill a
@@ -28,7 +28,7 @@
  *
  *   node scripts/smoke/all.mjs            every walk (the default)
  *   node scripts/smoke/all.mjs --read     the four that only look
- *   node scripts/smoke/all.mjs --write    the nineteen that change data
+ *   node scripts/smoke/all.mjs --write    the twenty that change data
  *   node scripts/smoke/all.mjs learn review     just those, by name
  *
  * A writing run against a host whose name does not look synthetic asks for
@@ -106,6 +106,7 @@ const WALKS = [
     { name: 'intake', writes: true, asks: 'Can the office run a scheduled intake, and can a student get a seat in it?' },
     { name: 'learn', writes: true, asks: 'Can a student take a lesson?' },
     { name: 'assess', writes: true, asks: 'Does a question a teacher writes become a mark a student gets?' },
+    { name: 'certify', writes: true, asks: 'Does a student who finishes a course get a certificate a stranger can verify?' },
     { name: 'review', writes: true, asks: 'Does work a machine cannot mark come back marked?' },
     { name: 'absence', writes: true, asks: 'Does the register believe a family who reported an absence?' },
     { name: 'pickup', writes: true, asks: 'Does a child get handed over, and only to the adult who asked?' },

@@ -83,6 +83,7 @@ class SmokeMarkerSeeder extends Seeder
         $this->authorCycle();
         $this->intakeCycle();
         $this->assessCycle();
+        $this->certifyCycle();
 
         // A default `migrate:fresh --seed` leaves `staff_profiles` empty, and
         // this used to skip the whole HR block in silence — so the sweep
@@ -1421,6 +1422,25 @@ class SmokeMarkerSeeder extends Seeder
         DB::table('assessment_questions')->whereIn('assessment_id', $assessmentIds)->orWhereIn('question_id', $questionIds)->delete();
         DB::table('assessments')->whereIn('id', $assessmentIds)->delete();
         DB::table('questions')->whereIn('id', $questionIds)->delete();
+    }
+
+    /**
+     * `scripts/smoke/certify.mjs` builds the `SMOKE-Cert` template, issues a
+     * certificate on it to the seeded student and revokes it. This plants
+     * nothing and clears what a run left: the issued rows, their rendered
+     * documents, and the template.
+     */
+    private function certifyCycle(): void
+    {
+        $templateIds = DB::table('certificate_templates')->where('name', 'SMOKE-Cert')->pluck('id');
+        $issuedIds = DB::table('issued_certificates')->whereIn('certificate_template_id', $templateIds)->pluck('id');
+
+        foreach (DB::table('documents')->where('documentable_type', 'issued_certificate')->whereIn('documentable_id', $issuedIds)->get(['id', 'media_path']) as $document) {
+            Storage::disk('local')->delete($document->media_path);
+            DB::table('documents')->where('id', $document->id)->delete();
+        }
+        DB::table('issued_certificates')->whereIn('id', $issuedIds)->delete();
+        DB::table('certificate_templates')->whereIn('id', $templateIds)->delete();
     }
 
     private function hr(AcademicYear $year, StaffProfile $staff, ?object $admin): void
