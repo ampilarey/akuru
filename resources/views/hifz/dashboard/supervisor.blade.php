@@ -23,6 +23,18 @@
 @empty<p class="text-gray-500 text-sm">No weak students flagged.</p>@endforelse
 </div>
 </div>
+{{-- The controller has always built this list; the view never showed it. A
+     supervisor landing here saw a "Pending Review" count and no way to tell
+     whose milestone it was (STATUS §5fz, second staging run). --}}
+<div class="card p-4 mt-6">
+<h3 class="font-semibold mb-3">Pending Milestones</h3>
+@forelse($pendingMilestones as $milestone)
+<div class="flex justify-between border-b py-2 text-sm">
+<span>{{ $milestone->student->full_name ?? 'Student' }} — {{ str_replace('_', ' ', $milestone->type?->value ?? 'milestone') }}</span>
+<a href="{{ route('hifz.milestones.index') }}" class="text-indigo-600">Review</a>
+</div>
+@empty<p class="text-gray-500 text-sm">No milestones waiting for review.</p>@endforelse
+</div>
 <div class="mt-6 flex gap-3">
 <a href="{{ route('hifz.reports.index') }}" class="btn btn-secondary">Reports</a>
 <a href="{{ route('hifz.milestones.index') }}" class="btn btn-secondary">Milestones</a>

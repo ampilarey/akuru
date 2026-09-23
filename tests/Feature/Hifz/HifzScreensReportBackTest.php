@@ -63,3 +63,23 @@ it('serves the reports export as CSV', function () {
     expect((string) $response->headers->get('Content-Type'))->toStartWith('text/csv')
         ->and((string) $response->headers->get('Content-Disposition'))->toContain('hifz-sessions-');
 });
+
+/**
+ * The supervisor's dashboard built a list of pending milestones on every
+ * request and never rendered it, so a supervisor landing there saw a
+ * "Pending Review" count and no way to tell whose milestone it was. The
+ * hifz walk's check passed locally only because the pupil's name appeared
+ * in the demo data's other lists; staging had none (STATUS §5fz).
+ */
+it('shows the supervisor the pending milestones by pupil, with a way to review them', function () {
+    $supervisor = User::where('email', 'supervisor@akuru.edu.mv')->firstOrFail();
+    $milestone = HifzMilestone::where('status', 'pending')->with('student')->firstOrFail();
+
+    $this->withoutLocalizationMiddleware()
+        ->actingAs($supervisor)
+        ->get(route('hifz.supervisor.dashboard'))
+        ->assertOk()
+        ->assertSee('Pending Milestones')
+        ->assertSee($milestone->student->full_name)
+        ->assertSee(route('hifz.milestones.index'));
+});
