@@ -21,7 +21,11 @@ class PayrollPeriodController extends Controller
 {
     public function index(Request $request): Response
     {
-        $this->guard($request, 'payroll.run');
+        // The permission only. The flag gates every write below; here it is a
+        // prop, so the screen can say payroll is off and where the switch is.
+        // Until the hr walk's off-path was run (STATUS §5fu) this aborted 403
+        // and the notice PR #418 added was never reachable.
+        abort_unless($request->user()?->can('payroll.run'), 403);
 
         $periodId = $request->integer('period_id') ?: PayrollPeriod::query()->orderByDesc('year')->orderByDesc('month')->value('id');
 

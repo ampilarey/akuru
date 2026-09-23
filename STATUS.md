@@ -131,7 +131,7 @@ Legend — **CODE:** implementation in repo (models/migrations/actions/routes/pa
 | S5.3 contracts | Yes. | `ContractsComplianceTest`. | Walked 2026-09-23 (`hr.mjs`, §5fd): the expiring permit on the compliance list, the notices sent, the staff member told in the portal. | |
 | S5.4 recruitment | Yes. Public `/careers`. | `RecruitmentTest`. | Walked **locally** 2026-09-13: screen shows a row planted for it (§5cm). | Not on the month-in-the-life path. |
 | S5.5 performance/CPD | Yes. CPD hours per staff member, this year and all time, on the HR screen, its CSV and the portal (§5ff). | `PerformanceTest`, `CpdSummaryTest`. | Walked 2026-09-23 (`hr.mjs`, §5fd): a cycle opened, an appraisal written, acknowledged by the staff member, seen acknowledged by the office. Summary row and CSV read in a browser (§5ff). | |
-| S5.6 payroll | Yes. **Flagged off** (`PAYROLL_ENABLED` + `payroll.enabled`). Rules and the settings-half switch on `/hr/settings` (§5fe). | `PayrollTest` (turns the flag on), `PayslipDocumentTest`, `HrSettingsTest`. | Walked 2026-09-23 with the flag on locally (`hr.mjs`, §5fd/§5fe): period 2099-12 run, approved, paid, bank CSV, locked; the staff member opens a payslip that names them, in the request language. Default **off** is by design; the walk skips these steps where it is. The seeder had been planting a period status the enum lacks, so `/hr/payroll` was 500 on every seeded database. | Payslip is HTML like every document (`AwardController` note), trilingual since §5fe. |
+| S5.6 payroll | Yes. **Flagged off** (`PAYROLL_ENABLED` + `payroll.enabled`). Rules and the settings-half switch on `/hr/settings` (§5fe). | `PayrollTest` (turns the flag on), `PayslipDocumentTest`, `HrSettingsTest`. | Walked 2026-09-23 with the flag on locally (`hr.mjs`, §5fd/§5fe): period 2099-12 run, approved, paid, bank CSV, locked; the staff member opens a payslip that names them, in the request language. Default **off** is by design; the walk skips these steps where it is — and the screen now opens off, saying so and pointing at HR settings (§5fu: the index shared the writes' flag guard and was a bare 403 on every host until then). The seeder had been planting a period status the enum lacks, so `/hr/payroll` was 500 on every seeded database. | Payslip is HTML like every document (`AwardController` note), trilingual since §5fe. |
 | 1A.1 auth/roles | Yes (Phase 0 + S1). | Auth tests, `RoleLandingTest`. | Walked login **ok locally** (R2/R3). Teacher `/dashboard` → Today (#88). Parent/student `/dashboard` → composed `/portal/home` (D1). Admin/headmaster `/dashboard` → `/portal/overview` (D3 #111). Staging login **fail**. | |
 | 1A.2–1A.7 course engine | Yes. Catalog, outline, text/media blocks, glossary term bank + lesson attach, `/learn`, portal learning. | Matching `tests/Feature/Courses/*` including `GlossaryTest`, `OutlineFormsPostTheirShownParentTest`. | Glossary walked (#102). **Catalog, glossary, levels and audiences each show a planted row** (§5ds sweep); **a student took a lesson end to end** (§5dt, `learn.mjs`); **an author built a course end to end** 2026-09-23 (`author.mjs`, §5fg): course → module → lesson → text, instruction and image blocks → revision → review by the supervisor → the student enrols, reads all three, completes. **The first lesson of a new course could not be saved from the outline editor before this** — the form posted an empty module id. Activities and assessments as authoring screens remain UNVERIFIED by walk (`review.mjs` covers marking). | `glossary_items` / `lesson_glossary_items` (SPEC §22). |
 | 1B.1–1B.6 offerings/PWA | Yes. Offerings, pin/seats, sessions, extra blocks, unlock/completion, PWA/i18n. **Learners choose an intake** from the catalog since §5fh. | Matching Offerings/Progress/Pwa tests, `IntakeEnrollmentTest`. | **1B.1 offerings shows a planted row** (§5ds sweep). **Walked 2026-09-23** (`intake.mjs`, §5fh): the office creates a face-to-face intake with one seat, pins it, schedules a session; the student sees it in the catalog with its seat and next session, enrols into it, sees it named on the course page and the session on the dashboard, the catalog reads Full; the office marks them present. PWA: `mobile.mjs` reads the manifest. Unlock/completion evaluators tested, not walked. **Before §5fh no screen let a learner choose an offering at all.** | 1B.5 tests the 2/3 = 66 formula. **1B.5's "evaluators" are one hardcoded policy each** — sequential unlock, required-lessons+sessions completion — behind contracts with a single implementation (ADR-022). No per-course strategy config exists; ROADMAP §2a describes the target, not `main`. §3.4's backfill **shipped** (#340, `offerings:verify-backfill --backfill`, gate output captured in its section) as rule 9's backfill deploy; the read switch (public site off `courses.seats`/`enrollment_deadline`) and the §3.5 column drop are the two deploys still pending. |
@@ -4346,6 +4346,39 @@ walk returned a header row and nothing else for circulation, student work and
 pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
+
+## 5fu. Regression run of the sixteen earlier writers: the payroll screen was 403 on every host, and the review walk read the wrong course (2026-09-23)
+
+After the day's seeder work the sixteen writer walks already on `main`
+were run again as one set. Fourteen green; two red, and one of the two
+was a defect.
+
+**Payroll (S5.6).** `PayrollPeriodController::index()` went through the
+same `guard()` as the writes, which aborts 403 with the feature flag
+down. `PAYROLL_ENABLED` is down on every host by design (S5 DoD line
+64), so `/hr/payroll` has been a bare 403 error page for every HR officer
+everywhere — and the "Payroll is disabled until two parallel cycles
+match … HR settings" notice that #418 put on the screen was unreachable
+from a browser. The hr walk's own off-path (skip the eight payroll steps
+when the screen says payroll is off) had never actually run: §5fd/§5fe
+walked it with the flag on locally, and off, the read found no `main` at
+all and the walk died inside Playwright. Now the index checks the
+permission only and passes `enabled` as a prop; every write and the CSV
+keep the flag. `PayrollTest` asserts the screen opens with `enabled:
+false` and the run POST is refused, and the walk asserts the screen opens
+either way before deciding whether to skip.
+
+**Review.** `review.mjs` took the first `/learn/courses/N` link on the
+student's home. Since `intake.mjs`, `buy.mjs` and `author.mjs` enrol the
+same student on courses of their own, the first link is whichever of
+those sorts first, and the review activity was reported missing from a
+course it was never on. It now looks in every course. A walk-order
+interaction, not an application defect.
+
+**Walked in a browser.** `review.mjs` 15/15 and `hr.mjs` 28/28 with the
+eight payroll steps skipped, twice each on a re-seeded database, no
+console or server errors. `PAYROLL_ENABLED` stays off here; the skip is now the honest
+reading of that.
 
 ## 5ft. The §2 table, read back: four rows that said "unverified" answered by the walks that already ran (2026-09-23)
 

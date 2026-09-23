@@ -290,8 +290,13 @@ if (await mine.count()) {
 
 // --------------------------------------------------------------- 5. payroll
 
-await admin.goto(`${BASE}/en/hr/payroll`, { waitUntil: 'networkidle' });
-const payrollOff = (await text(admin)).includes('Payroll is disabled');
+// The screen must open either way — off, it says so and points at HR
+// settings. Until STATUS §5fu the index itself answered 403 with the flag
+// down, so this read found no `main` at all and the walk died in Playwright
+// instead of skipping; the off-path had never actually been run.
+const payrollPage = await admin.goto(`${BASE}/en/hr/payroll`, { waitUntil: 'networkidle' });
+check('the payroll screen opens whether or not payroll is on', payrollPage.status() === 200, `HTTP ${payrollPage.status()}`);
+const payrollOff = payrollPage.status() === 200 && (await text(admin)).includes('Payroll is disabled');
 const payrollSteps = [
     'a payroll period runs',
     'the staff member has a draft payslip with a net figure',
