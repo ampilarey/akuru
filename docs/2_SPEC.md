@@ -66,3 +66,15 @@ the gradebook core. Term % still uses published exams + weight scheme only.
 
 AI, payments, certificates, Capacitor, Hifz behavior change, Arabic
 skill trees, quiz/assignment engines beyond the four patterns.
+
+## Walked
+
+- SPEC §47 *"Auto-marked activities work"*: `learn.mjs` (selection).
+  *"Teacher-marked submissions work … Teachers can review, score, and give
+  feedback … Students can see feedback"*: `review.mjs`.
+- *"Assessments can be attached to … courses … Question editing does not
+  affect existing attempts"*: `assess.mjs` (2026-09-23, STATUS §5fi) — bank,
+  builder, attach, player, auto-mark, snapshot, retake. The walk found the
+  builder's "correct answer" box was never read for a text question; fixed.
+- *"Teachers can mark attendance … Students can see scheduled sessions"*:
+  `intake.mjs` (§5fh).

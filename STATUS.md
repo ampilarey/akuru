@@ -22,8 +22,8 @@ the Library L1–L7; the public-site track W1–W3; EduPage parity E1–E22. The
 agent-buildable backlog in `KNOWN_ISSUES` is empty.
 
 **What is verified is narrower than what is built, and in one specific way.**
-Twenty-two scripted browser walks (`node scripts/smoke/all.mjs`, ~18 minutes)
-drive the loops that matter — building a course, running an intake, enrolling, taking a lesson, marking work,
+Twenty-three scripted browser walks (`node scripts/smoke/all.mjs`, ~19 minutes)
+drive the loops that matter — building a course, running an intake, enrolling, taking a lesson, sitting an assessment, marking work,
 reporting an absence, collecting a child, booking a meeting, publishing an
 article, taking and refunding money, recording a sound, reciting, an exam to a
 report card, a fee to a receipt, a staff member's month, and the whole app at
@@ -134,7 +134,7 @@ Legend — **CODE:** implementation in repo (models/migrations/actions/routes/pa
 | 1A.1 auth/roles | Yes (Phase 0 + S1). | Auth tests, `RoleLandingTest`. | Walked login **ok locally** (R2/R3). Teacher `/dashboard` → Today (#88). Parent/student `/dashboard` → composed `/portal/home` (D1). Admin/headmaster `/dashboard` → `/portal/overview` (D3 #111). Staging login **fail**. | |
 | 1A.2–1A.7 course engine | Yes. Catalog, outline, text/media blocks, glossary term bank + lesson attach, `/learn`, portal learning. | Matching `tests/Feature/Courses/*` including `GlossaryTest`, `OutlineFormsPostTheirShownParentTest`. | Glossary walked (#102). **Catalog, glossary, levels and audiences each show a planted row** (§5ds sweep); **a student took a lesson end to end** (§5dt, `learn.mjs`); **an author built a course end to end** 2026-09-23 (`author.mjs`, §5fg): course → module → lesson → text, instruction and image blocks → revision → review by the supervisor → the student enrols, reads all three, completes. **The first lesson of a new course could not be saved from the outline editor before this** — the form posted an empty module id. Activities and assessments as authoring screens remain UNVERIFIED by walk (`review.mjs` covers marking). | `glossary_items` / `lesson_glossary_items` (SPEC §22). |
 | 1B.1–1B.6 offerings/PWA | Yes. Offerings, pin/seats, sessions, extra blocks, unlock/completion, PWA/i18n. **Learners choose an intake** from the catalog since §5fh. | Matching Offerings/Progress/Pwa tests, `IntakeEnrollmentTest`. | **1B.1 offerings shows a planted row** (§5ds sweep). **Walked 2026-09-23** (`intake.mjs`, §5fh): the office creates a face-to-face intake with one seat, pins it, schedules a session; the student sees it in the catalog with its seat and next session, enrols into it, sees it named on the course page and the session on the dashboard, the catalog reads Full; the office marks them present. PWA: `mobile.mjs` reads the manifest. Unlock/completion evaluators tested, not walked. **Before §5fh no screen let a learner choose an offering at all.** | 1B.5 tests the 2/3 = 66 formula. **1B.5's "evaluators" are one hardcoded policy each** — sequential unlock, required-lessons+sessions completion — behind contracts with a single implementation (ADR-022). No per-course strategy config exists; ROADMAP §2a describes the target, not `main`. §3.4's backfill **shipped** (#340, `offerings:verify-backfill --backfill`, gate output captured in its section) as rule 9's backfill deploy; the read switch (public site off `courses.seats`/`enrollment_deadline`) and the §3.5 column drop are the two deploys still pending. |
-| 2.1–2.5 activities | Yes. Four patterns, bank, assessment player, review, session polish. Class quizzes/assignments migrate onto the same engine. Unified gradebook via `GradeItemContract`. | Matching Courses/Progress tests + `LegacyAssessmentMigrationTest` + `UnifiedGradebookTest`. | Quiz/assignment migration walked **#104**. Unified gradebook walked. **A student answered a `selection` activity and the engine scored it** — 9/9 (§5dv, `scripts/smoke/learn.mjs`); that walk found the attempt was being written with no academic year. The other three patterns, the assessment player and the review loop remain UNVERIFIED. | **Phase 2 audit (2026-08-27):** scoring covers all four patterns (teacher-marked short-circuits to review); review loop + standards-tied question bank verified; rule 6 holds behaviourally. **Deviations:** `Courses/Components/` was never created — Arabic/Quran code lives in `Courses/Models`+`Actions`, so rule 3's Components clause guards an empty set (correction point: Phase F, which creates `Components/Quran` and moves Arabic in the same slice — FQCN moves need morph-map + baseline updates together). Spec §43 `student_submissions`/`teacher_feedback` replaced by attempt `answers` json + review fields (recorded, fine). See ROADMAP §2a as-built notes. |
+| 2.1–2.5 activities | Yes. Four patterns, bank, assessment player, review, session polish. Class quizzes/assignments migrate onto the same engine. Unified gradebook via `GradeItemContract`. | Matching Courses/Progress tests + `LegacyAssessmentMigrationTest` + `UnifiedGradebookTest` + `AssessmentTextKeyTest`. | Quiz/assignment migration walked **#104**. Unified gradebook walked. **A student answered a `selection` activity and the engine scored it** (§5dv, `learn.mjs`). **The teacher-marked loop** — hand in, mark, feedback seen (§5dx, `review.mjs`). **The assessment, end to end** 2026-09-23 (`assess.mjs`, §5fi): two bank questions (multiple-choice, short-answer), the builder, attach, the player, auto-marked 2/2, the attempt keeps its snapshot after the question is edited, a retake starts unscored. **That walk found a short-answer key in the builder's "correct answer" box was never read — only "other accepted answers" was** — fixed. Arrange (ordering/matching) has tests, no walk. | **Phase 2 audit (2026-08-27):** scoring covers all four patterns (teacher-marked short-circuits to review); review loop + standards-tied question bank verified; rule 6 holds behaviourally. **Deviations:** `Courses/Components/` was never created — Arabic/Quran code lives in `Courses/Models`+`Actions`, so rule 3's Components clause guards an empty set (correction point: Phase F, which creates `Components/Quran` and moves Arabic in the same slice — FQCN moves need morph-map + baseline updates together). Spec §43 `student_submissions`/`teacher_feedback` replaced by attempt `answers` json + review fields (recorded, fine). See ROADMAP §2a as-built notes. |
 | Arabic A.1–A.3 | Yes. Letters/harakas, skill tag, reports. | `ArabicReferenceTest`, `ArabicSkillActivityTest`, `ArabicSkillReportTest`. | UNVERIFIED. | No AI (rule 8). **Audited 2026-08-27: PASS** — tables + `NormalizeTextAnswerAction` (spec normalization) + reports verified; skill metadata rides the four activity patterns (placement caveat = Phase 2 Components note). |
 | Qur’an A.1–A.4 | Yes. Read actions, recitation metadata, mapping, dual-write **off**. | Matching Courses/Offerings tests. | UNVERIFIED. | No Hifz dashboard change. `QURAN_HALAQA_DUAL_WRITE` default false. **Audited 2026-08-27: PASS** — rule 11 held (no parallel Quran source tables; reads via `QuranReferenceReader` contract, Hifz implements as owner; `quran_translations` is planned new data, not duplication); mapping tables morph-aliased; dual-write env-flagged default-off per rule 9 with tests. Hifz freeze verified: 3 recent commits are pure additions (read actions/contract impls/bindings), compliant with ADR-021 scope-discipline freeze. |
 | Hifz (frozen) | Legacy Blade exists. | `HifzAuthorizationTest` etc. | UNVERIFIED this week. Out of scope to change. | Rule 7. |
@@ -4345,6 +4345,50 @@ walk returned a header row and nothing else for circulation, student work and
 pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
+
+## 5fi. Phase 2 audit and its fix: the assessment walked from bank to mark — and the answer key nobody read (2026-09-23)
+
+The Phase 2 audit (`docs/2_SPEC.md`, SPEC §47) against activities,
+assessments, the question bank, review and the session UI. **The engine
+is sound**: the four patterns score, the bank snapshots, attempts hold
+the snapshot, teacher marking holds the attempt, retake and passing rules
+are enforced, the class quiz migration and the unified gradebook both
+walked earlier (#104, #105). Three findings.
+
+**D1 — the assessment had never been walked.** `learn.mjs` (§5dv) walks
+one selection *activity*; `review.mjs` (§5dx) walks the teacher-marked
+kind; the §2 row still said the review loop was UNVERIFIED (stale) and,
+correctly, that the assessment player was. `scripts/smoke/assess.mjs`,
+14 steps, two logins: the author writes a multiple-choice and a
+short-answer question into the bank, builds `SMOKE-Assessment` on the
+seeded `SMOKE-Course` — published, marks shown — and attaches both; the
+student opens it from the course page, answers, submits and is scored
+2/2 by the engine; the author edits the first question's text and the
+student's attempt still shows the text they answered at the same mark
+(§21's snapshot rule, seen rather than asserted); the student tries
+again and the new attempt starts unscored. `SmokeMarkerSeeder::assessCycle()`
+clears the questions, the assessment, its pivot and attempts;
+`AssessCycleSmokeResetTest`. Twenty-third walk, nineteenth writer.
+
+**D2 — what it found: the builder's "correct answer" was never read for a
+text question.** The first run scored 1/2. The question form has two
+boxes for a text answer — *correct answer* (`correct_answer`, the obvious
+one, pre-filled with a sample) and *other accepted answers*
+(`acceptable_answers`) — and `ScoreAssessmentSnapshotsAction` handed the
+scorer only the second. So a short-answer question whose author typed the
+answer where the form asked for it and left the alternatives blank could
+never be marked right; only an author who happened to put the answer in
+the *other* box got a working question. Activities were never affected
+(their builder writes `acceptable` directly), which is why every scoring
+test stayed green. The scorer now matches against both.
+`AssessmentTextKeyTest`: the key alone, a single string on an older row,
+alternatives alongside the key, and nothing-to-match scores nothing.
+
+**D3 — the §2 row was stale on the review loop.** Said UNVERIFIED; had
+been walked since §5dx. Corrected with the rest of the row.
+
+**Walked in a browser.** `assess.mjs` 14/14 twice on a re-seeded database,
+no console or server errors. The first run's 1/2 is the finding above.
 
 ## 5fh. Phase 1B audit and its fix: a learner can choose an intake — the scheduled offering finally has a door (2026-09-23)
 
