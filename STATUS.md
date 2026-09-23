@@ -22,8 +22,8 @@ the Library L1–L7; the public-site track W1–W3; EduPage parity E1–E22. The
 agent-buildable backlog in `KNOWN_ISSUES` is empty.
 
 **What is verified is narrower than what is built, and in one specific way.**
-Twenty-three scripted browser walks (`node scripts/smoke/all.mjs`, ~19 minutes)
-drive the loops that matter — building a course, running an intake, enrolling, taking a lesson, sitting an assessment, marking work,
+Twenty-four scripted browser walks (`node scripts/smoke/all.mjs`, ~20 minutes)
+drive the loops that matter — building a course, running an intake, enrolling, taking a lesson, sitting an assessment, earning a certificate, marking work,
 reporting an absence, collecting a child, booking a meeting, publishing an
 article, taking and refunding money, recording a sound, reciting, an exam to a
 report card, a fee to a receipt, a staff member's month, and the whole app at
@@ -98,7 +98,7 @@ Legend — **CODE:** implementation in repo (models/migrations/actions/routes/pa
 | S3.3 marks | Yes. Grid + CSV. | `ExamMarksTest`. | Walked **ok** (R2 S5) 15/15. PIL numbers **on this grid**. | |
 | S3.4 term grades | Yes. `ComputeTermGradesAction`, gradebook. | `TermGradesTest` happy path **and** missing-weights (#89); `WeightSchemePersistTest`. | Walked **explained fail** until weights persist (#96): scheme from Weights then Recompute fills Term % / Grade / Rank. `/academics/gradebook` redirects to `/exams/gradebook` (#100). | |
 | 2 leftover — unified gradebook | Yes. `GradeItemContract` + exam/assessment providers; `grade_items` on `/exams/gradebook`. | `UnifiedGradebookTest`; `GradeItemContractTest`. | Walked **#105**: Grade 5 A gradebook shows exam marks and engine quiz/assignment scores. | Engine stays subject-ignorant. Term % still exams-only. |
-| 3 C1 course certificates | Yes. `certificate_templates` + `issued_certificates`; admin builder; issue; public QR verify. | `CourseCertificateTest`. | Walked **#106**: template → issued AKU-2026-C9CAKP to Fatima Yoosuf → guest `/verify/certificates/{ulid}` face only; CSV. | Unlocalized verify URL. Morph aliases. HTML, not PDF. |
+| 3 C1 course certificates | Yes. `certificate_templates` + `issued_certificates`; admin builder; issue; public QR verify. | `CourseCertificateTest`. | Walked **#106** by hand; **scripted 2026-09-23** (`certify.mjs`, §5fj): a 100%-progress rule refuses the issue before the student finishes, allows it after; the student opens the document with its QR; a guest is told it is authentic and sees the face only; revoked, the same URL says so. | Unlocalized verify URL. Morph aliases. HTML, not PDF. |
 | 3 C2 completion + performance reports | Yes. Staff `/catalog/reports/completions`; portal `/portal/performance`. | `CourseCompletionReportTest`. | Walked **#107**: admin roster 12 rows (Unification representative course); parent Hassan sees Fatima Yoosuf performance card; CSV. | Course-only enrollments included; offering summaries empty when `course_offering_id` is null. |
 | 3 C3 teacher review reports | Yes. `/catalog/reviews` pending + weakness + revision; CSV. | `TeacherReviewReportTest`; existing `TeacherReviewTest`. | Walked **#108**: pending Mariyam Ali “Write a sentence” scored 8/10; weakness/revision for “Choose meaning” 0/10 + retry. Live walk found `passing_score` 50 on a 2-point quiz (legacy percent) falsely marking 2/2 as weak — treated as percent when passing > max. | No `course_type` branch. Threshold default 50% when no passing score. |
 | D1 composed parent/student home | Yes. `/portal/home` + CSV; parent/student `/dashboard` redirect. Reads Academics/ExamsGrades/Finance/Courses Actions and `StudentHifzSummaryReader`. | `PortalHomeTest`; `RoleLandingTest`. | Walked **#109**: parent Hassan `/en/dashboard` → `/en/portal/home` for Fatima Yoosuf (attendance 0% / 2 absent / 1 excused, Term 1 Arabic Final 70/100, three sent invoices, empty course + Hifz on seed). Student Mariyam Ali same page with course row. CSV `portal-home.csv`. | Portal new files import no other-domain Models and no `App\Domains\Hifz\`. AppShell Home link. Seed has no Hifz rows; Pest composes Hifz via a program created in the test. |
@@ -4345,6 +4345,43 @@ walk returned a header row and nothing else for circulation, student work and
 pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
+
+## 5fj. Phase 3 audit: the certificate walked from rule to QR, and the rest was already walked (2026-09-23)
+
+The Phase 3 audit (`docs/3_SPEC.md`, SPEC §48) against certificates and
+the three report families. **Everything asked for exists and was walked
+by hand when it shipped** — C1 (#106), C2 (#107), C3 (#108) each carry
+a hand-walk in the §2 rows, and the §48 DoD's *"Parents can view child
+progress and attendance"* is Phase D's composed portal, walked by
+`own-data.mjs`. What none of it had was a **scripted** walk, so the
+definition-of-done sentence *"Student can receive certificate after
+eligibility · Certificate can be verified by QR code"* was re-provable
+only by a person. No defects found; one walk written.
+
+**`scripts/smoke/certify.mjs`, 15 steps, three parties.** The office
+builds `SMOKE-Cert` — course completion on the seeded `SMOKE-Course`,
+100% progress required — and tries to issue it before the student has
+finished: refused, *Progress is below the minimum* (the rule doing its
+job, previously asserted in a test and seen by nobody). The student
+finishes the course's one lesson (or already had — the walk reads the
+percentage and takes either branch, saying which). The office issues;
+the student finds it on their dashboard with its number, opens the
+document — their name, an SVG QR, no word "PDF" — and a **guest with no
+login** follows the QR's URL and is told *This certificate is authentic*
+with the face only (number, student, course, date, institute: no email,
+no id); a made-up token is a plain 404. The office revokes it and the
+same URL now says revoked. `SmokeMarkerSeeder::certifyCycle()` clears the
+template, its issued rows and their documents; `CertifyCycleSmokeResetTest`.
+Twenty-fourth walk, twentieth writer.
+
+**Not walked by script, deliberately.** C2's completion report and C3's
+weakness/revision sections were hand-walked (#107, #108) and have
+`CourseCompletionReportTest` and `TeacherReviewReportTest`; the pending
+half of C3 is `review.mjs`. A script for the two report pages would
+assert planted rows, which is what `sweep.mjs` already does.
+
+**Walked in a browser.** `certify.mjs` 15/15 twice on a re-seeded
+database, no console or server errors.
 
 ## 5fi. Phase 2 audit and its fix: the assessment walked from bank to mark — and the answer key nobody read (2026-09-23)
 

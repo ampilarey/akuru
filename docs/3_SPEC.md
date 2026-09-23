@@ -45,3 +45,14 @@ No new tables. Progress owns attempt reads (`ListPendingReviewsAction`, `ListSco
 ## Out of scope here
 
 Paid course access (Phase 4). Portal composition (D1). Hifz dashboards (F4).
+
+## Walked
+
+- SPEC §48 *"Admin can configure certificate rules · Student can receive
+  certificate after eligibility · Certificate can be verified by QR code"*:
+  `scripts/smoke/certify.mjs` (2026-09-23, STATUS §5fj) — rule refuses
+  before completion, issues after, QR verified by a guest, revoked.
+- *"Parents can view child progress and attendance"*: `own-data.mjs`
+  (Phase D's portal). *"Teachers can identify pending reviews"*:
+  `review.mjs`. Completion and weakness reports: hand-walked at #107/#108,
+  planted rows swept by `sweep.mjs`.
