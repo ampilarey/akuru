@@ -299,6 +299,9 @@ export default function AppShell({ title, children }) {
                         <Link href="/hr/compliance" className="text-[#7C2D37] hover:underline">
                             Compliance
                         </Link>
+                        <Link href="/hr/settings" className="text-[#7C2D37] hover:underline">
+                            HR settings
+                        </Link>
                         <Link href="/hr/postings" className="text-[#7C2D37] hover:underline">
                             Jobs
                         </Link>
