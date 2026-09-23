@@ -27,3 +27,13 @@ No parallel LMS and no AI.
 
 Pronunciation AI, training samples, model versions (Module B).
 Hifz behavior change. New activity engines.
+
+## Walked
+
+- A.1 → A.2 → A.3 as one loop: `scripts/smoke/arabic.mjs` (2026-09-23,
+  STATUS §5fl) — the office adds a letter, the author tags a *reading*
+  selection activity with it, the engine scores the student 1/1 with no
+  teacher and no AI, and both skill reports list it (the student's under
+  the skill, the office's with the letter).
+- Teacher-marked skills go through 2.4 review: `review.mjs`.
+- Module B's recording queue: `pronounce.mjs`.

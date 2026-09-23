@@ -85,6 +85,7 @@ class SmokeMarkerSeeder extends Seeder
         $this->assessCycle();
         $this->certifyCycle();
         $this->buyCycle($admin);
+        $this->arabicCycle();
 
         // A default `migrate:fresh --seed` leaves `staff_profiles` empty, and
         // this used to skip the whole HR block in silence — so the sweep
@@ -1517,6 +1518,20 @@ class SmokeMarkerSeeder extends Seeder
         }
         DB::table('issued_certificates')->whereIn('id', $issuedIds)->delete();
         DB::table('certificate_templates')->whereIn('id', $templateIds)->delete();
+    }
+
+    /**
+     * `scripts/smoke/arabic.mjs` adds a letter to the Arabic reference,
+     * builds a reading activity tagged with it on `SMOKE-Course`, has the
+     * student answer it, and reads both skill reports. This plants nothing
+     * and clears what a run left: the attempts, the activity, the letter.
+     */
+    private function arabicCycle(): void
+    {
+        $activityIds = DB::table('activities')->where('title', 'SMOKE-Arabic-Activity')->pluck('id');
+        DB::table('activity_attempts')->whereIn('activity_id', $activityIds)->delete();
+        DB::table('activities')->whereIn('id', $activityIds)->delete();
+        DB::table('arabic_letters')->where('key_name', 'smoke_letter')->delete();
     }
 
     private function hr(AcademicYear $year, StaffProfile $staff, ?object $admin): void
