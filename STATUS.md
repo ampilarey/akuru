@@ -4506,6 +4506,19 @@ Quran page. Seven walks re-run locally on a fresh seed and again on the
 populated database: `absence` 13/13, `family` 28/28, `signup` 17/17,
 `meetings` 11/11, `hifz` 20/20, `library` 14/14, `peer-review` 12/12.
 
+**The fourth seeding** did not finish: `calendar()` died on a 1062.
+`calendar_days` is unique on (date, year) and the seeder inserted
+`SMOKE-Holiday` three days out after deleting only its own title — but
+`create-sweep.mjs` writes its calendar entry the day after the last one
+there is, so a marker that moves forward with the clock lands on a
+sweep's row within a few days of walks. Seeder, fixed: it now takes the
+date over (`updateOrInsert` on date and year), and
+`CalendarMarkerSmokeResetTest` plants a sweep row on that date first
+and reads the marker back — it reproduces staging's exact error on the
+old seeder. Same family as the `UserSeeder`, `SubjectSeeder` and
+staff-profile findings above: every one an assumption that the database
+was empty, and every one first seen on the host that is not.
+
 Two residue observations, not defects: the office queue on staging holds
 one `SMOKE-Research` from the second run whose peer review finished but
 which nobody published (the walk had already failed by then), and the
