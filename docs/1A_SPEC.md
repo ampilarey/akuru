@@ -9,7 +9,7 @@ Slice order is strict. Do not start the next slice with failing tests.
 
 Phase 0 + S1 already shipped authentication, Spatie roles, user management, Settings, rate limiting, and the Inertia `AppShell`. No new code in this slice.
 
-## Slice 1A.2 — Taxonomy + course CRUD + status workflow
+## Slice 1A.2 — Taxonomy + course CRUD + status workflow (done)
 
 **New `course_subjects`:** hierarchical `parent_id`, trilingual names, slug, sort_order, active. Seed examples only (Quran/Arabic/… tree). Distinct from Academics school `subjects`.
 **New `audiences` and `course_levels`:** flat, trilingual, admin-managed. They attach to **offerings in 1B** — CRUD exists now so the dimensions are ready; do not put them on `courses`.
@@ -56,3 +56,8 @@ scaffolded). Admin `/catalog/i18n-preview` checks LTR/RTL samples.
 Architecture tests lock Courses/Progress model imports.
 
 **Out of scope until later slices/phases:** offerings, delivery modes, remaining block types, certificates, payments, Arabic, Hifz, AI.
+
+## Walked
+
+- SPEC §46.2 *"A course creator can create a course, modules, lessons, and Phase 1A content blocks from the dashboard"* through to *"Basic lesson progress updates correctly"*: `scripts/smoke/author.mjs` (2026-09-23, STATUS §5fg) — the author builds the course, three blocks and a revision, the supervisor approves, the student enrols, reads all three blocks (the image through `/catalog/media`), and completes. The student's half alone: `learn.mjs` (§5dt).
+- §57.14 *"Factories exist for every new model"*: not how this repository tests. Fixtures are the `make*()` helpers in `tests/Support/*` (recorded in STATUS §5fg); only `Course` and `User` have factories.

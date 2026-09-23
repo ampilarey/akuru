@@ -310,6 +310,20 @@ export default function Outline({ course, modules, glossaryItems = [], assessmen
                 <form
                     onSubmit={(e) => {
                         e.preventDefault();
+                        // The select *shows* the first module as its fallback,
+                        // but the form's state was captured when the page
+                        // mounted — on a new course, before any module existed
+                        // — so it still held ''. The post then failed
+                        // `required` and, with no error rendered, the first
+                        // lesson of every new course could not be saved from
+                        // this screen at all: with one module there is nothing
+                        // to re-select. Send what the select shows (the same
+                        // fix the block form below already had; 1A audit,
+                        // STATUS §5fg).
+                        lessonForm.transform((data) => ({
+                            ...data,
+                            course_module_id: data.course_module_id || modules[0]?.id || '',
+                        }));
                         lessonForm.post(`/catalog/courses/${course.id}/lessons`, { preserveScroll: true });
                     }}
                     className="rounded-lg border bg-white p-4"
@@ -320,6 +334,8 @@ export default function Outline({ course, modules, glossaryItems = [], assessmen
                     </select>
                     <input className="form-input mb-2" placeholder="Lesson title" value={lessonForm.data.title} onChange={(e) => lessonForm.setData('title', e.target.value)} />
                     <button type="submit" className="btn-primary" disabled={lessonForm.processing || modules.length === 0}>Save lesson</button>
+                    {lessonForm.errors.title && <p className="mt-1 text-xs text-red-600">{lessonForm.errors.title}</p>}
+                    {lessonForm.errors.course_module_id && <p className="mt-1 text-xs text-red-600">{lessonForm.errors.course_module_id}</p>}
                 </form>
                 <form
                     onSubmit={(e) => {

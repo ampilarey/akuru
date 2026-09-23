@@ -22,8 +22,8 @@ the Library L1–L7; the public-site track W1–W3; EduPage parity E1–E22. The
 agent-buildable backlog in `KNOWN_ISSUES` is empty.
 
 **What is verified is narrower than what is built, and in one specific way.**
-Twenty scripted browser walks (`node scripts/smoke/all.mjs`, ~16 minutes)
-drive the loops that matter — enrolling, taking a lesson, marking work,
+Twenty-one scripted browser walks (`node scripts/smoke/all.mjs`, ~17 minutes)
+drive the loops that matter — building a course, enrolling, taking a lesson, marking work,
 reporting an absence, collecting a child, booking a meeting, publishing an
 article, taking and refunding money, recording a sound, reciting, an exam to a
 report card, a fee to a receipt, a staff member's month, and the whole app at
@@ -132,7 +132,7 @@ Legend — **CODE:** implementation in repo (models/migrations/actions/routes/pa
 | S5.5 performance/CPD | Yes. CPD hours per staff member, this year and all time, on the HR screen, its CSV and the portal (§5ff). | `PerformanceTest`, `CpdSummaryTest`. | Walked 2026-09-23 (`hr.mjs`, §5fd): a cycle opened, an appraisal written, acknowledged by the staff member, seen acknowledged by the office. Summary row and CSV read in a browser (§5ff). | |
 | S5.6 payroll | Yes. **Flagged off** (`PAYROLL_ENABLED` + `payroll.enabled`). Rules and the settings-half switch on `/hr/settings` (§5fe). | `PayrollTest` (turns the flag on), `PayslipDocumentTest`, `HrSettingsTest`. | Walked 2026-09-23 with the flag on locally (`hr.mjs`, §5fd/§5fe): period 2099-12 run, approved, paid, bank CSV, locked; the staff member opens a payslip that names them, in the request language. Default **off** is by design; the walk skips these steps where it is. The seeder had been planting a period status the enum lacks, so `/hr/payroll` was 500 on every seeded database. | Payslip is HTML like every document (`AwardController` note), trilingual since §5fe. |
 | 1A.1 auth/roles | Yes (Phase 0 + S1). | Auth tests, `RoleLandingTest`. | Walked login **ok locally** (R2/R3). Teacher `/dashboard` → Today (#88). Parent/student `/dashboard` → composed `/portal/home` (D1). Admin/headmaster `/dashboard` → `/portal/overview` (D3 #111). Staging login **fail**. | |
-| 1A.2–1A.7 course engine | Yes. Catalog, outline, text/media blocks, glossary term bank + lesson attach, `/learn`, portal learning. | Matching `tests/Feature/Courses/*` including `GlossaryTest`. | Glossary walked (#102). **Catalog, glossary, levels and audiences each show a planted row** (§5ds sweep) and **a student took a lesson end to end** — `/learn`, the course page, the published block and the completion, 7/7 (§5dt, `scripts/smoke/learn.mjs`). The outline **editor**, activities and assessments remain UNVERIFIED. | `glossary_items` / `lesson_glossary_items` (SPEC §22). |
+| 1A.2–1A.7 course engine | Yes. Catalog, outline, text/media blocks, glossary term bank + lesson attach, `/learn`, portal learning. | Matching `tests/Feature/Courses/*` including `GlossaryTest`, `OutlineFormsPostTheirShownParentTest`. | Glossary walked (#102). **Catalog, glossary, levels and audiences each show a planted row** (§5ds sweep); **a student took a lesson end to end** (§5dt, `learn.mjs`); **an author built a course end to end** 2026-09-23 (`author.mjs`, §5fg): course → module → lesson → text, instruction and image blocks → revision → review by the supervisor → the student enrols, reads all three, completes. **The first lesson of a new course could not be saved from the outline editor before this** — the form posted an empty module id. Activities and assessments as authoring screens remain UNVERIFIED by walk (`review.mjs` covers marking). | `glossary_items` / `lesson_glossary_items` (SPEC §22). |
 | 1B.1–1B.6 offerings/PWA | Yes. Offerings, pin/seats, sessions, extra blocks, unlock/completion, PWA/i18n. | Matching Offerings/Progress/Pwa tests. | **1B.1 offerings shows a planted row** (§5ds sweep, 2026-09-14). Pin/seats, sessions, unlock/completion and PWA remain UNVERIFIED. | 1B.5 tests the 2/3 = 66 formula. **1B.5's "evaluators" are one hardcoded policy each** — sequential unlock, required-lessons+sessions completion — now behind contracts with a single implementation (ADR-022). No per-course strategy config exists; ROADMAP §2a describes the target, not `main`. **1B audit (2026-08-27):** seat limits, pinning, sessions (§2d L1), PWA all verified solid; but §3.4's split **backfill was never written** — offerings are created lazily, legacy enrollments keep `course_offering_id = null`, and the public site still reads legacy `courses.seats`/`enrollment_deadline`. Backfill is mandatory before first real use (see ROADMAP §3.4 as-built note). |
 | 2.1–2.5 activities | Yes. Four patterns, bank, assessment player, review, session polish. Class quizzes/assignments migrate onto the same engine. Unified gradebook via `GradeItemContract`. | Matching Courses/Progress tests + `LegacyAssessmentMigrationTest` + `UnifiedGradebookTest`. | Quiz/assignment migration walked **#104**. Unified gradebook walked. **A student answered a `selection` activity and the engine scored it** — 9/9 (§5dv, `scripts/smoke/learn.mjs`); that walk found the attempt was being written with no academic year. The other three patterns, the assessment player and the review loop remain UNVERIFIED. | **Phase 2 audit (2026-08-27):** scoring covers all four patterns (teacher-marked short-circuits to review); review loop + standards-tied question bank verified; rule 6 holds behaviourally. **Deviations:** `Courses/Components/` was never created — Arabic/Quran code lives in `Courses/Models`+`Actions`, so rule 3's Components clause guards an empty set (correction point: Phase F, which creates `Components/Quran` and moves Arabic in the same slice — FQCN moves need morph-map + baseline updates together). Spec §43 `student_submissions`/`teacher_feedback` replaced by attempt `answers` json + review fields (recorded, fine). See ROADMAP §2a as-built notes. |
 | Arabic A.1–A.3 | Yes. Letters/harakas, skill tag, reports. | `ArabicReferenceTest`, `ArabicSkillActivityTest`, `ArabicSkillReportTest`. | UNVERIFIED. | No AI (rule 8). **Audited 2026-08-27: PASS** — tables + `NormalizeTextAnswerAction` (spec normalization) + reports verified; skill metadata rides the four activity patterns (placement caveat = Phase 2 Components note). |
@@ -4345,6 +4345,70 @@ walk returned a header row and nothing else for circulation, student work and
 pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
+
+## 5fg. Phase 1A audit and its one fix: the author's half of the course engine, walked — and the lesson nobody could add (2026-09-23)
+
+The 1A audit (`docs/1A_SPEC.md`, SPEC §46.1–46.2, §53, §57.2, §57.14)
+against the Courses engine. **The engine is sound and, unusually, so is
+its test coverage**: every one of §53's ten Phase 1A areas has a test
+(the two that did not were closed in §5dn), the workflow transitions,
+revisions, block order, self-learning enrolment, private media, the
+direction-as-setting rule and the domain boundaries all pinned. Four
+findings, one of which is a defect.
+
+**D1 — the author's half had never been walked.** §46.2's first sentence
+about a person is *"A course creator can create a course, modules,
+lessons, and Phase 1A content blocks from the dashboard."* `learn.mjs`
+(§5dt) walked the student's half against a lesson `SmokeMarkerSeeder`
+had planted through the actions, and the §2 row said so honestly: *"the
+outline editor … remain[s] UNVERIFIED"*. `scripts/smoke/author.mjs`, 23
+steps, three logins: the author creates `SMOKE-Authored`, a module, a
+lesson, a text block, an instruction block and an image block uploaded
+through the media pipeline, publishes the lesson (revision 1) and the
+module, submits for review; the **supervisor** — a different login,
+because reviewing is the one job §8.3's creator does not have — approves
+it; the student finds it in the catalog, enrols free, opens the lesson,
+reads all three blocks with the image served through `/learn/media`, not
+a storage URL, marks it complete and the course reads 100%.
+`SmokeMarkerSeeder::authorCycle()` clears the course and everything under
+it in foreign-key order, so it runs twice; `AuthorCycleSmokeResetTest`.
+Twenty-first walk, seventeenth writer.
+
+**What it found: the first lesson of a new course could not be saved.**
+The outline's "Add lesson" form captured `course_module_id` when the page
+mounted — on a new course, before any module existed — so it held `''`.
+The select *showed* the first module (its fallback), the post sent
+nothing, `required` refused it, and the form rendered no error. With one
+module there was nothing to re-select, so from the screen the first
+lesson of every new course was unsavable; the only lessons that ever got
+saved were on courses whose module existed before the page loaded. The
+block form had already been given the fix (send what the select shows);
+the lesson form now has it and shows its errors.
+`OutlineFormsPostTheirShownParentTest` reads the source for both, because
+no feature test can see a form's mounted state. Walked: the failing run
+left a module reading *No lessons yet.*; after the fix, 23/23 twice.
+
+**D2 — §57.14 "Factories exist for every new model": not how this repo
+tests.** Two factories exist (`Course`, `User`); everything else is a
+`make*()` helper in `tests/Support/*`, which is the convention every
+suite since Phase 0 has followed. Recorded in `1A_SPEC.md` as the
+deliberate reading, not backfilled: ten unused factories would satisfy the
+sentence and help nobody.
+
+**D3 — `1A_SPEC.md` said 1A.2 was the one slice not done.** Every other
+heading carried *(done)*; 1A.2 did not, and it shipped with the rest
+(`TaxonomyAndCourseCrudTest`). Marked. The same document now records
+what has been walked.
+
+**D4 — §53 test 6 asks for every Phase 1A block type through the player.**
+Text (seven files), image, audio, video and PDF (`MediaContentBlockTest`)
+were; rich text only at the block level (`RichTextSanitisationTest`) and
+instruction not at all. `PlayerRendersEveryPhase1ABlockTest`: one lesson,
+all seven, read back from the published snapshot in the order saved. The
+author walk renders text, instruction and image in a real browser.
+
+**Walked in a browser.** `author.mjs` 23/23 twice on a re-seeded database;
+no console or server errors.
 
 ## 5ff. S5 audit, last fix: the document a leave type requires, CPD hours added up, and the exit the payroll test forgot (2026-09-23)
 
