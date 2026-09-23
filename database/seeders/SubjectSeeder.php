@@ -64,8 +64,11 @@ class SubjectSeeder extends Seeder
             ],
         ];
 
+        // By code, which is unique: this can run on a database that already
+        // has some of them, and `PilotRehearsalSeeder` calls it for the three
+        // it needs (STATUS §5fz — staging had none, and stopped on the first).
         foreach ($subjects as $subject) {
-            \App\Domains\Academics\Models\Subject::create(array_merge($subject, [
+            \App\Domains\Academics\Models\Subject::query()->firstOrCreate(['code' => $subject['code']], array_merge($subject, [
                 'school_id' => $school->id,
                 'description' => 'Islamic education subject',
                 'description_arabic' => 'مادة تعليمية إسلامية',
