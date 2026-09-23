@@ -67,6 +67,9 @@ class PilotRehearsalSeeder extends Seeder
         }
 
         $this->call(PeriodSeeder::class);
+        // The three subjects below, planted if missing (both seeders find
+        // their rows first, so this is safe on a database that has them).
+        $this->call(SubjectSeeder::class);
 
         $arabic = Subject::query()->where('code', 'ARB101')->firstOrFail();
         $quran = Subject::query()->where('code', 'QUR102')->firstOrFail();

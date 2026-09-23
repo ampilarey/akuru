@@ -4371,6 +4371,17 @@ over a pre-existing `admin@` twice and reads the six back.
 staging they would read the laptop's database and walk the wrong rows.
 Recorded; the other thirty-three take `SMOKE_BASE_URL` as documented.
 
+**Second pull, second seeder.** With `UserSeeder` fixed, the owner ran
+`PilotRehearsalSeeder` on staging and it stopped at *No query results for
+model [Subject]*: it took the three pilot subjects on faith
+(`firstOrFail`), and staging had never had `SubjectSeeder` run.
+`SubjectSeeder` now finds each subject by its unique code, and the pilot
+seeder calls it — the same shape as its `PeriodSeeder` call.
+`PilotRehearsalSeederRunsOnAThinDatabaseTest` seeds roles, a school and
+the logins only, then the pilot seeder twice. Every seeder a host might
+be asked to run on its own now finds its rows first; `DatabaseSeeder` on
+a fresh database is unchanged.
+
 **Read from here.** Chromium in this sandbox reaches staging only through
 an intercepting proxy, so its CA had to be added to Chromium's trust
 store before a single page would load — trusting that CA, not turning
