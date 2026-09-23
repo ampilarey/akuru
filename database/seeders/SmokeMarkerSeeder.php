@@ -80,6 +80,7 @@ class SmokeMarkerSeeder extends Seeder
         $this->recitations();
         $this->examCycle($year);
         $this->hrCycle($year, $admin);
+        $this->authorCycle();
 
         // A default `migrate:fresh --seed` leaves `staff_profiles` empty, and
         // this used to skip the whole HR block in silence — so the sweep
@@ -1317,6 +1318,49 @@ class SmokeMarkerSeeder extends Seeder
                 'value' => '1', 'type' => 'boolean', 'group' => $group, 'label' => $key,
                 'created_at' => now(), 'updated_at' => now(),
             ]);
+        }
+    }
+
+    /**
+     * `scripts/smoke/author.mjs` builds `SMOKE-Authored` through the screens
+     * — course, module, lesson, three blocks, a revision, an offering, an
+     * enrolment, progress — so this plants nothing and only clears what the
+     * last run left, in foreign-key order, so the walk can run again. The
+     * course is removed outright rather than kept like `SMOKE-Course`: it is
+     * created by the walk, so nothing else can point at it.
+     */
+    private function authorCycle(): void
+    {
+        $courseIds = DB::table('courses')->where('title', 'SMOKE-Authored')->pluck('id');
+        if ($courseIds->isEmpty()) {
+            return;
+        }
+
+        $lessonIds = DB::table('lessons')->whereIn('course_id', $courseIds)->pluck('id');
+        $enrollmentIds = DB::table('course_enrollments')->whereIn('course_id', $courseIds)->pluck('id');
+
+        DB::table('activity_attempts')->whereIn('course_id', $courseIds)->delete();
+        DB::table('activities')->whereIn('course_id', $courseIds)->delete();
+        $assessmentIds = DB::table('assessments')->whereIn('course_id', $courseIds)->pluck('id');
+        DB::table('assessment_attempts')->whereIn('assessment_id', $assessmentIds)->delete();
+        DB::table('assessment_questions')->whereIn('assessment_id', $assessmentIds)->delete();
+        DB::table('assessments')->whereIn('id', $assessmentIds)->delete();
+        DB::table('student_lesson_progress')->whereIn('enrollment_id', $enrollmentIds)->delete();
+        DB::table('course_enrollments')->whereIn('id', $enrollmentIds)->delete();
+        DB::table('content_blocks')->whereIn('course_id', $courseIds)->delete();
+        DB::table('lessons')->whereIn('id', $lessonIds)->update(['current_revision_id' => null]);
+        DB::table('lesson_revisions')->whereIn('lesson_id', $lessonIds)->delete();
+        DB::table('lessons')->whereIn('id', $lessonIds)->delete();
+        DB::table('course_modules')->whereIn('course_id', $courseIds)->delete();
+        DB::table('course_offerings')->whereIn('course_id', $courseIds)->delete();
+        DB::table('course_review_decisions')->whereIn('course_id', $courseIds)->delete();
+        DB::table('course_instructor')->whereIn('course_id', $courseIds)->delete();
+        DB::table('courses')->whereIn('id', $courseIds)->delete();
+
+        // The image the walk uploaded, file and row.
+        foreach (DB::table('media_files')->where('original_name', 'smoke-authored.png')->get(['id', 'disk', 'path']) as $media) {
+            Storage::disk($media->disk)->delete($media->path);
+            DB::table('media_files')->where('id', $media->id)->delete();
         }
     }
 

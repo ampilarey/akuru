@@ -15,7 +15,7 @@ with a `teachers` row, and a parent/student pair for portal checks.
 
 ## 0. Run the automated walks first
 
-**Do this before anything below.** Twenty scripted walks drive real browsers
+**Do this before anything below.** Twenty-one scripted walks drive real browsers
 through the loops that matter — a stranger enrolling, a student taking a
 lesson, a teacher marking work, a family reporting an absence, a child being
 collected, a parent booking a meeting, somebody becoming a writer and getting
@@ -39,7 +39,7 @@ SMOKE_BASE_URL=https://test.akuru.edu.mv node scripts/smoke/all.mjs
 It exits non-zero if any walk fails and prints the full output of the failures
 only, so a green run is one screen and a red one explains itself.
 
-**Sixteen of the twenty write data** — they submit absence notes, request
+**Seventeen of the twenty-one write data** — they submit absence notes, request
 that children be collected, book meetings, enrol people, hand in recordings
 for a teacher to judge, publish exam results to families, issue them
 invoices and approve staff leave. Against a host whose name does not look synthetic the
@@ -48,7 +48,7 @@ four that look without touching anything (`page-errors`, `sweep`, `own-data`,
 `mobile`), which is the safe choice against anything with real families on it.
 
 `node scripts/smoke/all.mjs learn review` runs named walks; `--write` runs the
-sixteen that change data. The `exams` walk needs a queue worker on the host
+seventeen that change data. The `exams` walk needs a queue worker on the host
 (report cards render on the queue) and says so if none is running. The `hr`
 walk runs its payroll steps only where `PAYROLL_ENABLED` is on and says so
 where it is not.
