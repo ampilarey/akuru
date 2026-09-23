@@ -4437,6 +4437,41 @@ server, queue worker and HTTPS take the application; twenty-two of the
 thirty-two writers passed every step or all but one on the first try;
 `page-errors` loaded every screen as six roles with no server error.
 
+**The second staging run**, with causes 1–3 on the host and the surahs
+seeded: `sweep` **25/25**, the thirty-two writers **25/32** — and every
+red a single step. Read one by one:
+
+- **`hifz.mjs`, the supervisor's dashboard — code, fixed.** The
+  controller built a list of pending milestones on every request and the
+  view never rendered it; a supervisor landing there saw a *Pending
+  Review* count and no way to tell whose milestone it was. The walk's
+  check had passed locally only because the pupil's name appeared in the
+  demo data's haraka and weak-student lists, which staging does not
+  have. The dashboard now lists pending milestones by pupil with a Review
+  link; `HifzScreensReportBackTest` reads one back.
+- **`hr.mjs`, the balance and the appraisal — seeder, fixed.** Staging's
+  first seeder run, with no `teacher@` yet, had made a "Smoke Marker"
+  profile out of `admin@`, and `StaffProfile::first()` kept finding that
+  one: the entitlement, the appraisal and the attendance the walk read by
+  name belonged to somebody else's Smoke Marker, while `teacher@`'s own
+  leave was approved correctly. The seeder now takes `teacher@`'s
+  profile, makes one only for `teacher@`, renames its own residue to
+  *Smoke Stand-in*, keeps one active contract per profile, and picks
+  `student@`'s pupil and class rather than the first class's first
+  pupil — the same people on a fresh seed and not on a host with
+  history.
+- **Five reads before a post had landed — walks, fixed.** `author`
+  (0% read while *Mark complete* was in flight), `assess` (the second
+  attach posted into the first's re-render and was lost), `family` (the
+  inbox opened before *Message sent*), `money` (the catalog re-read
+  before the free enrolment redirected), `absence` (the register
+  submitted the pupil's earlier mark under a select still re-rendering),
+  and `consent` (a public page's cards counted before the reloaded
+  document had them). Each now waits for the thing it posted, not for the
+  network to go quiet.
+
+All nine walks green again locally on a re-seeded database.
+
 ## 5fy. Production was 500 after the day's pull, and came back — cause not captured (2026-09-23)
 
 The owner pulled `main` on the production cPanel terminal in the

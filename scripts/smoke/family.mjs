@@ -262,9 +262,12 @@ if (TEACHER_OPTION) {
 await parent.locator('label', { hasText: 'Subject' }).first().locator('input').fill(MESSAGE);
 await parent.locator('label', { hasText: 'Message' }).first().locator('textarea').fill(`${MESSAGE}: ${NAME} will be late on Sunday.`);
 await parent.locator('button[type="submit"]').first().click();
-await parent.waitForLoadState('networkidle');
+// Wait for the send to land, not for the network to go quiet: on a slower
+// host the inbox was opened while the post was still in flight, and the
+// teacher had the message before the parent's inbox did (STATUS §5fz).
+const sent = await settles(parent, 'Message sent.');
 await parent.goto(`${BASE}/en/portal/messages`, { waitUntil: 'networkidle' });
-check('the parent sends it and finds it in their inbox', (await text(parent)).includes(MESSAGE), (await text(parent)).slice(0, 160));
+check('the parent sends it and finds it in their inbox', sent && (await text(parent)).includes(MESSAGE), (await text(parent)).slice(0, 160));
 
 // ------------------------------------------------------------- the teacher
 

@@ -227,12 +227,18 @@ check('and adds no row', rows.length === 2, `${rows.length} rows: ${rows.join(' 
 // 6. the gate, closed
 check('the photo consent is revoked', await record(admin, PHOTO, false), (await text(admin)).slice(0, 160));
 await site.reload({ waitUntil: 'networkidle' });
+// A public Blade page: nothing to mount, but on a slower host the cards were
+// counted before the reloaded document had them (STATUS §5fz, second run).
+await site.locator('article').first().waitFor({ state: 'attached', timeout: 5000 }).catch(() => {});
 check('the public page keeps the award and the name', (await card().count()) > 0, (await text(site)).slice(0, 160));
 check('but no longer offers the photo', (await card().count()) > 0 && !/Photo on file/.test(await card().innerText()), (await card().count()) ? (await card().innerText()).replace(/\s+/g, ' ') : 'no card');
 
 // 7. back to the seeded state
 check('the photo consent is granted again', await record(admin, PHOTO, true), (await text(admin)).slice(0, 160));
 await site.reload({ waitUntil: 'networkidle' });
+// A public Blade page: nothing to mount, but on a slower host the cards were
+// counted before the reloaded document had them (STATUS §5fz, second run).
+await site.locator('article').first().waitFor({ state: 'attached', timeout: 5000 }).catch(() => {});
 check('and the photo is offered again', (await card().count()) > 0 && /Photo on file/.test(await card().innerText()), (await card().count()) ? (await card().innerText()).replace(/\s+/g, ' ') : 'no card');
 
 await finish();

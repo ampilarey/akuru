@@ -196,7 +196,14 @@ for (const needle of ['SMOKE-Q1', 'SMOKE-Q2']) {
     const value = await attachForm.locator('select').nth(1).locator('option', { hasText: needle }).first().getAttribute('value');
     await attachForm.locator('select').nth(1).selectOption(value);
     await attachForm.locator('button:has-text("Attach question")').click();
-    await author.waitForTimeout(800);
+    // Wait for this one to be on the card before attaching the next: a fixed
+    // pause was long enough locally and not on staging, where the second
+    // attach posted while the first was still re-rendering and was lost
+    // (STATUS §5fz, second run).
+    const deadline = Date.now() + 6000;
+    while (Date.now() < deadline && !(await card().innerText()).includes(needle)) {
+        await author.waitForTimeout(150);
+    }
 }
 const built = (await card().innerText()).replace(/\s+/g, ' ');
 check('both questions are attached, in order', built.indexOf('SMOKE-Q1') > -1 && built.indexOf('SMOKE-Q2') > built.indexOf('SMOKE-Q1'), built.slice(0, 200));

@@ -276,7 +276,10 @@ check(
 );
 
 await student.locator('button:has-text("Mark complete")').first().click();
-await student.waitForLoadState('networkidle');
+// Wait for the completion to land, not for the network to go quiet: on a
+// slower host the course page read 0% because it was opened while the
+// post was still in flight (STATUS §5fz, second run).
+check('the lesson is marked complete', await settles(student, 'Lesson marked complete.'), (await text(student)).slice(0, 160));
 await student.goto(new URL(coursePath, BASE).href, { waitUntil: 'networkidle' });
 const after = await text(student);
 check('marking it complete moves the course to 100%', after.includes('100%'), (after.match(/\d+%/) ?? ['no percentage on the course page'])[0]);

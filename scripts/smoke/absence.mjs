@@ -204,6 +204,14 @@ if (registerHref) {
 
     if (await row.count()) {
         await row.locator('select').first().selectOption('absent');
+        // Make sure the mark took before submitting: on a slower host the
+        // register re-rendered under the change and submitted the pupil's
+        // earlier mark instead (STATUS §5fz, second run).
+        await teacher.waitForLoadState('networkidle');
+        if ((await row.locator('select').first().inputValue()) !== 'absent') {
+            await row.locator('select').first().selectOption('absent');
+            await teacher.waitForLoadState('networkidle');
+        }
         // The register will not submit without a plan topic or a line about
         // what was taught — it says so, and an earlier version of this walk
         // clicked Submit, took the 303 for success and reported a green save
