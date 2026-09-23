@@ -4382,12 +4382,60 @@ the logins only, then the pilot seeder twice. Every seeder a host might
 be asked to run on its own now finds its rows first; `DatabaseSeeder` on
 a fresh database is unchanged.
 
-**Read from here.** Chromium in this sandbox reaches staging only through
+**Reaching it.** Chromium in this sandbox reaches staging only through
 an intercepting proxy, so its CA had to be added to Chromium's trust
 store before a single page would load — trusting that CA, not turning
-verification off. A page then answers in about four seconds. The first
-staging run of the read-only walks follows in this section once the
-logins are planted.
+verification off. A page then answers in one to four seconds.
+
+**The first staging run.** With the logins planted and the staging
+admin password set to the walks' password: `sweep.mjs` **24/25** (every
+screen answered, one marker missing), then the thirty-two remote-capable
+writers **10/32**. Read step by step, the reds fall into five causes,
+two of them code:
+
+1. **A closed year shadowed the active one — code, fixed here.** Staging
+   holds a closed "2026-2027" and an active "2026-2027 Pilot", both
+   spanning the calendar year. `ResolveAcademicYearForDateAction` took
+   the *first* year covering a date, which was the closed one, so every
+   date-scoped write on that host went into a year no screen shows by
+   default: the staff self check-in and the approved leave (`hr.mjs`,
+   four steps), the register roster for today (`family`, `school-day`,
+   `absence` — "no register today lists Fatima Yoosuf" while the
+   registers page listed her class), the seeded attendance marker
+   (`sweep` S5.1), and fourteen other consumers. It now prefers the
+   active year among the years covering a date, then the current one;
+   `ResolveYearPrefersTheActiveOneTest`. A dataset a laptop never has
+   — two years over the same dates — found it in an hour.
+2. **A page read before it mounted — walks, hardened here.** About a
+   fifth of the failed steps carried an empty page text: `main` was
+   there and empty when the walk read it, a fresh load a moment later
+   was fine. On a slower host the app's JavaScript can land after
+   Playwright's "network idle", and every walk read at exactly that
+   moment. Every walk's `goto` and `reload` now wait, bounded at four
+   seconds, for `main` to have text on an Inertia page. Not a
+   defect in the application; a defect in how the walks read one.
+3. **No surah reference on staging — operator.** `SurahSeeder` had
+   never run there. `quran.mjs` says so on its first step and stops;
+   `recite.mjs` found "no usable Record button — and no explanation on
+   screen", which was true: the page left the recorder out in silence.
+   **The page now says why** (`Quran.jsx`, trilingual,
+   `QuranPageSaysWhyRecordingIsUnavailableTest`). The seeder is the
+   owner's to run: `php artisan db:seed --class=SurahSeeder`.
+4. **Two walks read the laptop, not the host.** `own-data.mjs` and
+   `register.mjs` shell out to a local `php artisan tinker` for ids and
+   were left out of the staging run. Recorded above.
+5. **Not yet explained** — to be read again after 1–3 land and the
+   staging seed is re-run: `hifz.mjs` two steps, `peer-review.mjs` the
+   accept recommendation, `money.mjs` the catalog's own fee,
+   `fees.mjs` the family's invoice balance, `meetings.mjs` the office's
+   booking row, `earnings.mjs` a crash before its first step. Two
+   `HTTP 520` on the app's JavaScript in an hour are the host's
+   (Cloudflare in front of LiteSpeed), not the code's.
+
+What the run proved that no laptop could: the host's PHP, MariaDB, web
+server, queue worker and HTTPS take the application; twenty-two of the
+thirty-two writers passed every step or all but one on the first try;
+`page-errors` loaded every screen as six roles with no server error.
 
 ## 5fy. Production was 500 after the day's pull, and came back — cause not captured (2026-09-23)
 
