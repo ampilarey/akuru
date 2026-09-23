@@ -47,7 +47,7 @@ const CHECKS = [
   ['S3.5  standards',        '/en/exams/standards',        'SMOKE-Standard'],
   ['S3.7  awards',           '/en/exams/awards',           'SMOKE-Award'],
   ['S4.2  fee structures',   '/en/finance/fee-structures', 'SMOKE-Structure'],
-  ['S4.4  payment plans',    '/en/finance/payment-plans',  null],
+  ['S4.4  payment plans',    '/en/finance/payment-plans',  'SMOKE-INV-1'],
   ['S4.5  adjustments',      '/en/finance/adjustments',    '7.77'],
   ['S5.1  staff attendance', '/en/hr/attendance',          'SMOKE-Attendance'],
   ['S5.2  leave types',      '/en/hr/leave-types',         null],
