@@ -663,3 +663,12 @@ to end that habit rather than relocate it.
 
 Do not quote a total from this document without re-checking the slice against
 the codebase first. That is exactly how the first version went wrong.
+
+**Walked, 2026-09-23 (STATUS §5fp).** Wave 1 — E3 homework, E4 noticeboard,
+E2 messaging with a class poll, E22 notifications — is `scripts/smoke/family.mjs`,
+four logins. It found that no message had ever been sendable from the compose
+screen (the hidden branch's empty id failed `integer`), and that a class thread
+named every family to every family and let a small class reply-all; both fixed
+in that slice. E1 is `own-data.mjs`; E8 `pickup.mjs`; E9 `hr.mjs`; E12
+`meetings.mjs`; E13 §5bw; E14 `exams.mjs`. The rest of E5–E22 have their HTTP
+tests and no walk yet.

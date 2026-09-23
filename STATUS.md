@@ -22,8 +22,8 @@ the Library L1–L7; the public-site track W1–W3; EduPage parity E1–E22. The
 agent-buildable backlog in `KNOWN_ISSUES` is empty.
 
 **What is verified is narrower than what is built, and in one specific way.**
-Twenty-nine scripted browser walks (`node scripts/smoke/all.mjs`, ~25 minutes)
-drive the loops that matter — building a course, running an intake, enrolling, buying a course, taking a lesson, sitting an assessment, earning a certificate, tagging an Arabic skill activity, setting and marking a recitation, mapping a halaqa, approving a Hifz milestone, reading a protected book, redeeming a gift card, marking work,
+Thirty scripted browser walks (`node scripts/smoke/all.mjs`, ~26 minutes)
+drive the loops that matter — building a course, running an intake, enrolling, buying a course, taking a lesson, sitting an assessment, earning a certificate, tagging an Arabic skill activity, setting and marking a recitation, mapping a halaqa, approving a Hifz milestone, reading a protected book, redeeming a gift card, setting homework, posting a notice, messaging a teacher and polling a class, marking work,
 reporting an absence, collecting a child, booking a meeting, publishing an
 article, taking and refunding money, recording a sound, reciting, an exam to a
 report card, a fee to a receipt, a staff member's month, and the whole app at
@@ -4346,6 +4346,67 @@ walk returned a header row and nothing else for circulation, student work and
 pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
+
+## 5fp. E-track audit, Wave 1: the daily habit walked — and nobody could send a message (2026-09-23)
+
+The EduPage-parity audit, Wave 1 (`docs/EDUPAGE_FEATURES_PLAN.md` E1–E4,
+E22): the four things a family opens every day. E1's portal home is
+`own-data.mjs`; E3 homework, E4 noticeboard, E2 messaging and E22
+notifications each shipped with HTTP tests and the §5ag mirror harness, and
+none had been walked as the people involved. Three findings, two defects —
+one of them the kind the mirror harness exists to catch and could not.
+
+**D1 — every send from the message compose screen bounced.** The form
+posts both ids whichever branch is showing — a family writing to a person
+sends `class_id: ''`, a teacher writing to a class sends `recipient_id: ''`
+— and the browser turns `''` into null, which `integer` refused on a field
+not marked `nullable`. The POST came back 302 to the form with the error on
+the *hidden* branch, so the screen showed nothing wrong and no thread was
+made. `PortalMessagesPageTest` posts only the fields it needs and never saw
+it; §5ag's harness rendered props and never posted. **No parent or teacher
+has ever sent a message from the screen.** Both ids are `nullable` now with
+`required_if` still biting on the one the chosen branch needs.
+`MessageComposePostsWhatTheFormSendsTest` posts exactly what the form
+posts, both branches.
+
+**D2 — families in a class thread could see each other.** E2b sends a
+class message as one thread with every family on it and leaves the reply
+policy to the >5 default (§5ai), so the smoke class — three guardian
+accounts — got `all`: one family's reply reached the other two. And the
+inbox's *With …* line and the thread's participant list named every family
+to every family whatever the policy. The plan's acceptance is that each
+family sees only its own conversation, and its rule is that an all-parents
+send has reply-all off. A class send now always carries `author_only`
+(`ClassMessageBroadcastTest`'s small-class case flipped, with the reply
+delivered to the teacher alone), and under `author_only` a recipient is
+shown the author and themselves — the author still sees everyone.
+`ClassThreadShowsEachFamilyOnlyTheTeacherTest`. The compose notice says
+where replies go for a class send of any size.
+
+**D3 — the walk.** `scripts/smoke/family.mjs`, 27 steps, four logins: the
+teacher writes `SMOKE-Homework` into today's register for the pupil's class
+with the defaulted due date; the pupil sees it under the subject and the
+teacher, ticks it, and the tick survives a reload; the office publishes
+`SMOKE-Notice` to that class only and the pupil reads it on the
+noticeboard; the parent sees the same homework with nothing to tick, reads
+the notice, exports the noticeboard CSV; the parent writes to the teacher
+who set the homework — offered as *teacher — child* — and finds it in
+their inbox; the teacher is told in their notification centre, finds it
+unread, reads it and replies; the parent reads the reply; the teacher
+polls the whole class; the family gets it as their own thread *With* the
+teacher and nobody else, answers once, and the teacher sees *1 answered so
+far*. `SmokeMarkerSeeder::familyCycle()` plants nothing and clears the
+threads, poll, notifications, notice and ticks, blanking the homework
+rather than deleting the day's register. `FamilyCycleSmokeResetTest`.
+Thirtieth walk, twenty-sixth writer.
+
+**Recorded, not changed.** Teachers cannot post a notice — `announcements.store`
+is behind `role:super_admin|admin|headmaster|supervisor`; the plan's
+recommendation (own-class posting for teachers) is owner decision 3 and
+stays open. The walk posts as the office.
+
+**Walked in a browser.** `family.mjs` 27/27 twice on a re-seeded database,
+no console or server errors.
 
 ## 5fo. L-track audit: the reader's half walked — protected reader and gift card (2026-09-23)
 

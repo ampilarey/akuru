@@ -143,14 +143,27 @@ it('turns reply-all off on a class big enough to need it', function () {
     expect($delivered)->toBe([(int) $teacherUser->id]);
 });
 
-it('keeps reply-all on for a small class', function () {
-    ['teacherUser' => $teacherUser, 'class' => $class] = seedClassWithFamilies(3);
+it('turns reply-all off on a small class too — a class send is an all-parents send', function () {
+    ['teacherUser' => $teacherUser, 'class' => $class, 'guardians' => $guardians] = seedClassWithFamilies(3);
 
     $thread = app(StartClassMessageThreadAction::class)
         ->execute((int) $teacherUser->id, (int) $class->id, 'Reminder', 'Body');
 
-    // Three families can talk to each other without drowning anyone.
-    expect($thread->reply_policy)->toBe('all');
+    // This used to say `all` — "three families can talk to each other without
+    // drowning anyone" — and the family walk (STATUS §5fp) showed what that
+    // meant: one family's reply reached the other two, and each saw the
+    // others by name. Families in a class thread are not a group.
+    expect($thread->reply_policy)->toBe('author_only');
+
+    app(ReplyToMessageThreadAction::class)
+        ->execute((int) $thread->id, (int) $guardians[0]->user_id, 'Noted.');
+
+    $delivered = Message::query()
+        ->where('thread_id', $thread->id)
+        ->where('sender_id', $guardians[0]->user_id)
+        ->pluck('recipient_id')->map(fn ($id): int => (int) $id)->all();
+
+    expect($delivered)->toBe([(int) $teacherUser->id]);
 });
 
 it('refuses a broadcast to a class the sender does not teach', function () {

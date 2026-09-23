@@ -36,6 +36,17 @@ class ShowMessageThreadAction
             return null;
         }
 
+        // Where replies go only to the author, the author is the only person a
+        // recipient is in conversation with — the other recipients are not
+        // theirs to see. A class send used to list every family in the class
+        // to every family in the class (STATUS §5fp). The author still sees
+        // everyone, because the author is writing to everyone.
+        if (! $thread->allowsReplyToAll() && (int) $thread->created_by !== $userId) {
+            $participants = $participants->filter(
+                fn (MessageParticipant $row): bool => in_array((int) $row->user_id, [$userId, (int) $thread->created_by], true),
+            )->values();
+        }
+
         $names = $this->namesFor(
             $participants->pluck('user_id')->map(fn ($id): int => (int) $id)->all()
         );

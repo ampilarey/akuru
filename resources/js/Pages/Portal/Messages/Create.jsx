@@ -108,14 +108,13 @@ export default function Create({ recipients = [], classes = [] }) {
                                 </select>
                             </label>
 
-                            {/* Say the size before sending, and say what the size
-                                does: above five recipients replies stop going to
-                                everyone, which is a surprise if discovered after. */}
+                            {/* Say the size before sending, and say where replies
+                                go: to the sender only, for a class send of any
+                                size — a surprise if discovered after. */}
                             <p className="rounded border border-[#E6D9C8] bg-[#FDFBF8] p-2 text-xs text-gray-700">
                                 {reach === 0
                                     ? 'Nobody in this class has an account for that audience.'
-                                    : `Goes to ${reach} account${reach === 1 ? '' : 's'}.`}
-                                {reach > 5 && ' Replies come back to you only, not to the whole class.'}
+                                    : `Goes to ${reach} account${reach === 1 ? '' : 's'}. Replies come back to you only, not to the whole class.`}
                             </p>
                         </>
                     )}

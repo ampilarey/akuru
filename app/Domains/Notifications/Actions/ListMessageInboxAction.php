@@ -59,7 +59,7 @@ class ListMessageInboxAction
         );
 
         return $participations
-            ->map(function (MessageParticipant $row) use ($unread, $latest, $others, $names): array {
+            ->map(function (MessageParticipant $row) use ($userId, $unread, $latest, $others, $names): array {
                 $thread = $row->thread;
                 $last = $latest->get($thread->id)?->first();
 
@@ -68,7 +68,13 @@ class ListMessageInboxAction
                     'subject' => (string) $thread->subject,
                     'reply_policy' => (string) $thread->reply_policy,
                     'unread' => (int) ($unread[$thread->id] ?? 0),
+                    // Under author_only a recipient is in conversation with the
+                    // author alone; the other recipients are not theirs to see
+                    // (STATUS §5fp). The author is "with" everyone.
                     'with' => $others->get($thread->id, collect())
+                        ->filter(fn (MessageParticipant $other): bool => $thread->allowsReplyToAll()
+                            || (int) $thread->created_by === $userId
+                            || (int) $other->user_id === (int) $thread->created_by)
                         ->map(fn (MessageParticipant $other): string => $names[(int) $other->user_id] ?? 'Unknown')
                         ->values()
                         ->all(),
