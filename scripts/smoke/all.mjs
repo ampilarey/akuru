@@ -18,16 +18,17 @@
  *
  * ## Read-only and writing walks are separated, on purpose
  *
- * Four of these only look at screens. The other **fifteen write**: they enrol a
+ * Four of these only look at screens. The other **sixteen write**: they enrol a
  * stranger on a course, submit and approve an absence note, request that a
  * child be collected, book a parent-teacher meeting, publish an article to
- * the library, publish an exam and a term's report cards to families, and
- * bill a family and take their cash. That is exactly what makes them worth running — and exactly why
+ * the library, publish an exam and a term's report cards to families, bill a
+ * family and take their cash, and approve a staff member's leave and run
+ * payroll where the flag allows. That is exactly what makes them worth running — and exactly why
  * nobody should discover it by pointing the runner at a live school.
  *
  *   node scripts/smoke/all.mjs            every walk (the default)
  *   node scripts/smoke/all.mjs --read     the four that only look
- *   node scripts/smoke/all.mjs --write    the fifteen that change data
+ *   node scripts/smoke/all.mjs --write    the sixteen that change data
  *   node scripts/smoke/all.mjs learn review     just those, by name
  *
  * A writing run against a host whose name does not look synthetic asks for
@@ -114,6 +115,7 @@ const WALKS = [
     { name: 'recite', writes: true, asks: 'Can a student hand in a recitation, and does a teacher mark it?' },
     { name: 'exams', writes: true, asks: 'Does a mark a teacher types end up on a report card a family can open?' },
     { name: 'fees', writes: true, asks: 'Does a fee become an invoice a family can see, and cash a receipt they can open?' },
+    { name: 'hr', writes: true, asks: 'Does a staff member\'s month — check-in, leave, appraisal, payslip — go through?' },
     { name: 'mobile', writes: false, asks: 'Does this work on a phone?' },
 ];
 
@@ -144,7 +146,7 @@ const looksSynthetic = /localhost|127\.0\.0\.1|\btest\.|\bstaging\.|\bdev\./i.te
 if (selected.some((walk) => walk.writes) && !looksSynthetic && process.env.SMOKE_I_KNOW_THIS_WRITES !== 'yes') {
     console.error(`\nRefusing to run writing walks against ${BASE}.`);
     console.error('These walks submit absence notes, request that children be collected,');
-    console.error('book meetings, enrol people, hand in recordings, publish exam results and issue invoices. On a host with');
+    console.error('book meetings, enrol people, hand in recordings, publish exam results, issue invoices and approve leave. On a host with');
     console.error('real families on it that means real messages to real people.\n');
     console.error('If this host is synthetic, re-run with SMOKE_I_KNOW_THIS_WRITES=yes,');
     console.error('or use --read for the four walks that only look at screens.\n');

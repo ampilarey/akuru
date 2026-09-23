@@ -94,7 +94,11 @@ it('approves staff leave into attendance, ledger, and teacher absences in one tr
     $period = makePeriodRow();
     $teacher = makeTeacherRow();
     $staff = makeStaffProfile(['user_id' => $teacher->user_id]);
-    DB::table('teachers')->where('id', $teacher->id)->update(['staff_profile_id' => $staff->id]);
+    // Deliberately *not* linking `teachers.staff_profile_id` here: nothing in
+    // the application sets it, and this test used to set it by hand — which
+    // is how staff leave went a year without ever reaching the cover register
+    // on a real database (STATUS §5fd). The shared user is the link.
+    expect(DB::table('teachers')->where('id', $teacher->id)->value('staff_profile_id'))->toBeNull();
 
     $entry = app(SaveTimetableEntryAction::class)->execute([
         'class_id' => $class->id,

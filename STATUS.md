@@ -22,11 +22,12 @@ the Library L1–L7; the public-site track W1–W3; EduPage parity E1–E22. The
 agent-buildable backlog in `KNOWN_ISSUES` is empty.
 
 **What is verified is narrower than what is built, and in one specific way.**
-Seventeen scripted browser walks (`node scripts/smoke/all.mjs`, ~13 minutes)
+Twenty scripted browser walks (`node scripts/smoke/all.mjs`, ~16 minutes)
 drive the loops that matter — enrolling, taking a lesson, marking work,
 reporting an absence, collecting a child, booking a meeting, publishing an
-article, taking and refunding money, recording a sound, reciting, and the whole
-app at phone width. They pass **locally**. They have **never been run against
+article, taking and refunding money, recording a sound, reciting, an exam to a
+report card, a fee to a receipt, a staff member's month, and the whole app at
+phone width. They pass **locally**. They have **never been run against
 `test.akuru.edu.mv`**, because seed logins there still do not authenticate and
 this agent cannot SSH or seed the host. That single blocker is why
 `OWNER_ACTIONS` item 1 sits above everything else: a local run cannot tell you
@@ -124,12 +125,12 @@ Legend — **CODE:** implementation in repo (models/migrations/actions/routes/pa
 | S4.4 payment plans | Yes. | `PaymentPlanTest`. | Walked 2026-09-23 (`fees.mjs`, §5fa): a two-installment plan made through the form, cash allocated to the first, transfer completes it, the parent sees "next 100.00" in between. `sweep.mjs` now finds a planted plan (`SMOKE-INV-1`). | |
 | S4.5 adjustments | Yes. | `FeeAdjustmentTest`. | Walked **locally** 2026-09-13: screen shows a row planted for it (§5cm). | |
 | S4.6 payment + portal | Yes. Webhook + parent Fees. | `PaymentPortalTest`. | Walked 2026-09-23 (`fees.mjs`, §5fa): parent sees the invoice, the falling balance and opens both receipts; cash and transfer through the manual screen; collections, reconciliation and four CSVs. BML still **not** exercised — no webhook secret anywhere (item 2). | |
-| S5.1 staff attendance | Yes. | `StaffAttendanceTest`. | Walked **locally** 2026-09-13: screen shows a row planted for it (§5cm). | |
-| S5.2 leave | Yes. | `LeaveManagementTest`. | Walked **locally** 2026-09-13: screen shows a row planted for it (§5cm). | |
-| S5.3 contracts | Yes. | `ContractsComplianceTest`. | Walked **locally** 2026-09-13: screen shows a row planted for it (§5cm). | |
-| S5.4 recruitment | Yes. Public `/careers`. | `RecruitmentTest`. | Walked **locally** 2026-09-13: screen shows a row planted for it (§5cm). | |
-| S5.5 performance/CPD | Yes. | `PerformanceTest`. | Walked **locally** 2026-09-13: screen shows a row planted for it (§5cm). | |
-| S5.6 payroll | Yes. **Flagged off** (`PAYROLL_ENABLED` + `payroll.enabled`). | `PayrollTest` (turns the flag on). | UNVERIFIED; default **off** is by design. | |
+| S5.1 staff attendance | Yes. | `StaffAttendanceTest`. | Walked 2026-09-23 (`hr.mjs`, §5fd): the staff member checks in from the portal; the office sees the day present with a time, and the approved leave day on leave. | |
+| S5.2 leave | Yes. | `LeaveManagementTest`. | Walked 2026-09-23 (`hr.mjs`, §5fd): a day requested, approved, the balance 333 → 332, the absence and an open cover request on the cover register. **The cover half never worked before this** — the teacher lookup read a column nothing sets. | |
+| S5.3 contracts | Yes. | `ContractsComplianceTest`. | Walked 2026-09-23 (`hr.mjs`, §5fd): the expiring permit on the compliance list, the notices sent, the staff member told in the portal. | |
+| S5.4 recruitment | Yes. Public `/careers`. | `RecruitmentTest`. | Walked **locally** 2026-09-13: screen shows a row planted for it (§5cm). | Not on the month-in-the-life path. |
+| S5.5 performance/CPD | Yes. | `PerformanceTest`. | Walked 2026-09-23 (`hr.mjs`, §5fd): a cycle opened, an appraisal written, acknowledged by the staff member, seen acknowledged by the office. | |
+| S5.6 payroll | Yes. **Flagged off** (`PAYROLL_ENABLED` + `payroll.enabled`). | `PayrollTest` (turns the flag on). | Walked 2026-09-23 with the flag on locally (`hr.mjs`, §5fd): period 2099-12 run, approved, paid, bank CSV, locked; the staff member opens the payslip. Default **off** is by design; the walk skips these steps where it is. The seeder had been planting a period status the enum lacks, so `/hr/payroll` was 500 on every seeded database. | Payslip is the generic document, not trilingual (slice 2). |
 | 1A.1 auth/roles | Yes (Phase 0 + S1). | Auth tests, `RoleLandingTest`. | Walked login **ok locally** (R2/R3). Teacher `/dashboard` → Today (#88). Parent/student `/dashboard` → composed `/portal/home` (D1). Admin/headmaster `/dashboard` → `/portal/overview` (D3 #111). Staging login **fail**. | |
 | 1A.2–1A.7 course engine | Yes. Catalog, outline, text/media blocks, glossary term bank + lesson attach, `/learn`, portal learning. | Matching `tests/Feature/Courses/*` including `GlossaryTest`. | Glossary walked (#102). **Catalog, glossary, levels and audiences each show a planted row** (§5ds sweep) and **a student took a lesson end to end** — `/learn`, the course page, the published block and the completion, 7/7 (§5dt, `scripts/smoke/learn.mjs`). The outline **editor**, activities and assessments remain UNVERIFIED. | `glossary_items` / `lesson_glossary_items` (SPEC §22). |
 | 1B.1–1B.6 offerings/PWA | Yes. Offerings, pin/seats, sessions, extra blocks, unlock/completion, PWA/i18n. | Matching Offerings/Progress/Pwa tests. | **1B.1 offerings shows a planted row** (§5ds sweep, 2026-09-14). Pin/seats, sessions, unlock/completion and PWA remain UNVERIFIED. | 1B.5 tests the 2/3 = 66 formula. **1B.5's "evaluators" are one hardcoded policy each** — sequential unlock, required-lessons+sessions completion — now behind contracts with a single implementation (ADR-022). No per-course strategy config exists; ROADMAP §2a describes the target, not `main`. **1B audit (2026-08-27):** seat limits, pinning, sessions (§2d L1), PWA all verified solid; but §3.4's split **backfill was never written** — offerings are created lazily, legacy enrollments keep `course_offering_id = null`, and the public site still reads legacy `courses.seats`/`enrollment_deadline`. Backfill is mandatory before first real use (see ROADMAP §3.4 as-built note). |
@@ -4344,6 +4345,86 @@ walk returned a header row and nothing else for circulation, student work and
 pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
+
+## 5fd. S5 audit, first fix: the staff month walked by a script — and the cover request it found never happening (2026-09-23)
+
+The S5 audit (HR + payroll) found the engine sound — single-active contract,
+ledger balances, maker-checker payroll, locked periods, all tested — and
+seven deviations. D1 is the one the definition of done rests on: DoD line
+63, *"staff month-in-the-life works end to end"*, one sentence with eight
+arrows in it, and nobody had walked the sentence. Every screen on the path
+had a planted row for the sweep to find (§5cm), which is a load, not a
+month. The others: D2 the payslip is the generic document, not trilingual,
+stored as a `receipt`; D3 five settings configured, enforced and
+unreachable (`hr.staff_self_checkin`, onboarding/offboarding items,
+`payroll.rules`, `payroll.enabled` — the ninth instance of that shape); D4
+`requires_document` on a leave type never enforced; D5 no per-staff CPD
+summary; D6 no mid-month exit payroll test; D7 the roadmap's contract
+renewal alerts absent. Not mine: DoD line 64 (two parallel payroll cycles
+against the manual process) is the owner's, and so is whether leave counts
+calendar or working days.
+
+**What changed (#417).**
+
+- `scripts/smoke/hr.mjs`, 33 steps, two logins. The staff member checks in
+  from the portal, asks for a day's annual leave a week out, acknowledges
+  their appraisal and opens their payslip. The office reads the balance,
+  approves, sees it fall by one, the day on leave in the register, the
+  absence and an open cover request on the cover register, the expiring
+  permit on the compliance list, sends the notices, opens a cycle, writes
+  the appraisal, and runs, approves, pays, exports and locks payroll period
+  2099-12 — a month nothing real can have. Payroll steps are reported as
+  **skipped**, a third answer, where `PAYROLL_ENABLED` is off; the walk
+  still says what it could not prove. Twentieth walk, sixteenth writer.
+- `SmokeMarkerSeeder::hrCycle()` plants what the walk needs (teacher@'s
+  profile, an active contract, 333 annual days, `SMOKE-Permit` expiring in
+  25 days, the two settings on) and removes what a run leaves (the request,
+  its ledger and cover rows, the absence, the on-leave day, today's
+  self check-in, `SMOKE-Cycle`, the 2099-12 period with its payslips).
+  `HrCycleSmokeResetTest` seeds twice and then once over a run's residue.
+
+**Three things the walk found, in the order it found them.**
+
+1. **The seeder was breaking the payroll screen.** `payslips()` planted
+   period 2026-08 as `draft` — a status `PayrollPeriodStatus` does not
+   have — so `/hr/payroll` answered 500 on every seeded database, and the
+   sweep never noticed because the sweep reads the payslips row, not the
+   period list. Planted as `paid` now, with a repair for the bad value;
+   the reset test asserts every planted status casts and the screen
+   renders. Not a production defect (no host runs the smoke seeder without
+   knowing it), but the same lesson as §5ey: a seeder that plants what the
+   enum refuses makes the screen look broken.
+2. **An entitlement is not a balance.** The balances screen read *Entitled
+   333, Balance 0*, and approval refused with "Insufficient leave balance
+   (0 remaining, 1 requested)". `LeaveBalanceCalculator` is a ledger sum;
+   `EnsureLeaveEntitlementAction` writes the opening `entitled` row when it
+   creates an entitlement, and the seeder's direct insert did not. The
+   engine was right. The seeder now plants the opening row, for both the
+   sweep marker and the walk.
+3. **"Substitution created" was never happening.** The last of the three
+   is the real one. `HandleStaffLeaveApprovalAction` records the attendance
+   and the ledger, then asks `ResolveTeacherIdForStaffProfileAction` which
+   `teachers` row the profile is, and that read `teachers.staff_profile_id`
+   — a column S1.4 added and **nothing populates**. `EnsureTeacherRowAction`
+   and the staff account creator link the two records on `user_id`;
+   `SyncTeacherRowStatusAction` already says so in its own comment and
+   reads either. The only place the column was ever set was
+   `LeaveManagementTest`, by hand, one line above the assertion — which is
+   why the test proving "attendance, ledger and teacher absences in one
+   transaction" stayed green while every real approval found no teacher,
+   wrote no absence and raised no cover request. Silently: the resolver
+   returns null and the handler treats null as "not a teacher". The
+   resolver now falls back to the shared user; the test no longer sets the
+   column and asserts it is null; the walk asserts the absence names the
+   reason and the day's lesson has an open cover request.
+
+**Walked in a browser.** `hr.mjs` 33/33 twice on a re-seeded database with
+the flag on locally (`.env` back to off afterwards), no console or server
+errors; `sweep.mjs` 25/25; `own-data.mjs` clean. The cover request row
+reads *Sep 30, 2026 Period 1 Ustadh Mohamed Ali Arabic Language Grade 5
+Open*. DoD line 63 ticked with its two open clauses named: payroll only
+where the flag allows (line 64, owner), and the payslip not yet trilingual
+(D2, next slice).
 
 ## 5fc. S4 audit, last fix: the lock test the spec asked for, and a transition closed (2026-09-23)
 
