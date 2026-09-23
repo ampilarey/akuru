@@ -203,7 +203,10 @@ const pending = parent.locator('section', { hasText: 'Waiting for you to confirm
 check('the parent finds the child\'s answer waiting, and can read it', (await pending.count()) > 0 && (await pending.innerText()).includes(NAME) && /\?: yes\b/.test(await pending.innerText()), (await pending.count()) ? (await pending.innerText()).replace(/\s+/g, ' ').slice(0, 160) : (await text(parent)).slice(0, 160));
 if (await pending.count()) {
     await pending.locator('button:has-text("Confirm")').click();
-    await parent.waitForLoadState('networkidle');
+    // The flash, not `networkidle` — which resolves at once on a page that is
+    // already idle, so the next line reloaded the page before the confirmation
+    // had been written (third staging run, STATUS §5fz).
+    await settles(parent, 'Confirmed.');
 }
 await parent.goto(`${BASE}/en/portal/forms`, { waitUntil: 'networkidle' });
 check('after confirming there is nothing left waiting', (await parent.locator('section', { hasText: 'Waiting for you to confirm' }).locator('li', { hasText: TITLE }).count()) === 0, (await text(parent)).slice(0, 120));

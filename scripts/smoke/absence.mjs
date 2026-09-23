@@ -206,11 +206,13 @@ if (registerHref) {
         await row.locator('select').first().selectOption('absent');
         // Make sure the mark took before submitting: on a slower host the
         // register re-rendered under the change and submitted the pupil's
-        // earlier mark instead (STATUS §5fz, second run).
-        await teacher.waitForLoadState('networkidle');
+        // earlier mark instead (STATUS §5fz, second run). A bounded pause,
+        // not `networkidle`: the third run waited thirty seconds for a
+        // network that never went quiet and crashed the walk (§5fz).
+        await teacher.waitForTimeout(1000);
         if ((await row.locator('select').first().inputValue()) !== 'absent') {
             await row.locator('select').first().selectOption('absent');
-            await teacher.waitForLoadState('networkidle');
+            await teacher.waitForTimeout(1000);
         }
         // The register will not submit without a plan topic or a line about
         // what was taught — it says so, and an earlier version of this walk

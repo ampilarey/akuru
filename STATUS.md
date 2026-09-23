@@ -4472,6 +4472,48 @@ red a single step. Read one by one:
 
 All nine walks green again locally on a re-seeded database.
 
+**The third staging run**, re-seeded, with the eight fixes above on the
+host: `sweep` **25/25**, the thirty-two writers **26/33** (`consent`
+now counts) — seven reds, seven walks, and this time **no code and no
+seeder**. Every one was read back on staging afterwards, and every one
+had landed a few seconds after the walk gave up on it: the family's
+poll thread was in their inbox, the family's booking was in the office
+table as *1/1 Fatima Yoosuf*, the resubmitted book and the research
+were in the office queue with their buttons, the form was confirmed and
+closed. The walks had been reading before the post they had just made
+was written, and had not noticed for one of two reasons:
+
+- **A wait that matched history.** `settles(page, 'submitted')`,
+  `'Booked'` and `'changes_requested'` matched those words on an earlier
+  run's row, so on a host with residue they returned at once. Locally the
+  database is re-seeded before every run and the words never pre-exist,
+  which is why the same walks had been green three times here. `library`
+  and `peer-review` now wait for the status on *this item's* row;
+  `meetings` waits for *Meeting booked.*; `signup` for *Confirmed.*;
+  `family` for *Message sent.* on the class thread (a class message fans
+  out to every family on the roster, which on staging takes longer than
+  the parent's inbox takes to open — and the new step says so by name).
+- **`networkidle` after an XHR post.** Playwright resolves it at once on
+  a page that is already idle, so it was never a wait; and on `absence`,
+  used after a select, it did the opposite and waited thirty seconds for a
+  network that did not go quiet, then crashed the walk. Both uses gone.
+- **`hifz`** counted zero programme rows and found the same row's View
+  link two lines later. Bounded wait for the row to be attached.
+
+Everything else was green, including the four walks the second run had
+lost to the supervisor dashboard, the seeder's staff choice and the
+Quran page. Seven walks re-run locally on a fresh seed and again on the
+populated database: `absence` 13/13, `family` 28/28, `signup` 17/17,
+`meetings` 11/11, `hifz` 20/20, `library` 14/14, `peer-review` 12/12.
+
+Two residue observations, not defects: the office queue on staging holds
+one `SMOKE-Research` from the second run whose peer review finished but
+which nobody published (the walk had already failed by then), and the
+family walk's class thread reaches three guardians of *Grade 5 A*'s
+fifteen pupils, which is how many the seed data links. The seeder does
+not clear library submissions between runs; the queue grows by one or
+two rows per run until an operator clears them by hand.
+
 ## 5fy. Production was 500 after the day's pull, and came back — cause not captured (2026-09-23)
 
 The owner pulled `main` on the production cPanel terminal in the

@@ -131,6 +131,22 @@ async function settles(page, needle, ms = 6000) {
     return false;
 }
 
+// A status on *this* item's row. `settles(page, 'submitted')` matched the
+// word on any earlier run's row, so on a host with history it returned before
+// the click had landed and the office found the research still a draft, with
+// nothing to approve or assign (third staging run, STATUS §5fz).
+async function rowSettles(page, title, needle, ms = 6000) {
+    const deadline = Date.now() + ms;
+    while (Date.now() < deadline) {
+        if (await page.locator('tr', { hasText: title }).filter({ hasText: needle }).count()) {
+            return true;
+        }
+        await page.waitForTimeout(100);
+    }
+
+    return false;
+}
+
 /** The row that carries a given control, rather than the first one mentioning the title. */
 const rowWith = (page, title, label) => page.locator('tr, li, article')
     .filter({ hasText: title })
@@ -182,7 +198,7 @@ if ((await text(writer)).includes('Apply to publish')) {
         const row = rowWith(writer, TITLE, 'Submit for review');
         if (await row.count()) {
             await row.locator('button:has-text("Submit for review")').first().click();
-            check('and submits it', await settles(writer, 'submitted'), (await text(writer)).slice(0, 160));
+            check('and submits it', await rowSettles(writer, TITLE, 'submitted'), (await text(writer)).slice(0, 160));
         } else {
             check('and submits it', false, 'no "Submit for review" button on the research draft');
         }
@@ -224,7 +240,7 @@ if ((await text(writer)).includes('Apply to publish')) {
     if (await assignRow.count()) {
         await assignRow.locator('input[placeholder*="eviewer"], input[type=email]').first().fill(REVIEWER);
         await assignRow.locator('button:has-text("Assign")').first().click();
-        assigned = await settles(staff, 'assigned');
+        assigned = await settles(staff, 'Reviewer assigned.');
         check('the office assigns a reviewer by email', assigned, (await text(staff)).slice(0, 200));
     } else {
         check('the office assigns a reviewer by email', false, 'no Assign control on the submission');

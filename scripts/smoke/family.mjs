@@ -318,7 +318,11 @@ if (await classSelect.count()) {
     await teacher.locator('input[placeholder="Option 1"]').fill(YES);
     await teacher.locator('input[placeholder="Option 2"]').fill('SMOKE-No');
     await teacher.locator('button[type="submit"]').last().click();
-    await teacher.waitForLoadState('networkidle');
+    // Wait for the send to land, not for the network: the class thread fans
+    // out to every family on the roster, and on a real host that takes longer
+    // than the parent's inbox takes to open — the third staging run read the
+    // inbox before its thread existed and reported the family left out (§5fz).
+    check('the class message is sent', await settles(teacher, 'Message sent.', 15000), (await text(teacher)).slice(0, 120));
 }
 
 await parent.goto(`${BASE}/en/portal/messages`, { waitUntil: 'networkidle' });

@@ -186,7 +186,11 @@ if (await bookButton.count()) {
         await notes.fill(NOTES);
     }
     await bookButton.click();
-    booked = await settles(parent, 'Booked');
+    // The flash for *this* booking. `Booked` is also what an earlier run's
+    // slot says beside itself, so on a host with history the wait returned
+    // at once and the office was asked who booked a slot nobody had yet
+    // (third staging run, STATUS §5fz).
+    booked = await settles(parent, 'Meeting booked.');
     check('the family books it', booked, (await text(parent)).slice(0, 200));
 } else {
     check('the family books it', false, 'no Book button on the slot');
