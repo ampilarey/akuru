@@ -87,6 +87,7 @@ class SmokeMarkerSeeder extends Seeder
         $this->buyCycle($admin);
         $this->arabicCycle();
         $this->quranCycle();
+        $this->hifzCycle();
 
         // A default `migrate:fresh --seed` leaves `staff_profiles` empty, and
         // this used to skip the whole HR block in silence — so the sweep
@@ -1578,6 +1579,41 @@ class SmokeMarkerSeeder extends Seeder
         DB::table('hifz_sessions')->insert([
             'hifz_program_id' => $programId, 'teacher_id' => $teacherId, 'session_date' => now()->toDateString(),
             'title' => 'SMOKE-Halaqa-Session', 'status' => 'draft', 'created_at' => now(), 'updated_at' => now(),
+        ]);
+    }
+
+    /**
+     * `hifz.mjs` walks what survives of the Blade Hifz app (ADR-029): the
+     * dean enrols the smoke pupil in `SMOKE-Halaqa`, the supervisor reviews
+     * and the dean approves a milestone, and each role's dashboard shows
+     * its share. The programme is `quranCycle()`'s, re-planted a moment
+     * ago with nothing enrolled; this gives it the supervisor and teacher
+     * the walk signs in as, and one *pending* milestone for the pupil —
+     * recommendation itself moved to the engine board (`/teach/milestones`,
+     * F5-P3), so the Blade half of the workflow starts from a row that
+     * already exists.
+     */
+    private function hifzCycle(): void
+    {
+        $programId = DB::table('hifz_programs')->where('name', 'SMOKE-Halaqa')->value('id');
+        $studentId = DB::table('students')->where('user_id', DB::table('users')->where('email', 'student@akuru.edu.mv')->value('id'))->value('id');
+        if ($programId === null || $studentId === null) {
+            return;
+        }
+
+        $teacherUserId = DB::table('users')->where('email', 'teacher@akuru.edu.mv')->value('id');
+        $teacherId = DB::table('teachers')->where('user_id', $teacherUserId)->value('id') ?? DB::table('teachers')->orderBy('id')->value('id');
+        DB::table('hifz_programs')->where('id', $programId)->update([
+            'supervisor_id' => DB::table('users')->where('email', 'supervisor@akuru.edu.mv')->value('id'),
+            'default_teacher_id' => $teacherId,
+        ]);
+
+        DB::table('hifz_milestones')->where('title', 'SMOKE-Milestone')->delete();
+        DB::table('hifz_milestones')->insert([
+            'hifz_program_id' => $programId, 'student_id' => $studentId, 'teacher_id' => $teacherId,
+            'type' => 'surah_completed', 'surah_number' => 112, 'title' => 'SMOKE-Milestone', 'status' => 'pending',
+            'completed_at' => now(), 'recommended_by' => $teacherUserId, 'recommended_at' => now(), 'created_by' => $teacherUserId,
+            'created_at' => now(), 'updated_at' => now(),
         ]);
     }
 

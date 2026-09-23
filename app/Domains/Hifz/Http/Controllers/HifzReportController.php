@@ -97,6 +97,6 @@ class HifzReportController extends Controller
             }
 
             fclose($handle);
-        }, "hifz-{$type}-".now()->format('Y-m-d').'.csv');
+        }, "hifz-{$type}-".now()->format('Y-m-d').'.csv', ['Content-Type' => 'text/csv']);
     }
 }
