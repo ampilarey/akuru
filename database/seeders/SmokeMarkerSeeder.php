@@ -91,6 +91,7 @@ class SmokeMarkerSeeder extends Seeder
         $this->readerCycle();
         $this->familyCycle();
         $this->signupCycle();
+        $this->schoolDayCycle();
 
         // A default `migrate:fresh --seed` leaves `staff_profiles` empty, and
         // this used to skip the whole HR block in silence — so the sweep
@@ -1699,6 +1700,23 @@ class SmokeMarkerSeeder extends Seeder
         DB::table('invoice_lines')->whereIn('invoice_id', $invoiceIds)->delete();
         DB::table('invoices')->whereIn('id', $invoiceIds)->delete();
         DB::table('forms')->whereIn('id', $formIds)->delete();
+    }
+
+    /**
+     * `school-day.mjs` has the office publish one calendar day and keep
+     * another internal, and the teacher mark the smoke pupil late on
+     * today's register. This plants nothing and clears the two days and the
+     * pupil's marks for today — the register itself is the day's record and
+     * stays; `absence.mjs` re-marks it in its own run.
+     */
+    private function schoolDayCycle(): void
+    {
+        DB::table('calendar_days')->whereIn('title', ['SMOKE-Sports-Day', 'SMOKE-Staff-Meeting'])->delete();
+
+        $studentId = DB::table('students')->where('user_id', DB::table('users')->where('email', 'student@akuru.edu.mv')->value('id'))->value('id');
+        if ($studentId !== null) {
+            DB::table('class_attendance')->where('student_id', $studentId)->where('date', now()->toDateString())->delete();
+        }
     }
 
     private function hr(AcademicYear $year, StaffProfile $staff, ?object $admin): void
