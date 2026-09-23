@@ -4347,6 +4347,37 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5fz. Staging gets today's code — and the first thing the seeder found was the seeder (2026-09-23)
+
+The owner pulled `main` on `test.akuru.edu.mv` and ran
+`SmokeMarkerSeeder` there (first ever run of this code on a host other
+than a laptop). It planted its markers and said, in order: *No student
+row for student@ — the learner enrolment was skipped. Fewer than two
+staff profiles — the payslip pair was skipped. No teacher@ account — the
+HR-cycle markers were skipped.* Staging has an active academic year and
+an `admin@`, and not the rest of the six pilot logins the walks sign in
+as.
+
+**The seeder that plants them could not run there.** `UserSeeder` was six
+plain `create` calls, so on a database that already holds `admin@` it
+stops at the first duplicate email with nothing planted. It now finds
+each login by email (`firstOrCreate`), fills in whichever are missing,
+and leaves an existing user as it was — password included; only the role
+and the verified contact are ensured. `UserSeederRunsTwiceTest` seeds
+over a pre-existing `admin@` twice and reads the six back.
+
+**Two walks cannot be pointed at a remote host.** `own-data.mjs` and
+`register.mjs` read ids through a local `php artisan tinker`, so against
+staging they would read the laptop's database and walk the wrong rows.
+Recorded; the other thirty-three take `SMOKE_BASE_URL` as documented.
+
+**Read from here.** Chromium in this sandbox reaches staging only through
+an intercepting proxy, so its CA had to be added to Chromium's trust
+store before a single page would load — trusting that CA, not turning
+verification off. A page then answers in about four seconds. The first
+staging run of the read-only walks follows in this section once the
+logins are planted.
+
 ## 5fy. Production was 500 after the day's pull, and came back — cause not captured (2026-09-23)
 
 The owner pulled `main` on the production cPanel terminal in the
