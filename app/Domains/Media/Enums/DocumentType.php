@@ -15,5 +15,6 @@ enum DocumentType: string
     case IdCard = 'id_card';
     case TransferCertificate = 'transfer_certificate';
     case Receipt = 'receipt';
+    case Payslip = 'payslip';
     case Other = 'other';
 }

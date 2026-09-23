@@ -130,7 +130,7 @@ Legend — **CODE:** implementation in repo (models/migrations/actions/routes/pa
 | S5.3 contracts | Yes. | `ContractsComplianceTest`. | Walked 2026-09-23 (`hr.mjs`, §5fd): the expiring permit on the compliance list, the notices sent, the staff member told in the portal. | |
 | S5.4 recruitment | Yes. Public `/careers`. | `RecruitmentTest`. | Walked **locally** 2026-09-13: screen shows a row planted for it (§5cm). | Not on the month-in-the-life path. |
 | S5.5 performance/CPD | Yes. | `PerformanceTest`. | Walked 2026-09-23 (`hr.mjs`, §5fd): a cycle opened, an appraisal written, acknowledged by the staff member, seen acknowledged by the office. | |
-| S5.6 payroll | Yes. **Flagged off** (`PAYROLL_ENABLED` + `payroll.enabled`). | `PayrollTest` (turns the flag on). | Walked 2026-09-23 with the flag on locally (`hr.mjs`, §5fd): period 2099-12 run, approved, paid, bank CSV, locked; the staff member opens the payslip. Default **off** is by design; the walk skips these steps where it is. The seeder had been planting a period status the enum lacks, so `/hr/payroll` was 500 on every seeded database. | Payslip is the generic document, not trilingual (slice 2). |
+| S5.6 payroll | Yes. **Flagged off** (`PAYROLL_ENABLED` + `payroll.enabled`). Rules and the settings-half switch on `/hr/settings` (§5fe). | `PayrollTest` (turns the flag on), `PayslipDocumentTest`, `HrSettingsTest`. | Walked 2026-09-23 with the flag on locally (`hr.mjs`, §5fd/§5fe): period 2099-12 run, approved, paid, bank CSV, locked; the staff member opens a payslip that names them, in the request language. Default **off** is by design; the walk skips these steps where it is. The seeder had been planting a period status the enum lacks, so `/hr/payroll` was 500 on every seeded database. | Payslip is HTML like every document (`AwardController` note), trilingual since §5fe. |
 | 1A.1 auth/roles | Yes (Phase 0 + S1). | Auth tests, `RoleLandingTest`. | Walked login **ok locally** (R2/R3). Teacher `/dashboard` → Today (#88). Parent/student `/dashboard` → composed `/portal/home` (D1). Admin/headmaster `/dashboard` → `/portal/overview` (D3 #111). Staging login **fail**. | |
 | 1A.2–1A.7 course engine | Yes. Catalog, outline, text/media blocks, glossary term bank + lesson attach, `/learn`, portal learning. | Matching `tests/Feature/Courses/*` including `GlossaryTest`. | Glossary walked (#102). **Catalog, glossary, levels and audiences each show a planted row** (§5ds sweep) and **a student took a lesson end to end** — `/learn`, the course page, the published block and the completion, 7/7 (§5dt, `scripts/smoke/learn.mjs`). The outline **editor**, activities and assessments remain UNVERIFIED. | `glossary_items` / `lesson_glossary_items` (SPEC §22). |
 | 1B.1–1B.6 offerings/PWA | Yes. Offerings, pin/seats, sessions, extra blocks, unlock/completion, PWA/i18n. | Matching Offerings/Progress/Pwa tests. | **1B.1 offerings shows a planted row** (§5ds sweep, 2026-09-14). Pin/seats, sessions, unlock/completion and PWA remain UNVERIFIED. | 1B.5 tests the 2/3 = 66 formula. **1B.5's "evaluators" are one hardcoded policy each** — sequential unlock, required-lessons+sessions completion — now behind contracts with a single implementation (ADR-022). No per-course strategy config exists; ROADMAP §2a describes the target, not `main`. **1B audit (2026-08-27):** seat limits, pinning, sessions (§2d L1), PWA all verified solid; but §3.4's split **backfill was never written** — offerings are created lazily, legacy enrollments keep `course_offering_id = null`, and the public site still reads legacy `courses.seats`/`enrollment_deadline`. Backfill is mandatory before first real use (see ROADMAP §3.4 as-built note). |
@@ -4345,6 +4345,57 @@ walk returned a header row and nothing else for circulation, student work and
 pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
+
+## 5fe. S5 audit, second fix: a payslip in the staff member's language, and the five HR settings get a screen (2026-09-23)
+
+Two of the S5 audit's deviations, both on the edges of the engine; the
+computation is untouched.
+
+**D2 — the payslip was the generic fallback (#418).** S5.6 says *"payslip
+PDF (trilingual)"*. `MarkPayrollPaidAction` rendered the template
+`payslip`, no `documents/payslip` view existed, and so every payslip fell
+through `HtmlDocumentRenderer`'s key/value fallback — `lang="en"`,
+`net_pay` as a label, no staff name, no period — and was stored with
+`DocumentType::Receipt`, the nearest type the enum had. The same shape the
+receipt itself had before S4.6 (§5fb's audit), fixed the same way:
+`documents/payslip.blade.php` with `lang`/`dir` from the request locale and
+every label from `documents.payslip.*` in EN, DV and AR (the DV and AR
+strings carry the same *first pass, needs native review* note as the
+receipt's); `DocumentType::Payslip`; the action passes the staff name by DB
+query (rule 3 — HR does not import the People model), the period, every
+figure formatted to two places, and the employer's contribution as a note.
+`PayslipDocumentTest` marks a period paid under `dv` and reads the stored
+document back: type `payslip`, `lang="dv" dir="rtl"`, the Dhivehi heading,
+the name, the net figure, and no column name anywhere. Still HTML, like
+every other document (S3.7's note stands).
+
+**D3 — five settings nobody could change (#418).** `hr.staff_self_checkin`
+gates the portal's Check in button; `hr.onboarding_items` and
+`hr.offboarding_items` are seeded onto every new hire and leaver;
+`payroll.rules` is what every payslip is computed from; `payroll.enabled`
+is the settings half of the kill-switch. All five read on every request,
+none on any screen — the ninth *configured, enforced, unreachable*. Now
+`HR settings` in the nav (nav guard 108 → 109, with its note): one form
+for the HR policy under `hr.manage`, one for the payroll rules and switch
+under **`payroll.approve`**, the checker's permission, because a rule
+change moves every net figure the next run produces. `SavePayrollSettingsAction`
+validates the rates (0–0.5), working days (1–31), and the brackets
+(ceilings rising, only the last open, rates 0–1); rounding stays
+`half_up_2` (ADR-016). **The environment flag is deliberately not on the
+screen** — it is the owner's gate (DoD line 64) and a screen that could
+flip it would defeat it; the screen says which half is off and why payroll
+is disabled. `HrSettingsTest` (4): shown, saved where the resolvers read,
+checklists trimmed and bounded, the runner refused on the payroll form,
+every bound checked, both halves needed. The Payroll screen's disabled
+notice now says where the switch is.
+
+**Walked in a browser.** `hr.mjs` is 35 steps: the office opens HR
+settings, reads self check-in on and saves the policy; the payslip the
+staff member opens names them and carries a document language. 35/35 with
+the flag on locally, re-seeded, `.env` back to off. Payroll settings by
+hand: working days 22 → 21 saved and read back after reload, a bracket
+ceiling of 10 below the previous refused on the screen with the reason,
+back to 22. No console or server errors.
 
 ## 5fd. S5 audit, first fix: the staff month walked by a script — and the cover request it found never happening (2026-09-23)
 

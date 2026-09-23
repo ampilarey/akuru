@@ -1,4 +1,4 @@
-import { router, useForm } from '@inertiajs/react';
+import { Link, router, useForm } from '@inertiajs/react';
 import AppShell from '../../../Layouts/AppShell';
 
 export default function Index({ enabled, periods, periodId, rows, canApprove }) {
@@ -9,7 +9,12 @@ export default function Index({ enabled, periods, periodId, rows, canApprove }) 
 
     return (
         <AppShell title="Payroll">
-            {!enabled && <p className="mb-4 rounded border border-amber-200 bg-amber-50 px-4 py-2 text-sm">Payroll is disabled until two parallel cycles match.</p>}
+            {!enabled && (
+                <p className="mb-4 rounded border border-amber-200 bg-amber-50 px-4 py-2 text-sm">
+                    Payroll is disabled until two parallel cycles match. The switch and the rules are under{' '}
+                    <Link href="/hr/settings" className="underline">HR settings</Link>; the environment flag is the owner's.
+                </p>
+            )}
             <form
                 onSubmit={(e) => {
                     e.preventDefault();

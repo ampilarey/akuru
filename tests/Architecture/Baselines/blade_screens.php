@@ -13,7 +13,8 @@
 // expected direction, and the test asks you to update the count below when you
 // do.
 //
-// Count: 219.
+// Count: 220 (the one addition is a document template, not a screen — see the
+// documents block).
 
 return [
     // (root) — 4
@@ -117,11 +118,21 @@ return [
     'dashboard/super-admin.blade.php',
     'dashboard/supervisor.blade.php',
 
-    // documents — 7
+    // documents — 8
+    //
+    // Not screens: these are what `DocumentRendererInterface` renders (rule
+    // 11, one document renderer) — a receipt a parent downloads, a payslip a
+    // staff member opens. Nobody navigates them, so nothing in the AppShell
+    // argument above applies. A document that does NOT have a template here
+    // falls through to the renderer's generic key/value fallback, `lang="en"`,
+    // which is the worse outcome for a Dhivehi reader — the receipt (S4.6)
+    // and the payslip (S5.6, STATUS §5fe) were both that until their template
+    // arrived. So a new document type may add one line here, with its reason.
     'documents/award-certificate.blade.php',
     'documents/course-certificate.blade.php',
     'documents/finance/receipt.blade.php',
     'documents/id-card.blade.php',
+    'documents/payslip.blade.php',
     'documents/report-card.blade.php',
     'documents/transcript.blade.php',
     'documents/transfer-certificate.blade.php',

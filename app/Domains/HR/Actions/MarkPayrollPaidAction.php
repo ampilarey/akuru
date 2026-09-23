@@ -30,28 +30,48 @@ class MarkPayrollPaidAction
                 ->where('status', PayslipStatus::Final)
                 ->get();
 
+            // Trilingual per S5.6 ("payslip PDF (trilingual)"). Before this
+            // there was no documents/payslip view, so every payslip fell
+            // through to the renderer's generic key/value fallback — hardcoded
+            // lang="en", column names as labels — and was stored as a
+            // `receipt`, the nearest type the enum had (S5 audit D2, §5fe).
+            // Names by DB query, not the People model (rule 3).
+            $names = DB::table('staff_profiles')
+                ->whereIn('id', $payslips->pluck('staff_profile_id'))
+                ->get(['id', 'first_name', 'last_name'])
+                ->keyBy('id');
+            $locale = app()->getLocale();
+            $label = $period->year.'-'.str_pad((string) $period->month, 2, '0', STR_PAD_LEFT);
+
             $renderer = app(DocumentRendererInterface::class);
             foreach ($payslips as $payslip) {
                 if ($payslip->document_id) {
                     continue;
                 }
 
+                $profile = $names->get($payslip->staff_profile_id);
                 $html = $renderer->render('payslip', [
-                    'title' => 'Payslip '.$period->year.'-'.str_pad((string) $period->month, 2, '0', STR_PAD_LEFT),
-                    'gross' => $payslip->gross,
-                    'net_pay' => $payslip->net_pay,
-                    'employee_pension' => $payslip->employee_pension,
-                    'tax_withheld' => $payslip->tax_withheld,
-                    'unpaid_leave_deduction' => $payslip->unpaid_leave_deduction,
+                    'title' => 'Payslip '.$label,
+                    'staff_name' => $profile ? trim(($profile->first_name ?? '').' '.($profile->last_name ?? '')) : '',
+                    'period' => $label,
+                    'basic_salary' => number_format((float) $payslip->basic_salary, 2, '.', ''),
+                    'gross' => number_format((float) $payslip->gross, 2, '.', ''),
+                    'net_pay' => number_format((float) $payslip->net_pay, 2, '.', ''),
+                    'employee_pension' => number_format((float) $payslip->employee_pension, 2, '.', ''),
+                    'employer_pension' => number_format((float) $payslip->employer_pension, 2, '.', ''),
+                    'tax_withheld' => number_format((float) $payslip->tax_withheld, 2, '.', ''),
+                    'unpaid_leave_deduction' => number_format((float) $payslip->unpaid_leave_deduction, 2, '.', ''),
+                    'locale' => $locale,
+                    'dir' => in_array($locale, ['dv', 'ar'], true) ? 'rtl' : 'ltr',
                 ]);
 
                 $document = app(StoreRenderedDocumentAction::class)->execute(
                     'payslip',
                     (int) $payslip->id,
-                    'Payslip',
+                    'Payslip '.$label,
                     $html,
                     $period->approved_by,
-                    'receipt',
+                    'payslip',
                 );
                 $payslip->document_id = $document['id'];
                 $payslip->save();

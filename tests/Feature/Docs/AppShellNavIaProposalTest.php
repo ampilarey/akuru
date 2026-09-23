@@ -52,8 +52,13 @@ it('does not change AppShell.jsx as part of the IA proposal', function () {
     //   after the due date a family is reminded (S4 audit D3, STATUS §5fb).
     //   Unreachable without this link, which is the case the allowance above
     //   is for. One link worse; still P3 #11 and the owner's call.
+    // 108 → 109: +HR settings (`/hr/settings`). Five HR and payroll settings
+    //   — the portal check-in switch, both checklists, the payroll rules and
+    //   the payroll switch — were read on every request and editable from no
+    //   screen (S5 audit D3, STATUS §5fe). Same case, same allowance, one
+    //   link worse; still P3 #11 and the owner's call.
     $linkCount = substr_count($shell, '<Link href=');
-    expect($linkCount)->toBe(108);
+    expect($linkCount)->toBe(109);
 });
 
 it('does not register a product route for the proposal document', function () {

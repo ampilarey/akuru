@@ -239,6 +239,15 @@ if (cover) {
     skip('a cover request is raised for that day\'s lesson', `no open cover request dated ${coverDate} — the staff member may have no lesson on the timetable that day`);
 }
 
+// The policy behind the check-in button the staff member just used, on the
+// screen that did not exist before S5 slice 2 (audit D3): read back on, saved
+// unchanged, still on.
+await admin.goto(`${BASE}/en/hr/settings`, { waitUntil: 'networkidle' });
+const selfCheckIn = admin.locator('input[type=checkbox]').first();
+check('the HR settings screen shows self check-in on', await selfCheckIn.isChecked(), (await text(admin)).slice(0, 160));
+await admin.locator('button:has-text("Save HR settings")').click();
+check('and saves the HR policy', await settles(admin, 'HR settings saved.'), (await text(admin)).slice(0, 160));
+
 // --------------------------------------------------- 3. the permit expiry
 
 await admin.goto(`${BASE}/en/hr/compliance`, { waitUntil: 'networkidle' });
@@ -327,7 +336,13 @@ if (payrollOff) {
     if (await open.count()) {
         const opened = await staff.goto(new URL(await open.getAttribute('href'), BASE).href, { waitUntil: 'domcontentloaded' });
         const html = await staff.content();
-        check(payrollSteps[7], opened.status() === 200 && /Payslip/.test(html), `HTTP ${opened.status()}, ${html.length} bytes`);
+        // The staff member's own name and a document language: the generic
+        // fallback the payslip used to be had neither (S5 audit D2).
+        check(
+            payrollSteps[7],
+            opened.status() === 200 && /Payslip/.test(html) && html.includes(NAME) && /<html lang="(en|dv|ar)"/.test(html),
+            `HTTP ${opened.status()}, ${html.length} bytes, ${html.includes(NAME) ? 'named' : 'unnamed'}`,
+        );
     } else {
         check(payrollSteps[7], false, 'no Open link');
     }

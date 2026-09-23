@@ -99,6 +99,7 @@ use App\Domains\Hifz\Http\Controllers\QuranProgressController;
 use App\Domains\HR\Http\Controllers\AppraisalController;
 use App\Domains\HR\Http\Controllers\ComplianceController;
 use App\Domains\HR\Http\Controllers\CpdRecordController;
+use App\Domains\HR\Http\Controllers\HrSettingsController;
 use App\Domains\HR\Http\Controllers\InstructorController as AdminInstructorController;
 use App\Domains\HR\Http\Controllers\JobApplicationController;
 use App\Domains\HR\Http\Controllers\JobPostingController;
@@ -1215,5 +1216,8 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::post('payroll/{payrollPeriod}/pay', [PayrollPeriodController::class, 'pay'])->name('hr.payroll.pay');
         Route::post('payroll/{payrollPeriod}/lock', [PayrollPeriodController::class, 'lock'])->name('hr.payroll.lock');
         Route::get('payroll', [PayrollPeriodController::class, 'index'])->name('hr.payroll.index');
+        Route::get('settings', [HrSettingsController::class, 'index'])->name('hr.settings.index');
+        Route::put('settings', [HrSettingsController::class, 'update'])->name('hr.settings.update');
+        Route::put('settings/payroll', [HrSettingsController::class, 'updatePayroll'])->name('hr.settings.payroll');
     });
 });
