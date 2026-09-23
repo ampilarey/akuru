@@ -2,6 +2,10 @@
 @section('title', 'Hifz Milestones')
 @section('content')
 <div class="min-h-screen bg-gray-50 py-6"><div class="max-w-5xl mx-auto px-4">
+{{-- Review and Approve redirect back here with a flash, and until the Hifz
+     walk (STATUS §5fn) nothing on this screen rendered it: the row changed
+     status and the person who pressed the button was told nothing. --}}
+@include('hifz.partials.alerts')
 <h1 class="text-2xl font-bold mb-6">Hifz Milestones</h1>
 <div class="card overflow-x-auto"><table class="min-w-full text-sm"><thead><tr class="bg-gray-50"><th class="px-4 py-2 text-left">Student</th><th>Type</th><th>Status</th><th>Actions</th></tr></thead>
 <tbody>@foreach($milestones as $m)<tr class="border-t"><td class="px-4 py-3">{{ $m->student->full_name }}</td><td>{{ str_replace('_',' ',$m->type->value) }}</td><td>{{ $m->status->value }}</td>

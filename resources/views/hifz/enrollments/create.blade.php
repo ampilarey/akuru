@@ -2,6 +2,7 @@
 @section('title', 'Enroll Student')
 @section('content')
 <div class="min-h-screen bg-gray-50 py-6"><div class="max-w-2xl mx-auto px-4">
+@include('hifz.partials.alerts')
 <h1 class="text-2xl font-bold mb-6">Enroll Student — {{ $program->name }}</h1>
 <form method="POST" action="{{ route('hifz.enrollments.store', $program) }}" class="card p-6 space-y-4">@csrf
 <div><label class="block text-sm font-medium mb-1">Student</label><select name="student_id" class="form-input w-full" required>@foreach($students as $s)<option value="{{ $s->id }}">{{ $s->full_name }}</option>@endforeach</select></div>

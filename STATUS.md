@@ -22,8 +22,8 @@ the Library L1–L7; the public-site track W1–W3; EduPage parity E1–E22. The
 agent-buildable backlog in `KNOWN_ISSUES` is empty.
 
 **What is verified is narrower than what is built, and in one specific way.**
-Twenty-seven scripted browser walks (`node scripts/smoke/all.mjs`, ~23 minutes)
-drive the loops that matter — building a course, running an intake, enrolling, buying a course, taking a lesson, sitting an assessment, earning a certificate, tagging an Arabic skill activity, setting and marking a recitation, mapping a halaqa, marking work,
+Twenty-eight scripted browser walks (`node scripts/smoke/all.mjs`, ~24 minutes)
+drive the loops that matter — building a course, running an intake, enrolling, buying a course, taking a lesson, sitting an assessment, earning a certificate, tagging an Arabic skill activity, setting and marking a recitation, mapping a halaqa, approving a Hifz milestone, marking work,
 reporting an absence, collecting a child, booking a meeting, publishing an
 article, taking and refunding money, recording a sound, reciting, an exam to a
 report card, a fee to a receipt, a staff member's month, and the whole app at
@@ -138,7 +138,7 @@ Legend — **CODE:** implementation in repo (models/migrations/actions/routes/pa
 | 2.1–2.5 activities | Yes. Four patterns, bank, assessment player, review, session polish. Class quizzes/assignments migrate onto the same engine. Unified gradebook via `GradeItemContract`. | Matching Courses/Progress tests + `LegacyAssessmentMigrationTest` + `UnifiedGradebookTest` + `AssessmentTextKeyTest`. | Quiz/assignment migration walked **#104**. Unified gradebook walked. **A student answered a `selection` activity and the engine scored it** (§5dv, `learn.mjs`). **The teacher-marked loop** — hand in, mark, feedback seen (§5dx, `review.mjs`). **The assessment, end to end** 2026-09-23 (`assess.mjs`, §5fi): two bank questions (multiple-choice, short-answer), the builder, attach, the player, auto-marked 2/2, the attempt keeps its snapshot after the question is edited, a retake starts unscored. **That walk found a short-answer key in the builder's "correct answer" box was never read — only "other accepted answers" was** — fixed. Arrange (ordering/matching) has tests, no walk. | **Phase 2 audit (2026-08-27):** scoring covers all four patterns (teacher-marked short-circuits to review); review loop + standards-tied question bank verified; rule 6 holds behaviourally. **Deviations:** `Courses/Components/` was never created — Arabic/Quran code lives in `Courses/Models`+`Actions`, so rule 3's Components clause guards an empty set (correction point: Phase F, which creates `Components/Quran` and moves Arabic in the same slice — FQCN moves need morph-map + baseline updates together). Spec §43 `student_submissions`/`teacher_feedback` replaced by attempt `answers` json + review fields (recorded, fine). See ROADMAP §2a as-built notes. |
 | Arabic A.1–A.3 | Yes. Letters/harakas, skill tag, reports. | `ArabicReferenceTest`, `ArabicSkillActivityTest`, `ArabicSkillReportTest`. | **Walked 2026-09-23** (`arabic.mjs`, §5fl): the office adds a letter, the author tags a reading activity with it on the plain selection pattern, the engine scores the student 1/1 with no teacher and no AI, and both skill reports list it — the student's under *reading* with the attempt, the office's with the letter. | No AI (rule 8). **Audited 2026-08-27: PASS** — tables + `NormalizeTextAnswerAction` (spec normalization) + reports verified; skill metadata rides the four activity patterns (placement caveat = Phase 2 Components note). |
 | Qur’an A.1–A.4 | Yes. Read actions, recitation metadata, mapping, dual-write **off**. | Matching Courses/Offerings tests; `ActivityBuilderShowsRefusalsTest`. | **Walked 2026-09-23** (`quran.mjs`, §5fm): the reference and its CSV; a recitation activity refused past the end of its surah — **and the author now sees why** (D1: the builder swallowed every refusal but three) — then saved on ayahs 1–2; the student sees the passage heading, hands in, is not marked by the engine; the marker scores it in the ordinary queue; `SMOKE-Offering` is linked to a Hifz program, one session mapped, dual-write reported off. | No Hifz dashboard change. `QURAN_HALAQA_DUAL_WRITE` default false. **Audited 2026-08-27: PASS** — rule 11 held (no parallel Quran source tables; reads via `QuranReferenceReader` contract, Hifz implements as owner; `quran_translations` is planned new data, not duplication); mapping tables morph-aliased; dual-write env-flagged default-off per rule 9 with tests. Hifz freeze verified: 3 recent commits are pure additions (read actions/contract impls/bindings), compliant with ADR-021 scope-discipline freeze. |
-| Hifz (frozen) | Legacy Blade exists. | `HifzAuthorizationTest` etc. | UNVERIFIED this week. Out of scope to change. | Rule 7. |
+| Hifz (Blade survivors, ADR-029) | Yes. Hub, five dashboards, programmes, enrolments, milestone review/approve, five reports + CSV. Sessions, assignments and milestone *recommendation* live on the engine (F5-P1–P3). | `HifzAuthorizationTest`, `HifzCrossRoleAccessTest`, `HifzMilestoneWorkflowTest`, `HifzScreensReportBackTest`. | **Walked 2026-09-23** (`hifz.mjs`, §5fn): the hub lands each of five roles on their own dashboard; the dean enrols the pupil through the Blade form; the supervisor reviews and the dean approves the seeded milestone — **and both are now told so** (D1); the milestone report and the sessions CSV (**now `text/csv`**, D2) open; the pupil sees the approved milestone, the parent the child, the teacher the programme. | Rule 7's freeze expired with F5 (CLAUDE.md rule 7). Retiring these screens is a separate IA decision. `hifz.milestones.store` is reachable from no screen (its form went with the session screens in F5; the engine board recommends into the same table) — recorded, not removed. |
 | Pilot blockers #79–#84 | On `main`: picker, AppShell logout, seed contacts, class-teacher field, periods CRUD, teacher generate-today. | Matching Pest files. | Walked in R2/R3. | |
 | Round-2 fixes #86–#92 | On `main`: SMS log-bind (#86), seeder school (#87), role landings (#88), term-grades banner + HTML label (#89), fill-grid identity (#90), generate/uniqueness/invoices (#91), DoD browser walk (#92). | Matching Pest files (SMS, seed, landings, term grades, register, uniqueness, invoices). | Walked in **Round 3**. | Records: archive Round-2 fix 1–7. |
 | Round 3 notes #93 | Docs only. `docs/PILOT_REHEARSAL.md` Rounds 1–3. | n/a | The walk itself. | `cursor/pilot-rewalk-063c` was **not** merged (stale product overlap of #79–#84). |
@@ -4346,6 +4346,61 @@ walk returned a header row and nothing else for circulation, student work and
 pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
+
+## 5fn. Hifz audit: the Blade survivors walked, and two things they did quietly (2026-09-23)
+
+The Hifz audit against ADR-029, which is the only spec the surviving Blade
+app has: the Qur'an dataset and the session, assignment and milestone
+*recommendation* workflows moved to the engine (F5-P1–P3, walked at
+#136–#138), and the hub, five dashboards, programmes, enrolments, the
+milestone review/approve half and the five reports stayed, because
+retiring them is an information-architecture decision with its own parity
+work. The §2 row had said "frozen … UNVERIFIED this week" for as long as
+the row existed; the freeze expired with F5 (CLAUDE.md rule 7). Three
+findings, two defects.
+
+**D1 — Review and Approve told nobody.** `hifz.milestones.index` renders
+Review (supervisor) and Approve (dean); both controller actions redirect
+back with a flash, and the milestones screen never included
+`hifz.partials.alerts`, so the row changed status and the person who
+pressed the button was told nothing — the §5cn failure mode again, on a
+Blade screen this time. The walk's first run failed exactly there, twice.
+The include is added to the milestones list and to the enrolment form
+(whose validation errors had the same nowhere to go).
+
+**D2 — the reports CSV arrived as `text/html`.** `HifzReportController::export`
+streamed with no content type, so a browser shows a page of commas rather
+than saving a file. Every other export in the codebase passes
+`Content-Type: text/csv`; this one now does. `HifzScreensReportBackTest`
+pins both.
+
+**D3 — the §2 row had never been walked.** `scripts/smoke/hifz.mjs`, 20
+steps, five logins: the pupil signs in only to give the walk their own
+name; the dean lands on the dean dashboard from `/hifz`, finds
+`SMOKE-Halaqa` active with its supervisor, enrols the pupil through the
+Blade form and finds them on the programme and on the enrolment list, with
+the programme's default teacher; the supervisor lands on their dashboard
+with the pupil's pending milestone, reviews it from the list and is told
+*Milestone reviewed and sent to dean.*; the dean's dashboard shows it
+waiting, the dean approves it and is told so, the reports hub opens, the
+milestone report lists it *approved* under the programme, the sessions CSV
+downloads as CSV; the teacher lands on the teacher dashboard with the
+programme, the pupil on their progress with *SMOKE-Milestone* under
+Approved Milestones, the parent on the child's progress.
+`SmokeMarkerSeeder::hifzCycle()` gives `quranCycle()`'s programme the
+supervisor and teacher the walk signs in as and plants the milestone
+pending — recommendation is the engine board's since F5-P3, so the Blade
+half starts from a row that exists. `HifzCycleSmokeResetTest`.
+Twenty-eighth walk, twenty-fourth writer.
+
+**Recorded, not changed.** `hifz.milestones.store` is a POST no screen
+reaches: its form went with the session-record screens in F5, and the
+engine board (`/teach/milestones`) recommends into the same
+`hifz_milestones` table. Removing it is part of the retirement decision,
+not this audit.
+
+**Walked in a browser.** `hifz.mjs` 20/20 twice on a re-seeded database,
+no console or server errors.
 
 ## 5fm. Qur'an A audit: four slices walked, and the builder that swallowed its refusals (2026-09-23)
 

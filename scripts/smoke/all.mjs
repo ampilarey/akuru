@@ -18,7 +18,7 @@
  *
  * ## Read-only and writing walks are separated, on purpose
  *
- * Four of these only look at screens. The other **twenty-three write**: they build a course for a student, run a scheduled intake, set and sit an assessment, issue a certificate, sell a course for wallet money, tag an Arabic skill activity, set and mark a recitation and map a halaqa, enrol a
+ * Four of these only look at screens. The other **twenty-four write**: they build a course for a student, run a scheduled intake, set and sit an assessment, issue a certificate, sell a course for wallet money, tag an Arabic skill activity, set and mark a recitation and map a halaqa, enrol a pupil in a halaqa and approve their milestone, enrol a
  * stranger on a course, submit and approve an absence note, request that a
  * child be collected, book a parent-teacher meeting, publish an article to
  * the library, publish an exam and a term's report cards to families, bill a
@@ -28,7 +28,7 @@
  *
  *   node scripts/smoke/all.mjs            every walk (the default)
  *   node scripts/smoke/all.mjs --read     the four that only look
- *   node scripts/smoke/all.mjs --write    the twenty-three that change data
+ *   node scripts/smoke/all.mjs --write    the twenty-four that change data
  *   node scripts/smoke/all.mjs learn review     just those, by name
  *
  * A writing run against a host whose name does not look synthetic asks for
@@ -110,6 +110,7 @@ const WALKS = [
     { name: 'buy', writes: true, asks: 'Can a student buy a course, and does paying open it?' },
     { name: 'arabic', writes: true, asks: 'Does an Arabic skill activity, tagged to a letter, end up on the skill reports?' },
     { name: 'quran', writes: true, asks: 'Does a recitation range reach the student as a passage and come back marked, and does a halaqa map onto an offering?' },
+    { name: 'hifz', writes: true, asks: 'Does what survives of the Hifz app still work for the people who use it?' },
     { name: 'review', writes: true, asks: 'Does work a machine cannot mark come back marked?' },
     { name: 'absence', writes: true, asks: 'Does the register believe a family who reported an absence?' },
     { name: 'pickup', writes: true, asks: 'Does a child get handed over, and only to the adult who asked?' },
