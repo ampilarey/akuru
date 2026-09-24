@@ -7,10 +7,7 @@ use App\Domains\Courses\Models\CourseEnrollment;
 use App\Domains\Finance\Models\Payment;
 use App\Domains\Finance\Models\PaymentItem;
 use App\Domains\Identity\Models\User;
-use App\Domains\Identity\Models\UserContact;
-use App\Domains\People\Actions\DualWriteCourseStudentAction;
-use App\Domains\People\Actions\LinkGuardianDualWriteAction;
-use App\Domains\People\Models\RegistrationStudent;
+use App\Domains\People\Actions\RegisterCourseStudentAction;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
@@ -38,27 +35,10 @@ class EnrollmentService
             ]);
         }
 
-        $student = $user->registrationStudentProfile;
-        $idFields = $this->extractIdFields($studentData);
-
-        if (! $student) {
-            $student = RegistrationStudent::create(array_merge([
-                'user_id' => $user->id,
-                'first_name' => $studentData['first_name'],
-                'last_name' => $studentData['last_name'],
-                'dob' => $dob,
-                'gender' => $studentData['gender'] ?? null,
-            ], $idFields));
-        } else {
-            $student->update(array_merge([
-                'first_name' => $studentData['first_name'],
-                'last_name' => $studentData['last_name'],
-                'dob' => $dob,
-                'gender' => $studentData['gender'] ?? null,
-            ], $idFields));
-        }
-
-        app(DualWriteCourseStudentAction::class)->sync($student);
+        $student = app(RegisterCourseStudentAction::class)->forSelf(
+            $user->id,
+            array_merge($studentData, $this->extractIdFields($studentData)),
+        );
 
         $result = $this->enrollStudentInCourses($student, $courseIds, $termId, $user, $user);
 
@@ -99,68 +79,20 @@ class EnrollmentService
         return $result;
     }
 
-    protected function createOrGetStudentForParent(User $parent, array $studentData, array $guardianMeta): RegistrationStudent
+    /**
+     * @return array{id: int, user_id: ?int, first_name: string, last_name: string, date_of_birth: ?string, gender: ?string, national_id: ?string, passport: ?string}
+     */
+    protected function createOrGetStudentForParent(User $parent, array $studentData, array $guardianMeta): array
     {
-        $dob = \Carbon\Carbon::parse($studentData['dob']);
-        $idFields = $this->extractIdFields($studentData);
-
-        // national_id / passport are encrypted — cannot query directly.
-        // Search the parent's existing guardian students first (PHP comparison after decryption),
-        // then fall back to scanning all registration_students with a user_id (smaller set).
-        $student = null;
-        $searchNid = $idFields['national_id'] ?? null;
-        $searchPassport = $idFields['passport'] ?? null;
-
-        // 1. Check among parent's already-linked children (most common re-enrol case)
-        $parent->loadMissing('guardianStudents');
-        foreach ($parent->guardianStudents as $gs) {
-            if ($searchNid && $gs->national_id === $searchNid) {
-                $student = $gs;
-                break;
-            }
-            if ($searchPassport && $gs->passport === $searchPassport) {
-                $student = $gs;
-                break;
-            }
-        }
-
-        // 2. Broader scan: students that have a user_id (child accounts) — smaller table subset
-        if (! $student) {
-            $candidates = RegistrationStudent::whereNotNull('user_id')->get();
-            foreach ($candidates as $c) {
-                if ($searchNid && $c->national_id === $searchNid) {
-                    $student = $c;
-                    break;
-                }
-                if ($searchPassport && $c->passport === $searchPassport) {
-                    $student = $c;
-                    break;
-                }
-            }
-        }
-
-        if (! $student) {
-            $student = RegistrationStudent::create(array_merge([
-                'user_id' => null,
-                'first_name' => $studentData['first_name'],
-                'last_name' => $studentData['last_name'],
-                'dob' => $dob,
-                'gender' => $studentData['gender'] ?? null,
-            ], $idFields));
-        }
-
-        app(DualWriteCourseStudentAction::class)->sync($student);
-
-        app(LinkGuardianDualWriteAction::class)->execute(
+        $student = app(RegisterCourseStudentAction::class)->forChild(
             $parent->id,
-            $student,
-            $guardianMeta['relationship'] ?? 'guardian',
-            true,
+            array_merge($studentData, $this->extractIdFields($studentData)),
+            $guardianMeta['relationship'] ?? null,
         );
 
         // Create a login account for the child if they don't have one yet
         $childPassword = $guardianMeta['child_password'] ?? null;
-        if ($childPassword && ! $student->user_id) {
+        if ($childPassword && ! $student['user_id']) {
             $this->createChildUserAccount($student, $parent, $childPassword);
         }
 
@@ -170,43 +102,37 @@ class EnrollmentService
     /**
      * Create a User login account for a child student.
      * The child logs in with their national_id/passport.
-     * Password reset OTP is sent to the parent's verified mobile.
+     *
+     * Password-reset codes reach the parent without copying anything: the
+     * forgot-password page finds the child's student record, then its
+     * guardian, then the guardian's verified mobile.
+     *
+     * This used to copy the parent's mobile onto the child as a contact. A
+     * number belongs to one account (`user_contacts_type_value_unique`), so
+     * for every parent who verified by mobile the copy failed, the exception
+     * was logged and swallowed, the child's login was left behind unlinked,
+     * and the family was never told (found by the Deploy 3 slice 2 tests).
+     *
+     * @param  array{id: int, first_name: string, last_name: string, date_of_birth: ?string, gender: ?string, national_id: ?string, passport: ?string}  $student
      */
-    private function createChildUserAccount(RegistrationStudent $student, User $parent, string $plainPassword): void
+    private function createChildUserAccount(array $student, User $parent, string $plainPassword): void
     {
         try {
-            $childUser = User::create([
-                'name' => $student->first_name.' '.$student->last_name,
-                'national_id' => $student->national_id ?? $student->passport,
-                'passport' => $student->passport,
-                'date_of_birth' => $student->dob,
-                'gender' => $student->gender,
-                'password' => Hash::make($plainPassword),
-                'is_active' => true,
-            ]);
+            DB::transaction(function () use ($student, $plainPassword): void {
+                $childUser = User::create([
+                    'name' => $student['first_name'].' '.$student['last_name'],
+                    'national_id' => $student['national_id'] ?? $student['passport'],
+                    'passport' => $student['passport'],
+                    'date_of_birth' => $student['date_of_birth'],
+                    'gender' => $student['gender'],
+                    'password' => Hash::make($plainPassword),
+                    'is_active' => true,
+                ]);
 
-            // Assign student role
-            $childUser->assignRole('student');
+                $childUser->assignRole('student');
 
-            // Link parent's verified mobile as the child's password-reset contact
-            // (so reset OTPs go to the parent's phone)
-            $parentMobile = $parent->contacts()
-                ->where('type', 'mobile')
-                ->whereNotNull('verified_at')
-                ->first();
-
-            if ($parentMobile) {
-                // Only create if not already linked
-                UserContact::firstOrCreate(
-                    ['user_id' => $childUser->id, 'type' => 'mobile', 'value' => $parentMobile->value],
-                    ['is_primary' => true, 'verified_at' => now()]
-                );
-            }
-
-            // Link the user account to the student profile
-            $student->update(['user_id' => $childUser->id]);
-            app(DualWriteCourseStudentAction::class)->sync($student);
-
+                app(RegisterCourseStudentAction::class)->linkAccount($student['id'], $childUser->id);
+            });
         } catch (\Throwable $e) {
             // Log but don't fail enrollment — child can still be enrolled without an account
             \Illuminate\Support\Facades\Log::error('Failed to create child user account: '.$e->getMessage());
@@ -226,14 +152,16 @@ class EnrollmentService
         ];
     }
 
-    protected function ensureGuardianCanManageStudent(User $parent, int $studentId): RegistrationStudent
+    /**
+     * `$studentId` is a `students.id` since Deploy 3 slice 2.
+     *
+     * @return array{id: int, user_id: ?int, first_name: string, last_name: string, date_of_birth: ?string, gender: ?string, national_id: ?string, passport: ?string}
+     */
+    protected function ensureGuardianCanManageStudent(User $parent, int $studentId): array
     {
-        $student = RegistrationStudent::findOrFail($studentId);
+        $student = app(RegisterCourseStudentAction::class)->forActor($parent->id, $studentId);
 
-        $isGuardian = $parent->guardianStudents()->where('registration_students.id', $studentId)->exists();
-        $isSelf = $student->user_id === $parent->id;
-
-        if (! $isGuardian && ! $isSelf) {
+        if ($student === null) {
             throw ValidationException::withMessages([
                 'student' => ['You are not authorized to enroll this student.'],
             ]);
@@ -242,20 +170,23 @@ class EnrollmentService
         return $student;
     }
 
+    /**
+     * @param  array{id: int}  $student
+     */
     protected function enrollStudentInCourses(
-        RegistrationStudent $student,
+        array $student,
         array $courseIds,
         ?int $termId,
         User $createdBy,
         ?User $adultSelfUser
     ): EnrollmentResult {
-        $unified = app(DualWriteCourseStudentAction::class)->sync($student);
+        $studentId = $student['id'];
 
         $result = new EnrollmentResult;
         $courses = Course::whereIn('id', $courseIds)->get();
         $enrollmentsNeedingPayment = [];
 
-        DB::transaction(function () use ($student, $unified, $courses, $termId, $createdBy, $adultSelfUser, $result, &$enrollmentsNeedingPayment) {
+        DB::transaction(function () use ($studentId, $courses, $termId, $createdBy, $adultSelfUser, $result, &$enrollmentsNeedingPayment) {
             $totalFee = 0;
             $feeEnrollments = [];
 
@@ -268,7 +199,7 @@ class EnrollmentService
                 }
 
                 // Deploy 3 slice 1: one enrolment per unified student.
-                $existing = CourseEnrollment::where('unified_student_id', $unified->id)
+                $existing = CourseEnrollment::where('unified_student_id', $studentId)
                     ->where('course_id', $course->id)
                     ->whereRaw('IFNULL(term_id, 0) = ?', [$termId ?? 0])
                     ->first();
@@ -308,8 +239,7 @@ class EnrollmentService
                 $paymentStatus = $feeAmount > 0 ? 'pending' : 'not_required';
 
                 $enrollment = CourseEnrollment::create([
-                    'student_id' => $student->id,
-                    'unified_student_id' => $unified->id,
+                    'unified_student_id' => $studentId,
                     'course_id' => $course->id,
                     'term_id' => $termId,
                     'status' => 'pending',
@@ -329,7 +259,7 @@ class EnrollmentService
 
             if (count($feeEnrollments) > 0 && $totalFee > 0) {
                 $payer = $adultSelfUser ?? $createdBy;
-                $payment = $this->paymentService->createConsolidatedPayment($payer, $student->id, $feeEnrollments);
+                $payment = $this->paymentService->createConsolidatedPayment($payer, $studentId, $feeEnrollments);
 
                 foreach ($feeEnrollments as $fe) {
                     $fe['enrollment']->update(['payment_id' => $payment->id]);
@@ -344,7 +274,7 @@ class EnrollmentService
 
     /**
      * Called after BML confirms a payment that used the deferred-enrollment flow.
-     * Creates RegistrationStudent + CourseEnrollment + PaymentItem records and
+     * Creates the student (on `students`) + CourseEnrollment + PaymentItem records and
      * clears the pending payload from the payment row.
      *
      * Must be idempotent: if items already exist, skip silently.
@@ -375,26 +305,10 @@ class EnrollmentService
 
             // ── Resolve / create student ──────────────────────────────────────
             if ($flow === 'adult') {
-                $idFields = $this->extractIdFields($data);
-                $student = $user->registrationStudentProfile;
-                if (! $student) {
-                    $student = RegistrationStudent::create(array_merge([
-                        'user_id' => $user->id,
-                        'first_name' => $data['first_name'],
-                        'last_name' => $data['last_name'],
-                        'dob' => \Carbon\Carbon::parse($data['dob']),
-                        'gender' => $data['gender'] ?? null,
-                    ], $idFields));
-                } else {
-                    $student->update(array_merge([
-                        'first_name' => $data['first_name'],
-                        'last_name' => $data['last_name'],
-                        'dob' => \Carbon\Carbon::parse($data['dob']),
-                        'gender' => $data['gender'] ?? null,
-                    ], $idFields));
-                }
-
-                app(DualWriteCourseStudentAction::class)->sync($student);
+                $student = app(RegisterCourseStudentAction::class)->forSelf(
+                    $user->id,
+                    array_merge($data, $this->extractIdFields($data)),
+                );
 
                 if ($user->name === 'User') {
                     $user->update(['name' => $data['first_name'].' '.$data['last_name']]);
@@ -407,16 +321,14 @@ class EnrollmentService
                     : $this->createOrGetStudentForParent($user, $data, $guardianMeta);
             }
 
-            $unified = app(DualWriteCourseStudentAction::class)->sync($student);
-
-            // Link student_id on the payment
-            $payment->update(['student_id' => $student->id, 'unified_student_id' => $unified->id]);
+            // Link the student on the payment
+            $payment->update(['unified_student_id' => $student['id']]);
 
             // ── Create enrollments + payment items ────────────────────────────
             $courses = Course::whereIn('id', $courseIds)->get();
             foreach ($courses as $course) {
                 // Skip if already enrolled (idempotency)
-                $alreadyEnrolled = CourseEnrollment::where('unified_student_id', $unified->id)
+                $alreadyEnrolled = CourseEnrollment::where('unified_student_id', $student['id'])
                     ->where('course_id', $course->id)
                     ->whereRaw('IFNULL(term_id, 0) = ?', [$termId ?? 0])
                     ->exists();
@@ -429,8 +341,7 @@ class EnrollmentService
                 $feeAmount = (float) ($course->registration_fee_amount ?? $course->fee ?? 0);
 
                 $enrollment = CourseEnrollment::create([
-                    'student_id' => $student->id,
-                    'unified_student_id' => $unified->id,
+                    'unified_student_id' => $student['id'],
                     'course_id' => $course->id,
                     'term_id' => $termId,
                     'status' => $requiresApproval ? 'pending' : 'active',

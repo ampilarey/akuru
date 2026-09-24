@@ -67,7 +67,7 @@
                             <select name="student_id" class="w-full rounded-md border-gray-300" :disabled="flow !== 'parent' || studentMode !== 'existing'" required>
                                 <option value="">Select a child</option>
                                 @foreach($children as $s)
-                                    <option value="{{ $s->legacy_registration_student_id ?? $s->id }}">{{ $s->full_name }} ({{ $s->age() }} years)</option>
+                                    <option value="{{ $s->id }}">{{ $s->full_name }} ({{ $s->age() }} years)</option>
                                 @endforeach
                             </select>
                         </div>

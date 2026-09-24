@@ -34,7 +34,6 @@ it('keeps the priced course with one published lesson, clears the coupon and enr
     ]);
     $enrollmentId = DB::table('course_enrollments')->insertGetId([
         'course_id' => $courseId,
-        'student_id' => (int) DB::table('registration_students')->orderBy('id')->value('id'),
         'unified_student_id' => (int) DB::table('students')->where('user_id', $studentUserId)->value('id'),
         'status' => 'active', 'payment_status' => 'confirmed', 'enrolled_at' => now(), 'created_at' => now(), 'updated_at' => now(),
     ]);

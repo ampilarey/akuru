@@ -34,7 +34,6 @@ it('keeps the intake course, clears a run\'s offering, session, attendance and e
     $studentId = (int) DB::table('students')->orderBy('id')->value('id');
     $enrollmentId = DB::table('course_enrollments')->insertGetId([
         'course_id' => $courseId, 'course_offering_id' => $offeringId, 'unified_student_id' => $studentId,
-        'student_id' => (int) DB::table('registration_students')->orderBy('id')->value('id'),
         'status' => 'active', 'enrolled_at' => now(), 'created_at' => now(), 'updated_at' => now(),
     ]);
     DB::table('attendance_records')->insert([

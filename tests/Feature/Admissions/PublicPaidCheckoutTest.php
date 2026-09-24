@@ -221,5 +221,8 @@ it('still finalizes a pre-P4.2 deferred-payload payment as a legacy-data safety 
     expect($enrollment->payment_status)->toBe('confirmed')
         ->and($enrollment->status)->toBe('active')
         ->and($payment->fresh()->enrollment_pending_payload)->toBeNull()
-        ->and(RegistrationStudent::where('user_id', $user->id)->exists())->toBeTrue();
+        // The student is written to `students` only (Deploy 3 slice 2).
+        ->and($enrollment->unified_student_id)->toBe($user->fresh()->student?->id)
+        ->and($user->fresh()->student?->national_id)->toBe('A778899')
+        ->and(RegistrationStudent::where('user_id', $user->id)->exists())->toBeFalse();
 });

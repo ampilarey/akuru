@@ -352,7 +352,6 @@ class AdminEnrollmentController extends Controller
                 'course_id' => $enrollment->course_id,
                 'course_offering_id' => $enrollment->course_offering_id,
                 'unified_student_id' => $enrollment->unified_student_id,
-                'student_id' => $enrollment->student_id,
                 'metadata' => ['source' => 'admin_manual_payment', 'recorded_by' => $request->user()->id],
             ],
         );

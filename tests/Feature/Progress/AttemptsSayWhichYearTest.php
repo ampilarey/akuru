@@ -59,7 +59,6 @@ function anAnsweredActivity(): array
 
     $enrollment = CourseEnrollment::query()->create([
         'course_id' => $course->id,
-        'student_id' => app(App\Domains\People\Actions\EnsureLegacyStudentForUnifiedAction::class)->execute($student->id),
         'unified_student_id' => $student->id,
         'status' => 'active',
         'enrolled_at' => now(),

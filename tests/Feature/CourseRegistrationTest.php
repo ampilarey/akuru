@@ -6,7 +6,6 @@ use App\Domains\Courses\Models\Course;
 use App\Domains\Identity\Models\Otp;
 use App\Domains\Identity\Models\User;
 use App\Domains\Identity\Models\UserContact;
-use App\Domains\People\Models\RegistrationStudent;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -163,13 +162,6 @@ class CourseRegistrationTest extends TestCase
             'verified_at' => now(),
         ]);
 
-        $student = RegistrationStudent::create([
-            'user_id' => $user->id,
-            'first_name' => 'John',
-            'last_name' => 'Doe',
-            'dob' => now()->subYears(25),
-        ]);
-
         $course = Course::factory()->create(['registration_fee_amount' => 0]);
 
         $enrollmentService = app(\App\Domains\Admissions\Services\Enrollment\EnrollmentService::class);
@@ -185,7 +177,9 @@ class CourseRegistrationTest extends TestCase
             'dob' => now()->subYears(25)->format('Y-m-d'),
         ], [$course->id], null);
 
-        $count = \App\Domains\Courses\Models\CourseEnrollment::where('student_id', $student->id)
+        // One student, on `students` (Deploy 3 slice 2), however often they register.
+        $studentId = $user->fresh()->student->id;
+        $count = \App\Domains\Courses\Models\CourseEnrollment::where('unified_student_id', $studentId)
             ->where('course_id', $course->id)
             ->count();
         $this->assertEquals(1, $count);

@@ -140,6 +140,36 @@ a question with a default, so "do nothing" is always a legible choice.
 
 ---
 
+## Found by Deploy 3 slice 2 (2026-09-25)
+
+### A child's login, made at registration, was never linked to the child — **fixed (2026-09-25)**
+
+**Severity:** a family is told their child has an account and the child
+cannot use it. When a parent registers a new child and sets a password,
+`EnrollmentService` created the child's user, then copied the parent's
+verified mobile onto it as a contact. A number belongs to one account
+(`user_contacts_type_value_unique`), and registration requires a verified
+contact, so for every parent who verified by mobile the copy failed. The
+exception was logged and swallowed, the new user was left behind with no
+student attached, and nothing on screen said so.
+
+**Fix:** the copy is gone, because it was never needed. The forgot-password
+page already finds a child's student record, then its guardian, then the
+guardian's verified mobile. The user, its role and the link to the student
+are now written in one transaction. `RegistrationWritesStudentsOnlyTest`
+registers a child with a password, checks the login is on the student, and
+requests a reset by the child's ID card to check the code goes to the
+parent's phone.
+
+### A registrant who leaves gender empty is recorded as male — **open**
+
+**Severity:** wrong data, small. The registration forms let gender be left
+empty; `students.gender` is a required `enum('male','female')`. The dual
+write filled the gap with `male`, and `RegisterCourseStudentAction` keeps
+that default so this slice changes no behaviour. The honest fix is a
+nullable column plus every reader that assumes a value, or a required field
+on the form. That is a product choice, not a cleanup step.
+
 ## Found by the gate card slice (2026-09-24)
 
 ### The QR on certificates and ID cards cannot be scanned — **open, next QR slice**
