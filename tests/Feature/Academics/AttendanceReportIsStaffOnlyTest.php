@@ -14,7 +14,7 @@ uses(RefreshDatabase::class);
  * and read the school. Found by the navigation slice's open-every-link check
  * (STATUS §5ga); fixed by gating on what only staff hold.
  */
-function roleUser(string $role): User
+function attendanceReportUser(string $role): User
 {
     $user = User::factory()->create();
     $user->assignRole($role);
@@ -25,7 +25,7 @@ function roleUser(string $role): User
 it('refuses a parent and a student the school-wide attendance report and its CSV', function (string $role) {
     $this->seed(RoleSeeder::class);
     makeYear();
-    $user = roleUser($role);
+    $user = attendanceReportUser($role);
 
     expect($user->can('view_attendance'))->toBeTrue(); // what used to admit them
 
@@ -41,7 +41,7 @@ it('still opens for every staff role', function (string $role) {
     $this->seed(RoleSeeder::class);
     makeYear();
 
-    $this->withoutLocalizationMiddleware()->actingAs(roleUser($role))
+    $this->withoutLocalizationMiddleware()->actingAs(attendanceReportUser($role))
         ->get(route('academics.attendance.index'))
         ->assertOk();
 })->with(['super_admin', 'admin', 'headmaster', 'supervisor', 'teacher']);
