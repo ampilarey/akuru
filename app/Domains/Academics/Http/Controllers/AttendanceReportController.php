@@ -19,7 +19,7 @@ class AttendanceReportController extends Controller
 {
     public function index(Request $request): Response
     {
-        abort_unless($request->user()?->can('view_attendance') || $request->user()?->can('manage_attendance'), 403);
+        $this->authorizeStaff($request);
 
         $filters = $this->filters($request);
         $lister = app(ListClassAttendanceAction::class);
@@ -39,9 +39,25 @@ class AttendanceReportController extends Controller
         ]);
     }
 
+    /**
+     * The whole school's attendance — every pupil's rows, the chronic and the
+     * unexcused lists. Staff only. `view_attendance` used to admit, and the
+     * `parent` and `student` roles hold it (it is what lets them see their own
+     * rows on the portal), so any family could type this URL and read the
+     * school (KNOWN_ISSUES, found 2026-09-24). Every staff role holds one of
+     * these two; no family role holds either.
+     */
+    private function authorizeStaff(Request $request): void
+    {
+        abort_unless(
+            $request->user()?->can('manage_attendance') || $request->user()?->can('registers.manage'),
+            403,
+        );
+    }
+
     public function export(Request $request): StreamedResponse
     {
-        abort_unless($request->user()?->can('view_attendance') || $request->user()?->can('manage_attendance'), 403);
+        $this->authorizeStaff($request);
 
         $kind = $request->string('kind')->toString() ?: 'sheet';
         $lister = app(ListClassAttendanceAction::class);

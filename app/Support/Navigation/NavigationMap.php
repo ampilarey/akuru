@@ -134,9 +134,9 @@ final class NavigationMap
                 ['key' => 'registers', 'href' => '/academics/registers', 'can' => ['registers.manage']],
                 ['key' => 'plans', 'href' => '/academics/plans', 'roles' => $staff, 'can' => $fills],
                 ['key' => 'materials', 'href' => '/academics/materials', 'roles' => $staff, 'can' => $fills],
-                // Staff only by hint as well as by ability: the parent role holds
-                // `view_attendance` too, and this is the whole school's report.
-                ['key' => 'attendance', 'href' => '/academics/attendance', 'roles' => $staff, 'can' => ['view_attendance', 'manage_attendance']],
+                // The whole school's report: gated like the controller, on the two
+                // abilities every staff role holds and no family role does.
+                ['key' => 'attendance', 'href' => '/academics/attendance', 'roles' => $staff, 'can' => ['manage_attendance', 'registers.manage']],
                 ['key' => 'absences', 'href' => '/academics/attendance/absences', 'roles' => $staff, 'can' => ['mark_attendance', 'manage_attendance']],
                 ['key' => 'review_notes', 'href' => '/academics/absence-notes', 'can' => ['manage_attendance']],
                 ['key' => 'behavior', 'href' => '/academics/behavior', 'roles' => $staff, 'can' => ['behavior.record', 'behavior.manage']],
