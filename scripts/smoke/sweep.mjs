@@ -118,6 +118,8 @@ const browser = await chromium.launch({
   args: HERMETIC_ARGS,
 });
 const context = await browser.newContext();
+// Sixty seconds, not thirty: staging behind Cloudflare stalled past thirty on two page loads in one run (STATUS §5fz).
+context.setDefaultNavigationTimeout(60000);
 await blockOffsiteRequests(context, BASE);
 const page = await context.newPage();
     // Read only a mounted page. On a real host the app's JavaScript can land

@@ -87,6 +87,8 @@ async function finish() {
 
 async function signIn(email) {
     const context = await browser.newContext();
+    // Sixty seconds, not thirty: staging behind Cloudflare stalled past thirty on two page loads in one run (STATUS §5fz).
+    context.setDefaultNavigationTimeout(60000);
     await context.route('**/*', (route) => (route.request().url().startsWith(BASE) ? route.continue() : route.abort()));
     const page = await context.newPage();
     // Read only a mounted page. On a real host the app's JavaScript can land

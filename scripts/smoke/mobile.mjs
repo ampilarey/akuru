@@ -69,6 +69,8 @@ const check = (step, ok, detail = '') => results.push([step, ok, detail]);
 const phone = devices['Pixel 5'];
 
 const context = await browser.newContext({ ...phone, permissions: ['microphone'] });
+// Sixty seconds, not thirty: staging behind Cloudflare stalled past thirty on two page loads in one run (STATUS §5fz).
+context.setDefaultNavigationTimeout(60000);
 // Same-origin only — but `serviceWorker` requests are not page requests, so the
 // route handler has to let them through explicitly or registration hangs.
 await context.route('**/*', (route) => (route.request().url().startsWith(BASE) ? route.continue() : route.abort()));
@@ -153,8 +155,16 @@ const workerState = await page.evaluate(async () => {
         return 'unsupported';
     }
     try {
-        const registration = await navigator.serviceWorker.getRegistration();
-        const found = registration ?? await navigator.serviceWorker.ready.catch(() => null);
+        // `ready` resolves once a worker is *active*; a registration read
+        // straight away can still be installing — which is what the fifth
+        // staging run reported, over Cloudflare, with the precache still
+        // downloading (STATUS §5fz). Bounded, so a worker that never
+        // activates still reads as stuck.
+        const ready = await Promise.race([
+            navigator.serviceWorker.ready.catch(() => null),
+            new Promise((resolve) => setTimeout(() => resolve(null), 20000)),
+        ]);
+        const found = ready ?? await navigator.serviceWorker.getRegistration();
         const worker = found?.active ?? found?.waiting ?? found?.installing;
 
         return worker?.state ?? 'none';

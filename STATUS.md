@@ -4557,6 +4557,43 @@ walks re-run locally on a fresh seed after Maldives midnight: `absence`
 `requests` 23/23, `school-day` 14/14, `signup` 17/17, `arabic` 10/10,
 `hr` 27/27.
 
+**The fifth staging run**, re-seeded: `sweep` **25/25**, `page-errors`
+clean, the writers **27/35**, and every one of the fourth run's reds
+green. Eight reds, still no product defect:
+
+- **Two walks need the app's database — walks, now say so.** `own-data`
+  and `register` read ids and the OTP through local `tinker`, which is
+  the app's database only when the app is the local dev server. Against
+  any other host `own-data` crashed and `register` reported the OTP as
+  never sent — three runs running. Both now recognise a remote
+  `SMOKE_BASE_URL`, say why, and skip (`own-data` whole, `register` from
+  the code step on). The honest staging ceiling is therefore 33 writers
+  walked fully plus two that stop and say so.
+- **Three reads before the post had landed — walks, fixed.** `absence`
+  waited for `SUBMITTED`, which `school-day` had already put on today's
+  register an hour earlier, so the family's row was read while the
+  re-submit was still in flight and said *LATE* (the third time this
+  step was red, and the first time for the real reason — now the
+  *Register submitted.* flash and the badge); `recite` sent the student
+  to look while the teacher's review was in flight (waits for *Record
+  reviewed.*, and re-opens the student's page until the note is there);
+  `hr`'s expiry flash arrived after the five-second window (now
+  fifteen).
+- **`mobile`** read the service worker's registration straight away and
+  found it `installing` — the precache was still downloading over
+  Cloudflare. It now awaits `serviceWorker.ready`, bounded at twenty
+  seconds.
+- **Two navigation timeouts — host, tolerated.** `author` and `pickup`
+  each lost one page load to a thirty-second navigation timeout, minutes
+  apart, on pages that took a few seconds in every other run. Every
+  walk's context now allows sixty.
+
+Nine walks re-run locally on a fresh seed: `school-day` 14/14 then
+`absence` 13/13 on the same register (the order that was red),
+`recite` 13/13, `hr` 28/28, `mobile` 11/11, `register` 14/14,
+`own-data` clean, `author` 24/24, `pickup` 16/16; `own-data` against a
+remote URL prints its skip and exits 0.
+
 Two residue observations, not defects: the office queue on staging holds
 one `SMOKE-Research` from the second run whose peer review finished but
 which nobody published (the walk had already failed by then), and the

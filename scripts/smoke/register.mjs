@@ -101,6 +101,8 @@ const b = await chromium.launch({
   ...(process.env.SMOKE_CHROMIUM ? { executablePath: process.env.SMOKE_CHROMIUM } : {}),
 });
 const c = await b.newContext();
+// Sixty seconds, not thirty: staging behind Cloudflare stalled past thirty on two page loads in one run (STATUS §5fz).
+c.setDefaultNavigationTimeout(60000);
 await c.route('**/*', (r) => (r.request().url().startsWith(BASE) ? r.continue() : r.abort()));
 const p = await c.newPage();
 const problems = [];
@@ -166,8 +168,12 @@ const codeFor = (phone) => execSync(
   { encoding: 'utf8' }
 ).match(/\b(\d{4,8})\b/);
 
-const code = codeFor(PHONE);
-check('the code reaches sms_receipts', Boolean(code), code ? code[1] : 'no code found');
+// Through local tinker, so only when the app *is* the local dev server: on any
+// other host that command reads the walker's database, not the app's, and the
+// fifth staging run reported the OTP as never sent (STATUS §5fz).
+const LOCAL = /^https?:\/\/(127\.0\.0\.1|localhost)(:\d+)?\/?$/.test(BASE);
+const code = LOCAL ? codeFor(PHONE) : null;
+check('the code reaches sms_receipts', LOCAL ? Boolean(code) : true, LOCAL ? (code ? code[1] : 'no code found') : 'skipped on a remote host — sms_receipts is read through local tinker, so the funnel stops here');
 
 if (code) {
   const otpField = p.locator('input[name="otp"], input[name="code"], input[autocomplete="one-time-code"]').first();
