@@ -22,7 +22,7 @@ the Library L1–L7; the public-site track W1–W3; EduPage parity E1–E22. The
 agent-buildable backlog in `KNOWN_ISSUES` is empty.
 
 **What is verified is narrower than what is built, and in one specific way.**
-Thirty-five scripted browser walks (`node scripts/smoke/all.mjs`, ~31 minutes)
+Thirty-six scripted browser walks (`node scripts/smoke/all.mjs`, ~31 minutes)
 drive the loops that matter — building a course, running an intake, enrolling, buying a course, taking a lesson, sitting an assessment, earning a certificate, tagging an Arabic skill activity, setting and marking a recitation, mapping a halaqa, approving a Hifz milestone, reading a protected book, redeeming a gift card, setting homework, posting a notice, messaging a teacher and polling a class, sending a trip sign-up with a fee, publishing a calendar day and marking a pupil late, double-booking a teacher and being refused, marking work,
 reporting an absence, collecting a child, booking a meeting, publishing an
 article, taking and refunding money, recording a sound, reciting, an exam to a
@@ -4351,6 +4351,67 @@ walk returned a header row and nothing else for circulation, student work and
 pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
+
+## 5ga. The shell's navigation, by role — a month-old proposal accepted and built (2026-09-24)
+
+The owner accepted `docs/APPSHELL_NAV_IA.md` as written (owner action 8,
+KNOWN_ISSUES top-five 2 and P3 #11). Until today every Inertia screen carried
+the same **109** links in one wrapping strip — eleven rows, the top quarter
+of a laptop screen — for everybody, and a link the person could not open
+still showed and answered 403.
+
+**What was built.** `App\Support\Navigation\NavigationMap` is the map: a
+primary bar per role (admins · teacher · parent · student · course_creator ·
+writer · reviewer) and eleven groups — School year, People, Day loop,
+Exams, Catalog, Learn, Finance, HR, Library, Mine, Admin — holding every
+screen once. `BuildNavigationAction` builds `nav` for the signed-in person
+on every Inertia response and **reads visibility off each route's own
+guard**: the `role:`, `permission:`, `can:` and `role_or_permission:`
+layers in its gathered middleware, evaluated for the person exactly as the
+request would. Forty-six of the screens turned out to be `auth`-only at
+the route with their gate in the controller (`abort_unless can(...)`), so
+those carry a `can` hint mirroring the controller and a `roles` hint saying
+who the page is *for*; a link whose route does not exist is hidden, so the
+menu cannot carry a dead one. Labels come back translated (`lang/nav.php`
+in EN, DV and AR — the Dhivehi is the agent's, from everyday school
+vocabulary, and the override layer is where a school corrects one).
+`HandleInertiaRequests` shares it; `AppShell.jsx` renders the bar, marks
+the current screen, and a **More** button opening every group in a panel
+that closes on choice, on Escape and on a click elsewhere. 109 literal
+links in the shell became two destinations (Alerts, the account link).
+
+**Tests.** `NavigationIsGroupedByRoleTest`: every href is a real GET route;
+the office bar reads Today · Years · Students · Exams · Gradebook ·
+Invoices; a teacher gets Today first and none of the office-only screens;
+a parent gets Children · Fees · Results · Absence notes · School calendar
+and nothing of the office; a student gets Learn first; the groups list each
+screen once; a guest gets nothing; the nav is shared and labelled in the
+request language (Arabic *اليوم*). And the one that mattered: **a teacher
+and a parent, with the roles' real grants, are refused by none of the
+links they are shown** — every href opened, none 403 or 404. The Docs
+guard that stopped a shell redesign arriving unannounced now guards the
+other direction (no flat list creeping back).
+
+**Walk.** `scripts/smoke/nav.mjs` (read-only; the thirty-sixth): a teacher
+finds Today in a bar of five links, opens it, and the bar marks it current;
+the office finds Years and Exams in the bar and Payroll under More among
+96 links in eleven groups; choosing a screen closes the menu; a parent
+finds Fees and Children, is shown no staff screen, and all 27 links they
+are shown let them in. 14/14 locally; `page-errors` clean over every
+screen for every role with the new shell.
+
+**Two things the build found, one fixed here and one not.** The
+open-every-link test showed a parent the whole school's attendance report
+(`/academics/attendance`), and it let them in: `RoleSeeder` gives the
+`parent` and `student` roles `view_attendance`, and the report admits
+`view_attendance`. The menu no longer shows families that screen (it is
+staff by hint), but the **URL still admits them** — a disclosure, recorded
+in KNOWN_ISSUES as found by this slice and taken as the next slice, not
+folded into this one (rule 1). The second: three teacher-facing screens
+(Plans, Materials, Behavior) are `auth`-only at the route and gate on
+`registers.fill`/`behavior.record` in the controller, which parents do not
+hold — correct today, but a permission grant away from the same leak; the
+`roles` hint is a second lock on those.
 
 ## 5fz. Staging gets today's code — and the first thing the seeder found was the seeder (2026-09-23)
 

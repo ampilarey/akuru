@@ -133,6 +133,7 @@ const WALKS = [
     { name: 'fees', writes: true, asks: 'Does a fee become an invoice a family can see, and cash a receipt they can open?' },
     { name: 'hr', writes: true, asks: 'Does a staff member\'s month — check-in, leave, appraisal, payslip — go through?' },
     { name: 'mobile', writes: false, asks: 'Does this work on a phone?' },
+    { name: 'nav', writes: false, asks: 'Can each kind of person find their way, without reading a wall of links?' },
 ];
 
 const args = process.argv.slice(2);
