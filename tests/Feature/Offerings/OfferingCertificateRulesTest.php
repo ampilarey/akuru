@@ -184,7 +184,6 @@ it('lets an offering tighten a requirement the course template allows', function
     CourseEnrollment::query()->create([
         'course_id' => $course->id,
         'course_offering_id' => $offering->id,
-        'student_id' => makeRegistrationStudent()->id,
         'unified_student_id' => $student->id,
         'status' => 'active',
         'payment_status' => 'not_required',

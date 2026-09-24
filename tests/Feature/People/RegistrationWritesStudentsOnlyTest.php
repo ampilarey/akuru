@@ -51,8 +51,8 @@ function childDetails(array $overrides = []): array
 function legacyRowCounts(): array
 {
     return [
-        'registration_students' => DB::table('registration_students')->count(),
-        'student_guardians' => DB::table('student_guardians')->count(),
+        'registration_students' => DB::table('archived_registration_students')->count(),
+        'student_guardians' => DB::table('archived_student_guardians')->count(),
     ];
 }
 
@@ -131,8 +131,6 @@ it('enrols a pupil on an offering without a legacy registration row', function (
     $enrolment = app(EnrollUnifiedStudentInOfferingAction::class)->execute($student->id, $course->id, $offering->id, $admin->id);
 
     expect($enrolment->unified_student_id)->toBe($student->id)
-        ->and($enrolment->student_id)->toBeNull()
-        ->and($student->fresh()->legacy_registration_student_id)->toBeNull()
         ->and(legacyRowCounts()['registration_students'])->toBe(0);
 });
 
@@ -143,5 +141,7 @@ it('no longer reaches for the legacy student model or the dual write', function 
         ->and($service)->not->toContain('DualWrite')
         ->and(class_exists('App\\Domains\\People\\Actions\\DualWriteCourseStudentAction'))->toBeFalse()
         ->and(class_exists('App\\Domains\\People\\Actions\\LinkGuardianDualWriteAction'))->toBeFalse()
-        ->and(class_exists('App\\Domains\\People\\Actions\\EnsureLegacyStudentForUnifiedAction'))->toBeFalse();
+        ->and(class_exists('App\\Domains\\People\\Actions\\EnsureLegacyStudentForUnifiedAction'))->toBeFalse()
+        // Slice 3: the model itself is gone with its table.
+        ->and(class_exists('App\\Domains\\People\\Models\\RegistrationStudent'))->toBeFalse();
 });

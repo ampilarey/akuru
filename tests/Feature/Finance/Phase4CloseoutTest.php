@@ -15,7 +15,6 @@ use App\Domains\Finance\Services\Payment\PaymentVerificationResult;
 use App\Domains\Identity\Models\User;
 use App\Domains\Offerings\Actions\DefaultSelfLearningOfferingAction;
 use App\Domains\Offerings\Models\CourseOffering;
-use App\Domains\People\Models\RegistrationStudent;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
@@ -104,7 +103,7 @@ it('treats a zero override as a free offering of a paid course', function () {
 
 it('records a manual payment that activates the enrollment through the single path', function () {
     $payer = User::factory()->create();
-    $student = RegistrationStudent::create([
+    $student = makeCourseStudent([
         'user_id' => $payer->id,
         'first_name' => 'Ahmed',
         'last_name' => 'Rasheed',
@@ -115,7 +114,7 @@ it('records a manual payment that activates the enrollment through the single pa
         'requires_admin_approval' => false,
     ]);
     $enrollment = CourseEnrollment::create([
-        'student_id' => $student->id,
+        'unified_student_id' => $student->id,
         'course_id' => $course->id,
         'status' => 'pending',
         'payment_status' => 'pending',

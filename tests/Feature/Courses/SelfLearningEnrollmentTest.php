@@ -75,8 +75,6 @@ it('enrolls a student in a published course and rejects drafts', function () {
         ->and($enrollment->enrollment_type)->toBe('free')
         ->and($enrollment->payment_status)->toBe('not_required')
         ->and($enrollment->unified_student_id)->toBeInt()
-        // No legacy `registration_students` row since Deploy 3 slice 2.
-        ->and($enrollment->student_id)->toBeNull()
         ->and(app(EnrollSelfLearningAction::class)->execute($user->id, $course->id)->id)->toBe($enrollment->id);
 
     $draft = app(SaveEngineCourseAction::class)->execute([

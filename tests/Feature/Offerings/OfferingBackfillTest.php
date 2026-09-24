@@ -25,7 +25,7 @@ uses(RefreshDatabase::class);
  */
 function backfillStudentId(): int
 {
-    return (int) makeRegistrationStudent()->id;
+    return (int) makeStudent()->id;
 }
 
 function backfillCourse(array $attributes = []): Course
@@ -64,7 +64,7 @@ it('repoints a legacy enrollment that predates the split', function () {
     $course = backfillCourse();
     $enrollment = CourseEnrollment::query()->create([
         'course_id' => $course->id,
-        'student_id' => backfillStudentId(),
+        'unified_student_id' => backfillStudentId(),
         'status' => 'active',
         'payment_status' => 'not_required',
         'enrollment_type' => 'free',
@@ -105,7 +105,7 @@ it('runs twice without making a second offering or a second repoint', function (
     $course = backfillCourse(['seats' => 12]);
     CourseEnrollment::query()->create([
         'course_id' => $course->id,
-        'student_id' => backfillStudentId(),
+        'unified_student_id' => backfillStudentId(),
         'status' => 'active',
         'payment_status' => 'not_required',
         'enrollment_type' => 'free',
@@ -151,7 +151,7 @@ it('leaves an enrollment that already points at an offering alone', function () 
     $enrollment = CourseEnrollment::query()->create([
         'course_id' => $course->id,
         'course_offering_id' => $other->id,
-        'student_id' => backfillStudentId(),
+        'unified_student_id' => backfillStudentId(),
         'status' => 'active',
         'payment_status' => 'not_required',
         'enrollment_type' => 'free',
@@ -166,7 +166,7 @@ it('passes its own gate once the backfill has run, and fails before', function (
     backfillCourse();
     CourseEnrollment::query()->create([
         'course_id' => Course::query()->value('id'),
-        'student_id' => backfillStudentId(),
+        'unified_student_id' => backfillStudentId(),
         'status' => 'active',
         'payment_status' => 'not_required',
         'enrollment_type' => 'free',

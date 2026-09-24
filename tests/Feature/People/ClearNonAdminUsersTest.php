@@ -9,78 +9,96 @@ use Spatie\Permission\Models\Role;
 
 uses(RefreshDatabase::class);
 
-it('deletes student_guardians whose guardian users are wiped', function () {
+/**
+ * `users:clear-non-admin` wipes every account but admins'. Since Deploy 3
+ * (slice 3) registrations live on `students` and `guardian_student`, and the
+ * old `registration_students` / `student_guardians` rows sit in their
+ * `archived_` tables; the wipe covers both.
+ */
+function clearLink(int $guardianId, int $studentId, string $relationship = 'mother'): void
+{
+    DB::table('guardian_student')->insert([
+        'guardian_id' => $guardianId,
+        'student_id' => $studentId,
+        'relationship' => $relationship,
+        'is_primary' => true,
+        'can_pickup' => true,
+        'financial_responsible' => false,
+        'created_at' => now(),
+        'updated_at' => now(),
+    ]);
+}
+
+function clearChild(): Student
+{
+    return Student::query()->create([
+        'user_id' => null,
+        'first_name' => 'Registered',
+        'last_name' => 'Child',
+        'date_of_birth' => now()->subYears(9)->toDateString(),
+        'gender' => 'female',
+    ]);
+}
+
+it('wipes a child a wiped parent registered, with their enrolment and link', function () {
     $admin = actingPeopleAdmin();
-    $guardian = User::factory()->create(['name' => 'Doomed Guardian']);
-    $rs = makeRegistrationStudent(['user_id' => null]);
-    attachLegacyGuardian($rs->id, $guardian->id);
+    $parent = makeGuardian();
+    $child = clearChild();
+    clearLink($parent->id, $child->id);
     DB::table('course_enrollments')->insert([
-        'student_id' => $rs->id,
+        'unified_student_id' => $child->id,
         'course_id' => Course::factory()->create()->id,
         'status' => 'pending',
         'created_at' => now(),
         'updated_at' => now(),
     ]);
 
-    $this->artisan('users:clear-non-admin', ['--force' => true])
-        ->assertSuccessful();
+    $this->artisan('users:clear-non-admin', ['--force' => true])->assertSuccessful();
 
     expect(User::query()->find($admin->id))->not->toBeNull()
-        ->and(User::query()->find($guardian->id))->toBeNull()
-        ->and(DB::table('student_guardians')->count())->toBe(0)
-        ->and(DB::table('registration_students')->where('id', $rs->id)->exists())->toBeFalse()
-        ->and(DB::table('course_enrollments')->where('student_id', $rs->id)->exists())->toBeFalse();
+        ->and(User::query()->find($parent->user_id))->toBeNull()
+        ->and(DB::table('guardian_student')->count())->toBe(0)
+        ->and(DB::table('course_enrollments')->where('unified_student_id', $child->id)->exists())->toBeFalse();
 });
 
-it('deletes student_guardians for registration students whose users are wiped', function () {
+it('wipes an adult registrant\'s enrolments with their account', function () {
     actingPeopleAdmin();
-    $studentUser = User::factory()->create();
-    $guardian = User::factory()->create();
-    $rs = makeRegistrationStudent(['user_id' => $studentUser->id]);
-    attachLegacyGuardian($rs->id, $guardian->id);
+    $student = makeStudent();
+    DB::table('course_enrollments')->insert([
+        'unified_student_id' => $student->id,
+        'course_id' => Course::factory()->create()->id,
+        'status' => 'active',
+        'created_at' => now(),
+        'updated_at' => now(),
+    ]);
 
-    $this->artisan('users:clear-non-admin', ['--force' => true])
-        ->assertSuccessful();
+    $this->artisan('users:clear-non-admin', ['--force' => true])->assertSuccessful();
 
-    expect(DB::table('student_guardians')->where('student_id', $rs->id)->exists())->toBeFalse()
-        ->and(DB::table('registration_students')->where('id', $rs->id)->exists())->toBeFalse()
-        ->and(User::query()->find($studentUser->id))->toBeNull()
-        ->and(User::query()->find($guardian->id))->toBeNull();
+    expect(User::query()->find($student->user_id))->toBeNull()
+        ->and(DB::table('course_enrollments')->where('unified_student_id', $student->id)->exists())->toBeFalse();
 });
 
-it('keeps student_guardians that still point at surviving admin users', function () {
+it('keeps a child who still has a surviving guardian', function () {
     $admin = actingPeopleAdmin();
-    $rs = makeRegistrationStudent(['user_id' => $admin->id]);
-    attachLegacyGuardian($rs->id, $admin->id);
+    $adminGuardian = makeGuardian();
+    $adminGuardian->forceFill(['user_id' => $admin->id])->save();
+    $doomedParent = makeGuardian();
+    $child = clearChild();
+    clearLink($adminGuardian->id, $child->id);
+    clearLink($doomedParent->id, $child->id, 'father');
+    DB::table('course_enrollments')->insert([
+        'unified_student_id' => $child->id,
+        'course_id' => Course::factory()->create()->id,
+        'status' => 'active',
+        'created_at' => now(),
+        'updated_at' => now(),
+    ]);
 
-    $this->artisan('users:clear-non-admin', ['--force' => true])
-        ->assertSuccessful();
+    $this->artisan('users:clear-non-admin', ['--force' => true])->assertSuccessful();
 
-    expect(DB::table('student_guardians')->count())->toBe(1)
-        ->and((int) DB::table('student_guardians')->value('guardian_user_id'))->toBe($admin->id)
-        ->and((int) DB::table('student_guardians')->value('student_id'))->toBe($rs->id)
-        ->and(User::query()->find($admin->id))->not->toBeNull();
-});
-
-it('leaves no student_guardians.guardian_user_id pointing at deleted users', function () {
-    actingPeopleAdmin();
-    $keptGuardian = actingPeopleAdmin();
-    $doomedGuardian = User::factory()->create();
-    $keptRs = makeRegistrationStudent(['user_id' => $keptGuardian->id]);
-    $doomedRs = makeRegistrationStudent(['user_id' => User::factory()->create()->id]);
-    attachLegacyGuardian($keptRs->id, $keptGuardian->id);
-    attachLegacyGuardian($doomedRs->id, $doomedGuardian->id);
-
-    $this->artisan('users:clear-non-admin', ['--force' => true])
-        ->assertSuccessful();
-
-    $orphans = DB::table('student_guardians')
-        ->whereNotIn('guardian_user_id', User::query()->pluck('id'))
-        ->count();
-
-    expect($orphans)->toBe(0)
-        ->and(DB::table('student_guardians')->count())->toBe(1)
-        ->and((int) DB::table('student_guardians')->value('guardian_user_id'))->toBe($keptGuardian->id);
+    expect(DB::table('guardian_student')->count())->toBe(1)
+        ->and((int) DB::table('guardian_student')->value('guardian_id'))->toBe($adminGuardian->id)
+        ->and(DB::table('course_enrollments')->where('unified_student_id', $child->id)->exists())->toBeTrue();
 });
 
 it('aborts when no admin or super_admin users exist', function () {
@@ -94,79 +112,47 @@ it('aborts when no admin or super_admin users exist', function () {
     expect(User::query()->count())->toBe(1);
 });
 
-it('includes registration_students with NULL user_id in the wipe instead of leaving them as whereNotIn survivors', function () {
-    actingPeopleAdmin();
-    $guardian = User::factory()->create();
-    $rs = makeRegistrationStudent(['user_id' => null]);
-    attachLegacyGuardian($rs->id, $guardian->id);
+it('wipes archived registrations of wiped users and guardian-only archived rows', function () {
+    $admin = actingPeopleAdmin();
+    $doomed = User::factory()->create();
 
-    $this->artisan('users:clear-non-admin', ['--force' => true])
-        ->assertSuccessful();
-
-    expect(DB::table('registration_students')->where('id', $rs->id)->exists())->toBeFalse()
-        ->and(DB::table('student_guardians')->count())->toBe(0)
-        ->and(User::query()->find($guardian->id))->toBeNull();
-});
-
-it('deletes guardian_student rows for wiped parent profiles and unified students', function () {
-    actingPeopleAdmin();
-    $parent = makeGuardian();
-    $student = makeStudent(['user_id' => User::factory()->create()->id]);
-    DB::table('guardian_student')->insert([
-        'guardian_id' => $parent->id,
-        'student_id' => $student->id,
-        'relationship' => 'father',
-        'is_primary' => true,
-        'can_pickup' => true,
-        'financial_responsible' => false,
-        'created_at' => now(),
-        'updated_at' => now(),
+    $ownedId = DB::table('archived_registration_students')->insertGetId([
+        'user_id' => $doomed->id, 'first_name' => 'Old', 'last_name' => 'Adult', 'dob' => '1990-01-01',
+        'created_at' => now(), 'updated_at' => now(),
+    ]);
+    $childId = DB::table('archived_registration_students')->insertGetId([
+        'user_id' => null, 'first_name' => 'Old', 'last_name' => 'Child', 'dob' => '2015-01-01',
+        'created_at' => now(), 'updated_at' => now(),
+    ]);
+    $adminsId = DB::table('archived_registration_students')->insertGetId([
+        'user_id' => $admin->id, 'first_name' => 'Kept', 'last_name' => 'Admin', 'dob' => '1985-01-01',
+        'created_at' => now(), 'updated_at' => now(),
+    ]);
+    DB::table('archived_student_guardians')->insert([
+        'student_id' => $childId, 'guardian_user_id' => $doomed->id, 'relationship' => 'mother', 'is_primary' => true,
+        'created_at' => now(), 'updated_at' => now(),
     ]);
 
-    $this->artisan('users:clear-non-admin', ['--force' => true])
-        ->assertSuccessful();
+    $this->artisan('users:clear-non-admin', ['--force' => true])->assertSuccessful();
 
-    expect(DB::table('guardian_student')->count())->toBe(0)
-        ->and(DB::table('parent_guardians')->where('id', $parent->id)->exists())->toBeFalse();
+    expect(DB::table('archived_registration_students')->pluck('id')->all())->toBe([$adminsId])
+        ->and(DB::table('archived_student_guardians')->count())->toBe(0)
+        ->and($ownedId)->toBeInt();
 });
 
-it('leaves no orphaned student_guardians or guardian_student rows', function () {
+it('leaves no guardian_student row pointing at a wiped guardian or student', function () {
     actingPeopleAdmin();
-    $guardian = User::factory()->create();
-    $rs = makeRegistrationStudent(['user_id' => null]);
-    attachLegacyGuardian($rs->id, $guardian->id);
     $parent = makeGuardian();
     $student = makeStudent();
-    DB::table('guardian_student')->insert([
-        'guardian_id' => $parent->id,
-        'student_id' => $student->id,
-        'relationship' => 'mother',
-        'is_primary' => false,
-        'can_pickup' => true,
-        'financial_responsible' => false,
-        'created_at' => now(),
-        'updated_at' => now(),
-    ]);
+    clearLink($parent->id, $student->id);
 
-    $this->artisan('users:clear-non-admin', ['--force' => true])
-        ->assertSuccessful();
+    $this->artisan('users:clear-non-admin', ['--force' => true])->assertSuccessful();
 
-    $liveUserIds = User::query()->pluck('id');
     $liveGuardianIds = DB::table('parent_guardians')->pluck('id');
-    $liveStudentIds = Student::query()->pluck('id');
-    $liveRsIds = DB::table('registration_students')->pluck('id');
+    $orphans = DB::table('guardian_student')->get()
+        ->filter(fn ($row) => ! $liveGuardianIds->contains((int) $row->guardian_id));
 
-    $orphanLegacyGuardians = DB::table('student_guardians')->get()->filter(function ($row) use ($liveUserIds, $liveRsIds) {
-        return ! $liveUserIds->contains((int) $row->guardian_user_id)
-            || ! $liveRsIds->contains((int) $row->student_id);
-    });
-    $orphanUnifiedPivots = DB::table('guardian_student')->get()->filter(function ($row) use ($liveGuardianIds, $liveStudentIds) {
-        return ! $liveGuardianIds->contains((int) $row->guardian_id)
-            || ! $liveStudentIds->contains((int) $row->student_id);
-    });
-
-    expect($orphanLegacyGuardians)->toBeEmpty()
-        ->and($orphanUnifiedPivots)->toBeEmpty()
-        ->and(DB::table('student_guardians')->count())->toBe(0)
-        ->and(DB::table('guardian_student')->count())->toBe(0);
+    expect($orphans)->toBeEmpty()
+        ->and(DB::table('guardian_student')->count())->toBe(0)
+        ->and(DB::table('parent_guardians')->where('id', $parent->id)->exists())->toBeFalse();
 });

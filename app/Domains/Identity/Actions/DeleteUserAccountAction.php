@@ -103,7 +103,10 @@ class DeleteUserAccountAction
             $morph = $user->getMorphClass();
             DB::table('model_has_roles')->where('model_id', $user->id)->where('model_type', $morph)->delete();
             DB::table('model_has_permissions')->where('model_id', $user->id)->where('model_type', $morph)->delete();
-            DB::table('registration_students')->where('user_id', $user->id)->delete();
+            // Their archived registration row (Deploy 3 slice 3) goes with them.
+            if (Schema::hasTable('archived_registration_students')) {
+                DB::table('archived_registration_students')->where('user_id', $user->id)->delete();
+            }
             $user->delete();
         });
 
@@ -163,12 +166,11 @@ class DeleteUserAccountAction
 
             $query = DB::table($table)->whereIn($column, $studentIds ?: [0]);
 
-            // `course_enrollments` carries both the unified id and the legacy
-            // registration-student id, and the S1.1 read switch means either may
-            // be the one populated on an older row. Missing one would let a real
-            // roster be deleted.
-            if ($table === 'course_enrollments' && $legacyIds !== [] && Schema::hasColumn($table, 'student_id')) {
-                $query->orWhereIn('student_id', $legacyIds);
+            // An old enrolment the unification never placed keeps only its
+            // archived registration id (Deploy 3 slice 3). Missing it would let
+            // a real roster be deleted.
+            if ($table === 'course_enrollments' && $legacyIds !== [] && Schema::hasColumn($table, 'archived_registration_student_id')) {
+                $query->orWhereIn('archived_registration_student_id', $legacyIds);
             }
 
             $count = $query->count();
@@ -201,11 +203,11 @@ class DeleteUserAccountAction
      */
     private function legacyStudentIds(User $user): array
     {
-        if (! Schema::hasTable('registration_students')) {
+        if (! Schema::hasTable('archived_registration_students')) {
             return [];
         }
 
-        return DB::table('registration_students')
+        return DB::table('archived_registration_students')
             ->where('user_id', $user->id)
             ->pluck('id')
             ->map(fn ($id): int => (int) $id)

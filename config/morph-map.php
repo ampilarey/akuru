@@ -207,7 +207,6 @@ return [
     'recitation_practice' => \App\Domains\Hifz\Models\RecitationPractice::class,
     'register_unlock' => \App\Domains\Academics\Models\RegisterUnlock::class,
     'registration_flow' => \App\Domains\Admissions\Models\RegistrationFlow::class,
-    'registration_student' => \App\Domains\People\Models\RegistrationStudent::class,
     'report' => \App\Domains\Settings\Models\Report::class,
     'report_card' => \App\Domains\ExamsGrades\Models\ReportCard::class,
     'report_card_comment' => \App\Domains\ExamsGrades\Models\ReportCardComment::class,

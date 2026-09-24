@@ -102,15 +102,13 @@ it('never cancels an enrolment whose payment was confirmed', function () {
         'status' => 'open',
     ]);
 
-    // `course_enrollments.student_id` FKs to `registration_students`, not
-    // `students` — a distinction this repo has tripped over before. Two
-    // registrants, because (student, course, term) is unique.
-    $paidRegistrant = makeRegistrationStudent()->id;
-    $unpaidRegistrant = makeRegistrationStudent()->id;
+    // Two registrants, because (student, course, term) is unique.
+    $paidRegistrant = makeStudent()->id;
+    $unpaidRegistrant = makeStudent()->id;
 
     $confirmed = CourseEnrollment::query()->create([
         'course_id' => $course->id,
-        'student_id' => $paidRegistrant,
+        'unified_student_id' => $paidRegistrant,
         'status' => 'pending',
         'payment_status' => 'confirmed',
         'enrollment_type' => 'self_learning',
@@ -120,7 +118,7 @@ it('never cancels an enrolment whose payment was confirmed', function () {
 
     $unpaid = CourseEnrollment::query()->create([
         'course_id' => $course->id,
-        'student_id' => $unpaidRegistrant,
+        'unified_student_id' => $unpaidRegistrant,
         'status' => 'pending',
         'payment_status' => 'pending',
         'enrollment_type' => 'self_learning',
@@ -177,7 +175,7 @@ it('gives a discount slot back when an abandoned checkout is pruned', function (
 
     $enrollment = CourseEnrollment::query()->create([
         'course_id' => $course->id,
-        'student_id' => makeRegistrationStudent()->id,
+        'unified_student_id' => makeStudent()->id,
         'status' => 'pending',
         'payment_status' => 'pending',
         'enrollment_type' => 'self_learning',
@@ -213,7 +211,7 @@ it('does not release a redemption whose payment landed', function () {
 
     $enrollment = CourseEnrollment::query()->create([
         'course_id' => $course->id,
-        'student_id' => makeRegistrationStudent()->id,
+        'unified_student_id' => makeStudent()->id,
         'status' => 'pending',
         'payment_status' => 'confirmed',
         'enrollment_type' => 'self_learning',

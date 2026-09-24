@@ -2,7 +2,7 @@
 
 // PHASE_0_CHECKLIST §0.5 rule 2: cross-domain non-contract references.
 // Baseline may only shrink when violations are fixed — never grow.
-// Baseline count: 145
+// Baseline count: 140
 
 return [
     'app/Domains/Academics/Http/Controllers/SubstitutionRequestController.php -> App\Domains\People\Models\Teacher',
@@ -94,7 +94,6 @@ return [
     'app/Domains/Hifz/Services/HifzSessionService.php -> App\Domains\People\Models\Teacher',
     'app/Domains/Identity/Models/User.php -> App\Domains\Finance\Models\Payment',
     'app/Domains/Identity/Models/User.php -> App\Domains\People\Models\ParentGuardian',
-    'app/Domains/Identity/Models/User.php -> App\Domains\People\Models\RegistrationStudent',
     'app/Domains/Identity/Models/User.php -> App\Domains\People\Models\Student',
     'app/Domains/Identity/Models/User.php -> App\Domains\People\Models\Teacher',
     'app/Domains/Identity/Services/OtpService.php -> App\Domains\Notifications\Notifications\OtpEmailNotification',
@@ -102,9 +101,6 @@ return [
     'app/Domains/Notifications/Notifications/NewContactMessage.php -> App\Domains\Website\Models\ContactMessage',
     'app/Domains/Notifications/Services/NotificationService.php -> App\Domains\Identity\Models\User',
     'app/Domains/People/Models/ParentGuardian.php -> App\Domains\Identity\Models\User',
-    'app/Domains/People/Models/RegistrationStudent.php -> App\Domains\Courses\Models\Course',
-    'app/Domains/People/Models/RegistrationStudent.php -> App\Domains\Courses\Models\CourseEnrollment',
-    'app/Domains/People/Models/RegistrationStudent.php -> App\Domains\Identity\Models\User',
     'app/Domains/People/Models/Student.php -> App\Domains\Academics\Models\ClassRoom',
     'app/Domains/People/Models/Student.php -> App\Domains\Hifz\Models\HifzEnrollment',
     'app/Domains/People/Models/Student.php -> App\Domains\Hifz\Models\HifzMilestone',
@@ -120,7 +116,6 @@ return [
     'app/Domains/People/Models/Teacher.php -> App\Domains\Hifz\Models\QuranProgress',
     'app/Domains/People/Models/Teacher.php -> App\Domains\Identity\Models\User',
     'app/Domains/People/Models/Teacher.php -> App\Domains\Settings\Models\School',
-    'app/Domains/People/Policies/RegistrationStudentPolicy.php -> App\Domains\Identity\Models\User',
     'app/Domains/Portal/Http/Controllers/DashboardController.php -> App\Domains\Hifz\Models\QuranProgress',
     'app/Domains/Portal/Http/Controllers/PortalController.php -> App\Domains\Courses\Models\CourseEnrollment',
     'app/Domains/Portal/Http/Controllers/PortalController.php -> App\Domains\Finance\Models\Payment',

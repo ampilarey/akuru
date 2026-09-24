@@ -105,7 +105,11 @@ it('stores documents.documentable_type as a morph alias not a FQCN', function ()
         ->and($document->fresh()->documentable)->toBeInstanceOf(Student::class);
 });
 
-it('adds course_enrollments.unified_student_id without renaming student_id', function () {
-    expect(Schema::hasColumn('course_enrollments', 'student_id'))->toBeTrue()
-        ->and(Schema::hasColumn('course_enrollments', 'unified_student_id'))->toBeTrue();
+it('adds course_enrollments.unified_student_id, and keeps the legacy id only as an archive', function () {
+    // S1.1a added the unified column beside `student_id` rather than renaming
+    // it (rule 9). Deploy 3 slice 3 retired the legacy column to
+    // `archived_registration_student_id` once nothing read it.
+    expect(Schema::hasColumn('course_enrollments', 'unified_student_id'))->toBeTrue()
+        ->and(Schema::hasColumn('course_enrollments', 'student_id'))->toBeFalse()
+        ->and(Schema::hasColumn('course_enrollments', 'archived_registration_student_id'))->toBeTrue();
 });

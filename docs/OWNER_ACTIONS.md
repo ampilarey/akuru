@@ -185,10 +185,12 @@ the stop at the front before; none after; no line moved (STATUS §5gd,
 
 The owner left it to the recommendation: retire the legacy student tables
 now, before the first real family registers, while rule 9's waits are still
-optional. Being built as a short series of PRs after the gate cards
-(`docs/migrations/s11-deploy-3-cleanup-proposal.md`, checked against the
-code on 2026-09-24: the dual write and the legacy checkout id are both still
-live).
+optional. **Done 2026-09-25 in three PRs** (STATUS §5gf–§5gh): enrolments
+key on the student (#460), registration writes `students` only (#461), and
+the legacy tables are archived. They are renamed `archived_…`, not dropped,
+because staging holds rows the unification never placed. Nothing for you to
+run beyond the usual pull. Dropping the archive tables one day is a separate,
+optional call.
 
 ### 11. E18 — what scans at the gate — **decided 2026-09-24: QR cards, built**
 

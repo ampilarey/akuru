@@ -1,34 +1,27 @@
 <?php
 
 /**
- * S2.0: the staging pull script must gate student unification read-only.
- * Never pass --backfill (that writes mappings). Same warn/fail pattern as morph-map.
+ * The staging pull script's post-deploy gates.
+ *
+ * S2.0 added a read-only `students:verify-unification` gate after the
+ * morph-map one. S1 Deploy 3 archived `registration_students` and retired
+ * that command (STATUS §5gh), so the gate went with it; the morph-map gate
+ * stays.
  */
 function pullDeployTestScript(): string
 {
     return file_get_contents(base_path('scripts/pull-deploy-test.sh'));
 }
 
-it('runs students:verify-unification after morph-map:verify', function () {
+it('still gates the deploy on morph-map:verify', function () {
     $script = pullDeployTestScript();
 
-    expect($script)->toContain('morph-map:verify')
-        ->and($script)->toContain('students:verify-unification')
-        ->and(strpos($script, 'morph-map:verify'))->toBeLessThan(strpos($script, 'students:verify-unification'));
+    expect($script)->toContain('php artisan morph-map:verify 2>&1')
+        ->and($script)->toContain('======== MORPH-MAP GATE FAILED ========');
 });
 
-it('invokes students:verify-unification without --backfill', function () {
-    $script = pullDeployTestScript();
-
-    expect($script)->toContain('php artisan students:verify-unification 2>&1')
-        ->and($script)->not->toContain('students:verify-unification --');
-});
-
-it('fails the deploy on a nonzero unification verify', function () {
-    $script = pullDeployTestScript();
-
-    expect($script)->toContain('======== STUDENT-UNIFICATION GATE FAILED ========')
-        ->and($script)->toContain('WARN: students:verify-unification not available — skipping gate (older commit)');
+it('no longer calls the retired unification verify', function () {
+    expect(pullDeployTestScript())->not->toContain('php artisan students:verify-unification');
 });
 
 it('is valid bash', function () {

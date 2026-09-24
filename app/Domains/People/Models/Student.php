@@ -49,7 +49,6 @@ class Student extends Model
         'allergies',
         'doctor_name',
         'doctor_phone',
-        'legacy_registration_student_id',
     ];
 
     protected $attributes = [

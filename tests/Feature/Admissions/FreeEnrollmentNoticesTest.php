@@ -33,7 +33,7 @@ uses(RefreshDatabase::class);
 function freeEnrollmentFixture(string $paymentStatus = 'not_required'): array
 {
     $payer = User::factory()->create(['email' => 'family'.uniqid().'@example.test']);
-    $student = makeRegistrationStudent(['user_id' => $payer->id]);
+    $student = makeStudent(['user_id' => $payer->id]);
 
     $course = Course::factory()->create([
         'workflow_status' => 'published',
@@ -42,7 +42,7 @@ function freeEnrollmentFixture(string $paymentStatus = 'not_required'): array
 
     $enrollment = CourseEnrollment::query()->create([
         'course_id' => $course->id,
-        'student_id' => $student->id,
+        'unified_student_id' => $student->id,
         'status' => 'pending',
         'payment_status' => $paymentStatus,
         'enrollment_type' => $paymentStatus === 'not_required' ? 'free' : 'paid',

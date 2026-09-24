@@ -3,7 +3,6 @@
 use App\Domains\Courses\Models\Course;
 use App\Domains\Courses\Models\CourseEnrollment;
 use App\Domains\Identity\Models\User;
-use App\Domains\People\Models\RegistrationStudent;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\Models\Role;
 
@@ -23,7 +22,7 @@ uses(RefreshDatabase::class);
 function pendingEnrollment(): CourseEnrollment
 {
     $user = User::factory()->create();
-    $student = RegistrationStudent::create([
+    $student = makeCourseStudent([
         'user_id' => $user->id,
         'first_name' => 'Aishath',
         'last_name' => 'Ibrahim',
@@ -31,7 +30,7 @@ function pendingEnrollment(): CourseEnrollment
     ]);
 
     return CourseEnrollment::create([
-        'student_id' => $student->id,
+        'unified_student_id' => $student->id,
         'course_id' => Course::factory()->create(['registration_fee_amount' => 500])->id,
         'status' => 'pending',
         'payment_status' => 'pending',

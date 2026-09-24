@@ -78,14 +78,14 @@ Legend — **CODE:** implementation in repo (models/migrations/actions/routes/pa
 |---|---|---|---|---|
 | Phase 0 foundation | Yes. Domain skeleton, contracts, CI. | Architecture suite + route-name tests. | **Locally, daily:** every one of the 35 walks signs in — admin, supervisor, teacher, student, parent — and lands on the right home (`hifz.mjs` alone lands five roles). The staging notes here (2026-06-13 `/up` 200; 2026-08-23 seed login failed) are historical; **staging is the operator's to deploy and re-check** (§5ft). BML is unwalkable anywhere until its webhook secret exists (`OWNER_ACTIONS` 2). | Staging HEAD in archive is far behind current `main`. |
 | Morph-map hotfix | Yes. `config/morph-map.php`, backfill, `morph-map:verify`. | `MorphMapBackfillTest`, `MorphMapConfigTest` (CI). | Staging verify **OK** (2026-08-16, `05b8cca`). Every new polymorphic column since registers its alias in the same slice, and the arch test fails the build otherwise — the walks that create documents, certificates, found items and messages read them back by alias. | Mixed-era staging was the real test of collapse. |
-| S1.1a schema | Yes. Additive student/guardian/document columns. | `UnifiedStudentSchemaTest`. | Not a user task: the columns are what `create-sweep.mjs` (Add student), `own-data.mjs` and `signup.mjs` (the directory search) write and read. | Deploy 3 cleanup not run (owner's, `docs/migrations/s11-deploy-3-cleanup-proposal.md`). |
-| S1.1b backfill | Yes. `UnifyStudentsAction`, `students:verify-unification`. | `UnifiedStudentBackfillTest`, representative seeder test. | Staging verify **red** (collisions + orphan guardians, archive 2026-08-25). Representative gate **green** (ADR-021). | `--backfill` refused on `APP_ENV=production`. |
-| S1.1c read switch | Yes. Dual-write still on. | `UnifiedStudentReadSwitchTest`. | **Walked through its seam:** `register.mjs`, `buy.mjs` and `intake.mjs` enrol through `EnrollUnifiedStudentInOfferingAction`, which writes the legacy id beside `unified_student_id`, and the office's enrolment list and the family's own pages read the unified pupil back by name. The directory, portal and every family walk read `students`. | **What is still legacy, by design until Deploy 3:** `course_enrollments.student_id` keys `registration_students` (dual-written by `EnsureLegacyStudentForUnifiedAction`), and Admissions' `EnrollmentService` / `CourseRegistrationController` still read `RegistrationStudent` (12 files name it). Cleanup is the owner-confirmed slice in `s11-deploy-3-cleanup-proposal.md`. |
+| S1.1a schema | Yes. Additive student/guardian/document columns. | `UnifiedStudentSchemaTest`. | Not a user task: the columns are what `create-sweep.mjs` (Add student), `own-data.mjs` and `signup.mjs` (the directory search) write and read. | Deploy 3 cleanup **done** (owner-confirmed, three PRs, §5gf–§5gh): the legacy tables are archived. |
+| S1.1b backfill | **Retired 2026-09-25** with the table it read (§5gh). It ran on every environment that had legacy rows; its migration is now a documented no-op. | Tests retired with it. | Staging verify was **red** (collisions + orphan guardians, archive 2026-08-25); the archive keeps those rows rather than guessing. Representative gate was **green** (ADR-021). | `archived_registration_students.unified_student_id` records what each row became. |
+| S1.1c read switch | Yes. Dual-write **off** since §5gg; legacy tables archived §5gh. | `UnifiedStudentReadSwitchTest`. | **Walked through its seam:** `register.mjs`, `buy.mjs` and `intake.mjs` enrol through `EnrollUnifiedStudentInOfferingAction`, which writes the legacy id beside `unified_student_id`, and the office's enrolment list and the family's own pages read the unified pupil back by name. The directory, portal and every family walk read `students`. | Nothing is legacy any more: registration, checkout and offering enrolment write `students`, `guardian_student` and `unified_student_id` only (§5gg), and the old pointers survive as `archived_registration_student_id` history (§5gh). |
 | S1.2 custom fields | Yes. Admin CRUD + student profile fields. Directory create/edit added. | `CustomFieldsTest`, `StudentDirectoryCrudTest`. | Walked **create** (#95): Add student → show → class picker. | Course-only nullables supported. Status only via `ChangeStudentStatusAction`. |
 | S1.3 consent | Yes. Ledger + profile tab. | `ConsentTest`, `ConsentCycleSmokeResetTest`. | Walked 2026-09-23 (`consent.mjs`, §5fv): the office grants and revokes from the pupil's Consents tab, history kept as rows, the same answer twice adds none; revoking `photo_media_use` takes the photo off the public achievements page and granting it back restores it. **The tab had been a 500 on every seeded database since 2026-09-14** — the seeder's marker row carried a source outside the enum and the sweep only ever read the directory. | No portal screen writes `ConsentSource::Portal` — families cannot self-serve consent; owner call (§5fv). |
 | S1.4 staff profiles | Yes. Inertia `people.staff.*`. | `StaffProfileTest`. | Walked **locally** 2026-09-13: screen renders, but no row was planted for it — a load, not a data check (§5cm). | `teachers` row ≠ Spatie role `teacher` (mitigated for seed: `EnsureTeacherRowAction` in `UserSeeder`, #87). |
 | S1.5 years/terms/classes | Yes. Years/classes/roster/promotion. | `AcademicYearBackboneTest`, `YearClassUniquenessTest`. | Walked **partial** (R1 S1, R2 S1, R3 S1). Create unique year/class **validated** (#91); first R3 pass hid errors, follow-up paints `errors.name`. Year seeders `firstOrCreate` by name. Class teacher can be assigned on an existing class (show page). Picker identity_key **omits class** (#90) **and student number** (blank / PIL-01 vs PIL-99 still flag). | `ActivateAcademicYearAction` will not close the current year for you. |
-| S2.0 unify-verify gate | Yes. `scripts/pull-deploy-test.sh`. | `PullDeployTestScriptTest`. | Staging evidence **not pasted**. First #15 deploy used pre-pull script (archive). | Operator-only to confirm a gated deploy log. |
+| S2.0 unify-verify gate | **Retired 2026-09-25** (§5gh): nothing left to verify. | `PullDeployTestScriptTest` now pins its absence. | Staging evidence was never pasted. | The morph-map gate stays. |
 | S2.1 rooms | Yes. CRUD + CSV. | `RoomCrudTest`. | Walked **locally** 2026-09-13: screen shows a row planted for it (§5cm). | |
 | S2.2 timetable conflicts | Yes. Additive year/room/validity + checker. | `TimetableConflictSaveTest`, `TimetableTeacherViewNamesTheClassTest`. | **Walked 2026-09-23** (`timetable.mjs`, §5fs): the same teacher in the same slot of a second class is refused on the screen with *Timetable conflicts: teacher, room* and nothing saved; ticked *Allow conflict* with a reason it is placed and the cell wears its badge; the teacher view shows both classes at that hour — **now by name** (D1); removing the override empties the cell; the week exports. | The two classes are the seeder's own (`SMOKE-Class` A/B), so no real week is touched. |
 | S2.3 timetable builder | Yes. Week grid, class/teacher/room views, copy-week, copy-from-class, print, CSV, substitution overlay. | `TimetableBuilderTest` (9), `TimetableConflictCheckerTest` (17). | Walked **2026-09-22** (§5eu): placing a subject persisted with the default teacher and with a chosen one, and survived reload. The R2 "drag did not persist" does not reproduce. | |
@@ -167,9 +167,9 @@ Legend — **CODE:** implementation in repo (models/migrations/actions/routes/pa
 
 ### Operator-only
 
-1. **Staging login / seed** — no SSH from this environment; webhook deploy only (`docs/STAGING.md`). Seed passwords 302 back to login. Someone with server access must seed (or set real passwords) and paste `students:verify-unification` + `morph-map:verify` for **current** `main`. Round 3 ranked #1.
+1. **Staging login / seed** — no SSH from this environment; webhook deploy only (`docs/STAGING.md`). Seed passwords 302 back to login. Someone with server access must seed (or set real passwords) and paste `morph-map:verify` for **current** `main` (`students:verify-unification` was retired in §5gh). Round 3 ranked #1.
 2. **GitHub branch protection** — **confirmed not applied, 2026-09-15** (§5ep): the branches API reports `main` as `"protected": false`, and a PR's `mergeable_state` read `unstable` rather than `blocked` with CI still running. Applying it is still 403 from an agent. Until a repo admin applies `docs/BRANCH_PROTECTION.md`, the merge gates are discipline, not mechanism — CLAUDE.md now says so.
-3. **Deploy 3 cleanup** — proposal only (`docs/migrations/s11-deploy-3-cleanup-proposal.md`). Dual-write still on. **Do not execute.**
+3. **Deploy 3 cleanup** — **done** 2026-09-25, owner-confirmed (§5gf–§5gh). Nothing for an operator beyond the usual pull.
 4. **Credential smoke / BML sandbox** — never completed on staging.
 5. **`QURAN_HALAQA_DUAL_WRITE`** — leave off until an operator confirms dual-write; no read switch.
 6. **Payroll** — leave `PAYROLL_ENABLED` / `payroll.enabled` off.
@@ -181,7 +181,7 @@ Legend — **CODE:** implementation in repo (models/migrations/actions/routes/pa
 |---|---|
 | **Pilot timing** | Staging cannot start the rehearsal. Local walk is not `test.akuru.edu.mv`. |
 | **Track B vs finishing gaps** | ADR-021 representative gate is green (archive). Track B leftovers **B1–B4 are on main** (#102–#105). Remaining school-loop gaps: staging, AppShell nav. |
-| **Deploy 3** | Confirm or reject the cleanup proposal. Do not run it as a drive-by. |
+| **Deploy 3** | **Decided and done** (OWNER_ACTIONS item 10; §5gf–§5gh). Dropping the archive tables is a later, separate call. |
 | **Branch protection** | Apply on GitHub or accept that every PR must wait for CI and not self-merge (S2 kickoff terms). |
 | **SMS_LIVE / production flag** | When (if) production should send Dhiraagu. Local/staging already bind `LogSmsSender`. |
 | **HTML vs PDF documents** | **Decided (#97).** ADR-012: HTML is the supported production output. PDF is a future `DocumentRendererInterface` binding swap, not a domain `if`. |
@@ -4351,6 +4351,62 @@ walk returned a header row and nothing else for circulation, student work and
 pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
+
+## 5gh. Deploy 3, slice 3: the legacy student tables are archived, and Deploy 3 is done (2026-09-25)
+
+Last of three PRs for owner decision 10. After slices 1 and 2 nothing read
+or wrote the legacy tables; this slice retires them.
+
+**Migration `2026_09_25_000002_s11e_archive_legacy_student_tables`.**
+- Fills any enrolment or payment still missing `unified_student_id` from
+  the legacy map.
+- `course_enrollments.student_id` and `payments.student_id` lose their
+  foreign keys (and the enrolment's old unique key) and become
+  `archived_registration_student_id`: plain history, constrained to nothing.
+- `student_guardians` becomes `archived_student_guardians`;
+  `registration_students` becomes `archived_registration_students` and gains
+  `unified_student_id`, filled before `students.legacy_registration_student_id`
+  is dropped, so every archived row still says which student it became.
+
+**Changed from the proposal: archive, not drop.** The proposal said drop
+`student_guardians` and the two legacy columns, behind gates that stop the
+deploy on any row the unification never placed. I built that first and it
+worked: planted orphans stopped it by id. Then I checked where it runs.
+The staging deploy script runs `migrate` inside its chain, and STATUS
+records orphan guardian links and collisions on staging. A gate that throws
+there leaves new code on an old schema. Renaming keeps every row, needs no
+gate, and leaves "drop the archive" as a separate decision for later.
+
+**Rehearsed locally.** Up, down, up clean. With a planted legacy-only
+enrolment and guardian link, both survived into the archive with their
+pointers, and the archive's mapping column carried `27 → 39` across.
+
+**Retired with the tables:** the `RegistrationStudent` model, its policy
+and morph alias; `User::guardianStudents` and `registrationStudentProfile`;
+the legacy relations and saving hooks on `CourseEnrollment` and `Payment`;
+`UnifyStudentsAction`, `students:verify-unification`,
+`RepresentativeUnificationGate`, `UnificationRepresentativeSeeder`,
+`StudentUnificationReport`, `config/unification.php`;
+`students:encrypt-ids` and `local:clear-registration`, which only touched
+the legacy table. The S1.1b backfill migration is now a documented no-op,
+because a fresh database has nothing for it to backfill. The staging script's
+unification gate is removed; its own *not available* branch already covered
+the first deploy, which still runs the old script.
+`users:clear-non-admin` finds registrants through `students` and
+`guardian_student` and wipes the archive the way it wiped the live tables.
+Account deletion counts an archived-only enrolment as history. Seven rule-1
+and rule-2 baseline entries are gone.
+
+**Tests.** `LegacyStudentTablesArchivedTest` pins the schema.
+`ClearNonAdminUsersTest` is rewritten for students, links and the archive.
+`BmlWebhookTest`, the one test the S4 audit said would break, is rebuilt on
+`students`, along with about thirty fixtures that borrowed a legacy row. A
+new `makeCourseStudent()` helper replaces the legacy ones. Full suite 2119
+passed; the drop from 2148 is the retired unification tests.
+
+**Walked in a browser.** `page-errors` (every role, every route), `sweep`,
+`register`, `intake`, `learn`, `certify`, `buy`, `family`, `signup`,
+`money`, `fees`: 11/11 on the archived schema.
 
 ## 5gg. Deploy 3, slice 2: registration writes `students` only, and a child's login finally reaches the child (2026-09-25)
 

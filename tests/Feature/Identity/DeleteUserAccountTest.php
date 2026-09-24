@@ -136,7 +136,7 @@ it('leaves no orphan when it does delete', function () {
 
     app(DeleteUserAccountAction::class)->execute($user, null);
 
-    expect(DB::table('registration_students')->where('user_id', $user->id)->count())->toBe(0)
+    expect(DB::table('archived_registration_students')->where('user_id', $user->id)->count())->toBe(0)
         ->and(User::query()->find($user->id))->toBeNull();
 });
 
@@ -153,20 +153,20 @@ it('keeps the two refusals the controller already had', function () {
         ->toThrow(ValidationException::class);
 });
 
-it('counts a legacy enrolment as history too', function () {
-    // `course_enrollments` carries both the unified id and the legacy
-    // registration-student id, and the S1.1 read switch means either may be the
-    // one populated on an older row. Missing one would let a real roster go.
-    //
-    // Enrolment no longer writes a legacy row (Deploy 3 slice 2), so the older
-    // row this guards is planted: the user's `registration_students` row
-    // carries the enrolment and the unified id is empty.
+it('counts an archived legacy enrolment as history too', function () {
+    // An old enrolment the unification never placed keeps only its archived
+    // registration id (Deploy 3 slice 3). Missing it would let a real roster
+    // go. Planted here: the user's archived registration row carries the
+    // enrolment and the unified id is empty.
     ['user' => $user, 'enrollment' => $enrollment] = enrolledUser();
-    $legacy = makeRegistrationStudent(['user_id' => $user->id]);
+    $legacyId = DB::table('archived_registration_students')->insertGetId([
+        'user_id' => $user->id, 'first_name' => 'Old', 'last_name' => 'Row', 'dob' => '2000-01-01',
+        'created_at' => now(), 'updated_at' => now(),
+    ]);
 
-    CourseEnrollment::query()->whereKey($enrollment->id)->update([
+    DB::table('course_enrollments')->where('id', $enrollment->id)->update([
         'unified_student_id' => null,
-        'student_id' => $legacy->id,
+        'archived_registration_student_id' => $legacyId,
     ]);
 
     $counts = app(DeleteUserAccountAction::class)->dependentCounts($user->fresh());

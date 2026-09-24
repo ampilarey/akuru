@@ -61,7 +61,7 @@ function courseWithRoster(string $title = 'Has a roster', string $workflow = 'pu
     $course = recoverableCourse($title, $workflow);
     CourseEnrollment::query()->create([
         'course_id' => $course->id,
-        'student_id' => makeRegistrationStudent()->id,
+        'unified_student_id' => makeStudent()->id,
         'status' => 'active',
         'payment_status' => 'confirmed',
         'enrollment_type' => 'self_learning',
