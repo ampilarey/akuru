@@ -15,7 +15,7 @@ with a `teachers` row, and a parent/student pair for portal checks.
 
 ## 0. Run the automated walks first
 
-**Do this before anything below.** Thirty-six scripted walks drive real browsers
+**Do this before anything below.** Thirty-seven scripted walks drive real browsers
 through the loops that matter — a stranger enrolling, a student taking a
 lesson, a teacher marking work, a family reporting an absence, a child being
 collected, a parent booking a meeting, somebody becoming a writer and getting
@@ -39,13 +39,13 @@ SMOKE_BASE_URL=https://test.akuru.edu.mv node scripts/smoke/all.mjs
 It exits non-zero if any walk fails and prints the full output of the failures
 only, so a green run is one screen and a red one explains itself.
 
-**Thirty-one of the thirty-six write data** — they submit absence notes, request
+**Thirty-one of the thirty-seven write data** — they submit absence notes, request
 that children be collected, book meetings, enrol people, hand in recordings
 for a teacher to judge, publish exam results to families, issue them
 invoices and approve staff leave. Against a host whose name does not look synthetic the
 runner refuses to start and tells you how to override. `--read` runs only the
-five that look without touching anything (`page-errors`, `sweep`, `own-data`,
-`mobile`, `nav`), which is the safe choice against anything with real families on it.
+six that look without touching anything (`page-errors`, `sweep`, `own-data`,
+`mobile`, `nav`, `rtl`), which is the safe choice against anything with real families on it.
 
 `node scripts/smoke/all.mjs learn review` runs named walks; `--write` runs the
 thirty-one that change data. The `exams` walk needs a queue worker on the host

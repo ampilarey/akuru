@@ -57,6 +57,49 @@
   text-align: right;
 }
 
+/*
+ * English sentences on Dhivehi and Arabic pages (owner decision 9, STATUS §5gd).
+ *
+ * In a right-to-left paragraph the bidi algorithm draws an English sentence's
+ * trailing full stop at its visual *front*: ".No exams still in marks entry".
+ * `unicode-bidi: plaintext` gives each text element the direction of its own
+ * first letter, so English reads left-to-right with the stop at the end and
+ * Dhivehi and Arabic stay right-to-left.
+ *
+ * On its own that would also left-align every English line: an element's
+ * `start` alignment resolves against the paragraph's new direction. So the
+ * alignment is pinned to the page's direction, physically — `start` becomes
+ * `right` and `end` becomes `left` on RTL pages — and only where nothing else
+ * decides it: an element that is, or sits inside, a centred, justified or
+ * explicitly aligned container keeps what it had. (`text-align: match-parent`
+ * would say this in one line; Chrome does not support it, and the RTL walk
+ * caught it — `scripts/smoke/rtl.mjs`.)
+ *
+ * Only text-bearing elements, so layout is untouched. `:where` keeps the
+ * specificity at zero where a class should still win.
+ */
+:where([dir="rtl"]) :where(p, li, dt, dd, blockquote, figcaption, label, td, h1, h2, h3, h4, h5, h6, [role="status"], [role="alert"]) {
+  unicode-bidi: plaintext;
+}
+
+:where([dir="rtl"]) :where(p, li, dt, dd, blockquote, figcaption, label, td, h1, h2, h3, h4, h5, h6, [role="status"], [role="alert"]):where(:not([class*="text-center"], [class*="text-center"] *, [class*="text-justify"], [class*="text-justify"] *, [class*="text-end"], [class*="text-end"] *, [class*="text-left"], [class*="text-left"] *, [class*="text-right"], [class*="text-right"] *)) {
+  text-align: right;
+}
+
+:where([dir="rtl"]) :where([class*="text-end"]) :where(p, li, dt, dd, blockquote, figcaption, label, td, h1, h2, h3, h4, h5, h6, [role="status"], [role="alert"]):where(:not([class*="text-"])) {
+  text-align: left;
+}
+
+/* A logical class on the element itself means the page's direction, not the
+   sentence's. Higher specificity than the class, so it is pinned too. */
+[dir="rtl"] :is(p, li, dt, dd, blockquote, figcaption, label, td, h1, h2, h3, h4, h5, h6, [role="status"], [role="alert"]).text-start {
+  text-align: right;
+}
+
+[dir="rtl"] :is(p, li, dt, dd, blockquote, figcaption, label, td, h1, h2, h3, h4, h5, h6, [role="status"], [role="alert"]).text-end {
+  text-align: left;
+}
+
 /* Custom components */
 @layer components {
   .btn-primary {

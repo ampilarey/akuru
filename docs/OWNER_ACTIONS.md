@@ -171,16 +171,15 @@ Was ~109 links across eleven rows on every page. Now a primary bar per role
 and a *More* menu of labelled groups, with nothing shown that would refuse
 the person (`docs/APPSHELL_NAV_IA.md`, STATUS §5ga).
 
-### 9. Bidi alignment on Dhivehi and Arabic screens
+### 9. Bidi alignment on Dhivehi and Arabic screens — **decided 2026-09-24: fixed without the trade-off**
 
-An English sentence on an RTL page renders its full stop at the front
-(`.No exams still in marks entry`). One CSS rule fixes it — but the same rule
-left-aligns English text, and with ~87% of the UI still English that means
-nearly every line on every RTL screen.
-
-**Correct punctuation and left alignment, or wrong punctuation and right
-alignment**, until translation catches up. Screenshots of both were captured
-during the walk — decide from those, not from this description.
+The choice offered was correct punctuation with left-aligned English, or
+right alignment with the full stop at the front. Built instead: each text
+element takes its direction from its first letter (punctuation right), and
+its alignment is pinned to the page's direction (English stays on the
+right). On every admin screen in Dhivehi, 73 of 73 English sentences had
+the stop at the front before; none after; no line moved (STATUS §5gd,
+`scripts/smoke/rtl.mjs`).
 
 ### 10. Deploy 3 cleanup
 
