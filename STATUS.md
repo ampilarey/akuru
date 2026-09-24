@@ -4352,6 +4352,52 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5gf. Deploy 3, slice 1: one enrolment per *student*, not per legacy registration row (2026-09-25)
+
+Owner decision 10 (Deploy 3 cleanup), confirmed. First of three PRs
+(`docs/migrations/s11-deploy-3-cleanup-proposal.md`): **keys**, then **stop
+the legacy writes**, then **archive the legacy tables**.
+
+**Why keys first.** Every read has used `course_enrollments.unified_student_id`
+since Deploy 2, but the rule that stops a second enrolment was still
+`UNIQUE (student_id, course_id, term_key)` on the *legacy* column, which
+references `registration_students`. Slice 2 stops writing that column, and a
+unique key on a column nobody writes stops nothing.
+
+**What changed.**
+- Migration `2026_09_25_000001_s11d_enrolments_key_on_students`, additive:
+  fills any missing `unified_student_id` from the legacy map; **stops the
+  deploy and names the rows** if two enrolments share a student, course and
+  term (a person picks which survives, the migration never does); adds
+  `UNIQUE (unified_student_id, course_id, term_key)`; makes the legacy
+  `student_id` nullable. The old key and its foreign key stay until slice 3.
+- `CreateOrReviveEnrollmentAction` and both lookups in `EnrollmentService`
+  find an existing enrolment by the unified student. `EnrollmentService`
+  writes `unified_student_id` itself rather than leaning on the model's
+  saving hook, and sets it on the payment it confirms.
+
+**Rehearsed on a local database, the gate included.** Up, down, up clean.
+Two planted enrolments for one student and course stopped it with *student
+2, course 11, term key 0: enrolments 369,371*. The rehearsal also found a
+bug in my own `down()`: MySQL retires the unified foreign key's own index
+once the new key can serve it, so the key cannot be dropped under the
+constraint. `down()` now drops and restores that foreign key around it.
+
+**Found by the suite.** `OfferingCertificateRulesTest` put one student in
+two batches of the same course by giving each row its own
+`registration_students` id, which only the legacy key allowed and neither
+enrolment Action ever does. It now uses one learner per batch; what it
+proves (an offering can relax the template's rule) is unchanged.
+
+**Walked in a browser.** `register`, `intake`, `learn`, `buy`, `signup`,
+`money`, `fees`: 7/7 against the migrated local database.
+
+**Next (slice 2):** `EnrollmentService`, the offering Actions and
+`AttachGuardianAction` stop writing `registration_students` and
+`student_guardians`; checkout and registration post `students.id`; the four
+controller lookups in `CourseRegistrationController` that still resolve
+through the legacy row move with them.
+
 ## 5ge. Gate cards: a printed QR per pupil, scanned by camera or handheld scanner (2026-09-24)
 
 Owner decision 11 (E18, what scans at the gate), left to the

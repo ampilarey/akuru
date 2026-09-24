@@ -249,13 +249,13 @@ class EnrollmentService
         User $createdBy,
         ?User $adultSelfUser
     ): EnrollmentResult {
-        app(DualWriteCourseStudentAction::class)->sync($student);
+        $unified = app(DualWriteCourseStudentAction::class)->sync($student);
 
         $result = new EnrollmentResult;
         $courses = Course::whereIn('id', $courseIds)->get();
         $enrollmentsNeedingPayment = [];
 
-        DB::transaction(function () use ($student, $courses, $termId, $createdBy, $adultSelfUser, $result, &$enrollmentsNeedingPayment) {
+        DB::transaction(function () use ($student, $unified, $courses, $termId, $createdBy, $adultSelfUser, $result, &$enrollmentsNeedingPayment) {
             $totalFee = 0;
             $feeEnrollments = [];
 
@@ -267,7 +267,8 @@ class EnrollmentService
                     ]);
                 }
 
-                $existing = CourseEnrollment::where('student_id', $student->id)
+                // Deploy 3 slice 1: one enrolment per unified student.
+                $existing = CourseEnrollment::where('unified_student_id', $unified->id)
                     ->where('course_id', $course->id)
                     ->whereRaw('IFNULL(term_id, 0) = ?', [$termId ?? 0])
                     ->first();
@@ -308,6 +309,7 @@ class EnrollmentService
 
                 $enrollment = CourseEnrollment::create([
                     'student_id' => $student->id,
+                    'unified_student_id' => $unified->id,
                     'course_id' => $course->id,
                     'term_id' => $termId,
                     'status' => 'pending',
@@ -405,14 +407,16 @@ class EnrollmentService
                     : $this->createOrGetStudentForParent($user, $data, $guardianMeta);
             }
 
+            $unified = app(DualWriteCourseStudentAction::class)->sync($student);
+
             // Link student_id on the payment
-            $payment->update(['student_id' => $student->id]);
+            $payment->update(['student_id' => $student->id, 'unified_student_id' => $unified->id]);
 
             // ── Create enrollments + payment items ────────────────────────────
             $courses = Course::whereIn('id', $courseIds)->get();
             foreach ($courses as $course) {
                 // Skip if already enrolled (idempotency)
-                $alreadyEnrolled = CourseEnrollment::where('student_id', $student->id)
+                $alreadyEnrolled = CourseEnrollment::where('unified_student_id', $unified->id)
                     ->where('course_id', $course->id)
                     ->whereRaw('IFNULL(term_id, 0) = ?', [$termId ?? 0])
                     ->exists();
@@ -426,6 +430,7 @@ class EnrollmentService
 
                 $enrollment = CourseEnrollment::create([
                     'student_id' => $student->id,
+                    'unified_student_id' => $unified->id,
                     'course_id' => $course->id,
                     'term_id' => $termId,
                     'status' => $requiresApproval ? 'pending' : 'active',

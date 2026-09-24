@@ -113,9 +113,16 @@ it('tells "not required" apart from "inherit"', function () {
 
 it('lets an offering relax a requirement the course template imposes', function () {
     // The end-to-end meaning of "overridden at offering level": the same
-    // student, the same template, two batches, two answers.
+    // template, the same progress, two batches, two answers.
+    //
+    // One learner per batch. This used to put one student in both batches of
+    // the same course, which only the legacy key allowed (by giving each row
+    // its own `registration_students` id); since Deploy 3 slice 1 the key is
+    // one enrolment per student, course and term, as both enrolment Actions
+    // already assumed.
     ['admin' => $admin, 'course' => $course] = ruleOverrideCourse();
-    $student = makeStudent(['first_name' => 'Override', 'last_name' => 'Candidate']);
+    $strictStudent = makeStudent(['first_name' => 'Override', 'last_name' => 'Strict']);
+    $relaxedStudent = makeStudent(['first_name' => 'Override', 'last_name' => 'Relaxed']);
 
     $template = CertificateTemplate::query()->create([
         'name' => 'Course completion',
@@ -137,11 +144,10 @@ it('lets an offering relax a requirement the course template imposes', function 
         'certificate_rules' => ['min_progress_percent' => 60, 'require_teacher_approval' => '0'],
     ]);
 
-    foreach ([$strict, $relaxed] as $offering) {
+    foreach ([[$strict, $strictStudent], [$relaxed, $relaxedStudent]] as [$offering, $student]) {
         CourseEnrollment::query()->create([
             'course_id' => $course->id,
             'course_offering_id' => $offering->id,
-            'student_id' => makeRegistrationStudent()->id,
             'unified_student_id' => $student->id,
             'status' => 'active',
             'payment_status' => 'not_required',
@@ -152,8 +158,8 @@ it('lets an offering relax a requirement the course template imposes', function 
 
     $check = app(CheckCertificateEligibilityAction::class);
 
-    expect($check->execute($template, $student->id, $course->id, $strict->id)['eligible'])->toBeFalse()
-        ->and($check->execute($template, $student->id, $course->id, $relaxed->id)['eligible'])->toBeTrue();
+    expect($check->execute($template, $strictStudent->id, $course->id, $strict->id)['eligible'])->toBeFalse()
+        ->and($check->execute($template, $relaxedStudent->id, $course->id, $relaxed->id)['eligible'])->toBeTrue();
 });
 
 it('lets an offering tighten a requirement the course template allows', function () {
