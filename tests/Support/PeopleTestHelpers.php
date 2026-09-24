@@ -5,10 +5,8 @@ use App\Domains\People\Enums\CustomFieldEntityType;
 use App\Domains\People\Enums\CustomFieldType;
 use App\Domains\People\Models\CustomFieldDefinition;
 use App\Domains\People\Models\ParentGuardian;
-use App\Domains\People\Models\RegistrationStudent;
 use App\Domains\People\Models\StaffProfile;
 use App\Domains\People\Models\Student;
-use Illuminate\Support\Facades\DB;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 
@@ -57,30 +55,26 @@ function makeGuardian(): ParentGuardian
     ]);
 }
 
-function makeRegistrationStudent(array $overrides = []): RegistrationStudent
+/**
+ * A course registrant as registration now writes one: a `students` row, with
+ * no account unless `user_id` is given. Replaced `makeRegistrationStudent()`
+ * and `attachLegacyGuardian()` when Deploy 3 archived `registration_students`
+ * and `student_guardians` (STATUS §5gh). Accepts the old `dob` key.
+ */
+function makeCourseStudent(array $overrides = []): Student
 {
-    if (! array_key_exists('user_id', $overrides)) {
-        $overrides['user_id'] = User::factory()->create()->id;
+    if (array_key_exists('dob', $overrides)) {
+        $overrides['date_of_birth'] = $overrides['dob'];
+        unset($overrides['dob']);
     }
 
-    return RegistrationStudent::query()->create(array_merge([
+    return Student::query()->create(array_merge([
+        'user_id' => null,
         'first_name' => 'Aisha',
         'last_name' => 'Ali',
-        'dob' => '2012-03-01',
+        'date_of_birth' => '2012-03-01',
         'gender' => 'female',
     ], $overrides));
-}
-
-function attachLegacyGuardian(int $registrationStudentId, int $guardianUserId, array $pivot = []): int
-{
-    return DB::table('student_guardians')->insertGetId(array_merge([
-        'student_id' => $registrationStudentId,
-        'guardian_user_id' => $guardianUserId,
-        'relationship' => 'father',
-        'is_primary' => true,
-        'created_at' => now(),
-        'updated_at' => now(),
-    ], $pivot));
 }
 
 function actingPeopleAdmin(array $permissions = ['custom_fields.manage', 'students.view-sensitive']): User

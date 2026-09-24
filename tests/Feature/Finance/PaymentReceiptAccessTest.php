@@ -137,7 +137,6 @@ it('names what was bought even when the payment has no line items', function () 
     // answer for itself.
     $payer = User::factory()->create();
     makeStudent(['user_id' => $payer->id, 'first_name' => 'Receipt', 'last_name' => 'Reader']);
-    makeRegistrationStudent(['user_id' => $payer->id]);
     $course = Course::factory()->create([
         'title' => 'Tajweed Foundations',
         'registration_fee_amount' => 250,

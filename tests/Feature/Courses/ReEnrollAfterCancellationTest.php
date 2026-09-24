@@ -71,7 +71,7 @@ it('lets a student enrol again after their enrolment was cancelled', function ()
         // duplicate under a different name.
         ->and(CourseEnrollment::query()
             ->where('course_id', $course->id)
-            ->where('student_id', $first->student_id)
+            ->where('unified_student_id', $first->unified_student_id)
             ->count())->toBe(1);
 });
 

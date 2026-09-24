@@ -51,17 +51,10 @@ function familyDetailFixtures(int $studentId): array
 
     // Without this row every learn/* detail screen answers 403 and the sweep
     // proves nothing.
-    //
-    // Two student ids, not one, and the distinction is load-bearing.
-    // `course_enrollments.student_id` still carries a foreign key to the legacy
-    // `registration_students` table — the S1.1 unification left it there on
-    // purpose (rule 9: never drop a populated column in the deploy that stops
-    // using it), and STATUS records it as "posted enrollment id still legacy
-    // RS". The authorize actions match on `unified_student_id`, which is the
-    // People `students` row. A fixture that sets only one of them either fails
-    // the foreign key or is refused 403.
+    // The authorize actions match on `unified_student_id`, the People
+    // `students` row. (A legacy `student_id` was also needed until Deploy 3
+    // archived `registration_students`.)
     DB::table('course_enrollments')->insert([
-        'student_id' => makeRegistrationStudent()->id,
         'unified_student_id' => $studentId,
         'course_id' => $course->id,
         'status' => 'active',

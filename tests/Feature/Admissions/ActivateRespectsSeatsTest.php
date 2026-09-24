@@ -6,7 +6,6 @@ use App\Domains\Courses\Models\CourseEnrollment;
 use App\Domains\Identity\Models\User;
 use App\Domains\Offerings\Enums\DeliveryMode;
 use App\Domains\Offerings\Models\CourseOffering;
-use App\Domains\People\Models\RegistrationStudent;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Validation\ValidationException;
 
@@ -42,7 +41,7 @@ function seatTestOffering(int $seats): CourseOffering
 function seatTestEnrollment(CourseOffering $offering, string $status): CourseEnrollment
 {
     $user = User::factory()->create();
-    $student = RegistrationStudent::create([
+    $student = makeCourseStudent([
         'user_id' => $user->id,
         'first_name' => 'Seat',
         'last_name' => 'Test'.$user->id,
@@ -51,7 +50,7 @@ function seatTestEnrollment(CourseOffering $offering, string $status): CourseEnr
     ]);
 
     return CourseEnrollment::create([
-        'student_id' => $student->id,
+        'unified_student_id' => $student->id,
         'course_id' => $offering->course_id,
         'course_offering_id' => $offering->id,
         'status' => $status,

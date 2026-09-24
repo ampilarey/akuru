@@ -10,8 +10,8 @@ use App\Domains\Finance\Services\Payment\PaymentVerificationResult;
 use App\Domains\Identity\Models\Otp;
 use App\Domains\Identity\Models\User;
 use App\Domains\Identity\Models\UserContact;
-use App\Domains\People\Models\RegistrationStudent;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 
 uses(RefreshDatabase::class);
 
@@ -137,7 +137,7 @@ it('enrolls first for a paid public checkout and activates on the webhook', func
 
 it('reconciles a stuck payment through the same single confirmation path', function () {
     [$user] = makeVerifiedCheckoutUser();
-    $student = RegistrationStudent::create([
+    $student = makeCourseStudent([
         'user_id' => $user->id,
         'first_name' => 'Hawwa',
         'last_name' => 'Zahira',
@@ -145,14 +145,14 @@ it('reconciles a stuck payment through the same single confirmation path', funct
     ]);
     $course = Course::factory()->create(['registration_fee_amount' => 80, 'requires_admin_approval' => false]);
     $enrollment = CourseEnrollment::create([
-        'student_id' => $student->id,
+        'unified_student_id' => $student->id,
         'course_id' => $course->id,
         'status' => 'pending',
         'payment_status' => 'pending',
     ]);
     $payment = Payment::create([
         'user_id' => $user->id,
-        'student_id' => $student->id,
+        'unified_student_id' => $student->id,
         'course_id' => $course->id,
         'amount' => 80,
         'currency' => 'MVR',
@@ -224,5 +224,5 @@ it('still finalizes a pre-P4.2 deferred-payload payment as a legacy-data safety 
         // The student is written to `students` only (Deploy 3 slice 2).
         ->and($enrollment->unified_student_id)->toBe($user->fresh()->student?->id)
         ->and($user->fresh()->student?->national_id)->toBe('A778899')
-        ->and(RegistrationStudent::where('user_id', $user->id)->exists())->toBeFalse();
+        ->and(DB::table('archived_registration_students')->where('user_id', $user->id)->exists())->toBeFalse();
 });

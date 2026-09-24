@@ -336,7 +336,6 @@ class AdminEnrollmentController extends Controller
         ]);
 
         $payerUserId = $enrollment->student?->user_id
-            ?? $enrollment->legacyStudent?->user_id
             ?? $enrollment->created_by_user_id
             ?? $request->user()->id;
 

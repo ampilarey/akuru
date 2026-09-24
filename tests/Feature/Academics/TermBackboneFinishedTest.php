@@ -21,11 +21,11 @@ uses(RefreshDatabase::class);
  */
 function enrollmentRow(array $overrides = []): array
 {
-    $student = makeRegistrationStudent();
+    $student = makeStudent();
     $course = Course::query()->first() ?? Course::factory()->create();
 
     return array_merge([
-        'student_id' => $student->id,
+        'unified_student_id' => $student->id,
         'course_id' => $course->id,
         'status' => 'active',
         'enrollment_type' => 'self',

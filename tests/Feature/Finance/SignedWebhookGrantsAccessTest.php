@@ -7,7 +7,6 @@ use App\Domains\Courses\Models\Lesson;
 use App\Domains\Finance\Models\Payment;
 use App\Domains\Finance\Models\PaymentItem;
 use App\Domains\Identity\Models\User;
-use App\Domains\People\Models\RegistrationStudent;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -47,15 +46,8 @@ function paidCourseAwaitingPayment(): array
 {
     $user = User::factory()->create();
 
-    $student = RegistrationStudent::query()->create([
-        'user_id' => $user->id,
-        'first_name' => 'Paying',
-        'last_name' => 'Family',
-        'dob' => now()->subYears(20),
-    ]);
-
     $pupil = makeStudent(['first_name' => 'Paying', 'last_name' => 'Family']);
-    $pupil->forceFill(['user_id' => $user->id, 'legacy_registration_student_id' => $student->id])->save();
+    $pupil->forceFill(['user_id' => $user->id])->save();
 
     $course = Course::query()->create([
         'course_category_id' => DB::table('course_categories')->insertGetId([
@@ -94,7 +86,6 @@ function paidCourseAwaitingPayment(): array
     app(App\Domains\Courses\Actions\PublishLessonAction::class)->execute($lesson->fresh());
 
     $enrollment = CourseEnrollment::query()->create([
-        'student_id' => $student->id,
         'unified_student_id' => $pupil->id,
         'course_id' => $course->id,
         'status' => 'pending',
@@ -105,7 +96,7 @@ function paidCourseAwaitingPayment(): array
 
     $payment = Payment::query()->create([
         'user_id' => $user->id,
-        'student_id' => $student->id,
+        'unified_student_id' => $pupil->id,
         'course_id' => $course->id,
         'amount' => 500,
         'currency' => 'MVR',

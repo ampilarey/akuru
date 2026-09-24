@@ -89,7 +89,6 @@ class MorphMap
             'App\\Models\\QuranWordPosition' => 'quran_word_position',
             'App\\Models\\RecitationPractice' => 'recitation_practice',
             'App\\Models\\RegistrationFlow' => 'registration_flow',
-            'App\\Models\\RegistrationStudent' => 'registration_student',
             'App\\Models\\Report' => 'report',
             'App\\Models\\School' => 'school',
             'App\\Models\\Setting' => 'setting',

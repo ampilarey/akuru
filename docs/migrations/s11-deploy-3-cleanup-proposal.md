@@ -7,8 +7,15 @@ stability wait.
 | PR | Scope | State |
 |---|---|---|
 | Slice 1 | `UNIQUE (unified_student_id, course_id, term_key)`, legacy `course_enrollments.student_id` nullable, enrolment lookups by unified student (STATUS §5gf, #460) | merged |
-| Slice 2 | Steps 1–4 below: stop the legacy writes; checkout and registration post `students.id` (STATUS §5gg) | built |
-| Slice 3 | Steps 5–8: archive `registration_students`, drop `student_guardians` and `students.legacy_registration_student_id`, retire the model | next |
+| Slice 2 | Steps 1–4 below: stop the legacy writes; checkout and registration post `students.id` (STATUS §5gg, #461) | merged |
+| Slice 3 | Steps 5–8: archive the legacy tables and columns, drop `students.legacy_registration_student_id`, retire the model (STATUS §5gh) | built |
+
+**Slice 3 departs from steps 5 and 3 below:** `student_guardians` and the
+two legacy `student_id` columns are **archived (renamed), not dropped**. The
+staging deploy runs migrations inside its chain and staging is known to hold
+rows the unification never placed; a gate that stops the deploy there would
+leave new code on an old schema. STATUS §5gh has the reasoning. Dropping the
+archive is a separate, later decision.
 
 S1 Deploy 2 already switched reads to `students` via
 `unified_student_id` (ADR-008). Dual-write still creates

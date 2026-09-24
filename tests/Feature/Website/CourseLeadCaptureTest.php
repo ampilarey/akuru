@@ -147,9 +147,9 @@ it('rejects syllabus capture when the course has no public file', function () {
 
 it('dual-writes a waiting-list inquiry onto the leads table', function () {
     $course = leadCourse(['seats' => 1, 'slug' => 'w14-full-waitlist']);
-    $rs = makeRegistrationStudent(['first_name' => 'Wait', 'last_name' => 'Seat']);
+    $seatHolder = makeStudent(['first_name' => 'Wait', 'last_name' => 'Seat']);
     \Illuminate\Support\Facades\DB::table('course_enrollments')->insert([
-        'student_id' => $rs->id,
+        'unified_student_id' => $seatHolder->id,
         'course_id' => $course->id,
         'status' => 'active',
         'created_at' => now(),

@@ -43,8 +43,7 @@ uses(RefreshDatabase::class);
 function manualPaymentEnrollment(): array
 {
     $payer = User::factory()->create(['email' => 'parent'.uniqid().'@example.test']);
-    makeStudent(['user_id' => $payer->id, 'first_name' => 'Paying', 'last_name' => 'Student']);
-    $student = makeRegistrationStudent(['user_id' => $payer->id]);
+    $student = makeStudent(['user_id' => $payer->id, 'first_name' => 'Paying', 'last_name' => 'Student']);
 
     $course = Course::factory()->create([
         'registration_fee_amount' => 250.0,
@@ -55,7 +54,7 @@ function manualPaymentEnrollment(): array
 
     $enrollment = CourseEnrollment::query()->create([
         'course_id' => $course->id,
-        'student_id' => $student->id,
+        'unified_student_id' => $student->id,
         'status' => 'pending',
         'payment_status' => 'pending',
         'enrollment_type' => 'paid',

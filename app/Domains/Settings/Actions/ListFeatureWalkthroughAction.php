@@ -110,7 +110,7 @@ class ListFeatureWalkthroughAction
                 ['key' => 'fw-peo2', 'label' => 'Roster picker matches by identity fields, flags indistinguishable candidates', 'where' => '/academics/classes'],
                 ['key' => 'fw-peo3', 'label' => 'Consent ledger on the student profile (incl. prayer/daily SMS consent)', 'where' => '/people/students/{id}'],
                 ['key' => 'fw-peo4', 'label' => 'Staff profiles; teachers row backs teacher features', 'where' => '/people/staff'],
-                ['key' => 'fw-peo5', 'label' => 'students:verify-unification gate green on the representative dataset', 'where' => 'artisan students:verify-unification'],
+                ['key' => 'fw-peo5', 'label' => 'Registration writes students only; legacy registration tables moved to an archive (Deploy 3)', 'where' => '/courses/register'],
             ]],
             ['key' => 'fw-portal', 'title' => 'Portal & landings', 'items' => [
                 ['key' => 'fw-por1', 'label' => 'Role landings: teacher → Today, parent/student → Home, admin → Overview', 'where' => '/dashboard'],

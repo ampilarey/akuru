@@ -12,7 +12,6 @@ use App\Domains\Finance\Services\Payment\PaymentVerificationResult;
 use App\Domains\Identity\Models\Otp;
 use App\Domains\Identity\Models\User;
 use App\Domains\Identity\Models\UserContact;
-use App\Domains\People\Models\RegistrationStudent;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Mockery;
 use Tests\TestCase;
@@ -168,7 +167,7 @@ class RegistrationFlowTest extends TestCase
     public function test_return_endpoint_finalizes_payment_without_session(): void
     {
         $user = User::factory()->create();
-        $student = RegistrationStudent::create([
+        $student = makeCourseStudent([
             'user_id' => $user->id,
             'first_name' => 'Fathimath',
             'last_name' => 'Hassan',
@@ -177,7 +176,7 @@ class RegistrationFlowTest extends TestCase
         $course = Course::factory()->create(['registration_fee_amount' => 100, 'requires_admin_approval' => false]);
 
         $enrollment = CourseEnrollment::create([
-            'student_id' => $student->id,
+            'unified_student_id' => $student->id,
             'course_id' => $course->id,
             'status' => 'pending',
             'payment_status' => 'pending',
@@ -185,7 +184,7 @@ class RegistrationFlowTest extends TestCase
 
         $payment = Payment::create([
             'user_id' => $user->id,
-            'student_id' => $student->id,
+            'unified_student_id' => $student->id,
             'course_id' => $course->id,
             'amount' => 100,
             'currency' => 'MVR',
@@ -257,7 +256,7 @@ class RegistrationFlowTest extends TestCase
         config(['bml.webhook_secret' => $secret]);
 
         $user = User::factory()->create();
-        $student = RegistrationStudent::create([
+        $student = makeCourseStudent([
             'user_id' => $user->id,
             'first_name' => 'Test',
             'last_name' => 'User',
@@ -266,7 +265,7 @@ class RegistrationFlowTest extends TestCase
         $course = Course::factory()->create(['requires_admin_approval' => false]);
 
         $enrollment = CourseEnrollment::create([
-            'student_id' => $student->id,
+            'unified_student_id' => $student->id,
             'course_id' => $course->id,
             'status' => 'pending',
             'payment_status' => 'pending',
@@ -274,7 +273,7 @@ class RegistrationFlowTest extends TestCase
 
         $payment = Payment::create([
             'user_id' => $user->id,
-            'student_id' => $student->id,
+            'unified_student_id' => $student->id,
             'course_id' => $course->id,
             'amount' => 100,
             'currency' => 'MVR',
@@ -372,7 +371,7 @@ class RegistrationFlowTest extends TestCase
     public function test_finalize_by_reference_is_idempotent(): void
     {
         $user = User::factory()->create();
-        $student = RegistrationStudent::create([
+        $student = makeCourseStudent([
             'user_id' => $user->id,
             'first_name' => 'Ibrahim',
             'last_name' => 'Ali',
@@ -381,7 +380,7 @@ class RegistrationFlowTest extends TestCase
         $course = Course::factory()->create(['requires_admin_approval' => false]);
 
         $enrollment = CourseEnrollment::create([
-            'student_id' => $student->id,
+            'unified_student_id' => $student->id,
             'course_id' => $course->id,
             'status' => 'active',
             'payment_status' => 'confirmed',
@@ -391,7 +390,7 @@ class RegistrationFlowTest extends TestCase
         $confirmedAt = now()->subMinutes(5);
         $payment = Payment::create([
             'user_id' => $user->id,
-            'student_id' => $student->id,
+            'unified_student_id' => $student->id,
             'course_id' => $course->id,
             'amount' => 200,
             'currency' => 'MVR',

@@ -16,7 +16,6 @@ use App\Domains\Library\Actions\ResolveLibraryAccessAction;
 use App\Domains\Library\Models\LibraryAccessGrant;
 use App\Domains\Library\Models\LibraryItem;
 use App\Domains\Library\Models\LibraryPurchase;
-use App\Domains\People\Models\RegistrationStudent;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Validation\ValidationException;
 
@@ -25,7 +24,7 @@ uses(RefreshDatabase::class);
 function seedConfirmedCoursePayment(float $amount = 100): array
 {
     $payer = User::factory()->create();
-    $student = RegistrationStudent::create([
+    $student = makeCourseStudent([
         'user_id' => $payer->id,
         'first_name' => 'Mariyam',
         'last_name' => 'Shifa',
@@ -36,7 +35,7 @@ function seedConfirmedCoursePayment(float $amount = 100): array
         'requires_admin_approval' => false,
     ]);
     $enrollment = CourseEnrollment::create([
-        'student_id' => $student->id,
+        'unified_student_id' => $student->id,
         'course_id' => $course->id,
         'status' => 'active',
         'payment_status' => 'confirmed',
@@ -44,7 +43,7 @@ function seedConfirmedCoursePayment(float $amount = 100): array
     ]);
     $payment = Payment::create([
         'user_id' => $payer->id,
-        'student_id' => $student->id,
+        'unified_student_id' => $student->id,
         'course_id' => $course->id,
         'amount' => $amount,
         'currency' => 'MVR',

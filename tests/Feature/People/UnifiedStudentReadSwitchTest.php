@@ -5,10 +5,10 @@ use App\Domains\Courses\Models\Course;
 use App\Domains\Courses\Models\CourseEnrollment;
 use App\Domains\Identity\Models\User;
 use App\Domains\Identity\Models\UserContact;
-use App\Domains\People\Models\RegistrationStudent;
 use App\Domains\People\Models\Student;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 uses(RefreshDatabase::class);
 
@@ -45,12 +45,10 @@ it('writes the Student alone, and enrollment reads use it (Deploy 3 slice 2)', f
 
     expect($enrollment)->not->toBeNull()
         ->and($enrollment->unified_student_id)->toBe($student->id)
-        ->and($enrollment->student_id)->toBeNull()
         ->and($enrollment->student)->toBeInstanceOf(Student::class)
         ->and($enrollment->student->full_name)->toBe('John Doe')
         ->and($enrollment->student->dob?->toDateString())->toBe($student->date_of_birth->toDateString())
-        ->and($student->legacy_registration_student_id)->toBeNull()
-        ->and(RegistrationStudent::query()->count())->toBe(0)
+        ->and(DB::table('archived_registration_students')->count())->toBe(0)
         ->and($user->fresh()->student->id)->toBe($student->id);
 });
 
@@ -71,8 +69,8 @@ it('writes guardian_student alone when a parent enrolls a child (Deploy 3 slice 
 
     $student = Student::query()->where('first_name', 'Noor')->sole();
 
-    expect(RegistrationStudent::query()->count())->toBe(0)
-        ->and(DB::table('student_guardians')->count())->toBe(0)
+    expect(DB::table('archived_registration_students')->count())->toBe(0)
+        ->and(DB::table('archived_student_guardians')->count())->toBe(0)
         ->and($student->user_id)->toBeNull()
         ->and($parent->courseStudents()->pluck('students.id')->all())->toContain($student->id)
         ->and($student->guardians)->toHaveCount(1)
@@ -81,8 +79,9 @@ it('writes guardian_student alone when a parent enrolls a child (Deploy 3 slice 
         ->and((bool) $student->guardians->first()->pivot->is_primary)->toBeTrue();
 });
 
-it('marks RegistrationStudent as deprecated', function () {
-    $ref = new ReflectionClass(RegistrationStudent::class);
-
-    expect($ref->getDocComment())->toContain('@deprecated');
+it('has retired the legacy model with its table (Deploy 3 slice 3)', function () {
+    expect(class_exists('App\\Domains\\People\\Models\\RegistrationStudent'))->toBeFalse()
+        ->and(Schema::hasTable('registration_students'))->toBeFalse()
+        ->and(Schema::hasTable('archived_registration_students'))->toBeTrue()
+        ->and(Schema::hasColumn('students', 'legacy_registration_student_id'))->toBeFalse();
 });

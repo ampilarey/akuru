@@ -68,9 +68,9 @@ Flow:
    `composer install --no-dev` (only if `composer.lock` changed) → `migrate --force` →
    `permission:cache-reset` (warn + continue if the command is missing) →
    `config:cache` → `route:clear` (never `route:cache`) → `view:cache` → `queue:restart`,
-   then **`php artisan morph-map:verify`** and
-   **`php artisan students:verify-unification`** (read-only — never `--backfill`)
-   as post-chain gates (see below).
+   then **`php artisan morph-map:verify`** as a post-chain gate (see below).
+   (`students:verify-unification` ran here too until S1 Deploy 3 archived the
+   legacy student tables and retired it, STATUS §5gh.)
    Progress is logged to `~/self-update-test.log`.
 4. The Action smoke-checks `/up` and `/en`.
 
@@ -99,61 +99,15 @@ could abort after merge but before `migrate --force`, leaving staging on new cod
 against an un-migrated DB. If re-exec is revived later it must `bash -n` the pulled
 script and fall through to the in-process path on parse failure.
 
-### Student-unification deploy gate (S2.0)
+### Student-unification deploy gate (S2.0) — retired
 
-After the morph-map gate, the pull script runs
-`php artisan students:verify-unification` with **no `--backfill` flag**
-(read-only verify; `--backfill` writes mappings and must never run from
-auto-deploy) and writes its **full output** into `~/self-update-test.log`.
-The command also refreshes `storage/app/s11b-student-unification-report.json`
-on the server.
-
-| Outcome | What you see in `~/self-update-test.log` | Deploy result |
-|---------|------------------------------------------|---------------|
-| **Green** | Mapped/created/guardian/enrollment counts + `students:verify-unification OK` + `deploy complete: <sha>` | exit 0 |
-| **Gate failed** | Failure bullets + a `======== STUDENT-UNIFICATION GATE FAILED ========` block | exit 1 |
-| **Command missing** | `WARN: students:verify-unification not available — skipping gate (older commit)` | exit 0 (script must work on pre-S1.1b commits) |
-
-**Operator after a green (or failed) run:** copy the verbatim verify block
-from `~/self-update-test.log` into `STATUS.md` (same format as the
-morph-map capture) and archive
-`~/test.akuru.edu.mv/storage/app/s11b-student-unification-report.json`
-under `docs/migrations/` (S1 DoD line 158).
-
-**Same first-deploy caveat as morph-map:** the deploy that *introduces*
-this gate still runs the pre-pull script. Evidence appears from the
-**second** auto-deploy onward. S2.1–S2.10 already landed on `main`
-after S2.0 (#15), so later deploys should have run the gated script.
-**S2.0b** is the operator test merge (plus the S1.1b FK hotfix after the
-2026-08-25 paste). Staging is stuck at `c25c385`: `000002` 1091s on a
-missing `students_user_id_foreign`, so `000003` backfill never ran.
-Do not re-exec-after-pull (same blast-radius rejection as above).
-
-**Consequence for the morph-map hotfix deploy:** the automated gate does **not**
-cover that first cutover. After the hotfix lands on staging, run manually:
-
-```bash
-cd ~/test.akuru.edu.mv \
-  && php artisan morph-map:verify \
-  && php artisan permission:cache-reset
-```
-
-**Required secret** — set the SAME value in two places:
-
-| Location | Key | Notes |
-|----------|-----|-------|
-| Server `.env` (test) | `TEST_DEPLOY_WEBHOOK_SECRET` | >= 16 chars; empty = endpoint disabled (404) |
-| GitHub (repo or `test` environment) | `TEST_DEPLOY_WEBHOOK_SECRET` | Settings → Secrets and variables → Actions |
-
-Related server `.env` keys (defaults are fine): `TEST_DEPLOY_ALLOWED_HOSTS=test.akuru.edu.mv`,
-`TEST_DEPLOY_HOME=/home/akuruedu`.
-
-**One-time server setup:** `chmod +x scripts/pull-deploy-test.sh` and ensure the web PHP
-user can run `git`/`composer`/`php` (the script prepends the cPanel ea-php84 path).
-
-The endpoint returns `404` on non-test hosts / when disabled, `401` on a bad secret, and
-`202` once the background deploy is spawned — so production (`~/akuru-institute`) never
-auto-deploys even if the workflow secret leaks.
+Ran `php artisan students:verify-unification` after the morph-map gate, from
+S2.0 until S1 Deploy 3 slice 3 (STATUS §5gh). That slice archived
+`registration_students` as `archived_registration_students` and retired the
+command, the backfill and the representative seeder with it: there is no
+legacy table left to verify against. The first deploy after the retirement
+still runs the old script (the first-deploy caveat above), which finds the
+command missing and logs its own *not available — skipping gate* line.
 
 ## Routine deploy (after `git push origin main` on Mac)
 

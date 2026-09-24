@@ -748,11 +748,11 @@ second box. (Former P0 SMS live-bind is **fixed** — see Fixed on main #86.)
 
 **Fixed** — `identity_key` is name + DOB + national ID. Student number (including blank) and class do not distinguish. Assign still requires an explicit `student_id`. See **Fixed on main**.
 
-### 5. Unification matcher / staging collisions (historical, still a staging gate)
+### 5. Unification matcher / staging collisions — **closed by archive (2026-09-25)**
 
-**Severity:** wrong data if `--backfill` is run on a messy DB. Staging verify last recorded **red** (four collisions, 12/13 guardian users missing after `users:clear-non-admin`).
+**Was:** wrong data if `--backfill` ran on a messy DB. Staging verify last recorded **red** (four collisions, 12/13 guardian users missing after `users:clear-non-admin`).
 
-**Evidence:** `STATUS_ARCHIVE.md` staging 2026-08-25 and TRACK A. Representative local gate green (ADR-021) is **not** staging green.
+**Now:** Deploy 3 archived `registration_students` and retired the backfill and its verify command (STATUS §5gh). Nothing can re-run the matcher. The rows it never placed are kept, not guessed: they sit in `archived_registration_students` with an empty `unified_student_id`, and any enrolment that pointed at one keeps `archived_registration_student_id`.
 
 ---
 

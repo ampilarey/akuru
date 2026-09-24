@@ -43,10 +43,9 @@ function paymentContextCourse(float $fee = 250.0): array
 {
     $payer = User::factory()->create();
     // `EnrollSelfLearningAction` resolves the payer through the People
-    // `students` table, so the payer needs a unified student row, not only a
-    // registration one.
+    // `students` table; since Deploy 3 that is the only student there is.
     $unified = makeStudent(['user_id' => $payer->id, 'first_name' => 'Paying', 'last_name' => 'Student']);
-    $student = makeRegistrationStudent(['user_id' => $payer->id]);
+    $student = $unified;
     $course = Course::factory()->create([
         'registration_fee_amount' => $fee,
         'requires_admin_approval' => false,
@@ -65,7 +64,7 @@ function paymentContextEnrollment(int $courseId, int $studentId): CourseEnrollme
 {
     return CourseEnrollment::query()->create([
         'course_id' => $courseId,
-        'student_id' => $studentId,
+        'unified_student_id' => $studentId,
         'status' => 'pending',
         'payment_status' => 'pending',
         'enrollment_type' => 'paid',
@@ -74,7 +73,10 @@ function paymentContextEnrollment(int $courseId, int $studentId): CourseEnrollme
 
 it('carries every payment field SPEC §38 names', function () {
     foreach ([
-        'student_id', 'course_id', 'course_offering_id', 'amount', 'currency',
+        // SPEC §38's "student ID" is `unified_student_id`: the legacy
+        // `student_id` pointed at `registration_students` and was archived
+        // with it in Deploy 3.
+        'unified_student_id', 'course_id', 'course_offering_id', 'amount', 'currency',
         'payment_method', 'provider', 'status', 'provider_reference', 'paid_at',
         'metadata', 'created_at', 'updated_at',
     ] as $column) {
@@ -162,8 +164,8 @@ it('answers "how much cash came through the office" from the data, not from pros
     ['payer' => $payer, 'student' => $student, 'course' => $course] = paymentContextCourse();
     $record = app(RecordManualPaymentAction::class);
     $a = paymentContextEnrollment($course->id, $student->id);
-    $b = paymentContextEnrollment($course->id, makeRegistrationStudent()->id);
-    $c = paymentContextEnrollment($course->id, makeRegistrationStudent()->id);
+    $b = paymentContextEnrollment($course->id, makeStudent()->id);
+    $c = paymentContextEnrollment($course->id, makeStudent()->id);
 
     $record->execute('course_enrollment', $a->id, $payer->id, 100.0, null, null, PaymentMethod::Cash->value);
     $record->execute('course_enrollment', $b->id, $payer->id, 50.0, null, null, PaymentMethod::Cash->value);
@@ -218,7 +220,7 @@ it('does not turn an absent context id into zero', function () {
 it('requires the admin form to say which method it was', function () {
     ['course' => $course] = paymentContextCourse();
     $admin = actingPeopleAdmin(['payments.record', 'enrollments.manage']);
-    $enrollment = paymentContextEnrollment($course->id, makeRegistrationStudent()->id);
+    $enrollment = paymentContextEnrollment($course->id, makeStudent()->id);
 
     $this->actingAs($admin)
         ->withoutLocalizationMiddleware()

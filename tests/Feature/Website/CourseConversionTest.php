@@ -23,9 +23,9 @@ function conversionCourse(array $overrides = []): Course
 function occupySeats(Course $course, int $count, string $status = 'active'): void
 {
     for ($i = 0; $i < $count; $i++) {
-        $rs = makeRegistrationStudent(['first_name' => 'Wait', 'last_name' => 'Seat'.$i]);
+        $seatHolder = makeStudent(['first_name' => 'Wait', 'last_name' => 'Seat'.$i]);
         DB::table('course_enrollments')->insert([
-            'student_id' => $rs->id,
+            'unified_student_id' => $seatHolder->id,
             'course_id' => $course->id,
             'status' => $status,
             'created_at' => now(),

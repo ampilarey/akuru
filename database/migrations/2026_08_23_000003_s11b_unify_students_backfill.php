@@ -1,24 +1,27 @@
 <?php
 
-use App\Domains\People\Actions\UnifyStudentsAction;
 use Illuminate\Database\Migrations\Migration;
 
 /**
- * S1.1b — thin caller for the registration_students → students backfill.
+ * S1.1b — was the thin caller for the registration_students → students
+ * backfill (`UnifyStudentsAction`, ADR-007).
  *
- * Does not switch reads (Deploy 2). down() is a no-op: un-backfilling live
- * legacy aliases would break the 1:1 mapping and any later dual-writes.
- * Gate: `php artisan students:verify-unification`. See ADR-007.
+ * Emptied by S1 Deploy 3, slice 3 (STATUS §5gh), which archived
+ * `registration_students` and retired the backfill with it. Every
+ * environment that existed before then ran the real backfill when this
+ * migration first applied; a database created afterwards has no legacy rows,
+ * so there is nothing for it to do. Kept as a record so migration history
+ * stays identical everywhere.
  */
 return new class extends Migration
 {
     public function up(): void
     {
-        app(UnifyStudentsAction::class)->execute();
+        //
     }
 
     public function down(): void
     {
-        // Intentionally empty — do not un-backfill live aliases.
+        //
     }
 };

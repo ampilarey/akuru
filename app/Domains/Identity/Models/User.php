@@ -5,7 +5,6 @@ namespace App\Domains\Identity\Models;
 use App\Domains\Finance\Models\Payment;
 use App\Domains\Identity\Exceptions\SuperAdminProtectedException;
 use App\Domains\People\Models\ParentGuardian;
-use App\Domains\People\Models\RegistrationStudent;
 use App\Domains\People\Models\Student;
 use App\Domains\People\Models\Teacher;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
@@ -135,18 +134,6 @@ class User extends Authenticatable implements MustVerifyEmail
     public function primaryEmail()
     {
         return $this->hasOne(UserContact::class)->where('type', 'email')->where('is_primary', true);
-    }
-
-    public function guardianStudents()
-    {
-        return $this->belongsToMany(RegistrationStudent::class, 'student_guardians', 'guardian_user_id', 'student_id')
-            ->withPivot('relationship', 'is_primary')
-            ->withTimestamps();
-    }
-
-    public function registrationStudentProfile()
-    {
-        return $this->hasOne(RegistrationStudent::class, 'user_id');
     }
 
     public function payments()

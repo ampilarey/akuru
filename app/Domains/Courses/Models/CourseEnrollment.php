@@ -7,7 +7,6 @@ use App\Domains\Identity\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Support\Facades\DB;
 
 class CourseEnrollment extends Model
 {
@@ -15,7 +14,6 @@ class CourseEnrollment extends Model
     use SoftDeletes;
 
     protected $fillable = [
-        'student_id',
         'unified_student_id',
         'course_id',
         'course_offering_id',
@@ -46,33 +44,10 @@ class CourseEnrollment extends Model
         ];
     }
 
-    protected static function booted(): void
-    {
-        static::saving(function (CourseEnrollment $enrollment): void {
-            if ($enrollment->unified_student_id || ! $enrollment->student_id) {
-                return;
-            }
-
-            $unifiedId = DB::table('students')
-                ->where('legacy_registration_student_id', $enrollment->student_id)
-                ->value('id');
-
-            if ($unifiedId !== null) {
-                $enrollment->unified_student_id = $unifiedId;
-            }
-        });
-    }
-
     /** Canonical student (Deploy 2). */
     public function student(): BelongsTo
     {
         return $this->belongsTo(config('domain-models.student'), 'unified_student_id');
-    }
-
-    /** @deprecated Dual-write FK to registration_students. */
-    public function legacyStudent(): BelongsTo
-    {
-        return $this->belongsTo(config('domain-models.registration_student'), 'student_id');
     }
 
     public function course(): BelongsTo

@@ -34,6 +34,4 @@ return [
     'app/Domains/Courses/Actions/ListDeletedCoursesAction.php:52' => 'The screen listing deleted courses, counting the enrolments each one holds. Filtering deleted rows out of a report about deleted rows would empty it. **Worth a second look one day:** the count includes soft-deleted *enrolments* too, which may overstate what restoring the course would bring back.',
 
     // --- Backfills that must see every row ---------------------------------
-    'app/Domains/People/Actions/UnifyStudentsAction.php:496' => 'The S1 backfill repointing `course_enrollments` at unified students. A soft-deleted enrolment still carries a foreign key and still has to be repointed, or the cleanup deploy finds rows pointing at a table that is going away.',
-    'app/Domains/People/Actions/UnifyStudentsAction.php:542' => 'The verification count of enrolments with no `unified_student_id`. Counting deleted rows too is the safe direction: a gate that ignores them could pass while unmapped rows remain.',
 ];

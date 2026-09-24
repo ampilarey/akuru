@@ -11,5 +11,4 @@ return [
     'user' => \App\Domains\Identity\Models\User::class,
     'school' => \App\Domains\Settings\Models\School::class,
     'student' => \App\Domains\People\Models\Student::class,
-    'registration_student' => \App\Domains\People\Models\RegistrationStudent::class,
 ];

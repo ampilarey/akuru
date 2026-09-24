@@ -351,11 +351,7 @@ function detailFixtureRow(string $class, User $actor): ?Model
         'CourseEnrollment' => (function () use ($class) {
             $course = \App\Domains\Courses\Models\Course::query()->firstOrFail();
 
-            // `student_id` foreign-keys to the legacy `registration_students`
-            // table while the app reads `unified_student_id` — see the family
-            // detail fixtures for why both are set.
             return $class::query()->create([
-                'student_id' => makeRegistrationStudent()->id,
                 'unified_student_id' => makeStudent(['first_name' => 'Enrolled', 'last_name' => 'Child'])->id,
                 'course_id' => $course->id,
                 'status' => 'active',

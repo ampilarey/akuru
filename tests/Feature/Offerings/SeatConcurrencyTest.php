@@ -73,7 +73,6 @@ function takeSeat(int $offeringId, int $courseId, int $studentId): void
     DB::table('course_enrollments')->insert([
         'course_id' => $courseId,
         'course_offering_id' => $offeringId,
-        'student_id' => makeRegistrationStudent()->id,
         'unified_student_id' => $studentId,
         'status' => 'active',
         'payment_status' => 'not_required',

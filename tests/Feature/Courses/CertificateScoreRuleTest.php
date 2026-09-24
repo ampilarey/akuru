@@ -42,9 +42,6 @@ function certRuleFixture(array $rules, ?int $courseId = null): array
     ]);
     $enrollment = \App\Domains\Courses\Models\CourseEnrollment::query()->create([
         'course_id' => $course->id,
-        // `student_id` FKs `registration_students`; `unified_student_id` is the
-        // People `students` row, which is what every lookup here matches on.
-        'student_id' => makeRegistrationStudent()->id,
         'unified_student_id' => $student->id,
         'status' => 'active',
         'payment_status' => 'not_required',

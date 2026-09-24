@@ -190,7 +190,6 @@ it('honours the course mode through the real access check, not just the evaluato
     $student = makeStudent(['first_name' => 'Unlock', 'last_name' => 'Student']);
     $enrollment = CourseEnrollment::query()->create([
         'course_id' => $course->id,
-        'student_id' => makeRegistrationStudent()->id,
         'unified_student_id' => $student->id,
         'status' => 'active',
         'payment_status' => 'not_required',

@@ -7,7 +7,6 @@ use App\Domains\Courses\Models\CourseEnrollment;
 use App\Domains\Finance\Models\Payment;
 use App\Domains\Finance\Models\PaymentItem;
 use App\Domains\Identity\Models\User;
-use App\Domains\People\Models\RegistrationStudent;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -18,7 +17,7 @@ class BmlWebhookTest extends TestCase
     public function test_webhook_paid_marks_payment_paid_and_enrollment_enrolled(): void
     {
         $user = User::factory()->create();
-        $student = RegistrationStudent::create([
+        $student = makeCourseStudent([
             'user_id' => $user->id,
             'first_name' => 'John',
             'last_name' => 'Doe',
@@ -30,7 +29,7 @@ class BmlWebhookTest extends TestCase
         ]);
 
         $enrollment = CourseEnrollment::create([
-            'student_id' => $student->id,
+            'unified_student_id' => $student->id,
             'course_id' => $course->id,
             'status' => 'pending',
             'payment_status' => 'pending',
@@ -38,7 +37,7 @@ class BmlWebhookTest extends TestCase
 
         $payment = Payment::create([
             'user_id' => $user->id,
-            'student_id' => $student->id,
+            'unified_student_id' => $student->id,
             'course_id' => $course->id,
             'amount' => 100,
             'currency' => 'MVR',
@@ -79,7 +78,7 @@ class BmlWebhookTest extends TestCase
     public function test_webhook_idempotent_does_not_double_enroll(): void
     {
         $user = User::factory()->create();
-        $student = RegistrationStudent::create([
+        $student = makeCourseStudent([
             'user_id' => $user->id,
             'first_name' => 'Jane',
             'last_name' => 'Doe',
@@ -91,7 +90,7 @@ class BmlWebhookTest extends TestCase
         ]);
 
         $enrollment = CourseEnrollment::create([
-            'student_id' => $student->id,
+            'unified_student_id' => $student->id,
             'course_id' => $course->id,
             'status' => 'active',
             'payment_status' => 'confirmed',
@@ -100,7 +99,7 @@ class BmlWebhookTest extends TestCase
 
         $payment = Payment::create([
             'user_id' => $user->id,
-            'student_id' => $student->id,
+            'unified_student_id' => $student->id,
             'course_id' => $course->id,
             'amount' => 50,
             'currency' => 'MVR',
@@ -136,7 +135,7 @@ class BmlWebhookTest extends TestCase
         $payment->refresh();
         $this->assertSame('confirmed', $payment->status);
 
-        $count = CourseEnrollment::where('student_id', $student->id)->where('course_id', $course->id)->count();
+        $count = CourseEnrollment::where('unified_student_id', $student->id)->where('course_id', $course->id)->count();
         $this->assertSame(1, $count);
     }
 }

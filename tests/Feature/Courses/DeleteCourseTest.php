@@ -44,7 +44,7 @@ it('keeps the roster when a course with enrolments is deleted', function () {
     $course = deletableCourse('Has a roster');
     $enrollment = CourseEnrollment::query()->create([
         'course_id' => $course->id,
-        'student_id' => makeRegistrationStudent()->id,
+        'unified_student_id' => makeStudent()->id,
         'status' => 'active',
         'payment_status' => 'confirmed',
         'enrollment_type' => 'self_learning',
@@ -87,7 +87,7 @@ it('keeps payment line items when a course is deleted', function () {
     // taking it away is a ledger delete rather than a tidy-up.
     $enrollment = CourseEnrollment::query()->create([
         'course_id' => $course->id,
-        'student_id' => makeRegistrationStudent()->id,
+        'unified_student_id' => makeStudent()->id,
         'status' => 'active',
         'payment_status' => 'confirmed',
         'enrollment_type' => 'self_learning',
@@ -128,7 +128,7 @@ it('names every dependent when asked to refuse rather than archive', function ()
     $course = deletableCourse('Busy course');
     CourseEnrollment::query()->create([
         'course_id' => $course->id,
-        'student_id' => makeRegistrationStudent()->id,
+        'unified_student_id' => makeStudent()->id,
         'status' => 'active',
         'payment_status' => 'pending',
         'enrollment_type' => 'self_learning',
@@ -152,7 +152,7 @@ it('hides an archived course from ordinary queries but keeps it findable', funct
     $course = deletableCourse('Archived');
     CourseEnrollment::query()->create([
         'course_id' => $course->id,
-        'student_id' => makeRegistrationStudent()->id,
+        'unified_student_id' => makeStudent()->id,
         'status' => 'active',
         'payment_status' => 'pending',
         'enrollment_type' => 'self_learning',
@@ -170,7 +170,7 @@ it('soft-deletes an enrolment rather than losing it', function () {
     $course = deletableCourse('For the enrolment');
     $enrollment = CourseEnrollment::query()->create([
         'course_id' => $course->id,
-        'student_id' => makeRegistrationStudent()->id,
+        'unified_student_id' => makeStudent()->id,
         'status' => 'active',
         'payment_status' => 'confirmed',
         'enrollment_type' => 'self_learning',
