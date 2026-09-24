@@ -17,10 +17,17 @@ Part 2 can be decided in any order, including "not yet". Record each outcome in
 
 ## Part 1 — Blocked on the server (in order)
 
-### 1. Make staging staff login work  ← everything else waits on this
+### 1. Make staging staff login work  ← DONE 2026-09-23
 
-**The standing P0.** `https://test.akuru.edu.mv/en/login` 302s back to login for
-`admin@akuru.edu.mv` / `password`. No SSH from an agent session, so this has
+**Done.** The owner reset `admin@`'s password through tinker on the host,
+ran `UserSeeder` (made idempotent in #441) and `SmokeMarkerSeeder` there,
+and on 2026-09-24 all thirty-five browser walks passed against
+`test.akuru.edu.mv`, signing in as all six pilot logins by password
+(STATUS §5fz). The password box below is ticked by that run; the OTP box
+is still open — no walk requests a code on staging.
+
+**Was:** `https://test.akuru.edu.mv/en/login` 302s back to login for
+`admin@akuru.edu.mv` / `password`. No SSH from an agent session, so this had
 never been diagnosed on the host.
 
 **Test both paths, not one.** Until today only the password symptom was
@@ -28,8 +35,8 @@ recorded. `OtpService` called a method the SMS interface did not declare, so
 **OTP login could not have worked on staging either** — fixed in #366, but the
 fix has never run there.
 
-- [ ] Password login with the documented seed credentials
-      (`docs/AUTHENTICATION_GUIDE.md`)
+- [x] Password login with the documented seed credentials
+      (`docs/AUTHENTICATION_GUIDE.md`) — six logins, 35/35 walks, 2026-09-24
 - [ ] OTP login — request a code, read it from the log if live SMS is off,
       enter it
 
