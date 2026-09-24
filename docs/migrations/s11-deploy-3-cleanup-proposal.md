@@ -1,8 +1,14 @@
-# S1 Deploy 3 cleanup proposal (not executed)
+# S1 Deploy 3 cleanup proposal
 
-**Status:** proposal only. Do not run these migrations until an operator
-confirms this document. ADR-021: no live data, so there is no ≥2 week
-stability wait; cleanup is still a **separate confirmed slice**.
+**Status:** confirmed by the owner 2026-09-24 (OWNER_ACTIONS item 10), being
+executed as three PRs. ADR-021: no live data, so there is no ≥2 week
+stability wait.
+
+| PR | Scope | State |
+|---|---|---|
+| Slice 1 | `UNIQUE (unified_student_id, course_id, term_key)`, legacy `course_enrollments.student_id` nullable, enrolment lookups by unified student (STATUS §5gf) | built |
+| Slice 2 | Steps 1–4 below: stop the legacy writes; checkout posts `students.id` | next |
+| Slice 3 | Steps 5–8: archive `registration_students`, drop `student_guardians` and `students.legacy_registration_student_id`, retire the model | after slice 2 |
 
 S1 Deploy 2 already switched reads to `students` via
 `unified_student_id` (ADR-008). Dual-write still creates

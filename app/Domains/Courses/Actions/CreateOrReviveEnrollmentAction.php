@@ -11,6 +11,10 @@ use App\Domains\Courses\Models\CourseEnrollment;
  *
  *     UNIQUE KEY (student_id, course_id, term_key)   -- term_key = IFNULL(term_id, 0)
  *
+ * and, since Deploy 3 slice 1, on the unified student every read uses:
+ *
+ *     UNIQUE KEY (unified_student_id, course_id, term_key)
+ *
  * Both enrollment Actions decided who was already enrolled by a *different*
  * rule — "is there a row here whose status is not rejected or cancelled" — and
  * then inserted when the answer was no. The generosity is deliberate and right:
@@ -52,7 +56,9 @@ class CreateOrReviveEnrollmentAction
             // Soft-deleted rows still occupy the unique key, so a lookup that
             // cannot see them is a lookup that crashes on the insert instead.
             ->withTrashed()
-            ->where('student_id', $attributes['student_id'])
+            // The key is on the unified student since Deploy 3 slice 1
+            // (`course_enrollments_unified_student_course_term_unique`).
+            ->where('unified_student_id', $attributes['unified_student_id'])
             ->where('course_id', $attributes['course_id'])
             // The generated column's own definition, matching how
             // `EnrollmentService` already asks this question.
