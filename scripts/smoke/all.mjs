@@ -18,7 +18,7 @@
  *
  * ## Read-only and writing walks are separated, on purpose
  *
- * Four of these only look at screens. The other **thirty-one write**: they build a course for a student, run a scheduled intake, set and sit an assessment, issue a certificate, sell a course for wallet money, tag an Arabic skill activity, set and mark a recitation and map a halaqa, enrol a pupil in a halaqa and approve their milestone, issue and redeem a gift card and read a protected book, set homework, post a notice, message a teacher and poll a class, send a trip sign-up with a fee and close it, publish a calendar day and mark a pupil late, double-book a teacher and be refused, record and revoke a family's consent, ask the school for a day off and be answered, enrol a
+ * Six of these only look at screens. The other **thirty-one write**: they build a course for a student, run a scheduled intake, set and sit an assessment, issue a certificate, sell a course for wallet money, tag an Arabic skill activity, set and mark a recitation and map a halaqa, enrol a pupil in a halaqa and approve their milestone, issue and redeem a gift card and read a protected book, set homework, post a notice, message a teacher and poll a class, send a trip sign-up with a fee and close it, publish a calendar day and mark a pupil late, double-book a teacher and be refused, record and revoke a family's consent, ask the school for a day off and be answered, enrol a
  * stranger on a course, submit and approve an absence note, request that a
  * child be collected, book a parent-teacher meeting, publish an article to
  * the library, publish an exam and a term's report cards to families, bill a
@@ -27,7 +27,7 @@
  * nobody should discover it by pointing the runner at a live school.
  *
  *   node scripts/smoke/all.mjs            every walk (the default)
- *   node scripts/smoke/all.mjs --read     the four that only look
+ *   node scripts/smoke/all.mjs --read     the six that only look
  *   node scripts/smoke/all.mjs --write    the thirty-one that change data
  *   node scripts/smoke/all.mjs learn review     just those, by name
  *
@@ -134,6 +134,7 @@ const WALKS = [
     { name: 'hr', writes: true, asks: 'Does a staff member\'s month — check-in, leave, appraisal, payslip — go through?' },
     { name: 'mobile', writes: false, asks: 'Does this work on a phone?' },
     { name: 'nav', writes: false, asks: 'Can each kind of person find their way, without reading a wall of links?' },
+    { name: 'rtl', writes: false, asks: 'Do English sentences read right on a Dhivehi or Arabic page, without the page\'s alignment changing?' },
 ];
 
 const args = process.argv.slice(2);
@@ -166,7 +167,7 @@ if (selected.some((walk) => walk.writes) && !looksSynthetic && process.env.SMOKE
     console.error('book meetings, enrol people, hand in recordings, publish exam results, issue invoices and approve leave. On a host with');
     console.error('real families on it that means real messages to real people.\n');
     console.error('If this host is synthetic, re-run with SMOKE_I_KNOW_THIS_WRITES=yes,');
-    console.error('or use --read for the four walks that only look at screens.\n');
+    console.error('or use --read for the six walks that only look at screens.\n');
     process.exit(2);
 }
 

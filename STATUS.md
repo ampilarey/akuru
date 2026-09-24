@@ -22,7 +22,7 @@ the Library L1–L7; the public-site track W1–W3; EduPage parity E1–E22. The
 agent-buildable backlog in `KNOWN_ISSUES` is empty.
 
 **What is verified is narrower than what is built, and in one specific way.**
-Thirty-six scripted browser walks (`node scripts/smoke/all.mjs`, ~31 minutes)
+Thirty-seven scripted browser walks (`node scripts/smoke/all.mjs`, ~31 minutes)
 drive the loops that matter — building a course, running an intake, enrolling, buying a course, taking a lesson, sitting an assessment, earning a certificate, tagging an Arabic skill activity, setting and marking a recitation, mapping a halaqa, approving a Hifz milestone, reading a protected book, redeeming a gift card, setting homework, posting a notice, messaging a teacher and polling a class, sending a trip sign-up with a fee, publishing a calendar day and marking a pupil late, double-booking a teacher and being refused, marking work,
 reporting an absence, collecting a child, booking a meeting, publishing an
 article, taking and refunding money, recording a sound, reciting, an exam to a
@@ -4351,6 +4351,48 @@ walk returned a header row and nothing else for circulation, student work and
 pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
+
+## 5gd. English on Dhivehi and Arabic pages: the full stop at the end, and the line still on the right (2026-09-24)
+
+Owner decision 9, open since §5bz: on a right-to-left page the bidi
+algorithm draws an English sentence's trailing full stop at its visual front
+— `.No exams still in marks entry after the exam date` — and with ~87% of
+the interface still English that is most sentences on every Dhivehi and
+Arabic screen. The choice offered was a trade: `unicode-bidi: plaintext`
+fixes the punctuation but left-aligns every English line; leaving it keeps
+the alignment and the wrong punctuation. The owner took the recommended
+narrow option. What was built avoids the trade.
+
+**The rule** (`resources/css/app.css`). On `[dir="rtl"]` pages, text-bearing
+elements — `p, li, dt, dd, blockquote, figcaption, label, td, h1–h6` and the
+shell's flash messages, now `role="status"`/`role="alert"` — get
+`unicode-bidi: plaintext`: each takes its direction from its first letter,
+so English reads left-to-right with its stop at the end, and Dhivehi and
+Arabic stay right-to-left. The alignment is then pinned to the page's
+direction physically: where an element would have aligned to `start`, it
+gets `right`; `end` gets `left`; anything centred, justified, or aligned by a
+class on itself or an ancestor keeps what it had. Table headers and captions
+are left to their own centring. Specificity zero (`:where`) where a class
+should win; the element's own `text-start`/`text-end` pinned above the
+class.
+
+**It was nearly shipped wrong.** The first version used
+`text-align: match-parent` — one line, and exactly the right meaning — and
+Chrome drops it: only the bidi half applied, so every English line on a
+Dhivehi page went left, the trade the owner had been offered. The walk's
+first alignment check read the computed style, which reported `start`, and
+passed; it now measures where the text is *drawn* inside its box, which
+caught it, and the rule was rewritten in properties every browser supports.
+`RtlEnglishPunctuationTest` pins that `match-parent` stays out.
+
+**Walked.** `scripts/smoke/rtl.mjs` (read-only, the thirty-seventh): on
+`/dv` and `/ar`, every English sentence's punctuation is drawn after its
+first letter, no text element has moved to the left, `dir` is still `rtl`,
+and `/en` has no `plaintext` element at all. 8/8; against the build without
+the rule it fails exactly on the punctuation. A sweep of **every screen in
+the admin's menu in Dhivehi** (96 screens): before, **73 of 73** English
+sentences had their stop at the front; after, **0**, and **0** lines moved
+left. Screenshots before and after sent to the owner.
 
 ## 5gc. The logo in the brand colours, and app icons that show it whole (2026-09-24)
 
