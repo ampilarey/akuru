@@ -67,6 +67,7 @@ return [
     'requests' => 'Requests',
     'pickup' => 'Student pick-up',
     'gate' => 'At the gate',
+    'gate_cards' => 'Gate cards',
     'work_showcase' => 'Work showcase',
     'lost_and_found' => 'Lost and found',
     'weights' => 'Weights',

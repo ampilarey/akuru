@@ -898,6 +898,14 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::get('gate', [GateMovementController::class, 'index'])->name('academics.gate.index');
         Route::post('gate/record', [GateMovementController::class, 'record'])->name('academics.gate.record');
         Route::post('gate/{movement}/void', [GateMovementController::class, 'void'])->name('academics.gate.void')->whereNumber('movement');
+        // E18 gate cards (owner decision 11): a printed QR per pupil, scanned by
+        // a camera or a handheld scanner, or typed off the card.
+        Route::post('gate/scan', [GateMovementController::class, 'scan'])->name('academics.gate.scan');
+        Route::get('gate/cards', [\App\Domains\Academics\Http\Controllers\GateCardController::class, 'index'])->name('academics.gate.cards');
+        Route::post('gate/cards/issue', [\App\Domains\Academics\Http\Controllers\GateCardController::class, 'issue'])->name('academics.gate.cards.issue');
+        Route::post('gate/cards/{student}/reissue', [\App\Domains\Academics\Http\Controllers\GateCardController::class, 'reissue'])->name('academics.gate.cards.reissue')->whereNumber('student');
+        Route::get('gate/cards/print', [\App\Domains\Academics\Http\Controllers\GateCardController::class, 'print'])->name('academics.gate.cards.print');
+        Route::get('gate/cards/export', [\App\Domains\Academics\Http\Controllers\GateCardController::class, 'export'])->name('academics.gate.cards.export');
 
         // E21 student work showcase. Reassignment is a first-class verb, not
         // an edit form — wrong-parent is the documented failure mode.

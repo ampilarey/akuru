@@ -31,10 +31,17 @@ class SecurityHeaders
         // recording, and no test named this header, so nothing noticed.
         //
         // `(self)` lets this origin ask — the student is still prompted by the
-        // browser and can still refuse. Geolocation and camera stay shut
-        // because nothing in the app asks for either; if something ever does,
-        // it opens its own door in its own slice.
-        $response->headers->set('Permissions-Policy', 'geolocation=(), camera=(), microphone=(self)');
+        // browser and can still refuse. Geolocation stays shut because nothing
+        // in the app asks for it; whatever first does opens its own door in
+        // its own slice.
+        //
+        // The camera's door was opened that way: E18 gate cards (STATUS §5ge)
+        // read a pupil's QR card with the gate tablet's camera, and
+        // `camera=()` refused it on every device — found by the gate walk,
+        // whose fake camera was refused exactly as a real one would have been.
+        // `(self)` again: this origin may ask, the person is prompted, and
+        // an embedded third-party frame still cannot.
+        $response->headers->set('Permissions-Policy', 'geolocation=(), camera=(self), microphone=(self)');
         $response->headers->set('X-XSS-Protection', '1; mode=block');
         $response->headers->set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
 

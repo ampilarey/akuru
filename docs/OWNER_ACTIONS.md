@@ -181,14 +181,24 @@ right). On every admin screen in Dhivehi, 73 of 73 English sentences had
 the stop at the front before; none after; no line moved (STATUS §5gd,
 `scripts/smoke/rtl.mjs`).
 
-### 10. Deploy 3 cleanup
+### 10. Deploy 3 cleanup — **decided 2026-09-24: confirmed**
 
-**Confirm or reject** `docs/migrations/s11-deploy-3-cleanup-proposal.md`.
+The owner left it to the recommendation: retire the legacy student tables
+now, before the first real family registers, while rule 9's waits are still
+optional. Being built as a short series of PRs after the gate cards
+(`docs/migrations/s11-deploy-3-cleanup-proposal.md`, checked against the
+code on 2026-09-24: the dual write and the legacy checkout id are both still
+live).
 
-### 11. E18 — what scans at the gate
+### 11. E18 — what scans at the gate — **decided 2026-09-24: QR cards, built**
 
-The hardware decision. The column carries a `source` so a card reader is a
-binding rather than a rewrite.
+Printed QR cards per pupil, scanned by the gate tablet's camera or a
+handheld USB/Bluetooth scanner, or typed off the card (STATUS §5ge). To use
+it: *Gate cards* in the menu → pick a class → **Issue missing cards** →
+**Print cards**; at the gate, *At the gate* → choose Arriving or Leaving →
+scan. A lost card is replaced from the same screen and the old one stops
+working at once. A fixed RFID reader can still be added later: the movement
+record already carries its source.
 
 ### 12. E19 — who may read a sensitive note
 

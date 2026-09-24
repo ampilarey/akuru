@@ -142,6 +142,7 @@ final class NavigationMap
                 ['key' => 'behavior', 'href' => '/academics/behavior', 'roles' => $staff, 'can' => ['behavior.record', 'behavior.manage']],
                 ['key' => 'pickup', 'href' => '/academics/pickup'],
                 ['key' => 'gate', 'href' => '/academics/gate'],
+                ['key' => 'gate_cards', 'href' => '/academics/gate/cards'],
                 ['key' => 'work_showcase', 'href' => '/academics/work'],
                 ['key' => 'lost_and_found', 'href' => '/academics/found-items'],
             ]],

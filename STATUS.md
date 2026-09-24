@@ -22,7 +22,7 @@ the Library L1–L7; the public-site track W1–W3; EduPage parity E1–E22. The
 agent-buildable backlog in `KNOWN_ISSUES` is empty.
 
 **What is verified is narrower than what is built, and in one specific way.**
-Thirty-seven scripted browser walks (`node scripts/smoke/all.mjs`, ~31 minutes)
+Thirty-eight scripted browser walks (`node scripts/smoke/all.mjs`, ~32 minutes)
 drive the loops that matter — building a course, running an intake, enrolling, buying a course, taking a lesson, sitting an assessment, earning a certificate, tagging an Arabic skill activity, setting and marking a recitation, mapping a halaqa, approving a Hifz milestone, reading a protected book, redeeming a gift card, setting homework, posting a notice, messaging a teacher and polling a class, sending a trip sign-up with a fee, publishing a calendar day and marking a pupil late, double-booking a teacher and being refused, marking work,
 reporting an absence, collecting a child, booking a meeting, publishing an
 article, taking and refunding money, recording a sound, reciting, an exam to a
@@ -4351,6 +4351,73 @@ walk returned a header row and nothing else for circulation, student work and
 pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
+
+## 5ge. Gate cards: a printed QR per pupil, scanned by camera or handheld scanner (2026-09-24)
+
+Owner decision 11 (E18, what scans at the gate), left to the
+recommendation: QR cards. The gate console and the parents' arrivals page
+had shipped on 2026-09-11 as a log typed by hand, with a `source` column
+waiting for hardware.
+
+**What was built.**
+- `student_gate_cards` (migration `2026_09_24_000001`): one active card per
+  pupil, a 16-character token from an alphabet without look-alikes (80
+  bits) — never the student's id, which anyone could print on a card of
+  their own. Revoked rows stay as history. No `academic_year_id` (rule 10):
+  a card is a credential; the movements it produces carry the year.
+  Morph-map alias `student_gate_card`.
+- `IssueGateCardsAction` (missing cards only, so pressing it again never
+  voids a printed card; `reissue` revokes and replaces in one transaction),
+  `ResolveGateCardAction` (accepts `AKG:TOKEN` from a camera, the same with
+  a stray newline from a handheld scanner, or `ABCD-EFGH-…` typed off the
+  card, any case; says *replaced on <date>* for a revoked card),
+  `ListGateCardsAction` over `ListClassRosterAction`.
+- `GateCardController`: `/academics/gate/cards` (per class: who has a card,
+  **Issue missing cards**, **Card lost — replace**, **Print cards**, CSV
+  export) and the print sheet, eight cards to A4, the QR drawn in the
+  browser by the `qrcode` package as SVG, with the code under it for when a
+  scan fails. `GateMovementController::scan` records through
+  `RecordStudentMovementAction` with `source = qr` and answers with the
+  pupil's name — *Fatima Yoosuf arrived at 07:42.*
+- The gate console's **Scan a gate card** panel: Arriving/Leaving (kept on
+  the device), one box that a handheld scanner types into, **Use camera**
+  (`jsqr`, not `BarcodeDetector`, which iPads lack). Camera and stored
+  preference live in the platform layer (`Platform/camera.js`,
+  `Platform/storage.js`) as `PlatformApisStayInLayerTest` requires. *Gate
+  cards* in the menu under Day loop, in EN/DV/AR.
+
+**Found by the walk: the camera was forbidden on every page.**
+`SecurityHeaders` sent `Permissions-Policy: camera=()`, an empty allowlist,
+so the camera button would have failed on every real tablet exactly as the
+walk's fake camera did — the same trap §5ej found for the microphone, and
+the header's own comment said whatever first needed the camera should open
+it in its own slice. Now `camera=(self)`: this origin may ask, the person is
+prompted, embedded frames still cannot. `PermissionsPolicyTest` pins it.
+
+**Found by the build, recorded, not fixed here:** the QR on certificates
+and ID cards (`StudentNumberQr`) is not a QR code — corner squares and
+hashed bits. A real decoder cannot read it; a genuine QR of the same
+address decodes at once. KNOWN_ISSUES, next QR slice. (Composer could not
+reach GitHub-hosted packages from the sandbox, which is why the gate cards
+draw their QR in the browser; the certificate fix will need a server-side
+encoder.)
+
+**Tests.** `GateCardsTest`: cards for the whole roll, once, unguessable;
+the print sheet; an arrival recorded from a camera code, a handheld
+scanner's code with a newline, and a code typed in lower case, each as
+`qr` by the scanning member of staff; a replaced card refused by name and
+the new one working; a non-card and an unissued code refused; parents and
+students refused every route; CSV. Plus `PermissionsPolicyTest`,
+architecture suite, morph map.
+
+**Walked** (`scripts/smoke/gate.mjs`, the thirty-eighth, writes): the
+office finds the pupil's class, replaces the card, the print sheet shows
+the new QR and code; the new code typed and Enter pressed (a handheld
+scanner) records *Fatima Yoosuf arrived*; the old card is refused, *replaced
+on …*; then a second Chromium whose **fake camera plays a video frame of the
+printed QR** scans the departure through the page's own decoder; the gate
+log marks both QR; the parent's arrivals page shows both, *Recorded: QR*.
+12/12 locally.
 
 ## 5gd. English on Dhivehi and Arabic pages: the full stop at the end, and the line still on the right (2026-09-24)
 
