@@ -1,365 +1,90 @@
 import { Link, router, usePage } from '@inertiajs/react';
+import { useEffect, useState } from 'react';
 
+/**
+ * The shell every Inertia screen renders inside.
+ *
+ * Navigation comes from the server (`nav` shared prop, built by
+ * `App\Support\Navigation\BuildNavigationAction`): a short primary bar for the
+ * signed-in person's roles, and the *More* menu — every other screen, in nine
+ * labelled groups, with anything the person could only be refused left out.
+ * The shell decides nothing about who sees what; it renders what it is given.
+ * Until 2026-09-24 it was 109 links in one wrapping strip, for everybody
+ * (docs/APPSHELL_NAV_IA.md, KNOWN_ISSUES P3 #11).
+ */
 export default function AppShell({ title, children }) {
-    const { locale, locales = ['en', 'dv', 'ar'], locale_urls = {}, rtl, auth, flash, i18n } = usePage().props;
+    const { url, props } = usePage();
+    const { locale, locales = ['en', 'dv', 'ar'], locale_urls = {}, rtl, auth, flash, i18n, nav = { primary: [], groups: [] } } = props;
     const user = auth?.user;
     const t = i18n?.learn || {};
+    const n = i18n?.nav || {};
+    const [open, setOpen] = useState(false);
+
+    // A menu left open across a page change is a menu the person has to close
+    // twice. Close it whenever the URL moves, and on Escape.
+    useEffect(() => setOpen(false), [url]);
+    useEffect(() => {
+        if (!open) return undefined;
+        const onKey = (event) => event.key === 'Escape' && setOpen(false);
+        window.addEventListener('keydown', onKey);
+        return () => window.removeEventListener('keydown', onKey);
+    }, [open]);
+
+    const path = url.replace(/^\/(en|dv|ar)(?=\/|$)/, '').split('?')[0] || '/';
+    const isCurrent = (href) => path === href || path.startsWith(`${href}/`);
 
     return (
         <div dir={rtl ? 'rtl' : 'ltr'} className="min-h-screen bg-[#F9F4EE] text-gray-900">
-            <header className="border-b border-[#E6D9C8] bg-white">
-                <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-6 py-4">
-                    <div>
-                        <p className="text-xs uppercase tracking-wide text-[#7C2D37]">Akuru</p>
-                        <h1 className="text-xl font-semibold">{title}</h1>
+            <header className="relative border-b border-[#E6D9C8] bg-white">
+                <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-x-6 gap-y-2 px-6 py-3">
+                    <div className="flex items-center gap-4">
+                        <div>
+                            <p className="text-xs uppercase tracking-wide text-[#7C2D37]">Akuru</p>
+                            <h1 className="text-xl font-semibold">{title}</h1>
+                        </div>
                     </div>
-                    <nav className="flex flex-wrap items-center gap-3 text-sm">
-                        <Link href="/portal/home" className="text-[#7C2D37] hover:underline">
-                            Home
-                        </Link>
-                        <Link href="/portal/overview" className="text-[#7C2D37] hover:underline">
-                            Overview
-                        </Link>
-                        <Link href="/learn" className="text-[#7C2D37] hover:underline">
-                            {i18n?.learn?.nav || 'Learn'}
-                        </Link>
-                        <Link href="/learn/schedule" className="text-[#7C2D37] hover:underline">
-                            {i18n?.learn?.schedule || 'Schedule'}
-                        </Link>
-                        <Link href="/teach/schedule" className="text-[#7C2D37] hover:underline">
-                            Teach
-                        </Link>
-                        <Link href="/teach/meetings" className="text-[#7C2D37] hover:underline">
-                            My meetings
-                        </Link>
-                        <Link href="/portal/learning" className="text-[#7C2D37] hover:underline">
-                            {i18n?.learn?.children_learning || 'Children'}
-                        </Link>
-                        <Link href="/portal/performance" className="text-[#7C2D37] hover:underline">
-                            Performance
-                        </Link>
-                        <Link href="/catalog/courses" className="text-[#7C2D37] hover:underline">
-                            Catalog
-                        </Link>
-                        <Link href="/catalog/certificates" className="text-[#7C2D37] hover:underline">
-                            Certificates
-                        </Link>
-                        <Link href="/catalog/reports" className="text-[#7C2D37] hover:underline">
-                            Reports
-                        </Link>
-                        <Link href="/catalog/reports/completions" className="text-[#7C2D37] hover:underline">
-                            Completions
-                        </Link>
-                        <Link href="/catalog/offerings" className="text-[#7C2D37] hover:underline">
-                            Offerings
-                        </Link>
-                        <Link href="/catalog/questions" className="text-[#7C2D37] hover:underline">
-                            Questions
-                        </Link>
-                        <Link href="/catalog/reviews" className="text-[#7C2D37] hover:underline">
-                            Reviews
-                        </Link>
-                        <Link href="/catalog/arabic" className="text-[#7C2D37] hover:underline">
-                            Arabic
-                        </Link>
-                        <Link href="/catalog/arabic/reports" className="text-[#7C2D37] hover:underline">
-                            Arabic report
-                        </Link>
-                        <Link href="/catalog/quran" className="text-[#7C2D37] hover:underline">
-                            Qur’an
-                        </Link>
-                        <Link href="/catalog/subjects" className="text-[#7C2D37] hover:underline">
-                            Subjects
-                        </Link>
-                        <Link href="/catalog/glossary" className="text-[#7C2D37] hover:underline">
-                            Glossary
-                        </Link>
-                        <Link href="/catalog/audiences" className="text-[#7C2D37] hover:underline">
-                            Audiences
-                        </Link>
-                        <Link href="/catalog/levels" className="text-[#7C2D37] hover:underline">
-                            Levels
-                        </Link>
-                        <Link href="/people/students" className="text-[#7C2D37] hover:underline">
-                            Students
-                        </Link>
-                        <Link href="/people/custom-fields" className="text-[#7C2D37] hover:underline">
-                            Custom fields
-                        </Link>
-                        <Link href="/people/staff" className="text-[#7C2D37] hover:underline">
-                            Staff
-                        </Link>
-                        <Link href="/academics/years" className="text-[#7C2D37] hover:underline">
-                            Years
-                        </Link>
-                        <Link href="/academics/rooms" className="text-[#7C2D37] hover:underline">
-                            Rooms
-                        </Link>
-                        <Link href="/academics/periods" className="text-[#7C2D37] hover:underline">
-                            Periods
-                        </Link>
-                        <Link href="/academics/timetable" className="text-[#7C2D37] hover:underline">
-                            Timetable
-                        </Link>
-                        <Link href="/academics/bookings" className="text-[#7C2D37] hover:underline">
-                            Bookings
-                        </Link>
-                        <Link href="/academics/meetings" className="text-[#7C2D37] hover:underline">
-                            Meetings
-                        </Link>
-                        <Link href="/academics/calendar" className="text-[#7C2D37] hover:underline">
-                            Calendar
-                        </Link>
-                        <Link href="/academics/events" className="text-[#7C2D37] hover:underline">
-                            Events
-                        </Link>
-                        <Link href="/portal/events" className="text-[#7C2D37] hover:underline">
-                            Event signup
-                        </Link>
-                        <Link href="/portal/holidays" className="text-[#7C2D37] hover:underline">
-                            School calendar
-                        </Link>
-                        <Link href="/academics/clubs" className="text-[#7C2D37] hover:underline">
-                            Clubs
-                        </Link>
-                        <Link href="/academics/found-items" className="text-[#7C2D37] hover:underline">
-                            Lost and found
-                        </Link>
-                        <Link href="/portal/found-items" className="text-[#7C2D37] hover:underline">
-                            Lost property
-                        </Link>
-                        <Link href="/academics/attendance-policy" className="text-[#7C2D37] hover:underline">
-                            Attendance policy
-                        </Link>
-                        <Link href="/academics/absence-types" className="text-[#7C2D37] hover:underline">
-                            Absence reasons
-                        </Link>
-                        <Link href="/academics/pickup" className="text-[#7C2D37] hover:underline">
-                            Student pick-up
-                        </Link>
-                        <Link href="/portal/pickup" className="text-[#7C2D37] hover:underline">
-                            Collecting my child
-                        </Link>
-                        <Link href="/academics/gate" className="text-[#7C2D37] hover:underline">
-                            At the gate
-                        </Link>
-                        <Link href="/portal/movements" className="text-[#7C2D37] hover:underline">
-                            Arrivals
-                        </Link>
-                        <Link href="/academics/work" className="text-[#7C2D37] hover:underline">
-                            Work showcase
-                        </Link>
-                        <Link href="/portal/work" className="text-[#7C2D37] hover:underline">
-                            My child’s work
-                        </Link>
-                        <Link href="/people/sensitive" className="text-[#7C2D37] hover:underline">
-                            Sensitive info
-                        </Link>
-                        <Link href="/circulation" className="text-[#7C2D37] hover:underline">
-                            Circulation
-                        </Link>
-                        <Link href="/circulation/cards" className="text-[#7C2D37] hover:underline">
-                            Borrower cards
-                        </Link>
-                        <Link href="/portal/loans" className="text-[#7C2D37] hover:underline">
-                            Library books
-                        </Link>
-                        <Link href="/portal/teacher" className="text-[#7C2D37] hover:underline">
-                            My day
-                        </Link>
-                        <Link href="/academics/registers/today" className="text-[#7C2D37] hover:underline">
-                            Today
-                        </Link>
-                        <Link href="/academics/registers" className="text-[#7C2D37] hover:underline">
-                            Registers
-                        </Link>
-                        <Link href="/academics/plans" className="text-[#7C2D37] hover:underline">
-                            Plans
-                        </Link>
-                        <Link href="/academics/materials" className="text-[#7C2D37] hover:underline">
-                            Materials
-                        </Link>
-                        <Link href="/academics/attendance" className="text-[#7C2D37] hover:underline">
-                            Attendance
-                        </Link>
-                        <Link href="/academics/attendance/absences" className="text-[#7C2D37] hover:underline">
-                            Absences
-                        </Link>
-                        <Link href="/portal/attendance" className="text-[#7C2D37] hover:underline">
-                            My attendance
-                        </Link>
-                        <Link href="/portal/absence-notes" className="text-[#7C2D37] hover:underline">
-                            Absence notes
-                        </Link>
-                        <Link href="/academics/absence-notes" className="text-[#7C2D37] hover:underline">
-                            Review notes
-                        </Link>
-                        <Link href="/academics/behavior" className="text-[#7C2D37] hover:underline">
-                            Behavior
-                        </Link>
-                        <Link href="/portal/behavior" className="text-[#7C2D37] hover:underline">
-                            My behavior
-                        </Link>
-                        <Link href="/academics/requests" className="text-[#7C2D37] hover:underline">
-                            Requests
-                        </Link>
-                        <Link href="/exams/scales" className="text-[#7C2D37] hover:underline">
-                            Scales
-                        </Link>
-                        <Link href="/exams/types" className="text-[#7C2D37] hover:underline">
-                            Exam types
-                        </Link>
-                        <Link href="/exams/weights" className="text-[#7C2D37] hover:underline">
-                            Weights
-                        </Link>
-                        <Link href="/exams/schedule" className="text-[#7C2D37] hover:underline">
-                            Exams
-                        </Link>
-                        <Link href="/exams/gradebook" className="text-[#7C2D37] hover:underline">
-                            Gradebook
-                        </Link>
-                        <Link href="/exams/competencies" className="text-[#7C2D37] hover:underline">
-                            Competencies
-                        </Link>
-                        <Link href="/exams/standards" className="text-[#7C2D37] hover:underline">
-                            Standards
-                        </Link>
-                        <Link href="/exams/report-templates" className="text-[#7C2D37] hover:underline">
-                            Report templates
-                        </Link>
-                        <Link href="/exams/report-cards" className="text-[#7C2D37] hover:underline">
-                            Report cards
-                        </Link>
-                        <Link href="/exams/awards" className="text-[#7C2D37] hover:underline">
-                            Awards
-                        </Link>
-                        <Link href="/portal/exams" className="text-[#7C2D37] hover:underline">
-                            Results
-                        </Link>
-                        <Link href="/portal/report-cards" className="text-[#7C2D37] hover:underline">
-                            Report cards
-                        </Link>
-                        <Link href="/portal/awards" className="text-[#7C2D37] hover:underline">
-                            Awards
-                        </Link>
-                        <Link href="/finance/fee-items" className="text-[#7C2D37] hover:underline">
-                            Fee items
-                        </Link>
-                        <Link href="/finance/fee-structures" className="text-[#7C2D37] hover:underline">
-                            Fee structures
-                        </Link>
-                        <Link href="/finance/invoices" className="text-[#7C2D37] hover:underline">
-                            Invoices
-                        </Link>
-                        <Link href="/finance/arrears" className="text-[#7C2D37] hover:underline">
-                            Arrears
-                        </Link>
-                        <Link href="/finance/payment-plans" className="text-[#7C2D37] hover:underline">
-                            Payment plans
-                        </Link>
-                        <Link href="/finance/adjustments" className="text-[#7C2D37] hover:underline">
-                            Adjustments
-                        </Link>
-                        <Link href="/finance/receipts/manual" className="text-[#7C2D37] hover:underline">
-                            Manual receipt
-                        </Link>
-                        <Link href="/finance/collections" className="text-[#7C2D37] hover:underline">
-                            Collections
-                        </Link>
-                        <Link href="/finance/reconciliation" className="text-[#7C2D37] hover:underline">
-                            Reconciliation
-                        </Link>
-                        <Link href="/finance/settings" className="text-[#7C2D37] hover:underline">
-                            Finance settings
-                        </Link>
-                        <Link href="/portal/invoices" className="text-[#7C2D37] hover:underline">
-                            Fees
-                        </Link>
-                        <Link href="/hr/attendance" className="text-[#7C2D37] hover:underline">
-                            Staff attendance
-                        </Link>
-                        <Link href="/hr/attendance/reports" className="text-[#7C2D37] hover:underline">
-                            Staff reports
-                        </Link>
-                        <Link href="/portal/staff-check-in" className="text-[#7C2D37] hover:underline">
-                            Check in
-                        </Link>
-                        <Link href="/hr/leave-types" className="text-[#7C2D37] hover:underline">
-                            Leave types
-                        </Link>
-                        <Link href="/hr/leave-balances" className="text-[#7C2D37] hover:underline">
-                            Leave balances
-                        </Link>
-                        <Link href="/portal/leave" className="text-[#7C2D37] hover:underline">
-                            My leave
-                        </Link>
-                        <Link href="/hr/contracts" className="text-[#7C2D37] hover:underline">
-                            Contracts
-                        </Link>
-                        <Link href="/hr/compliance" className="text-[#7C2D37] hover:underline">
-                            Compliance
-                        </Link>
-                        <Link href="/hr/settings" className="text-[#7C2D37] hover:underline">
-                            HR settings
-                        </Link>
-                        <Link href="/hr/postings" className="text-[#7C2D37] hover:underline">
-                            Jobs
-                        </Link>
-                        <Link href="/hr/applications" className="text-[#7C2D37] hover:underline">
-                            Applications
-                        </Link>
-                        <Link href="/hr/onboarding" className="text-[#7C2D37] hover:underline">
-                            Onboarding
-                        </Link>
-                        <Link href="/hr/appraisals" className="text-[#7C2D37] hover:underline">
-                            Appraisals
-                        </Link>
-                        <Link href="/hr/observations" className="text-[#7C2D37] hover:underline">
-                            Observations
-                        </Link>
-                        <Link href="/hr/cpd" className="text-[#7C2D37] hover:underline">
-                            CPD
-                        </Link>
-                        <Link href="/portal/appraisals" className="text-[#7C2D37] hover:underline">
-                            My performance
-                        </Link>
-                        <Link href="/hr/payroll" className="text-[#7C2D37] hover:underline">
-                            Payroll
-                        </Link>
-                        <Link href="/portal/payslips" className="text-[#7C2D37] hover:underline">
-                            Payslips
-                        </Link>
-                        {auth?.can?.operations_manage && (
-                            <>
-                                <Link href="/admin/operations" className="text-[#7C2D37] hover:underline">
-                                    Ops checklist
-                                </Link>
-                                <Link href="/admin/operations/features" className="text-[#7C2D37] hover:underline">
-                                    Feature walkthrough
-                                </Link>
-                            </>
-                        )}
-                        {auth?.can?.translations_manage && (
-                            <Link href="/admin/translations" className="text-[#7C2D37] hover:underline">
-                                Translations
+                    <nav aria-label={n.primary_nav || 'Primary'} className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
+                        {nav.primary.map((item) => (
+                            <Link
+                                key={item.href}
+                                href={item.href}
+                                aria-current={isCurrent(item.href) ? 'page' : undefined}
+                                className={isCurrent(item.href)
+                                    ? 'border-b-2 border-[#7C2D37] pb-0.5 font-semibold text-[#7C2D37]'
+                                    : 'text-[#7C2D37] hover:underline'}
+                            >
+                                {item.label}
                             </Link>
+                        ))}
+                        {nav.groups.length > 0 && (
+                            <button
+                                type="button"
+                                aria-expanded={open}
+                                aria-controls="app-shell-more"
+                                onClick={() => setOpen((value) => !value)}
+                                className={`rounded px-2 py-1 font-medium text-[#7C2D37] hover:bg-[#F3EBE0] ${open ? 'bg-[#F3EBE0]' : ''}`}
+                            >
+                                {n.more || 'More'} {open ? '▴' : '▾'}
+                            </button>
                         )}
                         {/* E22a: notifications were invisible for months. A
                             count in the chrome is what makes them exist. */}
-                        <Link
-                            href="/portal/notifications"
-                            className="flex items-center gap-1 text-[#7C2D37] hover:underline"
-                        >
-                            Alerts
-                            {auth?.unread_notifications > 0 && (
-                                <span className="rounded-full bg-[#7C2D37] px-1.5 py-0.5 text-xs font-bold text-white">
-                                    {auth.unread_notifications}
-                                </span>
-                            )}
-                        </Link>
+                        {user && (
+                            <Link
+                                href="/portal/notifications"
+                                className="flex items-center gap-1 text-[#7C2D37] hover:underline"
+                            >
+                                Alerts
+                                {auth?.unread_notifications > 0 && (
+                                    <span className="rounded-full bg-[#7C2D37] px-1.5 py-0.5 text-xs font-bold text-white">
+                                        {auth.unread_notifications}
+                                    </span>
+                                )}
+                            </Link>
+                        )}
                         {/* E7: a person with two identities lands on one of them.
-                            Given as a bordered pill rather than a 41st link in
-                            this list, because a link in here is not findable. */}
+                            Given as a bordered pill rather than a link in the
+                            menu, because a link in there is not findable. */}
                         {auth?.alternate && (
                             <Link
                                 href={auth.alternate.href}
@@ -412,6 +137,44 @@ export default function AppShell({ title, children }) {
                         </span>
                     </nav>
                 </div>
+                {open && (
+                    <>
+                        {/* A click anywhere else closes the menu. */}
+                        <button
+                            type="button"
+                            aria-label={n.close || 'Close'}
+                            onClick={() => setOpen(false)}
+                            className="fixed inset-0 z-10 cursor-default bg-transparent"
+                        />
+                        <div
+                            id="app-shell-more"
+                            role="region"
+                            aria-label={n.all_screens || 'All screens'}
+                            className="absolute inset-x-0 top-full z-20 border-b border-[#E6D9C8] bg-white shadow-lg"
+                        >
+                            <div className="mx-auto grid max-w-6xl grid-cols-2 gap-x-8 gap-y-6 px-6 py-6 text-sm sm:grid-cols-3 lg:grid-cols-5">
+                                {nav.groups.map((group) => (
+                                    <section key={group.key}>
+                                        <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500">{group.label}</h2>
+                                        <ul className="space-y-1">
+                                            {group.items.map((item) => (
+                                                <li key={item.href}>
+                                                    <Link
+                                                        href={item.href}
+                                                        aria-current={isCurrent(item.href) ? 'page' : undefined}
+                                                        className={isCurrent(item.href) ? 'font-semibold text-[#7C2D37]' : 'text-[#7C2D37] hover:underline'}
+                                                    >
+                                                        {item.label}
+                                                    </Link>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </section>
+                                ))}
+                            </div>
+                        </div>
+                    </>
+                )}
             </header>
             <main className="mx-auto max-w-6xl px-6 py-6">
                 {flash?.success && (

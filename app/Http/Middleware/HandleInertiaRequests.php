@@ -93,6 +93,11 @@ class HandleInertiaRequests extends Middleware
                 // price of them being discoverable from any page.
                 'unread_notifications' => $this->unreadNotifications($request),
             ],
+            // The shell's navigation, built for this person: a short primary
+            // bar for their roles and the *More* groups, with every link they
+            // could only be refused left out (docs/APPSHELL_NAV_IA.md). Read
+            // off each route's own guard, so it cannot drift from the gates.
+            'nav' => app(\App\Support\Navigation\BuildNavigationAction::class)->execute($request->user(), $locale),
             'flash' => [
                 'success' => $request->session()->get('success'),
                 'error' => $request->session()->get('error'),
@@ -100,6 +105,9 @@ class HandleInertiaRequests extends Middleware
             ],
             'i18n' => [
                 'learn' => trans('learn'),
+                // The shell's own words — the *More* button and the menu's
+                // labels; item labels arrive already translated in `nav`.
+                'nav' => array_intersect_key((array) trans('nav'), array_flip(['more', 'close', 'primary_nav', 'all_screens'])),
                 // Only the page-facing subset: sharing the whole group would
                 // serialize every common string into every page's payload
                 // (and unrelated strings then leak into page assertions).

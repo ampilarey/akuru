@@ -1,8 +1,42 @@
-# AppShell navigation IA (proposal)
+# AppShell navigation IA
 
-**Status:** proposal only — **do not implement until confirmed**.  
+**Status:** **Accepted as written by the owner on 2026-09-24, and implemented the same day** (STATUS §5ga). What follows is the proposal as accepted; the *Implemented* section at the end says where it lives.  
 **Source:** `resources/js/Layouts/AppShell.jsx` (every Inertia screen). Round 3 ranked this #2 in `docs/KNOWN_ISSUES.md`. Proposal PR: **#98**.  
 **Out of scope:** Hifz Blade chrome, public marketing nav, this file’s logout/locale row (those stay).
+
+## Implemented (2026-09-24)
+
+- **`App\Support\Navigation\NavigationMap`** — the map: a primary bar per
+  role (admins · teacher · parent · student · course_creator · writer ·
+  reviewer) and eleven groups holding every Inertia screen once.
+- **`App\Support\Navigation\BuildNavigationAction`** — builds `nav` for the
+  signed-in person. Visibility is read off each **route's own guard**
+  (`role:`, `permission:`, `can:`, `role_or_permission:` in its gathered
+  middleware); a page whose gate lives in the controller carries a `can`
+  hint that mirrors it, and `auth`-only pages carry a `roles` hint saying
+  who they are *for*. A link whose route does not exist is hidden, so the
+  menu cannot carry a dead one. Labels come back translated from
+  `lang/nav.php` (EN, DV, AR).
+- **`HandleInertiaRequests`** shares `nav` and the shell's four words.
+- **`AppShell.jsx`** renders the bar, marks the current screen
+  (`aria-current`), and a **More** button opening every group in a panel
+  that closes on choice, on Escape, and on a click elsewhere. 109 literal
+  links became three (Alerts, the account link, and nothing else).
+- **Tests:** `tests/Feature/Nav/NavigationIsGroupedByRoleTest.php` — every
+  href is a real GET route; each role's bar; a teacher and a parent are
+  refused by **none** of the links they are shown (the walk that failed
+  before); the Docs guard now holds the other direction.
+- **Walk:** `scripts/smoke/nav.mjs` (read-only) — a teacher finds Today,
+  the office finds Years and Exams and Payroll under More, a parent is shown
+  no staff screen and every link they are shown lets them in.
+
+The primary bars below are as proposed, with two edits made while
+implementing and recorded here: a teacher's *Learn* became *Teach* (the
+teacher's own timetable) plus *Check in*, and a student got a bar of their
+own (Learn · Schedule · Homework · My attendance · Results). Gradebook shows
+to a teacher only where the exams routes and the gradebook's own gate admit
+them — today they do not, and the menu says so by omission rather than
+by a 403.
 
 ## Problem
 
@@ -58,7 +92,7 @@ Do **not** flatten these back into the primary bar.
 
 If a rare item is in the primary bar, the daily item has already lost.
 
-## Decision required (owner)
+## Decision required (owner) — decided 2026-09-24: **1. Accept as written**
 
 Reply with one of:
 

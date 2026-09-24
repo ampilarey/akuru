@@ -140,6 +140,24 @@ a question with a default, so "do nothing" is always a legible choice.
 
 ---
 
+## Found by the navigation slice (2026-09-24)
+
+### Any parent or student can open the whole school's attendance report — **open, next slice**
+
+**Severity:** disclosure. `RoleSeeder` grants the `parent` and `student`
+roles `view_attendance`, and `AttendanceReportController::index` admits
+`view_attendance || manage_attendance`. So a family signed in to the portal
+can type `/academics/attendance` and read every pupil's rows, the chronic-
+absence list and the unexcused list for the school. Found by
+`NavigationIsGroupedByRoleTest`'s open-every-link check the day the shell
+began hiding links people cannot open — this one it *could* open (STATUS §5ga).
+
+**Not fixed in that slice** (rule 1): the menu no longer shows families the
+screen, but the URL still admits them. The fix is the next slice: gate the
+report on `manage_attendance || registers.manage` (every staff role holds
+one; no family role does), with a test that a parent is refused and a
+headmaster is not.
+
 ## Found by the 2026-09-12 audit
 
 ### A full class could be oversold from the admin screen — **fixed (2026-09-13)**
@@ -637,7 +655,7 @@ P2 for that reason.
 
 1. ~~**Staging staff login**~~ — **closed 2026-09-23/24 (STATUS §5fz).** The owner reset `admin@`'s password through tinker on the host and ran the (now idempotent) seeders there; all six pilot logins sign in by password on `test.akuru.edu.mv`, and the walks prove it thirty-five times over. OTP login there is still untested.
 1b. ~~**Nothing merged since 2026-08 has been walked in a browser**~~ — **closed 2026-09-24 (STATUS §5fz).** Locally since 2026-09-10 (§5bu, §5bv; that walk found #234). On `test.akuru.edu.mv` since 2026-09-24: 35/35 on the sixth staging run, so the deployment question is answered as well as the code one.
-2. **AppShell nav IA** — **proposed, awaiting decision.** **105** wrapping `<Link href=` in `AppShell.jsx` — 83 when this line was written, 74 at the IA proposal, plus Glossary, admin Events, portal Event signup, Certificates, Completions, Performance, Home, Meetings, Overview. It grows with every slice that adds a screen, which is itself the argument. C3 extends `/catalog/reviews` (already linked). D1 adds Home. D2 adds Meetings. D3 adds Overview. Proposal in `docs/APPSHELL_NAV_IA.md` (PR #98): grouped by role and frequency. **Do not implement** until Accept / Accept with edits / Reject. The wrap is still live.
+2. ~~**AppShell nav IA**~~ — **accepted and implemented 2026-09-24 (STATUS §5ga).** The 109-link wrap is gone: a primary bar per role, every other screen under eleven labelled groups in a *More* menu, and nothing shown that the person could only be refused — visibility read off each route's own guard. `docs/APPSHELL_NAV_IA.md` has the map and where it lives.
 3. **Parent notified column shows — on excused rows** — column exists (#86); SMS body is not in the portal.
 4. ~~Shared Add-term form on every year card~~ — **fixed** (#13).
 5. ~~Exam schedule form defaults wander~~ — **fixed** (#19), along with the
@@ -715,9 +733,11 @@ still leaves cards draft without a `queue:listen`/`queue:work` worker running.
 
 ## P3 — Confusion (easy to think it worked or failed)
 
-### 11. AppShell nav is unusable as navigation
+### 11. AppShell nav is unusable as navigation — **fixed (2026-09-24)**
 
-**Severity:** confusion / blocked. **105** wrapping links as of 2026-09-12 (“50+” when this was written), duplicate “Report cards” / “Awards”. Logout **is** present (POST next to the name). `GET /logout` remains 405. Round 3 ranked #2. **Proposed, awaiting decision** — `docs/APPSHELL_NAV_IA.md` (PR #98). Shell unchanged until the owner confirms.
+**Severity:** confusion / blocked. **109** wrapping links by 2026-09-23 (“50+” when this was written), duplicate “Report cards” / “Awards”, and every link shown to everybody whether or not it would refuse them. Round 3 ranked #2.
+
+**Fixed.** The owner accepted `docs/APPSHELL_NAV_IA.md` as written; the shell now renders a server-built `nav` — a short primary bar per role and a *More* menu of eleven groups, with links the person could only be refused left out (STATUS §5ga). Staff “Report cards” and the family’s are in different groups and shown to different people. Logout unchanged (POST next to the name).
 
 ### 12. Seeder still inserts duplicate Extra year names
 

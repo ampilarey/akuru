@@ -165,13 +165,11 @@ whose name does not look synthetic; `--read` runs the three that only look.
 
 ## Part 2 — Decisions (any order, "not yet" is a legible answer)
 
-### 8. AppShell navigation
+### 8. AppShell navigation — **decided 2026-09-24: accepted as written, implemented**
 
-~90 links across **eleven rows**, roughly the top quarter of a 1200px viewport,
-on every page. Proposal in `docs/APPSHELL_NAV_IA.md`; the shell is untouched
-until you choose.
-
-**Accept / accept with edits / reject.**
+Was ~109 links across eleven rows on every page. Now a primary bar per role
+and a *More* menu of labelled groups, with nothing shown that would refuse
+the person (`docs/APPSHELL_NAV_IA.md`, STATUS §5ga).
 
 ### 9. Bidi alignment on Dhivehi and Arabic screens
 

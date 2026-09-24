@@ -1,64 +1,35 @@
 <?php
 
-it('records the AppShell nav IA proposal before any shell redesign', function () {
-    $path = base_path('docs/APPSHELL_NAV_IA.md');
+/**
+ * The AppShell navigation IA was a proposal from 2026-08-26 to 2026-09-24
+ * (docs/APPSHELL_NAV_IA.md), guarded here so the shell could not be redesigned
+ * unannounced. The owner accepted it on 2026-09-24; this now guards the other
+ * direction — that the flat strip does not creep back.
+ */
+it('records the AppShell nav IA as accepted and implemented', function () {
+    $text = file_get_contents(base_path('docs/APPSHELL_NAV_IA.md'));
 
-    expect($path)->toBeFile();
-
-    $text = file_get_contents($path);
-
-    expect($text)->toContain('proposal only');
-    expect($text)->toContain('do not implement until confirmed');
-    expect($text)->toContain('by role');
-    expect($text)->toContain('Frequency');
-    expect($text)->toContain('Today');
-    expect($text)->toContain('Years');
-    expect($text)->toContain('Exams');
-    expect($text)->toContain('Decision required');
-    expect($text)->toContain('AppShell.jsx');
-    expect($text)->toContain('74');
-    expect($text)->not->toContain('implemented in this PR');
+    expect($text)->toContain('Accepted')
+        ->and($text)->toContain('implemented')
+        ->and($text)->toContain('by role')
+        ->and($text)->toContain('Frequency')
+        ->and($text)->toContain('Today')
+        ->and($text)->toContain('Years')
+        ->and($text)->toContain('Exams')
+        ->and($text)->toContain('BuildNavigationAction');
 });
 
-it('does not change AppShell.jsx as part of the IA proposal', function () {
+it('renders the shell from the shared nav rather than a flat list of links', function () {
     $shell = file_get_contents(base_path('resources/js/Layouts/AppShell.jsx'));
 
-    expect($shell)->toContain('href="/academics/registers/today"');
-    expect($shell)->toContain('href="/academics/years"');
-    expect($shell)->toContain('href="/exams/schedule"');
-
-    // 83 → 86: +Ops checklist, +Feature walkthrough, +Translations
-    // (permission-gated admin links; conscious bump per this guard's intent).
-    // 86 → 87: +Materials (E13a). The guard exists to stop a nav *redesign*
-    // arriving unannounced, not to freeze the list — one link for a new screen
-    // that would otherwise be unreachable is the bump it is meant to allow.
-    // 87 → 88: +My day (E1b), the teacher's home.
-    // 88 → 89: +Absences (E10b), the office's morning list.
-    // 105 → 106: +Reports (§33), the admin reports hub. Six of §33's ten
-    //   reports were computed and scattered across three screens and three had
-    //   no reader at all, so the page is exactly the "otherwise unreachable"
-    //   case this allowance exists for. It also makes the nav one link worse,
-    //   which is KNOWN_ISSUES P3 #11 and still the owner's call.
-    // 106 → 107: +My meetings (`/teach/meetings`). The screen a teacher's own
-    //   parent-teacher bookings appear on, which had no screen at all — the
-    //   office's `/academics/meetings` answers 403 to a teacher, and neither
-    //   `/teach/schedule` nor `/portal/teacher` mentions meetings
-    //   (KNOWN_ISSUES #30). Unreachable without this link, which is the case
-    //   the allowance above is for. It also makes the nav one link worse,
-    //   which remains P3 #11 and the owner's call.
-    // 107 → 108: +Finance settings (`/finance/settings`). The three billing
-    //   settings the S4.3/S4.4 migrations seeded had no screen at all — a DBA
-    //   and the `settings` table were the only way to change how many days
-    //   after the due date a family is reminded (S4 audit D3, STATUS §5fb).
-    //   Unreachable without this link, which is the case the allowance above
-    //   is for. One link worse; still P3 #11 and the owner's call.
-    // 108 → 109: +HR settings (`/hr/settings`). Five HR and payroll settings
-    //   — the portal check-in switch, both checklists, the payroll rules and
-    //   the payroll switch — were read on every request and editable from no
-    //   screen (S5 audit D3, STATUS §5fe). Same case, same allowance, one
-    //   link worse; still P3 #11 and the owner's call.
-    $linkCount = substr_count($shell, '<Link href=');
-    expect($linkCount)->toBe(109);
+    expect($shell)->toContain('nav.primary.map')
+        ->and($shell)->toContain('nav.groups.map')
+        ->and($shell)->toContain('aria-expanded')
+        // The screens live in App\Support\Navigation\NavigationMap, not here.
+        // Alerts and the account link are the only literal destinations left.
+        ->and(substr_count($shell, '<Link href="'))->toBeLessThanOrEqual(3)
+        ->and($shell)->not->toContain('href="/academics/years"')
+        ->and($shell)->not->toContain('href="/hr/payroll"');
 });
 
 it('does not register a product route for the proposal document', function () {
