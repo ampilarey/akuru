@@ -4352,6 +4352,49 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5gi. The QR on certificates and ID cards is a real QR code (2026-09-25)
+
+Found by the gate card slice (§5ge, KNOWN_ISSUES): `StudentNumberQr` drew
+the three corner squares and filled the rest with bits of a SHA-256 hash.
+It looked like a QR code and no decoder could read it, so no certificate
+had ever been verifiable by scanning, and no ID card's code said anything.
+
+**Why an encoder in the app, not a package.** Composer's QR packages are
+hosted on GitHub, and this sandbox's GitHub access is scoped to this
+repository, so `composer require` could not download one. A package added
+by someone with normal network access remains a fine later swap: the
+interface is one method.
+
+**What was built.** `App\Support\Qr\QrMatrix` and `ReedSolomon`, about 550
+lines with comments: byte mode, error correction level M (about 15% damage recovered),
+versions 1–10 chosen automatically (up to 213 bytes, far more than a
+verification URL), all eight masks with the standard's penalty choosing.
+`StudentNumberQr::svg()` keeps its signature and attributes and now draws
+the real matrix as one SVG path with the four-module quiet zone. A printed
+certificate got smaller too: 18 KB of HTML became 10.5 KB.
+
+**How it was checked.**
+- Against an independent encoder: the npm `qrcode` package, forced to the
+  same byte mode, level and mask, produced the identical matrix in 64 of 64
+  comparisons across versions 1, 3, 4, 6, 7, 8 and 10 and all eight masks.
+  The first comparison differed on two payloads; that was npm choosing a
+  denser mode on its own, not a bug, and forcing byte mode settled it.
+  Reading npm's source also caught one real bug in my first draft before
+  the comparison ran: an alignment pattern that sits on the timing row from
+  version 7 up was being skipped.
+- By a real decoder: `jsQR` read all six automatically masked codes tried,
+  versions 1 to 10.
+- `QrCodeTest` keeps seven reference matrices as a fixture, so CI needs no
+  Node, plus version choice, the refusal past 213 bytes, and the SVG shape.
+
+**Walked in a browser.** `certify.mjs` used to follow the certificate's
+*Verify* link, which is why nothing noticed. It now takes the QR out of the
+printed document, draws it in a blank page, decodes it with `jsQR`, and
+sends the stranger wherever it points. 16/16 on this build; on the old
+generator the same walk fails at *the printed QR scans* (14/16). An ID card
+rendered by `GenerateIdCardAction` for the seeded pupil decodes, the same
+way, to its student number `PIL-01`.
+
 ## 5gh. Deploy 3, slice 3: the legacy student tables are archived, and Deploy 3 is done (2026-09-25)
 
 Last of three PRs for owner decision 10. After slices 1 and 2 nothing read

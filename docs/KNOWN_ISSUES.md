@@ -172,7 +172,7 @@ on the form. That is a product choice, not a cleanup step.
 
 ## Found by the gate card slice (2026-09-24)
 
-### The QR on certificates and ID cards cannot be scanned — **open, next QR slice**
+### The QR on certificates and ID cards cannot be scanned — **fixed (2026-09-25)**
 
 **Severity:** a promise on paper that does not work. `App\Support\Services\StudentNumberQr`
 draws the three corner squares of a QR code and fills the rest with hashed
@@ -191,6 +191,14 @@ that day (its GitHub access is scoped to this repository), which is also a
 question for the fix: a pure-PHP encoder vendored in, or the package added by
 someone with normal network access. The test to write first is a round trip:
 encode, render, decode, compare.
+
+**Fix (STATUS §5gi):** a small pure-PHP encoder in the app,
+`App\Support\Qr\QrMatrix` (byte mode, level M, versions 1–10), behind the
+same `StudentNumberQr::svg()` both documents already call. Its output matched
+the npm `qrcode` package module for module in 64 comparisons across
+versions 1–10 and all eight masks; `QrCodeTest` keeps a representative set as
+a fixture. The certificate walk now decodes the printed QR with `jsQR` and
+sends the stranger wherever it points, and it fails on the old generator.
 
 ## Found by the navigation slice (2026-09-24)
 
