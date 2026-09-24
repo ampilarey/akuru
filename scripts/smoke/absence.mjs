@@ -115,7 +115,12 @@ async function settles(page, needle, ms = 5000) {
     return false;
 }
 
-const today = new Date().toISOString().slice(0, 10);
+// The school's own date, not the walker's: the app keeps Indian/Maldives
+// time, and the fourth staging run, walked from a UTC host after Maldives
+// midnight, wrote the note for yesterday and read yesterday's row (§5fz).
+const TZ = process.env.SMOKE_TZ ?? 'Indian/Maldives';
+const isoDate = (date = new Date()) => new Intl.DateTimeFormat('en-CA', { timeZone: TZ, year: 'numeric', month: '2-digit', day: '2-digit' }).format(date);
+const today = isoDate();
 
 // ---------------------------------------------------------------- the family
 
@@ -245,7 +250,7 @@ if (markedAbsent) {
     const rows = await parent.$$eval('tbody tr', (trs) => trs.map(
         (tr) => [...tr.querySelectorAll('td')].map((td) => td.innerText.replace(/\s+/g, ' ').trim()),
     ));
-    const todayRow = rows.find((cells) => cells[0]?.includes(new Date().toISOString().slice(0, 10)));
+    const todayRow = rows.find((cells) => cells[0]?.includes(today));
 
     check(
         'the family has a row for today at all',

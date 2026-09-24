@@ -139,7 +139,11 @@ const rowText = async (page, needle) => {
 
     return (await row.count()) ? (await row.innerText()).replace(/\s+/g, ' ') : '';
 };
-const isoDaysFromNow = (days) => new Date(Date.now() + days * 86400000).toISOString().slice(0, 10);
+// The school's own date, not the walker's: the app keeps Indian/Maldives
+// time, and the fourth staging run, walked from a UTC host after Maldives
+// midnight, read yesterday's attendance row as today's (STATUS §5fz).
+const TZ = process.env.SMOKE_TZ ?? 'Indian/Maldives';
+const isoDaysFromNow = (days) => new Intl.DateTimeFormat('en-CA', { timeZone: TZ, year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date(Date.now() + days * 86400000));
 
 // ---------------------------------------------------------------- the pupil
 
@@ -251,7 +255,7 @@ check('the tardies CSV downloads with the pupil on it', csv !== null && csv.stat
 
 // 4. today's row
 await parent.goto(`${BASE}/en/portal/attendance`, { waitUntil: 'networkidle' });
-const today = await rowText(parent, new Date().toISOString().slice(0, 10));
+const today = await rowText(parent, isoDaysFromNow(0));
 check('the family sees today\'s row reading late', /late/i.test(today), today || (await text(parent)).slice(0, 160));
 
 await finish();

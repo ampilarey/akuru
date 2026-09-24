@@ -43,7 +43,8 @@
  * Every walk reads markers that seeder plants, and it can now be run twice
  * (STATUS §5dz — it could not, for most of its life). Locally, a dev server on
  * `SMOKE_BASE_URL` and a Chromium at `SMOKE_CHROMIUM` if the bundled one is not
- * where Playwright expects.
+ * where Playwright expects. Dates the walks compute are in `SMOKE_TZ`, default
+ * `Indian/Maldives` — the school's day, not the walker's (STATUS §5fz).
  */
 import { spawn } from 'node:child_process';
 import { existsSync, readdirSync } from 'node:fs';

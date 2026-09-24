@@ -226,7 +226,10 @@ const csv = await admin.request.get(new URL(`${resultsHref?.replace(/\/results$/
 check('the results export as CSV', csv.status() === 200 && /csv/i.test(csv.headers()['content-type'] ?? '') && (await csv.text()).includes(NAME), `HTTP ${csv.status()} ${csv.headers()['content-type'] ?? ''}`);
 
 await admin.click('button:has-text("Close sign-up now")');
-await admin.waitForLoadState('networkidle');
+// The flash, not `networkidle`: the close is a PUT that redirects to the
+// list, and the fourth staging run re-opened the list before it had landed
+// and read the sheet still open (STATUS §5fz).
+await settles(admin, 'Form updated.');
 await admin.goto(`${BASE}/en/forms`, { waitUntil: 'networkidle' });
 check('the office closes the sheet', /closed/i.test(await admin.locator('li', { hasText: TITLE }).first().innerText().catch(() => '')), (await admin.locator('li', { hasText: TITLE }).first().innerText().catch(() => '')).replace(/\s+/g, ' '));
 

@@ -41,9 +41,11 @@ const INTAKE = 'SMOKE-Intake';
 const SESSION = 'SMOKE-Session';
 
 // Tomorrow at ten, as the datetime-local input wants it.
-const tomorrow = new Date(Date.now() + 86400000);
-const startsAt = `${tomorrow.toISOString().slice(0, 10)}T10:00`;
-const endsAt = `${tomorrow.toISOString().slice(0, 10)}T11:00`;
+// In the school's own day (Indian/Maldives), not the walker's (STATUS §5fz).
+const TZ = process.env.SMOKE_TZ ?? 'Indian/Maldives';
+const tomorrow = new Intl.DateTimeFormat('en-CA', { timeZone: TZ, year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date(Date.now() + 86400000));
+const startsAt = `${tomorrow}T10:00`;
+const endsAt = `${tomorrow}T11:00`;
 
 const HERMETIC_ARGS = [
     '--disable-background-networking',

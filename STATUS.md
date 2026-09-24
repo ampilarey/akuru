@@ -4519,6 +4519,44 @@ old seeder. Same family as the `UserSeeder`, `SubjectSeeder` and
 staff-profile findings above: every one an assumption that the database
 was empty, and every one first seen on the host that is not.
 
+**The fourth staging run**, re-seeded with the fixed seeder: `sweep`
+**25/25**, `page-errors` clean, the writers **28/35** — and this run
+crossed **Maldives midnight**. Seven reds:
+
+- **`own-data`** — cannot target a remote host (shells out to local
+  tinker); known, unchanged.
+- **The walker's date was not the school's — five walks, fixed.** The
+  walks took *today* from `new Date().toISOString()`, which is UTC; the
+  app keeps `Indian/Maldives`, five hours ahead. Walked from a UTC host
+  between 19:00 and 24:00 UTC, `absence` wrote its note for the day
+  before the register it then filled, `requests` looked for yesterday's
+  date on today's cards, `hr` found yesterday's check-in under "today",
+  and `school-day` read yesterday's row as today's. Every date a walk
+  computes now comes from `Intl.DateTimeFormat` in `SMOKE_TZ`, default
+  `Indian/Maldives` (`absence`, `exams`, `fees`, `hr`, `intake`,
+  `meetings`, `requests`, `school-day`). Locally the same clocks apply
+  and the walks had been green only because they ran before 19:00 UTC.
+- **Residue the seeder did not clear — seeder, fixed.** `school-day`'s
+  sports day was refused: `create-sweep` adds a `MADE<run>S25` calendar
+  day after the last entry every run, and by the fourth those rows had
+  marched into the dates a week out. And the lateness panel counted the
+  pupil late **twice** — yesterday's run and today's — because the
+  seeder cleared only today's marks and the panel aggregates the year.
+  `schoolDayCycle()` now clears the sweep's calendar rows and every mark
+  of the smoke pupil's; `SchoolDayCycleSmokeResetTest` plants both and
+  reads them gone.
+- **Two reads before the post had landed — walks, fixed.** `signup`
+  re-opened the list before the close had been written (`networkidle`
+  after a PUT, the same non-wait as §5fz's third run — now the *Form
+  updated.* flash); `arabic` saw the saved activity's title on the page
+  and no row for it yet (bounded wait for the row, as `hifz`).
+
+Everything else green, including all seven of the third run's reds. Ten
+walks re-run locally on a fresh seed after Maldives midnight: `absence`
+13/13, `exams` 28/28, `fees` 31/31, `intake` 13/13, `meetings` 11/11,
+`requests` 23/23, `school-day` 14/14, `signup` 17/17, `arabic` 10/10,
+`hr` 27/27.
+
 Two residue observations, not defects: the office queue on staging holds
 one `SMOKE-Research` from the second run whose peer review finished but
 which nobody published (the walk had already failed by then), and the

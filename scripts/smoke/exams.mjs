@@ -53,7 +53,9 @@ const EXAM = 'SMOKE-Exam';
 // 85 sits exactly on the default scale's A boundary (`min: 85`), so the
 // gradebook step also checks that the boundary is inclusive.
 const MARK = '85';
-const today = new Date().toISOString().slice(0, 10);
+// The school's own date, not the walker's (Indian/Maldives; STATUS §5fz).
+const TZ = process.env.SMOKE_TZ ?? 'Indian/Maldives';
+const today = new Intl.DateTimeFormat('en-CA', { timeZone: TZ, year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
 
 // See sweep.mjs: without this the run stalls on fonts and Chromium's own
 // background services rather than on anything this application does.

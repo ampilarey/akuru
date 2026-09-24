@@ -144,7 +144,9 @@ check('the office has a teacher to make slots for', teacherName !== '', teacherN
 
 const existingDates = (await text(staff)).match(/\d{4}-\d{2}-\d{2}/g) ?? [];
 const latest = existingDates.sort().pop();
-const base = latest && latest >= new Date().toISOString().slice(0, 10) ? latest : new Date().toISOString().slice(0, 10);
+// Today in the school's own day (Indian/Maldives), not the walker's (§5fz).
+const today = new Intl.DateTimeFormat('en-CA', { timeZone: process.env.SMOKE_TZ ?? 'Indian/Maldives', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
+const base = latest && latest >= today ? latest : today;
 meetingDate = new Date(Date.parse(base) + 86400000).toISOString().slice(0, 10);
 
 await staff.fill('input[type=date]', meetingDate);

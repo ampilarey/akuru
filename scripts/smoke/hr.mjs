@@ -46,12 +46,17 @@ const PERMIT = 'SMOKE-Permit';
 const PERIOD = { year: '2099', month: '12' };
 // A week out, and on a school day: the cover request only exists for a
 // lesson on the timetable, and there are none on a Friday or Saturday.
-const leaveDay = new Date(Date.now() + 7 * 86400000);
-while ([5, 6].includes(leaveDay.getUTCDay())) {
-    leaveDay.setUTCDate(leaveDay.getUTCDate() + 1);
+// Dates in the school's own day, not the walker's: the app keeps
+// Indian/Maldives time, and the fourth staging run, walked from a UTC host
+// after Maldives midnight, found yesterday's check-in under "today" (§5fz).
+const TZ = process.env.SMOKE_TZ ?? 'Indian/Maldives';
+const isoDate = (date) => new Intl.DateTimeFormat('en-CA', { timeZone: TZ, year: 'numeric', month: '2-digit', day: '2-digit' }).format(date);
+let leaveDay = new Date(Date.now() + 7 * 86400000);
+while ([5, 6].includes(new Date(`${isoDate(leaveDay)}T00:00:00Z`).getUTCDay())) {
+    leaveDay = new Date(leaveDay.getTime() + 86400000);
 }
-const leaveDate = leaveDay.toISOString().slice(0, 10);
-const today = new Date().toISOString().slice(0, 10);
+const leaveDate = isoDate(leaveDay);
+const today = isoDate(new Date());
 
 // See sweep.mjs: without this the run stalls on fonts and Chromium's own
 // background services rather than on anything this application does.
