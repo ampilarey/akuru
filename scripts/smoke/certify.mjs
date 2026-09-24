@@ -223,11 +223,37 @@ const opened = openHref ? await student.request.get(new URL(openHref, BASE).href
 const html = opened ? await opened.text() : '';
 check('and opens the document, named, with a QR', opened?.status() === 200 && html.includes(NAME) && /<svg/.test(html) && !/PDF/.test(html), opened ? `HTTP ${opened.status()}, ${html.length} bytes, ${/<svg/.test(html) ? 'QR svg' : 'no svg'}` : 'no Open link');
 
-// 6. a stranger follows the QR
+// 6. a stranger scans the printed QR and follows it
+//
+// Until 2026-09-25 the certificate's QR was corner squares around hashed
+// bits, and this step followed the Verify *link* instead, so nothing noticed
+// that no phone could read the code (STATUS §5gi). Now the SVG from the
+// document is drawn in a blank page and read by `jsQR`, the decoder the gate
+// scanner uses, and the guest goes wherever the code says.
+const scanner = await (await browser.newContext()).newPage();
+const qrSvg = html.match(/<svg[^>]*data-qr=[\s\S]*?<\/svg>/)?.[0] ?? '';
+await scanner.setContent(`<!doctype html><html><body style="margin:0;background:#fff">${qrSvg}</body></html>`);
+await scanner.addScriptTag({ path: new URL('../../node_modules/jsqr/dist/jsQR.js', import.meta.url).pathname });
+const scanned = qrSvg ? await scanner.evaluate(async () => {
+  const svg = document.querySelector('svg[data-qr]');
+  const image = new Image();
+  image.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(new XMLSerializer().serializeToString(svg));
+  await image.decode();
+  const canvas = document.createElement('canvas');
+  canvas.width = canvas.height = 480;
+  const context = canvas.getContext('2d');
+  context.fillStyle = '#fff';
+  context.fillRect(0, 0, 480, 480);
+  context.drawImage(image, 0, 0, 480, 480);
+  const pixels = context.getImageData(0, 0, 480, 480);
+  return window.jsQR(pixels.data, 480, 480)?.data ?? null;
+}) : null;
+check('the printed QR scans, and says where to verify it', !!scanned && !!verifyHref && new URL(scanned, BASE).pathname === new URL(verifyHref, BASE).pathname, scanned ?? (qrSvg ? 'the QR did not decode' : 'no QR in the document'));
+
 const guest = await (await browser.newContext()).newPage();
-const verified = verifyHref ? await guest.goto(verifyHref, { waitUntil: 'domcontentloaded' }) : null;
+const verified = scanned ? await guest.goto(new URL(new URL(scanned, BASE).pathname, BASE).href, { waitUntil: 'domcontentloaded' }) : null;
 const face = verified ? (await guest.innerText('body')).replace(/\s+/g, ' ') : '';
-check('a guest following the QR is told it is authentic, and shown the face only', verified?.status() === 200 && /authentic/i.test(face) && face.includes(NAME) && !face.includes('@') && !/\bid\b/i.test(face), face.slice(0, 200) || 'no Verify link');
+check('a guest following the QR is told it is authentic, and shown the face only', verified?.status() === 200 && /authentic/i.test(face) && face.includes(NAME) && !face.includes('@') && !/\bid\b/i.test(face), face.slice(0, 200) || 'the QR did not scan');
 const bogus = await guest.goto(`${BASE}/verify/certificates/not-a-real-token`, { waitUntil: 'domcontentloaded' });
 check('and a made-up token is a plain 404', bogus?.status() === 404, `HTTP ${bogus?.status()}`);
 
