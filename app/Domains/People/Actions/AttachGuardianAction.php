@@ -5,7 +5,6 @@ namespace App\Domains\People\Actions;
 use App\Domains\People\Enums\GuardianRelationship;
 use App\Domains\People\Models\ParentGuardian;
 use App\Domains\People\Models\Student;
-use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 
 class AttachGuardianAction
@@ -51,31 +50,7 @@ class AttachGuardianAction
             app(RecordGuardianLinkPolicyAction::class)->execute($student, $guardian, $policy, $actorId);
         }
 
-        $this->dualWriteLegacy($student, $guardian, $relationship->value, $isPrimary);
-    }
-
-    private function dualWriteLegacy(Student $student, ParentGuardian $guardian, string $relationship, bool $isPrimary): void
-    {
-        if (! $student->legacy_registration_student_id || ! $guardian->user_id) {
-            return;
-        }
-
-        $exists = DB::table('student_guardians')
-            ->where('student_id', $student->legacy_registration_student_id)
-            ->where('guardian_user_id', $guardian->user_id)
-            ->exists();
-
-        if ($exists) {
-            return;
-        }
-
-        DB::table('student_guardians')->insert([
-            'student_id' => $student->legacy_registration_student_id,
-            'guardian_user_id' => $guardian->user_id,
-            'relationship' => $relationship,
-            'is_primary' => $isPrimary,
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
+        // The mirror into the legacy `student_guardians` table stopped in
+        // Deploy 3 slice 2; `guardian_student` is the only guardian link.
     }
 }

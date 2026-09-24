@@ -157,9 +157,17 @@ it('counts a legacy enrolment as history too', function () {
     // `course_enrollments` carries both the unified id and the legacy
     // registration-student id, and the S1.1 read switch means either may be the
     // one populated on an older row. Missing one would let a real roster go.
+    //
+    // Enrolment no longer writes a legacy row (Deploy 3 slice 2), so the older
+    // row this guards is planted: the user's `registration_students` row
+    // carries the enrolment and the unified id is empty.
     ['user' => $user, 'enrollment' => $enrollment] = enrolledUser();
+    $legacy = makeRegistrationStudent(['user_id' => $user->id]);
 
-    CourseEnrollment::query()->whereKey($enrollment->id)->update(['unified_student_id' => null]);
+    CourseEnrollment::query()->whereKey($enrollment->id)->update([
+        'unified_student_id' => null,
+        'student_id' => $legacy->id,
+    ]);
 
     $counts = app(DeleteUserAccountAction::class)->dependentCounts($user->fresh());
 

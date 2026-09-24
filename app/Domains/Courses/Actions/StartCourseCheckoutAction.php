@@ -130,7 +130,6 @@ class StartCourseCheckoutAction
                 'course_id' => $course->id,
                 'course_offering_id' => $enrollment->course_offering_id,
                 'unified_student_id' => $enrollment->unified_student_id,
-                'student_id' => $enrollment->student_id,
                 'metadata' => [
                     'source' => 'course_engine_checkout',
                     'course_title' => $course->title,

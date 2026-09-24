@@ -9,7 +9,6 @@ use App\Domains\Courses\Actions\PublishLessonAction;
 use App\Domains\Courses\Actions\SaveActivityAction;
 use App\Domains\Courses\Actions\SaveContentBlockAction;
 use App\Domains\Courses\Models\Lesson;
-use App\Domains\People\Actions\EnsureLegacyStudentForUnifiedAction;
 use App\Domains\People\Models\StaffProfile;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
@@ -593,29 +592,12 @@ class SmokeMarkerSeeder extends Seeder
             ->where('unified_student_id', $unifiedStudentId)
             ->delete();
 
-        // `course_enrollments.student_id` is **NOT NULL** and still points at
-        // the legacy `registration_students` row, while `unified_student_id`
-        // is the People one. That is the S1.1 dual-write era showing: an
-        // enrolment cannot exist for a People-side pupil alone, and a seeded
-        // database has **zero** `registration_students`, so there was no pupil
-        // anywhere who could be enrolled on anything.
-        //
-        // The legacy row is created here rather than the column forced,
-        // because that is what the real registration flow does. It is also the
-        // concrete shape of the Deploy 3 cleanup that STATUS has been carrying
-        // as a proposal: until `student_id` can go, this pairing is the only
-        // way to enrol anybody.
-        // Through People's own action rather than a hand-rolled insert. The
-        // first version of this built the legacy row here and set the link
-        // itself, duplicating `EnsureLegacyStudentForUnifiedAction`, which
-        // already existed and does it better — it reuses a legacy row already
-        // attached to the same login instead of making a second one. One
-        // definition of "pair a unified pupil with a legacy row" (rule 11).
-        $legacyId = app(EnsureLegacyStudentForUnifiedAction::class)->execute($unifiedStudentId);
-
+        // Enrolled on the People pupil alone. This used to pair the pupil
+        // with a legacy `registration_students` row first, because
+        // `course_enrollments.student_id` was NOT NULL; Deploy 3 made it
+        // optional (slice 1) and stopped writing it (slice 2).
         DB::table('course_enrollments')->insert([
             'course_id' => $courseId,
-            'student_id' => $legacyId,
             'unified_student_id' => $unifiedStudentId,
             'status' => 'active',
             'enrolled_at' => now(),
@@ -779,8 +761,6 @@ class SmokeMarkerSeeder extends Seeder
             return;
         }
 
-        $legacyId = app(EnsureLegacyStudentForUnifiedAction::class)->execute($unifiedStudentId);
-
         // Everything the previous run left behind. A refunded enrolment cannot
         // be un-refunded, so the row is replaced rather than reset — and the
         // payments it spawned go with it, or the walk would refund one of them
@@ -796,7 +776,6 @@ class SmokeMarkerSeeder extends Seeder
 
         DB::table('course_enrollments')->insert([
             'course_id' => $courseId,
-            'student_id' => $legacyId,
             'unified_student_id' => $unifiedStudentId,
             'status' => 'pending',
             'payment_status' => 'pending',

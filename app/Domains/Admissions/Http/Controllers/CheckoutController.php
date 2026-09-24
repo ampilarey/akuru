@@ -7,6 +7,7 @@ use App\Domains\Courses\Models\CourseEnrollment;
 use App\Domains\Finance\Models\Payment;
 use App\Domains\Finance\Models\PaymentItem;
 use App\Domains\Finance\Services\BmlConnectService;
+use App\Domains\People\Actions\RegisterCourseStudentAction;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -38,32 +39,22 @@ class CheckoutController extends Controller
      * Start payment: validate terms acceptance, create registration + payment, redirect to BML.
      */
     /**
-     * The registration students this person may check out for: themselves and
-     * their own children. Taken from the relations the rest of the app already
-     * uses, so this introduces no new policy.
+     * The students this person may check out for: themselves and their own
+     * children (`students.id` since Deploy 3 slice 2). The same rule
+     * registration uses, so this introduces no new policy.
      *
      * @return list<int>
      */
-    private function registrationStudentIdsFor(?\App\Domains\Identity\Models\User $user): array
+    private function studentIdsFor(?\App\Domains\Identity\Models\User $user): array
     {
-        if ($user === null) {
-            return [];
-        }
-
-        $ids = $user->guardianStudents()->pluck('registration_students.id')->all();
-
-        if ($own = $user->registrationStudentProfile()->value('id')) {
-            $ids[] = $own;
-        }
-
-        return array_values(array_unique(array_map('intval', $ids)));
+        return $user === null ? [] : app(RegisterCourseStudentAction::class)->idsForActor($user->id);
     }
 
     public function start(Request $request, Course $course)
     {
         $request->validate([
             'accept_terms' => ['required', Rule::in(['1', 'on', 'yes'])],
-            'student_id' => ['nullable', 'exists:registration_students,id'],
+            'student_id' => ['nullable', 'exists:students,id'],
             'enrollment_id' => ['nullable', 'exists:course_enrollments,id'],
         ], [
             'accept_terms.required' => 'You must accept the Terms & Conditions, Refund Policy, and Privacy Policy to proceed.',
@@ -88,13 +79,12 @@ class CheckoutController extends Controller
         // control, and pending if it was abandoned. Enrolment ids are
         // sequential integers.
         //
-        // `student_id` was `exists:registration_students,id`, which says the
-        // row exists and nothing about whose it is.
+        // `student_id` was `exists:...,id`, which says the row exists and
+        // nothing about whose it is.
         //
         // The set of students a person may act for is the app's own rule, not
-        // a new one: themselves (`registrationStudentProfile`) and their
-        // children (`guardianStudents`).
-        $mine = $this->registrationStudentIdsFor($user);
+        // a new one: themselves and their children.
+        $mine = $this->studentIdsFor($user);
 
         $studentId = $request->input('student_id');
         if ($studentId !== null && ! in_array((int) $studentId, $mine, true)) {
@@ -108,13 +98,13 @@ class CheckoutController extends Controller
             if ($enrollmentId) {
                 $enrollment = CourseEnrollment::where('id', $enrollmentId)
                     ->where('course_id', $course->id)
-                    ->whereIn('student_id', $mine)
+                    ->whereIn('unified_student_id', $mine)
                     ->firstOrFail();
             }
             if (! $enrollment && $studentId) {
                 $enrollment = CourseEnrollment::firstOrCreate(
                     [
-                        'student_id' => $studentId,
+                        'unified_student_id' => (int) $studentId,
                         'course_id' => $course->id,
                     ],
                     [
@@ -125,12 +115,11 @@ class CheckoutController extends Controller
                 );
             }
             if (! $enrollment) {
-                $student = $user?->student;
-                $legacyId = $student?->legacy_registration_student_id;
-                if ($legacyId) {
+                $ownId = $user?->student?->id;
+                if ($ownId) {
                     $enrollment = CourseEnrollment::firstOrCreate(
                         [
-                            'student_id' => $legacyId,
+                            'unified_student_id' => $ownId,
                             'course_id' => $course->id,
                         ],
                         [
@@ -144,7 +133,7 @@ class CheckoutController extends Controller
 
             $payment = Payment::create([
                 'user_id' => $user?->id,
-                'student_id' => $enrollment?->student_id,
+                'unified_student_id' => $enrollment?->unified_student_id,
                 'course_id' => $course->id,
                 'amount' => $fee,
                 'amount_mvr' => $fee,

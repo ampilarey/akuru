@@ -30,7 +30,7 @@ class CheckTestCourseEnrollmentCommand extends Command
         }
 
         $this->line('enrollment_id: '.$e->id);
-        $this->line('student_id: '.$e->student_id);
+        $this->line('student_id: '.$e->unified_student_id);
         $this->line('payment_status: '.$e->payment_status);
         $this->line('payment_id: '.($e->payment_id ?? 'null'));
 

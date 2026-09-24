@@ -13,6 +13,7 @@ use App\Domains\Identity\Models\UserContact;
 use App\Domains\Identity\Services\AccountResolverService;
 use App\Domains\Identity\Services\ContactNormalizer;
 use App\Domains\Identity\Services\OtpService;
+use App\Domains\People\Actions\RegisterCourseStudentAction;
 use App\Domains\Website\Actions\RecordFunnelEventAction;
 use App\Http\Requests\Registration\SetPasswordRequest;
 use App\Http\Requests\Registration\StartRegistrationRequest;
@@ -117,7 +118,7 @@ class CourseRegistrationController extends PublicRegistrationController
         ]);
 
         // Pre-select flow based on existing profile
-        $flow = $user->student ? 'adult' : ($user->courseStudents()->exists() || $user->guardianStudents()->exists() ? 'parent' : null);
+        $flow = $user->student ? 'adult' : ($user->courseStudents()->exists() ? 'parent' : null);
         if ($flow) {
             session(['checkout_flow' => $flow]);
         }
@@ -447,19 +448,15 @@ class CourseRegistrationController extends PublicRegistrationController
             // Duplicate check — same as enroll() adult path
             $searchNid = $request->id_type === 'national_id' ? strtoupper(trim($request->national_id ?? '')) : null;
             $searchPassport = $request->id_type === 'passport' ? strtoupper(trim($request->passport ?? '')) : null;
-            foreach (\App\Domains\People\Models\RegistrationStudent::whereNotNull('user_id')->get() as $candidate) {
-                $idMatch = ($searchNid && $candidate->national_id === $searchNid)
-                        || ($searchPassport && $candidate->passport === $searchPassport);
-                if (! $idMatch) {
-                    continue;
-                }
-                $existingEnrollment = \App\Domains\Courses\Models\CourseEnrollment::where('student_id', $candidate->id)
+            $candidate = app(RegisterCourseStudentAction::class)->findWithAccountByIdentity($searchNid, $searchPassport);
+            if ($candidate !== null) {
+                $existingEnrollment = \App\Domains\Courses\Models\CourseEnrollment::where('unified_student_id', $candidate['id'])
                     ->whereIn('course_id', $courseIds)
                     ->where('status', '!=', 'rejected')
                     ->with('course')
                     ->first();
                 $idLabel = $searchNid ? "ID card {$searchNid}" : "Passport {$searchPassport}";
-                $realName = trim($candidate->first_name.' '.$candidate->last_name);
+                $realName = trim($candidate['first_name'].' '.$candidate['last_name']);
                 if ($existingEnrollment) {
                     $title = $existingEnrollment->course?->title
                               ?? \App\Domains\Courses\Models\Course::whereIn('id', $courseIds)->first()?->title ?? 'this course';
@@ -551,12 +548,8 @@ class CourseRegistrationController extends PublicRegistrationController
         }
 
         // Pre-fill existing student profile for returning users (unified Student first)
-        $existingProfile = $user->student ?? $user->registrationStudentProfile;
+        $existingProfile = $user->student;
         $children = $user->courseStudents()->orderBy('first_name')->get();
-        if ($children->isEmpty()) {
-            $user->loadMissing('guardianStudents');
-            $children = $user->guardianStudents;
-        }
 
         // Default flow: honour the choice made on checkout start, then fall back to profile
         $checkoutFlow = session('checkout_flow');
@@ -626,10 +619,9 @@ class CourseRegistrationController extends PublicRegistrationController
 
         // Adult self-enrollment duplicate
         if ($flow === 'adult') {
-            $legacyStudentId = $user->student?->legacy_registration_student_id
-                ?? $user->registrationStudentProfile?->id;
-            if ($legacyStudentId) {
-                $existing = \App\Domains\Courses\Models\CourseEnrollment::where('student_id', $legacyStudentId)
+            $ownStudentId = $user->student?->id;
+            if ($ownStudentId) {
+                $existing = \App\Domains\Courses\Models\CourseEnrollment::where('unified_student_id', $ownStudentId)
                     ->whereIn('course_id', $courseIds)
                     ->where('status', '!=', 'rejected')
                     ->with('course')
@@ -649,7 +641,7 @@ class CourseRegistrationController extends PublicRegistrationController
         // Parent enrolling existing child duplicate
         if ($flow === 'parent' && $request->input('student_mode') === 'existing' && ! empty($data['student_id'])) {
             $studentId = (int) $data['student_id'];
-            $existing = \App\Domains\Courses\Models\CourseEnrollment::where('student_id', $studentId)
+            $existing = \App\Domains\Courses\Models\CourseEnrollment::where('unified_student_id', $studentId)
                 ->whereIn('course_id', $courseIds)
                 ->where('status', '!=', 'rejected')
                 ->with('course')
@@ -659,7 +651,8 @@ class CourseRegistrationController extends PublicRegistrationController
                                ?? \App\Domains\Courses\Models\Course::find($courseIds[0])?->title
                                ?? 'this course';
                 $status = $this->humanEnrollmentStatus($existing);
-                $studentName = \App\Domains\People\Models\RegistrationStudent::find($studentId)?->full_name ?? 'This student';
+                $known = app(RegisterCourseStudentAction::class)->forActor($user->id, $studentId);
+                $studentName = $known !== null ? trim($known['first_name'].' '.$known['last_name']) : 'This student';
 
                 return back()->withInput()
                     ->withErrors(['student_id' => "{$studentName} is already enrolled in \"{$title}\" — {$status}."]);
@@ -673,39 +666,18 @@ class CourseRegistrationController extends PublicRegistrationController
             $searchPassport = ($data['id_type'] ?? '') === 'passport'
                               ? strtoupper(trim($data['passport'] ?? '')) : null;
 
-            $existingStudent = null;
-            $user->loadMissing('guardianStudents');
-            foreach ($user->guardianStudents as $gs) {
-                if ($searchNid && $gs->national_id === $searchNid) {
-                    $existingStudent = $gs;
-                    break;
-                }
-                if ($searchPassport && $gs->passport === $searchPassport) {
-                    $existingStudent = $gs;
-                    break;
-                }
-            }
-            if (! $existingStudent) {
-                foreach (\App\Domains\People\Models\RegistrationStudent::whereNotNull('user_id')->get() as $c) {
-                    if ($searchNid && $c->national_id === $searchNid) {
-                        $existingStudent = $c;
-                        break;
-                    }
-                    if ($searchPassport && $c->passport === $searchPassport) {
-                        $existingStudent = $c;
-                        break;
-                    }
-                }
-            }
+            $finder = app(RegisterCourseStudentAction::class);
+            $existingStudent = $finder->findChildByIdentity($user->id, $searchNid, $searchPassport)
+                ?? $finder->findWithAccountByIdentity($searchNid, $searchPassport);
             if ($existingStudent) {
-                $existing = \App\Domains\Courses\Models\CourseEnrollment::where('student_id', $existingStudent->id)
+                $existing = \App\Domains\Courses\Models\CourseEnrollment::where('unified_student_id', $existingStudent['id'])
                     ->whereIn('course_id', $courseIds)
                     ->where('status', '!=', 'rejected')
                     ->with('course')
                     ->first();
 
                 // The ID belongs to a known student — always report the real name
-                $realName = trim($existingStudent->first_name.' '.$existingStudent->last_name);
+                $realName = trim($existingStudent['first_name'].' '.$existingStudent['last_name']);
                 $idLabel = $searchNid ? "ID card {$searchNid}" : "Passport {$searchPassport}";
 
                 if ($existing) {
@@ -1134,7 +1106,8 @@ class CourseRegistrationController extends PublicRegistrationController
                 $rules['child_password'] = ['required', 'string', 'min:8', 'confirmed'];
                 $rules['child_password_confirmation'] = ['required', 'string'];
             } else {
-                $rules['student_id'] = ['required', 'exists:registration_students,id'];
+                // `students.id` since Deploy 3 slice 2.
+                $rules['student_id'] = ['required', 'exists:students,id'];
             }
         } else {
             $rules['first_name'] = ['required', 'string', 'max:100'];

@@ -4352,6 +4352,57 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5gg. Deploy 3, slice 2: registration writes `students` only, and a child's login finally reaches the child (2026-09-25)
+
+Second of three PRs for owner decision 10. After this, nothing writes
+`registration_students` or `student_guardians`; slice 3 archives them.
+
+**What changed.**
+- New `People\Actions\RegisterCourseStudentAction`: the student a course
+  registration is for, on `students`. Adult: their own record, created or
+  refreshed (an ID already on the record is kept). Parent: the child is
+  matched first among the parent's own children, then among students with
+  an account, by ID card or passport, else created, and the parent linked in
+  `guardian_student` through `AttachGuardianAction`. The matching rules are
+  the ones registration used, moved, not reinvented. It returns plain arrays,
+  because Admissions may not import People's models (rule 3).
+- `EnrollmentService` uses it throughout. Enrolments and the consolidated
+  payment carry `unified_student_id` only.
+- Offering and self-learning enrolment no longer make a legacy row.
+  `AttachGuardianAction` no longer mirrors into `student_guardians`.
+- Checkout, the parent's *existing child* choice and `EnrollParentRequest`
+  take `students.id`, validated `exists:students,id` and scoped to the
+  actor's own record and children. Four controller lookups that resolved
+  through the legacy row, and the duplicate-identity scans that decrypted
+  every legacy row in PHP, are now single queries on `students`.
+- Deleted: `DualWriteCourseStudentAction`, `LinkGuardianDualWriteAction`,
+  `EnsureLegacyStudentForUnifiedAction`. `SmokeMarkerSeeder` enrols on the
+  People pupil alone. Two rule-2 baseline entries fixed and removed.
+
+**Found and fixed: a child's login was never linked to the child.** A parent
+registering a child with a password got a user created, then the parent's
+mobile copied onto it; a number belongs to one account, so the copy failed
+for every parent verified by mobile, was logged and swallowed, and the login
+was left orphaned. The copy was never needed (forgot-password reaches the
+guardian's phone through the student record). KNOWN_ISSUES has it; the new
+test proves both halves.
+
+**Recorded, not changed:** an empty gender still becomes `male`, as the dual
+write did (KNOWN_ISSUES).
+
+**Tests.** `RegistrationWritesStudentsOnlyTest` (a child registered twice is
+one student with one guardian link; existing child by `students.id`, a
+stranger refused; the child's login and reset code; offering enrolment with
+no legacy row; the service no longer names the legacy model). Twelve older
+tests that leaned on the dual write rewritten to say what is true now,
+among them `UnifiedStudentReadSwitchTest` and `CheckoutIsScopedToThePayerTest`.
+Full suite 2148 passed.
+
+**Walked in a browser.** `register`, `intake`, `learn`, `certify`, `buy`,
+`family`, `signup`, `money`, `fees`: 9/9 after reseeding with the changed
+seeder. Rows written during the walks: 0 `registration_students`, 0
+`student_guardians`, 5 enrolments all without a legacy id.
+
 ## 5gf. Deploy 3, slice 1: one enrolment per *student*, not per legacy registration row (2026-09-25)
 
 Owner decision 10 (Deploy 3 cleanup), confirmed. First of three PRs

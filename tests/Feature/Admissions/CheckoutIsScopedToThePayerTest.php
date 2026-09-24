@@ -2,8 +2,7 @@
 
 use App\Domains\Courses\Models\Course;
 use App\Domains\Courses\Models\CourseEnrollment;
-use App\Domains\Identity\Models\User;
-use App\Domains\People\Models\RegistrationStudent;
+use App\Domains\People\Models\Student;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
@@ -22,40 +21,42 @@ uses(RefreshDatabase::class);
  * somebody else mid-checkout attached to a payment they do not control, and
  * stuck pending if it was abandoned. Enrolment ids are sequential integers.
  *
- * `student_id` was validated as `exists:registration_students,id`, which says
- * the row exists and nothing whatever about whose it is.
+ * `student_id` was validated as `exists:...,id`, which says the row exists
+ * and nothing whatever about whose it is. (Since Deploy 3 slice 2 it is a
+ * `students.id`, and the fixtures below are students and `guardian_student`
+ * links rather than `registration_students` and `student_guardians`.)
  *
  * This is the shape behind most of today's findings — **an identifier taken
  * from the request where the owning record was available** — and it is the
  * fourth place it has turned up. The set of students a person may act for is
- * the app's own rule rather than a new one: themselves
- * (`registrationStudentProfile`) and their children (`guardianStudents`).
+ * the app's own rule rather than a new one: themselves and their children.
  */
+function checkoutStudent(string $first, string $last, int $age): Student
+{
+    return Student::query()->create([
+        'user_id' => null,
+        'first_name' => $first,
+        'last_name' => $last,
+        'date_of_birth' => now()->subYears($age)->toDateString(),
+        'gender' => 'female',
+    ]);
+}
+
 function payerWithChild(): array
 {
-    $payer = User::factory()->create();
-    $child = RegistrationStudent::create([
-        'user_id' => null,
-        'first_name' => 'Mine',
-        'last_name' => 'Child',
-        'dob' => now()->subYears(10),
-    ]);
-    $payer->guardianStudents()->attach($child->id, ['relationship' => 'mother', 'is_primary' => true]);
+    $guardian = makeGuardian();
+    $child = checkoutStudent('Mine', 'Child', 10);
+    $child->guardians()->attach($guardian->id, ['relationship' => 'mother', 'is_primary' => true]);
 
-    return [$payer->fresh(), $child];
+    return [$guardian->user->fresh(), $child];
 }
 
 function strangersEnrollment(Course $course): CourseEnrollment
 {
-    $stranger = RegistrationStudent::create([
-        'user_id' => null,
-        'first_name' => 'Somebody',
-        'last_name' => 'Else',
-        'dob' => now()->subYears(11),
-    ]);
+    $stranger = checkoutStudent('Somebody', 'Else', 11);
 
     return CourseEnrollment::create([
-        'student_id' => $stranger->id,
+        'unified_student_id' => $stranger->id,
         'course_id' => $course->id,
         'status' => 'pending',
         'payment_status' => 'required',
@@ -84,12 +85,7 @@ it('refuses to enrol a student the payer has nothing to do with', function () {
     [$payer] = payerWithChild();
     $course = Course::factory()->create(['registration_fee_amount' => 150]);
 
-    $stranger = RegistrationStudent::create([
-        'user_id' => null,
-        'first_name' => 'Not',
-        'last_name' => 'Mine',
-        'dob' => now()->subYears(9),
-    ]);
+    $stranger = checkoutStudent('Not', 'Mine', 9);
 
     $this->withoutLocalizationMiddleware()->actingAs($payer)
         ->post('/payments/course/'.$course->slug.'/start', [
@@ -98,7 +94,7 @@ it('refuses to enrol a student the payer has nothing to do with', function () {
         ])
         ->assertForbidden();
 
-    expect(CourseEnrollment::where('student_id', $stranger->id)->count())->toBe(0);
+    expect(CourseEnrollment::where('unified_student_id', $stranger->id)->count())->toBe(0);
 });
 
 it('still lets a guardian check out for their own child', function () {
@@ -113,5 +109,5 @@ it('still lets a guardian check out for their own child', function () {
             'student_id' => $child->id,
         ]);
 
-    expect(CourseEnrollment::where('student_id', $child->id)->where('course_id', $course->id)->count())->toBe(1);
+    expect(CourseEnrollment::where('unified_student_id', $child->id)->where('course_id', $course->id)->count())->toBe(1);
 });

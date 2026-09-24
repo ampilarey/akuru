@@ -6,9 +6,9 @@ stability wait.
 
 | PR | Scope | State |
 |---|---|---|
-| Slice 1 | `UNIQUE (unified_student_id, course_id, term_key)`, legacy `course_enrollments.student_id` nullable, enrolment lookups by unified student (STATUS §5gf) | built |
-| Slice 2 | Steps 1–4 below: stop the legacy writes; checkout posts `students.id` | next |
-| Slice 3 | Steps 5–8: archive `registration_students`, drop `student_guardians` and `students.legacy_registration_student_id`, retire the model | after slice 2 |
+| Slice 1 | `UNIQUE (unified_student_id, course_id, term_key)`, legacy `course_enrollments.student_id` nullable, enrolment lookups by unified student (STATUS §5gf, #460) | merged |
+| Slice 2 | Steps 1–4 below: stop the legacy writes; checkout and registration post `students.id` (STATUS §5gg) | built |
+| Slice 3 | Steps 5–8: archive `registration_students`, drop `student_guardians` and `students.legacy_registration_student_id`, retire the model | next |
 
 S1 Deploy 2 already switched reads to `students` via
 `unified_student_id` (ADR-008). Dual-write still creates

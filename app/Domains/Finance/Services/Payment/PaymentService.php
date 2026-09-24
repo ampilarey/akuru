@@ -34,9 +34,10 @@ class PaymentService
      * enrollments exist (pending) before any money moves, and the webhook
      * activates them through the PaymentConfirmed listener.
      *
+     * @param  int  $studentId  `students.id`
      * @param  array<int, array{enrollment: CourseEnrollment, course: Course, amount: float}>  $feeEnrollments
      */
-    public function createConsolidatedPayment(User $payer, int $registrationStudentId, array $feeEnrollments): Payment
+    public function createConsolidatedPayment(User $payer, int $studentId, array $feeEnrollments): Payment
     {
         $totalAmount = array_sum(array_column($feeEnrollments, 'amount'));
         $first = $feeEnrollments[0];
@@ -47,7 +48,9 @@ class PaymentService
 
         $payment = Payment::create([
             'user_id' => $payer->id,
-            'student_id' => $registrationStudentId,
+            // `students.id` since Deploy 3 slice 2; the legacy
+            // `payments.student_id` is no longer written.
+            'unified_student_id' => $studentId,
             'course_id' => $firstCourse->id,
             'amount' => $totalAmount,
             'amount_laar' => $totalLaar,

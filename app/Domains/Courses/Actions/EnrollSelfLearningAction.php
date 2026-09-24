@@ -7,7 +7,6 @@ use App\Domains\Courses\Models\Course;
 use App\Domains\Courses\Models\CourseEnrollment;
 use App\Domains\Offerings\Actions\DefaultSelfLearningOfferingAction;
 use App\Domains\Offerings\Actions\ReserveOfferingSeatAction;
-use App\Domains\People\Actions\EnsureLegacyStudentForUnifiedAction;
 use App\Domains\People\Actions\ResolveStudentForUserAction;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -50,10 +49,7 @@ class EnrollSelfLearningAction
             return $existing;
         }
 
-        $legacyId = $student['legacy_registration_student_id']
-            ?? app(EnsureLegacyStudentForUnifiedAction::class)->execute($student['id']);
-
-        return DB::transaction(function () use ($userId, $courseId, $offeringId, $student, $legacyId, $overrides): CourseEnrollment {
+        return DB::transaction(function () use ($userId, $courseId, $offeringId, $student, $overrides): CourseEnrollment {
             $offering = $offeringId
                 ? app(ReserveOfferingSeatAction::class)->execute($offeringId)
                 : app(DefaultSelfLearningOfferingAction::class)->execute($courseId);
@@ -70,7 +66,7 @@ class EnrollSelfLearningAction
             // this course — the `$existing` check above lets a cancelled or
             // refunded learner enrol again, and the unique key does not.
             return app(CreateOrReviveEnrollmentAction::class)->execute(array_merge([
-                'student_id' => $legacyId,
+                // No `registration_students` row since Deploy 3 slice 2.
                 'unified_student_id' => $student['id'],
                 'course_id' => $courseId,
                 'course_offering_id' => $offering['id'] ?? null,

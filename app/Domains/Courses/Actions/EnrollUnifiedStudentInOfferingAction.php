@@ -3,7 +3,6 @@
 namespace App\Domains\Courses\Actions;
 
 use App\Domains\Courses\Models\CourseEnrollment;
-use App\Domains\People\Actions\EnsureLegacyStudentForUnifiedAction;
 
 class EnrollUnifiedStudentInOfferingAction
 {
@@ -18,12 +17,10 @@ class EnrollUnifiedStudentInOfferingAction
             return $existing;
         }
 
-        $legacyId = app(EnsureLegacyStudentForUnifiedAction::class)->execute($unifiedStudentId);
-
         // Same reason as `EnrollSelfLearningAction`: the guard above lets a
         // cancelled member be added back, and the unique key does not.
         return app(CreateOrReviveEnrollmentAction::class)->execute([
-            'student_id' => $legacyId,
+            // No `registration_students` row since Deploy 3 slice 2.
             'unified_student_id' => $unifiedStudentId,
             'course_id' => $courseId,
             'course_offering_id' => $offeringId,

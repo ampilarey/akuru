@@ -26,7 +26,7 @@ class EnrollParentRequest extends FormRequest
             $rules['gender'] = ['nullable', 'in:male,female'];
             $rules['relationship'] = ['nullable', 'in:father,mother,guardian,other'];
         } else {
-            $rules['student_id'] = ['required', 'exists:registration_students,id'];
+            $rules['student_id'] = ['required', 'exists:students,id'];
         }
 
         return $rules;
