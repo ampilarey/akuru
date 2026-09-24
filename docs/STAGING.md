@@ -34,11 +34,11 @@ cd ~/test.akuru.edu.mv && git pull origin main
 
 | Item | Value |
 |------|--------|
-| Last verified deploy | **2026-06-13** |
-| Deployed commit | **`f8b8a56`** (`docs(status): record Phase 0 staging deploy at 9e8e8f6`) |
-| Phase 0 application code | Included via **`e84c657`** in history |
-| Verdict | **PHASE 0 STAGING PASSED** (deploy + public smoke) |
-| Production | **Not deployed** — do not touch `~/akuru-institute` unless explicitly requested |
+| Last verified deploy | **2026-09-24** (auto-deploy on push to `main`) |
+| Deployed commit | **`f069431`** (`fix(smoke): the fifth staging run … (#452)`) |
+| Verdict | **35/35 browser walks green against `test.akuru.edu.mv`** (STATUS §5fz, sixth run) after `php artisan db:seed --class=SmokeMarkerSeeder` on the host; `own-data` and `register` stop at the step that needs the app's database and say so |
+| How to repeat | On the host: `cd ~/test.akuru.edu.mv && php artisan db:seed --class=SmokeMarkerSeeder`. From a laptop: `SMOKE_BASE_URL=https://test.akuru.edu.mv SMOKE_I_KNOW_THIS_WRITES=yes node scripts/smoke/all.mjs` (~30 min). Dates are computed in `SMOKE_TZ`, default `Indian/Maldives` |
+| Production | **Live** at `akuru.edu.mv`; the owner pulls `main` by hand with the line under *Production (reference only)* — never auto-deployed, never seeded with smoke data |
 
 ## Rules
 

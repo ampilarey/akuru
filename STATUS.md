@@ -27,12 +27,17 @@ drive the loops that matter — building a course, running an intake, enrolling,
 reporting an absence, collecting a child, booking a meeting, publishing an
 article, taking and refunding money, recording a sound, reciting, an exam to a
 report card, a fee to a receipt, a staff member's month, and the whole app at
-phone width. They pass **locally**. They have **never been run against
-`test.akuru.edu.mv`**, because seed logins there still do not authenticate and
-this agent cannot SSH or seed the host. That single blocker is why
-`OWNER_ACTIONS` item 1 sits above everything else: a local run cannot tell you
-the deploy script, the built assets or the seeded database on that host are
-sound.
+phone width. They pass locally, and as of **2026-09-24 they pass against
+`test.akuru.edu.mv`: 35/35** on the sixth staging run (§5fz), walked from
+this session's browser over the owner-seeded host — two of the thirty-five
+(`own-data`, `register`) stop at the step that needs the app's database and
+say so. Six runs to get there, and not one product defect among the
+thirty-odd reds: four seeder assumptions that the database was empty, one
+dead dashboard list and one silent recorder found on the second run, and the
+rest the walks reading before their own post had landed, or reading the
+walker's date instead of the school's. The two things a local run could not
+tell you — that the deploy script and the built assets on that host are
+sound — are now told.
 
 **Three things are true of `main` that the gates imply are not.** It is **not
 branch-protected** — direct pushes, force pushes and merges over red CI are all
@@ -4593,6 +4598,14 @@ Nine walks re-run locally on a fresh seed: `school-day` 14/14 then
 `recite` 13/13, `hr` 28/28, `mobile` 11/11, `register` 14/14,
 `own-data` clean, `author` 24/24, `pickup` 16/16; `own-data` against a
 remote URL prints its skip and exits 0.
+
+**The sixth staging run**, re-seeded: **35/35** — `page-errors` clean,
+`sweep` 25/25, every writer at its full count, `own-data` and `register`
+printing their stated skips, `absence` 13/13 on the register `school-day`
+had already submitted, 27 minutes of walking end to end. Nothing to triage. The
+staging loop that §5fz opened is closed: the deploy script, the built
+assets and the seeded database on `test.akuru.edu.mv` are sound for
+everything the walks cover.
 
 Two residue observations, not defects: the office queue on staging holds
 one `SMOKE-Research` from the second run whose peer review finished but
