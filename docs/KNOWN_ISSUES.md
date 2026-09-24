@@ -20,12 +20,14 @@ a question with a default, so "do nothing" is always a legible choice.
 
 **Before any deploy**
 
-1. **Walk the app on `test.akuru.edu.mv`.** The core daily loop is now walked
-   **locally** and works end to end (STATUS §5bu/§5bv) — that half is done, and
-   it found a real defect. What remains is the *deployment*: nothing has been
-   executed on the staging host, whose staff login is itself the standing P0
-   below. A local walk cannot tell you the deploy script, the built assets, or
-   the seeded database on that host are sound.
+1. ~~**Walk the app on `test.akuru.edu.mv`.**~~ — **done 2026-09-24
+   (STATUS §5fz).** All thirty-five browser walks pass against the staging
+   host, seeded there by the owner: six runs, the reds all seeder
+   assumptions, walk timing and the walker's timezone, plus one dead
+   dashboard list and one silent recorder, every one fixed. The deploy
+   script, the built assets and the seeded database on that host are sound
+   for everything the walks cover. Still unwalked there: OTP login (owner
+   action 1's second box).
 2. **Set `BML_WEBHOOK_SECRET`**, and confirm with BML that they sign HMAC-`sha256`
    over the raw body under `X-BML-Signature`. The webhook now fails closed
    (STATUS §5bp), so **with no secret and no opt-out, no payment will confirm**.
@@ -633,8 +635,8 @@ P2 for that reason.
 
 ## Top five (remaining)
 
-1. **Staging staff login** — seed passwords 302 back to login; no SSH from this environment. Blocks any judgement that `test.akuru.edu.mv` is a school.
-1b. ~~**Nothing merged since 2026-08 has been walked in a browser**~~ — **partly closed 2026-09-10 (STATUS §5bu, §5bv).** The core daily loop is now walked **locally**, end to end, in Chromium: a teacher generates a register, fills it, marks a pupil absent and submits; the absence lands on the admin absence list; the homework and the absence both reach the family portal. That walk found a real defect (nested translation lines editable in neither language, fixed in #234). **Still open:** nothing has been walked on `test.akuru.edu.mv` itself, which is a separate question about the deployment rather than the code. See decision 1 above.
+1. ~~**Staging staff login**~~ — **closed 2026-09-23/24 (STATUS §5fz).** The owner reset `admin@`'s password through tinker on the host and ran the (now idempotent) seeders there; all six pilot logins sign in by password on `test.akuru.edu.mv`, and the walks prove it thirty-five times over. OTP login there is still untested.
+1b. ~~**Nothing merged since 2026-08 has been walked in a browser**~~ — **closed 2026-09-24 (STATUS §5fz).** Locally since 2026-09-10 (§5bu, §5bv; that walk found #234). On `test.akuru.edu.mv` since 2026-09-24: 35/35 on the sixth staging run, so the deployment question is answered as well as the code one.
 2. **AppShell nav IA** — **proposed, awaiting decision.** **105** wrapping `<Link href=` in `AppShell.jsx` — 83 when this line was written, 74 at the IA proposal, plus Glossary, admin Events, portal Event signup, Certificates, Completions, Performance, Home, Meetings, Overview. It grows with every slice that adds a screen, which is itself the argument. C3 extends `/catalog/reviews` (already linked). D1 adds Home. D2 adds Meetings. D3 adds Overview. Proposal in `docs/APPSHELL_NAV_IA.md` (PR #98): grouped by role and frequency. **Do not implement** until Accept / Accept with edits / Reject. The wrap is still live.
 3. **Parent notified column shows — on excused rows** — column exists (#86); SMS body is not in the portal.
 4. ~~Shared Add-term form on every year card~~ — **fixed** (#13).
@@ -645,13 +647,19 @@ P2 for that reason.
 
 ## P0 — Harm (real people, real messages, real money)
 
-### 1. Staging staff login does not work with documented seed passwords
+### 1. Staging staff login does not work with documented seed passwords — **fixed (2026-09-23)**
 
 **Severity:** harm-adjacent / blocked production judgement — the intended pilot host cannot be used; public 200 hides that.
 
 **Evidence:** Round 1 step 0; Round 2 opening; Round 3 ranked #1; archive “Staging credential smoke (2026-08-23)”. `https://test.akuru.edu.mv/en/login` 302s back to login for `admin@akuru.edu.mv` / `password`. This environment cannot SSH (`docs/STAGING.md` webhook only).
 
-**Still open.** (Former P0 SMS live-bind is **fixed** — see Fixed on main #86.)
+**Fixed.** The host's `admin@` had a password that was not the seeded one; the
+owner reset it through tinker on 2026-09-23, then ran `UserSeeder` (which
+until #441 could not run twice, so the other five pilot logins had never been
+made there) and `SmokeMarkerSeeder`. On 2026-09-24 all thirty-five browser
+walks passed against the host, signing in as all six logins by password
+(STATUS §5fz). OTP login on the host is still untested — owner action 1's
+second box. (Former P0 SMS live-bind is **fixed** — see Fixed on main #86.)
 
 ---
 
