@@ -105,6 +105,8 @@ async function finish() {
 
 async function signIn(email) {
     const context = await browser.newContext();
+    // Sixty seconds, not thirty: staging behind Cloudflare stalled past thirty on two page loads in one run (STATUS §5fz).
+    context.setDefaultNavigationTimeout(60000);
     await context.route('**/*', (route) => (route.request().url().startsWith(BASE) ? route.continue() : route.abort()));
     const page = await context.newPage();
     // Read only a mounted page. On a real host the app's JavaScript can land
@@ -284,7 +286,9 @@ await admin.goto(`${BASE}/en/hr/compliance`, { waitUntil: 'networkidle' });
 const permit = await rowText(admin, PERMIT);
 check('the expiring permit is on the compliance list', permit.includes(PERMIT) && /\b2[0-9]\b/.test(permit), permit || (await text(admin)).slice(0, 160));
 await admin.locator('button:has-text("Send due notices")').click();
-const notices = (await settles(admin, 'expiry notices sent.')) ? (await text(admin)).match(/(\d+) expiry notices sent\./)?.[1] : null;
+// Fifteen seconds: this posts, sends every due notice, and redirects back,
+// and on staging the flash arrived after the default five (STATUS §5fz).
+const notices = (await settles(admin, 'expiry notices sent.', 15000)) ? (await text(admin)).match(/(\d+) expiry notices sent\./)?.[1] : null;
 check('the expiry notices go out', notices !== null && Number(notices) >= 1, notices === null ? (await text(admin)).slice(0, 160) : `${notices} sent`);
 
 await staff.goto(`${BASE}/en/portal/notifications`, { waitUntil: 'networkidle' });

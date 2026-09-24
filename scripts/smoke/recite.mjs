@@ -68,6 +68,8 @@ const check = (step, ok, detail = '') => results.push([step, ok, detail]);
 
 async function signIn(email) {
     const context = await browser.newContext({ permissions: ['microphone'] });
+    // Sixty seconds, not thirty: staging behind Cloudflare stalled past thirty on two page loads in one run (STATUS §5fz).
+    context.setDefaultNavigationTimeout(60000);
     await context.route('**/*', (route) => (route.request().url().startsWith(BASE) ? route.continue() : route.abort()));
     const page = await context.newPage();
     // Read only a mounted page. On a real host the app's JavaScript can land
@@ -271,7 +273,11 @@ if (queueRows > 0) {
     // passed while the database still read `status=submitted, note=NULL`: a
     // false green over a review that never happened, and only the *next* step
     // failing gave it away.
-    await teacher.waitForTimeout(500);
+    // And on the flash first: the row leaves the table when the screen
+    // re-renders, which on a slow host can be before the save has been
+    // written — the fifth staging run sent the student to look while the
+    // teacher's review was still in flight (STATUS §5fz).
+    await settles(teacher, /Record reviewed\./, 40);
     const afterRows = await teacher.locator('tbody tr').filter({ has: teacher.getByRole('button', { name: /^Review$/ }) }).count();
     reviewed = afterRows < queueRows;
 
@@ -285,8 +291,13 @@ if (queueRows > 0) {
 // --------------------------------------------- 8. the student is told
 
 if (reviewed) {
-    await student.goto(`${BASE}/en/learn/quran`, { waitUntil: 'networkidle' });
-    const mine = await settles(student, new RegExp(NOTE.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i'));
+    // Re-open the page until the note is on it (bounded): the page does not
+    // refresh itself, so polling its text once loaded proves nothing.
+    let mine = '';
+    for (let attempt = 0; attempt < 4 && !mine.includes(NOTE); attempt += 1) {
+        await student.goto(`${BASE}/en/learn/quran`, { waitUntil: 'networkidle' });
+        mine = await settles(student, new RegExp(NOTE.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i'), 12);
+    }
 
     // The point of the whole loop. A verdict the student never sees is a
     // teacher talking to a database.

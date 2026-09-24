@@ -55,6 +55,8 @@ const check = (step, ok, detail = '') => results.push([step, ok, detail]);
 
 async function signIn(email) {
     const context = await browser.newContext();
+    // Sixty seconds, not thirty: staging behind Cloudflare stalled past thirty on two page loads in one run (STATUS §5fz).
+    context.setDefaultNavigationTimeout(60000);
     await context.route('**/*', (route) => (route.request().url().startsWith(BASE) ? route.continue() : route.abort()));
     const page = await context.newPage();
     // Read only a mounted page. On a real host the app's JavaScript can land
@@ -226,10 +228,13 @@ if (registerHref) {
         await teacher.fill('textarea >> nth=0', 'SMOKE-Taught: sun and moon letters.');
         await teacher.click('button:has-text("Submit register")');
 
-        // `SUBMITTED` is the register's own status badge, and it is the
-        // difference between a save and a bounce: a rejected submit leaves it
-        // `EXPECTED` with the validation message beside it.
-        markedAbsent = await settles(teacher, 'SUBMITTED');
+        // The flash for *this* submit, then the badge. `SUBMITTED` alone is
+        // the register's status, and when an earlier walk (`school-day`) has
+        // already submitted today's register it is on the screen before the
+        // click — the fifth staging run took it as done and read the family's
+        // row while the re-submit was still in flight (STATUS §5fz). A
+        // rejected submit gives neither: `EXPECTED` and the validation message.
+        markedAbsent = (await settles(teacher, 'Register submitted.', 10000)) && (await text(teacher)).includes('SUBMITTED');
         check('the teacher marks them absent and submits', markedAbsent, (await text(teacher)).slice(0, 160));
     } else {
         check('the teacher marks them absent and submits', false, `no row for ${childName}`);

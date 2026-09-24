@@ -41,6 +41,16 @@ import { chromium } from 'playwright';
 const BASE = process.env.SMOKE_BASE_URL ?? 'http://127.0.0.1:8000';
 const PASSWORD = process.env.SMOKE_PASSWORD ?? 'password';
 
+// The ids below are read through `php artisan tinker` — the walker's own
+// database, which is the app's only when the app is the local dev server.
+// Against any other host the numbers would describe the wrong database, and
+// the first three staging runs crashed here instead of saying so (§5fz).
+if (!/^https?:\/\/(127\.0\.0\.1|localhost)(:\d+)?\/?$/.test(BASE)) {
+  console.log(`own-data reads ids through local tinker, so it walks only a local host.`);
+  console.log(`skipped against ${BASE} — run it locally on the same build`);
+  process.exit(0);
+}
+
 // Who the guardian's child is, and somebody else's, read from the database
 // rather than hardcoded — the ids move whenever the seed does.
 const [mineId, mineName, otherId, otherName] = execFileSync('php', [
@@ -204,6 +214,8 @@ for (const [role, email] of [
   ['teacher', 'teacher@akuru.edu.mv'],
 ]) {
   const context = await browser.newContext();
+  // Sixty seconds, not thirty: staging behind Cloudflare stalled past thirty on two page loads in one run (STATUS §5fz).
+  context.setDefaultNavigationTimeout(60000);
   await blockOffsiteRequests(context, BASE);
   const page = await context.newPage();
     // Read only a mounted page. On a real host the app's JavaScript can land
