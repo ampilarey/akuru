@@ -142,7 +142,7 @@ a question with a default, so "do nothing" is always a legible choice.
 
 ## Found by the navigation slice (2026-09-24)
 
-### Any parent or student can open the whole school's attendance report — **open, next slice**
+### Any parent or student can open the whole school's attendance report — **fixed (2026-09-24)**
 
 **Severity:** disclosure. `RoleSeeder` grants the `parent` and `student`
 roles `view_attendance`, and `AttendanceReportController::index` admits
@@ -152,11 +152,12 @@ absence list and the unexcused list for the school. Found by
 `NavigationIsGroupedByRoleTest`'s open-every-link check the day the shell
 began hiding links people cannot open — this one it *could* open (STATUS §5ga).
 
-**Not fixed in that slice** (rule 1): the menu no longer shows families the
-screen, but the URL still admits them. The fix is the next slice: gate the
-report on `manage_attendance || registers.manage` (every staff role holds
-one; no family role does), with a test that a parent is refused and a
-headmaster is not.
+**Fixed** in the slice after (STATUS §5gb): `AttendanceReportController`
+gates the report and both CSVs on `manage_attendance || registers.manage` —
+every staff role holds one, no family role holds either.
+`AttendanceReportIsStaffOnlyTest` seeds the real roles and reads a parent
+and a student refused (each still holding `view_attendance`) and all five
+staff roles admitted. The navigation hint mirrors the new gate.
 
 ## Found by the 2026-09-12 audit
 

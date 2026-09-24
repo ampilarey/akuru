@@ -4352,6 +4352,32 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5gb. The school's attendance report was a URL away from every family (2026-09-24)
+
+Found by §5ga's open-every-link test and taken as its own slice: the
+`parent` and `student` roles hold `view_attendance` (it is what stands
+behind their own rows on the portal), and `/academics/attendance` — every
+pupil's rows, the chronic-absence list, the unexcused list and a CSV of
+each — admitted `view_attendance`. Any family signed in to the portal could
+type the URL and read the school. The screen is not linked from anywhere a
+family sees, which is how it stayed unnoticed; §5ga's shell would have gone
+on hiding it, and the URL would have gone on working.
+
+**Fixed.** `AttendanceReportController` gates the report and both exports
+on `manage_attendance || registers.manage`: every staff role holds one
+(teacher `manage_attendance`; headmaster and supervisor `registers.manage`;
+admin and super_admin both), no family role holds either.
+`AttendanceReportIsStaffOnlyTest` seeds the real roles and reads a parent
+and a student refused — each still holding `view_attendance`, the ability
+that used to admit them — and all five staff roles admitted. The
+navigation hint mirrors the gate. `ClassAttendanceTest`, whose admin holds
+`manage_attendance`, is unchanged and green.
+
+No other screen admits `view_attendance` alone (grepped); the portal's own
+attendance page never checked it. Walked in Chromium against the local dev
+server as four signed-in people: parent and student **403** on the report
+and on the CSV, admin and teacher **200** on both. KNOWN_ISSUES entry closed.
+
 ## 5ga. The shell's navigation, by role — a month-old proposal accepted and built (2026-09-24)
 
 The owner accepted `docs/APPSHELL_NAV_IA.md` as written (owner action 8,
