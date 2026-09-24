@@ -25,7 +25,7 @@ class ComposeOrganizationJsonLdAction
             '@type' => 'Organization',
             'name' => $name !== '' ? $name : 'Akuru Institute',
             'url' => $url !== '' ? $url : url('/'),
-            'logo' => asset('images/apple-touch-icon.png'),
+            'logo' => asset('images/logos/akuru-logo-800.png'),
         ];
 
         if ($address !== null) {

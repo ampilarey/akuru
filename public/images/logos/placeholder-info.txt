@@ -1,38 +1,18 @@
-AKURU INSTITUTE LOGO SETUP
+AKURU INSTITUTE LOGO FILES
 ==========================
 
-To use the official Akuru Institute logo:
+The logo is in the brand palette (docs/BRAND.md), as vectors:
 
-1. SAVE THE OFFICIAL LOGO as one of these files:
-   - public/images/logos/akuru-logo.png (recommended)
-   - public/images/logos/akuru-logo.jpg
-   - public/images/logos/akuru-logo.svg
+  akuru-logo.svg          wine wordmark, gold mark — on white or the site beige
+  akuru-logo-on-dark.svg  white wordmark, brand-gold mark — on the wine gradients
+  akuru-logo-white.svg    one colour — any dark background
+  akuru-mark.svg          the mark alone, gold
+  akuru-logo-800.png      raster copy for email, structured data and anywhere SVG is not taken
 
-2. RECOMMENDED SPECIFICATIONS:
-   - Format: PNG with transparent background (preferred)
-   - Size: 200x60px or similar aspect ratio
-   - Resolution: High-DPI ready (300 DPI or higher)
-   - Background: Transparent or white
+The Blade component `<x-akuru-logo variant="default|on-dark|white" />` picks
+the file. File names are lowercase and exact: a Linux server does not find
+`akuru-logo.PNG` when asked for `akuru-logo.png`.
 
-3. WHERE TO FIND THE LOGO:
-   - Contact Akuru Institute administration
-   - Check their official website
-   - Request from their marketing/communications team
-   - Look for official letterhead or documents
-
-4. CURRENT FALLBACK:
-   The system currently shows a beautiful Islamic-themed fallback design
-   with crescent moon, star, and Arabic/English text until the real logo
-   is added.
-
-5. AUTOMATIC DETECTION:
-   Once you place the logo file, it will automatically appear throughout
-   the system without any code changes needed.
-
-LOCATIONS WHERE LOGO APPEARS:
-- Public website header (all language versions)
-- Admin dashboard
-- Login pages
-- Email templates
-- PDF documents (future)
-- Mobile app (future)
+These were traced from a 200-pixel original. They are sharp on screen at any
+size; for print or signage, replace them with vectors exported from the
+original design file, keeping the same names.

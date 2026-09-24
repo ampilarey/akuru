@@ -36,7 +36,7 @@
     {{-- logo + name --}}
     <div style="position:relative">
         <div style="display:flex;align-items:center;gap:.875rem;margin-bottom:3rem">
-            <a href="{{ url('/') }}"><x-akuru-logo size="h-14" class="brightness-0 invert" /></a>
+            <a href="{{ url('/') }}"><x-akuru-logo size="h-14" variant="on-dark" /></a>
         </div>
         <h1 style="font-size:2rem;font-weight:800;color:white;line-height:1.2;margin-bottom:.75rem">
             Welcome to<br>Akuru Institute

@@ -8,7 +8,7 @@
       {{-- Brand column --}}
       <div class="col-span-1 md:col-span-2">
         <div class="flex items-center gap-3 mb-5">
-          <x-akuru-logo size="h-12" class="brightness-0 invert" />
+          <x-akuru-logo size="h-12" variant="on-dark" />
         </div>
         <p style="color:rgba(255,255,255,0.75);font-size:.875rem;line-height:1.7;margin-bottom:1.5rem;max-width:28rem">
           {{ __('public.footer_description') }}

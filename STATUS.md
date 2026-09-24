@@ -4352,6 +4352,53 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5gc. The logo in the brand colours, and app icons that show it whole (2026-09-24)
+
+The owner asked whether the logo matched the brand. It did not: the only
+artwork in the repository, `public/images/logos/akuru-logo.PNG`, was bright
+blue (`#0878D8`) and grey (`#585858`) against a product that is wine
+(`#7C2D37`) and gold (`#C9A227`) everywhere else. Three smaller defects came
+with it: the app icons were that logo pasted on wine and **cropped**, so a
+phone's home screen showed the mark, an "A" and "IN"; the file was committed
+as `.PNG` while the component asked for `.png`, which a Linux server does not
+find — both servers worked only because a lowercase copy had been put there by
+hand — and a fresh install would have shown a fallback in `text-brandBlue`, a
+colour that does not exist. The owner chose to recolour the logo to the brand.
+
+**What was made.** Vectors traced from the 200-pixel original, one layer per
+colour: ink coverage per pixel, interpolated bicubically to 12×, thresholded,
+traced with potrace. Five SVGs in `public/images/logos/` — the logo (wine
+wordmark, dark-gold mark and subtitle), an on-dark version (white wordmark,
+brand-gold mark), all-white, and the mark alone — plus an 800-pixel PNG. The
+icons (`favicon-16/32`, `apple-touch-icon`, `pwa-192/512`, `favicon.ico`) are
+the white mark on wine, inside the maskable safe zone so a launcher that crops
+to a circle keeps it whole. `docs/BRAND.md` records the palette, the files,
+and the limit: the shapes are the original's and sharp on screen at any size,
+but for print the vectors should be exported from the original design file.
+
+**What changed in the site.** `<x-akuru-logo>` takes a `variant`
+(`default`, `on-dark`, `white`) and serves the SVG. The footer, the staff bar
+and the login panel, all on wine gradients, used the logo flattened to white
+by CSS (`brightness-0 invert`); they now use the on-dark version, so the mark
+is gold there. Icon links and the manifest carry `?v=3` so browsers drop the
+old icons. The organisation structured data gives search engines the logo
+rather than the app icon. The old `.PNG` is removed; the lowercase copies on
+the servers are untracked and now unused.
+
+**Tests.** `BrandAssetsTest`: every logo file exists under its exact name
+(checked against the directory listing, so a case-insensitive disk cannot
+hide a `.PNG`); the logos carry the brand colours and neither old colour;
+each variant renders its file; no wine background inverts the logo any more;
+every icon the pages and manifest link exists at the size it claims;
+`favicon.ico` is an icon; structured data names the logo. Full suite 2121
+passed.
+
+**Walked** in Chromium against the local server: the public header (logo on
+white), the public footer and the login panel (on-dark on wine), the Blade
+staff bar on `/hifz/programs` (on-dark, loaded), every icon link answering
+200 under `?v=3`, no image 404 anywhere. The owner was sent the whole set as
+a downloadable bundle (SVGs, PNGs, icons, preview sheet, README).
+
 ## 5gb. The school's attendance report was a URL away from every family (2026-09-24)
 
 Found by §5ga's open-every-link test and taken as its own slice: the
