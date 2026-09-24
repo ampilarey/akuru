@@ -3,7 +3,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Akuru">
-<link rel="apple-touch-icon" href="/images/pwa-192.png">
+<link rel="apple-touch-icon" href="/images/apple-touch-icon.png?v=3">
 <script>
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', function () {
