@@ -4,8 +4,11 @@ namespace App\Domains\Academics\Http\Controllers;
 
 use App\Domains\Academics\Actions\ListGateMovementsAction;
 use App\Domains\Academics\Actions\RecordStudentMovementAction;
+use App\Domains\Academics\Actions\ResolveGateCardAction;
 use App\Domains\Academics\Actions\VoidStudentMovementAction;
 use App\Domains\Academics\Enums\MovementDirection;
+use App\Domains\Academics\Enums\MovementSource;
+use App\Domains\People\Actions\ListStudentsByIdsAction;
 use App\Domains\People\Actions\SearchRosterCandidatesAction;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
@@ -63,6 +66,37 @@ class GateMovementController extends Controller
         );
 
         return back()->with('success', 'Recorded at the gate.');
+    }
+
+    /**
+     * A gate card, scanned by a camera or a handheld scanner, or typed off the
+     * card (owner decision 11). The same writer as a tap on a name, marked QR,
+     * and the answer names the child so the person at the gate can see it was
+     * the right one.
+     */
+    public function scan(Request $request, ResolveGateCardAction $resolve, RecordStudentMovementAction $record, ListStudentsByIdsAction $students): RedirectResponse
+    {
+        $data = $request->validate([
+            'code' => ['required', 'string', 'max:64'],
+            'direction' => ['required', 'string', 'in:in,out'],
+        ]);
+
+        $card = $resolve->execute($data['code']);
+        if ($card['student_id'] === null) {
+            return back()->with('error', $card['reason']);
+        }
+
+        $movement = $record->execute(
+            $card['student_id'],
+            MovementDirection::from($data['direction']),
+            (int) $request->user()->id,
+            MovementSource::Qr,
+        );
+
+        $name = (string) ($students->execute([$card['student_id']])->first()['name'] ?? 'Pupil');
+        $verb = $data['direction'] === 'in' ? 'arrived' : 'left';
+
+        return back()->with('success', "{$name} {$verb} at ".$movement->at->timezone(config('app.timezone'))->format('H:i').'.');
     }
 
     public function void(Request $request, int $movement, VoidStudentMovementAction $void): RedirectResponse

@@ -140,6 +140,28 @@ a question with a default, so "do nothing" is always a legible choice.
 
 ---
 
+## Found by the gate card slice (2026-09-24)
+
+### The QR on certificates and ID cards cannot be scanned — **open, next QR slice**
+
+**Severity:** a promise on paper that does not work. `App\Support\Services\StudentNumberQr`
+draws the three corner squares of a QR code and fills the rest with hashed
+bits; it is not a QR encoding. `IssueCertificateAction` prints it as the
+certificate's *scan to verify* code and `GenerateIdCardAction` prints it on
+the ID card. Checked 2026-09-24 with a real decoder (`jsQR`, the one the gate
+uses): the generator's code for `https://akuru.edu.mv/verify/ABC123` does not
+decode at all; a genuine QR of the same address decodes at once. So nobody
+has ever been able to verify a certificate by scanning it.
+
+**Why not fixed in that slice** (rule 1): the gate cards draw their QR in the
+browser with the `qrcode` package; certificates and ID cards are
+server-rendered documents, so the fix needs a real encoder on the server.
+Composer's GitHub-hosted QR packages were unreachable from the agent sandbox
+that day (its GitHub access is scoped to this repository), which is also a
+question for the fix: a pure-PHP encoder vendored in, or the package added by
+someone with normal network access. The test to write first is a round trip:
+encode, render, decode, compare.
+
 ## Found by the navigation slice (2026-09-24)
 
 ### Any parent or student can open the whole school's attendance report — **fixed (2026-09-24)**

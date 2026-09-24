@@ -415,6 +415,12 @@ configuration plus a roster screen, so keep it thin and resist a parallel
 enrolment system (rule 11).
 
 ### E18. Student arrivals / departures — ~1 week + hardware decision
+**Shipped 2026-09-11 (by hand); hardware decided and built 2026-09-24: QR
+cards** (owner decision 11, STATUS §5ge) — printed per class, scanned by the
+gate tablet's camera or a handheld scanner, or typed off the card, recorded
+through the same writer as `source = qr`. The text below is the original
+plan row, kept.
+
 Gate check-in/out with parent visibility: `student_movements` (student,
 direction, at, recorded_by, `academic_year_id`). EduPage integrates access
 control hardware; card/QR readers are a separate purchase. Do not build the

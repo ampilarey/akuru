@@ -82,4 +82,5 @@ return [
     'Pages/Library/Review.jsx :: item.body' => 'The reviewer previews the same `library_items.body` the public page renders, and SaveLibraryItemAction cleans it on save — so a submission is sanitised before a reviewer ever opens it, not on approval.',
     'Pages/Circulation/Labels.jsx :: label.barcode' => 'Circulation\\Support\\Code39 — an SVG we generate from an accession number.',
     'Pages/Circulation/BorrowerCards.jsx :: card.barcode' => 'The same generated Code39 SVG.',
+    'Pages/Academics/Gate/PrintCards.jsx :: svg' => 'The `qrcode` package\'s SVG of a gate card code — `AKG:` and a 16-character token IssueGateCardsAction draws from a fixed alphabet; no author input reaches it.',
 ];

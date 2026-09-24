@@ -18,7 +18,7 @@
  *
  * ## Read-only and writing walks are separated, on purpose
  *
- * Six of these only look at screens. The other **thirty-one write**: they build a course for a student, run a scheduled intake, set and sit an assessment, issue a certificate, sell a course for wallet money, tag an Arabic skill activity, set and mark a recitation and map a halaqa, enrol a pupil in a halaqa and approve their milestone, issue and redeem a gift card and read a protected book, set homework, post a notice, message a teacher and poll a class, send a trip sign-up with a fee and close it, publish a calendar day and mark a pupil late, double-book a teacher and be refused, record and revoke a family's consent, ask the school for a day off and be answered, enrol a
+ * Six of these only look at screens. The other **thirty-two write**: they build a course for a student, run a scheduled intake, set and sit an assessment, issue a certificate, sell a course for wallet money, tag an Arabic skill activity, set and mark a recitation and map a halaqa, enrol a pupil in a halaqa and approve their milestone, issue and redeem a gift card and read a protected book, set homework, post a notice, message a teacher and poll a class, send a trip sign-up with a fee and close it, publish a calendar day and mark a pupil late, double-book a teacher and be refused, record and revoke a family's consent, ask the school for a day off and be answered, enrol a
  * stranger on a course, submit and approve an absence note, request that a
  * child be collected, book a parent-teacher meeting, publish an article to
  * the library, publish an exam and a term's report cards to families, bill a
@@ -132,6 +132,7 @@ const WALKS = [
     { name: 'exams', writes: true, asks: 'Does a mark a teacher types end up on a report card a family can open?' },
     { name: 'fees', writes: true, asks: 'Does a fee become an invoice a family can see, and cash a receipt they can open?' },
     { name: 'hr', writes: true, asks: 'Does a staff member\'s month — check-in, leave, appraisal, payslip — go through?' },
+    { name: 'gate', writes: true, asks: 'Does a pupil\'s gate card get them recorded, by scanner and by camera, and does the family see it?' },
     { name: 'mobile', writes: false, asks: 'Does this work on a phone?' },
     { name: 'nav', writes: false, asks: 'Can each kind of person find their way, without reading a wall of links?' },
     { name: 'rtl', writes: false, asks: 'Do English sentences read right on a Dhivehi or Arabic page, without the page\'s alignment changing?' },

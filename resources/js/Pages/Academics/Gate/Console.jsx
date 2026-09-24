@@ -1,6 +1,85 @@
-import { router } from '@inertiajs/react';
-import { useState } from 'react';
+import { Link, router } from '@inertiajs/react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import QrCameraScanner from '../../../Components/QrCameraScanner';
+import { readPreference, writePreference } from '../../../Platform';
 import AppShell from '../../../Layouts/AppShell';
+
+/**
+ * E18 gate cards (owner decision 11). One box takes every way a card arrives:
+ * a handheld USB or Bluetooth scanner types the code and presses Enter; the
+ * camera hands over what it decodes; a person can type the code printed under
+ * the QR. The direction is chosen once and stays, because a morning at the
+ * gate is all arrivals and an afternoon all departures.
+ */
+function ScanPanel() {
+    const [direction, setDirection] = useState(() => readPreference('gate.direction', new Date().getHours() < 12 ? 'in' : 'out'));
+    const [code, setCode] = useState('');
+    const [camera, setCamera] = useState(false);
+    const box = useRef(null);
+
+    useEffect(() => writePreference('gate.direction', direction), [direction]);
+
+    const submit = useCallback((value) => {
+        const scanned = String(value || '').trim();
+        if (scanned === '') return;
+        router.post('/academics/gate/scan', { code: scanned, direction }, {
+            preserveScroll: true,
+            preserveState: true,
+            onFinish: () => {
+                setCode('');
+                box.current?.focus();
+            },
+        });
+    }, [direction]);
+
+    return (
+        <div className="mb-6 rounded-lg border-2 border-[#7C2D37] bg-white p-4">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+                <h2 className="text-sm font-semibold">Scan a gate card</h2>
+                <div className="flex overflow-hidden rounded border" role="group" aria-label="Direction">
+                    {[['in', 'Arriving'], ['out', 'Leaving']].map(([value, label]) => (
+                        <button
+                            key={value}
+                            type="button"
+                            aria-pressed={direction === value}
+                            onClick={() => setDirection(value)}
+                            className={`px-3 py-1 text-sm ${direction === value ? 'bg-[#7C2D37] text-white' : 'bg-white text-[#7C2D37]'}`}
+                        >
+                            {label}
+                        </button>
+                    ))}
+                </div>
+            </div>
+            <form
+                className="mt-3 flex flex-wrap gap-2"
+                onSubmit={(e) => {
+                    e.preventDefault();
+                    submit(code);
+                }}
+            >
+                <input
+                    ref={box}
+                    autoFocus
+                    name="gate-code"
+                    autoComplete="off"
+                    className="form-input min-w-0 flex-1"
+                    placeholder="Scan with a handheld scanner, or type the code under the QR"
+                    value={code}
+                    onChange={(e) => setCode(e.target.value)}
+                />
+                <button type="submit" className="btn-primary">Record</button>
+                <button type="button" className="btn-secondary" onClick={() => setCamera((open) => !open)}>
+                    {camera ? 'Close camera' : 'Use camera'}
+                </button>
+            </form>
+            {camera && <QrCameraScanner onCode={submit} onClose={() => setCamera(false)} />}
+            <p className="mt-2 text-xs text-gray-500">
+                No card? Find the pupil by name below. Cards are issued and printed on{' '}
+                <Link href="/academics/gate/cards" className="text-[#7C2D37] underline">Gate cards</Link>.
+            </p>
+        </div>
+    );
+}
 
 function SearchResult({ child }) {
     const record = (direction) =>
@@ -55,6 +134,8 @@ export default function Console({ date, q = '', matches = [], movements = [], in
                 <span className="rounded bg-gray-100 px-2 py-0.5 text-sm text-gray-700">Out: {out_count}</span>
             </div>
 
+            <ScanPanel />
+
             <div className="mb-6 rounded-lg border bg-white p-4">
                 <label className="block text-sm">
                     <span className="mb-1 block font-semibold">Find a pupil</span>
@@ -99,6 +180,7 @@ export default function Console({ date, q = '', matches = [], movements = [], in
                                 <td className="px-3 py-2 text-xs text-gray-600">{m.at?.slice(11, 16)}</td>
                                 <td className="px-3 py-2 text-xs text-gray-600">
                                     {m.recorded_by ?? m.source_label}
+                                    {m.recorded_by && m.source && m.source !== 'manual' && ` · ${m.source_label}`}
                                     {m.note && <span className="block">“{m.note}”</span>}
                                 </td>
                                 <td className="px-3 py-2">

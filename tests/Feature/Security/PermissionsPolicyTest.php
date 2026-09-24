@@ -30,10 +30,19 @@ it('lets this origin ask for the microphone', function () {
 it('keeps the doors nothing asks for shut', function () {
     $policy = $this->withoutLocalizationMiddleware()->get(route('login'))->headers->get('Permissions-Policy');
 
-    // Nothing in the app calls either. A feature that needs one opens its own
-    // door in its own slice, rather than inheriting it from here.
-    expect($policy)->toContain('geolocation=()')
-        ->and($policy)->toContain('camera=()');
+    // Nothing in the app calls it. A feature that needs it opens its own door
+    // in its own slice, rather than inheriting it from here.
+    expect($policy)->toContain('geolocation=()');
+});
+
+it('lets this origin ask for the camera, for the gate card scanner', function () {
+    $policy = $this->withoutLocalizationMiddleware()->get(route('login'))->headers->get('Permissions-Policy');
+
+    // E18 gate cards (STATUS §5ge) read a QR with the gate tablet's camera;
+    // `camera=()` refused it on every device. Opened for this origin only.
+    expect($policy)->toContain('camera=(self)')
+        ->and($policy)->not->toMatch('/camera=\(\s*\)/')
+        ->and($policy)->not->toContain('camera=*');
 });
 
 it('still sends the rest of the security headers', function () {

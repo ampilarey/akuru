@@ -64,6 +64,7 @@ return [
     'requests' => 'الطلبات',
     'pickup' => 'استلام الطلاب',
     'gate' => 'عند البوابة',
+    'gate_cards' => 'بطاقات البوابة',
     'work_showcase' => 'معرض الأعمال',
     'lost_and_found' => 'المفقودات',
     'weights' => 'الأوزان',
