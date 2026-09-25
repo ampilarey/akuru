@@ -289,7 +289,7 @@ function CategoryForm() {
 
 export default function Admin({ items, categories, options, sales = [], queues = { applications: [], submissions: [] }, payouts = { requests: [], writers: [] } }) {
     return (
-        <AppShell title="Library admin">
+        <AppShell title="Digital Library admin">
             {/* Four controls on this page post through `router.post` with no
                 form object, so a refusal had nowhere to land: the peer-review
                 gate correctly declined to publish research with no accept on

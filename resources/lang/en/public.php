@@ -354,7 +354,12 @@ return [
     'Apply Now' => 'Apply Now',
 
     // Library (L1) — DV/AR first pass pending native review (operator item)
-    'Library' => 'Library',
+    // B0 (2026-09-25): the online library is renamed Akuru Digital
+    // Library — the full name on its own pages, the short one in menus
+    // and breadcrumbs. The staff menu's "Library" group (circulation of
+    // the school's printed books) is a different thing and keeps its name.
+    'Akuru Digital Library' => 'Akuru Digital Library',
+    'Digital Library' => 'Digital Library',
     'Books, articles and research from Akuru Institute' => 'Books, articles and research from Akuru Institute',
     'Search the library' => 'Search the library',
     'Type' => 'Type',
@@ -461,7 +466,7 @@ return [
     'paid' => 'paid',
     'failed' => 'failed',
     'Give the gift of reading' => 'Give the gift of reading',
-    'Give the gift of reading — a gift card for books, articles and research in the Akuru Knowledge Library.' => 'Give the gift of reading — a gift card for books, articles and research in the Akuru Knowledge Library.',
+    'Give the gift of reading — a gift card for books, articles and research in the Akuru Digital Library.' => 'Give the gift of reading — a gift card for books, articles and research in the Akuru Digital Library.',
     'A gift card becomes wallet money the moment it is redeemed, to spend on any book, article or research paper in the library. The code is sent to the person you name as soon as the bank confirms your payment.' => 'A gift card becomes wallet money the moment it is redeemed, to spend on any book, article or research paper in the library. The code is sent to the person you name as soon as the bank confirms your payment.',
     'Sign in to buy a gift card.' => 'Sign in to buy a gift card.',
     'Amount (MVR)' => 'Amount (MVR)',

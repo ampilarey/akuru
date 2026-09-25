@@ -4414,6 +4414,45 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5gu. B0: the Akuru Digital Library (2026-09-25)
+
+The owner decided every open bookshop question as recommended (plan §13,
+all sixteen now made; the default commission is set at 10%, the low end of
+the recommended range) and asked for B0: the Knowledge Library becomes the
+**Akuru Digital Library** in every label, English, Dhivehi and Arabic.
+`/library` and every route name stay; no data changes.
+
+- **Full name** where the library is the subject: the shelf's heading and
+  page title, the gift card page's description, the gift card email, the
+  seeded policy pages.
+- **Short name, "Digital Library"**, where it is a link among others: the
+  public header (desktop and mobile), the footer, breadcrumbs on an item,
+  an author page, gift cards and the wallet, the app shell's *Mine* group,
+  the old admin dropdown, the admin page title, and the notification
+  preference category ("Digital Library, writing and wallet").
+- **Dhivehi** އަކުރު ޑިޖިޓަލް ލައިބްރަރީ / ޑިޖިޓަލް ލައިބްރަރީ and **Arabic**
+  مكتبة أكورو الرقمية / المكتبة الرقمية, first passes pending native review
+  like the rest of the library's strings (BACKLOG A10). The old
+  `public.Library` key had no Dhivehi or Arabic at all; it is gone, so the
+  untranslated baseline shrinks by one (200 → 199).
+- **Not renamed:** the staff menu's *Library* group, which is circulation
+  of the school's printed books — a different library. *My Library* stays:
+  it is the reader's own shelf and reads naturally.
+- **Hosts seeded before the rename**: `LibraryPolicyPagesSeeder` now also
+  renames the old wording in a page that still carries its "first draft
+  pending review" line; a page the office has edited keeps its words. So
+  re-running the seeder on staging is safe and is the whole migration.
+
+`DigitalLibraryNameTest` (shelf heading and title, three "Digital Library"
+links on the shelf page, gift cards and wallet; DV/AR names; app-shell
+label in three languages with the circulation group unchanged; the
+notification category; the seeder renaming an untouched draft and leaving
+an edited page alone; and a scan that the old name appears nowhere in
+views, React pages, language files, app code or seeders). `gift.mjs`
+gains four steps: the shelf's heading, the header and footer links, the
+Dhivehi and Arabic headings; its app-shell step now looks for "Digital
+Library". Walked: **17/17**, no console or server errors.
+
 ## 5gt. The Akuru Online Bookshop plan, and its audit (2026-09-25)
 
 Owner's brief: a shop for printed books and educational materials under

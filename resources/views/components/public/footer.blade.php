@@ -51,7 +51,7 @@
             ['Admissions', route('public.admissions.create', app()->getLocale())],
             ['News', route('public.news.index', app()->getLocale())],
             ['Research', route('public.research.index')],
-            ['Library', route('public.library.index')],
+            ['Digital Library', route('public.library.index')],
             ['Daily reminders', route('public.daily.index', 'ayah')],
             ['Careers', route('public.careers')],
             ['Prayer times', route('public.prayer-times')],

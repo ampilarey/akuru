@@ -20,7 +20,7 @@
     <p class="mb-6 text-sm text-gray-600">
         <a href="{{ route('public.gift-cards.index') }}" class="text-brandMaroon-700 hover:underline" data-testid="buy-gift-card">{{ __('public.Buy a gift card') }}</a>
         · <a href="{{ route('public.library.my') }}" class="hover:underline">{{ __('public.My Library') }}</a>
-        · <a href="{{ route('public.library.index') }}" class="hover:underline">{{ __('public.Library') }}</a>
+        · <a href="{{ route('public.library.index') }}" class="hover:underline">{{ __('public.Digital Library') }}</a>
         · <a href="{{ route('public.page.show', 'wallet-terms') }}" class="hover:underline">{{ __('public.Wallet Terms') }}</a>
     </p>
     @if(session('success'))

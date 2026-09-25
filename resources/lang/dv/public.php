@@ -211,7 +211,10 @@ return [
     'paid' => 'ފައިސާ ދައްކާފައި',
     'failed' => 'ނާކާމިޔާބު',
     'Give the gift of reading' => 'ކިޔުމުގެ ހަދިޔާ ދެއްވާ',
-    'Give the gift of reading — a gift card for books, articles and research in the Akuru Knowledge Library.' => 'Give the gift of reading — a gift card for books, articles and research in the Akuru Knowledge Library.',
+    'Give the gift of reading — a gift card for books, articles and research in the Akuru Digital Library.' => 'Give the gift of reading — a gift card for books, articles and research in the Akuru Digital Library.',
+    // B0 (2026-09-25): the library's new name — first pass pending native review (operator item)
+    'Akuru Digital Library' => 'އަކުރު ޑިޖިޓަލް ލައިބްރަރީ',
+    'Digital Library' => 'ޑިޖިޓަލް ލައިބްރަރީ',
     'A gift card becomes wallet money the moment it is redeemed, to spend on any book, article or research paper in the library. The code is sent to the person you name as soon as the bank confirms your payment.' => 'A gift card becomes wallet money the moment it is redeemed, to spend on any book, article or research paper in the library. The code is sent to the person you name as soon as the bank confirms your payment.',
     'Sign in to buy a gift card.' => 'ގިފްޓް ކާޑެއް ގަތުމަށް ލޮގިން ކުރައްވާ.',
     'Amount (MVR)' => 'އަދަދު (MVR)',

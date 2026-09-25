@@ -1,12 +1,12 @@
 @extends('public.layouts.public')
 
 @section('title', __('public.Gift cards') . ' - ' . config('app.name'))
-@section('description', __('public.Give the gift of reading — a gift card for books, articles and research in the Akuru Knowledge Library.'))
+@section('description', __('public.Give the gift of reading — a gift card for books, articles and research in the Akuru Digital Library.'))
 
 @section('content')
 <div class="container mx-auto px-4 py-10 max-w-3xl">
     <nav class="text-sm text-gray-500 mb-6 flex gap-2 items-center flex-wrap">
-        <a href="{{ route('public.library.index') }}" class="hover:text-brandMaroon-600">{{ __('public.Library') }}</a>
+        <a href="{{ route('public.library.index') }}" class="hover:text-brandMaroon-600">{{ __('public.Digital Library') }}</a>
         <span>›</span>
         <span class="text-gray-700">{{ __('public.Gift cards') }}</span>
     </nav>

@@ -127,7 +127,7 @@ return [
     'event_signup' => 'التسجيل في الفعاليات',
     'lost_property' => 'المفقودات',
     'library_books' => 'كتب المكتبة',
-    'library' => 'المكتبة',
+    'library' => 'المكتبة الرقمية',
     'my_library' => 'مكتبتي',
     'my_wallet' => 'محفظتي',
     'collecting_my_child' => 'استلام ابني',
