@@ -51,6 +51,7 @@ class ListWriterDashboardAction
                 ->get()
                 ->keyBy('library_item_id');
 
+            $serialize = app(ListLibraryItemsAction::class);
             $items = $itemModels->map(fn (LibraryItem $item) => [
                 'id' => $item->id,
                 'title' => $item->title,
@@ -59,6 +60,7 @@ class ListWriterDashboardAction
                 'access_type' => $item->access_type?->value,
                 'price' => $item->price !== null ? (float) $item->price : null,
                 'abstract' => $item->abstract,
+                'cover_url' => $serialize->coverUrl($item),
                 'body' => $item->body,
                 'citations' => $item->citations,
                 'status' => $item->status?->value,

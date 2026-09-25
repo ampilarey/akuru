@@ -49,6 +49,7 @@ function ItemEditor({ item, options, onDone, t }) {
         body: item?.body || '',
         citations: item?.citations || '',
         pdf: null,
+        cover: null,
     });
 
     const submit = (e) => {
@@ -79,6 +80,11 @@ function ItemEditor({ item, options, onDone, t }) {
             {form.data.content_type === 'research' && (
                 <textarea className="form-input md:col-span-4" rows="3" placeholder="Citations (one per line)" value={form.data.citations} onChange={(e) => form.setData('citations', e.target.value)} />
             )}
+            <label className="text-sm md:col-span-4">
+                Cover image (JPEG, PNG or WebP — shown on the shelf)
+                <input className="form-input" type="file" accept="image/jpeg,image/png,image/webp" onChange={(e) => form.setData('cover', e.target.files[0] ?? null)} />
+                {item?.cover_url && <img src={item.cover_url} alt="" className="mt-2 h-24 rounded object-cover" data-testid="draft-cover" />}
+            </label>
             <label className="text-sm md:col-span-3">
                 Original PDF (stored privately)
                 <input className="form-input" type="file" accept="application/pdf" onChange={(e) => form.setData('pdf', e.target.files[0] ?? null)} />
@@ -284,8 +290,13 @@ export default function Write({ dashboard, options, earnings = null, item_sales 
                                 {items.map((item) => (
                                     <tr key={item.id} className="border-t">
                                         <td className="px-3 py-2">
-                                            <p className="font-medium">{item.title}</p>
-                                            <p className="text-xs text-gray-500">{item.content_type} · {item.access_type}{item.price ? ` · MVR ${item.price}` : ''}</p>
+                                            <div className="flex items-start gap-3">
+                                                {item.cover_url && <img src={item.cover_url} alt="" className="h-12 w-9 shrink-0 rounded object-cover" data-testid="item-cover" />}
+                                                <div>
+                                                    <p className="font-medium">{item.title}</p>
+                                                    <p className="text-xs text-gray-500">{item.content_type} · {item.access_type}{item.price ? ` · MVR ${item.price}` : ''}</p>
+                                                </div>
+                                            </div>
                                         </td>
                                         <td className="px-3 py-2">{item.status?.replaceAll('_', ' ')}</td>
                                         <td className="px-3 py-2 text-xs text-gray-600">{item.latest_comment || '—'}</td>

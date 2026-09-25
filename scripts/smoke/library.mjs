@@ -225,10 +225,14 @@ if (!portal.includes('Apply to publish')) {
     await writer.fill('input[placeholder="Title"]', TITLE);
     await writer.fill('textarea[placeholder="Abstract"]', 'SMOKE-Abstract');
     await writer.fill('textarea[placeholder*="Body"]', BODY);
+    // §36: a cover, uploaded with the draft, shown on the shelf once published.
+    await writer.locator('input[type=file][accept^="image/"]').first().setInputFiles(PORTRAIT);
     await writer.click('button:has-text("Save draft")');
 
     drafted = await settles(writer, TITLE);
     check('the writer can save a draft', drafted, (await text(writer)).slice(0, 160));
+    const draftCover = writer.locator('tr').filter({ hasText: TITLE }).locator('[data-testid="item-cover"]');
+    check('the draft carries its cover', (await draftCover.count()) === 1 && await draftCover.evaluate((el) => el.complete && el.naturalWidth > 0), (await draftCover.count()) ? await draftCover.getAttribute('src') : 'no cover thumbnail on the draft row');
 }
 
 // ------------------------------------------------ 4. and submit it for review
@@ -336,6 +340,8 @@ if (resubmitted) {
     await reader.goto(`${BASE}/en/library`, { waitUntil: 'networkidle' });
     const shelf = await text(reader);
     check('and a reader finds it in the library', shelf.includes(TITLE), shelf.slice(0, 200));
+    const shelfCover = reader.locator('a', { hasText: TITLE }).first().locator('img[data-cover]');
+    check('with its cover on the shelf', (await shelfCover.count()) === 1 && await shelfCover.evaluate((el) => el.complete && el.naturalWidth > 0), (await shelfCover.count()) ? await shelfCover.getAttribute('src') : 'no cover on the shelf card');
 
     // ------------------------------------ 8. the writer dresses their author page
 

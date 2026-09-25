@@ -12,7 +12,11 @@
     </nav>
 
     <article>
-        <header class="mb-8">
+        <header class="mb-8 flex flex-col gap-6 md:flex-row md:items-start">
+          @if($item['cover_url'])
+            <img src="{{ $item['cover_url'] }}" alt="{{ $item['title'] }}" class="w-40 shrink-0 rounded shadow-md object-cover" data-cover="{{ $item['slug'] }}">
+          @endif
+          <div class="min-w-0">
             <h1 class="text-4xl font-bold text-brandMaroon-900 mb-2 leading-tight">{{ $item['title'] }}</h1>
             @if($item['subtitle'])
                 <p class="text-xl text-gray-600 mb-3">{{ $item['subtitle'] }}</p>
@@ -37,6 +41,7 @@
                     <span>{{ $item['reading_time'] }} {{ __('public.min read') }}</span>
                 @endif
             </div>
+          </div>
         </header>
 
         @if($item['abstract'])

@@ -207,6 +207,7 @@ function ItemForm({ categories, options }) {
         tags_text: '',
         authors_text: '',
         pdf: null,
+        cover: null,
     });
 
     return (
@@ -246,7 +247,11 @@ function ItemForm({ categories, options }) {
             <input className="form-input" placeholder="Tags (comma-separated)" value={form.data.tags_text} onChange={(e) => form.setData('tags_text', e.target.value)} />
 
             <textarea className="form-input md:col-span-2" rows="2" placeholder="Abstract" value={form.data.abstract} onChange={(e) => form.setData('abstract', e.target.value)} />
-            <input className="form-input" placeholder="Cover image URL" value={form.data.cover_image} onChange={(e) => form.setData('cover_image', e.target.value)} />
+            <label className="text-sm">
+                Cover image (JPEG, PNG or WebP)
+                <input className="form-input" type="file" accept="image/jpeg,image/png,image/webp" onChange={(e) => form.setData('cover', e.target.files[0] ?? null)} />
+            </label>
+            <input className="form-input" placeholder="…or a cover image URL" value={form.data.cover_image} onChange={(e) => form.setData('cover_image', e.target.value)} />
             <input className="form-input" type="number" min="1" placeholder="Reading time (min)" value={form.data.reading_time} onChange={(e) => form.setData('reading_time', e.target.value)} />
 
             <textarea className="form-input md:col-span-4" rows="6" placeholder="Body (HTML — the free-reading content)" value={form.data.body} onChange={(e) => form.setData('body', e.target.value)} />

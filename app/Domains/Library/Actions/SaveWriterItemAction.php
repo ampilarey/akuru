@@ -21,7 +21,7 @@ class SaveWriterItemAction
     /**
      * @param  array<string, mixed>  $data
      */
-    public function execute(int $userId, array $data, ?int $itemId = null, ?UploadedFile $pdf = null): LibraryItem
+    public function execute(int $userId, array $data, ?int $itemId = null, ?UploadedFile $pdf = null, ?UploadedFile $cover = null): LibraryItem
     {
         $profile = WriterProfile::query()
             ->where('user_id', $userId)
@@ -47,6 +47,7 @@ class SaveWriterItemAction
             $data + ['created_by' => $userId, 'writer_id' => $profile->id],
             $item,
             $pdf,
+            $cover,
         );
     }
 }

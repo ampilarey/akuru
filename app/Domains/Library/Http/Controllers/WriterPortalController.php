@@ -98,6 +98,7 @@ class WriterPortalController extends Controller
             $this->validatedItem($request),
             null,
             $request->file('pdf'),
+            $request->file('cover'),
         );
 
         return back()->with('success', 'Draft saved. '.$this->pagesNote($saved, $request->hasFile('pdf')));
@@ -110,6 +111,7 @@ class WriterPortalController extends Controller
             $this->validatedItem($request),
             $item,
             $request->file('pdf'),
+            $request->file('cover'),
         );
 
         return back()->with('success', 'Draft updated. '.$this->pagesNote($saved, $request->hasFile('pdf')));
@@ -155,6 +157,7 @@ class WriterPortalController extends Controller
             'tags' => 'nullable|array',
             'tags.*' => 'string|max:60',
             'pdf' => 'nullable|file|mimes:pdf|max:51200',
+            'cover' => 'nullable|file|mimes:jpeg,jpg,png,webp|max:5120',
         ]);
     }
 }
