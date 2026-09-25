@@ -91,7 +91,7 @@ it('reads the same setting the sender reads', function () {
 it('sends the state and its label to the portal screen', function () {
     $guardian = makeGuardian();
     $student = makeStudent(['first_name' => 'Notify', 'last_name' => 'Child']);
-    $student->guardians()->attach($guardian->id, ['relationship' => 'mother']);
+    $student->guardians()->attach($guardian->id, ['relationship' => 'mother', 'verification_status' => 'verified']);
 
     $this->actingAs(\App\Domains\Identity\Models\User::query()->findOrFail($guardian->user_id))
         ->withoutLocalizationMiddleware()

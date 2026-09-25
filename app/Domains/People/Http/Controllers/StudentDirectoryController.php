@@ -38,7 +38,7 @@ class StudentDirectoryController extends Controller
 {
     public function index(Request $request): Response
     {
-        $filters = $request->only(['search', 'status', 'class_id']);
+        $filters = $request->only(['search', 'status', 'class_id', 'awaiting_verification']);
         $students = app(ListStudentsAction::class)->execute($filters);
 
         $options = app(ListStudentFormOptionsAction::class)->execute();
@@ -51,6 +51,9 @@ class StudentDirectoryController extends Controller
             'classes' => $options['classes'],
             'guardians' => $options['guardians'],
             'relationships' => $options['relationships'],
+            // Item 13: the office's queue — pupils with a parent link that a
+            // parent made on the public form and nobody has checked yet.
+            'awaitingVerification' => app(ListStudentsAction::class)->countAwaitingVerification(),
         ]);
     }
 
@@ -265,6 +268,9 @@ class StudentDirectoryController extends Controller
             'notes' => ['sometimes', 'nullable', 'string', 'max:5000'],
         ]);
 
+        // Item 13: a link the office makes here is verified as it is made —
+        // the member of staff attaching it is the check (AttachGuardianAction's
+        // default) — unless they pick another status on the form.
         app(AttachGuardianAction::class)->execute(
             $student,
             ParentGuardian::query()->findOrFail((int) $data['guardian_id']),

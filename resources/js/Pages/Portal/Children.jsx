@@ -1,8 +1,25 @@
 import AppShell from '../../Layouts/AppShell';
 
-export default function Children({ children }) {
+export default function Children({ children, pending = [] }) {
     return (
         <AppShell title="My children">
+            {pending.length > 0 && (
+                <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50 p-4" role="status" data-testid="pending-links">
+                    <p className="font-medium text-amber-900">Awaiting the office</p>
+                    <p className="mt-1 text-sm text-amber-800">
+                        The office checks each parent link before a child&rsquo;s records are shown. These will appear below once confirmed.
+                    </p>
+                    <ul className="mt-2 list-disc ps-5 text-sm text-amber-900">
+                        {pending.map((child) => (
+                            <li key={child.id}>
+                                {child.first_name} {child.last_name}
+                                {child.relationship ? ` · ${child.relationship}` : ''}
+                                {child.verification_status === 'rejected' ? ' · not accepted' : ''}
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+            )}
             <div className="overflow-x-auto rounded-lg border bg-white">
                 <table className="min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
@@ -16,7 +33,9 @@ export default function Children({ children }) {
                     <tbody>
                         {children.length === 0 && (
                             <tr>
-                                <td className="px-3 py-4 text-gray-500" colSpan={4}>No linked children.</td>
+                                <td className="px-3 py-4 text-gray-500" colSpan={4}>
+                                    {pending.length > 0 ? 'No confirmed children yet.' : 'No linked children.'}
+                                </td>
                             </tr>
                         )}
                         {children.map((child) => (

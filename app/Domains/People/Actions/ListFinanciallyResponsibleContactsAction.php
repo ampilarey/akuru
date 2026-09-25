@@ -16,6 +16,8 @@ class ListFinanciallyResponsibleContactsAction
             ->join('parent_guardians', 'parent_guardians.id', '=', 'guardian_student.guardian_id')
             ->where('guardian_student.student_id', $studentId)
             ->where('guardian_student.financial_responsible', true)
+            // Item 13: bills and receipts go to verified guardians only.
+            ->where('guardian_student.verification_status', 'verified')
             ->select([
                 'parent_guardians.id as guardian_id',
                 'parent_guardians.user_id',

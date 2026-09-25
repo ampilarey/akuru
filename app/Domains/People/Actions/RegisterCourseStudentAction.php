@@ -3,6 +3,7 @@
 namespace App\Domains\People\Actions;
 
 use App\Domains\People\Enums\GuardianRelationship;
+use App\Domains\People\Enums\GuardianVerificationStatus;
 use App\Domains\People\Enums\StudentStatus;
 use App\Domains\People\Models\ParentGuardian;
 use App\Domains\People\Models\Student;
@@ -213,11 +214,16 @@ class RegisterCourseStudentAction
             return;
         }
 
+        // Item 13: a link a parent makes for themselves on the public form
+        // starts unverified. They see the child as *awaiting the office*
+        // until a member of staff verifies the link on the student's profile.
+        // An adult registering *themselves* has no guardian link at all.
         app(AttachGuardianAction::class)->execute(
             $student,
             $parent,
             $relationship,
             isPrimary: true,
+            policy: ['verification_status' => GuardianVerificationStatus::Unverified->value, 'notes' => 'Created by the parent on the public registration form.'],
             actorId: $guardianUserId,
         );
     }

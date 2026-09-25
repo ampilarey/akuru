@@ -243,7 +243,9 @@ class User extends Authenticatable implements MustVerifyEmail
                 $query->select('guardian_student.student_id')
                     ->from('guardian_student')
                     ->join('parent_guardians', 'parent_guardians.id', '=', 'guardian_student.guardian_id')
-                    ->where('parent_guardians.user_id', $this->id);
+                    ->where('parent_guardians.user_id', $this->id)
+                    // Item 13: only links the office has verified.
+                    ->where('guardian_student.verification_status', 'verified');
             });
     }
 

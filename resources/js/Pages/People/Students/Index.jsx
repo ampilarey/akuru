@@ -9,11 +9,13 @@ export default function Index({
     classes = [],
     guardians = [],
     relationships = [],
+    awaitingVerification = 0,
 }) {
     const form = useForm({
         search: filters.search || '',
         status: filters.status || '',
         class_id: filters.class_id || '',
+        awaiting_verification: filters.awaiting_verification || '',
     });
 
     const createForm = useForm({
@@ -53,6 +55,17 @@ export default function Index({
                         <option key={status} value={status}>{status}</option>
                     ))}
                 </select>
+                <label className="flex items-center gap-2 text-sm">
+                    <input
+                        type="checkbox"
+                        checked={Boolean(form.data.awaiting_verification)}
+                        onChange={(e) => form.setData('awaiting_verification', e.target.checked ? '1' : '')}
+                    />
+                    Awaiting parent verification
+                    {awaitingVerification > 0 && (
+                        <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-900" data-testid="awaiting-verification-count">{awaitingVerification}</span>
+                    )}
+                </label>
                 <button type="submit" className="btn-primary">Filter</button>
                 <a
                     className="btn-secondary"

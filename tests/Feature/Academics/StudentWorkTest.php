@@ -58,7 +58,7 @@ function workSetup(): array
         DB::table('guardian_student')->insert([
             'guardian_id' => $gid, 'student_id' => $sid,
             'relationship' => 'mother', 'is_primary' => true, 'can_pickup' => true,
-            'created_at' => now(), 'updated_at' => now(),
+            'verification_status' => 'verified', 'created_at' => now(), 'updated_at' => now(),
         ]);
     }
 

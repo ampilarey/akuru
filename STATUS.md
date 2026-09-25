@@ -4386,6 +4386,75 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5gk. A parent reaches a child only through a link the office has checked (2026-09-25)
+
+Owner decision 13, left to the recommendation: the parent↔child link's
+verification status becomes a **gate**. It had been a record nothing read.
+
+**The risk it closes.** Registration on the public form links the
+registering account to a child it names, matching an existing pupil by ID
+card number. Anyone with a phone could therefore register a "child" under a
+real pupil's number, be linked, and read that pupil's attendance, invoices
+and messages, receive their absence SMS, and book a meeting about them.
+
+**One rule, written once.** `People\Support\VerifiedGuardianLink` scopes a
+query or a relation to `verification_status = verified`. The family-facing
+resolvers use it: `ParentGuardian::children()` (the office's unfiltered
+view is the new `allLinkedChildren()`), `User::courseStudents()`,
+`ListGuardianChildrenAction` (some thirty-five callers authorise by its
+result, so it is verified-only by default; `executePendingForGuardianUserId`
+is the one deliberately separate view — name and relationship, nothing
+behind the link — for *My children* to say *awaiting the office*),
+`ListCollectableChildrenAction`, `GuardianMayCollectStudentAction`,
+`ListFinanciallyResponsibleContactsAction`, the message and digest fan-out
+in `ListFamilyUserIdsForStudentsAction`, and the four notification
+listeners that query the pivot themselves (absence and behaviour SMS, exam
+results, report cards). The office's own reads — the student profile's
+Guardians tab — are deliberately not gated: that is where the decision is
+made.
+
+**Who starts verified.** The backfill migration marks every existing link
+verified with `verified_at` stamped and a note saying why: all were made
+by the office or a seeder, before self-registration could create one.
+`AttachGuardianAction` now defaults to verified — every caller is the
+office or a seeder — and only `RegisterCourseStudentAction::forChild`, the
+public form, passes `unverified` explicitly with a note. An adult who
+registers themselves has no guardian link at all.
+
+**What the office gets.** An **Awaiting parent verification** filter on the
+student directory with a count beside it; the pupil's Guardians tab already
+had the select (*Not checked / Verified / Rejected*) and the date.
+
+**Wrong turn, caught before it shipped.** My first cut kept unverified
+links in `ListGuardianChildrenAction`'s list with the child's number and
+status blanked. Reading its callers showed most of them use that list to
+*authorise* — whose invoice, whose absence note, whose report card — so a
+stranger's link would still have passed those checks by child id. The list
+is verified-only; the pending view is separate and carries nothing to
+authorise with.
+
+**Tests.** `GuardianLinkGateTest` (7): a self-registered link stays
+unverified and the parent sees the child only as awaiting; an unverified
+link is out of every family-facing answer, and a child-scoped portal page
+refuses; verifying opens everything at once; rejecting closes it again; the
+office queue and the profile show the link; the office's view is not gated;
+an adult's own registration makes no link. `GuardianLinkPolicyTest`'s
+"no gate" pin becomes "the office's attach verifies as it goes". Six tests
+that insert the pivot raw and then act as the parent say `verified`, as
+they meant. Full suite 2136 passed.
+
+**Walked in a browser.** `family.mjs` grows six steps: the office sets the
+seeded parent's link back to *Not checked*; the parent's *My children*
+shows Fatima only as *awaiting the office* and the attendance page has no
+child to show; the office verifies; the parent sees Fatima again with her
+number. **34/34.** The seed is left as it was found.
+
+**Deploy note.** The backfill runs in `migrate`; nothing for an operator.
+A family that registered a child on the public form *before* this deploy
+has a verified link (backfilled); one that registers *after* waits for the
+office. DV/AR strings for the new portal text are the English first pass
+(operator item).
+
 ## 5gj. Every author has a page (2026-09-25)
 
 Owner ask, answering "does an author's work show on their own page or all

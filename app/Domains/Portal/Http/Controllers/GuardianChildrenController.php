@@ -12,11 +12,13 @@ class GuardianChildrenController extends Controller
 {
     public function index(Request $request): Response
     {
-        $children = app(ListGuardianChildrenAction::class)
-            ->executeForGuardianUserId((int) $request->user()->id);
+        $list = app(ListGuardianChildrenAction::class);
+        $userId = (int) $request->user()->id;
 
         return Inertia::render('Portal/Children', [
-            'children' => $children,
+            'children' => $list->executeForGuardianUserId($userId),
+            // Item 13: links the office has not verified yet, by name only.
+            'pending' => $list->executePendingForGuardianUserId($userId),
         ]);
     }
 }

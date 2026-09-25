@@ -212,7 +212,7 @@ it('walks both screens over http and keeps the gate console off the family side'
     DB::table('guardian_student')->insert([
         'guardian_id' => $guardianId, 'student_id' => $student->id,
         'relationship' => 'father', 'is_primary' => true, 'can_pickup' => true,
-        'created_at' => now(), 'updated_at' => now(),
+        'verification_status' => 'verified', 'created_at' => now(), 'updated_at' => now(),
     ]);
 
     $this->withoutLocalizationMiddleware()->actingAs($staff)

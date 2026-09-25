@@ -3,6 +3,7 @@
 namespace App\Domains\People\Models;
 
 use App\Domains\Identity\Models\User;
+use App\Domains\People\Support\VerifiedGuardianLink;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -51,6 +52,17 @@ class ParentGuardian extends Model
      * parent dashboard worked for the demo parent and 403'd for every real one.
      */
     public function children(): BelongsToMany
+    {
+        // Item 13 (2026-09-25): the family-facing relation sees verified links
+        // only. `allLinkedChildren()` is the office's unfiltered view.
+        return VerifiedGuardianLink::scopeRelation($this->allLinkedChildren());
+    }
+
+    /**
+     * Every link, verified or not — for the office, which is where a link is
+     * checked. Family-facing code uses `children()`.
+     */
+    public function allLinkedChildren(): BelongsToMany
     {
         // SPEC §9's other five, which `withPivot` never declared on either side
         // of this relation — see the note on `Student::guardians()`.

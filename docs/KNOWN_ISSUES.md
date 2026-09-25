@@ -140,6 +140,26 @@ a question with a default, so "do nothing" is always a legible choice.
 
 ---
 
+## Found by owner decision 13 (2026-09-25)
+
+### A stranger could link themselves to a real pupil from the public form — **fixed (2026-09-25)**
+
+**Severity:** disclosure of a child's records to somebody outside the
+family. The public registration form links the registering account to the
+child it names, matching an existing pupil by ID card number. The link's
+`verification_status` existed and the office could set it, but nothing
+read it, so anyone with a phone could register a "child" under a real
+pupil's number and then read that pupil's attendance, invoices and
+messages, receive their absence SMS, and book a meeting about them.
+
+**Fix (STATUS §5gk):** verification is a gate. Every family-facing resolver
+goes through `VerifiedGuardianLink`; existing links were backfilled
+verified; the office's own attach verifies as it goes; a self-registered
+link starts unverified and shows as *awaiting the office* until a member
+of staff verifies it on the pupil's Guardians tab. The office finds them
+with the *Awaiting parent verification* filter on the student directory.
+`GuardianLinkGateTest` pins each door; `family.mjs` walks the loop.
+
 ## Found by Deploy 3 slice 2 (2026-09-25)
 
 ### A child's login, made at registration, was never linked to the child — **fixed (2026-09-25)**

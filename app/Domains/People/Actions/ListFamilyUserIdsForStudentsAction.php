@@ -41,6 +41,8 @@ class ListFamilyUserIdsForStudentsAction
             $userIds = DB::table('guardian_student')
                 ->join('parent_guardians', 'parent_guardians.id', '=', 'guardian_student.guardian_id')
                 ->whereIn('guardian_student.student_id', $ids)
+                // Item 13: a child's news reaches verified guardians only.
+                ->where('guardian_student.verification_status', 'verified')
                 ->whereNotNull('parent_guardians.user_id')
                 ->pluck('parent_guardians.user_id')
                 ->all();

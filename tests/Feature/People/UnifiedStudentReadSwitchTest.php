@@ -72,7 +72,11 @@ it('writes guardian_student alone when a parent enrolls a child (Deploy 3 slice 
     expect(DB::table('archived_registration_students')->count())->toBe(0)
         ->and(DB::table('archived_student_guardians')->count())->toBe(0)
         ->and($student->user_id)->toBeNull()
-        ->and($parent->courseStudents()->pluck('students.id')->all())->toContain($student->id)
+        // Item 13: a link the parent made on the public form is not in the
+        // parent's own children until the office verifies it, but the link
+        // itself is there for the office to see.
+        ->and($parent->courseStudents()->pluck('students.id')->all())->not->toContain($student->id)
+        ->and(DB::table('guardian_student')->where('student_id', $student->id)->value('verification_status'))->toBe('unverified')
         ->and($student->guardians)->toHaveCount(1)
         ->and($student->guardians->first()->name)->toBe($parent->name)
         ->and($student->guardians->first()->pivot->relationship)->toBe('mother')

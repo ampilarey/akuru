@@ -38,6 +38,8 @@ class ListCollectableChildrenAction
             ->join('students', 'students.id', '=', 'guardian_student.student_id')
             ->whereIn('guardian_student.guardian_id', $guardianIds)
             ->where('guardian_student.can_pickup', true)
+            // Item 13: an unverified link collects nobody.
+            ->where('guardian_student.verification_status', 'verified')
             ->orderBy('students.first_name')
             ->get(['students.id', 'students.first_name', 'students.last_name', 'students.student_id'])
             ->map(fn ($row): array => [
