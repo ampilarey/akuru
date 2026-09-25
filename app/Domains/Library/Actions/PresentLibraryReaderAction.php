@@ -58,8 +58,9 @@ class PresentLibraryReaderAction
         // that. Writing it would put a book nobody bought into "continue
         // reading" and count its pages towards a completion the reader cannot
         // reach.
+        $completed = false;
         if ($userId !== null && $total > 0 && ! $isPreview) {
-            app(SaveReadingProgressAction::class)->execute($userId, $item->id, $page, $total);
+            $completed = app(SaveReadingProgressAction::class)->execute($userId, $item->id, $page, $total)->completed_at !== null;
         }
 
         return $result + [
@@ -69,6 +70,8 @@ class PresentLibraryReaderAction
             // navigation must count against — `total_pages` still reports the
             // real length, so a sample says "3 of 210" rather than "3 of 3".
             'readable_pages' => $readable,
+            // §9.1 "mark as completed": reached the last page, or said so.
+            'completed' => $completed,
             'content' => $content,
             'watermark' => $watermarkLabel.' • '.now()->format('Y-m-d H:i'),
             'bookmarked' => $userId !== null && LibraryBookmark::query()

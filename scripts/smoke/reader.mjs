@@ -301,4 +301,26 @@ const policyCount = await policies.count();
 const termsResponse = await reader.request.get(`${BASE}/en/page/reader-terms`);
 check('the shelf links the required pages and Reader Terms opens', policyCount >= 5 && termsResponse.status() === 200 && (await termsResponse.text()).includes('Reader Terms'), `${policyCount} links · reader-terms HTTP ${termsResponse.status()}`);
 
+// ------------------------------------------------- 8. reading comfort (§9.1) — after 7, which needs the PDF primer still unfinished
+
+await reader.goto(`${BASE}/en/library/${PDF_SLUG}/read?page=1`, { waitUntil: 'networkidle' });
+const sizeBefore = await reader.locator('#reader-content').evaluate((el) => parseFloat(getComputedStyle(el).fontSize));
+await reader.click('[data-reader="font-up"]');
+const sizeAfter = await reader.locator('#reader-content').evaluate((el) => parseFloat(getComputedStyle(el).fontSize));
+check('the reader can make the text larger', sizeAfter > sizeBefore, `${sizeBefore}px → ${sizeAfter}px`);
+await reader.click('[data-reader="theme"][data-value="dark"]');
+const themed = await reader.locator('#reader-page').getAttribute('data-theme');
+await reader.reload({ waitUntil: 'networkidle' });
+check('and choose a dark page that stays chosen', themed === 'dark' && (await reader.locator('#reader-page').getAttribute('data-theme')) === 'dark' && (await reader.locator('#reader-content').evaluate((el) => parseFloat(getComputedStyle(el).fontSize))) === sizeAfter, `theme ${await reader.locator('#reader-page').getAttribute('data-theme')} after reload`);
+await reader.click('[data-reader="theme"][data-value="light"]');
+await reader.click('[data-reader="font-down"]');
+await reader.goto(`${BASE}/en/library/${PDF_SLUG}/read?page=2`, { waitUntil: 'networkidle' });
+await reader.click('[data-testid="mark-completed"]');
+await reader.waitForLoadState('networkidle');
+check('the reader can mark a book completed before its last page', (await reader.locator('[data-testid="completed"]').count()) === 1, (await text(reader)).match(/You have finished[^.]*\./)?.[0] ?? (await text(reader)).slice(0, 120));
+await reader.goto(`${BASE}/en/my-library`, { waitUntil: 'networkidle' });
+// Progress follows where the reader is (page 2 after the redirect back);
+// completion is the stamp that stays.
+check('and My Library records it', new RegExp(`${PDF_TITLE} Page \\d · \\d+% · Completed`).test(await text(reader)), (await text(reader)).match(new RegExp(`${PDF_TITLE} Page \\d[^R]*`))?.[0] ?? (await text(reader)).slice(0, 160));
+
 await finish();

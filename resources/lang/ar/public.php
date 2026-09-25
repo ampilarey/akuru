@@ -228,6 +228,21 @@ return [
     'Try again' => 'حاول مرة أخرى',
     'Bank confirmation can take a moment. Refresh this page shortly — the code is sent as soon as the bank confirms.' => 'قد يستغرق تأكيد البنك لحظات. حدّث هذه الصفحة بعد قليل — يُرسل الرمز فور تأكيد البنك.',
 
+    // Reader comfort and completion (§9.1, 2026-09-25) — first pass pending native review (operator item)
+    'Reading options' => 'خيارات القراءة',
+    'Smaller text' => 'نص أصغر',
+    'Larger text' => 'نص أكبر',
+    'Theme' => 'المظهر',
+    'Light' => 'فاتح',
+    'Sepia' => 'بني فاتح',
+    'Dark' => 'داكن',
+    'Text direction' => 'اتجاه النص',
+    'Auto' => 'تلقائي',
+    'Left to right' => 'من اليسار إلى اليمين',
+    'Right to left' => 'من اليمين إلى اليسار',
+    'Full screen' => 'ملء الشاشة',
+    'Mark as completed' => 'وضع علامة مكتمل',
+    'You have finished this item.' => 'لقد أنهيت هذا العنصر.',
     // Shelf discovery and the required pages (§8.2, 2026-09-25) — first pass pending native review (operator item)
     'Access' => 'الوصول',
     'Free and paid' => 'مجاني ومدفوع',
