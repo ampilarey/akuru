@@ -1,4 +1,8 @@
-# Akuru Online Bookshop — plan v2 (2026-09-25)
+# Akuru Online Bookshop — plan v2.1 (2026-09-25, audited)
+
+v2.1 is v2 read back against the code and against how selling works in
+the Maldives. The findings and what changed are in **§14**; the fixes are
+applied inline, marked *(audit)*.
 
 The owner's brief and confirmations (2026-09-25):
 
@@ -90,24 +94,29 @@ office with an owner account.
 
 **Cart and checkout**
 - Server-side cart per person; a guest cart on the session that merges on sign-in; quantities; stock re-checked on every change; discount code box; per-vendor sub-totals shown.
-- Checkout (sign-in required, as the library and gift cards): address book (atoll, island, street, phone), delivery method **per vendor** (collect from the vendor / collect from Akuru / delivery in Malé–Hulhumalé–Villimalé / atolls by courier or boat), delivery fee per vendor, order notes, gift message, then payment: **card (BML)** or **wallet**, with a discount code where it applies. Gift cards are wallet money once redeemed (rule 12). Bank transfer with office confirmation and cash on delivery are decisions (§13).
-- Order confirmation page and email receipt with GST line and the vendor's TIN; one **order number per vendor**, grouped under one checkout number.
+- Checkout (sign-in required, as the library and gift cards; *(audit)* the sign-in step offers the existing **mobile OTP** login so a first-time buyer needs only a phone number, and checkout asks for nothing the order does not need — a guest checkout without any account is **not** offered, because orders, returns and refunds need an identity to land on): address book (atoll, island, street, phone), delivery method **per vendor** (collect from the vendor / collect from Akuru / delivery in Malé–Hulhumalé–Villimalé / atolls by courier or boat), delivery fee per vendor, order notes, gift message, then payment: **card (BML)**, **wallet**, or *(audit)* **bank transfer with a slip upload** (the order waits as *pending payment* until the vendor or the office confirms the transfer — the usual way to pay a small shop in the Maldives, so it launches in B2, not B9), with a discount code where it applies. Gift cards are wallet money once redeemed (rule 12). Cash on delivery stays a decision (§13 no. 7).
+- *(audit)* **Stock reservation**: starting checkout reserves the basket's quantities for 30 minutes (a `stock_reservations` row per item); a card payment not confirmed and a bank transfer not slipped in that time releases the reservation and the checkout expires (the existing scheduler runs the sweep, like `akuru:prune-expired`). A reserved item shows "reserved — 2 left" to others. This replaces v2's "needs attention on oversell" as the first line of defence; needs-attention remains for the rare case a reservation lapsed and the webhook still arrived.
+- Order confirmation page and email receipt with a tax line and the vendor's TIN; one **order number per vendor**, grouped under one checkout number. *(audit)* Format: checkout `AK-2026-000123`, order `AK-2026-000123-FIT` (the vendor's three-letter code), both sequential per year and never reused; the receipt number is Finance's own.
 
 **After the order**
 - My orders: status trail (pending payment → paid → processing → ready to collect / dispatched → collected / delivered), tracking note, receipt, packing details, message the vendor (existing message threads), cancel before dispatch, request a return within the window, see the refund land in the wallet or on the card.
-- Notices in app and by email (SMS where the office enables it): paid, ready, dispatched, delivered, refund done, back in stock (if they asked).
+- *(audit)* **Atoll delivery by boat**: the vendor hands the parcel to a launch or supply boat and the customer pays the boat fee on arrival. The delivery method carries a "fee paid to the carrier on arrival" flag so the checkout shows "boat fee paid on arrival (about MVR 20–50)" instead of charging it, and the order's delivery fee is zero.
+- *(audit)* **Refunds** go through Finance's existing `RefundPaymentAction`: a wallet-paid order refunds to the wallet at once; a card-paid order is refunded by the office through BML (a vendor accepts the return, the office presses refund) and the customer sees "refund on its way to your card"; a bank-transfer order is refunded to the wallet by default, or by the office's manual transfer where the customer asks. The vendor's earning reverses in every case.
+- Notices in app and by email (SMS where the office enables it): paid, ready, dispatched, delivered, refund done, back in stock (if they asked). *(audit)* Email and SMS are queued, so they need the production **queue worker** (OWNER_ACTIONS item 3, BACKLOG C6) — B2's deploy gate includes it running, otherwise customers get in-app notices only.
 
 **Trust**
 - Reviews only from customers who received the product; vendor may reply; office may hide.
 - Every page trilingual-ready (EN/DV/AR) and RTL-safe; product names and descriptions in three languages where the vendor provides them.
-- Policies linked at checkout: Reader/Customer Terms, Returns Policy, Delivery Policy, Privacy — seeded CMS pages like the library's, editable by the office.
+- Policies linked at checkout: Reader/Customer Terms, Returns Policy, Delivery Policy, Privacy — seeded CMS pages like the library's, editable by the office. *(audit)* Seeded in B2 by a `BookshopPolicyPagesSeeder`, never overwriting edits: **Shop Terms**, **Delivery & Returns Policy**, **Vendor Agreement** (what a vendor signs up to: commission, payout timing, who handles a return, what the office may moderate) — the vendor accepts the agreement on first sign-in to the portal, and the acceptance is dated on `vendor_members`.
+- *(audit)* **Customer data**: addresses and phone numbers are the customer's; a vendor sees them only on their own orders, and only until the order closes plus the return window; exports of orders mask the phone after that; a customer can delete an address from the address book at any time (order snapshots keep what the order needed). The privacy page says so.
+- *(audit)* **Mobile**: the shop's public pages get a fixed bottom bar (Shop, Search, Cart, Orders) on phone widths, since most Maldivian buyers arrive from Instagram or Viber on a phone.
 
 ---
 
 ## 5. Vendor portal features
 
 **Products**
-- Create/edit: title (EN/DV/AR), slug, short and long description (rich text, sanitised), category, brand, tags, photos (drag to order; the first is the card image), price, compare-at price, cost (private, for margin reports), GST-inclusive flag, SKU, barcode/ISBN, weight and dimensions, stock and low-stock threshold, track stock or not, "made to order" lead time, variants with their own SKU/price/stock/photo, status (draft / active / archived), visibility (shop-wide or storefront-only), optional link to a library item, book fields (author, publisher, year, pages, language) and educational fields (age range, grade, subject).
+- Create/edit: title (EN/DV/AR), slug, short and long description (rich text, sanitised), category, brand, tags, photos (drag to order; the first is the card image), price, compare-at price, cost (private, for margin reports), *(audit)* **tax class** (standard / zero-rated / exempt — books are commonly zero-rated or exempt while stationery is standard, so one GST flag per product was wrong; prices are always tax-inclusive and the receipt shows tax per line), SKU, barcode/ISBN, weight and dimensions, stock and low-stock threshold, track stock or not, "made to order" lead time, variants with their own SKU/price/stock/photo, status (draft / active / archived), visibility (shop-wide or storefront-only), optional link to a library item, book fields (author, publisher, year, pages, language) and educational fields (age range, grade, subject).
 - Bulk: CSV import/export of products and stock; duplicate a product.
 - Collections: named groups of their products (manual or by tag) for the storefront and for `/shop/<vendor>/<collection>`.
 
@@ -119,9 +128,10 @@ office with an owner account.
 
 **Settings**
 - Shop identity: legal name, trading name, TIN, contact email and phone, address, opening hours.
-- Delivery: which methods, zones and fees (start from the office's template), collection address, handling days, free delivery over an amount.
+- Delivery: which methods, zones and fees (start from the office's template), collection address, handling days, free delivery over an amount, *(audit)* a minimum order amount per method (a vendor will not deliver a MVR 15 pencil to Hulhumalé), and the "fee paid to the carrier" flag for boat delivery.
 - Returns: window, conditions, who pays return delivery.
-- Members: invite by email, roles.
+- *(audit)* **Holiday mode**: pause the shop for a date range (Eid, stock-take, travel) — products stay visible marked "back on <date>", the cart refuses them, and the storefront shows the vendor's notice.
+- Members: invite by email, roles. *(audit)* Invitations are queued mail; the portal also shows a copyable invitation link so the owner can send it by Viber when the queue worker is not running.
 - Bank details for payouts.
 - Notifications: which events email or SMS them.
 
@@ -145,13 +155,13 @@ is safe, versioned, and renders inside the fixed Akuru frame.
 
 ### 6.2 Theme
 - **Colours**: primary, secondary, accent, page background, card background, text — as a palette the vendor picks from **presets** (Akuru maroon/beige, ocean, forest, sand, night, ink) or sets by hex, with contrast checked automatically (a colour pair that fails readability is refused, with the reason).
-- **Typography**: heading and body from an approved list (Latin: Inter, Merriweather, Poppins, Lora, Bree Serif, Courier Prime; Dhivehi: MV Waheed, Faruma; Arabic: Noto Naskh, Amiri), size scale (compact / regular / large).
+- **Typography**: heading and body from an approved list (Latin: Inter, Merriweather, Poppins, Lora, Bree Serif, Courier Prime; Dhivehi: MV Waheed, Faruma; Arabic: Noto Naskh, Amiri), size scale (compact / regular / large). *(audit)* The Latin and Arabic faces are on Google Fonts; **MV Waheed and Faruma are not** — they ship self-hosted under `public/fonts/` only after their licence is checked (Faruma is freely redistributable; MV Waheed's terms must be confirmed by the owner, otherwise the Dhivehi list is Faruma plus Noto Sans Thaana). Every theme's font stack ends in the system Thaana and Arabic fallbacks so a vendor's choice never breaks Dhivehi or Arabic text.
 - **Shape**: corner radius (square / soft / round), button style (filled / outlined), card style (flat / shadow / bordered), banner height, image ratio for product cards (square / portrait / landscape).
 - **Dark mode** variant optional; the vendor sets both or lets the theme derive one.
 - Themes have **named versions**: save as draft, preview, publish, roll back to a previous published version.
 
 ### 6.3 Layout: sections the vendor arranges
-A storefront is an ordered list of sections, each with its own settings, dragged into place in the designer. Available sections (v1 set; the office can add types over time):
+A storefront is an ordered list of sections, each with its own settings, arranged in the designer. *(audit)* The designer is built in two steps to keep B5 honest: first a **form-based** designer (a list of sections with up / down / hide buttons and a settings form each, plus a live **preview in an iframe** of the real storefront renderer, so what the vendor sees is what publishes), then drag-to-order as a polish item in B7. A form beats a half-working drag surface, and it is keyboard-accessible from day one. Available sections (v1 set; the office can add types over time):
 
 | Section | What it shows |
 |---|---|
@@ -212,8 +222,10 @@ Each section has: visibility (published / hidden / scheduled between dates), lan
 - Wallet and ledgers are append-only; refunds are reversals.
 - Discount codes reduce a price and never buy gift cards; each says who funds it (Akuru or the vendor); the vendor's share is computed like writers' (Akuru-funded: on full price; vendor-funded: on the discounted price).
 - One BML payment per checkout (payable alias `bookshop_checkout`); the webhook marks every order under it. Stock is decremented on *paid*; if a product sold out between checkout and payment the order is marked *needs attention* and the vendor and office are told; never a silent oversell.
-- GST: recorded per product (inclusive flag), shown as a line on the receipt with the vendor's TIN; **rate and registration are the owner's** (§13).
-- Delivery fees go to the vendor who delivers; Akuru's commission applies to goods, not to delivery fees (decision §13 if the owner prefers otherwise).
+- Tax: *(audit)* a **tax class per product** (standard / zero-rated / exempt) and a rate per class in the office settings; prices are inclusive; the receipt shows tax per line and a total, under the vendor's TIN, only when the vendor is GST-registered (a vendor below the registration threshold sells without a tax line — the plan's earlier "GST on every receipt" was wrong for a small shop). **Rates, registration and who files are the owner's** (§13 no. 4).
+- *(audit)* **Akuru's commission is a service Akuru sells to the vendor**, so Akuru issues the vendor a monthly **commission tax invoice** (Akuru's TIN, GST on the commission if Akuru is registered), and the statement nets it against sales. Vendor payouts are then sales − refunds − commission invoice, which is what an accountant expects to see.
+- Delivery fees go to the vendor who delivers; Akuru's commission applies to goods, not to delivery fees (decision §13 if the owner prefers otherwise). Boat fees paid to the carrier on arrival never touch Akuru's books.
+- *(audit)* **Currency**: MVR only, stored as integer laari like the wallet; no USD pricing in v1 (tourists are not the market; a decision if a vendor asks).
 
 ---
 
@@ -223,11 +235,13 @@ Each section has: visibility (published / hidden / scheduled between dates), lan
 
 **Storefront**: `vendor_storefronts` (vendor, draft_theme JSON, published_theme JSON, draft_sections JSON, published_sections JSON, published_at, published_by), `vendor_storefront_versions` (append-only snapshots for roll-back), `vendor_pages` (vendor, slug, title ×3, sections JSON, status), `vendor_collections` (vendor, slug, name ×3, rule JSON or manual), `vendor_collection_products`.
 
-**Catalogue**: `product_categories` (shared, trilingual), `brands`, `products` (vendor, category, brand, slug, titles ×3, descriptions ×3, price, compare_at, cost, gst_inclusive, sku, barcode, weight, dimensions, stock, low_stock_at, track_stock, lead_days, status, visibility, featured, library_item_id, attributes JSON for book/educational fields), `product_images` (media id, sort), `product_variants` (name, options JSON, sku, price, stock, image), `product_tags`, `product_reviews` (order_item, rating, text, status, vendor_reply), `wishlists`, `stock_movements` (append-only: in, sale, return, adjustment, by whom).
+**Catalogue**: `product_categories` (shared, trilingual), `brands`, `products` (vendor, category, brand, slug, titles ×3, descriptions ×3, price, compare_at, cost, tax_class *(audit)*, sku, barcode, weight, dimensions, stock, low_stock_at, track_stock, lead_days, status, visibility, featured, library_item_id, attributes JSON for book/educational fields), `product_images` (media id, sort), `product_variants` (name, options JSON, sku, price, stock, image), `product_tags`, `product_reviews` (order_item, rating, text, status, vendor_reply), `wishlists`, `stock_movements` (append-only: in, sale, return, adjustment, by whom).
 
-**Orders**: `customer_addresses`, `carts`, `cart_items`, `bookshop_checkouts` (user, totals, discount, payment_id, status), `orders` (number, checkout, vendor, user, status, delivery method and fee, address snapshot, subtotal, discount, gst, total, notes), `order_items` (product and variant snapshot: name, sku, unit price, qty, gst), `order_events` (append-only trail with actor), `order_returns` (order_item, reason, status, refund_id), `order_messages` via existing message threads.
+**Orders**: `customer_addresses`, `carts`, `cart_items`, `bookshop_checkouts` (user, number, totals, discount, payment_id, payment_method, status, expires_at *(audit)*), `stock_reservations` *(audit)* (checkout, product/variant, qty, expires_at), `bank_transfer_slips` *(audit)* (checkout, media id, reference, confirmed_by, confirmed_at), `orders` (number, checkout, vendor, user, status, delivery method and fee, carrier_pays flag, address snapshot, subtotal, discount, tax, total, notes), `order_items` (product and variant snapshot: name, sku, unit price, qty, tax_class, tax), `order_events` (append-only trail with actor), `order_returns` (order_item, reason, status, refund_id), `order_messages` via existing message threads.
 
-**Money**: `vendor_earnings` (order, gross, discount, funding source, commission, net, status, available_at), `vendor_payouts`, `vendor_statements`.
+**Money**: `vendor_earnings` (order, gross, discount, funding source, commission, net, status, available_at), `vendor_commission_invoices` *(audit)* (vendor, period, amount, tax, number), `vendor_payouts`, `vendor_statements`.
+
+**Vendors** also carry *(audit)* `code` (three letters for order numbers, unique), `holiday_from`, `holiday_until`, `holiday_notice`, `gst_registered`, and `vendor_members.agreement_accepted_at`.
 
 No `academic_year_id`: commerce, not a term's record (every commerce table's precedent).
 
@@ -237,10 +251,11 @@ No `academic_year_id`: commerce, not a term's record (every commerce table's pre
 
 - **Domain**: `Domains/Bookshop` with Actions, Models, Http, Contracts, Enums, Listeners, Console. Cross-domain only through Commerce/Finance/Media/Notifications Actions and DTOs (rule 3). No SDKs in domain logic (rule 4); BML and mail stay behind their existing interfaces.
 - **Storefront rendering**: sections are structured data → a Blade renderer per section type in the public zone (the library precedent for public Blade), with the theme applied as CSS custom properties on the storefront root; no vendor-supplied CSS or HTML; rich text through `HtmlSanitizer` with a vendor profile (no scripts, iframes only from the allowed video hosts, no inline styles).
-- **Images**: public media, resized variants (card, gallery, zoom) at upload with `gd`; lazy loading; a size cap.
+- **Images**: public media, resized variants (card, gallery, zoom) at upload through the existing `ImageProcessorInterface` (Media's `WebPImageService`, already behind a contract — *(audit)* not raw `gd` calls in Bookshop, rule 4); lazy loading; a size cap.
 - **Performance**: catalogue queries with counts (`withCount`) and cursor pagination; storefront published JSON cached per vendor and cleared on publish; product listing cached per filter set for a minute.
 - **Search**: database LIKE with a prefix index for v1; a search service (Meilisearch) is a later binding behind a contract if the catalogue grows.
-- **Security**: every write validated into DTOs; vendors reach only their vendor's rows (a `VendorScope` resolved from membership, the way `VerifiedGuardianLink` is the one definition for families); office routes gated by `bookshop.manage`; rate limits on cart and checkout; stock and money changes in transactions with row locks; append-only trails.
+- **Security**: every write validated into DTOs; vendors reach only their vendor's rows (a `VendorScope` resolved from membership, the way `VerifiedGuardianLink` is the one definition for families — *(audit)* pinned by an architecture test that every query in `Domains/Bookshop/Http/Vendor/*` goes through the scope, the way the private-media reader test lists its allowed callers); office routes gated by `bookshop.manage`; rate limits on cart and checkout; stock and money changes in transactions with row locks; append-only trails; *(audit)* bank-transfer slips are private media (readable by the paying customer, the vendor of that order and the office only).
+- *(audit)* **Scheduler**: checkout expiry, reservation release, earnings maturing and holiday-mode transitions are commands on the existing schedule in `routes/console.php` (which already runs `payments:reconcile` and `akuru:prune-expired`); nothing new to install on the host beyond the queue worker.
 - **Trilingual and RTL**: all labels in `lang/*/shop.php` with DV/AR first passes; every listing has CSV export (conventions).
 - **Accessibility**: theme contrast check; keyboard-navigable designer; alt text required on product images.
 - **Tests**: Pest feature tests per slice; architecture suite stays green (public routes and Blade baselines, morph map, thin controllers, discount callers — the gift-card rule test lists the checkout as a permitted discount caller because it buys goods).
@@ -253,27 +268,29 @@ No `academic_year_id`: commerce, not a term's record (every commerce table's pre
 | # | Slice | A person can, at the end |
 |---|---|---|
 | B0 | **Rename** the Knowledge Library to *Akuru Digital Library* in every label (EN/DV/AR); `/library` stays. | see the new name across the library |
-| B1 | **Vendors and products** — domain scaffold, vendors and members, office vendor screen, vendor portal with products (photos, variants, stock, book and educational fields), shared categories and brands, public `/shop` home and listing, product page, a plain `/shop/<vendor>` page, Shop in the header and menu. | the office invites a vendor; the vendor lists a product; anyone finds it on the shop and the vendor's page |
-| B2 | **Cart and checkout** — cart with guest merge, addresses, delivery methods and fees, discount codes, BML and wallet, one order per vendor under one checkout, webhook confirmation, stock decrement and needs-attention, receipt with GST, My orders, notices. | a customer buys two vendors' items in one basket and both orders show as paid |
-| B3 | **Fulfilment and returns** — vendor order queue with status steps, packing slip and label, tracking note, customer cancellation before dispatch, vendor cancellation with reason, return requests and refunds (wallet or card), order messages. | a vendor dispatches; the customer tracks it and, if needed, returns it |
+| B1a | **Vendors and the portal** *(audit: B1 split — v2's B1 was three slices in one)* — domain scaffold, `vendors`, `vendor_members`, morph aliases, office vendor screen (create with owner account, invitation link), vendor portal shell with the Vendor Agreement acceptance, products (photos through `ImageProcessorInterface`, variants, stock, tax class, book and educational fields), shared categories and brands, Fitrah seeded on staging. | the office creates Fitrah; Inaaya signs in, accepts the agreement and lists a product with photos |
+| B1b | **The public shop** — `/shop` home and listing with filters, product page, category pages, a plain `/shop/<vendor>` page, search, Shop in the header, menu and mobile bottom bar, sitemap entries. | anyone finds Fitrah's product on the shop and on her page |
+| B2 | **Cart and checkout** — cart with guest merge, addresses, delivery methods and fees (incl. minimums and carrier-paid boat fees), discount codes, **BML, wallet and bank transfer with slip upload**, stock reservation and checkout expiry on the scheduler, one order per vendor under one checkout, webhook confirmation, stock decrement and needs-attention, receipt with tax lines, My orders, notices, the three seeded policy pages, OTP sign-in at checkout. Deploy gate: queue worker running on production. | a customer buys two vendors' items in one basket and both orders show as paid; a bank-transfer order waits for confirmation and then shows as paid |
+| B3 | **Fulfilment and returns** — vendor order queue with status steps, packing slip and label, tracking note, bank-transfer confirmation by the vendor, customer cancellation before dispatch, vendor cancellation with reason, holiday mode, return requests and refunds through `RefundPaymentAction` (wallet at once, card by the office), order messages. | a vendor dispatches; the customer tracks it and, if needed, returns it |
 | B4 | **Storefront designer, part 1: identity and theme** — logo, banner, story, contact, hours, socials; colour presets and custom palette with contrast check; fonts; shape; draft / preview / publish / roll back. | a vendor's page looks like their brand, inside the Akuru frame |
-| B5 | **Storefront designer, part 2: sections, pages, collections, navigation** — the section types of §6.3, drag-to-order, scheduling, vendor pages, collections, storefront menu, SEO fields. | a vendor arranges a hero, featured products, a story, FAQ and contact, adds an About page, and publishes |
-| B6 | **Money to vendors** — commission, earnings maturing after the return window, payout requests and decisions, statements, vendor and office reports, GST report. | a vendor sees what they are owed and is paid |
-| B7 | **Shop polish and trust** — search suggestions, best-selling and top-rated sorts, wishlist, recently viewed, reviews with vendor replies and office moderation, back-in-stock notices, product badges, vendor-funded discount codes scoped to their products, free-delivery-over rules, shop-home merchandising by the office. | the shop feels like a shop |
+| B5 | **Storefront designer, part 2: sections, pages, collections, navigation** — the section types of §6.3 in the form-based designer with iframe preview, scheduling, vendor pages, collections, storefront menu, SEO fields. | a vendor arranges a hero, featured products, a story, FAQ and contact, adds an About page, and publishes |
+| B6 | **Money to vendors** — commission, monthly commission tax invoice, earnings maturing after the return window, payout requests and decisions, statements, vendor and office reports, tax report. | a vendor sees what they are owed and is paid |
+| B7 | **Shop polish and trust** — search suggestions, best-selling and top-rated sorts, wishlist, recently viewed, reviews with vendor replies and office moderation, back-in-stock notices, product badges, vendor-funded discount codes scoped to their products, free-delivery-over rules, shop-home merchandising by the office, drag-to-order in the designer. | the shop feels like a shop |
 | B8 | **Bulk and operations** — CSV import/export of products and stock, stock movements log, low-stock alerts, order exports, email/SMS switches. | a vendor with 500 items can manage them |
-| B9 | **Later, on request** — public vendor onboarding (apply → approve), custom host per vendor, whole-shop subdomain, bank transfer with office confirmation, cash on delivery, newsletter section, search service, analytics funnel. | parked in `BACKLOG.md` |
+| B9 | **Later, on request** — public vendor onboarding (apply → approve), custom host per vendor, whole-shop subdomain, cash on delivery, newsletter section, abandoned-cart reminders, bulk quotes for schools (B2B), USD pricing, search service, analytics funnel. | parked in `BACKLOG.md` |
 
-Rough size: B1–B3 are each about the gift-card slice times three; B4 and
-B5 together are the largest piece (the designer); B6–B8 are each a
-library-sized slice. Order can change after B1 if the owner wants the
-designer before checkout to show vendors their pages early.
+Rough size: B1a, B1b and B3 are each about the gift-card slice times
+two, B2 times three; B4 and B5 together are the largest piece (the
+designer); B6–B8 are each a library-sized slice. Order can change after
+B1b if the owner wants the designer before checkout to show vendors their
+pages early.
 
 ---
 
 ## 12. What this plan reuses
 
 `InitiatePayablePaymentAction` and the `PaymentConfirmed` listener
-pattern (Finance); refunds (Finance); `DebitWalletAction`,
+pattern (Finance); `RefundPaymentAction` (Finance); `DebitWalletAction`,
 `CreditWalletAction`, `ResolveDiscountAction` and funding sources
 (Commerce); `StorePublicMediaAction` / `ResolvePublicMediaUrlAction`
 (Media); `SendUserNotificationAction` and message threads
@@ -291,13 +308,62 @@ scope definition (`VendorScope`).
 | 1 | Path now, subdomain later | as §2 | **confirmed 2026-09-25** |
 | 2 | One catalogue for all vendors | as §1 | **confirmed 2026-09-25** |
 | 3 | Vendors customise their storefront inside the Akuru frame | as §6 | **confirmed 2026-09-25** |
-| 4 | GST: rate, prices inclusive or not, TIN on receipts | inclusive prices; rate per current law; each vendor's TIN | open |
+| 4 | Tax: rates per class, prices inclusive, TIN on receipts, which vendors are registered | inclusive prices; standard / zero-rated / exempt classes at the current rates; a tax line only for GST-registered vendors; Akuru invoices its commission (audit) | open |
 | 5 | Default commission on goods; commission on delivery fees? | 10–15% on goods; none on delivery | open |
-| 6 | Delivery zones and fees vendors start from; Akuru's office as a collection point? | Malé–Hulhumalé–Villimalé flat; atolls by courier/boat at vendor's fee; yes to Akuru collection | open |
-| 7 | Payment methods at launch | card and wallet; bank transfer and cash on delivery in B9 | open |
+| 6 | Delivery zones and fees vendors start from; Akuru's office as a collection point? | Malé–Hulhumalé–Villimalé flat; atolls by courier at the vendor's fee or by boat with the fee paid to the carrier on arrival; yes to Akuru collection | open |
+| 7 | Payment methods at launch | **card, wallet and bank transfer with slip upload in B2** (audit: bank transfer is how most small shops here are paid); cash on delivery in B9 unless the owner wants it at launch | open — recommendation changed |
 | 8 | Return window and returns policy | 7 days, unused, buyer pays return delivery unless faulty | open |
 | 9 | Vendors in v1 | invitation only | **decided 2026-09-25: the first vendor is the owner's wife's educational-items shop, an independent business selling inside the bookshop; **Fitrah** (owner Fathimath Inaaya, `/shop/fitrah`) — identity, palette, logo and proposed theme in `docs/vendors/FITRAH.md`; contact, delivery, returns and first products still to come. Bank details and ID documents are entered by her in the vendor portal, never sent through the conversation or committed.** |
 | 10 | Storefront fonts and presets the office allows; may vendors use Akuru's own maroon palette? | the §6.2 list; yes to presets, Akuru's palette marked "Akuru partner" | open |
 | 11 | Does a vendor page show "at Akuru Online Bookshop" under their name? | yes, always | open |
 | 12 | Should reviews be on from B7, or off until vendors ask? | on, moderated | open |
 | 13 | Order of slices: checkout (B2–B3) before the designer (B4–B5), or designer first? | checkout first: money before polish | open |
+| 14 | *(audit)* Dhivehi fonts: may MV Waheed be self-hosted (licence), or Faruma and Noto Sans Thaana only? | Faruma + Noto Sans Thaana unless the owner holds an MV Waheed licence | open |
+| 15 | *(audit)* Customer data retention: how long may a vendor see a customer's phone and address after an order closes? | the return window, then masked in the vendor's view and exports | open |
+| 16 | *(audit)* Vendor Agreement text (commission, payout timing, returns responsibility, moderation): the office drafts it, or the owner supplies one? | seeded first draft by B2, like the library policy pages; the owner edits in the page editor | open |
+
+---
+
+## 14. Audit of v2 (2026-09-25)
+
+The owner asked for the plan to be audited once more before anything is
+built. Each row was checked against the code (what exists to reuse, what
+v2 assumed wrongly) and against how a small shop in the Maldives actually
+sells. **Fixed inline** means the section text above was changed and is
+marked *(audit)*.
+
+| # | Finding | Severity | Resolution |
+|---|---|---|---|
+| 1 | v2 put **bank transfer** in B9 ("later"). In the Maldives most small-shop purchases are paid by BML/MIB transfer with a slip sent on Viber; a shop that takes only card and wallet at launch turns away the ordinary buyer. | high | Fixed inline: bank transfer with slip upload and vendor/office confirmation moves into B2; decision 7's recommendation changed. Cash on delivery stays a decision. |
+| 2 | v2 relied on "needs attention on oversell" as the only protection between checkout and payment. With a slow BML webhook or a bank transfer taking hours, two customers can buy the last item. | high | Fixed inline: stock reservation at checkout start with a 30-minute expiry swept by the existing scheduler; `stock_reservations` and `bookshop_checkouts.expires_at` added to §9. |
+| 3 | A single **GST-inclusive flag per product** cannot express that books are commonly zero-rated or exempt while stationery is standard, and v2 printed a GST line on every receipt even for a vendor below the registration threshold. | high | Fixed inline: tax class per product, rate per class in settings, tax line only for GST-registered vendors (`vendors.gst_registered`); decision 4 reworded. |
+| 4 | Akuru's **commission** had no tax treatment: it is a service Akuru sells to the vendor and needs an invoice from Akuru, or the vendor's accountant cannot book it. | medium | Fixed inline: monthly commission tax invoice (`vendor_commission_invoices`), netted on the statement; in B6. |
+| 5 | **Atoll delivery by boat** is paid to the boat on arrival, not to the shop; v2 charged every delivery fee at checkout. | medium | Fixed inline: a "fee paid to the carrier on arrival" flag on the delivery method; shown, not charged. |
+| 6 | **Refunds**: v2 said "wallet or card" without saying who does it. Finance's `RefundPaymentAction` exists; card refunds are an office action through BML, not something a vendor can trigger. | medium | Fixed inline: wallet refunds at once, card refunds by the office on the vendor's accepted return, bank-transfer refunds to the wallet by default. |
+| 7 | **Images**: v2 said "resized with gd", which would put an image library call in domain logic (rule 4). Media already has `ImageProcessorInterface` bound to `WebPImageService`. | medium | Fixed inline: Bookshop resizes through the existing contract. |
+| 8 | **Notices and invitations** are queued mail; production has no queue worker (OWNER_ACTIONS 3, BACKLOG C6). A vendor invited by email would wait forever. | medium | Fixed inline: copyable invitation link in the portal; B2's deploy gate includes the worker running. |
+| 9 | **Dhivehi fonts**: MV Waheed and Faruma are not on Google Fonts, so v2's font list could not be served as written; MV Waheed's redistribution terms are unclear. | medium | Fixed inline: self-hosted under `public/fonts/` after a licence check; decision 14 added; every stack ends in system Thaana/Arabic fallbacks. |
+| 10 | **The designer's drag-and-drop** was the riskiest UI in the plan and in the largest slice. A form-based designer with a real-renderer iframe preview delivers the same result and is keyboard-accessible. | medium | Fixed inline: forms first (B5), drag-to-order as polish (B7). |
+| 11 | **B1 was three slices** (domain + portal + public shop) under one PR, against rule 1. | medium | Fixed inline: B1a vendors and portal; B1b public shop. Sizes re-estimated. |
+| 12 | **Vendor scoping** was a design intention with nothing enforcing it. | medium | Fixed inline: an architecture test lists the vendor controllers and asserts every query goes through `VendorScope`, like the private-media reader test. |
+| 13 | **Customer data**: v2 said nothing about how long a vendor sees a customer's phone and address, or whether a customer can remove an address. | medium | Fixed inline: vendor sees them on their own orders until the return window closes, then masked; address book deletable; decision 15 added. |
+| 14 | **Legal pages** were listed for customers only; nothing bound a vendor to commission, payout timing or moderation. | medium | Fixed inline: seeded Vendor Agreement (accepted on first portal sign-in, dated on `vendor_members`), Shop Terms, Delivery & Returns Policy, by B2; decision 16 added. |
+| 15 | **Sign-in at checkout**: the library and gift cards require sign-in, but a bookshop buyer arriving from Instagram will not create a password. The mobile OTP login exists (`routes` for OTP course registration). | low | Fixed inline: OTP sign-in offered at checkout; no anonymous guest checkout (orders need an identity). |
+| 16 | **Order numbers** were unspecified; vendors and customers quote them on Viber and on slips. | low | Fixed inline: `AK-YYYY-NNNNNN` per checkout, `-XXX` vendor code per order; `vendors.code` added. |
+| 17 | **Currency** was implicit. | low | Fixed inline: MVR only, integer laari, like the wallet; USD parked in B9. |
+| 18 | **Holiday mode** and **order minimums** were missing; both are the first things a one-person shop asks for. | low | Fixed inline: vendor settings (§5), B3 and B2 respectively. |
+| 19 | **Mobile**: no phone-first affordance for a shop whose customers arrive from Instagram and Viber. | low | Fixed inline: bottom bar (Shop, Search, Cart, Orders) on phone widths, in B1b. |
+| 20 | **Scheduler**: the plan introduced timed behaviour (expiry, maturing, holiday) without saying where it runs. `routes/console.php` already schedules `payments:reconcile` and `akuru:prune-expired`. | low | Fixed inline: commands on the existing schedule; nothing new on the host. |
+| 21 | **Sitemap and SEO**: v2 asked for sitemap entries; `sitemap.xml` already exists as a route, so this is an extension, not a new feature. | info | Noted in B1b. |
+| 22 | **Abandoned-cart reminders** and **bulk quotes for schools** came up while auditing and are real for an educational-items vendor. | info | Parked in B9 and BACKLOG C7. |
+
+What the audit confirmed unchanged: one catalogue, one frame, path not
+subdomain, structured (never CSS/HTML) storefront customisation, the
+webhook rule, append-only ledgers, the domain layout and the
+Commerce/Finance/Media/Notifications reuse list (every named class in §12
+exists), `VerifiedGuardianLink` as the precedent for a single scope
+definition, and the Fitrah kit.
+
+Nothing is built. The next step is still the owner's: the open decisions
+in §13 (4–8, 10–16), the remaining Fitrah details in
+`docs/vendors/FITRAH.md`, and the word "build B0" or "build B1a".
