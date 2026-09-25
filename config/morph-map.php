@@ -106,6 +106,7 @@ return [
     'fee_structure_item' => \App\Domains\Finance\Models\FeeStructureItem::class,
     'gallery_album' => \App\Domains\Website\Models\GalleryAlbum::class,
     'gift_card' => \App\Domains\Commerce\Models\GiftCard::class,
+    'gift_card_order' => \App\Domains\Commerce\Models\GiftCardOrder::class,
     'gift_card_transaction' => \App\Domains\Commerce\Models\GiftCardTransaction::class,
     'gallery_item' => \App\Domains\Website\Models\GalleryItem::class,
     'glossary_item' => \App\Domains\Courses\Models\GlossaryItem::class,

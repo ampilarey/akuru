@@ -13,7 +13,7 @@
 // expected direction, and the test asks you to update the count below when you
 // do.
 //
-// Count: 221 (the one addition is a document template, not a screen — see the
+// Count: 224 (the one addition is a document template, not a screen — see the
 // documents block).
 
 return [
@@ -144,13 +144,15 @@ return [
     'e-learning/quran-lessons.blade.php',
     'e-learning/show.blade.php',
 
-    // emails — 6
+    // emails — 7 (an email is a Blade template by nature, not a screen)
     'emails/admin-free-enrollment.blade.php',
     'emails/admin-new-enrollment.blade.php',
     'emails/daily-content-digest.blade.php',
     'emails/enrollment-confirmed.blade.php',
     'emails/enrollment-status.blade.php',
     'emails/free-enrollment-confirmed.blade.php',
+    // L4 §15.3: the one delivery of a purchased gift card's code. 2026-09-25.
+    'emails/gift-card-code.blade.php',
 
     // errors — 2
     'errors/404.blade.php',
@@ -214,7 +216,7 @@ return [
     'profile/partials/update-password-form.blade.php',
     'profile/partials/update-profile-information-form.blade.php',
 
-    // public — 50
+    // public — 52
     'public/about/index.blade.php',
     'public/achievements/index.blade.php',
     'public/admissions/apply.blade.php',
@@ -228,6 +230,10 @@ return [
     'public/articles/show.blade.php',
     'public/careers/index.blade.php',
     'public/certificates/verify.blade.php',
+    // L4 §15.3 gift card purchase — the public site is a Blade zone (recorded
+    // W2.5 deviation; the wallet above is the precedent). 2026-09-25.
+    'public/commerce/gift-card-return.blade.php',
+    'public/commerce/gift-cards.blade.php',
     'public/commerce/wallet.blade.php',
     'public/contact/create.blade.php',
     'public/courses/_conversion_badges.blade.php',

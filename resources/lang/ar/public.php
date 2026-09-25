@@ -202,6 +202,32 @@ return [
     'Author page' => 'Author page',
     'Show everyone' => 'Show everyone',
 
+    // Gift card purchase (§15.3, 2026-09-25) — first pass pending native review (operator item)
+    'Gift cards' => 'بطاقات الهدايا',
+    'Buy a gift card' => 'اشترِ بطاقة هدية',
+    'Gift cards you bought' => 'بطاقات الهدايا التي اشتريتها',
+    'sent to :to' => 'أُرسلت إلى :to',
+    'pending' => 'قيد الانتظار',
+    'paid' => 'مدفوع',
+    'failed' => 'فشل',
+    'Give the gift of reading' => 'أهدِ متعة القراءة',
+    'Give the gift of reading — a gift card for books, articles and research in the Akuru Knowledge Library.' => 'أهدِ متعة القراءة — بطاقة هدية للكتب والمقالات والبحوث في مكتبة أكورو المعرفية.',
+    'A gift card becomes wallet money the moment it is redeemed, to spend on any book, article or research paper in the library. The code is sent to the person you name as soon as the bank confirms your payment.' => 'تتحول بطاقة الهدية إلى رصيد في المحفظة فور استردادها، لتُنفق على أي كتاب أو مقال أو بحث في المكتبة. يُرسل الرمز إلى الشخص الذي تسميه بمجرد تأكيد البنك للدفع.',
+    'Sign in to buy a gift card.' => 'سجّل الدخول لشراء بطاقة هدية.',
+    'Amount (MVR)' => 'المبلغ (MVR)',
+    'Any whole amount from MVR :min to MVR :max.' => 'أي مبلغ صحيح من :min إلى :max روفية.',
+    'Who is it for?' => 'لمن هذه البطاقة؟',
+    'Their email' => 'بريده الإلكتروني',
+    'Their mobile (optional)' => 'رقم جواله (اختياري)',
+    'A message (optional)' => 'رسالة (اختياري)',
+    'Gift cards are paid by card only. Discount codes and wallet money cannot buy a gift card.' => 'تُدفع بطاقات الهدايا بالبطاقة البنكية فقط. لا يمكن شراء بطاقة هدية برموز الخصم أو برصيد المحفظة.',
+    'Pay with card' => 'ادفع بالبطاقة',
+    'The :currency :amount gift card for :name is on its way.' => 'بطاقة الهدية بقيمة :currency :amount لـ :name في طريقها.',
+    'The code was sent to :to.' => 'أُرسل الرمز إلى :to.',
+    'Payment could not be started' => 'تعذّر بدء الدفع',
+    'Try again' => 'حاول مرة أخرى',
+    'Bank confirmation can take a moment. Refresh this page shortly — the code is sent as soon as the bank confirms.' => 'قد يستغرق تأكيد البنك لحظات. حدّث هذه الصفحة بعد قليل — يُرسل الرمز فور تأكيد البنك.',
+
     // Library PDF pages (L2, 2026-09-25) — first pass pending native review (operator item)
     'This page has no text — it may be a picture or a blank page.' => 'هذه الصفحة بلا نص — قد تكون صورة أو صفحة فارغة.',
 ];

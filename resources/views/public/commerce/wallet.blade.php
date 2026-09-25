@@ -17,12 +17,34 @@
             <button type="submit" class="btn-primary">{{ __('public.Redeem gift card') }}</button>
         </form>
     </div>
+    <p class="mb-6 text-sm text-gray-600">
+        <a href="{{ route('public.gift-cards.index') }}" class="text-brandMaroon-700 hover:underline" data-testid="buy-gift-card">{{ __('public.Buy a gift card') }}</a>
+        · <a href="{{ route('public.library.my') }}" class="hover:underline">{{ __('public.My Library') }}</a>
+        · <a href="{{ route('public.library.index') }}" class="hover:underline">{{ __('public.Library') }}</a>
+    </p>
     @if(session('success'))
         <p class="mb-4 rounded bg-green-50 p-3 text-green-800">{{ session('success') }}</p>
     @endif
     @error('code')
         <p class="mb-4 rounded bg-red-50 p-3 text-red-700">{{ $message }}</p>
     @enderror
+
+    @if(count($wallet['gift_card_orders']) > 0)
+        <h2 class="text-xl font-semibold mb-3">{{ __('public.Gift cards you bought') }}</h2>
+        <div class="mb-8 grid gap-2" data-testid="gift-card-orders">
+            @foreach($wallet['gift_card_orders'] as $order)
+                <div class="flex flex-wrap items-center justify-between gap-2 rounded-lg border bg-white p-3">
+                    <div>
+                        <span class="font-medium">{{ $order['currency'] }} {{ $order['amount'] }}</span>
+                        <span class="text-sm text-gray-500"> — {{ $order['recipient_name'] }}</span>
+                    </div>
+                    <span class="text-sm text-gray-600">
+                        {{ __('public.'.$order['status']) }}{{ $order['delivered_to'] ? ' · '.__('public.sent to :to', ['to' => $order['delivered_to']]) : '' }}{{ $order['created_at'] ? ' · '.$order['created_at'] : '' }}
+                    </span>
+                </div>
+            @endforeach
+        </div>
+    @endif
 
     <h2 class="text-xl font-semibold mb-3">{{ __('public.Transactions') }}</h2>
     <div class="overflow-x-auto rounded-lg border bg-white">

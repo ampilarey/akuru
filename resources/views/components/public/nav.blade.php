@@ -209,6 +209,20 @@
                 </svg>
                 My Enrollments
               </a>
+              <a href="{{ route('public.library.my') }}"
+                 class="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-brandBeige-50 hover:text-brandMaroon-700" data-testid="nav-my-library">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+                </svg>
+                {{ __('public.My Library') }}
+              </a>
+              <a href="{{ route('public.wallet') }}"
+                 class="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-brandBeige-50 hover:text-brandMaroon-700" data-testid="nav-my-wallet">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
+                </svg>
+                {{ __('public.My Wallet') }}
+              </a>
               <div class="border-t border-gray-100 my-1"></div>
               <form method="POST" action="{{ route('logout') }}">
                 @csrf
@@ -309,6 +323,14 @@
           <a href="{{ route('portal.enrollments') }}"
              class="block py-3 px-4 text-brandGray-600 hover:text-brandMaroon-600 hover:bg-brandBeige-100 rounded-lg transition-colors duration-200">
             My Enrollments
+          </a>
+          <a href="{{ route('public.library.my') }}"
+             class="block py-3 px-4 text-brandGray-600 hover:text-brandMaroon-600 hover:bg-brandBeige-100 rounded-lg transition-colors duration-200">
+            {{ __('public.My Library') }}
+          </a>
+          <a href="{{ route('public.wallet') }}"
+             class="block py-3 px-4 text-brandGray-600 hover:text-brandMaroon-600 hover:bg-brandBeige-100 rounded-lg transition-colors duration-200">
+            {{ __('public.My Wallet') }}
           </a>
           <a href="{{ route('portal.payments') }}"
              class="block py-3 px-4 text-brandGray-600 hover:text-brandMaroon-600 hover:bg-brandBeige-100 rounded-lg transition-colors duration-200">

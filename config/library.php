@@ -21,6 +21,15 @@ return [
     // Minimum available balance before a payout can be requested.
     'min_payout' => env('LIBRARY_MIN_PAYOUT', 100),
 
+    // L4 (§15.3): the public gift card purchase. Presets are the buttons;
+    // any whole amount between min and max is accepted. Paid by BML only —
+    // never by wallet, never with a discount (§15.4).
+    'gift_cards' => [
+        'presets' => [100, 250, 500, 1000],
+        'min' => env('LIBRARY_GIFT_CARD_MIN', 50),
+        'max' => env('LIBRARY_GIFT_CARD_MAX', 5000),
+    ],
+
     // L7 (§12.2/§29): research cannot be approved without a peer-review
     // recommendation while this is on.
     'research_review_required' => env('LIBRARY_RESEARCH_REVIEW_REQUIRED', true),

@@ -42,9 +42,22 @@ class RaisePaymentNoticeReady
                 // Re-read rather than closing over the instance: the listeners
                 // that ran inside the transaction activate enrollments, and the
                 // notices should describe the committed state.
-                $payment = Payment::query()->find($paymentId);
+                $payment = Payment::query()->with('items')->find($paymentId);
 
                 if ($payment === null) {
+                    return;
+                }
+
+                // The notice is an *enrolment* notice — "Payment received for
+                // <student>", the course table, the admin's "new enrolment"
+                // mail. A library purchase or a gift card is a payment with
+                // no course in it, and until 2026-09-25 its buyer got an
+                // "Enrollment confirmed" email with an empty table and the
+                // office got a "new enrolment" that was not one (found by the
+                // gift card purchase slice, STATUS §5gn). Those payables have
+                // their own listeners; this one is for courses.
+                $payable = $payment->getRawOriginal('payable_type');
+                if ($payable !== null && $payable !== '' && $payable !== 'course_enrollment' && $payment->items->isEmpty()) {
                     return;
                 }
 

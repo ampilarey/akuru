@@ -202,6 +202,32 @@ return [
     'Author page' => 'Author page',
     'Show everyone' => 'Show everyone',
 
+    // Gift card purchase (§15.3, 2026-09-25) — first pass pending native review (operator item)
+    'Gift cards' => 'ގިފްޓް ކާޑު',
+    'Buy a gift card' => 'ގިފްޓް ކާޑެއް ގަންނަވާ',
+    'Gift cards you bought' => 'ތިބާ ގަތް ގިފްޓް ކާޑުތައް',
+    'sent to :to' => ':to އަށް ފޮނުވިފައި',
+    'pending' => 'ބައްލަވަމުން',
+    'paid' => 'ފައިސާ ދައްކާފައި',
+    'failed' => 'ނާކާމިޔާބު',
+    'Give the gift of reading' => 'ކިޔުމުގެ ހަދިޔާ ދެއްވާ',
+    'Give the gift of reading — a gift card for books, articles and research in the Akuru Knowledge Library.' => 'Give the gift of reading — a gift card for books, articles and research in the Akuru Knowledge Library.',
+    'A gift card becomes wallet money the moment it is redeemed, to spend on any book, article or research paper in the library. The code is sent to the person you name as soon as the bank confirms your payment.' => 'A gift card becomes wallet money the moment it is redeemed, to spend on any book, article or research paper in the library. The code is sent to the person you name as soon as the bank confirms your payment.',
+    'Sign in to buy a gift card.' => 'ގިފްޓް ކާޑެއް ގަތުމަށް ލޮގިން ކުރައްވާ.',
+    'Amount (MVR)' => 'އަދަދު (MVR)',
+    'Any whole amount from MVR :min to MVR :max.' => 'Any whole amount from MVR :min to MVR :max.',
+    'Who is it for?' => 'މިއީ ކާކަށް؟',
+    'Their email' => 'އެމީހާގެ އީމެއިލް',
+    'Their mobile (optional)' => 'އެމީހާގެ މޯބައިލް (އިޚްތިޔާރީ)',
+    'A message (optional)' => 'މެސެޖެއް (އިޚްތިޔާރީ)',
+    'Gift cards are paid by card only. Discount codes and wallet money cannot buy a gift card.' => 'Gift cards are paid by card only. Discount codes and wallet money cannot buy a gift card.',
+    'Pay with card' => 'ކާޑުން ފައިސާ ދައްކަވާ',
+    'The :currency :amount gift card for :name is on its way.' => 'The :currency :amount gift card for :name is on its way.',
+    'The code was sent to :to.' => 'The code was sent to :to.',
+    'Payment could not be started' => 'Payment could not be started',
+    'Try again' => 'އަލުން މަސައްކަތްކުރައްވާ',
+    'Bank confirmation can take a moment. Refresh this page shortly — the code is sent as soon as the bank confirms.' => 'Bank confirmation can take a moment. Refresh this page shortly — the code is sent as soon as the bank confirms.',
+
     // Library PDF pages (L2, 2026-09-25) — first pass pending native review (operator item)
     'This page has no text — it may be a picture or a blank page.' => 'މި ސަފުހާގައި ލިޔުމެއް ނެތް — މިއީ ތަސްވީރެއް ނުވަތަ ހުސް ސަފުހާއެއް ކަމަށް ވެދާނެ.',
 ];
