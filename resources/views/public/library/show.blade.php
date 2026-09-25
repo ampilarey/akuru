@@ -22,8 +22,13 @@
                 @if($item['category'])
                     <span>{{ $item['category']['name'] }}</span>
                 @endif
+                @if($item['writer'])
+                    <a href="{{ route('public.library.author', $item['writer']['slug']) }}" class="text-brandMaroon-700 hover:underline" rel="author">{{ $item['writer']['display_name'] }}</a>
+                @endif
                 @foreach($item['authors'] as $author)
-                    <span>{{ $author }}</span>
+                    @if(! $item['writer'] || $author !== $item['writer']['display_name'])
+                        <span>{{ $author }}</span>
+                    @endif
                 @endforeach
                 @if($item['published_at'])
                     <span>{{ $item['published_at'] }}</span>

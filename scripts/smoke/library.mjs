@@ -35,6 +35,9 @@
  * Environment: SMOKE_BASE_URL, SMOKE_APPLICANT, SMOKE_STAFF, SMOKE_PASSWORD,
  * SMOKE_CHROMIUM.
  */
+import { mkdtempSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { chromium } from 'playwright';
 
 const BASE = process.env.SMOKE_BASE_URL ?? 'http://127.0.0.1:8000';
@@ -54,6 +57,11 @@ const STAMP = `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6
 const TITLE = `SMOKE-Library-Item ${STAMP}`;
 const BODY = 'SMOKE-Library-Body: the sun letters assimilate the laam of the definite article.';
 const CHANGES = 'SMOKE-Changes: please add a citation for the assimilation rule.';
+const BIO = `SMOKE-Bio ${STAMP}: teaches the sun and moon letters.`;
+
+// A one-pixel PNG for the author portrait, written where the browser can pick it.
+const PORTRAIT = join(mkdtempSync(join(tmpdir(), 'smoke-library-')), 'portrait.png');
+writeFileSync(PORTRAIT, Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==', 'base64'));
 
 const HERMETIC_ARGS = [
     '--disable-background-networking',
@@ -328,6 +336,47 @@ if (resubmitted) {
     await reader.goto(`${BASE}/en/library`, { waitUntil: 'networkidle' });
     const shelf = await text(reader);
     check('and a reader finds it in the library', shelf.includes(TITLE), shelf.slice(0, 200));
+
+    // ------------------------------------ 8. the writer dresses their author page
+
+    // L8 (LIBRARY_PLAN §8.7). Before this, the name on an item was plain
+    // text and a writer's work was findable only by scrolling the shelf.
+    await writer.goto(`${BASE}/en/write`, { waitUntil: 'networkidle' });
+    await writer.click('button:has-text("Edit author page")');
+    const authorForm = writer.locator('[data-testid="author-page-form"]');
+    await authorForm.locator('textarea[placeholder="Bio"]').fill(BIO);
+    await authorForm.locator('input[type=file]').setInputFiles(PORTRAIT);
+    await authorForm.locator('button:has-text("Save author page")').click();
+    check('the writer puts a bio and a portrait on their author page', await settles(writer, 'Author page updated.'), (await text(writer)).slice(0, 160));
+    const portrait = writer.locator('[data-testid="author-portrait"]');
+    check('and the portrait shows in their portal', (await portrait.count()) === 1, (await portrait.count()) ? await portrait.getAttribute('src') : 'no portrait image after saving');
+
+    // ------------------------------------------ 9. a reader follows the name
+
+    await reader.goto(`${BASE}/en/library`, { waitUntil: 'networkidle' });
+    await reader.locator('a', { hasText: TITLE }).first().click();
+    await reader.waitForLoadState('networkidle');
+    const byline = reader.locator('a[rel="author"]');
+    check('the item names its author as a link', (await byline.count()) === 1, (await byline.count()) ? await byline.innerText() : 'author is plain text on the item page');
+    if (await byline.count()) {
+        await byline.click();
+        await reader.waitForLoadState('networkidle');
+        const page = await text(reader);
+        const img = reader.locator('header[data-author] img');
+        // A portrait tag whose file never arrives is a broken image on a
+        // public page: ask the browser whether it actually decoded. (Locally
+        // this needs `php artisan storage:link`, as every host already has.)
+        const drawn = (await img.count()) === 1 && await img.evaluate((el) => el.complete && el.naturalWidth > 0);
+        check('and lands on an author page with their bio, portrait and this work', page.includes(BIO) && page.includes(TITLE) && drawn, drawn ? page.slice(0, 200) : `portrait did not load (${(await img.count()) ? await img.getAttribute('src') : 'no img'})`);
+        const url = reader.url();
+        const guest = await (await browser.newContext()).newPage();
+        const open = await guest.goto(url, { waitUntil: 'domcontentloaded' });
+        const guestText = (await guest.innerText('body')).replace(/\s+/g, ' ');
+        check('a stranger can open the same page without signing in', open?.status() === 200 && guestText.includes(TITLE) && !guestText.includes('Unfinished'), `HTTP ${open?.status()}`);
+    } else {
+        check('and lands on an author page with their bio, portrait and this work', false, 'no author link to follow');
+        check('a stranger can open the same page without signing in', false, 'no author link to follow');
+    }
 }
 
 const width = Math.max(...results.map(([step]) => step.length));

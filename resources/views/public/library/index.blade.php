@@ -14,6 +14,9 @@
 <section class="bg-white border-b py-4">
     <div class="container mx-auto px-4">
         <form method="GET" action="{{ route('public.library.index') }}" class="flex flex-wrap gap-3 items-end">
+            @if($filters['author'] ?? null)
+                <input type="hidden" name="author" value="{{ $filters['author'] }}">
+            @endif
             <div class="flex-1 min-w-48">
                 <label class="block text-xs text-gray-500 mb-1">{{ __('public.Search') }}</label>
                 <input type="text" name="q" value="{{ $filters['q'] ?? '' }}" class="form-input w-full" placeholder="{{ __('public.Search the library') }}">
@@ -44,6 +47,13 @@
 
 <section class="py-10">
     <div class="container mx-auto px-4">
+        @if($filters['author'] ?? null)
+            <p class="mb-4 text-sm text-gray-600">
+                {{ __('public.Showing works by one author.') }}
+                <a href="{{ route('public.library.author', $filters['author']) }}" class="text-brandMaroon-700 hover:underline">{{ __('public.Author page') }}</a>
+                · <a href="{{ route('public.library.index', array_diff_key($filters, ['author' => 1])) }}" class="hover:underline">{{ __('public.Show everyone') }}</a>
+            </p>
+        @endif
         @if(count($items) === 0)
             <p class="text-gray-500">{{ __('public.Nothing in the library matches your search yet.') }}</p>
         @endif
@@ -60,7 +70,9 @@
                     @if($item['subtitle'])
                         <p class="text-sm text-gray-600 mb-2">{{ $item['subtitle'] }}</p>
                     @endif
-                    @if(count($item['authors']))
+                    @if($item['writer'])
+                        <p class="text-sm text-gray-500 mb-2">{{ $item['writer']['display_name'] }}</p>
+                    @elseif(count($item['authors']))
                         <p class="text-sm text-gray-500 mb-2">{{ implode(', ', $item['authors']) }}</p>
                     @endif
                     @if($item['abstract'])

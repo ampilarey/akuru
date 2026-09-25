@@ -54,6 +54,7 @@ Route::get('articles/{post:slug}', [\App\Domains\Website\Http\Controllers\Public
 
 Route::get('library/export', [PublicLibraryController::class, 'export'])->name('public.library.export');
 Route::get('library', [PublicLibraryController::class, 'index'])->name('public.library.index');
+Route::get('library/authors/{slug}', [PublicLibraryController::class, 'author'])->name('public.library.author');
 Route::get('my-library', [LibraryReaderController::class, 'myLibrary'])->name('public.library.my');
 Route::get('my-wallet', [WalletController::class, 'show'])->name('public.wallet');
 Route::post('my-wallet/redeem', [WalletController::class, 'redeem'])->name('public.wallet.redeem')->middleware('throttle:10,1');

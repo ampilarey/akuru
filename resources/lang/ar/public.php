@@ -192,4 +192,13 @@ return [
     'Get the full item' => 'احصل على النسخة الكاملة',
     'Your private note on this page' => 'ملاحظتك الخاصة على هذه الصفحة',
     'Save note' => 'حفظ الملاحظة',
+
+    // Library author page (L8) — DV/AR first pass pending native review (operator item)
+    'Published works' => 'Published works',
+    ':count published work|:count published works' => ':count published work|:count published works',
+    'Writing with Akuru since :year' => 'Writing with Akuru since :year',
+    'Nothing published yet.' => 'Nothing published yet.',
+    'Showing works by one author.' => 'Showing works by one author.',
+    'Author page' => 'Author page',
+    'Show everyone' => 'Show everyone',
 ];

@@ -7,6 +7,7 @@ use App\Domains\Library\Models\LibraryItemReview;
 use App\Domains\Library\Models\LibraryPurchase;
 use App\Domains\Library\Models\WriterApplication;
 use App\Domains\Library\Models\WriterProfile;
+use App\Domains\Media\Actions\ResolvePublicMediaUrlAction;
 
 /**
  * L5 (§11): the writer's own world — application state, own items with
@@ -77,6 +78,13 @@ class ListWriterDashboardAction
         return [
             'profile' => $profile ? [
                 'display_name' => $profile->display_name,
+                'slug' => $profile->slug,
+                'bio' => $profile->bio,
+                'qualifications' => $profile->qualifications,
+                'expertise' => $profile->expertise,
+                'photo_url' => $profile->photo_media_file_id
+                    ? app(ResolvePublicMediaUrlAction::class)->execute((int) $profile->photo_media_file_id)
+                    : null,
                 'status' => $profile->status,
                 'approved_at' => $profile->approved_at?->toDateString(),
             ] : null,

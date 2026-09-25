@@ -72,4 +72,10 @@ class LibraryItem extends Model
     {
         return $this->hasMany(LibraryItemAuthor::class)->orderBy('sort_order');
     }
+
+    /** The approved writer who submitted it, when it came through `/write`. */
+    public function writer(): BelongsTo
+    {
+        return $this->belongsTo(WriterProfile::class, 'writer_id');
+    }
 }
