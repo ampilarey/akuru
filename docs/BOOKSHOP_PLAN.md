@@ -145,7 +145,7 @@ is safe, versioned, and renders inside the fixed Akuru frame.
 
 ### 6.2 Theme
 - **Colours**: primary, secondary, accent, page background, card background, text — as a palette the vendor picks from **presets** (Akuru maroon/beige, ocean, forest, sand, night, ink) or sets by hex, with contrast checked automatically (a colour pair that fails readability is refused, with the reason).
-- **Typography**: heading and body from an approved list (Latin: Inter, Merriweather, Poppins, Lora; Dhivehi: MV Waheed, Faruma; Arabic: Noto Naskh, Amiri), size scale (compact / regular / large).
+- **Typography**: heading and body from an approved list (Latin: Inter, Merriweather, Poppins, Lora, Bree Serif, Courier Prime; Dhivehi: MV Waheed, Faruma; Arabic: Noto Naskh, Amiri), size scale (compact / regular / large).
 - **Shape**: corner radius (square / soft / round), button style (filled / outlined), card style (flat / shadow / bordered), banner height, image ratio for product cards (square / portrait / landscape).
 - **Dark mode** variant optional; the vendor sets both or lets the theme derive one.
 - Themes have **named versions**: save as draft, preview, publish, roll back to a previous published version.
@@ -296,7 +296,7 @@ scope definition (`VendorScope`).
 | 6 | Delivery zones and fees vendors start from; Akuru's office as a collection point? | Malé–Hulhumalé–Villimalé flat; atolls by courier/boat at vendor's fee; yes to Akuru collection | open |
 | 7 | Payment methods at launch | card and wallet; bank transfer and cash on delivery in B9 | open |
 | 8 | Return window and returns policy | 7 days, unused, buyer pays return delivery unless faulty | open |
-| 9 | Vendors in v1 | invitation only | **decided 2026-09-25: the first vendor is the owner's wife's educational-items shop, an independent business selling inside the bookshop; details (name, slug, owner account, contact, delivery, returns, branding, first products) to follow from the owner. Bank details and ID documents are entered by her in the vendor portal, never sent through the conversation or committed.** |
+| 9 | Vendors in v1 | invitation only | **decided 2026-09-25: the first vendor is the owner's wife's educational-items shop, an independent business selling inside the bookshop; **Fitrah** (owner Fathimath Inaaya, `/shop/fitrah`) — identity, palette, logo and proposed theme in `docs/vendors/FITRAH.md`; contact, delivery, returns and first products still to come. Bank details and ID documents are entered by her in the vendor portal, never sent through the conversation or committed.** |
 | 10 | Storefront fonts and presets the office allows; may vendors use Akuru's own maroon palette? | the §6.2 list; yes to presets, Akuru's palette marked "Akuru partner" | open |
 | 11 | Does a vendor page show "at Akuru Online Bookshop" under their name? | yes, always | open |
 | 12 | Should reviews be on from B7, or off until vendors ask? | on, moderated | open |
