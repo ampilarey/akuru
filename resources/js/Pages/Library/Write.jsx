@@ -30,7 +30,12 @@ function ApplyForm({ t }) {
             <textarea className="form-input" rows="3" placeholder="Why do you want to publish with us?" value={form.data.motivation} onChange={(e) => form.setData('motivation', e.target.value)} />
             <label className="flex items-start gap-2 text-sm">
                 <input type="checkbox" checked={form.data.agreement_accepted} onChange={(e) => form.setData('agreement_accepted', e.target.checked)} />
-                <span>I own or have permission for everything I upload, accept the publishing, payment, and refund terms, and understand Akuru may remove content on a valid complaint.</span>
+                <span>
+                    I own or have permission for everything I upload, accept the{' '}
+                    <a className="text-[#7C2D37] underline" href="/page/publishing-terms" target="_blank" rel="noopener">Publishing Terms</a>,{' '}
+                    the <a className="text-[#7C2D37] underline" href="/page/writer-agreement" target="_blank" rel="noopener">Writer Agreement</a>{' '}
+                    and the <a className="text-[#7C2D37] underline" href="/refunds" target="_blank" rel="noopener">refund rules</a>, and understand Akuru may remove content on a valid complaint.
+                </span>
             </label>
             {form.errors.agreement_accepted && <p className="text-sm text-red-600">{form.errors.agreement_accepted}</p>}
             {form.errors.application && <p className="text-sm text-red-600">{form.errors.application}</p>}

@@ -261,9 +261,44 @@ await admin.goto(`${BASE}/en/admin/library`, { waitUntil: 'networkidle' });
 const itemForm = admin.locator('form', { has: admin.locator('input[type=file][accept="application/pdf"]') }).first();
 await itemForm.locator('input[placeholder="Title"]').fill(UPLOAD_TITLE);
 await itemForm.locator('select').first().selectOption('book');
-await itemForm.locator('input[type=file]').setInputFiles(PDF_FILE);
+// Two file inputs since covers (§5gm): name the PDF one.
+await itemForm.locator('input[type=file][accept="application/pdf"]').setInputFiles(PDF_FILE);
 await itemForm.locator('button:has-text("Save item")').click();
 const told = await settles(admin, 'reader pages ready');
 check('the office uploads a PDF and is told 3 reader pages are ready', told && (await text(admin)).includes('3 reader pages ready'), (await text(admin)).match(/Library item saved[^.]*\.[^.]*\./)?.[0] ?? (await text(admin)).slice(0, 160));
+
+// ------------------------------------------------- 7. finding things (§8.1–§8.3)
+
+// The office features the PDF primer; the front of the shelf shows it, and
+// the reader's own half-read primer (page 3 of 3 was reached above, so it is
+// completed — the PDF primer, opened at page 2, is not).
+await admin.reload({ waitUntil: 'networkidle' });
+const star = admin.locator(`[data-testid="feature-${PDF_SLUG}"]`);
+if ((await star.count()) && (await star.innerText()).includes('Feature') && !(await star.innerText()).includes('Unfeature')) {
+    await star.click();
+    await admin.waitForLoadState('networkidle');
+}
+check('the office can feature an item', (await star.count()) === 1 && (await settles(admin, 'Unfeature')), (await star.count()) ? await star.innerText() : 'no feature toggle on the row');
+
+await reader.goto(`${BASE}/en/library`, { waitUntil: 'networkidle' });
+const front = await text(reader);
+const featuredStrip = reader.locator('[data-testid="featured"]');
+check('the front of the shelf shows the featured pick', (await featuredStrip.count()) === 1 && (await featuredStrip.innerText()).includes(PDF_TITLE), (await featuredStrip.count()) ? (await featuredStrip.innerText()).replace(/\s+/g, ' ').slice(0, 120) : front.slice(0, 160));
+const continueStrip = reader.locator('[data-testid="continue-reading"]');
+check('and offers the reader their half-read book', (await continueStrip.count()) === 1 && (await continueStrip.innerText()).includes(PDF_TITLE), (await continueStrip.count()) ? (await continueStrip.innerText()).replace(/\s+/g, ' ').slice(0, 120) : 'no continue-reading strip');
+
+// Narrow and order: free items, most read first — the primers are free.
+await reader.goto(`${BASE}/en/library?access=free&sort=most_read`, { waitUntil: 'networkidle' });
+const narrowed = await text(reader);
+check('the shelf narrows to free items, most read first', narrowed.includes(TITLE) && !(await reader.locator('[data-testid="featured"]').count()) && (await reader.locator('select[name="sort"]').inputValue()) === 'most_read', narrowed.slice(0, 160));
+await reader.goto(`${BASE}/en/library?access=paid&price_min=99999`, { waitUntil: 'networkidle' });
+check('and says so when nothing matches', (await text(reader)).includes('Nothing in the library matches'), (await text(reader)).slice(0, 120));
+
+// The plan's required pages, from the shelf.
+await reader.goto(`${BASE}/en/library`, { waitUntil: 'networkidle' });
+const policies = reader.locator('[data-testid="library-policies"] a');
+const policyCount = await policies.count();
+const termsResponse = await reader.request.get(`${BASE}/en/page/reader-terms`);
+check('the shelf links the required pages and Reader Terms opens', policyCount >= 5 && termsResponse.status() === 200 && (await termsResponse.text()).includes('Reader Terms'), `${policyCount} links · reader-terms HTTP ${termsResponse.status()}`);
 
 await finish();

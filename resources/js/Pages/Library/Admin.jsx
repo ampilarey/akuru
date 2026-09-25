@@ -367,7 +367,17 @@ export default function Admin({ items, categories, options, sales = [], queues =
                                 <td className="px-3 py-2">{item.category?.name ?? '—'}</td>
                                 <td className="px-3 py-2">{item.status}</td>
                                 <td className="px-3 py-2">{item.published_at ?? '—'}</td>
-                                <td className="px-3 py-2 text-end">
+                                <td className="px-3 py-2 text-end whitespace-nowrap">
+                                    {item.status === 'published' && (
+                                        <button
+                                            type="button"
+                                            className="me-3 text-sm text-[#7C2D37] hover:underline"
+                                            data-testid={`feature-${item.slug}`}
+                                            onClick={() => router.post(`/admin/library/items/${item.id}/feature`, { featured: !item.featured }, { preserveScroll: true })}
+                                        >
+                                            {item.featured ? '★ Unfeature' : '☆ Feature'}
+                                        </button>
+                                    )}
                                     <button
                                         type="button"
                                         className={item.status === 'published' ? 'text-sm text-red-600' : 'btn-primary'}

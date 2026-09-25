@@ -324,6 +324,24 @@ authoring permission: courses, lessons, questions, offerings, glossary.
 
 ---
 
+### 17. Read the seven library policy pages
+
+LIBRARY_PLAN requires nine policy pages; seven did not exist. On
+2026-09-25 `LibraryPolicyPagesSeeder` created them as CMS pages —
+Publishing Terms, Writer Agreement, Reader Terms, Gift Card Terms, Wallet
+Terms, Copyright Policy, Promotion Policy — as first drafts that describe
+what the platform actually does (the 70/30 default split, the 7-day
+window, webhook-only access, hashed gift card codes, no discounts on gift
+cards). Each says at the top that it is a draft pending your review.
+
+**What to do:** on production, once, run
+`php artisan db:seed --class=LibraryPolicyPagesSeeder --force`, then open
+each page in the page editor (`/page/<slug>`), read it, and change what
+should read differently. The seeder never overwrites a page that exists,
+so your edits stay. Remove the "first draft pending review" line when you
+are satisfied. Writers agree to the Publishing Terms and Writer Agreement
+on the application form, so those two first.
+
 ## What is *not* on this list
 
 The agent-buildable backlog is empty. Of the 28 numbered defects in

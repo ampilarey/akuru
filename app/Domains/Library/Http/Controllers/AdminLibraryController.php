@@ -4,6 +4,7 @@ namespace App\Domains\Library\Http\Controllers;
 
 use App\Domains\Library\Actions\DecideWriterApplicationAction;
 use App\Domains\Library\Actions\DecideWriterPayoutAction;
+use App\Domains\Library\Actions\FeatureLibraryItemAction;
 use App\Domains\Library\Actions\ListLibraryCategoriesAction;
 use App\Domains\Library\Actions\ListLibraryItemsAction;
 use App\Domains\Library\Actions\ListLibraryPurchasesAction;
@@ -128,6 +129,17 @@ class AdminLibraryController extends Controller
         );
 
         return back()->with('success', 'Library item status updated.');
+    }
+
+    /** §7.8: feature an item on the shelf, or stop. */
+    public function feature(Request $request, int $item): RedirectResponse
+    {
+        abort_unless($request->user()?->can('library.manage'), 403);
+        $data = $request->validate(['featured' => 'required|boolean']);
+
+        app(FeatureLibraryItemAction::class)->execute($item, (bool) $data['featured']);
+
+        return back()->with('success', $data['featured'] ? 'Featured on the shelf.' : 'No longer featured.');
     }
 
     /** L6 (§7.7): decide a requested payout — paid or rejected. */

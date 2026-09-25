@@ -723,6 +723,7 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::post('items', [AdminLibraryController::class, 'storeItem'])->name('admin.library.items.store');
         Route::put('items/{item}', [AdminLibraryController::class, 'updateItem'])->name('admin.library.items.update')->whereNumber('item');
         Route::post('items/{item}/publish', [AdminLibraryController::class, 'publish'])->name('admin.library.items.publish')->whereNumber('item');
+        Route::post('items/{item}/feature', [AdminLibraryController::class, 'feature'])->name('admin.library.items.feature')->whereNumber('item');
         Route::post('items/{item}/review', [AdminLibraryController::class, 'reviewSubmission'])->name('admin.library.items.review')->whereNumber('item');
         Route::post('applications/{application}/decide', [AdminLibraryController::class, 'decideApplication'])->name('admin.library.applications.decide')->whereNumber('application');
         Route::post('payouts/{payout}/decide', [AdminLibraryController::class, 'decidePayout'])->name('admin.library.payouts.decide')->whereNumber('payout');

@@ -64,7 +64,7 @@
             </label>
         </div>
 
-        <p class="text-xs text-gray-500">{{ __('public.Gift cards are paid by card only. Discount codes and wallet money cannot buy a gift card.') }}</p>
+        <p class="text-xs text-gray-500">{{ __('public.Gift cards are paid by card only. Discount codes and wallet money cannot buy a gift card.') }} <a href="{{ route('public.page.show', 'gift-card-terms') }}" class="underline">{{ __('public.Gift Card Terms') }}</a></p>
 
         <div>
             <button type="submit" class="btn-primary" @disabled(! $signedIn)>{{ __('public.Pay with card') }}</button>

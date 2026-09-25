@@ -40,6 +40,8 @@ class LibraryItem extends Model
         'declared_at',
         'pdf_media_file_id',
         'status',
+        'featured',
+        'featured_at',
         'published_at',
         'writer_id',
         'page_count',
@@ -64,6 +66,8 @@ class LibraryItem extends Model
             'price' => 'decimal:2',
             'declarations' => 'array',
             'declared_at' => 'datetime',
+            'featured' => 'boolean',
+            'featured_at' => 'datetime',
         ];
     }
 
@@ -86,6 +90,18 @@ class LibraryItem extends Model
     public function pages(): HasMany
     {
         return $this->hasMany(LibraryItemPage::class)->orderBy('page_number');
+    }
+
+    /** One row per reader who opened it (§8.2 "most read"). */
+    public function readers(): HasMany
+    {
+        return $this->hasMany(LibraryReadingProgress::class);
+    }
+
+    /** Paid purchases (§8.2 "most purchased"). */
+    public function paidPurchases(): HasMany
+    {
+        return $this->hasMany(LibraryPurchase::class)->where('status', 'paid');
     }
 
     /** The approved writer who submitted it, when it came through `/write`. */
