@@ -83,6 +83,8 @@ Never expose a PDF URL directly. Original files in private storage; reading happ
 
 ## 10. Reader Dashboard
 
+> **9.1 reading comfort built 2026-09-25 (STATUS §5gq):** font size, light/sepia/dark, text direction, full screen (kept in the reader's browser), and *Mark as completed*. Not built: private highlights, in-book search, reading time per session.
+
 - **My Library:** purchased books/articles/research, free saved, course-included, gifted, recently opened.
 - **Continue Reading:** title, last page/chapter, %, continue button, last read date.
 - **Reading Progress:** started / in progress / completed, last read, total time (optional), %.

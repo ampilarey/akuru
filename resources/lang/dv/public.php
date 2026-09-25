@@ -228,6 +228,21 @@ return [
     'Try again' => 'އަލުން މަސައްކަތްކުރައްވާ',
     'Bank confirmation can take a moment. Refresh this page shortly — the code is sent as soon as the bank confirms.' => 'Bank confirmation can take a moment. Refresh this page shortly — the code is sent as soon as the bank confirms.',
 
+    // Reader comfort and completion (§9.1, 2026-09-25) — first pass pending native review (operator item)
+    'Reading options' => 'ކިޔުމުގެ އިޚްތިޔާރުތައް',
+    'Smaller text' => 'ކުޑަ އަކުރު',
+    'Larger text' => 'ބޮޑު އަކުރު',
+    'Theme' => 'ކުލަ',
+    'Light' => 'އަލި',
+    'Sepia' => 'ސީޕިއާ',
+    'Dark' => 'އަނދިރި',
+    'Text direction' => 'ލިޔުމުގެ މިސްރާބު',
+    'Auto' => 'އޮޓޯ',
+    'Left to right' => 'ވާތުން ކަނާތަށް',
+    'Right to left' => 'ކަނާތުން ވާތަށް',
+    'Full screen' => 'ފުލް ސްކްރީން',
+    'Mark as completed' => 'ނިމުނުކަމަށް ފާހަގަކުރައްވާ',
+    'You have finished this item.' => 'ތިބާ މި ލިޔުން ނިންމައިފި.',
     // Shelf discovery and the required pages (§8.2, 2026-09-25) — first pass pending native review (operator item)
     'Access' => 'ލިބޭގޮތް',
     'Free and paid' => 'ހިލޭ އަދި އަގުދީގެން',

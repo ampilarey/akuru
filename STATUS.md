@@ -690,6 +690,8 @@ migration; no Hifz behaviour change outside it.
   `PdfPageTextExtractor` (pure PHP), the body still wins when both exist,
   a scan yields no pages and says so at save time, and
   `library:sync-pages` backfills the items uploaded before.
+- **Reading comfort (2026-09-25, §9.1):** text size, light/sepia/dark,
+  direction, full screen, and *Mark as completed* — see §5gq.
 - **Discovery and the required pages (2026-09-25, §8):** free/paid,
   language, price and six sorts on the shelf; featured items and continue
   reading on its front; the seven missing policy pages seeded and linked —
@@ -4408,6 +4410,33 @@ walk returned a header row and nothing else for circulation, student work and
 pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
+
+## 5gq. Reading comfort, and "mark as completed" (2026-09-25)
+
+Last of the Library audit's reader items. LIBRARY_PLAN §9.1 lists font
+size, Arabic RTL / Dhivehi / English LTR, light/sepia/dark, full screen
+and mark-as-completed; the reader had none of them — one size, one white
+page, and completion only by reaching the last page.
+
+The reader now carries a toolbar: A− / A+ (70–180%), Light / Sepia /
+Dark, a text-direction select (auto / LTR / RTL — `dir="auto"` per
+paragraph already lays Dhivehi and Arabic out right-to-left inside an
+English shell; the select is for a whole page that the browser guesses
+wrongly), and Full screen. The choices live in the reader's browser
+(`localStorage`), applied before first paint, because they are a
+preference and not a record. *Mark as completed* posts the last page
+number to the existing progress endpoint, so `SaveReadingProgressAction`
+completes it the same way reaching the last page does; a finished item
+says so at the top of every page and the button goes. A preview offers no
+completion button: a sample is not reading (§9.4).
+
+`LibraryReaderPolishTest` (the tools and the button on a readable page;
+completion from page two of four with the record at 100%, the note on
+return, My Library saying Completed; no button on a preview).
+`reader.mjs` grows four steps to **35/35** — larger text, a dark page
+that survives a reload with the size kept, a book marked completed from
+page two, and My Library recording it. Not built from §9.1: private
+highlights, in-book search, per-session reading time.
 
 ## 5gp. A reader can find things, and the required pages exist (2026-09-25)
 
