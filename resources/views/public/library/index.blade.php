@@ -1,12 +1,12 @@
 @extends('public.layouts.public')
 
-@section('title', __('public.Library') . ' - ' . config('app.name'))
+@section('title', __('public.Akuru Digital Library') . ' - ' . config('app.name'))
 @section('description', __('public.Books, articles and research from Akuru Institute'))
 
 @section('content')
 <section class="bg-gradient-to-br from-brandMaroon-50 to-brandBeige-100 py-12">
     <div class="container mx-auto px-4">
-        <h1 class="text-4xl font-bold text-brandMaroon-900 mb-3">{{ __('public.Library') }}</h1>
+        <h1 class="text-4xl font-bold text-brandMaroon-900 mb-3">{{ __('public.Akuru Digital Library') }}</h1>
         <p class="text-xl text-brandGray-700">{{ __('public.Books, articles and research from Akuru Institute') }}</p>
         <p class="mt-3 text-sm text-brandGray-600">
             <a href="{{ route('public.gift-cards.index') }}" class="text-brandMaroon-700 hover:underline">{{ __('public.Gift cards') }}</a>

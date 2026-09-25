@@ -8,7 +8,7 @@ This file governs every AI-assisted coding session in this repo. It encodes the 
 |---|---|
 | `docs/ROADMAP.md` | architecture, domain map, phase order, all decisions |
 | `docs/SPEC.md` | course engine requirements (Phases 1A–5, §51 Arabic, §52 Quran, §57 build strategy) |
-| `docs/LIBRARY_PLAN.md` | Knowledge Library (L-track) requirements |
+| `docs/LIBRARY_PLAN.md` | Akuru Digital Library (L-track, formerly Knowledge Library) requirements |
 | `docs/EDUPAGE_FEATURES_PLAN.md` | EduPage parity track (E1–E22). **Verify every row against the code before starting a slice** — it has been wrong 16 times across two audits, always recording as missing work that already shipped. Its own correction section says how to audit it. |
 | `docs/KNOWN_ISSUES.md` | open defects by severity, and what is operator-blocked rather than unbuilt |
 | `docs/BACKLOG.md` | parked items and ideas kept for later, with why — update it in the PR that parks or builds one |

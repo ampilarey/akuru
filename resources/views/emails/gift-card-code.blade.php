@@ -29,7 +29,7 @@
     @endif
     <p>Your gift card code:</p>
     <div class="code">{{ $plainCode }}</div>
-    <p class="note">Sign in at {{ config('app.url') }}, open <strong>My Wallet</strong> and redeem this code. The amount becomes wallet money you can spend on books, articles and research in the Knowledge Library.</p>
+    <p class="note">Sign in at {{ config('app.url') }}, open <strong>My Wallet</strong> and redeem this code. The amount becomes wallet money you can spend on books, articles and research in the Akuru Digital Library.</p>
     <p class="note">Keep this email: the code is shown only here and is not stored anywhere we can read it back.</p>
   </div>
   <div class="footer">Akuru Institute · {{ config('app.url') }}</div>

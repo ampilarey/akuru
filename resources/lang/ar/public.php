@@ -211,7 +211,10 @@ return [
     'paid' => 'مدفوع',
     'failed' => 'فشل',
     'Give the gift of reading' => 'أهدِ متعة القراءة',
-    'Give the gift of reading — a gift card for books, articles and research in the Akuru Knowledge Library.' => 'أهدِ متعة القراءة — بطاقة هدية للكتب والمقالات والبحوث في مكتبة أكورو المعرفية.',
+    'Give the gift of reading — a gift card for books, articles and research in the Akuru Digital Library.' => 'أهدِ متعة القراءة — بطاقة هدية للكتب والمقالات والبحوث في مكتبة أكورو الرقمية.',
+    // B0 (2026-09-25): the library's new name — first pass pending native review (operator item)
+    'Akuru Digital Library' => 'مكتبة أكورو الرقمية',
+    'Digital Library' => 'المكتبة الرقمية',
     'A gift card becomes wallet money the moment it is redeemed, to spend on any book, article or research paper in the library. The code is sent to the person you name as soon as the bank confirms your payment.' => 'تتحول بطاقة الهدية إلى رصيد في المحفظة فور استردادها، لتُنفق على أي كتاب أو مقال أو بحث في المكتبة. يُرسل الرمز إلى الشخص الذي تسميه بمجرد تأكيد البنك للدفع.',
     'Sign in to buy a gift card.' => 'سجّل الدخول لشراء بطاقة هدية.',
     'Amount (MVR)' => 'المبلغ (MVR)',

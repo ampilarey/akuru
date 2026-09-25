@@ -30,7 +30,7 @@ class ResolveNotificationPreferencesAction
         'finance' => 'Invoices and payments',
         // LIBRARY_PLAN §41 (2026-09-25): writers' decisions and sales,
         // readers' purchases and gift cards.
-        'library' => 'Library, writing and wallet',
+        'library' => 'Digital Library, writing and wallet',
     ];
 
     /**

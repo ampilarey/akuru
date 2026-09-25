@@ -26,7 +26,10 @@ class LibraryPolicyPagesSeeder extends Seeder
     public function run(): void
     {
         foreach ($this->pages() as $slug => [$title, $excerpt, $body]) {
-            if (Page::query()->where('slug', $slug)->exists()) {
+            $existing = Page::query()->where('slug', $slug)->first();
+            if ($existing !== null) {
+                $this->renameInUntouchedDraft($existing);
+
                 continue;
             }
             Page::query()->create([
@@ -41,6 +44,34 @@ class LibraryPolicyPagesSeeder extends Seeder
     }
 
     /**
+     * B0 (2026-09-25): the Knowledge Library became the Akuru Digital
+     * Library. A host seeded before the rename holds the old name in these
+     * pages. The office's edits always win, so only a page still carrying
+     * the seeded "first draft" line — one nobody has signed off — gets the
+     * new name; anything else is left exactly as the office wrote it.
+     */
+    private function renameInUntouchedDraft(Page $page): void
+    {
+        $body = (string) $page->body;
+        $excerpt = (string) $page->excerpt;
+
+        if (! str_contains($body, 'First draft pending review by Akuru Institute')) {
+            return;
+        }
+        if (! str_contains($body.$excerpt, 'Knowledge Library')) {
+            return;
+        }
+
+        $rename = static fn (string $text): string => str_replace(
+            ['Akuru Knowledge Library', 'the Knowledge Library'],
+            ['Akuru Digital Library', 'the Akuru Digital Library'],
+            $text,
+        );
+
+        $page->forceFill(['body' => $rename($body), 'excerpt' => $rename($excerpt)])->save();
+    }
+
+    /**
      * @return array<string, array{0: string, 1: string, 2: string}>
      */
     private function pages(): array
@@ -48,11 +79,11 @@ class LibraryPolicyPagesSeeder extends Seeder
         $updated = '<p><em>Last updated: 25 September 2026. First draft pending review by Akuru Institute.</em></p>';
 
         return [
-            'publishing-terms' => ['Publishing Terms', 'The terms under which Akuru Institute publishes writers\' work in the Knowledge Library.', <<<HTML
+            'publishing-terms' => ['Publishing Terms', 'The terms under which Akuru Institute publishes writers\' work in the Akuru Digital Library.', <<<HTML
 <h2>Publishing Terms</h2>
 $updated
 <h3>1. What you give us</h3>
-<p>By submitting a book, article or research paper to the Akuru Knowledge Library you grant Akuru Institute a non-exclusive right to publish, display, sell access to and promote that work on its platforms. You keep the copyright. You may ask for a work to be withdrawn from sale at any time; readers who have already bought it keep their access.</p>
+<p>By submitting a book, article or research paper to the Akuru Digital Library you grant Akuru Institute a non-exclusive right to publish, display, sell access to and promote that work on its platforms. You keep the copyright. You may ask for a work to be withdrawn from sale at any time; readers who have already bought it keep their access.</p>
 <h3>2. What we check</h3>
 <p>Nothing is published without editorial approval. Research is additionally sent to a peer reviewer. We may ask for changes, and we may decline a work without giving a reason.</p>
 <h3>3. Money</h3>
@@ -63,7 +94,7 @@ HTML],
             'writer-agreement' => ['Writer Agreement', 'What a writer confirms when applying to publish with Akuru Institute.', <<<HTML
 <h2>Writer Agreement</h2>
 $updated
-<p>By applying to write for the Akuru Knowledge Library, and again each time you submit a work, you confirm that:</p>
+<p>By applying to write for the Akuru Digital Library, and again each time you submit a work, you confirm that:</p>
 <ol>
 <li>you own the copyright in everything you upload, or hold the permission needed to publish it, and it does not infringe anyone else's rights;</li>
 <li>Akuru Institute may publish, display, promote and sell access to the work under the Publishing Terms;</li>
@@ -105,10 +136,10 @@ $updated
 <li>Akuru Institute may correct a wallet balance where a credit was made in error, and will record the correction on the ledger.</li>
 </ol>
 HTML],
-            'copyright-policy' => ['Copyright Policy', 'How Akuru Institute handles copyright in the Knowledge Library.', <<<HTML
+            'copyright-policy' => ['Copyright Policy', 'How Akuru Institute handles copyright in the Akuru Digital Library.', <<<HTML
 <h2>Copyright Policy</h2>
 $updated
-<p>Every work in the Knowledge Library is published with the writer's declaration that they own it or have permission to publish it. Copyright stays with the author; Akuru Institute holds a publishing licence under the Publishing Terms.</p>
+<p>Every work in the Akuru Digital Library is published with the writer's declaration that they own it or have permission to publish it. Copyright stays with the author; Akuru Institute holds a publishing licence under the Publishing Terms.</p>
 <p>If you believe a work infringes your copyright, write to Akuru Institute with the title of the work, what you own, and how it is infringed. We will take the work down while we look into it, tell the writer, and restore or remove it according to what we find. Repeated infringement ends a writer's account.</p>
 <p>Readers may not copy, redistribute or extract works from the reader. Each delivered page is marked with the reader's identity for this reason.</p>
 HTML],

@@ -225,7 +225,7 @@ final class NavigationMap
                 ['key' => 'messages', 'href' => '/portal/messages', 'roles' => $everyone],
                 ['key' => 'notices', 'href' => '/portal/announcements', 'roles' => $everyone],
                 ['key' => 'forms', 'href' => '/portal/forms', 'roles' => $everyone],
-                // The Knowledge Library (L-track): the shelf, what I have and
+                // The Akuru Digital Library (L-track): the shelf, what I have and
                 // can continue, and the wallet that pays for it. Until
                 // 2026-09-25 none of the three had a link anywhere a signed-in
                 // person could see; they were reachable by typing the address.

@@ -3,7 +3,7 @@
 // CLAUDE.md Conventions: "All screens trilingual-ready (EN/DV/AR)".
 // English UI-string keys with no Dhivehi AND no Arabic entry in resources/lang.
 // Baseline may only shrink when strings are translated — never grow.
-// Baseline count: 200
+// Baseline count: 199
 
 return [
     'common.assignment_completion',
@@ -86,7 +86,6 @@ return [
     'public.Learn Quran with Expert Teachers',
     'public.Learn Quran, Arabic, and Islamic Studies in the Maldives',
     'public.Level',
-    'public.Library',
     'public.Login to read',
     'public.Main Campus',
     'public.Master the Holy Quran with our qualified instructors',

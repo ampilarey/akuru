@@ -79,7 +79,7 @@ app/
                      "purchasable" concept; consumed by Library, course/offering
                      payments (spec Phase 4), and Finance invoices. Separate
                      module by design so it can be enhanced independently (§9)
-    Library/         Akuru Knowledge Library — catalog (books/articles/research/
+    Library/         Akuru Digital Library — catalog (books/articles/research/
                      course materials), protected reader, reading progress,
                      writer portal, editorial + peer-review workflow, writer
                      sales/payouts (§9; L-track)
@@ -431,7 +431,7 @@ Run the §2b migration as soon as the engine is stable — do **not** wait for A
 
 Add AI assistance on top of the human workflow: isolated letter + haraka checking, low-confidence flags routed to teacher review, future recitation assistance. Same `Pronunciation` service as Arabic (§52.3) — one model family, two consumers. AI arrives only after dataset collection, labeling, training, and measured accuracy (spec §51.16–51.18 human-in-the-loop). The Hifz program must already be fully functional without it.
 
-### L-track — Akuru Knowledge Library (parallel; see §9)
+### L-track — Akuru Digital Library (parallel; see §9)
 
 L1–L7 run as an independent parallel track after Phase 0 + W1/W2. Key shared milestone: **L4 ships `Domains/Commerce`**, which spec Phase 4 (course payments) then adopts — gift cards, wallet, and discounts work across both courses and the library from that point.
 
@@ -593,7 +593,9 @@ Per `docs/W3_SPEC.md` — replicate Bake&Grill model (`salat.db` import, 366-day
 
 ---
 
-## 9. Akuru Knowledge Library (L-track)
+## 9. Akuru Digital Library (L-track)
+
+Renamed from *Akuru Knowledge Library* on 2026-09-25 (BOOKSHOP_PLAN slice B0).
 
 A reading, publishing, and digital-sales platform inside the same monolith, per the "Akuru Knowledge Library — Complete Project Plan" (separate document; this section integrates it with corrections). Books, articles, research papers, and course materials; free and paid; protected online reader; writer marketplace with editorial approval and commission.
 

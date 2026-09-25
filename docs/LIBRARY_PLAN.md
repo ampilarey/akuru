@@ -1,4 +1,10 @@
-# Akuru Knowledge Library — Complete Project Plan
+# Akuru Digital Library — Complete Project Plan
+
+> **Renamed 2026-09-25 (BOOKSHOP_PLAN slice B0).** This plan was written
+> as the *Akuru Knowledge Library*; the owner renamed it the **Akuru
+> Digital Library** when the Akuru Online Bookshop was planned beside it.
+> Every label on the site uses the new name; `/library` is unchanged. The
+> old name is kept below where it records what was decided at the time.
 
 > Integration note: read together with `docs/ROADMAP.md` §9 (L-track), which integrates this plan into the platform and **overrides it on four points**: (1) wallet/gift cards/discounts are the platform-wide `Domains/Commerce`, not library-scoped tables; (2) writer is a role on the unified People record, not a separate identity; (3) course teaching content lives in engine lessons — the Library holds standalone publications, with "course-included" access granted via enrollment events; (4) the eight suggested domains collapse to `Library` + shared `Commerce`, reusing Finance/Media/Notifications/Identity.
 

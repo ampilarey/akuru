@@ -1,12 +1,12 @@
 @extends('public.layouts.public')
 
-@section('title', $author['display_name'] . ' - ' . __('public.Library') . ' - ' . config('app.name'))
+@section('title', $author['display_name'] . ' - ' . __('public.Digital Library') . ' - ' . config('app.name'))
 @section('description', Str::limit($author['bio'] ?? $author['display_name'], 155))
 
 @section('content')
 <div class="container mx-auto px-4 py-10 max-w-5xl">
     <nav class="text-sm text-gray-500 mb-6 flex gap-2 items-center flex-wrap">
-        <a href="{{ route('public.library.index') }}" class="hover:text-brandMaroon-600">{{ __('public.Library') }}</a>
+        <a href="{{ route('public.library.index') }}" class="hover:text-brandMaroon-600">{{ __('public.Digital Library') }}</a>
         <span>›</span>
         <span class="text-gray-700">{{ $author['display_name'] }}</span>
     </nav>

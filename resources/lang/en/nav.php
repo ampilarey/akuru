@@ -130,7 +130,7 @@ return [
     'event_signup' => 'Event signup',
     'lost_property' => 'Lost property',
     'library_books' => 'Library books',
-    'library' => 'Library',
+    'library' => 'Digital Library',
     'my_library' => 'My library',
     'my_wallet' => 'My wallet',
     'collecting_my_child' => 'Collecting my child',

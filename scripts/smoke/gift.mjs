@@ -113,6 +113,18 @@ const reader = await signIn(STUDENT);
 check('the reader signs in', !reader.url().includes('/login'), reader.url());
 
 await reader.goto(`${BASE}/en/library`, { waitUntil: 'networkidle' });
+// B0: the library's name. The full name heads its own page; the site's
+// menu and footer carry the short one; Dhivehi and Arabic have their own.
+const shelfHeading = (await reader.locator('h1').first().innerText()).trim();
+const siteLinks = await reader.locator('header a, nav a, footer a').evaluateAll((els) => els.map((el) => [el.innerText.trim(), el.getAttribute('href') ?? '']));
+check('the shelf is called the Akuru Digital Library', shelfHeading === 'Akuru Digital Library' && !(await text(reader)).includes('Knowledge Library'), shelfHeading);
+check('the site menu and footer link to it as Digital Library', siteLinks.filter(([t, h]) => t === 'Digital Library' && /\/library$/.test(h)).length >= 2, siteLinks.filter(([, h]) => /\/library$/.test(h)).map(([t]) => t).join(' · ') || 'no library links');
+for (const [locale, name] of [['dv', 'އަކުރު ޑިޖިޓަލް ލައިބްރަރީ'], ['ar', 'مكتبة أكورو الرقمية']]) {
+    await reader.goto(`${BASE}/${locale}/library`, { waitUntil: 'networkidle' });
+    const heading = (await reader.locator('h1').first().innerText()).trim();
+    check(`in ${locale === 'dv' ? 'Dhivehi' : 'Arabic'} it has its own name`, heading === name, heading);
+}
+await reader.goto(`${BASE}/en/library`, { waitUntil: 'networkidle' });
 await reader.click('#user-menu-wrapper button');
 const menuLibrary = reader.locator('[data-testid="nav-my-library"]');
 const menuWallet = reader.locator('[data-testid="nav-my-wallet"]');
@@ -130,7 +142,7 @@ if (await more.count()) {
 }
 const shellLinks = await reader.locator('#app-shell-more a, nav a').evaluateAll((els) => els.map((el) => [el.innerText.trim(), el.getAttribute('href') ?? '']));
 const has = (label, path) => shellLinks.some(([t, h]) => t === label && h.endsWith(path));
-check('the app shell offers Library, My library and My wallet', has('Library', '/library') && has('My library', '/my-library') && has('My wallet', '/my-wallet'), shellLinks.filter(([, h]) => /library|wallet/.test(h)).map(([t, h]) => `${t}→${h}`).join(' · ') || 'no library or wallet links in the shell');
+check('the app shell offers Digital Library, My library and My wallet', has('Digital Library', '/library') && has('My library', '/my-library') && has('My wallet', '/my-wallet'), shellLinks.filter(([, h]) => /library|wallet/.test(h)).map(([t, h]) => `${t}→${h}`).join(' · ') || 'no library or wallet links in the shell');
 
 // -------------------------------------------------------- 2. the offer
 
