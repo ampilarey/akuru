@@ -1707,6 +1707,10 @@ class SmokeMarkerSeeder extends Seeder
             return;
         }
 
+        // The plan's required pages: real content, idempotent, and what the
+        // reader walk's policy links open. Pages the office edited are kept.
+        $this->call(LibraryPolicyPagesSeeder::class);
+
         $item = app(\App\Domains\Library\Actions\SaveLibraryItemAction::class)->execute([
             'title' => 'SMOKE-Primer',
             'slug' => 'smoke-primer',

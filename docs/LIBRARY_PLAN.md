@@ -65,6 +65,8 @@ Not a simple PDF upload page — a publishing platform with connected modules: P
 - **8.2 Books page filters:** free/paid, discounted, language, category, author, newest, most read, most purchased, difficulty, price range.
 - **8.3 Articles page filters:** free/paid, discounted, category, author, language, reading time, latest, popular.
 - **8.4 Research page extra filters:** research area, author, keywords, published date, peer-reviewed, open access, paid/free, discounted.
+
+> **8.1–8.3 built 2026-09-25 (STATUS §5gp):** free/paid, language, price range, newest / most read / most purchased / price / title; featured (office toggle) and continue reading on the front of the shelf; gift card link. Not built: discounted/promotions (no campaigns), difficulty, reading-time filter, peer-reviewed/open-access filters, popular-by-period.
 - **8.5 Promotions page:** Ramadan offers, back-to-school, new writer launches, free article campaigns, bundles, gift card bonus campaigns.
 - **8.6 Gift Card page:** buy, choose amount, recipient name/email/mobile, gift message, BML payment, code delivery, redeem into Akuru wallet.
 - **8.7 Author page:** name, photo, bio, qualifications, published works, featured, totals, social links (optional). **Built 2026-09-25 (L8, STATUS §5g)** — all but *featured* and *social links*.
@@ -218,6 +220,8 @@ Search: title, author, description, abstract, tags, category, language, content 
 ## 31. Copyright & Legal
 
 Writer must agree: owns content/has permission; Akuru may publish; no copyright violation; Akuru may remove on complaint; payment/commission terms accepted; writer responsible for originality; agrees to promotion/discount/payout/refund rules. Required pages: Publishing Terms, Reader Terms, Gift Card Terms, Wallet Terms, Refund Policy, Copyright Policy, Privacy Policy, Writer Agreement, Promotion Policy.
+
+> **All nine exist as CMS pages from 2026-09-25 (STATUS §5gp):** `LibraryPolicyPagesSeeder` adds the seven that were missing as first drafts marked for the owner's review; the office edits them in the page editor. Linked from the shelf, item page, gift card page, wallet and the writer application.
 
 ## 32. Content Quality Rules
 

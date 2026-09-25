@@ -690,6 +690,10 @@ migration; no Hifz behaviour change outside it.
   `PdfPageTextExtractor` (pure PHP), the body still wins when both exist,
   a scan yields no pages and says so at save time, and
   `library:sync-pages` backfills the items uploaded before.
+- **Discovery and the required pages (2026-09-25, §8):** free/paid,
+  language, price and six sorts on the shelf; featured items and continue
+  reading on its front; the seven missing policy pages seeded and linked —
+  see §5gp.
 - **The writer's form and §41 (2026-09-25):** the draft editor carries
   everything §11.3/§11.5 list, a submission needs the declarations, the
   item page shows contents and a copyright notice, and writers, readers
@@ -4404,6 +4408,60 @@ walk returned a header row and nothing else for circulation, student work and
 pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
+
+## 5gp. A reader can find things, and the required pages exist (2026-09-25)
+
+Sixth finding of the Library audit, the discovery half of LIBRARY_PLAN §8.
+
+**The shelf could search and filter by type, category, tag and author,
+and always listed newest first.** §8.2/§8.3 ask for free/paid, language,
+price range, newest, most read, most purchased; §8.1 for featured items
+and *continue reading* on the front; §7.8 for the office to feature.
+`ListLibraryItemsAction` now takes `access` (free/paid), `language`,
+`price_min`/`price_max`, `featured` and `sort` (newest, most read, most
+purchased, price either way, title — an unknown sort is newest);
+"most read" counts readers with a progress row, "most purchased" paid
+purchases, both by `withCount` so the shelf stays one query. The shelf
+form carries the new controls; a paid card shows its price and a free one
+says *Free*. `library_items.featured`/`featured_at` (additive) with a
+★ Feature / Unfeature toggle on the office's item row
+(`FeatureLibraryItemAction`, `admin.library.items.feature`). The front of
+the shelf — unfiltered, sort aside — shows a *Featured* strip and, for a
+signed-in reader, *Continue reading* (their three most recent unfinished
+items, from `ListMyLibraryAction`); a filtered shelf shows neither,
+because an answer to a question is not a shop window. The shelf header
+links Gift cards, My Library and My Wallet.
+
+**The plan's required pages did not exist.** "Publishing Terms, Reader
+Terms, Gift Card Terms, Wallet Terms, Refund Policy, Copyright Policy,
+Privacy Policy, Writer Agreement, Promotion Policy" — two of nine
+existed (`PolicyPagesSeeder`). `LibraryPolicyPagesSeeder` creates the
+other seven as CMS pages, so the office edits them in the page editor;
+it creates only pages that do not exist, so an edited page survives a
+reseed. The text is a first draft that states what the platform actually
+does — the 70/30 default, the 7-day window, webhook-only access, hashed
+gift card codes, no discounts on gift cards — and each page says so at
+the top; **the owner should read them** (OWNER_ACTIONS). They are linked
+where a person would look: the shelf's foot, the item page's copyright
+line (Copyright Policy, Reader Terms), the gift card page (Gift Card
+Terms), the wallet (Wallet Terms), and the writer's application checkbox
+(Publishing Terms, Writer Agreement, refund rules). `SmokeMarkerSeeder`
+seeds them too, so a rehearsal host has them. **Production, once:**
+`php artisan db:seed --class=LibraryPolicyPagesSeeder --force`.
+
+**Tests:** `LibraryDiscoveryTest` (three: every filter and every sort
+against a three-item shelf with readers and a purchase; feature/unfeature
+by the office and the two strips on the front only; the seven pages
+seeded, an office edit surviving a reseed, and the links on each page).
+**Walked:** `reader.mjs` grows six steps to **31/31** — the office
+features the PDF primer, the front of the shelf shows it in *Featured*
+and offers the reader's half-read primer in *Continue reading*, the shelf
+narrows to free items most-read-first with the strips gone, says so when
+nothing matches, and links the required pages with Reader Terms opening.
+
+Not built from §8: "discounted" and "promotions" (campaigns are not
+built), "difficulty" and "reading time" filters, research's
+"peer-reviewed / open access" filters, and the 8.5 promotions page.
 
 ## 5go. The writer's form is the plan's form, and people are told what happened (2026-09-25)
 

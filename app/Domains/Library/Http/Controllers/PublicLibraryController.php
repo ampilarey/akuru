@@ -4,6 +4,7 @@ namespace App\Domains\Library\Http\Controllers;
 
 use App\Domains\Library\Actions\ListLibraryCategoriesAction;
 use App\Domains\Library\Actions\ListLibraryItemsAction;
+use App\Domains\Library\Actions\ListMyLibraryAction;
 use App\Domains\Library\Actions\PresentLibraryItemAction;
 use App\Domains\Library\Actions\PresentWriterPublicProfileAction;
 use App\Http\Controllers\Controller;
@@ -18,21 +19,34 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
  */
 class PublicLibraryController extends Controller
 {
+    /** The query-string keys the shelf understands (§8.2/§8.3). */
+    private const FILTERS = ['q', 'content_type', 'category', 'tag', 'author', 'access', 'language', 'price_min', 'price_max', 'sort'];
+
     public function index(Request $request)
     {
-        $filters = $request->only(['q', 'content_type', 'category', 'tag', 'author']);
+        $filters = array_filter($request->only(self::FILTERS), fn ($value) => $value !== null && $value !== '');
+        $browsing = array_diff_key($filters, ['sort' => 1]) === [];
 
         return view('public.library.index', [
             'items' => app(ListLibraryItemsAction::class)->execute($filters),
             'categories' => app(ListLibraryCategoriesAction::class)->execute(withCounts: true),
             'filters' => $filters,
+            'sorts' => ListLibraryItemsAction::SORTS,
+            'languages' => ['en' => 'English', 'dv' => 'Dhivehi', 'ar' => 'Arabic'],
+            // §8.1: the office's picks and the reader's own half-read books,
+            // on the front of the shelf and nowhere else — a filtered list
+            // is an answer to a question, not a shop window.
+            'featured' => $browsing ? app(ListLibraryItemsAction::class)->execute(['featured' => true]) : [],
+            'continue_reading' => $browsing && $request->user()
+                ? array_slice(array_values(array_filter(app(ListMyLibraryAction::class)->execute((int) $request->user()->id)['continue'], fn ($row) => ! $row['completed'])), 0, 3)
+                : [],
         ]);
     }
 
     public function export(Request $request): StreamedResponse
     {
         $rows = app(ListLibraryItemsAction::class)->execute(
-            $request->only(['q', 'content_type', 'category', 'tag', 'author'])
+            $request->only(self::FILTERS)
         );
 
         return response()->streamDownload(function () use ($rows): void {

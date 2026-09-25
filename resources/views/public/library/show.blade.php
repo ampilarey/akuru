@@ -127,7 +127,10 @@
 
         {{-- §8.8 copyright notice; §11.3 the AI-use declaration, when made. --}}
         <footer class="mt-8 border-t pt-4 text-xs text-gray-500" data-testid="copyright">
-            <p>{{ $item['copyright_notice'] }}. {{ __('public.All rights reserved. Published by Akuru Institute.') }}</p>
+            <p>{{ $item['copyright_notice'] }}. {{ __('public.All rights reserved. Published by Akuru Institute.') }}
+                <a href="{{ route('public.page.show', 'copyright-policy') }}" class="underline">{{ __('public.Copyright Policy') }}</a>
+                · <a href="{{ route('public.page.show', 'reader-terms') }}" class="underline">{{ __('public.Reader Terms') }}</a>
+            </p>
             @if($item['ai_use_declared'] ?? false)
                 <p class="mt-1">{{ __('public.The author declares that AI tools were used in preparing this work.') }}</p>
             @endif
