@@ -253,6 +253,8 @@ Build as a module inside the Laravel monolith. (Per ROADMAP §9.1 correction: do
 
 PDF: upload original to private storage → convert pages to protected page images or secure HTML → store privately → reader loads one page/chapter at a time with permission check → dynamic user watermark → original never exposed. Articles: structured HTML/JSON; protected reader if paid, normal web view if free public. Cover image upload; rich text editor for articles.
 
+> **Built 2026-09-25 (STATUS §5gl):** the "secure HTML" path. A PDF's pages are read on save by `App\Support\Pdf\PdfTextExtractor` (pure PHP, behind `Library\Contracts\PdfPageTextExtractor`) into `library_item_pages` as escaped, direction-aware paragraphs; the body wins when both exist; a scan yields no pages and the uploader is told. Page *images* are not produced (no rasteriser on the hosts); two-column layouts read across; OCR is out of reach. `php artisan library:sync-pages` backfills earlier uploads.
+
 ## 37. Recommended MVP
 
 **Public:** library home, books/articles/research listings, categories, search, detail page, free preview. **Reader:** login-gated content, protected reader, progress, continue reading, bookmarks. **Payment:** BML for paid content, webhook access grant, purchase history, basic invoice. **Writer:** application, dashboard, upload book/article, submit for review, status, basic sales. **Admin:** approve writers, review submissions, publish/unpublish, price, commission, sales, earnings. **Promotions MVP:** basic discount codes, manual free access, simple gift card, wallet balance, basic redemption.

@@ -12,6 +12,7 @@ use App\Domains\Library\Actions\SaveWriterItemAction;
 use App\Domains\Library\Actions\SaveWriterPublicProfileAction;
 use App\Domains\Library\Actions\SubmitLibraryItemForReviewAction;
 use App\Domains\Library\Enums\LibraryContentType;
+use App\Domains\Library\Models\LibraryItem;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -92,26 +93,39 @@ class WriterPortalController extends Controller
 
     public function storeItem(Request $request): RedirectResponse
     {
-        app(SaveWriterItemAction::class)->execute(
+        $saved = app(SaveWriterItemAction::class)->execute(
             (int) $request->user()->id,
             $this->validatedItem($request),
             null,
             $request->file('pdf'),
         );
 
-        return back()->with('success', 'Draft saved.');
+        return back()->with('success', 'Draft saved. '.$this->pagesNote($saved, $request->hasFile('pdf')));
     }
 
     public function updateItem(Request $request, int $item): RedirectResponse
     {
-        app(SaveWriterItemAction::class)->execute(
+        $saved = app(SaveWriterItemAction::class)->execute(
             (int) $request->user()->id,
             $this->validatedItem($request),
             $item,
             $request->file('pdf'),
         );
 
-        return back()->with('success', 'Draft updated.');
+        return back()->with('success', 'Draft updated. '.$this->pagesNote($saved, $request->hasFile('pdf')));
+    }
+
+    /** What readers will get, said to the writer at save time. */
+    private function pagesNote(LibraryItem $item, bool $pdfUploaded): string
+    {
+        $count = (int) $item->page_count;
+        if ($count > 0) {
+            return sprintf('%d reader page%s ready.', $count, $count === 1 ? '' : 's');
+        }
+
+        return $pdfUploaded || $item->pdf_media_file_id !== null
+            ? 'Your PDF has no readable text (a scan or pictures), so readers would see no pages — paste the text into the body.'
+            : 'No reader pages yet — add a body or upload a PDF.';
     }
 
     public function submit(Request $request, int $item): RedirectResponse

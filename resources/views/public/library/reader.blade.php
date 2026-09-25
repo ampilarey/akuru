@@ -25,6 +25,9 @@
         </div>
         @if($reader['content'])
             <div class="prose max-w-none relative">{!! $reader['content'] !!}</div>
+        @elseif($reader['total_pages'] > 0)
+            {{-- A page of a PDF that carried no text: a figure, a photograph, a blank leaf. --}}
+            <p class="text-gray-500 relative">{{ __('public.This page has no text — it may be a picture or a blank page.') }}</p>
         @else
             <p class="text-gray-500 relative">{{ __('public.This item has no reader pages yet.') }}</p>
         @endif

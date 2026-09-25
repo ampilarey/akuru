@@ -1692,7 +1692,10 @@ class SmokeMarkerSeeder extends Seeder
      */
     private function readerCycle(): void
     {
-        $itemIds = DB::table('library_items')->where('slug', 'smoke-primer')->pluck('id');
+        // `smoke-primer-upload` is what the walk's own upload step makes.
+        $itemIds = DB::table('library_items')
+            ->where(fn ($q) => $q->whereIn('slug', ['smoke-primer', 'smoke-primer-pdf'])->orWhere('slug', 'like', 'smoke-primer-upload%'))
+            ->pluck('id');
         DB::table('library_bookmarks')->whereIn('library_item_id', $itemIds)->delete();
         DB::table('library_reading_progress')->whereIn('library_item_id', $itemIds)->delete();
         DB::table('library_reading_events')->whereIn('library_item_id', $itemIds)->delete();
@@ -1713,6 +1716,23 @@ class SmokeMarkerSeeder extends Seeder
             'body' => '<p>SMOKE-Primer-Page-One</p><!-- pagebreak --><p>SMOKE-Primer-Page-Two</p><!-- pagebreak --><p>SMOKE-Primer-Page-Three</p>',
         ]);
         app(\App\Domains\Library\Actions\PublishLibraryItemAction::class)->execute($item->id, (int) $approverId);
+
+        // `SMOKE-Primer-PDF`: the same reader, fed from a PDF original and no
+        // body — three pages printed by a browser, with English, Arabic and
+        // Dhivehi. `reader.mjs` reads it page by page.
+        $pdfPath = __DIR__.'/fixtures/smoke-primer.pdf';
+        if (is_file($pdfPath)) {
+            $pdf = new \Illuminate\Http\UploadedFile($pdfPath, 'smoke-primer.pdf', 'application/pdf', null, true);
+            $pdfItem = app(\App\Domains\Library\Actions\SaveLibraryItemAction::class)->execute([
+                'title' => 'SMOKE-Primer-PDF',
+                'slug' => 'smoke-primer-pdf',
+                'content_type' => 'book',
+                'access_type' => 'free_login',
+                'description' => 'Planted by SmokeMarkerSeeder from a PDF, no body.',
+                'created_by' => (int) $approverId,
+            ], null, $pdf);
+            app(\App\Domains\Library\Actions\PublishLibraryItemAction::class)->execute($pdfItem->id, (int) $approverId);
+        }
     }
 
     /**

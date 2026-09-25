@@ -384,6 +384,7 @@ return [
     'Bookmark this page' => 'Bookmark this page',
     'Remove bookmark' => 'Remove bookmark',
     'This item has no reader pages yet.' => 'This item has no reader pages yet.',
+    'This page has no text — it may be a picture or a blank page.' => 'This page has no text — it may be a picture or a blank page.',
     'My Library' => 'My Library',
     'Continue' => 'Continue',
     'Completed' => 'Completed',

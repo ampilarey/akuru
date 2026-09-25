@@ -78,13 +78,30 @@ class AdminLibraryController extends Controller
         abort_unless($request->user()?->can('library.manage'), 403);
         $data = $this->validatedItem($request);
 
-        app(SaveLibraryItemAction::class)->execute(
+        $item = app(SaveLibraryItemAction::class)->execute(
             $data + ['created_by' => (int) $request->user()->id],
             null,
             $request->file('pdf'),
         );
 
-        return back()->with('success', 'Library item saved.');
+        return back()->with('success', 'Library item saved. '.$this->pagesNote($item, $request->hasFile('pdf')));
+    }
+
+    /**
+     * What the reader will serve, said at save time: a PDF that yields no
+     * text (a scan) is not readable, and the office should hear that here
+     * rather than from a reader.
+     */
+    private function pagesNote(LibraryItem $item, bool $pdfUploaded): string
+    {
+        $count = (int) $item->page_count;
+        if ($count > 0) {
+            return sprintf('%d reader page%s ready.', $count, $count === 1 ? '' : 's');
+        }
+
+        return $pdfUploaded || $item->pdf_media_file_id !== null
+            ? 'The PDF has no readable text (a scan or pictures), so the reader has no pages — add the text as the body to make it readable.'
+            : 'No reader pages yet — add a body or upload a PDF.';
     }
 
     public function updateItem(Request $request, int $item): RedirectResponse
@@ -93,9 +110,9 @@ class AdminLibraryController extends Controller
         $model = LibraryItem::query()->findOrFail($item);
         $data = $this->validatedItem($request);
 
-        app(SaveLibraryItemAction::class)->execute($data, $model, $request->file('pdf'));
+        $model = app(SaveLibraryItemAction::class)->execute($data, $model, $request->file('pdf'));
 
-        return back()->with('success', 'Library item updated.');
+        return back()->with('success', 'Library item updated. '.$this->pagesNote($model, $request->hasFile('pdf')));
     }
 
     public function publish(Request $request, int $item): RedirectResponse

@@ -73,6 +73,12 @@ class LibraryItem extends Model
         return $this->hasMany(LibraryItemAuthor::class)->orderBy('sort_order');
     }
 
+    /** The reader's pages, made by `SyncLibraryItemPagesAction` from the body or the PDF. */
+    public function pages(): HasMany
+    {
+        return $this->hasMany(LibraryItemPage::class)->orderBy('page_number');
+    }
+
     /** The approved writer who submitted it, when it came through `/write`. */
     public function writer(): BelongsTo
     {

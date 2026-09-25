@@ -254,6 +254,9 @@ function ItemForm({ categories, options }) {
             <label className="text-sm md:col-span-3">
                 Original PDF (stored privately — never exposed)
                 <input className="form-input" type="file" accept="application/pdf" onChange={(e) => form.setData('pdf', e.target.files[0] ?? null)} />
+                <span className="mt-1 block text-xs text-gray-500">
+                    Its pages become the reader&rsquo;s pages, watermarked per reader. A scanned PDF has no text to show — paste the text into the body. When both exist, the body wins.
+                </span>
             </label>
             <button type="submit" className="btn-primary self-end" disabled={form.processing}>Save item</button>
             <FormErrors errors={form.errors} />

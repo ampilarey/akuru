@@ -82,6 +82,9 @@ function ItemEditor({ item, options, onDone, t }) {
             <label className="text-sm md:col-span-3">
                 Original PDF (stored privately)
                 <input className="form-input" type="file" accept="application/pdf" onChange={(e) => form.setData('pdf', e.target.files[0] ?? null)} />
+                <span className="mt-1 block text-xs text-gray-500">
+                    Readers get the PDF page by page, with their name on each page — never the file. A scanned PDF has no text to show; paste the text into the body instead. When both exist, the body is what readers see.
+                </span>
             </label>
             <div className="flex gap-2 self-end">
                 <button type="submit" className="btn-primary" disabled={form.processing}>{item ? t.library_update_draft || 'Update draft' : t.library_save_draft || 'Save draft'}</button>
