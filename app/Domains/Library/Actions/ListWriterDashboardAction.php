@@ -52,17 +52,35 @@ class ListWriterDashboardAction
                 ->keyBy('library_item_id');
 
             $serialize = app(ListLibraryItemsAction::class);
+            $itemModels->load(['tags', 'authors']);
             $items = $itemModels->map(fn (LibraryItem $item) => [
                 'id' => $item->id,
                 'title' => $item->title,
+                'subtitle' => $item->subtitle,
                 'slug' => $item->slug,
                 'content_type' => $item->content_type?->value,
                 'access_type' => $item->access_type?->value,
                 'price' => $item->price !== null ? (float) $item->price : null,
+                'language' => $item->language,
+                'library_category_id' => $item->library_category_id,
+                'description' => $item->description,
                 'abstract' => $item->abstract,
                 'cover_url' => $serialize->coverUrl($item),
                 'body' => $item->body,
+                'toc' => $item->toc,
                 'citations' => $item->citations,
+                'affiliation' => $item->affiliation,
+                'research_field' => $item->research_field,
+                'suggested_reviewer' => $item->suggested_reviewer,
+                'declarations' => is_array($item->declarations) ? $item->declarations : [],
+                'preview_enabled' => (bool) $item->preview_enabled,
+                'preview_pages' => $item->preview_pages,
+                'tags' => $item->tags->pluck('name')->values()->all(),
+                // §11.3 co-authors: everyone named on the item but the writer.
+                'co_authors' => $item->authors->pluck('name')
+                    ->reject(fn ($name) => $name === $profile->display_name)
+                    ->values()
+                    ->all(),
                 'status' => $item->status?->value,
                 'submitted_at' => $item->submitted_at?->toDateTimeString(),
                 'published_at' => $item->published_at?->toDateTimeString(),

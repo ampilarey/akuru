@@ -28,7 +28,7 @@ class ApplyAsWriterAction
             throw ValidationException::withMessages(['agreement_accepted' => 'You must accept the writer agreement.']);
         }
 
-        return WriterApplication::query()->create([
+        $application = WriterApplication::query()->create([
             'user_id' => $userId,
             'display_name' => trim((string) $data['display_name']),
             'bio' => $data['bio'] ?? null,
@@ -38,5 +38,14 @@ class ApplyAsWriterAction
             'agreement_accepted_at' => now(),
             'status' => 'pending',
         ]);
+
+        // §41: the office hears there is an application to decide.
+        app(NotifyLibraryUserAction::class)->office(
+            'New writer application',
+            $application->display_name.' applied to write for the library.',
+            '/admin/library',
+        );
+
+        return $application;
     }
 }

@@ -5,7 +5,9 @@ namespace App\Domains\Library\Listeners;
 use App\Domains\Commerce\Actions\RecordDiscountRedemptionAction;
 use App\Domains\Finance\Events\PaymentConfirmed;
 use App\Domains\Library\Actions\GrantLibraryAccessAction;
+use App\Domains\Library\Actions\NotifyLibraryUserAction;
 use App\Domains\Library\Actions\RecordWriterEarningForPurchaseAction;
+use App\Domains\Library\Models\LibraryItem;
 use App\Domains\Library\Models\LibraryPurchase;
 
 /**
@@ -46,6 +48,19 @@ class GrantLibraryAccessOnPaymentConfirmed
         // L6: the same paid sale accrues the writer's earning (idempotent).
         if ($purchase !== null) {
             app(RecordWriterEarningForPurchaseAction::class)->execute($purchase->id);
+        }
+
+        // §41 reader: purchase success and access granted, in one line, once.
+        if ($purchase !== null && $purchase->wasChanged('status')) {
+            $item = LibraryItem::query()->find($payment->payable_id);
+            if ($item !== null) {
+                app(NotifyLibraryUserAction::class)->execute(
+                    (int) $payment->user_id,
+                    'Your purchase is ready',
+                    'Payment confirmed for "'.$item->title.'". You can read it now.',
+                    '/library/'.$item->slug.'/read',
+                );
+            }
         }
     }
 }

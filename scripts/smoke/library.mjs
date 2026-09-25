@@ -58,6 +58,9 @@ const TITLE = `SMOKE-Library-Item ${STAMP}`;
 const BODY = 'SMOKE-Library-Body: the sun letters assimilate the laam of the definite article.';
 const CHANGES = 'SMOKE-Changes: please add a citation for the assimilation rule.';
 const BIO = `SMOKE-Bio ${STAMP}: teaches the sun and moon letters.`;
+const CO_AUTHOR = `SMOKE-CoAuthor ${STAMP}`;
+const TOC_ONE = `SMOKE-Chapter-One ${STAMP}`;
+const TOC_TWO = `SMOKE-Chapter-Two ${STAMP}`;
 
 // A one-pixel PNG for the author portrait, written where the browser can pick it.
 const PORTRAIT = join(mkdtempSync(join(tmpdir(), 'smoke-library-')), 'portrait.png');
@@ -225,6 +228,13 @@ if (!portal.includes('Apply to publish')) {
     await writer.fill('input[placeholder="Title"]', TITLE);
     await writer.fill('textarea[placeholder="Abstract"]', 'SMOKE-Abstract');
     await writer.fill('textarea[placeholder*="Body"]', BODY);
+    // §11.3: a co-author, a table of contents (the type is `book`, the
+    // editor's default in this walk is the first type — set it), and the
+    // copyright declaration, without which the submission below is refused.
+    await writer.locator('[data-testid="draft-editor"] select').first().selectOption('book');
+    await writer.fill('input[placeholder*="Co-authors"]', CO_AUTHOR);
+    await writer.fill('textarea[placeholder*="Table of contents"]', `${TOC_ONE}\n${TOC_TWO}`);
+    await writer.check('input[name="declarations[copyright]"]');
     // §36: a cover, uploaded with the draft, shown on the shelf once published.
     await writer.locator('input[type=file][accept^="image/"]').first().setInputFiles(PORTRAIT);
     await writer.click('button:has-text("Save draft")');
@@ -364,6 +374,16 @@ if (resubmitted) {
     await reader.waitForLoadState('networkidle');
     const byline = reader.locator('a[rel="author"]');
     check('the item names its author as a link', (await byline.count()) === 1, (await byline.count()) ? await byline.innerText() : 'author is plain text on the item page');
+
+    // §8.8 / §11.3: what the writer typed reaches the reader — the co-author,
+    // the table of contents, and a copyright line under the work.
+    const itemPage = await text(reader);
+    check('and shows the co-author, the contents and the copyright line', itemPage.includes(CO_AUTHOR) && itemPage.includes(TOC_ONE) && itemPage.includes(TOC_TWO) && itemPage.includes('All rights reserved. Published by Akuru Institute.') && (await reader.locator('[data-testid="toc"] li').count()) === 2, itemPage.match(/©[^.]*\./)?.[0] ?? itemPage.slice(0, 160));
+
+    // §41: the writer did not have to keep looking — they were told.
+    await writer.goto(`${BASE}/en/portal/notifications`, { waitUntil: 'networkidle' });
+    const told = await text(writer);
+    check('the writer was told of the change request and of publication', told.includes('Changes requested') && told.includes(CHANGES) && told.includes('Published') && told.includes(TITLE), told.match(/Changes requested[^.]*\./)?.[0] ?? told.slice(0, 200));
     if (await byline.count()) {
         await byline.click();
         await reader.waitForLoadState('networkidle');

@@ -42,21 +42,59 @@ function ApplyForm({ t }) {
 function ItemEditor({ item, options, onDone, t }) {
     const form = useForm({
         title: item?.title || '',
+        subtitle: item?.subtitle || '',
         content_type: item?.content_type || options.content_types[0] || 'article',
         access_type: item?.access_type || 'free_login',
         price: item?.price ?? '',
+        language: item?.language || 'en',
+        library_category_id: item?.library_category_id || '',
+        description: item?.description || '',
         abstract: item?.abstract || '',
         body: item?.body || '',
+        toc: item?.toc || '',
         citations: item?.citations || '',
+        affiliation: item?.affiliation || '',
+        research_field: item?.research_field || '',
+        suggested_reviewer: item?.suggested_reviewer || '',
+        tags_text: (item?.tags || []).join(', '),
+        co_authors_text: (item?.co_authors || []).join(', '),
+        preview_enabled: Boolean(item?.preview_enabled),
+        preview_pages: item?.preview_pages ?? '',
+        declarations: {
+            copyright: Boolean(item?.declarations?.copyright),
+            ai_use: Boolean(item?.declarations?.ai_use),
+            originality: Boolean(item?.declarations?.originality),
+            conflict_of_interest: Boolean(item?.declarations?.conflict_of_interest),
+            ethics: Boolean(item?.declarations?.ethics),
+        },
         pdf: null,
         cover: null,
     });
 
+    const isResearch = form.data.content_type === 'research';
+    const isBook = form.data.content_type === 'book';
+    const split = (text) => (text ? text.split(',').map((part) => part.trim()).filter(Boolean) : []);
+    const declare = (name, value) => form.setData('declarations', { ...form.data.declarations, [name]: value });
+
     const submit = (e) => {
         e.preventDefault();
         const opts = { preserveScroll: true, forceFormData: true, onSuccess: onDone };
+        form.transform((data) => {
+            // Booleans travel as 1/0 in multipart form data; the server
+            // validates them as booleans.
+            const declarations = Object.fromEntries(Object.entries(data.declarations).map(([key, on]) => [key, on ? 1 : 0]));
+            const { tags_text, co_authors_text, ...rest } = data;
+
+            return {
+                ...rest,
+                declarations,
+                preview_enabled: data.preview_enabled ? 1 : 0,
+                tags: split(tags_text),
+                co_authors: split(co_authors_text),
+                ...(item ? { _method: 'put' } : {}),
+            };
+        });
         if (item) {
-            form.transform((data) => ({ ...data, _method: 'put' }));
             form.post(`/write/items/${item.id}`, opts);
         } else {
             form.post('/write/items', opts);
@@ -64,8 +102,9 @@ function ItemEditor({ item, options, onDone, t }) {
     };
 
     return (
-        <form onSubmit={submit} className="mb-4 grid gap-2 rounded-lg border bg-white p-4 md:grid-cols-4">
+        <form onSubmit={submit} className="mb-4 grid gap-2 rounded-lg border bg-white p-4 md:grid-cols-4" data-testid="draft-editor">
             <input className="form-input md:col-span-2" placeholder="Title" value={form.data.title} onChange={(e) => form.setData('title', e.target.value)} />
+            <input className="form-input md:col-span-2" placeholder="Subtitle" value={form.data.subtitle} onChange={(e) => form.setData('subtitle', e.target.value)} />
             <select className="form-input" value={form.data.content_type} onChange={(e) => form.setData('content_type', e.target.value)}>
                 {options.content_types.map((type) => <option key={type} value={type}>{type.replaceAll('_', ' ')}</option>)}
             </select>
@@ -75,23 +114,74 @@ function ItemEditor({ item, options, onDone, t }) {
                 <option value="paid">paid</option>
             </select>
             <input className="form-input" placeholder="Suggested price (MVR)" value={form.data.price} onChange={(e) => form.setData('price', e.target.value)} />
-            <textarea className="form-input md:col-span-3" rows="2" placeholder="Abstract" value={form.data.abstract} onChange={(e) => form.setData('abstract', e.target.value)} />
+            <select className="form-input" value={form.data.language} onChange={(e) => form.setData('language', e.target.value)} aria-label="Language">
+                {Object.entries(options.languages || { en: 'English' }).map(([code, label]) => <option key={code} value={code}>{label}</option>)}
+            </select>
+            <select className="form-input" value={form.data.library_category_id} onChange={(e) => form.setData('library_category_id', e.target.value)} aria-label="Category">
+                <option value="">Category…</option>
+                {(options.categories || []).map((category) => <option key={category.id} value={category.id}>{category.name}</option>)}
+            </select>
+            <input className="form-input" placeholder="Keywords (comma-separated)" value={form.data.tags_text} onChange={(e) => form.setData('tags_text', e.target.value)} />
+            <input className="form-input md:col-span-2" placeholder="Co-authors (comma-separated)" value={form.data.co_authors_text} onChange={(e) => form.setData('co_authors_text', e.target.value)} />
+            <textarea className="form-input md:col-span-2" rows="2" placeholder="Description" value={form.data.description} onChange={(e) => form.setData('description', e.target.value)} />
+            <textarea className="form-input md:col-span-2" rows="2" placeholder="Abstract" value={form.data.abstract} onChange={(e) => form.setData('abstract', e.target.value)} />
             <textarea className="form-input md:col-span-4" rows="6" placeholder="Body (HTML — use <!-- pagebreak --> between pages)" value={form.data.body} onChange={(e) => form.setData('body', e.target.value)} />
-            {form.data.content_type === 'research' && (
-                <textarea className="form-input md:col-span-4" rows="3" placeholder="Citations (one per line)" value={form.data.citations} onChange={(e) => form.setData('citations', e.target.value)} />
+            {isBook && (
+                <textarea className="form-input md:col-span-4" rows="4" placeholder="Table of contents (one entry per line)" value={form.data.toc} onChange={(e) => form.setData('toc', e.target.value)} />
             )}
+            {isResearch && (
+                <>
+                    <textarea className="form-input md:col-span-4" rows="3" placeholder="Citations (one per line)" value={form.data.citations} onChange={(e) => form.setData('citations', e.target.value)} />
+                    <input className="form-input md:col-span-2" placeholder="Affiliation" value={form.data.affiliation} onChange={(e) => form.setData('affiliation', e.target.value)} />
+                    <input className="form-input" placeholder="Field" value={form.data.research_field} onChange={(e) => form.setData('research_field', e.target.value)} />
+                    <input className="form-input" placeholder="Suggested reviewer (optional)" value={form.data.suggested_reviewer} onChange={(e) => form.setData('suggested_reviewer', e.target.value)} />
+                </>
+            )}
+            <label className="flex items-center gap-2 text-sm md:col-span-2">
+                <input type="checkbox" checked={form.data.preview_enabled} onChange={(e) => form.setData('preview_enabled', e.target.checked)} />
+                Suggest a free preview of
+                <input className="form-input w-20" type="number" min="1" value={form.data.preview_pages} onChange={(e) => form.setData('preview_pages', e.target.value)} aria-label="Preview pages" />
+                pages
+            </label>
             <label className="text-sm md:col-span-4">
                 Cover image (JPEG, PNG or WebP — shown on the shelf)
                 <input className="form-input" type="file" accept="image/jpeg,image/png,image/webp" onChange={(e) => form.setData('cover', e.target.files[0] ?? null)} />
                 {item?.cover_url && <img src={item.cover_url} alt="" className="mt-2 h-24 rounded object-cover" data-testid="draft-cover" />}
             </label>
-            <label className="text-sm md:col-span-3">
+            <label className="text-sm md:col-span-4">
                 Original PDF (stored privately)
                 <input className="form-input" type="file" accept="application/pdf" onChange={(e) => form.setData('pdf', e.target.files[0] ?? null)} />
                 <span className="mt-1 block text-xs text-gray-500">
                     Readers get the PDF page by page, with their name on each page — never the file. A scanned PDF has no text to show; paste the text into the body instead. When both exist, the body is what readers see.
                 </span>
             </label>
+            <fieldset className="md:col-span-4 rounded border p-3" data-testid="declarations">
+                <legend className="px-1 text-sm font-medium">Declarations (required before submitting)</legend>
+                <label className="flex items-start gap-2 text-sm">
+                    <input type="checkbox" name="declarations[copyright]" checked={form.data.declarations.copyright} onChange={(e) => declare('copyright', e.target.checked)} />
+                    <span>I hold the copyright to this work, or the right to publish it, and it does not infringe anyone else&rsquo;s.</span>
+                </label>
+                <label className="mt-1 flex items-start gap-2 text-sm">
+                    <input type="checkbox" name="declarations[ai_use]" checked={form.data.declarations.ai_use} onChange={(e) => declare('ai_use', e.target.checked)} />
+                    <span>AI tools were used in preparing this work (optional; shown to readers).</span>
+                </label>
+                {isResearch && (
+                    <>
+                        <label className="mt-1 flex items-start gap-2 text-sm">
+                            <input type="checkbox" name="declarations[originality]" checked={form.data.declarations.originality} onChange={(e) => declare('originality', e.target.checked)} />
+                            <span>This research is original and not under review or published elsewhere.</span>
+                        </label>
+                        <label className="mt-1 flex items-start gap-2 text-sm">
+                            <input type="checkbox" name="declarations[conflict_of_interest]" checked={form.data.declarations.conflict_of_interest} onChange={(e) => declare('conflict_of_interest', e.target.checked)} />
+                            <span>I have declared any conflict of interest, or have none.</span>
+                        </label>
+                        <label className="mt-1 flex items-start gap-2 text-sm">
+                            <input type="checkbox" name="declarations[ethics]" checked={form.data.declarations.ethics} onChange={(e) => declare('ethics', e.target.checked)} />
+                            <span>Where the research involved people, the required ethics approval was obtained (if applicable).</span>
+                        </label>
+                    </>
+                )}
+            </fieldset>
             <div className="flex gap-2 self-end">
                 <button type="submit" className="btn-primary" disabled={form.processing}>{item ? t.library_update_draft || 'Update draft' : t.library_save_draft || 'Save draft'}</button>
                 {onDone && <button type="button" className="btn-secondary" onClick={onDone}>{t.library_close || 'Close'}</button>}

@@ -119,6 +119,27 @@ class SaveLibraryItemAction
         if (array_key_exists('citations', $data)) {
             $payload['citations'] = $data['citations'] !== '' ? $data['citations'] : null;
         }
+
+        // §11.3 / §11.5: the rest of what a writer describes. Plain text,
+        // escaped where shown. Written only when the form carries the key.
+        foreach (['toc', 'affiliation', 'research_field', 'suggested_reviewer'] as $field) {
+            if (array_key_exists($field, $data)) {
+                $value = trim((string) ($data[$field] ?? ''));
+                $payload[$field] = $value === '' ? null : $value;
+            }
+        }
+        if (array_key_exists('declarations', $data) && is_array($data['declarations'])) {
+            $declared = [];
+            foreach (['copyright', 'ai_use', 'originality', 'conflict_of_interest', 'ethics'] as $name) {
+                if (filter_var($data['declarations'][$name] ?? false, FILTER_VALIDATE_BOOL)) {
+                    $declared[$name] = true;
+                }
+            }
+            $payload['declarations'] = $declared === [] ? null : $declared;
+            // The copyright declaration is the one that gates submission;
+            // the first time it is made is worth a timestamp.
+            $payload['declared_at'] = isset($declared['copyright']) ? ($item?->declared_at ?? now()) : null;
+        }
         // L5: price rides the same writer; writer_id only when the caller
         // sets it (never nulled by an admin edit).
         if (array_key_exists('price', $data)) {

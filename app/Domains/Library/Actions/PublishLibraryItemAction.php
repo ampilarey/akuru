@@ -25,6 +25,16 @@ class PublishLibraryItemAction
         }
         $item->save();
 
+        // §41: a writer hears their work went live, with where it is.
+        if ($publish && $item->writer?->user_id) {
+            app(NotifyLibraryUserAction::class)->execute(
+                (int) $item->writer->user_id,
+                'Published',
+                '"'.$item->title.'" is now on the library shelf.',
+                '/library/'.$item->slug,
+            );
+        }
+
         return $item->refresh();
     }
 }

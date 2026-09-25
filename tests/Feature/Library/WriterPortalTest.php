@@ -57,6 +57,7 @@ it('walks apply → approve → draft → review loop → publish', function () 
             'access_type' => 'paid',
             'price' => 45,
             'body' => 'Page one<!-- pagebreak -->Page two',
+            'declarations' => ['copyright' => 1],
         ])->assertSessionHasNoErrors();
     $item = LibraryItem::query()->firstOrFail();
     expect($item->status->value)->toBe('draft')
@@ -86,6 +87,7 @@ it('walks apply → approve → draft → review loop → publish', function () 
             'access_type' => 'paid',
             'price' => 45,
             'body' => 'Page one revised<!-- pagebreak -->Page two',
+            'declarations' => ['copyright' => 1],
         ])->assertSessionHasNoErrors();
     $this->withoutLocalizationMiddleware()->actingAs($writerUser)
         ->post(route('write.items.submit', $item->id))->assertSessionHasNoErrors();
@@ -120,6 +122,7 @@ it('guards writer boundaries: no profile, wrong owner, wrong state, double decid
             'title' => 'Owned Item',
             'content_type' => 'article',
             'body' => 'Text',
+            'declarations' => ['copyright' => 1],
         ]);
     $item = LibraryItem::query()->firstOrFail();
 

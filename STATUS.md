@@ -690,6 +690,10 @@ migration; no Hifz behaviour change outside it.
   `PdfPageTextExtractor` (pure PHP), the body still wins when both exist,
   a scan yields no pages and says so at save time, and
   `library:sync-pages` backfills the items uploaded before.
+- **The writer's form and §41 (2026-09-25):** the draft editor carries
+  everything §11.3/§11.5 list, a submission needs the declarations, the
+  item page shows contents and a copyright notice, and writers, readers
+  and the office are told what happened, in-app — see §5go.
 - **Findable, and gift cards for sale (2026-09-25, §15.3):** the shell's
   *Mine* group and the public site's account menu link Library, My library
   and My wallet; `/gift-cards` sells a gift card by BML only (no discount,
@@ -4400,6 +4404,65 @@ walk returned a header row and nothing else for circulation, student work and
 pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
+
+## 5go. The writer's form is the plan's form, and people are told what happened (2026-09-25)
+
+Fifth finding of the Library audit. LIBRARY_PLAN §11.3 lists what a
+writer gives with a book — title, subtitle, language, category,
+description, TOC, author, co-authors, cover, manuscript, suggested price,
+free/paid suggestion, preview page suggestion, keywords, copyright
+declaration, AI-use declaration — and §11.5 adds, for research,
+affiliation, field, originality, conflict-of-interest and ethics
+declarations and a suggested reviewer. The draft editor had title, type,
+access, price, abstract, body and a PDF. A writer could submit anything
+without declaring it was theirs. And §41's writer notifications —
+application decided, submission received, changes requested, published,
+sale, payout — existed nowhere: a writer learned their book was on the
+shelf by opening the portal and looking.
+
+**The form.** `library_items` gains `toc`, `affiliation`,
+`research_field`, `suggested_reviewer`, `declarations` (JSON map) and
+`declared_at` (additive). The writer's editor (`Write.jsx`) now carries
+subtitle, language, category, keywords, co-authors, description, table of
+contents (books), citations/affiliation/field/suggested reviewer
+(research), the preview suggestion, the cover, the PDF, and a
+*Declarations* box. Co-authors go through the one `SaveLibraryItemAction`
+as the item's author list with the writer first and never doubled; the
+office's form is untouched. The item page shows the table of contents
+(§8.8), the research's field and affiliation, a copyright notice
+(`© year, the authors. All rights reserved. Published by Akuru
+Institute.`) and, when the writer declared it, *The author declares that
+AI tools were used in preparing this work.*
+
+**The gate.** `SubmitLibraryItemForReviewAction` refuses a submission
+until the copyright declaration is made — research also needs originality
+and conflict of interest — and says which are missing. The declarations
+are saved with the draft, so the writer is asked once, on the form, not
+at the end. The three older writer tests now declare, as a writer would.
+
+**§41.** `NotifyLibraryUserAction` is the Library's one door to
+Notifications' `SendUserNotificationAction` (rule 3), category `library`
+(new, switchable in a person's preferences), in-app with a link:
+application decided (approved / not, with the office's note); submission
+received; changes requested and rejected (with the editor's comment);
+published (from the one publisher, so an approval is told once, with the
+shelf address); new sale (price and the writer's share); payout paid /
+not paid (with the note). The office hears of a new application and a new
+submission (`library.manage` holders). Readers hear that a purchase is
+ready (on the webhook grant) and that a gift card was redeemed into their
+wallet (Commerce). Every send is try/caught: a note never fails the
+decision it describes.
+
+**Tests:** `WriterFormCompletenessTest` (three: the full §11.3 form
+round-trips through the portal and the item page shows contents,
+copyright and the AI note; the declaration gate for a book and for
+research; the §41 chain end to end — application, decision, submission,
+changes with the reason, published once with its address, sale with the
+share, payout with the note, all in the `library` category).
+**Walked:** `library.mjs` — the draft carries a co-author, a table of
+contents and the copyright declaration; after publication the item page
+shows the contents and the copyright line; the writer's Notifications
+page lists *Changes requested* and *Published*.
 
 ## 5gn. Readers can find the Library, and anyone can buy a gift card (2026-09-25)
 

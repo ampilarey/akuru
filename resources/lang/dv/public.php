@@ -228,6 +228,13 @@ return [
     'Try again' => 'އަލުން މަސައްކަތްކުރައްވާ',
     'Bank confirmation can take a moment. Refresh this page shortly — the code is sent as soon as the bank confirms.' => 'Bank confirmation can take a moment. Refresh this page shortly — the code is sent as soon as the bank confirms.',
 
+    // Item page completeness (§8.8, 2026-09-25) — first pass pending native review (operator item)
+    'Contents' => 'ފިހުރިސްތު',
+    'Field' => 'ދާއިރާ',
+    'Affiliation' => 'ނިސްބަތްވާ ތަން',
+    'All rights reserved. Published by Akuru Institute.' => 'ހުރިހާ ހައްގެއް ރައްކާތެރިކުރެވިފައި. ޝާއިއުކުރީ އަކުރު އިންސްޓިޓިއުޓް.',
+    'The author declares that AI tools were used in preparing this work.' => 'The author declares that AI tools were used in preparing this work.',
+
     // Library PDF pages (L2, 2026-09-25) — first pass pending native review (operator item)
     'This page has no text — it may be a picture or a blank page.' => 'މި ސަފުހާގައި ލިޔުމެއް ނެތް — މިއީ ތަސްވީރެއް ނުވަތަ ހުސް ސަފުހާއެއް ކަމަށް ވެދާނެ.',
 ];

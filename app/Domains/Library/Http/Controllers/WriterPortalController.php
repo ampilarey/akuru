@@ -3,6 +3,7 @@
 namespace App\Domains\Library\Http\Controllers;
 
 use App\Domains\Library\Actions\ApplyAsWriterAction;
+use App\Domains\Library\Actions\ListLibraryCategoriesAction;
 use App\Domains\Library\Actions\ListWriterDashboardAction;
 use App\Domains\Library\Actions\ListWriterEarningsSummaryAction;
 use App\Domains\Library\Actions\ListWriterItemSalesAction;
@@ -33,6 +34,8 @@ class WriterPortalController extends Controller
             'item_sales' => app(ListWriterItemSalesAction::class)->execute((int) $request->user()->id),
             'options' => [
                 'content_types' => array_map(fn ($case) => $case->value, LibraryContentType::cases()),
+                'categories' => app(ListLibraryCategoriesAction::class)->execute(),
+                'languages' => ['en' => 'English', 'dv' => 'Dhivehi', 'ar' => 'Arabic'],
             ],
         ]);
     }
@@ -142,7 +145,7 @@ class WriterPortalController extends Controller
      */
     private function validatedItem(Request $request): array
     {
-        return $request->validate([
+        $data = $request->validate([
             'title' => 'required|string|max:255',
             'subtitle' => 'nullable|string|max:255',
             'description' => 'nullable|string|max:10000',
@@ -150,14 +153,26 @@ class WriterPortalController extends Controller
             'content_type' => 'required|string|max:30',
             'access_type' => 'nullable|string|max:20',
             'price' => 'nullable|numeric|min:0',
-            'language' => 'nullable|string|max:5',
-            'library_category_id' => 'nullable|integer',
+            'language' => 'nullable|string|in:en,dv,ar',
+            'library_category_id' => 'nullable|integer|exists:library_categories,id',
             'body' => 'nullable|string',
+            'toc' => 'nullable|string|max:20000',
             'citations' => 'nullable|string|max:20000',
-            'tags' => 'nullable|array',
+            'affiliation' => 'nullable|string|max:255',
+            'research_field' => 'nullable|string|max:255',
+            'suggested_reviewer' => 'nullable|string|max:255',
+            'tags' => 'nullable|array|max:20',
             'tags.*' => 'string|max:60',
+            'co_authors' => 'nullable|array|max:20',
+            'co_authors.*' => 'nullable|string|max:120',
+            'declarations' => 'nullable|array',
+            'declarations.*' => 'nullable|boolean',
+            'preview_enabled' => 'nullable|boolean',
+            'preview_pages' => 'nullable|integer|min:1|max:1000',
             'pdf' => 'nullable|file|mimes:pdf|max:51200',
             'cover' => 'nullable|file|mimes:jpeg,jpg,png,webp|max:5120',
         ]);
+
+        return $data;
     }
 }
