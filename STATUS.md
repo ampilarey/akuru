@@ -4414,6 +4414,23 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5gs. A backlog file for parked items and ideas (2026-09-25)
+
+Owner's instruction after the Library series: *"Keep all new ideas and
+parked items documented. Later we will build or fix."* `docs/BACKLOG.md`
+now holds them in one place — the owner-parked items (BML secret, branch
+protection, the undecided `resume` link, items 15–17, the payouts flag,
+native review of DV/AR strings), the Library's not-built list by plan
+section (page images and OCR, columns and RTL producers, rich text,
+promotions and campaigns, remaining filters, highlights and in-book
+search, the parent's child library, application extras, gift card expiry,
+the rest of §41's notifications and their email/SMS channels, an admin
+settings screen, the §38 non-MVP list, analytics), and ideas raised
+outside the Library (retiring the Hifz Blade screens, PDF report cards,
+Qur'an A.4b, the Deploy 3 cleanup, a queue worker). CLAUDE.md's document
+map and OWNER_ACTIONS point at it; the rule is to update it in the PR
+that parks or builds a thing. Docs only.
+
 ## 5gr. The office sees gift card purchases (2026-09-25)
 
 The last item of the Library audit: LIBRARY_PLAN §7.7 lists "gift card

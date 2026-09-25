@@ -342,6 +342,13 @@ so your edits stay. Remove the "first draft pending review" line when you
 are satisfied. Writers agree to the Publishing Terms and Writer Agreement
 on the application form, so those two first.
 
+## Parked items and later ideas
+
+Everything deferred or left unbuilt on purpose — the BML secret, branch
+protection, the undecided items above, the Library's not-built list, and
+ideas raised along the way — is kept in **`docs/BACKLOG.md`** (owner's
+instruction, 2026-09-25: "keep all new ideas and parked items documented").
+
 ## What is *not* on this list
 
 The agent-buildable backlog is empty. Of the 28 numbered defects in
