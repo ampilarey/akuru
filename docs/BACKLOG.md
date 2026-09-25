@@ -17,9 +17,9 @@ PR that builds it.
 |---|---|---|---|
 | A1 | **BML webhook secret** (OWNER_ACTIONS item 2). Production `.env` has none of `BML_WEBHOOK_SECRET`, `BML_WEBHOOK_ALLOW_UNSIGNED`, `BML_BASE_URL`; the webhook fails closed without a secret. The owner reports card payments work, which is possible if the callback secret is set under another name. | 2026-09-25, "Keep bml for later" | Run on production: `grep -E "^(BML_\|PAYMENTS?_)" .env \| sed 's/=\(.\{4\}\).*/=\1…/'` and paste the key names (values stay masked). Then either set `BML_WEBHOOK_SECRET` or confirm `config/bml.php` reads the name in use. |
 | A2 | **Branch protection on `main`** (OWNER_ACTIONS item 6, `docs/BRANCH_PROTECTION.md`). Merge gates are discipline, not mechanism. | deferred earlier | A repo admin applies the rule set; ADR-027's read-the-conclusion-back stays load-bearing until then. |
-| A3 | **The `resume` magic link** (OWNER_ACTIONS item 14): build (recommended: short-lived, single-use, resumes the registration form only) or delete the route, model and table. | undecided | The word "build" or "delete". |
-| A4 | **Hifz enrolment when a pupil leaves** (OWNER_ACTIONS item 15). | not yet presented | Presented next, after item 14. |
-| A5 | **Who marks the work and whose work they see** (OWNER_ACTIONS item 16, KNOWN_ISSUES #28). | not yet presented | Presented after item 15. |
+| A3 | **The `resume` magic link** (OWNER_ACTIONS item 14): build (recommended: short-lived, single-use, resumes the registration form only) or delete the route, model and table. | 2026-09-25, "this also later" | The word "build" or "delete", when the owner returns to it. |
+| A4 | **Hifz enrolment when a pupil leaves** (OWNER_ACTIONS item 15): reuse `transferred` or add a fifth status, plus a screen that ends an enrolment. | 2026-09-25, parked with item 14 | The owner's choice of word; then one slice. |
+| A5 | **Who marks the work and whose work they see** (OWNER_ACTIONS item 16, KNOWN_ISSUES #28). | not yet presented | Present when the owner returns to the decision queue. |
 | A6 | **Read the seven library policy pages** (OWNER_ACTIONS item 17): first drafts seeded 2026-09-25. | new | Read and edit in the page editor; remove the "draft" line when satisfied. |
 | A7 | **Permissions table on the host** (OWNER_ACTIONS item 4) is unverified. | earlier | Run the check in item 4 on production once. |
 | A8 | **OTP login on staging** has not been walked. | earlier | One sign-in by phone on `test.akuru.edu.mv` with the log SMS sender. |
