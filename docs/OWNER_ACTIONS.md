@@ -202,7 +202,14 @@ scan. A lost card is replaced from the same screen and the old one stops
 working at once. A fixed RFID reader can still be added later: the movement
 record already carries its source.
 
-### 12. E19 — who may read a sensitive note
+### 12. E19 — who may read a sensitive note — **decided 2026-09-25: keep as is**
+
+Left to the recommendation: `super_admin` and `headmaster` only, no change.
+A note about a child's health or a safeguarding concern is the most private
+thing the system holds; the headmaster tells a class teacher what they need
+to know. Widening later is one line; narrowing later un-reads nothing. If a
+nurse or counsellor ever needs their own door, it is a named role, not
+`admin`.
 
 Health and welfare notes are readable by `super_admin` and `headmaster` only.
 `admin` is **deliberately excluded**, because `RoleSeeder`'s blanket
