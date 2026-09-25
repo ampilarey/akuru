@@ -690,6 +690,10 @@ migration; no Hifz behaviour change outside it.
   `PdfPageTextExtractor` (pure PHP), the body still wins when both exist,
   a scan yields no pages and says so at save time, and
   `library:sync-pages` backfills the items uploaded before.
+- **Cover upload (2026-09-25, §36):** the cover was a URL only the office
+  could type. Now both forms upload a file to public media
+  (`cover_media_file_id`), and the shelf, item page, author page and the
+  writer's list show it — see §5gm.
 
 ## 5h. Spec Phase 4 — course payments on the engine (adopting L4 Commerce)
 
@@ -4391,6 +4395,36 @@ walk returned a header row and nothing else for circulation, student work and
 pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
+
+## 5gm. Books have covers (2026-09-25)
+
+Second finding of the Library audit, after the PDF reader (§5gl):
+LIBRARY_PLAN §36 says "cover image upload", and the shelf had no picture on
+it. `library_items.cover_image` was a free-text URL field on the office's
+form — a writer had nowhere to put a cover, and the office had to host the
+picture somewhere else first. Every card on the shelf was a title and a
+line of grey text.
+
+**Now the cover is an uploaded file**, `library_items.cover_media_file_id`,
+PUBLIC media in `library-covers/` (a cover is published on purpose; the PDF
+beside it is private and the two are stored by different actions, never
+swapped), on both forms — the writer's draft editor and the office's item
+form — through the one `SaveLibraryItemAction`. JPEG, PNG or WebP, 5 MB. An
+edit without a new file keeps the cover. The typed URL stays as the
+office's fallback and is used only when it looks like one; a bare word
+shows nothing rather than a broken image. `ListLibraryItemsAction::coverUrl()`
+is the one resolver, so the shelf, the item page, the author page and the
+writer's own list all show the same picture, through Media's
+`ResolvePublicMediaUrlAction` (never the model). The item page puts the
+cover beside the title; the shelf and author page cards put it above, in
+a 3:4 frame, lazily loaded.
+
+`LibraryCoverTest` (office upload → public media → shelf and item page;
+typed URL fallback and the bare-word case; writer upload → own list →
+kept on edit → author page; a PDF is not a cover). `library.mjs` grows two
+steps to **21/21**: the writer attaches a cover to the draft and the row
+shows it decoded; after the office publishes, the shelf card carries the
+same picture, decoded. Migration additive; `down()` drops the column.
 
 ## 5gl. A PDF book can be read (2026-09-25)
 

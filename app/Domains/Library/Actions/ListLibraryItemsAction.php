@@ -3,6 +3,7 @@
 namespace App\Domains\Library\Actions;
 
 use App\Domains\Library\Models\LibraryItem;
+use App\Domains\Media\Actions\ResolvePublicMediaUrlAction;
 
 /**
  * L1 listing + basic search (LIBRARY_PLAN §28): published items for the
@@ -61,6 +62,9 @@ class ListLibraryItemsAction
             'access_type' => $item->access_type?->value,
             'language' => $item->language,
             'cover_image' => $item->cover_image,
+            // §36: the uploaded cover first; the office's typed URL as the
+            // fallback; null shows the card's placeholder.
+            'cover_url' => $this->coverUrl($item),
             'status' => $item->status?->value,
             'published_at' => $item->published_at?->toDateString(),
             'reading_time' => $item->reading_time,
@@ -80,5 +84,18 @@ class ListLibraryItemsAction
             ] : null,
             'has_pdf' => $item->pdf_media_file_id !== null,
         ];
+    }
+
+    public function coverUrl(LibraryItem $item): ?string
+    {
+        if ($item->cover_media_file_id !== null) {
+            $url = app(ResolvePublicMediaUrlAction::class)->execute((int) $item->cover_media_file_id);
+            if ($url !== null) {
+                return $url;
+            }
+        }
+        $typed = trim((string) $item->cover_image);
+
+        return $typed !== '' && preg_match('#^(https?://|/)#', $typed) === 1 ? $typed : null;
     }
 }

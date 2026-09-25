@@ -82,6 +82,7 @@ class AdminLibraryController extends Controller
             $data + ['created_by' => (int) $request->user()->id],
             null,
             $request->file('pdf'),
+            $request->file('cover'),
         );
 
         return back()->with('success', 'Library item saved. '.$this->pagesNote($item, $request->hasFile('pdf')));
@@ -110,7 +111,7 @@ class AdminLibraryController extends Controller
         $model = LibraryItem::query()->findOrFail($item);
         $data = $this->validatedItem($request);
 
-        $model = app(SaveLibraryItemAction::class)->execute($data, $model, $request->file('pdf'));
+        $model = app(SaveLibraryItemAction::class)->execute($data, $model, $request->file('pdf'), $request->file('cover'));
 
         return back()->with('success', 'Library item updated. '.$this->pagesNote($model, $request->hasFile('pdf')));
     }
@@ -266,6 +267,7 @@ class AdminLibraryController extends Controller
             'authors.*.name' => 'required_with:authors|string|max:255',
             'authors.*.user_id' => 'nullable|integer',
             'pdf' => 'nullable|file|mimes:pdf|max:51200',
+            'cover' => 'nullable|file|mimes:jpeg,jpg,png,webp|max:5120',
         ]);
     }
 

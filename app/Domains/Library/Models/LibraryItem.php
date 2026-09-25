@@ -29,6 +29,7 @@ class LibraryItem extends Model
         'language',
         'library_category_id',
         'cover_image',
+        'cover_media_file_id',
         'body',
         'citations',
         'pdf_media_file_id',

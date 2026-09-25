@@ -45,6 +45,9 @@
     <div class="grid gap-6 md:grid-cols-2">
         @foreach($author['items'] as $item)
             <a href="{{ route('public.library.show', $item['slug']) }}" class="block rounded-lg border bg-white p-5 hover:shadow-md transition">
+                @if($item['cover_url'])
+                    <img src="{{ $item['cover_url'] }}" alt="" class="mb-3 aspect-[3/4] w-full rounded object-cover" data-cover="{{ $item['slug'] }}" loading="lazy">
+                @endif
                 <div class="flex items-center gap-2 text-xs text-gray-500 mb-2">
                     <span class="rounded bg-brandBeige-100 px-2 py-0.5">{{ __('public.'.$item['content_type']) }}</span>
                     @if($item['published_at'])

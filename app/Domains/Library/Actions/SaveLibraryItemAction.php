@@ -7,6 +7,7 @@ use App\Domains\Library\Enums\LibraryContentType;
 use App\Domains\Library\Models\LibraryItem;
 use App\Domains\Library\Models\LibraryTag;
 use App\Domains\Media\Actions\StorePrivateMediaAction;
+use App\Domains\Media\Actions\StorePublicMediaAction;
 use App\Support\Html\HtmlSanitizer;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Str;
@@ -23,7 +24,7 @@ class SaveLibraryItemAction
     /**
      * @param  array<string, mixed>  $data
      */
-    public function execute(array $data, ?LibraryItem $item = null, ?UploadedFile $pdf = null): LibraryItem
+    public function execute(array $data, ?LibraryItem $item = null, ?UploadedFile $pdf = null, ?UploadedFile $cover = null): LibraryItem
     {
         $title = trim((string) ($data['title'] ?? ''));
         if ($title === '') {
@@ -61,6 +62,20 @@ class SaveLibraryItemAction
             $pdfId = $stored['id'];
         }
 
+        // §36 cover: PUBLIC media, on purpose — it is shown on the shelf to
+        // everyone. The PDF above is private; the two must never swap.
+        $coverId = $item?->cover_media_file_id;
+        if ($cover !== null) {
+            $storedCover = app(StorePublicMediaAction::class)->execute(
+                $cover,
+                $data['created_by'] ?? $item?->created_by,
+                ['image/jpeg', 'image/png', 'image/webp'],
+                ['alt' => $title],
+                'library-covers',
+            );
+            $coverId = $storedCover['id'];
+        }
+
         $payload = [
             'title' => $title,
             'subtitle' => $data['subtitle'] ?? null,
@@ -71,7 +86,10 @@ class SaveLibraryItemAction
             'access_type' => $accessType,
             'language' => $data['language'] ?? 'en',
             'library_category_id' => $data['library_category_id'] ?? null,
-            'cover_image' => $data['cover_image'] ?? null,
+            // The typed URL is the office's fallback; a form that does not
+            // carry the field (the writer's) leaves it alone.
+            'cover_image' => array_key_exists('cover_image', $data) ? ($data['cover_image'] ?: null) : $item?->cover_image,
+            'cover_media_file_id' => $coverId,
             // Rendered raw at `public/library/show.blade.php`, and chunked by
             // `SyncLibraryItemPagesAction` into the pages the protected reader
             // serves — so sanitising here closes both surfaces at once.
