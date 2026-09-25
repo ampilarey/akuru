@@ -58,6 +58,7 @@ Everything below was audited against the code on 2026-09-25 (STATUS
 | C4 | **E19 sensitive-note readers**: `admin` is deliberately excluded; widening is a one-line migration, narrowing later is a disclosure. Decided "keep" 2026-09-25; revisit only if the office asks. | OWNER_ACTIONS item 12. |
 | C5 | **Deploy 3 cleanup proposal** (`docs/migrations/s11-deploy-3-cleanup-proposal.md`): the archived legacy student tables can be dropped after a stable period. | STATUS §5gh. |
 | C6 | **A queue worker on production** (OWNER_ACTIONS item 3): queued mail (gift card codes, enrolment notices) waits without one. | Every queued Mailable. |
+| C7 | **A Shop for printed books and educational materials** (owner's question, 2026-09-25). Not the Library: physical goods have stock, quantity and fulfilment, not access grants. Proposed as a small Shop in the Commerce domain — products (optionally linked to a library item for "also in print"), orders with collect-at-Institute or delivery, the same webhook-confirmed BML payable pattern, wallet and discount codes as payment, an office queue (stock, mark ready, mark collected) with CSV and in-app notices, Shop in the public header and My orders for buyers. Three slices: products and public shop; checkout and fulfilment; office queue and reports. First version leaves out rate-based shipping, returns and external stock sync. | Owner's question in conversation; ROADMAP domain map (Commerce is the shared commerce domain). |
 
 ## How to use this file
 
