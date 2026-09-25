@@ -124,7 +124,7 @@ function LiabilityPanel({ liability }) {
     );
 }
 
-export default function Admin({ gift_cards, discount_codes, liability }) {
+export default function Admin({ gift_cards, gift_card_orders = [], discount_codes, liability }) {
     return (
         <AppShell title="Commerce admin">
             <LiabilityPanel liability={liability} />
@@ -132,6 +132,46 @@ export default function Admin({ gift_cards, discount_codes, liability }) {
             <CreditForm />
             <DiscountForm />
 
+            {/* §7.7 gift card usage, §41 admin "gift card purchase": what people
+                bought at /gift-cards, whether the bank confirmed it, and where the
+                code went (masked — the code itself is never stored). */}
+            <div className="mb-2 flex items-center justify-between">
+                <h2 className="text-lg font-semibold">Gift card purchases</h2>
+                <a className="text-sm text-[#7C2D37] hover:underline" href="/admin/commerce/gift-card-orders/export" data-testid="gift-card-orders-export">Export CSV</a>
+            </div>
+            <div className="mb-6 overflow-x-auto rounded-lg border bg-white" data-testid="gift-card-orders">
+                <table className="min-w-full text-sm">
+                    <thead className="bg-[#F3EBE0] text-start">
+                        <tr>
+                            <th className="px-3 py-2">Order</th>
+                            <th className="px-3 py-2">Buyer</th>
+                            <th className="px-3 py-2">For</th>
+                            <th className="px-3 py-2">Amount</th>
+                            <th className="px-3 py-2">Status</th>
+                            <th className="px-3 py-2">Code sent</th>
+                            <th className="px-3 py-2">When</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {gift_card_orders.length === 0 && (
+                            <tr><td className="px-3 py-4 text-gray-500" colSpan={7}>No gift cards bought yet.</td></tr>
+                        )}
+                        {gift_card_orders.map((order) => (
+                            <tr key={order.id} className="border-t">
+                                <td className="px-3 py-2">#{order.id}</td>
+                                <td className="px-3 py-2">{order.buyer}{order.buyer_email ? <span className="block text-xs text-gray-500">{order.buyer_email}</span> : null}</td>
+                                <td className="px-3 py-2">{order.recipient_name}</td>
+                                <td className="px-3 py-2">{order.currency} {order.amount}</td>
+                                <td className="px-3 py-2">{order.status}{order.gift_card_id ? ` · card #${order.gift_card_id}` : ''}</td>
+                                <td className="px-3 py-2">{order.delivered_via ? `${order.delivered_via} → ${order.delivered_to}` : '—'}</td>
+                                <td className="px-3 py-2">{order.paid_at ?? order.created_at}</td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+
+            <h2 className="mb-2 text-lg font-semibold">Gift cards</h2>
             <div className="mb-6 overflow-x-auto rounded-lg border bg-white">
                 <table className="min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
@@ -141,12 +181,13 @@ export default function Admin({ gift_cards, discount_codes, liability }) {
                             <th className="px-3 py-2">Amount</th>
                             <th className="px-3 py-2">Balance</th>
                             <th className="px-3 py-2">Status</th>
+                            <th className="px-3 py-2">Source</th>
                             <th className="px-3 py-2">Expires</th>
                         </tr>
                     </thead>
                     <tbody>
                         {gift_cards.length === 0 && (
-                            <tr><td className="px-3 py-4 text-gray-500" colSpan={6}>No gift cards issued.</td></tr>
+                            <tr><td className="px-3 py-4 text-gray-500" colSpan={7}>No gift cards issued.</td></tr>
                         )}
                         {gift_cards.map((card) => (
                             <tr key={card.id} className="border-t">
@@ -155,6 +196,7 @@ export default function Admin({ gift_cards, discount_codes, liability }) {
                                 <td className="px-3 py-2">{card.currency} {card.original_amount}</td>
                                 <td className="px-3 py-2">{card.balance_amount}</td>
                                 <td className="px-3 py-2">{card.status}</td>
+                                <td className="px-3 py-2">{card.source}</td>
                                 <td className="px-3 py-2">{card.expires_at ?? '—'}</td>
                             </tr>
                         ))}

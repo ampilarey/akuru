@@ -714,6 +714,7 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
     Route::prefix('admin/commerce')->middleware(['role:super_admin|admin', 'can:commerce.manage'])->group(function () {
         Route::get('/', [AdminCommerceController::class, 'index'])->name('admin.commerce.index');
         Route::post('gift-cards', [AdminCommerceController::class, 'issueGiftCard'])->name('admin.commerce.gift-cards.store');
+        Route::get('gift-card-orders/export', [AdminCommerceController::class, 'exportGiftCardOrders'])->name('admin.commerce.gift-card-orders.export');
         Route::post('wallet-credits', [AdminCommerceController::class, 'creditWallet'])->name('admin.commerce.wallet-credits.store');
         Route::post('discount-codes', [AdminCommerceController::class, 'storeDiscount'])->name('admin.commerce.discount-codes.store');
     });

@@ -59,6 +59,8 @@ Not a simple PDF upload page — a publishing platform with connected modules: P
 - **7.8 Admin/Publisher:** manage all content, writers, applications, submissions, prices, commission, gift cards, discount codes, campaigns, featuring, categories, reports, purchases, manual access, refund rules, wallet credit, publishing settings.
 - **7.9 Super Admin:** everything.
 
+> **7.7 gift card usage built 2026-09-25 (STATUS §5gr):** purchases table and CSV on `/admin/commerce`; cards carry a purchased/office source. The rest of 7.7 (sales, payouts, earnings, reading alerts, liabilities) shipped with L3–L6.
+
 ## 8. Main Public Pages
 
 - **8.1 Library Home:** featured books/articles, latest research, free resources, paid books, popular, new releases, promotions, discounted, gift card promo, categories, authors, continue reading (logged in).

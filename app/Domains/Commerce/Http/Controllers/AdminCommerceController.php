@@ -4,15 +4,18 @@ namespace App\Domains\Commerce\Http\Controllers;
 
 use App\Domains\Commerce\Actions\CreditWalletAction;
 use App\Domains\Commerce\Actions\IssueGiftCardAction;
+use App\Domains\Commerce\Actions\ListGiftCardOrdersAction;
 use App\Domains\Commerce\Actions\ListGiftCardsAction;
 use App\Domains\Commerce\Actions\ResolveStoredValueLiabilityAction;
 use App\Domains\Commerce\Actions\SaveDiscountCodeAction;
 use App\Domains\Commerce\Models\DiscountCode;
 use App\Http\Controllers\Controller;
+use App\Support\Csv;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
  * L4 admin: issue gift cards (plain code flashed ONCE — §43.19), manual
@@ -31,6 +34,8 @@ class AdminCommerceController extends Controller
             // of wallet credit is an obligation to hand over goods later.
             'liability' => app(ResolveStoredValueLiabilityAction::class)->execute(),
             'gift_cards' => app(ListGiftCardsAction::class)->execute(),
+            // §7.7 / §41: the gift cards people bought, and where the code went.
+            'gift_card_orders' => app(ListGiftCardOrdersAction::class)->execute(),
             'discount_codes' => DiscountCode::query()->orderByDesc('id')->limit(200)->get()
                 ->map(fn (DiscountCode $code) => [
                     'id' => $code->id,
@@ -43,6 +48,25 @@ class AdminCommerceController extends Controller
                     'status' => $code->status,
                 ])->values()->all(),
         ]);
+    }
+
+    /** Every listing gets a CSV (conventions): the gift card purchases. */
+    public function exportGiftCardOrders(Request $request): StreamedResponse
+    {
+        abort_unless($request->user()?->can('commerce.manage'), 403);
+        $rows = app(ListGiftCardOrdersAction::class)->execute(5000);
+
+        return response()->streamDownload(function () use ($rows): void {
+            $out = fopen('php://output', 'w');
+            Csv::put($out, ['id', 'buyer', 'buyer_email', 'amount', 'currency', 'recipient', 'status', 'delivered_via', 'delivered_to', 'gift_card_id', 'paid_at', 'created_at']);
+            foreach ($rows as $row) {
+                Csv::put($out, [
+                    $row['id'], $row['buyer'], $row['buyer_email'], $row['amount'], $row['currency'], $row['recipient_name'],
+                    $row['status'], $row['delivered_via'], $row['delivered_to'], $row['gift_card_id'], $row['paid_at'], $row['created_at'],
+                ]);
+            }
+            fclose($out);
+        }, 'gift-card-purchases.csv', ['Content-Type' => 'text/csv']);
     }
 
     public function issueGiftCard(Request $request): RedirectResponse
