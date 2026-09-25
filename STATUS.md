@@ -4414,6 +4414,39 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5gt. The Akuru Online Bookshop plan, and its audit (2026-09-25)
+
+Owner's brief: a shop for printed books and educational materials under
+the name *Akuru Online Bookshop*, the Knowledge Library renamed *Akuru
+Digital Library*, ordinary e-commerce with delivery, a few invited
+vendors whose items all appear in the one shop, and a page per vendor the
+vendor can brand. `docs/BOOKSHOP_PLAN.md` (v2, #474/#475) holds the
+plan — shape, addresses, roles, customer and vendor features, storefront
+customisation as structured data inside the Akuru frame, money rules,
+tables, architecture, slices B0–B9, thirteen owner decisions — and
+`docs/vendors/FITRAH.md` the first vendor's kit (name, palette, logo,
+proposed theme; nothing personal beyond a contact).
+
+The owner then asked for the plan to be audited once more (v2.1, this
+PR). Twenty-two findings, each fixed inline and recorded in the plan's
+§14: bank transfer with slip upload moves from "later" to B2 because that
+is how small shops here are paid; stock is reserved at checkout with an
+expiry on the existing scheduler instead of relying on "needs attention";
+a tax class per product replaces one GST flag and the tax line appears
+only for registered vendors; Akuru invoices its commission; boat fees to
+the atolls are paid to the carrier, so shown and not charged; refunds go
+through the existing `RefundPaymentAction` with the office doing card
+refunds; images through `ImageProcessorInterface`, not raw `gd`; queued
+mail needs the production worker, so invitations also show a copyable
+link; Dhivehi fonts are not on Google Fonts and need self-hosting after a
+licence check; the designer starts form-based with an iframe preview and
+gets drag-to-order as polish; B1 splits into B1a (vendors and portal)
+and B1b (public shop); vendor scoping is pinned by an architecture test;
+customer data retention, a seeded Vendor Agreement, OTP sign-in at
+checkout, order-number format, MVR-only, holiday mode, order minimums, a
+mobile bottom bar. Three decisions added (14–16). Nothing built; the next
+word is the owner's. Docs only.
+
 ## 5gs. A backlog file for parked items and ideas (2026-09-25)
 
 Owner's instruction after the Library series: *"Keep all new ideas and
