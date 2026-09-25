@@ -228,6 +228,13 @@ return [
     'Try again' => 'حاول مرة أخرى',
     'Bank confirmation can take a moment. Refresh this page shortly — the code is sent as soon as the bank confirms.' => 'قد يستغرق تأكيد البنك لحظات. حدّث هذه الصفحة بعد قليل — يُرسل الرمز فور تأكيد البنك.',
 
+    // Item page completeness (§8.8, 2026-09-25) — first pass pending native review (operator item)
+    'Contents' => 'المحتويات',
+    'Field' => 'المجال',
+    'Affiliation' => 'الانتماء',
+    'All rights reserved. Published by Akuru Institute.' => 'جميع الحقوق محفوظة. نشر معهد أكورو.',
+    'The author declares that AI tools were used in preparing this work.' => 'يقرّ المؤلف باستخدام أدوات الذكاء الاصطناعي في إعداد هذا العمل.',
+
     // Library PDF pages (L2, 2026-09-25) — first pass pending native review (operator item)
     'This page has no text — it may be a picture or a blank page.' => 'هذه الصفحة بلا نص — قد تكون صورة أو صفحة فارغة.',
 ];

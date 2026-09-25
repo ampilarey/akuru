@@ -4,6 +4,7 @@ namespace App\Domains\Library\Actions;
 
 use App\Domains\Library\Models\WriterEarning;
 use App\Domains\Library\Models\WriterPayout;
+use App\Domains\Library\Models\WriterProfile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -37,6 +38,17 @@ class DecideWriterPayoutAction
                 WriterEarning::query()
                     ->where('writer_payout_id', $payout->id)
                     ->update(['writer_payout_id' => null]);
+            }
+
+            // §41: payout processed, either way, with the office's note.
+            $writerUserId = WriterProfile::query()->whereKey($payout->writer_id)->value('user_id');
+            if ($writerUserId) {
+                app(NotifyLibraryUserAction::class)->execute(
+                    (int) $writerUserId,
+                    $paid ? 'Payout paid' : 'Payout not paid',
+                    'MVR '.number_format((float) $payout->amount, 2).($paid ? ' has been paid out.' : ' was not paid out; the earnings are available again.').($note !== null && trim($note) !== '' ? ' '.trim($note) : ''),
+                    '/write',
+                );
             }
 
             return $payout->refresh();

@@ -55,6 +55,14 @@ class RecordWriterEarningForPurchaseAction
             default => round($paid * $writerPercent / 100, 2),
         };
 
+        // §41: the writer hears about the sale, in their share.
+        app(NotifyLibraryUserAction::class)->execute(
+            (int) $writer->user_id,
+            'New sale',
+            '"'.$item->title.'" sold for MVR '.number_format($paid, 2).'. Your share: MVR '.number_format($writerAmount, 2).'.',
+            '/write',
+        );
+
         return WriterEarning::query()->create([
             'writer_id' => $writer->id,
             'library_item_id' => $item->id,

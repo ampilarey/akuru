@@ -43,6 +43,19 @@ class SaveWriterItemAction
             }
         }
 
+        // §11.3 co-authors: the writer is always the first author; the names
+        // they add follow, their own never doubled. Only when the form carries
+        // the key, so a form without it leaves the author list alone.
+        if (array_key_exists('co_authors', $data)) {
+            $self = (string) $profile->display_name;
+            $names = array_values(array_filter(
+                array_map(fn ($n) => trim((string) $n), is_array($data['co_authors']) ? $data['co_authors'] : []),
+                fn ($n) => $n !== '' && $n !== $self,
+            ));
+            $data['authors'] = array_merge($self !== '' ? [$self] : [], $names);
+            unset($data['co_authors']);
+        }
+
         return app(SaveLibraryItemAction::class)->execute(
             $data + ['created_by' => $userId, 'writer_id' => $profile->id],
             $item,

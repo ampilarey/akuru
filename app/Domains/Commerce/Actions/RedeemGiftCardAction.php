@@ -4,6 +4,7 @@ namespace App\Domains\Commerce\Actions;
 
 use App\Domains\Commerce\Models\GiftCard;
 use App\Domains\Commerce\Models\GiftCardTransaction;
+use App\Domains\Notifications\Actions\SendUserNotificationAction;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -67,6 +68,16 @@ class RedeemGiftCardAction
                 $card->id,
                 'Gift card redemption',
             );
+
+            // LIBRARY_PLAN §41 reader: gift card redeemed, wallet credited.
+            try {
+                app(SendUserNotificationAction::class)->execute($userId, 'Gift card redeemed', 'MVR '.number_format($balance, 2).' was added to your wallet.', [
+                    'category' => 'library',
+                    'href' => '/my-wallet',
+                ]);
+            } catch (\Throwable) {
+                // The money moved; the note about it is not worth a rollback.
+            }
 
             return ['gift_card' => $card->refresh(), 'credited' => $balance];
         });

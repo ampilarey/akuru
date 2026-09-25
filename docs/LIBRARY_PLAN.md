@@ -95,6 +95,8 @@ Never expose a PDF URL directly. Original files in private storage; reading happ
 - **11.3 Upload Book:** title, subtitle, language, category, description, TOC, author, co-authors, cover, manuscript file, suggested price, free/paid suggestion, preview page suggestion, keywords, copyright declaration, AI-use declaration (optional), submit for review.
 - **11.4 Upload Article:** title, summary, main content, cover, category, language, tags, suggested price/free, references (optional), submit.
 - **11.5 Upload Research:** title, abstract, keywords, author details, co-authors, affiliation, field, manuscript, references, originality declaration, conflict-of-interest declaration, ethics declaration (if needed), suggested reviewer (optional), submit for editorial review.
+
+> **11.3 and 11.5 built 2026-09-25 (STATUS §5go):** every field above is on the writer's editor and saved; the copyright declaration (and for research originality + conflict of interest) gates submission. Not built from 11.1: photo, previous publications, ID document, bank details at application time (bank details come later, L6).
 - **11.6 Writer promotion requests** (NOT MVP): writer-funded discount requests with admin approval; earnings follow the funding rule.
 
 ## 12. Editorial Workflow
@@ -287,6 +289,8 @@ Full DOI, journal issue/volume system, complex peer review, subscriptions, offli
 - **Reader:** purchase success, access granted, gift card received/redeemed, wallet credited, discount used, new content published, continue-reading reminder (optional).
 - **Writer:** application decision, submission received, changes requested, approved, published, new sale, discount applied to content, payout processed.
 - **Admin:** new writer application, new submission, payment issue, gift card purchase, large wallet adjustment, suspicious activity, copyright complaint.
+
+> **Built 2026-09-25 (STATUS §5go), in-app:** writer — application decision, submission received, changes requested, rejected, published, new sale, payout decided; reader — purchase ready, gift card redeemed; admin — new writer application, new submission. Not built: new content published to readers, continue-reading reminder, discount used, payment issue, large wallet adjustment, suspicious activity (reading alerts have their own admin screen), copyright complaint. Email/SMS channels for these: not built (in-app only).
 
 ## 42. Admin Settings
 

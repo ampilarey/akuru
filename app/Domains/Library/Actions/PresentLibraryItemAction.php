@@ -20,7 +20,7 @@ class PresentLibraryItemAction
     public function execute(string $slug, ?int $userId = null, bool $publishedOnly = true): ?array
     {
         $item = LibraryItem::query()
-            ->with(['category', 'tags', 'authors'])
+            ->with(['category', 'tags', 'authors', 'writer'])
             ->where('slug', $slug)
             ->when($publishedOnly, fn ($query) => $query->where('status', 'published'))
             ->first();
@@ -41,10 +41,24 @@ class PresentLibraryItemAction
                 ->value('current_page');
         }
 
+        $declarations = is_array($item->declarations) ? $item->declarations : [];
+        $authorNames = $item->authors->pluck('name')->all();
+        if ($authorNames === [] && $item->writer?->display_name) {
+            $authorNames = [$item->writer->display_name];
+        }
+
         return app(ListLibraryItemsAction::class)->serialize($item) + $gate + [
             'body' => $canRead ? $item->body : null,
             // L7: citations are part of the scholarly record — always public.
             'citations' => $item->citations,
+            // §8.8: the table of contents (books), the research's affiliation
+            // and field, the copyright notice, and the AI-use declaration
+            // where the author made one.
+            'toc' => $item->toc,
+            'affiliation' => $item->affiliation,
+            'research_field' => $item->research_field,
+            'ai_use_declared' => ! empty($declarations['ai_use']),
+            'copyright_notice' => '© '.($item->published_at?->format('Y') ?? now()->format('Y')).' '.($authorNames !== [] ? implode(', ', $authorNames) : config('app.name')),
             'price' => $item->price !== null ? (string) $item->price : null,
             'currency' => $item->currency,
             'total_pages' => $totalPages,

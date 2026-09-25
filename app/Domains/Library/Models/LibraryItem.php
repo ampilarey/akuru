@@ -31,7 +31,13 @@ class LibraryItem extends Model
         'cover_image',
         'cover_media_file_id',
         'body',
+        'toc',
         'citations',
+        'affiliation',
+        'research_field',
+        'suggested_reviewer',
+        'declarations',
+        'declared_at',
         'pdf_media_file_id',
         'status',
         'published_at',
@@ -56,6 +62,8 @@ class LibraryItem extends Model
             'submitted_at' => 'datetime',
             'preview_enabled' => 'boolean',
             'price' => 'decimal:2',
+            'declarations' => 'array',
+            'declared_at' => 'datetime',
         ];
     }
 

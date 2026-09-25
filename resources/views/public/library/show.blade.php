@@ -48,6 +48,27 @@
             <p class="text-lg text-gray-700 mb-6">{{ $item['abstract'] }}</p>
         @endif
 
+        @if(!empty($item['toc']))
+            {{-- §8.8: the table of contents, one line per entry as the writer typed it. --}}
+            <details class="mb-6 rounded border bg-gray-50 p-4" open data-testid="toc">
+                <summary class="cursor-pointer text-sm font-semibold text-gray-800">{{ __('public.Contents') }}</summary>
+                <ol class="mt-2 list-decimal ps-5 text-sm text-gray-700">
+                    @foreach(preg_split('/\r?\n/', $item['toc']) as $line)
+                        @if(trim($line) !== '')
+                            <li>{{ trim($line) }}</li>
+                        @endif
+                    @endforeach
+                </ol>
+            </details>
+        @endif
+
+        @if(!empty($item['affiliation']) || !empty($item['research_field']))
+            <p class="mb-6 text-sm text-gray-600">
+                @if(!empty($item['research_field']))<span>{{ __('public.Field') }}: {{ $item['research_field'] }}</span>@endif
+                @if(!empty($item['affiliation']))<span class="{{ !empty($item['research_field']) ? 'ms-3' : '' }}">{{ __('public.Affiliation') }}: {{ $item['affiliation'] }}</span>@endif
+            </p>
+        @endif
+
         @if(!empty($item['citations']))
             <div class="mb-6 rounded border bg-gray-50 p-4">
                 <h2 class="mb-2 text-sm font-semibold text-gray-800">{{ __('public.Citations') }}</h2>
@@ -103,6 +124,14 @@
                 @endforeach
             </div>
         @endif
+
+        {{-- §8.8 copyright notice; §11.3 the AI-use declaration, when made. --}}
+        <footer class="mt-8 border-t pt-4 text-xs text-gray-500" data-testid="copyright">
+            <p>{{ $item['copyright_notice'] }}. {{ __('public.All rights reserved. Published by Akuru Institute.') }}</p>
+            @if($item['ai_use_declared'] ?? false)
+                <p class="mt-1">{{ __('public.The author declares that AI tools were used in preparing this work.') }}</p>
+            @endif
+        </footer>
     </article>
 </div>
 @endsection

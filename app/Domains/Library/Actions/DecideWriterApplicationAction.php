@@ -55,6 +55,16 @@ class DecideWriterApplicationAction
                 $userModel::query()->findOrFail($application->user_id)->assignRole('writer');
             }
 
+            // §41: the applicant hears the decision, and the reason if given.
+            app(NotifyLibraryUserAction::class)->execute(
+                (int) $application->user_id,
+                $approve ? 'You are now an Akuru writer' : 'Writer application not accepted',
+                $approve
+                    ? 'Your application was approved. Open the writer portal to start a draft.'
+                    : ($note !== null && trim($note) !== '' ? trim($note) : 'Your application was not accepted this time.'),
+                '/write',
+            );
+
             return $application->refresh();
         });
     }

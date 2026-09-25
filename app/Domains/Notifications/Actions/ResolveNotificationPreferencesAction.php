@@ -28,6 +28,9 @@ class ResolveNotificationPreferencesAction
         'registers' => 'Register reminders',
         'hr' => 'Staff and HR',
         'finance' => 'Invoices and payments',
+        // LIBRARY_PLAN §41 (2026-09-25): writers' decisions and sales,
+        // readers' purchases and gift cards.
+        'library' => 'Library, writing and wallet',
     ];
 
     /**

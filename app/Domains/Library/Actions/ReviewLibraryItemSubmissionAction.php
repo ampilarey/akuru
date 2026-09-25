@@ -60,6 +60,17 @@ class ReviewLibraryItemSubmissionAction
             'comment' => $comment,
         ]);
 
+        // §41: the writer hears the decision, with the reason. "Published"
+        // is sent by the one publisher, so an approval is not told twice.
+        if ($decision !== 'approved' && $item->writer?->user_id) {
+            app(NotifyLibraryUserAction::class)->execute(
+                (int) $item->writer->user_id,
+                $decision === 'rejected' ? 'Submission not accepted' : 'Changes requested',
+                '"'.$item->title.'": '.($comment !== null && trim($comment) !== '' ? trim($comment) : ($decision === 'rejected' ? 'the editor did not accept it.' : 'the editor asked for changes.')),
+                '/write',
+            );
+        }
+
         return $item;
     }
 }

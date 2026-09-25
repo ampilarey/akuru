@@ -34,6 +34,7 @@ it('walks the research peer-review loop: assign → revise → accept → publis
             'content_type' => 'research',
             'access_type' => 'free_login',
             'body' => 'Findings',
+            'declarations' => ['copyright' => 1, 'originality' => 1, 'conflict_of_interest' => 1],
             'citations' => 'Al-Jazari, Kitab al-Tajwid.',
         ])->assertSessionHasNoErrors();
     $item = LibraryItem::query()->firstOrFail();
@@ -99,6 +100,7 @@ it('publishes non-research without any reviewer and can bypass via config', func
             'title' => 'Simple Article',
             'content_type' => 'article',
             'body' => 'Text',
+            'declarations' => ['copyright' => 1],
         ]);
     $article = LibraryItem::query()->firstOrFail();
     $this->withoutLocalizationMiddleware()->actingAs($writerUser)
@@ -115,6 +117,7 @@ it('publishes non-research without any reviewer and can bypass via config', func
             'title' => 'Fast Research',
             'content_type' => 'research',
             'body' => 'Quick findings',
+            'declarations' => ['copyright' => 1, 'originality' => 1, 'conflict_of_interest' => 1],
         ]);
     $research = LibraryItem::query()->where('title', 'Fast Research')->firstOrFail();
     $this->withoutLocalizationMiddleware()->actingAs($writerUser)

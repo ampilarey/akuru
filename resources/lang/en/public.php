@@ -385,6 +385,12 @@ return [
     'Remove bookmark' => 'Remove bookmark',
     'This item has no reader pages yet.' => 'This item has no reader pages yet.',
     'This page has no text — it may be a picture or a blank page.' => 'This page has no text — it may be a picture or a blank page.',
+    // Item page completeness (§8.8, 2026-09-25)
+    'Contents' => 'Contents',
+    'Field' => 'Field',
+    'Affiliation' => 'Affiliation',
+    'All rights reserved. Published by Akuru Institute.' => 'All rights reserved. Published by Akuru Institute.',
+    'The author declares that AI tools were used in preparing this work.' => 'The author declares that AI tools were used in preparing this work.',
     'My Library' => 'My Library',
     'Continue' => 'Continue',
     'Completed' => 'Completed',

@@ -2,6 +2,7 @@
 
 namespace App\Domains\Library\Actions;
 
+use App\Domains\Library\Enums\LibraryContentType;
 use App\Domains\Library\Enums\LibraryItemStatus;
 use App\Domains\Library\Models\LibraryItem;
 use App\Domains\Library\Models\LibraryItemReview;
@@ -31,6 +32,23 @@ class SubmitLibraryItemForReviewAction
             throw ValidationException::withMessages(['item' => 'Only drafts and change-requested items can be submitted.']);
         }
 
+        // §11.3 / §11.5: no submission without the declarations. The
+        // copyright declaration for everything; research adds originality
+        // and conflict of interest. The form saves them with the draft, so
+        // this is the writer being asked once, not a hurdle at the end.
+        $declared = is_array($item->declarations) ? $item->declarations : [];
+        $required = ['copyright'];
+        if ($item->content_type === LibraryContentType::Research) {
+            $required[] = 'originality';
+            $required[] = 'conflict_of_interest';
+        }
+        $missing = array_values(array_filter($required, fn (string $name) => empty($declared[$name])));
+        if ($missing !== []) {
+            throw ValidationException::withMessages([
+                'declarations' => 'Before submitting, confirm the '.implode(', ', array_map(fn ($n) => str_replace('_', ' ', $n), $missing)).' declaration'.(count($missing) === 1 ? '' : 's').' on the draft.',
+            ]);
+        }
+
         $item->status = LibraryItemStatus::Submitted;
         $item->submitted_at = now();
         $item->save();
@@ -41,6 +59,11 @@ class SubmitLibraryItemForReviewAction
             'decision' => 'submitted',
             'comment' => null,
         ]);
+
+        // §41: the writer hears it arrived; the office hears there is work.
+        $notify = app(NotifyLibraryUserAction::class);
+        $notify->execute($userId, 'Submission received', '"'.$item->title.'" is in the editorial queue. You will hear when it is reviewed.', '/write');
+        $notify->office('New library submission', $profile->display_name.' submitted "'.$item->title.'" for review.', '/admin/library');
 
         return $item->refresh();
     }
