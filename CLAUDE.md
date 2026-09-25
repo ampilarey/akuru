@@ -12,7 +12,7 @@ This file governs every AI-assisted coding session in this repo. It encodes the 
 | `docs/EDUPAGE_FEATURES_PLAN.md` | EduPage parity track (E1–E22). **Verify every row against the code before starting a slice** — it has been wrong 16 times across two audits, always recording as missing work that already shipped. Its own correction section says how to audit it. |
 | `docs/KNOWN_ISSUES.md` | open defects by severity, and what is operator-blocked rather than unbuilt |
 | `docs/BACKLOG.md` | parked items and ideas kept for later, with why — update it in the PR that parks or builds one |
-| `docs/BOOKSHOP_PLAN.md` | Akuru Online Bookshop (multi-vendor physical goods) plan: slices B0–B6 and the owner's decisions |
+| `docs/BOOKSHOP_PLAN.md` | Akuru Online Bookshop (multi-vendor physical goods) plan: slices B0–B9, the owner's decisions (all made 2026-09-25) and the audit |
 | `docs/PHASE_0_CHECKLIST.md`, `docs/S1_SPEC.md`, `docs/S2_SPEC.md`, `docs/S3_SPEC.md`, `docs/W1_SPEC.md` | per-phase build specs |
 | `STATUS.md` | what is done, in progress, next — UPDATE AFTER EVERY SLICE |
 | `docs/adr/` | architecture decision records |

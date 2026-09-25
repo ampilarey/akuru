@@ -308,19 +308,22 @@ scope definition (`VendorScope`).
 | 1 | Path now, subdomain later | as §2 | **confirmed 2026-09-25** |
 | 2 | One catalogue for all vendors | as §1 | **confirmed 2026-09-25** |
 | 3 | Vendors customise their storefront inside the Akuru frame | as §6 | **confirmed 2026-09-25** |
-| 4 | Tax: rates per class, prices inclusive, TIN on receipts, which vendors are registered | inclusive prices; standard / zero-rated / exempt classes at the current rates; a tax line only for GST-registered vendors; Akuru invoices its commission (audit) | open |
-| 5 | Default commission on goods; commission on delivery fees? | 10–15% on goods; none on delivery | open |
-| 6 | Delivery zones and fees vendors start from; Akuru's office as a collection point? | Malé–Hulhumalé–Villimalé flat; atolls by courier at the vendor's fee or by boat with the fee paid to the carrier on arrival; yes to Akuru collection | open |
-| 7 | Payment methods at launch | **card, wallet and bank transfer with slip upload in B2** (audit: bank transfer is how most small shops here are paid); cash on delivery in B9 unless the owner wants it at launch | open — recommendation changed |
-| 8 | Return window and returns policy | 7 days, unused, buyer pays return delivery unless faulty | open |
+| 4 | Tax: rates per class, prices inclusive, TIN on receipts, which vendors are registered | inclusive prices; standard / zero-rated / exempt classes at the current rates; a tax line only for GST-registered vendors; Akuru invoices its commission (audit) | **decided 2026-09-25: as recommended.** The rates live in the office settings, not in code, so a change in law is a settings edit. |
+| 5 | Default commission on goods; commission on delivery fees? | 10–15% on goods; none on delivery | **decided 2026-09-25: as recommended** — the default is set at **10%** (the low end of the range, for a first vendor), overridable per vendor by the office; no commission on delivery fees. |
+| 6 | Delivery zones and fees vendors start from; Akuru's office as a collection point? | Malé–Hulhumalé–Villimalé flat; atolls by courier at the vendor's fee or by boat with the fee paid to the carrier on arrival; yes to Akuru collection | **decided 2026-09-25: as recommended.** |
+| 7 | Payment methods at launch | **card, wallet and bank transfer with slip upload in B2** (audit: bank transfer is how most small shops here are paid); cash on delivery in B9 unless the owner wants it at launch | **decided 2026-09-25: as recommended** — card, wallet and bank transfer in B2; cash on delivery in B9. |
+| 8 | Return window and returns policy | 7 days, unused, buyer pays return delivery unless faulty | **decided 2026-09-25: as recommended** (the office default; a vendor may offer longer, never shorter). |
 | 9 | Vendors in v1 | invitation only | **decided 2026-09-25: the first vendor is the owner's wife's educational-items shop, an independent business selling inside the bookshop; **Fitrah** (owner Fathimath Inaaya, `/shop/fitrah`) — identity, palette, logo and proposed theme in `docs/vendors/FITRAH.md`; contact, delivery, returns and first products still to come. Bank details and ID documents are entered by her in the vendor portal, never sent through the conversation or committed.** |
-| 10 | Storefront fonts and presets the office allows; may vendors use Akuru's own maroon palette? | the §6.2 list; yes to presets, Akuru's palette marked "Akuru partner" | open |
-| 11 | Does a vendor page show "at Akuru Online Bookshop" under their name? | yes, always | open |
-| 12 | Should reviews be on from B7, or off until vendors ask? | on, moderated | open |
-| 13 | Order of slices: checkout (B2–B3) before the designer (B4–B5), or designer first? | checkout first: money before polish | open |
-| 14 | *(audit)* Dhivehi fonts: may MV Waheed be self-hosted (licence), or Faruma and Noto Sans Thaana only? | Faruma + Noto Sans Thaana unless the owner holds an MV Waheed licence | open |
-| 15 | *(audit)* Customer data retention: how long may a vendor see a customer's phone and address after an order closes? | the return window, then masked in the vendor's view and exports | open |
-| 16 | *(audit)* Vendor Agreement text (commission, payout timing, returns responsibility, moderation): the office drafts it, or the owner supplies one? | seeded first draft by B2, like the library policy pages; the owner edits in the page editor | open |
+| 10 | Storefront fonts and presets the office allows; may vendors use Akuru's own maroon palette? | the §6.2 list; yes to presets, Akuru's palette marked "Akuru partner" | **decided 2026-09-25: as recommended** (with decision 14's Dhivehi list). |
+| 11 | Does a vendor page show "at Akuru Online Bookshop" under their name? | yes, always | **decided 2026-09-25: yes, always.** |
+| 12 | Should reviews be on from B7, or off until vendors ask? | on, moderated | **decided 2026-09-25: on from B7, moderated.** |
+| 13 | Order of slices: checkout (B2–B3) before the designer (B4–B5), or designer first? | checkout first: money before polish | **decided 2026-09-25: checkout first** — the order in §11 stands. |
+| 14 | *(audit)* Dhivehi fonts: may MV Waheed be self-hosted (licence), or Faruma and Noto Sans Thaana only? | Faruma + Noto Sans Thaana unless the owner holds an MV Waheed licence | **decided 2026-09-25: Faruma and Noto Sans Thaana**; MV Waheed joins only if a licence turns up. |
+| 15 | *(audit)* Customer data retention: how long may a vendor see a customer's phone and address after an order closes? | the return window, then masked in the vendor's view and exports | **decided 2026-09-25: as recommended.** |
+| 16 | *(audit)* Vendor Agreement text (commission, payout timing, returns responsibility, moderation): the office drafts it, or the owner supplies one? | seeded first draft by B2, like the library policy pages; the owner edits in the page editor | **decided 2026-09-25: as recommended** — first draft seeded in B2, flagged "draft" until the owner reads it (BACKLOG A6's pattern). |
+
+All sixteen decisions are made. The owner said *"Go with the
+recommendations and build B0"* on 2026-09-25.
 
 ---
 
@@ -364,6 +367,6 @@ Commerce/Finance/Media/Notifications reuse list (every named class in §12
 exists), `VerifiedGuardianLink` as the precedent for a single scope
 definition, and the Fitrah kit.
 
-Nothing is built. The next step is still the owner's: the open decisions
-in §13 (4–8, 10–16), the remaining Fitrah details in
-`docs/vendors/FITRAH.md`, and the word "build B0" or "build B1a".
+The owner then decided every open row as recommended and asked for B0
+(2026-09-25). Still to come from the vendor before B1a's production
+setup: the remaining Fitrah details in `docs/vendors/FITRAH.md`.
