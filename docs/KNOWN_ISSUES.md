@@ -157,6 +157,21 @@ at save time. **Production, once after deploying:**
 `php artisan library:sync-pages` rebuilds pages for every item that has a
 PDF and no pages.
 
+### A library buyer got an "Enrollment confirmed" email — **fixed (2026-09-25)**
+
+**Severity:** confusion, and a wrong message to the office. Since L3 every
+confirmed payment raised the enrolment notice: the payer received
+*Enrollment confirmed* with an empty course table and an SMS, and the office
+received *new enrolment* mail and SMS for a book. Found by the gift card
+purchase slice, which would have sent the same. **Fix (STATUS §5gn):**
+`RaisePaymentNoticeReady` raises the notice only for payments that carry a
+course; library items and gift cards have their own listeners.
+
+### Nothing linked a signed-in reader to the Library — **fixed (2026-09-25)**
+
+`/my-library` and `/my-wallet` were addresses to type. The shell's *Mine*
+group and the public site's account menu now carry them (STATUS §5gn).
+
 ### PDF text extraction has known limits — open, by design of the hosts
 
 - A two-column page reads across the columns, not down them.

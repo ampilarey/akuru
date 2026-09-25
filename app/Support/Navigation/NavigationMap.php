@@ -225,6 +225,13 @@ final class NavigationMap
                 ['key' => 'messages', 'href' => '/portal/messages', 'roles' => $everyone],
                 ['key' => 'notices', 'href' => '/portal/announcements', 'roles' => $everyone],
                 ['key' => 'forms', 'href' => '/portal/forms', 'roles' => $everyone],
+                // The Knowledge Library (L-track): the shelf, what I have and
+                // can continue, and the wallet that pays for it. Until
+                // 2026-09-25 none of the three had a link anywhere a signed-in
+                // person could see; they were reachable by typing the address.
+                ['key' => 'library', 'href' => '/library', 'roles' => $everyone],
+                ['key' => 'my_library', 'href' => '/my-library', 'roles' => $everyone],
+                ['key' => 'my_wallet', 'href' => '/my-wallet', 'roles' => $everyone],
                 // One screen for a family's requests and a staff member's leave; the
                 // controller admits whoever may submit or review.
                 ['key' => 'requests', 'href' => '/academics/requests', 'roles' => $everyone, 'can' => ['requests.submit', 'requests.review']],

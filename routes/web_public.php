@@ -58,6 +58,10 @@ Route::get('library/authors/{slug}', [PublicLibraryController::class, 'author'])
 Route::get('my-library', [LibraryReaderController::class, 'myLibrary'])->name('public.library.my');
 Route::get('my-wallet', [WalletController::class, 'show'])->name('public.wallet');
 Route::post('my-wallet/redeem', [WalletController::class, 'redeem'])->name('public.wallet.redeem')->middleware('throttle:10,1');
+// L4 §15.3: buy a gift card. BML only; no discount, no wallet (§15.4).
+Route::get('gift-cards', [\App\Domains\Commerce\Http\Controllers\GiftCardPurchaseController::class, 'index'])->name('public.gift-cards.index');
+Route::post('gift-cards', [\App\Domains\Commerce\Http\Controllers\GiftCardPurchaseController::class, 'purchase'])->name('public.gift-cards.purchase')->middleware('throttle:10,1');
+Route::get('gift-cards/return', [\App\Domains\Commerce\Http\Controllers\GiftCardPurchaseController::class, 'paymentReturn'])->name('public.gift-cards.return');
 Route::get('library/{slug}/read', [LibraryReaderController::class, 'read'])->name('public.library.read');
 Route::post('library/{slug}/checkout', [LibraryCheckoutController::class, 'checkout'])->name('public.library.checkout')->middleware('throttle:10,1');
 Route::get('library/{slug}/payment-return', [LibraryCheckoutController::class, 'paymentReturn'])->name('public.library.payment-return');

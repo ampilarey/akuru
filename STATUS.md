@@ -690,6 +690,11 @@ migration; no Hifz behaviour change outside it.
   `PdfPageTextExtractor` (pure PHP), the body still wins when both exist,
   a scan yields no pages and says so at save time, and
   `library:sync-pages` backfills the items uploaded before.
+- **Findable, and gift cards for sale (2026-09-25, §15.3):** the shell's
+  *Mine* group and the public site's account menu link Library, My library
+  and My wallet; `/gift-cards` sells a gift card by BML only (no discount,
+  no wallet — §15.4), issued on the webhook and delivered to the recipient
+  by email and/or SMS, never stored — see §5gn.
 - **Cover upload (2026-09-25, §36):** the cover was a URL only the office
   could type. Now both forms upload a file to public media
   (`cover_media_file_id`), and the shelf, item page, author page and the
@@ -4395,6 +4400,84 @@ walk returned a header row and nothing else for circulation, student work and
 pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
+
+## 5gn. Readers can find the Library, and anyone can buy a gift card (2026-09-25)
+
+Third and fourth findings of the Library audit, one slice because they are
+the two halves of "a reader can get to the shop and pay in it".
+
+**Nothing a signed-in person could see linked to the Library.** The public
+site's header has *Library*, but the account menu offered My Portal, My
+Enrollments and My Payments, and the app shell's *Mine* group had every
+family screen and no shelf. `/my-library` (continue reading, bookmarks,
+purchases) and `/my-wallet` (balance, gift-card redemption) were addresses
+to type. Now the *Mine* group carries Library, My library and My wallet for
+everyone (`NavigationMap`; labels in three languages), and the public
+site's account menu, desktop and mobile, carries My Library and My Wallet.
+`BuildNavigationAction` already hides what a person cannot open, so nothing
+new decides access.
+
+**LIBRARY_PLAN §15.3's purchase flow did not exist.** "Select amount →
+recipient details → message → BML → webhook → generate code → deliver":
+every gift card so far was issued by the office on `/admin/commerce`, and
+`DiscountsNeverBuyGiftCardsTest` said in its own docblock that §15.4 held
+only because there was no purchase to discount. Now `/gift-cards` is a
+public page — a gift is often a visitor's first purchase — with the presets
+(MVR 100 / 250 / 500 / 1,000) and any whole amount between the configured
+min and max (`config/library.php` `gift_cards`), recipient name, email
+and/or mobile, a message, and one button: *Pay with card*. Buying needs a
+sign-in (the payment row belongs to someone; a guest is told so).
+`StartGiftCardPurchaseAction` writes a `gift_card_orders` row (new table,
+morph alias `gift_card_order`; no `academic_year_id`, like every other
+commerce table — the money is not a term's) and hands the amount to
+Finance's `InitiatePayablePaymentAction`. **It takes no discount code and
+no wallet payment, by construction** — a gift card is money, and §15.4 is
+written as an attack — and the arch test still lists only the two course
+and library checkouts as discount callers.
+
+`IssueGiftCardOnPaymentConfirmed` (Commerce, on `PaymentConfirmed`) is the
+only path from the buyer's money to a card (§43.5): inside a row lock it
+moves the order pending → paid once, issues through the same
+`IssueGiftCardAction` the office uses (purchaser, recipient, message
+recorded on the card), and delivers the plain code — by email
+(`GiftCardCodeMail`, queued) to the recipient's address, by SMS through
+`SmsSenderInterface` to their mobile, or both — then records *where* it
+went, masked (`h***@example.test`, `********777`), and when. The code is
+never written down (§43.19); the order, the wallet page and the return
+page show status and destination only. A second webhook issues nothing.
+The return page shows only the buyer's own latest order, never one named
+by the query string, and is display-only. The wallet page lists *Gift
+cards you bought* and links to the shop, My Library and the Library.
+
+**Found while building it, fixed here:** every confirmed payment raised
+the *enrolment* notice — `EnrollmentConfirmedMail` to the payer with an
+empty course table, `AdminNewEnrollmentMail` to the office, and both SMS —
+including a library purchase, since L3. `RaisePaymentNoticeReady` now
+raises it only for payments that carry a course (an enrolment payable or
+itemised courses); library items and gift cards have their own listeners.
+Recorded in KNOWN_ISSUES.
+
+**Tests:** `GiftCardPurchaseTest` (six: the visitor's page and the 403;
+BML redirect → pending order and payment on the right payable → return
+page says confirming → webhook issues the card once with the code in the
+recipient's email and nowhere on the order → the recipient redeems it into
+wallet money → the buyer's pages show the destination and not the code;
+SMS delivery with masking; amount and recipient validation; a gateway that
+will not start marks the order failed and says so; the three links in the
+shell and on the public site). `PaymentConfirmationNoticesTest` and the
+library checkout tests still pass under the notice guard. Baselines:
+three public routes declared with their guards; three Blade files
+(two screens in the public zone, one email template) — count 224.
+**Walked:** `scripts/smoke/gift.mjs`, **11/11** — the account menu's My
+Library opens; the shell's More menu offers the three; the wallet offers
+to buy; the page shows presets and the rules and no discount box; a preset
+fills the amount; paying leaves the site for the bank, or (this host has
+no gateway keys) says plainly that it could not start; the wallet lists
+the order by recipient with its status and no code.
+
+Not built from §15.2: optional expiry on purchased cards (the office's
+issue form has none either), and admin deactivation/fraud logs beyond
+what L4 already has.
 
 ## 5gm. Books have covers (2026-09-25)
 
