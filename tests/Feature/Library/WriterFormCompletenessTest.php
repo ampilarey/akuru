@@ -81,7 +81,8 @@ it('saves everything §11.3 asks for, and shows the contents and copyright notic
         ->and($item->authors->pluck('name')->all())->toBe(['Aishath Writer', 'Ahmed Co'])
         ->and($item->preview_enabled)->toBeTrue()
         ->and((int) $item->preview_pages)->toBe(1)
-        ->and($item->declarations)->toBe(['copyright' => true, 'ai_use' => true])
+        // Key order is the database's (MySQL 8 sorts JSON object keys; MariaDB keeps them).
+        ->and($item->declarations)->toEqualCanonicalizing(['copyright' => true, 'ai_use' => true])
         ->and($item->declared_at)->not->toBeNull();
 
     // The portal hands the same back for editing.
