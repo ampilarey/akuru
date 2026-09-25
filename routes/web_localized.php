@@ -753,6 +753,7 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::put('items/{item}', [\App\Domains\Library\Http\Controllers\WriterPortalController::class, 'updateItem'])->name('write.items.update')->whereNumber('item');
         Route::post('items/{item}/submit', [\App\Domains\Library\Http\Controllers\WriterPortalController::class, 'submit'])->name('write.items.submit')->whereNumber('item');
         Route::post('bank-details', [\App\Domains\Library\Http\Controllers\WriterPortalController::class, 'saveBankDetails'])->name('write.bank-details');
+        Route::post('profile', [\App\Domains\Library\Http\Controllers\WriterPortalController::class, 'saveProfile'])->name('write.profile');
         Route::post('payout-request', [\App\Domains\Library\Http\Controllers\WriterPortalController::class, 'requestPayout'])->name('write.payout-request');
     });
 

@@ -97,6 +97,7 @@ return [
     'write/items/{item}' => 'WriterPortalController@updateItem — READ: SaveWriterItemAction enforces own-items-only and editable states.',
     'write/items/{item}/submit' => 'WriterPortalController@submit — own-items-only in the Action.',
     'write/bank-details' => 'WriterPortalController@saveBankDetails — your own payout details.',
+    'write/profile' => 'WriterPortalController@saveProfile — your own author page; SaveWriterPublicProfileAction refuses a caller without an active writer profile.',
     'write/payout-request' => 'WriterPortalController@requestPayout — your own balance; gated by library.payouts_enabled.',
     'review/{assignment}' => 'ReviewerPortalController@store — READ: SubmitResearchReviewAction refuses an assignment not assigned to you.',
 ];

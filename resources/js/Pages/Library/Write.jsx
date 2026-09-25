@@ -92,6 +92,47 @@ function ItemEditor({ item, options, onDone, t }) {
     );
 }
 
+/**
+ * L8: what readers see on the author's public page. The address is fixed
+ * at approval and kept across renames, so it is shown, not edited.
+ */
+function AuthorPageForm({ profile, onDone, t }) {
+    const form = useForm({
+        display_name: profile.display_name || '',
+        bio: profile.bio || '',
+        qualifications: profile.qualifications || '',
+        expertise: profile.expertise || '',
+        photo: null,
+    });
+
+    return (
+        <form
+            onSubmit={(e) => {
+                e.preventDefault();
+                form.post('/write/profile', { preserveScroll: true, forceFormData: true, onSuccess: onDone });
+            }}
+            className="mb-4 grid gap-2 rounded-lg border bg-white p-4 md:grid-cols-2"
+            data-testid="author-page-form"
+        >
+            <h3 className="text-base font-semibold md:col-span-2">{t.library_author_page_title || 'Your author page'}</h3>
+            <input className="form-input" placeholder="Display name (as shown to readers)" value={form.data.display_name} onChange={(e) => form.setData('display_name', e.target.value)} />
+            <input className="form-input" placeholder="Expertise (e.g. Tafsir, Arabic grammar)" value={form.data.expertise} onChange={(e) => form.setData('expertise', e.target.value)} />
+            <textarea className="form-input md:col-span-2" rows="3" placeholder="Bio" value={form.data.bio} onChange={(e) => form.setData('bio', e.target.value)} />
+            <textarea className="form-input md:col-span-2" rows="2" placeholder="Qualifications" value={form.data.qualifications} onChange={(e) => form.setData('qualifications', e.target.value)} />
+            <label className="text-sm md:col-span-2">
+                {t.library_author_photo || 'Portrait (JPEG, PNG or WebP, up to 4 MB) — shown publicly on your author page'}
+                <input className="form-input" type="file" accept="image/jpeg,image/png,image/webp" onChange={(e) => form.setData('photo', e.target.files[0] ?? null)} />
+            </label>
+            <div className="flex flex-wrap items-center gap-2 md:col-span-2">
+                <button type="submit" className="btn-primary" disabled={form.processing}>{t.library_author_save || 'Save author page'}</button>
+                {onDone && <button type="button" className="btn-secondary" onClick={onDone}>{t.library_close || 'Close'}</button>}
+                {profile.slug && <a className="text-sm underline" href={`/library/authors/${profile.slug}`} target="_blank" rel="noreferrer">{t.library_author_view || 'View my author page'}</a>}
+            </div>
+            {Object.values(form.errors).map((error) => <p key={error} className="text-sm text-red-600 md:col-span-2">{error}</p>)}
+        </form>
+    );
+}
+
 function EarningsCard({ earnings, itemSales = [], t = {} }) {
     const bank = useForm({ bank_name: '', account_name: '', account_number: '' });
     if (!earnings) return null;
@@ -165,6 +206,7 @@ export default function Write({ dashboard, options, earnings = null, item_sales 
     const { flash = {}, i18n } = usePage().props;
     const t = i18n?.common || {};
     const [editing, setEditing] = useState(null);
+    const [editingProfile, setEditingProfile] = useState(false);
     const { profile, application, items, sales } = dashboard;
 
     return (
@@ -190,14 +232,31 @@ export default function Write({ dashboard, options, earnings = null, item_sales 
             {profile && (
                 <>
                     <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-                        <div>
-                            <h2 className="text-lg font-semibold">{profile.display_name}</h2>
-                            <p className="text-sm text-gray-500">Approved writer since {profile.approved_at} · {sales.total_sales || 0} sales · MVR {sales.total_revenue || 0}</p>
+                        <div className="flex items-center gap-3">
+                            {profile.photo_url ? (
+                                <img src={profile.photo_url} alt="" className="h-12 w-12 rounded-full object-cover" data-testid="author-portrait" />
+                            ) : (
+                                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#F3EBE0] font-semibold text-[#7C2D37]" aria-hidden="true">{(profile.display_name || '?').slice(0, 1).toUpperCase()}</div>
+                            )}
+                            <div>
+                                <h2 className="text-lg font-semibold">{profile.display_name}</h2>
+                                <p className="text-sm text-gray-500">
+                                    Approved writer since {profile.approved_at} · {sales.total_sales || 0} sales · MVR {sales.total_revenue || 0}
+                                    {profile.slug && <> · <a className="underline" href={`/library/authors/${profile.slug}`}>{t.library_author_view || 'View my author page'}</a></>}
+                                </p>
+                            </div>
                         </div>
-                        <button type="button" className="btn-primary" onClick={() => setEditing(editing === 'new' ? null : 'new')}>
-                            {editing === 'new' ? t.library_close_editor || 'Close editor' : t.library_new_draft || 'New draft'}
-                        </button>
+                        <div className="flex gap-2">
+                            <button type="button" className="btn-secondary" onClick={() => setEditingProfile(!editingProfile)}>
+                                {editingProfile ? t.library_close || 'Close' : t.library_author_edit || 'Edit author page'}
+                            </button>
+                            <button type="button" className="btn-primary" onClick={() => setEditing(editing === 'new' ? null : 'new')}>
+                                {editing === 'new' ? t.library_close_editor || 'Close editor' : t.library_new_draft || 'New draft'}
+                            </button>
+                        </div>
                     </div>
+
+                    {editingProfile && <AuthorPageForm profile={profile} onDone={() => setEditingProfile(false)} t={t} />}
 
                     <EarningsCard earnings={earnings} itemSales={item_sales} t={t} />
 

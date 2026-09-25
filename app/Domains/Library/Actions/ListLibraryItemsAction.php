@@ -18,8 +18,11 @@ class ListLibraryItemsAction
     public function execute(array $filters = [], bool $publishedOnly = true): array
     {
         return LibraryItem::query()
-            ->with(['category', 'tags', 'authors'])
+            ->with(['category', 'tags', 'authors', 'writer'])
             ->when($publishedOnly, fn ($query) => $query->where('status', 'published'))
+            // L8: everything by one author, by their page's address.
+            ->when($filters['author'] ?? null, fn ($query, $slug) => $query
+                ->whereHas('writer', fn ($sub) => $sub->where('slug', $slug)->where('status', 'active')))
             ->when($filters['content_type'] ?? null, fn ($query, $type) => $query->where('content_type', $type))
             ->when($filters['category'] ?? null, fn ($query, $slug) => $query
                 ->whereHas('category', fn ($sub) => $sub->where('slug', $slug)))
@@ -69,6 +72,12 @@ class ListLibraryItemsAction
             ] : null,
             'tags' => $item->tags->map(fn ($tag) => ['name' => $tag->name, 'slug' => $tag->slug])->values()->all(),
             'authors' => $item->authors->map(fn ($author) => $author->name)->values()->all(),
+            // L8: the writer's public page, when the item has a writer
+            // account behind it (office-uploaded items may not).
+            'writer' => $item->writer && $item->writer->status === 'active' && $item->writer->slug ? [
+                'display_name' => $item->writer->display_name,
+                'slug' => $item->writer->slug,
+            ] : null,
             'has_pdf' => $item->pdf_media_file_id !== null,
         ];
     }

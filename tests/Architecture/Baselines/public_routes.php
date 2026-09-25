@@ -93,6 +93,7 @@ return [
     'GET gallery/{gallery}' => 'Public site content. No per-person data; nothing here reads the session.',
     'GET instructors/{slug}' => 'A named person\'s public profile — deliberately about someone, published for that purpose. Not session data.',
     'GET library' => 'Public site content. No per-person data; nothing here reads the session.',
+    'GET library/authors/{slug}' => 'A named writer\'s public author page — deliberately about someone, published for that purpose (LIBRARY_PLAN §8.7). Only active writers and only their published items.',
     'GET library/export' => 'Public site content. No per-person data; nothing here reads the session.',
     'GET news' => 'Public site content. No per-person data; nothing here reads the session.',
     'GET news/{post}' => 'Public site content. No per-person data; nothing here reads the session.',

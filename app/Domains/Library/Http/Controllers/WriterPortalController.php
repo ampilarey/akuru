@@ -9,6 +9,7 @@ use App\Domains\Library\Actions\ListWriterItemSalesAction;
 use App\Domains\Library\Actions\RequestWriterPayoutAction;
 use App\Domains\Library\Actions\SaveWriterBankDetailsAction;
 use App\Domains\Library\Actions\SaveWriterItemAction;
+use App\Domains\Library\Actions\SaveWriterPublicProfileAction;
 use App\Domains\Library\Actions\SubmitLibraryItemForReviewAction;
 use App\Domains\Library\Enums\LibraryContentType;
 use App\Http\Controllers\Controller;
@@ -55,6 +56,22 @@ class WriterPortalController extends Controller
         app(RequestWriterPayoutAction::class)->execute((int) $request->user()->id);
 
         return back()->with('success', 'Payout requested — the admin will process it.');
+    }
+
+    /** L8: the author page's name, bio and portrait. */
+    public function saveProfile(Request $request): RedirectResponse
+    {
+        $data = $request->validate([
+            'display_name' => 'required|string|max:255',
+            'bio' => 'nullable|string|max:5000',
+            'qualifications' => 'nullable|string|max:5000',
+            'expertise' => 'nullable|string|max:255',
+            'photo' => 'nullable|image|mimes:jpeg,png,webp|max:4096',
+        ]);
+
+        app(SaveWriterPublicProfileAction::class)->execute((int) $request->user()->id, $data, $request->file('photo'));
+
+        return back()->with('success', 'Author page updated.');
     }
 
     public function apply(Request $request): RedirectResponse

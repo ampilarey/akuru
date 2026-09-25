@@ -650,6 +650,40 @@ migration; no Hifz behaviour change outside it.
   research page. Alias library_review_assignment same commit.
   Post-L7 backlog per §38 (recorded): DOI, journal issues/volumes,
   subscriptions, bundles, audiobooks. **L-track L1–L7 complete.**
+- **L8 author page (2026-09-25, §8.7):** a writer's work was findable
+  only by scrolling the shelf, and the name on an item was plain text.
+  Now every approved writer has a public address,
+  `/library/authors/{slug}` (`PresentWriterPublicProfileAction`: active
+  writers only, published items only; drafts and submissions never leave
+  `/write`), the item page and the shelf link the writer's name to it
+  (`rel="author"`), and `/library?author=` filters the shelf to one
+  writer. `writer_profiles` gains `slug` (set once from the display name
+  at approval, kept across renames so saved links survive, backfilled for
+  existing writers) and `photo_media_file_id` (**public** media,
+  deliberately — a portrait is published, unlike the PDF original). The
+  writer edits name, bio, qualifications, expertise and portrait from an
+  *Edit author page* panel on `/write` (`SaveWriterPublicProfileAction`,
+  own profile only). New Media action `ResolvePublicMediaUrlAction`: one
+  public id → URL, refusing private files, so Library never touches
+  Media's model. An office-uploaded item with a named guest author but no
+  writer account keeps its plain-text name: there is no page to send
+  anyone to. Not built from §8.7: *featured* and *social links*.
+  `AuthorPageTest` (address made from the name and unique; only published,
+  only theirs; 404 for nobody and for a suspended writer; links and the
+  filter; rename keeps the address; a PDF is not a portrait; a reader
+  cannot edit a profile). `library.mjs` grows five steps: the writer saves
+  a bio and portrait, the portal shows it, the item's byline is a link,
+  the author page shows bio, portrait (the browser confirms it decoded)
+  and the work, and a stranger opens it signed out — **19/19**. Found by
+  that walk, twice, because it asks the browser whether the image decoded
+  rather than whether the tag exists: a fresh checkout has no
+  `public/storage` link (403), and its `.env` `APP_URL` is
+  `http://localhost`, where nothing listens, so the portrait's URL points
+  off the dev server. Both are local-checkout facts: every host runs
+  `storage:link` in its deploy and has its real domain in `APP_URL`. Local
+  fix is `php artisan storage:link` and `APP_URL=http://127.0.0.1:8000`.
+  DV/AR strings are the English first pass, like every other library
+  string (operator item).
 
 ## 5h. Spec Phase 4 — course payments on the engine (adopting L4 Commerce)
 
@@ -4351,6 +4385,16 @@ walk returned a header row and nothing else for circulation, student work and
 pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
+
+## 5gj. Every author has a page (2026-09-25)
+
+Owner ask, answering "does an author's work show on their own page or all
+in one place?": it was all in one place, and the name on an item was plain
+text. Built as **L8** — the full record is in the L-track section, §5g,
+beside L1–L7. In short: `/library/authors/{slug}` for every approved
+writer, linked from every item they wrote; bio, qualifications, expertise
+and a portrait, edited by the writer on `/write`; an author filter on the
+shelf. `AuthorPageTest`; `library.mjs` 19/19 with five new steps.
 
 ## 5gi. The QR on certificates and ID cards is a real QR code (2026-09-25)
 

@@ -5,6 +5,7 @@ namespace App\Domains\Library\Http\Controllers;
 use App\Domains\Library\Actions\ListLibraryCategoriesAction;
 use App\Domains\Library\Actions\ListLibraryItemsAction;
 use App\Domains\Library\Actions\PresentLibraryItemAction;
+use App\Domains\Library\Actions\PresentWriterPublicProfileAction;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
 use Illuminate\Http\Request;
@@ -19,7 +20,7 @@ class PublicLibraryController extends Controller
 {
     public function index(Request $request)
     {
-        $filters = $request->only(['q', 'content_type', 'category', 'tag']);
+        $filters = $request->only(['q', 'content_type', 'category', 'tag', 'author']);
 
         return view('public.library.index', [
             'items' => app(ListLibraryItemsAction::class)->execute($filters),
@@ -31,7 +32,7 @@ class PublicLibraryController extends Controller
     public function export(Request $request): StreamedResponse
     {
         $rows = app(ListLibraryItemsAction::class)->execute(
-            $request->only(['q', 'content_type', 'category', 'tag'])
+            $request->only(['q', 'content_type', 'category', 'tag', 'author'])
         );
 
         return response()->streamDownload(function () use ($rows): void {
@@ -63,5 +64,16 @@ class PublicLibraryController extends Controller
         }
 
         return view('public.library.show', ['item' => $item]);
+    }
+
+    /** L8 (§8.7): an author and everything of theirs that is published. */
+    public function author(string $slug)
+    {
+        $author = app(PresentWriterPublicProfileAction::class)->execute($slug);
+        if ($author === null) {
+            abort(404);
+        }
+
+        return view('public.library.author', ['author' => $author]);
     }
 }

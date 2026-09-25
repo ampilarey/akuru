@@ -13,7 +13,7 @@
 // expected direction, and the test asks you to update the count below when you
 // do.
 //
-// Count: 220 (the one addition is a document template, not a screen — see the
+// Count: 221 (the one addition is a document template, not a screen — see the
 // documents block).
 
 return [
@@ -214,7 +214,7 @@ return [
     'profile/partials/update-password-form.blade.php',
     'profile/partials/update-profile-information-form.blade.php',
 
-    // public — 49
+    // public — 50
     'public/about/index.blade.php',
     'public/achievements/index.blade.php',
     'public/admissions/apply.blade.php',
@@ -252,6 +252,10 @@ return [
     'public/instructors/show.blade.php',
     'public/lang-test.blade.php',
     'public/layouts/public.blade.php',
+    // L8 author page — the public library is a Blade zone (recorded W2.5
+    // deviation, consistent within the zone); an Inertia page here would be
+    // the odd one out beside index/show/reader.
+    'public/library/author.blade.php',
     'public/library/index.blade.php',
     'public/library/my.blade.php',
     'public/library/payment-return.blade.php',

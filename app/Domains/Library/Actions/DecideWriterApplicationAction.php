@@ -39,6 +39,8 @@ class DecideWriterApplicationAction
                     ['user_id' => $application->user_id],
                     [
                         'display_name' => $application->display_name,
+                        // L8: the author page's address, from the name.
+                        'slug' => SaveWriterPublicProfileAction::slugFor($application->display_name),
                         'bio' => $application->bio,
                         'qualifications' => $application->qualifications,
                         'expertise' => $application->expertise,
