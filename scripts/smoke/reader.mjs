@@ -15,10 +15,13 @@
  *      download path;
  *   4. they bookmark a page and leave; My Library offers to continue from
  *      where they stopped and lists the bookmark; the last page marks it
- *      completed.
+ *      completed;
+ *   5. a second book, `SMOKE-Primer-PDF`, has no body — its pages were made
+ *      from the PDF the office uploaded — and reads the same way, page by
+ *      page, watermarked, with its Arabic and Dhivehi in reading order.
  *
- * `SmokeMarkerSeeder::readerCycle()` re-plants `SMOKE-Primer` and clears the
- * reader's progress and bookmarks. The gift card and its credit are money and
+ * `SmokeMarkerSeeder::readerCycle()` re-plants `SMOKE-Primer` and
+ * `SMOKE-Primer-PDF` and clears the reader's progress and bookmarks. The gift card and its credit are money and
  * stay (rule 12): each run issues a fresh card.
  *
  *   php artisan db:seed --class=SmokeMarkerSeeder
@@ -36,6 +39,10 @@ const PASSWORD = process.env.SMOKE_PASSWORD ?? 'password';
 
 const SLUG = 'smoke-primer';
 const TITLE = 'SMOKE-Primer';
+const PDF_SLUG = 'smoke-primer-pdf';
+const PDF_TITLE = 'SMOKE-Primer-PDF';
+const UPLOAD_TITLE = 'SMOKE-Primer-Upload';
+const PDF_FILE = new URL('../../database/seeders/fixtures/smoke-primer.pdf', import.meta.url).pathname;
 const AMOUNT = '25.00';
 
 const HERMETIC_ARGS = [
@@ -230,5 +237,33 @@ check('My Library lists the bookmark', /SMOKE-Primer — Page 2/.test(mine), min
 await reader.goto(`${BASE}/en/library/${SLUG}/read?page=3`, { waitUntil: 'networkidle' });
 await reader.goto(`${BASE}/en/my-library`, { waitUntil: 'networkidle' });
 check('the last page marks it completed', (await text(reader)).includes('100% · Completed'), (await text(reader)).match(new RegExp(`${TITLE} Page 3[^R]*`))?.[0] ?? (await text(reader)).slice(0, 160));
+
+// ----------------------------------------------------------- a PDF original
+
+// 5. `SMOKE-Primer-PDF` has no body: its pages come from the PDF the seeder
+//    uploaded (a browser-printed file with English, Arabic and Dhivehi). The
+//    same reader, the same watermark, still no download.
+await reader.goto(`${BASE}/en/library/${PDF_SLUG}`, { waitUntil: 'networkidle' });
+check('a PDF-only book offers to read online', (await text(reader)).includes(PDF_TITLE) && (await text(reader)).includes('Read online') && (await text(reader)).includes('3 pages'), (await text(reader)).match(/\d+ pages/)?.[0] ?? (await text(reader)).slice(0, 160));
+await reader.goto(`${BASE}/en/library/${PDF_SLUG}/read`, { waitUntil: 'networkidle' });
+const pdfOne = await text(reader);
+check('page one of the PDF is its text, alone, watermarked', pdfOne.includes('Chapter One') && pdfOne.includes('The quick brown fox jumps over the lazy dog.') && !pdfOne.includes('Chapter Two') && pdfOne.includes(`• ${STUDENT} •`) && /Page 1 \/ 3/.test(pdfOne), pdfOne.match(/Page 1 \/ 3/)?.[0] ?? pdfOne.slice(0, 160));
+check('there is no download on the PDF reader either', (await reader.locator('a[href*="download"], a[download], a[href$=".pdf"], embed, iframe, object').count()) === 0);
+await reader.locator('a', { hasText: 'Next' }).first().click();
+await reader.waitForLoadState('networkidle');
+const pdfTwo = await text(reader);
+check('page two carries the Arabic and Dhivehi in reading order', pdfTwo.includes('Chapter Two begins here on page two.') && pdfTwo.includes('بسم الله الرحمن الرحيم') && pdfTwo.includes('ދިވެހި ބަސް') && !pdfTwo.includes('Chapter One'), pdfTwo.match(/Dhivehi:[^\s]*\s[^\s]*\s[^\s]*/)?.[0] ?? pdfTwo.slice(0, 160));
+const rtlParagraphs = await reader.locator('.prose p[dir="auto"]').count();
+check('PDF paragraphs are direction-aware', rtlParagraphs >= 3, `${rtlParagraphs} paragraphs with dir=auto`);
+
+// 6. the office uploads a PDF through the form and is told what readers get.
+await admin.goto(`${BASE}/en/admin/library`, { waitUntil: 'networkidle' });
+const itemForm = admin.locator('form', { has: admin.locator('input[type=file][accept="application/pdf"]') }).first();
+await itemForm.locator('input[placeholder="Title"]').fill(UPLOAD_TITLE);
+await itemForm.locator('select').first().selectOption('book');
+await itemForm.locator('input[type=file]').setInputFiles(PDF_FILE);
+await itemForm.locator('button:has-text("Save item")').click();
+const told = await settles(admin, 'reader pages ready');
+check('the office uploads a PDF and is told 3 reader pages are ready', told && (await text(admin)).includes('3 reader pages ready'), (await text(admin)).match(/Library item saved[^.]*\.[^.]*\./)?.[0] ?? (await text(admin)).slice(0, 160));
 
 await finish();

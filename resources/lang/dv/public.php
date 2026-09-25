@@ -201,4 +201,7 @@ return [
     'Showing works by one author.' => 'Showing works by one author.',
     'Author page' => 'Author page',
     'Show everyone' => 'Show everyone',
+
+    // Library PDF pages (L2, 2026-09-25) — first pass pending native review (operator item)
+    'This page has no text — it may be a picture or a blank page.' => 'މި ސަފުހާގައި ލިޔުމެއް ނެތް — މިއީ ތަސްވީރެއް ނުވަތަ ހުސް ސަފުހާއެއް ކަމަށް ވެދާނެ.',
 ];

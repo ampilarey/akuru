@@ -140,6 +140,39 @@ a question with a default, so "do nothing" is always a legible choice.
 
 ---
 
+## Found by the Library completion audit (2026-09-25)
+
+### A PDF uploaded to the Library could not be read — **fixed (2026-09-25)**
+
+**Severity:** a book the office uploaded as a PDF, with no HTML body, was
+listed with *Read online* and opened to "This item has no reader pages
+yet" — for a paid item, after payment. The original was stored privately
+(correct) and never read; pages came only from the body's page-break
+markers.
+
+**Fix (STATUS §5gl):** pages are extracted from the PDF on save by a
+pure-PHP reader (`App\Support\Pdf`) behind `PdfPageTextExtractor`; the
+body wins when both exist; a scan yields no pages and the uploader is told
+at save time. **Production, once after deploying:**
+`php artisan library:sync-pages` rebuilds pages for every item that has a
+PDF and no pages.
+
+### PDF text extraction has known limits — open, by design of the hosts
+
+- A two-column page reads across the columns, not down them.
+- Producers that write right-to-left text glyph-reversed (some office
+  suites) come out reversed within words. Browser-printed PDFs (the
+  tested case) read correctly in English, Arabic and Dhivehi. **Spot-read
+  page one of a Dhivehi or Arabic PDF before publishing it**; if it reads
+  wrongly, paste the text into the body, which always wins.
+- A scanned book is pictures: no text, no pages, and the save says so.
+  OCR is not available on these hosts.
+- Page *images* (§36's other option) are not produced: no Imagick,
+  poppler, ghostscript or mutool on the hosts.
+
+`--all` on `library:sync-pages` rebuilds every item after the extractor
+improves.
+
 ## Found by owner decision 13 (2026-09-25)
 
 ### A stranger could link themselves to a real pupil from the public form — **fixed (2026-09-25)**

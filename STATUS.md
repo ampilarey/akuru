@@ -684,6 +684,12 @@ migration; no Hifz behaviour change outside it.
   fix is `php artisan storage:link` and `APP_URL=http://127.0.0.1:8000`.
   DV/AR strings are the English first pass, like every other library
   string (operator item).
+- **L2 PDF originals become pages (2026-09-25, §36):** an uploaded PDF
+  was stored privately and never read again, so a PDF-only book had no
+  reader pages — see §5gl. Now its pages come from the file through
+  `PdfPageTextExtractor` (pure PHP), the body still wins when both exist,
+  a scan yields no pages and says so at save time, and
+  `library:sync-pages` backfills the items uploaded before.
 
 ## 5h. Spec Phase 4 — course payments on the engine (adopting L4 Commerce)
 
@@ -4385,6 +4391,89 @@ walk returned a header row and nothing else for circulation, student work and
 pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
+
+## 5gl. A PDF book can be read (2026-09-25)
+
+The Library audit that followed L8 (the user's "complete writers and
+library") started at the reader, and the first thing it found was the
+worst: **a PDF uploaded to the Library was unreadable.** `SaveLibraryItemAction`
+stored the original in private media — correctly, §43.6 — and nothing ever
+read it again. Reader pages came only from the HTML body split on
+`<!-- pagebreak -->`. A book uploaded as a PDF with no body was listed on the
+shelf with *Read online* and a page count of nothing, and the reader said
+"This item has no reader pages yet" to a person who might have paid for it.
+The action's own comment said PDF-to-page conversion "needs server tooling
+and is recorded as a later infrastructure step". The tooling never came:
+the hosts have PHP with `gd` and `zlib`, no Imagick, no poppler, no
+ghostscript, no mutool, and Composer cannot fetch GitHub-hosted packages
+from the build container.
+
+**So the PDF reader is written in PHP, in `app/Support/Pdf`,** behind a
+Library-owned contract (`PdfPageTextExtractor`, rule 4) bound in
+`LibraryServiceProvider`. It does not follow the cross-reference table —
+wrong in a meaningful share of real files — but scans for every object,
+opens object streams, takes the latest definition of each number, and
+walks the page tree from the catalog it finds through the trailer, the
+cross-reference stream, or by type. It undoes Flate (with predictors), LZW,
+ASCIIHex, ASCII85 and RunLength; runs the text operators of ISO 32000 §9
+over the graphics state, into form XObjects, past inline images; decodes
+simple fonts through ToUnicode, the base encodings and `/Differences`
+(accented glyph names composed from their parts), and composite fonts
+through their CMap's codespace and ToUnicode; keeps every run's position;
+and then gathers runs into lines by baseline, orders a line right-to-left
+when it is mostly Arabic or Thaana (with a vowel sign drawn as a run of its
+own put back on its consonant), spaces runs by the gaps between them,
+groups lines into paragraphs by vertical gap and size change, and
+normalises presentation forms to letters (NFKC). Plain text per page; the
+Library action escapes it into `<p dir="auto">` paragraphs, so a Dhivehi
+page lays out right-to-left inside the English shell and a PDF that
+contains markup shows it rather than running it.
+
+**Read against real producers**, not only hand-made files: a browser's
+print-to-PDF (Type0, Identity-H, ToUnicode, one `Tj` per glyph in visual
+order — English, Arabic and Dhivehi all come out in reading order), a
+ReportLab file (simple WinAnsi fonts, ten pages) and a PDF 1.6 file whose
+objects live in object streams behind a cross-reference stream. Each in
+under 50 ms. The 300-page book was not to hand; the parser is linear in
+the file and lazy per object, and a save that fails to read its PDF logs
+and yields no pages rather than failing the save.
+
+**Behaviour:** `SyncLibraryItemPagesAction` takes the body when there is
+one (a person edited it) and the PDF otherwise. `page_count` is what the
+reader will serve. A textless page (a figure, a scan's page) stays in its
+place and says so; a PDF with no text on any page yields no pages, and the
+office or writer is told at save time — *"The PDF has no readable text (a
+scan or pictures) … add the text as the body"* — instead of a reader
+finding out. Both upload forms say what a PDF becomes.
+`php artisan library:sync-pages` rebuilds pages for items that have a PDF
+and no pages (`--all` for every item; run it after the extractor
+improves), which is what production needs once for the books uploaded
+before today. `PrivateMediaReadersAreScopedTest` gains the action as its
+eighth pinned caller: it resolves the media id from the item record and
+the bytes never leave the process.
+
+**Not done, and said here rather than found later:** a two-column page
+reads across, not down; producers that write right-to-left runs
+glyph-reversed (some office suites) will come out reversed within words —
+the browser-printed case is right, and the HTML body remains the path for
+a book that reads wrongly; a scanned book is pictures and has no text (OCR
+is not in reach on these hosts); page images (§36's other option) are not
+produced. Recorded in KNOWN_ISSUES.
+
+**Tests:** `PdfTextExtractorTest` (nine: the two real producers, simple
+fonts with Differences and TJ kerning in a nested page tree with
+inherited resources, form XObjects under Flate, textless pages, a wrong
+`/Length` with an inline image, garbage in, the filters, the glyph list)
+and `PdfReaderTest` (eight: pages from an upload served one at a time
+with the watermark and no file path, the preview clamp on PDF pages,
+escaping, the no-text message, the textless page kept in place, body
+wins, the backfill command, the writer's own save message).
+**Walked:** `reader.mjs` grows six steps to **25/25** — `SMOKE-Primer-PDF`
+(the seeder uploads the browser-printed fixture, no body) offers to read
+online with three pages, page one is its text alone and watermarked, no
+download or embed on the page, page two carries the Arabic and Dhivehi in
+reading order in direction-aware paragraphs, and the office uploads the
+same PDF through the admin form and is told "3 reader pages ready".
 
 ## 5gk. A parent reaches a child only through a link the office has checked (2026-09-25)
 
