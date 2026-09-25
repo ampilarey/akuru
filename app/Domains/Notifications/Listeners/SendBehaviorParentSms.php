@@ -64,6 +64,8 @@ class SendBehaviorParentSms
         return DB::table('guardian_student')
             ->join('parent_guardians', 'parent_guardians.id', '=', 'guardian_student.guardian_id')
             ->where('guardian_student.student_id', $studentId)
+            // Item 13: an SMS about a child goes to verified guardians only.
+            ->where('guardian_student.verification_status', 'verified')
             ->whereNotNull('parent_guardians.phone')
             ->pluck('parent_guardians.phone')
             ->map(fn ($phone) => trim((string) $phone))

@@ -3,6 +3,7 @@
 namespace App\Domains\People\Actions;
 
 use App\Domains\People\Enums\GuardianRelationship;
+use App\Domains\People\Enums\GuardianVerificationStatus;
 use App\Domains\People\Models\ParentGuardian;
 use App\Domains\People\Models\Student;
 use InvalidArgumentException;
@@ -12,9 +13,15 @@ class AttachGuardianAction
     /**
      * @param  array<string, mixed>  $policy  SPEC §9's consent status,
      *                                        verification status and notes.
-     *                                        Optional: a link created without
-     *                                        them is "not asked, not checked",
-     *                                        which is the honest starting state.
+     *                                        Consent left out is "not asked".
+     *                                        Verification left out is
+     *                                        **verified**: since item 13
+     *                                        (2026-09-25) the status gates
+     *                                        the family's access, and every
+     *                                        caller of this Action is the
+     *                                        office or a seeder — the one
+     *                                        that is not, self-registration,
+     *                                        passes `unverified` explicitly.
      */
     public function execute(
         Student $student,
@@ -46,9 +53,8 @@ class AttachGuardianAction
             'created_by' => $actorId,
         ]);
 
-        if ($policy !== []) {
-            app(RecordGuardianLinkPolicyAction::class)->execute($student, $guardian, $policy, $actorId);
-        }
+        $policy += ['verification_status' => GuardianVerificationStatus::Verified->value];
+        app(RecordGuardianLinkPolicyAction::class)->execute($student, $guardian, $policy, $actorId);
 
         // The mirror into the legacy `student_guardians` table stopped in
         // Deploy 3 slice 2; `guardian_student` is the only guardian link.

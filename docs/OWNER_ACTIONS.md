@@ -202,7 +202,14 @@ scan. A lost card is replaced from the same screen and the old one stops
 working at once. A fixed RFID reader can still be added later: the movement
 record already carries its source.
 
-### 12. E19 — who may read a sensitive note
+### 12. E19 — who may read a sensitive note — **decided 2026-09-25: keep as is**
+
+Left to the recommendation: `super_admin` and `headmaster` only, no change.
+A note about a child's health or a safeguarding concern is the most private
+thing the system holds; the headmaster tells a class teacher what they need
+to know. Widening later is one line; narrowing later un-reads nothing. If a
+nurse or counsellor ever needs their own door, it is a named role, not
+`admin`.
 
 Health and welfare notes are readable by `super_admin` and `headmaster` only.
 `admin` is **deliberately excluded**, because `RoleSeeder`'s blanket
@@ -210,7 +217,22 @@ Health and welfare notes are readable by `super_admin` and `headmaster` only.
 accident. Widening it is one line in a migration; narrowing it later is a
 disclosure.
 
-### 13. `guardian_student` verification flag
+### 13. `guardian_student` verification flag — **decided 2026-09-25: it is a gate, built**
+
+Left to the recommendation, and built the same day (STATUS §5gk). A parent
+reaches a child, and a child's news reaches a parent, only over a link the
+office has **verified**. Every link that existed was backfilled verified
+(all made by the office or a seeder). A link the office attaches on the
+profile is verified as it is made. A link a parent creates for themselves
+on the public registration form starts unverified: *My children* shows the
+child as *awaiting the office* with nothing behind it, and the office finds
+such pupils with the **Awaiting parent verification** filter on the student
+directory (a count sits beside it) and verifies on the pupil's Guardians
+tab. To *reject* a link is one more option in the same select.
+
+What this closes: before, anyone with a phone could register a "child"
+under a real pupil's ID card number, be linked to that pupil, and read
+their attendance, invoices and messages.
 
 SPEC §9 asks for it and it is now written on attach — but nothing **reads** it,
 so every link says `unverified` while `/portal/children` lists the child

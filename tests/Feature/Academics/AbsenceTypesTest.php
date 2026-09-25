@@ -216,7 +216,7 @@ it('still accepts the old `type` code from a client that has not been redeployed
     DB::table('guardian_student')->insert([
         'guardian_id' => $guardianId, 'student_id' => $student->id,
         'relationship' => 'father', 'is_primary' => true, 'can_pickup' => true,
-        'created_at' => now(), 'updated_at' => now(),
+        'verification_status' => 'verified', 'created_at' => now(), 'updated_at' => now(),
     ]);
 
     $this->withoutLocalizationMiddleware()->actingAs($parent->fresh())

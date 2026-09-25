@@ -351,4 +351,39 @@ if (await teacherPoll.count()) {
 }
 check('the teacher sees the tally', (await text(teacher)).includes('1 answered so far.'), (await text(teacher)).match(/\d+ answered so far\./)?.[0] ?? (await text(teacher)).slice(0, 160));
 
+// 7. the parent link is a gate (OWNER_ACTIONS item 13, 2026-09-25)
+//
+// The seeded parent's link to the pupil is verified. The office sets it back
+// to "Not checked" — what a link a stranger made on the public form looks
+// like — and the parent's side must close: the child is only "awaiting the
+// office" on My children, and a page about the child refuses. The office
+// verifies it again and both open. The seed is left as it was found.
+await admin.goto(`${BASE}/en/people/students?search=${encodeURIComponent(NAME)}`, { waitUntil: 'networkidle' });
+const profileHref = (await hrefs(admin)).find((h) => /\/people\/students\/\d+$/.test(h));
+check('the office finds the pupil', Boolean(profileHref), profileHref ?? `no /people/students/{id} link for ${NAME}`);
+
+const setVerification = async (label) => {
+    await admin.goto(`${BASE}${profileHref.replace(/^https?:\/\/[^/]+/, '')}?tab=guardians`, { waitUntil: 'networkidle' });
+    const row = admin.locator('tr', { has: admin.locator('select[aria-label="Verification status"]') }).first();
+    await row.locator('select[aria-label="Verification status"]').selectOption({ label });
+    await row.locator('button:has-text("Save")').click();
+    await admin.waitForLoadState('networkidle');
+    return (await row.locator('select[aria-label="Verification status"] option:checked').innerText().catch(() => '')).trim();
+};
+
+const unchecked = await setVerification('Not checked');
+check('the office can set the link back to "Not checked"', unchecked === 'Not checked', unchecked || 'no verification select on the Guardians tab');
+
+await parent.goto(`${BASE}/en/portal/children`, { waitUntil: 'networkidle' });
+const pendingBox = parent.locator('[data-testid="pending-links"]');
+check('the parent now sees the child only as awaiting the office', (await pendingBox.count()) === 1 && (await pendingBox.innerText()).includes(NAME) && !(await parent.locator('tbody tr', { hasText: NAME }).count()), (await pendingBox.count()) ? (await pendingBox.innerText()).replace(/\s+/g, ' ').slice(0, 140) : (await text(parent)).slice(0, 160));
+const closedAttendance = await parent.goto(`${BASE}/en/portal/attendance`, { waitUntil: 'networkidle' });
+check('and the attendance page has no child to show', closedAttendance?.status() === 200 && !(await text(parent)).includes(NAME), `HTTP ${closedAttendance?.status()} · ${(await text(parent)).slice(0, 80)}`);
+
+const verified = await setVerification('Verified');
+check('the office verifies the link', verified === 'Verified', verified);
+
+await parent.goto(`${BASE}/en/portal/children`, { waitUntil: 'networkidle' });
+check('and the parent sees the child again, with their number', (await parent.locator('[data-testid="pending-links"]').count()) === 0 && (await parent.locator('tbody tr', { hasText: NAME }).count()) === 1, (await text(parent)).slice(0, 160));
+
 await finish();

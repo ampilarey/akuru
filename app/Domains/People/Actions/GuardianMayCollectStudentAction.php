@@ -36,6 +36,8 @@ class GuardianMayCollectStudentAction
             ->whereIn('guardian_id', $guardianIds)
             ->where('student_id', $studentId)
             ->where('can_pickup', true)
+            // Item 13: an unverified link collects nobody.
+            ->where('verification_status', 'verified')
             ->exists();
     }
 }

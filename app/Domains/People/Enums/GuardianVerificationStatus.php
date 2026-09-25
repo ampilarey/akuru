@@ -5,20 +5,18 @@ namespace App\Domains\People\Enums;
 /**
  * SPEC §9's "Verification status", with `verified_at` beside it.
  *
- * **This does not gate the parent portal, and must not.** The temptation is
- * obvious — the column says `unverified`, so filter on it — but every link in
- * the database has said `unverified` since the table shipped, because nothing
- * could ever set it. Enforcing it as an access rule would hide **every** child
- * from **every** parent overnight. That is a regression wearing the costume of
- * a security fix.
+ * **A gate since 2026-09-25** (OWNER_ACTIONS item 13). A parent reaches a
+ * child, and a child's news reaches a parent, only over a `verified` link —
+ * see `VerifiedGuardianLink`, the one place the rule is written.
  *
- * What it is instead: a record of whether a member of staff has checked that
- * this adult really is this child's guardian. `/portal/children` stays scoped
- * the way it always was — to the signed-in guardian's own links — and this
- * column tells staff which of those links anyone has actually looked at.
- *
- * Turning it into an access gate is a separate decision with its own migration
- * of existing links, and it belongs to the owner, not to this slice.
+ * It was a record only until then, and deliberately: every link in the
+ * database had said `unverified` since the table shipped because nothing
+ * could set it, so gating without a backfill would have hidden every child
+ * from every parent overnight. The backfill migration of the same day marked
+ * every then-existing link verified (all made by the office or a seeder), the
+ * office's own attach verifies as it goes, and only a link a parent creates
+ * on the public registration form starts `unverified` — shown to them as
+ * *awaiting the office* until a member of staff checks it.
  */
 enum GuardianVerificationStatus: string
 {

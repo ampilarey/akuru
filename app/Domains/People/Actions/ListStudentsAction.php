@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\DB;
 class ListStudentsAction
 {
     /**
-     * @param  array{search?: string, status?: string, class_id?: int, year?: string}  $filters
+     * @param  array{search?: string, status?: string, class_id?: int, year?: string, awaiting_verification?: mixed}  $filters
      * @return Collection<int, object>
      */
     public function execute(array $filters = []): Collection
@@ -61,6 +61,25 @@ class ListStudentsAction
             $query->where('students.class_id', (int) $filters['class_id']);
         }
 
+        // Item 13: pupils with a parent link the office has not verified yet.
+        if (! empty($filters['awaiting_verification'])) {
+            $query->whereIn('students.id', $this->awaitingVerification());
+        }
+
         return $query->get();
+    }
+
+    /** How many pupils have a parent link awaiting the office's check. */
+    public function countAwaitingVerification(): int
+    {
+        return $this->awaitingVerification()->count();
+    }
+
+    private function awaitingVerification(): \Illuminate\Database\Query\Builder
+    {
+        return DB::table('guardian_student')
+            ->where('verification_status', 'unverified')
+            ->select('student_id')
+            ->distinct();
     }
 }

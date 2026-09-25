@@ -70,7 +70,7 @@ function hifzTwoFamilyFixture(): array
         DB::table('guardian_student')->insert([
             'guardian_id' => $guardianId, 'student_id' => $child->id,
             'relationship' => 'mother', 'is_primary' => true, 'can_pickup' => true,
-            'created_at' => now(), 'updated_at' => now(),
+            'verification_status' => 'verified', 'created_at' => now(), 'updated_at' => now(),
         ]);
 
         HifzEnrollment::create([

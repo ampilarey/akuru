@@ -46,7 +46,7 @@ function pickupSetup(bool $canPickup = true): array
         'relationship' => 'father',
         'is_primary' => true,
         'can_pickup' => $canPickup,
-        'created_at' => now(), 'updated_at' => now(),
+        'verification_status' => 'verified', 'created_at' => now(), 'updated_at' => now(),
     ]);
 
     Role::findOrCreate('admin', 'web');
@@ -71,7 +71,7 @@ it('offers only children the guardian may collect, each with a name to read', fu
         'guardian_id' => DB::table('parent_guardians')->where('user_id', $guardian->id)->value('id'),
         'student_id' => $other->id,
         'relationship' => 'father', 'is_primary' => false, 'can_pickup' => false,
-        'created_at' => now(), 'updated_at' => now(),
+        'verification_status' => 'verified', 'created_at' => now(), 'updated_at' => now(),
     ]);
 
     $children = app(ListCollectableChildrenAction::class)->execute($guardian->id);

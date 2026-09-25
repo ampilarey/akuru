@@ -30,10 +30,11 @@ use Inertia\Testing\AssertableInertia as Assert;
  * §9 also names five example relationship types — "Father · Mother · Guardian ·
  * **Sponsor** · Other" — and the enum had every one but sponsor.
  *
- * **Verification is a record, not a gate.** Nothing here filters
- * `/portal/children` on `verification_status`, and the test below pins that:
- * every existing link is `unverified`, so enforcing it would hide every child
- * from every parent overnight.
+ * **Verification became a gate on 2026-09-25** (OWNER_ACTIONS item 13):
+ * the family sees a child through verified links only. Existing links were
+ * backfilled verified; the office's own attach verifies as it goes; only a
+ * link a parent makes on the public form starts unverified. The gate itself
+ * is pinned in `GuardianLinkGateTest`.
  */
 uses(RefreshDatabase::class);
 
@@ -63,9 +64,10 @@ it('records who created the link, which nothing ever wrote', function () {
         ->where('student_id', $student->id)->where('guardian_id', $guardian->id)->first();
 
     expect((int) $pivot->created_by)->toBe($admin->id);
-    // The honest starting state for a link somebody has only just made.
+    // Consent starts "not asked". Verification starts verified: since item
+    // 13 the office attaching the link is the check (see the gate test).
     expect($pivot->consent_status)->toBe('unknown');
-    expect($pivot->verification_status)->toBe('unverified');
+    expect($pivot->verification_status)->toBe('verified');
 });
 
 it('lets staff record consent and verification, and stamps verified_at with it', function () {
@@ -192,19 +194,20 @@ it('saves the record over HTTP', function () {
     expect($pivot->verified_at)->toBeNull();
 });
 
-it('does not let verification gate the parent portal', function () {
-    // Deliberate, and pinned. Every link in the database is `unverified`
-    // because nothing could ever set it, so filtering the portal on this
-    // column would hide every child from every parent overnight. Turning it
-    // into an access rule is a separate decision with its own backfill.
+it('verifies a link the office attaches, so the parent sees the child at once', function () {
+    // Item 13 (2026-09-25): verification gates the portal now. The office
+    // attaching a link on the profile IS the check, so the link is verified
+    // as it is made and the parent is not left waiting on a second click.
+    // `GuardianLinkGateTest` covers the self-registered case.
     $admin = actingPeopleAdmin();
     $student = policyStudent();
     $guardian = policyGuardian();
-    // makeGuardian() already attaches a user.
     app(AttachGuardianAction::class)->execute($student, $guardian, GuardianRelationship::Mother, actorId: $admin->id);
 
     $children = app(\App\Domains\People\Actions\ListGuardianChildrenAction::class)
         ->executeForGuardianUserId((int) $guardian->user_id);
 
-    expect($children)->toHaveCount(1);
+    expect($children)->toHaveCount(1)
+        ->and(DB::table('guardian_student')->where('student_id', $student->id)->value('verification_status'))->toBe('verified')
+        ->and(DB::table('guardian_student')->where('student_id', $student->id)->value('verified_at'))->not->toBeNull();
 });
