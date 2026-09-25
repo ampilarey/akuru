@@ -690,6 +690,9 @@ migration; no Hifz behaviour change outside it.
   `PdfPageTextExtractor` (pure PHP), the body still wins when both exist,
   a scan yields no pages and says so at save time, and
   `library:sync-pages` backfills the items uploaded before.
+- **Gift card purchases for the office (2026-09-25, §7.7):** a purchases
+  table with buyer, recipient, status and masked destination, CSV export,
+  and a source column on the cards — see §5gr.
 - **Reading comfort (2026-09-25, §9.1):** text size, light/sepia/dark,
   direction, full screen, and *Mark as completed* — see §5gq.
 - **Discovery and the required pages (2026-09-25, §8):** free/paid,
@@ -4410,6 +4413,27 @@ walk returned a header row and nothing else for circulation, student work and
 pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
+
+## 5gr. The office sees gift card purchases (2026-09-25)
+
+The last item of the Library audit: LIBRARY_PLAN §7.7 lists "gift card
+usage" among the office's reports and §41 a "gift card purchase" admin
+notice, and §5gn had just made purchases possible with nowhere for the
+office to see them — the commerce page listed cards (office-issued and
+purchased alike, indistinguishable) and nothing about orders.
+
+`/admin/commerce` now has a *Gift card purchases* table
+(`ListGiftCardOrdersAction`): order, buyer (name and email, through the
+auth model from config — Commerce imports no Identity model), recipient,
+amount, status with the issued card's number, where the code was sent
+(masked, as the order records it — the code itself is nowhere), and when.
+*Export CSV* streams the same (`admin.commerce.gift-card-orders.export`,
+`commerce.manage`). The gift cards table gains a *Source* column:
+purchased or office. `GiftCardOrdersReportTest` (paid and failed orders
+listed newest first with buyer, destination and card; source column; CSV
+has the rows and never the code; a stranger is refused). `gift.mjs` grows
+two steps to **13/13**: the office sees the walk's own order with its
+buyer and status, and exports it.
 
 ## 5gq. Reading comfort, and "mark as completed" (2026-09-25)
 

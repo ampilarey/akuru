@@ -27,6 +27,7 @@ import { chromium } from 'playwright';
 
 const BASE = process.env.SMOKE_BASE_URL ?? 'http://127.0.0.1:8000';
 const STUDENT = process.env.SMOKE_STUDENT ?? 'student@akuru.edu.mv';
+const ADMIN = process.env.SMOKE_ADMIN ?? 'admin@akuru.edu.mv';
 const PASSWORD = process.env.SMOKE_PASSWORD ?? 'password';
 const RECIPIENT = `SMOKE-Gift-${Date.now().toString(36).slice(-5)}`;
 
@@ -166,5 +167,14 @@ const wallet = await text(reader);
 const row = reader.locator('[data-testid="gift-card-orders"] > div', { hasText: RECIPIENT });
 check('the wallet lists the order by recipient with its status', (await row.count()) === 1 && /pending|failed/.test(await row.innerText()), (await row.count()) ? (await row.innerText()).replace(/\s+/g, ' ') : wallet.slice(0, 160));
 check('and shows no gift card code', !/AKG-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}/.test(wallet));
+
+// -------------------------------------------------------- 5. the office's view
+
+const office = await signIn(ADMIN);
+await office.goto(`${BASE}/en/admin/commerce`, { waitUntil: 'networkidle' });
+const orders = office.locator('[data-testid="gift-card-orders"] tr', { hasText: RECIPIENT });
+check('the office sees the purchase, its buyer and its status', (await orders.count()) === 1 && /pending|failed/.test(await orders.innerText()), (await orders.count()) ? (await orders.innerText()).replace(/\s+/g, ' ') : 'no row for the order');
+const csv = await office.request.get(`${BASE}/en/admin/commerce/gift-card-orders/export`);
+check('and can export the purchases', csv.status() === 200 && (await csv.text()).includes(RECIPIENT), `HTTP ${csv.status()}`);
 
 await finish();

@@ -27,6 +27,8 @@ class ListGiftCardsAction
                 'recipient_name' => $card->recipient_name,
                 'recipient_email' => $card->recipient_email,
                 'status' => $card->status?->value,
+                // §15.4: bought through the shop, or issued by the office.
+                'source' => $card->purchaser_user_id !== null ? 'purchased' : 'office',
                 'expires_at' => $card->expires_at?->toDateString(),
                 'created_at' => $card->created_at?->toDateString(),
             ])
