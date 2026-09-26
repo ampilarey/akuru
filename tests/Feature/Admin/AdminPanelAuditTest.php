@@ -97,7 +97,7 @@ it('lists the whole admin panel in the Inertia More menu, Blade screens marked f
     // The shell receives the flag.
     auditAs($admin)->get(route('admin.operations.index'))->assertInertia(fn ($page) => $page->has('nav.groups'));
     app()->setLocale('dv');
-    expect(collect(app(BuildNavigationAction::class)->execute($admin, 'dv')['groups'])->firstWhere('key', 'admin_group')['items'][1]['label'])->toBe('އެންރޯލްމަންޓް');
+    expect(collect(collect(app(BuildNavigationAction::class)->execute($admin, 'dv')['groups'])->firstWhere('key', 'admin_group')['items'])->firstWhere('href', '/admin/enrollments')['label'])->toBe('އެންރޯލްމަންޓް');
 });
 
 it('refuses a prayer-times database over 20 MB', function () {
