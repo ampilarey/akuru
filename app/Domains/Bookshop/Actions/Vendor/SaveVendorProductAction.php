@@ -8,6 +8,7 @@ use App\Domains\Bookshop\Models\Product;
 use App\Domains\Bookshop\Models\ProductImage;
 use App\Domains\Bookshop\Models\ProductVariant;
 use App\Domains\Bookshop\Support\ShopPresenter;
+use App\Domains\Bookshop\Support\StockLedger;
 use App\Domains\Media\Actions\ResolvePublicImageVariantAction;
 use App\Domains\Media\Actions\StorePublicMediaAction;
 use App\Support\Html\HtmlSanitizer;
@@ -33,10 +34,11 @@ class SaveVendorProductAction
     /**
      * @param  array<string, mixed>  $data
      * @param  list<UploadedFile>  $photos
+     * @param  string  $stockKind  how a stock change here is logged (B8): an edit is an `adjustment`, a CSV row an `import`
      */
-    public function execute(VendorScope $scope, array $data, ?int $productId = null, array $photos = []): Product
+    public function execute(VendorScope $scope, array $data, ?int $productId = null, array $photos = [], string $stockKind = 'adjustment'): Product
     {
-        $product = DB::transaction(function () use ($scope, $data, $productId, $photos) {
+        $product = DB::transaction(function () use ($scope, $data, $productId, $photos, $stockKind) {
             $product = $productId === null
                 ? new Product(['vendor_id' => $scope->vendorId, 'created_by' => $scope->userId])
                 : Product::query()->where('vendor_id', $scope->vendorId)->lockForUpdate()->findOrFail($productId);
@@ -44,16 +46,23 @@ class SaveVendorProductAction
             $this->guardSku($scope, $data['sku'] ?? null, $product->id);
             $this->guardPrices($data);
 
+            $isNew = ! $product->exists;
+            $before = $isNew ? 0 : (int) $product->stock;
             $product->fill($this->columns($data));
             $product->vendor_id = $scope->vendorId;
             $product->updated_by = $scope->userId;
-            if (! $product->exists) {
+            if ($isNew) {
                 $product->slug = $this->uniqueSlug((string) $data['title'], $scope->vendorSlug);
             }
             $product->save();
+            // B8: the change in the stock log — the opening count of a new product is stock in.
+            StockLedger::record($product, null, (int) $product->stock - $before, $isNew ? 'in' : $stockKind, $scope->userId);
+            if ($product->stock === $before) {
+                StockLedger::checkLow($product);
+            }
 
             if (array_key_exists('variants', $data) || ! empty($data['variants_sent'])) {
-                $this->syncVariants($product, (array) ($data['variants'] ?? []));
+                $this->syncVariants($product, (array) ($data['variants'] ?? []), $scope->userId, $stockKind);
             }
             $this->storePhotos($scope, $product, $photos);
 
@@ -181,7 +190,7 @@ class SaveVendorProductAction
     /**
      * @param  list<array<string, mixed>>  $rows
      */
-    private function syncVariants(Product $product, array $rows): void
+    private function syncVariants(Product $product, array $rows, ?int $userId = null, string $stockKind = 'adjustment'): void
     {
         $max = (int) config('bookshop.variants.max_per_product', 30);
         $rows = array_values(array_filter($rows, fn ($row) => trim((string) ($row['name'] ?? '')) !== ''));
@@ -195,6 +204,8 @@ class SaveVendorProductAction
                 ? ProductVariant::query()->where('product_id', $product->id)->find((int) $row['id'])
                 : null;
             $variant ??= new ProductVariant(['product_id' => $product->id]);
+            $isNew = ! $variant->exists;
+            $before = $isNew ? 0 : (int) $variant->stock;
             $variant->fill([
                 'name' => trim((string) $row['name']),
                 'sku' => ($row['sku'] ?? null) ?: null,
@@ -205,6 +216,7 @@ class SaveVendorProductAction
             ]);
             $variant->product_id = $product->id;
             $variant->save();
+            StockLedger::record($product, $variant, (int) $variant->stock - $before, $isNew ? 'in' : $stockKind, $userId);
             $kept[] = $variant->id;
         }
 

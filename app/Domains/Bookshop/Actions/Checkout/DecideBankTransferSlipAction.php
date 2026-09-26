@@ -55,6 +55,7 @@ class DecideBankTransferSlipAction
                 __('shop.notice_slip_rejected_title'),
                 __('shop.notice_slip_rejected_body', ['number' => $checkout->number, 'note' => trim((string) $note)]),
                 '/shop/checkout/'.$checkout->number,
+                'slip_decided',
             );
         }
 

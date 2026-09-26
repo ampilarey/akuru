@@ -12,6 +12,7 @@ use App\Domains\Bookshop\Models\OrderEvent;
 use App\Domains\Bookshop\Models\OrderItem;
 use App\Domains\Bookshop\Models\Product;
 use App\Domains\Bookshop\Models\ProductVariant;
+use App\Domains\Bookshop\Support\StockLedger;
 use App\Domains\Commerce\Actions\RecordDiscountRedemptionAction;
 use Illuminate\Support\Facades\DB;
 
@@ -93,12 +94,17 @@ class MarkCheckoutPaidAction
                 if ($variant->stock < $item->quantity) {
                     $short[] = $item->title.' ('.$item->variant_name.')';
                 }
+                $before = (int) $variant->stock;
                 $variant->update(['stock' => max(0, $variant->stock - $item->quantity)]);
+                // B8: the sale in the stock log, as much as was really there.
+                StockLedger::record($product, $variant, (int) $variant->stock - $before, 'sale', null, (int) $order->id);
             } else {
                 if ($product->stock < $item->quantity) {
                     $short[] = $item->title;
                 }
+                $before = (int) $product->stock;
                 $product->update(['stock' => max(0, $product->stock - $item->quantity)]);
+                StockLedger::record($product, null, (int) $product->stock - $before, 'sale', null, (int) $order->id);
             }
         }
 
@@ -116,9 +122,10 @@ class MarkCheckoutPaidAction
             __('shop.notice_paid_title'),
             __('shop.notice_paid_body', ['number' => $checkout->number]),
             '/my-orders',
+            'order_paid',
         );
         foreach ($checkout->orders as $order) {
-            $notify->vendor((int) $order->vendor_id, __('shop.notice_vendor_order_title'), __('shop.notice_vendor_order_body', ['number' => $order->number]), '/vendor');
+            $notify->vendor((int) $order->vendor_id, __('shop.notice_vendor_order_title'), __('shop.notice_vendor_order_body', ['number' => $order->number]), '/vendor/orders', 'new_order');
         }
         foreach ($attention as $order) {
             $notify->vendor((int) $order->vendor_id, __('shop.notice_attention_title'), __('shop.notice_attention_body', ['number' => $order->number]), '/vendor');

@@ -142,6 +142,7 @@ class RefundOrderAction
                 __('shop.notice_refund_done_title'),
                 __($refund->destination === 'card' ? 'shop.notice_refund_card_body' : 'shop.notice_refund_wallet_body', ['amount' => $amount, 'number' => $order->number]),
                 '/my-orders/'.$order->number,
+                'refund',
             );
 
             return;

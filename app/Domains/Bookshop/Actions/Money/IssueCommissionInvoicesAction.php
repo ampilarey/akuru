@@ -64,7 +64,7 @@ class IssueCommissionInvoicesAction
             });
             if ($invoice !== null) {
                 $issued[] = $invoice;
-                app(NotifyBookshopUserAction::class)->vendor($vendor->id, __('shop.notice_invoice_title'), __('shop.notice_invoice_body', ['number' => $invoice->number, 'amount' => $invoice->currency.' '.number_format((float) $invoice->total, 2)]), '/vendor/money');
+                app(NotifyBookshopUserAction::class)->vendor($vendor->id, __('shop.notice_invoice_title'), __('shop.notice_invoice_body', ['number' => $invoice->number, 'amount' => $invoice->currency.' '.number_format((float) $invoice->total, 2)]), '/vendor/money', 'invoice');
             }
         }
 

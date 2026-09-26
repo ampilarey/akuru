@@ -1849,6 +1849,17 @@ class SmokeMarkerSeeder extends Seeder
         DB::table('products')->whereIn('id', $shopProducts)->update(['badge' => null, 'badge_dv' => null, 'badge_ar' => null, 'rating_avg' => null, 'rating_count' => 0]);
         DB::table('vendors')->whereIn('id', [$fitrahId, $otherId])->update(['free_delivery_over' => null]);
         $this->smokeProduct($fitrahId, 'smoke-quran-stand', 'Wooden Quran Stand', 150, 'standard', $category('islamic-studies'), 0, ['material' => 'Wood']);
+
+        // B8 (`operations.mjs`): the walk's imported products are
+        // `SMOKE-Walk …` and went with the walk's products above; its
+        // duplicates (`…-copy`), the stock log of both shops, the low-stock
+        // flags, the shop's notice choices and the office's switches go too,
+        // so each run starts from the same stock and the default channels.
+        DB::table('products')->whereIn('vendor_id', [$fitrahId, $otherId])->where('slug', 'like', '%-copy%')->delete();
+        DB::table('stock_movements')->whereIn('vendor_id', [$fitrahId, $otherId])->delete();
+        DB::table('products')->whereIn('vendor_id', [$fitrahId, $otherId])->update(['low_stock_notified_at' => null]);
+        DB::table('vendors')->whereIn('id', [$fitrahId, $otherId])->update(['notice_settings' => null]);
+        DB::table('settings')->where('key', 'like', 'bookshop_notices_%')->delete();
     }
 
     /**

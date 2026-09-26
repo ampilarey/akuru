@@ -63,6 +63,7 @@ class DecideVendorPayoutAction
             __($paid ? 'shop.notice_payout_paid_title' : 'shop.notice_payout_rejected_title'),
             __($paid ? 'shop.notice_payout_paid_body' : 'shop.notice_payout_rejected_body', ['amount' => $payout->currency.' '.number_format((float) $payout->amount, 2), 'reference' => (string) $reference, 'note' => (string) $note]),
             '/vendor/money',
+            'payout_decided',
         );
 
         return $payout;

@@ -16,7 +16,10 @@ use Illuminate\Support\Facades\DB;
  */
 final class Restock
 {
-    public static function item(OrderItem $item, int $quantity): void
+    /**
+     * @param  string  $kind  `cancel` or `return`, for the stock log (B8)
+     */
+    public static function item(OrderItem $item, int $quantity, string $kind = 'return', ?int $userId = null): void
     {
         if ($quantity <= 0 || $item->product_id === null) {
             return;
@@ -27,9 +30,14 @@ final class Restock
         }
         if ($item->product_variant_id !== null) {
             $variant = ProductVariant::query()->whereKey($item->product_variant_id)->lockForUpdate()->first();
-            $variant?->update(['stock' => (int) $variant->stock + $quantity]);
+            if ($variant === null) {
+                return;
+            }
+            $variant->update(['stock' => (int) $variant->stock + $quantity]);
+            StockLedger::record($product, $variant, $quantity, $kind, $userId, (int) $item->order_id);
         } else {
             $product->update(['stock' => (int) $product->stock + $quantity]);
+            StockLedger::record($product, null, $quantity, $kind, $userId, (int) $item->order_id);
         }
         // B7: anyone waiting for it hears, once the stock is really back.
         $productId = (int) $product->id;

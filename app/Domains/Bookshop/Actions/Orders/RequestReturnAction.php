@@ -60,6 +60,7 @@ class RequestReturnAction
             __('shop.notice_return_requested_title'),
             __('shop.notice_return_requested_body', ['number' => $order->number]),
             '/vendor/orders',
+            'return_requested',
         );
 
         return $return;

@@ -7,6 +7,7 @@ use App\Domains\Bookshop\Actions\CreateVendorAction;
 use App\Domains\Bookshop\Actions\DecideVendorPayoutAction;
 use App\Domains\Bookshop\Actions\ListBankTransferSlipsAction;
 use App\Domains\Bookshop\Actions\ListCatalogueOptionsAction;
+use App\Domains\Bookshop\Actions\ListLowStockAction;
 use App\Domains\Bookshop\Actions\ListOrdersAction;
 use App\Domains\Bookshop\Actions\ListPendingRefundsAction;
 use App\Domains\Bookshop\Actions\ListVendorMoneyReportAction;
@@ -15,11 +16,14 @@ use App\Domains\Bookshop\Actions\ManageShopHomeAction;
 use App\Domains\Bookshop\Actions\ModerateReviewAction;
 use App\Domains\Bookshop\Actions\ModerateStorefrontAction;
 use App\Domains\Bookshop\Actions\Money\IssueCommissionInvoicesAction;
+use App\Domains\Bookshop\Actions\NotifyBookshopUserAction;
 use App\Domains\Bookshop\Actions\Orders\RefundOrderAction;
+use App\Domains\Bookshop\Actions\SaveBookshopNoticeSwitchesAction;
 use App\Domains\Bookshop\Actions\SaveCatalogueTermAction;
 use App\Domains\Bookshop\Actions\Shop\ListShopProductsAction;
 use App\Domains\Bookshop\Actions\Shop\PresentShopVendorAction;
 use App\Domains\Bookshop\Actions\UpdateVendorAction;
+use App\Domains\Bookshop\Enums\OrderStatus;
 use App\Domains\Bookshop\Support\SectionTypes;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
@@ -51,6 +55,9 @@ class AdminBookshopController extends Controller
             'money' => app(ListVendorMoneyReportAction::class)->execute(),
             'reviews' => app(ModerateReviewAction::class)->list(),
             'home' => app(ManageShopHomeAction::class)->list(),
+            'low_stock' => app(ListLowStockAction::class)->execute(500),
+            'notices' => NotifyBookshopUserAction::officeSwitches(),
+            'order_statuses' => array_map(fn (OrderStatus $s) => $s->value, OrderStatus::cases()),
             'default_commission_rate' => number_format((float) config('bookshop.default_commission_rate'), 2, '.', ''),
             'agreement_url' => route('public.page.show', 'vendor-agreement'),
             'sign_in_url' => route('login'),
@@ -340,7 +347,7 @@ class AdminBookshopController extends Controller
     public function exportOrders(Request $request): StreamedResponse
     {
         abort_unless($request->user()?->can('bookshop.manage'), 403);
-        $rows = app(ListOrdersAction::class)->execute(5000);
+        $rows = app(ListOrdersAction::class)->execute((int) config('bookshop.operations.export_max_rows', 20000), $this->orderFilters($request));
 
         return response()->streamDownload(function () use ($rows): void {
             $out = fopen('php://output', 'w');
@@ -353,6 +360,62 @@ class AdminBookshopController extends Controller
             }
             fclose($out);
         }, 'bookstore-orders.csv', ['Content-Type' => 'text/csv']);
+    }
+
+    /** B8: one row per order line across every shop, same filters as the orders export. */
+    public function exportOrderLines(Request $request): StreamedResponse
+    {
+        abort_unless($request->user()?->can('bookshop.manage'), 403);
+        $rows = app(ListOrdersAction::class)->lines($this->orderFilters($request), (int) config('bookshop.operations.export_max_rows', 20000));
+
+        return response()->streamDownload(function () use ($rows): void {
+            $out = fopen('php://output', 'w');
+            Csv::put($out, ['number', 'status', 'vendor', 'placed_at', 'paid_at', 'sku', 'title', 'variant', 'quantity', 'unit_price', 'line_total', 'tax_class', 'tax_amount', 'currency']);
+            foreach ($rows as $r) {
+                Csv::put($out, [$r['number'], $r['status'], $r['vendor'], $r['placed_at'], $r['paid_at'], $r['sku'], $r['title'], $r['variant'], $r['quantity'], $r['unit_price'], $r['line_total'], $r['tax_class'], $r['tax_amount'], $r['currency']]);
+            }
+            fclose($out);
+        }, 'bookstore-order-lines.csv', ['Content-Type' => 'text/csv; charset=UTF-8']);
+    }
+
+    /** B8: low stock across every shop, as a CSV. */
+    public function exportLowStock(Request $request): StreamedResponse
+    {
+        abort_unless($request->user()?->can('bookshop.manage'), 403);
+        $rows = app(ListLowStockAction::class)->execute();
+
+        return response()->streamDownload(function () use ($rows): void {
+            $out = fopen('php://output', 'w');
+            Csv::put($out, ['vendor', 'product', 'variant', 'sku', 'stock', 'low_stock_at', 'state', 'status']);
+            foreach ($rows as $r) {
+                Csv::put($out, [$r['vendor'], $r['title'], $r['variant'], $r['sku'], $r['stock'], $r['low_stock_at'], $r['state'], $r['status']]);
+            }
+            fclose($out);
+        }, 'bookstore-low-stock.csv', ['Content-Type' => 'text/csv; charset=UTF-8']);
+    }
+
+    /** B8 (§7 Settings "email/SMS notice switches"). */
+    public function saveNotices(Request $request): RedirectResponse
+    {
+        abort_unless($request->user()?->can('bookshop.manage'), 403);
+        $data = $request->validate(['customer_email' => 'nullable|boolean', 'customer_sms' => 'nullable|boolean', 'vendor_email' => 'nullable|boolean', 'vendor_sms' => 'nullable|boolean']);
+
+        app(SaveBookshopNoticeSwitchesAction::class)->execute($data);
+
+        return back()->with('success', __('shop.notices_saved_flash'));
+    }
+
+    /**
+     * @return array{vendor?: int, status?: string, from?: string, to?: string}
+     */
+    private function orderFilters(Request $request): array
+    {
+        return array_filter($request->validate([
+            'vendor' => 'nullable|integer',
+            'status' => ['nullable', 'string', \Illuminate\Validation\Rule::in(array_map(fn (OrderStatus $s) => $s->value, OrderStatus::cases()))],
+            'from' => 'nullable|date_format:Y-m-d',
+            'to' => 'nullable|date_format:Y-m-d',
+        ]), fn ($v) => $v !== null && $v !== '');
     }
 
     /** Every listing gets a CSV (conventions): the vendors. */

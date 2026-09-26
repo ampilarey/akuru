@@ -13,11 +13,11 @@
 // expected direction, and the test asks you to update the count below when you
 // do.
 //
-// Count: 240 (a document template, not a screen — see the documents block;
+// Count: 241 (a document template, not a screen — see the documents block;
 // the five public bookshop views of BOOKSHOP_PLAN B1b, the five customer
 // pages of B2, the two storefront partials of B4, the sections, menu and
 // vendor page of B5 and the customer's wishlist of B7 — see the public
-// block).
+// block; and B8's bookstore notice email — see the emails block).
 
 return [
     // (root) — 4
@@ -156,6 +156,8 @@ return [
     'emails/free-enrollment-confirmed.blade.php',
     // L4 §15.3: the one delivery of a purchased gift card's code. 2026-09-25.
     'emails/gift-card-code.blade.php',
+    // BOOKSHOP_PLAN B8 — a bookstore notice by email (the in-app notice's words and link).
+    'emails/bookshop-notice.blade.php',
 
     // errors — 2
     'errors/404.blade.php',

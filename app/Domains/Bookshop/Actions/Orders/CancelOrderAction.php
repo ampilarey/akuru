@@ -48,7 +48,7 @@ class CancelOrderAction
             ]);
 
             foreach ($locked->items as $item) {
-                Restock::item($item, (int) $item->quantity);
+                Restock::item($item, (int) $item->quantity, 'cancel', $actorUserId);
             }
 
             app(RefundOrderAction::class)->request($locked, (float) $locked->total, 'Cancelled: '.$reason, $actorUserId);
@@ -60,9 +60,9 @@ class CancelOrderAction
 
         $notify = app(NotifyBookshopUserAction::class);
         if ($byCustomer) {
-            $notify->vendor((int) $order->vendor_id, __('shop.notice_customer_cancelled_title'), __('shop.notice_customer_cancelled_body', ['number' => $order->number, 'reason' => $reason]), '/vendor/orders');
+            $notify->vendor((int) $order->vendor_id, __('shop.notice_customer_cancelled_title'), __('shop.notice_customer_cancelled_body', ['number' => $order->number, 'reason' => $reason]), '/vendor/orders', 'customer_cancelled');
         } else {
-            $notify->execute((int) $order->user_id, __('shop.notice_vendor_cancelled_title'), __('shop.notice_vendor_cancelled_body', ['number' => $order->number, 'reason' => $reason]), '/my-orders/'.$order->number);
+            $notify->execute((int) $order->user_id, __('shop.notice_vendor_cancelled_title'), __('shop.notice_vendor_cancelled_body', ['number' => $order->number, 'reason' => $reason]), '/my-orders/'.$order->number, 'order_cancelled');
         }
 
         return $order;

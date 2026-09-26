@@ -219,6 +219,9 @@ export default function VendorOrders({ t, vendor, orders, counts, filters }) {
     const { flash = {}, errors } = usePage().props;
     const [open, setOpen] = useState(orders.length === 1 ? orders[0].id : null);
     const [q, setQ] = useState(filters.q || '');
+    const [range, setRange] = useState({ from: '', to: '' });
+    // B8: exports by date and by the tab's status, per order or per line.
+    const exportQuery = new URLSearchParams(Object.fromEntries(Object.entries({ status: filters.status && filters.status !== 'returns' ? filters.status : '', from: range.from, to: range.to }).filter(([, v]) => v))).toString();
     const total = Object.entries(counts).filter(([k]) => k !== 'returns').reduce((sum, [, n]) => sum + n, 0);
 
     return (
@@ -233,9 +236,15 @@ export default function VendorOrders({ t, vendor, orders, counts, filters }) {
                 <form className="flex gap-2" onSubmit={(e) => { e.preventDefault(); router.get('/vendor/orders', { status: filters.status || undefined, q: q || undefined }); }}>
                     <input className="form-input" placeholder={t.search_orders} value={q} onChange={(e) => setQ(e.target.value)} />
                     <button type="submit" className="btn-secondary">{t.search}</button>
-                    <a href="/vendor/orders/export" className="btn-secondary" data-testid="export-vendor-orders">{t.export_csv}</a>
                 </form>
             </header>
+            <div className="mb-4 flex flex-wrap items-center gap-2 rounded border bg-white p-2 text-sm" data-testid="order-exports">
+                <span className="text-gray-600">{t.export_orders_label}</span>
+                <label className="flex items-center gap-1">{t.from} <input className="form-input" type="date" value={range.from} onChange={(e) => setRange({ ...range, from: e.target.value })} data-testid="export-from" /></label>
+                <label className="flex items-center gap-1">{t.to} <input className="form-input" type="date" value={range.to} onChange={(e) => setRange({ ...range, to: e.target.value })} data-testid="export-to" /></label>
+                <a href={`/vendor/orders/export${exportQuery ? `?${exportQuery}` : ''}`} className="btn-secondary" data-testid="export-vendor-orders">{t.export_orders_csv}</a>
+                <a href={`/vendor/orders/lines/export${exportQuery ? `?${exportQuery}` : ''}`} className="btn-secondary" data-testid="export-order-lines">{t.export_lines_csv}</a>
+            </div>
             <nav className="mb-4 flex flex-wrap gap-2" data-testid="order-tabs">
                 {TABS.map((s) => {
                     const n = s === '' ? total : counts[s] || 0;
