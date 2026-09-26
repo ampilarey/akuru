@@ -81,6 +81,11 @@ final class NavigationMap
             'vendor' => [
                 ['key' => 'vendor_portal', 'href' => '/vendor'],
             ],
+            // B10b: a Bookstore admin runs the Bookstore office screen.
+            'bookshop_manager' => [
+                ['key' => 'bookshop', 'href' => '/admin/bookshop'],
+                ['key' => 'shop', 'href' => '/shop'],
+            ],
         ];
     }
 
