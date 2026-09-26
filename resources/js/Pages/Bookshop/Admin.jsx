@@ -587,6 +587,58 @@ function Applications({ applications, open, t }) {
     );
 }
 
+/** B9f (§2): shops' own domains — checked, then turned on; and the whole-shop subdomain. */
+function Hosts({ hosts, t }) {
+    const check = hosts.check;
+
+    return (
+        <section className="mt-8" data-testid="office-hosts">
+            <h2 className="mb-1 text-lg font-semibold">{t.hosts_heading}</h2>
+            <p className="mb-2 text-sm text-gray-600" data-testid="shop-host">{hosts.shop_host ? t.shop_host_set.replace(':host', hosts.shop_host) : t.shop_host_unset}</p>
+            {check && (
+                <p className={`mb-2 rounded p-2 text-sm ${check.points_here ? 'bg-green-50 text-green-800' : 'bg-amber-50 text-amber-900'}`} data-testid="host-check">
+                    {(check.points_here ? t.host_points_here : t.host_points_elsewhere).replace(':host', check.host)}{' '}
+                    <span className="text-xs">({[...check.addresses, ...check.aliases].join(', ') || t.host_no_records})</span>
+                </p>
+            )}
+            {hosts.shops.length === 0 ? (
+                <p className="rounded border bg-white p-3 text-sm text-gray-600">{t.no_host_requests}</p>
+            ) : (
+                <ul className="divide-y rounded border bg-white text-sm">
+                    {hosts.shops.map((h) => (
+                        <li key={h.vendor_id} className="flex flex-wrap items-center justify-between gap-2 p-2" data-testid={`host-${h.slug}`} data-status={h.status}>
+                            <span><span className="font-mono" dir="ltr">{h.host}</span> · {h.vendor} · {h.status === 'active' ? t.host_state_active : t.host_state_requested}</span>
+                            <span className="flex gap-2">
+                                <button type="button" className="btn-secondary" onClick={() => router.post(`/admin/bookshop/hosts/${h.vendor_id}/check`, {}, { preserveScroll: true })} data-testid={`host-check-${h.slug}`}>{t.host_check}</button>
+                                {h.status === 'active'
+                                    ? <button type="button" className="btn-secondary" onClick={() => router.post(`/admin/bookshop/hosts/${h.vendor_id}`, { decision: 'off' }, { preserveScroll: true })} data-testid={`host-off-${h.slug}`}>{t.host_turn_off}</button>
+                                    : <button type="button" className="btn-primary" onClick={() => router.post(`/admin/bookshop/hosts/${h.vendor_id}`, { decision: 'approve' }, { preserveScroll: true })} data-testid={`host-approve-${h.slug}`}>{t.host_turn_on}</button>}
+                            </span>
+                        </li>
+                    ))}
+                </ul>
+            )}
+        </section>
+    );
+}
+
+/** B9f (§11): prices in dollars, as a guide — always charged in MVR. */
+function UsdDisplay({ usd, t }) {
+    const form = useForm({ on: usd.on ? 1 : 0, rate: String(usd.rate) });
+
+    return (
+        <section className="mt-8" data-testid="office-usd">
+            <h2 className="mb-1 text-lg font-semibold">{t.usd_heading}</h2>
+            <p className="mb-2 text-sm text-gray-600">{t.usd_hint}</p>
+            <form className="flex flex-wrap items-end gap-3 rounded border bg-white p-3 text-sm" onSubmit={(e) => { e.preventDefault(); form.post('/admin/bookshop/usd', { preserveScroll: true }); }}>
+                <label className="flex items-center gap-2"><input type="checkbox" checked={!!form.data.on} onChange={(e) => form.setData('on', e.target.checked ? 1 : 0)} data-testid="usd-on" /> {t.usd_show}</label>
+                <label>{t.usd_rate}<input className="form-input block w-28" type="number" min="1" step="0.01" value={form.data.rate} onChange={(e) => form.setData('rate', e.target.value)} data-testid="usd-rate" /></label>
+                <button type="submit" className="btn-secondary" disabled={form.processing} data-testid="usd-save">{t.save}</button>
+            </form>
+        </section>
+    );
+}
+
 /** B9e: every shop's funnel side by side. */
 function Funnels({ insights, t }) {
     const fill = (s, vars) => Object.entries(vars).reduce((out, [k, v]) => out.replaceAll(`:${k}`, v), s || '');
@@ -817,7 +869,7 @@ function ShopHome({ home, t }) {
     );
 }
 
-export default function Admin({ t, vendors, catalogue, slips = [], orders = [], refunds = [], money = null, reviews = [], home = null, low_stock = [], notices = null, order_statuses = [], applications = [], applications_open = true, quotes = null, insights = null, cod_on = true, default_commission_rate, sign_in_url, section_types = [] }) {
+export default function Admin({ t, vendors, catalogue, slips = [], orders = [], refunds = [], money = null, reviews = [], home = null, low_stock = [], notices = null, order_statuses = [], applications = [], applications_open = true, quotes = null, insights = null, hosts = null, usd = null, cod_on = true, default_commission_rate, sign_in_url, section_types = [] }) {
     const { flash = {}, errors } = usePage().props;
 
     return (
@@ -845,6 +897,8 @@ export default function Admin({ t, vendors, catalogue, slips = [], orders = [], 
             {!applications.some((a) => a.status === 'pending') && <Applications applications={applications} open={applications_open} t={t} />}
             {quotes && <Quotes quotes={quotes} t={t} />}
             {insights && <Funnels insights={insights} t={t} />}
+            {hosts && <Hosts hosts={hosts} t={t} />}
+            {usd && <UsdDisplay usd={usd} t={t} />}
             <Orders orders={orders} vendors={vendors} statuses={order_statuses} t={t} />
             <LowStockAll rows={low_stock} t={t} />
             <Reviews reviews={reviews} t={t} />

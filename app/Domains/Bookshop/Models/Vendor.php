@@ -29,6 +29,9 @@ class Vendor extends Model
         'address',
         'opening_hours',
         'custom_host',
+        'custom_host_status',
+        'custom_host_requested_at',
+        'custom_host_approved_at',
         'settings',
         'holiday_from',
         'holiday_until',
@@ -58,6 +61,8 @@ class Vendor extends Model
             'cod_max' => 'decimal:2',
             'holiday_from' => 'date',
             'holiday_until' => 'date',
+            'custom_host_requested_at' => 'datetime',
+            'custom_host_approved_at' => 'datetime',
         ];
     }
 

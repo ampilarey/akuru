@@ -395,6 +395,31 @@ function ShopSettings({ settings, isOwner, t }) {
     );
 }
 
+/** B9f (§2): the shop's own domain — asked for here, turned on by the office once it points at Akuru. */
+function OwnDomain({ settings, isOwner, t }) {
+    const form = useForm({ custom_host: settings.custom_host || '' });
+    const status = settings.custom_host ? settings.custom_host_status : null;
+
+    return (
+        <section className="mt-8" data-testid="own-domain">
+            <h2 className="mb-1 text-lg font-semibold">{t.host_heading}</h2>
+            <p className="mb-2 text-sm text-gray-600">{t.host_intro.replace(':host', settings.canonical_host)}</p>
+            {status && (
+                <p className={`mb-2 rounded p-2 text-sm ${status === 'active' ? 'bg-green-50 text-green-800' : 'bg-amber-50 text-amber-900'}`} data-testid="host-status" data-status={status}>
+                    {(status === 'active' ? t.host_active : t.host_requested).replace(':host', settings.custom_host)}
+                </p>
+            )}
+            <form className="flex flex-wrap items-end gap-2 rounded border bg-white p-3" onSubmit={(e) => { e.preventDefault(); form.post('/vendor/host', { preserveScroll: true }); }}>
+                <label className="text-sm">{t.host_label}
+                    <input className="form-input block w-72" dir="ltr" placeholder="www.example.mv" value={form.data.custom_host} onChange={(e) => form.setData('custom_host', e.target.value)} disabled={!isOwner} data-testid="host-input" />
+                </label>
+                {isOwner && <button type="submit" className="btn-secondary" disabled={form.processing} data-testid="host-save">{t.host_save}</button>}
+                <FormErrors errors={form.errors} className="w-full" />
+            </form>
+        </section>
+    );
+}
+
 /** B7 (§6.5): the shop's own discount codes — funded by the shop, good on its products only. */
 function DiscountCodes({ codes, isOwner, t }) {
     const blank = { code: '', name: '', discount_type: 'percentage', discount_value: '', minimum_order_amount: '', max_discount_amount: '', usage_limit: '', per_user_limit: '1', starts_at: '', ends_at: '' };
@@ -668,6 +693,7 @@ export default function Vendor({ t, vendor, memberships = [], agreement_url, pro
                     </section>
                     {/* Keyed on the rows, so the form re-reads them after the template or a save (useForm keeps its first values otherwise). */}
                     {shop_settings && <ShopSettings settings={shop_settings} isOwner={isOwner} t={t} />}
+                    {shop_settings && <OwnDomain settings={shop_settings} isOwner={isOwner} t={t} />}
                     <DiscountCodes codes={discount_codes} isOwner={isOwner} t={t} />
                     {notice_settings && <Notices key={JSON.stringify(notice_settings.events)} settings={notice_settings} isOwner={isOwner} t={t} />}
                     {newsletter && <Newsletter newsletter={newsletter} t={t} />}

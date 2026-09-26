@@ -290,6 +290,32 @@ return [
         ],
     ],
 
+    /*
+     * B9f: other addresses for the shop (§2 "path now, a host per vendor
+     * later"). `shop_host` is a whole-shop subdomain (e.g.
+     * shop.akuru.edu.mv): any path on it goes to the same path under /shop.
+     * A shop's own domain, once the office turns it on, goes to that shop's
+     * page. Both redirect to the one canonical site, so the cart, sign-in
+     * and payment stay on one origin. The DNS record and the domain in the
+     * hosting panel are the owner's to set up.
+     */
+    'hosts' => [
+        'shop_host' => env('BOOKSHOP_SHOP_HOST'),
+        'redirect_status' => (int) env('BOOKSHOP_HOST_REDIRECT_STATUS', 302),
+        'cache_seconds' => 300,
+    ],
+
+    /*
+     * B9f: prices shown in US dollars as a guide (§11 "USD pricing").
+     * Everything is still charged in MVR. Off until the office turns it on
+     * and sets the rate (MVR for one dollar) on /admin/bookshop.
+     */
+    'usd' => [
+        'display_setting_key' => 'bookshop_usd_display',
+        'rate_setting_key' => 'bookshop_usd_rate',
+        'default_rate' => 15.42,
+    ],
+
     'bank_transfer' => [
         'bank' => env('BOOKSHOP_BANK_NAME', 'Bank of Maldives'),
         'account_name' => env('BOOKSHOP_BANK_ACCOUNT_NAME', 'Akuru Institute'),

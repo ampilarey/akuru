@@ -79,6 +79,9 @@
                     <span class="ms-2 text-lg font-normal text-gray-500 line-through">{{ $product['compare_at_price'] }}</span>
                 @endif
             </p>
+            {{-- B9f: dollars as a guide, when the office shows them; charged in MVR. --}}
+            @php($usd = \App\Domains\Bookshop\Support\Usd::line($product['price']))
+            @if($usd !== '')<p class="text-sm text-gray-600" data-testid="product-usd">{{ $usd }} <span class="text-xs text-gray-500">{{ __('shop.usd_guide_note') }}</span></p>@endif
             <p class="text-xs text-gray-500">{{ __('shop.prices_include_tax') }}</p>
             @if($product['vendor']['free_delivery_over'])
                 <p class="text-sm text-green-800" data-testid="free-delivery-line">{{ __('shop.free_delivery_over_line', ['amount' => $product['currency'].' '.$product['vendor']['free_delivery_over'], 'vendor' => $product['vendor']['name']]) }}</p>

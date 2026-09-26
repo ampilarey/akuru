@@ -23,6 +23,8 @@
         @endif
         <p class="mt-auto pt-2">
             <span class="font-semibold">{{ $card['currency'] }} {{ $card['price'] }}</span>
+            @php($usd = \App\Domains\Bookshop\Support\Usd::line($card['price']))
+            @if($usd !== '')<span class="block text-xs text-gray-500" data-testid="card-usd">{{ $usd }}</span>@endif
             @if($card['on_sale'])
                 <span class="ms-1 text-sm text-gray-500 line-through">{{ $card['compare_at_price'] }}</span>
             @endif

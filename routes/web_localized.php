@@ -781,6 +781,10 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         // B9b: cash on delivery.
         Route::post('cod', [\App\Domains\Bookshop\Http\Controllers\AdminBookshopController::class, 'setCod'])->name('admin.bookshop.cod');
         Route::get('applications/export', [\App\Domains\Bookshop\Http\Controllers\AdminBookshopController::class, 'exportApplications'])->name('admin.bookshop.applications.export');
+        // B9f: shops' own domains, and prices in dollars.
+        Route::post('hosts/{vendor}/check', [\App\Domains\Bookshop\Http\Controllers\AdminBookshopController::class, 'checkHost'])->name('admin.bookshop.hosts.check')->whereNumber('vendor');
+        Route::post('hosts/{vendor}', [\App\Domains\Bookshop\Http\Controllers\AdminBookshopController::class, 'decideHost'])->name('admin.bookshop.hosts.decide')->whereNumber('vendor');
+        Route::post('usd', [\App\Domains\Bookshop\Http\Controllers\AdminBookshopController::class, 'saveUsd'])->name('admin.bookshop.usd');
         // B9e: every shop's funnel.
         Route::get('insights/export', [\App\Domains\Bookshop\Http\Controllers\AdminBookshopController::class, 'exportInsights'])->name('admin.bookshop.insights.export');
         // B9d: bulk quotes across every shop.
@@ -844,6 +848,8 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::post('delivery-methods/template', [\App\Domains\Bookshop\Http\Controllers\VendorPortalController::class, 'useDeliveryTemplate'])->name('vendor.delivery-methods.template');
         // B3: returns and holiday mode; the order queue.
         Route::post('settings', [\App\Domains\Bookshop\Http\Controllers\VendorPortalController::class, 'saveShopSettings'])->name('vendor.settings.save');
+        // B9f: the shop's own domain.
+        Route::post('host', [\App\Domains\Bookshop\Http\Controllers\VendorPortalController::class, 'saveHost'])->name('vendor.host.save');
         Route::get('orders', [\App\Domains\Bookshop\Http\Controllers\VendorOrderController::class, 'index'])->name('vendor.orders.index');
         Route::get('orders/export', [\App\Domains\Bookshop\Http\Controllers\VendorOrderController::class, 'export'])->name('vendor.orders.export');
         Route::get('orders/lines/export', [\App\Domains\Bookshop\Http\Controllers\VendorOrderController::class, 'exportLines'])->name('vendor.orders.lines.export');

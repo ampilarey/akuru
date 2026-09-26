@@ -16,6 +16,9 @@ return Application::configure(basePath: dirname(__DIR__))
             'payments/bml/callback',
             'webhooks/bml',
         ]);
+        // BOOKSHOP_PLAN B9f: the shop subdomain and shops' own domains go to
+        // the canonical site before anything else runs.
+        $middleware->prepend(\App\Domains\Bookshop\Http\Middleware\RedirectShopHosts::class);
         $middleware->web(append: [
             \App\Http\Middleware\HandleInertiaRequests::class,
             \App\Http\Middleware\SetLocale::class,

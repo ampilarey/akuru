@@ -6,6 +6,7 @@ use App\Domains\Bookshop\Actions\Checkout\CashOnDeliveryAction;
 use App\Domains\Bookshop\Actions\Checkout\DecideBankTransferSlipAction;
 use App\Domains\Bookshop\Actions\CreateVendorAction;
 use App\Domains\Bookshop\Actions\DecideVendorApplicationAction;
+use App\Domains\Bookshop\Actions\DecideVendorHostAction;
 use App\Domains\Bookshop\Actions\DecideVendorPayoutAction;
 use App\Domains\Bookshop\Actions\ListBankTransferSlipsAction;
 use App\Domains\Bookshop\Actions\ListCatalogueOptionsAction;
@@ -23,6 +24,7 @@ use App\Domains\Bookshop\Actions\NotifyBookshopUserAction;
 use App\Domains\Bookshop\Actions\Orders\RefundOrderAction;
 use App\Domains\Bookshop\Actions\SaveBookshopNoticeSwitchesAction;
 use App\Domains\Bookshop\Actions\SaveCatalogueTermAction;
+use App\Domains\Bookshop\Actions\SaveUsdDisplayAction;
 use App\Domains\Bookshop\Actions\Shop\ApplyToSellAction;
 use App\Domains\Bookshop\Actions\Shop\ListShopProductsAction;
 use App\Domains\Bookshop\Actions\Shop\PresentShopVendorAction;
@@ -30,6 +32,7 @@ use App\Domains\Bookshop\Actions\UpdateVendorAction;
 use App\Domains\Bookshop\Enums\OrderStatus;
 use App\Domains\Bookshop\Support\InsightsReport;
 use App\Domains\Bookshop\Support\SectionTypes;
+use App\Domains\Bookshop\Support\Usd;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
 use Carbon\Carbon;
@@ -66,6 +69,8 @@ class AdminBookshopController extends Controller
             'applications' => app(DecideVendorApplicationAction::class)->list(),
             'applications_open' => app(ApplyToSellAction::class)->isOpen(),
             'quotes' => app(ListQuotesAction::class)->summary(),
+            'hosts' => ['shops' => app(DecideVendorHostAction::class)->list(), 'shop_host' => config('bookshop.hosts.shop_host'), 'check' => $request->session()->get('host_check')],
+            'usd' => Usd::state(),
             'insights' => ['days' => InsightsReport::days((int) $request->query('insight_days', 30)), 'shops' => InsightsReport::byShop((int) $request->query('insight_days', 30)), 'ranges' => array_map('intval', (array) config('bookshop.insights.ranges'))],
             'cod_on' => app(CashOnDeliveryAction::class)->isOn(),
             'default_commission_rate' => number_format((float) config('bookshop.default_commission_rate'), 2, '.', ''),
@@ -456,6 +461,36 @@ class AdminBookshopController extends Controller
             }
             fclose($out);
         }, 'bookstore-shop-applications.csv', ['Content-Type' => 'text/csv; charset=UTF-8']);
+    }
+
+    /** B9f: what a shop's requested domain points at now. */
+    public function checkHost(Request $request, int $vendor): RedirectResponse
+    {
+        abort_unless($request->user()?->can('bookshop.manage'), 403);
+
+        return back()->with('host_check', app(DecideVendorHostAction::class)->check($vendor));
+    }
+
+    /** B9f: turn a shop's own domain on (approve) or off. */
+    public function decideHost(Request $request, int $vendor): RedirectResponse
+    {
+        abort_unless($request->user()?->can('bookshop.manage'), 403);
+        $data = $request->validate(['decision' => 'required|string|in:approve,off']);
+
+        $data['decision'] === 'approve' ? app(DecideVendorHostAction::class)->approve($vendor) : app(DecideVendorHostAction::class)->turnOff($vendor);
+
+        return back()->with('success', __($data['decision'] === 'approve' ? 'shop.host_approved_flash' : 'shop.host_off_flash'));
+    }
+
+    /** B9f: prices in dollars as a guide, and the rate. */
+    public function saveUsd(Request $request): RedirectResponse
+    {
+        abort_unless($request->user()?->can('bookshop.manage'), 403);
+        $data = $request->validate(['on' => 'required|boolean', 'rate' => 'required|numeric|min:1|max:1000']);
+
+        app(SaveUsdDisplayAction::class)->execute((bool) $data['on'], (float) $data['rate']);
+
+        return back()->with('success', __('shop.usd_saved_flash'));
     }
 
     /** B9e: every shop's funnel side by side. */

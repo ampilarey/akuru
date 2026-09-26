@@ -106,6 +106,8 @@
         <div class="flex flex-wrap items-center justify-between gap-4 rounded-lg border bg-white p-4">
             <div>
                 <p class="text-lg font-semibold" data-testid="cart-subtotal">{{ __('shop.subtotal') }}: {{ $cart['currency'] }} {{ $cart['subtotal'] }}</p>
+                @php($usd = \App\Domains\Bookshop\Support\Usd::line($cart['subtotal']))
+                @if($usd !== '')<p class="text-sm text-gray-600" data-testid="cart-usd">{{ $usd }} · {{ __('shop.usd_charged_in_mvr') }}</p>@endif
                 <p class="text-xs text-gray-500">{{ __('shop.delivery_at_checkout') }} {{ __('shop.prices_include_tax') }}</p>
             </div>
             <div class="flex flex-wrap items-center gap-3">
