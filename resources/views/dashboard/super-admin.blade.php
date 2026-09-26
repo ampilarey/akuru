@@ -41,7 +41,9 @@
     </div>
 
     {{-- ── Main grid: enrollments + health ──────────────────────────────── --}}
-    <div style="display:grid;grid-template-columns:1fr 320px;gap:1.25rem;margin-bottom:1.25rem">
+    {{-- One column on a phone, the 320 px side column from lg: (the owner's phone
+         screenshot, 2026-09-26 — the enrolments card was squeezed to 40 px). --}}
+    <div class="mb-5 grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1fr)_320px]">
 
         {{-- Recent Enrollments --}}
         <div style="background:white;border-radius:.875rem;border:1px solid #E5E7EB;overflow:hidden">
@@ -165,7 +167,7 @@
     </div>
 
     {{-- ── Bottom row: stats + quick actions ────────────────────────────── --}}
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem">
+    <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
 
         {{-- Enrollment Stats --}}
         <div style="background:white;border-radius:.875rem;border:1px solid #E5E7EB;padding:1.25rem">
