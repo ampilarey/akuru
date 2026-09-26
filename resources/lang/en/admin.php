@@ -3,7 +3,8 @@
 // The admin panel's front door at /admin (docs/ADMIN_PANEL.md §1).
 return [
     'hub_title' => 'Admin panel',
-    'hub_intro' => 'Everything the office runs, in one place. You see the sections your role may open.',
+    'hub_intro' => 'Everything the office runs, in four parts. Open a section, or go straight to a screen inside it. You see only what your role may open.',
+    'hub_parts' => 'Parts of the panel',
     'hub_dashboard' => 'Dashboard',
     'desc_ops_checklist' => 'The close-out checklist: what has been checked before the platform goes live, by whom.',
     'desc_admin_enrolments' => 'Applications and enrolments: activate, reject, suspend, record a manual payment.',

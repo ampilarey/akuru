@@ -54,9 +54,18 @@ class BuildNavigationAction
         foreach (NavigationMap::groups() as $group) {
             $items = [];
             foreach ($group['items'] as $item) {
-                if ($this->mayOpen($user, $roles, $item, $routes, $locale)) {
-                    $items[] = $this->present($item);
+                if (! $this->mayOpen($user, $roles, $item, $routes, $locale)) {
+                    continue;
                 }
+                // A section's inner screens (the admin panel), each behind
+                // its own route gate too.
+                $children = [];
+                foreach ($item['children'] ?? [] as $child) {
+                    if ($this->mayOpen($user, $roles, $child, $routes, $locale)) {
+                        $children[] = $this->present($child);
+                    }
+                }
+                $items[] = $this->present($item, $children);
             }
             if ($items !== []) {
                 $groups[] = [
@@ -129,15 +138,23 @@ class BuildNavigationAction
     }
 
     /**
-     * @param  array{key: string, href: string}  $item
-     * @return array{key: string, label: string, href: string}
+     * @param  array{key: string, href: string, hard?: bool, section?: string}  $item
+     * @param  list<array{key: string, label: string, href: string, hard?: bool}>  $children
+     * @return array{key: string, label: string, href: string, hard?: bool, section?: array{key: string, label: string}, children?: list<array{key: string, label: string, href: string, hard?: bool}>}
      */
-    private function present(array $item): array
+    private function present(array $item, array $children = []): array
     {
         $presented = ['key' => $item['key'], 'label' => $this->label($item['key']), 'href' => $item['href']];
         // A Blade screen: the shell must load it whole, not as an Inertia visit.
         if (! empty($item['hard'])) {
             $presented['hard'] = true;
+        }
+        // The part of the admin panel it belongs to, for a heading.
+        if (! empty($item['section'])) {
+            $presented['section'] = ['key' => $item['section'], 'label' => $this->label($item['section'])];
+        }
+        if ($children !== []) {
+            $presented['children'] = $children;
         }
 
         return $presented;

@@ -85,6 +85,7 @@ it('lists the whole admin panel in the Inertia More menu, Blade screens marked f
     expect($items['/admin/enrollments']['hard'] ?? false)->toBeTrue()
         ->and($items['/admin/public-site/pages']['hard'] ?? false)->toBeTrue()
         ->and($items['/admin/commerce'])->not->toHaveKey('hard')
+        ->and($items['/admin/commerce']['section']['key'])->toBe('panel_money')
         ->and($items['/admin/enrollments']['label'])->toBe('Enrolments');
 
     // A super admin sees the two; a teacher sees none of the panel.

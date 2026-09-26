@@ -169,8 +169,14 @@ export default function AppShell({ title, children }) {
                                     <section key={group.key}>
                                         <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500">{group.label}</h2>
                                         <ul className="space-y-1">
-                                            {group.items.map((item) => (
+                                            {group.items.map((item, index) => (
                                                 <li key={item.href}>
+                                                    {/* The admin panel's parts (Admissions, Website & content,
+                                                        Shops & money, System): a small heading where a new
+                                                        part begins, so the column reads as the hub does. */}
+                                                    {item.section && item.section.key !== group.items[index - 1]?.section?.key && (
+                                                        <span className="mb-0.5 mt-2 block text-[11px] font-semibold uppercase tracking-wide text-gray-400" data-nav-section={item.section.key}>{item.section.label}</span>
+                                                    )}
                                                     {/* `hard`: a Blade screen, opened with a full page
                                                         load — an Inertia visit would get a non-Inertia
                                                         response and show it in a modal. */}
