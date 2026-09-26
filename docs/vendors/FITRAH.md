@@ -54,6 +54,26 @@ mapping, to be confirmed with the vendor:
 Bree Serif and Courier Prime are added to the plan's approved font list
 (§6.2) for this.
 
+**Checked against the designer (B4, 2026-09-26).** Two of the proposed
+pairs do not read, as predicted: cream on dusty blue reaches 2.81 (text
+needs 4.5), and coral pink as a link on cream reaches 1.79 (needs 3). The
+palette the staging walk publishes, and the one to propose to the vendor:
+
+| Theme slot | Value | Change |
+|---|---|---|
+| Primary | Dusty Blue `#7B9AA5` | — |
+| Secondary | Sandy Yellow `#F2C778` | — |
+| Accent | Terracotta `#B0553F` | coral darkened until links on cream read (4.6) |
+| Page background | Cream `#FBF7F1` | — |
+| Card background | White `#FFFFFF` | — |
+| Text | Ink `#2F3A40` | — |
+| Text on primary | Near-black `#1A2226` | cream failed; the band's text has to be dark (5.4) |
+| Text on accent | White `#FFFFFF` | on the terracotta (5.0) |
+
+Coral pink itself is still usable where it carries no text — a badge
+background with ink text, or the banner — but the designer's slots are for
+reading pairs. Fonts as proposed; corners soft, buttons filled, cards flat.
+
 ## Still to collect
 
 - Legal name and TIN (or "not GST-registered").

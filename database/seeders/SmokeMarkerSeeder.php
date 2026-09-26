@@ -1782,10 +1782,35 @@ class SmokeMarkerSeeder extends Seeder
         $this->smokeProductPhoto('smoke-arabic-letters-tracing-book', database_path('seeders/fixtures/vendors/fitrah-logo.jpg'));
 
         // B3: Fitrah open, with the standard seven-day window, every run.
+        // B4: verified by the office (the walk checks the badge shows), not an
+        // Akuru partner (the walk checks Akuru's palette stays locked).
         DB::table('vendors')->where('id', $fitrahId)->update([
             'holiday_from' => null, 'holiday_until' => null, 'holiday_notice' => null,
             'return_window_days' => null, 'return_conditions' => null,
+            'badges' => json_encode(['verified']),
         ]);
+
+        // B4 (`storefront.mjs`): the walk designs and publishes Fitrah's page
+        // itself, so the storefront and its images start from nothing.
+        $storefrontIds = DB::table('vendor_storefronts')->where('vendor_id', $fitrahId)->pluck('id');
+        $storefrontMedia = [];
+        foreach (DB::table('vendor_storefronts')->whereIn('id', $storefrontIds)->get(['draft_identity', 'published_identity']) as $row) {
+            foreach ([$row->draft_identity, $row->published_identity] as $json) {
+                $identity = json_decode((string) $json, true) ?: [];
+                $storefrontMedia = [...$storefrontMedia, ...array_filter(array_values((array) ($identity['images'] ?? [])), 'is_numeric')];
+            }
+        }
+        DB::table('vendor_storefront_versions')->whereIn('vendor_storefront_id', $storefrontIds)->delete();
+        DB::table('vendor_storefronts')->whereIn('id', $storefrontIds)->delete();
+        foreach (array_unique($storefrontMedia) as $mediaId) {
+            $media = DB::table('media_files')->where('id', $mediaId)->first(['disk', 'path']);
+            if ($media !== null) {
+                $stem = preg_replace('/\.[^.]+$/', '', $media->path);
+                $copies = array_filter(Storage::disk($media->disk)->files(dirname($media->path)), fn ($f) => str_starts_with($f, $stem.'-w'));
+                Storage::disk($media->disk)->delete([$media->path, ...$copies]);
+            }
+            DB::table('media_files')->where('id', $mediaId)->delete();
+        }
 
         // B2: the walk pays from the student's wallet; the stock the walk
         // bought last time is put back by the updateOrInsert above.

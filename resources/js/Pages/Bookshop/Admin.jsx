@@ -66,8 +66,10 @@ function VendorEditor({ vendor, t, onDone }) {
         gst_registered: Boolean(vendor.gst_registered), status: vendor.status, commission_rate: vendor.commission_rate || '',
         contact_email: vendor.contact_email || '', contact_phone: vendor.contact_phone || '', address: vendor.address || '',
         opening_hours: vendor.opening_hours || '', office_notes: vendor.office_notes || '',
+        badges: vendor.badges || [],
     });
     const set = (name) => (e) => form.setData(name, e.target.type === 'checkbox' ? e.target.checked : e.target.value);
+    const toggleBadge = (badge) => (e) => form.setData('badges', e.target.checked ? [...form.data.badges, badge] : form.data.badges.filter((b) => b !== badge));
 
     return (
         <form
@@ -90,6 +92,15 @@ function VendorEditor({ vendor, t, onDone }) {
             <label className="text-sm">{t.legal_name}<input className="form-input w-full" value={form.data.legal_name} onChange={set('legal_name')} /></label>
             <label className="text-sm">{t.tin}<input className="form-input w-full" value={form.data.tin} onChange={set('tin')} /></label>
             <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={form.data.gst_registered} onChange={set('gst_registered')} /> {t.gst_registered}</label>
+            {/* B4 (plan §6.1): the office's badges; "Akuru partner" also unlocks Akuru's own palette (decision 10). */}
+            <fieldset className="flex flex-wrap items-center gap-3 text-sm md:col-span-2">
+                <legend className="sr-only">{t.badges}</legend>
+                <span className="font-medium">{t.badges}:</span>
+                {['verified', 'akuru_partner'].map((badge) => (
+                    <label key={badge} className="flex items-center gap-1"><input type="checkbox" checked={form.data.badges.includes(badge)} onChange={toggleBadge(badge)} data-testid={`badge-${badge}`} /> {t[`badge_${badge}`]}</label>
+                ))}
+                {vendor.storefront_published_at && <span className="text-xs text-gray-500">{t.storefront_published_on.replace(':date', vendor.storefront_published_at)}</span>}
+            </fieldset>
             <label className="text-sm">{t.contact_email}<input className="form-input w-full" type="email" value={form.data.contact_email} onChange={set('contact_email')} /></label>
             <label className="text-sm">{t.contact_phone}<input className="form-input w-full" value={form.data.contact_phone} onChange={set('contact_phone')} /></label>
             <label className="text-sm md:col-span-3">{t.address}<textarea className="form-input w-full" rows={2} value={form.data.address} onChange={set('address')} /></label>

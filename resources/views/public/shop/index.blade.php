@@ -6,7 +6,20 @@
 @section('title', $pageTitle . ' - ' . config('app.name'))
 @section('description', $vendor['tagline'] ?? __('shop.shop_intro'))
 
+@php($storefront = $vendor['storefront'] ?? null)
+@if($storefront)
+    @include('public.shop._theme')
+@endif
+
 @section('content')
+@if($storefront)
+{{-- B4: the vendor's own look, inside the Akuru frame. --}}
+<div class="storefront {{ $storefront['theme']['shape']['button'] === 'outlined' ? 'sf-outlined' : '' }}" data-testid="storefront" data-preview="{{ ($preview ?? false) ? '1' : '0' }}" data-preset="{{ $storefront['theme']['preset'] ?? 'custom' }}">
+@if($preview ?? false)
+    <p class="bg-amber-100 px-4 py-2 text-center text-sm text-amber-900" data-testid="preview-banner">{{ __('shop.preview_banner') }}</p>
+@endif
+@include('public.shop._storefront')
+@else
 <section class="bg-gradient-to-br from-brandMaroon-50 to-brandBeige-100 py-10">
     <div class="container mx-auto px-4">
         @if($vendor || $heading)
@@ -33,8 +46,9 @@
         @endif
     </div>
 </section>
+@endif
 
-<section class="border-b bg-white py-4">
+<section class="border-b py-4 {{ $storefront ? '' : 'bg-white' }}">
     <div class="container mx-auto px-4">
         <form method="GET" action="{{ url()->current() }}" class="flex flex-wrap items-end gap-3" data-testid="shop-filters">
             <div class="min-w-48 flex-1">
@@ -150,6 +164,9 @@
         <div class="mt-6">{{ $products->links() }}</div>
     </div>
 </section>
+@if($storefront)
+</div>
+@endif
 
 @include('public.shop._bottom-bar')
 @endsection

@@ -26,6 +26,41 @@ return [
      * B2 — checkout (plan §4, §8; decisions 4, 6, 7).
      */
     /*
+     * B4 — the storefront designer (plan §6.1, §6.2; decisions 10 and 14).
+     * The design is data on the vendor, never code: a theme is a preset or
+     * a palette of hex colours, checked for contrast on save and again on
+     * publish; fonts come from this approved list only. Every font stack
+     * ends in the system Thaana and Arabic fallbacks, so a vendor's choice
+     * never breaks Dhivehi or Arabic text.
+     */
+    'storefront' => [
+        'images' => [
+            'max_kilobytes' => 5120,
+            'mimes' => ['image/jpeg', 'image/png', 'image/webp'],
+        ],
+        // Google Fonts serve every face but Faruma, which ships under
+        // public/fonts (decision 14: Faruma and Noto Sans Thaana; MV Waheed
+        // only if a licence turns up).
+        'fonts' => [
+            'latin' => ['Inter', 'Merriweather', 'Poppins', 'Lora', 'Bree Serif', 'Courier Prime'],
+            'dhivehi' => ['Faruma', 'Noto Sans Thaana'],
+            'arabic' => ['Noto Naskh Arabic', 'Amiri'],
+            'self_hosted' => ['Faruma'],
+        ],
+        // Decision 10: presets, with Akuru's own palette reserved for a
+        // vendor the office has badged "Akuru partner".
+        'presets' => [
+            'akuru' => ['label' => 'Akuru maroon and beige', 'badge' => 'akuru_partner', 'colors' => ['primary' => '#7A1F2B', 'secondary' => '#E9D8B4', 'accent' => '#8A5A0B', 'page_bg' => '#FBF7F1', 'card_bg' => '#FFFFFF', 'text' => '#2B1B1E', 'on_primary' => '#FFFFFF', 'on_accent' => '#FFFFFF']],
+            'ocean' => ['label' => 'Ocean', 'colors' => ['primary' => '#0F4C81', 'secondary' => '#CFE8F3', 'accent' => '#0B7285', 'page_bg' => '#F4FAFC', 'card_bg' => '#FFFFFF', 'text' => '#12303F', 'on_primary' => '#FFFFFF', 'on_accent' => '#FFFFFF']],
+            'forest' => ['label' => 'Forest', 'colors' => ['primary' => '#1F5F3F', 'secondary' => '#DDEBDD', 'accent' => '#8C5A16', 'page_bg' => '#F5F8F4', 'card_bg' => '#FFFFFF', 'text' => '#1B2A20', 'on_primary' => '#FFFFFF', 'on_accent' => '#FFFFFF']],
+            'sand' => ['label' => 'Sand', 'colors' => ['primary' => '#8A5A2B', 'secondary' => '#F2E6D3', 'accent' => '#B0413E', 'page_bg' => '#FBF6EE', 'card_bg' => '#FFFFFF', 'text' => '#3A2A1A', 'on_primary' => '#FFFFFF', 'on_accent' => '#FFFFFF']],
+            'night' => ['label' => 'Night', 'colors' => ['primary' => '#1E1B4B', 'secondary' => '#3B3765', 'accent' => '#F2C778', 'page_bg' => '#14122E', 'card_bg' => '#1F1C40', 'text' => '#F3F0FF', 'on_primary' => '#FFFFFF', 'on_accent' => '#1A1400']],
+            'ink' => ['label' => 'Ink', 'colors' => ['primary' => '#111827', 'secondary' => '#E5E7EB', 'accent' => '#1D4ED8', 'page_bg' => '#FFFFFF', 'card_bg' => '#F9FAFB', 'text' => '#111827', 'on_primary' => '#FFFFFF', 'on_accent' => '#FFFFFF']],
+        ],
+        'max_versions_shown' => 20,
+    ],
+
+    /*
      * B3 — returns (decision 8): seven days from delivery or collection,
      * unused, the buyer paying return delivery unless the item was faulty.
      * A shop may offer longer, never shorter. Decision 15: a shop sees its

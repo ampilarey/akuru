@@ -21,6 +21,7 @@ class ListVendorsAction
     public function execute(int $limit = 500): array
     {
         $vendors = Vendor::query()
+            ->with('storefront')
             ->withCount(['members', 'products', 'products as active_products_count' => fn ($q) => $q->where('status', ProductStatus::Active->value)])
             ->orderBy('name')
             ->limit($limit)
@@ -53,6 +54,8 @@ class ListVendorsAction
                 'legal_name' => $vendor->legal_name,
                 'tin' => $vendor->tin,
                 'gst_registered' => $vendor->gst_registered,
+                'badges' => (array) ($vendor->badges ?? []),
+                'storefront_published_at' => $vendor->storefront?->published_at?->toDateTimeString(),
                 'commission_rate' => $vendor->commission_rate !== null ? (string) $vendor->commission_rate : null,
                 'effective_commission_rate' => number_format($vendor->commission_rate !== null ? (float) $vendor->commission_rate : $default, 2, '.', ''),
                 'contact_email' => $vendor->contact_email,

@@ -88,6 +88,8 @@ class AdminBookshopController extends Controller
             'address' => 'nullable|string|max:1000',
             'opening_hours' => 'nullable|string|max:1000',
             'office_notes' => 'nullable|string|max:5000',
+            'badges' => 'nullable|array',
+            'badges.*' => 'string|in:'.implode(',', UpdateVendorAction::BADGES),
         ]);
 
         app(UpdateVendorAction::class)->execute($vendor, $data);

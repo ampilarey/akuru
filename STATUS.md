@@ -4414,6 +4414,118 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5hb. B4: the storefront designer, part 1 — identity and theme (2026-09-26)
+
+BOOKSHOP_PLAN slice B4, the owner's "B4". A vendor's page can now look
+like its brand, inside the Akuru frame (§6, decision 3). Sections, pages
+and the office's moderation are B5.
+
+**The designer** (`/vendor/storefront`, Inertia; *Storefront designer* on
+the portal home). A form on the left, the **real public page rendered
+from the draft** in an iframe on the right, so what the vendor sees is
+what publishes (§6.3's method, applied here to the head of the page).
+- **Theme** (§6.2): six presets — Akuru maroon and beige, Ocean, Forest,
+  Sand, Night, Ink — or the shop's own eight colours (primary band,
+  secondary, accent, page, card, text, text on primary, text on accent) by
+  hex; heading, body and tagline fonts from the approved Latin list, a
+  Dhivehi font (Faruma, self-hosted; Noto Sans Thaana) and an Arabic one
+  (Noto Naskh Arabic, Amiri) — decision 14, no MV Waheed; text size; corner
+  radius, button style, card style, banner height and product-photo ratio;
+  and an optional **dark version**, derived from the light palette (page
+  and cards go dark, brand colours stay; a dark accent is lightened until
+  it reads and given whichever text reads better on it).
+- **Contrast check** (§6.2 "refused, with the reason"): five pairs must
+  read — text on page and on card, text on primary, text on accent (WCAG
+  4.5) and accent on page (3, for links). A draft may be saved failing;
+  the designer lists each failing pair with the ratio it reached and the
+  floor it needs, and **publishing refuses** until they pass. Fitrah's kit
+  was right about itself: cream on dusty blue reaches 2.81 and coral links
+  on cream 1.79; `docs/vendors/FITRAH.md` now carries the checked palette
+  (dark text on the band, a terracotta accent) that the staging walk
+  publishes.
+- **Identity** (§6.1): logo, a logo for dark backgrounds, banner (public
+  media through `StorePublicMediaAction`, resized through the same
+  `ImageProcessorInterface` variants as product photos: 240 and 1600 wide);
+  name and tagline in Dhivehi and Arabic; the story in three languages,
+  cleaned to the prose profile like product descriptions; contact block
+  (phone, email, Viber, address, a map link from Google Maps or
+  OpenStreetMap only); opening hours; social links, each kept only when it
+  points at its own network over https (`javascript:` and strangers'
+  hosts are dropped).
+- **Draft, preview, publish, roll back** (§6.2 "named versions"): staff
+  and owners save drafts; owners publish, with an optional name for the
+  version. Each publish appends a numbered snapshot; rolling back publishes
+  an earlier snapshot as a new version ("Rolled back to v1") and makes it
+  the draft again, so the trail is append-only. The screen shows what is
+  live, whether the draft differs, and the versions to go back to.
+
+**The public page** (`/shop/<vendor>`): until something is published it
+is B1b's plain page. Once published, the whole page sits in a `.storefront`
+root carrying the theme as **CSS custom properties** (`Theme::cssVariables`
+— normalised hex, words from fixed lists, font names from the approved
+list; no vendor CSS or HTML ever reaches the page), Google Fonts loaded
+for the chosen faces (Faruma stays self-hosted), a dark block under
+`prefers-color-scheme: dark` when the theme has one, and the vendor's
+head: banner, logo (dark variant swapped in dark mode), name and tagline
+in the visitor's language, the office's **badges**, always *at Akuru
+Bookstore* (decision 11), the holiday notice, then the story and the
+contact block; the product cards below take the card style, corners and
+photo ratio. The preview is the same view with a "this is your draft"
+banner, under the vendor routes (members only).
+
+**Badges** (§6.1, decision 10): the office grants *Verified vendor* and
+*Akuru partner* in the vendor editor; they show on the page, and Akuru's
+own palette is **locked** in the designer for a shop without the partner
+badge — refused on save and on publish, unlocked the moment the office
+ticks it.
+
+**Data** (one additive migration; both models aliased, ADR-005):
+`vendor_storefronts` (one per vendor: draft and published identity and
+theme as JSON, the live version, when and by whom), append-only
+`vendor_storefront_versions`, and `vendors.badges`. The plan's
+`draft_sections`/`published_sections` columns arrive with B5.
+
+**Not in B4, by the plan**: sections, pages, navigation and the section
+designer (B5); story photos (B5's image gallery); the office unpublishing
+a storefront or locking a section type (§6.6, B5); per-vendor published
+JSON caching (§10) — one query per page, not worth a cache until B5's
+sections make it wide.
+
+**Baselines**: `blade_screens` 234 → 236 (the head and theme partials of
+the public vendor page); `raw_html_renders` declares the story (cleaned on
+every save) and the theme's CSS values (never vendor text);
+`VendorScopeIsTheOnlyDoorTest` covers the new controller.
+
+**Tests**: `StorefrontDesignerTest` (5): the designer's defaults and
+choices with Akuru's palette locked, and every preset reading in light and
+derived dark; a failing draft saved with its two named pairs and refused
+at publish, then the checked Fitrah palette passing; images, sanitised
+story, dropped social links, the preview for members only, staff refused
+to publish, v1 live and the public page carrying the theme, fonts, images,
+identity and Dhivehi; two versions, a roll-back as v3, and the office's
+badges (an unknown badge refused) unlocking Akuru's palette and showing on
+the page; the derived dark scheme, allowed fonts and shapes only, and a
+palette edited away from its preset. Full suite **2230 passed**.
+
+**Walked** (`scripts/smoke/storefront.mjs`, **15/15**, no console or
+server errors, twice): Fitrah's owner opens the designer from the portal
+(six presets, Akuru's locked, nothing published); saves cream on dusty
+blue and reads the two failing pairs with Publish held; corrects to the
+checked palette, Bree Serif and Inter, uploads the logo and a banner,
+writes the story, phone and Instagram; the preview iframe shows the real
+page in the new look marked a draft while a guest still sees the plain
+page; publishes "Brand look" as v1 and the guest sees the logo, tagline,
+*at Akuru Bookstore*, the Verified badge, the story, the contact block,
+dusty-blue custom properties with Bree Serif headings and the products
+under it; publishes Forest as v2 (the guest's page turns green) and rolls
+back to v1 as v3 (dusty blue again). `vendor.mjs` **25/25**, `shop.mjs`
+**24/24**. Staging: the seeder clears Fitrah's storefront and its images
+each run and marks her Verified.
+
+**Production**: the migration only. Vendor pages with a published theme
+load their fonts from Google Fonts in the customer's browser; nothing on
+the host changes.
+
 ## 5ha. B3: fulfilment and returns (2026-09-26)
 
 BOOKSHOP_PLAN slice B3. The owner first said "B4", then "B3"; the plan's

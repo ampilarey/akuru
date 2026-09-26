@@ -122,6 +122,8 @@ return [
     'order_event' => \App\Domains\Bookshop\Models\OrderEvent::class,
     'order_return' => \App\Domains\Bookshop\Models\OrderReturn::class,
     'order_refund' => \App\Domains\Bookshop\Models\OrderRefund::class,
+    'vendor_storefront' => \App\Domains\Bookshop\Models\VendorStorefront::class,
+    'vendor_storefront_version' => \App\Domains\Bookshop\Models\VendorStorefrontVersion::class,
     'cart' => \App\Domains\Bookshop\Models\Cart::class,
     'cart_item' => \App\Domains\Bookshop\Models\CartItem::class,
     'customer_address' => \App\Domains\Bookshop\Models\CustomerAddress::class,

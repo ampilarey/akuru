@@ -801,6 +801,12 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::post('returns/{return}/decide', [\App\Domains\Bookshop\Http\Controllers\VendorOrderController::class, 'decideReturn'])->name('vendor.returns.decide')->whereNumber('return');
         Route::post('slips/{slip}/decide', [\App\Domains\Bookshop\Http\Controllers\VendorOrderController::class, 'decideSlip'])->name('vendor.slips.decide')->whereNumber('slip');
         Route::get('slips/{slip}', [\App\Domains\Bookshop\Http\Controllers\VendorOrderController::class, 'slip'])->name('vendor.slips.show')->whereNumber('slip');
+        // B4: the storefront designer.
+        Route::get('storefront', [\App\Domains\Bookshop\Http\Controllers\VendorStorefrontController::class, 'index'])->name('vendor.storefront.index');
+        Route::get('storefront/preview', [\App\Domains\Bookshop\Http\Controllers\VendorStorefrontController::class, 'preview'])->name('vendor.storefront.preview');
+        Route::post('storefront/draft', [\App\Domains\Bookshop\Http\Controllers\VendorStorefrontController::class, 'saveDraft'])->name('vendor.storefront.draft');
+        Route::post('storefront/publish', [\App\Domains\Bookshop\Http\Controllers\VendorStorefrontController::class, 'publish'])->name('vendor.storefront.publish');
+        Route::post('storefront/versions/{version}/roll-back', [\App\Domains\Bookshop\Http\Controllers\VendorStorefrontController::class, 'rollBack'])->name('vendor.storefront.roll-back')->whereNumber('version');
     });
 
     // L7 reviewer portal (§12.2) — own assignments only, enforced in actions.
