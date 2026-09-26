@@ -13,6 +13,7 @@ final class ViolationScanner
         'Identity', 'People', 'Academics', 'ExamsGrades', 'Hifz', 'Admissions',
         'Finance', 'Forms', 'HR', 'Commerce', 'Library', 'Courses', 'Offerings', 'Progress',
         'Pronunciation', 'Media', 'Notifications', 'Portal', 'Website', 'Settings', 'PrayerTimes',
+        'Bookshop',
     ];
 
     /** @var list<string> */

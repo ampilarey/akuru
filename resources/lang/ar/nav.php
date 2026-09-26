@@ -130,6 +130,8 @@ return [
     'library' => 'المكتبة الرقمية',
     'my_library' => 'مكتبتي',
     'my_wallet' => 'محفظتي',
+    'bookshop' => 'متجر الكتب الإلكتروني',
+    'vendor_portal' => 'متجري',
     'collecting_my_child' => 'استلام ابني',
     'arrivals' => 'الوصول',
     'my_childs_work' => 'أعمال ابني',

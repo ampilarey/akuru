@@ -133,6 +133,8 @@ return [
     'library' => 'Digital Library',
     'my_library' => 'My library',
     'my_wallet' => 'My wallet',
+    'bookshop' => 'Online Bookshop',
+    'vendor_portal' => 'My shop',
     'collecting_my_child' => 'Collecting my child',
     'arrivals' => 'Arrivals',
     'my_childs_work' => 'My child’s work',

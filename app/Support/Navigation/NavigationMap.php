@@ -77,6 +77,10 @@ final class NavigationMap
             'reviewer' => [
                 ['key' => 'review', 'href' => '/review'],
             ],
+            // BOOKSHOP_PLAN B1a: a vendor member's own shop.
+            'vendor' => [
+                ['key' => 'vendor_portal', 'href' => '/vendor'],
+            ],
         ];
     }
 
@@ -185,6 +189,7 @@ final class NavigationMap
                 ['key' => 'performance', 'href' => '/portal/performance', 'roles' => $family],
                 ['key' => 'write', 'href' => '/write', 'roles' => ['writer']],
                 ['key' => 'review', 'href' => '/review', 'roles' => ['reviewer']],
+                ['key' => 'vendor_portal', 'href' => '/vendor', 'roles' => ['vendor']],
             ]],
             ['key' => 'finance_group', 'items' => [
                 ['key' => 'fee_items', 'href' => '/finance/fee-items'],
@@ -258,6 +263,7 @@ final class NavigationMap
             ]],
             ['key' => 'admin_group', 'items' => [
                 ['key' => 'ops_checklist', 'href' => '/admin/operations'],
+                ['key' => 'bookshop', 'href' => '/admin/bookshop', 'can' => ['bookshop.manage']],
                 ['key' => 'feature_walkthrough', 'href' => '/admin/operations/features'],
                 ['key' => 'translations', 'href' => '/admin/translations'],
             ]],
