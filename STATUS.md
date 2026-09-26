@@ -4445,8 +4445,8 @@ there, is kept out of `/admin/operations`, can use the screen's writes
 but not the team; a user with no role kept out; a full admin adds an
 existing account (no password) and a new one (a 12-character one-time
 password, change forced), sees both, removes one, who is then kept out;
-the command refuses an unknown email, grants and revokes. Full suite in
-the PR.
+the command refuses an unknown email, grants and revokes. Full suite
+**2282 passed**.
 
 **Walked** (`scripts/smoke/team.mjs`, **8/8**, no console or server
 errors): the admin adds the parent as a Bookstore admin (no password for
