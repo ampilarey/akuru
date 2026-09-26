@@ -94,6 +94,10 @@
                     </button>
                     <div x-show="adminOpen" x-transition x-cloak id="nav-more-menu"
                          style="position:absolute;top:calc(100% + .5rem);inset-inline-start:0;min-width:180px;background:white;border-radius:.625rem;box-shadow:0 8px 30px rgba(0,0,0,.15);border:1px solid #E5E7EB;padding:.375rem;z-index:200">
+                        @if(auth()->user()->hasAnyRole(['super_admin','admin','headmaster','supervisor','bookshop_manager']))
+                        <a href="{{ route('admin.index') }}" style="display:block;padding:.5rem .75rem;border-radius:.375rem;font-size:.8rem;color:#374151;text-decoration:none;font-weight:600" onmouseover="this.style.background='#F9FAFB'" onmouseout="this.style.background='transparent'">🛠️ Admin panel</a>
+                        <div style="height:1px;background:#F3F4F6;margin:.25rem 0"></div>
+                        @endif
                         @if(auth()->user()->hasAnyRole(['super_admin','admin','headmaster','supervisor','teacher']))
                         <a href="{{ route('announcements.index') }}" style="display:block;padding:.5rem .75rem;border-radius:.375rem;font-size:.8rem;color:#374151;text-decoration:none" onmouseover="this.style.background='#F9FAFB'" onmouseout="this.style.background='transparent'">📢 Announcements</a>
                         @endif
@@ -229,6 +233,11 @@
         @endauth
 
         <a href="{{ route('dashboard') }}" style="display:block;padding:.625rem .75rem;color:white;font-size:.85rem;text-decoration:none;border-radius:.375rem" onmouseover="this.style.background='rgba(255,255,255,.1)'" onmouseout="this.style.background='transparent'">Dashboard</a>
+        @auth
+        @if(auth()->user()->hasAnyRole(['super_admin','admin','headmaster','supervisor','bookshop_manager']))
+        <a href="{{ route('admin.index') }}" class="block rounded px-3 py-2.5 text-[.85rem] font-semibold text-white hover:bg-white/10">Admin panel</a>
+        @endif
+        @endauth
 
         @auth
         @if(auth()->user()->hasAnyRole(['super_admin','admin','headmaster','supervisor']))

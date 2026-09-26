@@ -152,6 +152,7 @@ return [
     'feature_walkthrough' => 'ފީޗަރ ތަޢާރަފު',
     'translations' => 'ތަރުޖަމާ',
     // The admin panel in the Inertia shell's More menu (admin-panel audit, STATUS §5hs).
+    'admin_home' => 'އެޑްމިން ޕެނަލް',
     'admin_enrolments' => 'އެންރޯލްމަންޓް',
     'admin_instructors' => 'މުދައްރިސުން',
     'website_cms' => 'ވެބްސައިޓް ސީއެމްއެސް',

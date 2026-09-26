@@ -31,6 +31,19 @@ KNOWN_ISSUES or BACKLOG.
 | `admin/pronunciation` | 5 | `role:super_admin\|admin` + `can:pronunciation.manage` | Inertia | yes | 1 file | `pronounce.mjs` |
 | `admin/bookshop` | 37 | `role:super_admin\|admin\|bookshop_manager` + `can:bookshop.manage` | Inertia | yes, all ten | 17 files | 15 walks |
 
+**The front door.** `/admin` (the owner, 2026-09-26: "in Bake & Grill admin is a
+separate app at `/admin` — is the way admin is set correct?"). Akuru's admin
+is not a separate app: it is these sections inside the one application,
+under two shells, and until that day nothing answered at `/admin` itself.
+It now shows one card per section the signed-in person may open — the
+navigation map's admin group filtered by each route's own gate, so a
+Bookstore manager sees the Bookstore and a super admin sees all thirteen
+— with a line on what each is for, in EN/DV/AR; a person who may open
+none gets 403. Linked first in both menus. Whether the panel should
+become a separate app with its own shell is BACKLOG C9's port, not a
+fact about routing: one application with `/admin/*` behind role and
+permission gates is the ordinary Laravel shape and holds.
+
 **Landing.** `/dashboard` resolves by role (`ResolveDashboardLandingAction`):
 `super_admin` gets the Blade super-admin dashboard, `admin`/`headmaster`
 the portal overview, `supervisor` its dashboard, `bookshop_manager` the
@@ -182,6 +195,8 @@ Bookstore invoices have no seeded row and are covered by `money.mjs`.
 **Walked**: `admin-pages.mjs` **3/3** after the fixes (40 pages, both
 viewports, nothing lacking); `admin-mobile.mjs`, `admin-layout.mjs`,
 `admin.mjs` and `operations.mjs` re-walked on the changed shell.
+
+| L21 | **Nothing answered at `/admin`.** The panel had thirteen sections and no front door; an administrator reached them from a menu or by URL. | medium | **Fixed**: `/admin`, an Inertia hub of the sections the person may open, described in three languages, linked first in both menus; `AdminHubTest` (a super admin sees all, a Bookstore manager one, a teacher 403, a guest the login). In both sweeps. |
 
 ## 6. What the owner still owns
 
