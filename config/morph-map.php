@@ -137,6 +137,8 @@ return [
     'stock_movement' => \App\Domains\Bookshop\Models\StockMovement::class,
     'vendor_application' => \App\Domains\Bookshop\Models\VendorApplication::class,
     'vendor_newsletter_subscriber' => \App\Domains\Bookshop\Models\VendorNewsletterSubscriber::class,
+    'quote_request' => \App\Domains\Bookshop\Models\QuoteRequest::class,
+    'quote_item' => \App\Domains\Bookshop\Models\QuoteItem::class,
     'shop_home_feature' => \App\Domains\Bookshop\Models\ShopHomeFeature::class,
     'cart' => \App\Domains\Bookshop\Models\Cart::class,
     'cart_item' => \App\Domains\Bookshop\Models\CartItem::class,

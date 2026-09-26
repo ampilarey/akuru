@@ -242,6 +242,8 @@ final class NavigationMap
                 ['key' => 'my_orders', 'href' => '/my-orders', 'roles' => $everyone],
                 // B7: what a customer saved for later.
                 ['key' => 'my_wishlist', 'href' => '/my-wishlist', 'roles' => $everyone],
+                // B9d: a school's bulk quotes.
+                ['key' => 'my_quotes', 'href' => '/my-quotes', 'roles' => $everyone],
                 // One screen for a family's requests and a staff member's leave; the
                 // controller admits whoever may submit or review.
                 ['key' => 'requests', 'href' => '/academics/requests', 'roles' => $everyone, 'can' => ['requests.submit', 'requests.review']],

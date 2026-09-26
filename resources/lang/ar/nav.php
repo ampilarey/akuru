@@ -134,6 +134,7 @@ return [
     'shop' => 'متجر الكتب',
     'my_orders' => 'طلباتي',
     'my_wishlist' => 'قائمة أمنياتي',
+    'my_quotes' => 'عروض الأسعار الخاصة بي',
     'vendor_portal' => 'متجري',
     'collecting_my_child' => 'استلام ابني',
     'arrivals' => 'الوصول',

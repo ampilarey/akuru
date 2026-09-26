@@ -189,8 +189,8 @@ return [
      * only sends where `SMS_LIVE` allows it.
      */
     'notices' => [
-        'customer_events' => ['order_paid', 'slip_decided', 'order_progress', 'order_cancelled', 'return_decided', 'refund', 'back_in_stock', 'cart_reminder'],
-        'vendor_events' => ['new_order', 'customer_cancelled', 'return_requested', 'low_stock', 'review', 'payout_decided', 'invoice'],
+        'customer_events' => ['order_paid', 'slip_decided', 'order_progress', 'order_cancelled', 'return_decided', 'refund', 'back_in_stock', 'cart_reminder', 'quote_ready'],
+        'vendor_events' => ['new_order', 'customer_cancelled', 'return_requested', 'low_stock', 'review', 'payout_decided', 'invoice', 'quote_requested'],
         'vendor_defaults' => [
             'new_order' => ['email' => true, 'sms' => false],
             'customer_cancelled' => ['email' => true, 'sms' => false],
@@ -199,6 +199,7 @@ return [
             'review' => ['email' => false, 'sms' => false],
             'payout_decided' => ['email' => true, 'sms' => false],
             'invoice' => ['email' => true, 'sms' => false],
+            'quote_requested' => ['email' => true, 'sms' => false],
         ],
         'office_defaults' => [
             'customer_email' => true,
@@ -242,6 +243,17 @@ return [
         'enabled' => (bool) env('BOOKSHOP_CART_REMINDERS', true),
         'after_hours' => 24,
         'within_days' => 7,
+    ],
+
+    /*
+     * B9d: bulk quotes for schools. A request needs at least `min_quantity`
+     * items from one shop in the cart; the shop's price holds for the days
+     * it chooses, up to `max_valid_days`.
+     */
+    'quotes' => [
+        'min_quantity' => 10,
+        'default_valid_days' => 14,
+        'max_valid_days' => 60,
     ],
 
     'bank_transfer' => [

@@ -781,6 +781,8 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         // B9b: cash on delivery.
         Route::post('cod', [\App\Domains\Bookshop\Http\Controllers\AdminBookshopController::class, 'setCod'])->name('admin.bookshop.cod');
         Route::get('applications/export', [\App\Domains\Bookshop\Http\Controllers\AdminBookshopController::class, 'exportApplications'])->name('admin.bookshop.applications.export');
+        // B9d: bulk quotes across every shop.
+        Route::get('quotes/export', [\App\Domains\Bookshop\Http\Controllers\AdminBookshopController::class, 'exportQuotes'])->name('admin.bookshop.quotes.export');
         // B3: card refunds, returned through BML and recorded.
         Route::get('refunds/export', [\App\Domains\Bookshop\Http\Controllers\AdminBookshopController::class, 'exportRefunds'])->name('admin.bookshop.refunds.export');
         Route::post('refunds/{refund}', [\App\Domains\Bookshop\Http\Controllers\AdminBookshopController::class, 'processRefund'])->name('admin.bookshop.refunds.process')->whereNumber('refund');
@@ -824,6 +826,11 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::get('stock/movements/export', [\App\Domains\Bookshop\Http\Controllers\VendorStockController::class, 'exportMovements'])->name('vendor.stock.movements.export');
         Route::get('stock/low/export', [\App\Domains\Bookshop\Http\Controllers\VendorStockController::class, 'exportLowStock'])->name('vendor.stock.low.export');
         Route::post('notices', [\App\Domains\Bookshop\Http\Controllers\VendorPortalController::class, 'saveNotices'])->name('vendor.notices.save');
+        // B9d: bulk quotes for schools — price a request or decline it.
+        Route::get('quotes', [\App\Domains\Bookshop\Http\Controllers\VendorQuotesController::class, 'index'])->name('vendor.quotes.index');
+        Route::get('quotes/export', [\App\Domains\Bookshop\Http\Controllers\VendorQuotesController::class, 'export'])->name('vendor.quotes.export');
+        Route::post('quotes/{quote}', [\App\Domains\Bookshop\Http\Controllers\VendorQuotesController::class, 'quote'])->name('vendor.quotes.quote')->whereNumber('quote');
+        Route::post('quotes/{quote}/decline', [\App\Domains\Bookshop\Http\Controllers\VendorQuotesController::class, 'decline'])->name('vendor.quotes.decline')->whereNumber('quote');
         // B9c: the shop's newsletter list.
         Route::get('newsletter/export', [\App\Domains\Bookshop\Http\Controllers\VendorPortalController::class, 'exportSubscribers'])->name('vendor.newsletter.export');
         Route::post('product-images/{image}', [\App\Domains\Bookshop\Http\Controllers\VendorProductController::class, 'arrangeImage'])->name('vendor.product-images.arrange')->whereNumber('image');

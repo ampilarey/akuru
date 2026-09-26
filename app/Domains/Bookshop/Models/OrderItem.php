@@ -11,7 +11,7 @@ class OrderItem extends Model
 {
     protected $fillable = [
         'order_id', 'product_id', 'product_variant_id', 'title', 'variant_name', 'sku',
-        'unit_price', 'quantity', 'line_total', 'tax_class', 'tax_amount',
+        'unit_price', 'quantity', 'line_total', 'tax_class', 'tax_amount', 'quote_item_id',
     ];
 
     protected function casts(): array

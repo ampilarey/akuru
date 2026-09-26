@@ -1898,6 +1898,19 @@ class SmokeMarkerSeeder extends Seeder
             DB::table('cart_items')->insert(['cart_id' => $cartId, 'product_id' => DB::table('products')->where('slug', 'smoke-wooden-alphabet-puzzle')->value('id'), 'quantity' => 1, 'created_at' => now()->subHours(36), 'updated_at' => now()->subHours(36)]);
             app(\App\Domains\Bookshop\Actions\Shop\RemindAbandonedCartsAction::class)->execute();
         }
+
+        // B9d (`quotes.mjs`): the teacher — whom no other walk shops as —
+        // asks Fitrah for a school price and accepts it into the cart. Their
+        // quotes, cart and the quote notices go.
+        $teacher = DB::table('users')->where('email', 'teacher@akuru.edu.mv')->value('id');
+        if ($teacher !== null) {
+            $teacherCarts = DB::table('carts')->where('user_id', $teacher)->pluck('id');
+            DB::table('cart_items')->whereIn('cart_id', $teacherCarts)->delete();
+            DB::table('carts')->whereIn('id', $teacherCarts)->delete();
+            DB::table('quote_requests')->where('user_id', $teacher)->delete();
+            $quoteTitles = array_map(fn (string $key) => __('shop.'.$key, [], 'en'), ['notice_quote_requested_title', 'notice_quote_ready_title', 'notice_quote_declined_title']);
+            DB::table('user_notifications')->whereIn('title', $quoteTitles)->delete();
+        }
     }
 
     /**

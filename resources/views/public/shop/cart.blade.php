@@ -49,14 +49,17 @@
                                 <a href="{{ route('public.shop.product', $line['slug']) }}" class="font-medium text-brandMaroon-900 hover:underline" dir="auto">{{ $line['title'] }}</a>
                                 @if($line['variant'])<span class="block text-sm text-gray-600">{{ $line['variant'] }}</span>@endif
                                 <span class="block text-sm text-gray-500">{{ $cart['currency'] }} {{ $line['unit_price'] }}</span>
+                                {{-- B9d: a line from an accepted quote keeps its price and quantity while the quote holds. --}}
+                                @if($line['quoted'] ?? false)<span class="mt-1 inline-block rounded bg-green-100 px-2 py-0.5 text-xs text-green-800" data-testid="cart-quoted">{{ __('shop.quoted_price_badge') }}</span>@endif
+                                @if($line['quote_lapsed'] ?? false)<span class="block text-xs text-amber-800" data-testid="cart-quote-lapsed">{{ __('shop.quote_lapsed_note') }}</span>@endif
                                 @if($line['made_to_order'])<span class="block text-xs text-gray-500">{{ __('shop.made_to_order_note') }}</span>@endif
                                 @if($line['short'])<span class="block text-xs text-amber-800">{{ __('shop.stock_short', ['count' => $line['available']]) }}</span>@endif
                             </div>
                             <form method="POST" action="{{ route('public.shop.cart.update', $line['id']) }}" class="flex items-center gap-2">
                                 @csrf
                                 <label class="sr-only" for="qty-{{ $line['id'] }}">{{ __('shop.quantity') }}</label>
-                                <input id="qty-{{ $line['id'] }}" type="number" name="quantity" min="0" max="{{ config('bookshop.checkout.max_quantity_per_line', 50) }}" value="{{ $line['quantity'] }}" class="form-input w-20" data-testid="cart-qty">
-                                <button type="submit" class="btn-secondary text-sm">{{ __('shop.update') }}</button>
+                                <input id="qty-{{ $line['id'] }}" type="number" name="quantity" min="0" max="{{ config('bookshop.checkout.max_quantity_per_line', 50) }}" value="{{ $line['quantity'] }}" class="form-input w-20" data-testid="cart-qty" @if($line['quoted'] ?? false) readonly @endif>
+                                @unless($line['quoted'] ?? false)<button type="submit" class="btn-secondary text-sm">{{ __('shop.update') }}</button>@endunless
                                 <button type="submit" name="quantity" value="0" class="text-sm text-red-700 underline" data-testid="cart-remove">{{ __('shop.remove') }}</button>
                             </form>
                             <div class="w-28 text-end font-semibold" data-testid="cart-line-total">{{ $cart['currency'] }} {{ $line['line_total'] }}</div>
@@ -70,6 +73,32 @@
                     <p class="border-t px-4 py-2 text-sm {{ $short > 0 ? 'text-amber-800' : 'text-green-700' }}" data-testid="free-delivery-{{ $group['vendor']['slug'] }}">
                         {{ $short > 0 ? __('shop.free_delivery_nudge', ['amount' => $cart['currency'].' '.number_format($short, 2), 'vendor' => $group['vendor']['name']]) : __('shop.free_delivery_reached', ['vendor' => $group['vendor']['name']]) }}
                     </p>
+                @endif
+                {{-- B9d: a school or group buying in bulk asks this shop for a price. --}}
+                @php($unquoted = collect($group['lines'])->reject(fn ($l) => $l['quoted'] ?? false)->sum('quantity'))
+                @if($signed_in && $unquoted > 0)
+                    <details class="border-t px-4 py-3 text-sm" data-testid="quote-form-{{ $group['vendor']['slug'] }}">
+                        <summary class="cursor-pointer font-medium text-brandMaroon-700">{{ __('shop.quote_ask', ['vendor' => $group['vendor']['name']]) }}</summary>
+                        @if($unquoted < (int) config('bookshop.quotes.min_quantity', 10))
+                            <p class="mt-2 text-gray-600">{{ __('shop.quote_min_note', ['min' => (int) config('bookshop.quotes.min_quantity', 10)]) }}</p>
+                        @else
+                            <form method="POST" action="{{ route('public.shop.quotes.store') }}" class="mt-3 grid gap-3 sm:grid-cols-2">
+                                @csrf
+                                <input type="hidden" name="vendor" value="{{ $group['vendor']['slug'] }}">
+                                <p class="text-gray-600 sm:col-span-2">{{ __('shop.quote_intro') }}</p>
+                                <label class="block">{{ __('shop.quote_organisation') }}
+                                    <input name="organisation" required maxlength="160" class="form-input mt-1 w-full" data-testid="quote-organisation" dir="auto">
+                                </label>
+                                <label class="block">{{ __('shop.quote_phone') }}
+                                    <input name="contact_phone" maxlength="30" class="form-input mt-1 w-full" dir="ltr">
+                                </label>
+                                <label class="block sm:col-span-2">{{ __('shop.quote_note') }}
+                                    <textarea name="note" rows="2" maxlength="2000" class="form-input mt-1 w-full" dir="auto"></textarea>
+                                </label>
+                                <div class="sm:col-span-2"><button type="submit" class="btn-primary" data-testid="quote-submit">{{ __('shop.quote_submit') }}</button></div>
+                            </form>
+                        @endif
+                    </details>
                 @endif
             </section>
         @endforeach

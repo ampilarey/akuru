@@ -13,12 +13,13 @@
 // expected direction, and the test asks you to update the count below when you
 // do.
 //
-// Count: 242 (a document template, not a screen — see the documents block;
+// Count: 244 (a document template, not a screen — see the documents block;
 // the five public bookshop views of BOOKSHOP_PLAN B1b, the five customer
 // pages of B2, the two storefront partials of B4, the sections, menu and
 // vendor page of B5 and the customer's wishlist of B7 — see the public
-// block; B8's bookstore notice email — see the emails block; and B9c's
-// newsletter unsubscribe page, reached from a shop's own mailings).
+// block; B8's bookstore notice email — see the emails block; B9c's
+// newsletter unsubscribe page, reached from a shop's own mailings; and B9d's
+// two "My quotes" pages, siblings of My orders).
 
 return [
     // (root) — 4
@@ -311,6 +312,10 @@ return [
     'public/shop/wishlist.blade.php',
     // BOOKSHOP_PLAN B9c — leave a shop's newsletter, from the link in its emails (no sign-in).
     'public/shop/newsletter.blade.php',
+    // BOOKSHOP_PLAN B9d — a customer's bulk quotes, asked from the Blade cart
+    // and accepted back into it; siblings of My orders for the same reason.
+    'public/shop/quotes/index.blade.php',
+    'public/shop/quotes/show.blade.php',
     'public/search.blade.php',
     'public/test.blade.php',
 

@@ -12,6 +12,7 @@ use App\Domains\Bookshop\Actions\ListCatalogueOptionsAction;
 use App\Domains\Bookshop\Actions\ListLowStockAction;
 use App\Domains\Bookshop\Actions\ListOrdersAction;
 use App\Domains\Bookshop\Actions\ListPendingRefundsAction;
+use App\Domains\Bookshop\Actions\ListQuotesAction;
 use App\Domains\Bookshop\Actions\ListVendorMoneyReportAction;
 use App\Domains\Bookshop\Actions\ListVendorsAction;
 use App\Domains\Bookshop\Actions\ManageShopHomeAction;
@@ -63,6 +64,7 @@ class AdminBookshopController extends Controller
             'order_statuses' => array_map(fn (OrderStatus $s) => $s->value, OrderStatus::cases()),
             'applications' => app(DecideVendorApplicationAction::class)->list(),
             'applications_open' => app(ApplyToSellAction::class)->isOpen(),
+            'quotes' => app(ListQuotesAction::class)->summary(),
             'cod_on' => app(CashOnDeliveryAction::class)->isOn(),
             'default_commission_rate' => number_format((float) config('bookshop.default_commission_rate'), 2, '.', ''),
             'agreement_url' => route('public.page.show', 'vendor-agreement'),
@@ -452,6 +454,24 @@ class AdminBookshopController extends Controller
             }
             fclose($out);
         }, 'bookstore-shop-applications.csv', ['Content-Type' => 'text/csv; charset=UTF-8']);
+    }
+
+    /** B9d: every shop's quotes, one row per line. */
+    public function exportQuotes(Request $request): StreamedResponse
+    {
+        abort_unless($request->user()?->can('bookshop.manage'), 403);
+        $rows = app(ListQuotesAction::class)->all();
+
+        return response()->streamDownload(function () use ($rows): void {
+            $out = fopen('php://output', 'w');
+            Csv::put($out, ['number', 'status', 'shop', 'organisation', 'title', 'quantity', 'list_price', 'quoted_price', 'list_total', 'quoted_total', 'valid_until', 'requested_at', 'quoted_at']);
+            foreach ($rows as $r) {
+                foreach ($r['items'] as $i) {
+                    Csv::put($out, [$r['number'], $r['status'], $r['vendor']['name'], $r['organisation'], $i['title'], $i['quantity'], $i['list_price'], $i['quoted_price'], $r['list_total'], $r['quoted_total'], $r['valid_until'], $r['requested_at'], $r['quoted_at']]);
+                }
+            }
+            fclose($out);
+        }, 'bookstore-quotes.csv', ['Content-Type' => 'text/csv; charset=UTF-8']);
     }
 
     /** B8 (§7 Settings "email/SMS notice switches"). */

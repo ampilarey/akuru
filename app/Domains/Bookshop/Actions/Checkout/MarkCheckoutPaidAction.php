@@ -61,6 +61,8 @@ class MarkCheckoutPaidAction
 
             $checkout->reservations()->delete();
             app(RecordDiscountRedemptionAction::class)->transition('bookshop_checkout', $checkout->id, 'confirmed');
+            // B9d: a school quote bought is ordered.
+            app(\App\Domains\Bookshop\Actions\Shop\CustomerQuotesAction::class)->markOrdered((int) $checkout->id);
 
             return ['checkout' => $checkout, 'attention' => $attention];
         });
