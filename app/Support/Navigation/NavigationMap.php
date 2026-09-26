@@ -237,6 +237,8 @@ final class NavigationMap
                 ['key' => 'library', 'href' => '/library', 'roles' => $everyone],
                 ['key' => 'my_library', 'href' => '/my-library', 'roles' => $everyone],
                 ['key' => 'my_wallet', 'href' => '/my-wallet', 'roles' => $everyone],
+                // BOOKSHOP_PLAN B1b: the public bookshop.
+                ['key' => 'shop', 'href' => '/shop', 'roles' => $everyone],
                 // One screen for a family's requests and a staff member's leave; the
                 // controller admits whoever may submit or review.
                 ['key' => 'requests', 'href' => '/academics/requests', 'roles' => $everyone, 'can' => ['requests.submit', 'requests.review']],

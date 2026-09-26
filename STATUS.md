@@ -4414,6 +4414,74 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5gw. B1b: the public Akuru Online Bookshop (2026-09-26)
+
+BOOKSHOP_PLAN slice B1b, the owner's "Build B1b". Anyone can now find the
+vendors' products. Ordering is B2.
+
+- **`/shop`** — the one catalogue (decision 2): new arrivals, the
+  categories that have something in them, the shops, and every product for
+  sale, 24 to a page. Search covers title (all three languages), summary,
+  SKU, barcode/ISBN, tags and shop name. Filters: category (with the
+  categories inside it), language, price range, in stock only. Sorts:
+  newest, price either way, name. All filters live in the URL, so a
+  filtered page is a link a customer can share. CSV of the listing as
+  filtered.
+- **`/shop/c/<category>`** a category, **`/shop/<vendor>`** a vendor's plain
+  page: name, tagline, "at Akuru Online Bookshop" (decision 11), and its
+  products, including those it keeps for its own page. The designer comes
+  in B4/B5.
+- **`/shop/products/<slug>`** — gallery, price and "was" price with a Sale
+  badge, "Prices include any tax", a stock state a customer can read (in
+  stock / only N left / out of stock / made to order in N days / available),
+  variants with their own prices and which are unavailable, book and
+  educational details, the sanitised description, "sold by" linking to the
+  vendor, related products, and "Online ordering opens soon".
+- **Never shown**: drafts, archived products, anything of a suspended
+  vendor (a 404, not an empty page). **The vendor's contact details are
+  deliberately not on the public pages.** A new vendor's shop email
+  defaults to its owner's own address, and ordering (B2) is how a customer
+  will reach a shop.
+- **Photos** are served as resized WebP copies: 480px on cards, 1200px on
+  the product page. They are made when a vendor uploads and kept beside the
+  original, never enlarged, with a fallback to the original. That is a new
+  method on Media's `ImageProcessorInterface` (`getResizedWebPPath`) and a
+  new Media action, `ResolvePublicImageVariantAction`, which refuses private
+  files like its sibling. This is the resize the B1a note deferred to here.
+- **Where people find it**: "Bookshop" in the public header (desktop and
+  mobile), "Online Bookshop" in the footer, "Bookshop" in the app shell's
+  *Mine* group, and a **bottom bar on phone widths** on shop pages. The
+  bar has Shop, Search, Categories and Account; Cart and Orders join it in
+  B2 (audit finding 19). The vendor portal links each product for sale to
+  its public page, and the shop to its own page. The office's vendor list
+  links each shop's address.
+- **Sitemap**: the shop home, categories with products, vendor pages and
+  every product for sale, in all three languages (plan §6.7).
+- **Vendor slugs** can no longer be one of the shop's own words (`products`,
+  `c`, `export`, `cart`, `checkout`, `orders`, `search`). Such a name gets
+  `-shop` appended, and the `/shop/{vendor}` route refuses those words too.
+
+Five public Blade views join the public Blade zone beside the Digital
+Library (plan §10; `blade_screens` baseline 224 → 229, recorded). The
+description is the one raw render, declared: vendors' text is cleaned with
+the prose profile on save.
+
+`ShopPublicTest` (7): one catalogue across vendors, with nothing not for
+sale and a vendor's page-only product on its page only; category (with
+children), price, stock, language, tag, SKU and Dhivehi-title search and
+the sorts; an unknown sort refused; the product page with its variants,
+stock, details, sanitised description and a 2000px photo served as a
+1200px WebP; Dhivehi and Arabic titles and labels; the filtered CSV and the
+sitemap; a reserved vendor name. `scripts/smoke/shop.mjs` walks a guest
+from the site header through the front, a category, search, filters, a
+product, the seller's page, Dhivehi, the phone bar, the CSV and the
+sitemap, then the vendor's portal link: **23/23**, no console or server
+errors. `vendor.mjs` still **25/25**. Staging adds a photo on Fitrah's
+tracing book, a Dhivehi title on the puzzle, and a draft that must stay
+hidden.
+
+No migration and no production step beyond the pull.
+
 ## 5gv. B1a: vendors and the vendor portal (2026-09-26)
 
 BOOKSHOP_PLAN slice B1a, the owner's "Build B1a". The Akuru Online

@@ -312,7 +312,12 @@ function ProductList({ products, t, onEdit }) {
                             {p.low_stock && <span className="ms-1 rounded bg-amber-100 px-1 text-xs text-amber-800">{t.low_stock}</span>}
                         </td>
                         <td className="p-2">{t[`status_${p.status}`] || p.status}</td>
-                        <td className="p-2 text-end"><button type="button" className="text-blue-700 underline" onClick={() => onEdit(p)} data-testid={`edit-${p.slug}`}>{t.edit}</button></td>
+                        <td className="p-2 text-end">
+                            <button type="button" className="text-blue-700 underline" onClick={() => onEdit(p)} data-testid={`edit-${p.slug}`}>{t.edit}</button>
+                            {p.status === 'active' && (
+                                <a href={`/shop/products/${p.slug}`} target="_blank" rel="noreferrer" className="ms-3 text-blue-700 underline" data-testid={`view-${p.slug}`}>{t.view_on_shop}</a>
+                            )}
+                        </td>
                     </tr>
                 ))}
             </tbody>
@@ -340,7 +345,10 @@ export default function Vendor({ t, vendor, memberships = [], agreement_url, pro
             <header className="mb-6 flex flex-wrap items-end justify-between gap-3">
                 <div>
                     <h1 className="text-2xl font-bold" data-testid="vendor-name">{vendor.name}</h1>
-                    <p className="text-sm text-gray-600">{t.at_akuru} · {t.your_role}: {t[`role_${vendor.role}`] || vendor.role}</p>
+                    <p className="text-sm text-gray-600">
+                        {t.at_akuru} · {t.your_role}: {t[`role_${vendor.role}`] || vendor.role} ·{' '}
+                        <a href={`/shop/${vendor.slug}`} target="_blank" rel="noreferrer" className="text-blue-700 underline" data-testid="open-shop-page">{t.open_shop_page}</a>
+                    </p>
                 </div>
                 {memberships.length > 1 && (
                     <label className="text-sm">

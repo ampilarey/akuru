@@ -52,6 +52,16 @@ Route::get('search', [\App\Domains\Website\Http\Controllers\PublicSite\SearchCon
 Route::get('articles', [\App\Domains\Website\Http\Controllers\PublicSite\PostController::class, 'articlesIndex'])->name('public.articles.index');
 Route::get('articles/{post:slug}', [\App\Domains\Website\Http\Controllers\PublicSite\PostController::class, 'show'])->name('public.articles.show');
 
+// BOOKSHOP_PLAN B1b: the Akuru Online Bookshop. `shop/{vendor}` is last and
+// refuses the words the shop itself uses, so a vendor can never be named
+// "products", "c", "export", "cart" or "checkout".
+Route::get('shop', [\App\Domains\Bookshop\Http\Controllers\ShopController::class, 'index'])->name('public.shop.index');
+Route::get('shop/export', [\App\Domains\Bookshop\Http\Controllers\ShopController::class, 'export'])->name('public.shop.export');
+Route::get('shop/products/{slug}', [\App\Domains\Bookshop\Http\Controllers\ShopController::class, 'product'])->name('public.shop.product');
+Route::get('shop/c/{slug}', [\App\Domains\Bookshop\Http\Controllers\ShopController::class, 'category'])->name('public.shop.category');
+Route::get('shop/{vendor}', [\App\Domains\Bookshop\Http\Controllers\ShopController::class, 'vendor'])->name('public.shop.vendor')
+    ->where('vendor', '(?!(products|c|export|cart|checkout)$)[a-z0-9-]+');
+
 Route::get('library/export', [PublicLibraryController::class, 'export'])->name('public.library.export');
 Route::get('library', [PublicLibraryController::class, 'index'])->name('public.library.index');
 Route::get('library/authors/{slug}', [PublicLibraryController::class, 'author'])->name('public.library.author');

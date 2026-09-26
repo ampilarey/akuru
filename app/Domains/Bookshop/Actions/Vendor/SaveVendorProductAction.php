@@ -6,6 +6,8 @@ use App\Domains\Bookshop\DTOs\VendorScope;
 use App\Domains\Bookshop\Models\Product;
 use App\Domains\Bookshop\Models\ProductImage;
 use App\Domains\Bookshop\Models\ProductVariant;
+use App\Domains\Bookshop\Support\ShopPresenter;
+use App\Domains\Media\Actions\ResolvePublicImageVariantAction;
 use App\Domains\Media\Actions\StorePublicMediaAction;
 use App\Support\Html\HtmlSanitizer;
 use Illuminate\Http\UploadedFile;
@@ -225,6 +227,11 @@ class SaveVendorProductAction
                 'alt_text' => $product->title,
                 'sort_order' => $next++,
             ]);
+            // B1b: the shop shows a card-size and a large copy; make them now,
+            // so the first customer does not wait for a phone photo to shrink.
+            foreach ([ShopPresenter::CARD_WIDTH, ShopPresenter::LARGE_WIDTH] as $width) {
+                app(ResolvePublicImageVariantAction::class)->execute((int) $stored['id'], $width);
+            }
         }
     }
 
