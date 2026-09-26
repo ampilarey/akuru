@@ -2,6 +2,7 @@
 
 namespace App\Domains\Bookshop\Http\Controllers;
 
+use App\Domains\Bookshop\Actions\Insights\RecordShopEventAction;
 use App\Domains\Bookshop\Actions\ListCatalogueOptionsAction;
 use App\Domains\Bookshop\Actions\Shop\ApplyToSellAction;
 use App\Domains\Bookshop\Actions\Shop\CustomerListsAction;
@@ -63,6 +64,7 @@ class ShopController extends Controller
     {
         $shop = app(PresentShopVendorAction::class)->execute($vendor);
         abort_if($shop === null, 404);
+        app(RecordShopEventAction::class)->view($request, $shop['slug'], 'shop_view', 'home');
         $filters = ['vendor' => $shop['slug']] + $this->filters($request);
 
         return view('public.shop.index', [
@@ -76,10 +78,11 @@ class ShopController extends Controller
     }
 
     /** B5 (§6.4): a page under a vendor's storefront, published with it. */
-    public function vendorPage(string $vendor, string $page)
+    public function vendorPage(Request $request, string $vendor, string $page)
     {
         $shop = app(PresentShopVendorAction::class)->page($vendor, $page);
         abort_if($shop === null, 404);
+        app(RecordShopEventAction::class)->view($request, $vendor, 'shop_view', 'page:'.$page);
 
         return view('public.shop.page', ['vendor' => $shop['vendor'], 'page' => $shop['page']]);
     }
@@ -89,6 +92,7 @@ class ShopController extends Controller
     {
         $shop = app(PresentShopVendorAction::class)->collection($vendor, $collection);
         abort_if($shop === null, 404);
+        app(RecordShopEventAction::class)->view($request, $shop['vendor']['slug'], 'shop_view', 'collection:'.$shop['collection']['slug']);
         $filters = ['vendor' => $shop['vendor']['slug'], 'collection' => $shop['collection']['slug']] + $this->filters($request);
 
         return view('public.shop.index', [
@@ -106,6 +110,7 @@ class ShopController extends Controller
     {
         $product = app(PresentShopProductAction::class)->execute($slug);
         abort_if($product === null, 404);
+        app(RecordShopEventAction::class)->view($request, $product['vendor']['slug'], 'product_view', 'product:'.$product['id']);
         // B7 (§4): reviews, the wishlist and back-in-stock state for the
         // signed-in customer, and this device's recently viewed.
         $lists = app(CustomerListsAction::class);

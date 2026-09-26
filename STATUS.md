@@ -4414,6 +4414,83 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5hk. B9e: a shop's funnel, and search behind a contract (2026-09-26)
+
+BOOKSHOP_PLAN slice B9, fifth sub-slice: **storefront analytics beyond
+basics** (§6.8 "funnel, top pages") and the **search service** (§10 "a
+search service is a later binding behind a contract if the catalogue
+grows").
+
+**The funnel.** Every shop gets **Insights** (`/vendor/insights`, from the
+portal): over the last 7, 30 or 90 days, shop visits → product views →
+added to cart → checkouts started → orders paid, each with the rate from
+the step before, the paid total and paid orders per 100 product views;
+the products most looked at with their adds to cart, units sold and
+sales; the shop's pages (its page, its pages, its collections); the days.
+CSV of the days and of the products. The office's `/admin/bookshop` shows
+every shop's funnel side by side, with a CSV.
+
+**What is counted, and what is not.** One table of **daily counters**
+(`shop_daily_stats`: shop, day, step, subject, count, amount) — **no
+visitor, IP, user id or cookie of its own is written**. A page view counts
+once per browser session, subject and day (a reload is not a second
+view); a user agent that looks like a crawler is not counted, nor a shop's
+own members looking at their own shop. Adds to cart are counted in the
+cart action, a checkout per shop's order when it is created, and a paid
+order (and each product it sold, with the amount) when it is paid — or
+placed, for cash on delivery. A counter that cannot be written is reported
+and never breaks the page or the sale. `BOOKSHOP_INSIGHTS=false` stops
+counting.
+
+**Search.** `Contracts/ProductSearchInterface`, bound in
+`BookshopServiceProvider` from `BOOKSHOP_SEARCH_DRIVER`:
+`DatabaseProductSearch` (the v1 search, moved out of the listing
+unchanged — the default) or `MeilisearchProductSearch`, which asks a
+Meilisearch server over its HTTP API (no SDK, rule 4) for the matching ids
+in relevance order. The listing still applies every other filter and the
+"for sale" rule, so a lagging index never shows a draft; a sort the
+visitor chose wins over relevance; a server that does not answer falls
+back to the database search for that request, logged.
+`php artisan bookshop:search-sync` (hourly, only while the driver is
+`meilisearch`) replaces the index with every product for sale. The
+suggestions-as-you-type stay on the database.
+
+**Data** (`2026_09_26_000013_b9e_shop_insights`, additive):
+`shop_daily_stats`. Alias `shop_daily_stat` (ADR-005). Baselined in
+`tables_without_academic_backbone` (calendar-day counters, like
+`dashboard_analytics`; commerce tables carry no year, precedent B2).
+`VendorInsightsController` added to `VendorScopeIsTheOnlyDoorTest`.
+
+**Tests**: `ShopInsightsAndSearchTest` (4): views once per session, again
+for a new session, never for a crawler or the owner; add to cart,
+checkout, paid (cash) and units sold with amounts; the table's columns are
+counts only; the shop's report (steps, rates, revenue, conversion, top
+product and page, 30 days by default, 90 days reaching older rows, an
+unknown range falling back to 30), another shop seeing nothing, both CSVs,
+the office's view and CSV, a vendor refused it; search on the database by
+default, on Meilisearch in the server's order with a draft still hidden
+and the key sent, a chosen sort winning, the database when the server is
+down; the sync doing nothing on the database driver and, on Meilisearch,
+clearing the index, sending only products for sale (description without
+HTML, the shop's name) and setting the searchable fields. Full suite
+**2277 passed**.
+
+**Walked** (`scripts/smoke/insights.mjs`, **12/12**, no console or server
+errors): a guest searches "tracing" and finds the tracing book; visits
+Fitrah, opens the book, reloads it and adds it to the cart; Fitrah's
+owner opens Insights — one visit, one product view (the reload not
+counted), one add to cart at 100% of the step before, the book at the top,
+the shop page among the pages; switches to 7 days; both CSVs download;
+the owner opening their own product is not counted; the office sees
+Fitrah's row and its CSV. Re-walked: `quotes.mjs` **13/13**, `cod.mjs`
+**10/10**, `checkout.mjs` **28/28**.
+
+**Production**: the migration only. Search stays on the database; a
+Meilisearch server is an **owner decision** (a server to run, or a hosted
+plan) — when there is one, set `BOOKSHOP_SEARCH_DRIVER=meilisearch`,
+`MEILISEARCH_HOST` and `MEILISEARCH_KEY` and run
+`php artisan bookshop:search-sync` once.
+
 ## 5hj. B9d: bulk quotes for schools (2026-09-26)
 
 BOOKSHOP_PLAN slice B9, fourth sub-slice: **bulk quotes for schools

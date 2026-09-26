@@ -2,6 +2,7 @@
 
 namespace App\Domains\Bookshop\Actions\Cart;
 
+use App\Domains\Bookshop\Actions\Insights\RecordShopEventAction;
 use App\Domains\Bookshop\Actions\Shop\ListShopProductsAction;
 use App\Domains\Bookshop\Models\Cart;
 use App\Domains\Bookshop\Models\CartItem;
@@ -41,11 +42,15 @@ class SaveCartItemAction
             ->first();
         $wanted = ($existing?->quantity ?? 0) + $quantity;
 
-        return $this->set($cart, $existing ?? new CartItem([
+        $item = $this->set($cart, $existing ?? new CartItem([
             'cart_id' => $cart->id,
             'product_id' => $product->id,
             'product_variant_id' => $variant?->id,
         ]), $wanted);
+        // B9e: a step of the shop's funnel.
+        app(RecordShopEventAction::class)->count((int) $product->vendor_id, 'cart_add', 'product:'.$product->id);
+
+        return $item;
     }
 
     public function update(Cart $cart, int $itemId, int $quantity): ?CartItem

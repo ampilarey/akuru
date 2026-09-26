@@ -256,6 +256,40 @@ return [
         'max_valid_days' => 60,
     ],
 
+    /*
+     * B9e: the shop's funnel (§6.8 "storefront analytics beyond basics").
+     * Daily counters only — nothing about the visitor is kept. A view is
+     * counted once per browser session, subject and day; requests whose
+     * user agent looks like a crawler are not counted, nor a shop's own
+     * members looking at their own shop.
+     */
+    'insights' => [
+        'enabled' => (bool) env('BOOKSHOP_INSIGHTS', true),
+        'bot_pattern' => '/bot|crawl|spider|slurp|facebookexternalhit|embedly|preview|curl|wget|python-requests|httpclient|monitor/i',
+        'session_cap' => 300,
+        'ranges' => [7, 30, 90],
+        'top' => 10,
+    ],
+
+    /*
+     * B9e: shop search behind a contract (§10 "Search: database LIKE for
+     * v1; a search service is a later binding behind a contract").
+     * `database` (the default) is the v1 search; `meilisearch` asks a
+     * Meilisearch server over its HTTP API and falls back to the database
+     * when the server does not answer. `php artisan bookshop:search-sync`
+     * (hourly while the driver is meilisearch) sends it the catalogue.
+     */
+    'search' => [
+        'driver' => env('BOOKSHOP_SEARCH_DRIVER', 'database'),
+        'meilisearch' => [
+            'host' => env('MEILISEARCH_HOST'),
+            'key' => env('MEILISEARCH_KEY'),
+            'index' => env('BOOKSHOP_SEARCH_INDEX', 'akuru_bookstore_products'),
+            'timeout' => 3,
+            'limit' => 1000,
+        ],
+    ],
+
     'bank_transfer' => [
         'bank' => env('BOOKSHOP_BANK_NAME', 'Bank of Maldives'),
         'account_name' => env('BOOKSHOP_BANK_ACCOUNT_NAME', 'Akuru Institute'),
