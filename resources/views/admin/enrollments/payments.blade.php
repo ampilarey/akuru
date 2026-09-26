@@ -97,11 +97,12 @@
                                 @if(auth()->user()?->can('payments.refund') && in_array($payment->status, ['confirmed', 'paid'], true) && $refundable > 0)
                                     <details>
                                         <summary class="cursor-pointer text-xs text-brandMaroon-700 hover:underline">Refund…</summary>
-                                        <form method="POST" action="{{ route('admin.payments.refund', $payment) }}" class="mt-2 space-y-1">
+                                        {{-- Wrapping controls: in one line the select stuck 15 px past a 1400 px desktop (the page-by-page sweep, STATUS §5hw). --}}
+                                        <form method="POST" action="{{ route('admin.payments.refund', $payment) }}" class="mt-2 flex flex-wrap items-center gap-1">
                                             @csrf
                                             <input type="number" name="amount" step="0.01" min="0.01" max="{{ $refundable }}"
                                                    value="{{ $refundable }}" class="border rounded px-2 py-1 text-xs w-24">
-                                            <select name="destination" class="border rounded px-2 py-1 text-xs">
+                                            <select name="destination" class="max-w-full border rounded px-2 py-1 text-xs">
                                                 <option value="wallet">To wallet</option>
                                                 <option value="manual">Manual (returned outside)</option>
                                             </select>

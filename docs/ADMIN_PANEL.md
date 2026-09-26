@@ -155,6 +155,34 @@ is named with the element that causes it.
 
 **Walked**: `admin-layout.mjs` **14/14** — on a phone the menu starts closed and cloaked, the hamburger opens it and says so, it reaches the whole panel the admin role may open without Users or Settings, nothing overflows sideways; on a desktop the tab is titled after the screen, the More menu starts closed and says when it is open, the first Tab lands on the skip link; in Dhivehi the page is right-to-left and the user menu opens inside the viewport; the Inertia shell has the skip link, a main landmark, a language switcher, and Alerts in Dhivehi. `admin.mjs` and `operations.mjs` re-walked on the changed shells.
 
+### Every page, desktop and phone (the owner: "check each and every admin page, desktop and mobile — the layouts, all the tabs are there like home, back")
+
+`admin-pages.mjs` loads every admin landing page and the detail, create and
+edit pages it discovers from each index — 40 pages — at 1400 × 950 and at
+390 × 844, as a super admin, and asks of each: does it load with a heading;
+is its navigation there (the Blade bar with Dashboard and More, or the
+Inertia shell with its bar, More and Alerts); is there a way home (a link
+to `/dashboard`); on a page that is not an index, a way back (a link to its
+section's index in the content); is anything wider than the viewport, cut
+off inside a hidden-overflow ancestor, or is the menu button off-screen.
+Each page is listed with what it lacks.
+
+| # | Finding | Severity | Outcome |
+|---|---|---|---|
+| L17 | **No Inertia admin page had a way home.** The shell's "Akuru" wordmark was a label; the Blade bar's logo links to the dashboard, the Inertia shell's did not — ten pages (the staff overview, Operations, Features, Translations, Commerce, the Library office, Reading alerts, Pronunciation, OTP abuse, Deleted courses, the Bookstore office). | medium | **Fixed**: the wordmark links to `/dashboard`, the Blade router that sends each person to their own landing. |
+| L18 | **Three Inertia sub-pages had no way back** to the screen they belong to: OTP abuse (→ Users), Reading alerts (→ Library office), Deleted courses (→ Manage Courses). | low | **Fixed**: a back link on each. |
+| L19 | **The instructor form had no heading** — a breadcrumb (which carries its back link) and the form. | low | **Fixed**: "Add instructor" / "Edit instructor". |
+| L20 | **On the payments screen the refund form's select stuck 15 px past a 1400 px desktop**: its controls sat on one line. | low | **Fixed**: they wrap. |
+
+Sections with no seeded rows to discover an edit page from (instructors,
+research, daily content, prayer groups and broadcasts) share one `form`
+view between create and edit, so their create pages cover the form;
+Bookstore invoices have no seeded row and are covered by `money.mjs`.
+
+**Walked**: `admin-pages.mjs` **3/3** after the fixes (40 pages, both
+viewports, nothing lacking); `admin-mobile.mjs`, `admin-layout.mjs`,
+`admin.mjs` and `operations.mjs` re-walked on the changed shell.
+
 ## 6. What the owner still owns
 
 

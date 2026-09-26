@@ -21,6 +21,8 @@ export default function DeletedCourses({ courses = [] }) {
 
     return (
         <AppShell title="Deleted courses">
+            {/* A way back to the list these came from — a Blade screen, so a full page load (the page-by-page sweep, STATUS §5hw). */}
+            <p className="mb-3 text-sm"><a href="/admin/public-site/courses" className="text-[#7C2D37] hover:underline" data-testid="back-link">← Manage Courses</a></p>
             <p className="mb-2 text-sm text-gray-600">
                 Courses that were deleted but kept, because something of somebody&apos;s is attached to them.
                 Nothing listed below was removed — the enrolments, attempts, progress and payment records are

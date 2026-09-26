@@ -40,6 +40,8 @@ export default function OtpAbuse({ groups = [], days = 7, total_trips = 0, limit
                 <a className="btn-secondary" href={`/admin/users/otp-abuse/export?days=${days}`}>
                     Export CSV
                 </a>
+                {/* A way back to the roster this log belongs to (the page-by-page sweep, STATUS §5hw). */}
+                <a className="text-sm text-[#7C2D37] hover:underline" href="/admin/users" data-testid="back-link">← Users</a>
                 <span className="text-sm text-gray-500">
                     {total_trips.toLocaleString()} trips across {groups.length.toLocaleString()} contacts
                 </span>
