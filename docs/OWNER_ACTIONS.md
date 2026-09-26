@@ -358,7 +358,7 @@ what the office may moderate.
 `php artisan db:seed --class=BookshopCatalogueSeeder --force` and
 `php artisan db:seed --class=BookshopPolicyPagesSeeder --force`. Read
 `/page/vendor-agreement` in the page editor and change what should read
-differently. Then invite Fitrah from *Admin → Online Bookshop* with the
+differently. Then invite Fitrah from *Admin → Online Store* with the
 details in `docs/vendors/FITRAH.md`, and send Inaaya the one-time password
 the screen shows (once) with the sign-in address.
 

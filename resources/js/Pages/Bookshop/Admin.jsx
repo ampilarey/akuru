@@ -4,7 +4,7 @@ import AppShell from '../../Layouts/AppShell';
 import FormErrors from '../../Components/FormErrors';
 
 /**
- * BOOKSHOP_PLAN slice B1a — the office's side of the Akuru Online Bookshop:
+ * BOOKSHOP_PLAN slice B1a — the office's side of the Akuru Online Store:
  * invite a vendor with its owner, edit or suspend it, and keep the shared
  * categories and brands.
  */

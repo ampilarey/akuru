@@ -131,6 +131,6 @@ class AdminBookshopController extends Controller
                 ]);
             }
             fclose($out);
-        }, 'bookshop-vendors.csv', ['Content-Type' => 'text/csv']);
+        }, 'store-vendors.csv', ['Content-Type' => 'text/csv']);
     }
 }

@@ -4,7 +4,7 @@
  *
  * Three logins:
  *
- *   1. the office opens the Online Bookshop screen, sees Fitrah and its
+ *   1. the office opens the Online Store screen, sees Fitrah and its
  *      owner, invites a new vendor and is shown the owner's one-time
  *      password once; the CSV has the vendors;
  *   2. that new owner signs in with the one-time password, is asked to
@@ -121,7 +121,7 @@ check('the office signs in', !office.url().includes('/login'), office.url());
 
 await office.goto(`${BASE}/en/admin/bookshop`, { waitUntil: 'networkidle' });
 const fitrahRow = office.locator('[data-testid="vendor-row-fitrah"]');
-check('the Online Bookshop screen lists Fitrah with its owner', (await fitrahRow.count()) === 1 && (await fitrahRow.innerText()).includes(VENDOR), (await fitrahRow.count()) ? (await fitrahRow.innerText()).replace(/\s+/g, ' ') : (await text(office)).slice(0, 160));
+check('the Online Store screen lists Fitrah with its owner', (await fitrahRow.count()) === 1 && (await fitrahRow.innerText()).includes(VENDOR), (await fitrahRow.count()) ? (await fitrahRow.innerText()).replace(/\s+/g, ' ') : (await text(office)).slice(0, 160));
 
 await office.fill('[data-testid="invite-vendor"] [data-testid="vendor-name"]', INVITED);
 await office.fill('[data-testid="owner-name"]', 'Smoke Invited Owner');

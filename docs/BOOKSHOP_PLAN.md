@@ -1,4 +1,14 @@
-# Akuru Online Bookshop — plan v2.1 (2026-09-25, audited)
+# Akuru Online Store — plan v2.1 (2026-09-25, audited)
+
+> **Renamed 2026-09-26: the Akuru Online Bookshop is now the Akuru Online
+> Store.** The owner: *"It's not only for books but educational items."*
+> Every label a person reads says *Akuru Online Store*, *Store* in menus,
+> and *at Akuru Online Store* on a vendor's page (decision 11). In Dhivehi
+> it is އަކުރު އޮންލައިން ފިހާރަ and in Arabic متجر أكورو الإلكتروني. The
+> address `/shop`, the office's `/admin/bookshop`, and internal names stay
+> unchanged. The internal names are this file's name, the `Bookshop`
+> domain, its tables and the `bookshop.manage` permission. Below, "the
+> bookshop" means the store; the text records what was decided when.
 
 v2.1 is v2 read back against the code and against how selling works in
 the Maldives. The findings and what changed are in **§14**; the fixes are

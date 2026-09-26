@@ -1,11 +1,11 @@
 <?php
 
-// Akuru Online Bookshop (BOOKSHOP_PLAN) — B1a. First pass pending native review (BACKLOG A10).
+// Akuru Online Store (BOOKSHOP_PLAN) — B1a. First pass pending native review (BACKLOG A10).
 return [
-    'bookshop_title' => 'متجر أكورو للكتب على الإنترنت',
-    'office_title' => 'متجر الكتب على الإنترنت — البائعون',
+    'bookshop_title' => 'متجر أكورو الإلكتروني',
+    'office_title' => 'المتجر الإلكتروني — البائعون',
     'portal_title' => 'متجري',
-    'at_akuru' => 'في متجر أكورو للكتب على الإنترنت',
+    'at_akuru' => 'في متجر أكورو الإلكتروني',
 
     // Office
     'vendors' => 'البائعون',
@@ -71,7 +71,7 @@ return [
 
     // Portal
     'agreement_heading' => 'قبل أن تبدأ',
-    'agreement_intro' => 'البيع في متجر أكورو للكتب يعني الموافقة على اتفاقية البائع: العمولة، وموعد الدفع لك، ومن يتولى المرتجعات، وما يجوز للمكتب مراجعته.',
+    'agreement_intro' => 'البيع في متجر أكورو الإلكتروني يعني الموافقة على اتفاقية البائع: العمولة، وموعد الدفع لك، ومن يتولى المرتجعات، وما يجوز للمكتب مراجعته.',
     'read_agreement' => 'اقرأ اتفاقية البائع',
     'accept_agreement' => 'قرأت اتفاقية البائع وأوافق عليها',
     'continue' => 'متابعة',
@@ -160,8 +160,8 @@ return [
     'products_count' => ':count منتجات',
 
     // Public shop (B1b)
-    'nav_shop' => 'متجر الكتب',
-    'shop_intro' => 'كتب ومواد تعليمية من معهد أكورو والمتاجر التي يتعاون معها.',
+    'nav_shop' => 'المتجر',
+    'shop_intro' => 'كتب ومستلزمات ومواد تعليمية من معهد أكورو والمتاجر التي يتعاون معها.',
     'search_shop' => 'ابحث عن الكتب والمواد والمتاجر',
     'filter' => 'تصفية',
     'clear_filters' => 'مسح',

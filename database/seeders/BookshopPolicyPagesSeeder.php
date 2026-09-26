@@ -23,7 +23,10 @@ class BookshopPolicyPagesSeeder extends Seeder
     public function run(): void
     {
         foreach ($this->pages() as $slug => [$title, $excerpt, $body]) {
-            if (Page::query()->where('slug', $slug)->exists()) {
+            $existing = Page::query()->where('slug', $slug)->first();
+            if ($existing !== null) {
+                $this->renameInUntouchedDraft($existing);
+
                 continue;
             }
             Page::query()->create([
@@ -38,6 +41,29 @@ class BookshopPolicyPagesSeeder extends Seeder
     }
 
     /**
+     * 2026-09-26: the shop was renamed the Akuru Online Store (it sells
+     * educational items, not only books). A host seeded before the rename
+     * holds the old name. The office's edits always win, so only a page
+     * still carrying the seeded "first draft" line is renamed.
+     */
+    private function renameInUntouchedDraft(Page $page): void
+    {
+        $body = (string) $page->body;
+        $excerpt = (string) $page->excerpt;
+        if (! str_contains($body, 'First draft pending review by Akuru Institute') || ! str_contains($body.$excerpt, 'Bookshop')) {
+            return;
+        }
+
+        $rename = static fn (string $text): string => str_replace(
+            ['Akuru Online Bookshop', 'Selling in the bookshop', "The bookshop's"],
+            ['Akuru Online Store', 'Selling in the store', "The store's"],
+            $text,
+        );
+
+        $page->forceFill(['body' => $rename($body), 'excerpt' => $rename($excerpt)])->save();
+    }
+
+    /**
      * @return array<string, array{0: string, 1: string, 2: string}>
      */
     private function pages(): array
@@ -45,12 +71,12 @@ class BookshopPolicyPagesSeeder extends Seeder
         $updated = '<p><em>Last updated: 26 September 2026. First draft pending review by Akuru Institute.</em></p>';
 
         return [
-            'vendor-agreement' => ['Vendor Agreement', 'The terms on which a shop sells in the Akuru Online Bookshop.', <<<HTML
+            'vendor-agreement' => ['Vendor Agreement', 'The terms on which a shop sells in the Akuru Online Store.', <<<HTML
 <h2>Vendor Agreement</h2>
 $updated
-<p>This agreement is between Akuru Institute ("Akuru") and the business selling in the Akuru Online Bookshop (the "vendor"). Each person who acts for the vendor in the vendor portal accepts it before the portal opens, and the date of acceptance is recorded.</p>
-<h3>1. Selling in the bookshop</h3>
-<p>Vendors sell by invitation. Every product a vendor marks for sale appears in the one Akuru Online Bookshop — in search, categories and collections — with the vendor's name on it, and on the vendor's own page. The bookshop's header, cart, checkout, payment, receipts and policies stay Akuru's, and the vendor's page carries the line "at Akuru Online Bookshop".</p>
+<p>This agreement is between Akuru Institute ("Akuru") and the business selling in the Akuru Online Store (the "vendor"). Each person who acts for the vendor in the vendor portal accepts it before the portal opens, and the date of acceptance is recorded.</p>
+<h3>1. Selling in the store</h3>
+<p>Vendors sell by invitation. Every product a vendor marks for sale appears in the one Akuru Online Store — in search, categories and collections — with the vendor's name on it, and on the vendor's own page. The store's header, cart, checkout, payment, receipts and policies stay Akuru's, and the vendor's page carries the line "at Akuru Online Store".</p>
 <h3>2. What the vendor promises</h3>
 <ol>
 <li>Products are described honestly, with true prices, photos the vendor may use, and correct stock.</li>

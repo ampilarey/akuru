@@ -140,7 +140,7 @@
                         <a href="{{ route('admin.library.index') }}" style="display:block;padding:.5rem .75rem;border-radius:.375rem;font-size:.8rem;color:#374151;text-decoration:none" onmouseover="this.style.background='#F9FAFB'" onmouseout="this.style.background='transparent'">📖 Digital Library</a>
                         @endcan
                         @can('bookshop.manage')
-                        <a href="{{ route('admin.bookshop.index') }}" style="display:block;padding:.5rem .75rem;border-radius:.375rem;font-size:.8rem;color:#374151;text-decoration:none" onmouseover="this.style.background='#F9FAFB'" onmouseout="this.style.background='transparent'">🛍️ Online Bookshop</a>
+                        <a href="{{ route('admin.bookshop.index') }}" style="display:block;padding:.5rem .75rem;border-radius:.375rem;font-size:.8rem;color:#374151;text-decoration:none" onmouseover="this.style.background='#F9FAFB'" onmouseout="this.style.background='transparent'">🛍️ Online Store</a>
                         @endcan
                         @can('prayer.manage')
                         <a href="{{ route('admin.prayer-times.islands') }}" style="display:block;padding:.5rem .75rem;border-radius:.375rem;font-size:.8rem;color:#374151;text-decoration:none" onmouseover="this.style.background='#F9FAFB'" onmouseout="this.style.background='transparent'">🕌 Prayer times</a>
