@@ -90,8 +90,12 @@ Route::middleware('auth')->group(function () {
     Route::post('shop/products/{slug}/notify', [\App\Domains\Bookshop\Http\Controllers\ShopAccountController::class, 'toggleStockAlert'])->name('public.shop.stock-alert')->middleware('throttle:30,1,shop-alert');
     Route::post('shop/products/{slug}/reviews', [\App\Domains\Bookshop\Http\Controllers\ShopAccountController::class, 'review'])->name('public.shop.review')->middleware('throttle:10,1,shop-review');
 });
+// B9c: a shop's newsletter — sign up on its page; the unsubscribe page its mailings link to.
+Route::get('shop/newsletter/unsubscribe/{token}', [\App\Domains\Bookshop\Http\Controllers\NewsletterController::class, 'show'])->name('public.shop.newsletter.unsubscribe')->where('token', '[A-Za-z0-9]{48}');
+Route::post('shop/newsletter/unsubscribe/{token}', [\App\Domains\Bookshop\Http\Controllers\NewsletterController::class, 'unsubscribe'])->name('public.shop.newsletter.unsubscribe.confirm')->where('token', '[A-Za-z0-9]{48}')->middleware('throttle:20,1,shop-newsletter-leave');
+Route::post('shop/{vendor}/newsletter', [\App\Domains\Bookshop\Http\Controllers\NewsletterController::class, 'subscribe'])->name('public.shop.newsletter.subscribe')->where('vendor', '[a-z0-9-]+')->middleware('throttle:10,1,shop-newsletter');
 Route::get('shop/{vendor}', [\App\Domains\Bookshop\Http\Controllers\ShopController::class, 'vendor'])->name('public.shop.vendor')
-    ->where('vendor', '(?!(products|c|export|cart|checkout|slips|suggest|wishlist)$)[a-z0-9-]+');
+    ->where('vendor', '(?!(products|c|export|cart|checkout|slips|suggest|wishlist|newsletter)$)[a-z0-9-]+');
 // B5: a vendor's own pages and collections under its storefront (plan §6.4, §5).
 Route::get('shop/{vendor}/p/{page}', [\App\Domains\Bookshop\Http\Controllers\ShopController::class, 'vendorPage'])->name('public.shop.vendor.page')
     ->where('vendor', '(?!(products|c|export|cart|checkout|slips|suggest|wishlist)$)[a-z0-9-]+')->where('page', '[a-z0-9-]+');

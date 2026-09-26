@@ -4414,6 +4414,72 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5hi. B9c: a shop's newsletter sign-up, and abandoned-cart reminders (2026-09-26)
+
+BOOKSHOP_PLAN slice B9, third sub-slice: the **newsletter section**
+(§6.3 "Newsletter (later): collect emails for the vendor's news, with
+consent") and **abandoned-cart reminders** (audit finding 22, parked in
+B9).
+
+**Newsletter.** A fifteenth storefront section type, *Newsletter
+sign-up* (heading and text in three languages), placed like any other in
+the designer. On the shop's page it is an email, an optional name and a
+**required consent box** ("I agree that Fitrah may email me its news. I
+can leave any time from the link in every email."); the visitor is
+thanked in place. One row per shop and address; signing up again after
+leaving renews the consent date. The shop's portal shows how many are
+subscribed, the latest ten, and a **CSV with each person's own
+unsubscribe link**, which the shop must put in every email — Akuru sends
+nothing itself (no bulk mail from the platform). The unsubscribe page
+(public, by a 48-character token) **asks before it acts**: a mail scanner
+following the link unsubscribes nobody; the button does. Unknown tokens
+are a 404. Sign-up and leaving are throttled.
+
+**Cart reminders.** `bookshop:remind-abandoned-carts`, hourly on the
+existing schedule: a **signed-in** customer's cart untouched for a day
+(and no more than a week) gets **one** reminder — "Still thinking it
+over? You left 2 item(s) from Fitrah in your cart" — in the app and, as
+the `cart_reminder` event, by email where the office's customer-email
+switch allows; once per cart until they touch it again; never if they
+placed an order since; never to a guest (nobody to tell); never to
+someone who switched shop notices off. `BOOKSHOP_CART_REMINDERS=false`
+stops it.
+
+**Data** (`2026_09_26_000011_b9c_newsletter_and_cart_reminders`,
+additive): `vendor_newsletter_subscribers`, `carts.reminded_at`. Alias
+`vendor_newsletter_subscriber` (ADR-005).
+
+**Baselines**: `public/shop/newsletter.blade.php` (Blade count 242, the
+unsubscribe page reached from outside the site); the three newsletter
+routes declared public (the sign-up for anonymous visitors, the
+unsubscribe pair verified by token); the sign-up POST declared as a
+throttled public write.
+
+**Tests**: `NewsletterAndRemindersTest` (3): the section on the published
+page, consent required, the address lower-cased and one row per shop,
+the owner's list and CSV with the unsubscribe link, another shop's CSV
+without it; unsubscribing only by the button, the page saying so after,
+an unknown token 404, a new sign-up renewing the consent; the reminder
+sent once to the one eligible cart of six (fresh, a week old, ordered
+since, opted out and a guest's all skipped), by email too, not again,
+then again after the cart is touched and left another day, and the
+command. Full suite **2269 passed** (one assertion counting the section types updated for the fifteenth, and that file re-run).
+
+**Walked** (`scripts/smoke/newsletter.mjs`, **11/11**, no console or
+server errors): Fitrah adds a Newsletter section and publishes; a guest
+cannot send the form without the consent box, then signs up and is
+thanked; Fitrah sees one subscriber and the CSV has the address and its
+link; the guest opens the link, which asks first, presses the button and
+is unsubscribed; Fitrah's count goes back to none; the parent — whose
+cart the seeder left a day and a half ago and reminded once — finds
+"Still thinking it over?" in their notifications and the puzzle still in
+the cart. Re-walked: `sections.mjs` **22/22**, `apply.mjs` **14/14**,
+`storefront.mjs` **15/15**, `checkout.mjs` **28/28**.
+
+**Production**: the migration only; the reminder runs on the scheduler
+already set up (`schedule:run` every minute) and emails need the queue
+worker.
+
 ## 5hh. B9b: cash on delivery (2026-09-26)
 
 BOOKSHOP_PLAN slice B9, second sub-slice: **cash on delivery** (decision

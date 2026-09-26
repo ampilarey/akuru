@@ -5,6 +5,7 @@ namespace App\Domains\Bookshop\Providers;
 use App\Domains\Bookshop\Console\ExpireCheckoutsCommand;
 use App\Domains\Bookshop\Console\IssueCommissionInvoicesCommand;
 use App\Domains\Bookshop\Console\MatureEarningsCommand;
+use App\Domains\Bookshop\Console\RemindAbandonedCartsCommand;
 use App\Domains\Bookshop\Listeners\MarkCheckoutPaidOnPaymentConfirmed;
 use App\Domains\Finance\Events\PaymentConfirmed;
 use Illuminate\Support\Facades\Event;
@@ -23,7 +24,7 @@ class BookshopServiceProvider extends ServiceProvider
         Event::listen(PaymentConfirmed::class, MarkCheckoutPaidOnPaymentConfirmed::class);
 
         if ($this->app->runningInConsole()) {
-            $this->commands([ExpireCheckoutsCommand::class, MatureEarningsCommand::class, IssueCommissionInvoicesCommand::class]);
+            $this->commands([ExpireCheckoutsCommand::class, MatureEarningsCommand::class, IssueCommissionInvoicesCommand::class, RemindAbandonedCartsCommand::class]);
         }
     }
 }

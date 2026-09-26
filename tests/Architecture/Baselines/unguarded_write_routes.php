@@ -53,6 +53,7 @@ return [
     'courses/{course}/syllabus' => 'PublicSite\CourseController@syllabus — READ: sends a public marketing course its published syllabus; writes nothing.',
     'courses/{course}/waitlist' => 'PublicSite\CourseController@waitlist — public waitlist signup.',
     'events/{event}/register' => 'EventController@register — public event signup.',
+    'shop/{vendor}/newsletter' => 'NewsletterController@subscribe — BOOKSHOP_PLAN B9c: a public newsletter sign-up with consent; throttled. READ: it only adds or renews the address given, for that shop, and shows nothing back.',
     'shop/cart' => 'ShopCartController@add — BOOKSHOP_PLAN B2: a guest\'s basket, by a token in their own session; throttled. READ: the cart comes from ResolvesCart, never from the request; the sibling shop/cart/{item} aborts 404 without a basket and so passes the detector.',
 
     // ---------------------------------------------------------------------

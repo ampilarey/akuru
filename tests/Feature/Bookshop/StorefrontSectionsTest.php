@@ -296,7 +296,7 @@ it('lets the office require changes, take a storefront down, lift it and lock se
     sectionsAs($owner)->get(route('vendor.storefront.sections'))->assertInertia(fn ($p) => $p->where('designer.moderation.held', true));
     sectionsAs($office)->get(route('admin.bookshop.storefront.preview', 'fitrah'))->assertOk()->assertSee('data-preview="1"', false)->assertSee('player.vimeo.com', false);
     sectionsAs($owner)->get(route('admin.bookshop.storefront.preview', 'fitrah'))->assertForbidden();
-    sectionsAs($office)->get(route('admin.bookshop.index'))->assertInertia(fn ($p) => $p->where('vendors.0.storefront.live', false)->where('vendors.0.storefront.note', 'Taken down pending the licence.')->has('section_types', 14));
+    sectionsAs($office)->get(route('admin.bookshop.index'))->assertInertia(fn ($p) => $p->where('vendors.0.storefront.live', false)->where('vendors.0.storefront.note', 'Taken down pending the licence.')->has('section_types', 15));
 
     // Lift: back at once, from the published copy.
     sectionsAs($office)->post(route('admin.bookshop.storefront.moderate', $vendor->id), ['action' => 'lift'])->assertSessionHasNoErrors();

@@ -57,6 +57,7 @@ class RenderSectionsAction
                 'delivery_returns' => $this->deliveryReturns($vendor, $settings),
                 'contact_map' => $this->contactMap($vendor, $settings, $draft),
                 'video' => ['embed' => SectionTypes::videoEmbed($settings['url'] ?? null), 'url' => $settings['url'] ?? null],
+                'newsletter' => ['body' => $this->text($settings, 'body'), 'action' => route('public.shop.newsletter.subscribe', $vendor->slug), 'vendor_slug' => $vendor->slug, 'vendor_name' => $vendor->name],
                 default => [],
             };
             // An empty shelf is not a shop window: a section with nothing in it
