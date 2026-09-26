@@ -27,7 +27,7 @@ class VendorOrderController extends Controller
     {
         $scope = $this->authorizeVendor($request);
         $filters = $request->validate([
-            'status' => 'nullable|string|in:returns,pending_payment,paid,needs_attention,processing,ready,dispatched,delivered,cancelled',
+            'status' => 'nullable|string|in:returns,pending_payment,paid,cash_due,needs_attention,processing,ready,dispatched,delivered,cancelled',
             'q' => 'nullable|string|max:40',
         ]);
         $list = app(ListVendorOrdersAction::class)->execute($scope, $filters);
@@ -48,6 +48,7 @@ class VendorOrderController extends Controller
             'to' => 'required|string|in:processing,ready,dispatched,delivered',
             'carrier' => 'nullable|string|max:120',
             'tracking_note' => 'nullable|string|max:500',
+            'cash_received' => 'nullable|boolean',
         ]);
 
         app(FulfilVendorOrderAction::class)->advance($scope, $order, $data['to'], $data);
@@ -162,7 +163,7 @@ class VendorOrderController extends Controller
     private function exportFilters(Request $request): array
     {
         return array_filter($request->validate([
-            'status' => 'nullable|string|in:returns,pending_payment,paid,needs_attention,processing,ready,dispatched,delivered,cancelled',
+            'status' => 'nullable|string|in:returns,pending_payment,paid,cash_due,needs_attention,processing,ready,dispatched,delivered,cancelled',
             'from' => 'nullable|date_format:Y-m-d',
             'to' => 'nullable|date_format:Y-m-d',
         ]), fn ($v) => $v !== null && $v !== '');

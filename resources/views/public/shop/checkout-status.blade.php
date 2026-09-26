@@ -32,6 +32,12 @@
             <p class="mb-3 text-gray-700">{{ __('shop.card_pending') }}</p>
             <a href="{{ route('public.shop.checkout.status', $checkout['number']) }}" class="btn-secondary">{{ __('shop.refresh') }}</a>
         </div>
+    @elseif($checkout['status'] === 'cash_on_delivery')
+        {{-- B9b: placed; the cash is paid to each shop when its order arrives. --}}
+        <div class="mb-6 rounded-lg border border-green-200 bg-green-50 p-4 text-green-900" data-testid="cod-placed">
+            <p class="font-semibold">{{ __('shop.cod_placed_heading') }}</p>
+            <p class="text-sm">{{ __('shop.cod_placed_body', ['amount' => $checkout['currency'].' '.$checkout['total']]) }}</p>
+        </div>
     @elseif($checkout['payment_method'] === 'bank_transfer')
         <div class="mb-6 rounded-lg border bg-white p-4" data-testid="bank-transfer">
             <h2 class="mb-2 text-lg font-semibold">{{ __('shop.bank_details_heading') }}</h2>

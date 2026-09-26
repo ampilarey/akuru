@@ -47,7 +47,8 @@ class CheckoutController extends Controller
             'address_label' => 'nullable|string|max:40',
             'delivery' => 'required|array',
             'delivery.*' => 'required|string|max:20',
-            'payment_method' => 'required|string|in:'.implode(',', (array) config('bookshop.checkout.methods')),
+            // B9b: cash on delivery is checked shop by shop in the Action.
+            'payment_method' => 'required|string|in:'.implode(',', [...(array) config('bookshop.checkout.methods'), 'cash_on_delivery']),
             'discount_code' => 'nullable|string|max:40',
             'notes' => 'nullable|string|max:1000',
         ]);

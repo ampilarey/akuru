@@ -10,6 +10,8 @@ enum CheckoutStatus: string
 {
     case PendingPayment = 'pending_payment';
     case Paid = 'paid';
+    // B9b: placed, stock taken, the cash is paid to the shop on delivery.
+    case CashOnDelivery = 'cash_on_delivery';
     case Expired = 'expired';
     case Failed = 'failed';
 }

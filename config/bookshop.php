@@ -130,7 +130,7 @@ return [
         // Audit finding 2: stock is reserved while the customer pays.
         'reservation_minutes' => (int) env('BOOKSHOP_RESERVATION_MINUTES', 30),
         // Payment methods offered at checkout (decision 7). Cash on delivery
-        // is B9.
+        // (B9b) is added per basket when the office and every shop allow it.
         'methods' => ['card', 'wallet', 'bank_transfer'],
         'max_quantity_per_line' => 50,
     ],
@@ -217,6 +217,19 @@ return [
     'onboarding' => [
         'open_by_default' => (bool) env('BOOKSHOP_VENDOR_APPLICATIONS_OPEN', true),
         'setting_key' => 'bookshop_vendor_applications_open',
+    ],
+
+    /*
+     * B9b: cash on delivery (decision 7). The office's switch (a setting)
+     * starts at `enabled_by_default`; each shop opts in on its settings.
+     * Only where the shop itself hands the parcel over: its own collection
+     * point and its own couriers — not a boat (the carrier takes no cash for
+     * the shop) and not the Akuru counter.
+     */
+    'cod' => [
+        'enabled_by_default' => (bool) env('BOOKSHOP_COD_ENABLED', true),
+        'setting_key' => 'bookshop_cod_enabled',
+        'delivery_kinds' => ['collect_vendor', 'courier_male', 'courier_atolls'],
     ],
 
     'bank_transfer' => [

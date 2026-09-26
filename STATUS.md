@@ -4414,6 +4414,75 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5hh. B9b: cash on delivery (2026-09-26)
+
+BOOKSHOP_PLAN slice B9, second sub-slice: **cash on delivery** (decision
+7: "card, wallet and bank transfer in B2; cash on delivery in B9").
+
+**Who may use it.** Offered at checkout only when the office's switch is
+on (a setting on `/admin/bookshop`, default on, `BOOKSHOP_COD_ENABLED`
+for its first value) **and every shop in the basket has opted in** on its
+settings. At placing the order each shop's part is checked again: the
+delivery must be one the shop hands over itself — its own collection
+point or its own couriers (`collect_vendor`, `courier_male`,
+`courier_atolls`), never a boat (the carrier takes no cash for the shop)
+and never the Akuru counter — and the shop's order must be under the
+shop's own cap, if it set one. Each refusal says which shop and why.
+
+**How it runs.** Placing a cash order takes the stock at once (as payment
+does; a line in the stock log), confirms any discount, and neither the
+checkout (`cash_on_delivery`) nor its orders (`cash_due`, "Cash on
+delivery") ever expire. The customer is told to have the amount ready;
+the shop is told a cash order is in. The shop prepares and dispatches it
+as usual (the `cash_due` tab, the same steps as a paid order); **Delivered
+is disabled until the shop ticks "I have received MVR … in cash"**, and
+the server refuses it otherwise. That moment is the payment: `paid_at`
+set, a *cash received* event, the sale counts for best sellers, the
+earning is recorded, and the checkout becomes paid once all its orders
+are paid or cancelled.
+
+**The money** (rule 12). The earning gains `cash_collected` — the cash
+the shop took on Akuru's behalf — and its `net` is what Akuru owes the
+shop after it: for a cash order, minus the commission (a MVR 270 order at
+10% on MVR 240 of goods: net **−24.00**), which the next payout settles
+the way B6 already settles a refund after a payout. The commission
+invoice is unchanged. A cash order **cancelled before delivery refunds
+nothing** (no money moved) and puts the stock back. A **return after
+delivery** is refunded to the customer's wallet at once by Akuru, and the
+shop's earning keeps the cash it collected, so the shop owes that back
+too (all returned: net −270.00, not marked reversed, so the balance still
+reaches the next payout). The shop's Money page and earnings CSV show the
+cash taken.
+
+**Data** (`2026_09_26_000010_b9b_cash_on_delivery`, additive):
+`vendors.cod_enabled`, `vendors.cod_max`, `vendor_earnings.cash_collected`.
+The new checkout, order and payment-method values are strings in
+existing columns.
+
+**Tests**: `CashOnDeliveryTest` (5): placed (offered, stock taken, the
+expiry sweep leaves it alone, the shop's `cash_due` tab and count, the
+customer's page); paid on delivery only with the cash ticked (refused
+without it, then the earning: 230 cash, commission 20, net −20.00, the
+checkout paid); cancelled before delivery (no refund, stock back, no
+earning); returned after delivery (refunded to the wallet, net −230.00,
+not reversed); refused over the shop's cap, by boat, with a shop that
+takes no cash (not even offered), and with the office's switch off; the
+shop's own switch. Full suite **2266 passed**.
+
+**Walked** (`scripts/smoke/cod.mjs`, **10/10**, no console or server
+errors): Fitrah turns on cash on delivery up to MVR 1000; the student
+buys the Wooden Alphabet Puzzle by courier paying cash, and is told to
+have MVR 270.00 ready; Fitrah finds it under Cash on delivery, prepares
+and dispatches it, finds Delivered held until the cash is ticked, ticks
+it and delivers; the student sees it delivered; Fitrah's Money page shows
+MVR 270.00 cash taken and −24.00 net; the office turns cash on delivery
+off and the checkout stops offering it. Re-walked: `checkout.mjs`
+**28/28**, `fulfilment.mjs` **21/21**, `vendor-money.mjs` **16/16**,
+`polish.mjs` **29/29**, `operations.mjs` **21/21**, `vendor.mjs` **25/25**.
+
+**Production**: the migration only. The office switch is on, but no shop
+offers cash until it ticks *Take cash on delivery* on its settings.
+
 ## 5hg. B9a: open a shop — public vendor applications, approved by the office (2026-09-26)
 
 BOOKSHOP_PLAN slice B9 ("later, on request"), which the owner asked for

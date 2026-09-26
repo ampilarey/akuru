@@ -13,11 +13,12 @@ import FormErrors from '../../Components/FormErrors';
  * window passed (decision 15).
  */
 
-const TABS = ['', 'pending_payment', 'paid', 'needs_attention', 'processing', 'ready', 'dispatched', 'delivered', 'cancelled', 'returns'];
+const TABS = ['', 'pending_payment', 'paid', 'cash_due', 'needs_attention', 'processing', 'ready', 'dispatched', 'delivered', 'cancelled', 'returns'];
 
 const tone = {
     pending_payment: 'bg-amber-100 text-amber-800',
     paid: 'bg-blue-100 text-blue-800',
+    cash_due: 'bg-amber-100 text-amber-900',
     needs_attention: 'bg-red-100 text-red-800',
     processing: 'bg-indigo-100 text-indigo-800',
     ready: 'bg-teal-100 text-teal-800',
@@ -31,6 +32,8 @@ const post = (url, data) => router.post(url, data, { preserveScroll: true });
 function StepButtons({ order, t }) {
     const [carrier, setCarrier] = useState(order.carrier || '');
     const [tracking, setTracking] = useState(order.tracking_note || '');
+    // B9b: a cash order is handed over only with the cash in hand.
+    const [cash, setCash] = useState(false);
     if (order.next.length === 0) {
         return null;
     }
@@ -43,13 +46,20 @@ function StepButtons({ order, t }) {
                     <label className="text-sm">{t.tracking_note}<input className="form-input block w-64" value={tracking} onChange={(e) => setTracking(e.target.value)} data-testid="tracking-note" /></label>
                 </>
             )}
+            {order.awaiting_cash && order.next.includes('delivered') && (
+                <label className="flex items-center gap-2 rounded bg-amber-50 p-2 text-sm text-amber-900">
+                    <input type="checkbox" checked={cash} onChange={(e) => setCash(e.target.checked)} data-testid="cash-received" />
+                    {t.cash_received_label.replace(':amount', `${order.currency} ${order.total}`)}
+                </label>
+            )}
             {order.next.map((to) => (
                 <button
                     key={to}
                     type="button"
                     className={to === order.next[order.next.length - 1] ? 'btn-primary' : 'btn-secondary'}
                     data-testid={`step-${to}`}
-                    onClick={() => post(`/vendor/orders/${order.id}/advance`, { to, carrier, tracking_note: tracking })}
+                    disabled={to === 'delivered' && order.awaiting_cash && !cash}
+                    onClick={() => post(`/vendor/orders/${order.id}/advance`, { to, carrier, tracking_note: tracking, cash_received: to === 'delivered' && order.awaiting_cash ? 1 : undefined })}
                 >
                     {to === 'delivered' && order.collection ? t.step_collected : t[`step_${to}`]}
                 </button>

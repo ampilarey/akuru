@@ -14,6 +14,8 @@ enum OrderStatus: string
 {
     case PendingPayment = 'pending_payment';
     case Paid = 'paid';
+    // B9b: to prepare and deliver; the shop takes the cash at the door.
+    case CashDue = 'cash_due';
     case NeedsAttention = 'needs_attention';
     case Processing = 'processing';
     case Ready = 'ready';
@@ -25,7 +27,7 @@ enum OrderStatus: string
     /** Money is in and the parcel has not left: the shop may still cancel. */
     public function cancellableByVendor(): bool
     {
-        return in_array($this, [self::Paid, self::NeedsAttention, self::Processing, self::Ready], true);
+        return in_array($this, [self::Paid, self::CashDue, self::NeedsAttention, self::Processing, self::Ready], true);
     }
 
     /** "Cancel before dispatch" (plan §4). A parcel waiting to be collected has not left the shop. */
@@ -37,6 +39,6 @@ enum OrderStatus: string
     /** The statuses a vendor works through, in order, for the queue's tabs. */
     public static function queue(): array
     {
-        return [self::Paid, self::NeedsAttention, self::Processing, self::Ready, self::Dispatched, self::Delivered, self::Cancelled];
+        return [self::Paid, self::CashDue, self::NeedsAttention, self::Processing, self::Ready, self::Dispatched, self::Delivered, self::Cancelled];
     }
 }

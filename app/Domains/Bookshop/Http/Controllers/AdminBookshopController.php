@@ -2,6 +2,7 @@
 
 namespace App\Domains\Bookshop\Http\Controllers;
 
+use App\Domains\Bookshop\Actions\Checkout\CashOnDeliveryAction;
 use App\Domains\Bookshop\Actions\Checkout\DecideBankTransferSlipAction;
 use App\Domains\Bookshop\Actions\CreateVendorAction;
 use App\Domains\Bookshop\Actions\DecideVendorApplicationAction;
@@ -62,6 +63,7 @@ class AdminBookshopController extends Controller
             'order_statuses' => array_map(fn (OrderStatus $s) => $s->value, OrderStatus::cases()),
             'applications' => app(DecideVendorApplicationAction::class)->list(),
             'applications_open' => app(ApplyToSellAction::class)->isOpen(),
+            'cod_on' => app(CashOnDeliveryAction::class)->isOn(),
             'default_commission_rate' => number_format((float) config('bookshop.default_commission_rate'), 2, '.', ''),
             'agreement_url' => route('public.page.show', 'vendor-agreement'),
             'sign_in_url' => route('login'),
@@ -412,6 +414,17 @@ class AdminBookshopController extends Controller
         $decided = app(DecideVendorApplicationAction::class)->execute($application, (int) $request->user()->id, $data['decision'] === 'approve', $data['note'] ?? null, $data);
 
         return back()->with('success', __($data['decision'] === 'approve' ? 'shop.application_approved_flash' : 'shop.application_declined_flash', ['shop' => $decided->shop_name]));
+    }
+
+    /** B9b: cash on delivery on or off for the whole bookstore. */
+    public function setCod(Request $request): RedirectResponse
+    {
+        abort_unless($request->user()?->can('bookshop.manage'), 403);
+        $data = $request->validate(['on' => 'required|boolean']);
+
+        app(CashOnDeliveryAction::class)->setOn((bool) $data['on']);
+
+        return back()->with('success', __($data['on'] ? 'shop.cod_on_flash' : 'shop.cod_off_flash'));
     }
 
     /** B9a: open or close the "Open a shop" form. */

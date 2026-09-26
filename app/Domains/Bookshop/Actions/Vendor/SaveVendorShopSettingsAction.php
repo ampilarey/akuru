@@ -36,6 +36,10 @@ class SaveVendorShopSettingsAction
             'holiday_notice' => $vendor->holiday_notice,
             'on_holiday' => $vendor->onHoliday(),
             'free_delivery_over' => $vendor->free_delivery_over !== null ? (string) $vendor->free_delivery_over : null,
+            // B9b: cash on delivery, and the largest order it is taken for.
+            'cod_enabled' => (bool) $vendor->cod_enabled,
+            'cod_max' => $vendor->cod_max !== null ? (string) $vendor->cod_max : null,
+            'cod_office_on' => app(\App\Domains\Bookshop\Actions\Checkout\CashOnDeliveryAction::class)->isOn(),
             'minimum_window' => (int) config('bookshop.returns.window_days', 7),
         ];
     }
@@ -68,6 +72,8 @@ class SaveVendorShopSettingsAction
             'holiday_notice' => $from === null ? null : (trim((string) ($data['holiday_notice'] ?? '')) ?: null),
             // B7 (§6.5): "spend MVR X, get free delivery", across the shop's charged methods.
             'free_delivery_over' => is_numeric($data['free_delivery_over'] ?? null) && (float) $data['free_delivery_over'] > 0 ? round((float) $data['free_delivery_over'], 2) : null,
+            'cod_enabled' => (bool) ($data['cod_enabled'] ?? false),
+            'cod_max' => is_numeric($data['cod_max'] ?? null) && (float) $data['cod_max'] > 0 ? round((float) $data['cod_max'], 2) : null,
         ]);
     }
 }

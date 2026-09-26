@@ -73,6 +73,8 @@ final class MoneyView
             'commission_tax' => self::money($e->commission_tax),
             'refunded' => self::money($e->refunded),
             'net' => self::money($e->net),
+            // B9b: cash the shop took at the door, already taken off `net`.
+            'cash_collected' => self::money($e->cash_collected),
             'paid_amount' => self::money($e->paid_amount),
             'balance' => self::money($e->balance()),
             'status' => $e->status->value,

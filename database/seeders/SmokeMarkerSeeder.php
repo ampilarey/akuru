@@ -1877,6 +1877,12 @@ class SmokeMarkerSeeder extends Seeder
             }
         }
         DB::table('settings')->where('key', (string) config('bookshop.onboarding.setting_key'))->delete();
+
+        // B9b (`cod.mjs`): the walk turns cash on delivery on for Fitrah and
+        // the office turns it off; both go back. The walk's cash order went
+        // with the student's orders above.
+        DB::table('vendors')->whereIn('id', [$fitrahId, $otherId])->update(['cod_enabled' => false, 'cod_max' => null]);
+        DB::table('settings')->where('key', (string) config('bookshop.cod.setting_key'))->delete();
     }
 
     /**

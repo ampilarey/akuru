@@ -98,6 +98,7 @@
                             <span class="font-medium">{{ __('shop.pay_'.$method) }}</span>
                             @if($method === 'wallet')<span class="block text-xs text-gray-500">{{ __('shop.wallet_balance', ['balance' => $currency.' '.$checkout['wallet_balance']]) }}</span>@endif
                             @if($method === 'bank_transfer')<span class="block text-xs text-gray-500">{{ __('shop.pay_bank_transfer_hint') }}</span>@endif
+                            @if($method === 'cash_on_delivery')<span class="block text-xs text-gray-500">{{ __('shop.pay_cash_on_delivery_hint') }}</span>@endif
                         </span>
                     </label>
                 @endforeach

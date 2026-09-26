@@ -778,6 +778,8 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         // B9a: shop applications.
         Route::post('applications/{application}/decide', [\App\Domains\Bookshop\Http\Controllers\AdminBookshopController::class, 'decideApplication'])->name('admin.bookshop.applications.decide')->whereNumber('application');
         Route::post('applications/open', [\App\Domains\Bookshop\Http\Controllers\AdminBookshopController::class, 'setApplicationsOpen'])->name('admin.bookshop.applications.open');
+        // B9b: cash on delivery.
+        Route::post('cod', [\App\Domains\Bookshop\Http\Controllers\AdminBookshopController::class, 'setCod'])->name('admin.bookshop.cod');
         Route::get('applications/export', [\App\Domains\Bookshop\Http\Controllers\AdminBookshopController::class, 'exportApplications'])->name('admin.bookshop.applications.export');
         // B3: card refunds, returned through BML and recorded.
         Route::get('refunds/export', [\App\Domains\Bookshop\Http\Controllers\AdminBookshopController::class, 'exportRefunds'])->name('admin.bookshop.refunds.export');

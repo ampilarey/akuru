@@ -24,7 +24,7 @@ final class OrderView
         $collection = $order->isCollection();
 
         return match ($order->status) {
-            OrderStatus::Paid, OrderStatus::NeedsAttention => ['processing', $collection ? 'ready' : 'dispatched'],
+            OrderStatus::Paid, OrderStatus::CashDue, OrderStatus::NeedsAttention => ['processing', $collection ? 'ready' : 'dispatched'],
             OrderStatus::Processing => [$collection ? 'ready' : 'dispatched'],
             OrderStatus::Ready, OrderStatus::Dispatched => ['delivered'],
             default => [],

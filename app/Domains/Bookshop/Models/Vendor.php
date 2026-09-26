@@ -37,6 +37,8 @@ class Vendor extends Model
         'return_conditions',
         'free_delivery_over',
         'notice_settings',
+        'cod_enabled',
+        'cod_max',
         'badges',
         'office_notes',
         'created_by',
@@ -52,6 +54,8 @@ class Vendor extends Model
             'badges' => 'array',
             'free_delivery_over' => 'decimal:2',
             'notice_settings' => 'array',
+            'cod_enabled' => 'boolean',
+            'cod_max' => 'decimal:2',
             'holiday_from' => 'date',
             'holiday_until' => 'date',
         ];
