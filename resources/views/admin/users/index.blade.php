@@ -3,7 +3,7 @@
 @section('content')
 
 {{-- Header --}}
-<div style="background:linear-gradient(135deg,#3D1219,#7C2D37);padding:1.25rem 1.5rem;display:flex;justify-content:space-between;align-items:center">
+<div style="background:linear-gradient(135deg,#3D1219,#7C2D37);padding:1.25rem 1.5rem;display:flex;flex-wrap:wrap;gap:.75rem;justify-content:space-between;align-items:center">
     <div>
         <h2 style="font-size:1.1rem;font-weight:800;color:white;margin:0">User Management</h2>
         <p style="font-size:.75rem;color:rgba(255,255,255,.65);margin:.2rem 0 0">
@@ -77,7 +77,8 @@
     </form>
 
     {{-- Table --}}
-    <div style="background:white;border-radius:.875rem;border:1px solid #E5E7EB;overflow:hidden">
+    {{-- overflow-x:auto, not hidden: on a phone the right-hand columns — Role, Status, the delete button — were cut off with no way to reach them (the mobile sweep, STATUS §5hu). --}}
+    <div style="background:white;border-radius:.875rem;border:1px solid #E5E7EB;overflow-x:auto">
         <table style="width:100%;border-collapse:collapse;font-size:.82rem">
             <thead>
                 <tr style="background:#F9FAFB;border-bottom:1px solid #E5E7EB">

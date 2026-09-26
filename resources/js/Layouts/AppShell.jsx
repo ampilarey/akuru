@@ -48,6 +48,10 @@ export default function AppShell({ title, children }) {
                         </div>
                     </div>
                     <nav aria-label={n.primary_nav || 'Primary'} className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
+                        {/* On a phone the primary links are one row that scrolls sideways;
+                            More, Alerts, the account and the language switcher stay in view
+                            beneath it (the mobile sweep, STATUS §5hu). */}
+                        <div className="flex w-full flex-nowrap items-center gap-x-4 overflow-x-auto whitespace-nowrap sm:w-auto sm:flex-wrap sm:gap-y-1 sm:overflow-visible sm:whitespace-normal">
                         {nav.primary.map((item) => (
                             <Link
                                 key={item.href}
@@ -60,6 +64,7 @@ export default function AppShell({ title, children }) {
                                 {item.label}
                             </Link>
                         ))}
+                        </div>
                         {nav.groups.length > 0 && (
                             <button
                                 type="button"

@@ -13,6 +13,7 @@
     @if(session('success'))
         <div class="bg-green-100 text-green-800 p-3 rounded mb-4">{{ session('success') }}</div>
     @endif
+    <div class="overflow-x-auto">
     <table class="min-w-full bg-white border">
         <thead><tr class="text-left text-xs uppercase text-gray-500"><th class="p-2">Name</th><th class="p-2">Members</th><th class="p-2">Active</th></tr></thead>
         <tbody>
@@ -27,5 +28,6 @@
         @endforelse
         </tbody>
     </table>
+</div>
 </div>
 @endsection

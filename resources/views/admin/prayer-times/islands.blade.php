@@ -13,6 +13,7 @@
         <a href="{{ route('admin.prayer-times.islands.export') }}" class="btn-secondary">Export CSV</a>
     </div>
     <p class="text-sm text-gray-600 mb-4">Cache version {{ $cacheVersion }} · default island {{ $defaultIslandId ?: 'unset' }}</p>
+    <div class="overflow-x-auto">
     <table class="min-w-full bg-white border">
         <thead><tr class="text-left text-xs uppercase text-gray-500">
             <th class="p-2">ID</th><th class="p-2">Island</th><th class="p-2">Atoll</th><th class="p-2">Offset</th><th class="p-2">Lat/Lng</th><th class="p-2">Active</th>
@@ -32,5 +33,6 @@
         @endforelse
         </tbody>
     </table>
+</div>
 </div>
 @endsection
