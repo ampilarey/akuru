@@ -5,6 +5,7 @@ namespace App\Domains\Bookshop\Models;
 use App\Domains\Bookshop\Enums\VendorStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 /**
  * A shop selling inside the Akuru Online Bookshop (BOOKSHOP_PLAN §3). The
@@ -34,6 +35,7 @@ class Vendor extends Model
         'holiday_notice',
         'return_window_days',
         'return_conditions',
+        'badges',
         'office_notes',
         'created_by',
     ];
@@ -45,6 +47,7 @@ class Vendor extends Model
             'gst_registered' => 'boolean',
             'commission_rate' => 'decimal:2',
             'settings' => 'array',
+            'badges' => 'array',
             'holiday_from' => 'date',
             'holiday_until' => 'date',
         ];
@@ -63,6 +66,17 @@ class Vendor extends Model
     public function deliveryMethods(): HasMany
     {
         return $this->hasMany(VendorDeliveryMethod::class)->orderBy('sort_order')->orderBy('id');
+    }
+
+    public function storefront(): HasOne
+    {
+        return $this->hasOne(VendorStorefront::class);
+    }
+
+    /** The office's badges (plan §6.1): `verified`, `akuru_partner`. */
+    public function hasBadge(string $badge): bool
+    {
+        return in_array($badge, (array) ($this->badges ?? []), true);
     }
 
     /**

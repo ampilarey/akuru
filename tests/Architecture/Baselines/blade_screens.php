@@ -13,9 +13,9 @@
 // expected direction, and the test asks you to update the count below when you
 // do.
 //
-// Count: 234 (a document template, not a screen — see the documents block;
-// the five public bookshop views of BOOKSHOP_PLAN B1b and the five customer
-// pages of B2 — see the public block).
+// Count: 236 (a document template, not a screen — see the documents block;
+// the five public bookshop views of BOOKSHOP_PLAN B1b, the five customer
+// pages of B2 and the two storefront partials of B4 — see the public block).
 
 return [
     // (root) — 4
@@ -292,6 +292,10 @@ return [
     'public/shop/checkout-status.blade.php',
     'public/shop/orders/index.blade.php',
     'public/shop/orders/show.blade.php',
+    // BOOKSHOP_PLAN B4 — the vendor's storefront head and its theme, two
+    // partials of the same public vendor page.
+    'public/shop/_storefront.blade.php',
+    'public/shop/_theme.blade.php',
     'public/search.blade.php',
     'public/test.blade.php',
 

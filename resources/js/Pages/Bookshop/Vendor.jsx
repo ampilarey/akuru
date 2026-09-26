@@ -453,7 +453,12 @@ export default function Vendor({ t, vendor, memberships = [], agreement_url, pro
                         {t.at_akuru} · {t.your_role}: {t[`role_${vendor.role}`] || vendor.role} ·{' '}
                         <a href={`/shop/${vendor.slug}`} target="_blank" rel="noreferrer" className="text-blue-700 underline" data-testid="open-shop-page">{t.open_shop_page}</a>
                     </p>
-                    {vendor.agreement_accepted && <a href="/vendor/orders" className="btn-primary mt-2 inline-block" data-testid="open-orders">{t.orders_title}</a>}
+                    {vendor.agreement_accepted && (
+                        <span className="mt-2 inline-flex gap-2">
+                            <a href="/vendor/orders" className="btn-primary" data-testid="open-orders">{t.orders_title}</a>
+                            <a href="/vendor/storefront" className="btn-secondary" data-testid="open-designer">{t.designer_title}</a>
+                        </span>
+                    )}
                 </div>
                 {memberships.length > 1 && (
                     <label className="text-sm">

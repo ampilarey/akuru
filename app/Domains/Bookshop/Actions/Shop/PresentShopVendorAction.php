@@ -8,19 +8,23 @@ use App\Domains\Bookshop\Support\ShopPresenter;
 
 /**
  * A vendor's page head (BOOKSHOP_PLAN §2 `/shop/<vendor>`): its name, its
- * tagline and "at Akuru Online Bookshop" (decision 11). B1b's page is the
- * plain one — the vendor's own branding, sections and pages arrive with the
- * storefront designer (B4, B5). Null for an unknown or suspended vendor.
+ * tagline and "at Akuru Bookstore" (decision 11), and — since B4 — its
+ * published storefront (identity and theme), or the draft for the vendor's
+ * own preview. Null for an unknown or suspended vendor. Without a
+ * published storefront the page stays the plain B1b one.
  */
 class PresentShopVendorAction
 {
     /**
-     * @return array{name: string, slug: string, tagline: ?string}|null
+     * @return array<string, mixed>|null
      */
-    public function execute(string $slug): ?array
+    public function execute(string $slug, bool $draft = false): ?array
     {
-        $vendor = Vendor::query()->where('slug', $slug)->where('status', VendorStatus::Active->value)->first();
+        $vendor = Vendor::query()->where('slug', $slug)->where('status', VendorStatus::Active->value)->with('storefront')->first();
+        if ($vendor === null) {
+            return null;
+        }
 
-        return $vendor === null ? null : ShopPresenter::vendor($vendor);
+        return ShopPresenter::vendor($vendor) + ['storefront' => app(ResolveStorefrontAction::class)->execute($vendor, $draft)];
     }
 }
