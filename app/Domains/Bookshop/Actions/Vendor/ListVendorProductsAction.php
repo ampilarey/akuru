@@ -105,6 +105,7 @@ class ListVendorProductsAction
             'price' => (string) $p->price,
             'compare_at_price' => $p->compare_at_price !== null ? (string) $p->compare_at_price : null,
             'cost' => $p->cost !== null ? (string) $p->cost : null,
+            'library_item_id' => $p->library_item_id,
             'currency' => $p->currency,
             'tax_class' => $p->tax_class->value,
             'sku' => $p->sku,

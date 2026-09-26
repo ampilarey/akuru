@@ -77,6 +77,7 @@ class PresentOrderAction
             ])->values()->all(),
             'address' => $order->address_snapshot,
             'notes' => $order->notes,
+            'gift_message' => $order->gift_message,
             'checkout_number' => $order->checkout?->number,
             'payment_method' => $order->checkout?->payment_method->value,
             'receipt' => [

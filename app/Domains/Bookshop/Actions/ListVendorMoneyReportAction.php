@@ -26,7 +26,7 @@ class ListVendorMoneyReportAction
     {
         app(MatureVendorEarningsAction::class)->execute();
         $vendors = Vendor::query()->orderBy('name')->get()->keyBy('id');
-        $earnings = VendorEarning::query()->get();
+        $earnings = VendorEarning::query()->with('order:id,tax')->get();
         $payouts = VendorPayout::query()->orderByDesc('requested_at')->limit(200)->get();
         $invoices = VendorCommissionInvoice::query()->orderByDesc('period_start')->orderBy('vendor_id')->limit(200)->get();
 
@@ -81,6 +81,8 @@ class ListVendorMoneyReportAction
                 'refunded' => MoneyView::money($rows->sum(fn (VendorEarning $e) => (float) $e->refunded)),
                 'commission' => MoneyView::money($rows->sum(fn (VendorEarning $e) => (float) $e->commission)),
                 'commission_tax' => MoneyView::money($rows->sum(fn (VendorEarning $e) => (float) $e->commission_tax)),
+                // B11 (§7 "GST collected"): the GST the registered shops charged on these sales, summed.
+                'sales_tax' => MoneyView::money($rows->sum(fn (VendorEarning $e) => (float) ($e->order?->tax ?? 0))),
                 'vendor_net' => MoneyView::money($rows->sum(fn (VendorEarning $e) => (float) $e->net)),
                 'invoices' => $invoiced->get($key, collect())->count(),
                 'invoiced' => MoneyView::money($invoiced->get($key, collect())->sum(fn (VendorCommissionInvoice $i) => (float) $i->total)),

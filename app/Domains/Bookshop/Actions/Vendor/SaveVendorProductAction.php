@@ -65,6 +65,10 @@ class SaveVendorProductAction
                 $this->syncVariants($product, (array) ($data['variants'] ?? []), $scope->userId, $stockKind);
             }
             $this->storePhotos($scope, $product, $photos);
+            // B11 (§10 "alt text required"): the words a screen reader says for each photo.
+            foreach ((array) ($data['image_alts'] ?? []) as $imageId => $alt) {
+                ProductImage::query()->where('product_id', $product->id)->whereKey((int) $imageId)->update(['alt_text' => trim((string) $alt)]);
+            }
 
             return $product->refresh();
         });
@@ -111,6 +115,7 @@ class SaveVendorProductAction
             'price' => $data['price'],
             'compare_at_price' => $data['compare_at_price'] ?? null,
             'cost' => $data['cost'] ?? null,
+            'library_item_id' => isset($data['library_item_id']) && $data['library_item_id'] !== '' ? (int) $data['library_item_id'] : null,
             'currency' => (string) config('bookshop.currency', 'MVR'),
             'tax_class' => $data['tax_class'] ?? 'standard',
             'sku' => ($data['sku'] ?? null) ?: null,

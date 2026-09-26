@@ -51,6 +51,7 @@ class CheckoutController extends Controller
             'payment_method' => 'required|string|in:'.implode(',', [...(array) config('bookshop.checkout.methods'), 'cash_on_delivery']),
             'discount_code' => 'nullable|string|max:40',
             'notes' => 'nullable|string|max:1000',
+            'gift_message' => 'nullable|string|max:300',
         ]);
         $cart = $this->cart($request);
         abort_if($cart === null, 404);

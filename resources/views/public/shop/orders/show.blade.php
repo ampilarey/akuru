@@ -94,6 +94,7 @@
             <p>{{ $order['delivery']['name'] }} · {{ __('shop.handling_note', ['days' => $order['delivery']['handling_days']]) }}</p>
             <p class="mt-1 text-gray-700">{{ $order['address']['recipient_name'] ?? '' }} · {{ $order['address']['phone'] ?? '' }}<br>{{ $order['address']['street'] ?? '' }}, {{ $order['address']['island'] ?? '' }}, {{ $order['address']['atoll'] ?? '' }}@if(! empty($order['address']['notes']))<br>{{ $order['address']['notes'] }}@endif</p>
             @if($order['notes'])<p class="mt-1 text-gray-600">{{ __('shop.order_notes') }}: {{ $order['notes'] }}</p>@endif
+            @if($order['gift_message'] ?? null)<p class="mt-1 text-gray-600" data-testid="order-gift-message" dir="auto">{{ __('shop.gift_message') }}: {{ $order['gift_message'] }}</p>@endif
         </div>
         <div class="rounded-lg border bg-white p-4 text-sm" data-testid="order-history">
             <h2 class="mb-1 font-semibold">{{ __('shop.history') }}</h2>

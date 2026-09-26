@@ -30,6 +30,7 @@ use App\Domains\Bookshop\Actions\SaveCatalogueTermAction;
 use App\Domains\Bookshop\Actions\Shop\ApplyToSellAction;
 use App\Domains\Bookshop\Actions\Shop\ListShopProductsAction;
 use App\Domains\Bookshop\Actions\Shop\PresentShopVendorAction;
+use App\Domains\Bookshop\Actions\ShopOpenAction;
 use App\Domains\Bookshop\Actions\UpdateVendorAction;
 use App\Domains\Bookshop\Enums\OrderStatus;
 use App\Domains\Bookshop\Support\InsightsReport;
@@ -76,6 +77,7 @@ class AdminBookshopController extends Controller
             'hosts' => ['shops' => app(DecideVendorHostAction::class)->list(), 'shop_host' => config('bookshop.hosts.shop_host'), 'check' => $request->session()->get('host_check')],
             'insights' => ['days' => InsightsReport::days((int) $request->query('insight_days', 30)), 'shops' => InsightsReport::byShop((int) $request->query('insight_days', 30)), 'ranges' => array_map('intval', (array) config('bookshop.insights.ranges'))],
             'cod_on' => app(CashOnDeliveryAction::class)->isOn(),
+            'shop_open' => ['open' => app(ShopOpenAction::class)->isOpen(), 'message' => app(ShopOpenAction::class)->message()],
             'default_commission_rate' => number_format((float) config('bookshop.default_commission_rate'), 2, '.', ''),
             'agreement_url' => route('public.page.show', 'vendor-agreement'),
             'sign_in_url' => route('login'),
@@ -285,9 +287,9 @@ class AdminBookshopController extends Controller
                     Csv::put($out, [$v['name'], $v['commission_rate'], $v['orders_count'], $v['awaiting_delivery'], $v['in_window'], $v['available'], $v['requested'], $v['paid'], $v['requestable_money'], $v['lifetime_net'], $v['lifetime_commission']]);
                 }
             } else {
-                Csv::put($out, ['month', 'orders', 'sales_charged', 'gross_paid', 'refunded', 'commission', 'commission_tax', 'vendor_net', 'invoices', 'invoiced']);
+                Csv::put($out, ['month', 'orders', 'sales_charged', 'gross_paid', 'refunded', 'commission', 'commission_tax', 'sales_gst', 'vendor_net', 'invoices', 'invoiced']);
                 foreach ($report['tax_report'] as $r) {
-                    Csv::put($out, [$r['month'], $r['orders'], $r['sales'], $r['gross_paid'], $r['refunded'], $r['commission'], $r['commission_tax'], $r['vendor_net'], $r['invoices'], $r['invoiced']]);
+                    Csv::put($out, [$r['month'], $r['orders'], $r['sales'], $r['gross_paid'], $r['refunded'], $r['commission'], $r['commission_tax'], $r['sales_tax'], $r['vendor_net'], $r['invoices'], $r['invoiced']]);
                 }
             }
             fclose($out);
@@ -426,6 +428,17 @@ class AdminBookshopController extends Controller
         $decided = app(DecideVendorApplicationAction::class)->execute($application, (int) $request->user()->id, $data['decision'] === 'approve', $data['note'] ?? null, $data);
 
         return back()->with('success', __($data['decision'] === 'approve' ? 'shop.application_approved_flash' : 'shop.application_declined_flash', ['shop' => $decided->shop_name]));
+    }
+
+    /** B11 (§7): the whole shop open or closed, with the notice shown while closed. */
+    public function setShopOpen(Request $request): RedirectResponse
+    {
+        abort_unless($request->user()?->can('bookshop.manage'), 403);
+        $data = $request->validate(['open' => 'required|boolean', 'message' => 'nullable|string|max:500']);
+
+        app(ShopOpenAction::class)->set((bool) $data['open'], $data['message'] ?? null);
+
+        return back()->with('success', __($data['open'] ? 'shop.shop_opened_flash' : 'shop.shop_closed_flash'));
     }
 
     /** B9b: cash on delivery on or off for the whole bookstore. */

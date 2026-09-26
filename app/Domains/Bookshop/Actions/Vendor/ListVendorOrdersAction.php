@@ -128,6 +128,7 @@ class ListVendorOrdersAction
             'total' => (string) $order->total,
             'currency' => $order->currency,
             'notes' => $order->notes,
+            'gift_message' => $order->gift_message,
             'payment_method' => $order->checkout->payment_method->value,
             // B9b: the shop takes the cash when it hands the order over.
             'awaiting_cash' => $order->paid_at === null && $order->checkout->payment_method === \App\Domains\Bookshop\Enums\CheckoutPaymentMethod::CashOnDelivery,

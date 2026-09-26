@@ -71,12 +71,17 @@ export default function VendorMoney({ t, vendor, money }) {
                 </p>
             </header>
 
-            <div className="mb-4 grid gap-3 sm:grid-cols-2 md:grid-cols-5">
+            <div className="mb-4 grid gap-3 sm:grid-cols-2 md:grid-cols-6">
                 <Stat label={t.awaiting_delivery} value={s.awaiting_delivery} currency={c} testid="stat-awaiting" />
                 <Stat label={t.in_return_window} value={s.in_window} currency={c} testid="stat-window" />
                 <Stat label={t.available_now} value={s.available} currency={c} testid="stat-available" tone="border-green-300" />
                 <Stat label={t.stat_requested} value={s.requested} currency={c} testid="stat-requested" />
                 <Stat label={t.paid_out} value={s.paid} currency={c} testid="stat-paid" />
+                <div className="rounded-lg border bg-white p-3" data-testid="stat-returns-rate" title={t.returns_rate_hint}>
+                    <p className="text-xs text-gray-500">{t.returns_rate}</p>
+                    <p className="text-lg font-semibold">{s.returns_rate === null || s.returns_rate === undefined ? '—' : `${s.returns_rate}%`}</p>
+                    <p className="text-xs text-gray-500">{t.returns_rate_of.replace(':returned', s.returned_orders ?? 0).replace(':delivered', s.delivered_orders ?? 0)}</p>
+                </div>
             </div>
 
             <section className="mb-4 flex flex-wrap items-center gap-3 rounded-lg border bg-white p-4" data-testid="payout-box">

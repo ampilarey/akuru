@@ -18,12 +18,12 @@ function blankProduct() {
         title: '', title_dv: '', title_ar: '', summary: '', summary_dv: '', summary_ar: '',
         badge: '', badge_dv: '', badge_ar: '',
         description: '', description_dv: '', description_ar: '',
-        product_category_id: '', brand_id: '', tags_text: '',
+        product_category_id: '', brand_id: '', tags_text: '', library_item_id: '',
         price: '', compare_at_price: '', cost: '', tax_class: 'standard',
         sku: '', barcode: '', weight_grams: '', dimensions: '',
         track_stock: true, stock: '0', low_stock_at: '', lead_days: '',
         status: 'draft', visibility: 'shop',
-        details: {}, variants: [], photos: [],
+        details: {}, variants: [], photos: [], image_alts: {},
     };
 }
 
@@ -37,6 +37,8 @@ function fromProduct(p) {
         badge: text(p.badge), badge_dv: text(p.badge_dv), badge_ar: text(p.badge_ar),
         description: text(p.description), description_dv: text(p.description_dv), description_ar: text(p.description_ar),
         product_category_id: text(p.product_category_id), brand_id: text(p.brand_id), tags_text: (p.tags || []).join(', '),
+        library_item_id: text(p.library_item_id),
+        image_alts: Object.fromEntries((p.images || []).map((i) => [i.id, text(i.alt)])),
         price: text(p.price), compare_at_price: text(p.compare_at_price), cost: text(p.cost), tax_class: p.tax_class,
         sku: text(p.sku), barcode: text(p.barcode), weight_grams: text(p.weight_grams), dimensions: text(p.dimensions),
         track_stock: Boolean(p.track_stock), stock: text(p.stock), low_stock_at: text(p.low_stock_at), lead_days: text(p.lead_days),
@@ -148,6 +150,12 @@ function ProductEditor({ product, options, t, onDone }) {
                     </select>
                 </Field>
                 <Field label={t.tags} hint={t.tags_hint} className="md:col-span-2"><input className="form-input w-full" value={form.data.tags_text} onChange={set('tags_text')} /></Field>
+                <Field label={t.ebook_link} hint={t.ebook_link_hint} className="md:col-span-2">
+                    <select className="form-input w-full" value={form.data.library_item_id} onChange={set('library_item_id')} data-testid="product-ebook">
+                        <option value="">{t.none}</option>
+                        {(options.library_items || []).map((i) => <option key={i.id} value={i.id}>{i.title}</option>)}
+                    </select>
+                </Field>
                 <Field label={t.sku}><input className="form-input w-full" value={form.data.sku} onChange={set('sku')} data-testid="product-sku" /></Field>
                 <Field label={t.barcode}><input className="form-input w-full" value={form.data.barcode} onChange={set('barcode')} /></Field>
                 <Field label={t.weight_grams}><input className="form-input w-full" type="number" min="0" value={form.data.weight_grams} onChange={set('weight_grams')} /></Field>
@@ -198,6 +206,16 @@ function ProductEditor({ product, options, t, onDone }) {
                         {product.images.map((image, index) => (
                             <li key={image.id} className="w-28 text-center text-xs">
                                 {image.url && <img src={image.url} alt={image.alt || ''} className="mb-1 h-28 w-28 rounded object-cover" loading="lazy" />}
+                                <input
+                                    className="form-input mb-1 w-full text-xs"
+                                    placeholder={t.image_alt}
+                                    aria-label={t.image_alt}
+                                    maxLength={160}
+                                    required
+                                    value={form.data.image_alts[image.id] ?? ''}
+                                    onChange={(e) => form.setData('image_alts', { ...form.data.image_alts, [image.id]: e.target.value })}
+                                    data-testid={`image-alt-${image.id}`}
+                                />
                                 {index > 0 && <button type="button" className="me-2 text-blue-700 underline" onClick={() => arrange(image, 'first')}>{t.make_first}</button>}
                                 <button type="button" className="text-red-700 underline" onClick={() => arrange(image, 'remove')}>{t.remove}</button>
                             </li>
@@ -205,7 +223,7 @@ function ProductEditor({ product, options, t, onDone }) {
                     </ul>
                 )}
                 <input type="file" multiple accept="image/jpeg,image/png,image/webp" onChange={(e) => form.setData('photos', Array.from(e.target.files || []))} data-testid="product-photos" />
-                <p className="mt-1 text-xs text-gray-500">{t.photos_hint}</p>
+                <p className="mt-1 text-xs text-gray-500">{t.photos_hint} {t.image_alt_hint}</p>
             </fieldset>
 
             <div className="flex gap-3">

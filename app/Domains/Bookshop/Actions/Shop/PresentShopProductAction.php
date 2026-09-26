@@ -7,6 +7,7 @@ use App\Domains\Bookshop\Models\Product;
 use App\Domains\Bookshop\Models\ProductImage;
 use App\Domains\Bookshop\Models\ProductVariant;
 use App\Domains\Bookshop\Support\ShopPresenter;
+use App\Domains\Library\Actions\ListLibraryItemsAction;
 use App\Domains\Media\Actions\ResolvePublicImageVariantAction;
 
 /**
@@ -52,6 +53,8 @@ class PresentShopProductAction
             'tax_class' => $product->tax_class->value,
             'details' => $product->details ?? [],
             'tags' => $product->tags ?? [],
+            // B11 (§4): "read the e-book" when the printed book is tied to a published Digital Library item.
+            'ebook' => $this->ebook($product->library_item_id),
             'gallery' => $product->images->map(fn (ProductImage $i) => [
                 'card' => $images->execute((int) $i->media_file_id, ShopPresenter::CARD_WIDTH),
                 'large' => $images->execute((int) $i->media_file_id, ShopPresenter::LARGE_WIDTH),
@@ -127,5 +130,18 @@ class PresentShopProductAction
             ->get()
             ->map(fn (Product $p) => ShopPresenter::card($p))
             ->values()->all();
+    }
+
+    /**
+     * @return array{title: string, url: string}|null
+     */
+    private function ebook(?int $libraryItemId): ?array
+    {
+        if ($libraryItemId === null) {
+            return null;
+        }
+        $item = app(ListLibraryItemsAction::class)->execute(['id' => $libraryItemId])[0] ?? null;
+
+        return $item === null ? null : ['title' => (string) $item['title'], 'url' => route('public.library.show', $item['slug'])];
     }
 }

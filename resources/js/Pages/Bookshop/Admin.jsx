@@ -519,10 +519,10 @@ function Money({ money, t }) {
                     <h3 className="mb-1 mt-4 font-semibold">{t.tax_report}</h3>
                     {money.tax_report.length === 0 ? <p className="rounded border bg-white p-3 text-sm text-gray-600">{t.no_earnings}</p> : (
                         <table className="w-full rounded border bg-white text-sm" data-testid="tax-report">
-                            <thead className="bg-gray-50"><tr><th className="p-2 text-start">{t.month}</th><th className="p-2 text-end">{t.sales_charged}</th><th className="p-2 text-end">{t.commission}</th><th className="p-2 text-end">{t.gst}</th><th className="p-2 text-end">{t.invoiced}</th></tr></thead>
+                            <thead className="bg-gray-50"><tr><th className="p-2 text-start">{t.month}</th><th className="p-2 text-end">{t.sales_charged}</th><th className="p-2 text-end">{t.commission}</th><th className="p-2 text-end">{t.gst}</th><th className="p-2 text-end">{t.sales_gst}</th><th className="p-2 text-end">{t.invoiced}</th></tr></thead>
                             <tbody>
                                 {money.tax_report.map((r) => (
-                                    <tr key={r.month} className="border-t" data-testid={`tax-${r.month}`}><td className="p-2">{r.label}</td><td className="p-2 text-end">{r.sales}</td><td className="p-2 text-end">{r.commission}</td><td className="p-2 text-end">{r.commission_tax}</td><td className="p-2 text-end">{r.invoiced} <span className="text-xs text-gray-500">({r.invoices})</span></td></tr>
+                                    <tr key={r.month} className="border-t" data-testid={`tax-${r.month}`}><td className="p-2">{r.label}</td><td className="p-2 text-end">{r.sales}</td><td className="p-2 text-end">{r.commission}</td><td className="p-2 text-end">{r.commission_tax}</td><td className="p-2 text-end" data-testid={`tax-sales-gst-${r.month}`}>{r.sales_tax}</td><td className="p-2 text-end">{r.invoiced} <span className="text-xs text-gray-500">({r.invoices})</span></td></tr>
                                 ))}
                             </tbody>
                         </table>
@@ -853,6 +853,28 @@ function CodSwitch({ on, t }) {
     );
 }
 
+function ShopOpenSwitch({ shopOpen, t }) {
+    // B11 (§7): the whole bookstore open or closed; customers still reach their own orders while it is closed.
+    const [message, setMessage] = useState(shopOpen.message || '');
+    const save = (open) => router.post('/admin/bookshop/open', { open: open ? 1 : 0, message }, { preserveScroll: true });
+
+    return (
+        <section className="mt-8" data-testid="office-shop-open">
+            <h2 className="mb-1 text-lg font-semibold">{t.shop_open_label}</h2>
+            <p className="mb-2 text-sm text-gray-600">{t.office_shop_open_hint}</p>
+            <form className="flex flex-wrap items-end gap-3 rounded border bg-white p-3 text-sm" onSubmit={(e) => { e.preventDefault(); save(shopOpen.open); }}>
+                <span className={`rounded px-2 py-1 font-semibold ${shopOpen.open ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'}`} data-testid="shop-open-state">{shopOpen.open ? t.shop_is_open : t.shop_is_closed}</span>
+                <label className="block grow">
+                    <span className="mb-1 block text-xs text-gray-500">{t.shop_closed_message}</span>
+                    <input className="form-input w-full" maxLength={500} value={message} onChange={(e) => setMessage(e.target.value)} placeholder={t.closed_default} data-testid="shop-closed-message" />
+                </label>
+                <button type="submit" className="text-sm text-blue-700 underline" data-testid="save-closed-message">{t.save}</button>
+                <button type="button" className="btn-secondary" onClick={() => save(!shopOpen.open)} data-testid="toggle-shop-open">{shopOpen.open ? t.close_shop : t.open_shop}</button>
+            </form>
+        </section>
+    );
+}
+
 function NoticeSwitches({ notices, t }) {
     const form = useForm({ ...notices });
 
@@ -975,7 +997,7 @@ function ShopHome({ home, t }) {
     );
 }
 
-export default function Admin({ t, vendors, catalogue, slips = [], orders = [], refunds = [], money = null, reviews = [], home = null, low_stock = [], notices = null, order_statuses = [], applications = [], applications_open = true, quotes = null, insights = null, hosts = null, team = null, custom_css = null, themes = null, cod_on = true, default_commission_rate, sign_in_url, section_types = [] }) {
+export default function Admin({ t, vendors, catalogue, slips = [], orders = [], refunds = [], money = null, reviews = [], home = null, low_stock = [], notices = null, order_statuses = [], applications = [], applications_open = true, quotes = null, insights = null, hosts = null, team = null, custom_css = null, themes = null, cod_on = true, shop_open = { open: true, message: null }, default_commission_rate, sign_in_url, section_types = [] }) {
     const { flash = {}, errors } = usePage().props;
 
     return (
@@ -1013,6 +1035,7 @@ export default function Admin({ t, vendors, catalogue, slips = [], orders = [], 
             {home && <ShopHome home={home} t={t} />}
             {notices && <NoticeSwitches key={JSON.stringify(notices)} notices={notices} t={t} />}
             <CodSwitch on={cod_on} t={t} />
+            <ShopOpenSwitch shopOpen={shop_open} t={t} />
 
             <Catalogue catalogue={catalogue} t={t} />
         </AppShell>

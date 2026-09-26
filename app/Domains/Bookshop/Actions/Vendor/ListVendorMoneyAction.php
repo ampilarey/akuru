@@ -4,6 +4,7 @@ namespace App\Domains\Bookshop\Actions\Vendor;
 
 use App\Domains\Bookshop\Actions\Money\MatureVendorEarningsAction;
 use App\Domains\Bookshop\DTOs\VendorScope;
+use App\Domains\Bookshop\Enums\OrderStatus;
 use App\Domains\Bookshop\Enums\PayoutStatus;
 use App\Domains\Bookshop\Models\Vendor;
 use App\Domains\Bookshop\Models\VendorCommissionInvoice;
@@ -38,6 +39,10 @@ class ListVendorMoneyAction
 
         return [
             'summary' => $summary + [
+                // B11 (§5 "returns rate"): of the orders delivered, how many had money go back.
+                'delivered_orders' => $delivered = $earnings->filter(fn (VendorEarning $e) => $e->order?->status === OrderStatus::Delivered)->count(),
+                'returned_orders' => $returned = $earnings->filter(fn (VendorEarning $e) => $e->order?->status === OrderStatus::Delivered && (float) $e->refunded > 0)->count(),
+                'returns_rate' => $delivered > 0 ? number_format($returned * 100 / $delivered, 1) : null,
                 'commission_rate' => number_format($vendor->effectiveCommissionRate(), 2, '.', ''),
                 'return_window_days' => $vendor->returnWindowDays(),
                 'min_payout' => number_format($minimum, 2, '.', ''),

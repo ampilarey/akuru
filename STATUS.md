@@ -4414,6 +4414,69 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5hr. B11: the seven the audit found unbuilt (2026-09-26)
+
+The owner: "Build the seven unbuilt items as one slice." They are plan
+§15's findings 9–14 and 16, all small, all in Bookshop; one migration
+(`gift_message` on checkouts and orders), no new tables.
+
+- **The e-book link** (§4). The product form offers the published
+  Digital Library items (through `Library`'s `ListLibraryItemsAction`,
+  which gained an `id` filter — no model import); `library_item_id`,
+  written by nothing since B1a, is now written on save and read on the
+  product page as "Read *title* online". A draft or archived item shows
+  no link.
+- **A gift message** (§4) at checkout, up to 300 characters, kept on the
+  checkout and copied to each shop's order; shown on the customer's order
+  page, the shop's order card and the packing slip — never on the
+  receipt.
+- **The returns rate** (§5) on the shop's money page: of the orders
+  delivered, how many had money go back, with the two counts under it.
+  Undelivered orders do not count; no delivered orders shows a dash.
+- **The bookstore open or closed** (§7): one switch on `/admin/bookshop`
+  with a notice. `EnsureBookstoreOpen` answers every `public.shop.*`
+  route with the notice as a **503** (nothing indexes it) — browsing,
+  the product, the cart, the checkout — while a customer's own orders,
+  quotes, wishlist, a checkout's status and slip, and the newsletter
+  link stay reachable; whoever holds `bookshop.manage` sees the shop as
+  usual, to check it before reopening; the vendor portal is untouched.
+  Open by default; two settings, cleared by the seeder.
+- **GST collected** (§7): the office's tax report and its CSV gain a
+  summed `sales_gst` column — the GST the registered shops charged on
+  the month's sales, from `orders.tax`. Akuru's commission GST stays its
+  own column.
+- **Alt text** (§10): the product form asks for a few words for every
+  photo it already has (`image_alts[id]`, required on save, 160
+  characters) and writes them to `alt_text`; the title stays the
+  fallback for a photo just uploaded. Another shop's photo id is
+  ignored.
+- **Gallery zoom** (§4): every photo opens full-size in a `<dialog>`
+  lightbox on the same page — previous, next, arrow keys, click to
+  zoom further, close — and without JavaScript the links still open the
+  large image in a tab, as before.
+
+**Tests**: `AuditFollowUpsTest` (4) — the closed shop from a guest's, a
+customer's, a shop's and the office's side and the `open` validation;
+the gift message end to end and its length; the returns rate at 0 of 2
+and 1 of 2 with an undelivered order left out, and the GST column at
+`22.23` for three orders at `7.41`; the e-book select and link, a draft
+item hidden, the alt-text validation and cross-shop guard, the lightbox
+markup. Architecture **64 passed**; Bookshop **111 passed**; full suite
+**2291 passed**.
+
+**Walked**: `followups.mjs` **22/22** — the owner ties the tracing book
+to SMOKE-Primer and writes its photo's words; a guest sees the link and
+the words and opens the lightbox; the student buys with a gift message
+and reads it on the order; the shop sees it on the order card and the
+slip; the returns rate on the money page; the office's tax report and
+CSV carry GST collected; the office closes the bookstore with a notice
+(guest 503 on the shop and the product, the student's order still opens,
+the portal still runs) and reopens it (guest 200). The first run failed
+at the checkout with a 500: the local database had not had the
+migration — a walk finding the deploy step, which is what walks are for.
+
+**Production**: `php artisan migrate --force` (in the pull line).
+
 ## 5hq. The Bookstore audit (2026-09-26)
 
 The owner: "audit everything related to bookstore". Done against the

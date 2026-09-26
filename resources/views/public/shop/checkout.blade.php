@@ -103,6 +103,7 @@
                     </label>
                 @endforeach
                 <label class="mt-3 block text-sm">{{ __('shop.discount_code') }}<input name="discount_code" value="{{ $old['discount_code'] ?? '' }}" class="form-input w-full md:w-64" data-testid="discount-code"></label>
+                <label class="mt-3 block text-sm">{{ __('shop.gift_message') }}<input name="gift_message" maxlength="300" value="{{ $old['gift_message'] ?? '' }}" class="form-input w-full" dir="auto" data-testid="gift-message" placeholder="{{ __('shop.gift_message_hint') }}"></label>
                 <label class="mt-3 block text-sm">{{ __('shop.order_notes') }}<textarea name="notes" rows="2" class="form-input w-full">{{ $old['notes'] ?? '' }}</textarea></label>
             </section>
         </div>

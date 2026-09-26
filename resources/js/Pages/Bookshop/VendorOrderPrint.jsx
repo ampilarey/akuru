@@ -40,6 +40,7 @@ export default function VendorOrderPrint({ t, order }) {
                     </tbody>
                 </table>
                 {order.notes && <p className="text-sm"><span className="font-semibold">{t.order_notes}:</span> {order.notes}</p>}
+                {order.gift_message && <p className="mt-2 rounded border p-2 text-sm" data-testid="print-gift-message" dir="auto"><span className="font-semibold">{t.gift_message}:</span> {order.gift_message}</p>}
                 <p className="mt-6 text-xs text-gray-500">{t.slip_footer}</p>
             </section>
         </div>
