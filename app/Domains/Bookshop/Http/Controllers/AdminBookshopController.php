@@ -4,12 +4,15 @@ namespace App\Domains\Bookshop\Http\Controllers;
 
 use App\Domains\Bookshop\Actions\Checkout\DecideBankTransferSlipAction;
 use App\Domains\Bookshop\Actions\CreateVendorAction;
+use App\Domains\Bookshop\Actions\DecideVendorPayoutAction;
 use App\Domains\Bookshop\Actions\ListBankTransferSlipsAction;
 use App\Domains\Bookshop\Actions\ListCatalogueOptionsAction;
 use App\Domains\Bookshop\Actions\ListOrdersAction;
 use App\Domains\Bookshop\Actions\ListPendingRefundsAction;
+use App\Domains\Bookshop\Actions\ListVendorMoneyReportAction;
 use App\Domains\Bookshop\Actions\ListVendorsAction;
 use App\Domains\Bookshop\Actions\ModerateStorefrontAction;
+use App\Domains\Bookshop\Actions\Money\IssueCommissionInvoicesAction;
 use App\Domains\Bookshop\Actions\Orders\RefundOrderAction;
 use App\Domains\Bookshop\Actions\SaveCatalogueTermAction;
 use App\Domains\Bookshop\Actions\Shop\ListShopProductsAction;
@@ -18,6 +21,7 @@ use App\Domains\Bookshop\Actions\UpdateVendorAction;
 use App\Domains\Bookshop\Support\SectionTypes;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
+use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -42,6 +46,7 @@ class AdminBookshopController extends Controller
             'slips' => app(ListBankTransferSlipsAction::class)->execute(),
             'orders' => app(ListOrdersAction::class)->execute(200),
             'refunds' => app(ListPendingRefundsAction::class)->execute(),
+            'money' => app(ListVendorMoneyReportAction::class)->execute(),
             'default_commission_rate' => number_format((float) config('bookshop.default_commission_rate'), 2, '.', ''),
             'agreement_url' => route('public.page.show', 'vendor-agreement'),
             'sign_in_url' => route('login'),
@@ -191,6 +196,73 @@ class AdminBookshopController extends Controller
             'heading' => $shop['name'],
             'preview' => true,
         ]);
+    }
+
+    /** B6 (§7 "Payouts"): paid by bank transfer, with its reference, or declined with a note. */
+    public function decidePayout(Request $request, int $payout): RedirectResponse
+    {
+        abort_unless($request->user()?->can('bookshop.manage'), 403);
+        $data = $request->validate([
+            'decision' => 'required|string|in:paid,rejected',
+            'reference' => 'nullable|string|max:120',
+            'note' => 'nullable|string|max:500',
+        ]);
+
+        app(DecideVendorPayoutAction::class)->execute($payout, (int) $request->user()->id, $data['decision'] === 'paid', $data['reference'] ?? null, $data['note'] ?? null);
+
+        return back()->with('success', $data['decision'] === 'paid' ? __('shop.payout_paid_flash') : __('shop.payout_rejected_flash'));
+    }
+
+    /** B6 (§8): Akuru's commission tax invoices for a month, on demand. */
+    public function issueInvoices(Request $request): RedirectResponse
+    {
+        abort_unless($request->user()?->can('bookshop.manage'), 403);
+        $data = $request->validate(['month' => 'required|date_format:Y-m']);
+
+        $issued = app(IssueCommissionInvoicesAction::class)->execute(Carbon::createFromFormat('Y-m', $data['month'])->startOfMonth(), (int) $request->user()->id);
+
+        return back()->with('success', __('shop.invoices_issued_flash', ['count' => count($issued), 'month' => $data['month']]));
+    }
+
+    /** A commission invoice, on one page for the printer, for the office. */
+    public function invoice(Request $request, int $invoice): Response
+    {
+        abort_unless($request->user()?->can('bookshop.manage'), 403);
+
+        return Inertia::render('Bookshop/CommissionInvoice', [
+            't' => trans('shop'),
+            'invoice' => app(ListVendorMoneyReportAction::class)->invoice($invoice),
+            'back_url' => route('admin.bookshop.index'),
+        ]);
+    }
+
+    /** Every listing gets a CSV (conventions): payouts, or the tax report. */
+    public function exportMoney(Request $request, string $what): StreamedResponse
+    {
+        abort_unless($request->user()?->can('bookshop.manage'), 403);
+        abort_unless(in_array($what, ['payouts', 'tax-report', 'balances'], true), 404);
+        $report = app(ListVendorMoneyReportAction::class)->execute();
+
+        return response()->streamDownload(function () use ($report, $what): void {
+            $out = fopen('php://output', 'w');
+            if ($what === 'payouts') {
+                Csv::put($out, ['id', 'vendor', 'amount', 'currency', 'status', 'requested_at', 'decided_at', 'reference', 'note']);
+                foreach ([...$report['requests'], ...$report['payouts']] as $p) {
+                    Csv::put($out, [$p['id'], $p['vendor'], $p['amount'], $p['currency'], $p['status'], $p['requested_at'], $p['decided_at'], $p['reference'], $p['note']]);
+                }
+            } elseif ($what === 'balances') {
+                Csv::put($out, ['vendor', 'commission_rate', 'orders', 'awaiting_delivery', 'in_window', 'available', 'requested', 'paid', 'requestable', 'lifetime_net', 'lifetime_commission']);
+                foreach ($report['vendors'] as $v) {
+                    Csv::put($out, [$v['name'], $v['commission_rate'], $v['orders_count'], $v['awaiting_delivery'], $v['in_window'], $v['available'], $v['requested'], $v['paid'], $v['requestable_money'], $v['lifetime_net'], $v['lifetime_commission']]);
+                }
+            } else {
+                Csv::put($out, ['month', 'orders', 'sales_charged', 'gross_paid', 'refunded', 'commission', 'commission_tax', 'vendor_net', 'invoices', 'invoiced']);
+                foreach ($report['tax_report'] as $r) {
+                    Csv::put($out, [$r['month'], $r['orders'], $r['sales'], $r['gross_paid'], $r['refunded'], $r['commission'], $r['commission_tax'], $r['vendor_net'], $r['invoices'], $r['invoiced']]);
+                }
+            }
+            fclose($out);
+        }, 'bookstore-'.$what.'.csv', ['Content-Type' => 'text/csv']);
     }
 
     /** Every listing gets a CSV (conventions): the refunds. */

@@ -105,6 +105,27 @@ class Vendor extends Model
         return $this->holiday_from->toDateString() <= $today && $today <= $this->holiday_until->toDateString();
     }
 
+    public function bankDetail(): HasOne
+    {
+        return $this->hasOne(VendorBankDetail::class);
+    }
+
+    public function earnings(): HasMany
+    {
+        return $this->hasMany(VendorEarning::class);
+    }
+
+    public function payouts(): HasMany
+    {
+        return $this->hasMany(VendorPayout::class)->orderByDesc('requested_at');
+    }
+
+    /** Decision 5: the office's rate for this shop, else the default (10%). */
+    public function effectiveCommissionRate(): float
+    {
+        return $this->commission_rate !== null ? (float) $this->commission_rate : (float) config('bookshop.default_commission_rate', 10);
+    }
+
     /** Decision 8: seven days unless the shop offers longer. */
     public function returnWindowDays(): int
     {

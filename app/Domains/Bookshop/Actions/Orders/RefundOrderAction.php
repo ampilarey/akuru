@@ -2,6 +2,7 @@
 
 namespace App\Domains\Bookshop\Actions\Orders;
 
+use App\Domains\Bookshop\Actions\Money\ReverseVendorEarningAction;
 use App\Domains\Bookshop\Actions\NotifyBookshopUserAction;
 use App\Domains\Bookshop\Enums\CheckoutPaymentMethod;
 use App\Domains\Bookshop\Enums\RefundStatus;
@@ -58,6 +59,9 @@ class RefundOrderAction
                 'reason' => $reason,
                 'requested_by' => $byUserId,
             ]);
+
+            // B6: the vendor's earning reverses in proportion, the moment the money is owed back.
+            app(ReverseVendorEarningAction::class)->execute($order, $amount);
 
             if ($paidWith === CheckoutPaymentMethod::Wallet) {
                 app(CreditWalletAction::class)->execute((int) $order->user_id, $amount, 'bookshop_refund', $refund->id, 'Refund: Akuru Bookstore '.$order->number);

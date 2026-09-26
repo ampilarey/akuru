@@ -4414,6 +4414,114 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5hd. B6: money to vendors — earnings, payouts, commission invoices, statements (2026-09-26)
+
+BOOKSHOP_PLAN slice B6, the owner's "B6": a vendor sees what it is owed
+and is paid (§5 "Money", §7 "Payouts" and "Reports", §8; decisions 4 and
+5). The library's writer-earnings pattern (L6), applied to shops.
+
+**Earnings** (`vendor_earnings`, one row per paid order, recorded inside
+`MarkCheckoutPaidAction`'s transaction so a webhook that arrives twice
+records it once). Commission is on **goods only** at the vendor's rate or
+the 10% default (decision 5), never on the delivery fee, which is the
+vendor's in full (a boat fee paid to the carrier never reaches these
+books). A discount **Akuru funded** (every B2 code) leaves the vendor's
+goods at full price — Akuru's promotion, Akuru's cost; a **vendor-funded**
+code (B7's vendor-scoped codes) comes off the goods first. GST on the
+commission is added only when Akuru is registered (config), so the net
+already matches the invoice. **Reversal**: every refund — a cancellation,
+an accepted return, the office's goodwill — reverses the earning **in
+proportion** to the money that went back (a third of the order back, a
+third of the commission, its tax and the net); a sale that went back in
+full is *reversed*; a refund after a payout leaves a negative balance the
+next payout claws back. **Maturing**: the earning is pending until the
+order is delivered or collected and the shop's return window has passed
+(`available_at` set on delivery; `bookshop:mature-earnings` daily at 03:10
+Maldives on the existing schedule, and lazily wherever a balance is read);
+an order never marked delivered never matures.
+
+**Payouts** (`vendor_payouts`, `vendor_bank_details`): the **owner** enters
+the shop's bank details in the portal (never through the office, never in
+a kit file — FITRAH.md; the portal shows the number masked to its last
+four digits, the office sees it only on a request) and asks for the
+**matured balance** — every matured earning's `net − paid_amount`, so a
+clawback comes off the request — once it reaches the minimum (MVR 100,
+config) and no request is waiting; the earnings are tied to the request
+so it cannot be made twice; the office is told. The office **pays by bank
+transfer** and records the transfer's reference (required) or **declines**
+with a note (required); paid earnings settle to their current net; the
+shop is told either way. `BOOKSHOP_PAYOUTS_ENABLED` (default on, unlike
+the library's gate: decision 4 settled the tax treatment) closes requests
+without touching accrual.
+
+**Commission tax invoices** (`vendor_commission_invoices`; audit finding
+4): Akuru's monthly invoice to each vendor for its commission — the
+commission on the orders paid in the month as it stands on the day of
+issue, GST on it only when Akuru is registered, under Akuru's name and TIN
+from config (`BOOKSHOP_ISSUER_NAME`, `BOOKSHOP_ISSUER_TIN`,
+`BOOKSHOP_ISSUER_GST_REGISTERED`, `BOOKSHOP_COMMISSION_TAX_RATE`) —
+numbered `ACI-YYYYMM-<vendor code>`, one per vendor and month, never
+edited; `bookshop:issue-commission-invoices` on the first of the month at
+03:20, or the office's button for any month. A printable page for the
+shop and for the office, with the orders behind it.
+
+**Screens**: `/vendor/money` (Inertia) — five figures (awaiting delivery,
+in the return window, available, requested, paid out), the requestable
+balance and the Request button, bank details, and four tabs: earnings by
+order, **statements by month** (sales, vendor-funded discounts, delivery,
+refunds, commission and its GST, net, paid out, the invoice), payouts,
+commission invoices; CSVs of the earnings and the statements. The office's
+`/admin/bookshop` gains a Money section: payout requests with the account
+to pay and the paid/declined form, vendor balances, payout history,
+invoices with an issue-for-month button, and the **tax report** by month
+(sales charged, commission, GST, invoiced) — CSVs of payouts, balances and
+the tax report. *Money* on the portal home.
+
+**Not here**: `vendor_statements` as a table (§9 lists one; statements are
+computed from earnings, payouts and invoices, which is one source of
+truth fewer to keep in step); vendor-funded discount codes (B7 — the
+earning already knows the model); a bank-transfer file export (Finance's
+payroll export is the precedent when a second vendor makes it worth it);
+a backfill of earnings for orders paid before B6 (none exist: synthetic
+staging only).
+
+**Baselines**: `VendorScopeIsTheOnlyDoorTest` covers the new controller;
+`DetailScreensDoNotCrashTest` declares the two invoice pages as covered.
+Four new models aliased (ADR-005).
+
+**Tests**: `VendorMoneyTest` (4): the earning per paid order (12.5% on
+goods, the courier fee the vendor's, a boat fee nobody's, an Akuru-funded
+discount on the full price, the default rate, idempotent); proportional
+reversal on an accepted return with the delivery back (30.3% kept:
+commission 9.09, net 90.91), whole on cancellation, maturing by the
+command after delivery and the window and never without delivery; bank
+details (owner only, masked), the request (matured only, minimum, no
+double), the office paying with a required reference, a goodwill refund
+after the payout clawed back from the next request, declining with a
+required note; the monthly invoice (`ACI-202608-FIT`, a cancelled order
+left out, once, both readers, a stranger's 404), GST riding on the
+commission when Akuru is registered, the tax report and every CSV. Full
+suite **2240 passed**.
+
+**Walked** (`scripts/smoke/money.mjs`, **16/16**, no console or server
+errors): the seeder leaves Fitrah a paid, delivered order from three
+weeks ago (two tracing books plus MVR 30 delivery) whose earning has
+matured; the owner opens Money from the portal, sees it available with
+MVR 17 commission and MVR 183 to ask for, enters staging-only bank
+details (shown masked), requests the payout; the office sees the request
+with the account, records the transfer reference and marks it paid,
+issues `ACI-202609-FIT` for MVR 17.00 and reads it on its printable page,
+sees the month in the tax report; the owner sees MVR 183 paid out with
+the reference, the invoice under Commission invoices on its own page, and
+the month's statement. `fulfilment.mjs` **21/21**, `vendor.mjs` **25/25**,
+`checkout.mjs` **28/28**.
+
+**Production**: the migration, then set Akuru's tax identity in `.env`
+before the first invoice goes out on 1 October (`BOOKSHOP_ISSUER_NAME`,
+`BOOKSHOP_ISSUER_TIN`; `BOOKSHOP_ISSUER_GST_REGISTERED=true` and the rate
+only if Akuru is registered). Without a TIN the invoice still issues,
+without one printed.
+
 ## 5hc. B5: the storefront designer, part 2 — sections, pages, collections, menu, SEO, moderation (2026-09-26)
 
 BOOKSHOP_PLAN slice B5, the owner's "B5". A vendor now arranges its whole

@@ -112,6 +112,11 @@ function unresolvedDetailScreens(): array
         // office preview as the office (200) and as a vendor (403).
         'vendor/storefront/pages/{page}/preview' => 'the public vendor page from a draft; covered by StorefrontSectionsTest',
         'admin/bookshop/storefronts/{vendor}/preview' => 'a slug, not a row; the public vendor page from a draft, for the office; covered by StorefrontSectionsTest',
+        // B6: Akuru's commission tax invoice, one printable page for the shop
+        // and one for the office. VendorMoneyTest loads both (own shop 200,
+        // another shop's 404, office 200).
+        'vendor/money/invoices/{invoice}' => 'a commission invoice for the printer; covered by VendorMoneyTest',
+        'admin/bookshop/commission-invoices/{invoice}' => 'a commission invoice for the printer, office side; covered by VendorMoneyTest',
         'teachers/{teacher}' => 'redirect to the React staff profile; covered by LegacyTeacherScreensRetiredTest',
         'announcements/{announcement}' => 'redirect to the portal noticeboard; covered by AnnouncementsAdminTest',
 

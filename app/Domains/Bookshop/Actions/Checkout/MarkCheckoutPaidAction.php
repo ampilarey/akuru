@@ -2,6 +2,7 @@
 
 namespace App\Domains\Bookshop\Actions\Checkout;
 
+use App\Domains\Bookshop\Actions\Money\RecordVendorEarningAction;
 use App\Domains\Bookshop\Actions\NotifyBookshopUserAction;
 use App\Domains\Bookshop\Enums\CheckoutStatus;
 use App\Domains\Bookshop\Enums\OrderStatus;
@@ -49,6 +50,8 @@ class MarkCheckoutPaidAction
                 $order->paid_at = now();
                 $order->save();
                 OrderEvent::query()->create(['order_id' => $order->id, 'type' => 'paid', 'actor_user_id' => $actorUserId, 'created_at' => now(), 'meta' => ['how' => $how]]);
+                // B6: what the vendor earned on it, from this moment.
+                app(RecordVendorEarningAction::class)->execute($order);
                 if ($short !== []) {
                     OrderEvent::query()->create(['order_id' => $order->id, 'type' => 'needs_attention', 'created_at' => now(), 'note' => 'Stock ran out before payment: '.implode(', ', $short)]);
                     $attention[] = $order;

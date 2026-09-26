@@ -16,6 +16,10 @@ Schedule::command('akuru:prune-expired')->hourly();
 
 // BOOKSHOP_PLAN B2: unpaid checkouts let their reserved stock go.
 Schedule::command('bookshop:expire-checkouts')->everyTenMinutes();
+// BOOKSHOP_PLAN B6: earnings mature after the return window; Akuru's
+// commission tax invoices go out on the first of the month.
+Schedule::command('bookshop:mature-earnings')->dailyAt('03:10')->timezone('Indian/Maldives');
+Schedule::command('bookshop:issue-commission-invoices')->monthlyOn(1, '03:20')->timezone('Indian/Maldives');
 
 // Scheduler heartbeat — used to verify cron is running
 Schedule::command('akuru:scheduler-heartbeat')->everyMinute();

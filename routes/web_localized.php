@@ -777,6 +777,11 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         // B5: storefront moderation (§6.6) and the office's look at a draft.
         Route::post('vendors/{vendor}/storefront', [\App\Domains\Bookshop\Http\Controllers\AdminBookshopController::class, 'moderateStorefront'])->name('admin.bookshop.storefront.moderate')->whereNumber('vendor');
         Route::get('storefronts/{vendor}/preview', [\App\Domains\Bookshop\Http\Controllers\AdminBookshopController::class, 'previewStorefront'])->name('admin.bookshop.storefront.preview');
+        // B6: payouts, commission invoices, the tax report.
+        Route::post('payouts/{payout}/decide', [\App\Domains\Bookshop\Http\Controllers\AdminBookshopController::class, 'decidePayout'])->name('admin.bookshop.payouts.decide')->whereNumber('payout');
+        Route::post('commission-invoices/issue', [\App\Domains\Bookshop\Http\Controllers\AdminBookshopController::class, 'issueInvoices'])->name('admin.bookshop.invoices.issue');
+        Route::get('commission-invoices/{invoice}', [\App\Domains\Bookshop\Http\Controllers\AdminBookshopController::class, 'invoice'])->name('admin.bookshop.invoices.show')->whereNumber('invoice');
+        Route::get('money/{what}/export', [\App\Domains\Bookshop\Http\Controllers\AdminBookshopController::class, 'exportMoney'])->name('admin.bookshop.money.export')->where('what', 'payouts|tax-report|balances');
     });
 
     // BOOKSHOP_PLAN B1a: the vendor portal. `auth` only on the route: the
@@ -824,6 +829,13 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::post('storefront/images', [\App\Domains\Bookshop\Http\Controllers\VendorStorefrontController::class, 'uploadImages'])->name('vendor.storefront.images.upload');
         Route::post('storefront/images/{image}', [\App\Domains\Bookshop\Http\Controllers\VendorStorefrontController::class, 'updateImage'])->name('vendor.storefront.images.update')->whereNumber('image');
         Route::delete('storefront/images/{image}', [\App\Domains\Bookshop\Http\Controllers\VendorStorefrontController::class, 'destroyImage'])->name('vendor.storefront.images.destroy')->whereNumber('image');
+        // B6: the shop's money.
+        Route::get('money', [\App\Domains\Bookshop\Http\Controllers\VendorMoneyController::class, 'index'])->name('vendor.money.index');
+        Route::get('money/earnings/export', [\App\Domains\Bookshop\Http\Controllers\VendorMoneyController::class, 'exportEarnings'])->name('vendor.money.earnings.export');
+        Route::get('money/statements/export', [\App\Domains\Bookshop\Http\Controllers\VendorMoneyController::class, 'exportStatements'])->name('vendor.money.statements.export');
+        Route::get('money/invoices/{invoice}', [\App\Domains\Bookshop\Http\Controllers\VendorMoneyController::class, 'invoice'])->name('vendor.money.invoices.show')->whereNumber('invoice');
+        Route::post('money/bank-details', [\App\Domains\Bookshop\Http\Controllers\VendorMoneyController::class, 'saveBankDetails'])->name('vendor.money.bank-details');
+        Route::post('money/payout-request', [\App\Domains\Bookshop\Http\Controllers\VendorMoneyController::class, 'requestPayout'])->name('vendor.money.payout-request');
     });
 
     // L7 reviewer portal (§12.2) — own assignments only, enforced in actions.

@@ -406,7 +406,116 @@ function Refunds({ refunds, t }) {
     );
 }
 
-export default function Admin({ t, vendors, catalogue, slips = [], orders = [], refunds = [], default_commission_rate, sign_in_url, section_types = [] }) {
+/** B6 (plan §7 "Payouts", "Reports"): payout requests with where they go, vendor balances, commission invoices, the tax report. */
+function Money({ money, t }) {
+    const [forms, setForms] = useState({});
+    const [month, setMonth] = useState(money.last_month);
+    const field = (id, key) => forms[id]?.[key] || '';
+    const set = (id, key) => (e) => setForms({ ...forms, [id]: { ...forms[id], [key]: e.target.value } });
+    const decide = (id, decision) => router.post(`/admin/bookshop/payouts/${id}/decide`, { decision, reference: field(id, 'reference'), note: field(id, 'note') }, { preserveScroll: true });
+    const c = money.currency;
+
+    return (
+        <section className="mt-8" data-testid="office-money">
+            <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+                <h2 className="text-lg font-semibold">{t.money_title} {money.requests.length > 0 && <span className="ms-2 rounded bg-amber-100 px-2 text-sm text-amber-800">{money.requests.length}</span>}</h2>
+                <span className="flex flex-wrap gap-2">
+                    <a href="/admin/bookshop/money/payouts/export" className="btn-secondary" data-testid="export-payouts">{t.export_csv}: {t.money_tab_payouts}</a>
+                    <a href="/admin/bookshop/money/balances/export" className="btn-secondary">{t.export_csv}: {t.balances}</a>
+                    <a href="/admin/bookshop/money/tax-report/export" className="btn-secondary" data-testid="export-tax-report">{t.export_csv}: {t.tax_report}</a>
+                </span>
+            </div>
+
+            <h3 className="mb-1 font-semibold">{t.payout_requests}</h3>
+            {money.requests.length === 0 ? <p className="mb-4 rounded border bg-white p-3 text-sm text-gray-600">{t.no_payout_requests}</p> : (
+                <table className="mb-4 w-full rounded border bg-white text-sm" data-testid="payout-requests">
+                    <thead className="bg-gray-50"><tr><th className="p-2 text-start">{t.vendor_name}</th><th className="p-2 text-end">{t.amount}</th><th className="p-2 text-start">{t.pay_to}</th><th className="p-2 text-start">{t.decision}</th></tr></thead>
+                    <tbody>
+                        {money.requests.map((p) => (
+                            <tr key={p.id} className="border-t" data-testid={`payout-request-${p.id}`}>
+                                <td className="p-2">{p.vendor}<span className="block text-xs text-gray-500">{p.requested_at}</span></td>
+                                <td className="p-2 text-end font-semibold">{p.currency} {p.amount}</td>
+                                <td className="p-2">{p.bank ? <>{p.bank.bank_name}<span className="block">{p.bank.account_name}</span><span className="block font-mono" data-testid="payout-account">{p.bank.account_number}</span></> : '—'}</td>
+                                <td className="p-2">
+                                    <div className="flex flex-wrap items-center gap-2">
+                                        <input className="form-input w-40" placeholder={t.payment_ref} value={field(p.id, 'reference')} onChange={set(p.id, 'reference')} data-testid={`payout-reference-${p.id}`} />
+                                        <input className="form-input w-40" placeholder={t.note} value={field(p.id, 'note')} onChange={set(p.id, 'note')} data-testid={`payout-note-${p.id}`} />
+                                        <button type="button" className="btn-primary" onClick={() => decide(p.id, 'paid')} data-testid={`payout-paid-${p.id}`}>{t.mark_paid}</button>
+                                        <button type="button" className="text-red-700 underline" onClick={() => decide(p.id, 'rejected')} data-testid={`payout-reject-${p.id}`}>{t.decline}</button>
+                                    </div>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            )}
+
+            <div className="grid gap-6 lg:grid-cols-2">
+                <div>
+                    <h3 className="mb-1 font-semibold">{t.balances}</h3>
+                    {money.vendors.length === 0 ? <p className="rounded border bg-white p-3 text-sm text-gray-600">{t.no_earnings}</p> : (
+                        <table className="w-full rounded border bg-white text-sm" data-testid="vendor-balances">
+                            <thead className="bg-gray-50"><tr><th className="p-2 text-start">{t.vendor_name}</th><th className="p-2 text-end">{t.in_return_window}</th><th className="p-2 text-end">{t.available_now}</th><th className="p-2 text-end">{t.paid_out}</th><th className="p-2 text-end">{t.lifetime_commission}</th></tr></thead>
+                            <tbody>
+                                {money.vendors.map((v) => (
+                                    <tr key={v.id} className="border-t" data-testid={`balance-${v.slug}`}>
+                                        <td className="p-2">{v.name}<span className="block text-xs text-gray-500">{v.commission_rate}% · {t.result_count.replace(':count', v.orders_count)}</span></td>
+                                        <td className="p-2 text-end">{v.in_window}<span className="block text-xs text-gray-500">+{v.awaiting_delivery}</span></td>
+                                        <td className="p-2 text-end">{v.requestable_money}</td>
+                                        <td className="p-2 text-end">{v.paid}</td>
+                                        <td className="p-2 text-end">{v.lifetime_commission}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    )}
+                    <h3 className="mb-1 mt-4 font-semibold">{t.payout_history}</h3>
+                    {money.payouts.length === 0 ? <p className="rounded border bg-white p-3 text-sm text-gray-600">{t.no_payouts}</p> : (
+                        <table className="w-full rounded border bg-white text-sm" data-testid="payout-history">
+                            <tbody>
+                                {money.payouts.map((p) => (
+                                    <tr key={p.id} className="border-t" data-testid={`payout-done-${p.id}`}><td className="p-2">{p.vendor}</td><td className="p-2 text-end">{p.currency} {p.amount}</td><td className="p-2">{t[`payout_${p.status}`] || p.status}</td><td className="p-2 text-xs text-gray-500">{p.reference || p.note} · {p.decided_at}</td></tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    )}
+                </div>
+                <div>
+                    <div className="mb-1 flex flex-wrap items-center justify-between gap-2">
+                        <h3 className="font-semibold">{t.commission_invoices}</h3>
+                        <form className="flex items-center gap-2" onSubmit={(e) => { e.preventDefault(); router.post('/admin/bookshop/commission-invoices/issue', { month }, { preserveScroll: true }); }}>
+                            <input type="month" className="form-input" value={month} onChange={(e) => setMonth(e.target.value)} data-testid="invoice-month" />
+                            <button type="submit" className="btn-secondary" data-testid="issue-invoices">{t.issue_invoices}</button>
+                        </form>
+                    </div>
+                    <p className="mb-2 text-xs text-gray-500">{money.issuer.name}{money.issuer.tin ? ` · ${t.tin} ${money.issuer.tin}` : ''} · {money.issuer.gst_registered ? t.gst_on_commission.replace(':rate', money.issuer.tax_rate) : t.no_gst_on_commission}</p>
+                    {money.invoices.length === 0 ? <p className="rounded border bg-white p-3 text-sm text-gray-600">{t.no_invoices}</p> : (
+                        <table className="w-full rounded border bg-white text-sm" data-testid="office-invoices">
+                            <tbody>
+                                {money.invoices.map((i) => (
+                                    <tr key={i.id} className="border-t" data-testid={`office-invoice-${i.number}`}><td className="p-2 font-mono">{i.number}</td><td className="p-2">{i.vendor}<span className="block text-xs text-gray-500">{i.period}</span></td><td className="p-2 text-end">{i.currency} {i.total}</td><td className="p-2 text-end"><a href={`/admin/bookshop/commission-invoices/${i.id}`} target="_blank" rel="noreferrer" className="text-blue-700 underline">{t.open}</a></td></tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    )}
+                    <h3 className="mb-1 mt-4 font-semibold">{t.tax_report}</h3>
+                    {money.tax_report.length === 0 ? <p className="rounded border bg-white p-3 text-sm text-gray-600">{t.no_earnings}</p> : (
+                        <table className="w-full rounded border bg-white text-sm" data-testid="tax-report">
+                            <thead className="bg-gray-50"><tr><th className="p-2 text-start">{t.month}</th><th className="p-2 text-end">{t.sales_charged}</th><th className="p-2 text-end">{t.commission}</th><th className="p-2 text-end">{t.gst}</th><th className="p-2 text-end">{t.invoiced}</th></tr></thead>
+                            <tbody>
+                                {money.tax_report.map((r) => (
+                                    <tr key={r.month} className="border-t" data-testid={`tax-${r.month}`}><td className="p-2">{r.label}</td><td className="p-2 text-end">{r.sales}</td><td className="p-2 text-end">{r.commission}</td><td className="p-2 text-end">{r.commission_tax}</td><td className="p-2 text-end">{r.invoiced} <span className="text-xs text-gray-500">({r.invoices})</span></td></tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    )}
+                </div>
+            </div>
+        </section>
+    );
+}
+
+export default function Admin({ t, vendors, catalogue, slips = [], orders = [], refunds = [], money = null, default_commission_rate, sign_in_url, section_types = [] }) {
     const { flash = {}, errors } = usePage().props;
 
     return (
@@ -417,6 +526,7 @@ export default function Admin({ t, vendors, catalogue, slips = [], orders = [], 
 
             {slips.some((s) => s.status === 'waiting') && <Slips slips={slips} t={t} />}
             {refunds.some((r) => r.status === 'pending') && <Refunds refunds={refunds} t={t} />}
+            {money && money.requests.length > 0 && <Money money={money} t={t} />}
 
             <InviteVendor t={t} defaultRate={default_commission_rate} />
 
@@ -428,6 +538,7 @@ export default function Admin({ t, vendors, catalogue, slips = [], orders = [], 
 
             {!slips.some((s) => s.status === 'waiting') && <Slips slips={slips} t={t} />}
             {!refunds.some((r) => r.status === 'pending') && <Refunds refunds={refunds} t={t} />}
+            {money && money.requests.length === 0 && <Money money={money} t={t} />}
             <Orders orders={orders} t={t} />
 
             <Catalogue catalogue={catalogue} t={t} />
