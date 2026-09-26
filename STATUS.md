@@ -4414,6 +4414,23 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5hv. The dashboard on the owner's phone (2026-09-26)
+
+The owner sent a screenshot of production `/dashboard` on a phone: the
+*Recent Enrollments* card squeezed to 40 px beside System Health and
+Prayer Times. The super-admin dashboard's main grid was an inline
+`1fr 320px` with no breakpoint, and its lower grid `1fr 1fr`; §5hu's
+sweep had covered the 34 `/admin/*` screens and not the landing that
+sends an administrator to them.
+
+**Fixed**: both grids are one column on a phone (the side column from
+`lg:`, the pair from `md:`). `/dashboard` and `/portal/overview` join
+`admin-mobile.mjs`, which now sweeps **36** screens; the dashboard's
+recent-enrolments table is a swipe inside its wrapper. Screenshots
+checked by eye at 390 px. Admin suite **47 passed**.
+
+**Production**: nothing to migrate; the pull line as usual.
+
 ## 5hu. Every admin screen on a phone (2026-09-26)
 
 The owner: "did u check the mobile layout of the admin". §5ht had

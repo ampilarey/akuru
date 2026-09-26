@@ -21,6 +21,8 @@ const PASSWORD = process.env.SMOKE_PASSWORD ?? 'password';
 const SHOTS = process.env.SMOKE_SHOTS ?? null;
 
 const PAGES = [
+    // The landings that send an administrator into the panel (the owner's phone screenshot, 2026-09-26).
+    '/en/dashboard', '/en/portal/overview',
     '/en/admin/users', '/en/admin/users/otp-abuse', '/en/admin/settings',
     '/en/admin/enrollments', '/en/admin/enrollments/payments',
     '/en/admin/instructors', '/en/admin/instructors/create',
