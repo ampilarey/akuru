@@ -2,6 +2,7 @@
 
 namespace App\Domains\Website\Actions;
 
+use App\Domains\Bookshop\Actions\Shop\ListShopSitemapEntriesAction;
 use App\Domains\Courses\Actions\ListPublicCourseSitemapEntriesAction;
 use App\Domains\Website\Enums\DailyContentStatus;
 use App\Domains\Website\Enums\DailyContentType;
@@ -68,6 +69,12 @@ class BuildPublicSitemapAction
 
         foreach (app(ListPublicCourseSitemapEntriesAction::class)->execute() as $course) {
             $xml .= $this->localizedGroup($base, $locales, 'courses/'.$course['slug'], $course['lastmod'], '0.8', 'monthly');
+        }
+
+        // BOOKSHOP_PLAN B1b: the shop home, its categories, vendor pages and
+        // products for sale.
+        foreach (app(ListShopSitemapEntriesAction::class)->execute() as $entry) {
+            $xml .= $this->localizedGroup($base, $locales, $entry['path'], $entry['lastmod'], $entry['priority'], 'weekly');
         }
 
         foreach (Event::query()->published()->public()->latest('updated_at')->get(['id', 'updated_at']) as $event) {

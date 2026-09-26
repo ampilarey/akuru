@@ -52,6 +52,7 @@
             ['News', route('public.news.index', app()->getLocale())],
             ['Research', route('public.research.index')],
             ['Digital Library', route('public.library.index')],
+            ['Online Bookshop', route('public.shop.index')],
             ['Daily reminders', route('public.daily.index', 'ayah')],
             ['Careers', route('public.careers')],
             ['Prayer times', route('public.prayer-times')],

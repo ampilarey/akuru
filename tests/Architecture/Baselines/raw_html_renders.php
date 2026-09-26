@@ -64,6 +64,7 @@ return [
     'public/events/show.blade.php :: $event->requirements' => 'SaveEventAction cleans `requirements` the same way.',
 
     // --- Library: the item body, and the pages sliced from it ---------------
+    "public/shop/product.blade.php :: \$product['description']" => 'SaveVendorProductAction cleans every description (EN/DV/AR) with PROFILE_LESSON on save — the prose profile: paragraphs, emphasis, lists, links, no script, style or attributes beyond href. Written by vendor members, who are invited by the office.',
     "public/library/show.blade.php :: \$item['body']" => 'SaveLibraryItemAction cleans each part of `body` with PROFILE_CMS. The lowest-privilege authored HTML in the app: any authed user may apply to be a writer.',
     "public/library/reader.blade.php :: \$reader['content']" => 'The reader renders `library_item_pages.content`, which SyncLibraryItemPagesAction slices from the already-sanitised `body`. Nothing else writes those rows.',
 

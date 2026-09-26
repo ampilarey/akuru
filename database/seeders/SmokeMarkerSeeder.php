@@ -1737,6 +1737,46 @@ class SmokeMarkerSeeder extends Seeder
         $this->smokeProduct($fitrahId, 'smoke-wooden-alphabet-puzzle', 'Wooden Alphabet Puzzle', 240, 'standard', $category('educational-toys'), 12, ['age_range' => '3–6', 'subject' => 'Thaana letters']);
         $this->smokeProduct($fitrahId, 'smoke-kids-prayer-mat', 'Kids Prayer Mat', 180, 'standard', $category('islamic-studies'), 3, ['age_range' => '3–10'], lowStockAt: 5);
         $this->smokeProduct($otherId, 'smoke-other-secret', 'SMOKE-Other-Secret', 99, 'standard', null, 1, []);
+
+        // B1b (`shop.mjs`): a photo on the tracing book, a Dhivehi title on
+        // the puzzle, and a draft the public shop must never show.
+        DB::table('products')->where('slug', 'smoke-wooden-alphabet-puzzle')->update(['title_dv' => 'ލަކުޑި އަކުރު ޕަޒަލް']);
+        $this->smokeProduct($fitrahId, 'smoke-hidden-draft', 'SMOKE-Hidden-Draft', 10, 'standard', null, 1, []);
+        DB::table('products')->where('slug', 'smoke-hidden-draft')->update(['status' => 'draft']);
+        $this->smokeProductPhoto('smoke-arabic-letters-tracing-book', database_path('seeders/fixtures/vendors/fitrah-logo.jpg'));
+    }
+
+    /** One photo on a staging product, replaced on every run. */
+    private function smokeProductPhoto(string $slug, string $path): void
+    {
+        $productId = (int) DB::table('products')->where('slug', $slug)->value('id');
+        if ($productId === 0 || ! is_file($path)) {
+            return;
+        }
+
+        foreach (DB::table('product_images')->where('product_id', $productId)->pluck('media_file_id') as $mediaId) {
+            $media = DB::table('media_files')->where('id', $mediaId)->first(['disk', 'path']);
+            if ($media !== null) {
+                // The original and the resized copies the shop made of it.
+                $stem = preg_replace('/\.[^.]+$/', '', $media->path);
+                $copies = array_filter(Storage::disk($media->disk)->files(dirname($media->path)), fn ($f) => str_starts_with($f, $stem.'-w'));
+                Storage::disk($media->disk)->delete([$media->path, ...$copies]);
+            }
+            DB::table('product_images')->where('media_file_id', $mediaId)->delete();
+            DB::table('media_files')->where('id', $mediaId)->delete();
+        }
+
+        $stored = app(\App\Domains\Media\Actions\StorePublicMediaAction::class)->execute(
+            new \Illuminate\Http\UploadedFile($path, basename($path), 'image/jpeg', null, true),
+            null,
+            ['image/jpeg'],
+            ['smoke' => true],
+            'shop-products',
+        );
+        DB::table('product_images')->insert([
+            'product_id' => $productId, 'media_file_id' => $stored['id'], 'alt_text' => 'Arabic Letters Tracing Book',
+            'sort_order' => 0, 'created_at' => now(), 'updated_at' => now(),
+        ]);
     }
 
     private function vendorLogin(string $email, string $name): int

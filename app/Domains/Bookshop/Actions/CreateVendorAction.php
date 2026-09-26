@@ -18,6 +18,8 @@ use Illuminate\Validation\ValidationException;
  */
 class CreateVendorAction
 {
+    public const RESERVED_SLUGS = ['products', 'c', 'export', 'cart', 'checkout', 'orders', 'search'];
+
     /**
      * @param  array<string, mixed>  $data
      * @return array{vendor_id: int, slug: string, owner_user_id: int, owner_created: bool, temporary_password: ?string}
@@ -72,6 +74,11 @@ class CreateVendorAction
     {
         $base = Str::slug($source) ?: 'vendor';
         $base = Str::limit($base, 70, '');
+        // The shop's own addresses (`/shop/products`, `/shop/c`, …) are not
+        // vendor names (B1b routes).
+        if (in_array($base, self::RESERVED_SLUGS, true)) {
+            $base .= '-shop';
+        }
         $slug = $base;
         for ($n = 2; Vendor::query()->where('slug', $slug)->exists(); $n++) {
             $slug = $base.'-'.$n;

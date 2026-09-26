@@ -131,6 +131,7 @@ return [
     'my_library' => 'مكتبتي',
     'my_wallet' => 'محفظتي',
     'bookshop' => 'متجر الكتب الإلكتروني',
+    'shop' => 'متجر الكتب',
     'vendor_portal' => 'متجري',
     'collecting_my_child' => 'استلام ابني',
     'arrivals' => 'الوصول',

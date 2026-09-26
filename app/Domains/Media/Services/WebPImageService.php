@@ -65,6 +65,42 @@ class WebPImageService implements ImageProcessorInterface
         }
     }
 
+    public function getResizedWebPPath(string $storagePath, int $width): ?string
+    {
+        $extension = strtolower(pathinfo($storagePath, PATHINFO_EXTENSION));
+        if (! in_array($extension, [...$this->supportedFormats, 'webp'], true) || $width < 16) {
+            return null;
+        }
+
+        $variantPath = preg_replace('/\.'.preg_quote($extension, '/').'$/i', '-w'.$width.'.webp', $storagePath);
+        $disk = Storage::disk('public');
+        if ($disk->exists($variantPath)) {
+            return $variantPath;
+        }
+
+        try {
+            $fullPath = $disk->path($storagePath);
+            if (! file_exists($fullPath)) {
+                return null;
+            }
+
+            $image = ImageManager::gd()->read($fullPath);
+            $image->scaleDown(width: $width);
+
+            $variantFullPath = $disk->path($variantPath);
+            if (! is_dir(dirname($variantFullPath))) {
+                mkdir(dirname($variantFullPath), 0755, true);
+            }
+            $image->toWebp(82)->save($variantFullPath);
+
+            return $variantPath;
+        } catch (\Throwable $e) {
+            report($e);
+
+            return null;
+        }
+    }
+
     /**
      * Check if a path is eligible for WebP conversion.
      */

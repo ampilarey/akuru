@@ -13,8 +13,9 @@
 // expected direction, and the test asks you to update the count below when you
 // do.
 //
-// Count: 224 (the one addition is a document template, not a screen — see the
-// documents block).
+// Count: 229 (a document template, not a screen — see the documents block;
+// and the five public bookshop views of BOOKSHOP_PLAN B1b — see the public
+// block).
 
 return [
     // (root) — 4
@@ -216,7 +217,7 @@ return [
     'profile/partials/update-password-form.blade.php',
     'profile/partials/update-profile-information-form.blade.php',
 
-    // public — 52
+    // public — 57
     'public/about/index.blade.php',
     'public/achievements/index.blade.php',
     'public/admissions/apply.blade.php',
@@ -276,6 +277,14 @@ return [
     'public/prayer-times/index.blade.php',
     'public/research/index.blade.php',
     'public/research/show.blade.php',
+    // BOOKSHOP_PLAN B1b — the public bookshop joins the public Blade zone
+    // beside the Digital Library (plan §10: public pages are Blade, the
+    // vendor and office screens Inertia). Two pages and three partials.
+    'public/shop/_bottom-bar.blade.php',
+    'public/shop/_card.blade.php',
+    'public/shop/_stock.blade.php',
+    'public/shop/index.blade.php',
+    'public/shop/product.blade.php',
     'public/search.blade.php',
     'public/test.blade.php',
 

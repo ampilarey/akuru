@@ -138,7 +138,7 @@ function FragmentRow({ vendor: v, t, editing, onEdit, onDone }) {
     return (
         <>
             <tr className="border-t" data-testid={`vendor-row-${v.slug}`}>
-                <td className="p-2"><span className="font-medium">{v.name}</span><span className="block text-xs text-gray-500">/shop/{v.slug} · {v.code}</span></td>
+                <td className="p-2"><span className="font-medium">{v.name}</span><a href={`/shop/${v.slug}`} target="_blank" rel="noreferrer" className="block text-xs text-blue-700 underline">/shop/{v.slug}</a><span className="block text-xs text-gray-500">{v.code}</span></td>
                 <td className="p-2">{owner ? <>{owner.name}<span className="block text-xs text-gray-500">{owner.email}</span></> : t.none}</td>
                 <td className="p-2">{owner?.agreement_accepted_at ? t.accepted : t.not_yet}</td>
                 <td className="p-2 text-end">{v.effective_commission_rate}%</td>
