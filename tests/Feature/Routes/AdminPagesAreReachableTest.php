@@ -124,6 +124,28 @@ it('reaches every admin landing page from the Inertia More menu too', function (
     }
 });
 
+it('reaches the admin panel from the Blade mobile menu as well as the desktop one', function () {
+    // The first check above counts a link anywhere in the file, so the desktop
+    // More menu satisfied it while the phone menu stopped at the CMS (the
+    // admin-panel layout audit, STATUS §5ht). The mobile block is marked, and
+    // must carry the same admin landings.
+    $nav = (string) file_get_contents(resource_path('views/layouts/navigation.blade.php'));
+    $start = strpos($nav, 'data-testid="mobile-menu"');
+    expect($start)->not->toBeFalse();
+    $mobile = substr($nav, $start);
+
+    foreach ([
+        'admin.enrollments.index', 'admin.instructors.index', 'admin.pages.index', 'admin.courses.index',
+        'admin.operations.index', 'admin.operations.features', 'admin.translations.index',
+        'admin.commerce.index', 'admin.library.index', 'admin.bookshop.index',
+        'admin.prayer-times.islands', 'admin.pronunciation.index', 'admin.users.index', 'admin.settings.index',
+    ] as $name) {
+        expect(str_contains($mobile, "route('{$name}')"))->toBeTrue("{$name} is missing from the mobile menu");
+    }
+    // And the menus say what they are to a screen reader.
+    expect($nav)->toContain(':aria-expanded="adminOpen"')->toContain(':aria-expanded="open"')->toContain('aria-controls="nav-mobile-menu"')->toContain('href="#main"');
+});
+
 it('gates the operations nav entries on the permission the routes require', function () {
     $nav = (string) file_get_contents(resource_path('views/layouts/navigation.blade.php'));
 

@@ -103,7 +103,38 @@ each screen shows the link; a CMS page is created with a `<script>` in its
 body (sanitised) and deleted; a checklist item is ticked and unticked; the
 translation editor opens with rows. The result is in STATUS §5hs.
 
-## 5. What the owner still owns
+## 5. The layouts (2026-09-26, the owner: "did u audit admin layouts")
+
+The first pass audited the two navigations for reachability and gating,
+not the shells themselves. This pass did: `layouts/app.blade.php` and
+`layouts/navigation.blade.php` (all 28 admin Blade views extend
+`layouts.app`; two include-partials aside), and `Layouts/AppShell.jsx`
+(every Inertia admin page).
+
+**Held**: both shells set `lang` and `dir` from the locale (Dhivehi and
+Arabic are right-to-left); `app.css` self-hosts Faruma and loads Amiri
+and Cairo, so the scripts render; `[x-cloak]` is defined, so the desktop
+dropdowns do not flash open before Alpine loads; the Inertia shell's
+menus carry `aria-expanded`, `aria-controls` and `aria-current`, its
+flash messages render centrally, and it has a language switcher.
+
+| # | Finding | Severity | Outcome |
+|---|---|---|---|
+| L1 | **The Blade mobile menu stopped at the CMS.** On a phone the hamburger offered Dashboard, Enrolments, Students, Teachers, Announcements, Website CMS, Profile and Log out — no Instructors, Ops checklist, Translations, Commerce, Library, Bookstore, prayer times, Pronunciation, Users or Settings. `AdminPagesAreReachableTest` counted a link anywhere in the file, so the desktop dropdown satisfied it. | medium | **Fixed**: the same links with the same gates in the mobile block; the block is marked and the test now checks it separately. Walked at 390 px. |
+| L2 | **Menus did not say whether they were open.** The desktop *More* dropdown and the hamburger had no `aria-expanded`, `aria-controls` or label (the user menu had `aria-expanded`); the mobile menu was not cloaked. | low (accessibility) | **Fixed**: attributes on both buttons, ids on both menus, `x-cloak` on the mobile one; tested and walked (the hamburger reads `aria-expanded=true` when open). |
+| L3 | **No skip link and no `main` landmark** in either shell: a keyboard user tabbed through every menu link on every page. | low (accessibility) | **Fixed**: a "Skip to content" link first in the tab order and `<main id="main">` in both shells (translated in the Inertia one). Walked: the first Tab lands on it. |
+| L4 | **Right-to-left mirrored the nav but not its dropdowns.** The user menu was anchored `right:0` and the *More* menu `left:0`, and the sign-out buttons `text-align:left`, so in Dhivehi or Arabic a dropdown opened away from its button. | low (RTL) | **Fixed**: logical properties (`inset-inline-end`, `inset-inline-start`, `text-align:start`). Walked in Dhivehi: the user menu opens inside the viewport. |
+| L5 | **26 of 28 admin Blade screens set no `<title>`**, so every tab read the app name. | low | **Fixed** in the layout: a screen that names itself keeps its title; the rest are titled from their route (`admin.pages.index` → "Pages - Akuru"). Tested and walked. |
+| L6 | **"Alerts" in the Inertia shell was hardcoded English** while every other label came from `nav.php`. | low | **Fixed**: `nav.alerts` in EN/DV/AR, whitelisted in the shared `i18n.nav`. Walked in Dhivehi. |
+| L7 | **The Blade nav is 66 inline `style` attributes, 33 inline `onmouseover` handlers and hardcoded English**; the Inertia shell hardcodes its brand hexes rather than the Tailwind tokens. Two shells, two looks (maroon gradient header on white; white header on beige), one admin. | note (maintainability) | Not fixed: the port to one Inertia shell is BACKLOG C9's work, and restyling the Blade nav while it is being retired is rule 1's "while you're there". |
+| L8 | **No language switcher in the Blade shell**; the locale is the URL prefix only. | note | Not fixed; the panel is English-only (finding 9), so nothing to switch to yet. Joins C9. |
+| L9 | **Flash messages are per screen in Blade**: 20 of 28 views render `session('success')`, 2 render `session('error')` (the two whose controllers flash one), 3 read-only lists render neither. The Inertia shell renders both centrally. | note | Held: every screen that receives a flash shows it (the enrolment refusal that could not show was fixed in §5cn's round). Central rendering would double up on the twenty that already do; part of the C9 port. |
+| L10 | **The Blade shell loads Figtree from fonts.bunny.net** while the public layout self-hosts its fonts (decision 14). Office-only; a request to a third party per page. | note | Recorded; the C9 port decides the font. |
+
+**Walked**: `admin-layout.mjs` **14/14** — on a phone the menu starts closed and cloaked, the hamburger opens it and says so, it reaches the whole panel the admin role may open without Users or Settings, nothing overflows sideways; on a desktop the tab is titled after the screen, the More menu starts closed and says when it is open, the first Tab lands on the skip link; in Dhivehi the page is right-to-left and the user menu opens inside the viewport; the Inertia shell has the skip link, a main landmark, a language switcher, and Alerts in Dhivehi. `admin.mjs` and `operations.mjs` re-walked on the changed shells.
+
+## 6. What the owner still owns
+
 
 - Findings 7 and 8: which roles run the website, admissions and instructors,
   and whether `admin` should hold everything.

@@ -4414,6 +4414,54 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5ht. The admin panel's layouts (2026-09-26)
+
+The owner: "did u audit admin layouts". §5hs had audited the two
+navigations for reachability and gating, not the shells. This pass did
+(`docs/ADMIN_PANEL.md` §5): `layouts/app.blade.php` and
+`navigation.blade.php`, which all 28 admin Blade screens extend, and
+`AppShell.jsx`, which every Inertia admin page renders inside.
+
+**Held**: `lang` and `dir` from the locale in both shells; Faruma
+self-hosted, Amiri and Cairo loaded; `[x-cloak]` defined; the Inertia
+shell's menus labelled for screen readers, its flashes central, its
+language switcher present.
+
+**Fixed**: the Blade **mobile menu stopped at the CMS** — ten admin
+landings unreachable on a phone, and the reachability test could not
+tell because it counted a link anywhere in the file (same links and
+gates added; the block is marked and tested on its own); the *More*
+dropdown and the hamburger **did not say whether they were open**
+(`aria-expanded`, `aria-controls`, labels, `x-cloak`); **no skip link
+and no `main` landmark** in either shell (added, translated in Inertia);
+dropdowns anchored `right:0`/`left:0` and `text-align:left`, so in
+Dhivehi or Arabic they **opened away from their button** (logical
+properties); **26 of 28 admin screens had no `<title>`** (titled from the
+route when the screen sets none); **"Alerts" hardcoded** in the Inertia
+shell (`nav.alerts`, EN/DV/AR).
+
+**Recorded**: the Blade nav is 66 inline styles, 33 inline mouse
+handlers and hardcoded English, the Inertia shell hardcodes its hexes,
+and one admin has two shells with two looks — the port to one Inertia
+shell is BACKLOG C9; no language switcher in Blade (nothing to switch to
+yet); per-screen flashes in Blade (every screen that receives one shows
+it); Figtree from a third party in the Blade shell.
+
+**Tests**: `AdminLayoutTest` (3) — route-derived titles and a kept
+title, the skip link, landmark and menu attributes, right-to-left for
+Dhivehi and left-to-right for English; `AdminPagesAreReachableTest`
+gains the mobile-menu check. Admin, Routes and Nav suites **60 passed**;
+architecture **64 passed**.
+
+**Walked**: `admin-layout.mjs` **14/14** (a phone at 390 px, a desktop
+left-to-right and in Dhivehi, the Inertia shell); `admin.mjs` and
+`operations.mjs` re-walked green. The skip-link step first failed
+because the browser resumes tabbing from the last focused element — the
+walk now starts it from a fresh load.
+
+**Production**: nothing to migrate; the pull line as usual (the build
+carries the shell change).
+
 ## 5hs. The admin-panel audit (2026-09-26)
 
 The owner: "audit everything related to admin panel". Done against the

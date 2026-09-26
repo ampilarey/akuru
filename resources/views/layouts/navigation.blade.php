@@ -1,5 +1,7 @@
 <nav x-data="{ open: false, adminOpen: false, userMenuOpen: false }"
      style="background:linear-gradient(135deg,#3D1219 0%,#7C2D37 100%);box-shadow:0 2px 12px rgba(0,0,0,.25);position:sticky;top:0;z-index:50;overflow:visible">
+    {{-- Keyboard users land on the content, not on forty links (admin-panel layout audit, STATUS §5ht). --}}
+    <a href="#main" class="sr-only focus:not-sr-only focus:absolute focus:start-2 focus:top-2 focus:z-[300] focus:rounded focus:bg-white focus:px-3 focus:py-2 focus:text-sm focus:text-brandMaroon-800">Skip to content</a>
 
     <div style="max-width:80rem;margin:0 auto;padding:0 1.25rem">
         <div style="display:flex;justify-content:space-between;align-items:center;height:3.75rem">
@@ -83,14 +85,15 @@
                 {{-- More dropdown (CMS + Instructors + Substitutions + Announcements) --}}
                 @if(auth()->user()->hasAnyRole(['super_admin','admin','headmaster','supervisor','teacher']))
                 <div style="position:relative" @click.away="adminOpen=false">
-                    <button @click="adminOpen=!adminOpen"
+                    <button @click="adminOpen=!adminOpen" type="button"
+                            aria-expanded="false" :aria-expanded="adminOpen" aria-controls="nav-more-menu"
                             style="display:flex;align-items:center;gap:.3rem;padding:.4rem .75rem;border-radius:.375rem;font-size:.8rem;font-weight:500;background:transparent;border:none;cursor:pointer;color:rgba(255,255,255,.8);transition:background .15s"
                             onmouseover="this.style.background='rgba(255,255,255,.12)'" onmouseout="this.style.background='transparent'">
                         More
                         <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
                     </button>
-                    <div x-show="adminOpen" x-transition x-cloak
-                         style="position:absolute;top:calc(100% + .5rem);left:0;min-width:180px;background:white;border-radius:.625rem;box-shadow:0 8px 30px rgba(0,0,0,.15);border:1px solid #E5E7EB;padding:.375rem;z-index:200">
+                    <div x-show="adminOpen" x-transition x-cloak id="nav-more-menu"
+                         style="position:absolute;top:calc(100% + .5rem);inset-inline-start:0;min-width:180px;background:white;border-radius:.625rem;box-shadow:0 8px 30px rgba(0,0,0,.15);border:1px solid #E5E7EB;padding:.375rem;z-index:200">
                         @if(auth()->user()->hasAnyRole(['super_admin','admin','headmaster','supervisor','teacher']))
                         <a href="{{ route('announcements.index') }}" style="display:block;padding:.5rem .75rem;border-radius:.375rem;font-size:.8rem;color:#374151;text-decoration:none" onmouseover="this.style.background='#F9FAFB'" onmouseout="this.style.background='transparent'">📢 Announcements</a>
                         @endif
@@ -182,7 +185,7 @@
                     </button>
 
                     <div x-show="userMenuOpen" x-transition x-cloak
-                         style="position:absolute;top:calc(100% + .5rem);right:0;min-width:200px;background:white;border-radius:.625rem;box-shadow:0 8px 30px rgba(0,0,0,.15);border:1px solid #E5E7EB;padding:.375rem;z-index:200">
+                         style="position:absolute;top:calc(100% + .5rem);inset-inline-end:0;min-width:200px;background:white;border-radius:.625rem;box-shadow:0 8px 30px rgba(0,0,0,.15);border:1px solid #E5E7EB;padding:.375rem;z-index:200">
                         <div style="padding:.5rem .75rem;border-bottom:1px solid #F3F4F6;margin-bottom:.25rem">
                             @if($navUser->nameDuplicatesPrimaryRole())
                             <p style="font-size:.75rem;font-weight:600;color:#111827;margin:0">{{ $navUser->email ?: $navUser->phone }}</p>
@@ -197,7 +200,7 @@
                         <div style="height:1px;background:#F3F4F6;margin:.25rem 0"></div>
                         <form method="POST" action="{{ route('logout') }}" style="margin:0">
                             @csrf
-                            <button type="submit" style="width:100%;display:block;padding:.5rem .75rem;border-radius:.375rem;font-size:.8rem;color:#991B1B;text-decoration:none;background:none;border:none;cursor:pointer;text-align:left" onmouseover="this.style.background='#FEF2F2'" onmouseout="this.style.background='transparent'">🔒 Log Out</button>
+                            <button type="submit" style="width:100%;display:block;padding:.5rem .75rem;border-radius:.375rem;font-size:.8rem;color:#991B1B;text-decoration:none;background:none;border:none;cursor:pointer;text-align:start" onmouseover="this.style.background='#FEF2F2'" onmouseout="this.style.background='transparent'">🔒 Log Out</button>
                         </form>
                     </div>
                 </div>
@@ -205,7 +208,8 @@
             </div>
 
             {{-- ── Hamburger (mobile) ───────────────────────────────────────── --}}
-            <button @click="open=!open" class="sm:hidden"
+            <button @click="open=!open" class="sm:hidden" type="button"
+                    aria-label="Menu" aria-expanded="false" :aria-expanded="open" aria-controls="nav-mobile-menu"
                     style="padding:.5rem;border-radius:.375rem;background:rgba(255,255,255,.12);border:none;cursor:pointer">
                 <svg style="width:1.25rem;height:1.25rem;stroke:white" fill="none" viewBox="0 0 24 24">
                     <path :class="{'hidden':open}" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
@@ -216,7 +220,7 @@
     </div>
 
     {{-- ── Mobile menu ──────────────────────────────────────────────────── --}}
-    <div x-show="open" x-transition class="sm:hidden" style="border-top:1px solid rgba(255,255,255,.1);padding:.75rem 1rem">
+    <div x-show="open" x-transition x-cloak class="sm:hidden" id="nav-mobile-menu" data-testid="mobile-menu" style="border-top:1px solid rgba(255,255,255,.1);padding:.75rem 1rem">
         @auth
         <div style="margin-bottom:.75rem;padding:.625rem;background:rgba(255,255,255,.1);border-radius:.5rem">
             <p style="color:white;font-size:.85rem;font-weight:600;margin:0">{{ Auth::user()?->name }}</p>
@@ -235,13 +239,47 @@
         <a href="{{ route('announcements.index') }}" style="display:block;padding:.625rem .75rem;color:rgba(255,255,255,.85);font-size:.85rem;text-decoration:none;border-radius:.375rem" onmouseover="this.style.background='rgba(255,255,255,.1)'" onmouseout="this.style.background='transparent'">Announcements</a>
         @if(auth()->user()->hasAnyRole(['super_admin','admin']))
         <a href="{{ route('admin.pages.index') }}" style="display:block;padding:.625rem .75rem;color:rgba(255,255,255,.85);font-size:.85rem;text-decoration:none;border-radius:.375rem" onmouseover="this.style.background='rgba(255,255,255,.1)'" onmouseout="this.style.background='transparent'">Website CMS</a>
+        <a href="{{ route('admin.courses.index') }}" class="block rounded px-3 py-2.5 text-[.85rem] text-white/85 hover:bg-white/10">Manage Courses</a>
+        @endif
+        {{-- The rest of the admin panel, on a phone: the same links and gates as
+             the desktop More menu above. Until the layout audit (STATUS §5ht) the
+             mobile menu stopped at the CMS, and the reachability test could not
+             tell, because it counted a link anywhere in this file. --}}
+        @if(auth()->user()->hasAnyRole(['super_admin','admin','headmaster','supervisor']))
+        <a href="{{ route('admin.instructors.index') }}" class="block rounded px-3 py-2.5 text-[.85rem] text-white/85 hover:bg-white/10">Instructors</a>
+        @endif
+        @can('operations.manage')
+        <a href="{{ route('admin.operations.index') }}" class="block rounded px-3 py-2.5 text-[.85rem] text-white/85 hover:bg-white/10">Ops checklist</a>
+        <a href="{{ route('admin.operations.features') }}" class="block rounded px-3 py-2.5 text-[.85rem] text-white/85 hover:bg-white/10">Feature walkthrough</a>
+        @endcan
+        @can('translations.manage')
+        <a href="{{ route('admin.translations.index') }}" class="block rounded px-3 py-2.5 text-[.85rem] text-white/85 hover:bg-white/10">Translations</a>
+        @endcan
+        @can('commerce.manage')
+        <a href="{{ route('admin.commerce.index') }}" class="block rounded px-3 py-2.5 text-[.85rem] text-white/85 hover:bg-white/10">Commerce</a>
+        @endcan
+        @can('library.manage')
+        <a href="{{ route('admin.library.index') }}" class="block rounded px-3 py-2.5 text-[.85rem] text-white/85 hover:bg-white/10">Digital Library</a>
+        @endcan
+        @can('bookshop.manage')
+        <a href="{{ route('admin.bookshop.index') }}" class="block rounded px-3 py-2.5 text-[.85rem] text-white/85 hover:bg-white/10">Akuru Bookstore</a>
+        @endcan
+        @can('prayer.manage')
+        <a href="{{ route('admin.prayer-times.islands') }}" class="block rounded px-3 py-2.5 text-[.85rem] text-white/85 hover:bg-white/10">Prayer times</a>
+        @endcan
+        @can('pronunciation.manage')
+        <a href="{{ route('admin.pronunciation.index') }}" class="block rounded px-3 py-2.5 text-[.85rem] text-white/85 hover:bg-white/10">Pronunciation</a>
+        @endcan
+        @if(auth()->user()->hasRole('super_admin'))
+        <a href="{{ route('admin.users.index') }}" class="block rounded px-3 py-2.5 text-[.85rem] font-semibold text-red-200 hover:bg-white/10">Manage Users</a>
+        <a href="{{ route('admin.settings.index') }}" class="block rounded px-3 py-2.5 text-[.85rem] font-semibold text-red-200 hover:bg-white/10">Settings</a>
         @endif
 
         <div style="border-top:1px solid rgba(255,255,255,.1);margin:.75rem 0;padding-top:.75rem">
             <a href="{{ route('profile.edit') }}" style="display:block;padding:.625rem .75rem;color:rgba(255,255,255,.85);font-size:.85rem;text-decoration:none;border-radius:.375rem">My Profile</a>
             <form method="POST" action="{{ route('logout') }}">
                 @csrf
-                <button type="submit" style="width:100%;padding:.625rem .75rem;color:#FCA5A5;font-size:.85rem;background:none;border:none;cursor:pointer;text-align:left;border-radius:.375rem">Log Out</button>
+                <button type="submit" style="width:100%;padding:.625rem .75rem;color:#FCA5A5;font-size:.85rem;background:none;border:none;cursor:pointer;text-align:start;border-radius:.375rem">Log Out</button>
             </form>
         </div>
         @endauth

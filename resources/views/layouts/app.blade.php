@@ -5,7 +5,9 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
-        <title>@yield('title', config('app.name', 'Akuru LMS'))</title>
+        {{-- 2 of 28 admin screens set a title; every other tab read "Akuru LMS".
+             The route's own name is a fair default: admin.pages.index → "Pages". --}}
+        <title>@yield('title', \Illuminate\Support\Str::of((string) request()->route()?->getName())->replace(['admin.', '.index'], '')->replace(['.', '-'], ' ')->headline()->whenEmpty(fn ($t) => $t->append(config('app.name', 'Akuru LMS')))->when(request()->route()?->getName(), fn ($t) => $t->append(' - '.config('app.name', 'Akuru LMS'))))</title>
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
@@ -29,7 +31,7 @@
             @endisset
 
             <!-- Page Content -->
-            <main>
+            <main id="main">
                 {{ $slot ?? '' }}
                 @yield('content')
             </main>

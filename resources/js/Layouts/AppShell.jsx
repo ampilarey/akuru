@@ -35,6 +35,10 @@ export default function AppShell({ title, children }) {
 
     return (
         <div dir={rtl ? 'rtl' : 'ltr'} className="min-h-screen bg-[#F9F4EE] text-gray-900">
+            {/* Keyboard users land on the content, not on the menu (admin-panel layout audit, STATUS §5ht). */}
+            <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:start-2 focus:top-2 focus:z-50 focus:rounded focus:bg-white focus:px-3 focus:py-2 focus:text-sm focus:text-[#7C2D37]">
+                {n.skip_to_content || 'Skip to content'}
+            </a>
             <header className="relative border-b border-[#E6D9C8] bg-white">
                 <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-x-6 gap-y-2 px-6 py-3">
                     <div className="flex items-center gap-4">
@@ -74,7 +78,7 @@ export default function AppShell({ title, children }) {
                                 href="/portal/notifications"
                                 className="flex items-center gap-1 text-[#7C2D37] hover:underline"
                             >
-                                Alerts
+                                {n.alerts || 'Alerts'}
                                 {auth?.unread_notifications > 0 && (
                                     <span className="rounded-full bg-[#7C2D37] px-1.5 py-0.5 text-xs font-bold text-white">
                                         {auth.unread_notifications}
@@ -189,7 +193,7 @@ export default function AppShell({ title, children }) {
                     </>
                 )}
             </header>
-            <main className="mx-auto max-w-6xl px-6 py-6">
+            <main id="main" className="mx-auto max-w-6xl px-6 py-6">
                 {flash?.success && (
                     <div role="status" className="mb-4 rounded border border-green-200 bg-green-50 px-4 py-2 text-sm text-green-800">
                         {flash.success}
