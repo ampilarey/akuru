@@ -1,0 +1,228 @@
+import { useState } from 'react';
+import { useForm, usePage } from '@inertiajs/react';
+import AppShell from '../../Layouts/AppShell';
+import FormErrors from '../../Components/FormErrors';
+
+/**
+ * BOOKSHOP_PLAN slice B1a — the office's side of the Akuru Online Bookshop:
+ * invite a vendor with its owner, edit or suspend it, and keep the shared
+ * categories and brands.
+ */
+
+function InviteVendor({ t, defaultRate }) {
+    const form = useForm({ name: '', slug: '', code: '', tagline: '', commission_rate: '', contact_email: '', contact_phone: '', owner_name: '', owner_email: '', owner_phone: '' });
+    const set = (name) => (e) => form.setData(name, e.target.value);
+
+    return (
+        <form
+            className="mb-6 grid gap-3 rounded-lg border bg-white p-4 md:grid-cols-3"
+            data-testid="invite-vendor"
+            onSubmit={(e) => {
+                e.preventDefault();
+                form.post('/admin/bookshop/vendors', { preserveScroll: true, onSuccess: () => form.reset() });
+            }}
+        >
+            <h2 className="text-lg font-semibold md:col-span-3">{t.invite_vendor}</h2>
+            <p className="text-sm text-gray-600 md:col-span-3">{t.invite_vendor_intro}</p>
+            <label className="text-sm">{t.vendor_name}<input className="form-input w-full" value={form.data.name} onChange={set('name')} data-testid="vendor-name" required /></label>
+            <label className="text-sm">{t.slug_label}<input className="form-input w-full" value={form.data.slug} onChange={set('slug')} data-testid="vendor-slug" /><span className="block text-xs text-gray-500">{t.slug_hint}</span></label>
+            <label className="text-sm">{t.code_label}<input className="form-input w-full" maxLength={3} value={form.data.code} onChange={set('code')} data-testid="vendor-code" /><span className="block text-xs text-gray-500">{t.code_hint}</span></label>
+            <label className="text-sm">{t.tagline}<input className="form-input w-full" value={form.data.tagline} onChange={set('tagline')} /></label>
+            <label className="text-sm">{t.commission_rate}<input className="form-input w-full" type="number" step="0.01" min="0" max="100" value={form.data.commission_rate} onChange={set('commission_rate')} /><span className="block text-xs text-gray-500">{t.commission_default.replace(':rate', defaultRate)}</span></label>
+            <label className="text-sm">{t.contact_phone}<input className="form-input w-full" value={form.data.contact_phone} onChange={set('contact_phone')} /></label>
+            <label className="text-sm">{t.owner_name}<input className="form-input w-full" value={form.data.owner_name} onChange={set('owner_name')} data-testid="owner-name" required /></label>
+            <label className="text-sm">{t.owner_email}<input className="form-input w-full" type="email" value={form.data.owner_email} onChange={set('owner_email')} data-testid="owner-email" required /></label>
+            <label className="text-sm">{t.owner_phone}<input className="form-input w-full" value={form.data.owner_phone} onChange={set('owner_phone')} /></label>
+            <FormErrors errors={form.errors} className="md:col-span-3" />
+            <div className="md:col-span-3"><button type="submit" className="btn-primary" disabled={form.processing} data-testid="create-vendor">{t.create_vendor}</button></div>
+        </form>
+    );
+}
+
+function InviteCard({ invite, t, signInUrl }) {
+    return (
+        <div className="mb-6 rounded-lg border border-amber-300 bg-amber-50 p-4" data-testid="vendor-invite">
+            <p className="font-semibold">{t.invite_ready.replace(':vendor', invite.vendor).replace(':email', invite.email)}</p>
+            {invite.existing_account ? (
+                <p className="mt-1">{t.invite_existing}</p>
+            ) : (
+                <>
+                    <p className="mt-1">{t.invite_new}</p>
+                    <p className="mt-2">{t.sign_in_at} <span className="font-mono" data-testid="invite-sign-in-url">{signInUrl}</span></p>
+                    <p className="mt-1">
+                        {t.one_time_password}: <span className="font-mono text-lg" data-testid="invite-password">{invite.temporary_password}</span>
+                        <span className="ms-2 text-sm text-amber-800">{t.shown_once}</span>
+                    </p>
+                </>
+            )}
+        </div>
+    );
+}
+
+function VendorEditor({ vendor, t, onDone }) {
+    const form = useForm({
+        name: vendor.name, tagline: vendor.tagline || '', legal_name: vendor.legal_name || '', tin: vendor.tin || '',
+        gst_registered: Boolean(vendor.gst_registered), status: vendor.status, commission_rate: vendor.commission_rate || '',
+        contact_email: vendor.contact_email || '', contact_phone: vendor.contact_phone || '', address: vendor.address || '',
+        opening_hours: vendor.opening_hours || '', office_notes: vendor.office_notes || '',
+    });
+    const set = (name) => (e) => form.setData(name, e.target.type === 'checkbox' ? e.target.checked : e.target.value);
+
+    return (
+        <form
+            className="grid gap-2 bg-gray-50 p-3 md:grid-cols-3"
+            data-testid={`vendor-editor-${vendor.slug}`}
+            onSubmit={(e) => {
+                e.preventDefault();
+                form.put(`/admin/bookshop/vendors/${vendor.id}`, { preserveScroll: true, onSuccess: onDone });
+            }}
+        >
+            <label className="text-sm">{t.vendor_name}<input className="form-input w-full" value={form.data.name} onChange={set('name')} /></label>
+            <label className="text-sm">{t.status}
+                <select className="form-input w-full" value={form.data.status} onChange={set('status')} data-testid="vendor-status">
+                    <option value="active">{t.active}</option>
+                    <option value="suspended">{t.suspended}</option>
+                </select>
+            </label>
+            <label className="text-sm">{t.commission_rate}<input className="form-input w-full" type="number" step="0.01" min="0" max="100" value={form.data.commission_rate} onChange={set('commission_rate')} /></label>
+            <label className="text-sm">{t.tagline}<input className="form-input w-full" value={form.data.tagline} onChange={set('tagline')} /></label>
+            <label className="text-sm">{t.legal_name}<input className="form-input w-full" value={form.data.legal_name} onChange={set('legal_name')} /></label>
+            <label className="text-sm">{t.tin}<input className="form-input w-full" value={form.data.tin} onChange={set('tin')} /></label>
+            <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={form.data.gst_registered} onChange={set('gst_registered')} /> {t.gst_registered}</label>
+            <label className="text-sm">{t.contact_email}<input className="form-input w-full" type="email" value={form.data.contact_email} onChange={set('contact_email')} /></label>
+            <label className="text-sm">{t.contact_phone}<input className="form-input w-full" value={form.data.contact_phone} onChange={set('contact_phone')} /></label>
+            <label className="text-sm md:col-span-3">{t.address}<textarea className="form-input w-full" rows={2} value={form.data.address} onChange={set('address')} /></label>
+            <label className="text-sm md:col-span-3">{t.opening_hours}<textarea className="form-input w-full" rows={2} value={form.data.opening_hours} onChange={set('opening_hours')} /></label>
+            <label className="text-sm md:col-span-3">{t.office_notes}<textarea className="form-input w-full" rows={2} value={form.data.office_notes} onChange={set('office_notes')} /></label>
+            <FormErrors errors={form.errors} className="md:col-span-3" />
+            <div className="flex gap-3 md:col-span-3">
+                <button type="submit" className="btn-primary" disabled={form.processing}>{t.save}</button>
+                <button type="button" className="text-sm underline" onClick={onDone}>{t.cancel}</button>
+            </div>
+        </form>
+    );
+}
+
+function VendorTable({ vendors, t }) {
+    const [editing, setEditing] = useState(null);
+
+    if (vendors.length === 0) {
+        return <p className="rounded border bg-white p-4 text-gray-600">{t.no_vendors}</p>;
+    }
+
+    return (
+        <table className="w-full rounded border bg-white text-sm" data-testid="vendor-table">
+            <thead className="bg-gray-50">
+                <tr>
+                    <th className="p-2 text-start">{t.vendor_name}</th>
+                    <th className="p-2 text-start">{t.owner}</th>
+                    <th className="p-2 text-start">{t.agreement}</th>
+                    <th className="p-2 text-end">{t.commission_rate}</th>
+                    <th className="p-2 text-end">{t.products}</th>
+                    <th className="p-2 text-start">{t.status}</th>
+                    <th className="p-2" />
+                </tr>
+            </thead>
+            <tbody>
+                {vendors.map((v) => (
+                    <FragmentRow key={v.id} vendor={v} t={t} editing={editing === v.id} onEdit={() => setEditing(editing === v.id ? null : v.id)} onDone={() => setEditing(null)} />
+                ))}
+            </tbody>
+        </table>
+    );
+}
+
+function FragmentRow({ vendor: v, t, editing, onEdit, onDone }) {
+    const owner = v.owners[0];
+
+    return (
+        <>
+            <tr className="border-t" data-testid={`vendor-row-${v.slug}`}>
+                <td className="p-2"><span className="font-medium">{v.name}</span><span className="block text-xs text-gray-500">/shop/{v.slug} · {v.code}</span></td>
+                <td className="p-2">{owner ? <>{owner.name}<span className="block text-xs text-gray-500">{owner.email}</span></> : t.none}</td>
+                <td className="p-2">{owner?.agreement_accepted_at ? t.accepted : t.not_yet}</td>
+                <td className="p-2 text-end">{v.effective_commission_rate}%</td>
+                <td className="p-2 text-end">{v.active_products_count} / {v.products_count}</td>
+                <td className="p-2">{v.status === 'active' ? t.active : t.suspended}</td>
+                <td className="p-2 text-end"><button type="button" className="text-blue-700 underline" onClick={onEdit}>{t.edit}</button></td>
+            </tr>
+            {editing && (
+                <tr><td colSpan={7}><VendorEditor vendor={v} t={t} onDone={onDone} /></td></tr>
+            )}
+        </>
+    );
+}
+
+function Catalogue({ catalogue, t }) {
+    const category = useForm({ name: '', name_dv: '', name_ar: '', parent_id: '' });
+    const brand = useForm({ name: '' });
+
+    return (
+        <section className="mt-8 grid gap-6 md:grid-cols-2">
+            <div>
+                <h2 className="text-lg font-semibold">{t.categories}</h2>
+                <p className="mb-2 text-sm text-gray-600">{t.catalogue_intro}</p>
+                <ul className="mb-3 rounded border bg-white text-sm" data-testid="category-list">
+                    {catalogue.categories.map((c) => <li key={c.id} className="border-t p-2 first:border-t-0">{c.name}{c.name_dv ? ` · ${c.name_dv}` : ''}{c.name_ar ? ` · ${c.name_ar}` : ''}</li>)}
+                </ul>
+                <form
+                    className="grid gap-2 md:grid-cols-2"
+                    onSubmit={(e) => {
+                        e.preventDefault();
+                        category.post('/admin/bookshop/categories', { preserveScroll: true, onSuccess: () => category.reset() });
+                    }}
+                >
+                    <input className="form-input" placeholder={t.name} value={category.data.name} onChange={(e) => category.setData('name', e.target.value)} data-testid="category-name" required />
+                    <select className="form-input" value={category.data.parent_id} onChange={(e) => category.setData('parent_id', e.target.value)} aria-label={t.parent_category}>
+                        <option value="">{t.parent_category}: {t.none}</option>
+                        {catalogue.categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+                    </select>
+                    <input className="form-input" dir="rtl" placeholder={t.name_dv} value={category.data.name_dv} onChange={(e) => category.setData('name_dv', e.target.value)} />
+                    <input className="form-input" dir="rtl" placeholder={t.name_ar} value={category.data.name_ar} onChange={(e) => category.setData('name_ar', e.target.value)} />
+                    <FormErrors errors={category.errors} className="md:col-span-2" />
+                    <button type="submit" className="btn-secondary md:col-span-2" disabled={category.processing}>{t.add_category}</button>
+                </form>
+            </div>
+            <div>
+                <h2 className="text-lg font-semibold">{t.brands}</h2>
+                <p className="mb-2 text-sm text-gray-600">{t.catalogue_intro}</p>
+                <ul className="mb-3 rounded border bg-white text-sm" data-testid="brand-list">
+                    {catalogue.brands.map((b) => <li key={b.id} className="border-t p-2 first:border-t-0">{b.name}</li>)}
+                </ul>
+                <form
+                    className="flex gap-2"
+                    onSubmit={(e) => {
+                        e.preventDefault();
+                        brand.post('/admin/bookshop/brands', { preserveScroll: true, onSuccess: () => brand.reset() });
+                    }}
+                >
+                    <input className="form-input flex-1" placeholder={t.name} value={brand.data.name} onChange={(e) => brand.setData('name', e.target.value)} required />
+                    <button type="submit" className="btn-secondary" disabled={brand.processing}>{t.add_brand}</button>
+                    <FormErrors errors={brand.errors} />
+                </form>
+            </div>
+        </section>
+    );
+}
+
+export default function Admin({ t, vendors, catalogue, default_commission_rate, sign_in_url }) {
+    const { flash = {}, errors } = usePage().props;
+
+    return (
+        <AppShell title={t.office_title}>
+            <FormErrors errors={errors} className="mb-4" />
+            {flash.success && <p className="mb-4 rounded bg-green-50 p-3 text-green-700">{flash.success}</p>}
+            {flash.vendor_invite && <InviteCard invite={flash.vendor_invite} t={t} signInUrl={sign_in_url} />}
+
+            <InviteVendor t={t} defaultRate={default_commission_rate} />
+
+            <div className="mb-2 flex items-center justify-between">
+                <h2 className="text-lg font-semibold">{t.vendors}</h2>
+                <a href="/admin/bookshop/vendors/export" className="btn-secondary" data-testid="export-vendors">{t.export_csv}</a>
+            </div>
+            <VendorTable vendors={vendors} t={t} />
+
+            <Catalogue catalogue={catalogue} t={t} />
+        </AppShell>
+    );
+}

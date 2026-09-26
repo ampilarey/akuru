@@ -102,6 +102,10 @@ class HandleInertiaRequests extends Middleware
                 'success' => $request->session()->get('success'),
                 'error' => $request->session()->get('error'),
                 'gift_card_code' => $request->session()->get('gift_card_code'),
+                // B1a: a new vendor member's one-time password, shown once to
+                // whoever added them (the office or the shop's owner).
+                'vendor_invite' => $request->session()->get('vendor_invite'),
+                'temporary_password' => $request->session()->get('temporary_password'),
             ],
             'i18n' => [
                 'learn' => trans('learn'),

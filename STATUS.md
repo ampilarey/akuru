@@ -4414,6 +4414,97 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5gv. B1a: vendors and the vendor portal (2026-09-26)
+
+BOOKSHOP_PLAN slice B1a, the owner's "Build B1a". The Akuru Online
+Bookshop now has vendors, their people, and a portal where a vendor lists
+products. Nothing is sold or shown to the public yet (B1b shows the shop,
+B2 sells).
+
+**The office** (`/admin/bookshop`, `bookshop.manage`, in the admin
+dropdown and the app shell's Admin group as *Online Bookshop*) invites a
+vendor and its owner in one form. The shop address (`/shop/<slug>`) is
+fixed at creation and the three-letter order code (FIT for Fitrah) is
+unique. An owner email that already has an Akuru account is linked as it
+is. A new one gets an account with a **one-time password shown once** on
+the office screen, marked to be changed. Production has no queue worker
+(BACKLOG C6), so a mailed invitation would never arrive (plan audit
+finding 8); the office passes the password on by Viber or in person
+instead. The office edits a vendor (details, TIN, GST registration,
+commission, notes), suspends it (its people are shut out of the portal),
+keeps the shared categories (trilingual) and brands, and exports vendors
+as CSV. The default commission shown is 10% (decision 5).
+
+**The vendor portal** (`/vendor`, *My shop* in the menu for anyone with
+the new `vendor` role) opens on the **Vendor Agreement** (a seeded CMS
+page, first draft) and does nothing else until the member ticks and
+accepts it; the date is kept on their membership. Then: products with
+titles, short and long descriptions in three languages (plain text becomes
+paragraphs; anything else is sanitised to the prose profile), category,
+brand, tags, price, "was" price (must be higher), private cost, **tax
+class** (standard / zero-rated / exempt, audit finding 3), SKU unique
+within the shop, barcode/ISBN, weight, size, stock with a low-stock
+warning, made-to-order days, status, where it shows, book details
+(author, publisher, year, pages, language) and educational details (age,
+grade, subject), variants with their own SKU, price and stock, and up to
+eight photos (make first, remove). Search, a status filter and a products
+CSV. The owner adds staff (same one-time password); staff list products
+but cannot add people. A person in two shops switches between them.
+
+**One door.** `VendorScope` (a DTO resolved only by
+`ResolveVendorScopeAction` from the membership row) is the first argument
+of every portal Action, and every portal query names the scope's vendor.
+`VendorScopeIsTheOnlyDoorTest` pins it: portal Actions take a scope first,
+their queries name `$scope->vendorId`, and the portal's controllers import
+no model and open every method with `authorizeVendor()`.
+
+**Two corrections to the plan, recorded there:**
+- Money is **decimal(10,2)**, not integer laari. The plan said "integer
+  laari like the wallet"; the wallet, gift cards and discount codes are all
+  decimal(10,2), so the bookshop follows them.
+- Photos are stored as public media (`StorePublicMediaAction`), and
+  resizing is deferred to B1b. `ImageProcessorInterface` has no resize
+  method today. The public pages B1b builds render through the existing
+  `<x-public.picture>`, which already asks it for WebP; a card-size
+  variant is a new contract method there, where it is first needed.
+
+Deliberately left for later slices: variant photos (the plan's per-variant
+image), drag-to-order (B7), stock movements (B8), collections (B5), public
+pages (B1b). `products.details` holds the book and educational fields (the
+plan called it `attributes`, which is Eloquent's own property name).
+
+`AdminBookshopTest` (5) and `VendorPortalTest` (8): invitation with a new
+and an existing account, unique slug and code, suspension shutting the
+portal, categories, brands, listing and CSV, refusal without the
+permission; the agreement gate, a non-member refused, a full product with
+photos, variants and a script stripped from its description, SKU and "was"
+price rules, **vendor A cannot see, edit, export or rearrange vendor B's
+products or photos**, photo order and variant sync, staff versus owner,
+the shop switcher. `CreateUserAction` gained an optional
+`forcePasswordChange` flag for the one-time password. The seven models
+carry morph aliases (`vendor`, `vendor_member`, `product`,
+`product_category`, `product_image`, `product_variant`, `brand`);
+`MorphMapConfigTest` requires one for every domain model.
+
+**Staging**: `SmokeMarkerSeeder::vendorCycle()` plants **Fitrah**
+(`docs/vendors/FITRAH.md`) with a synthetic staging owner
+`vendor@akuru.edu.mv` (the seeded password; the real owner's email is
+never seeded anywhere), three sample products, and a second shop whose
+product the walk must never see; it clears the walk's invited vendors,
+products, photos and staff each run. `scripts/smoke/vendor.mjs` walks the
+office, a freshly invited owner signing in with the one-time password, and
+Fitrah's owner end to end: **25/25**, no console or server errors. (A
+first run beside the full test suite failed four steps on timing: the walk
+waited a fixed half second after an Inertia submit. It now waits for the
+element each step expects.)
+
+**Production, once, after the pull**: `php artisan db:seed
+--class=BookshopCatalogueSeeder --force` (nine starter categories, DV/AR
+first pass) and `php artisan db:seed --class=BookshopPolicyPagesSeeder
+--force` (the Vendor Agreement draft, owner to read, OWNER_ACTIONS). Then
+the office creates Fitrah from `/admin/bookshop` with the details in the
+vendor kit.
+
 ## 5gu. B0: the Akuru Digital Library (2026-09-25)
 
 The owner decided every open bookshop question as recommended (plan §13,

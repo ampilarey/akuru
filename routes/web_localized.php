@@ -759,6 +759,30 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::post('payout-request', [\App\Domains\Library\Http\Controllers\WriterPortalController::class, 'requestPayout'])->name('write.payout-request');
     });
 
+    // BOOKSHOP_PLAN B1a: the office invites vendors and keeps the shared
+    // catalogue taxonomy.
+    Route::prefix('admin/bookshop')->middleware(['role:super_admin|admin', 'can:bookshop.manage'])->group(function () {
+        Route::get('/', [\App\Domains\Bookshop\Http\Controllers\AdminBookshopController::class, 'index'])->name('admin.bookshop.index');
+        Route::get('vendors/export', [\App\Domains\Bookshop\Http\Controllers\AdminBookshopController::class, 'exportVendors'])->name('admin.bookshop.vendors.export');
+        Route::post('vendors', [\App\Domains\Bookshop\Http\Controllers\AdminBookshopController::class, 'storeVendor'])->name('admin.bookshop.vendors.store');
+        Route::put('vendors/{vendor}', [\App\Domains\Bookshop\Http\Controllers\AdminBookshopController::class, 'updateVendor'])->name('admin.bookshop.vendors.update')->whereNumber('vendor');
+        Route::post('categories', [\App\Domains\Bookshop\Http\Controllers\AdminBookshopController::class, 'storeCategory'])->name('admin.bookshop.categories.store');
+        Route::post('brands', [\App\Domains\Bookshop\Http\Controllers\AdminBookshopController::class, 'storeBrand'])->name('admin.bookshop.brands.store');
+    });
+
+    // BOOKSHOP_PLAN B1a: the vendor portal. `auth` only on the route: the
+    // gate is the membership (VendorScope), checked in every method.
+    Route::prefix('vendor')->middleware(['auth'])->group(function () {
+        Route::get('/', [\App\Domains\Bookshop\Http\Controllers\VendorPortalController::class, 'index'])->name('vendor.index');
+        Route::post('agreement', [\App\Domains\Bookshop\Http\Controllers\VendorPortalController::class, 'acceptAgreement'])->name('vendor.agreement');
+        Route::post('switch', [\App\Domains\Bookshop\Http\Controllers\VendorPortalController::class, 'switchVendor'])->name('vendor.switch');
+        Route::post('members', [\App\Domains\Bookshop\Http\Controllers\VendorPortalController::class, 'addMember'])->name('vendor.members.store');
+        Route::get('products/export', [\App\Domains\Bookshop\Http\Controllers\VendorPortalController::class, 'exportProducts'])->name('vendor.products.export');
+        Route::post('products', [\App\Domains\Bookshop\Http\Controllers\VendorProductController::class, 'store'])->name('vendor.products.store');
+        Route::post('products/{product}', [\App\Domains\Bookshop\Http\Controllers\VendorProductController::class, 'update'])->name('vendor.products.update')->whereNumber('product');
+        Route::post('product-images/{image}', [\App\Domains\Bookshop\Http\Controllers\VendorProductController::class, 'arrangeImage'])->name('vendor.product-images.arrange')->whereNumber('image');
+    });
+
     // L7 reviewer portal (§12.2) — own assignments only, enforced in actions.
     Route::prefix('review')->middleware(['auth'])->group(function () {
         Route::get('/', [\App\Domains\Library\Http\Controllers\ReviewerPortalController::class, 'index'])->name('review.index');

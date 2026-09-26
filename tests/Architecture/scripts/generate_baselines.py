@@ -7,6 +7,7 @@ DOMAINS = [
     'Identity', 'People', 'Academics', 'ExamsGrades', 'Hifz', 'Admissions',
     'Finance', 'HR', 'Commerce', 'Library', 'Courses', 'Offerings', 'Progress',
     'Pronunciation', 'Media', 'Notifications', 'Portal', 'Website', 'Settings',
+    'Bookshop',
 ]
 ALLOWED_LAYERS = {'Contracts', 'DTOs', 'Events', 'Actions'}
 

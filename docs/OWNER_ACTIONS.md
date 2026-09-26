@@ -342,6 +342,26 @@ so your edits stay. Remove the "first draft pending review" line when you
 are satisfied. Writers agree to the Publishing Terms and Writer Agreement
 on the application form, so those two first.
 
+---
+
+### 18. Read the Vendor Agreement, then invite Fitrah
+
+Bookshop slice B1a (2026-09-26) opens the vendor portal behind a **Vendor
+Agreement** that every shop member accepts once. It is seeded as a first
+draft stating what you decided on 2026-09-25: invitation only, 10%
+commission on goods and none on delivery, a monthly commission invoice,
+payouts after the return window, a 7-day return window, card, wallet and
+bank-transfer payment, a tax line only for GST-registered vendors, and
+what the office may moderate.
+
+**What to do:** on production, once, run
+`php artisan db:seed --class=BookshopCatalogueSeeder --force` and
+`php artisan db:seed --class=BookshopPolicyPagesSeeder --force`. Read
+`/page/vendor-agreement` in the page editor and change what should read
+differently. Then invite Fitrah from *Admin → Online Bookshop* with the
+details in `docs/vendors/FITRAH.md`, and send Inaaya the one-time password
+the screen shows (once) with the sign-in address.
+
 ## Parked items and later ideas
 
 Everything deferred or left unbuilt on purpose — the BML secret, branch

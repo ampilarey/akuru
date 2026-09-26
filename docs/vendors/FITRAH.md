@@ -65,7 +65,22 @@ Bree Serif and Courier Prime are added to the plan's approved font list
 
 ## On staging
 
-`SmokeMarkerSeeder` (from B1) plants Fitrah with the logo above, the
-proposed theme and a few sample products, so `vendor.mjs` and `shop.mjs`
-walk a real store. On production the office creates the vendor through
-`/admin/bookshop` from this kit; nothing personal is seeded there.
+`SmokeMarkerSeeder::vendorCycle()` (B1a) plants Fitrah — slug `fitrah`,
+code `FIT`, tagline — with three sample products and a synthetic staging
+owner, `vendor@akuru.edu.mv`. The real owner's email is not seeded
+anywhere. `vendor.mjs` walks it. The logo and theme arrive with the
+designer (B4).
+
+## On production (after B1a is pulled)
+
+1. Run once: `php artisan db:seed --class=BookshopCatalogueSeeder --force`
+   and `php artisan db:seed --class=BookshopPolicyPagesSeeder --force`.
+2. Read the Vendor Agreement draft (`/page/vendor-agreement`) and edit it
+   in the page editor.
+3. At `/admin/bookshop`, *Invite a vendor*: shop name **Fitrah**, address
+   `fitrah`, code `FIT`, tagline `iman.noor.ihsan`, owner **Fathimath
+   Inaaya**, email `f7920288@gmail.com`, mobile `7920288`.
+4. If her email has no Akuru account yet, the screen shows a one-time
+   password once. Send it to her with the sign-in address. She signs in,
+   is asked to set her own password, opens *My shop*, accepts the
+   agreement, and lists her products.

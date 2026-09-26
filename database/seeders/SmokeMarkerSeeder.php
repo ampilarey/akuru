@@ -123,6 +123,7 @@ class SmokeMarkerSeeder extends Seeder
         $this->timetableCycle($year);
         $this->consentCycle($studentId, $admin);
         $this->requestsCycle($class);
+        $this->vendorCycle();
 
         // A default `migrate:fresh --seed` leaves `staff_profiles` empty, and
         // this used to skip the whole HR block in silence — so the sweep
@@ -1677,6 +1678,123 @@ class SmokeMarkerSeeder extends Seeder
             'type' => 'surah_completed', 'surah_number' => 112, 'title' => 'SMOKE-Milestone', 'status' => 'pending',
             'completed_at' => now(), 'recommended_by' => $teacherUserId, 'recommended_at' => now(), 'created_by' => $teacherUserId,
             'created_at' => now(), 'updated_at' => now(),
+        ]);
+    }
+
+    /**
+     * BOOKSHOP_PLAN B1a and docs/vendors/FITRAH.md: staging carries Fitrah,
+     * the first vendor, so `vendor.mjs` walks a real shop. Its owner here is
+     * a synthetic staging login (`vendor@akuru.edu.mv`, the seeded password)
+     * — never the real owner's email, which only production's office screen
+     * ever uses. A second shop, `SMOKE-Other Shop`, holds one product the
+     * walk must never see from Fitrah's side.
+     *
+     * Each run: Fitrah's agreement is un-accepted (the walk accepts it), the
+     * walk's own products and invited vendors go, and the three sample
+     * products are put back as they were.
+     */
+    private function vendorCycle(): void
+    {
+        $this->call(BookshopCatalogueSeeder::class);
+        $this->call(BookshopPolicyPagesSeeder::class);
+
+        $ownerId = $this->vendorLogin('vendor@akuru.edu.mv', 'Fitrah Owner (staging)');
+        $otherOwnerId = $this->vendorLogin('vendor-other@akuru.edu.mv', 'Other Shop Owner (staging)');
+
+        // What the walk made: vendors it invited, products it listed, their photos.
+        $invited = DB::table('vendors')->where('name', 'like', 'SMOKE-Invited%')->pluck('id');
+        $walkProducts = DB::table('products')->where('title', 'like', 'SMOKE-Walk%')->orWhereIn('vendor_id', $invited)->pluck('id');
+        foreach (DB::table('product_images')->whereIn('product_id', $walkProducts)->pluck('media_file_id') as $mediaId) {
+            $media = DB::table('media_files')->where('id', $mediaId)->first(['disk', 'path']);
+            if ($media !== null) {
+                Storage::disk($media->disk)->delete($media->path);
+            }
+            DB::table('product_images')->where('media_file_id', $mediaId)->delete();
+            DB::table('media_files')->where('id', $mediaId)->delete();
+        }
+        DB::table('products')->whereIn('id', $walkProducts)->delete();
+        DB::table('vendors')->whereIn('id', $invited)->delete();
+
+        $fitrahId = $this->smokeVendor('fitrah', 'FIT', [
+            'name' => 'Fitrah',
+            'tagline' => 'iman.noor.ihsan',
+            'contact_email' => 'vendor@akuru.edu.mv',
+            'contact_phone' => '7000000',
+        ], $ownerId);
+        $otherId = $this->smokeVendor('smoke-other-shop', 'SOS', ['name' => 'SMOKE-Other Shop'], $otherOwnerId);
+
+        // The walk accepts the agreement itself, every run, and the staff it
+        // added last time leave the shop (their accounts stay: people are not
+        // the walk's to delete).
+        DB::table('vendor_members')->where('vendor_id', $fitrahId)->where('user_id', $ownerId)->update(['agreement_accepted_at' => null]);
+        DB::table('vendor_members')->where('vendor_id', $fitrahId)
+            ->whereIn('user_id', DB::table('users')->where('email', 'like', 'smoke-staff%')->pluck('id'))
+            ->delete();
+        DB::table('vendor_members')->where('vendor_id', $otherId)->update(['agreement_accepted_at' => now()]);
+
+        $category = fn (string $slug) => DB::table('product_categories')->where('slug', $slug)->value('id');
+        $this->smokeProduct($fitrahId, 'smoke-arabic-letters-tracing-book', 'Arabic Letters Tracing Book', 85, 'zero_rated', $category('workbooks'), 40, ['author' => 'Fitrah', 'pages' => '56', 'language' => 'Arabic', 'age_range' => '4–6']);
+        $this->smokeProduct($fitrahId, 'smoke-wooden-alphabet-puzzle', 'Wooden Alphabet Puzzle', 240, 'standard', $category('educational-toys'), 12, ['age_range' => '3–6', 'subject' => 'Thaana letters']);
+        $this->smokeProduct($fitrahId, 'smoke-kids-prayer-mat', 'Kids Prayer Mat', 180, 'standard', $category('islamic-studies'), 3, ['age_range' => '3–10'], lowStockAt: 5);
+        $this->smokeProduct($otherId, 'smoke-other-secret', 'SMOKE-Other-Secret', 99, 'standard', null, 1, []);
+    }
+
+    private function vendorLogin(string $email, string $name): int
+    {
+        $id = (int) DB::table('users')->where('email', $email)->value('id');
+        if ($id === 0) {
+            $id = (int) app(\App\Domains\Identity\Actions\CreateUserAction::class)->execute($name, $email, 'password', null, 'vendor')['id'];
+        }
+        $userModel = config('auth.providers.users.model');
+        $user = $userModel::query()->find($id);
+        if ($user !== null && ! $user->hasRole('vendor')) {
+            $user->assignRole('vendor');
+        }
+
+        return $id;
+    }
+
+    /**
+     * @param  array<string, mixed>  $attributes
+     */
+    private function smokeVendor(string $slug, string $code, array $attributes, int $ownerId): int
+    {
+        DB::table('vendors')->updateOrInsert(['slug' => $slug], $attributes + [
+            'code' => $code, 'status' => 'active', 'commission_rate' => null, 'created_at' => now(), 'updated_at' => now(),
+        ]);
+        $vendorId = (int) DB::table('vendors')->where('slug', $slug)->value('id');
+        DB::table('vendor_members')->updateOrInsert(
+            ['vendor_id' => $vendorId, 'user_id' => $ownerId],
+            ['role' => 'owner', 'created_at' => now(), 'updated_at' => now()],
+        );
+
+        return $vendorId;
+    }
+
+    /**
+     * @param  array<string, string>  $details
+     */
+    private function smokeProduct(int $vendorId, string $slug, string $title, float $price, string $taxClass, ?int $categoryId, int $stock, array $details, ?int $lowStockAt = null): void
+    {
+        DB::table('products')->updateOrInsert(['slug' => $slug], [
+            'vendor_id' => $vendorId,
+            'product_category_id' => $categoryId,
+            'title' => $title,
+            'summary' => 'Staging sample for the vendor walk.',
+            'price' => $price,
+            'currency' => 'MVR',
+            'tax_class' => $taxClass,
+            'sku' => strtoupper(substr(str_replace('smoke-', '', $slug), 0, 20)),
+            'track_stock' => true,
+            'stock' => $stock,
+            'low_stock_at' => $lowStockAt,
+            'status' => 'active',
+            'visibility' => 'shop',
+            'featured' => false,
+            'tags' => json_encode(['staging']),
+            'details' => json_encode($details),
+            'created_at' => now(),
+            'updated_at' => now(),
         ]);
     }
 

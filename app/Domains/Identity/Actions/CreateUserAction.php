@@ -15,9 +15,14 @@ class CreateUserAction
      *                             is a write to it — another domain creating a
      *                             staff account must not import the model to
      *                             finish the job.
+     * @param  bool  $forcePasswordChange  The account starts with a password
+     *                                     someone else chose (the office's
+     *                                     one-time password for a new vendor
+     *                                     owner, B1a), so its owner sets their
+     *                                     own without being asked for this one.
      * @return array{id: int, email: string, name: string}
      */
-    public function execute(string $name, string $email, ?string $password = null, ?string $phone = null, ?string $role = null): array
+    public function execute(string $name, string $email, ?string $password = null, ?string $phone = null, ?string $role = null, bool $forcePasswordChange = false): array
     {
         $user = User::query()->create([
             'name' => $name,
@@ -25,6 +30,7 @@ class CreateUserAction
             'password' => Hash::make($password ?: Str::password(16)),
             'phone' => $phone,
             'is_active' => true,
+            'force_password_change' => $forcePasswordChange,
         ]);
 
         // Without this the account cannot reset its own password by email:
