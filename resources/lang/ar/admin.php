@@ -3,10 +3,20 @@
 // The admin panel's front door at /admin (docs/ADMIN_PANEL.md §1).
 return [
     'hub_title' => 'لوحة الإدارة',
-    'hub_intro' => 'كل ما يديره المكتب في أربعة أجزاء. افتح قسمًا، أو انتقل مباشرة إلى شاشة داخله. لا ترى إلا ما يسمح دورك بفتحه.',
+    'hub_intro' => 'صفحتك الرئيسية: أرقام اليوم، ثم كل ما يديره المكتب في أربعة أجزاء. افتح قسمًا، أو انتقل مباشرة إلى شاشة داخله. لا ترى إلا ما يسمح دورك بفتحه.',
     'hub_parts' => 'أجزاء اللوحة',
-    'hub_dashboard_hint' => 'هذه الصفحة هي حيث تُدار الأمور. أرقام اليوم في لوحة المعلومات.',
-    'hub_dashboard' => 'لوحة المعلومات',
+    // Today's numbers at the top of the hub (STATUS §5ia).
+    'today_title' => 'اليوم',
+    'today_pending_payment' => 'بانتظار الدفع',
+    'today_enrolled_today' => 'سُجّلوا اليوم',
+    'today_paid_today' => 'المدفوع اليوم (روفيا)',
+    'today_new_accounts' => 'حسابات جديدة اليوم',
+    'today_unfilled_registers' => 'سجلات غير مملوءة',
+    'today_ungraded_exams' => 'امتحانات غير مصحّحة',
+    'today_students_on_roll' => 'الطلاب المقيّدون',
+    'today_teachers_teaching' => 'المعلمون الذين يدرّسون',
+    'today_overview' => 'نظرة عامة للموظفين',
+    'today_full_dashboard' => 'لوحة المعلومات الكاملة',
     'desc_ops_checklist' => 'قائمة الإغلاق: ما جرى التحقق منه قبل إطلاق المنصة، ومن تحقق منه.',
     'desc_admin_enrolments' => 'الطلبات والتسجيلات: تفعيل، رفض، تعليق، تسجيل دفعة يدوية.',
     'desc_admin_instructors' => 'المدرّسون المعروضون في الموقع العام.',

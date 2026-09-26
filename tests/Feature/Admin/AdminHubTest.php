@@ -126,35 +126,63 @@ it('heads the shell’s admin column and both Blade menus with the same four par
     expect(collect($teacherNav['groups'])->firstWhere('key', 'admin_group'))->toBeNull();
 });
 
-it('says on every administrator landing that the dashboard is the numbers and the Admin panel is the doors, each linking the other', function () {
+it('is where every administrator lands, with today\'s numbers on top and the full dashboard a link away', function () {
     // The owner, 2026-09-26: "I don't understand what's happening sometimes,
-    // /dashboard or /admin." Neither screen linked the other except from a
-    // menu. Now: the super-admin and supervisor dashboards carry the button
-    // and the line; the staff overview carries them for whoever may open the
-    // panel; the hub says it at the top with the way back.
-    $super = hubUser('super_admin', HUB_PERMISSIONS);
-    test()->withoutLocalizationMiddleware()->actingAs($super)->get(route('dashboard'))->assertOk()
-        ->assertSee('data-testid="open-admin-panel"', false)->assertSee(route('admin.index'))->assertSee("today's numbers", false);
+    // /dashboard or /admin" — then, offered one page or two, "I don't know".
+    // One page (STATUS §5ia): /dashboard sends administrators here; the
+    // strip at the top carries the numbers their old dashboards led with,
+    // asked of the owning domains; the full dashboards keep their addresses.
+    Role::findOrCreate('supervisor', 'web');
+    $super = hubUser('super_admin', HUB_PERMISSIONS + ['registers.manage', 'exams.manage']);
+    $course = \App\Domains\Courses\Models\Course::query()->create([
+        'course_category_id' => \Illuminate\Support\Facades\DB::table('course_categories')->insertGetId(['name' => 'Hub category', 'slug' => 'hub-'.\Illuminate\Support\Str::random(6), 'order' => 0, 'created_at' => now(), 'updated_at' => now()]),
+        'title' => 'Hub course', 'slug' => 'hub-course', 'short_desc' => 'Short.', 'body' => 'Body.', 'cover_image' => '', 'workflow_status' => 'published', 'course_type' => 'general', 'status' => 'open',
+    ]);
+    foreach (['pending', 'pending', 'active'] as $status) {
+        \App\Domains\Courses\Models\CourseEnrollment::query()->create(['course_id' => $course->id, 'unified_student_id' => makeStudent()->id, 'status' => $status, 'payment_status' => 'pending', 'enrollment_type' => 'self_learning', 'progress_percentage' => 0]);
+    }
 
-    test()->withoutLocalizationMiddleware()->actingAs(hubUser('supervisor'))->get(route('dashboard'))->assertOk()
-        ->assertSee('data-testid="open-admin-panel"', false)->assertSee(route('admin.index'));
+    test()->withoutLocalizationMiddleware()->actingAs($super)->get(route('dashboard'))->assertRedirect(route('admin.index'));
+    test()->withoutLocalizationMiddleware()->actingAs($super)->get(route('admin.index'))->assertOk()
+        ->assertInertia(fn ($page) => $page->component('Settings/AdminHub')
+            ->where('t.today_title', 'Today')
+            ->has('today.tiles', 6)
+            ->where('today.tiles.0.key', 'pending_payment')->where('today.tiles.0.value', '2')->where('today.tiles.0.href', '/admin/enrollments')->where('today.tiles.0.hard', true)
+            ->where('today.tiles.1.key', 'enrolled_today')->where('today.tiles.1.value', '3')
+            ->where('today.tiles.2.key', 'paid_today')->where('today.tiles.2.value', '0.00')
+            ->where('today.tiles.3.key', 'new_accounts')->where('today.tiles.3.href', '/admin/users')
+            ->where('today.tiles.4.key', 'unfilled_registers')->where('today.tiles.4.href', '/academics/registers')->where('today.tiles.4.hard', false)
+            ->where('today.tiles.5.key', 'ungraded_exams')
+            ->where('today.more.href', '/dashboard/numbers')->where('today.more.label', 'Full dashboard'));
 
-    // The admin lands on the Inertia overview; the shell's nav carries the
-    // door and the shared strings carry the line, so the page can show both.
+    // An admin: the institute's numbers without the accounts link, the
+    // school day's, and the staff overview as the fuller page.
     $admin = hubUser('admin', ['operations.manage', 'registers.manage']);
-    test()->withoutLocalizationMiddleware()->actingAs($admin)->get(route('dashboard'))->assertRedirect(route('portal.overview'));
+    test()->withoutLocalizationMiddleware()->actingAs($admin)->get(route('dashboard'))->assertRedirect(route('admin.index'));
+    test()->withoutLocalizationMiddleware()->actingAs($admin)->get(route('admin.index'))->assertOk()
+        ->assertInertia(fn ($page) => $page->has('today.tiles', 6)->where('today.tiles.3.href', null)->where('today.more.href', '/portal/overview'));
+
+    // A supervisor: the roll and the staff, and their full dashboard.
+    $supervisor = hubUser('supervisor');
+    test()->withoutLocalizationMiddleware()->actingAs($supervisor)->get(route('admin.index'))->assertOk()
+        ->assertInertia(fn ($page) => $page->has('today.tiles', 2)->where('today.tiles.0.key', 'students_on_roll')->where('today.more.href', '/dashboard/supervisor')->where('today.more.hard', true));
+
+    // A Bookstore manager: the panel, no strip.
+    test()->withoutLocalizationMiddleware()->actingAs(hubUser('bookshop_manager', ['bookshop.manage']))->get(route('admin.index'))->assertOk()
+        ->assertInertia(fn ($page) => $page->has('today.tiles', 0)->where('today.more', null));
+
+    // The full dashboards still say what they are and link the panel; the
+    // staff overview still offers the door to whoever may open it, and not
+    // to a teacher. In Dhivehi and Arabic too.
+    test()->withoutLocalizationMiddleware()->actingAs($super)->get(route('dashboard.numbers'))->assertOk()
+        ->assertSee('data-testid="open-admin-panel"', false)->assertSee(route('admin.index'));
+    test()->withoutLocalizationMiddleware()->actingAs($supervisor)->get(route('dashboard.supervisor'))->assertOk()
+        ->assertSee('data-testid="open-admin-panel"', false);
     test()->withoutLocalizationMiddleware()->actingAs($admin)->get(route('portal.overview'))->assertOk()
         ->assertInertia(fn ($page) => $page->component('Portal/StaffOverview')
             ->where('nav.groups', fn ($groups) => collect($groups)->firstWhere('key', 'admin_group')['items'][0]['href'] === '/admin')
             ->where('i18n.nav.dashboard_hint', trans('nav.dashboard_hint')));
-
-    // A teacher on the overview is offered no door (they cannot open it).
-    $teacher = hubUser('teacher', ['registers.manage']);
-    test()->withoutLocalizationMiddleware()->actingAs($teacher)->get(route('portal.overview'))->assertOk()
+    test()->withoutLocalizationMiddleware()->actingAs(hubUser('teacher', ['registers.manage']))->get(route('portal.overview'))->assertOk()
         ->assertInertia(fn ($page) => $page->where('nav.groups', fn ($groups) => collect($groups)->firstWhere('key', 'admin_group') === null));
-
-    // The hub, in Dhivehi too.
-    test()->withoutLocalizationMiddleware()->actingAs($super)->get(route('admin.index'))->assertOk()
-        ->assertInertia(fn ($page) => $page->where('t.hub_dashboard_hint', "This page is where things are managed. Today's numbers are on the Dashboard."));
-    expect(trans('admin.hub_dashboard_hint', [], 'dv'))->toContain('ޑޭޝްބޯޑު')->and(trans('nav.dashboard_hint', [], 'ar'))->toContain('لوحة الإدارة');
+    expect(trans('admin.today_pending_payment', [], 'dv'))->toBe('ފައިސާ ނުދައްކާ')->and(trans('admin.today_title', [], 'ar'))->toBe('اليوم');
 });

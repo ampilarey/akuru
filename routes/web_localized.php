@@ -181,6 +181,10 @@ Route::get('/locale/{locale}', [LocaleController::class, 'setLocale'])->name('lo
 // Dashboard routes
 Route::middleware(['auth', 'trackActivity'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    // The full dashboards administrators used to land on; `/dashboard` now
+    // sends them to `/admin`, which links these (STATUS §5ia).
+    Route::get('/dashboard/numbers', [DashboardController::class, 'numbers'])->middleware('role:super_admin')->name('dashboard.numbers');
+    Route::get('/dashboard/supervisor', [DashboardController::class, 'supervisor'])->middleware('role:supervisor')->name('dashboard.supervisor');
     Route::get('/portal/home/export', [PortalHomeController::class, 'export'])->name('portal.home.export');
     Route::get('/portal/home', [PortalHomeController::class, 'index'])->name('portal.home');
     // A teacher's own home (E1b), distinct from the school-wide staff overview.

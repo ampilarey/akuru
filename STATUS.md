@@ -4414,6 +4414,55 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5ia. One home: `/admin` leads with today's numbers (2026-09-26)
+
+The owner, offered one page or two after §5hz: "I don't know." So one
+page. An administrator had a numbers page (three of them, by role) and a
+doors page, each now linking the other, and still had to know which to
+open. Now `/dashboard` sends `super_admin`, `admin`/`headmaster` and
+`supervisor` to `/admin`, and `/admin` leads with **Today**.
+
+**Built**: `ComposeAdminTodayAction` (Portal) composes the strip for one
+person from the numbers their old dashboard led with — for the institute's
+roles: enrolments pending payment, enrolled today, paid today (MVR), new
+accounts today; for whoever may run registers or exams: unfilled registers
+and ungraded exams (from `ComposeStaffOverviewAction`); for a supervisor:
+students on the roll and teachers teaching. Each is asked of its owning
+domain (rule 3): new `CountEnrollmentsAction` (Courses),
+`SumPaidPaymentsAction` (Finance), `CountUsersAction` (Identity), and
+People's existing counts. Each tile opens where its number comes from
+(Blade ones as full page loads); after the tiles, one link to the full
+dashboard: `/dashboard/numbers` (the Blade super-admin dashboard, gated
+`role:super_admin`), `/dashboard/supervisor` (gated `role:supervisor`) or
+`/portal/overview`. `DashboardController::index` redirects the three kinds
+to `admin.index`; `numbers()` and `supervisor()` serve the old views at
+their new addresses. The hub drops its *← Dashboard* link (it would loop)
+and its intro says what the page is. A Bookstore manager gets no strip.
+Strings EN/DV/AR. `docs/ADMIN_PANEL.md` §1 (Landing) and L24; BACKLOG C9
+notes the two Blade dashboards are now retirable by the port.
+
+**Tests**: `AdminHubTest`'s fourth test rewritten — a super admin's six
+tiles with values from seeded enrolments and their links, the full
+dashboard link; an admin's without the accounts link and with the
+overview link; a supervisor's two and their dashboard; a Bookstore
+manager's none; the full dashboards still carry the button; the overview
+still offers the door and not to a teacher; DV/AR strings.
+`RoleLandingTest`: the three administrator kinds redirect to the panel
+and each full dashboard renders at its own address and refuses the other
+role. `CountingPeopleTest` and `StaffOverviewTest` follow the new
+addresses. Architecture green (boundaries, parity, thin controllers).
+
+**Walked**: `admin-hub.mjs` 26/26 as the seeded admin — `/dashboard` lands
+on the panel; Today shows six labelled tiles with numbers; the
+pending-payment tile opens the enrolments; the full-dashboard link opens
+the staff overview, whose button comes back; 30 with `SMOKE_SUPER_ADMIN`
+(`/dashboard/numbers` opens the Super Admin Dashboard and its button comes
+back). `admin.mjs` 18/18, `admin-layout.mjs` 14/14; `admin-pages.mjs` 3/3
+and `admin-mobile.mjs` 3/3 with `/dashboard/numbers` in their lists.
+
+**Production**: nothing to migrate; the pull line as usual. After it, an
+administrator who signs in lands on `/admin`.
+
 ## 5hz. Dashboard is the numbers, Admin panel is the doors (2026-09-26)
 
 The owner, after §5hy: "still I don't understand what's happening

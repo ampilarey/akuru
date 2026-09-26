@@ -15,17 +15,42 @@ function Open({ hard, href, className, children, ...rest }) {
         : <Link href={href} className={className} {...rest}>{children}</Link>;
 }
 
-export default function AdminHub({ t, parts }) {
+export default function AdminHub({ t, parts, today = { tiles: [], more: null } }) {
     return (
         <AppShell title={t.hub_title}>
-            <p className="mb-2 text-sm text-gray-600">{t.hub_intro}</p>
-            {/* The other half: the dashboard is the numbers, this page is the
-                doors. Said at the top, with the way back, because the two
-                were confused for each other (the owner, 2026-09-26). */}
-            <p className="mb-4 flex flex-wrap items-center gap-3 text-xs text-gray-500">
-                <a href="/dashboard" className="rounded border border-[#7C2D37] px-3 py-1.5 text-sm font-semibold text-[#7C2D37] hover:bg-[#F3EBE0]" data-testid="hub-dashboard">← {t.hub_dashboard}</a>
-                <span>{t.hub_dashboard_hint}</span>
-            </p>
+            <p className="mb-4 text-sm text-gray-600">{t.hub_intro}</p>
+            {/* Today's numbers first — the three dashboards' tiles, so an
+                administrator has one home, not a numbers page and a doors page
+                (the owner, 2026-09-26). Each tile opens where its number comes
+                from; the link after them opens the full dashboard. */}
+            {today.tiles.length > 0 && (
+                <section className="mb-8" data-testid="today">
+                    <h2 className="mb-3 border-b border-[#E6D9C8] pb-1 text-base font-semibold uppercase tracking-wide text-gray-700">{t.today_title}</h2>
+                    <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+                        {today.tiles.map((tile) => {
+                            const body = (
+                                <>
+                                    <span className="block text-2xl font-semibold text-[#7C2D37]">{tile.value}</span>
+                                    <span className="mt-1 block text-xs uppercase tracking-wide text-gray-500">{tile.label}</span>
+                                </>
+                            );
+                            const className = 'block h-full rounded-lg border border-[#E6D9C8] bg-white p-3';
+                            return (
+                                <li key={tile.key} data-testid={`today-${tile.key}`}>
+                                    {tile.href
+                                        ? <Open hard={tile.hard} href={tile.href} className={`${className} hover:border-[#7C2D37]`}>{body}</Open>
+                                        : <div className={className}>{body}</div>}
+                                </li>
+                            );
+                        })}
+                    </ul>
+                    {today.more && (
+                        <p className="mt-3 text-sm">
+                            <Open hard={today.more.hard} href={today.more.href} className="font-semibold text-[#7C2D37] hover:underline" data-testid="today-more">{today.more.label} →</Open>
+                        </p>
+                    )}
+                </section>
+            )}
             {/* The four parts, for a phone: one tap to the part. */}
             <nav aria-label={t.hub_parts} className="mb-6 flex flex-wrap gap-2 text-sm" data-testid="hub-parts">
                 {parts.map((part) => (

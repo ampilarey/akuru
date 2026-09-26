@@ -3,10 +3,20 @@
 // The admin panel's front door at /admin (docs/ADMIN_PANEL.md §1).
 return [
     'hub_title' => 'Admin panel',
-    'hub_intro' => 'Everything the office runs, in four parts. Open a section, or go straight to a screen inside it. You see only what your role may open.',
+    'hub_intro' => 'Your home: today\'s numbers, then everything the office runs, in four parts. Open a section, or go straight to a screen inside it. You see only what your role may open.',
     'hub_parts' => 'Parts of the panel',
-    'hub_dashboard_hint' => "This page is where things are managed. Today's numbers are on the Dashboard.",
-    'hub_dashboard' => 'Dashboard',
+    // Today's numbers at the top of the hub (STATUS §5ia).
+    'today_title' => 'Today',
+    'today_pending_payment' => 'Pending payment',
+    'today_enrolled_today' => 'Enrolled today',
+    'today_paid_today' => 'Paid today (MVR)',
+    'today_new_accounts' => 'New accounts today',
+    'today_unfilled_registers' => 'Unfilled registers',
+    'today_ungraded_exams' => 'Ungraded exams',
+    'today_students_on_roll' => 'Students on the roll',
+    'today_teachers_teaching' => 'Teachers teaching',
+    'today_overview' => 'Staff overview',
+    'today_full_dashboard' => 'Full dashboard',
     'desc_ops_checklist' => 'The close-out checklist: what has been checked before the platform goes live, by whom.',
     'desc_admin_enrolments' => 'Applications and enrolments: activate, reject, suspend, record a manual payment.',
     'desc_admin_instructors' => 'The instructors shown on the public website.',
