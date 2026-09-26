@@ -4414,6 +4414,32 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5hw. Every admin page, desktop and phone (2026-09-26)
+
+The owner: "check each and every admin page, desktop and mobile — the
+layouts, all the tabs are there like home, back". `admin-pages.mjs`
+loads every admin landing and the detail, create and edit pages it finds
+on each index — **40 pages** — at 1400 × 950 and at 390 × 844, and asks
+each for a heading, its navigation with its entries, a way home, a way
+back where it is not an index, and nothing cut off or off-screen
+(`docs/ADMIN_PANEL.md` §5, L17–L20).
+
+**Found and fixed**: **no Inertia admin page had a way home** — the
+shell's "Akuru" wordmark was a label where the Blade logo is a link; ten
+pages, one fix (it links to `/dashboard`). Three Inertia sub-pages had
+**no way back** (OTP abuse → Users, Reading alerts → Library office,
+Deleted courses → Manage Courses). The instructor form had **no
+heading**. The refund form on the payments screen stuck 15 px past a
+desktop; it wraps.
+
+**Walked**: `admin-pages.mjs` **3/3** after the fixes; `admin-mobile.mjs`
+3/3, `admin-layout.mjs` 14/14, `admin.mjs` 18/18, `operations.mjs` 21/21
+re-walked. Admin, Routes and Nav suites green; full suite in this PR's
+count.
+
+**Production**: nothing to migrate; the pull line as usual (the build
+carries the shell change).
+
 ## 5hv. The dashboard on the owner's phone (2026-09-26)
 
 The owner sent a screenshot of production `/dashboard` on a phone: the

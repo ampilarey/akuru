@@ -8,6 +8,8 @@
         <span class="text-gray-300">/</span>
         <span class="text-gray-700 text-sm">{{ isset($instructor->id) ? 'Edit' : 'New Instructor' }}</span>
     </div>
+    {{-- The breadcrumb is not a heading: the page had none (the page-by-page sweep, STATUS §5hw). --}}
+    <h1 class="mb-6 text-2xl font-bold text-gray-900">{{ isset($instructor->id) ? 'Edit instructor' : 'Add instructor' }}</h1>
 
     @if($errors->any())
         <div class="mb-4 p-3 bg-red-100 text-red-800 rounded text-sm">{{ $errors->first() }}</div>

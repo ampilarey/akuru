@@ -43,7 +43,10 @@ export default function AppShell({ title, children }) {
                 <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-x-6 gap-y-2 px-6 py-3">
                     <div className="flex items-center gap-4">
                         <div>
-                            <p className="text-xs uppercase tracking-wide text-[#7C2D37]">Akuru</p>
+                            {/* The wordmark is the way home — every Inertia admin page lacked one
+                                (the page-by-page sweep, STATUS §5hw). A plain link: /dashboard is a
+                                Blade router that sends each person to their own landing. */}
+                            <a href="/dashboard" className="text-xs uppercase tracking-wide text-[#7C2D37] hover:underline" data-testid="shell-home">Akuru</a>
                             <h1 className="text-xl font-semibold">{title}</h1>
                         </div>
                     </div>

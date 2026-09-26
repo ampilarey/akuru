@@ -1,4 +1,4 @@
-import { router } from '@inertiajs/react';
+import { Link, router } from '@inertiajs/react';
 import AppShell from '../../Layouts/AppShell';
 
 const OUTCOMES = [
@@ -50,6 +50,8 @@ export default function ReadingAlerts({ alerts = [], open_only = true, enforcing
                     {open_only ? 'Show reviewed too' : 'Show open only'}
                 </button>
                 <a className="btn-secondary" href={exportHref}>Export CSV</a>
+                {/* A way back to the Library office this list belongs to (the page-by-page sweep, STATUS §5hw). */}
+                <Link className="text-sm text-[#7C2D37] hover:underline" href="/admin/library" data-testid="back-link">← Library office</Link>
             </div>
 
             <div className="overflow-x-auto rounded-lg border bg-white">
