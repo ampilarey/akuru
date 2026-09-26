@@ -4,8 +4,10 @@ namespace App\Domains\Website\Http\Controllers\Admin\PublicSite;
 
 use App\Domains\Website\Models\Page;
 use App\Http\Controllers\Controller;
+use App\Support\Csv;
 use App\Support\Html\HtmlSanitizer;
 use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class PageController extends Controller
 {
@@ -14,6 +16,21 @@ class PageController extends Controller
         $pages = Page::orderBy('title')->paginate(15);
 
         return view('admin.public-site.pages.index', compact('pages'));
+    }
+
+    /** "Every listing gets CSV export" (admin-panel audit, STATUS §5hs). */
+    public function export(): StreamedResponse
+    {
+        $rows = Page::orderBy('title')->get();
+
+        return response()->streamDownload(function () use ($rows): void {
+            $out = fopen('php://output', 'w');
+            Csv::put($out, ['id', 'title', 'slug', 'published', 'published_at', 'updated_at']);
+            foreach ($rows as $row) {
+                Csv::put($out, [$row->id, $row->title, $row->slug, $row->is_published ? 'yes' : 'no', $row->published_at?->toDateTimeString(), $row->updated_at?->toDateTimeString()]);
+            }
+            fclose($out);
+        }, 'pages.csv', ['Content-Type' => 'text/csv']);
     }
 
     public function create()

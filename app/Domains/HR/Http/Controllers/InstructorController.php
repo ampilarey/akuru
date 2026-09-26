@@ -4,8 +4,10 @@ namespace App\Domains\HR\Http\Controllers;
 
 use App\Domains\HR\Models\Instructor;
 use App\Http\Controllers\Controller;
+use App\Support\Csv;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class InstructorController extends Controller
 {
@@ -14,6 +16,24 @@ class InstructorController extends Controller
         $instructors = Instructor::withCount('courses')->ordered()->paginate(20);
 
         return view('admin.instructors.index', compact('instructors'));
+    }
+
+    /**
+     * CLAUDE.md: "every listing gets CSV export" (admin-panel audit, STATUS §5hs).
+     * The public instructor roster as the screen orders it.
+     */
+    public function export(): StreamedResponse
+    {
+        $rows = Instructor::withCount('courses')->ordered()->get();
+
+        return response()->streamDownload(function () use ($rows): void {
+            $out = fopen('php://output', 'w');
+            Csv::put($out, ['id', 'name', 'email', 'phone', 'qualification', 'specialization', 'courses', 'active', 'sort_order']);
+            foreach ($rows as $row) {
+                Csv::put($out, [$row->id, $row->name, $row->email, $row->phone, $row->qualification, $row->specialization, $row->courses_count, $row->is_active ? 'yes' : 'no', $row->sort_order]);
+            }
+            fclose($out);
+        }, 'instructors.csv', ['Content-Type' => 'text/csv']);
     }
 
     public function create()

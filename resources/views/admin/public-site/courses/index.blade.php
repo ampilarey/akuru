@@ -5,6 +5,7 @@
     <div class="flex justify-between items-center mb-6">
         <div class="flex items-center gap-4">
             <h1 class="text-3xl font-bold text-gray-900">Manage Courses</h1>
+            <a href="{{ route('admin.courses.export') }}" class="btn-secondary text-sm" data-testid="export-csv">Export CSV</a>
             <a href="{{ route('admin.pages.index') }}" class="text-brandBlue-600 hover:text-brandBlue-800 text-sm font-medium">
                 Manage Pages →
             </a>

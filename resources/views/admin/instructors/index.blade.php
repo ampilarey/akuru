@@ -5,6 +5,7 @@
 <div class="container mx-auto px-4 py-8 max-w-5xl">
     <div class="flex items-center justify-between mb-6">
         <h1 class="text-2xl font-bold text-gray-900">Instructors</h1>
+            <a href="{{ route('admin.instructors.export') }}" class="btn-secondary text-sm" data-testid="export-csv">Export CSV</a>
         <a href="{{ route('admin.instructors.create') }}" class="btn-primary">+ Add Instructor</a>
     </div>
 

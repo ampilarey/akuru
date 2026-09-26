@@ -134,7 +134,13 @@ class BuildNavigationAction
      */
     private function present(array $item): array
     {
-        return ['key' => $item['key'], 'label' => $this->label($item['key']), 'href' => $item['href']];
+        $presented = ['key' => $item['key'], 'label' => $this->label($item['key']), 'href' => $item['href']];
+        // A Blade screen: the shell must load it whole, not as an Inertia visit.
+        if (! empty($item['hard'])) {
+            $presented['hard'] = true;
+        }
+
+        return $presented;
     }
 
     private function label(string $key): string

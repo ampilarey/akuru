@@ -159,13 +159,26 @@ export default function AppShell({ title, children }) {
                                         <ul className="space-y-1">
                                             {group.items.map((item) => (
                                                 <li key={item.href}>
-                                                    <Link
-                                                        href={item.href}
-                                                        aria-current={isCurrent(item.href) ? 'page' : undefined}
-                                                        className={isCurrent(item.href) ? 'font-semibold text-[#7C2D37]' : 'text-[#7C2D37] hover:underline'}
-                                                    >
-                                                        {item.label}
-                                                    </Link>
+                                                    {/* `hard`: a Blade screen, opened with a full page
+                                                        load — an Inertia visit would get a non-Inertia
+                                                        response and show it in a modal. */}
+                                                    {item.hard ? (
+                                                        <a
+                                                            href={item.href}
+                                                            className="text-[#7C2D37] hover:underline"
+                                                            data-nav-hard
+                                                        >
+                                                            {item.label}
+                                                        </a>
+                                                    ) : (
+                                                        <Link
+                                                            href={item.href}
+                                                            aria-current={isCurrent(item.href) ? 'page' : undefined}
+                                                            className={isCurrent(item.href) ? 'font-semibold text-[#7C2D37]' : 'text-[#7C2D37] hover:underline'}
+                                                        >
+                                                            {item.label}
+                                                        </Link>
+                                                    )}
                                                 </li>
                                             ))}
                                         </ul>
