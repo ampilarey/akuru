@@ -5,6 +5,7 @@
     <div class="flex justify-between items-center mb-6">
         <div class="flex items-center gap-4">
             <h1 class="text-3xl font-bold">Recipient groups</h1>
+            <a href="{{ route('admin.prayer-times.groups.export') }}" class="btn-secondary text-sm" data-testid="export-csv">Export CSV</a>
             <a href="{{ route('admin.prayer-times.islands') }}" class="text-sm text-brandBlue-600">Islands →</a>
         </div>
         <a href="{{ route('admin.prayer-times.groups.create') }}" class="btn-primary">New group</a>

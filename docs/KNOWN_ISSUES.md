@@ -165,6 +165,37 @@ paid at that moment can only be refunded or cancelled by the office from
 a `paused` vendor status (portal open, products hidden) is one enum value
 and one query clause.
 
+## Found by the admin-panel audit (2026-09-26)
+
+Full record: `docs/ADMIN_PANEL.md` §3. Fixed in the same PR: the Inertia
+shell's missing admin links, four listings without CSV, the unguarded
+`users:clear-non-admin`, the uncapped prayer-times upload, the phantom
+`super_admin@` account in the auth guide.
+
+### Enrolment decisions record no actor — **open**
+
+Activate, reject, suspend, reinstate and the access window on
+`/admin/enrollments` write the status and nothing about who decided or
+when; `reject` writes it straight from the controller. Refunds, manual
+payments and wallet credits do record the actor. **Fix**: a `decided_by`
+/ `decided_at` pair on `course_enrollments` (additive, rule 9), set by the
+Actions, shown on the enrolment page. A general activity log of admin
+writes is a separate, platform-wide decision (only behaviour records and
+exam status carry audits today).
+
+### The CMS, instructors and enrolments are gated by role alone — **owner's call**
+
+`admin/public-site/*`, `admin/instructors/*` and the non-money half of
+`admin/enrollments/*` carry `role:super_admin|admin|headmaster|supervisor`
+and no permission, while the Blade nav shows *Website CMS* to `super_admin`
+and `admin` only — so a headmaster or supervisor can edit the public site
+by URL. `daily_content.manage` and `.approve` exist and are checked in
+their controllers; `hr.manage` exists and the instructor screens do not
+check it; no `cms.manage` exists. This sits with item 12 above: which
+roles run the website, admissions and instructors is a policy question.
+Tightening is one `can:` per group and a permission migration; widening
+the nav is one `@if`.
+
 ## Found by the bookstore's B3 walk (2026-09-26)
 
 ### Ten cart adds in a minute got the checkout refused (429) — **fixed for the bookstore (2026-09-26); open elsewhere**

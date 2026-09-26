@@ -4414,6 +4414,75 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5hs. The admin-panel audit (2026-09-26)
+
+The owner: "audit everything related to admin panel". Done against the
+code — every route under `/admin/*` (149 in 14 groups), the `/dashboard`
+landing, the two navigations that reach it, and the roles behind it —
+and written up as **`docs/ADMIN_PANEL.md`**: the inventory (gate, screens,
+CSV, tests, walk per group), what was checked and held, fifteen findings,
+and what the owner still owns. The staff screens outside `/admin` were
+swept in §5cl and are not re-audited.
+
+**Held**: all 149 routes behind `auth` and a role, 96 with a `can:` as
+well, the money writes tightest; no unguarded write route; every CMS
+body sanitised on write and every raw render declared; thin controllers
+(four baselined exports); account deletion refusing self and any super
+admin and deactivating where history depends; every GET screen a crash
+gate; every landing reachable from the Blade nav.
+
+**Fixed in this PR**:
+
+- **The Inertia shell's More menu reached four admin pages.** From
+  Operations, Commerce or the Library office an admin had no link to
+  Users, Settings, Enrolments, Instructors, the CMS or prayer times — the
+  mirror of §5ab. Nine entries added to `NavigationMap`; the Blade ones
+  carry `hard`, which the shell renders as a plain `<a>` (an Inertia visit
+  to a Blade route shows the response in a modal). Labels in EN/DV/AR;
+  gating stays on the routes, so a plain admin never sees Users or
+  Settings. `AdminPagesAreReachableTest` gains the Inertia check.
+- **Four listings had no CSV**: instructors, prayer recipient groups, CMS
+  pages, CMS courses. Four exports, each the screen's own query, a link
+  on each screen, declared before the resources so `pages/export` is not
+  swallowed by `pages/{page}`.
+- **`users:clear-non-admin` had no production guard.** It turns
+  foreign-key checks off and hard-deletes every non-admin account with
+  their `payments` rows; `--force` skipped the only confirmation. Refused
+  outright on production now, before any count.
+- **The prayer-times import took any file size**: capped at 20 MB.
+- **`AUTHENTICATION_GUIDE.md` named a `super_admin@` test account** no
+  seeder creates; it now says how a super admin is made.
+
+**Recorded, not fixed here** (`docs/ADMIN_PANEL.md` §3): no screen
+assigns a role or reactivates an account (BACKLOG C8); enrolment
+decisions record no actor, and `reject` writes its status from the
+controller (KNOWN_ISSUES); the CMS, instructors and enrolments are gated
+by role alone while the nav shows the CMS to two roles (owner's, with
+KNOWN_ISSUES 12); `admin` still holds every permission (KNOWN_ISSUES 10);
+the whole panel outside the Bookstore is English-only and 24 of its 36
+screens are Blade (BACKLOG C9); no general audit log.
+
+**Tests**: `AdminPanelAuditTest` (4) — the four CSVs with their rows and a
+teacher refused; the More menu's admin group for an admin, a super admin
+and a teacher, `hard` on the Blade entries, the Dhivehi label; the import
+cap; the command refused on production and working off it. Architecture
+**64 passed**; the Nav, Routes and Admin suites green; full suite in §5hr's
+count plus these.
+
+**Walked**: `admin.mjs` **18/18** as the seeded `admin@` — all 24 admin
+landing pages open with their heading; Users and Settings answer 403 to
+the admin role; from an Inertia admin screen the More menu lists the
+whole panel, its four Blade entries as plain links and Users and Settings
+absent; a Blade entry opens the Blade screen; the four new CSVs download
+with their headers and each screen shows the link; a CMS page is created
+(with a `<script>` in its body, sanitised) and deleted; a checklist item
+is ticked and unticked; the translation editor opens with rows. The first
+run stalled on the CMS form's submit button because the Blade nav's
+sign-out form has one too — the walk now scopes the click to the page form.
+
+**Production**: nothing to migrate; the pull line as usual (the build
+carries the shell change).
+
 ## 5hr. B11: the seven the audit found unbuilt (2026-09-26)
 
 The owner: "Build the seven unbuilt items as one slice." They are plan

@@ -35,8 +35,11 @@ class ImportController extends Controller
         if ($request->boolean('use_bundled')) {
             $path = database_path('salat.db');
         } else {
+            // The bundled salat.db is under half a megabyte; 20 MB leaves room
+            // for a fuller release without letting a stray upload fill the disk
+            // (admin-panel audit, STATUS §5hs).
             $data = $request->validate([
-                'salat_db' => ['required', 'file'],
+                'salat_db' => ['required', 'file', 'max:20480'],
             ]);
             $path = $data['salat_db']->getRealPath();
         }

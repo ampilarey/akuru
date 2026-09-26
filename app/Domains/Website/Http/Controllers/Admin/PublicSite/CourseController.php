@@ -10,9 +10,11 @@ use App\Domains\Courses\Actions\SaveCoursePublicCtaAction;
 use App\Domains\Courses\Models\Course;
 use App\Domains\Courses\Models\CourseCategory;
 use App\Http\Controllers\Controller;
+use App\Support\Csv;
 use App\Support\Html\HtmlSanitizer;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class CourseController extends Controller
 {
@@ -21,6 +23,21 @@ class CourseController extends Controller
         $courses = Course::with('category')->orderBy('title')->paginate(15);
 
         return view('admin.public-site.courses.index', compact('courses'));
+    }
+
+    /** "Every listing gets CSV export" (admin-panel audit, STATUS §5hs). */
+    public function export(): StreamedResponse
+    {
+        $rows = Course::with('category')->orderBy('title')->get();
+
+        return response()->streamDownload(function () use ($rows): void {
+            $out = fopen('php://output', 'w');
+            Csv::put($out, ['id', 'title', 'slug', 'category', 'status', 'updated_at']);
+            foreach ($rows as $row) {
+                Csv::put($out, [$row->id, $row->title, $row->slug, $row->category->name ?? '', $row->status, $row->updated_at?->toDateTimeString()]);
+            }
+            fclose($out);
+        }, 'public-site-courses.csv', ['Content-Type' => 'text/csv']);
     }
 
     public function create()

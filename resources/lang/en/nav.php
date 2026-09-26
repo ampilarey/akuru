@@ -148,4 +148,14 @@ return [
     'ops_checklist' => 'Ops checklist',
     'feature_walkthrough' => 'Feature walkthrough',
     'translations' => 'Translations',
+    // The admin panel in the Inertia shell's More menu (admin-panel audit, STATUS §5hs).
+    'admin_enrolments' => 'Enrolments',
+    'admin_instructors' => 'Instructors',
+    'website_cms' => 'Website CMS',
+    'commerce' => 'Commerce',
+    'library_office' => 'Library office',
+    'prayer_times' => 'Prayer times',
+    'pronunciation_office' => 'Pronunciation office',
+    'manage_users' => 'Manage users',
+    'system_settings' => 'System settings',
 ];

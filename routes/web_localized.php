@@ -640,6 +640,7 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
     // Instructor management
     Route::prefix('admin/instructors')->middleware(['role:super_admin|admin|headmaster|supervisor'])->group(function () {
         Route::get('/', [AdminInstructorController::class, 'index'])->name('admin.instructors.index');
+        Route::get('/export', [AdminInstructorController::class, 'export'])->name('admin.instructors.export');
         Route::get('/create', [AdminInstructorController::class, 'create'])->name('admin.instructors.create');
         Route::post('/', [AdminInstructorController::class, 'store'])->name('admin.instructors.store');
         Route::get('/{instructor}/edit', [AdminInstructorController::class, 'edit'])->name('admin.instructors.edit');
@@ -655,6 +656,11 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
 
     // Admin CMS routes
     Route::prefix('admin/public-site')->middleware(['role:super_admin|admin|headmaster|supervisor'])->group(function () {
+        // "Every listing gets CSV export" (admin-panel audit, STATUS §5hs).
+        // Declared before the resources, or `pages/export` is swallowed by
+        // `pages/{page}` and `courses/export` by `courses/{course}`.
+        Route::get('pages/export', [AdminPageController::class, 'export'])->name('admin.pages.export');
+        Route::get('courses/export', [AdminCourseController::class, 'export'])->name('admin.courses.export');
         Route::resource('pages', AdminPageController::class)->names([
             'index' => 'admin.pages.index',
             'create' => 'admin.pages.create',
@@ -923,6 +929,7 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::get('islands', [AdminPrayerIslandController::class, 'index'])->name('admin.prayer-times.islands');
         Route::get('import', [AdminPrayerImportController::class, 'index'])->name('admin.prayer-times.import');
         Route::post('import', [AdminPrayerImportController::class, 'store'])->name('admin.prayer-times.import.store');
+        Route::get('groups/export', [AdminPrayerGroupController::class, 'export'])->name('admin.prayer-times.groups.export');
         Route::get('groups', [AdminPrayerGroupController::class, 'index'])->name('admin.prayer-times.groups.index');
         Route::get('groups/create', [AdminPrayerGroupController::class, 'create'])->name('admin.prayer-times.groups.create');
         Route::post('groups', [AdminPrayerGroupController::class, 'store'])->name('admin.prayer-times.groups.store');

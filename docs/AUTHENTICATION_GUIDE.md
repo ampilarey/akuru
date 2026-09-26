@@ -276,13 +276,26 @@ Super Admin > Admin > Headmaster > Supervisor > Teacher > Student/Parent
 
 ### Test Data
 ```php
-// Test users with different roles
-'super_admin@akuru.edu.mv' => 'Super Admin',
+// Test users with different roles (UserSeeder). No super_admin account is
+// seeded — see "Making a super admin" below.
 'admin@akuru.edu.mv' => 'Admin',
 'teacher@akuru.edu.mv' => 'Teacher',
 'student@akuru.edu.mv' => 'Student',
 'parent@akuru.edu.mv' => 'Parent'
 ```
+
+### Making a super admin
+
+No seeder creates a `super_admin` account (the admin-panel audit,
+`docs/ADMIN_PANEL.md` finding 11, found this guide naming one). `/admin/users`
+and `/admin/settings` are `role:super_admin` only, so on a fresh host grant
+the role once, on the host, to a real account:
+
+```
+php artisan tinker --execute="\App\Domains\Identity\Models\User::where('email', 'you@akuru.edu.mv')->firstOrFail()->assignRole('super_admin');"
+```
+
+Then rotate that account's password (KNOWN_ISSUES item 4).
 
 ---
 

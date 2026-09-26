@@ -79,6 +79,51 @@ it('reaches every admin landing page from the Blade nav', function () {
     );
 });
 
+it('reaches every admin landing page from the Inertia More menu too', function () {
+    // The mirror of the Blade check above, found by the admin-panel audit
+    // (STATUS §5hs): an admin on an Inertia screen — Operations, Commerce,
+    // the Library office — saw a More menu with four admin entries and no
+    // way to Users, Settings, Enrolments, Instructors, the CMS or the
+    // prayer-times pages except by typing the URL. The map's Blade entries
+    // carry `hard`, so the shell opens them with a full page load.
+    $allowed = [
+        'admin.prayer-times.groups.index' => 'opened from the admin.prayer-times.islands hub',
+        'admin.prayer-times.broadcasts.index' => 'opened from the admin.prayer-times.islands hub',
+        'admin.daily-content.queue' => 'opened from admin.daily-content.index',
+        'admin.daily-content.ayah-preview' => 'opened from admin.daily-content.index',
+        'admin.enrollments.payments' => 'opened from admin.enrollments.index',
+        'admin.leads.index' => 'opened from the Website CMS hub (admin.pages.index)',
+        'admin.funnel.index' => 'opened from the Website CMS hub (admin.pages.index)',
+        'admin.research.index' => 'opened from the Website CMS hub (admin.pages.index)',
+        'admin.daily-content.index' => 'opened from the Website CMS hub (admin.pages.index)',
+        'admin.daily-subscriptions.index' => 'opened from the Website CMS hub (admin.pages.index)',
+        'admin.courses.index' => 'opened from the Website CMS hub (admin.pages.index)',
+        'admin.library.reading-alerts' => 'opened from the Library admin hub (admin.library.index)',
+        'admin.users.otp-abuse' => 'opened from User management (admin.users.index)',
+        'admin.courses.deleted' => 'opened from Manage Courses (admin.courses.index)',
+    ];
+    $hrefs = \App\Support\Navigation\NavigationMap::hrefs();
+    $orphans = [];
+    foreach (adminLandingRoutes() as $name => $uri) {
+        if (array_key_exists($name, $allowed) || in_array('/'.$uri, $hrefs, true)) {
+            continue;
+        }
+        $orphans[] = "{$name}  (/{$uri})";
+    }
+
+    expect($orphans)->toBeEmpty("Admin pages missing from NavigationMap's admin group:\n  ".implode("\n  ", $orphans));
+
+    // Every Blade admin screen in the map is marked `hard`; every Inertia one is not.
+    $blade = ['/admin/enrollments', '/admin/instructors', '/admin/public-site/pages', '/admin/prayer-times/islands', '/admin/users', '/admin/settings'];
+    foreach (\App\Support\Navigation\NavigationMap::groups() as $group) {
+        foreach ($group['items'] as $item) {
+            if (str_starts_with($item['href'], '/admin/')) {
+                expect(! empty($item['hard']))->toBe(in_array($item['href'], $blade, true), $item['href']);
+            }
+        }
+    }
+});
+
 it('gates the operations nav entries on the permission the routes require', function () {
     $nav = (string) file_get_contents(resource_path('views/layouts/navigation.blade.php'));
 

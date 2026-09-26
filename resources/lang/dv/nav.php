@@ -149,4 +149,14 @@ return [
     'ops_checklist' => 'އޮޕަރޭޝަން ލިސްޓު',
     'feature_walkthrough' => 'ފީޗަރ ތަޢާރަފު',
     'translations' => 'ތަރުޖަމާ',
+    // The admin panel in the Inertia shell's More menu (admin-panel audit, STATUS §5hs).
+    'admin_enrolments' => 'އެންރޯލްމަންޓް',
+    'admin_instructors' => 'މުދައްރިސުން',
+    'website_cms' => 'ވެބްސައިޓް ސީއެމްއެސް',
+    'commerce' => 'ވިޔަފާރި',
+    'library_office' => 'ލައިބްރަރީ އޮފީސް',
+    'prayer_times' => 'ނަމާދު ވަގުތު',
+    'pronunciation_office' => 'އުޗާރު އޮފީސް',
+    'manage_users' => 'ޔޫޒަރުން ބެލެހެއްޓުން',
+    'system_settings' => 'ސިސްޓަމް ސެޓިންގްސް',
 ];

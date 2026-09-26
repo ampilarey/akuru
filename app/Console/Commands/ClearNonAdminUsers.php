@@ -15,6 +15,18 @@ class ClearNonAdminUsers extends Command
 
     public function handle(): int
     {
+        // "Clears test data" is the whole purpose, and the delete below turns
+        // foreign-key checks off and takes `payments` rows with the people —
+        // which rule 12 forbids on real money. It has no place on production,
+        // where `--force` would have wiped every family in one line (the
+        // admin-panel audit, STATUS §5hs). Refused there outright, before any
+        // count or confirmation.
+        if ($this->laravel->isProduction()) {
+            $this->error('users:clear-non-admin clears test data and is refused on production.');
+
+            return self::FAILURE;
+        }
+
         $keepIds = User::query()
             ->whereHas('roles', fn ($query) => $query->whereIn('name', ['super_admin', 'admin']))
             ->pluck('id');

@@ -273,11 +273,26 @@ final class NavigationMap
                 ['key' => 'my_performance', 'href' => '/portal/appraisals', 'roles' => $staff],
                 ['key' => 'payslips', 'href' => '/portal/payslips', 'roles' => $staff],
             ]],
+            // The admin panel. Its Blade screens carry `hard`: the shell opens
+            // them with a full page load, because an Inertia visit to a Blade
+            // route gets a non-Inertia response and shows it in a modal (the
+            // admin-panel audit, STATUS §5hs). Visibility still comes off each
+            // route's own gate — `role:super_admin` hides Users and Settings
+            // from everyone else, `can:commerce.manage` hides Commerce.
             ['key' => 'admin_group', 'items' => [
                 ['key' => 'ops_checklist', 'href' => '/admin/operations'],
+                ['key' => 'admin_enrolments', 'href' => '/admin/enrollments', 'hard' => true],
+                ['key' => 'admin_instructors', 'href' => '/admin/instructors', 'hard' => true],
+                ['key' => 'website_cms', 'href' => '/admin/public-site/pages', 'hard' => true],
+                ['key' => 'commerce', 'href' => '/admin/commerce'],
+                ['key' => 'library_office', 'href' => '/admin/library'],
                 ['key' => 'bookshop', 'href' => '/admin/bookshop', 'can' => ['bookshop.manage']],
+                ['key' => 'prayer_times', 'href' => '/admin/prayer-times/islands', 'hard' => true],
+                ['key' => 'pronunciation_office', 'href' => '/admin/pronunciation'],
                 ['key' => 'feature_walkthrough', 'href' => '/admin/operations/features'],
                 ['key' => 'translations', 'href' => '/admin/translations'],
+                ['key' => 'manage_users', 'href' => '/admin/users', 'hard' => true],
+                ['key' => 'system_settings', 'href' => '/admin/settings', 'hard' => true],
             ]],
         ];
     }
