@@ -4414,6 +4414,42 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5hu. Every admin screen on a phone (2026-09-26)
+
+The owner: "did u check the mobile layout of the admin". §5ht had
+checked one screen at 390 px. `scripts/smoke/admin-mobile.mjs` now loads
+all 34 admin screens at 390 × 844 and measures what the eye misses:
+content wider than the phone, and content **cut off** inside an ancestor
+that hides its overflow — invisible to the page-level number, and the
+difference between a table a swipe reaches and a column nobody can. Each
+offender is named (`docs/ADMIN_PANEL.md` §5, L11–L15).
+
+**Found and fixed**: `/admin/users` cut off its table (`overflow:hidden`
+on the card), so on a phone the Role, Status and **delete** columns were
+unreachable — it scrolls now; four admin tables had no scrolling wrapper
+(instructors, prayer islands, groups, broadcasts) — wrapped; the CMS and
+Users headers did not wrap, pushing *Add New Page* past the edge — they
+wrap; the Inertia shell's header took four rows on a phone — the six primary
+links are one sideways-scrolling row on a phone now, with More, Alerts,
+the account and the language switcher in view beneath them. (The first
+version scrolled the whole bar and pushed the More button off-screen;
+the screenshots showed it, and the sweep now requires the menu button
+inside the phone, not merely rendered.)
+
+**Recorded**: twelve admin tables need a swipe inside their wrapper with
+nothing to say so — the usual pattern for wide admin data; a swipe
+affordance or a per-row card layout is BACKLOG C9 work.
+
+**Walked**: `admin-mobile.mjs` **3/3** after the fixes (the first run
+passed trivially on the page-level number and was rewritten to see
+clipping; the screenshots showed what the number missed); `admin-layout.mjs`
+**14/14** and `admin.mjs` **18/18** re-walked on the changed shell. The
+sweep needs a super admin for Users and Settings; locally the role was
+granted to `admin@` for the run and revoked after.
+
+**Production**: nothing to migrate; the pull line as usual (the build
+carries the shell change).
+
 ## 5ht. The admin panel's layouts (2026-09-26)
 
 The owner: "did u audit admin layouts". §5hs had audited the two

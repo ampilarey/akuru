@@ -20,6 +20,7 @@
         <select name="status" class="form-input"><option value="">All statuses</option>@foreach(['draft','previewed','queued','completed','failed','cancelled'] as $status)<option value="{{ $status }}" @selected(($filters['status'] ?? '')===$status)>{{ $status }}</option>@endforeach</select>
         <button class="btn-secondary">Filter</button>
     </form>
+    <div class="overflow-x-auto">
     <table class="min-w-full bg-white border">
         <thead><tr class="text-left text-xs uppercase text-gray-500"><th class="p-2">ID</th><th class="p-2">Mode</th><th class="p-2">Status</th><th class="p-2">Island</th><th class="p-2">Sent</th><th class="p-2">Cost</th></tr></thead>
         <tbody>
@@ -37,6 +38,7 @@
         @endforelse
         </tbody>
     </table>
+</div>
     <div class="mt-4">{{ $broadcasts->links() }}</div>
 </div>
 @endsection

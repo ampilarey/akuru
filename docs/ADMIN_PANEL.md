@@ -131,6 +131,26 @@ flash messages render centrally, and it has a language switcher.
 | L9 | **Flash messages are per screen in Blade**: 20 of 28 views render `session('success')`, 2 render `session('error')` (the two whose controllers flash one), 3 read-only lists render neither. The Inertia shell renders both centrally. | note | Held: every screen that receives a flash shows it (the enrolment refusal that could not show was fixed in §5cn's round). Central rendering would double up on the twenty that already do; part of the C9 port. |
 | L10 | **The Blade shell loads Figtree from fonts.bunny.net** while the public layout self-hosts its fonts (decision 14). Office-only; a request to a third party per page. | note | Recorded; the C9 port decides the font. |
 
+### Every screen on a phone (the owner: "did u check the mobile layout of the admin")
+
+The layout pass had checked one screen at 390 px. `admin-mobile.mjs` now
+loads all 34 admin screens at 390 × 844 as a super admin and measures two
+things the eye misses: content wider than the phone (the page-level
+number), and content **cut off** inside an ancestor that hides its overflow
+— which the page-level number cannot see, and which is the difference
+between a table a swipe can reach and a column nobody can. Each offender
+is named with the element that causes it.
+
+| # | Finding | Severity | Outcome |
+|---|---|---|---|
+| L11 | **`/admin/users` cut off its table.** The card was `overflow:hidden`, so on a phone the Role, Status and **delete** columns were beyond the edge with no way to reach them. | medium | **Fixed**: the card scrolls sideways. |
+| L12 | **Four admin tables had no scrolling wrapper** (instructors, prayer islands, groups, broadcasts): they fit today's data at 390 px and would have cut off the first long name. | low | **Fixed**: wrapped. |
+| L13 | **The CMS headers did not wrap**: on Manage Pages the *Add New Page* button was pushed past the edge; Manage Courses and Users crammed their title and actions into one row. | low | **Fixed**: the header rows wrap. |
+| L14 | **The Inertia shell's header took four rows on a phone** (title, six primary links wrapped over two rows, Alerts and account, the language switcher) — a third of the screen before any content. | low | **Fixed**: on a phone the six primary links are one row that scrolls sideways; More, Alerts, the account and the language switcher wrap beneath it and stay in view. The first version scrolled the whole bar and pushed the More button off-screen — the screenshots showed it, and the sweep, which had only checked that the button was rendered, now checks it is inside the phone. |
+| L15 | **Twelve admin tables need a sideways swipe on a phone** (enrolments, payments, pages, courses, leads, funnel, OTP abuse, translations, commerce ×3, library ×3, reading alerts) inside a scrolling wrapper, with nothing to say so. | note | Held: the usual pattern for wide admin data; a "swipe" affordance or a card layout per row is C9 work. |
+
+**Walked**: `admin-mobile.mjs` **3/3** (34 screens load, every menu button visible, nothing cut off) after the fixes; the twelve swipe tables listed in its output. `admin-layout.mjs` and `admin.mjs` re-walked on the changed shell.
+
 **Walked**: `admin-layout.mjs` **14/14** — on a phone the menu starts closed and cloaked, the hamburger opens it and says so, it reaches the whole panel the admin role may open without Users or Settings, nothing overflows sideways; on a desktop the tab is titled after the screen, the More menu starts closed and says when it is open, the first Tab lands on the skip link; in Dhivehi the page is right-to-left and the user menu opens inside the viewport; the Inertia shell has the skip link, a main landmark, a language switcher, and Alerts in Dhivehi. `admin.mjs` and `operations.mjs` re-walked on the changed shells.
 
 ## 6. What the owner still owns

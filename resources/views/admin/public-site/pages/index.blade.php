@@ -2,8 +2,8 @@
 
 @section('content')
 <div class="container mx-auto px-4 py-8">
-    <div class="flex justify-between items-center mb-6">
-        <div class="flex items-center gap-4">
+    <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
+        <div class="flex flex-wrap items-center gap-4">
             <h1 class="text-3xl font-bold text-gray-900">Manage Pages</h1>
             <a href="{{ route('admin.pages.export') }}" class="btn-secondary text-sm" data-testid="export-csv">Export CSV</a>
             <a href="{{ route('admin.courses.index') }}" class="text-brandBlue-600 hover:text-brandBlue-800 text-sm font-medium">

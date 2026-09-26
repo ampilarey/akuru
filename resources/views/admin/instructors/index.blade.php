@@ -15,6 +15,7 @@
 
     <div class="card overflow-hidden">
         @if($instructors->count() > 0)
+        <div class="overflow-x-auto">
         <table class="w-full text-sm">
             <thead class="bg-gray-50 border-b">
                 <tr>
@@ -67,6 +68,7 @@
                 @endforeach
             </tbody>
         </table>
+</div>
         <div class="px-4 py-3 border-t">{{ $instructors->links() }}</div>
         @else
         <div class="p-8 text-center text-gray-500">
