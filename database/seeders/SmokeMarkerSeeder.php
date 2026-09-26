@@ -1883,6 +1883,21 @@ class SmokeMarkerSeeder extends Seeder
         // with the student's orders above.
         DB::table('vendors')->whereIn('id', [$fitrahId, $otherId])->update(['cod_enabled' => false, 'cod_max' => null]);
         DB::table('settings')->where('key', (string) config('bookshop.cod.setting_key'))->delete();
+
+        // B9c (`newsletter.mjs`): Fitrah's newsletter list starts empty (the
+        // walk adds its Newsletter section; the storefront was reset above).
+        // The parent — whom no other walk shops as — gets a cart left a day
+        // and a half ago, and the reminder run once, so the walk finds it.
+        DB::table('vendor_newsletter_subscribers')->whereIn('vendor_id', [$fitrahId, $otherId])->delete();
+        if ($applicant !== null) {
+            $parentCarts = DB::table('carts')->where('user_id', $applicant)->pluck('id');
+            DB::table('cart_items')->whereIn('cart_id', $parentCarts)->delete();
+            DB::table('carts')->whereIn('id', $parentCarts)->delete();
+            DB::table('user_notifications')->where('user_id', $applicant)->where('title', __('shop.notice_cart_reminder_title', [], 'en'))->delete();
+            $cartId = DB::table('carts')->insertGetId(['user_id' => $applicant, 'created_at' => now()->subHours(36), 'updated_at' => now()->subHours(36)]);
+            DB::table('cart_items')->insert(['cart_id' => $cartId, 'product_id' => DB::table('products')->where('slug', 'smoke-wooden-alphabet-puzzle')->value('id'), 'quantity' => 1, 'created_at' => now()->subHours(36), 'updated_at' => now()->subHours(36)]);
+            app(\App\Domains\Bookshop\Actions\Shop\RemindAbandonedCartsAction::class)->execute();
+        }
     }
 
     /**

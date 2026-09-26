@@ -824,6 +824,8 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::get('stock/movements/export', [\App\Domains\Bookshop\Http\Controllers\VendorStockController::class, 'exportMovements'])->name('vendor.stock.movements.export');
         Route::get('stock/low/export', [\App\Domains\Bookshop\Http\Controllers\VendorStockController::class, 'exportLowStock'])->name('vendor.stock.low.export');
         Route::post('notices', [\App\Domains\Bookshop\Http\Controllers\VendorPortalController::class, 'saveNotices'])->name('vendor.notices.save');
+        // B9c: the shop's newsletter list.
+        Route::get('newsletter/export', [\App\Domains\Bookshop\Http\Controllers\VendorPortalController::class, 'exportSubscribers'])->name('vendor.newsletter.export');
         Route::post('product-images/{image}', [\App\Domains\Bookshop\Http\Controllers\VendorProductController::class, 'arrangeImage'])->name('vendor.product-images.arrange')->whereNumber('image');
         // B2: the owner's delivery methods.
         Route::post('delivery-methods', [\App\Domains\Bookshop\Http\Controllers\VendorPortalController::class, 'saveDeliveryMethods'])->name('vendor.delivery-methods.save');

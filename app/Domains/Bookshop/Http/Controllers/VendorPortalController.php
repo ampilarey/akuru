@@ -8,6 +8,7 @@ use App\Domains\Bookshop\Actions\Shop\ApplyToSellAction;
 use App\Domains\Bookshop\Actions\Vendor\AcceptVendorAgreementAction;
 use App\Domains\Bookshop\Actions\Vendor\ImportVendorProductsAction;
 use App\Domains\Bookshop\Actions\Vendor\ListVendorProductsAction;
+use App\Domains\Bookshop\Actions\Vendor\ListVendorSubscribersAction;
 use App\Domains\Bookshop\Actions\Vendor\ManageVendorDiscountCodesAction;
 use App\Domains\Bookshop\Actions\Vendor\ManageVendorMembersAction;
 use App\Domains\Bookshop\Actions\Vendor\SaveVendorDeliveryMethodsAction;
@@ -62,6 +63,7 @@ class VendorPortalController extends Controller
             'shop_settings' => $scope->agreementAccepted ? app(SaveVendorShopSettingsAction::class)->get($scope) : null,
             'discount_codes' => $scope->agreementAccepted ? app(ManageVendorDiscountCodesAction::class)->list($scope) : [],
             'notice_settings' => $scope->agreementAccepted ? app(SaveVendorNoticeSettingsAction::class)->get($scope) : null,
+            'newsletter' => $scope->agreementAccepted ? app(ListVendorSubscribersAction::class)->summary($scope) : null,
             'options' => app(ListCatalogueOptionsAction::class)->execute(),
             'filters' => $filters + ['q' => null, 'status' => null, 'low' => null, 'category' => null],
             'must_set_password' => (bool) $request->user()->force_password_change,
@@ -202,6 +204,22 @@ class VendorPortalController extends Controller
         app(ManageVendorDiscountCodesAction::class)->setStatus($scope, $code, (bool) $data['active']);
 
         return back()->with('success', __($data['active'] ? 'shop.code_on_flash' : 'shop.code_off_flash'));
+    }
+
+    /** B9c: the shop's newsletter list, with each person's unsubscribe link for the shop's mailings. */
+    public function exportSubscribers(Request $request): StreamedResponse
+    {
+        $scope = $this->authorizeVendor($request);
+        $rows = app(ListVendorSubscribersAction::class)->all($scope);
+
+        return response()->streamDownload(function () use ($rows): void {
+            $out = fopen('php://output', 'w');
+            Csv::put($out, ['email', 'name', 'consented_at', 'unsubscribe_url']);
+            foreach ($rows as $r) {
+                Csv::put($out, [$r['email'], $r['name'], $r['consented_at'], $r['unsubscribe_url']]);
+            }
+            fclose($out);
+        }, $scope->vendorSlug.'-newsletter.csv', ['Content-Type' => 'text/csv; charset=UTF-8']);
     }
 
     /** B8: which shop notices also go by email or SMS. Owners only (in the Action). */

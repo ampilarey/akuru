@@ -189,7 +189,7 @@ return [
      * only sends where `SMS_LIVE` allows it.
      */
     'notices' => [
-        'customer_events' => ['order_paid', 'slip_decided', 'order_progress', 'order_cancelled', 'return_decided', 'refund', 'back_in_stock'],
+        'customer_events' => ['order_paid', 'slip_decided', 'order_progress', 'order_cancelled', 'return_decided', 'refund', 'back_in_stock', 'cart_reminder'],
         'vendor_events' => ['new_order', 'customer_cancelled', 'return_requested', 'low_stock', 'review', 'payout_decided', 'invoice'],
         'vendor_defaults' => [
             'new_order' => ['email' => true, 'sms' => false],
@@ -230,6 +230,18 @@ return [
         'enabled_by_default' => (bool) env('BOOKSHOP_COD_ENABLED', true),
         'setting_key' => 'bookshop_cod_enabled',
         'delivery_kinds' => ['collect_vendor', 'courier_male', 'courier_atolls'],
+    ],
+
+    /*
+     * B9c: a signed-in customer's cart left alone for `after_hours` is
+     * reminded once (in the app, and by email where the office's customer
+     * email switch allows); not after `within_days`, and not if they have
+     * placed an order since. Hourly on the existing schedule.
+     */
+    'cart_reminders' => [
+        'enabled' => (bool) env('BOOKSHOP_CART_REMINDERS', true),
+        'after_hours' => 24,
+        'within_days' => 7,
     ],
 
     'bank_transfer' => [

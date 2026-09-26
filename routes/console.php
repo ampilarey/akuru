@@ -20,6 +20,8 @@ Schedule::command('bookshop:expire-checkouts')->everyTenMinutes();
 // commission tax invoices go out on the first of the month.
 Schedule::command('bookshop:mature-earnings')->dailyAt('03:10')->timezone('Indian/Maldives');
 Schedule::command('bookshop:issue-commission-invoices')->monthlyOn(1, '03:20')->timezone('Indian/Maldives');
+// BOOKSHOP_PLAN B9c: one reminder for a signed-in customer's cart left for a day.
+Schedule::command('bookshop:remind-abandoned-carts')->hourly();
 
 // Scheduler heartbeat — used to verify cron is running
 Schedule::command('akuru:scheduler-heartbeat')->everyMinute();

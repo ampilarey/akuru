@@ -482,6 +482,24 @@ function Notices({ settings, isOwner, t }) {
     );
 }
 
+/** B9c (§6.3 "Newsletter"): who asked for the shop's news. Add the Newsletter section on the storefront to collect them. */
+function Newsletter({ newsletter, t }) {
+    return (
+        <section className="mt-8" data-testid="shop-newsletter">
+            <div className="mb-1 flex flex-wrap items-center justify-between gap-2">
+                <h2 className="text-lg font-semibold">{t.newsletter_list_heading} <span className="text-sm font-normal text-gray-500" data-testid="newsletter-count">{t.newsletter_count.replace(':count', newsletter.active)}</span></h2>
+                <a href="/vendor/newsletter/export" className="btn-secondary" data-testid="export-newsletter">{t.export_csv}</a>
+            </div>
+            <p className="mb-2 text-sm text-gray-600">{t.newsletter_list_hint}</p>
+            {newsletter.recent.length > 0 && (
+                <ul className="divide-y rounded border bg-white text-sm">
+                    {newsletter.recent.map((s) => <li key={s.email} className="flex justify-between gap-2 p-2"><span>{s.name ? `${s.name} · ` : ''}{s.email}</span><span className="text-gray-500">{s.since}</span></li>)}
+                </ul>
+            )}
+        </section>
+    );
+}
+
 function ProductList({ products, t, onEdit, selected, setSelected }) {
     if (products.length === 0) {
         return <p className="rounded border bg-white p-4 text-gray-600">{t.no_products}</p>;
@@ -537,7 +555,7 @@ function ProductList({ products, t, onEdit, selected, setSelected }) {
     );
 }
 
-export default function Vendor({ t, vendor, memberships = [], agreement_url, products = [], products_page = null, members = [], delivery_methods = [], delivery_kinds = [], shop_settings = null, discount_codes = [], notice_settings = null, options, filters, must_set_password, set_password_url }) {
+export default function Vendor({ t, vendor, memberships = [], agreement_url, products = [], products_page = null, members = [], delivery_methods = [], delivery_kinds = [], shop_settings = null, discount_codes = [], notice_settings = null, newsletter = null, options, filters, must_set_password, set_password_url }) {
     const { flash = {}, errors } = usePage().props;
     const [editing, setEditing] = useState(null);
     const [search, setSearch] = useState(filters.q || '');
@@ -650,6 +668,7 @@ export default function Vendor({ t, vendor, memberships = [], agreement_url, pro
                     {shop_settings && <ShopSettings settings={shop_settings} isOwner={isOwner} t={t} />}
                     <DiscountCodes codes={discount_codes} isOwner={isOwner} t={t} />
                     {notice_settings && <Notices key={JSON.stringify(notice_settings.events)} settings={notice_settings} isOwner={isOwner} t={t} />}
+                    {newsletter && <Newsletter newsletter={newsletter} t={t} />}
                     <DeliveryMethods key={delivery_methods.map((m) => `${m.id}:${m.name}`).join('|')} methods={delivery_methods} kinds={delivery_kinds} isOwner={isOwner} t={t} />
                     <Members members={members} isOwner={isOwner} t={t} />
                 </>

@@ -211,6 +211,30 @@
                     </div>
                 @endif
                 @break
+
+            @case('newsletter')
+                {{-- B9c: the shop's news by email, with consent; the shop sends it and links the unsubscribe page. --}}
+                <div class="container mx-auto max-w-2xl px-4">
+                    <div class="sf-card p-5" data-testid="newsletter-signup">
+                        <h2 class="mb-1 text-xl font-semibold" dir="auto">{{ $section['heading'] ?? __('shop.newsletter_heading') }}</h2>
+                        <p class="mb-3 text-sm opacity-90" dir="auto">{{ $section['body'] ?? __('shop.newsletter_body') }}</p>
+                        @if(session('newsletter_joined') === $section['vendor_slug'])
+                            <p class="rounded bg-green-50 p-2 text-sm text-green-800" data-testid="newsletter-thanks">{{ __('shop.newsletter_thanks') }}</p>
+                        @elseif($preview)
+                            <p class="text-xs opacity-70">{{ __('shop.newsletter_preview_note') }}</p>
+                        @else
+                            <form method="POST" action="{{ $section['action'] }}" class="flex flex-wrap items-end gap-2">
+                                @csrf
+                                <label class="text-sm">{{ __('shop.newsletter_email') }}<input type="email" name="email" required maxlength="255" class="form-input block w-64" data-testid="newsletter-email"></label>
+                                <label class="text-sm">{{ __('shop.newsletter_name') }}<input name="name" maxlength="120" class="form-input block w-48" data-testid="newsletter-name"></label>
+                                <label class="flex w-full items-start gap-2 text-xs"><input type="checkbox" name="consent" value="1" required data-testid="newsletter-consent"> <span>{{ __('shop.newsletter_consent', ['shop' => $section['vendor_name']]) }}</span></label>
+                                <button type="submit" class="btn-primary" data-testid="newsletter-submit">{{ __('shop.newsletter_join') }}</button>
+                            </form>
+                            @error('email')<p class="mt-2 text-sm text-red-700">{{ $message }}</p>@enderror
+                        @endif
+                    </div>
+                </div>
+                @break
         @endswitch
     </section>
 @endforeach

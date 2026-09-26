@@ -39,6 +39,8 @@ final class SectionTypes
         'delivery_returns' => ['heading' => 'text', 'body' => 'rich'],
         'contact_map' => ['heading' => 'text', 'lat' => 'float', 'lng' => 'float', 'zoom' => 'int:10,18'],
         'video' => ['heading' => 'text', 'url' => 'video'],
+        // B9c (§6.3 "Newsletter"): a sign-up for the shop's news, with consent.
+        'newsletter' => ['heading' => 'text', 'body' => 'text'],
     ];
 
     public const VISIBILITIES = ['published', 'hidden', 'scheduled'];
