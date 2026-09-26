@@ -90,7 +90,7 @@ class ShopController extends Controller
                 ]);
             }
             fclose($out);
-        }, 'akuru-store.csv', ['Content-Type' => 'text/csv; charset=UTF-8']);
+        }, 'akuru-bookstore.csv', ['Content-Type' => 'text/csv; charset=UTF-8']);
     }
 
     /**

@@ -4414,6 +4414,37 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5gy. The Akuru Bookstore — the name settled (2026-09-26)
+
+The owner, after §5gx the same day: *"I want to change the name to Akuru
+Bookstore."* Bookstores commonly sell stationery and educational items
+too, so the name still covers Fitrah's shop. The new labels:
+- **English**: *Akuru Bookstore* in titles, headings, breadcrumbs, the
+  footer, the office dropdown and the admin menu. *Bookstore* in the site
+  header and app shell. *at Akuru Bookstore* on a vendor's page.
+- **Dhivehi**: އަކުރު ފޮތްފިހާރަ, ފޮތްފިހާރަ.
+- **Arabic**: متجر أكورو للكتب, متجر الكتب.
+
+The generic word "shop" stays where it means a vendor's own shop, for
+example "Shop name" or the phone bar's *Shop* button. The CSV downloads
+are `akuru-bookstore.csv` and `bookstore-vendors.csv`. The Vendor
+Agreement text says "bookstore". `/shop` and every internal name are
+unchanged, as in §5gx.
+
+**Hosts seeded under either earlier name**: `BookshopPolicyPagesSeeder`
+renames "Akuru Online Bookshop" *or* "Akuru Online Store" in a Vendor
+Agreement that still carries its "first draft" line. An edited page keeps
+its words. Re-running the seeder is the whole migration.
+
+`BookstoreNameTest` replaces `OnlineStoreNameTest`. It covers the name in
+three languages and the menus, the agreement renamed from each earlier
+name when untouched and kept when edited, and a scan that neither earlier
+name appears in any view, React page, language file or store seeder.
+`ShopPublicTest` and both walks follow. `shop.mjs` checks that neither
+earlier name is anywhere on the page. Walked: `shop.mjs` **24/24**,
+`vendor.mjs` **25/25**, no console or server errors. Full suite 2203
+passed.
+
 ## 5gx. The Akuru Online Store (renamed from Bookshop, 2026-09-26)
 
 The owner asked to change "bookshop" everywhere: *"It's not only for books
