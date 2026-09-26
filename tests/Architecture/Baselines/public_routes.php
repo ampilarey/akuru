@@ -108,6 +108,8 @@ return [
     'GET shop/products/{slug}' => 'A product for sale. Drafts, archived products and suspended vendors\' products are a 404. No per-person data; the vendor\'s contact details are deliberately not shown.',
     'GET shop/c/{slug}' => 'A shop category. Public catalogue content. No per-person data.',
     'GET shop/{vendor}' => 'A vendor\'s public page: its name, tagline and products for sale — a business deliberately published by the office. A suspended vendor is a 404.',
+    'GET shop/{vendor}/p/{page}' => 'A page under a vendor\'s storefront (BOOKSHOP_PLAN B5, §6.4): structured sections the vendor published, rendered from data. Unpublished pages and held storefronts are a 404. No per-person data.',
+    'GET shop/{vendor}/{collection}' => 'A vendor\'s collection (B5, §5): its products for sale, in the vendor\'s order. Inactive collections are a 404. No per-person data.',
     'GET shop/cart' => 'The cart (BOOKSHOP_PLAN B2): a guest fills one before signing in, so it is reachable without a session. Shows only the basket the session\'s own token (or the signed-in person) owns.',
     'POST shop/cart' => 'Add to the cart (B2). A guest\'s, by the token minted into their own session; throttled. Nothing here can touch another basket.',
     'POST shop/cart/{item}' => 'Change or remove a cart line (B2). The line must belong to the caller\'s own basket (ResolveCartAction); throttled.',

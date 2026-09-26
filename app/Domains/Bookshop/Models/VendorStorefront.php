@@ -7,15 +7,18 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
- * A vendor's storefront design (BOOKSHOP_PLAN §6): identity and theme as
- * data, a draft the vendor edits and a published copy the public page
- * renders. B5 adds sections and pages to the same row.
+ * A vendor's storefront design (BOOKSHOP_PLAN §6): identity, theme,
+ * sections, menu and SEO as data, a draft the vendor edits and a published
+ * copy the public page renders. The office may hold it (§6.6): while held
+ * the public sees the plain page and publishing is refused.
  */
 class VendorStorefront extends Model
 {
     protected $fillable = [
-        'vendor_id', 'draft_identity', 'draft_theme', 'published_identity', 'published_theme',
+        'vendor_id', 'draft_identity', 'draft_theme', 'draft_sections', 'draft_navigation', 'draft_seo',
+        'published_identity', 'published_theme', 'published_sections', 'published_navigation', 'published_seo',
         'published_version_id', 'published_at', 'published_by',
+        'held_at', 'held_by', 'moderation_note', 'locked_section_types',
     ];
 
     protected function casts(): array
@@ -23,9 +26,17 @@ class VendorStorefront extends Model
         return [
             'draft_identity' => 'array',
             'draft_theme' => 'array',
+            'draft_sections' => 'array',
+            'draft_navigation' => 'array',
+            'draft_seo' => 'array',
             'published_identity' => 'array',
             'published_theme' => 'array',
+            'published_sections' => 'array',
+            'published_navigation' => 'array',
+            'published_seo' => 'array',
+            'locked_section_types' => 'array',
             'published_at' => 'datetime',
+            'held_at' => 'datetime',
         ];
     }
 
@@ -42,5 +53,16 @@ class VendorStorefront extends Model
     public function isPublished(): bool
     {
         return $this->published_at !== null && $this->published_theme !== null;
+    }
+
+    public function isHeld(): bool
+    {
+        return $this->held_at !== null;
+    }
+
+    /** Publicly visible: published and not held by the office. */
+    public function isLive(): bool
+    {
+        return $this->isPublished() && ! $this->isHeld();
     }
 }

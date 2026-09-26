@@ -2,8 +2,6 @@
 
 namespace App\Domains\Bookshop\Support;
 
-use App\Support\Html\HtmlSanitizer;
-
 /**
  * A storefront's identity as data (BOOKSHOP_PLAN §6.1): names and taglines
  * in three languages, logo (light and dark), banner, the story, the
@@ -65,9 +63,9 @@ final class Identity
             'tagline_dv' => $text($input['tagline_dv'] ?? null, 200),
             'tagline_ar' => $text($input['tagline_ar'] ?? null, 200),
             'images' => (array) $current['images'],
-            'story' => self::richText($input['story'] ?? null),
-            'story_dv' => self::richText($input['story_dv'] ?? null),
-            'story_ar' => self::richText($input['story_ar'] ?? null),
+            'story' => RichText::clean($input['story'] ?? null),
+            'story_dv' => RichText::clean($input['story_dv'] ?? null),
+            'story_ar' => RichText::clean($input['story_ar'] ?? null),
             'contact' => [
                 'phone' => $text($input['contact']['phone'] ?? null, 40),
                 'email' => filter_var(trim((string) ($input['contact']['email'] ?? '')), FILTER_VALIDATE_EMAIL) ?: null,
@@ -110,23 +108,5 @@ final class Identity
         }
 
         return null;
-    }
-
-    /** Plain text becomes paragraphs; everything is cleaned to the prose profile (as product descriptions). */
-    private static function richText(mixed $text): ?string
-    {
-        $text = trim((string) $text);
-        if ($text === '') {
-            return null;
-        }
-        if (! preg_match('/<(p|ul|ol|li|h[1-6]|br|div|blockquote)\b/i', $text)) {
-            $paragraphs = preg_split('/\R{2,}/', $text) ?: [];
-            $text = implode('', array_map(
-                fn (string $p) => '<p>'.nl2br(str_contains($p, '<') ? trim($p) : e(trim($p)), false).'</p>',
-                array_filter($paragraphs, fn (string $p) => trim($p) !== ''),
-            ));
-        }
-
-        return app(HtmlSanitizer::class)->clean($text, HtmlSanitizer::PROFILE_LESSON);
     }
 }

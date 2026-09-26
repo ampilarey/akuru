@@ -6,6 +6,10 @@
 @if(isset($product['gallery'][0]))
     @section('og_image', $product['gallery'][0]['large'])
 @endif
+{{-- B5 (§6.7): structured data — name, price, availability — so search engines list the product. --}}
+@push('head_meta')
+    @include('public.partials.json_ld', ['payload' => $product['json_ld'] ?? []])
+@endpush
 
 @section('content')
 <div class="container mx-auto max-w-6xl px-4 py-8">

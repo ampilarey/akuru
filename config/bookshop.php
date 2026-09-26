@@ -58,6 +58,18 @@ return [
             'ink' => ['label' => 'Ink', 'colors' => ['primary' => '#111827', 'secondary' => '#E5E7EB', 'accent' => '#1D4ED8', 'page_bg' => '#FFFFFF', 'card_bg' => '#F9FAFB', 'text' => '#111827', 'on_primary' => '#FFFFFF', 'on_accent' => '#FFFFFF']],
         ],
         'max_versions_shown' => 20,
+        // B5 (§6.3–§6.5): how much a storefront may hold, and where a video
+        // may come from (URL only; the embed is built here, never pasted).
+        'max_sections' => 20,
+        'max_pages' => 10,
+        'max_collections' => 20,
+        'max_library_images' => 60,
+        'video_hosts' => ['youtube.com', 'youtu.be', 'vimeo.com'],
+        // The published storefront is read on every vendor page; cached per
+        // vendor and locale, cleared on publish and on moderation (§10).
+        'cache_seconds' => 600,
+        // Best sellers: paid order lines in this many days (§6.3 "automatic").
+        'best_seller_days' => 90,
     ],
 
     /*

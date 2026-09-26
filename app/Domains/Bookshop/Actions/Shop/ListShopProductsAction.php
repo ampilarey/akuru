@@ -7,6 +7,7 @@ use App\Domains\Bookshop\Enums\ProductVisibility;
 use App\Domains\Bookshop\Enums\VendorStatus;
 use App\Domains\Bookshop\Models\Product;
 use App\Domains\Bookshop\Models\ProductCategory;
+use App\Domains\Bookshop\Models\VendorCollection;
 use App\Domains\Bookshop\Support\ShopPresenter;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
@@ -26,7 +27,7 @@ class ListShopProductsAction
     public const SORTS = ['newest', 'price_asc', 'price_desc', 'name'];
 
     /** The query-string keys the listing understands. */
-    public const FILTERS = ['q', 'category', 'vendor', 'brand', 'price_min', 'price_max', 'in_stock', 'language', 'age', 'grade', 'sort'];
+    public const FILTERS = ['q', 'category', 'vendor', 'collection', 'brand', 'price_min', 'price_max', 'in_stock', 'language', 'age', 'grade', 'sort'];
 
     /**
      * @param  array<string, mixed>  $filters
@@ -47,8 +48,15 @@ class ListShopProductsAction
     {
         $q = trim((string) ($filters['q'] ?? ''));
         $sort = in_array($filters['sort'] ?? null, self::SORTS, true) ? $filters['sort'] : 'newest';
+        // B5: a vendor's collection (§5), by rule or hand-picked — in the
+        // vendor's own order unless the visitor chose a sort.
+        $collection = ($filters['collection'] ?? '') !== '' && ($filters['vendor'] ?? '') !== ''
+            ? VendorCollection::query()->where('slug', (string) $filters['collection'])->where('is_active', true)->whereHas('vendor', fn ($v) => $v->where('slug', (string) $filters['vendor']))->first()
+            : null;
+        $picked = $collection?->isManual() ? $collection->products()->pluck('products.id')->map(fn ($id) => (int) $id)->all() : [];
 
         $query = self::forSale()
+            ->when(($filters['collection'] ?? '') !== '', fn ($query) => $collection === null ? $query->whereRaw('0 = 1') : $query->whereIn('id', $collection->forSaleQuery()->reorder()->select('id')))
             ->when(! $storefront, fn ($query) => $query->where('visibility', ProductVisibility::Shop->value))
             ->when($q !== '', fn ($query) => $query->where(fn ($w) => $w
                 ->where('title', 'like', '%'.$q.'%')
@@ -72,6 +80,10 @@ class ListShopProductsAction
             ->when(($filters['language'] ?? '') !== '', fn ($query) => $query->where('details->language', 'like', '%'.$filters['language'].'%'))
             ->when(($filters['age'] ?? '') !== '', fn ($query) => $query->where('details->age_range', 'like', '%'.$filters['age'].'%'))
             ->when(($filters['grade'] ?? '') !== '', fn ($query) => $query->where('details->grade', 'like', '%'.$filters['grade'].'%'));
+
+        if ($picked !== [] && ! isset($filters['sort'])) {
+            return $query->orderByRaw('field(id, '.implode(',', $picked).')');
+        }
 
         return match ($sort) {
             'price_asc' => $query->orderBy('price')->orderBy('id'),

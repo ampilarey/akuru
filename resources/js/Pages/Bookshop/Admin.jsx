@@ -60,7 +60,46 @@ function InviteCard({ invite, t, signInUrl }) {
     );
 }
 
-function VendorEditor({ vendor, t, onDone }) {
+/** B5 (plan §6.6): the office moderates a storefront — require changes, take it down, lift, lock section types. */
+function StorefrontModeration({ vendor, t, sectionTypes }) {
+    const sf = vendor.storefront || { exists: false, locked_types: [] };
+    const [note, setNote] = useState('');
+    const [locked, setLocked] = useState(sf.locked_types || []);
+    const act = (action, extra = {}) => router.post(`/admin/bookshop/vendors/${vendor.id}/storefront`, { action, note, locked_types: locked, ...extra }, { preserveScroll: true, onSuccess: () => setNote('') });
+
+    return (
+        <fieldset className="rounded border border-gray-300 p-3 text-sm md:col-span-3" data-testid={`moderation-${vendor.slug}`}>
+            <legend className="px-1 font-medium">{t.storefront_moderation}</legend>
+            <p className="mb-2 text-xs text-gray-600">
+                {sf.held_at ? <span className="font-semibold text-red-700" data-testid="moderation-state">{t.storefront_taken_down.replace(':date', sf.held_at)}</span>
+                    : sf.published_at ? <span data-testid="moderation-state">{t.storefront_published_on.replace(':date', sf.published_at)}</span>
+                        : <span data-testid="moderation-state">{t.not_published_yet_short}</span>}
+                {sf.draft_dirty && ` · ${t.draft_differs}`}
+                {sf.note && !sf.held_at && <span className="block text-amber-800">{t.changes_required} {sf.note}</span>}
+                {' · '}
+                <a href={`/shop/${vendor.slug}`} target="_blank" rel="noreferrer" className="text-blue-700 underline">{t.published_version}</a>
+                {' · '}
+                <a href={`/admin/bookshop/storefronts/${vendor.slug}/preview`} target="_blank" rel="noreferrer" className="text-blue-700 underline" data-testid="office-preview">{t.draft_version}</a>
+            </p>
+            <div className="flex flex-wrap items-end gap-2">
+                <label className="flex-1 text-sm">{t.moderation_note}<input className="form-input w-full" value={note} onChange={(e) => setNote(e.target.value)} data-testid="moderation-note-input" /></label>
+                <button type="button" className="btn-secondary" onClick={() => act('require_changes')} data-testid="require-changes">{t.require_changes}</button>
+                {sf.held_at
+                    ? <button type="button" className="btn-primary" onClick={() => act('lift')} data-testid="lift-hold">{t.lift_hold}</button>
+                    : <button type="button" className="rounded bg-red-700 px-3 py-2 text-white" onClick={() => act('hold')} data-testid="take-down">{t.take_down}</button>}
+            </div>
+            <div className="mt-2 flex flex-wrap items-center gap-2">
+                <span className="font-medium">{t.locked_types}:</span>
+                {sectionTypes.map((k) => (
+                    <label key={k} className="flex items-center gap-1"><input type="checkbox" checked={locked.includes(k)} onChange={(e) => setLocked(e.target.checked ? [...locked, k] : locked.filter((x) => x !== k))} data-testid={`lock-${k}`} /> {t[`section_${k}`] || k}</label>
+                ))}
+                <button type="button" className="btn-secondary text-xs" onClick={() => act('lock')} data-testid="save-locks">{t.save_locks}</button>
+            </div>
+        </fieldset>
+    );
+}
+
+function VendorEditor({ vendor, t, onDone, sectionTypes = [] }) {
     const form = useForm({
         name: vendor.name, tagline: vendor.tagline || '', legal_name: vendor.legal_name || '', tin: vendor.tin || '',
         gst_registered: Boolean(vendor.gst_registered), status: vendor.status, commission_rate: vendor.commission_rate || '',
@@ -106,6 +145,7 @@ function VendorEditor({ vendor, t, onDone }) {
             <label className="text-sm md:col-span-3">{t.address}<textarea className="form-input w-full" rows={2} value={form.data.address} onChange={set('address')} /></label>
             <label className="text-sm md:col-span-3">{t.opening_hours}<textarea className="form-input w-full" rows={2} value={form.data.opening_hours} onChange={set('opening_hours')} /></label>
             <label className="text-sm md:col-span-3">{t.office_notes}<textarea className="form-input w-full" rows={2} value={form.data.office_notes} onChange={set('office_notes')} /></label>
+            <StorefrontModeration vendor={vendor} t={t} sectionTypes={sectionTypes} />
             <FormErrors errors={form.errors} className="md:col-span-3" />
             <div className="flex gap-3 md:col-span-3">
                 <button type="submit" className="btn-primary" disabled={form.processing}>{t.save}</button>
@@ -115,7 +155,7 @@ function VendorEditor({ vendor, t, onDone }) {
     );
 }
 
-function VendorTable({ vendors, t }) {
+function VendorTable({ vendors, t, sectionTypes }) {
     const [editing, setEditing] = useState(null);
 
     if (vendors.length === 0) {
@@ -137,14 +177,14 @@ function VendorTable({ vendors, t }) {
             </thead>
             <tbody>
                 {vendors.map((v) => (
-                    <FragmentRow key={v.id} vendor={v} t={t} editing={editing === v.id} onEdit={() => setEditing(editing === v.id ? null : v.id)} onDone={() => setEditing(null)} />
+                    <FragmentRow key={v.id} vendor={v} t={t} sectionTypes={sectionTypes} editing={editing === v.id} onEdit={() => setEditing(editing === v.id ? null : v.id)} onDone={() => setEditing(null)} />
                 ))}
             </tbody>
         </table>
     );
 }
 
-function FragmentRow({ vendor: v, t, editing, onEdit, onDone }) {
+function FragmentRow({ vendor: v, t, sectionTypes, editing, onEdit, onDone }) {
     const owner = v.owners[0];
 
     return (
@@ -159,7 +199,7 @@ function FragmentRow({ vendor: v, t, editing, onEdit, onDone }) {
                 <td className="p-2 text-end"><button type="button" className="text-blue-700 underline" onClick={onEdit}>{t.edit}</button></td>
             </tr>
             {editing && (
-                <tr><td colSpan={7}><VendorEditor vendor={v} t={t} onDone={onDone} /></td></tr>
+                <tr><td colSpan={7}><VendorEditor vendor={v} t={t} onDone={onDone} sectionTypes={sectionTypes} /></td></tr>
             )}
         </>
     );
@@ -366,7 +406,7 @@ function Refunds({ refunds, t }) {
     );
 }
 
-export default function Admin({ t, vendors, catalogue, slips = [], orders = [], refunds = [], default_commission_rate, sign_in_url }) {
+export default function Admin({ t, vendors, catalogue, slips = [], orders = [], refunds = [], default_commission_rate, sign_in_url, section_types = [] }) {
     const { flash = {}, errors } = usePage().props;
 
     return (
@@ -384,7 +424,7 @@ export default function Admin({ t, vendors, catalogue, slips = [], orders = [], 
                 <h2 className="text-lg font-semibold">{t.vendors}</h2>
                 <a href="/admin/bookshop/vendors/export" className="btn-secondary" data-testid="export-vendors">{t.export_csv}</a>
             </div>
-            <VendorTable vendors={vendors} t={t} />
+            <VendorTable vendors={vendors} t={t} sectionTypes={section_types} />
 
             {!slips.some((s) => s.status === 'waiting') && <Slips slips={slips} t={t} />}
             {!refunds.some((r) => r.status === 'pending') && <Refunds refunds={refunds} t={t} />}

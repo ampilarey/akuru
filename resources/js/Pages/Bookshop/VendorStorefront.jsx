@@ -88,6 +88,8 @@ export default function VendorStorefront({ t, vendor, designer, preview_url, pub
                         {' · '}
                         <a href={public_url} target="_blank" rel="noreferrer" className="text-blue-700 underline" data-testid="open-public">{t.open_shop_page}</a>
                         {' · '}
+                        <a href="/vendor/storefront/sections" className="text-blue-700 underline" data-testid="open-sections">{t.sections_title}</a>
+                        {' · '}
                         {d.published_at ? t.published_on.replace(':date', d.published_at) : t.not_published_yet}
                     </p>
                 </div>

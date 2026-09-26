@@ -106,6 +106,12 @@ function unresolvedDetailScreens(): array
         // shop with an order under that checkout. BookshopFulfilmentTest loads
         // it as that shop (200) and as another shop (404).
         'vendor/slips/{slip}' => 'streams a private slip file; covered by BookshopFulfilmentTest (own shop 200, other shop 404)',
+        // Not screens of their own: both render the public vendor page from
+        // the storefront's draft, for a designer's or the office's iframe.
+        // StorefrontSectionsTest loads the page preview as its shop and the
+        // office preview as the office (200) and as a vendor (403).
+        'vendor/storefront/pages/{page}/preview' => 'the public vendor page from a draft; covered by StorefrontSectionsTest',
+        'admin/bookshop/storefronts/{vendor}/preview' => 'a slug, not a row; the public vendor page from a draft, for the office; covered by StorefrontSectionsTest',
         'teachers/{teacher}' => 'redirect to the React staff profile; covered by LegacyTeacherScreensRetiredTest',
         'announcements/{announcement}' => 'redirect to the portal noticeboard; covered by AnnouncementsAdminTest',
 

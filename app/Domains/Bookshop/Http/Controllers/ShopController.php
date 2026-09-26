@@ -67,6 +67,33 @@ class ShopController extends Controller
         ]);
     }
 
+    /** B5 (§6.4): a page under a vendor's storefront, published with it. */
+    public function vendorPage(string $vendor, string $page)
+    {
+        $shop = app(PresentShopVendorAction::class)->page($vendor, $page);
+        abort_if($shop === null, 404);
+
+        return view('public.shop.page', ['vendor' => $shop['vendor'], 'page' => $shop['page']]);
+    }
+
+    /** B5 (§5 "Collections"): a vendor's collection, in the vendor's order unless the visitor sorts. */
+    public function vendorCollection(Request $request, string $vendor, string $collection)
+    {
+        $shop = app(PresentShopVendorAction::class)->collection($vendor, $collection);
+        abort_if($shop === null, 404);
+        $filters = ['vendor' => $shop['vendor']['slug'], 'collection' => $shop['collection']['slug']] + $this->filters($request);
+
+        return view('public.shop.index', [
+            'home' => null,
+            'products' => app(ListShopProductsAction::class)->execute($filters, storefront: true),
+            'filters' => $filters,
+            'options' => $this->options(),
+            'vendor' => $shop['vendor'],
+            'heading' => $shop['collection']['name'],
+            'collection' => $shop['collection'],
+        ]);
+    }
+
     public function product(string $slug)
     {
         $product = app(PresentShopProductAction::class)->execute($slug);
@@ -102,6 +129,7 @@ class ShopController extends Controller
             'q' => 'nullable|string|max:100',
             'category' => 'nullable|string|max:80',
             'vendor' => 'nullable|string|max:80',
+            'collection' => 'nullable|string|max:80',
             'brand' => 'nullable|string|max:80',
             'price_min' => 'nullable|numeric|min:0',
             'price_max' => 'nullable|numeric|min:0',

@@ -56,6 +56,20 @@ class ListVendorsAction
                 'gst_registered' => $vendor->gst_registered,
                 'badges' => (array) ($vendor->badges ?? []),
                 'storefront_published_at' => $vendor->storefront?->published_at?->toDateTimeString(),
+                // B5 (§6.6): what the office moderates.
+                'storefront' => [
+                    'exists' => $vendor->storefront !== null,
+                    'published_at' => $vendor->storefront?->published_at?->toDateTimeString(),
+                    'live' => $vendor->storefront?->isLive() ?? false,
+                    'held_at' => $vendor->storefront?->held_at?->toDateTimeString(),
+                    'note' => $vendor->storefront?->moderation_note,
+                    'locked_types' => (array) ($vendor->storefront?->locked_section_types ?? []),
+                    'draft_dirty' => $vendor->storefront !== null && (
+                        $vendor->storefront->draft_theme !== $vendor->storefront->published_theme
+                        || $vendor->storefront->draft_identity !== $vendor->storefront->published_identity
+                        || ($vendor->storefront->draft_sections ?? []) !== ($vendor->storefront->published_sections ?? [])
+                    ),
+                ],
                 'commission_rate' => $vendor->commission_rate !== null ? (string) $vendor->commission_rate : null,
                 'effective_commission_rate' => number_format($vendor->commission_rate !== null ? (float) $vendor->commission_rate : $default, 2, '.', ''),
                 'contact_email' => $vendor->contact_email,

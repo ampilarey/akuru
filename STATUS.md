@@ -4414,6 +4414,131 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5hc. B5: the storefront designer, part 2 — sections, pages, collections, menu, SEO, moderation (2026-09-26)
+
+BOOKSHOP_PLAN slice B5, the owner's "B5". A vendor now arranges its whole
+page from sections, adds pages and collections under it, sets its own menu
+and search fields, and publishes; the office moderates (§6.3–§6.7, §5
+"Collections", §6.6). Also here from B4's "not in B4" list: story photos
+(the image gallery), per-vendor published caching, and the office taking a
+storefront down or locking a section type.
+
+**Sections as data** (`Support/SectionTypes`, §6.3). Fourteen types — hero
+(photos as a slideshow, headline, sub-headline, up to two buttons to a
+product, collection, page or the whole catalogue), announcement bar (with
+an end date and a link), featured products (hand-picked, grid or
+carousel), collection, category tiles (the shop's categories with counts
+and a photo each), new arrivals, best sellers (paid order lines of the
+last 90 days), text and image, image gallery, testimonials, FAQ, delivery
+and returns (the shop's methods, fees, free-over amounts and return window
+drawn from its settings, plus its own words), contact and map (an
+OpenStreetMap embed from a pair of coordinates), video (YouTube or Vimeo
+by URL; the embed is built here, never pasted). Each section carries
+visibility — shown, hidden, or scheduled between dates — text in three
+languages, and a phone order (CSS `order` on narrow screens, never a
+second copy of the markup). **Nothing typed reaches the page unchecked**:
+`SectionTypes::normalize` is the one place that decides what a setting may
+be — text trimmed and bounded, prose cleaned to the prose profile
+(`RichText::clean`, now shared with the story and product descriptions),
+images only from the shop's own **image library** (`vendor_storefront_images`,
+public media, 60 at most), products, collections and pages only the shop's
+own (a button to another shop's product is dropped), a video only from an
+allowed host, coordinates clamped, twenty sections at most. Custom HTML is
+not a type and never will be (§6.3's last row).
+
+**Pages** (§6.4, `/shop/<vendor>/p/<slug>`): up to ten, built from the
+same sections, with a title in three languages and their own SEO fields.
+The slug is fixed at creation. A page's draft goes public with the
+storefront's next publish; an unpublished page is a 404. **Collections**
+(§5, `/shop/<vendor>/<slug>`): up to twenty, hand-picked in an order or by
+rule (any of some tags, a category, or both); shown by the Collection
+section, listed by the same catalogue listing (the `collection` filter, so
+the CSV export works too), in the vendor's order unless the visitor sorts.
+A few words the shop's address already uses cannot be a collection slug.
+**Menu** (§6.4): up to eight entries inside the storefront — the whole
+catalogue, a collection or a page, never a bare URL — with the current
+entry marked; an entry whose target is gone or unpublished disappears.
+**SEO** (§6.7): title, description and share image per storefront and per
+page; pages and active collections join the sitemap; every product page
+carries Product structured data (name, price, availability, photos, the
+shop as seller) from the same card the page shows.
+
+**The designer** (`/vendor/storefront/sections`, Inertia; *Sections and
+pages* on the portal home and from part 1). Five tabs — home sections,
+menu and SEO, pages, collections, images — beside the real public page
+rendered from the draft in an iframe (a page's own preview when one is
+being edited). Sections are a list with up / down, a visibility select
+with dates, a phone-order box, and a settings form per type driven by the
+schema (§6.3's form-based method; drag-to-order stays B7). The owner
+publishes from here too. Hidden and out-of-schedule sections show in the
+preview with a dashed outline and a note; an empty section (no products,
+no photos, no video) is left out of the public page — an empty shelf is
+not a shop window.
+
+**Publishing** (`PublishStorefrontAction`): a version now snapshots the
+sections, menu, SEO and every page's sections; rolling back restores them
+all, pages included. **Cache** (§10): the published storefront and each
+published page are cached per vendor and language for ten minutes,
+cleared on publish, roll-back and every moderation step; drafts are never
+cached.
+
+**Moderation** (§6.6, on the office's vendor editor): **require changes**
+(a note the designer shows until the next publish), **take down** (the
+public sees the plain B1b page at once, publishing and roll-back are
+refused, the office's own preview still shows the draft), **lift**, and
+**locked section types** per shop (refused on save and on publish, named
+in the designer). The office sees whether the storefront is live, held,
+or has a draft that differs, with links to the published and draft
+versions.
+
+**Data** (one additive migration; the three new models aliased, ADR-005):
+`vendor_storefronts` gains draft and published `sections`, `navigation`,
+`seo`, and `held_at`/`held_by`/`moderation_note`/`locked_section_types`;
+`vendor_storefront_versions` gains `sections`, `navigation`, `seo`,
+`pages`; new `vendor_pages`, `vendor_collections`,
+`vendor_collection_products`, `vendor_storefront_images`.
+
+**Baselines**: `blade_screens` 236 → 239 (the sections and menu partials
+of the public vendor page, and the vendor page view); `public_routes`
+declares the two new public GETs; `raw_html_renders` declares the rich
+section body (cleaned on every save) and re-attributes the story to
+`RichText::clean`; `DetailScreensDoNotCrashTest` declares the two draft
+previews as covered by `StorefrontSectionsTest`.
+
+**Tests**: `StorefrontSectionsTest` (6): normalisation to the schema (own
+images and products only, a stranger's dropped; allowed videos; bounded
+text; cleaned prose; clamped coordinates; too many or unknown sections
+refused); the public page rendering the published sections in English and
+Dhivehi with hidden and expired ones left out, the preview keeping them,
+best sellers appearing after a paid order, and Product JSON-LD; pages
+publishing with the storefront, served with their SEO and menu, the
+sitemap, deletion; collections by hand and by rule, the public listing in
+the vendor's order with CSV, the section and menu entry, an inactive one
+gone; the office's four moderation steps with the vendor's designer
+reading each; roll-back of sections, menu and pages, and the cache
+holding until a publish clears it. Full suite **2236 passed**.
+
+**Walked** (`scripts/smoke/sections.mjs`, **22/22**, no console or server
+errors): Fitrah's owner opens *Sections and pages* from the portal,
+uploads two photos, arranges a hero (photo, button to the tracing book),
+featured products, an FAQ and a video, saves and sees them in the
+preview; sets the menu and SEO title; adds an *About us* page with a text
+section (its own preview); makes a *Starter kit* collection of two
+products and a Collection section on it; publishes, and a guest sees the
+hero and its button, the menu, the SEO title, the picks, the FAQ, the
+video embed and the collection, the About page at `/p/about-us`, the
+collection at `/starter-kit` with exactly its two products, and the
+product page's structured data. The office takes the storefront down (the
+guest sees the plain page, the designer says so with Publish held), lifts
+it (back at once), and locks Video for Fitrah (the designer names it and
+refuses a draft that still has one). `storefront.mjs` **15/15**,
+`vendor.mjs` **25/25**, `shop.mjs` **24/24**. Staging: the seeder clears
+Fitrah's pages, collections and image library each run.
+
+**Production**: the migration only. Map and video embeds load from
+OpenStreetMap, YouTube (no-cookie) and Vimeo in the customer's browser;
+nothing on the host changes.
+
 ## 5hb. B4: the storefront designer, part 1 — identity and theme (2026-09-26)
 
 BOOKSHOP_PLAN slice B4, the owner's "B4". A vendor's page can now look

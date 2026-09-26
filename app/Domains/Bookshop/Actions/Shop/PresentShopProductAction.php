@@ -64,7 +64,44 @@ class PresentShopProductAction
                     'in_stock' => ! $product->track_stock || $v->stock > 0,
                 ])->values()->all(),
             'related' => $this->related($product),
-        ];
+        ] + ['json_ld' => $this->jsonLd($product)];
+    }
+
+    /**
+     * Structured data for search engines (BOOKSHOP_PLAN §6.7): name, price,
+     * availability, photos, the shop as seller. Built from the same card
+     * the page shows, so they never disagree.
+     *
+     * @return array<string, mixed>
+     */
+    private function jsonLd(Product $product): array
+    {
+        $card = ShopPresenter::card($product);
+        $availability = match ($card['stock']['state']) {
+            'out_of_stock' => 'https://schema.org/OutOfStock',
+            'made_to_order' => 'https://schema.org/PreOrder',
+            default => 'https://schema.org/InStock',
+        };
+        $images = $product->images->map(fn (ProductImage $i) => app(ResolvePublicImageVariantAction::class)->execute((int) $i->media_file_id, ShopPresenter::LARGE_WIDTH))->filter()->values()->all();
+
+        return array_filter([
+            '@context' => 'https://schema.org',
+            '@type' => 'Product',
+            'name' => $card['title'],
+            'description' => $card['summary'] ?: \Illuminate\Support\Str::limit(trim(strip_tags((string) ShopPresenter::localized($product, 'description'))), 300, ''),
+            'image' => $images,
+            'sku' => $product->sku,
+            'gtin13' => is_string($product->barcode) && preg_match('/^\d{13}$/', $product->barcode) ? $product->barcode : null,
+            'brand' => $product->brand !== null ? ['@type' => 'Brand', 'name' => $product->brand->name] : null,
+            'offers' => [
+                '@type' => 'Offer',
+                'url' => route('public.shop.product', $product->slug),
+                'priceCurrency' => $card['currency'],
+                'price' => $card['price'],
+                'availability' => $availability,
+                'seller' => ['@type' => 'Organization', 'name' => $card['vendor']['name']],
+            ],
+        ], fn ($v) => $v !== null && $v !== '' && $v !== []);
     }
 
     /**

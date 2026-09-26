@@ -9,9 +9,13 @@ use App\Domains\Bookshop\Actions\ListCatalogueOptionsAction;
 use App\Domains\Bookshop\Actions\ListOrdersAction;
 use App\Domains\Bookshop\Actions\ListPendingRefundsAction;
 use App\Domains\Bookshop\Actions\ListVendorsAction;
+use App\Domains\Bookshop\Actions\ModerateStorefrontAction;
 use App\Domains\Bookshop\Actions\Orders\RefundOrderAction;
 use App\Domains\Bookshop\Actions\SaveCatalogueTermAction;
+use App\Domains\Bookshop\Actions\Shop\ListShopProductsAction;
+use App\Domains\Bookshop\Actions\Shop\PresentShopVendorAction;
 use App\Domains\Bookshop\Actions\UpdateVendorAction;
+use App\Domains\Bookshop\Support\SectionTypes;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
 use Illuminate\Http\RedirectResponse;
@@ -41,6 +45,7 @@ class AdminBookshopController extends Controller
             'default_commission_rate' => number_format((float) config('bookshop.default_commission_rate'), 2, '.', ''),
             'agreement_url' => route('public.page.show', 'vendor-agreement'),
             'sign_in_url' => route('login'),
+            'section_types' => array_keys(SectionTypes::TYPES),
         ]);
     }
 
@@ -152,6 +157,40 @@ class AdminBookshopController extends Controller
         app(RefundOrderAction::class)->process($refund, $data['destination'], (int) $request->user()->id, $data['note'] ?? null);
 
         return back()->with('success', __('shop.refund_recorded_flash'));
+    }
+
+    /** B5 (§6.6): the office requires changes, takes a storefront down, lifts the hold, or locks section types. */
+    public function moderateStorefront(Request $request, int $vendor): RedirectResponse
+    {
+        abort_unless($request->user()?->can('bookshop.manage'), 403);
+        $data = $request->validate([
+            'action' => 'required|string|in:'.implode(',', ModerateStorefrontAction::ACTIONS),
+            'note' => 'nullable|string|max:1000',
+            'locked_types' => 'nullable|array',
+            'locked_types.*' => 'string|in:'.implode(',', array_keys(SectionTypes::TYPES)),
+        ]);
+
+        app(ModerateStorefrontAction::class)->execute($vendor, $data['action'], (int) $request->user()->id, $data['note'] ?? null, (array) ($data['locked_types'] ?? []));
+
+        return back()->with('success', __('shop.moderation_'.$data['action'].'_flash'));
+    }
+
+    /** B5 (§6.6 "it sees the published and draft versions"): the draft, on the real renderer. */
+    public function previewStorefront(Request $request, string $vendor)
+    {
+        abort_unless($request->user()?->can('bookshop.manage'), 403);
+        $shop = app(PresentShopVendorAction::class)->execute($vendor, draft: true);
+        abort_if($shop === null, 404);
+
+        return view('public.shop.index', [
+            'home' => null,
+            'products' => app(ListShopProductsAction::class)->execute(['vendor' => $vendor], storefront: true),
+            'filters' => ['vendor' => $vendor],
+            'options' => ['categories' => [], 'brands' => [], 'sorts' => ListShopProductsAction::SORTS],
+            'vendor' => $shop,
+            'heading' => $shop['name'],
+            'preview' => true,
+        ]);
     }
 
     /** Every listing gets a CSV (conventions): the refunds. */
