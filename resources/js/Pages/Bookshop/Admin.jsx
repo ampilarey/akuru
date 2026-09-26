@@ -587,6 +587,48 @@ function Applications({ applications, open, t }) {
     );
 }
 
+/** B10b: the Bookstore admins — they run this screen and nothing else of the school system. */
+function Team({ team, t }) {
+    const form = useForm({ email: '', name: '', phone: '' });
+
+    return (
+        <section className="mt-8" data-testid="office-team">
+            <h2 className="mb-1 text-lg font-semibold">{t.team_heading}</h2>
+            <p className="mb-2 text-sm text-gray-600">{t.team_intro}</p>
+            {team.added && (
+                <p className="mb-2 rounded bg-amber-50 p-2 text-sm text-amber-900" data-testid="team-password">
+                    {t.team_new_account.replace(':email', team.added.email)} <span className="font-mono font-semibold" dir="ltr">{team.added.password}</span>
+                </p>
+            )}
+            {team.members.length === 0 ? (
+                <p className="mb-2 rounded border bg-white p-3 text-sm text-gray-600">{t.team_none}</p>
+            ) : (
+                <ul className="mb-2 divide-y rounded border bg-white text-sm">
+                    {team.members.map((m) => (
+                        <li key={m.id} className="flex flex-wrap items-center justify-between gap-2 p-2" data-testid={`team-${m.email}`}>
+                            <span>{m.name} <span className="text-gray-500" dir="ltr">{m.email}</span>{m.last_login_at && <span className="ms-2 text-xs text-gray-500">{t.team_last_seen.replace(':date', m.last_login_at)}</span>}</span>
+                            {team.can_manage && (
+                                <button type="button" className="text-sm text-red-700 underline" onClick={() => { if (window.confirm(t.team_remove_confirm.replace(':name', m.name))) router.post(`/admin/bookshop/team/${m.id}/remove`, {}, { preserveScroll: true }); }} data-testid={`team-remove-${m.id}`}>{t.team_remove}</button>
+                            )}
+                        </li>
+                    ))}
+                </ul>
+            )}
+            {team.can_manage ? (
+                <form className="flex flex-wrap items-end gap-2 rounded border bg-white p-3 text-sm" onSubmit={(e) => { e.preventDefault(); form.post('/admin/bookshop/team', { preserveScroll: true, onSuccess: () => form.reset() }); }}>
+                    <label>{t.team_email}<input className="form-input block w-64" type="email" required dir="ltr" value={form.data.email} onChange={(e) => form.setData('email', e.target.value)} data-testid="team-email" /></label>
+                    <label>{t.team_name}<input className="form-input block w-48" value={form.data.name} onChange={(e) => form.setData('name', e.target.value)} data-testid="team-name" /></label>
+                    <label>{t.team_phone}<input className="form-input block w-36" dir="ltr" value={form.data.phone} onChange={(e) => form.setData('phone', e.target.value)} /></label>
+                    <button type="submit" className="btn-primary" disabled={form.processing} data-testid="team-add">{t.team_add}</button>
+                    <FormErrors errors={form.errors} className="w-full" />
+                </form>
+            ) : (
+                <p className="text-xs text-gray-500">{t.team_admins_only}</p>
+            )}
+        </section>
+    );
+}
+
 /** B9f (§2): shops' own domains — checked, then turned on; and the whole-shop subdomain. */
 function Hosts({ hosts, t }) {
     const check = hosts.check;
@@ -852,7 +894,7 @@ function ShopHome({ home, t }) {
     );
 }
 
-export default function Admin({ t, vendors, catalogue, slips = [], orders = [], refunds = [], money = null, reviews = [], home = null, low_stock = [], notices = null, order_statuses = [], applications = [], applications_open = true, quotes = null, insights = null, hosts = null, cod_on = true, default_commission_rate, sign_in_url, section_types = [] }) {
+export default function Admin({ t, vendors, catalogue, slips = [], orders = [], refunds = [], money = null, reviews = [], home = null, low_stock = [], notices = null, order_statuses = [], applications = [], applications_open = true, quotes = null, insights = null, hosts = null, team = null, cod_on = true, default_commission_rate, sign_in_url, section_types = [] }) {
     const { flash = {}, errors } = usePage().props;
 
     return (
@@ -881,6 +923,7 @@ export default function Admin({ t, vendors, catalogue, slips = [], orders = [], 
             {quotes && <Quotes quotes={quotes} t={t} />}
             {insights && <Funnels insights={insights} t={t} />}
             {hosts && <Hosts hosts={hosts} t={t} />}
+            {team && <Team team={team} t={t} />}
             <Orders orders={orders} vendors={vendors} statuses={order_statuses} t={t} />
             <LowStockAll rows={low_stock} t={t} />
             <Reviews reviews={reviews} t={t} />

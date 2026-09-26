@@ -1919,6 +1919,13 @@ class SmokeMarkerSeeder extends Seeder
         // B9f (`hosts.mjs`): Fitrah asks for its own domain and the office
         // turns it on; the domain goes back.
         DB::table('vendors')->whereIn('id', [$fitrahId, $otherId])->update(['custom_host' => null, 'custom_host_status' => null, 'custom_host_requested_at' => null, 'custom_host_approved_at' => null]);
+        // B10b (`team.mjs`): the admin makes the parent a Bookstore admin and
+        // removes them again; the role goes.
+        $managerRole = DB::table('roles')->where('name', 'bookshop_manager')->value('id');
+        if ($managerRole !== null && $applicant !== null) {
+            DB::table('model_has_roles')->where('role_id', $managerRole)->where('model_id', $applicant)->delete();
+            app(\Spatie\Permission\PermissionRegistrar::class)->forgetCachedPermissions();
+        }
         // B10a: dollar prices were removed; their two settings go.
         DB::table('settings')->whereIn('key', ['bookshop_usd_display', 'bookshop_usd_rate'])->delete();
         \Illuminate\Support\Facades\Cache::forget('bookshop_host:www.smoke-fitrah.test');

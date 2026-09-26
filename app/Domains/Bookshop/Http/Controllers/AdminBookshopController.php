@@ -16,6 +16,7 @@ use App\Domains\Bookshop\Actions\ListPendingRefundsAction;
 use App\Domains\Bookshop\Actions\ListQuotesAction;
 use App\Domains\Bookshop\Actions\ListVendorMoneyReportAction;
 use App\Domains\Bookshop\Actions\ListVendorsAction;
+use App\Domains\Bookshop\Actions\ManageBookshopTeamAction;
 use App\Domains\Bookshop\Actions\ManageShopHomeAction;
 use App\Domains\Bookshop\Actions\ModerateReviewAction;
 use App\Domains\Bookshop\Actions\ModerateStorefrontAction;
@@ -67,6 +68,7 @@ class AdminBookshopController extends Controller
             'applications' => app(DecideVendorApplicationAction::class)->list(),
             'applications_open' => app(ApplyToSellAction::class)->isOpen(),
             'quotes' => app(ListQuotesAction::class)->summary(),
+            'team' => ['members' => app(ManageBookshopTeamAction::class)->list(), 'can_manage' => (bool) $request->user()?->hasAnyRole(['super_admin', 'admin']), 'added' => $request->session()->get('team_added')],
             'hosts' => ['shops' => app(DecideVendorHostAction::class)->list(), 'shop_host' => config('bookshop.hosts.shop_host'), 'check' => $request->session()->get('host_check')],
             'insights' => ['days' => InsightsReport::days((int) $request->query('insight_days', 30)), 'shops' => InsightsReport::byShop((int) $request->query('insight_days', 30)), 'ranges' => array_map('intval', (array) config('bookshop.insights.ranges'))],
             'cod_on' => app(CashOnDeliveryAction::class)->isOn(),
@@ -458,6 +460,26 @@ class AdminBookshopController extends Controller
             }
             fclose($out);
         }, 'bookstore-shop-applications.csv', ['Content-Type' => 'text/csv; charset=UTF-8']);
+    }
+
+    /** B10b: a Bookstore admin, by email — an existing account, or a new one with a one-time password. Full admins only. */
+    public function addTeamMember(Request $request): RedirectResponse
+    {
+        abort_unless($request->user()?->hasAnyRole(['super_admin', 'admin']), 403);
+        $data = $request->validate(['email' => 'required|email|max:255', 'name' => 'nullable|string|max:120', 'phone' => 'nullable|string|max:30']);
+
+        $added = app(ManageBookshopTeamAction::class)->add($data['email'], $data['name'] ?? null, $data['phone'] ?? null);
+
+        return back()->with('success', __('shop.team_added_flash', ['name' => $added['name']]))->with('team_added', $added['created'] ? ['email' => strtolower($data['email']), 'password' => $added['temporary_password']] : null);
+    }
+
+    /** B10b: no longer a Bookstore admin (their account stays). Full admins only. */
+    public function removeTeamMember(Request $request, int $user): RedirectResponse
+    {
+        abort_unless($request->user()?->hasAnyRole(['super_admin', 'admin']), 403);
+        app(ManageBookshopTeamAction::class)->remove($user, (int) $request->user()->id);
+
+        return back()->with('success', __('shop.team_removed_flash'));
     }
 
     /** B9f: what a shop's requested domain points at now. */

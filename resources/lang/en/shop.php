@@ -1402,4 +1402,22 @@ return [
     'host_no_records' => 'no records found',
     'host_approved_flash' => 'Domain turned on.',
     'host_off_flash' => 'Domain turned off.',
+
+    // B10b — Bookstore admins.
+    'team_heading' => 'Bookstore admins',
+    'team_intro' => 'People who run this screen — shops, orders, payouts and the shop itself — without being admins of the school system.',
+    'team_none' => 'No Bookstore admins yet. Full admins can always use this screen.',
+    'team_email' => 'Email',
+    'team_name' => 'Name (for a new account)',
+    'team_phone' => 'Phone (optional)',
+    'team_add' => 'Add',
+    'team_remove' => 'Remove',
+    'team_remove_confirm' => 'Stop :name being a Bookstore admin? Their account stays.',
+    'team_last_seen' => 'last signed in :date',
+    'team_admins_only' => 'Only full admins add or remove Bookstore admins.',
+    'team_new_account' => 'A new account was made for :email. Give them this one-time password by hand — it is shown once, and they choose their own at first sign-in:',
+    'team_added_flash' => ':name is now a Bookstore admin.',
+    'team_removed_flash' => 'No longer a Bookstore admin.',
+    'error_team_name_needed' => 'There is no account with that email — give a name to make one.',
+    'error_team_self' => 'You cannot remove yourself.',
 ];

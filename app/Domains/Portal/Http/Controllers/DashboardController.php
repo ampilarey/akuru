@@ -37,6 +37,7 @@ class DashboardController extends Controller
             'supervisor' => $this->supervisorDashboard(),
             'registers' => $this->teacherDashboard(),
             'portal_home' => redirect()->route('portal.home'),
+            'bookshop' => redirect()->route('admin.bookshop.index'),
             // Public users (registered via OTP for course enrollment)
             default => $this->publicUserDashboard(),
         };

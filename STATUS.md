@@ -4414,6 +4414,50 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5hn. B10b: Bookstore admins (2026-09-26)
+
+The owner: "need admin for bookshops". A **Bookstore admin**
+(`bookshop_manager`, holding the office's `bookshop.manage` since B1a)
+runs `/admin/bookshop` — shops, applications, orders, slips, refunds,
+payouts, reviews, quotes, insights, domains, the home page — **without
+being an admin of the school system**: the school's admin pages stay
+closed to them. Signing in lands them on `/admin/bookshop`, with
+"Bookstore" and "Shop" in their menu.
+
+**Who makes them.** A new **Bookstore admins** section on
+`/admin/bookshop` lists them (with when each last signed in); **full
+admins** add one by email — an existing account gets the role, otherwise
+an account is made with a one-time password shown once, to hand over,
+changed at first sign-in (the B1a vendor-owner precedent) — and remove
+them (the account stays; no one removes themselves). Bookstore admins see
+the list but cannot change it. From the server:
+`php artisan bookshop:grant-manager someone@example.mv` (or `--revoke`),
+for an account that already exists; no password is made or printed.
+
+**Data** (`2026_09_26_000016_b10b_bookshop_manager_role`): the role, with
+`bookshop.manage`. The office route group now admits
+`super_admin|admin|bookshop_manager` (still gated by `bookshop.manage`).
+`ResolveDashboardLandingAction` gains a `bookshop` landing below teacher
+(a teacher who also runs the Bookstore still lands on their registers).
+
+**Tests**: `BookshopManagersTest` (3): the role runs the screen, lands
+there, is kept out of `/admin/operations`, can use the screen's writes
+but not the team; a user with no role kept out; a full admin adds an
+existing account (no password) and a new one (a 12-character one-time
+password, change forced), sees both, removes one, who is then kept out;
+the command refuses an unknown email, grants and revokes. Full suite
+**2282 passed**.
+
+**Walked** (`scripts/smoke/team.mjs`, **8/8**, no console or server
+errors): the admin adds the parent as a Bookstore admin (no password for
+an existing account); the parent signs in and lands on `/admin/bookshop`,
+sees the team without add or remove, has "Bookstore" in the menu, and
+gets 403 on `/admin/operations`; the admin removes them; the screen is
+403 to them again.
+
+**Production**: the migration. Then add Bookstore admins from
+`/admin/bookshop` (as a full admin) or with the command.
+
 ## 5hm. B10a: dollar prices removed (2026-09-26)
 
 The owner, on seeing B9f: **no dollar prices** ("No need $"). B9f's

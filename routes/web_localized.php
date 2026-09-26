@@ -761,7 +761,9 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
 
     // BOOKSHOP_PLAN B1a: the office invites vendors and keeps the shared
     // catalogue taxonomy.
-    Route::prefix('admin/bookshop')->middleware(['role:super_admin|admin', 'can:bookshop.manage'])->group(function () {
+    // B10b: a Bookstore admin (`bookshop_manager`) runs this screen without
+    // being a full admin.
+    Route::prefix('admin/bookshop')->middleware(['role:super_admin|admin|bookshop_manager', 'can:bookshop.manage'])->group(function () {
         Route::get('/', [\App\Domains\Bookshop\Http\Controllers\AdminBookshopController::class, 'index'])->name('admin.bookshop.index');
         Route::get('vendors/export', [\App\Domains\Bookshop\Http\Controllers\AdminBookshopController::class, 'exportVendors'])->name('admin.bookshop.vendors.export');
         Route::post('vendors', [\App\Domains\Bookshop\Http\Controllers\AdminBookshopController::class, 'storeVendor'])->name('admin.bookshop.vendors.store');
@@ -781,6 +783,9 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         // B9b: cash on delivery.
         Route::post('cod', [\App\Domains\Bookshop\Http\Controllers\AdminBookshopController::class, 'setCod'])->name('admin.bookshop.cod');
         Route::get('applications/export', [\App\Domains\Bookshop\Http\Controllers\AdminBookshopController::class, 'exportApplications'])->name('admin.bookshop.applications.export');
+        // B10b: the Bookstore admins — full admins add and remove them.
+        Route::post('team', [\App\Domains\Bookshop\Http\Controllers\AdminBookshopController::class, 'addTeamMember'])->name('admin.bookshop.team.store');
+        Route::post('team/{user}/remove', [\App\Domains\Bookshop\Http\Controllers\AdminBookshopController::class, 'removeTeamMember'])->name('admin.bookshop.team.remove')->whereNumber('user');
         // B9f: shops' own domains.
         Route::post('hosts/{vendor}/check', [\App\Domains\Bookshop\Http\Controllers\AdminBookshopController::class, 'checkHost'])->name('admin.bookshop.hosts.check')->whereNumber('vendor');
         Route::post('hosts/{vendor}', [\App\Domains\Bookshop\Http\Controllers\AdminBookshopController::class, 'decideHost'])->name('admin.bookshop.hosts.decide')->whereNumber('vendor');

@@ -23,7 +23,7 @@ namespace App\Domains\Portal\Actions;
 class ResolveDashboardLandingAction
 {
     /** Landings that mean "you are here to run the school". */
-    private const STAFF_KINDS = ['super_admin', 'overview', 'supervisor', 'registers'];
+    private const STAFF_KINDS = ['super_admin', 'overview', 'supervisor', 'registers', 'bookshop'];
 
     /** @var list<string> */
     private const FAMILY_ROLES = ['student', 'parent'];
@@ -54,6 +54,8 @@ class ResolveDashboardLandingAction
             $has('admin', 'headmaster') => 'overview',
             $has('supervisor') => 'supervisor',
             $has('teacher') => 'registers',
+            // B10b: a Bookstore admin's job is the Bookstore office screen.
+            $has('bookshop_manager') => 'bookshop',
             $has('student', 'parent') => 'portal_home',
             default => 'public',
         };
