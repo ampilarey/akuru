@@ -163,6 +163,8 @@ class VendorPortalController extends Controller
             'holiday_until' => 'nullable|date',
             'holiday_notice' => 'nullable|string|max:255',
             'free_delivery_over' => 'nullable|numeric|min:0|max:1000000',
+            'cod_enabled' => 'nullable|boolean',
+            'cod_max' => 'nullable|numeric|min:0|max:1000000',
         ]);
 
         app(SaveVendorShopSettingsAction::class)->save($scope, $data);

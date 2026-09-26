@@ -129,6 +129,8 @@ class ListVendorOrdersAction
             'currency' => $order->currency,
             'notes' => $order->notes,
             'payment_method' => $order->checkout->payment_method->value,
+            // B9b: the shop takes the cash when it hands the order over.
+            'awaiting_cash' => $order->paid_at === null && $order->checkout->payment_method === \App\Domains\Bookshop\Enums\CheckoutPaymentMethod::CashOnDelivery,
             'carrier' => $order->carrier,
             'tracking_note' => $order->tracking_note,
             'cancel_reason' => $order->cancel_reason,

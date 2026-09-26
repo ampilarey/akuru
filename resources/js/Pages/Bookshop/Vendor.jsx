@@ -357,6 +357,8 @@ function ShopSettings({ settings, isOwner, t }) {
         holiday_until: settings.holiday_until || '',
         holiday_notice: settings.holiday_notice || '',
         free_delivery_over: settings.free_delivery_over || '',
+        cod_enabled: !!settings.cod_enabled,
+        cod_max: settings.cod_max || '',
     });
     const set = (name) => (e) => form.setData(name, e.target.value);
 
@@ -381,6 +383,11 @@ function ShopSettings({ settings, isOwner, t }) {
                 <Field label={t.holiday_until}><input className="form-input w-full" type="date" value={form.data.holiday_until} onChange={set('holiday_until')} disabled={!isOwner} data-testid="holiday-until" /></Field>
                 <Field label={t.holiday_notice} hint={t.holiday_hint}><input className="form-input w-full" value={form.data.holiday_notice} onChange={set('holiday_notice')} disabled={!isOwner} data-testid="holiday-notice" /></Field>
                 <Field label={t.free_delivery_over} hint={t.free_delivery_over_hint}><input className="form-input w-full" type="number" min="0" step="1" value={form.data.free_delivery_over} onChange={set('free_delivery_over')} disabled={!isOwner} data-testid="free-delivery-over" /></Field>
+                {/* B9b: cash on delivery — the shop's own collection and couriers only; the office can switch it off for everyone. */}
+                <Field label={t.cod_label} hint={settings.cod_office_on ? t.cod_hint : t.cod_office_off}>
+                    <label className="flex items-center gap-2"><input type="checkbox" checked={form.data.cod_enabled} onChange={(e) => form.setData('cod_enabled', e.target.checked)} disabled={!isOwner || !settings.cod_office_on} data-testid="cod-enabled" /> {t.cod_take_cash}</label>
+                </Field>
+                <Field label={t.cod_max} hint={t.cod_max_hint}><input className="form-input w-full" type="number" min="0" step="1" value={form.data.cod_max} onChange={set('cod_max')} disabled={!isOwner || !form.data.cod_enabled} data-testid="cod-max" /></Field>
                 <FormErrors errors={form.errors} className="md:col-span-3" />
                 {isOwner && <div className="md:col-span-3"><button type="submit" className="btn-primary" disabled={form.processing} data-testid="save-settings">{t.save}</button></div>}
             </form>

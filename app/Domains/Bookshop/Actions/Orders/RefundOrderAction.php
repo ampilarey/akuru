@@ -40,6 +40,10 @@ class RefundOrderAction
         if ($amount <= 0 || $paidWith === CheckoutPaymentMethod::None) {
             return null;
         }
+        // B9b: a cash order not yet handed over has taken no money — nothing goes back.
+        if ($paidWith === CheckoutPaymentMethod::CashOnDelivery && $order->paid_at === null) {
+            return null;
+        }
 
         $refund = DB::transaction(function () use ($order, $amount, $reason, $byUserId, $returnId, $paidWith) {
             Order::query()->whereKey($order->id)->lockForUpdate()->first();
@@ -63,7 +67,8 @@ class RefundOrderAction
             // B6: the vendor's earning reverses in proportion, the moment the money is owed back.
             app(ReverseVendorEarningAction::class)->execute($order, $amount);
 
-            if ($paidWith === CheckoutPaymentMethod::Wallet) {
+            // B9b: cash went to the shop; Akuru refunds to the wallet at once and the shop's earning owes it back.
+            if ($paidWith === CheckoutPaymentMethod::Wallet || $paidWith === CheckoutPaymentMethod::CashOnDelivery) {
                 app(CreditWalletAction::class)->execute((int) $order->user_id, $amount, 'bookshop_refund', $refund->id, 'Refund: Akuru Bookstore '.$order->number);
                 $refund->update(['status' => RefundStatus::Done->value, 'destination' => 'wallet', 'processed_by' => $byUserId, 'processed_at' => now()]);
             } elseif ($paidWith === CheckoutPaymentMethod::BankTransfer) {

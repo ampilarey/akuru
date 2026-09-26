@@ -53,8 +53,10 @@ class ReverseVendorEarningAction
         $delivery = round((float) $earning->delivery_fee * $keep, 2);
         $earning->commission = $commission;
         $earning->commission_tax = $tax;
-        $earning->net = $fraction >= 1 ? 0 : round((float) $earning->commission_base * $keep + $delivery - $commission - $tax, 2);
-        if ($fraction >= 1) {
+        // B9b: cash the shop took at the door stays with it, so it is owed back whatever is refunded.
+        $cash = round((float) $earning->cash_collected, 2);
+        $earning->net = round(($fraction >= 1 ? 0 : (float) $earning->commission_base * $keep + $delivery - $commission - $tax) - $cash, 2);
+        if ($fraction >= 1 && $cash <= 0) {
             $earning->status = EarningStatus::Reversed;
         }
         $earning->save();

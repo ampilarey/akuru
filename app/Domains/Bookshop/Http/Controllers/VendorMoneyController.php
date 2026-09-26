@@ -78,9 +78,9 @@ class VendorMoneyController extends Controller
 
         return response()->streamDownload(function () use ($rows): void {
             $out = fopen('php://output', 'w');
-            Csv::put($out, ['order', 'paid_at', 'delivered_at', 'available_at', 'goods', 'discount', 'discount_funding', 'delivery_fee', 'commission_rate', 'commission', 'commission_tax', 'refunded', 'net', 'paid_amount', 'balance', 'status']);
+            Csv::put($out, ['order', 'paid_at', 'delivered_at', 'available_at', 'goods', 'discount', 'discount_funding', 'delivery_fee', 'commission_rate', 'commission', 'commission_tax', 'refunded', 'cash_collected', 'net', 'paid_amount', 'balance', 'status']);
             foreach ($rows as $r) {
-                Csv::put($out, [$r['order_number'], $r['paid_at'], $r['delivered_at'], $r['available_at'], $r['gross'], $r['discount'], $r['discount_funding'], $r['delivery_fee'], $r['commission_rate'], $r['commission'], $r['commission_tax'], $r['refunded'], $r['net'], $r['paid_amount'], $r['balance'], $r['status']]);
+                Csv::put($out, [$r['order_number'], $r['paid_at'], $r['delivered_at'], $r['available_at'], $r['gross'], $r['discount'], $r['discount_funding'], $r['delivery_fee'], $r['commission_rate'], $r['commission'], $r['commission_tax'], $r['refunded'], $r['cash_collected'], $r['net'], $r['paid_amount'], $r['balance'], $r['status']]);
             }
             fclose($out);
         }, $scope->vendorSlug.'-earnings.csv', ['Content-Type' => 'text/csv']);

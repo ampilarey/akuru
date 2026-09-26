@@ -132,6 +132,17 @@ class StartBookshopCheckoutAction
 
             $total = round($subtotal - $discount + $deliveryTotal, 2);
             $effective = $total <= 0 ? CheckoutPaymentMethod::None : $method;
+            // B9b: cash on delivery — every shop in the basket must take it, for this delivery and this amount.
+            if ($effective === CheckoutPaymentMethod::CashOnDelivery) {
+                foreach ($byVendor as $vendorId => $vendorLines) {
+                    $vendor = $vendorLines->first()['product']->vendor;
+                    $orderTotal = round($vendorLines->sum('total') - ($shares[$vendorId] ?? 0.0) + (float) $chosen[$vendorId]['fee'], 2);
+                    $blocker = app(CashOnDeliveryAction::class)->blocker($vendor, (string) $chosen[$vendorId]['kind'], $orderTotal);
+                    if ($blocker !== null) {
+                        throw ValidationException::withMessages(['payment_method' => $blocker]);
+                    }
+                }
+            }
             $minutes = (int) config('bookshop.checkout.reservation_minutes', 30);
 
             // 4. The checkout and its orders.
@@ -236,6 +247,11 @@ class StartBookshopCheckoutAction
 
         if ($checkout->payment_method === CheckoutPaymentMethod::BankTransfer) {
             return ['checkout' => $checkout, 'redirect_url' => null, 'error' => null, 'paid' => false];
+        }
+        if ($checkout->payment_method === CheckoutPaymentMethod::CashOnDelivery) {
+            app(CashOnDeliveryAction::class)->place($checkout->id);
+
+            return ['checkout' => $checkout->refresh(), 'redirect_url' => null, 'error' => null, 'paid' => false];
         }
 
         $initiated = app(InitiatePayablePaymentAction::class)->execute(

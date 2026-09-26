@@ -77,7 +77,7 @@ class MarkCheckoutPaidAction
     /**
      * @return list<string> the titles that ran short
      */
-    private function takeStock(Order $order): array
+    public function takeStock(Order $order): array
     {
         $short = [];
         foreach ($order->items as $item) {

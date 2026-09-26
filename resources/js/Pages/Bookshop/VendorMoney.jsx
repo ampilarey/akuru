@@ -128,7 +128,7 @@ export default function VendorMoney({ t, vendor, money }) {
                                             <td className="p-2 text-end">{e.delivery_fee}</td>
                                             <td className="p-2 text-end">{e.commission}{Number(e.commission_tax) > 0 && <span className="block text-xs text-gray-500">+{e.commission_tax} {t.gst}</span>}<span className="block text-xs text-gray-500">{e.commission_rate}%</span></td>
                                             <td className="p-2 text-end">{Number(e.refunded) > 0 ? e.refunded : '—'}</td>
-                                            <td className="p-2 text-end font-semibold">{e.net}{Number(e.paid_amount) > 0 && Number(e.balance) !== 0 && <span className="block text-xs text-red-700">{t.clawback}: {e.balance}</span>}</td>
+                                            <td className="p-2 text-end font-semibold">{e.net}{Number(e.cash_collected) > 0 && <span className="block text-xs font-normal text-amber-800" data-testid="cash-collected">{t.cash_you_took}: {e.cash_collected}</span>}{Number(e.paid_amount) > 0 && Number(e.balance) !== 0 && <span className="block text-xs text-red-700">{t.clawback}: {e.balance}</span>}</td>
                                             <td className="p-2">{t[`earning_${e.status}`] || e.status}{e.status === 'pending' && <span className="block text-xs text-gray-500">{e.available_at ? t.available_on.replace(':date', e.available_at) : t.after_delivery}</span>}{e.in_payout && <span className="block text-xs text-gray-500">{t.in_payout_request}</span>}</td>
                                         </tr>
                                     ))}

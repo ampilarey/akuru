@@ -2,6 +2,7 @@
 
 namespace App\Domains\Bookshop\Actions\Vendor;
 
+use App\Domains\Bookshop\Actions\Checkout\CashOnDeliveryAction;
 use App\Domains\Bookshop\Actions\Money\RecordVendorEarningAction;
 use App\Domains\Bookshop\Actions\NotifyBookshopUserAction;
 use App\Domains\Bookshop\Actions\Orders\CancelOrderAction;
@@ -27,7 +28,7 @@ use Illuminate\Validation\ValidationException;
 class FulfilVendorOrderAction
 {
     /**
-     * @param  array{carrier?: ?string, tracking_note?: ?string}  $data
+     * @param  array{carrier?: ?string, tracking_note?: ?string, cash_received?: mixed}  $data
      */
     public function advance(VendorScope $scope, int $orderId, string $to, array $data = []): Order
     {
@@ -35,6 +36,12 @@ class FulfilVendorOrderAction
             $order = Order::query()->where('vendor_id', $scope->vendorId)->whereKey($orderId)->lockForUpdate()->firstOrFail();
             if (! in_array($to, OrderView::nextSteps($order), true)) {
                 throw ValidationException::withMessages(['status' => __('shop.error_step')]);
+            }
+            $cod = app(CashOnDeliveryAction::class);
+            $collectCash = $to === 'delivered' && $cod->awaitingCash($order);
+            if ($collectCash) {
+                // B9b: a cash order is paid the moment the shop hands it over and takes the cash.
+                $cod->requireCash($order, (bool) ($data['cash_received'] ?? false));
             }
 
             $fields = ['status' => $to, $to.'_at' => now()];
@@ -47,6 +54,9 @@ class FulfilVendorOrderAction
                 'order_id' => $order->id, 'type' => $to, 'actor_user_id' => $scope->userId, 'created_at' => now(),
                 'note' => $to === 'dispatched' ? trim(($fields['carrier'] ?? '').' '.($fields['tracking_note'] ?? '')) ?: null : null,
             ]);
+            if ($collectCash) {
+                $cod->collect($order->refresh(), $scope->userId);
+            }
             if ($to === 'delivered') {
                 // B6: the return window starts; the earning matures at its end.
                 app(RecordVendorEarningAction::class)->onDelivered($order->refresh());

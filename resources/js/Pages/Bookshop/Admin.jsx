@@ -618,6 +618,20 @@ function LowStockAll({ rows, t }) {
 }
 
 /** B8 (§7 Settings "email/SMS notice switches"): the in-app notice always goes; these add channels. */
+/** B9b (decision 7): cash on delivery for the whole bookstore; each shop then opts in. */
+function CodSwitch({ on, t }) {
+    return (
+        <section className="mt-8" data-testid="office-cod">
+            <h2 className="mb-1 text-lg font-semibold">{t.cod_label}</h2>
+            <p className="mb-2 text-sm text-gray-600">{t.office_cod_hint}</p>
+            <div className="flex flex-wrap items-center gap-3 rounded border bg-white p-3 text-sm">
+                <span data-testid="cod-state">{on ? t.cod_is_on : t.cod_is_off}</span>
+                <button type="button" className="btn-secondary" onClick={() => router.post('/admin/bookshop/cod', { on: on ? 0 : 1 }, { preserveScroll: true })} data-testid="toggle-cod">{on ? t.cod_turn_off : t.cod_turn_on}</button>
+            </div>
+        </section>
+    );
+}
+
 function NoticeSwitches({ notices, t }) {
     const form = useForm({ ...notices });
 
@@ -740,7 +754,7 @@ function ShopHome({ home, t }) {
     );
 }
 
-export default function Admin({ t, vendors, catalogue, slips = [], orders = [], refunds = [], money = null, reviews = [], home = null, low_stock = [], notices = null, order_statuses = [], applications = [], applications_open = true, default_commission_rate, sign_in_url, section_types = [] }) {
+export default function Admin({ t, vendors, catalogue, slips = [], orders = [], refunds = [], money = null, reviews = [], home = null, low_stock = [], notices = null, order_statuses = [], applications = [], applications_open = true, cod_on = true, default_commission_rate, sign_in_url, section_types = [] }) {
     const { flash = {}, errors } = usePage().props;
 
     return (
@@ -771,6 +785,7 @@ export default function Admin({ t, vendors, catalogue, slips = [], orders = [], 
             <Reviews reviews={reviews} t={t} />
             {home && <ShopHome home={home} t={t} />}
             {notices && <NoticeSwitches key={JSON.stringify(notices)} notices={notices} t={t} />}
+            <CodSwitch on={cod_on} t={t} />
 
             <Catalogue catalogue={catalogue} t={t} />
         </AppShell>

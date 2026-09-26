@@ -33,6 +33,10 @@ class PrepareCheckoutAction
         if ((string) config('bookshop.bank_transfer.account_number', '') === '') {
             $methods = array_values(array_diff($methods, ['bank_transfer']));
         }
+        // B9b: offered when the office allows it and every shop in the basket takes cash.
+        if (app(CashOnDeliveryAction::class)->offeredFor($vendors->values())) {
+            $methods[] = 'cash_on_delivery';
+        }
 
         return [
             'basket' => $basket,
