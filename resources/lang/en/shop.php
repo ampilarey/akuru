@@ -1,12 +1,14 @@
 <?php
 
-// Akuru Online Bookshop (BOOKSHOP_PLAN). B1a: the office's vendor screen
+// Akuru Online Store (BOOKSHOP_PLAN). B1a: the office's vendor screen
 // and the vendor portal. DV/AR first pass pending native review (BACKLOG A10).
 return [
-    'bookshop_title' => 'Akuru Online Bookshop',
-    'office_title' => 'Online Bookshop — vendors',
+    // Renamed 2026-09-26: "Akuru Online Store" — it sells educational items,
+    // not only books. The keys keep their old names; only the words changed.
+    'bookshop_title' => 'Akuru Online Store',
+    'office_title' => 'Online Store — vendors',
     'portal_title' => 'My shop',
-    'at_akuru' => 'at Akuru Online Bookshop',
+    'at_akuru' => 'at Akuru Online Store',
 
     // Office
     'vendors' => 'Vendors',
@@ -72,7 +74,7 @@ return [
 
     // Portal
     'agreement_heading' => 'Before you start',
-    'agreement_intro' => 'Selling in the Akuru Online Bookshop means agreeing to the Vendor Agreement: the commission, when you are paid, who handles returns, and what the office may moderate.',
+    'agreement_intro' => 'Selling in the Akuru Online Store means agreeing to the Vendor Agreement: the commission, when you are paid, who handles returns, and what the office may moderate.',
     'read_agreement' => 'Read the Vendor Agreement',
     'accept_agreement' => 'I have read and accept the Vendor Agreement',
     'continue' => 'Continue',
@@ -161,8 +163,8 @@ return [
     'products_count' => ':count products',
 
     // Public shop (B1b)
-    'nav_shop' => 'Bookshop',
-    'shop_intro' => 'Books and learning materials from Akuru Institute and the shops it works with.',
+    'nav_shop' => 'Store',
+    'shop_intro' => 'Books, educational items and learning materials from Akuru Institute and the shops it works with.',
     'search_shop' => 'Search books, materials and shops',
     'filter' => 'Filter',
     'clear_filters' => 'Clear',

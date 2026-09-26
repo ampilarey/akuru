@@ -1,6 +1,6 @@
 # Vendor kit — Fitrah (vendor no. 1)
 
-The first vendor of the Akuru Online Bookshop (BOOKSHOP_PLAN §13 decision 9),
+The first vendor of the Akuru Online Store (renamed from "Bookshop" 2026-09-26; BOOKSHOP_PLAN §13 decision 9),
 an independent educational-items shop selling inside the bookshop. Details
 supplied by the owner on 2026-09-25; more to follow. This file is the
 office's checklist for creating the vendor on production once slice B1
@@ -18,7 +18,7 @@ enters those in her own portal.
 | Address | `/shop/fitrah` (slug `fitrah`, fixed at creation) |
 | Owner (vendor member, role owner) | Fathimath Inaaya |
 | Owner account | email `f7920288@gmail.com`, mobile `7920288` — the sign-in identity; the office creates the account (or links it if one exists) and she sets her password on first sign-in |
-| Line under the name | "at Akuru Online Bookshop" (decision 11, pending) |
+| Line under the name | "at Akuru Online Store" (decision 11) |
 
 ## Branding
 

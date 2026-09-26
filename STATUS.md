@@ -4414,6 +4414,41 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5gx. The Akuru Online Store (renamed from Bookshop, 2026-09-26)
+
+The owner asked to change "bookshop" everywhere: *"It's not only for books
+but educational items."* The shop is now the **Akuru Online Store**:
+- **English**: *Akuru Online Store* (page titles, headings, breadcrumbs),
+  *Store* (site header, app shell), *Online Store* (footer, office
+  dropdown and admin menu), *at Akuru Online Store* on a vendor's page.
+- **Dhivehi**: އަކުރު އޮންލައިން ފިހާރަ, ފިހާރަ.
+- **Arabic**: متجر أكورو الإلكتروني, المتجر.
+
+Dhivehi and Arabic changed too, because their old wording (ފޮތްފިހާރަ,
+متجر الكتب) literally meant "book shop". The intro line now reads "Books,
+educational items and learning materials". The CSV downloads are
+`akuru-store.csv` and `store-vendors.csv`. The Vendor Agreement text says
+"store".
+
+**Unchanged on purpose:** `/shop` (already in the sitemap and in any link
+shared), `/admin/bookshop`, the `Bookshop` domain, its tables, route names
+and the `bookshop.manage` permission. None are read by a person, and
+renaming the permission would need a data migration on production for
+nothing a user sees.
+
+**Hosts that already seeded the Vendor Agreement**:
+`BookshopPolicyPagesSeeder` renames the old wording only in a page still
+carrying its "first draft" line; a page the office has edited keeps its
+words. Re-running the seeder is the whole migration.
+
+`OnlineStoreNameTest` (the name in three languages and the menus; the
+agreement renamed when untouched and kept when edited; a scan that the old
+name appears in no view, React page, language file or bookshop seeder).
+`ShopPublicTest`'s name assertions follow. `shop.mjs` now finds *Store* in
+the header, checks *Bookshop* appears nowhere on the page and reads the
+Dhivehi name. Walked: `shop.mjs` **24/24**, `vendor.mjs` **25/25**, no
+console or server errors. Full suite 2203 passed.
+
 ## 5gw. B1b: the public Akuru Online Bookshop (2026-09-26)
 
 BOOKSHOP_PLAN slice B1b, the owner's "Build B1b". Anyone can now find the
