@@ -12,6 +12,7 @@ use Illuminate\Validation\ValidationException;
  *
  *  - **Returns**: the window in days — seven at least (decision 8), longer
  *    if the shop offers it — and its conditions in its own words;
+ *  - **Free delivery over** an amount (B7, §6.5), shop-wide;
  *  - **Holiday mode** (audit finding 18): a date range and a notice. The
  *    products stay visible marked "back on <date>", the cart refuses them,
  *    and the shop's page shows the notice.
@@ -34,6 +35,7 @@ class SaveVendorShopSettingsAction
             'holiday_until' => $vendor->holiday_until?->toDateString(),
             'holiday_notice' => $vendor->holiday_notice,
             'on_holiday' => $vendor->onHoliday(),
+            'free_delivery_over' => $vendor->free_delivery_over !== null ? (string) $vendor->free_delivery_over : null,
             'minimum_window' => (int) config('bookshop.returns.window_days', 7),
         ];
     }
@@ -64,6 +66,8 @@ class SaveVendorShopSettingsAction
             'holiday_from' => $from,
             'holiday_until' => $until,
             'holiday_notice' => $from === null ? null : (trim((string) ($data['holiday_notice'] ?? '')) ?: null),
+            // B7 (§6.5): "spend MVR X, get free delivery", across the shop's charged methods.
+            'free_delivery_over' => is_numeric($data['free_delivery_over'] ?? null) && (float) $data['free_delivery_over'] > 0 ? round((float) $data['free_delivery_over'], 2) : null,
         ]);
     }
 }

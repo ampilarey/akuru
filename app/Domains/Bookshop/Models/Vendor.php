@@ -35,6 +35,7 @@ class Vendor extends Model
         'holiday_notice',
         'return_window_days',
         'return_conditions',
+        'free_delivery_over',
         'badges',
         'office_notes',
         'created_by',
@@ -48,6 +49,7 @@ class Vendor extends Model
             'commission_rate' => 'decimal:2',
             'settings' => 'array',
             'badges' => 'array',
+            'free_delivery_over' => 'decimal:2',
             'holiday_from' => 'date',
             'holiday_until' => 'date',
         ];

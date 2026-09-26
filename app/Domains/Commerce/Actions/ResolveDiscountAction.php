@@ -14,11 +14,18 @@ class ResolveDiscountAction
     /**
      * @return array{discount_code: DiscountCode, amount_discounted: float, final_amount: float}
      */
-    public function execute(string $code, int $userId, float $orderAmount, bool $payingWithWallet = false): array
+    public function execute(string $code, int $userId, float $orderAmount, bool $payingWithWallet = false, ?string $scopeType = null, ?int $scopeId = null): array
     {
-        $discount = DiscountCode::query()->where('code', trim($code))->first();
+        $discount = DiscountCode::query()->where('code', strtoupper(trim($code)))->first();
         if ($discount === null || $discount->status !== 'active') {
             throw ValidationException::withMessages(['discount_code' => 'Discount code not found or inactive.']);
+        }
+        // BOOKSHOP_PLAN B7: a code scoped to one seller (a vendor-funded code)
+        // is good only where the caller says it is buying from that seller;
+        // callers that pass no scope (the library, courses) accept 'all' codes only.
+        $appliesTo = (string) ($discount->applies_to_type ?: 'all');
+        if ($appliesTo !== 'all' && ($appliesTo !== $scopeType || (int) $discount->applies_to_id !== (int) $scopeId)) {
+            throw ValidationException::withMessages(['discount_code' => 'This code is not valid for this purchase.']);
         }
         if ($discount->starts_at !== null && $discount->starts_at->isFuture()) {
             throw ValidationException::withMessages(['discount_code' => 'Discount code is not active yet.']);

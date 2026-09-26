@@ -2,9 +2,11 @@
 
 namespace App\Domains\Bookshop\Support;
 
+use App\Domains\Bookshop\Actions\Shop\CustomerListsAction;
 use App\Domains\Bookshop\Models\OrderItem;
 use App\Domains\Bookshop\Models\Product;
 use App\Domains\Bookshop\Models\ProductVariant;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Goods coming back onto the shelf (B3): a cancelled order's items, or a
@@ -26,9 +28,11 @@ final class Restock
         if ($item->product_variant_id !== null) {
             $variant = ProductVariant::query()->whereKey($item->product_variant_id)->lockForUpdate()->first();
             $variant?->update(['stock' => (int) $variant->stock + $quantity]);
-
-            return;
+        } else {
+            $product->update(['stock' => (int) $product->stock + $quantity]);
         }
-        $product->update(['stock' => (int) $product->stock + $quantity]);
+        // B7: anyone waiting for it hears, once the stock is really back.
+        $productId = (int) $product->id;
+        DB::afterCommit(fn () => app(CustomerListsAction::class)->notifyIfBack($productId));
     }
 }

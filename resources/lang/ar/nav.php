@@ -133,6 +133,7 @@ return [
     'bookshop' => 'متجر أكورو للكتب',
     'shop' => 'متجر الكتب',
     'my_orders' => 'طلباتي',
+    'my_wishlist' => 'قائمة أمنياتي',
     'vendor_portal' => 'متجري',
     'collecting_my_child' => 'استلام ابني',
     'arrivals' => 'الوصول',

@@ -152,7 +152,8 @@ await guest.waitForLoadState('networkidle');
 const vendorPage = await text(guest);
 const vendorCards = await cards(guest);
 check('the seller\'s page says "at Akuru Bookstore"', /\/shop\/fitrah$/.test(guest.url()) && vendorPage.includes('iman.noor.ihsan') && vendorPage.includes('at Akuru Bookstore'), guest.url().replace(BASE, ''));
-check('and shows only that seller\'s products', vendorCards.length === 3 && !vendorCards.includes('smoke-other-secret'), vendorCards.join(', '));
+// Four since B7: the sold-out Wooden Quran Stand polish.mjs is told about.
+check('and shows only that seller\'s products', vendorCards.length === 4 && !vendorCards.includes('smoke-other-secret'), vendorCards.join(', '));
 
 // ------------------------------------------------------------ 5. and the rest
 

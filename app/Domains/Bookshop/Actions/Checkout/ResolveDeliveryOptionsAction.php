@@ -45,7 +45,14 @@ class ResolveDeliveryOptionsAction
                 'note' => $t['note'] ?? null,
             ], (array) config('bookshop.delivery_template', []), array_keys((array) config('bookshop.delivery_template', [])));
 
-        return array_map(function (array $row) use ($vendorSubtotal): array {
+        // B7 (§6.5 "spend MVR X, get free delivery"): the shop-wide threshold
+        // frees every charged method, unless the method's own is lower.
+        $shopWide = $vendor->free_delivery_over !== null ? (float) $vendor->free_delivery_over : null;
+
+        return array_map(function (array $row) use ($vendorSubtotal, $shopWide): array {
+            if ($shopWide !== null && ! $row['carrier_paid'] && $row['fee'] > 0) {
+                $row['free_over'] = $row['free_over'] === null ? $shopWide : min($row['free_over'], $shopWide);
+            }
             $free = $row['carrier_paid'] || ($row['free_over'] !== null && $vendorSubtotal >= $row['free_over']);
             $fee = $free ? 0.0 : $row['fee'];
 
@@ -58,6 +65,7 @@ class ResolveDeliveryOptionsAction
                 'carrier_paid' => $row['carrier_paid'],
                 'handling_days' => $row['handling_days'],
                 'minimum_order' => $row['minimum_order'] !== null ? number_format($row['minimum_order'], 2, '.', '') : null,
+                'free_over' => $row['free_over'] !== null ? number_format($row['free_over'], 2, '.', '') : null,
                 'offered' => $row['minimum_order'] === null || $vendorSubtotal >= $row['minimum_order'],
                 'note' => $row['note'],
             ];

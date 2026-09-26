@@ -50,8 +50,17 @@ class SaveDiscountCodeAction
         ];
 
         // L6 (§21): who funds the discount — decides the writer's cut.
-        if (in_array($data['discount_funding_source'] ?? null, ['shared', 'akuru', 'writer'], true)) {
+        // BOOKSHOP_PLAN B7: a bookstore vendor funds its own codes.
+        if (in_array($data['discount_funding_source'] ?? null, ['shared', 'akuru', 'writer', 'vendor'], true)) {
             $payload['discount_funding_source'] = $data['discount_funding_source'];
+        }
+        // B7: a code scoped to one seller (`vendor` + its id), else every purchase.
+        if (array_key_exists('applies_to_type', $data)) {
+            $payload['applies_to_type'] = in_array($data['applies_to_type'], ['all', 'vendor'], true) ? $data['applies_to_type'] : 'all';
+            $payload['applies_to_id'] = $payload['applies_to_type'] === 'all' ? null : (int) ($data['applies_to_id'] ?? 0);
+        }
+        if ($code === null && isset($data['created_by'])) {
+            $payload['created_by'] = (int) $data['created_by'];
         }
 
         if ($code === null) {

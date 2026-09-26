@@ -2,6 +2,7 @@
 
 namespace App\Domains\Bookshop\Actions\Vendor;
 
+use App\Domains\Bookshop\Actions\Shop\CustomerListsAction;
 use App\Domains\Bookshop\DTOs\VendorScope;
 use App\Domains\Bookshop\Models\Product;
 use App\Domains\Bookshop\Models\ProductImage;
@@ -35,7 +36,7 @@ class SaveVendorProductAction
      */
     public function execute(VendorScope $scope, array $data, ?int $productId = null, array $photos = []): Product
     {
-        return DB::transaction(function () use ($scope, $data, $productId, $photos) {
+        $product = DB::transaction(function () use ($scope, $data, $productId, $photos) {
             $product = $productId === null
                 ? new Product(['vendor_id' => $scope->vendorId, 'created_by' => $scope->userId])
                 : Product::query()->where('vendor_id', $scope->vendorId)->lockForUpdate()->findOrFail($productId);
@@ -58,6 +59,10 @@ class SaveVendorProductAction
 
             return $product->refresh();
         });
+        // B7: restocked or reactivated — tell anyone waiting for it.
+        app(CustomerListsAction::class)->notifyIfBack((int) $product->id);
+
+        return $product;
     }
 
     /**
@@ -111,7 +116,16 @@ class SaveVendorProductAction
             'visibility' => $data['visibility'] ?? 'shop',
             'tags' => $tags,
             'details' => $details,
+            // B7 (§6.5): the vendor's own badge ("Eid special"), in three languages.
+            'badge' => $this->short($data['badge'] ?? null),
+            'badge_dv' => $this->short($data['badge_dv'] ?? null),
+            'badge_ar' => $this->short($data['badge_ar'] ?? null),
         ];
+    }
+
+    private function short(mixed $value): ?string
+    {
+        return is_string($value) && trim($value) !== '' ? mb_substr(trim($value), 0, 40) : null;
     }
 
     /**

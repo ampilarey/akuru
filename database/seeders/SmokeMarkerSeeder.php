@@ -1823,7 +1823,7 @@ class SmokeMarkerSeeder extends Seeder
         // bought last time is put back by the updateOrInsert above.
         $this->topUpWallet('student@akuru.edu.mv', 500.0, 'SMOKE-Wallet top-up so a customer can pay in the bookstore.');
 
-        // B6 (`money.mjs`): the walk's payouts, the fake bank details it
+        // B6 (`vendor-money.mjs`): the walk's payouts, the fake bank details it
         // enters and Fitrah's commission invoices go; earnings went with the
         // walk's orders above. Then one paid, delivered order from three
         // weeks ago whose earning has matured, so the walk has a balance to
@@ -1833,6 +1833,22 @@ class SmokeMarkerSeeder extends Seeder
         DB::table('vendor_bank_details')->whereIn('vendor_id', [$fitrahId, $otherId])->delete();
         DB::table('vendor_commission_invoices')->whereIn('vendor_id', [$fitrahId, $otherId])->delete();
         $this->smokeMaturedOrder($fitrahId, 'student@akuru.edu.mv', 'smoke-arabic-letters-tracing-book', 2, 30.0, now()->subDays(21));
+
+        // B7 (`polish.mjs`): the walk's reviews went with the walk's orders
+        // above (they cascade); the matured order just made is the delivered
+        // one the student reviews. Its wishlist, back-in-stock notices, the
+        // shop's own codes, the office's home picks, badges, ratings and the
+        // free-delivery amount go too. A sold-out product to be told about.
+        DB::table('wishlist_items')->whereIn('user_id', $walkPeople)->delete();
+        DB::table('stock_alerts')->whereIn('user_id', $walkPeople)->delete();
+        $vendorCodes = DB::table('discount_codes')->where('applies_to_type', 'vendor')->whereIn('applies_to_id', [$fitrahId, $otherId])->pluck('id');
+        DB::table('discount_redemptions')->whereIn('discount_code_id', $vendorCodes)->delete();
+        DB::table('discount_codes')->whereIn('id', $vendorCodes)->delete();
+        $shopProducts = DB::table('products')->whereIn('vendor_id', [$fitrahId, $otherId])->pluck('id');
+        DB::table('shop_home_features')->where('heading', 'like', 'SMOKE-%')->orWhereIn('product_id', $shopProducts)->delete();
+        DB::table('products')->whereIn('id', $shopProducts)->update(['badge' => null, 'badge_dv' => null, 'badge_ar' => null, 'rating_avg' => null, 'rating_count' => 0]);
+        DB::table('vendors')->whereIn('id', [$fitrahId, $otherId])->update(['free_delivery_over' => null]);
+        $this->smokeProduct($fitrahId, 'smoke-quran-stand', 'Wooden Quran Stand', 150, 'standard', $category('islamic-studies'), 0, ['material' => 'Wood']);
     }
 
     /**
