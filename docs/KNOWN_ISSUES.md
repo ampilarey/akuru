@@ -140,6 +140,35 @@ a question with a default, so "do nothing" is always a legible choice.
 
 ---
 
+## Found by the bookstore's B3 walk (2026-09-26)
+
+### Ten cart adds in a minute got the checkout refused (429) — **fixed for the bookstore (2026-09-26); open elsewhere**
+
+Laravel's plain `throttle:N,1` keys on the signed-in user alone
+(`ThrottleRequests::resolveRequestSignature`), not on the route, so every
+route with a plain throttle shares **one counter per person**, each checking
+it against its own limit. A customer who put ten or more things in the cart
+within a minute (`throttle:60,1`) was then refused at checkout
+(`throttle:10,1`) with a bare 429. The B3 walk found it by running the
+checkout walk back to back: intermittent, at a different step each time.
+
+**Fixed for the bookstore**: each of its seven limits now names its own
+prefix, the third argument (`throttle:60,1,shop-cart`,
+`throttle:10,1,shop-checkout`, …; `routes/web_public.php`).
+`BookshopCheckoutTest` fills twelve cart lines and checks out, and fails with
+a 429 on the old routes.
+
+**Still open**: about thirty other routes use a plain `throttle:N,1`
+(library checkout, wallet redeem, gift cards, course waitlist and syllabus,
+the public forms), so they still share one counter per person or IP — a
+parent who sends several forms and then buys a book in the same minute can
+be refused. Harm is low (one minute's wait) and nobody uses the site for
+real yet (ADR-021). The fix is the same one-word prefix per route, best done
+in one sweep with a test that pins every `throttle:` in the route files to
+carry a prefix. Not done here: outside B3's scope (rule 1).
+
+---
+
 ## Found by the Library completion audit (2026-09-25)
 
 ### A PDF uploaded to the Library could not be read — **fixed (2026-09-25)**

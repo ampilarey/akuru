@@ -195,6 +195,20 @@ it('pays from the wallet at once: one order per shop, discount on goods only, ta
     checkoutAs($stranger)->get(route('public.shop.orders.show', $checkout->number.'-FIT'))->assertNotFound();
 });
 
+it('lets a customer who filled a long basket quickly still check out: the cart and checkout limits are counted apart', function () {
+    $fitrah = checkoutVendor('fitrah');
+    $user = User::factory()->create();
+    app(CreditWalletAction::class)->execute($user->id, 5000, 'admin', null, 'Top-up');
+    foreach (range(1, 12) as $n) {
+        $product = checkoutProduct($fitrah, 'School list item '.$n, 10);
+        checkoutAs($user)->post(route('public.shop.cart.add'), ['product' => $product->slug])->assertSessionHasNoErrors();
+    }
+
+    checkoutAs($user)->post(route('public.shop.checkout.store'), addressInput(['delivery' => ['fitrah' => 't0'], 'payment_method' => 'wallet']))
+        ->assertRedirect()->assertSessionHasNoErrors();
+    expect(BookshopCheckout::query()->value('status')->value)->toBe('paid');
+});
+
 it('refuses a short wallet, a missing delivery choice, a missing address and an over-stock line, leaving the cart as it was', function () {
     $fitrah = checkoutVendor('fitrah');
     $book = checkoutProduct($fitrah, 'Workbook', 100, ['stock' => 1]);

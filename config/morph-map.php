@@ -120,6 +120,8 @@ return [
     'order' => \App\Domains\Bookshop\Models\Order::class,
     'order_item' => \App\Domains\Bookshop\Models\OrderItem::class,
     'order_event' => \App\Domains\Bookshop\Models\OrderEvent::class,
+    'order_return' => \App\Domains\Bookshop\Models\OrderReturn::class,
+    'order_refund' => \App\Domains\Bookshop\Models\OrderRefund::class,
     'cart' => \App\Domains\Bookshop\Models\Cart::class,
     'cart_item' => \App\Domains\Bookshop\Models\CartItem::class,
     'customer_address' => \App\Domains\Bookshop\Models\CustomerAddress::class,

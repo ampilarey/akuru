@@ -101,6 +101,11 @@ function unresolvedDetailScreens(): array
         // closure, so reflection has no controller to read a model from.
         // `LegacyStudentScreensRetiredTest` loads it and pins where it lands.
         'students/{student}' => 'redirect to the React profile; covered by LegacyStudentScreensRetiredTest',
+
+        // Not a screen: it streams a bank-transfer slip (private media) to the
+        // shop with an order under that checkout. BookshopFulfilmentTest loads
+        // it as that shop (200) and as another shop (404).
+        'vendor/slips/{slip}' => 'streams a private slip file; covered by BookshopFulfilmentTest (own shop 200, other shop 404)',
         'teachers/{teacher}' => 'redirect to the React staff profile; covered by LegacyTeacherScreensRetiredTest',
         'announcements/{announcement}' => 'redirect to the portal noticeboard; covered by AnnouncementsAdminTest',
 

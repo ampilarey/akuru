@@ -47,6 +47,9 @@ class PresentCartAction
 
             if (! $sellable) {
                 $problems[] = __('shop.error_not_for_sale_named', ['title' => $product->title]);
+            } elseif ($product->vendor->onHoliday()) {
+                $sellable = false;
+                $problems[] = __('shop.error_on_holiday', ['vendor' => $product->vendor->name, 'date' => $product->vendor->holiday_until->copy()->addDay()->toDateString()]);
             } elseif ($short) {
                 $problems[] = $available <= 0
                     ? __('shop.error_sold_out', ['title' => $product->title])

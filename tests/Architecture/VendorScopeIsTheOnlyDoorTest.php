@@ -70,6 +70,7 @@ it('keeps models out of the portal controllers and opens every method with the g
     $controllers = [
         App\Domains\Bookshop\Http\Controllers\VendorPortalController::class,
         App\Domains\Bookshop\Http\Controllers\VendorProductController::class,
+        App\Domains\Bookshop\Http\Controllers\VendorOrderController::class,
     ];
 
     $offenders = [];

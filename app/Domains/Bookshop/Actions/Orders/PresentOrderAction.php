@@ -5,6 +5,9 @@ namespace App\Domains\Bookshop\Actions\Orders;
 use App\Domains\Bookshop\Models\Order;
 use App\Domains\Bookshop\Models\OrderEvent;
 use App\Domains\Bookshop\Models\OrderItem;
+use App\Domains\Bookshop\Models\OrderRefund;
+use App\Domains\Bookshop\Models\OrderReturn;
+use App\Domains\Bookshop\Support\OrderView;
 use App\Domains\Bookshop\Support\ShopPresenter;
 
 /**
@@ -20,13 +23,37 @@ class PresentOrderAction
      */
     public function execute(int $userId, string $number): ?array
     {
-        $order = Order::query()->where('user_id', $userId)->where('number', $number)->with(['vendor', 'items', 'events', 'checkout'])->first();
+        $order = Order::query()->where('user_id', $userId)->where('number', $number)->with(['vendor', 'items', 'events', 'checkout', 'returns.item', 'refunds'])->first();
         if ($order === null) {
             return null;
         }
+        $returnsOpen = OrderView::returnsOpen($order);
 
         return self::summary($order) + [
+            // B3: where it is, and what the customer can still do.
+            'collection' => $order->isCollection(),
+            'carrier' => $order->carrier,
+            'tracking_note' => $order->tracking_note,
+            'steps' => [
+                'paid' => $order->paid_at?->toDateTimeString(),
+                'processing' => $order->processing_at?->toDateTimeString(),
+                'ready' => $order->ready_at?->toDateTimeString(),
+                'dispatched' => $order->dispatched_at?->toDateTimeString(),
+                'delivered' => $order->delivered_at?->toDateTimeString(),
+            ],
+            'cancelled_at' => $order->cancelled_at?->toDateTimeString(),
+            'cancel_reason' => $order->cancel_reason,
+            'cancelled_by_customer' => $order->cancelled_by !== null && (int) $order->cancelled_by === (int) $order->user_id,
+            'can_cancel' => $order->status->cancellableByCustomer(),
+            'returns_open' => $returnsOpen,
+            'returns_until' => OrderView::returnsUntil($order)?->toDateString(),
+            'return_conditions' => $order->vendor?->return_conditions,
+            'returns' => $order->returns->map(fn (OrderReturn $r) => OrderView::returnRow($r))->values()->all(),
+            'refunds' => $order->refunds->map(fn (OrderRefund $r) => OrderView::refund($r))->values()->all(),
+            'message_thread_id' => $order->message_thread_id,
             'items' => $order->items->map(fn (OrderItem $i) => [
+                'id' => $i->id,
+                'returnable' => $returnsOpen ? OrderView::returnable($i, $order->returns) : 0,
                 'title' => $i->title,
                 'variant' => $i->variant_name,
                 'sku' => $i->sku,

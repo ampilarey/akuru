@@ -5,14 +5,15 @@ namespace App\Domains\Bookshop\Actions\Checkout;
 use App\Domains\Bookshop\Actions\NotifyBookshopUserAction;
 use App\Domains\Bookshop\Enums\SlipStatus;
 use App\Domains\Bookshop\Models\BankTransferSlip;
+use App\Domains\Finance\Actions\RecordManualPaymentAction;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 /**
  * The office reads the slip against the bank account and confirms it —
  * the checkout is paid — or rejects it with a reason, and the customer
- * may upload another while the checkout still waits. B3 lets the vendor
- * of a single-vendor checkout confirm as well.
+ * may upload another while the checkout still waits. Since B3 the shop of
+ * a single-shop checkout may confirm as well (`ConfirmVendorSlipAction`).
  */
 class DecideBankTransferSlipAction
 {
@@ -35,7 +36,19 @@ class DecideBankTransferSlipAction
 
         $checkout = $slip->checkout;
         if ($confirm) {
-            app(MarkCheckoutPaidAction::class)->execute((int) $checkout->id, 'bank_transfer', $byUserId);
+            // B3: the transfer is recorded in Finance's books as a manual
+            // payment, which fires the same `PaymentConfirmed` a card does —
+            // one money→goods path — and gives a refund a payment to go
+            // back against (`RefundPaymentAction`).
+            app(RecordManualPaymentAction::class)->execute(
+                'bookshop_checkout',
+                (int) $checkout->id,
+                (int) $checkout->user_id,
+                (float) $checkout->total,
+                'Akuru Bookstore '.$checkout->number.', bank transfer slip #'.$slip->id.($slip->reference ? ' ('.$slip->reference.')' : ''),
+                $byUserId,
+                'bank_transfer',
+            );
         } else {
             app(NotifyBookshopUserAction::class)->execute(
                 (int) $checkout->user_id,

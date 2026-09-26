@@ -299,7 +299,63 @@ function Orders({ orders, t }) {
     );
 }
 
-export default function Admin({ t, vendors, catalogue, slips = [], orders = [], default_commission_rate, sign_in_url }) {
+/**
+ * B3 (audit finding 6): card refunds a shop has accepted, waiting for the
+ * office to return the money through BML's merchant portal and record it —
+ * or to credit the wallet instead where the customer asks.
+ */
+function Refunds({ refunds, t }) {
+    const [notes, setNotes] = useState({});
+    const pending = refunds.filter((r) => r.status === 'pending');
+    const process = (r, destination) => router.post(`/admin/bookshop/refunds/${r.id}`, { destination, note: notes[r.id] || '' }, { preserveScroll: true });
+
+    return (
+        <section className="mt-8" data-testid="office-refunds">
+            <div className="mb-2 flex items-center justify-between">
+                <h2 className="text-lg font-semibold">{t.refunds_heading} {pending.length > 0 && <span className="ms-2 rounded bg-amber-100 px-2 text-sm text-amber-800">{pending.length}</span>}</h2>
+                <a href="/admin/bookshop/refunds/export" className="btn-secondary" data-testid="export-refunds">{t.export_csv}</a>
+            </div>
+            {refunds.length === 0 ? (
+                <p className="rounded border bg-white p-4 text-gray-600">{t.no_refunds}</p>
+            ) : (
+                <table className="w-full rounded border bg-white text-sm">
+                    <thead className="bg-gray-50">
+                        <tr>
+                            <th className="p-2 text-start">{t.order_number}</th>
+                            <th className="p-2 text-start">{t.customer}</th>
+                            <th className="p-2 text-end">{t.total}</th>
+                            <th className="p-2 text-start">{t.payment_method}</th>
+                            <th className="p-2 text-start">{t.status}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {refunds.map((r) => (
+                            <tr key={r.id} className="border-t" data-testid={`refund-row-${r.id}`} data-refund-status={r.status}>
+                                <td className="p-2"><span className="font-mono">{r.order_number}</span><span className="block text-xs text-gray-500">{r.vendor} · {r.reason}</span></td>
+                                <td className="p-2">{r.customer}<span className="block text-xs text-gray-500">{r.customer_email}</span></td>
+                                <td className="p-2 text-end">{r.currency} {r.amount}</td>
+                                <td className="p-2">{t[`pay_${r.paid_with}`] || r.paid_with}{r.bml_reference ? <span className="block text-xs text-gray-500">{t.payment_ref}: {r.bml_reference}</span> : null}</td>
+                                <td className="p-2">
+                                    {r.status === 'pending' ? (
+                                        <div className="flex flex-wrap items-center gap-2">
+                                            <input className="form-input w-40" placeholder={t.note} value={notes[r.id] || ''} onChange={(e) => setNotes({ ...notes, [r.id]: e.target.value })} />
+                                            <button type="button" className="btn-primary" onClick={() => process(r, 'manual')} data-testid={`refund-card-${r.id}`}>{t.refunded_to_card}</button>
+                                            <button type="button" className="text-blue-700 underline" onClick={() => process(r, 'wallet')} data-testid={`refund-wallet-${r.id}`}>{t.refund_to_wallet_instead}</button>
+                                        </div>
+                                    ) : (
+                                        <span>{t.refund_done} · {t[`refund_to_${r.destination}`] || r.destination} · {r.processed_at}</span>
+                                    )}
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            )}
+        </section>
+    );
+}
+
+export default function Admin({ t, vendors, catalogue, slips = [], orders = [], refunds = [], default_commission_rate, sign_in_url }) {
     const { flash = {}, errors } = usePage().props;
 
     return (
@@ -309,6 +365,7 @@ export default function Admin({ t, vendors, catalogue, slips = [], orders = [], 
             {flash.vendor_invite && <InviteCard invite={flash.vendor_invite} t={t} signInUrl={sign_in_url} />}
 
             {slips.some((s) => s.status === 'waiting') && <Slips slips={slips} t={t} />}
+            {refunds.some((r) => r.status === 'pending') && <Refunds refunds={refunds} t={t} />}
 
             <InviteVendor t={t} defaultRate={default_commission_rate} />
 
@@ -319,6 +376,7 @@ export default function Admin({ t, vendors, catalogue, slips = [], orders = [], 
             <VendorTable vendors={vendors} t={t} />
 
             {!slips.some((s) => s.status === 'waiting') && <Slips slips={slips} t={t} />}
+            {!refunds.some((r) => r.status === 'pending') && <Refunds refunds={refunds} t={t} />}
             <Orders orders={orders} t={t} />
 
             <Catalogue catalogue={catalogue} t={t} />

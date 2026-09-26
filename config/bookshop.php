@@ -25,6 +25,18 @@ return [
     /*
      * B2 — checkout (plan §4, §8; decisions 4, 6, 7).
      */
+    /*
+     * B3 — returns (decision 8): seven days from delivery or collection,
+     * unused, the buyer paying return delivery unless the item was faulty.
+     * A shop may offer longer, never shorter. Decision 15: a shop sees its
+     * customer's phone and address until the order has closed (delivered,
+     * collected or cancelled) and this window has passed, then masked.
+     */
+    'returns' => [
+        'window_days' => 7,
+        'max_window_days' => 60,
+    ],
+
     'checkout' => [
         // Audit finding 2: stock is reserved while the customer pays.
         'reservation_minutes' => (int) env('BOOKSHOP_RESERVATION_MINUTES', 30),

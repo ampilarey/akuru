@@ -93,13 +93,20 @@ async function signIn(page, email, password = PASSWORD) {
     await page.goto(`${BASE}/en/login`, { waitUntil: 'domcontentloaded' });
     await page.fill('input[name="identifier"]', email);
     await page.fill('input[name="password"]', password);
-    await page.click('button[type=submit]');
+    await submit(page, 'button[type=submit]');
     await page.waitForLoadState('networkidle');
 
     return page;
 }
 
 const text = async (page) => (await ((await page.locator('main').count()) ? page.innerText('main') : page.innerText('body'))).replace(/\s+/g, ' ');
+// A Blade form post or link is a real navigation. "networkidle" straight
+// after the click could resolve before it started, so the next step read the
+// old page or cut the post off (an intermittent red, 2026-09-26). Wait for
+// the navigation itself.
+const submit = async (page, selector) => {
+    await Promise.all([page.waitForNavigation({ waitUntil: 'networkidle' }).catch(() => {}), page.click(selector)]);
+};
 const settle = async (page, selector = null) => {
     await page.waitForLoadState('networkidle').catch(() => {});
     if (selector) {
@@ -111,7 +118,7 @@ const settle = async (page, selector = null) => {
 async function addToCart(page, slug, quantity = 1) {
     await page.goto(`${BASE}/en/shop/products/${slug}`, { waitUntil: 'networkidle' });
     await page.fill('[data-testid="quantity"]', String(quantity));
-    await page.click('[data-testid="add-to-cart"]');
+    await submit(page, '[data-testid="add-to-cart"]');
     await page.waitForLoadState('networkidle');
 }
 
@@ -146,13 +153,13 @@ check('and the phone bar counts what is in it', (await customer.locator('[data-t
 await addToCart(customer, OTHER, 1);
 check('an item from the other shop joins as its own group', (await customer.locator('[data-testid="cart-group-smoke-other-shop"]').count()) === 1 && (await customer.locator('[data-testid="cart-group-fitrah"]').count()) === 1);
 
-await customer.click('[data-testid="go-to-checkout"]');
+await submit(customer, '[data-testid="go-to-checkout"]');
 await customer.waitForLoadState('networkidle');
 check('the checkout opens', /\/shop\/checkout$/.test(customer.url()) && (await customer.locator('[data-testid="checkout-heading"]').count()) === 1, customer.url().replace(BASE, ''));
 check('with a delivery choice per shop and three ways to pay', (await customer.locator('[data-testid="delivery-fitrah"] input[type=radio]').count()) >= 1 && (await customer.locator('[data-testid="delivery-smoke-other-shop"] input[type=radio]').count()) >= 1 && (await customer.locator('[data-testid="pay-wallet"]').count()) === 1 && (await customer.locator('[data-testid="pay-bank_transfer"]').count()) === 1 && (await customer.locator('[data-testid="pay-card"]').count()) === 1);
 
 // Refused first: no address and no delivery choice.
-await customer.click('[data-testid="place-order"]');
+await submit(customer, '[data-testid="place-order"]');
 await customer.waitForLoadState('networkidle');
 check('placing it with nothing filled in is refused, and the basket kept', (await customer.locator('[data-testid="checkout-errors"]').count()) === 1 && (await customer.locator('[data-testid="checkout-form"]').count()) === 1);
 
@@ -161,7 +168,7 @@ await customer.check('[data-testid="save-address"]');
 await customer.locator('[data-testid="delivery-fitrah"] input[type=radio]:not([disabled])').first().check();
 await customer.locator('[data-testid="delivery-smoke-other-shop"] input[type=radio]:not([disabled])').first().check();
 await customer.check('[data-testid="pay-wallet"]');
-await customer.click('[data-testid="place-order"]');
+await submit(customer, '[data-testid="place-order"]');
 await customer.waitForLoadState('networkidle');
 const paidNumber = ((await customer.locator('[data-testid="checkout-number"]').innerText().catch(() => '')).match(/AK-\d{4}-\d{6}/) ?? [''])[0];
 check('paid from the wallet, the customer lands on the checkout marked paid', /\/shop\/checkout\/AK-/.test(customer.url()) && (await customer.locator('[data-testid="checkout-status"]').getAttribute('data-status').catch(() => '')) === 'paid' && (await customer.locator('[data-testid="paid-thanks"]').count()) === 1, `${customer.url().replace(BASE, '')}`);
@@ -183,14 +190,14 @@ check('the saved address is offered next time', (await customer.locator('[data-t
 await customer.locator('[data-testid="saved-address"]').first().check();
 await customer.locator('[data-testid="delivery-fitrah"] input[type=radio]:not([disabled])').first().check();
 await customer.check('[data-testid="pay-bank_transfer"]');
-await customer.click('[data-testid="place-order"]');
+await submit(customer, '[data-testid="place-order"]');
 await customer.waitForLoadState('networkidle');
 const bankNumber = ((await customer.locator('[data-testid="checkout-number"]').innerText().catch(() => '')).match(/AK-\d{4}-\d{6}/) ?? [''])[0];
-check('a bank-transfer order waits, showing the account to pay into and the reference', (await customer.locator('[data-testid="checkout-status"]').getAttribute('data-status').catch(() => '')) === 'pending_payment' && (await customer.locator('[data-testid="bank-account"]').count()) === 1 && (await text(customer)).includes(bankNumber), bankNumber);
+check('a bank-transfer order waits, showing the account to pay into and the reference', (await customer.locator('[data-testid="checkout-status"]').getAttribute('data-status').catch(() => '')) === 'pending_payment' && (await customer.locator('[data-testid="bank-account"]').count()) === 1 && (await text(customer)).includes(bankNumber), bankNumber || `${customer.url().replace(BASE, '')} ${(await text(customer)).slice(0, 200)}`);
 
 await customer.setInputFiles('[data-testid="slip-file"]', SLIP);
 await customer.fill('[data-testid="slip-reference"]', 'SMOKE-TRX');
-await customer.click('[data-testid="send-slip"]');
+await submit(customer, '[data-testid="send-slip"]');
 await customer.waitForLoadState('networkidle');
 check('the slip is received and the page says the office is looking', (await customer.locator('[data-testid="slips"] [data-slip-status="waiting"]').count()) === 1 && (await customer.locator('[data-testid="slip-form"]').count()) === 0);
 

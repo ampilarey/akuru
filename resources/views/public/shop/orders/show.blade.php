@@ -1,7 +1,9 @@
 @extends('public.layouts.public')
 
 {{-- BOOKSHOP_PLAN §4 (slice B2): one order and its receipt — a tax line and
-     the vendor's TIN only when the vendor is GST-registered (decision 4). --}}
+     the vendor's TIN only when the vendor is GST-registered (decision 4).
+     B3: its progress and tracking, cancelling before dispatch, returns inside
+     the window, refunds, and a message to the shop. --}}
 @section('title', __('shop.order_title', ['number' => $order['number']]) . ' - ' . __('shop.bookshop_title'))
 
 @section('content')
@@ -21,6 +23,34 @@
         </div>
         <button type="button" class="btn-secondary no-print" onclick="window.print()">{{ __('shop.print') }}</button>
     </div>
+
+    @if($errors->any())
+        <div class="no-print mb-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800" data-testid="order-errors">
+            @foreach($errors->all() as $message)<p>{{ $message }}</p>@endforeach
+        </div>
+    @endif
+
+    {{-- B3: where it is. --}}
+    @if($order['status'] === 'cancelled')
+        <div class="no-print mb-4 rounded-lg border border-gray-300 bg-gray-50 p-4" data-testid="order-cancelled">
+            <p class="font-semibold">{{ $order['cancelled_by_customer'] ? __('shop.you_cancelled') : __('shop.shop_cancelled') }}</p>
+            <p class="text-sm text-gray-700">{{ $order['cancel_reason'] }}</p>
+        </div>
+    @elseif(! in_array($order['status'], ['pending_payment', 'expired'], true))
+        @php($stepKeys = ['paid', 'processing', $order['collection'] ? 'ready' : 'dispatched', 'delivered'])
+        <ol class="no-print mb-4 grid grid-cols-4 gap-1 text-center text-xs" data-testid="order-progress">
+            @foreach($stepKeys as $step)
+                @php($at = $order['steps'][$step] ?? null)
+                <li class="rounded px-1 py-2 {{ $at ? 'bg-green-100 text-green-900' : 'bg-gray-100 text-gray-500' }}" data-step="{{ $step }}" data-done="{{ $at ? '1' : '0' }}">
+                    <span class="block font-semibold">{{ $step === 'delivered' && $order['collection'] ? __('shop.step_collected') : __('shop.progress_'.$step) }}</span>
+                    @if($at)<span class="block">{{ \Illuminate\Support\Str::of($at)->before(' ') }}</span>@endif
+                </li>
+            @endforeach
+        </ol>
+        @if($order['carrier'] || $order['tracking_note'])
+            <p class="mb-4 rounded-lg bg-brandBeige-50 p-3 text-sm" data-testid="tracking"><span class="font-semibold">{{ __('shop.tracking_note') }}:</span> {{ $order['carrier'] }} {{ $order['tracking_note'] }}</p>
+        @endif
+    @endif
 
     <section class="mb-4 rounded-lg border bg-white p-4" data-testid="receipt">
         <h2 class="mb-1 text-lg font-semibold">{{ __('shop.receipt') }}</h2>
@@ -76,5 +106,93 @@
             @endif
         </div>
     </section>
+
+    {{-- B3: money going back. --}}
+    @if(count($order['refunds']) > 0)
+        <section class="mb-4 rounded-lg border bg-white p-4 text-sm" data-testid="order-refunds">
+            <h2 class="mb-1 font-semibold">{{ __('shop.refunds_heading') }}</h2>
+            <ul>
+                @foreach($order['refunds'] as $refund)
+                    <li class="py-0.5" data-refund-status="{{ $refund['status'] }}">
+                        {{ $order['currency'] }} {{ $refund['amount'] }} —
+                        @if($refund['status'] === 'done')
+                            {{ __($refund['destination'] === 'card' ? 'shop.refund_done_card' : 'shop.refund_done_wallet') }}
+                        @else
+                            {{ __('shop.refund_on_its_way') }}
+                        @endif
+                    </li>
+                @endforeach
+            </ul>
+        </section>
+    @endif
+
+    {{-- B3: returns asked for, and asking for one. --}}
+    @if(count($order['returns']) > 0)
+        <section class="mb-4 rounded-lg border bg-white p-4 text-sm" data-testid="order-returns">
+            <h2 class="mb-1 font-semibold">{{ __('shop.returns_heading') }}</h2>
+            <ul>
+                @foreach($order['returns'] as $return)
+                    <li class="py-0.5" data-return-status="{{ $return['status'] }}">
+                        {{ $return['quantity'] }} × {{ $return['title'] }} · {{ __('shop.reason_'.$return['reason']) }} ·
+                        <span class="font-medium">{{ __('shop.return_status_'.$return['status']) }}</span>@if($return['decision_note']) — {{ $return['decision_note'] }}@endif
+                    </li>
+                @endforeach
+            </ul>
+        </section>
+    @endif
+
+    @if($order['returns_open'] && collect($order['items'])->sum('returnable') > 0)
+        <section class="no-print mb-4 rounded-lg border bg-white p-4 text-sm" data-testid="return-form">
+            <h2 class="mb-1 font-semibold">{{ __('shop.ask_return') }}</h2>
+            <p class="mb-2 text-gray-600">{{ __('shop.returns_until', ['date' => $order['returns_until']]) }}</p>
+            @if($order['return_conditions'])<p class="mb-2 text-gray-600" dir="auto">{{ $order['return_conditions'] }}</p>@endif
+            <form method="POST" action="{{ route('public.shop.orders.return', $order['number']) }}" class="grid gap-2 md:grid-cols-4">
+                @csrf
+                <label class="md:col-span-2">{{ __('shop.product_title') }}
+                    <select name="item_id" class="form-input block w-full" data-testid="return-item">
+                        @foreach($order['items'] as $item)
+                            @if($item['returnable'] > 0)<option value="{{ $item['id'] }}">{{ $item['title'] }}@if($item['variant']) ({{ $item['variant'] }})@endif — {{ __('shop.up_to', ['count' => $item['returnable']]) }}</option>@endif
+                        @endforeach
+                    </select>
+                </label>
+                <label>{{ __('shop.quantity') }}<input type="number" name="quantity" min="1" value="1" class="form-input block w-full" data-testid="return-quantity"></label>
+                <label>{{ __('shop.return_reason') }}
+                    <select name="reason" class="form-input block w-full" data-testid="return-reason">
+                        @foreach($reasons as $reason)<option value="{{ $reason }}">{{ __('shop.reason_'.$reason) }}</option>@endforeach
+                    </select>
+                </label>
+                <label class="md:col-span-3">{{ __('shop.slip_note') }}<input name="note" class="form-input block w-full" data-testid="return-note"></label>
+                <div class="self-end"><button type="submit" class="btn-primary w-full" data-testid="request-return">{{ __('shop.ask_return') }}</button></div>
+            </form>
+        </section>
+    @endif
+
+    {{-- B3: cancel before it leaves the shop. --}}
+    @if($order['can_cancel'])
+        <details class="no-print mb-4 rounded-lg border bg-white p-4 text-sm" data-testid="cancel-order">
+            <summary class="cursor-pointer font-semibold text-red-700">{{ __('shop.cancel_order') }}</summary>
+            <p class="my-2 text-gray-600">{{ __('shop.cancel_intro') }}</p>
+            <form method="POST" action="{{ route('public.shop.orders.cancel', $order['number']) }}" class="flex flex-wrap gap-2">
+                @csrf
+                <input name="reason" class="form-input flex-1" placeholder="{{ __('shop.cancel_reason') }}" required data-testid="cancel-reason">
+                <button type="submit" class="rounded bg-red-600 px-3 py-2 text-white" data-testid="confirm-cancel">{{ __('shop.cancel_order_refund') }}</button>
+            </form>
+        </details>
+    @endif
+
+    {{-- B3: write to the shop. --}}
+    @if(! in_array($order['status'], ['pending_payment', 'expired'], true))
+        <section class="no-print mb-4 rounded-lg border bg-white p-4 text-sm" data-testid="message-shop">
+            <h2 class="mb-1 font-semibold">{{ __('shop.message_shop', ['vendor' => $order['vendor']['name']]) }}</h2>
+            <form method="POST" action="{{ route('public.shop.orders.message', $order['number']) }}" class="flex flex-wrap items-start gap-2">
+                @csrf
+                <textarea name="body" rows="2" class="form-input flex-1" required data-testid="message-body"></textarea>
+                <button type="submit" class="btn-secondary" data-testid="send-message">{{ __('shop.send') }}</button>
+            </form>
+            @if($order['message_thread_id'])
+                <a href="{{ url('portal/messages/'.$order['message_thread_id']) }}" class="mt-2 inline-block text-brandMaroon-700 underline" data-testid="open-thread">{{ __('shop.open_conversation') }}</a>
+            @endif
+        </section>
+    @endif
 </div>
 @endsection

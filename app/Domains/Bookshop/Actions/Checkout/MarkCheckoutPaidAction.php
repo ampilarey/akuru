@@ -26,9 +26,9 @@ use Illuminate\Support\Facades\DB;
  */
 class MarkCheckoutPaidAction
 {
-    public function execute(int $checkoutId, string $how, ?int $actorUserId = null): ?BookshopCheckout
+    public function execute(int $checkoutId, string $how, ?int $actorUserId = null, ?int $paymentId = null): ?BookshopCheckout
     {
-        $paid = DB::transaction(function () use ($checkoutId, $how, $actorUserId) {
+        $paid = DB::transaction(function () use ($checkoutId, $how, $actorUserId, $paymentId) {
             $checkout = BookshopCheckout::query()->whereKey($checkoutId)->lockForUpdate()->first();
             if ($checkout === null || $checkout->status !== CheckoutStatus::PendingPayment) {
                 return null;
@@ -36,6 +36,9 @@ class MarkCheckoutPaidAction
 
             $checkout->status = CheckoutStatus::Paid;
             $checkout->paid_at = now();
+            if ($paymentId !== null) {
+                $checkout->payment_id = $paymentId;
+            }
             $checkout->save();
 
             $attention = [];

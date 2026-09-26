@@ -8,6 +8,7 @@ use App\Domains\Bookshop\Actions\Vendor\AcceptVendorAgreementAction;
 use App\Domains\Bookshop\Actions\Vendor\ListVendorProductsAction;
 use App\Domains\Bookshop\Actions\Vendor\ManageVendorMembersAction;
 use App\Domains\Bookshop\Actions\Vendor\SaveVendorDeliveryMethodsAction;
+use App\Domains\Bookshop\Actions\Vendor\SaveVendorShopSettingsAction;
 use App\Domains\Bookshop\Enums\DeliveryKind;
 use App\Domains\Bookshop\Http\Controllers\Concerns\AuthorizesVendor;
 use App\Http\Controllers\Controller;
@@ -50,6 +51,7 @@ class VendorPortalController extends Controller
             'members' => $scope->agreementAccepted ? app(ManageVendorMembersAction::class)->list($scope) : [],
             'delivery_methods' => $scope->agreementAccepted ? app(SaveVendorDeliveryMethodsAction::class)->list($scope) : [],
             'delivery_kinds' => array_map(fn (DeliveryKind $k) => $k->value, DeliveryKind::cases()),
+            'shop_settings' => $scope->agreementAccepted ? app(SaveVendorShopSettingsAction::class)->get($scope) : null,
             'options' => app(ListCatalogueOptionsAction::class)->execute(),
             'filters' => $filters + ['q' => null, 'status' => null],
             'must_set_password' => (bool) $request->user()->force_password_change,
@@ -121,6 +123,24 @@ class VendorPortalController extends Controller
         app(SaveVendorDeliveryMethodsAction::class)->replace($scope, $data['methods']);
 
         return back()->with('success', __('shop.delivery_saved_flash'));
+    }
+
+    /** B3: returns window and conditions, and holiday mode. Owners only. */
+    public function saveShopSettings(Request $request): RedirectResponse
+    {
+        $scope = $this->authorizeVendor($request);
+        abort_unless($scope->isOwner(), 403, __('shop.owner_only'));
+        $data = $request->validate([
+            'return_window_days' => 'required|integer|min:1|max:365',
+            'return_conditions' => 'nullable|string|max:2000',
+            'holiday_from' => 'nullable|date',
+            'holiday_until' => 'nullable|date',
+            'holiday_notice' => 'nullable|string|max:255',
+        ]);
+
+        app(SaveVendorShopSettingsAction::class)->save($scope, $data);
+
+        return back()->with('success', __('shop.settings_saved_flash'));
     }
 
     /** B2: the office's template becomes the shop's own rows, to edit. */

@@ -78,7 +78,13 @@
             @php($buyable = count($product['variants']) > 0
                 ? collect($product['variants'])->contains('in_stock', true)
                 : $product['stock']['state'] !== 'out_of_stock')
-            @if($buyable)
+            @if($product['vendor']['holiday'])
+                {{-- B3 holiday mode: still visible, not in the cart until the shop is back. --}}
+                <div class="mt-6 rounded-lg border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900" data-testid="holiday-notice">
+                    <p class="font-semibold">{{ __('shop.back_on', ['date' => $product['vendor']['holiday']['back_on']]) }}</p>
+                    @if($product['vendor']['holiday']['notice'])<p dir="auto">{{ $product['vendor']['holiday']['notice'] }}</p>@endif
+                </div>
+            @elseif($buyable)
                 <form method="POST" action="{{ route('public.shop.cart.add') }}" class="mt-6 flex flex-wrap items-end gap-3 rounded-lg bg-brandBeige-50 p-4" data-testid="add-to-cart-form">
                     @csrf
                     <input type="hidden" name="product" value="{{ $product['slug'] }}">
