@@ -84,6 +84,25 @@ return [
         'max_window_days' => 60,
     ],
 
+    /*
+     * B6 — money to vendors (§5 "Money", §7 "Payouts", §8; decisions 4 and
+     * 5). Commission is on goods only, at the vendor's rate or the default
+     * above; an earning matures after the return window from delivery; the
+     * owner asks for the matured balance once it reaches the minimum.
+     * Akuru invoices its commission monthly under its own name and TIN,
+     * with GST on it only when Akuru is registered — the owner's numbers,
+     * set on the host, never committed.
+     */
+    'money' => [
+        'payouts_enabled' => filter_var(env('BOOKSHOP_PAYOUTS_ENABLED', true), FILTER_VALIDATE_BOOLEAN),
+        'min_payout' => (float) env('BOOKSHOP_MIN_PAYOUT', 100),
+        'issuer_name' => env('BOOKSHOP_ISSUER_NAME', 'Akuru Institute'),
+        'issuer_tin' => env('BOOKSHOP_ISSUER_TIN'),
+        'issuer_gst_registered' => filter_var(env('BOOKSHOP_ISSUER_GST_REGISTERED', false), FILTER_VALIDATE_BOOLEAN),
+        'commission_tax_rate' => (float) env('BOOKSHOP_COMMISSION_TAX_RATE', 8),
+        'invoice_prefix' => 'ACI',
+    ],
+
     'checkout' => [
         // Audit finding 2: stock is reserved while the customer pays.
         'reservation_minutes' => (int) env('BOOKSHOP_RESERVATION_MINUTES', 30),

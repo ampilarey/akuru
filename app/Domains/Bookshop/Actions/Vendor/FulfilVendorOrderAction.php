@@ -2,6 +2,7 @@
 
 namespace App\Domains\Bookshop\Actions\Vendor;
 
+use App\Domains\Bookshop\Actions\Money\RecordVendorEarningAction;
 use App\Domains\Bookshop\Actions\NotifyBookshopUserAction;
 use App\Domains\Bookshop\Actions\Orders\CancelOrderAction;
 use App\Domains\Bookshop\Actions\Orders\RefundOrderAction;
@@ -46,6 +47,10 @@ class FulfilVendorOrderAction
                 'order_id' => $order->id, 'type' => $to, 'actor_user_id' => $scope->userId, 'created_at' => now(),
                 'note' => $to === 'dispatched' ? trim(($fields['carrier'] ?? '').' '.($fields['tracking_note'] ?? '')) ?: null : null,
             ]);
+            if ($to === 'delivered') {
+                // B6: the return window starts; the earning matures at its end.
+                app(RecordVendorEarningAction::class)->onDelivered($order->refresh());
+            }
 
             return $order->refresh();
         });

@@ -2,6 +2,7 @@
 
 namespace App\Domains\Bookshop\Actions\Orders;
 
+use App\Domains\Bookshop\Actions\Money\ReverseVendorEarningAction;
 use App\Domains\Bookshop\Actions\NotifyBookshopUserAction;
 use App\Domains\Bookshop\Enums\OrderStatus;
 use App\Domains\Bookshop\Models\Order;
@@ -51,6 +52,8 @@ class CancelOrderAction
             }
 
             app(RefundOrderAction::class)->request($locked, (float) $locked->total, 'Cancelled: '.$reason, $actorUserId);
+            // B6: a free order raises no refund, but its earning still goes.
+            app(ReverseVendorEarningAction::class)->cancel($locked);
 
             return $locked->refresh();
         });

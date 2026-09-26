@@ -1822,6 +1822,53 @@ class SmokeMarkerSeeder extends Seeder
         // B2: the walk pays from the student's wallet; the stock the walk
         // bought last time is put back by the updateOrInsert above.
         $this->topUpWallet('student@akuru.edu.mv', 500.0, 'SMOKE-Wallet top-up so a customer can pay in the bookstore.');
+
+        // B6 (`money.mjs`): the walk's payouts, the fake bank details it
+        // enters and Fitrah's commission invoices go; earnings went with the
+        // walk's orders above. Then one paid, delivered order from three
+        // weeks ago whose earning has matured, so the walk has a balance to
+        // ask for and a month to invoice. Never real bank details here.
+        DB::table('vendor_earnings')->whereIn('vendor_id', [$fitrahId, $otherId])->whereNull('order_id')->delete();
+        DB::table('vendor_payouts')->whereIn('vendor_id', [$fitrahId, $otherId])->delete();
+        DB::table('vendor_bank_details')->whereIn('vendor_id', [$fitrahId, $otherId])->delete();
+        DB::table('vendor_commission_invoices')->whereIn('vendor_id', [$fitrahId, $otherId])->delete();
+        $this->smokeMaturedOrder($fitrahId, 'student@akuru.edu.mv', 'smoke-arabic-letters-tracing-book', 2, 30.0, now()->subDays(21));
+    }
+
+    /**
+     * A paid, delivered order dated in the past, with its earning matured —
+     * what B6's walk needs and no browser can make (the return window is
+     * seven days). Through the real earning action, then backdated.
+     */
+    private function smokeMaturedOrder(int $vendorId, string $customerEmail, string $productSlug, int $quantity, float $deliveryFee, \Carbon\CarbonInterface $paidAt): void
+    {
+        $customerId = (int) DB::table('users')->where('email', $customerEmail)->value('id');
+        $product = DB::table('products')->where('slug', $productSlug)->first(['id', 'title', 'price', 'sku', 'tax_class']);
+        if ($customerId === 0 || $product === null) {
+            return;
+        }
+        $goods = round((float) $product->price * $quantity, 2);
+        $address = ['recipient_name' => 'SMOKE Customer', 'phone' => '7700000', 'atoll' => 'K', 'island' => 'Malé', 'street' => 'M. Smoke Villa'];
+        $number = 'SMK-'.$paidAt->format('ymd');
+        $checkout = \App\Domains\Bookshop\Models\BookshopCheckout::query()->create([
+            'number' => $number, 'user_id' => $customerId, 'status' => 'paid', 'payment_method' => 'wallet', 'address_snapshot' => $address,
+            'subtotal' => $goods, 'discount' => 0, 'delivery_total' => $deliveryFee, 'total' => $goods + $deliveryFee, 'currency' => 'MVR', 'paid_at' => $paidAt,
+        ]);
+        $order = \App\Domains\Bookshop\Models\Order::query()->create([
+            'number' => $number.'-FIT', 'bookshop_checkout_id' => $checkout->id, 'vendor_id' => $vendorId, 'user_id' => $customerId, 'status' => 'delivered',
+            'delivery_kind' => 'courier_male', 'delivery_name' => 'Delivery in Malé', 'delivery_fee' => $deliveryFee, 'delivery_carrier_paid' => false, 'delivery_handling_days' => 2,
+            'address_snapshot' => $address, 'subtotal' => $goods, 'discount' => 0, 'tax' => 0, 'total' => $goods + $deliveryFee, 'currency' => 'MVR', 'tax_shown' => false,
+            'paid_at' => $paidAt, 'processing_at' => $paidAt->copy()->addHours(2), 'dispatched_at' => $paidAt->copy()->addDay(), 'delivered_at' => $paidAt->copy()->addDays(2),
+        ]);
+        \App\Domains\Bookshop\Models\OrderItem::query()->create([
+            'order_id' => $order->id, 'product_id' => $product->id, 'title' => $product->title, 'sku' => $product->sku, 'unit_price' => $product->price,
+            'quantity' => $quantity, 'line_total' => $goods, 'tax_class' => $product->tax_class, 'tax_amount' => 0,
+        ]);
+        foreach (['placed' => $paidAt, 'paid' => $paidAt, 'processing' => $order->processing_at, 'dispatched' => $order->dispatched_at, 'delivered' => $order->delivered_at] as $type => $at) {
+            \App\Domains\Bookshop\Models\OrderEvent::query()->create(['order_id' => $order->id, 'type' => $type, 'created_at' => $at]);
+        }
+        app(\App\Domains\Bookshop\Actions\Money\RecordVendorEarningAction::class)->execute($order->refresh());
+        app(\App\Domains\Bookshop\Actions\Money\MatureVendorEarningsAction::class)->execute($vendorId);
     }
 
     /** One photo on a staging product, replaced on every run. */
