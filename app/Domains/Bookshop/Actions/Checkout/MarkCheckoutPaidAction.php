@@ -2,6 +2,7 @@
 
 namespace App\Domains\Bookshop\Actions\Checkout;
 
+use App\Domains\Bookshop\Actions\Insights\RecordShopEventAction;
 use App\Domains\Bookshop\Actions\Money\RecordVendorEarningAction;
 use App\Domains\Bookshop\Actions\NotifyBookshopUserAction;
 use App\Domains\Bookshop\Enums\CheckoutStatus;
@@ -127,6 +128,8 @@ class MarkCheckoutPaidAction
             'order_paid',
         );
         foreach ($checkout->orders as $order) {
+            // B9e: the last step of the shop's funnel, and what it sold.
+            app(RecordShopEventAction::class)->paid($order);
             $notify->vendor((int) $order->vendor_id, __('shop.notice_vendor_order_title'), __('shop.notice_vendor_order_body', ['number' => $order->number]), '/vendor/orders', 'new_order');
         }
         foreach ($attention as $order) {

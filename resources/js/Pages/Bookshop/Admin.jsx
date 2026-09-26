@@ -587,6 +587,42 @@ function Applications({ applications, open, t }) {
     );
 }
 
+/** B9e: every shop's funnel side by side. */
+function Funnels({ insights, t }) {
+    const fill = (s, vars) => Object.entries(vars).reduce((out, [k, v]) => out.replaceAll(`:${k}`, v), s || '');
+    const steps = ['shop_view', 'product_view', 'cart_add', 'checkout', 'order_paid'];
+
+    return (
+        <section className="mt-8" data-testid="office-insights">
+            <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+                <h2 className="text-lg font-semibold">{t.insights_office_heading}</h2>
+                <span className="flex flex-wrap gap-1">
+                    {insights.ranges.map((d) => (
+                        <button key={d} type="button" className={`rounded px-2 py-1 text-sm ${d === insights.days ? 'bg-gray-800 text-white' : 'bg-gray-100'}`}
+                            onClick={() => router.get('/admin/bookshop', { insight_days: d }, { preserveScroll: true })}>{fill(t.insights_last_days, { days: d })}</button>
+                    ))}
+                    <a href={`/admin/bookshop/insights/export?days=${insights.days}`} className="btn-secondary" data-testid="export-insights">{t.export_csv}</a>
+                </span>
+            </div>
+            <div className="overflow-x-auto rounded border bg-white">
+                <table className="w-full text-sm">
+                    <thead className="bg-gray-50"><tr><th className="p-2 text-start">{t.insights_shop}</th>{steps.map((s) => <th key={s} className="p-2 text-end">{t[`insights_step_${s}`] || s}</th>)}<th className="p-2 text-end">{t.insights_sales}</th><th className="p-2 text-end">%</th></tr></thead>
+                    <tbody>
+                        {insights.shops.map((r) => (
+                            <tr key={r.slug} className="border-t" data-testid={`insights-${r.slug}`}>
+                                <td className="p-2">{r.vendor}</td>
+                                {steps.map((s) => <td key={s} className="p-2 text-end">{r[s]}</td>)}
+                                <td className="p-2 text-end">{r.revenue}</td>
+                                <td className="p-2 text-end">{r.conversion ?? '—'}</td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    );
+}
+
 /** B9d: bulk quotes across shops — a request nobody answers is seen here. */
 function Quotes({ quotes, t }) {
     const statuses = ['requested', 'quoted', 'accepted', 'ordered', 'declined', 'withdrawn'];
@@ -781,7 +817,7 @@ function ShopHome({ home, t }) {
     );
 }
 
-export default function Admin({ t, vendors, catalogue, slips = [], orders = [], refunds = [], money = null, reviews = [], home = null, low_stock = [], notices = null, order_statuses = [], applications = [], applications_open = true, quotes = null, cod_on = true, default_commission_rate, sign_in_url, section_types = [] }) {
+export default function Admin({ t, vendors, catalogue, slips = [], orders = [], refunds = [], money = null, reviews = [], home = null, low_stock = [], notices = null, order_statuses = [], applications = [], applications_open = true, quotes = null, insights = null, cod_on = true, default_commission_rate, sign_in_url, section_types = [] }) {
     const { flash = {}, errors } = usePage().props;
 
     return (
@@ -808,6 +844,7 @@ export default function Admin({ t, vendors, catalogue, slips = [], orders = [], 
             {money && money.requests.length === 0 && <Money money={money} t={t} />}
             {!applications.some((a) => a.status === 'pending') && <Applications applications={applications} open={applications_open} t={t} />}
             {quotes && <Quotes quotes={quotes} t={t} />}
+            {insights && <Funnels insights={insights} t={t} />}
             <Orders orders={orders} vendors={vendors} statuses={order_statuses} t={t} />
             <LowStockAll rows={low_stock} t={t} />
             <Reviews reviews={reviews} t={t} />

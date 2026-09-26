@@ -139,6 +139,7 @@ return [
     'vendor_newsletter_subscriber' => \App\Domains\Bookshop\Models\VendorNewsletterSubscriber::class,
     'quote_request' => \App\Domains\Bookshop\Models\QuoteRequest::class,
     'quote_item' => \App\Domains\Bookshop\Models\QuoteItem::class,
+    'shop_daily_stat' => \App\Domains\Bookshop\Models\ShopDailyStat::class,
     'shop_home_feature' => \App\Domains\Bookshop\Models\ShopHomeFeature::class,
     'cart' => \App\Domains\Bookshop\Models\Cart::class,
     'cart_item' => \App\Domains\Bookshop\Models\CartItem::class,

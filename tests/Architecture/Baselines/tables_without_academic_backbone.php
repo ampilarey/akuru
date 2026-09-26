@@ -35,6 +35,7 @@ return [
     'media_galleries' => 'Website gallery. `event_date` is editorial — the date shown under the album.',
     'daily_contents' => 'W2.2 daily content for the public site, published by calendar date and read by visitors with no year at all.',
     'daily_content_deliveries' => 'The send log for the above. A delivery receipt, not a school record.',
+    'shop_daily_stats' => 'Bookstore funnel counters (BOOKSHOP_PLAN B9e) keyed by calendar day and shop, like `dashboard_analytics`; the Bookstore is commerce, and none of its tables carry the year (precedent B2).',
     'dashboard_analytics' => 'Platform telemetry keyed by calendar date. Scoping it to an academic year would make the platform-health charts unreadable across a rollover.',
     'admission_applications' => 'An applicant is not in a year yet — the intake they are applying for is `expected_start`. If admissions ever reports per intake year, this becomes a miss and should move down to that group.',
 

@@ -28,6 +28,7 @@ use App\Domains\Bookshop\Actions\Shop\ListShopProductsAction;
 use App\Domains\Bookshop\Actions\Shop\PresentShopVendorAction;
 use App\Domains\Bookshop\Actions\UpdateVendorAction;
 use App\Domains\Bookshop\Enums\OrderStatus;
+use App\Domains\Bookshop\Support\InsightsReport;
 use App\Domains\Bookshop\Support\SectionTypes;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
@@ -65,6 +66,7 @@ class AdminBookshopController extends Controller
             'applications' => app(DecideVendorApplicationAction::class)->list(),
             'applications_open' => app(ApplyToSellAction::class)->isOpen(),
             'quotes' => app(ListQuotesAction::class)->summary(),
+            'insights' => ['days' => InsightsReport::days((int) $request->query('insight_days', 30)), 'shops' => InsightsReport::byShop((int) $request->query('insight_days', 30)), 'ranges' => array_map('intval', (array) config('bookshop.insights.ranges'))],
             'cod_on' => app(CashOnDeliveryAction::class)->isOn(),
             'default_commission_rate' => number_format((float) config('bookshop.default_commission_rate'), 2, '.', ''),
             'agreement_url' => route('public.page.show', 'vendor-agreement'),
@@ -454,6 +456,23 @@ class AdminBookshopController extends Controller
             }
             fclose($out);
         }, 'bookstore-shop-applications.csv', ['Content-Type' => 'text/csv; charset=UTF-8']);
+    }
+
+    /** B9e: every shop's funnel side by side. */
+    public function exportInsights(Request $request): StreamedResponse
+    {
+        abort_unless($request->user()?->can('bookshop.manage'), 403);
+        $days = InsightsReport::days((int) $request->query('days', 30));
+        $rows = InsightsReport::byShop($days);
+
+        return response()->streamDownload(function () use ($rows): void {
+            $out = fopen('php://output', 'w');
+            Csv::put($out, ['shop', 'slug', 'shop_views', 'product_views', 'cart_adds', 'checkouts', 'orders_paid', 'revenue', 'conversion_percent']);
+            foreach ($rows as $r) {
+                Csv::put($out, array_values($r));
+            }
+            fclose($out);
+        }, 'bookstore-funnels-'.$days.'d.csv', ['Content-Type' => 'text/csv; charset=UTF-8']);
     }
 
     /** B9d: every shop's quotes, one row per line. */

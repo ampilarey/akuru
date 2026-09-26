@@ -1911,6 +1911,10 @@ class SmokeMarkerSeeder extends Seeder
             $quoteTitles = array_map(fn (string $key) => __('shop.'.$key, [], 'en'), ['notice_quote_requested_title', 'notice_quote_ready_title', 'notice_quote_declined_title']);
             DB::table('user_notifications')->whereIn('title', $quoteTitles)->delete();
         }
+
+        // B9e (`insights.mjs`): Fitrah's funnel starts from nothing, so the
+        // walk's one guest visit is what the shop's Insights page shows.
+        DB::table('shop_daily_stats')->whereIn('vendor_id', [$fitrahId, $otherId])->delete();
     }
 
     /**

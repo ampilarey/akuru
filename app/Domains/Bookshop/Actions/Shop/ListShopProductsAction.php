@@ -2,6 +2,7 @@
 
 namespace App\Domains\Bookshop\Actions\Shop;
 
+use App\Domains\Bookshop\Contracts\ProductSearchInterface;
 use App\Domains\Bookshop\Enums\ProductStatus;
 use App\Domains\Bookshop\Enums\ProductVisibility;
 use App\Domains\Bookshop\Enums\VendorStatus;
@@ -59,16 +60,8 @@ class ListShopProductsAction
         $query = self::forSale()
             ->when(($filters['collection'] ?? '') !== '', fn ($query) => $collection === null ? $query->whereRaw('0 = 1') : $query->whereIn('id', $collection->forSaleQuery()->reorder()->select('id')))
             ->when(! $storefront, fn ($query) => $query->where('visibility', ProductVisibility::Shop->value))
-            ->when($q !== '', fn ($query) => $query->where(fn ($w) => $w
-                ->where('title', 'like', '%'.$q.'%')
-                ->orWhere('title_dv', 'like', '%'.$q.'%')
-                ->orWhere('title_ar', 'like', '%'.$q.'%')
-                ->orWhere('summary', 'like', '%'.$q.'%')
-                ->orWhere('description', 'like', '%'.$q.'%')
-                ->orWhere('sku', 'like', '%'.$q.'%')
-                ->orWhere('barcode', 'like', '%'.$q.'%')
-                ->orWhere('tags', 'like', '%'.$q.'%')
-                ->orWhereHas('vendor', fn ($v) => $v->where('name', 'like', '%'.$q.'%'))))
+            // B9e: the words go to the search driver (§10), the database by default.
+            ->when($q !== '', fn ($query) => app(ProductSearchInterface::class)->apply($query, $q, ! isset($filters['sort']) && $picked === []))
             ->when(($filters['category'] ?? '') !== '', fn ($query) => $query->whereIn('product_category_id', $this->categoryIds((string) $filters['category'])))
             ->when(($filters['vendor'] ?? '') !== '', fn ($query) => $query->whereHas('vendor', fn ($v) => $v->where('slug', (string) $filters['vendor'])))
             ->when(($filters['brand'] ?? '') !== '', fn ($query) => $query->whereHas('brand', fn ($b) => $b->where('slug', (string) $filters['brand'])))
