@@ -4414,6 +4414,74 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5hj. B9d: bulk quotes for schools (2026-09-26)
+
+BOOKSHOP_PLAN slice B9, fourth sub-slice: **bulk quotes for schools
+(B2B)** (audit finding 22, parked in B9 and BACKLOG C7).
+
+**Asking.** A signed-in customer with **ten or more** of one shop's items
+in the cart (`bookshop.quotes.min_quantity`) opens "Buying for a school or
+group? Ask Fitrah for a price" under that shop's lines and gives the
+school or organisation, an optional phone and a note. The quote
+(`QT-2026-000001`) copies those lines with their list prices; the shop is
+told (`quote_requested`, by email by default). Fewer items and the form
+says how many are needed. Throttled.
+
+**Pricing.** The shop's new **Quotes** page (`/vendor/quotes`, from the
+portal) lists requests waiting first, with the customer, school, phone
+and note; the owner or staff gives **a price for each line** (above or
+below the list price; zero refused) and **how many days it holds**
+(1–60, default 14), with an optional note — the total updates as they
+type — or **declines with a note**. A priced quote can be re-priced until
+it is accepted. The customer is told either way (`quote_ready`). Only
+this shop's quotes; CSV one row per line.
+
+**Accepting.** *My quotes* (`/my-quotes`, in the menu, with CSV) shows
+each quote's status, the list and quoted totals, the saving and the date
+the price holds until. **Accept** puts the quoted lines in the cart at
+the quoted quantity, replacing the same items already there, marked
+"Quoted price", quantity locked (more of it is a separate list-price
+line). **One price rule** (`Support/CartPrice`) serves the cart page and
+the checkout: a quoted line pays the quoted price **while the quote holds
+— same product, variant and shop, not past its date** — and the list
+price after, with a note on the line; once lapsed the line can be changed
+like any other. Paying (or placing a cash order) marks the quote
+**ordered**; the order line keeps which quote line it came from.
+**Withdraw** takes its lines out of the cart.
+
+**Office.** `/admin/bookshop` shows the count by status and the latest
+quotes, and a CSV across every shop — a request no shop answers is seen.
+
+**Data** (`2026_09_26_000012_b9d_school_quotes`, additive):
+`quote_requests`, `quote_items`, `cart_items.quote_item_id`,
+`order_items.quote_item_id`. Aliases `quote_request`, `quote_item`
+(ADR-005). No money moves until checkout, which is the existing one.
+
+**Baselines**: `public/shop/quotes/index.blade.php` and `show.blade.php`
+(Blade count 244 — siblings of My orders, from the Blade cart);
+`VendorQuotesController` added to `VendorScopeIsTheOnlyDoorTest`.
+
+**Tests**: `SchoolQuotesTest` (4): asking from the cart and the minimum,
+the shop told, only its own requests (another shop 404s, another customer
+404s), zero and out-of-range days refused, the price and date, the
+customer told, their page, saving and CSVs; accepting into the cart,
+quantity locked, the checkout charging 510.00 not 600.00, the order line
+linked and the quote ordered; the lapsed quote at list price, accept
+refused, the line editable again; declining needs a note, a decided quote
+cannot be re-priced, withdrawing empties the cart, the office's counts
+and CSV and a customer refused it. Full suite **2273 passed**.
+
+**Walked** (`scripts/smoke/quotes.mjs`, **13/13**, no console or server
+errors): the teacher puts 12 tracing books in the cart, asks Fitrah for a
+price for "SMOKE-Majeediyya School" and sees it waiting in My quotes;
+Fitrah's owner finds it on Quotes, prices the book at 70.00 for 14 days
+(the live total reads 840.00) and sends it; the CSV has the line; the
+teacher sees 840.00 and the 180.00 saving, accepts, and the cart shows
+the quoted line at 840.00 with its quantity locked; the checkout charges
+840.00, not 1020.00; the office sees one accepted quote.
+
+**Production**: the migration only.
+
 ## 5hi. B9c: a shop's newsletter sign-up, and abandoned-cart reminders (2026-09-26)
 
 BOOKSHOP_PLAN slice B9, third sub-slice: the **newsletter section**

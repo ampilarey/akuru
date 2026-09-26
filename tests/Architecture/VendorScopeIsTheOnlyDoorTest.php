@@ -74,6 +74,7 @@ it('keeps models out of the portal controllers and opens every method with the g
         App\Domains\Bookshop\Http\Controllers\VendorStorefrontController::class,
         App\Domains\Bookshop\Http\Controllers\VendorMoneyController::class,
         App\Domains\Bookshop\Http\Controllers\VendorReviewController::class,
+        App\Domains\Bookshop\Http\Controllers\VendorQuotesController::class,
     ];
 
     $offenders = [];

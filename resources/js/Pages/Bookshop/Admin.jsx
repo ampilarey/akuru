@@ -587,6 +587,33 @@ function Applications({ applications, open, t }) {
     );
 }
 
+/** B9d: bulk quotes across shops — a request nobody answers is seen here. */
+function Quotes({ quotes, t }) {
+    const statuses = ['requested', 'quoted', 'accepted', 'ordered', 'declined', 'withdrawn'];
+
+    return (
+        <section className="mt-8" data-testid="office-quotes">
+            <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+                <h2 className="text-lg font-semibold">{t.quotes_title}</h2>
+                <a href="/admin/bookshop/quotes/export" className="btn-secondary" data-testid="export-quotes-all">{t.export_csv}</a>
+            </div>
+            <p className="mb-2 flex flex-wrap gap-2 text-sm">
+                {statuses.map((s) => <span key={s} className="rounded bg-gray-100 px-2 py-0.5" data-testid={`quotes-count-${s}`}>{t[`quote_status_${s}`] || s}: {quotes.counts[s] || 0}</span>)}
+            </p>
+            {quotes.recent.length > 0 && (
+                <ul className="divide-y rounded border bg-white text-sm">
+                    {quotes.recent.map((q) => (
+                        <li key={q.id} className="flex flex-wrap justify-between gap-2 p-2">
+                            <span><span className="font-mono">{q.number}</span> · {q.vendor.name} · <span dir="auto">{q.organisation}</span> · {t[`quote_status_${q.status}`] || q.status}</span>
+                            <span>{q.currency} {q.quoted_total ?? q.list_total} · {q.requested_at}</span>
+                        </li>
+                    ))}
+                </ul>
+            )}
+        </section>
+    );
+}
+
 /** B8 (§7 Reports "low stock across vendors"). */
 function LowStockAll({ rows, t }) {
     return (
@@ -754,7 +781,7 @@ function ShopHome({ home, t }) {
     );
 }
 
-export default function Admin({ t, vendors, catalogue, slips = [], orders = [], refunds = [], money = null, reviews = [], home = null, low_stock = [], notices = null, order_statuses = [], applications = [], applications_open = true, cod_on = true, default_commission_rate, sign_in_url, section_types = [] }) {
+export default function Admin({ t, vendors, catalogue, slips = [], orders = [], refunds = [], money = null, reviews = [], home = null, low_stock = [], notices = null, order_statuses = [], applications = [], applications_open = true, quotes = null, cod_on = true, default_commission_rate, sign_in_url, section_types = [] }) {
     const { flash = {}, errors } = usePage().props;
 
     return (
@@ -780,6 +807,7 @@ export default function Admin({ t, vendors, catalogue, slips = [], orders = [], 
             {!refunds.some((r) => r.status === 'pending') && <Refunds refunds={refunds} t={t} />}
             {money && money.requests.length === 0 && <Money money={money} t={t} />}
             {!applications.some((a) => a.status === 'pending') && <Applications applications={applications} open={applications_open} t={t} />}
+            {quotes && <Quotes quotes={quotes} t={t} />}
             <Orders orders={orders} vendors={vendors} statuses={order_statuses} t={t} />
             <LowStockAll rows={low_stock} t={t} />
             <Reviews reviews={reviews} t={t} />

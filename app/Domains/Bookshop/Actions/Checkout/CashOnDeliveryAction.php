@@ -110,6 +110,7 @@ class CashOnDeliveryAction
             }
             $checkout->reservations()->delete();
             app(RecordDiscountRedemptionAction::class)->transition('bookshop_checkout', $checkout->id, 'confirmed');
+            app(\App\Domains\Bookshop\Actions\Shop\CustomerQuotesAction::class)->markOrdered((int) $checkout->id);
 
             return $checkout->refresh();
         });

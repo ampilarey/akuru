@@ -137,6 +137,7 @@ return [
     'shop' => 'Bookstore',
     'my_orders' => 'My orders',
     'my_wishlist' => 'My wishlist',
+    'my_quotes' => 'My quotes',
     'vendor_portal' => 'My shop',
     'collecting_my_child' => 'Collecting my child',
     'arrivals' => 'Arrivals',

@@ -14,6 +14,7 @@ use App\Domains\Bookshop\Models\OrderItem;
 use App\Domains\Bookshop\Models\Product;
 use App\Domains\Bookshop\Models\StockReservation;
 use App\Domains\Bookshop\Models\Vendor;
+use App\Domains\Bookshop\Support\CartPrice;
 use App\Domains\Bookshop\Support\OrderNumbers;
 use App\Domains\Bookshop\Support\Stock;
 use App\Domains\Bookshop\Support\Tax;
@@ -81,9 +82,11 @@ class StartBookshopCheckoutAction
                         ? __('shop.error_sold_out', ['title' => $product->title])
                         : __('shop.error_only_n_left', ['count' => $available, 'title' => $product->title])]);
                 }
-                $unit = (float) ($variant?->price ?? $product->price);
+                // B9d: the quoted price while the quote holds, else the list price.
+                $unit = CartPrice::unit($item, $product, $variant);
                 $lines[] = [
                     'product' => $product, 'variant' => $variant, 'quantity' => (int) $item->quantity,
+                    'quote_item_id' => CartPrice::quoted($item, $product, $variant) !== null ? (int) $item->quote_item_id : null,
                     'unit' => $unit, 'total' => round($unit * $item->quantity, 2),
                 ];
             }
@@ -210,6 +213,7 @@ class StartBookshopCheckoutAction
                         'line_total' => $l['total'],
                         'tax_class' => $l['product']->tax_class->value,
                         'tax_amount' => $lineTax,
+                        'quote_item_id' => $l['quote_item_id'] ?? null,
                     ]);
                     if ($l['product']->track_stock) {
                         StockReservation::query()->create([

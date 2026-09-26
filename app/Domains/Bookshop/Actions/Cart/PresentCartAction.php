@@ -5,6 +5,7 @@ namespace App\Domains\Bookshop\Actions\Cart;
 use App\Domains\Bookshop\Actions\Shop\ListShopProductsAction;
 use App\Domains\Bookshop\Models\Cart;
 use App\Domains\Bookshop\Models\CartItem;
+use App\Domains\Bookshop\Support\CartPrice;
 use App\Domains\Bookshop\Support\ShopPresenter;
 use App\Domains\Bookshop\Support\Stock;
 use App\Domains\Media\Actions\ResolvePublicImageVariantAction;
@@ -42,7 +43,9 @@ class PresentCartAction
             $sellable = in_array($product->id, $forSale, true) && ($variant === null || $variant->is_active);
             $available = $sellable ? Stock::available($product, $variant) : 0;
             $short = $available !== null && $item->quantity > $available && ! Stock::madeToOrder($product);
-            $unitPrice = (float) ($variant?->price ?? $product->price);
+            // B9d: a quoted line pays the quoted price while the quote holds.
+            $quoted = CartPrice::quoted($item, $product, $variant);
+            $unitPrice = $quoted ?? (float) ($variant?->price ?? $product->price);
             $lineTotal = round($unitPrice * $item->quantity, 2);
 
             if (! $sellable) {
@@ -76,6 +79,8 @@ class PresentCartAction
                 'sellable' => $sellable,
                 'short' => $short,
                 'made_to_order' => Stock::madeToOrder($product),
+                'quoted' => $quoted !== null,
+                'quote_lapsed' => $item->quote_item_id !== null && $quoted === null,
             ];
             $groups[$vendorId]['subtotal'] += $lineTotal;
             $subtotal += $lineTotal;

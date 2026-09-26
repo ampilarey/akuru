@@ -593,6 +593,7 @@ export default function Vendor({ t, vendor, memberships = [], agreement_url, pro
                             <a href="/vendor/money" className="btn-secondary" data-testid="open-money">{t.money_title}</a>
                             <a href="/vendor/reviews" className="btn-secondary" data-testid="open-reviews">{t.reviews_heading}</a>
                             <a href="/vendor/stock" className="btn-secondary" data-testid="open-stock">{t.stock_title}</a>
+                            <a href="/vendor/quotes" className="btn-secondary" data-testid="open-quotes">{t.quotes_title}</a>
                         </span>
                     )}
                 </div>

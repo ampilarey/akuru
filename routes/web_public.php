@@ -89,6 +89,13 @@ Route::middleware('auth')->group(function () {
     Route::post('shop/wishlist/{slug}', [\App\Domains\Bookshop\Http\Controllers\ShopAccountController::class, 'toggleWishlist'])->name('public.shop.wishlist.toggle')->middleware('throttle:60,1,shop-wishlist');
     Route::post('shop/products/{slug}/notify', [\App\Domains\Bookshop\Http\Controllers\ShopAccountController::class, 'toggleStockAlert'])->name('public.shop.stock-alert')->middleware('throttle:30,1,shop-alert');
     Route::post('shop/products/{slug}/reviews', [\App\Domains\Bookshop\Http\Controllers\ShopAccountController::class, 'review'])->name('public.shop.review')->middleware('throttle:10,1,shop-review');
+    // B9d: bulk quotes for schools — asked from the cart, accepted back into it.
+    Route::post('shop/quotes', [\App\Domains\Bookshop\Http\Controllers\MyQuotesController::class, 'store'])->name('public.shop.quotes.store')->middleware('throttle:5,10,shop-quote');
+    Route::get('my-quotes', [\App\Domains\Bookshop\Http\Controllers\MyQuotesController::class, 'index'])->name('public.shop.quotes');
+    Route::get('my-quotes/export', [\App\Domains\Bookshop\Http\Controllers\MyQuotesController::class, 'export'])->name('public.shop.quotes.export');
+    Route::get('my-quotes/{number}', [\App\Domains\Bookshop\Http\Controllers\MyQuotesController::class, 'show'])->name('public.shop.quotes.show');
+    Route::post('my-quotes/{number}/accept', [\App\Domains\Bookshop\Http\Controllers\MyQuotesController::class, 'accept'])->name('public.shop.quotes.accept')->middleware('throttle:20,1,shop-quote-decide');
+    Route::post('my-quotes/{number}/withdraw', [\App\Domains\Bookshop\Http\Controllers\MyQuotesController::class, 'withdraw'])->name('public.shop.quotes.withdraw')->middleware('throttle:20,1,shop-quote-decide');
 });
 // B9c: a shop's newsletter — sign up on its page; the unsubscribe page its mailings link to.
 Route::get('shop/newsletter/unsubscribe/{token}', [\App\Domains\Bookshop\Http\Controllers\NewsletterController::class, 'show'])->name('public.shop.newsletter.unsubscribe')->where('token', '[A-Za-z0-9]{48}');

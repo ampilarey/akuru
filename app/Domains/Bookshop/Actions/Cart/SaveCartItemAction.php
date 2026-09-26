@@ -36,6 +36,8 @@ class SaveCartItemAction
             ->where('cart_id', $cart->id)
             ->where('product_id', $product->id)
             ->where('product_variant_id', $variant?->id)
+            // B9d: a quoted line keeps its quoted quantity; more of it is an ordinary line.
+            ->whereNull('quote_item_id')
             ->first();
         $wanted = ($existing?->quantity ?? 0) + $quantity;
 
@@ -53,6 +55,18 @@ class SaveCartItemAction
             $item->delete();
 
             return null;
+        }
+        // B9d: a quote prices a quantity; change it and it is no longer the quote.
+        // Once the quote has lapsed the line is an ordinary one again.
+        if ($item->quote_item_id !== null && ! ($item->quoteItem()->with('quote')->first()?->quote?->priceHolds() ?? false)) {
+            $item->update(['quote_item_id' => null]);
+        }
+        if ($item->quote_item_id !== null) {
+            if ($quantity !== (int) $item->quantity) {
+                throw ValidationException::withMessages(['quantity' => __('shop.error_quote_quantity')]);
+            }
+
+            return $item;
         }
 
         return $this->set($cart, $item, $quantity);
