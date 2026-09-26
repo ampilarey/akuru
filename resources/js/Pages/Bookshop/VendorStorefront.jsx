@@ -65,7 +65,70 @@ function CustomCssEditor({ css, isOwner, t, onSaved }) {
     );
 }
 
-export default function VendorStorefront({ t, vendor, designer, preview_url, public_url, custom_css }) {
+/** B10d (ADR-039): looks the office has published — applied to the draft in one go; and offering this shop's own look. */
+function ThemeSwatches({ colors }) {
+    return (
+        <span className="flex gap-1" aria-hidden="true">
+            {['primary', 'secondary', 'accent', 'page_bg', 'text'].map((slot) => <span key={slot} className="inline-block h-5 w-5 rounded border" style={{ background: colors[slot] }} />)}
+        </span>
+    );
+}
+
+function ThemeGallery({ gallery, isOwner, published, t, onApplied }) {
+    const offer = useForm({ name: '', description: '' });
+
+    return (
+        <section className="rounded-lg border bg-white p-4" data-testid="theme-gallery">
+            <h2 className="mb-1 text-lg font-semibold">{t.gallery_heading}</h2>
+            <p className="mb-3 text-sm text-gray-600">{t.gallery_intro}</p>
+            <ul className="grid gap-3 sm:grid-cols-2">
+                {gallery.themes.map((theme) => (
+                    <li key={theme.id} className="rounded border p-3" data-testid={`gallery-${theme.slug}`}>
+                        <div className="mb-1 flex items-center justify-between gap-2">
+                            <span className="font-semibold">{theme.name}</span>
+                            <ThemeSwatches colors={theme.colors} />
+                        </div>
+                        {theme.description && <p className="text-xs text-gray-600">{theme.description}</p>}
+                        <p className="mt-1 text-xs text-gray-500">
+                            {theme.fonts.heading}{theme.fonts.body !== theme.fonts.heading && ` / ${theme.fonts.body}`}
+                            {theme.has_css && ` · ${t.gallery_has_css}`}
+                            {theme.by && ` · ${t.gallery_by.replace(':shop', theme.by)}`}
+                        </p>
+                        {isOwner && (
+                            <button type="button" className="btn-secondary mt-2 text-sm" data-testid={`gallery-apply-${theme.slug}`}
+                                onClick={() => { if (window.confirm(t.gallery_apply_confirm.replace(':name', theme.name))) router.post(`/vendor/storefront/themes/${theme.id}/apply`, {}, { preserveScroll: true, onSuccess: onApplied }); }}>
+                                {t.gallery_apply}
+                            </button>
+                        )}
+                    </li>
+                ))}
+            </ul>
+            {isOwner && (
+                <div className="mt-4 border-t pt-3" data-testid="gallery-offer">
+                    <h3 className="text-sm font-semibold">{t.gallery_offer_heading}</h3>
+                    {gallery.offered ? (
+                        <p className="text-sm text-gray-600" data-testid="gallery-offered" data-status={gallery.offered.status}>
+                            {(gallery.offered.status === 'declined' ? t.gallery_offer_declined : t.gallery_offer_waiting).replace(':name', gallery.offered.name)}
+                            {gallery.offered.note && <span className="block text-xs">{gallery.offered.note}</span>}
+                        </p>
+                    ) : null}
+                    {(!gallery.offered || gallery.offered.status === 'declined') && (
+                        published ? (
+                            <form className="mt-2 flex flex-wrap items-end gap-2 text-sm" onSubmit={(e) => { e.preventDefault(); offer.post('/vendor/storefront/themes/offer', { preserveScroll: true, onSuccess: () => offer.reset() }); }}>
+                                <label>{t.gallery_offer_name}<input className="form-input block w-48" required maxLength={80} value={offer.data.name} onChange={(e) => offer.setData('name', e.target.value)} data-testid="gallery-offer-name" /></label>
+                                <label className="flex-1">{t.gallery_offer_description}<input className="form-input block w-full" maxLength={300} value={offer.data.description} onChange={(e) => offer.setData('description', e.target.value)} /></label>
+                                <button type="submit" className="btn-secondary" disabled={offer.processing} data-testid="gallery-offer-send">{t.gallery_offer_send}</button>
+                                <FormErrors errors={offer.errors} className="w-full" />
+                            </form>
+                        ) : <p className="text-xs text-gray-500">{t.error_gallery_publish_first}</p>
+                    )}
+                </div>
+            )}
+        </section>
+    );
+}
+
+export default function VendorStorefront({ t, vendor, designer, preview_url, public_url, custom_css, gallery }) {
     const { flash = {}, errors } = usePage().props;
     const isOwner = vendor.role === 'owner';
     const d = designer;
@@ -284,6 +347,7 @@ export default function VendorStorefront({ t, vendor, designer, preview_url, pub
                         <p className="mt-1 px-2 text-xs text-gray-500">{t.preview_hint}</p>
                     </section>
 
+                    {gallery && <ThemeGallery gallery={gallery} isOwner={isOwner} published={d.versions.length > 0} t={t} onApplied={() => window.location.reload()} />}
                     {custom_css && <CustomCssEditor css={custom_css} isOwner={isOwner} t={t} onSaved={() => setPreviewKey((k) => k + 1)} />}
 
                     <section className="rounded-lg border bg-white p-4" data-testid="versions">

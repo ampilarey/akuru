@@ -587,6 +587,47 @@ function Applications({ applications, open, t }) {
     );
 }
 
+/** B10d (ADR-039): the theme gallery — looks the shops offered, waiting; what is published; withdraw. */
+function ThemeGalleryOffice({ themes, t }) {
+    const [notes, setNotes] = useState({});
+    const decide = (id, decision) => router.post(`/admin/bookshop/themes/${id}`, { decision, note: notes[id] || '' }, { preserveScroll: true });
+    const swatches = (colors) => (
+        <span className="flex gap-1" aria-hidden="true">{['primary', 'secondary', 'accent', 'page_bg', 'text'].map((s) => <span key={s} className="inline-block h-4 w-4 rounded border" style={{ background: colors[s] }} />)}</span>
+    );
+
+    return (
+        <section className="mt-8" data-testid="office-themes">
+            <h2 className="mb-1 text-lg font-semibold">{t.gallery_office_heading}</h2>
+            <p className="mb-2 text-sm text-gray-600">{t.gallery_office_hint}</p>
+            {themes.waiting.length > 0 && (
+                <ul className="mb-3 space-y-2">
+                    {themes.waiting.map((th) => (
+                        <li key={th.id} className="rounded border border-amber-300 bg-white p-3 text-sm" data-testid={`theme-waiting-${th.id}`}>
+                            <div className="flex flex-wrap items-center justify-between gap-2"><span className="font-semibold">{th.name} · {th.by}</span>{swatches(th.colors)}</div>
+                            {th.description && <p className="text-xs text-gray-600">{th.description}</p>}
+                            <p className="text-xs text-gray-500">{th.fonts.heading} / {th.fonts.body}</p>
+                            {th.css && <pre className="mt-1 max-h-40 overflow-auto rounded bg-gray-50 p-2 text-xs" dir="ltr">{th.css}</pre>}
+                            <div className="mt-2 flex flex-wrap items-center gap-2">
+                                <input className="form-input flex-1" placeholder={t.css_note_placeholder} value={notes[th.id] || ''} onChange={(e) => setNotes({ ...notes, [th.id]: e.target.value })} />
+                                <button type="button" className="btn-primary" onClick={() => decide(th.id, 'publish')} data-testid={`theme-publish-${th.id}`}>{t.gallery_publish}</button>
+                                <button type="button" className="btn-secondary" onClick={() => decide(th.id, 'decline')} data-testid={`theme-decline-${th.id}`}>{t.css_decline}</button>
+                            </div>
+                        </li>
+                    ))}
+                </ul>
+            )}
+            <ul className="divide-y rounded border bg-white text-sm">
+                {themes.gallery.map((th) => (
+                    <li key={th.id} className="flex flex-wrap items-center justify-between gap-2 p-2" data-testid={`theme-${th.slug}`}>
+                        <span className="flex items-center gap-2">{swatches(th.colors)} <span className="font-semibold">{th.name}</span> <span className="text-xs text-gray-500">{th.by ? t.gallery_by.replace(':shop', th.by) : t.gallery_by_office} · {t.gallery_uses.replace(':count', th.uses)}</span></span>
+                        <button type="button" className="text-sm text-red-700 underline" onClick={() => decide(th.id, 'withdraw')} data-testid={`theme-withdraw-${th.slug}`}>{t.gallery_withdraw}</button>
+                    </li>
+                ))}
+            </ul>
+        </section>
+    );
+}
+
 /** B10c (ADR-039): shops' own CSS — read it, open the shop's preview with it, approve or send back; take a live one down. */
 function CustomCssReviews({ rows, t }) {
     const [notes, setNotes] = useState({});
@@ -934,7 +975,7 @@ function ShopHome({ home, t }) {
     );
 }
 
-export default function Admin({ t, vendors, catalogue, slips = [], orders = [], refunds = [], money = null, reviews = [], home = null, low_stock = [], notices = null, order_statuses = [], applications = [], applications_open = true, quotes = null, insights = null, hosts = null, team = null, custom_css = null, cod_on = true, default_commission_rate, sign_in_url, section_types = [] }) {
+export default function Admin({ t, vendors, catalogue, slips = [], orders = [], refunds = [], money = null, reviews = [], home = null, low_stock = [], notices = null, order_statuses = [], applications = [], applications_open = true, quotes = null, insights = null, hosts = null, team = null, custom_css = null, themes = null, cod_on = true, default_commission_rate, sign_in_url, section_types = [] }) {
     const { flash = {}, errors } = usePage().props;
 
     return (
@@ -964,6 +1005,7 @@ export default function Admin({ t, vendors, catalogue, slips = [], orders = [], 
             {insights && <Funnels insights={insights} t={t} />}
             {hosts && <Hosts hosts={hosts} t={t} />}
             {custom_css && <CustomCssReviews rows={custom_css} t={t} />}
+            {themes && <ThemeGalleryOffice themes={themes} t={t} />}
             {team && <Team team={team} t={t} />}
             <Orders orders={orders} vendors={vendors} statuses={order_statuses} t={t} />
             <LowStockAll rows={low_stock} t={t} />

@@ -216,7 +216,7 @@ Each section has: visibility (published / hidden / scheduled between dates), lan
 ### 6.8 Later, on request
 - A vendor's own domain or subdomain mapped to the storefront (§2).
 - Storefront analytics beyond basics (funnel, top pages).
-- A theme marketplace or per-vendor CSS: ~~not planned~~ — **the owner asked for both (2026-09-26); ADR-039.** Per-vendor CSS **built in B10c** (STATUS §5ho): cleaned, confined to the shop's part of its page, live only once the office approves. The theme gallery follows in B10d.
+- A theme marketplace or per-vendor CSS: ~~not planned~~ — **the owner asked for both (2026-09-26); ADR-039.** Per-vendor CSS **built in B10c** (STATUS §5ho): cleaned, confined to the shop's part of its page, live only once the office approves. The **theme gallery built in B10d** (§5hp): four starter looks, shops apply a look to their draft and offer their own, the office publishes, declines and withdraws. Free; paid themes would be a decision for the owner.
 
 ---
 

@@ -6,6 +6,7 @@ use App\Domains\Bookshop\Actions\Checkout\CashOnDeliveryAction;
 use App\Domains\Bookshop\Actions\Checkout\DecideBankTransferSlipAction;
 use App\Domains\Bookshop\Actions\CreateVendorAction;
 use App\Domains\Bookshop\Actions\DecideStorefrontCssAction;
+use App\Domains\Bookshop\Actions\DecideStorefrontThemeAction;
 use App\Domains\Bookshop\Actions\DecideVendorApplicationAction;
 use App\Domains\Bookshop\Actions\DecideVendorHostAction;
 use App\Domains\Bookshop\Actions\DecideVendorPayoutAction;
@@ -70,6 +71,7 @@ class AdminBookshopController extends Controller
             'applications_open' => app(ApplyToSellAction::class)->isOpen(),
             'quotes' => app(ListQuotesAction::class)->summary(),
             'custom_css' => app(DecideStorefrontCssAction::class)->list(),
+            'themes' => app(DecideStorefrontThemeAction::class)->list(),
             'team' => ['members' => app(ManageBookshopTeamAction::class)->list(), 'can_manage' => (bool) $request->user()?->hasAnyRole(['super_admin', 'admin']), 'added' => $request->session()->get('team_added')],
             'hosts' => ['shops' => app(DecideVendorHostAction::class)->list(), 'shop_host' => config('bookshop.hosts.shop_host'), 'check' => $request->session()->get('host_check')],
             'insights' => ['days' => InsightsReport::days((int) $request->query('insight_days', 30)), 'shops' => InsightsReport::byShop((int) $request->query('insight_days', 30)), 'ranges' => array_map('intval', (array) config('bookshop.insights.ranges'))],
@@ -462,6 +464,23 @@ class AdminBookshopController extends Controller
             }
             fclose($out);
         }, 'bookstore-shop-applications.csv', ['Content-Type' => 'text/csv; charset=UTF-8']);
+    }
+
+    /** B10d (ADR-039): the theme gallery — publish a look (a shop's, or a withdrawn one again), decline with a note, withdraw. */
+    public function decideTheme(Request $request, int $theme): RedirectResponse
+    {
+        abort_unless($request->user()?->can('bookshop.manage'), 403);
+        $data = $request->validate(['decision' => 'required|string|in:publish,decline,withdraw', 'note' => 'nullable|string|max:500', 'name' => 'nullable|string|max:80']);
+        $gallery = app(DecideStorefrontThemeAction::class);
+        $by = (int) $request->user()->id;
+
+        match ($data['decision']) {
+            'publish' => $gallery->publish($theme, $by, $data['name'] ?? null),
+            'decline' => $gallery->decline($theme, $by, (string) ($data['note'] ?? '')),
+            'withdraw' => $gallery->withdraw($theme, $by),
+        };
+
+        return back()->with('success', __('shop.theme_decided_flash_'.$data['decision']));
     }
 
     /** B10c (ADR-039): a shop's own CSS — approve it, send it back with a note, or take the live one down. */
