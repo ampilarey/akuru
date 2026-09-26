@@ -105,7 +105,9 @@ it('saves a product with photos, variants, details, tags and a sanitised descrip
         ->and($product->tax_class->value)->toBe('zero_rated')
         ->and((string) $product->price)->toBe('120.00')
         ->and($product->tags)->toBe(['arabic', 'grade 1'])
-        ->and($product->details)->toBe(['author' => 'Akuru Press', 'pages' => '64', 'age_range' => '5–7'])
+        // MySQL 8 stores JSON object keys in its own order (MariaDB keeps
+        // them as given), so the keys are compared, not their order.
+        ->and($product->details)->toEqualCanonicalizing(['author' => 'Akuru Press', 'pages' => '64', 'age_range' => '5–7'])
         ->and($product->description)->toContain('<p>First paragraph.</p>')
         ->and($product->description)->not->toContain('<script')
         ->and($product->description)->not->toContain('alert(1)')
