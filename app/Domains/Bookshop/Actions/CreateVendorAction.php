@@ -40,24 +40,29 @@ class CreateVendorAction
                 'gst_registered' => (bool) ($data['gst_registered'] ?? false),
                 'status' => VendorStatus::Active->value,
                 'commission_rate' => $data['commission_rate'] ?? null,
-                'contact_email' => $data['contact_email'] ?? $data['owner_email'],
+                'contact_email' => $data['contact_email'] ?? $data['owner_email'] ?? null,
                 'contact_phone' => $data['contact_phone'] ?? $data['owner_phone'] ?? null,
                 'address' => $data['address'] ?? null,
                 'opening_hours' => $data['opening_hours'] ?? null,
                 'created_by' => $byUserId,
             ]);
 
-            $account = app(EnsureVendorAccountAction::class)->execute(
-                (string) $data['owner_name'],
-                (string) $data['owner_email'],
-                $data['owner_phone'] ?? null,
-            );
+            // B9a: an approved applicant is already the owner's account.
+            $account = ! empty($data['owner_user_id'])
+                ? app(EnsureVendorAccountAction::class)->existing((int) $data['owner_user_id'])
+                : app(EnsureVendorAccountAction::class)->execute(
+                    (string) $data['owner_name'],
+                    (string) $data['owner_email'],
+                    $data['owner_phone'] ?? null,
+                );
 
             VendorMember::query()->create([
                 'vendor_id' => $vendor->id,
                 'user_id' => $account['user_id'],
                 'role' => VendorMemberRole::Owner->value,
                 'added_by' => $byUserId,
+                // B9a: accepted on the application, dated there.
+                'agreement_accepted_at' => $data['agreement_accepted_at'] ?? null,
             ]);
 
             return [

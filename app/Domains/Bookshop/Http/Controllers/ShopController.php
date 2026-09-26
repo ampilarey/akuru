@@ -3,6 +3,7 @@
 namespace App\Domains\Bookshop\Http\Controllers;
 
 use App\Domains\Bookshop\Actions\ListCatalogueOptionsAction;
+use App\Domains\Bookshop\Actions\Shop\ApplyToSellAction;
 use App\Domains\Bookshop\Actions\Shop\CustomerListsAction;
 use App\Domains\Bookshop\Actions\Shop\ListShopProductsAction;
 use App\Domains\Bookshop\Actions\Shop\PresentShopHomeAction;
@@ -29,7 +30,10 @@ class ShopController extends Controller
         $browsing = array_diff_key($filters, ['sort' => 1]) === [];
 
         return view('public.shop.index', [
-            'home' => $browsing ? app(PresentShopHomeAction::class)->execute() + ['recently_viewed' => app(CustomerListsAction::class)->recentlyViewed($request->session())] : null,
+            'home' => $browsing ? app(PresentShopHomeAction::class)->execute() + [
+                'recently_viewed' => app(CustomerListsAction::class)->recentlyViewed($request->session()),
+                'applications_open' => app(ApplyToSellAction::class)->isOpen(),
+            ] : null,
             'products' => app(ListShopProductsAction::class)->execute($filters),
             'filters' => $filters,
             'options' => $this->options(),

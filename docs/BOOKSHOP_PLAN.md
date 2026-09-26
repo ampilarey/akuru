@@ -94,7 +94,8 @@ Vendor membership is a row on the unified identity (`vendor_members`),
 the way writer is a role on a person. A person can belong to more than
 one vendor (a switcher in the portal). Public vendor onboarding (apply →
 approve, like writers) is a later slice; v1 vendors are created by the
-office with an owner account.
+office with an owner account. *(Built in B9a, STATUS §5hg: `/vendor/apply`,
+decided on `/admin/bookshop`, the form closable by the office.)*
 
 ---
 
@@ -292,7 +293,7 @@ No `academic_year_id`: commerce, not a term's record (every commerce table's pre
 | B6 | **Money to vendors** — commission, monthly commission tax invoice, earnings maturing after the return window, payout requests and decisions, statements, vendor and office reports, tax report. **Built 2026-09-26 (STATUS §5hd)** — statements are computed, not a table; vendor-funded codes are B7 (the earning already knows the model). | a vendor sees what they are owed and is paid — walked, `scripts/smoke/vendor-money.mjs` 16/16 |
 | B7 | **Shop polish and trust** — search suggestions, best-selling and top-rated sorts, wishlist, recently viewed, reviews with vendor replies and office moderation, back-in-stock notices, product badges, vendor-funded discount codes scoped to their products, free-delivery-over rules, shop-home merchandising by the office, drag-to-order in the designer. **Built 2026-09-26 (STATUS §5he)** — reviews on and published at once, premoderation behind `BOOKSHOP_REVIEWS_PREMODERATE`; vendor codes live in Commerce with a vendor scope; recently viewed is per session. | the shop feels like a shop — walked, `scripts/smoke/polish.mjs` 29/29 |
 | B8 | **Bulk and operations** — CSV import/export of products and stock, stock movements log, low-stock alerts, order exports, email/SMS switches. **Built 2026-09-26 (STATUS §5hf)** — the import checks and previews before it writes; duplicate and bulk status on a paged product list; order-line exports; email is queued and SMS goes through the SMS contract, both behind the office's switches and each shop's choice per event. | a vendor with 500 items can manage them — walked, `scripts/smoke/operations.mjs` 21/21 |
-| B9 | **Later, on request** — public vendor onboarding (apply → approve), custom host per vendor, whole-shop subdomain, cash on delivery, newsletter section, abandoned-cart reminders, bulk quotes for schools (B2B), USD pricing, search service, analytics funnel. | parked in `BACKLOG.md` |
+| B9 | **Later, on request** — public vendor onboarding (apply → approve), custom host per vendor, whole-shop subdomain, cash on delivery, newsletter section, abandoned-cart reminders, bulk quotes for schools (B2B), USD pricing, search service, analytics funnel. **Requested 2026-09-26 ("B9"); built as sub-slices, one PR each.** B9a public vendor onboarding **built (STATUS §5hg)**. | parked in `BACKLOG.md`; being built |
 
 Rough size: B1a, B1b and B3 are each about the gift-card slice times
 two, B2 times three; B4 and B5 together are the largest piece (the

@@ -775,6 +775,10 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::get('orders/lines/export', [\App\Domains\Bookshop\Http\Controllers\AdminBookshopController::class, 'exportOrderLines'])->name('admin.bookshop.orders.lines.export');
         Route::get('low-stock/export', [\App\Domains\Bookshop\Http\Controllers\AdminBookshopController::class, 'exportLowStock'])->name('admin.bookshop.low-stock.export');
         Route::post('notices', [\App\Domains\Bookshop\Http\Controllers\AdminBookshopController::class, 'saveNotices'])->name('admin.bookshop.notices.save');
+        // B9a: shop applications.
+        Route::post('applications/{application}/decide', [\App\Domains\Bookshop\Http\Controllers\AdminBookshopController::class, 'decideApplication'])->name('admin.bookshop.applications.decide')->whereNumber('application');
+        Route::post('applications/open', [\App\Domains\Bookshop\Http\Controllers\AdminBookshopController::class, 'setApplicationsOpen'])->name('admin.bookshop.applications.open');
+        Route::get('applications/export', [\App\Domains\Bookshop\Http\Controllers\AdminBookshopController::class, 'exportApplications'])->name('admin.bookshop.applications.export');
         // B3: card refunds, returned through BML and recorded.
         Route::get('refunds/export', [\App\Domains\Bookshop\Http\Controllers\AdminBookshopController::class, 'exportRefunds'])->name('admin.bookshop.refunds.export');
         Route::post('refunds/{refund}', [\App\Domains\Bookshop\Http\Controllers\AdminBookshopController::class, 'processRefund'])->name('admin.bookshop.refunds.process')->whereNumber('refund');
@@ -798,6 +802,9 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
     // gate is the membership (VendorScope), checked in every method.
     Route::prefix('vendor')->middleware(['auth'])->group(function () {
         Route::get('/', [\App\Domains\Bookshop\Http\Controllers\VendorPortalController::class, 'index'])->name('vendor.index');
+        // B9a: "Open a shop" — anyone signed in may apply.
+        Route::get('apply', [\App\Domains\Bookshop\Http\Controllers\VendorApplyController::class, 'index'])->name('vendor.apply');
+        Route::post('apply', [\App\Domains\Bookshop\Http\Controllers\VendorApplyController::class, 'store'])->name('vendor.apply.store')->middleware('throttle:5,60,vendor-apply');
         Route::post('agreement', [\App\Domains\Bookshop\Http\Controllers\VendorPortalController::class, 'acceptAgreement'])->name('vendor.agreement');
         Route::post('switch', [\App\Domains\Bookshop\Http\Controllers\VendorPortalController::class, 'switchVendor'])->name('vendor.switch');
         Route::post('members', [\App\Domains\Bookshop\Http\Controllers\VendorPortalController::class, 'addMember'])->name('vendor.members.store');

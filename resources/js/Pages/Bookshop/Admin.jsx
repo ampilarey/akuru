@@ -534,6 +534,59 @@ function Money({ money, t }) {
 }
 
 /** B7 (plan §4 "office may hide"; decision 12): the newest reviews, those waiting first; hide with a note, or publish. */
+/** B9a (§3 "apply → approve"): shop applications, and the switch that opens or closes the form. */
+function ApplicationRow({ a, t }) {
+    const [note, setNote] = useState('');
+    const [rate, setRate] = useState('');
+    const [code, setCode] = useState('');
+    const decide = (decision) => router.post(`/admin/bookshop/applications/${a.id}/decide`, { decision, note, commission_rate: rate, code }, { preserveScroll: true });
+
+    return (
+        <li className="p-3 text-sm" data-testid={`application-${a.id}`} data-status={a.status}>
+            <div className="flex flex-wrap items-baseline justify-between gap-2">
+                <span className="font-semibold" dir="auto">{a.shop_name}</span>
+                <span className="text-xs text-gray-500">{a.submitted_at} · {t[`application_state_${a.status}`] || a.status}</span>
+            </div>
+            <p className="text-gray-700">{a.applicant} · {a.contact_email} · {a.contact_phone} · {a.island}{a.legal_name && ` · ${a.legal_name}`}{a.tin && ` · TIN ${a.tin}`}</p>
+            <p className="mt-1 whitespace-pre-line text-gray-700" dir="auto">{a.what_they_sell}</p>
+            {a.link && <a href={a.link} target="_blank" rel="noreferrer nofollow" className="text-blue-700 underline">{a.link}</a>}
+            {a.status === 'pending' ? (
+                <div className="mt-2 flex flex-wrap items-center gap-2">
+                    <input className="form-input w-24" type="number" min="0" max="100" step="0.5" placeholder={t.commission_rate} value={rate} onChange={(e) => setRate(e.target.value)} aria-label={t.commission_rate} data-testid={`application-rate-${a.id}`} />
+                    <input className="form-input w-20" maxLength={3} placeholder={t.code} value={code} onChange={(e) => setCode(e.target.value)} aria-label={t.code} data-testid={`application-code-${a.id}`} />
+                    <button type="button" className="btn-primary" onClick={() => decide('approve')} data-testid={`application-approve-${a.id}`}>{t.approve_open_shop}</button>
+                    <input className="form-input min-w-48 flex-1" placeholder={t.decline_note} value={note} onChange={(e) => setNote(e.target.value)} data-testid={`application-note-${a.id}`} />
+                    <button type="button" className="text-red-700 underline" onClick={() => decide('decline')} data-testid={`application-decline-${a.id}`}>{t.decline}</button>
+                </div>
+            ) : (
+                <p className="mt-1 text-xs text-gray-500">{a.decided_at}{a.decision_note && ` · ${a.decision_note}`}{a.vendor && <> · <a href={`/shop/${a.vendor.slug}`} className="text-blue-700 underline">{a.vendor.name}</a></>}</p>
+            )}
+        </li>
+    );
+}
+
+function Applications({ applications, open, t }) {
+    const waiting = applications.filter((a) => a.status === 'pending').length;
+
+    return (
+        <section className="mt-8" data-testid="office-applications">
+            <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+                <h2 className="text-lg font-semibold">{t.applications_heading} {waiting > 0 && <span className="rounded bg-amber-100 px-2 text-sm text-amber-900">{t.waiting_count.replace(':count', waiting)}</span>}</h2>
+                <span className="flex flex-wrap items-center gap-2">
+                    <span className="text-sm text-gray-600" data-testid="applications-state">{open ? t.applications_are_open : t.applications_are_closed}</span>
+                    <button type="button" className="btn-secondary" onClick={() => router.post('/admin/bookshop/applications/open', { open: open ? 0 : 1 }, { preserveScroll: true })} data-testid="toggle-applications">{open ? t.close_applications : t.open_applications}</button>
+                    <a href="/admin/bookshop/applications/export" className="btn-secondary">{t.export_csv}</a>
+                </span>
+            </div>
+            {applications.length === 0 ? (
+                <p className="rounded border bg-white p-3 text-sm text-gray-600">{t.no_applications}</p>
+            ) : (
+                <ul className="divide-y rounded border bg-white">{applications.slice(0, 50).map((a) => <ApplicationRow key={a.id} a={a} t={t} />)}</ul>
+            )}
+        </section>
+    );
+}
+
 /** B8 (§7 Reports "low stock across vendors"). */
 function LowStockAll({ rows, t }) {
     return (
@@ -687,7 +740,7 @@ function ShopHome({ home, t }) {
     );
 }
 
-export default function Admin({ t, vendors, catalogue, slips = [], orders = [], refunds = [], money = null, reviews = [], home = null, low_stock = [], notices = null, order_statuses = [], default_commission_rate, sign_in_url, section_types = [] }) {
+export default function Admin({ t, vendors, catalogue, slips = [], orders = [], refunds = [], money = null, reviews = [], home = null, low_stock = [], notices = null, order_statuses = [], applications = [], applications_open = true, default_commission_rate, sign_in_url, section_types = [] }) {
     const { flash = {}, errors } = usePage().props;
 
     return (
@@ -699,6 +752,7 @@ export default function Admin({ t, vendors, catalogue, slips = [], orders = [], 
             {slips.some((s) => s.status === 'waiting') && <Slips slips={slips} t={t} />}
             {refunds.some((r) => r.status === 'pending') && <Refunds refunds={refunds} t={t} />}
             {money && money.requests.length > 0 && <Money money={money} t={t} />}
+            {applications.some((a) => a.status === 'pending') && <Applications applications={applications} open={applications_open} t={t} />}
 
             <InviteVendor t={t} defaultRate={default_commission_rate} />
 
@@ -711,6 +765,7 @@ export default function Admin({ t, vendors, catalogue, slips = [], orders = [], 
             {!slips.some((s) => s.status === 'waiting') && <Slips slips={slips} t={t} />}
             {!refunds.some((r) => r.status === 'pending') && <Refunds refunds={refunds} t={t} />}
             {money && money.requests.length === 0 && <Money money={money} t={t} />}
+            {!applications.some((a) => a.status === 'pending') && <Applications applications={applications} open={applications_open} t={t} />}
             <Orders orders={orders} vendors={vendors} statuses={order_statuses} t={t} />
             <LowStockAll rows={low_stock} t={t} />
             <Reviews reviews={reviews} t={t} />
