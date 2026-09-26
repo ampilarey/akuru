@@ -32,18 +32,32 @@
     <div class="grid gap-8 md:grid-cols-2">
         <div data-testid="product-gallery">
             @if(count($product['gallery']) > 0)
-                <a href="{{ $product['gallery'][0]['large'] }}" target="_blank" rel="noopener">
-                    <img src="{{ $product['gallery'][0]['large'] }}" alt="{{ $product['gallery'][0]['alt'] }}" class="w-full rounded-lg border object-contain bg-white" data-main-image>
+                {{-- B11 (§10 "zoom"): each photo opens full-size in a lightbox; without JS the link still opens it in a tab. --}}
+                <a href="{{ $product['gallery'][0]['large'] }}" target="_blank" rel="noopener" data-zoom="0" title="{{ __('shop.zoom_photo') }}">
+                    <img src="{{ $product['gallery'][0]['large'] }}" alt="{{ $product['gallery'][0]['alt'] }}" class="w-full cursor-zoom-in rounded-lg border object-contain bg-white" data-main-image>
                 </a>
                 @if(count($product['gallery']) > 1)
                     <div class="mt-3 grid grid-cols-4 gap-2">
                         @foreach($product['gallery'] as $index => $image)
-                            <a href="{{ $image['large'] }}" target="_blank" rel="noopener" aria-label="{{ __('shop.photo_n', ['n' => $index + 1]) }}">
-                                <img src="{{ $image['card'] }}" alt="{{ $image['alt'] }}" class="aspect-square w-full rounded border object-cover" loading="lazy">
+                            <a href="{{ $image['large'] }}" target="_blank" rel="noopener" data-zoom="{{ $index }}" aria-label="{{ __('shop.photo_n', ['n' => $index + 1]) }}">
+                                <img src="{{ $image['card'] }}" alt="{{ $image['alt'] }}" class="aspect-square w-full cursor-zoom-in rounded border object-cover" loading="lazy">
                             </a>
                         @endforeach
                     </div>
                 @endif
+                <dialog id="shop-zoom" class="m-auto w-[min(96vw,1100px)] rounded-lg bg-white p-2 shadow-xl backdrop:bg-black/70" aria-label="{{ __('shop.zoom_photo') }}" data-testid="zoom-dialog">
+                    <div class="flex items-center justify-between gap-2 px-1 pb-2 text-sm">
+                        <span data-zoom-caption dir="auto"></span>
+                        <span class="flex items-center gap-2">
+                            <button type="button" class="btn-secondary px-2 py-1" data-zoom-prev aria-label="{{ __('shop.zoom_previous') }}">‹</button>
+                            <button type="button" class="btn-secondary px-2 py-1" data-zoom-next aria-label="{{ __('shop.zoom_next') }}">›</button>
+                            <button type="button" class="btn-secondary px-2 py-1" data-zoom-close data-testid="zoom-close">{{ __('shop.zoom_close') }}</button>
+                        </span>
+                    </div>
+                    <div class="max-h-[80vh] overflow-auto">
+                        <img src="" alt="" class="mx-auto max-h-[80vh] cursor-zoom-in object-contain" data-zoom-image data-testid="zoom-image">
+                    </div>
+                </dialog>
             @else
                 <div class="aspect-square w-full rounded-lg border bg-brandBeige-50"></div>
             @endif
@@ -155,6 +169,14 @@
             </div>
             <p class="mt-3"><a href="{{ route('public.shop.vendor', $product['vendor']['slug']) }}" class="text-sm text-brandMaroon-700 hover:underline">{{ __('shop.visit_shop') }} →</a></p>
 
+            @if($product['ebook'])
+                {{-- B11 (§4): the printed book's Digital Library edition, one click away. --}}
+                <p class="mt-6 rounded-lg border border-brandMaroon-200 bg-brandBeige-50 p-3 text-sm" data-testid="ebook-link">
+                    <span class="text-gray-700">{{ __('shop.ebook_available') }}</span>
+                    <a href="{{ $product['ebook']['url'] }}" class="ms-1 font-semibold text-brandMaroon-800 underline" dir="auto">{{ __('shop.read_ebook', ['title' => $product['ebook']['title']]) }}</a>
+                </p>
+            @endif
+
             @php($facts = array_filter([
                 'author' => $product['details']['author'] ?? null,
                 'publisher' => $product['details']['publisher'] ?? null,
@@ -262,3 +284,46 @@
 
 @include('public.shop._bottom-bar')
 @endsection
+
+@push('scripts')
+<script>
+(() => {
+    // B11 (§10 "zoom"): the lightbox. Photos come from the page's own gallery links; nothing is fetched.
+    const dialog = document.getElementById('shop-zoom');
+    if (!dialog || typeof dialog.showModal !== 'function') return;
+    const links = Array.from(document.querySelectorAll('[data-testid="product-gallery"] a[data-zoom]'));
+    const photos = [];
+    for (const link of links) {
+        const index = Number(link.dataset.zoom);
+        const img = link.querySelector('img');
+        photos[index] = { src: link.getAttribute('href'), alt: img ? img.getAttribute('alt') : '' };
+    }
+    const image = dialog.querySelector('[data-zoom-image]');
+    const caption = dialog.querySelector('[data-zoom-caption]');
+    let current = 0;
+    const show = (index) => {
+        current = (index + photos.length) % photos.length;
+        image.src = photos[current].src;
+        image.alt = photos[current].alt;
+        image.classList.remove('zoomed');
+        caption.textContent = photos.length > 1 ? `${photos[current].alt} (${current + 1}/${photos.length})` : photos[current].alt;
+        if (!dialog.open) dialog.showModal();
+    };
+    for (const link of links) {
+        link.addEventListener('click', (e) => { e.preventDefault(); show(Number(link.dataset.zoom)); });
+    }
+    dialog.querySelector('[data-zoom-prev]').addEventListener('click', () => show(current - 1));
+    dialog.querySelector('[data-zoom-next]').addEventListener('click', () => show(current + 1));
+    dialog.querySelector('[data-zoom-close]').addEventListener('click', () => dialog.close());
+    image.addEventListener('click', () => image.classList.toggle('zoomed'));
+    dialog.addEventListener('click', (e) => { if (e.target === dialog) dialog.close(); });
+    dialog.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowLeft') show(current - 1);
+        if (e.key === 'ArrowRight') show(current + 1);
+    });
+})();
+</script>
+<style>
+#shop-zoom img.zoomed { max-height: none; max-width: none; width: auto; cursor: zoom-out; }
+</style>
+@endpush

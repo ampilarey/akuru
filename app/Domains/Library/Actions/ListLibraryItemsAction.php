@@ -30,6 +30,8 @@ class ListLibraryItemsAction
             ->with(['category', 'tags', 'authors', 'writer'])
             ->withCount(['readers', 'paidPurchases'])
             ->when($publishedOnly, fn ($query) => $query->where('status', 'published'))
+            // Bookstore B11: one item by id, for a product that links to it.
+            ->when(is_numeric($filters['id'] ?? null), fn ($query) => $query->whereKey((int) $filters['id']))
             ->when(($filters['access'] ?? null) === 'free', fn ($query) => $query->whereIn('access_type', ['free_public', 'free_login']))
             ->when(($filters['access'] ?? null) === 'paid', fn ($query) => $query->where('access_type', 'paid'))
             ->when($filters['language'] ?? null, fn ($query, $language) => $query->where('language', $language))

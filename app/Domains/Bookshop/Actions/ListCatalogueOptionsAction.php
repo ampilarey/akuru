@@ -7,6 +7,7 @@ use App\Domains\Bookshop\Enums\ProductVisibility;
 use App\Domains\Bookshop\Enums\TaxClass;
 use App\Domains\Bookshop\Models\Brand;
 use App\Domains\Bookshop\Models\ProductCategory;
+use App\Domains\Library\Actions\ListLibraryItemsAction;
 
 /** What a product form offers: the shared categories and brands, and the fixed lists. */
 class ListCatalogueOptionsAction
@@ -39,6 +40,8 @@ class ListCatalogueOptionsAction
             'statuses' => array_map(fn (ProductStatus $s) => $s->value, ProductStatus::cases()),
             'visibilities' => array_map(fn (ProductVisibility $v) => $v->value, ProductVisibility::cases()),
             'languages' => ['en' => 'English', 'dv' => 'Dhivehi', 'ar' => 'Arabic'],
+            // B11 (§4 "read the e-book"): the published Digital Library items a printed book may point at.
+            'library_items' => array_map(fn (array $i) => ['id' => $i['id'], 'title' => $i['title'], 'slug' => $i['slug']], app(ListLibraryItemsAction::class)->execute(['sort' => 'title'])),
         ];
     }
 }

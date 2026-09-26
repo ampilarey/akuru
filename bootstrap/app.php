@@ -24,6 +24,8 @@ return Application::configure(basePath: dirname(__DIR__))
             \App\Http\Middleware\SetLocale::class,
             \App\Http\Middleware\SecurityHeaders::class,
             \App\Http\Middleware\ConvertEnroll403ToRedirect::class,
+            // BOOKSHOP_PLAN B11: the office can close the public shop; the notice needs the session (a signed-in customer's links).
+            \App\Domains\Bookshop\Http\Middleware\EnsureBookstoreOpen::class,
             // SPEC §52.27: the Qur'an/Hifz module is feature-flagged, and
             // §52.29 requires the platform to work with it disabled. Applied
             // to the whole web group because the module's 57 routes are

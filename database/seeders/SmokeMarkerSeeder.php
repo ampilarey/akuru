@@ -1932,6 +1932,8 @@ class SmokeMarkerSeeder extends Seeder
         // B10d (`gallery.mjs`): Fitrah applies a starter look and offers its
         // own, which the office publishes and withdraws; the offered looks go.
         DB::table('storefront_themes')->whereIn('source_vendor_id', [$fitrahId, $otherId])->delete();
+        // B11 (`followups.mjs`): the office closes and reopens the shop; open again.
+        DB::table('settings')->whereIn('key', [(string) config('bookshop.shop.open_setting_key'), (string) config('bookshop.shop.closed_message_key')])->delete();
         // B10a: dollar prices were removed; their two settings go.
         DB::table('settings')->whereIn('key', ['bookshop_usd_display', 'bookshop_usd_rate'])->delete();
         \Illuminate\Support\Facades\Cache::forget('bookshop_host:www.smoke-fitrah.test');

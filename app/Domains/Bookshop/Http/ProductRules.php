@@ -50,6 +50,10 @@ final class ProductRules
             'lead_days' => 'nullable|integer|min:0|max:365',
             'status' => 'required|string|in:draft,active,archived',
             'visibility' => 'required|string|in:shop,storefront',
+            // B11: a product tied to a book in the Digital Library, and the alt text of each photo it already has.
+            'library_item_id' => 'nullable|integer|exists:library_items,id',
+            'image_alts' => 'nullable|array|max:20',
+            'image_alts.*' => 'required|string|max:160',
             'details' => 'nullable|array',
             'details.*' => 'nullable|string|max:255',
             // A form that removes every variant sends none, so it says so.

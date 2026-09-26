@@ -16,7 +16,7 @@ class BookshopCheckout extends Model
 {
     protected $fillable = [
         'number', 'user_id', 'status', 'payment_method', 'subtotal', 'discount', 'delivery_total', 'total',
-        'currency', 'discount_code_id', 'payment_id', 'address_snapshot', 'notes', 'expires_at', 'paid_at',
+        'currency', 'discount_code_id', 'payment_id', 'address_snapshot', 'notes', 'gift_message', 'expires_at', 'paid_at',
     ];
 
     protected function casts(): array

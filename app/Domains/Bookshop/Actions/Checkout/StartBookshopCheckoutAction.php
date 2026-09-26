@@ -163,6 +163,7 @@ class StartBookshopCheckoutAction
                 'discount_code_id' => $resolved['discount_code']->id ?? null,
                 'address_snapshot' => $address,
                 'notes' => trim((string) ($data['notes'] ?? '')) ?: null,
+                'gift_message' => trim((string) ($data['gift_message'] ?? '')) ?: null,
                 'expires_at' => now()->addMinutes($minutes),
             ]);
 
@@ -194,6 +195,7 @@ class StartBookshopCheckoutAction
                     'tax_shown' => $taxShown,
                     'vendor_tin' => $taxShown ? $vendor->tin : null,
                     'notes' => $checkout->notes,
+                    'gift_message' => $checkout->gift_message,
                 ]);
 
                 $tax = 0.0;

@@ -19,7 +19,7 @@ class Order extends Model
     protected $fillable = [
         'number', 'bookshop_checkout_id', 'vendor_id', 'user_id', 'status', 'delivery_kind', 'delivery_name',
         'delivery_fee', 'delivery_carrier_paid', 'delivery_handling_days', 'address_snapshot', 'subtotal', 'discount',
-        'tax', 'total', 'currency', 'tax_shown', 'vendor_tin', 'notes', 'paid_at',
+        'tax', 'total', 'currency', 'tax_shown', 'vendor_tin', 'notes', 'gift_message', 'paid_at',
         // B3: fulfilment.
         'processing_at', 'ready_at', 'dispatched_at', 'delivered_at', 'cancelled_at', 'cancelled_by', 'cancel_reason',
         'carrier', 'tracking_note', 'message_thread_id',

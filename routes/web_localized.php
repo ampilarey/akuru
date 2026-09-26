@@ -782,6 +782,8 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::post('applications/open', [\App\Domains\Bookshop\Http\Controllers\AdminBookshopController::class, 'setApplicationsOpen'])->name('admin.bookshop.applications.open');
         // B9b: cash on delivery.
         Route::post('cod', [\App\Domains\Bookshop\Http\Controllers\AdminBookshopController::class, 'setCod'])->name('admin.bookshop.cod');
+        // B11: the whole shop open or closed.
+        Route::post('open', [\App\Domains\Bookshop\Http\Controllers\AdminBookshopController::class, 'setShopOpen'])->name('admin.bookshop.open');
         Route::get('applications/export', [\App\Domains\Bookshop\Http\Controllers\AdminBookshopController::class, 'exportApplications'])->name('admin.bookshop.applications.export');
         // B10d: the theme gallery — publish, decline, withdraw.
         Route::post('themes/{theme}', [\App\Domains\Bookshop\Http\Controllers\AdminBookshopController::class, 'decideTheme'])->name('admin.bookshop.themes.decide')->whereNumber('theme');

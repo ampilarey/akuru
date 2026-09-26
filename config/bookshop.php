@@ -227,6 +227,15 @@ return [
      * point and its own couriers — not a boat (the carrier takes no cash for
      * the shop) and not the Akuru counter.
      */
+    /*
+     * B11 (§7 "shop on/off"): the office closes the whole shop for a day
+     * with a notice; a customer's own orders stay reachable.
+     */
+    'shop' => [
+        'open_setting_key' => 'bookshop_shop_open',
+        'closed_message_key' => 'bookshop_closed_message',
+    ],
+
     'cod' => [
         'enabled_by_default' => (bool) env('BOOKSHOP_COD_ENABLED', true),
         'setting_key' => 'bookshop_cod_enabled',
