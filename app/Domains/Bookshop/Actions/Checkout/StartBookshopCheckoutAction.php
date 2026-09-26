@@ -71,6 +71,9 @@ class StartBookshopCheckoutAction
                 if (! $sellable) {
                     throw ValidationException::withMessages(['cart' => __('shop.error_not_for_sale_named', ['title' => $item->product->title])]);
                 }
+                if ($product->vendor->onHoliday()) {
+                    throw ValidationException::withMessages(['cart' => __('shop.error_on_holiday', ['vendor' => $product->vendor->name, 'date' => $product->vendor->holiday_until->copy()->addDay()->toDateString()])]);
+                }
                 $available = Stock::available($product, $variant);
                 if ($available !== null && $item->quantity > $available && ! Stock::madeToOrder($product)) {
                     throw ValidationException::withMessages(['cart' => $available <= 0

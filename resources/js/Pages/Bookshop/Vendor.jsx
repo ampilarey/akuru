@@ -337,6 +337,48 @@ function DeliveryMethods({ methods, kinds, isOwner, t }) {
     );
 }
 
+/**
+ * B3: the return window (seven days at least, decision 8) and conditions,
+ * and holiday mode — products stay visible marked "back on", the cart
+ * refuses them, the shop page shows the notice. Owners edit; staff read.
+ */
+function ShopSettings({ settings, isOwner, t }) {
+    const form = useForm({
+        return_window_days: String(settings.return_window_days),
+        return_conditions: settings.return_conditions || '',
+        holiday_from: settings.holiday_from || '',
+        holiday_until: settings.holiday_until || '',
+        holiday_notice: settings.holiday_notice || '',
+    });
+    const set = (name) => (e) => form.setData(name, e.target.value);
+
+    return (
+        <section className="mt-8" data-testid="shop-settings">
+            <h2 className="mb-1 text-lg font-semibold">{t.shop_settings_heading}</h2>
+            {settings.on_holiday && <p className="mb-2 rounded bg-amber-50 p-2 text-sm text-amber-900" data-testid="on-holiday">{t.on_holiday_now}</p>}
+            <form
+                className="grid gap-3 rounded border bg-white p-3 md:grid-cols-3"
+                onSubmit={(e) => {
+                    e.preventDefault();
+                    form.post('/vendor/settings', { preserveScroll: true });
+                }}
+            >
+                <Field label={t.return_window_days} hint={t.return_window_hint.replace(':min', settings.minimum_window)}>
+                    <input className="form-input w-full" type="number" min={settings.minimum_window} max="60" value={form.data.return_window_days} onChange={set('return_window_days')} disabled={!isOwner} data-testid="return-window" />
+                </Field>
+                <Field label={t.return_conditions} className="md:col-span-2">
+                    <textarea className="form-input w-full" rows={2} value={form.data.return_conditions} onChange={set('return_conditions')} disabled={!isOwner} />
+                </Field>
+                <Field label={t.holiday_from}><input className="form-input w-full" type="date" value={form.data.holiday_from} onChange={set('holiday_from')} disabled={!isOwner} data-testid="holiday-from" /></Field>
+                <Field label={t.holiday_until}><input className="form-input w-full" type="date" value={form.data.holiday_until} onChange={set('holiday_until')} disabled={!isOwner} data-testid="holiday-until" /></Field>
+                <Field label={t.holiday_notice} hint={t.holiday_hint}><input className="form-input w-full" value={form.data.holiday_notice} onChange={set('holiday_notice')} disabled={!isOwner} data-testid="holiday-notice" /></Field>
+                <FormErrors errors={form.errors} className="md:col-span-3" />
+                {isOwner && <div className="md:col-span-3"><button type="submit" className="btn-primary" disabled={form.processing} data-testid="save-settings">{t.save}</button></div>}
+            </form>
+        </section>
+    );
+}
+
 function ProductList({ products, t, onEdit }) {
     if (products.length === 0) {
         return <p className="rounded border bg-white p-4 text-gray-600">{t.no_products}</p>;
@@ -387,7 +429,7 @@ function ProductList({ products, t, onEdit }) {
     );
 }
 
-export default function Vendor({ t, vendor, memberships = [], agreement_url, products = [], members = [], delivery_methods = [], delivery_kinds = [], options, filters, must_set_password, set_password_url }) {
+export default function Vendor({ t, vendor, memberships = [], agreement_url, products = [], members = [], delivery_methods = [], delivery_kinds = [], shop_settings = null, options, filters, must_set_password, set_password_url }) {
     const { flash = {}, errors } = usePage().props;
     const [editing, setEditing] = useState(null);
     const [search, setSearch] = useState(filters.q || '');
@@ -411,6 +453,7 @@ export default function Vendor({ t, vendor, memberships = [], agreement_url, pro
                         {t.at_akuru} · {t.your_role}: {t[`role_${vendor.role}`] || vendor.role} ·{' '}
                         <a href={`/shop/${vendor.slug}`} target="_blank" rel="noreferrer" className="text-blue-700 underline" data-testid="open-shop-page">{t.open_shop_page}</a>
                     </p>
+                    {vendor.agreement_accepted && <a href="/vendor/orders" className="btn-primary mt-2 inline-block" data-testid="open-orders">{t.orders_title}</a>}
                 </div>
                 {memberships.length > 1 && (
                     <label className="text-sm">
@@ -458,6 +501,7 @@ export default function Vendor({ t, vendor, memberships = [], agreement_url, pro
                         <ProductList products={products} t={t} onEdit={(p) => setEditing(p)} />
                     </section>
                     {/* Keyed on the rows, so the form re-reads them after the template or a save (useForm keeps its first values otherwise). */}
+                    {shop_settings && <ShopSettings settings={shop_settings} isOwner={isOwner} t={t} />}
                     <DeliveryMethods key={delivery_methods.map((m) => `${m.id}:${m.name}`).join('|')} methods={delivery_methods} kinds={delivery_kinds} isOwner={isOwner} t={t} />
                     <Members members={members} isOwner={isOwner} t={t} />
                 </>

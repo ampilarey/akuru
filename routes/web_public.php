@@ -61,18 +61,26 @@ Route::get('shop/products/{slug}', [\App\Domains\Bookshop\Http\Controllers\ShopC
 Route::get('shop/c/{slug}', [\App\Domains\Bookshop\Http\Controllers\ShopController::class, 'category'])->name('public.shop.category');
 // B2: the cart is a guest's too (by session token), so it is public and
 // throttled; checkout, its status page, slips and orders need a sign-in.
+// Each limit carries its own prefix (the third argument): a plain
+// `throttle:N,1` keys on the user alone, so every such route shares one
+// counter, and ten cart adds in a minute used to get the checkout a 429
+// (found by the B3 walk, 2026-09-26).
 Route::get('shop/cart', [\App\Domains\Bookshop\Http\Controllers\ShopCartController::class, 'index'])->name('public.shop.cart');
-Route::post('shop/cart', [\App\Domains\Bookshop\Http\Controllers\ShopCartController::class, 'add'])->name('public.shop.cart.add')->middleware('throttle:60,1');
-Route::post('shop/cart/{item}', [\App\Domains\Bookshop\Http\Controllers\ShopCartController::class, 'update'])->name('public.shop.cart.update')->middleware('throttle:60,1')->whereNumber('item');
+Route::post('shop/cart', [\App\Domains\Bookshop\Http\Controllers\ShopCartController::class, 'add'])->name('public.shop.cart.add')->middleware('throttle:60,1,shop-cart');
+Route::post('shop/cart/{item}', [\App\Domains\Bookshop\Http\Controllers\ShopCartController::class, 'update'])->name('public.shop.cart.update')->middleware('throttle:60,1,shop-cart')->whereNumber('item');
 Route::middleware('auth')->group(function () {
     Route::get('shop/checkout', [\App\Domains\Bookshop\Http\Controllers\CheckoutController::class, 'show'])->name('public.shop.checkout');
-    Route::post('shop/checkout', [\App\Domains\Bookshop\Http\Controllers\CheckoutController::class, 'store'])->name('public.shop.checkout.store')->middleware('throttle:10,1');
+    Route::post('shop/checkout', [\App\Domains\Bookshop\Http\Controllers\CheckoutController::class, 'store'])->name('public.shop.checkout.store')->middleware('throttle:10,1,shop-checkout');
     Route::get('shop/checkout/{number}', [\App\Domains\Bookshop\Http\Controllers\CheckoutController::class, 'status'])->name('public.shop.checkout.status');
-    Route::post('shop/checkout/{number}/slip', [\App\Domains\Bookshop\Http\Controllers\CheckoutController::class, 'uploadSlip'])->name('public.shop.checkout.slip')->middleware('throttle:10,1');
+    Route::post('shop/checkout/{number}/slip', [\App\Domains\Bookshop\Http\Controllers\CheckoutController::class, 'uploadSlip'])->name('public.shop.checkout.slip')->middleware('throttle:10,1,shop-slip');
     Route::get('shop/slips/{slip}', [\App\Domains\Bookshop\Http\Controllers\CheckoutController::class, 'slip'])->name('public.shop.slip')->whereNumber('slip');
     Route::get('my-orders', [\App\Domains\Bookshop\Http\Controllers\MyOrdersController::class, 'index'])->name('public.shop.orders');
     Route::get('my-orders/export', [\App\Domains\Bookshop\Http\Controllers\MyOrdersController::class, 'export'])->name('public.shop.orders.export');
     Route::get('my-orders/{number}', [\App\Domains\Bookshop\Http\Controllers\MyOrdersController::class, 'show'])->name('public.shop.orders.show');
+    // B3: the customer cancels before dispatch, asks for a return, writes to the shop.
+    Route::post('my-orders/{number}/cancel', [\App\Domains\Bookshop\Http\Controllers\MyOrdersController::class, 'cancel'])->name('public.shop.orders.cancel')->middleware('throttle:10,1,shop-cancel');
+    Route::post('my-orders/{number}/returns', [\App\Domains\Bookshop\Http\Controllers\MyOrdersController::class, 'requestReturn'])->name('public.shop.orders.return')->middleware('throttle:10,1,shop-return');
+    Route::post('my-orders/{number}/message', [\App\Domains\Bookshop\Http\Controllers\MyOrdersController::class, 'message'])->name('public.shop.orders.message')->middleware('throttle:20,1,shop-message');
 });
 Route::get('shop/{vendor}', [\App\Domains\Bookshop\Http\Controllers\ShopController::class, 'vendor'])->name('public.shop.vendor')
     ->where('vendor', '(?!(products|c|export|cart|checkout|slips)$)[a-z0-9-]+');

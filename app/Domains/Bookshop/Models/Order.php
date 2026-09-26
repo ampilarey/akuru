@@ -20,6 +20,9 @@ class Order extends Model
         'number', 'bookshop_checkout_id', 'vendor_id', 'user_id', 'status', 'delivery_kind', 'delivery_name',
         'delivery_fee', 'delivery_carrier_paid', 'delivery_handling_days', 'address_snapshot', 'subtotal', 'discount',
         'tax', 'total', 'currency', 'tax_shown', 'vendor_tin', 'notes', 'paid_at',
+        // B3: fulfilment.
+        'processing_at', 'ready_at', 'dispatched_at', 'delivered_at', 'cancelled_at', 'cancelled_by', 'cancel_reason',
+        'carrier', 'tracking_note', 'message_thread_id',
     ];
 
     protected function casts(): array
@@ -36,7 +39,28 @@ class Order extends Model
             'total' => 'decimal:2',
             'tax_shown' => 'boolean',
             'paid_at' => 'datetime',
+            'processing_at' => 'datetime',
+            'ready_at' => 'datetime',
+            'dispatched_at' => 'datetime',
+            'delivered_at' => 'datetime',
+            'cancelled_at' => 'datetime',
         ];
+    }
+
+    public function returns(): HasMany
+    {
+        return $this->hasMany(OrderReturn::class)->orderBy('id');
+    }
+
+    public function refunds(): HasMany
+    {
+        return $this->hasMany(OrderRefund::class)->orderBy('id');
+    }
+
+    /** A collection order is "collected" where a delivery is "delivered". */
+    public function isCollection(): bool
+    {
+        return in_array($this->delivery_kind, [DeliveryKind::CollectVendor, DeliveryKind::CollectAkuru], true);
     }
 
     public function checkout(): BelongsTo

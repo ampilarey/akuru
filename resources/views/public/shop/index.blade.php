@@ -22,6 +22,12 @@
                 <p class="mt-1 text-lg text-brandGray-700">{{ $vendor['tagline'] }}</p>
             @endif
             <p class="mt-1 text-sm text-brandGray-600" data-testid="at-akuru">{{ __('shop.at_akuru') }}</p>
+            @if($vendor['holiday'] ?? null)
+                <div class="mt-3 inline-block rounded-lg border border-amber-300 bg-amber-50 px-4 py-2 text-sm text-amber-900" data-testid="holiday-notice">
+                    <p class="font-semibold">{{ __('shop.back_on', ['date' => $vendor['holiday']['back_on']]) }}</p>
+                    @if($vendor['holiday']['notice'])<p dir="auto">{{ $vendor['holiday']['notice'] }}</p>@endif
+                </div>
+            @endif
         @elseif(! $heading)
             <p class="mt-2 text-lg text-brandGray-700">{{ __('shop.shop_intro') }}</p>
         @endif

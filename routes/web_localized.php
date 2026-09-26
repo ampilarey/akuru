@@ -771,6 +771,9 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         // B2: bank-transfer slips and the orders list.
         Route::post('slips/{slip}/decide', [\App\Domains\Bookshop\Http\Controllers\AdminBookshopController::class, 'decideSlip'])->name('admin.bookshop.slips.decide')->whereNumber('slip');
         Route::get('orders/export', [\App\Domains\Bookshop\Http\Controllers\AdminBookshopController::class, 'exportOrders'])->name('admin.bookshop.orders.export');
+        // B3: card refunds, returned through BML and recorded.
+        Route::get('refunds/export', [\App\Domains\Bookshop\Http\Controllers\AdminBookshopController::class, 'exportRefunds'])->name('admin.bookshop.refunds.export');
+        Route::post('refunds/{refund}', [\App\Domains\Bookshop\Http\Controllers\AdminBookshopController::class, 'processRefund'])->name('admin.bookshop.refunds.process')->whereNumber('refund');
     });
 
     // BOOKSHOP_PLAN B1a: the vendor portal. `auth` only on the route: the
@@ -787,6 +790,17 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         // B2: the owner's delivery methods.
         Route::post('delivery-methods', [\App\Domains\Bookshop\Http\Controllers\VendorPortalController::class, 'saveDeliveryMethods'])->name('vendor.delivery-methods.save');
         Route::post('delivery-methods/template', [\App\Domains\Bookshop\Http\Controllers\VendorPortalController::class, 'useDeliveryTemplate'])->name('vendor.delivery-methods.template');
+        // B3: returns and holiday mode; the order queue.
+        Route::post('settings', [\App\Domains\Bookshop\Http\Controllers\VendorPortalController::class, 'saveShopSettings'])->name('vendor.settings.save');
+        Route::get('orders', [\App\Domains\Bookshop\Http\Controllers\VendorOrderController::class, 'index'])->name('vendor.orders.index');
+        Route::get('orders/export', [\App\Domains\Bookshop\Http\Controllers\VendorOrderController::class, 'export'])->name('vendor.orders.export');
+        Route::get('orders/{order}/print', [\App\Domains\Bookshop\Http\Controllers\VendorOrderController::class, 'print'])->name('vendor.orders.print')->whereNumber('order');
+        Route::post('orders/{order}/advance', [\App\Domains\Bookshop\Http\Controllers\VendorOrderController::class, 'advance'])->name('vendor.orders.advance')->whereNumber('order');
+        Route::post('orders/{order}/cancel', [\App\Domains\Bookshop\Http\Controllers\VendorOrderController::class, 'cancel'])->name('vendor.orders.cancel')->whereNumber('order');
+        Route::post('orders/{order}/message', [\App\Domains\Bookshop\Http\Controllers\VendorOrderController::class, 'message'])->name('vendor.orders.message')->whereNumber('order');
+        Route::post('returns/{return}/decide', [\App\Domains\Bookshop\Http\Controllers\VendorOrderController::class, 'decideReturn'])->name('vendor.returns.decide')->whereNumber('return');
+        Route::post('slips/{slip}/decide', [\App\Domains\Bookshop\Http\Controllers\VendorOrderController::class, 'decideSlip'])->name('vendor.slips.decide')->whereNumber('slip');
+        Route::get('slips/{slip}', [\App\Domains\Bookshop\Http\Controllers\VendorOrderController::class, 'slip'])->name('vendor.slips.show')->whereNumber('slip');
     });
 
     // L7 reviewer portal (§12.2) — own assignments only, enforced in actions.

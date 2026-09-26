@@ -6,9 +6,12 @@ use App\Domains\Bookshop\Actions\Checkout\MarkCheckoutPaidAction;
 use App\Domains\Finance\Events\PaymentConfirmed;
 
 /**
- * Rule 12 / BOOKSHOP_PLAN §8: a card checkout becomes paid on the BML
- * webhook's `PaymentConfirmed`, never on the return URL. Idempotent
- * through `MarkCheckoutPaidAction`.
+ * Rule 12 / BOOKSHOP_PLAN §8: a checkout becomes paid on Finance's
+ * `PaymentConfirmed` — the BML webhook for a card, or (B3) the manual
+ * payment the office or shop records when it confirms a bank-transfer
+ * slip — never on the return URL. Idempotent through
+ * `MarkCheckoutPaidAction`, which also keeps the payment's id so a refund
+ * can go back against it.
  */
 class MarkCheckoutPaidOnPaymentConfirmed
 {
@@ -19,6 +22,7 @@ class MarkCheckoutPaidOnPaymentConfirmed
             return;
         }
 
-        app(MarkCheckoutPaidAction::class)->execute((int) $payment->payable_id, 'card');
+        $how = $payment->provider === 'manual' ? 'bank_transfer' : 'card';
+        app(MarkCheckoutPaidAction::class)->execute((int) $payment->payable_id, $how, null, (int) $payment->id);
     }
 }

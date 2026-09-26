@@ -63,10 +63,14 @@ class SaveCartItemAction
         $max = (int) config('bookshop.checkout.max_quantity_per_line', 50);
         $quantity = min($quantity, $max);
 
-        $product = ListShopProductsAction::forSale()->whereKey($item->product_id)->first();
+        $product = ListShopProductsAction::forSale()->whereKey($item->product_id)->with('vendor')->first();
         if ($product === null) {
             $item->exists && $item->delete();
             throw ValidationException::withMessages(['product' => __('shop.error_not_for_sale')]);
+        }
+        // B3 holiday mode: the product stays visible; the cart refuses it.
+        if ($product->vendor->onHoliday()) {
+            throw ValidationException::withMessages(['product' => __('shop.error_on_holiday', ['vendor' => $product->vendor->name, 'date' => $product->vendor->holiday_until->copy()->addDay()->toDateString()])]);
         }
         $variant = $item->product_variant_id !== null ? ProductVariant::query()->find($item->product_variant_id) : null;
 

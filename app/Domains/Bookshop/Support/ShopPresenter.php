@@ -64,7 +64,16 @@ final class ShopPresenter
      */
     public static function vendor(Vendor $vendor): array
     {
-        return ['name' => $vendor->name, 'slug' => $vendor->slug, 'tagline' => $vendor->tagline];
+        return [
+            'name' => $vendor->name,
+            'slug' => $vendor->slug,
+            'tagline' => $vendor->tagline,
+            // B3 holiday mode: "back on <date>" is the day after the last day away.
+            'holiday' => $vendor->onHoliday() ? [
+                'back_on' => $vendor->holiday_until->copy()->addDay()->toDateString(),
+                'notice' => $vendor->holiday_notice,
+            ] : null,
+        ];
     }
 
     /**

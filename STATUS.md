@@ -4414,6 +4414,125 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5ha. B3: fulfilment and returns (2026-09-26)
+
+BOOKSHOP_PLAN slice B3. The owner first said "B4", then "B3"; the plan's
+order stands and nothing for B4 was written. A shop can now send an order
+and the customer can follow it, cancel it, return part of it, and talk to
+the shop.
+
+**The shop's order queue** (`/vendor/orders`, Inertia, *Orders* on the
+portal home). Tabs by status with counts: all, a transfer to confirm, paid,
+needs attention, processing, ready to collect, dispatched, delivered,
+cancelled, and returns waiting for an answer. An order opens to its lines,
+address, delivery, payment, note and history, and the next steps it can
+take: processing, then **ready to collect** for a collection or
+**dispatched** with a carrier and a tracking note for a delivery, then
+delivered (read as *collected* for a collection). A step the order cannot
+take is refused. Owners and staff both work orders. Each order prints a
+**delivery label and packing slip** on one page. The queue exports as CSV.
+
+**Cancelling** before the parcel leaves the shop, by the customer ("cancel
+before dispatch") or by the shop, with a reason either way. The stock goes
+back on the shelf, the whole order's money goes back, and the other side is
+told. Once dispatched, the customer is told to ask for a return instead.
+
+**Returns** (decision 8): from delivery, inside the shop's window (seven
+days at least; the shop may offer longer and word its conditions), the
+customer asks to return some units of a line with a reason. A unit is worth
+its share of the goods after the discount, which B2 spread over the lines
+by value. The shop accepts it (back on the shelf or not) or declines it
+with a reason the customer reads. When the reason is the shop's fault
+(damaged, wrong item, not as described), the delivery fee goes back too,
+once per order, as the Delivery and Returns page promises.
+
+**Refunds** (audit finding 6), one path for cancellations and returns, never
+more than the order's total less what already went back:
+- **wallet**: credited back at once on Commerce's append-only ledger;
+- **bank transfer**: back to the wallet at once, through Finance's
+  `RefundPaymentAction`;
+- **card**: waits for the office, who returns it through BML's merchant
+  portal and records it (`manual`), or credits the wallet instead.
+  `RefundPaymentAction` either way, so Finance's books carry it. The
+  customer sees "refund on its way to your card" until then.
+
+For bank transfers to go back through Finance, **B2's slip confirmation now
+records a Finance manual payment** (`RecordManualPaymentAction`, method
+`bank_transfer`). It fires the same `PaymentConfirmed` a card does, and the
+listener keeps the payment's id on the checkout. A transfer confirmed before
+this slice has no payment, and its refund goes straight to the wallet.
+
+**The shop confirms its own transfers**: on a checkout that is that shop's
+alone, it reads the slip and confirms or rejects it in the queue. A basket
+split across shops paid one transfer to Akuru, so only the office confirms
+it; the shops can still read the slip. `ServeBankTransferSlipAction` now
+also admits a shop with an order under the checkout.
+
+**Messages**: the customer writes to the shop from the order page, and the
+shop writes back from the queue, on one Notifications thread per order
+(context `order`) with the customer and every member of the shop. It lands
+in everyone's Messages with its badge. The order keeps only the thread's id.
+
+**Holiday mode** (audit finding 18): the owner sets a date range and a
+notice. The shop's products stay visible, marked *Back on <date>*, the
+cart and checkout refuse them, and the shop's page shows the notice.
+Worked out from the dates, so nothing runs on the scheduler.
+
+**Decision 15**: the shop sees the customer's phone and street until the
+order has closed (delivered, collected or cancelled) and its return window
+has passed. Then the queue and its CSV show them masked.
+
+**The office** gets the card refunds to send (moved to the top while one
+waits) and a refunds CSV. **Notices** to the customer: ready, dispatched,
+delivered or collected, cancelled by the shop, return answered, refund
+done. To the shop: a customer cancelled, a return was asked. To the
+office: a card refund to send.
+
+**Data** (one additive migration): `orders` gains the fulfilment
+timestamps, cancellation, carrier and tracking note, and the message thread
+id; `vendors` gains the return window and conditions; new `order_returns`
+and `order_refunds` with morph aliases (ADR-005). The plan's separate
+`vendor_return_policies` table became two columns on `vendors`.
+
+**Found and fixed on the way (B2's)**: ten cart adds in a minute got the
+checkout refused with a 429. Laravel's plain `throttle:N,1` keys on the user
+alone, so every such route shared one counter. Each of the bookstore's seven
+limits now has its own prefix. The same pattern on about thirty other routes
+is recorded in `KNOWN_ISSUES` ("Found by the bookstore's B3 walk"), not
+fixed here. `checkout.mjs` also now waits for the navigation after a Blade
+form post, which it had been racing.
+
+**Tests**: `BookshopFulfilmentTest` (8) covers the queue with its tabs and
+another shop's 404; delivery and collection steps with notices, tracking and
+the refused step; the print page and CSV; a customer cancel with stock back
+and wallet money back at once; a shop cancel on a card order, pending until
+the office records it in Finance; a shop confirming its own transfer as a
+Finance payment, refused on a split basket, and refunded to the wallet
+through Finance; returns with the discount share, the delivery fee once,
+restock, decline with reason, the window, and masking after it; a longer
+window and the seven-day floor; holiday mode on the product, shop page,
+cart and checkout; and one message thread for the customer and the shop.
+`BookshopCheckoutTest` gains the long-basket 429 case. The route sweep
+declares the slip file. Full suite **2225 passed**.
+
+**Walked**: `scripts/smoke/fulfilment.mjs` **21/21**, no console or server
+errors, three runs back to back. The student buys three things; Fitrah's
+owner opens the queue, processes, dispatches with a carrier and tracking,
+prints the label and slip, and marks it delivered; the student sees all
+four steps and the tracking, writes to the shop, and asks to return a book
+as damaged; the owner accepts it from the Returns tab and reads the message
+in Messages; the student sees the refund in the wallet, then cancels a
+second order before it is ready; the wallet is down by exactly what was
+kept; the owner puts the shop on holiday, the product says when it is back
+with no cart button, and the owner lifts it. `checkout.mjs` **28/28** three
+times back to back, `shop.mjs` **24/24**, `vendor.mjs` **25/25**.
+
+**Not walked**: the office recording a card refund, because a card payment
+cannot complete anywhere until `BML_WEBHOOK_SECRET` exists (OWNER_ACTIONS 2).
+`BookshopFulfilmentTest` covers it end to end with a faked gateway.
+
+**Production**: the migration only. No seeder, no new setting.
+
 ## 5gz. B2: cart and checkout (2026-09-26)
 
 BOOKSHOP_PLAN slice B2, the owner's "B2". The Akuru Bookstore now sells:

@@ -7,7 +7,9 @@ use App\Domains\Bookshop\Actions\CreateVendorAction;
 use App\Domains\Bookshop\Actions\ListBankTransferSlipsAction;
 use App\Domains\Bookshop\Actions\ListCatalogueOptionsAction;
 use App\Domains\Bookshop\Actions\ListOrdersAction;
+use App\Domains\Bookshop\Actions\ListPendingRefundsAction;
 use App\Domains\Bookshop\Actions\ListVendorsAction;
+use App\Domains\Bookshop\Actions\Orders\RefundOrderAction;
 use App\Domains\Bookshop\Actions\SaveCatalogueTermAction;
 use App\Domains\Bookshop\Actions\UpdateVendorAction;
 use App\Http\Controllers\Controller;
@@ -35,6 +37,7 @@ class AdminBookshopController extends Controller
             'catalogue' => app(ListCatalogueOptionsAction::class)->execute(activeOnly: false),
             'slips' => app(ListBankTransferSlipsAction::class)->execute(),
             'orders' => app(ListOrdersAction::class)->execute(200),
+            'refunds' => app(ListPendingRefundsAction::class)->execute(),
             'default_commission_rate' => number_format((float) config('bookshop.default_commission_rate'), 2, '.', ''),
             'agreement_url' => route('public.page.show', 'vendor-agreement'),
             'sign_in_url' => route('login'),
@@ -130,6 +133,39 @@ class AdminBookshopController extends Controller
         app(DecideBankTransferSlipAction::class)->execute($slip, $data['decision'] === 'confirm', (int) $request->user()->id, $data['note'] ?? null);
 
         return back()->with('success', $data['decision'] === 'confirm' ? __('shop.slip_confirmed_flash') : __('shop.slip_rejected_flash'));
+    }
+
+    /**
+     * B3 (audit finding 6): a card refund, returned through BML's merchant
+     * portal and recorded here (`manual`), or credited to the wallet instead.
+     */
+    public function processRefund(Request $request, int $refund): RedirectResponse
+    {
+        abort_unless($request->user()?->can('bookshop.manage'), 403);
+        $data = $request->validate([
+            'destination' => 'required|string|in:manual,wallet',
+            'note' => 'nullable|string|max:500',
+        ]);
+
+        app(RefundOrderAction::class)->process($refund, $data['destination'], (int) $request->user()->id, $data['note'] ?? null);
+
+        return back()->with('success', __('shop.refund_recorded_flash'));
+    }
+
+    /** Every listing gets a CSV (conventions): the refunds. */
+    public function exportRefunds(Request $request): StreamedResponse
+    {
+        abort_unless($request->user()?->can('bookshop.manage'), 403);
+        $rows = app(ListPendingRefundsAction::class)->execute(5000);
+
+        return response()->streamDownload(function () use ($rows): void {
+            $out = fopen('php://output', 'w');
+            Csv::put($out, ['order', 'vendor', 'customer', 'customer_email', 'amount', 'currency', 'paid_with', 'status', 'destination', 'reason', 'payment_id', 'requested_at', 'processed_at']);
+            foreach ($rows as $r) {
+                Csv::put($out, [$r['order_number'], $r['vendor'], $r['customer'], $r['customer_email'], $r['amount'], $r['currency'], $r['paid_with'], $r['status'], $r['destination'], $r['reason'], $r['bml_reference'], $r['requested_at'], $r['processed_at']]);
+            }
+            fclose($out);
+        }, 'bookstore-refunds.csv', ['Content-Type' => 'text/csv']);
     }
 
     /** Every listing gets a CSV (conventions): the orders. */

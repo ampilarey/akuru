@@ -1729,6 +1729,15 @@ class SmokeMarkerSeeder extends Seeder
             DB::table('media_files')->where('id', $mediaId)->delete();
         }
         $walkOrders = DB::table('orders')->whereIn('bookshop_checkout_id', $walkCheckouts)->pluck('id');
+        // B3 (`fulfilment.mjs`): the order threads the walk wrote on, its
+        // returns and refund rows. Wallet credits from refunds are money and
+        // stay; the top-up below evens the balance out.
+        $walkThreads = DB::table('message_threads')->where('context_type', 'order')->whereIn('context_id', $walkOrders)->pluck('id');
+        DB::table('messages')->whereIn('thread_id', $walkThreads)->delete();
+        DB::table('message_participants')->whereIn('message_thread_id', $walkThreads)->delete();
+        DB::table('message_threads')->whereIn('id', $walkThreads)->delete();
+        DB::table('order_refunds')->whereIn('order_id', $walkOrders)->delete();
+        DB::table('order_returns')->whereIn('order_id', $walkOrders)->delete();
         DB::table('order_events')->whereIn('order_id', $walkOrders)->delete();
         DB::table('order_items')->whereIn('order_id', $walkOrders)->delete();
         DB::table('orders')->whereIn('id', $walkOrders)->delete();
@@ -1771,6 +1780,12 @@ class SmokeMarkerSeeder extends Seeder
         $this->smokeProduct($fitrahId, 'smoke-hidden-draft', 'SMOKE-Hidden-Draft', 10, 'standard', null, 1, []);
         DB::table('products')->where('slug', 'smoke-hidden-draft')->update(['status' => 'draft']);
         $this->smokeProductPhoto('smoke-arabic-letters-tracing-book', database_path('seeders/fixtures/vendors/fitrah-logo.jpg'));
+
+        // B3: Fitrah open, with the standard seven-day window, every run.
+        DB::table('vendors')->where('id', $fitrahId)->update([
+            'holiday_from' => null, 'holiday_until' => null, 'holiday_notice' => null,
+            'return_window_days' => null, 'return_conditions' => null,
+        ]);
 
         // B2: the walk pays from the student's wallet; the stock the walk
         // bought last time is put back by the updateOrInsert above.
