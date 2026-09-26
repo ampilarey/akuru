@@ -150,11 +150,27 @@ await phone.waitForSelector('#nav-mobile-menu', { state: 'visible' });
 const mobileHeads = await texts(phone, '#nav-mobile-menu [data-nav-section]');
 check('the Blade mobile menu carries the same headings', mobileHeads.map((t) => t.trim()).join(' | ') === 'School | Admissions | Website & content | Shops & money | System', mobileHeads.join(' | '));
 
-// ------------------------------------------------------------ 5. a super admin, when given
+// ------------------------------------------------------------ 5. dashboard ↔ admin panel (the owner: "I don't understand
+// what's happening sometimes, /dashboard or /admin"): each landing says what it is and links the other.
+await office.goto(`${BASE}/en/dashboard`, { waitUntil: 'networkidle' });
+check('an admin’s /dashboard is the staff overview, with the Admin panel button and the line', /\/portal\/overview$/.test(office.url()) && (await count(office, '[data-testid="open-admin-panel"]')) === 1 && (await office.textContent('[data-testid="dashboard-hint"]')).includes('numbers'), office.url().replace(BASE, ''));
+await office.click('[data-testid="open-admin-panel"]');
+await office.waitForURL(/\/admin$/, { timeout: 15000 }).catch(() => {});
+check('the button opens the Admin panel', /\/admin$/.test(office.url()), office.url().replace(BASE, ''));
+const hubTop = await office.locator('[data-testid="hub-dashboard"]').evaluate((el) => el.getBoundingClientRect().top);
+check('the hub says at the top that it is the doors and the dashboard the numbers, with the way back', hubTop > 0 && hubTop < 300 && (await office.textContent('[data-testid="hub-dashboard"] + span')).includes('Dashboard'), `${Math.round(hubTop)}px`);
+await Promise.all([office.waitForNavigation({ waitUntil: 'networkidle' }).catch(() => {}), office.click('[data-testid="hub-dashboard"]')]);
+check('and Dashboard from the hub goes back to it', /\/portal\/overview$/.test(office.url()), office.url().replace(BASE, ''));
+
+// ------------------------------------------------------------ 6. a super admin, when given
 if (SUPER) {
     const su = await signIn(SUPER, { width: 1400, height: 950 }, false);
     await su.goto(`${BASE}/en/admin`, { waitUntil: 'networkidle' });
     check('a super admin sees all thirteen sections, Users and Settings first under System', (await count(su, '[data-testid^="section-"]')) === 13 && (await texts(su, '[data-testid="part-panel_system"] [data-testid^="open-"]')).slice(0, 2).join(' | ') === 'Manage users | System settings');
+    await su.goto(`${BASE}/en/dashboard`, { waitUntil: 'networkidle' });
+    check('the super-admin dashboard carries the Admin panel button and the line', /\/dashboard$/.test(su.url()) && (await count(su, '[data-testid="open-admin-panel"]')) === 1 && (await su.textContent('[data-testid="dashboard-hint"]')).includes('numbers'), su.url().replace(BASE, ''));
+    await Promise.all([su.waitForNavigation({ waitUntil: 'networkidle' }).catch(() => {}), su.click('[data-testid="open-admin-panel"]')]);
+    check('and it opens the Admin panel', /\/admin$/.test(su.url()), su.url().replace(BASE, ''));
 }
 
 await finish();

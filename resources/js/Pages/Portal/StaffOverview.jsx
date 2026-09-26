@@ -1,4 +1,4 @@
-import { Link, router } from '@inertiajs/react';
+import { Link, router, usePage } from '@inertiajs/react';
 import AppShell from '../../Layouts/AppShell';
 
 function averageRate(rows) {
@@ -39,9 +39,24 @@ export default function StaffOverview({
     const hrefs = Object.fromEntries(sections.map((section) => [section.key, section.href]));
     const fillAverage = averageRate(fillRates);
     const planAverage = averageRate(planAdherence);
+    // This screen is the school day in numbers; the Admin panel is where
+    // things are managed. Offered here to whoever the navigation says may
+    // open it (the owner, 2026-09-26: "I don't understand what's happening
+    // sometimes, /dashboard or /admin").
+    const { nav = { groups: [] }, i18n = {} } = usePage().props;
+    const adminDoor = (nav.groups.find((group) => group.key === 'admin_group')?.items || []).find((item) => item.href === '/admin');
+    const hint = i18n.nav || {};
 
     return (
         <AppShell title={title}>
+            {adminDoor && (
+                <p className="mb-4 flex flex-wrap items-center gap-3 text-xs text-gray-500" data-testid="dashboard-hint">
+                    <Link href="/admin" data-testid="open-admin-panel" className="rounded bg-[#7C2D37] px-3 py-1.5 text-sm font-semibold text-white hover:bg-[#5E1F28]">
+                        🛠️ {adminDoor.label} →
+                    </Link>
+                    <span>{hint.dashboard_hint || 'This overview is today’s numbers. To manage enrolments, the website, the shops or the system, open the Admin panel.'}</span>
+                </p>
+            )}
             <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
                 <select
                     className="form-input"

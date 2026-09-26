@@ -55,12 +55,19 @@ the panel should become a separate app with its own shell is BACKLOG C9's
 port, not a fact about routing: one application with `/admin/*` behind role
 and permission gates is the ordinary Laravel shape and holds.
 
-**Landing.** `/dashboard` resolves by role (`ResolveDashboardLandingAction`):
-`super_admin` gets the Blade super-admin dashboard, `admin`/`headmaster`
-the portal overview, `supervisor` its dashboard, `bookshop_manager` the
-Bookstore office. The two navigations: the Blade nav
+**Landing, and how it relates to the front door.** `/dashboard` resolves by
+role (`ResolveDashboardLandingAction`): `super_admin` gets the Blade super-admin
+dashboard, `admin`/`headmaster` the Inertia staff overview, `supervisor` its
+dashboard, `bookshop_manager` the Bookstore office. **The dashboard is today's
+numbers; the Admin panel is where things are managed** (the owner, 2026-09-26:
+"I don't understand what's happening sometimes, /dashboard or /admin"). Until
+that day neither screen said so or linked the other except from a menu. Now
+each administrator landing carries an *Admin panel →* button and the one-line
+rule at the top (the two Blade dashboards outright; the staff overview for
+whoever the navigation says may open the panel), and the hub carries the rule
+and *← Dashboard* at its top. The two navigations: the Blade nav
 (`layouts/navigation.blade.php`) lists every admin landing (gated by
-`AdminPagesAreReachableTest`); the Inertia shell's More menu now does too
+`AdminPagesAreReachableTest`); the Inertia shell's More menu does too
 (§3, finding 1).
 
 ## 2. Checked and held
@@ -209,6 +216,7 @@ viewports, nothing lacking); `admin-mobile.mjs`, `admin-layout.mjs`,
 
 | L21 | **Nothing answered at `/admin`.** The panel had thirteen sections and no front door; an administrator reached them from a menu or by URL. | medium | **Fixed**: `/admin`, an Inertia hub of the sections the person may open, described in three languages, linked first in both menus; `AdminHubTest` (a super admin sees all, a Bookstore manager one, a teacher 403, a guest the login). In both sweeps. |
 | L22 | **The hub was a flat list.** Thirteen cards in one grid, in map order, with no grouping; the Blade More dropdown mixed school links and fourteen admin links with only rules between them (the owner: "still admin page is too much complicated"). | medium | **Fixed**: the panel in four parts — Admissions, Website & content, Shops & money, System — on the hub (a row of cards per part, a part-link row on top, the screens inside a section on its card), in the Inertia More menu (the admin column headed by the parts) and in both Blade menus (the same headings, plus *School*). `NavigationMap::adminPanel()` is the one map; `AdminHubTest` (3) pins the parts, the sections, the inner screens and the headings in both shells and in Dhivehi. `admin-hub.mjs` (20/20) walks it on desktop and phone. |
+| L23 | **`/dashboard` and `/admin` did not explain each other.** An administrator's landing was a page of numbers with no link to the panel except in a menu, and the hub's only way back was a link at its bottom; the owner could not tell which was for what. | medium | **Fixed**: the rule in one line — *the dashboard is today's numbers, the Admin panel is where things are managed* — with an *Admin panel →* button on the super-admin dashboard, the supervisor dashboard and the staff overview (offered to whoever may open it), and *← Dashboard* with the rule at the top of the hub. EN/DV/AR. `AdminHubTest` (4th test) pins all four landings and a teacher's absence of the door; `admin-hub.mjs` walks the round trip (24/24; 27 with a super admin). |
 
 ## 6. What the owner still owns
 

@@ -10,10 +10,19 @@
             {{ $islamicDate['day'] }} {{ $islamicDate['month_name'] }} {{ $islamicDate['year'] }} AH
         </p>
     </div>
-    <span style="padding:.35rem .85rem;background:rgba(255,255,255,.15);color:white;font-size:.7rem;font-weight:700;border-radius:9999px;letter-spacing:.06em;border:1px solid rgba(255,255,255,.25)">
-        SUPER ADMIN
-    </span>
+    {{-- The other half of an administrator's day. This screen is the numbers;
+         the Admin panel is where things are managed (the owner, 2026-09-26:
+         "I don't understand what's happening sometimes, /dashboard or /admin").
+         Neither screen linked the other except from a menu. --}}
+    <div class="flex flex-wrap items-center gap-2">
+        <a href="{{ route('admin.index') }}" data-testid="open-admin-panel"
+           style="padding:.45rem .9rem;background:white;color:#7C2D37;font-size:.8rem;font-weight:700;border-radius:.5rem;text-decoration:none;white-space:nowrap">🛠️ Admin panel →</a>
+        <span style="padding:.35rem .85rem;background:rgba(255,255,255,.15);color:white;font-size:.7rem;font-weight:700;border-radius:9999px;letter-spacing:.06em;border:1px solid rgba(255,255,255,.25)">
+            SUPER ADMIN
+        </span>
+    </div>
 </div>
+<p class="mx-auto max-w-[80rem] px-4 pt-3 text-xs text-gray-500" data-testid="dashboard-hint">This dashboard is today's numbers. To manage enrolments, the website, the shops or the system, open the <a href="{{ route('admin.index') }}" class="font-semibold text-[#7C2D37] underline">Admin panel</a>.</p>
 
 <div style="padding:1.5rem 1rem 3rem;max-width:80rem;margin:0 auto">
 
