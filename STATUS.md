@@ -4414,6 +4414,89 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5hp. B10d: the theme gallery (2026-09-26)
+
+This is the owner's "theme marketplace", which BOOKSHOP_PLAN §6.8 had
+listed as "not planned". The decision is recorded in ADR-039. The
+gallery is **free**: paid themes would mean money moving between shops,
+and the owner has not decided that.
+
+**What a theme is.** A theme is a whole look: the B4 theme data (colours,
+approved fonts, scale, shape and a dark variant), plus optional CSS that
+has already been cleaned and confined (§5ho). Four starter looks are
+published by migration:
+- Classic bookshop: serif, paper tones, a little CSS.
+- Playful kids: round shapes, Poppins, cards that lift on hover.
+- Modern minimal.
+- Evening reading.
+
+**The shop's side.** The designer gains a **Theme gallery** showing each
+look's swatches, fonts, whether it has styling, and who made it.
+
+**Use this theme** (owners only) puts the look into the **draft**:
+- If the theme has CSS, that CSS is approved along with the theme. It
+  shows in the preview and goes live on the next **publish**, with no
+  office step.
+- If the theme has no CSS, any unpublished theme CSS is cleared. The live
+  CSS stays until the next publish.
+
+**Offer your look to the gallery** (owners only) sends the shop's
+*published* theme and live CSS to the office, under a name and a line of
+description. Only one offer can be waiting at a time. A declined offer
+shows the office's note.
+
+**The office's side.** `/admin/bookshop` gains **Theme gallery**. It
+lists waiting offers, with swatches, fonts and CSS. The office can:
+- **Publish** an offer, optionally renaming it. The CSS is cleaned again,
+  and publishing approves it for every shop that later applies it. The
+  shop that offered it is told.
+- **Decline** an offer with a note.
+- **Withdraw** a published theme. Shops already using it keep their look.
+
+Each theme shows how many times it has been used.
+
+**Data** (`2026_09_26_000018_b10d_storefront_theme_gallery`, additive):
+`storefront_themes`, with the four starters. The morph alias is
+`storefront_theme` (ADR-005). `PublishStorefrontAction` now promotes a
+gallery theme's CSS when the shop publishes.
+
+**Tests**: `StorefrontThemeGalleryTest` (2).
+- The four starters are published.
+- Staff are refused. Applying sets the draft's fonts and colours and
+  holds the CSS for publish; the use is counted; the preview shows it.
+- Publishing puts the CSS live and the public page shows it.
+- A look without CSS clears the unpublished theme CSS and keeps the
+  live CSS.
+- An unknown theme returns 404.
+- Offering needs a published storefront, and only one offer can wait.
+  The offer carries the published theme and live CSS, and the office is
+  told.
+- The office sees the offer. A vendor is refused. Declining needs a note.
+  Publishing with a new name works and the shop is told.
+- Another shop applies the published look and its CSS goes live with
+  that shop's publish.
+- Withdrawing removes the theme from the gallery; it can no longer be
+  applied, and the shop using it keeps its CSS.
+- A declined second offer shows its note.
+
+Full suite **2287 passed**.
+
+**Walked** (`scripts/smoke/gallery.mjs`, **9/9**, no console or server
+errors):
+1. Fitrah's designer shows the four starter looks.
+2. "Classic bookshop" is used; its CSS waits for publish, and the preview
+   has the look and the CSS.
+3. After publishing, a guest sees Merriweather and the CSS.
+4. The published look is offered.
+5. The office sees it with its CSS and publishes it, and it joins the
+   shops' gallery (five looks).
+6. The office withdraws it: the gallery is back to four and Fitrah's page
+   is unchanged.
+
+Re-walked: `css.mjs` **9/9** and `storefront.mjs` **15/15**.
+
+**Production**: the migration, which also adds the four starter looks.
+
 ## 5ho. B10c: a shop's own CSS, cleaned, confined and approved by the office (2026-09-26)
 
 The owner asked for per-vendor custom CSS, which BOOKSHOP_PLAN §6.8 had

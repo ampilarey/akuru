@@ -1929,6 +1929,9 @@ class SmokeMarkerSeeder extends Seeder
         // B10c (`css.mjs`): Fitrah sends its own CSS and the office approves
         // and takes it down; it starts from none.
         DB::table('vendor_storefronts')->whereIn('vendor_id', [$fitrahId, $otherId])->update(['custom_css' => null, 'custom_css_pending' => null, 'custom_css_status' => null, 'custom_css_note' => null, 'custom_css_submitted_at' => null, 'custom_css_reviewed_at' => null, 'custom_css_reviewed_by' => null]);
+        // B10d (`gallery.mjs`): Fitrah applies a starter look and offers its
+        // own, which the office publishes and withdraws; the offered looks go.
+        DB::table('storefront_themes')->whereIn('source_vendor_id', [$fitrahId, $otherId])->delete();
         // B10a: dollar prices were removed; their two settings go.
         DB::table('settings')->whereIn('key', ['bookshop_usd_display', 'bookshop_usd_rate'])->delete();
         \Illuminate\Support\Facades\Cache::forget('bookshop_host:www.smoke-fitrah.test');

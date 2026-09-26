@@ -60,6 +60,10 @@ class PublishStorefrontAction
             foreach ($pages as $page) {
                 $page->update(['published_sections' => (array) ($page->draft_sections ?? []), 'published_at' => now()]);
             }
+            // B10d: a gallery theme's CSS was approved with the theme; it goes live with the look.
+            if ($storefront->custom_css_status === 'theme' && $storefront->custom_css_pending !== null) {
+                $storefront->update(['custom_css' => $storefront->custom_css_pending, 'custom_css_pending' => null, 'custom_css_status' => 'approved', 'custom_css_reviewed_at' => now()]);
+            }
 
             return $this->record($storefront, [
                 'identity' => (array) $storefront->draft_identity,

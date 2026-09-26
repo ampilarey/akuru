@@ -783,6 +783,8 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         // B9b: cash on delivery.
         Route::post('cod', [\App\Domains\Bookshop\Http\Controllers\AdminBookshopController::class, 'setCod'])->name('admin.bookshop.cod');
         Route::get('applications/export', [\App\Domains\Bookshop\Http\Controllers\AdminBookshopController::class, 'exportApplications'])->name('admin.bookshop.applications.export');
+        // B10d: the theme gallery — publish, decline, withdraw.
+        Route::post('themes/{theme}', [\App\Domains\Bookshop\Http\Controllers\AdminBookshopController::class, 'decideTheme'])->name('admin.bookshop.themes.decide')->whereNumber('theme');
         // B10c: shops' own CSS — approve, send back, take down.
         Route::post('storefronts/{vendor}/css', [\App\Domains\Bookshop\Http\Controllers\AdminBookshopController::class, 'decideCss'])->name('admin.bookshop.storefront.css')->whereNumber('vendor');
         // B10b: the Bookstore admins — full admins add and remove them.
@@ -871,6 +873,9 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::get('storefront/preview', [\App\Domains\Bookshop\Http\Controllers\VendorStorefrontController::class, 'preview'])->name('vendor.storefront.preview');
         Route::post('storefront/draft', [\App\Domains\Bookshop\Http\Controllers\VendorStorefrontController::class, 'saveDraft'])->name('vendor.storefront.draft');
         Route::post('storefront/publish', [\App\Domains\Bookshop\Http\Controllers\VendorStorefrontController::class, 'publish'])->name('vendor.storefront.publish');
+        // B10d: the theme gallery — apply a look, offer the shop's own.
+        Route::post('storefront/themes/{theme}/apply', [\App\Domains\Bookshop\Http\Controllers\VendorStorefrontController::class, 'applyTheme'])->name('vendor.storefront.theme.apply')->whereNumber('theme');
+        Route::post('storefront/themes/offer', [\App\Domains\Bookshop\Http\Controllers\VendorStorefrontController::class, 'offerTheme'])->name('vendor.storefront.theme.offer')->middleware('throttle:5,60,storefront-theme-offer');
         // B10c: the shop's own CSS, approved by the office.
         Route::post('storefront/css', [\App\Domains\Bookshop\Http\Controllers\VendorStorefrontController::class, 'saveCss'])->name('vendor.storefront.css')->middleware('throttle:20,1,storefront-css');
         Route::post('storefront/css/remove', [\App\Domains\Bookshop\Http\Controllers\VendorStorefrontController::class, 'removeCss'])->name('vendor.storefront.css.remove');

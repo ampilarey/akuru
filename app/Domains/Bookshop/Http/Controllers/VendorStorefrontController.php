@@ -11,6 +11,7 @@ use App\Domains\Bookshop\Actions\Vendor\PresentStorefrontDesignerAction;
 use App\Domains\Bookshop\Actions\Vendor\PublishStorefrontAction;
 use App\Domains\Bookshop\Actions\Vendor\SaveStorefrontDraftAction;
 use App\Domains\Bookshop\Actions\Vendor\SaveStorefrontSectionsAction;
+use App\Domains\Bookshop\Actions\Vendor\StorefrontGalleryAction;
 use App\Domains\Bookshop\Actions\Vendor\SubmitStorefrontCssAction;
 use App\Domains\Bookshop\Actions\Vendor\UploadStorefrontImagesAction;
 use App\Domains\Bookshop\Http\Controllers\Concerns\AuthorizesVendor;
@@ -44,6 +45,7 @@ class VendorStorefrontController extends Controller
             'preview_url' => route('vendor.storefront.preview'),
             'public_url' => route('public.shop.vendor', $scope->vendorSlug),
             'custom_css' => app(SubmitStorefrontCssAction::class)->get($scope),
+            'gallery' => app(StorefrontGalleryAction::class)->list($scope),
         ]);
     }
 
@@ -56,6 +58,26 @@ class VendorStorefrontController extends Controller
         $storefront = app(SubmitStorefrontCssAction::class)->submit($scope, $data['css'] ?? null);
 
         return back()->with('success', __($storefront->custom_css_status === 'pending' ? 'shop.css_sent_flash' : 'shop.css_saved_flash'));
+    }
+
+    /** B10d: a gallery theme onto the draft (its CSS goes live with the next publish). Owners only. */
+    public function applyTheme(Request $request, int $theme): RedirectResponse
+    {
+        $scope = $this->authorizeVendor($request);
+        app(StorefrontGalleryAction::class)->apply($scope, $theme);
+
+        return back()->with('success', __('shop.theme_applied_flash'));
+    }
+
+    /** B10d: offer the shop's published look to the gallery. Owners only. */
+    public function offerTheme(Request $request): RedirectResponse
+    {
+        $scope = $this->authorizeVendor($request);
+        $data = $request->validate(['name' => 'required|string|max:80', 'description' => 'nullable|string|max:300']);
+
+        app(StorefrontGalleryAction::class)->offer($scope, $data['name'], $data['description'] ?? null);
+
+        return back()->with('success', __('shop.theme_offered_flash'));
     }
 
     /** B10c: take the shop's own CSS off its page now. Owners only. */
