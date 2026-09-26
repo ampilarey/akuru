@@ -2,6 +2,8 @@
      banner, logo, name and tagline in the visitor's language, the office's badges, always the
      "at Akuru Bookstore" line (decision 11), then the story and the contact block. --}}
 @php($sf = $vendor['storefront'])
+@php($part = $part ?? 'all')
+@if(in_array($part, ['all', 'head'], true))
 <header class="sf-band" data-testid="storefront-head">
     @if($sf['banner'])
         <div class="sf-banner w-full overflow-hidden"><img src="{{ $sf['banner'] }}" alt="" class="h-full w-full object-cover" data-testid="storefront-banner"></div>
@@ -30,9 +32,10 @@
         </div>
     </div>
 </header>
+@endif
 
 @php($contact = array_filter($sf['contact']))
-@if($sf['story'] || $contact !== [] || $sf['hours'] || $sf['socials'] !== [])
+@if(in_array($part, ['all', 'about'], true) && ($sf['story'] || $contact !== [] || $sf['hours'] || $sf['socials'] !== []))
     <section class="container mx-auto grid gap-6 px-4 py-8 md:grid-cols-3" data-testid="storefront-about">
         @if($sf['story'])
             <div class="prose max-w-none md:col-span-2" dir="auto" data-testid="storefront-story">{!! $sf['story'] !!}</div>

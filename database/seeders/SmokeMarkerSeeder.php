@@ -1802,6 +1802,13 @@ class SmokeMarkerSeeder extends Seeder
         }
         DB::table('vendor_storefront_versions')->whereIn('vendor_storefront_id', $storefrontIds)->delete();
         DB::table('vendor_storefronts')->whereIn('id', $storefrontIds)->delete();
+        // B5 (`sections.mjs`): the walk's pages, collections and image library
+        // (the library's media files go with the storefront's below).
+        $storefrontMedia = [...$storefrontMedia, ...DB::table('vendor_storefront_images')->where('vendor_id', $fitrahId)->pluck('media_file_id')->all()];
+        DB::table('vendor_storefront_images')->where('vendor_id', $fitrahId)->delete();
+        DB::table('vendor_pages')->where('vendor_id', $fitrahId)->delete();
+        DB::table('vendor_collection_products')->whereIn('vendor_collection_id', DB::table('vendor_collections')->where('vendor_id', $fitrahId)->pluck('id'))->delete();
+        DB::table('vendor_collections')->where('vendor_id', $fitrahId)->delete();
         foreach (array_unique($storefrontMedia) as $mediaId) {
             $media = DB::table('media_files')->where('id', $mediaId)->first(['disk', 'path']);
             if ($media !== null) {

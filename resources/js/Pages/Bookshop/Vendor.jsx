@@ -457,6 +457,7 @@ export default function Vendor({ t, vendor, memberships = [], agreement_url, pro
                         <span className="mt-2 inline-flex gap-2">
                             <a href="/vendor/orders" className="btn-primary" data-testid="open-orders">{t.orders_title}</a>
                             <a href="/vendor/storefront" className="btn-secondary" data-testid="open-designer">{t.designer_title}</a>
+                            <a href="/vendor/storefront/sections" className="btn-secondary" data-testid="open-sections">{t.sections_title}</a>
                         </span>
                     )}
                 </div>

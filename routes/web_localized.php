@@ -774,6 +774,9 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         // B3: card refunds, returned through BML and recorded.
         Route::get('refunds/export', [\App\Domains\Bookshop\Http\Controllers\AdminBookshopController::class, 'exportRefunds'])->name('admin.bookshop.refunds.export');
         Route::post('refunds/{refund}', [\App\Domains\Bookshop\Http\Controllers\AdminBookshopController::class, 'processRefund'])->name('admin.bookshop.refunds.process')->whereNumber('refund');
+        // B5: storefront moderation (§6.6) and the office's look at a draft.
+        Route::post('vendors/{vendor}/storefront', [\App\Domains\Bookshop\Http\Controllers\AdminBookshopController::class, 'moderateStorefront'])->name('admin.bookshop.storefront.moderate')->whereNumber('vendor');
+        Route::get('storefronts/{vendor}/preview', [\App\Domains\Bookshop\Http\Controllers\AdminBookshopController::class, 'previewStorefront'])->name('admin.bookshop.storefront.preview');
     });
 
     // BOOKSHOP_PLAN B1a: the vendor portal. `auth` only on the route: the
@@ -807,6 +810,20 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::post('storefront/draft', [\App\Domains\Bookshop\Http\Controllers\VendorStorefrontController::class, 'saveDraft'])->name('vendor.storefront.draft');
         Route::post('storefront/publish', [\App\Domains\Bookshop\Http\Controllers\VendorStorefrontController::class, 'publish'])->name('vendor.storefront.publish');
         Route::post('storefront/versions/{version}/roll-back', [\App\Domains\Bookshop\Http\Controllers\VendorStorefrontController::class, 'rollBack'])->name('vendor.storefront.roll-back')->whereNumber('version');
+        // B5: sections, the menu and SEO; pages; collections; the image library.
+        Route::get('storefront/sections', [\App\Domains\Bookshop\Http\Controllers\VendorStorefrontController::class, 'sections'])->name('vendor.storefront.sections');
+        Route::post('storefront/sections', [\App\Domains\Bookshop\Http\Controllers\VendorStorefrontController::class, 'saveSections'])->name('vendor.storefront.sections.save');
+        Route::post('storefront/pages', [\App\Domains\Bookshop\Http\Controllers\VendorStorefrontController::class, 'storePage'])->name('vendor.storefront.pages.store');
+        Route::post('storefront/pages/{page}', [\App\Domains\Bookshop\Http\Controllers\VendorStorefrontController::class, 'updatePage'])->name('vendor.storefront.pages.update')->whereNumber('page');
+        Route::delete('storefront/pages/{page}', [\App\Domains\Bookshop\Http\Controllers\VendorStorefrontController::class, 'destroyPage'])->name('vendor.storefront.pages.destroy')->whereNumber('page');
+        Route::post('storefront/pages/{page}/sections', [\App\Domains\Bookshop\Http\Controllers\VendorStorefrontController::class, 'savePageSections'])->name('vendor.storefront.pages.sections')->whereNumber('page');
+        Route::get('storefront/pages/{page}/preview', [\App\Domains\Bookshop\Http\Controllers\VendorStorefrontController::class, 'previewPage'])->name('vendor.storefront.pages.preview')->whereNumber('page');
+        Route::post('storefront/collections', [\App\Domains\Bookshop\Http\Controllers\VendorStorefrontController::class, 'saveCollection'])->name('vendor.storefront.collections.store');
+        Route::post('storefront/collections/{collection}', [\App\Domains\Bookshop\Http\Controllers\VendorStorefrontController::class, 'saveCollection'])->name('vendor.storefront.collections.update')->whereNumber('collection');
+        Route::delete('storefront/collections/{collection}', [\App\Domains\Bookshop\Http\Controllers\VendorStorefrontController::class, 'destroyCollection'])->name('vendor.storefront.collections.destroy')->whereNumber('collection');
+        Route::post('storefront/images', [\App\Domains\Bookshop\Http\Controllers\VendorStorefrontController::class, 'uploadImages'])->name('vendor.storefront.images.upload');
+        Route::post('storefront/images/{image}', [\App\Domains\Bookshop\Http\Controllers\VendorStorefrontController::class, 'updateImage'])->name('vendor.storefront.images.update')->whereNumber('image');
+        Route::delete('storefront/images/{image}', [\App\Domains\Bookshop\Http\Controllers\VendorStorefrontController::class, 'destroyImage'])->name('vendor.storefront.images.destroy')->whereNumber('image');
     });
 
     // L7 reviewer portal (§12.2) — own assignments only, enforced in actions.

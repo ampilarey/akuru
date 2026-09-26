@@ -3,10 +3,16 @@
 {{-- BOOKSHOP_PLAN B1b: the shop home, a category, a search, and a vendor's
      plain page — one catalogue in one view. --}}
 @php($pageTitle = $heading ?? __('shop.bookshop_title'))
-@section('title', $pageTitle . ' - ' . config('app.name'))
-@section('description', $vendor['tagline'] ?? __('shop.shop_intro'))
-
 @php($storefront = $vendor['storefront'] ?? null)
+@php($collection = $collection ?? null)
+{{-- B5 (§6.7): a published storefront's own title, description and share image on its home. --}}
+@php($seo = $storefront && ! $collection ? $storefront['seo'] : null)
+@section('title', ($seo ? $seo['title'] : $pageTitle) . ' - ' . config('app.name'))
+@section('description', $seo && $seo['description'] ? $seo['description'] : ($collection['description'] ?? $vendor['tagline'] ?? __('shop.shop_intro')))
+@if($seo && $seo['image'])
+    @section('og_image', $seo['image'])
+@endif
+
 @if($storefront)
     @include('public.shop._theme')
 @endif
@@ -18,7 +24,21 @@
 @if($preview ?? false)
     <p class="bg-amber-100 px-4 py-2 text-center text-sm text-amber-900" data-testid="preview-banner">{{ __('shop.preview_banner') }}</p>
 @endif
-@include('public.shop._storefront')
+@include('public.shop._storefront', ['part' => 'head'])
+@include('public.shop._nav')
+@if($collection)
+    <section class="container mx-auto px-4 pt-8" data-testid="collection-head">
+        <nav class="mb-2 text-sm opacity-70"><a href="{{ $storefront['home_url'] }}" class="hover:underline">{{ $storefront['name'] }}</a> › <span>{{ $collection['name'] }}</span></nav>
+        <h2 class="text-2xl md:text-3xl font-bold" dir="auto" data-testid="collection-title">{{ $collection['name'] }}</h2>
+        @if($collection['description'])<p class="mt-1 opacity-90" dir="auto">{{ $collection['description'] }}</p>@endif
+    </section>
+@else
+    {{-- B5 (§6.3): the vendor's sections, then the story and contact block. --}}
+    @if(count($storefront['sections']) > 0)
+        @include('public.shop._sections', ['sections' => $storefront['sections'], 'preview' => $preview ?? false])
+    @endif
+    @include('public.shop._storefront', ['part' => 'about'])
+@endif
 @else
 <section class="bg-gradient-to-br from-brandMaroon-50 to-brandBeige-100 py-10">
     <div class="container mx-auto px-4">
@@ -26,11 +46,18 @@
             <nav class="mb-3 text-sm text-gray-500">
                 <a href="{{ route('public.shop.index') }}" class="hover:text-brandMaroon-600">{{ __('shop.bookshop_title') }}</a>
                 <span>›</span>
+                @if($collection && $vendor)
+                    <a href="{{ route('public.shop.vendor', $vendor['slug']) }}" class="hover:text-brandMaroon-600">{{ $vendor['name'] }}</a>
+                    <span>›</span>
+                @endif
                 <span class="text-gray-700">{{ $heading }}</span>
             </nav>
         @endif
-        <h1 class="text-3xl md:text-4xl font-bold text-brandMaroon-900" data-testid="shop-heading">{{ $pageTitle }}</h1>
-        @if($vendor)
+        <h1 class="text-3xl md:text-4xl font-bold text-brandMaroon-900" data-testid="{{ $collection ? 'collection-title' : 'shop-heading' }}" dir="auto">{{ $pageTitle }}</h1>
+        @if($collection)
+            @if($collection['description'])<p class="mt-1 text-lg text-brandGray-700" dir="auto">{{ $collection['description'] }}</p>@endif
+            <p class="mt-1 text-sm text-brandGray-600" data-testid="at-akuru">{{ $vendor['name'] }} · {{ __('shop.at_akuru') }}</p>
+        @elseif($vendor)
             @if($vendor['tagline'])
                 <p class="mt-1 text-lg text-brandGray-700">{{ $vendor['tagline'] }}</p>
             @endif
@@ -150,7 +177,7 @@
 <section class="py-8">
     <div class="container mx-auto px-4">
         <h2 class="mb-3 text-xl font-semibold text-brandMaroon-900">
-            {{ $home ? __('shop.all_products') : __('shop.results') }}
+            {{ $home || ($storefront && ! $collection && count($storefront['sections']) > 0) ? __('shop.all_products') : __('shop.results') }}
             <span class="text-sm font-normal text-gray-500" data-testid="result-count">{{ __('shop.result_count', ['count' => $products->total()]) }}</span>
         </h2>
         @if($products->total() === 0)

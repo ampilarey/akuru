@@ -73,6 +73,16 @@ class Vendor extends Model
         return $this->hasOne(VendorStorefront::class);
     }
 
+    public function pages(): HasMany
+    {
+        return $this->hasMany(VendorPage::class)->orderBy('sort_order')->orderBy('id');
+    }
+
+    public function collections(): HasMany
+    {
+        return $this->hasMany(VendorCollection::class)->orderBy('sort_order')->orderBy('id');
+    }
+
     /** The office's badges (plan §6.1): `verified`, `akuru_partner`. */
     public function hasBadge(string $badge): bool
     {

@@ -84,6 +84,11 @@ Route::middleware('auth')->group(function () {
 });
 Route::get('shop/{vendor}', [\App\Domains\Bookshop\Http\Controllers\ShopController::class, 'vendor'])->name('public.shop.vendor')
     ->where('vendor', '(?!(products|c|export|cart|checkout|slips)$)[a-z0-9-]+');
+// B5: a vendor's own pages and collections under its storefront (plan §6.4, §5).
+Route::get('shop/{vendor}/p/{page}', [\App\Domains\Bookshop\Http\Controllers\ShopController::class, 'vendorPage'])->name('public.shop.vendor.page')
+    ->where('vendor', '(?!(products|c|export|cart|checkout|slips)$)[a-z0-9-]+')->where('page', '[a-z0-9-]+');
+Route::get('shop/{vendor}/{collection}', [\App\Domains\Bookshop\Http\Controllers\ShopController::class, 'vendorCollection'])->name('public.shop.vendor.collection')
+    ->where('vendor', '(?!(products|c|export|cart|checkout|slips)$)[a-z0-9-]+')->where('collection', '(?!p$)[a-z0-9-]+');
 
 Route::get('library/export', [PublicLibraryController::class, 'export'])->name('public.library.export');
 Route::get('library', [PublicLibraryController::class, 'index'])->name('public.library.index');

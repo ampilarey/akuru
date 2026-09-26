@@ -9,13 +9,17 @@ class VendorStorefrontVersion extends Model
 {
     public $timestamps = false;
 
-    protected $fillable = ['vendor_storefront_id', 'number', 'identity', 'theme', 'note', 'created_by', 'created_at'];
+    protected $fillable = ['vendor_storefront_id', 'number', 'identity', 'theme', 'sections', 'navigation', 'seo', 'pages', 'note', 'created_by', 'created_at'];
 
     protected function casts(): array
     {
         return [
             'identity' => 'array',
             'theme' => 'array',
+            'sections' => 'array',
+            'navigation' => 'array',
+            'seo' => 'array',
+            'pages' => 'array',
             'created_at' => 'datetime',
         ];
     }
