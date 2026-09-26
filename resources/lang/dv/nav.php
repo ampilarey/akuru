@@ -9,6 +9,8 @@ return [
     'close' => 'ބަންދުކުރޭ',
     'primary_nav' => 'މައިގަނޑު',
     'all_screens' => 'ހުރިހާ ސަފުހާތައް',
+    'alerts' => 'އެލާޓް',
+    'skip_to_content' => 'ލިޔުމަށް ދާން',
 
     'school_year' => 'ދިރާސީ އަހަރު',
     'people' => 'މީހުން',

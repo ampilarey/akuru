@@ -5,6 +5,8 @@ return [
     'close' => 'إغلاق',
     'primary_nav' => 'الرئيسية',
     'all_screens' => 'كل الصفحات',
+    'alerts' => 'التنبيهات',
+    'skip_to_content' => 'انتقل إلى المحتوى',
 
     'school_year' => 'العام الدراسي',
     'people' => 'الأشخاص',

@@ -6,6 +6,8 @@ return [
     'close' => 'Close',
     'primary_nav' => 'Primary',
     'all_screens' => 'All screens',
+    'alerts' => 'Alerts',
+    'skip_to_content' => 'Skip to content',
 
     // Groups
     'school_year' => 'School year',
