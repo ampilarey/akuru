@@ -1,17 +1,17 @@
 /**
- * Can anyone find Fitrah's products in the Akuru Online Store?
- * (BOOKSHOP_PLAN slice B1b; renamed from "Bookshop" 2026-09-26.)
+ * Can anyone find Fitrah's products in the Akuru Bookstore?
+ * (BOOKSHOP_PLAN slice B1b; the name settled 2026-09-26.)
  *
  * A guest, signed in as nobody:
  *
- *   1. finds "Store" in the site's header and opens the store;
+ *   1. finds "Bookstore" in the site's header and opens the bookstore;
  *   2. sees new arrivals with their photos (card-size copies, not the
  *      original), the categories that have something in them, and the
  *      shops; never a draft;
  *   3. opens a category, searches, filters to what is in stock and sorts;
  *   4. opens a product page — price, "sold by", tax note, stock, details,
  *      a large photo — and goes from it to the vendor's page, which says
- *      "at Akuru Online Store" and shows only that vendor's products;
+ *      "at Akuru Bookstore" and shows only that vendor's products;
  *   5. reads the shop in Dhivehi, sees the phone's bottom bar at phone
  *      width, exports the listing and finds the product in the sitemap.
  *
@@ -99,12 +99,12 @@ const loads = async (page, src) => {
 
 const guest = await newPage('guest');
 await guest.goto(`${BASE}/en`, { waitUntil: 'networkidle' });
-const headerLink = guest.locator('nav a', { hasText: /^\s*Store\s*$/ }).first();
-check('the site header offers Store', (await headerLink.count()) === 1 && /\/shop$/.test((await headerLink.getAttribute('href')) ?? ''));
+const headerLink = guest.locator('nav a', { hasText: /^\s*Bookstore\s*$/ }).first();
+check('the site header offers Bookstore', (await headerLink.count()) === 1 && /\/shop$/.test((await headerLink.getAttribute('href')) ?? ''));
 await headerLink.click();
 await guest.waitForLoadState('networkidle');
-check('it opens the Akuru Online Store', /\/shop$/.test(guest.url()) && (await guest.locator('[data-testid="shop-heading"]').innerText()).includes('Akuru Online Store'), guest.url());
-check('and the old name is gone', !(await text(guest)).includes('Bookshop'));
+check('it opens the Akuru Bookstore', /\/shop$/.test(guest.url()) && (await guest.locator('[data-testid="shop-heading"]').innerText()).includes('Akuru Bookstore'), guest.url());
+check('and neither earlier name is on the page', !/Bookshop|Online Store/.test(await guest.innerText('body')));
 
 // ------------------------------------------------------------ 2. the front
 
@@ -151,14 +151,14 @@ await guest.locator('[data-testid="product-vendor"] a').click();
 await guest.waitForLoadState('networkidle');
 const vendorPage = await text(guest);
 const vendorCards = await cards(guest);
-check('the seller\'s page says "at Akuru Online Store"', /\/shop\/fitrah$/.test(guest.url()) && vendorPage.includes('iman.noor.ihsan') && vendorPage.includes('at Akuru Online Store'), guest.url().replace(BASE, ''));
+check('the seller\'s page says "at Akuru Bookstore"', /\/shop\/fitrah$/.test(guest.url()) && vendorPage.includes('iman.noor.ihsan') && vendorPage.includes('at Akuru Bookstore'), guest.url().replace(BASE, ''));
 check('and shows only that seller\'s products', vendorCards.length === 3 && !vendorCards.includes('smoke-other-secret'), vendorCards.join(', '));
 
 // ------------------------------------------------------------ 5. and the rest
 
 await guest.goto(`${BASE}/dv/shop`, { waitUntil: 'networkidle' });
 const dv = await text(guest);
-check('the store reads in Dhivehi, with a Dhivehi title where the seller gave one', dv.includes('އަކުރު އޮންލައިން ފިހާރަ') && dv.includes('ލަކުޑި އަކުރު ޕަޒަލް') && dv.includes('އާ ތަކެތި'), dv.slice(0, 120));
+check('the bookstore reads in Dhivehi, with a Dhivehi title where the seller gave one', dv.includes('އަކުރު ފޮތްފިހާރަ') && dv.includes('ލަކުޑި އަކުރު ޕަޒަލް') && dv.includes('އާ ތަކެތި'), dv.slice(0, 120));
 
 const phone = await newPage('phone', { width: 390, height: 844 });
 await phone.goto(`${BASE}/en/shop`, { waitUntil: 'networkidle' });

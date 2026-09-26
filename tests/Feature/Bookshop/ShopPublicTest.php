@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Storage;
 uses(RefreshDatabase::class);
 
 /**
- * BOOKSHOP_PLAN slice B1b: the public Akuru Online Store — one catalogue
+ * BOOKSHOP_PLAN slice B1b: the public Akuru Bookstore — one catalogue
  * of every vendor's products for sale, a category, a search, a product
  * page and a vendor's plain page; and never a draft, an archived product or
  * a suspended vendor's.
@@ -65,7 +65,7 @@ it('shows every vendor\'s products for sale in one shop, and nothing that is not
     shopProduct($fitrah, 'Page Only', ['visibility' => 'storefront']);
 
     $home = shopGet(route('public.shop.index'))->assertOk()
-        ->assertSee('Akuru Online Store')
+        ->assertSee('Akuru Bookstore')
         ->assertSee('Sold by')
         ->assertSee('data-testid="new-arrivals"', false)
         ->assertSee('data-testid="shop-bottom-bar"', false);
@@ -73,7 +73,7 @@ it('shows every vendor\'s products for sale in one shop, and nothing that is not
 
     // A vendor's own page also carries what it keeps for its page alone.
     $page = shopGet(route('public.shop.vendor', 'fitrah'))->assertOk()
-        ->assertSee('at Akuru Online Store')
+        ->assertSee('at Akuru Bookstore')
         ->assertSee('fitrah tagline');
     expect(shopOrder($page))->toEqualCanonicalizing(['arabic-workbook', 'page-only']);
 
@@ -166,9 +166,9 @@ it('speaks the visitor\'s language where the vendor gave one', function () {
     shopProduct($fitrah, 'English Only');
 
     App::setLocale('dv');
-    shopGet(route('public.shop.index'))->assertOk()->assertSee('ނަމާދު ކުރާ ފޮތި')->assertSee('English Only')->assertSee('އަކުރު އޮންލައިން ފިހާރަ');
+    shopGet(route('public.shop.index'))->assertOk()->assertSee('ނަމާދު ކުރާ ފޮތި')->assertSee('English Only')->assertSee('އަކުރު ފޮތްފިހާރަ');
     App::setLocale('ar');
-    shopGet(route('public.shop.product', 'prayer-mat'))->assertOk()->assertSee('سجادة صلاة')->assertSee('في متجر أكورو الإلكتروني');
+    shopGet(route('public.shop.product', 'prayer-mat'))->assertOk()->assertSee('سجادة صلاة')->assertSee('في متجر أكورو للكتب');
 });
 
 it('exports the listing as it is filtered, and lists the shop in the sitemap', function () {
