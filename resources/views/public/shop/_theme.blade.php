@@ -65,4 +65,13 @@
         .storefront .sf-draft-hidden { outline: 2px dashed #b45309; opacity: .65; }
         .storefront .sf-faq summary { cursor: pointer; font-weight: 600; }
     </style>
+    {{-- B10c (ADR-039): the shop's own CSS — cleaned, every selector under .storefront, approved by the
+         office (the preview shows the one waiting). The shop's part of the page contains its own
+         painting and positioning, so nothing it draws can cover the Akuru frame. --}}
+    @if(! empty($sf['custom_css']))
+        <style data-testid="shop-custom-css">
+            .storefront { position: relative; isolation: isolate; contain: paint; }
+            {!! $sf['custom_css'] !!}
+        </style>
+    @endif
 @endpush

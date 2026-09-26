@@ -120,6 +120,8 @@ class ResolveStorefrontAction
             'navigation' => $render->links($vendor, (array) (($draft ? $storefront->draft_navigation : $storefront->published_navigation) ?? []), $draft),
             'seo' => $this->seo((array) (($draft ? $storefront->draft_seo : $storefront->published_seo) ?? []), $name),
             'home_url' => route('public.shop.vendor', $vendor->slug),
+            // B10c (ADR-039): the shop's own CSS, cleaned and confined; the preview shows the one waiting for the office.
+            'custom_css' => $draft ? ($storefront->custom_css_pending ?? $storefront->custom_css) : $storefront->custom_css,
         ];
     }
 
