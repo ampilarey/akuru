@@ -1915,6 +1915,13 @@ class SmokeMarkerSeeder extends Seeder
         // B9e (`insights.mjs`): Fitrah's funnel starts from nothing, so the
         // walk's one guest visit is what the shop's Insights page shows.
         DB::table('shop_daily_stats')->whereIn('vendor_id', [$fitrahId, $otherId])->delete();
+
+        // B9f (`hosts.mjs`): Fitrah asks for its own domain and the office
+        // turns it on, then shows dollar prices; the domain and the dollar
+        // switch go back.
+        DB::table('vendors')->whereIn('id', [$fitrahId, $otherId])->update(['custom_host' => null, 'custom_host_status' => null, 'custom_host_requested_at' => null, 'custom_host_approved_at' => null]);
+        DB::table('settings')->whereIn('key', [(string) config('bookshop.usd.display_setting_key'), (string) config('bookshop.usd.rate_setting_key')])->delete();
+        \Illuminate\Support\Facades\Cache::forget('bookshop_host:www.smoke-fitrah.test');
     }
 
     /**

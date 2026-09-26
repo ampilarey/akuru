@@ -39,6 +39,10 @@ class SaveVendorShopSettingsAction
             // B9b: cash on delivery, and the largest order it is taken for.
             'cod_enabled' => (bool) $vendor->cod_enabled,
             'cod_max' => $vendor->cod_max !== null ? (string) $vendor->cod_max : null,
+            // B9f: the shop's own domain, and where to point it.
+            'custom_host' => $vendor->custom_host,
+            'custom_host_status' => $vendor->custom_host_status,
+            'canonical_host' => (string) parse_url((string) config('app.url'), PHP_URL_HOST),
             'cod_office_on' => app(\App\Domains\Bookshop\Actions\Checkout\CashOnDeliveryAction::class)->isOn(),
             'minimum_window' => (int) config('bookshop.returns.window_days', 7),
         ];

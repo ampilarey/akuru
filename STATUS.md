@@ -4414,6 +4414,75 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5hl. B9f: a shop's own domain, the shop subdomain, and dollar prices (2026-09-26)
+
+BOOKSHOP_PLAN slice B9, sixth and last sub-slice: **custom host per
+vendor** and **whole-shop subdomain** (§2 "path now, a host per vendor
+stays a later mapping"; decision 1 "path now, subdomain later") and **USD
+pricing** (§11, parked: "a decision if a vendor asks"). With it, every B9
+item is built.
+
+**A shop's own domain.** In the portal, the owner enters the shop's
+domain (`https://www.Fitrah.mv/` is saved as `www.fitrah.mv`; no Akuru
+address, no other shop's) with instructions to point it at the site (a
+CNAME, or an A record to the same address). It waits; the office is told.
+On `/admin/bookshop` the office **checks where it points** (its addresses
+and alias against the site's) and **turns it on**, or off later; the
+owner is told. Changing the domain puts it back to waiting; clearing it
+stops it at once; a suspended shop's domain is not answered.
+
+**How the addresses work.** A global middleware, first in the stack,
+**redirects** a request on the whole-shop subdomain (`BOOKSHOP_SHOP_HOST`,
+e.g. `shop.akuru.edu.mv`) to the same path under `/shop`, and on a shop's
+active domain to that shop's page (`/` → `/shop/fitrah`, `/p/about` →
+`/shop/fitrah/p/about`), query kept, on the one canonical site
+(`APP_URL`). **Redirect, not served in place — on purpose**: the cart,
+sign-in, CSRF, the BML return URL and the webhook stay on one origin, and
+no session or cookie is ever set on another host. GET and HEAD only;
+anything else there is a 404. The main host takes a fast path (no lookup);
+other hosts are looked up once per five minutes. 302 by default;
+`BOOKSHOP_HOST_REDIRECT_STATUS=301` once an address is settled.
+
+**Dollars.** The office turns on **prices in US dollars** and sets the
+rate (MVR for one dollar, default 15.42): "≈ USD 5.51 (a guide — charged
+in MVR)" beside the product price, on the cards, under the cart subtotal
+and the checkout's goods. **Nothing is ever charged in dollars.** Off by
+default.
+
+**Data** (`2026_09_26_000014_b9f_shop_hosts`, additive):
+`vendors.custom_host_status`, `custom_host_requested_at`,
+`custom_host_approved_at` (`custom_host` has existed, unused, since B1a).
+Two settings for the dollars. No new model.
+
+**Tests**: `ShopHostsAndUsdTest` (3): staff refused; bad, Akuru, subdomain
+and taken domains refused; a URL cleaned to a host; the office told; a
+waiting domain not answered; the check (the network stood in for); a
+vendor refused the office's routes; on — the root and a path with its
+query redirected, a POST there a 404; a suspended shop's domain not
+answered; a changed domain waiting again and the old one no longer
+answered; clearing; the subdomain to `/shop` and a path under it, 301 when
+configured, the main site untouched; dollars hidden by default, a vendor
+refused the switch, a zero rate refused, then shown on the product, cards
+and cart at the rate, and gone when turned off. Full suite **2280 passed**.
+
+**Walked** (`scripts/smoke/hosts.mjs`, **11/11**, no console or server
+errors): Fitrah's owner saves `https://www.Smoke-Fitrah.test/` — saved as
+`www.smoke-fitrah.test`, waiting; a request on it is not the shop; the
+office sees the request, checks it (no records here — reported), turns it
+on; the domain now redirects to `/shop/fitrah`, and `/about?ref=card`
+under it; the owner sees it on; the office shows dollars at 15.42 — a
+guest sees "≈ USD 5.51" by the tracing book and on the cards — then
+turns them off, and they go.
+
+**Production**: the migration only; nothing changes until someone acts.
+**Owner actions**, when wanted: for the shop subdomain, a DNS record for
+`shop.akuru.edu.mv`, the subdomain added in cPanel pointing at the same
+`public/` folder with its TLS certificate, then `BOOKSHOP_SHOP_HOST` in
+`.env` and `php artisan config:cache`. For a shop's domain, the shop
+points its DNS at the site; the domain is added in cPanel as an alias of
+the site with its certificate; then the office turns it on. The dollar
+rate is the office's to set and keep current.
+
 ## 5hk. B9e: a shop's funnel, and search behind a contract (2026-09-26)
 
 BOOKSHOP_PLAN slice B9, fifth sub-slice: **storefront analytics beyond

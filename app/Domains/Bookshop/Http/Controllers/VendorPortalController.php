@@ -11,6 +11,7 @@ use App\Domains\Bookshop\Actions\Vendor\ListVendorProductsAction;
 use App\Domains\Bookshop\Actions\Vendor\ListVendorSubscribersAction;
 use App\Domains\Bookshop\Actions\Vendor\ManageVendorDiscountCodesAction;
 use App\Domains\Bookshop\Actions\Vendor\ManageVendorMembersAction;
+use App\Domains\Bookshop\Actions\Vendor\RequestVendorHostAction;
 use App\Domains\Bookshop\Actions\Vendor\SaveVendorDeliveryMethodsAction;
 use App\Domains\Bookshop\Actions\Vendor\SaveVendorNoticeSettingsAction;
 use App\Domains\Bookshop\Actions\Vendor\SaveVendorShopSettingsAction;
@@ -172,6 +173,18 @@ class VendorPortalController extends Controller
         app(SaveVendorShopSettingsAction::class)->save($scope, $data);
 
         return back()->with('success', __('shop.settings_saved_flash'));
+    }
+
+    /** B9f (§2): ask for the shop's own domain, or clear it. Owners only. */
+    public function saveHost(Request $request): RedirectResponse
+    {
+        $scope = $this->authorizeVendor($request);
+        abort_unless($scope->isOwner(), 403, __('shop.owner_only'));
+        $data = $request->validate(['custom_host' => 'nullable|string|max:200']);
+
+        $vendor = app(RequestVendorHostAction::class)->request($scope, $data['custom_host'] ?? null);
+
+        return back()->with('success', __($vendor->custom_host === null ? 'shop.host_cleared_flash' : 'shop.host_requested_flash'));
     }
 
     /** B7 (§6.5): a discount code the shop funds, on its own products only. Owners only. */
