@@ -140,6 +140,31 @@ a question with a default, so "do nothing" is always a legible choice.
 
 ---
 
+## Found by the Bookstore audit (2026-09-26)
+
+### Deleting a customer or a vendor would take their orders and money records with them — **open, latent, platform-wide**
+
+`bookshop_checkouts.user_id`, `orders.user_id` and the `vendor_id` foreign
+keys on `orders`, `vendor_earnings` and `vendor_payouts` are
+`cascadeOnDelete` (B2, B6). Nothing deletes a user or a vendor today —
+accounts are deactivated, shops suspended — and Finance's
+`payments.user_id` cascades the same way, so the Bookstore followed the
+platform's precedent. But a paid order or an earning that vanishes with
+its person is against the spirit of rule 12 (money records are kept, not
+dropped). **Fix**: one additive migration, platform-wide, that re-creates
+those foreign keys `restrictOnDelete` (payments, the wallet ledger,
+orders, checkouts, earnings, payouts) so a delete is refused while money
+hangs off the row. Not a Bookstore-only change, so not done in the audit
+(BOOKSHOP_PLAN §15 finding 7).
+
+### A suspended shop's owner cannot move its orders in flight — **open, by design; a "paused" state would soften it**
+
+Suspension shuts the portal (BOOKSHOP_PLAN §15 finding 8). Orders already
+paid at that moment can only be refunded or cancelled by the office from
+`/admin/bookshop`. If a shop needs to stop selling but finish delivering,
+a `paused` vendor status (portal open, products hidden) is one enum value
+and one query clause.
+
 ## Found by the bookstore's B3 walk (2026-09-26)
 
 ### Ten cart adds in a minute got the checkout refused (429) — **fixed for the bookstore (2026-09-26); open elsewhere**

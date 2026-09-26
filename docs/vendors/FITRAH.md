@@ -88,8 +88,9 @@ reading pairs. Fonts as proposed; corners soft, buttons filled, cards flat.
 `SmokeMarkerSeeder::vendorCycle()` (B1a) plants Fitrah — slug `fitrah`,
 code `FIT`, tagline — with three sample products and a synthetic staging
 owner, `vendor@akuru.edu.mv`. The real owner's email is not seeded
-anywhere. `vendor.mjs` walks it. The logo and theme arrive with the
-designer (B4).
+anywhere. `vendor.mjs` walks it. The logo and theme are set in the
+designer (B4, `/vendor/storefront`), which also offers the theme gallery
+and the shop's own CSS (B10c–d).
 
 ## On production (after B1a is pulled)
 

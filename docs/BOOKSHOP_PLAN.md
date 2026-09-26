@@ -241,7 +241,7 @@ Each section has: visibility (published / hidden / scheduled between dates), lan
 - Tax: *(audit)* a **tax class per product** (standard / zero-rated / exempt) and a rate per class in the office settings; prices are inclusive; the receipt shows tax per line and a total, under the vendor's TIN, only when the vendor is GST-registered (a vendor below the registration threshold sells without a tax line — the plan's earlier "GST on every receipt" was wrong for a small shop). **Rates, registration and who files are the owner's** (§13 no. 4).
 - *(audit)* **Akuru's commission is a service Akuru sells to the vendor**, so Akuru issues the vendor a monthly **commission tax invoice** (Akuru's TIN, GST on the commission if Akuru is registered), and the statement nets it against sales. Vendor payouts are then sales − refunds − commission invoice, which is what an accountant expects to see.
 - Delivery fees go to the vendor who delivers; Akuru's commission applies to goods, not to delivery fees (decision §13 if the owner prefers otherwise). Boat fees paid to the carrier on arrival never touch Akuru's books.
-- *(audit)* **Currency**: MVR only, stored as **decimal(10,2)** like the wallet, gift cards and discount codes (corrected in B1a: this line first said "integer laari like the wallet", and the wallet is decimal); no USD pricing in v1 (tourists are not the market; a decision if a vendor asks).
+- *(audit)* **Currency**: MVR only, stored as **decimal(10,2)** like the wallet, gift cards and discount codes (corrected in B1a: this line first said "integer laari like the wallet", and the wallet is decimal); no USD pricing — **decided 2026-09-26: none** (B9f's dollar guide was built and removed the same day at the owner's word, B10a).
 
 ---
 
@@ -294,6 +294,7 @@ No `academic_year_id`: commerce, not a term's record (every commerce table's pre
 | B7 | **Shop polish and trust** — search suggestions, best-selling and top-rated sorts, wishlist, recently viewed, reviews with vendor replies and office moderation, back-in-stock notices, product badges, vendor-funded discount codes scoped to their products, free-delivery-over rules, shop-home merchandising by the office, drag-to-order in the designer. **Built 2026-09-26 (STATUS §5he)** — reviews on and published at once, premoderation behind `BOOKSHOP_REVIEWS_PREMODERATE`; vendor codes live in Commerce with a vendor scope; recently viewed is per session. | the shop feels like a shop — walked, `scripts/smoke/polish.mjs` 29/29 |
 | B8 | **Bulk and operations** — CSV import/export of products and stock, stock movements log, low-stock alerts, order exports, email/SMS switches. **Built 2026-09-26 (STATUS §5hf)** — the import checks and previews before it writes; duplicate and bulk status on a paged product list; order-line exports; email is queued and SMS goes through the SMS contract, both behind the office's switches and each shop's choice per event. | a vendor with 500 items can manage them — walked, `scripts/smoke/operations.mjs` 21/21 |
 | B9 | **Later, on request** — public vendor onboarding (apply → approve), custom host per vendor, whole-shop subdomain, cash on delivery, newsletter section, abandoned-cart reminders, bulk quotes for schools (B2B), USD pricing, search service, analytics funnel. **Requested 2026-09-26 ("B9"); built as sub-slices, one PR each.** B9a public vendor onboarding **built (STATUS §5hg)**; B9b cash on delivery **built (§5hh)** — the shop's own delivery or collection only, paid when the shop takes the cash, the commission owed back through payouts; B9c newsletter section and abandoned-cart reminders **built (§5hi)** — the shop sends its own newsletters from the exported list. B9d bulk quotes for schools **built (§5hj)** — asked from the cart (ten items or more), priced per line for a number of days, accepted into the cart, charged at the quoted price while it holds. B9e the shop's funnel and search behind a contract **built (§5hk)** — daily counters only, nothing about the visitor; the database search by default, a Meilisearch server when the owner has one. B9f a shop's own domain and the whole-shop subdomain **built (§5hl)** — the addresses redirect to the one canonical site (the owner sets up DNS and the hosting panel). B9f's dollar prices were **removed at the owner's word (B10a, §5hm)**: MVR only. B10b **Bookstore admins** (`bookshop_manager`, §5hn) run `/admin/bookshop` without being school admins. **Every B9 item is built.** | **built** (B9a–B9f, STATUS §5hg–§5hl) |
+| B10 | **The owner's asks after B9 (2026-09-26)** — B10a dollar prices removed (§5hm); B10b **Bookstore admins** (`bookshop_manager`, §5hn); B10c **a shop's own CSS**, cleaned, confined and office-approved (§5ho, ADR-039); B10d the **theme gallery** (§5hp). **Built 2026-09-26.** | a Bookstore admin runs the shop without being a school admin; a shop styles its page within the frame and picks a whole look — walked, `team.mjs` 8/8, `css.mjs` 9/9, `gallery.mjs` 9/9 |
 
 Rough size: B1a, B1b and B3 are each about the gift-card slice times
 two, B2 times three; B4 and B5 together are the largest piece (the
@@ -338,8 +339,13 @@ scope definition (`VendorScope`).
 | 15 | *(audit)* Customer data retention: how long may a vendor see a customer's phone and address after an order closes? | the return window, then masked in the vendor's view and exports | **decided 2026-09-25: as recommended.** |
 | 16 | *(audit)* Vendor Agreement text (commission, payout timing, returns responsibility, moderation): the office drafts it, or the owner supplies one? | seeded first draft by B2, like the library policy pages; the owner edits in the page editor | **decided 2026-09-25: as recommended** — first draft seeded in B2, flagged "draft" until the owner reads it (BACKLOG A6's pattern). |
 
-All sixteen decisions are made. The owner said *"Go with the
-recommendations and build B0"* on 2026-09-25.
+| 17 | *(2026-09-26)* Prices shown in US dollars as a guide? | no — MVR only | **decided 2026-09-26: no** ("No need $"); B9f's dollar guide removed in B10a. |
+| 18 | *(2026-09-26)* Who runs the Bookstore office screen? | a Bookstore admin role, short of a school admin | **decided 2026-09-26: yes** — `bookshop_manager`, B10b; full admins add and remove them. |
+| 19 | *(2026-09-26)* Per-vendor CSS and a theme marketplace (§6.8 had them "not planned")? | allowed with cleaning, confinement and office approval; the gallery free | **decided 2026-09-26: build both** — ADR-039, B10c and B10d. Paid themes stay undecided. |
+
+All sixteen decisions of 2026-09-25 are made — the owner said *"Go with the
+recommendations and build B0"* — and three more followed on 2026-09-26
+(17–19) once every slice had shipped.
 
 ---
 
@@ -386,3 +392,66 @@ definition, and the Fitrah kit.
 The owner then decided every open row as recommended and asked for B0
 (2026-09-25). Still to come from the vendor before B1a's production
 setup: the remaining Fitrah details in `docs/vendors/FITRAH.md`.
+
+---
+
+## 15. Audit of the build (2026-09-26)
+
+The owner asked, once every slice from B0 to B10d had merged, for
+everything Bookstore to be audited. Each section above was checked
+against the code, not against STATUS (the EDUPAGE lesson: a plan's own
+"built" marks drift); the security and money rules of CLAUDE.md were
+checked route by route and action by action; the data, the docs and the
+environment file were read for drift; and all eighteen Bookstore browser
+walks were run in one batch on one seed. **Fixed** means in this audit's
+PR; **gap** is a plan item not built, listed for the owner with a
+recommendation; **note** is a design fact worth knowing, not a defect.
+
+### What was checked and held
+
+| Area | Checked | Result |
+|---|---|---|
+| Office routes | all 36 `/admin/bookshop` routes carry `can:bookshop.manage`; all 35 controller methods gate again inside (`bookshop.manage`, or `admin|super_admin` for the team) | held |
+| Vendor routes | all 87 `/vendor` routes under `auth`; every portal controller's public method calls `authorizeVendor` and every `Actions/Vendor/*` public method takes a `VendorScope` first (`VendorScopeIsTheOnlyDoorTest`) | held |
+| Customer routes | every `my-*`, checkout and quote route under `auth` and checking `$request->user()`; every public write throttled (16 of 16); guest cart scoped to its session token | held |
+| Rule 12 | a card checkout is paid only by the `PaymentConfirmed` listener on payable `bookshop_checkout`; the return URL only shows the status page; wallet at once; bank slip on a person's decision; cash when the shop takes it | held |
+| Money maths | commission on goods only (delivery excluded; carrier-paid boat fees zero); Akuru-funded discount on full price, vendor-funded on the discounted price; refunds reverse the earning in proportion; expiry releases reservations and the discount redemption | held |
+| Raw HTML | every `{!! !!}` in the shop's Blade is declared with its write path (`raw_html_renders`); product descriptions, stories and section text through `HtmlSanitizer`; the shop's own CSS through `CustomCss::clean` before storage and again on gallery publish | held |
+| Uploads | product and storefront images `file|image|max`; slips `file|max` into **private** media, served only to the paying customer, a shop with an order under the checkout, or the office | held |
+| Cross-domain | Bookshop imports no other domain's `Models\*`; Identity through `config('auth.providers.users.model')`; no raw `gd` | held |
+| Data | 18 additive migrations; every new model in `config/morph-map.php`; indexes on every hot `(vendor_id, status)` / `(user_id, status)` pair; `shop_daily_stats` baselined as calendar-day counters | held |
+| Walks | 18 walks, 315 steps, one seed: all green after two walk-only timing fixes (below) | held |
+| Tests | 107 Bookstore feature tests in 21 files; the architecture suite green | held |
+
+### Findings
+
+| # | Finding | Severity | Resolution |
+|---|---|---|---|
+| 1 | `vendor-money.mjs` read the payout figures before the Inertia visit finished, because the bank-details flash from the step before already satisfied "wait for the flash". Under load it failed one step in sixteen. | low (walk only) | **Fixed**: waits for the requested figure itself. |
+| 2 | `operations.mjs` read the product list before the low-stock filter's visit landed; one step in twenty-one. | low (walk only) | **Fixed**: waits for `low=1` and for the unfiltered row to leave. |
+| 3 | `BOOKSHOP_DEFAULT_COMMISSION_RATE` was read by `config/bookshop.php` but absent from `.env.example`. | low | **Fixed**. |
+| 4 | `docs/ROADMAP.md`'s domain map (§2) did not list `Domains/Bookshop` at all — eleven slices in and the architecture map had no Bookstore. | medium (docs) | **Fixed**: the map names it and what it consumes. |
+| 5 | §11 had no B10 row and §13 no record of the three decisions of 2026-09-26 (no dollars; Bookstore admins; CSS and the gallery); §8 still called USD "a decision if a vendor asks". | medium (docs) | **Fixed** inline: B10 row, decisions 17–19, §8 amended. |
+| 6 | `docs/vendors/FITRAH.md` said the theme "arrives with the designer (B4)". | low (docs) | **Fixed**. |
+| 7 | **Deleting a customer would cascade-delete their checkouts, orders and earnings** (`bookshop_checkouts.user_id`, `orders.user_id` are `cascadeOnDelete`; so are `vendor_id` FKs on orders and money tables). No code path deletes a user or a vendor today (users are deactivated, vendors suspended), and Finance's `payments.user_id` cascades the same way — so this is the platform's precedent, not a Bookstore mistake — but a money record that vanishes with its person breaks rule 12's spirit. | medium (latent) | **Note, and recorded in KNOWN_ISSUES**: a platform-wide slice should move money-table FKs to `restrictOnDelete` (payments, wallet ledger, orders, earnings, payouts) in one additive migration. Not done here: it is not Bookstore-only and touches Finance's tables. |
+| 8 | A **suspended shop's owner is shut out of the portal** (the scope requires an active vendor), so orders in flight at suspension can only be moved by the office, and the office screen has no "act as the shop" control for fulfilment. | medium | **Note**: suspension is meant as a stop; the office refunds or cancels from `/admin/bookshop`. If a "paused" state (portal open, shop hidden) is wanted, it is one enum value and one clause. |
+| 9 | §4 **"read the e-book" link** for a product tied to a library item: `products.library_item_id` exists (B1a) but nothing writes it (no field in the product form) and nothing reads it (no link on the product page). | gap | Recommend: one select in the product form (through `Library`'s `ListLibraryItemsAction`), one link on the product page. Parked in BACKLOG. |
+| 10 | §4 **gift message** at checkout: not built (order notes are). | gap | Recommend: a `gift_message` on the checkout and the packing slip; small. Parked. |
+| 11 | §5 **returns rate** in the vendor's reports: refunded amounts are reported (B6), the rate is not. | gap | Recommend: `returns / delivered orders` on the money page; trivial. Parked. |
+| 12 | §7 **shop on/off** switch for the office: not built. Holiday mode is per shop; the office can suspend a shop but not close the whole shop for a day. | gap | Recommend: one setting, one middleware clause on `/shop*` showing a notice page; small. Parked. |
+| 13 | §7 **GST collected** report: the office's tax report covers Akuru's commission and its GST (B6); GST on the shops' own sales is each registered shop's to file and is on its statement, not summed across shops. | gap (partial) | Recommend: one summed column on the office money report; trivial. Parked. |
+| 14 | §10 **alt text required on product images**: stored and rendered (`alt_text`, falling back to the title) but never asked for in the product form. | gap (accessibility) | Recommend: an alt field on each image in the product form, required on save. Parked. |
+| 15 | §10 **product listing cached per filter set for a minute**: not built; the storefront's published JSON is cached (B5), the listing is a live query. | note | Fine at the current catalogue size; revisit with the search-service decision. |
+| 16 | §4 **gallery zoom**: a gallery with a large image and thumbnails; no zoom. | note | Cosmetic; park. |
+| 17 | `vendor_earnings` rows are **recomputed in place** on refund (`refunded`, `commission`, `net`, `status`) rather than appended as reversal rows; the append-only trails are `stock_movements`, `order_events`, payouts and Commerce's wallet ledger. | note | B6's design: one earning per order, its reversal recorded on it and in the order's events; payouts (the money that moves) are append-only. Documented here so nobody "fixes" it into two ledgers. |
+| 18 | The **office screen** loads every section on one page (vendors, orders ≤200, slips, refunds, money, reviews, applications, quotes, insights, hosts, team, CSS, themes). Bounded everywhere, but at hundreds of orders it is a heavy page. | note | Split into tabs when it hurts; every list already has its own export. |
+| 19 | **Queued mail**: every Bookstore email is a queued mailable; production has no queue worker (OWNER_ACTIONS item 3). Customers and shops get in-app notices only until it runs. | note (owner action) | Already recorded; repeated here because the Bookstore now sends eight kinds of email. |
+| 20 | A **discount code on a quoted line** (B9d) applies on top of the quoted price. | note | Both are the shop's own money to give; if a shop objects, exclude quoted lines from vendor-funded codes. |
+| 21 | `contain: paint` on a storefront with live CSS (B10c) clips anything a shop positions outside its own box. | note | Intended — it is what keeps the frame safe; documented in ADR-039. |
+
+### What the owner still owns
+
+The queue worker (OWNER_ACTIONS 3); DNS and cPanel for the shop
+subdomain and any shop's domain (§5hl); a Meilisearch server if the
+catalogue grows (§5hk); paid gallery themes (decision 19, undecided);
+Fitrah's remaining details (`docs/vendors/FITRAH.md`).

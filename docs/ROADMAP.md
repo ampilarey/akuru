@@ -79,6 +79,13 @@ app/
                      "purchasable" concept; consumed by Library, course/offering
                      payments (spec Phase 4), and Finance invoices. Separate
                      module by design so it can be enhanced independently (§9)
+    Bookshop/        Akuru Bookstore — multi-vendor shop for printed books and
+                     educational items (docs/BOOKSHOP_PLAN.md, B0–B10 built
+                     2026-09-25/26): vendors and the portal, catalogue, cart
+                     and checkout (BML/wallet/bank slip/cash on delivery),
+                     fulfilment, storefront designer, vendor money, operations.
+                     Consumes Commerce, Finance, Media, Notifications, Settings
+                     through their Actions/Contracts only (rule 3)
     Library/         Akuru Digital Library — catalog (books/articles/research/
                      course materials), protected reader, reading progress,
                      writer portal, editorial + peer-review workflow, writer

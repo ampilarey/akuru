@@ -131,7 +131,9 @@ check('bank details save and show masked to the last four digits', (await inner(
 
 check('Request payout is now offered', !(await vendor.locator('[data-testid="request-payout"]').isDisabled()));
 await vendor.click('[data-testid="request-payout"]');
-await settle(vendor, '[data-testid="flash-success"]');
+// The bank save's flash is still on the page, so wait for the figure itself, not the flash.
+await vendor.waitForFunction((b) => document.querySelector('[data-testid="stat-requested"]')?.innerText.includes(b), BALANCE, { timeout: 20000 }).catch(() => {});
+await settle(vendor);
 check(`the payout of MVR ${BALANCE} is requested and the button held`, (await inner(vendor, '[data-testid="stat-requested"]')).includes(BALANCE) && (await inner(vendor, '[data-testid="requestable"]')).includes('0.00') && (await vendor.locator('[data-testid="request-payout"]').isDisabled()), await inner(vendor, '[data-testid="flash-success"]'));
 
 // ------------------------------------------------------------ 4. the office pays
