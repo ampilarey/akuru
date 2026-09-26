@@ -9,6 +9,12 @@
 {{-- B5 (§6.7): structured data — name, price, availability — so search engines list the product. --}}
 @push('head_meta')
     @include('public.partials.json_ld', ['payload' => $product['json_ld'] ?? []])
+    <style>
+        .shop-badge { background: #7a1f2b; color: #fff; }
+        .shop-badge-new { background: #0f4c81; }
+        .shop-badge-bestseller { background: #8a5a0b; }
+        .shop-badge-custom { background: #1f5f3f; }
+    </style>
 @endpush
 
 @section('content')
@@ -44,7 +50,23 @@
         </div>
 
         <div>
+            @if(session('success'))
+                <p class="mb-3 rounded bg-green-50 p-2 text-sm text-green-800" data-testid="flash-success">{{ session('success') }}</p>
+            @endif
+            @if(count($product['badges']) > 0)
+                <p class="mb-2 flex flex-wrap gap-1" data-testid="product-badges">
+                    @foreach($product['badges'] as $badge)
+                        <span class="shop-badge shop-badge-{{ $badge['kind'] }} rounded px-2 py-0.5 text-xs font-semibold" dir="auto" data-badge="{{ $badge['kind'] }}">{{ $badge['label'] }}</span>
+                    @endforeach
+                </p>
+            @endif
             <h1 class="text-2xl md:text-3xl font-bold text-brandMaroon-900" dir="auto" data-testid="product-title">{{ $product['title'] }}</h1>
+            @if($product['rating'])
+                <a href="#reviews" class="mt-1 inline-block text-sm text-amber-700" data-testid="product-rating">
+                    <span aria-hidden="true">{{ str_repeat('★', (int) round((float) $product['rating']['avg'])) }}{{ str_repeat('☆', 5 - (int) round((float) $product['rating']['avg'])) }}</span>
+                    {{ __('shop.rating_summary', ['avg' => $product['rating']['avg'], 'count' => $product['rating']['count']]) }}
+                </a>
+            @endif
             <p class="mt-2 text-sm text-gray-600" data-testid="product-vendor">
                 {{ __('shop.sold_by') }}
                 <a href="{{ route('public.shop.vendor', $product['vendor']['slug']) }}" class="font-semibold text-brandMaroon-700 hover:underline">{{ $product['vendor']['name'] }}</a>
@@ -55,10 +77,12 @@
                 {{ $product['currency'] }} {{ $product['price'] }}
                 @if($product['on_sale'])
                     <span class="ms-2 text-lg font-normal text-gray-500 line-through">{{ $product['compare_at_price'] }}</span>
-                    <span class="ms-2 rounded bg-brandMaroon-600 px-2 py-0.5 text-xs font-semibold text-white align-middle">{{ __('shop.on_sale') }}</span>
                 @endif
             </p>
             <p class="text-xs text-gray-500">{{ __('shop.prices_include_tax') }}</p>
+            @if($product['vendor']['free_delivery_over'])
+                <p class="text-sm text-green-800" data-testid="free-delivery-line">{{ __('shop.free_delivery_over_line', ['amount' => $product['currency'].' '.$product['vendor']['free_delivery_over'], 'vendor' => $product['vendor']['name']]) }}</p>
+            @endif
             <div class="mt-2">@include('public.shop._stock', ['stock' => $product['stock']])</div>
 
             @if($product['summary'])
@@ -111,6 +135,24 @@
                     @endif
                 </form>
             @endif
+            {{-- B7 (§4): out of stock — notify me; the wishlist. --}}
+            <div class="mt-4 flex flex-wrap items-center gap-3">
+                @auth
+                    @unless($product['available'])
+                        <form method="POST" action="{{ route('public.shop.stock-alert', $product['slug']) }}">
+                            @csrf
+                            <button type="submit" class="btn-secondary" data-testid="notify-me">{{ $product['has_alert'] ? __('shop.alert_cancel') : __('shop.notify_me') }}</button>
+                        </form>
+                        @if($product['has_alert'])<span class="text-sm text-gray-600" data-testid="alert-on">{{ __('shop.alert_waiting') }}</span>@endif
+                    @endunless
+                    <form method="POST" action="{{ route('public.shop.wishlist.toggle', $product['slug']) }}">
+                        @csrf
+                        <button type="submit" class="btn-secondary" aria-pressed="{{ $product['in_wishlist'] ? 'true' : 'false' }}" data-testid="wishlist-toggle">{{ $product['in_wishlist'] ? '♥ '.__('shop.in_wishlist') : '♡ '.__('shop.add_to_wishlist') }}</button>
+                    </form>
+                @else
+                    <a href="{{ route('login') }}" class="text-sm text-brandMaroon-700 underline" data-testid="sign-in-to-save">{{ $product['available'] ? __('shop.sign_in_to_save') : __('shop.sign_in_to_be_told') }}</a>
+                @endauth
+            </div>
             <p class="mt-3"><a href="{{ route('public.shop.vendor', $product['vendor']['slug']) }}" class="text-sm text-brandMaroon-700 hover:underline">{{ __('shop.visit_shop') }} →</a></p>
 
             @php($facts = array_filter([
@@ -145,6 +187,56 @@
         <div class="prose mt-10 max-w-none" dir="auto" data-testid="product-description">{!! $product['description'] !!}</div>
     @endif
 
+    {{-- B7 (§4 "Trust"): reviews from customers who received it; the shop's replies. --}}
+    @php($rv = $product['reviews'])
+    <section id="reviews" class="mt-12" data-testid="reviews">
+        <h2 class="mb-3 text-xl font-semibold text-brandMaroon-900">{{ __('shop.reviews_heading') }}
+            @if($rv['count'] > 0)<span class="text-base font-normal text-gray-600">· {{ __('shop.rating_summary', ['avg' => $rv['avg'], 'count' => $rv['count']]) }}</span>@endif
+        </h2>
+        @if($rv['count'] > 0)
+            <ul class="mb-4 max-w-sm space-y-1 text-sm" aria-label="{{ __('shop.rating_breakdown') }}">
+                @foreach($rv['distribution'] as $stars => $n)
+                    <li class="flex items-center gap-2"><span class="w-8">{{ $stars }}★</span><span class="h-2 flex-1 rounded bg-gray-200"><span class="block h-2 rounded bg-amber-500" style="width: {{ $rv['count'] > 0 ? round($n * 100 / $rv['count']) : 0 }}%"></span></span><span class="w-6 text-end text-gray-500">{{ $n }}</span></li>
+                @endforeach
+            </ul>
+        @endif
+        @if($rv['can_review'])
+            <form method="POST" action="{{ route('public.shop.review', $product['slug']) }}" class="mb-6 max-w-xl rounded-lg border bg-brandBeige-50 p-4" data-testid="review-form">
+                @csrf
+                <p class="mb-2 text-sm font-semibold">{{ __('shop.write_review') }}</p>
+                <fieldset class="mb-2 flex gap-3 text-sm">
+                    <legend class="sr-only">{{ __('shop.your_rating') }}</legend>
+                    @foreach([5, 4, 3, 2, 1] as $stars)
+                        <label class="flex items-center gap-1"><input type="radio" name="rating" value="{{ $stars }}" required @checked(old('rating') == $stars) data-testid="rating-{{ $stars }}"> {{ $stars }}★</label>
+                    @endforeach
+                </fieldset>
+                <textarea name="body" rows="3" maxlength="{{ config('bookshop.reviews.max_body', 2000) }}" class="form-input w-full" placeholder="{{ __('shop.review_placeholder') }}" data-testid="review-body">{{ old('body') }}</textarea>
+                @error('rating')<p class="text-sm text-red-700">{{ $message }}</p>@enderror
+                <button type="submit" class="btn-primary mt-2" data-testid="submit-review">{{ __('shop.submit_review') }}</button>
+            </form>
+        @elseif($rv['pending_mine'])
+            <p class="mb-4 text-sm text-gray-600" data-testid="review-pending">{{ __('shop.review_pending_flash') }}</p>
+        @endif
+        @if($rv['count'] === 0)
+            <p class="text-sm text-gray-500" data-testid="no-reviews">{{ __('shop.no_reviews') }}</p>
+        @endif
+        <ul class="space-y-4">
+            @foreach($rv['reviews'] as $review)
+                <li class="border-b pb-3" data-testid="review-{{ $review['id'] }}">
+                    <p class="text-sm"><span class="text-amber-700" aria-label="{{ __('shop.rated_out_of', ['avg' => $review['rating']]) }}">{{ str_repeat('★', $review['rating']) }}{{ str_repeat('☆', 5 - $review['rating']) }}</span>
+                        <span class="font-semibold">{{ $review['name'] }}</span> · <span class="text-gray-500">{{ $review['date'] }}</span> · <span class="text-xs text-green-700">{{ __('shop.verified_purchase') }}</span></p>
+                    @if($review['body'])<p class="mt-1 whitespace-pre-line text-sm" dir="auto">{{ $review['body'] }}</p>@endif
+                    @if($review['reply'])
+                        <div class="mt-2 ms-4 rounded bg-gray-50 p-2 text-sm" data-testid="review-reply">
+                            <p class="text-xs font-semibold text-gray-600">{{ __('shop.reply_from', ['vendor' => $product['vendor']['name']]) }}</p>
+                            <p class="whitespace-pre-line" dir="auto">{{ $review['reply'] }}</p>
+                        </div>
+                    @endif
+                </li>
+            @endforeach
+        </ul>
+    </section>
+
     @if(count($product['related']) > 0)
         <section class="mt-12">
             <h2 class="mb-3 text-xl font-semibold text-brandMaroon-900">{{ __('shop.related') }}</h2>
@@ -156,6 +248,17 @@
         </section>
     @endif
 </div>
+
+@if(count($product['recently_viewed']) > 0)
+    <section class="container mx-auto max-w-6xl px-4 pb-10" data-testid="recently-viewed">
+        <h2 class="mb-3 text-xl font-semibold text-brandMaroon-900">{{ __('shop.recently_viewed') }}</h2>
+        <div class="grid grid-cols-2 gap-4 md:grid-cols-4">
+            @foreach(array_slice($product['recently_viewed'], 0, 4) as $card)
+                @include('public.shop._card', ['card' => $card])
+            @endforeach
+        </div>
+    </section>
+@endif
 
 @include('public.shop._bottom-bar')
 @endsection

@@ -6,6 +6,7 @@ use App\Domains\Bookshop\Actions\ListCatalogueOptionsAction;
 use App\Domains\Bookshop\Actions\ResolveVendorScopeAction;
 use App\Domains\Bookshop\Actions\Vendor\AcceptVendorAgreementAction;
 use App\Domains\Bookshop\Actions\Vendor\ListVendorProductsAction;
+use App\Domains\Bookshop\Actions\Vendor\ManageVendorDiscountCodesAction;
 use App\Domains\Bookshop\Actions\Vendor\ManageVendorMembersAction;
 use App\Domains\Bookshop\Actions\Vendor\SaveVendorDeliveryMethodsAction;
 use App\Domains\Bookshop\Actions\Vendor\SaveVendorShopSettingsAction;
@@ -52,6 +53,7 @@ class VendorPortalController extends Controller
             'delivery_methods' => $scope->agreementAccepted ? app(SaveVendorDeliveryMethodsAction::class)->list($scope) : [],
             'delivery_kinds' => array_map(fn (DeliveryKind $k) => $k->value, DeliveryKind::cases()),
             'shop_settings' => $scope->agreementAccepted ? app(SaveVendorShopSettingsAction::class)->get($scope) : null,
+            'discount_codes' => $scope->agreementAccepted ? app(ManageVendorDiscountCodesAction::class)->list($scope) : [],
             'options' => app(ListCatalogueOptionsAction::class)->execute(),
             'filters' => $filters + ['q' => null, 'status' => null],
             'must_set_password' => (bool) $request->user()->force_password_change,
@@ -136,11 +138,44 @@ class VendorPortalController extends Controller
             'holiday_from' => 'nullable|date',
             'holiday_until' => 'nullable|date',
             'holiday_notice' => 'nullable|string|max:255',
+            'free_delivery_over' => 'nullable|numeric|min:0|max:1000000',
         ]);
 
         app(SaveVendorShopSettingsAction::class)->save($scope, $data);
 
         return back()->with('success', __('shop.settings_saved_flash'));
+    }
+
+    /** B7 (§6.5): a discount code the shop funds, on its own products only. Owners only. */
+    public function saveDiscountCode(Request $request, ?int $code = null): RedirectResponse
+    {
+        $scope = $this->authorizeVendor($request);
+        $data = $request->validate([
+            'code' => 'required|string|max:20',
+            'name' => 'nullable|string|max:120',
+            'discount_type' => 'required|string|in:percentage,fixed',
+            'discount_value' => 'required|numeric|min:0.01|max:100000',
+            'max_discount_amount' => 'nullable|numeric|min:0|max:100000',
+            'minimum_order_amount' => 'nullable|numeric|min:0|max:1000000',
+            'usage_limit' => 'nullable|integer|min:1|max:100000',
+            'per_user_limit' => 'nullable|integer|min:1|max:100',
+            'starts_at' => 'nullable|date',
+            'ends_at' => 'nullable|date',
+        ]);
+
+        app(ManageVendorDiscountCodesAction::class)->save($scope, $data, $code);
+
+        return back()->with('success', __('shop.code_saved_flash', ['code' => strtoupper($data['code'])]));
+    }
+
+    public function setDiscountCodeStatus(Request $request, int $code): RedirectResponse
+    {
+        $scope = $this->authorizeVendor($request);
+        $data = $request->validate(['active' => 'required|boolean']);
+
+        app(ManageVendorDiscountCodesAction::class)->setStatus($scope, $code, (bool) $data['active']);
+
+        return back()->with('success', __($data['active'] ? 'shop.code_on_flash' : 'shop.code_off_flash'));
     }
 
     /** B2: the office's template becomes the shop's own rows, to edit. */

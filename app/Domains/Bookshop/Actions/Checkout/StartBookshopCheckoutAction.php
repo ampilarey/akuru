@@ -18,6 +18,7 @@ use App\Domains\Bookshop\Support\OrderNumbers;
 use App\Domains\Bookshop\Support\Stock;
 use App\Domains\Bookshop\Support\Tax;
 use App\Domains\Commerce\Actions\DebitWalletAction;
+use App\Domains\Commerce\Actions\DescribeDiscountCodeAction;
 use App\Domains\Commerce\Actions\RecordDiscountRedemptionAction;
 use App\Domains\Commerce\Actions\ResolveDiscountAction;
 use App\Domains\Finance\Actions\InitiatePayablePaymentAction;
@@ -93,12 +94,26 @@ class StartBookshopCheckoutAction
             // 2. The discount, on goods only (delivery is never discounted).
             $discount = 0.0;
             $resolved = null;
+            $subtotals = $byVendor->map(fn ($ls) => round($ls->sum('total'), 2))->all();
             $code = trim((string) ($data['discount_code'] ?? ''));
-            if ($code !== '') {
-                $resolved = app(ResolveDiscountAction::class)->execute($code, $userId, $subtotal, $method === CheckoutPaymentMethod::Wallet);
+            $scope = $code !== '' ? app(DescribeDiscountCodeAction::class)->execute($code) : null;
+            if ($scope !== null && $scope['applies_to_type'] === 'vendor') {
+                // B7 (§6.5): a vendor-funded code, priced against that vendor's goods only and borne by its order alone.
+                $vendorId = (int) $scope['applies_to_id'];
+                if (! array_key_exists($vendorId, $subtotals)) {
+                    throw ValidationException::withMessages(['discount_code' => __('shop.error_code_other_shop', ['vendor' => (string) Vendor::query()->whereKey($vendorId)->value('name')])]);
+                }
+                $resolved = app(ResolveDiscountAction::class)->execute($code, $userId, $subtotals[$vendorId], $method === CheckoutPaymentMethod::Wallet, 'vendor', $vendorId);
                 $discount = (float) $resolved['amount_discounted'];
+                $shares = array_map(fn () => 0.0, $subtotals);
+                $shares[$vendorId] = $discount;
+            } else {
+                if ($code !== '') {
+                    $resolved = app(ResolveDiscountAction::class)->execute($code, $userId, $subtotal, $method === CheckoutPaymentMethod::Wallet);
+                    $discount = (float) $resolved['amount_discounted'];
+                }
+                $shares = $this->shares($subtotals, $discount);
             }
-            $shares = $this->shares($byVendor->map(fn ($ls) => round($ls->sum('total'), 2))->all(), $discount);
 
             // 3. Delivery per vendor.
             $deliveryTotal = 0.0;

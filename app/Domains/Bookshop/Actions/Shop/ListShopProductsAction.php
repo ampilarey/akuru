@@ -8,6 +8,7 @@ use App\Domains\Bookshop\Enums\VendorStatus;
 use App\Domains\Bookshop\Models\Product;
 use App\Domains\Bookshop\Models\ProductCategory;
 use App\Domains\Bookshop\Models\VendorCollection;
+use App\Domains\Bookshop\Support\Merchandise;
 use App\Domains\Bookshop\Support\ShopPresenter;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
@@ -24,7 +25,7 @@ use Illuminate\Database\Eloquent\Builder;
  */
 class ListShopProductsAction
 {
-    public const SORTS = ['newest', 'price_asc', 'price_desc', 'name'];
+    public const SORTS = ['newest', 'best_selling', 'top_rated', 'price_asc', 'price_desc', 'name'];
 
     /** The query-string keys the listing understands. */
     public const FILTERS = ['q', 'category', 'vendor', 'collection', 'brand', 'price_min', 'price_max', 'in_stock', 'language', 'age', 'grade', 'sort'];
@@ -63,6 +64,7 @@ class ListShopProductsAction
                 ->orWhere('title_dv', 'like', '%'.$q.'%')
                 ->orWhere('title_ar', 'like', '%'.$q.'%')
                 ->orWhere('summary', 'like', '%'.$q.'%')
+                ->orWhere('description', 'like', '%'.$q.'%')
                 ->orWhere('sku', 'like', '%'.$q.'%')
                 ->orWhere('barcode', 'like', '%'.$q.'%')
                 ->orWhere('tags', 'like', '%'.$q.'%')
@@ -86,6 +88,9 @@ class ListShopProductsAction
         }
 
         return match ($sort) {
+            // B7 (§4): by units paid for in the best-seller window, and by the published reviews' average.
+            'best_selling' => $query->orderByDesc(Merchandise::unitsSold())->orderByDesc('created_at')->orderByDesc('id'),
+            'top_rated' => $query->orderByRaw('rating_avg is null')->orderByDesc('rating_avg')->orderByDesc('rating_count')->orderByDesc('id'),
             'price_asc' => $query->orderBy('price')->orderBy('id'),
             'price_desc' => $query->orderByDesc('price')->orderByDesc('id'),
             'name' => $query->orderBy('title')->orderBy('id'),

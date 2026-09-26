@@ -80,7 +80,12 @@
         <form method="GET" action="{{ url()->current() }}" class="flex flex-wrap items-end gap-3" data-testid="shop-filters">
             <div class="min-w-48 flex-1">
                 <label for="shop-search" class="mb-1 block text-xs text-gray-500">{{ __('shop.search') }}</label>
-                <input id="shop-search" type="search" name="q" value="{{ $filters['q'] ?? '' }}" class="form-input w-full" placeholder="{{ __('shop.search_shop') }}">
+                {{-- B7 (§4 "suggestions as you type"): a listbox under the box, from shop/suggest. --}}
+                <div class="relative">
+                    <input id="shop-search" type="search" name="q" value="{{ $filters['q'] ?? '' }}" class="form-input w-full" placeholder="{{ __('shop.search_shop') }}"
+                        autocomplete="off" role="combobox" aria-expanded="false" aria-controls="shop-suggest" aria-autocomplete="list" data-suggest-url="{{ route('public.shop.suggest') }}" data-testid="shop-search">
+                    <ul id="shop-suggest" role="listbox" class="absolute z-30 mt-1 hidden max-h-96 w-full overflow-y-auto rounded border bg-white text-sm shadow-lg" data-testid="shop-suggest"></ul>
+                </div>
             </div>
             @if(! request()->routeIs('public.shop.category'))
                 <div>
@@ -128,6 +133,55 @@
 </section>
 
 @if($home)
+    {{-- B7 (§7): the office's hero slides, featured products and collections; best sellers; recently viewed. --}}
+    @if(count($home['hero']) > 0)
+        <section class="shop-hero relative overflow-hidden bg-brandMaroon-900 text-white" data-testid="shop-hero">
+            <div class="flex snap-x snap-mandatory overflow-x-auto">
+                @foreach($home['hero'] as $slide)
+                    <div class="relative w-full shrink-0 snap-start" data-testid="hero-slide">
+                        @if($slide['image'])<img src="{{ $slide['image'] }}" alt="" class="absolute inset-0 h-full w-full object-cover opacity-60" loading="{{ $loop->first ? 'eager' : 'lazy' }}">@endif
+                        <div class="relative container mx-auto px-4 py-14 md:py-20">
+                            <h2 class="text-3xl md:text-4xl font-bold" dir="auto">{{ $slide['heading'] }}</h2>
+                            @if($slide['subheading'])<p class="mt-2 max-w-2xl text-lg" dir="auto">{{ $slide['subheading'] }}</p>@endif
+                            @if($slide['url'])<a href="{{ $slide['url'] }}" class="btn-primary mt-5 inline-block" data-testid="hero-link">{{ __('shop.shop_now') }}</a>@endif
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+        </section>
+    @endif
+
+    @foreach([['featured', 'featured_heading', 'shop-featured'], ['best_sellers', 'best_sellers', 'shop-best-sellers'], ['recently_viewed', 'recently_viewed', 'shop-recently-viewed']] as [$key, $label, $testid])
+        @if(count($home[$key] ?? []) > 0)
+            <section class="py-8 {{ $key === 'featured' ? 'bg-brandBeige-50' : '' }}" data-testid="{{ $testid }}">
+                <div class="container mx-auto px-4">
+                    <h2 class="mb-3 text-xl font-semibold text-brandMaroon-900">{{ __('shop.'.$label) }}</h2>
+                    <div class="grid grid-cols-2 gap-4 md:grid-cols-4">
+                        @foreach(array_slice($home[$key], 0, $key === 'featured' ? 12 : 8) as $card)
+                            @include('public.shop._card', ['card' => $card])
+                        @endforeach
+                    </div>
+                </div>
+            </section>
+        @endif
+    @endforeach
+
+    @foreach($home['collections'] as $collection)
+        <section class="py-8" data-testid="shop-collection">
+            <div class="container mx-auto px-4">
+                <div class="mb-3 flex flex-wrap items-baseline justify-between gap-2">
+                    <h2 class="text-xl font-semibold text-brandMaroon-900" dir="auto">{{ $collection['name'] }} <span class="text-sm font-normal text-gray-500">· {{ $collection['vendor'] }}</span></h2>
+                    <a href="{{ $collection['url'] }}" class="text-sm text-brandMaroon-700 underline">{{ __('shop.see_all') }} →</a>
+                </div>
+                <div class="grid grid-cols-2 gap-4 md:grid-cols-4">
+                    @foreach($collection['cards'] as $card)
+                        @include('public.shop._card', ['card' => $card])
+                    @endforeach
+                </div>
+            </div>
+        </section>
+    @endforeach
+
     @if(count($home['categories']) > 0)
         <section id="categories" class="py-8" data-testid="shop-categories">
             <div class="container mx-auto px-4">
@@ -197,3 +251,64 @@
 
 @include('public.shop._bottom-bar')
 @endsection
+
+@push('scripts')
+<script>
+(() => {
+    const input = document.getElementById('shop-search');
+    const list = document.getElementById('shop-suggest');
+    if (!input || !list) return;
+    let timer = null, active = -1, items = [];
+    const labels = @json(['products' => __('shop.suggest_products'), 'vendors' => __('shop.suggest_shops'), 'categories' => __('shop.suggest_categories')]);
+    const close = () => { list.classList.add('hidden'); list.innerHTML = ''; input.setAttribute('aria-expanded', 'false'); active = -1; items = []; };
+    const mark = () => items.forEach((el, i) => { el.setAttribute('aria-selected', i === active ? 'true' : 'false'); el.classList.toggle('bg-gray-100', i === active); });
+    const render = (data) => {
+        list.innerHTML = '';
+        items = [];
+        for (const kind of ['products', 'vendors', 'categories']) {
+            if (!(data[kind] || []).length) continue;
+            const head = document.createElement('li');
+            head.className = 'px-3 pt-2 text-xs uppercase text-gray-500';
+            head.setAttribute('role', 'presentation');
+            head.textContent = labels[kind];
+            list.appendChild(head);
+            for (const row of data[kind]) {
+                const li = document.createElement('li');
+                li.setAttribute('role', 'option');
+                li.dataset.url = row.url;
+                li.className = 'flex cursor-pointer items-center gap-2 px-3 py-2 hover:bg-gray-100';
+                if (row.image) { const img = document.createElement('img'); img.src = row.image; img.alt = ''; img.className = 'h-8 w-8 rounded object-cover'; li.appendChild(img); }
+                const text = document.createElement('span');
+                text.dir = 'auto';
+                text.textContent = row.title || row.name;
+                li.appendChild(text);
+                if (row.vendor) { const sub = document.createElement('span'); sub.className = 'ms-auto text-xs text-gray-500'; sub.textContent = row.vendor + ' · ' + row.price; li.appendChild(sub); }
+                li.addEventListener('mousedown', (e) => { e.preventDefault(); window.location.href = row.url; });
+                list.appendChild(li);
+                items.push(li);
+            }
+        }
+        if (items.length === 0) { close(); return; }
+        list.classList.remove('hidden');
+        input.setAttribute('aria-expanded', 'true');
+    };
+    input.addEventListener('input', () => {
+        clearTimeout(timer);
+        const q = input.value.trim();
+        if (q.length < 2) { close(); return; }
+        timer = setTimeout(() => {
+            fetch(input.dataset.suggestUrl + '?q=' + encodeURIComponent(q), { headers: { Accept: 'application/json' } })
+                .then((r) => (r.ok ? r.json() : null)).then((data) => { if (data && input.value.trim() === q) render(data); }).catch(() => {});
+        }, 200);
+    });
+    input.addEventListener('keydown', (e) => {
+        if (list.classList.contains('hidden')) return;
+        if (e.key === 'ArrowDown') { e.preventDefault(); active = Math.min(items.length - 1, active + 1); mark(); }
+        else if (e.key === 'ArrowUp') { e.preventDefault(); active = Math.max(-1, active - 1); mark(); }
+        else if (e.key === 'Enter' && active >= 0) { e.preventDefault(); window.location.href = items[active].dataset.url; }
+        else if (e.key === 'Escape') { close(); }
+    });
+    input.addEventListener('blur', () => setTimeout(close, 150));
+})();
+</script>
+@endpush

@@ -3,12 +3,16 @@
 namespace App\Domains\Bookshop\Http\Controllers;
 
 use App\Domains\Bookshop\Actions\ListCatalogueOptionsAction;
+use App\Domains\Bookshop\Actions\Shop\CustomerListsAction;
 use App\Domains\Bookshop\Actions\Shop\ListShopProductsAction;
 use App\Domains\Bookshop\Actions\Shop\PresentShopHomeAction;
 use App\Domains\Bookshop\Actions\Shop\PresentShopProductAction;
 use App\Domains\Bookshop\Actions\Shop\PresentShopVendorAction;
+use App\Domains\Bookshop\Actions\Shop\ProductReviewsAction;
+use App\Domains\Bookshop\Actions\Shop\SuggestAction;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -25,7 +29,7 @@ class ShopController extends Controller
         $browsing = array_diff_key($filters, ['sort' => 1]) === [];
 
         return view('public.shop.index', [
-            'home' => $browsing ? app(PresentShopHomeAction::class)->execute() : null,
+            'home' => $browsing ? app(PresentShopHomeAction::class)->execute() + ['recently_viewed' => app(CustomerListsAction::class)->recentlyViewed($request->session())] : null,
             'products' => app(ListShopProductsAction::class)->execute($filters),
             'filters' => $filters,
             'options' => $this->options(),
@@ -94,12 +98,31 @@ class ShopController extends Controller
         ]);
     }
 
-    public function product(string $slug)
+    public function product(Request $request, string $slug)
     {
         $product = app(PresentShopProductAction::class)->execute($slug);
         abort_if($product === null, 404);
+        // B7 (§4): reviews, the wishlist and back-in-stock state for the
+        // signed-in customer, and this device's recently viewed.
+        $lists = app(CustomerListsAction::class);
+        $userId = $request->user()?->id;
+        $recent = $lists->recentlyViewed($request->session(), $product['id']);
+        $lists->rememberViewed($request->session(), $product['id']);
 
-        return view('public.shop.product', ['product' => $product]);
+        return view('public.shop.product', ['product' => $product + [
+            'reviews' => app(ProductReviewsAction::class)->forProduct($product['id'], $userId),
+            'in_wishlist' => $lists->inWishlist($userId, $product['id']),
+            'has_alert' => $lists->hasStockAlert($userId, $product['id']),
+            'recently_viewed' => $recent,
+        ]]);
+    }
+
+    /** B7 (§4 "suggestions as you type"): a few products, shops and categories, as JSON. */
+    public function suggest(Request $request): JsonResponse
+    {
+        $data = $request->validate(['q' => 'nullable|string|max:100']);
+
+        return response()->json(app(SuggestAction::class)->execute((string) ($data['q'] ?? '')));
     }
 
     /** Every listing gets a CSV (conventions): the listing as filtered. */

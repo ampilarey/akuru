@@ -22,6 +22,40 @@ function parseKind(kind) {
     return { name, arg };
 }
 
+/**
+ * B7 (§6.3): drag to reorder, beside the up / down buttons that stay for
+ * keyboards and screen readers. Native drag and drop; the list is only
+ * reordered on drop, and a drop outside a row changes nothing.
+ */
+function useDragOrder(list, onChange) {
+    const [dragging, setDragging] = useState(null);
+    const [over, setOver] = useState(null);
+    // Only the handle arms a row, so text in a row's inputs stays selectable.
+    const [armed, setArmed] = useState(null);
+    const handle = (i) => ({ onMouseDown: () => setArmed(i), onMouseUp: () => setArmed(null), onTouchStart: () => setArmed(i) });
+    const props = (i) => ({
+        draggable: armed === i,
+        onDragStart: (e) => { setDragging(i); e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', String(i)); },
+        onDragOver: (e) => { if (dragging === null) return; e.preventDefault(); e.dataTransfer.dropEffect = 'move'; setOver(i); },
+        onDragLeave: () => setOver((o) => (o === i ? null : o)),
+        onDrop: (e) => {
+            e.preventDefault();
+            const from = dragging;
+            setDragging(null);
+            setOver(null);
+            if (from === null || from === i) return;
+            const next = [...list];
+            const [moved] = next.splice(from, 1);
+            next.splice(i, 0, moved);
+            onChange(next);
+        },
+        onDragEnd: () => { setDragging(null); setOver(null); setArmed(null); },
+        'data-drop-target': over === i ? '1' : '0',
+    });
+
+    return { props, handle, dragging, over };
+}
+
 function blankSettings(fields) {
     const out = {};
     Object.entries(fields).forEach(([field, kind]) => {
@@ -104,10 +138,12 @@ function LinkRow({ value, onChange, d, t, withLabel, onRemove, testid }) {
 
 function Rows({ items, max, blank, render, onChange, t, addLabel, testid }) {
     const list = items || [];
+    const drag = useDragOrder(list, onChange);
     return (
         <div className="space-y-2" data-testid={testid}>
             {list.map((item, i) => (
-                <div key={i} className="flex flex-wrap items-end gap-2 rounded border bg-gray-50 p-2">
+                <div key={i} {...drag.props(i)} className={`flex flex-wrap items-end gap-2 rounded border bg-gray-50 p-2 ${drag.over === i ? 'ring-2 ring-blue-400' : ''}`}>
+                    <span {...drag.handle(i)} className="cursor-grab select-none text-gray-400" title={t.drag_to_reorder} aria-hidden="true">⠿</span>
                     {render(item, (patch) => onChange(list.map((x, j) => (j === i ? { ...x, ...patch } : x))), i)}
                     <button type="button" className="text-xs text-red-700 underline" onClick={() => onChange(list.filter((_, j) => j !== i))}>{t.remove}</button>
                 </div>
@@ -239,6 +275,7 @@ function SectionsEditor({ sections, onChange, d, t, prefix }) {
     const [type, setType] = useState('hero');
     const locked = d.moderation.locked_types || [];
     const types = Object.keys(d.schema);
+    const drag = useDragOrder(sections, (next) => { onChange(next); setOpen(null); });
     const update = (i, patch) => onChange(sections.map((s, j) => (j === i ? { ...s, ...patch } : s)));
     const move = (i, dir) => {
         const j = i + dir;
@@ -258,8 +295,9 @@ function SectionsEditor({ sections, onChange, d, t, prefix }) {
             {sections.length === 0 && <p className="mb-3 text-sm text-gray-600">{t.no_sections_yet}</p>}
             <ol className="space-y-2">
                 {sections.map((s, i) => (
-                    <li key={s.id} className={`rounded border bg-white ${locked.includes(s.type) ? 'border-red-300' : ''}`} data-testid={`${prefix}-row-${i}`} data-type={s.type}>
+                    <li key={s.id} {...drag.props(i)} className={`rounded border bg-white ${locked.includes(s.type) ? 'border-red-300' : ''} ${drag.over === i ? 'ring-2 ring-blue-400' : ''} ${drag.dragging === i ? 'opacity-50' : ''}`} data-testid={`${prefix}-row-${i}`} data-type={s.type}>
                         <div className="flex flex-wrap items-center gap-2 p-2 text-sm">
+                            <span {...drag.handle(i)} className="cursor-grab select-none text-gray-400" title={t.drag_to_reorder} aria-hidden="true" data-testid={`${prefix}-${i}-handle`}>⠿</span>
                             <span className="w-6 text-center text-gray-500">{i + 1}</span>
                             <span className="font-semibold">{t[`section_${s.type}`] || s.type}</span>
                             {s.settings?.heading && <span className="truncate text-gray-500" dir="auto">— {s.settings.heading}</span>}

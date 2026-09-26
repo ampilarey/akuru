@@ -515,7 +515,113 @@ function Money({ money, t }) {
     );
 }
 
-export default function Admin({ t, vendors, catalogue, slips = [], orders = [], refunds = [], money = null, default_commission_rate, sign_in_url, section_types = [] }) {
+/** B7 (plan §4 "office may hide"; decision 12): the newest reviews, those waiting first; hide with a note, or publish. */
+function Reviews({ reviews, t }) {
+    const [notes, setNotes] = useState({});
+    const act = (id, action) => router.post(`/admin/bookshop/reviews/${id}/moderate`, { action, note: notes[id] || '' }, { preserveScroll: true });
+    const waiting = reviews.filter((r) => r.status === 'pending').length;
+
+    return (
+        <section className="mt-8" data-testid="office-reviews">
+            <h2 className="mb-2 text-lg font-semibold">{t.reviews_heading} {waiting > 0 && <span className="ms-2 rounded bg-amber-100 px-2 text-sm text-amber-800">{waiting}</span>}</h2>
+            {reviews.length === 0 ? <p className="rounded border bg-white p-3 text-sm text-gray-600">{t.no_reviews}</p> : (
+                <ul className="divide-y rounded border bg-white text-sm">
+                    {reviews.map((r) => (
+                        <li key={r.id} className="flex flex-wrap items-start gap-3 p-2" data-testid={`office-review-${r.id}`} data-review-status={r.status}>
+                            <div className="min-w-64 flex-1">
+                                <p><span className="text-amber-700">{'★'.repeat(r.rating)}{'☆'.repeat(5 - r.rating)}</span> · <a href={`/shop/products/${r.product_slug}#reviews`} target="_blank" rel="noreferrer" className="text-blue-700 underline">{r.product}</a> <span className="text-gray-500">· {r.vendor} · {r.created_at}</span></p>
+                                {r.body && <p className="whitespace-pre-line" dir="auto">{r.body}</p>}
+                                {r.reply && <p className="ms-3 text-xs text-gray-600">↳ {r.reply}</p>}
+                                {r.moderation_note && <p className="text-xs text-red-700">{t.office_note}: {r.moderation_note}</p>}
+                            </div>
+                            <div className="flex flex-wrap items-center gap-2">
+                                <span className="text-xs">{t[`review_status_${r.status}`] || r.status}</span>
+                                <input className="form-input w-40" placeholder={t.note} value={notes[r.id] || ''} onChange={(e) => setNotes({ ...notes, [r.id]: e.target.value })} data-testid={`review-note-${r.id}`} />
+                                {r.status !== 'hidden' && <button type="button" className="text-red-700 underline" onClick={() => act(r.id, 'hide')} data-testid={`review-hide-${r.id}`}>{t.hide}</button>}
+                                {r.status !== 'published' && <button type="button" className="text-blue-700 underline" onClick={() => act(r.id, 'publish')} data-testid={`review-publish-${r.id}`}>{t.publish}</button>}
+                            </div>
+                        </li>
+                    ))}
+                </ul>
+            )}
+        </section>
+    );
+}
+
+/** B7 (plan §7): the shop home — hero slides, featured products, featured collections, in the office's order. */
+function ShopHome({ home, t }) {
+    const o = home.options;
+    const hero = useForm({ kind: 'hero', heading: '', heading_dv: '', heading_ar: '', subheading: '', link: { kind: '', target: '' }, image: null });
+    const [productId, setProductId] = useState('');
+    const [collectionId, setCollectionId] = useState('');
+    const targets = { vendor: o.vendors.map((v) => [v.slug, v.label]), category: o.categories.map((c) => [c.slug, c.label]), product: o.products.map((p) => [p.slug, p.label]), collection: o.collections.map((c) => [String(c.id), c.label]) };
+    const list = (kind) => home.features.filter((f) => f.kind === kind);
+    const row = (f) => (
+        <li key={f.id} className="flex flex-wrap items-center gap-2 p-2" data-testid={`home-feature-${f.id}`}>
+            {f.image && <img src={f.image} alt="" className="h-10 w-16 rounded object-cover" />}
+            <span className="flex-1" dir="auto">{f.label}{!f.is_active && <span className="ms-2 text-xs text-gray-500">({t.inactive})</span>}</span>
+            <button type="button" className="btn-secondary px-2 py-1 text-xs" onClick={() => router.post(`/admin/bookshop/home/${f.id}/move`, { direction: -1 }, { preserveScroll: true })} aria-label={t.move_up}>↑</button>
+            <button type="button" className="btn-secondary px-2 py-1 text-xs" onClick={() => router.post(`/admin/bookshop/home/${f.id}/move`, { direction: 1 }, { preserveScroll: true })} aria-label={t.move_down}>↓</button>
+            <button type="button" className="text-xs text-red-700 underline" onClick={() => router.delete(`/admin/bookshop/home/${f.id}`, { preserveScroll: true })} data-testid={`home-remove-${f.id}`}>{t.remove}</button>
+        </li>
+    );
+
+    return (
+        <section className="mt-8" data-testid="office-home">
+            <div className="mb-2 flex items-center justify-between"><h2 className="text-lg font-semibold">{t.shop_home_heading}</h2><a href="/shop" target="_blank" rel="noreferrer" className="text-sm text-blue-700 underline">/shop</a></div>
+            <div className="grid gap-6 lg:grid-cols-3">
+                <div>
+                    <h3 className="mb-1 font-semibold">{t.hero_slides}</h3>
+                    <ul className="mb-2 divide-y rounded border bg-white text-sm">{list('hero').map(row)}</ul>
+                    <form className="space-y-2 rounded border bg-white p-2 text-sm" data-testid="hero-form" onSubmit={(e) => { e.preventDefault(); hero.post('/admin/bookshop/home', { forceFormData: true, preserveScroll: true, onSuccess: () => hero.reset() }); }}>
+                        <input className="form-input w-full" placeholder={t.field_heading} value={hero.data.heading} onChange={(e) => hero.setData('heading', e.target.value)} required data-testid="hero-heading" />
+                        <input className="form-input w-full" dir="rtl" placeholder={t.name_dv} value={hero.data.heading_dv} onChange={(e) => hero.setData('heading_dv', e.target.value)} />
+                        <input className="form-input w-full" placeholder={t.field_subheading} value={hero.data.subheading} onChange={(e) => hero.setData('subheading', e.target.value)} />
+                        <div className="flex gap-2">
+                            <select className="form-input" value={hero.data.link.kind} onChange={(e) => hero.setData('link', { kind: e.target.value, target: '' })} data-testid="hero-link-kind">
+                                <option value="">{t.no_link}</option>
+                                {o.link_kinds.map((k) => <option key={k} value={k}>{t[`home_link_${k}`] || k}</option>)}
+                            </select>
+                            {hero.data.link.kind && (
+                                <select className="form-input flex-1" value={hero.data.link.target} onChange={(e) => hero.setData('link', { ...hero.data.link, target: e.target.value })} data-testid="hero-link-target">
+                                    <option value="">—</option>
+                                    {(targets[hero.data.link.kind] || []).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+                                </select>
+                            )}
+                        </div>
+                        <input type="file" accept="image/jpeg,image/png,image/webp" className="block w-full text-xs" onChange={(e) => hero.setData('image', e.target.files?.[0] || null)} data-testid="hero-image" />
+                        <FormErrors errors={hero.errors} />
+                        <button type="submit" className="btn-primary" disabled={hero.processing} data-testid="add-hero">{t.add_slide}</button>
+                    </form>
+                </div>
+                <div>
+                    <h3 className="mb-1 font-semibold">{t.featured_heading}</h3>
+                    <ul className="mb-2 divide-y rounded border bg-white text-sm" data-testid="home-featured">{list('product').map(row)}</ul>
+                    <div className="flex gap-2">
+                        <select className="form-input flex-1" value={productId} onChange={(e) => setProductId(e.target.value)} data-testid="feature-product">
+                            <option value="">—</option>
+                            {o.products.map((p) => <option key={p.id} value={p.id}>{p.label}</option>)}
+                        </select>
+                        <button type="button" className="btn-secondary" disabled={!productId} onClick={() => router.post('/admin/bookshop/home', { kind: 'product', product_id: productId }, { preserveScroll: true, onSuccess: () => setProductId('') })} data-testid="add-featured">{t.add}</button>
+                    </div>
+                </div>
+                <div>
+                    <h3 className="mb-1 font-semibold">{t.featured_collections}</h3>
+                    <ul className="mb-2 divide-y rounded border bg-white text-sm" data-testid="home-collections">{list('collection').map(row)}</ul>
+                    <div className="flex gap-2">
+                        <select className="form-input flex-1" value={collectionId} onChange={(e) => setCollectionId(e.target.value)} data-testid="feature-collection">
+                            <option value="">—</option>
+                            {o.collections.map((c) => <option key={c.id} value={c.id}>{c.label}</option>)}
+                        </select>
+                        <button type="button" className="btn-secondary" disabled={!collectionId} onClick={() => router.post('/admin/bookshop/home', { kind: 'collection', vendor_collection_id: collectionId }, { preserveScroll: true, onSuccess: () => setCollectionId('') })} data-testid="add-collection">{t.add}</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    );
+}
+
+export default function Admin({ t, vendors, catalogue, slips = [], orders = [], refunds = [], money = null, reviews = [], home = null, default_commission_rate, sign_in_url, section_types = [] }) {
     const { flash = {}, errors } = usePage().props;
 
     return (
@@ -540,6 +646,8 @@ export default function Admin({ t, vendors, catalogue, slips = [], orders = [], 
             {!refunds.some((r) => r.status === 'pending') && <Refunds refunds={refunds} t={t} />}
             {money && money.requests.length === 0 && <Money money={money} t={t} />}
             <Orders orders={orders} t={t} />
+            <Reviews reviews={reviews} t={t} />
+            {home && <ShopHome home={home} t={t} />}
 
             <Catalogue catalogue={catalogue} t={t} />
         </AppShell>

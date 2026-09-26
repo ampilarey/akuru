@@ -2,11 +2,14 @@
 
 namespace App\Domains\Bookshop\Actions\Orders;
 
+use App\Domains\Bookshop\Actions\Shop\ListShopProductsAction;
+use App\Domains\Bookshop\Enums\OrderStatus;
 use App\Domains\Bookshop\Models\Order;
 use App\Domains\Bookshop\Models\OrderEvent;
 use App\Domains\Bookshop\Models\OrderItem;
 use App\Domains\Bookshop\Models\OrderRefund;
 use App\Domains\Bookshop\Models\OrderReturn;
+use App\Domains\Bookshop\Models\ProductReview;
 use App\Domains\Bookshop\Support\OrderView;
 use App\Domains\Bookshop\Support\ShopPresenter;
 
@@ -53,6 +56,10 @@ class PresentOrderAction
             'message_thread_id' => $order->message_thread_id,
             'items' => $order->items->map(fn (OrderItem $i) => [
                 'id' => $i->id,
+                // B7: a delivered line the customer has not reviewed yet points at its product's review form.
+                'review_url' => $order->status === OrderStatus::Delivered && $i->product_id !== null && ! ProductReview::query()->where('order_item_id', $i->id)->exists()
+                    && ($slug = ListShopProductsAction::forSale()->whereKey($i->product_id)->value('slug')) !== null
+                    ? route('public.shop.product', $slug).'#reviews' : null,
                 'returnable' => $returnsOpen ? OrderView::returnable($i, $order->returns) : 0,
                 'title' => $i->title,
                 'variant' => $i->variant_name,

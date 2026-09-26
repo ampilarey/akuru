@@ -16,6 +16,7 @@ const DETAIL_EDU = ['age_range', 'grade', 'subject'];
 function blankProduct() {
     return {
         title: '', title_dv: '', title_ar: '', summary: '', summary_dv: '', summary_ar: '',
+        badge: '', badge_dv: '', badge_ar: '',
         description: '', description_dv: '', description_ar: '',
         product_category_id: '', brand_id: '', tags_text: '',
         price: '', compare_at_price: '', cost: '', tax_class: 'standard',
@@ -33,6 +34,7 @@ function fromProduct(p) {
         ...blankProduct(),
         title: p.title, title_dv: text(p.title_dv), title_ar: text(p.title_ar),
         summary: text(p.summary), summary_dv: text(p.summary_dv), summary_ar: text(p.summary_ar),
+        badge: text(p.badge), badge_dv: text(p.badge_dv), badge_ar: text(p.badge_ar),
         description: text(p.description), description_dv: text(p.description_dv), description_ar: text(p.description_ar),
         product_category_id: text(p.product_category_id), brand_id: text(p.brand_id), tags_text: (p.tags || []).join(', '),
         price: text(p.price), compare_at_price: text(p.compare_at_price), cost: text(p.cost), tax_class: p.tax_class,
@@ -99,8 +101,11 @@ function ProductEditor({ product, options, t, onDone }) {
                         {options.statuses.map((s) => <option key={s} value={s}>{t[`status_${s}`] || s}</option>)}
                     </select>
                 </Field>
-                <Field label={t.summary} className="md:col-span-3">
+                <Field label={t.summary} className="md:col-span-2">
                     <input className="form-input w-full" value={form.data.summary} onChange={set('summary')} maxLength={500} />
+                </Field>
+                <Field label={t.product_badge} hint={t.product_badge_hint}>
+                    <input className="form-input w-full" value={form.data.badge} onChange={set('badge')} maxLength={40} data-testid="product-badge" />
                 </Field>
                 <Field label={t.description} hint={t.description_hint} className="md:col-span-3">
                     <textarea className="form-input w-full" rows={4} value={form.data.description} onChange={set('description')} />
@@ -114,6 +119,8 @@ function ProductEditor({ product, options, t, onDone }) {
                     <Field label={t.title_ar}><input dir="rtl" className="form-input w-full" value={form.data.title_ar} onChange={set('title_ar')} /></Field>
                     <Field label={t.summary_dv}><input dir="rtl" className="form-input w-full" value={form.data.summary_dv} onChange={set('summary_dv')} /></Field>
                     <Field label={t.summary_ar}><input dir="rtl" className="form-input w-full" value={form.data.summary_ar} onChange={set('summary_ar')} /></Field>
+                    <Field label={t.product_badge_dv}><input dir="rtl" className="form-input w-full" value={form.data.badge_dv} onChange={set('badge_dv')} maxLength={40} /></Field>
+                    <Field label={t.product_badge_ar}><input dir="rtl" className="form-input w-full" value={form.data.badge_ar} onChange={set('badge_ar')} maxLength={40} /></Field>
                     <Field label={t.description_dv}><textarea dir="rtl" rows={3} className="form-input w-full" value={form.data.description_dv} onChange={set('description_dv')} /></Field>
                     <Field label={t.description_ar}><textarea dir="rtl" rows={3} className="form-input w-full" value={form.data.description_ar} onChange={set('description_ar')} /></Field>
                 </div>
@@ -349,6 +356,7 @@ function ShopSettings({ settings, isOwner, t }) {
         holiday_from: settings.holiday_from || '',
         holiday_until: settings.holiday_until || '',
         holiday_notice: settings.holiday_notice || '',
+        free_delivery_over: settings.free_delivery_over || '',
     });
     const set = (name) => (e) => form.setData(name, e.target.value);
 
@@ -372,9 +380,62 @@ function ShopSettings({ settings, isOwner, t }) {
                 <Field label={t.holiday_from}><input className="form-input w-full" type="date" value={form.data.holiday_from} onChange={set('holiday_from')} disabled={!isOwner} data-testid="holiday-from" /></Field>
                 <Field label={t.holiday_until}><input className="form-input w-full" type="date" value={form.data.holiday_until} onChange={set('holiday_until')} disabled={!isOwner} data-testid="holiday-until" /></Field>
                 <Field label={t.holiday_notice} hint={t.holiday_hint}><input className="form-input w-full" value={form.data.holiday_notice} onChange={set('holiday_notice')} disabled={!isOwner} data-testid="holiday-notice" /></Field>
+                <Field label={t.free_delivery_over} hint={t.free_delivery_over_hint}><input className="form-input w-full" type="number" min="0" step="1" value={form.data.free_delivery_over} onChange={set('free_delivery_over')} disabled={!isOwner} data-testid="free-delivery-over" /></Field>
                 <FormErrors errors={form.errors} className="md:col-span-3" />
                 {isOwner && <div className="md:col-span-3"><button type="submit" className="btn-primary" disabled={form.processing} data-testid="save-settings">{t.save}</button></div>}
             </form>
+        </section>
+    );
+}
+
+/** B7 (§6.5): the shop's own discount codes — funded by the shop, good on its products only. */
+function DiscountCodes({ codes, isOwner, t }) {
+    const blank = { code: '', name: '', discount_type: 'percentage', discount_value: '', minimum_order_amount: '', max_discount_amount: '', usage_limit: '', per_user_limit: '1', starts_at: '', ends_at: '' };
+    const form = useForm(blank);
+    const set = (name) => (e) => form.setData(name, e.target.value);
+
+    return (
+        <section className="mt-8" data-testid="discount-codes">
+            <h2 className="mb-1 text-lg font-semibold">{t.discount_codes_heading}</h2>
+            <p className="mb-2 text-sm text-gray-600">{t.discount_codes_intro}</p>
+            {codes.length > 0 && (
+                <table className="mb-3 w-full rounded border bg-white text-sm">
+                    <thead className="bg-gray-50"><tr><th className="p-2 text-start">{t.discount_code}</th><th className="p-2 text-start">{t.discount}</th><th className="p-2 text-start">{t.code_valid}</th><th className="p-2 text-end">{t.code_used}</th><th className="p-2 text-start">{t.status}</th><th className="p-2" /></tr></thead>
+                    <tbody>
+                        {codes.map((c) => (
+                            <tr key={c.id} className="border-t" data-testid={`code-${c.code}`} data-code-status={c.status}>
+                                <td className="p-2 font-mono">{c.code}<span className="block text-xs text-gray-500">{c.name}</span></td>
+                                <td className="p-2">{c.discount_type === 'percentage' ? `${Number(c.discount_value)}%` : `MVR ${c.discount_value}`}{c.minimum_order_amount && <span className="block text-xs text-gray-500">{t.code_minimum.replace(':amount', c.minimum_order_amount)}</span>}</td>
+                                <td className="p-2 text-xs">{c.starts_at || '—'} → {c.ends_at || '—'}</td>
+                                <td className="p-2 text-end">{c.used_count}{c.usage_limit ? ` / ${c.usage_limit}` : ''}<span className="block text-xs text-gray-500">MVR {c.discounted_total}</span></td>
+                                <td className="p-2">{c.status === 'active' ? t.active : t.inactive}</td>
+                                <td className="p-2 text-end">{isOwner && <button type="button" className="text-blue-700 underline" onClick={() => router.post(`/vendor/discount-codes/${c.id}/status`, { active: c.status === 'active' ? 0 : 1 }, { preserveScroll: true })} data-testid={`toggle-code-${c.code}`}>{c.status === 'active' ? t.switch_off : t.switch_on}</button>}</td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            )}
+            {isOwner ? (
+                <form className="grid gap-3 rounded border bg-white p-3 md:grid-cols-4" data-testid="code-form" onSubmit={(e) => { e.preventDefault(); form.post('/vendor/discount-codes', { preserveScroll: true, onSuccess: () => form.reset() }); }}>
+                    <Field label={t.discount_code}><input className="form-input w-full font-mono uppercase" value={form.data.code} onChange={set('code')} maxLength={20} required data-testid="code-code" /></Field>
+                    <Field label={t.code_type}>
+                        <select className="form-input w-full" value={form.data.discount_type} onChange={set('discount_type')} data-testid="code-type">
+                            <option value="percentage">{t.code_percentage}</option>
+                            <option value="fixed">{t.code_fixed}</option>
+                        </select>
+                    </Field>
+                    <Field label={t.code_value}><input className="form-input w-full" type="number" min="0.01" step="0.01" value={form.data.discount_value} onChange={set('discount_value')} required data-testid="code-value" /></Field>
+                    <Field label={t.code_minimum_label}><input className="form-input w-full" type="number" min="0" step="1" value={form.data.minimum_order_amount} onChange={set('minimum_order_amount')} /></Field>
+                    <Field label={t.code_usage_limit}><input className="form-input w-full" type="number" min="1" value={form.data.usage_limit} onChange={set('usage_limit')} /></Field>
+                    <Field label={t.code_per_user}><input className="form-input w-full" type="number" min="1" value={form.data.per_user_limit} onChange={set('per_user_limit')} /></Field>
+                    <Field label={t.from}><input className="form-input w-full" type="date" value={form.data.starts_at} onChange={set('starts_at')} /></Field>
+                    <Field label={t.until}><input className="form-input w-full" type="date" value={form.data.ends_at} onChange={set('ends_at')} /></Field>
+                    <FormErrors errors={form.errors} className="md:col-span-4" />
+                    <div className="md:col-span-4"><button type="submit" className="btn-primary" disabled={form.processing} data-testid="save-code">{t.create_code}</button></div>
+                </form>
+            ) : (
+                <p className="text-sm text-gray-600">{t.owner_manages_codes}</p>
+            )}
         </section>
     );
 }
@@ -429,7 +490,7 @@ function ProductList({ products, t, onEdit }) {
     );
 }
 
-export default function Vendor({ t, vendor, memberships = [], agreement_url, products = [], members = [], delivery_methods = [], delivery_kinds = [], shop_settings = null, options, filters, must_set_password, set_password_url }) {
+export default function Vendor({ t, vendor, memberships = [], agreement_url, products = [], members = [], delivery_methods = [], delivery_kinds = [], shop_settings = null, discount_codes = [], options, filters, must_set_password, set_password_url }) {
     const { flash = {}, errors } = usePage().props;
     const [editing, setEditing] = useState(null);
     const [search, setSearch] = useState(filters.q || '');
@@ -459,6 +520,7 @@ export default function Vendor({ t, vendor, memberships = [], agreement_url, pro
                             <a href="/vendor/storefront" className="btn-secondary" data-testid="open-designer">{t.designer_title}</a>
                             <a href="/vendor/storefront/sections" className="btn-secondary" data-testid="open-sections">{t.sections_title}</a>
                             <a href="/vendor/money" className="btn-secondary" data-testid="open-money">{t.money_title}</a>
+                            <a href="/vendor/reviews" className="btn-secondary" data-testid="open-reviews">{t.reviews_heading}</a>
                         </span>
                     )}
                 </div>
@@ -509,6 +571,7 @@ export default function Vendor({ t, vendor, memberships = [], agreement_url, pro
                     </section>
                     {/* Keyed on the rows, so the form re-reads them after the template or a save (useForm keeps its first values otherwise). */}
                     {shop_settings && <ShopSettings settings={shop_settings} isOwner={isOwner} t={t} />}
+                    <DiscountCodes codes={discount_codes} isOwner={isOwner} t={t} />
                     <DeliveryMethods key={delivery_methods.map((m) => `${m.id}:${m.name}`).join('|')} methods={delivery_methods} kinds={delivery_kinds} isOwner={isOwner} t={t} />
                     <Members members={members} isOwner={isOwner} t={t} />
                 </>

@@ -39,6 +39,8 @@ class PresentShopProductAction
         $category = $product->category;
 
         return ShopPresenter::card($product) + [
+            'id' => (int) $product->id,
+            'available' => CustomerListsAction::available($product),
             'description' => ShopPresenter::localized($product, 'description'),
             'category_slug' => $category?->slug,
             'category_name' => $category === null ? null : (($locale === 'dv' && $category->name_dv) ? $category->name_dv : (($locale === 'ar' && $category->name_ar) ? $category->name_ar : $category->name)),

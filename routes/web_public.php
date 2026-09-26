@@ -57,6 +57,8 @@ Route::get('articles/{post:slug}', [\App\Domains\Website\Http\Controllers\Public
 // "products", "c", "export", "cart", "checkout" or "slips".
 Route::get('shop', [\App\Domains\Bookshop\Http\Controllers\ShopController::class, 'index'])->name('public.shop.index');
 Route::get('shop/export', [\App\Domains\Bookshop\Http\Controllers\ShopController::class, 'export'])->name('public.shop.export');
+// B7: suggestions as you type.
+Route::get('shop/suggest', [\App\Domains\Bookshop\Http\Controllers\ShopController::class, 'suggest'])->name('public.shop.suggest')->middleware('throttle:120,1,shop-suggest');
 Route::get('shop/products/{slug}', [\App\Domains\Bookshop\Http\Controllers\ShopController::class, 'product'])->name('public.shop.product');
 Route::get('shop/c/{slug}', [\App\Domains\Bookshop\Http\Controllers\ShopController::class, 'category'])->name('public.shop.category');
 // B2: the cart is a guest's too (by session token), so it is public and
@@ -81,14 +83,20 @@ Route::middleware('auth')->group(function () {
     Route::post('my-orders/{number}/cancel', [\App\Domains\Bookshop\Http\Controllers\MyOrdersController::class, 'cancel'])->name('public.shop.orders.cancel')->middleware('throttle:10,1,shop-cancel');
     Route::post('my-orders/{number}/returns', [\App\Domains\Bookshop\Http\Controllers\MyOrdersController::class, 'requestReturn'])->name('public.shop.orders.return')->middleware('throttle:10,1,shop-return');
     Route::post('my-orders/{number}/message', [\App\Domains\Bookshop\Http\Controllers\MyOrdersController::class, 'message'])->name('public.shop.orders.message')->middleware('throttle:20,1,shop-message');
+    // B7: the wishlist, back-in-stock requests, reviews of what was received.
+    Route::get('my-wishlist', [\App\Domains\Bookshop\Http\Controllers\ShopAccountController::class, 'wishlist'])->name('public.shop.wishlist');
+    Route::get('my-wishlist/export', [\App\Domains\Bookshop\Http\Controllers\ShopAccountController::class, 'exportWishlist'])->name('public.shop.wishlist.export');
+    Route::post('shop/wishlist/{slug}', [\App\Domains\Bookshop\Http\Controllers\ShopAccountController::class, 'toggleWishlist'])->name('public.shop.wishlist.toggle')->middleware('throttle:60,1,shop-wishlist');
+    Route::post('shop/products/{slug}/notify', [\App\Domains\Bookshop\Http\Controllers\ShopAccountController::class, 'toggleStockAlert'])->name('public.shop.stock-alert')->middleware('throttle:30,1,shop-alert');
+    Route::post('shop/products/{slug}/reviews', [\App\Domains\Bookshop\Http\Controllers\ShopAccountController::class, 'review'])->name('public.shop.review')->middleware('throttle:10,1,shop-review');
 });
 Route::get('shop/{vendor}', [\App\Domains\Bookshop\Http\Controllers\ShopController::class, 'vendor'])->name('public.shop.vendor')
-    ->where('vendor', '(?!(products|c|export|cart|checkout|slips)$)[a-z0-9-]+');
+    ->where('vendor', '(?!(products|c|export|cart|checkout|slips|suggest|wishlist)$)[a-z0-9-]+');
 // B5: a vendor's own pages and collections under its storefront (plan §6.4, §5).
 Route::get('shop/{vendor}/p/{page}', [\App\Domains\Bookshop\Http\Controllers\ShopController::class, 'vendorPage'])->name('public.shop.vendor.page')
-    ->where('vendor', '(?!(products|c|export|cart|checkout|slips)$)[a-z0-9-]+')->where('page', '[a-z0-9-]+');
+    ->where('vendor', '(?!(products|c|export|cart|checkout|slips|suggest|wishlist)$)[a-z0-9-]+')->where('page', '[a-z0-9-]+');
 Route::get('shop/{vendor}/{collection}', [\App\Domains\Bookshop\Http\Controllers\ShopController::class, 'vendorCollection'])->name('public.shop.vendor.collection')
-    ->where('vendor', '(?!(products|c|export|cart|checkout|slips)$)[a-z0-9-]+')->where('collection', '(?!p$)[a-z0-9-]+');
+    ->where('vendor', '(?!(products|c|export|cart|checkout|slips|suggest|wishlist)$)[a-z0-9-]+')->where('collection', '(?!p$)[a-z0-9-]+');
 
 Route::get('library/export', [PublicLibraryController::class, 'export'])->name('public.library.export');
 Route::get('library', [PublicLibraryController::class, 'index'])->name('public.library.index');

@@ -11,6 +11,8 @@ use App\Domains\Bookshop\Actions\ListOrdersAction;
 use App\Domains\Bookshop\Actions\ListPendingRefundsAction;
 use App\Domains\Bookshop\Actions\ListVendorMoneyReportAction;
 use App\Domains\Bookshop\Actions\ListVendorsAction;
+use App\Domains\Bookshop\Actions\ManageShopHomeAction;
+use App\Domains\Bookshop\Actions\ModerateReviewAction;
 use App\Domains\Bookshop\Actions\ModerateStorefrontAction;
 use App\Domains\Bookshop\Actions\Money\IssueCommissionInvoicesAction;
 use App\Domains\Bookshop\Actions\Orders\RefundOrderAction;
@@ -47,6 +49,8 @@ class AdminBookshopController extends Controller
             'orders' => app(ListOrdersAction::class)->execute(200),
             'refunds' => app(ListPendingRefundsAction::class)->execute(),
             'money' => app(ListVendorMoneyReportAction::class)->execute(),
+            'reviews' => app(ModerateReviewAction::class)->list(),
+            'home' => app(ManageShopHomeAction::class)->list(),
             'default_commission_rate' => number_format((float) config('bookshop.default_commission_rate'), 2, '.', ''),
             'agreement_url' => route('public.page.show', 'vendor-agreement'),
             'sign_in_url' => route('login'),
@@ -263,6 +267,57 @@ class AdminBookshopController extends Controller
             }
             fclose($out);
         }, 'bookstore-'.$what.'.csv', ['Content-Type' => 'text/csv']);
+    }
+
+    /** B7 (§4 "office may hide"): hide a review with a note, or publish one. */
+    public function moderateReview(Request $request, int $review): RedirectResponse
+    {
+        abort_unless($request->user()?->can('bookshop.manage'), 403);
+        $data = $request->validate(['action' => 'required|string|in:hide,publish', 'note' => 'nullable|string|max:500']);
+
+        app(ModerateReviewAction::class)->execute($review, $data['action'], (int) $request->user()->id, $data['note'] ?? null);
+
+        return back()->with('success', __('shop.review_'.$data['action'].'_flash'));
+    }
+
+    /** B7 (§7): a hero slide, a featured product or a featured collection on the shop home. */
+    public function saveHomeFeature(Request $request, ?int $feature = null): RedirectResponse
+    {
+        abort_unless($request->user()?->can('bookshop.manage'), 403);
+        $kb = (int) config('bookshop.storefront.images.max_kilobytes', 5120);
+        $data = $request->validate([
+            'kind' => 'nullable|string|in:hero,product,collection',
+            'product_id' => 'nullable|integer',
+            'vendor_collection_id' => 'nullable|integer',
+            'heading' => 'nullable|string|max:160', 'heading_dv' => 'nullable|string|max:160', 'heading_ar' => 'nullable|string|max:160',
+            'subheading' => 'nullable|string|max:300', 'subheading_dv' => 'nullable|string|max:300', 'subheading_ar' => 'nullable|string|max:300',
+            'link' => 'nullable|array', 'link.kind' => 'nullable|string|in:vendor,category,product,collection', 'link.target' => 'nullable|string|max:120',
+            'is_active' => 'nullable|boolean',
+            'image' => 'nullable|file|image|max:'.$kb,
+        ]);
+
+        app(ManageShopHomeAction::class)->save($data, $feature, (int) $request->user()->id, $request->file('image'));
+
+        return back()->with('success', __('shop.home_saved_flash'));
+    }
+
+    public function removeHomeFeature(Request $request, int $feature): RedirectResponse
+    {
+        abort_unless($request->user()?->can('bookshop.manage'), 403);
+
+        app(ManageShopHomeAction::class)->remove($feature);
+
+        return back()->with('success', __('shop.home_removed_flash'));
+    }
+
+    public function moveHomeFeature(Request $request, int $feature): RedirectResponse
+    {
+        abort_unless($request->user()?->can('bookshop.manage'), 403);
+        $data = $request->validate(['direction' => 'required|integer|in:-1,1']);
+
+        app(ManageShopHomeAction::class)->move($feature, (int) $data['direction']);
+
+        return back();
     }
 
     /** Every listing gets a CSV (conventions): the refunds. */

@@ -4414,6 +4414,125 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5he. B7: shop polish and trust — find, save, review, be told, be nudged (2026-09-26)
+
+BOOKSHOP_PLAN slice B7, the owner's "B7": the shop feels like a shop
+(§4 "Discovery", "Trust", "Customer lists"; §6.5 vendor codes; decision 12
+"reviews on from B7, moderated").
+
+**Finding things.** The shop's search box suggests as you type
+(`GET shop/suggest`, public, throttled, JSON): up to six products for sale,
+three shops and three categories, by title in any of the three languages,
+SKU, barcode, tag or author; a keyboard listbox (arrows, Enter, Escape)
+under the box. The listing gains **Best selling** (units paid in the last
+90 days, cancelled and expired orders left out) and **Top rated** sorts.
+**Badges** on every card and product page, at most three: the vendor's own
+words first (a new per-product field in three languages, 40 characters),
+then Sale, Bestseller (the top ten by units, at least two, cached ten
+minutes) and New (listed in the last 30 days). Stars and a count on cards.
+
+**Keeping things.** A signed-in customer's **wishlist** (`/my-wishlist`,
+Blade like My orders, with a CSV; a heart on the product page; *My
+wishlist* in the account menu). **Recently viewed**, kept in the visitor's
+own session (twelve at most), shown on the product page and the shop
+home. **Back in stock**: on a sold-out product, *Notify me when it's back*
+(signed in); whenever stock comes back — a vendor's save, a cancellation or
+return put back on the shelf (`Restock`, after commit) — everyone waiting
+is told once, in the portal notifications.
+
+**Trust.** **Reviews** only from a customer whose order of that product
+was **delivered**, one per order line, 1–5 stars and an optional text;
+published at once, or held for the office when
+`BOOKSHOP_REVIEWS_PREMODERATE=true`; shown with a first name and initial
+only and *Verified purchase*; the product's average and count kept on the
+product for sorting. My order offers *Write a review* on each delivered
+line. The shop is told and **replies in public** from `/vendor/reviews`
+(Inertia, any member, CSV). The office **hides** a review with a required
+note, or publishes a held one, from `/admin/bookshop`; the rating follows.
+
+**Money.** **Vendor-funded codes** (§6.5), in the one discount system
+(rule 11): an owner makes a code on the portal (percentage up to 90%, or
+fixed; dates, limits) and Commerce stores it with
+`applies_to_type = vendor` and the shop's id, funded by `vendor`, with
+who made it. At checkout it is priced against **that shop's goods only**
+and borne by its order alone; a basket without that shop's goods is told
+the code belongs to another shop. B6's earning already takes a
+vendor-funded discount off the goods before commission. Commerce's
+`ResolveDiscountAction` now refuses a scoped code to any caller that does
+not name the same scope — the library and courses pass none, so they
+accept `all` codes only (`DiscountsNeverBuyGiftCardsTest` unchanged: no new
+caller). **Free delivery over** an amount per shop (portal settings):
+every charged, non-carrier-paid delivery becomes free when the shop's
+goods reach it; the product page says so and the cart nudges (*Add MVR
+115.00 more from Fitrah for free delivery*).
+
+**Merchandising.** The office arranges the **shop home** from
+`/admin/bookshop`: hero slides (heading and sub-heading in three
+languages, a photo, a button to a shop, category, product or
+collection), featured products and collections, each in the office's
+order with up and down. Anything no longer for sale drops off by itself.
+Below them, Best sellers, new arrivals and categories as before.
+**Drag-to-order** in the storefront designer (B5 left it for here): the
+section list and every repeatable row (buttons, slides, FAQ items) drag
+by their handle — only the handle arms a row, so text in its inputs
+stays selectable — beside the existing up/down buttons.
+
+**Data** (`2026_09_26_000007_b7_shop_polish_and_trust`, additive):
+`product_reviews`, `wishlist_items`, `stock_alerts`,
+`shop_home_features`; badge and rating columns on `products`;
+`free_delivery_over` on `vendors`; `applies_to_id` and `created_by` on
+`discount_codes`. Four aliases in the morph map (ADR-005).
+
+**Baselines**: `public/shop/wishlist.blade.php` (Blade count 240, a sibling
+of the cart and My orders); `GET shop/suggest` declared public and the
+product page's and home's session reads described; the wishlist,
+notify-me and review POSTs declared as the caller's own data;
+`VendorReviewController` behind the `VendorScope`.
+
+**Fixed here, from B6**: PR #486 wrote its vendor walk over
+`scripts/smoke/money.mjs`, which was the school's own walk (a manual
+payment activates without BML, a refund revokes and credits the wallet,
+an override of 0 makes a course free) and is still listed in `all.mjs`.
+That walk is restored unchanged, and the vendor walk now lives in
+`scripts/smoke/vendor-money.mjs`.
+
+**Tests**: `ShopPolishTest` (9): the two sorts and all four badges;
+suggestions (drafts never, fewer than two letters nothing); the wishlist
+(guests refused, one's own only, CSV, toggled off) and recently viewed;
+back-in-stock from a vendor's save, told once, refused on an in-stock
+product; reviews (not before delivery, not by a stranger, once per line,
+the name shortened, the shop's reply, another shop's 404, the office's
+note required, the rating recomputed, a non-office 403) and
+premoderation; the vendor code (staff refused, 95% refused, uppercased,
+another shop's basket refused, 10% of Fitrah's goods only on a two-shop
+basket, the earning funded by the vendor: commission 9.00, net 111.00,
+refused with no scope, paused, another owner 404); free delivery over the
+amount; the home's hero, featured order, move, archived dropping off and
+a non-office 403. Full suite **2249 passed**.
+
+**Walked** (`scripts/smoke/polish.mjs`, **29/29**, no console or server
+errors): the student types "traci", picks the tracing book from the
+suggestions with ArrowDown and Enter, saves it to the wishlist and finds
+it on My wishlist, asks to be told about the sold-out Wooden Quran Stand,
+and sees both under Recently viewed on the shop home; Fitrah's owner
+restocks the stand, badges the book *Staff pick*, sets free delivery over
+MVR 200, makes FITWALK at 10% and drags a video section above an FAQ;
+the student finds *Back in stock* in their notifications, reviews the
+book from the delivered order (four stars), is nudged MVR 115.00 short of
+free delivery in the cart, and pays with FITWALK taking MVR 8.50 off;
+Fitrah replies in public; the office adds a hero linking to Fitrah and
+features the book, which a guest sees with its badge and stars, first
+under Top rated; the office hides the review with a note and the product
+page drops it and its stars. Re-walked: `shop.mjs` **24/24** (Fitrah now
+shows four products, the stand being the fourth), `checkout.mjs`
+**28/28**, `vendor.mjs` **25/25**, `fulfilment.mjs` **21/21**,
+`storefront.mjs` **15/15**, `sections.mjs` **22/22**, `vendor-money.mjs`
+**16/16**, and the restored `money.mjs` **21/21**.
+
+**Production**: the migration only. Reviews publish at once; set
+`BOOKSHOP_REVIEWS_PREMODERATE=true` in `.env` (then `config:cache`) to
+hold them for the office instead.
+
 ## 5hd. B6: money to vendors — earnings, payouts, commission invoices, statements (2026-09-26)
 
 BOOKSHOP_PLAN slice B6, the owner's "B6": a vendor sees what it is owed
@@ -4503,7 +4622,7 @@ left out, once, both readers, a stranger's 404), GST riding on the
 commission when Akuru is registered, the tax report and every CSV. Full
 suite **2240 passed**.
 
-**Walked** (`scripts/smoke/money.mjs`, **16/16**, no console or server
+**Walked** (`scripts/smoke/vendor-money.mjs` — first committed over the school's `money.mjs` by mistake, restored in §5he — **16/16**, no console or server
 errors): the seeder leaves Fitrah a paid, delivered order from three
 weeks ago (two tracing books plus MVR 30 delivery) whose earning has
 matured; the owner opens Money from the portal, sees it available with

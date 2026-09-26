@@ -64,6 +64,13 @@
                     @endforeach
                 </ul>
                 <p class="border-t px-4 py-2 text-end text-sm text-gray-600">{{ __('shop.subtotal') }}: <span class="font-semibold">{{ $cart['currency'] }} {{ $group['subtotal'] }}</span></p>
+                {{-- B7 (§6.5): how far from the shop's free delivery. --}}
+                @if($group['vendor']['free_delivery_over'] ?? null)
+                    @php($short = round((float) $group['vendor']['free_delivery_over'] - (float) $group['subtotal'], 2))
+                    <p class="border-t px-4 py-2 text-sm {{ $short > 0 ? 'text-amber-800' : 'text-green-700' }}" data-testid="free-delivery-{{ $group['vendor']['slug'] }}">
+                        {{ $short > 0 ? __('shop.free_delivery_nudge', ['amount' => $cart['currency'].' '.number_format($short, 2), 'vendor' => $group['vendor']['name']]) : __('shop.free_delivery_reached', ['vendor' => $group['vendor']['name']]) }}
+                    </p>
+                @endif
             </section>
         @endforeach
 

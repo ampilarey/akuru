@@ -24,10 +24,12 @@ class DiscountCode extends Model
         'per_user_limit',
         'minimum_order_amount',
         'applies_to_type',
+        'applies_to_id',
         'discount_funding_source',
         'can_combine',
         'can_use_with_wallet',
         'status',
+        'created_by',
     ];
 
     protected function casts(): array

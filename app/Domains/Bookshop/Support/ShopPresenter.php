@@ -56,6 +56,9 @@ final class ShopPresenter
             'vendor' => self::vendor($product->vendor),
             'category' => $product->category?->name,
             'on_sale' => $product->compare_at_price !== null && (float) $product->compare_at_price > (float) $product->price,
+            // B7: badges and stars.
+            'badges' => Merchandise::badges($product),
+            'rating' => Merchandise::rating($product),
         ];
     }
 
@@ -68,6 +71,8 @@ final class ShopPresenter
             'name' => $vendor->name,
             'slug' => $vendor->slug,
             'tagline' => $vendor->tagline,
+            // B7: the shop-wide "free delivery over" rule, for the product page and the cart.
+            'free_delivery_over' => $vendor->free_delivery_over !== null ? number_format((float) $vendor->free_delivery_over, 2, '.', '') : null,
             // B3 holiday mode: "back on <date>" is the day after the last day away.
             'holiday' => $vendor->onHoliday() ? [
                 'back_on' => $vendor->holiday_until->copy()->addDay()->toDateString(),

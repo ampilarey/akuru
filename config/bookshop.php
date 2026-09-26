@@ -103,6 +103,29 @@ return [
         'invoice_prefix' => 'ACI',
     ],
 
+    /*
+     * B7 — shop polish and trust (§4, §6.5; decision 12). A product is
+     * "New" for this many days; "Bestseller" means among the top sellers by
+     * units paid for in the storefront's best-seller window. Reviews go
+     * live at once and the office may hide them (§4 "office may hide");
+     * `BOOKSHOP_REVIEWS_PREMODERATE` holds each for the office instead.
+     */
+    'merchandising' => [
+        'new_days' => 30,
+        'bestseller_top' => 10,
+        'bestseller_min_units' => 2,
+        'recently_viewed' => 12,
+        'wishlist_max' => 200,
+        'home_featured_max' => 12,
+        'home_collections_max' => 6,
+        'home_hero_max' => 5,
+        'vendor_code_max_percent' => 90,
+    ],
+    'reviews' => [
+        'premoderate' => filter_var(env('BOOKSHOP_REVIEWS_PREMODERATE', false), FILTER_VALIDATE_BOOLEAN),
+        'max_body' => 2000,
+    ],
+
     'checkout' => [
         // Audit finding 2: stock is reserved while the customer pays.
         'reservation_minutes' => (int) env('BOOKSHOP_RESERVATION_MINUTES', 30),

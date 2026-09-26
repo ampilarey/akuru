@@ -65,7 +65,8 @@
             <tbody>
                 @foreach($order['items'] as $item)
                     <tr class="border-b" data-testid="order-item">
-                        <td class="py-1" dir="auto">{{ $item['title'] }}@if($item['variant']) <span class="text-gray-500">({{ $item['variant'] }})</span>@endif @if($item['sku'])<span class="block text-xs text-gray-400">{{ $item['sku'] }}</span>@endif</td>
+                        <td class="py-1" dir="auto">{{ $item['title'] }}@if($item['variant']) <span class="text-gray-500">({{ $item['variant'] }})</span>@endif @if($item['sku'])<span class="block text-xs text-gray-400">{{ $item['sku'] }}</span>@endif
+                            @if($item['review_url'] ?? null)<a href="{{ $item['review_url'] }}" class="block text-xs text-brandMaroon-700 underline" data-testid="write-review">{{ __('shop.write_review') }}</a>@endif</td>
                         <td class="py-1 text-end">{{ $item['quantity'] }}</td>
                         <td class="py-1 text-end">{{ $item['unit_price'] }}</td>
                         <td class="py-1 text-end">{{ $item['line_total'] }}</td>

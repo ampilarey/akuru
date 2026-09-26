@@ -4,6 +4,7 @@ namespace App\Domains\Bookshop\Models;
 
 use App\Domains\Bookshop\Enums\TaxClass;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /** A line of an order, snapshotted from the product at checkout. */
 class OrderItem extends Model
@@ -21,5 +22,10 @@ class OrderItem extends Model
             'tax_class' => TaxClass::class,
             'tax_amount' => 'decimal:2',
         ];
+    }
+
+    public function order(): BelongsTo
+    {
+        return $this->belongsTo(Order::class);
     }
 }
