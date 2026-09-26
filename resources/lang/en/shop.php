@@ -1371,7 +1371,7 @@ return [
     'insights_office_heading' => 'Shop funnels',
     'insights_shop' => 'Shop',
 
-    // B9f — own domains and dollar prices.
+    // B9f — own domains.
     'host_heading' => 'Your own domain',
     'host_intro' => 'Send visitors from your own web address to your shop page here. Add the domain, then at your domain registrar point it at :host (a CNAME record, or an A record to the same address). The office turns it on once it points here.',
     'host_label' => 'Domain',
@@ -1402,11 +1402,4 @@ return [
     'host_no_records' => 'no records found',
     'host_approved_flash' => 'Domain turned on.',
     'host_off_flash' => 'Domain turned off.',
-    'usd_heading' => 'Prices in US dollars',
-    'usd_hint' => 'Show a dollar guide beside prices for visitors from abroad. Everything is still charged in MVR, at the rate you set.',
-    'usd_show' => 'Show dollar prices',
-    'usd_rate' => 'MVR for one US dollar',
-    'usd_saved_flash' => 'Dollar prices saved.',
-    'usd_guide_note' => '(a guide — charged in MVR)',
-    'usd_charged_in_mvr' => 'charged in MVR',
 ];

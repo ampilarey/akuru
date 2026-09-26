@@ -305,17 +305,6 @@ return [
         'cache_seconds' => 300,
     ],
 
-    /*
-     * B9f: prices shown in US dollars as a guide (§11 "USD pricing").
-     * Everything is still charged in MVR. Off until the office turns it on
-     * and sets the rate (MVR for one dollar) on /admin/bookshop.
-     */
-    'usd' => [
-        'display_setting_key' => 'bookshop_usd_display',
-        'rate_setting_key' => 'bookshop_usd_rate',
-        'default_rate' => 15.42,
-    ],
-
     'bank_transfer' => [
         'bank' => env('BOOKSHOP_BANK_NAME', 'Bank of Maldives'),
         'account_name' => env('BOOKSHOP_BANK_ACCOUNT_NAME', 'Akuru Institute'),

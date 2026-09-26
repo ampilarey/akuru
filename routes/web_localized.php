@@ -781,10 +781,9 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         // B9b: cash on delivery.
         Route::post('cod', [\App\Domains\Bookshop\Http\Controllers\AdminBookshopController::class, 'setCod'])->name('admin.bookshop.cod');
         Route::get('applications/export', [\App\Domains\Bookshop\Http\Controllers\AdminBookshopController::class, 'exportApplications'])->name('admin.bookshop.applications.export');
-        // B9f: shops' own domains, and prices in dollars.
+        // B9f: shops' own domains.
         Route::post('hosts/{vendor}/check', [\App\Domains\Bookshop\Http\Controllers\AdminBookshopController::class, 'checkHost'])->name('admin.bookshop.hosts.check')->whereNumber('vendor');
         Route::post('hosts/{vendor}', [\App\Domains\Bookshop\Http\Controllers\AdminBookshopController::class, 'decideHost'])->name('admin.bookshop.hosts.decide')->whereNumber('vendor');
-        Route::post('usd', [\App\Domains\Bookshop\Http\Controllers\AdminBookshopController::class, 'saveUsd'])->name('admin.bookshop.usd');
         // B9e: every shop's funnel.
         Route::get('insights/export', [\App\Domains\Bookshop\Http\Controllers\AdminBookshopController::class, 'exportInsights'])->name('admin.bookshop.insights.export');
         // B9d: bulk quotes across every shop.

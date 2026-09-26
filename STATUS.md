@@ -4414,6 +4414,26 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5hm. B10a: dollar prices removed (2026-09-26)
+
+The owner, on seeing B9f: **no dollar prices** ("No need $"). B9f's
+dollar guide is gone — the office switch and rate on `/admin/bookshop`,
+the "≈ USD" lines on the product page, cards, cart and checkout, the
+`Usd` helper, `SaveUsdDisplayAction`, the `admin.bookshop.usd` route, the
+`bookshop.usd` config and the `usd_*` keys in all three languages.
+`2026_09_26_000015_b10a_remove_dollar_prices` deletes its two settings.
+Nothing was ever charged in dollars, so no order, price or payment
+changes. The shop's own domain and the shop subdomain (the rest of B9f)
+stay. BOOKSHOP_PLAN's USD line goes back to "MVR only".
+
+**Tests**: `ShopHostsAndUsdTest` renamed `ShopHostsTest` with the dollar
+case removed (2 left). Full suite **2279 passed**.
+
+**Walked**: `hosts.mjs` **8/8** (its dollar steps removed), `checkout.mjs`
+**28/28**; the product page carries no "USD".
+
+**Production**: the migration only.
+
 ## 5hl. B9f: a shop's own domain, the shop subdomain, and dollar prices (2026-09-26)
 
 BOOKSHOP_PLAN slice B9, sixth and last sub-slice: **custom host per

@@ -1917,10 +1917,10 @@ class SmokeMarkerSeeder extends Seeder
         DB::table('shop_daily_stats')->whereIn('vendor_id', [$fitrahId, $otherId])->delete();
 
         // B9f (`hosts.mjs`): Fitrah asks for its own domain and the office
-        // turns it on, then shows dollar prices; the domain and the dollar
-        // switch go back.
+        // turns it on; the domain goes back.
         DB::table('vendors')->whereIn('id', [$fitrahId, $otherId])->update(['custom_host' => null, 'custom_host_status' => null, 'custom_host_requested_at' => null, 'custom_host_approved_at' => null]);
-        DB::table('settings')->whereIn('key', [(string) config('bookshop.usd.display_setting_key'), (string) config('bookshop.usd.rate_setting_key')])->delete();
+        // B10a: dollar prices were removed; their two settings go.
+        DB::table('settings')->whereIn('key', ['bookshop_usd_display', 'bookshop_usd_rate'])->delete();
         \Illuminate\Support\Facades\Cache::forget('bookshop_host:www.smoke-fitrah.test');
     }
 

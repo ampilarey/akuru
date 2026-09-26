@@ -1,6 +1,5 @@
 <?php
 
-use App\Domains\Bookshop\Models\Product;
 use App\Domains\Bookshop\Models\Vendor;
 use App\Domains\Bookshop\Models\VendorMember;
 use App\Domains\Bookshop\Support\HostDns;
@@ -16,8 +15,7 @@ uses(RefreshDatabase::class);
  * BOOKSHOP_PLAN slice B9f: other addresses for the shop (§2 "path now, a
  * host per vendor later") — a whole-shop subdomain and a shop's own domain,
  * asked for by the owner and turned on by the office, both sent to the one
- * canonical site — and prices in US dollars as a guide (§11), always
- * charged in MVR.
+ * canonical site. (B9f's dollar prices were removed at the owner's word, B10a.)
  */
 function hostShop(string $slug = 'fitrah'): array
 {
@@ -125,26 +123,4 @@ it('sends the whole-shop subdomain to the same path under /shop, and leaves the 
 
     config(['bookshop.hosts.redirect_status' => 301]);
     $this->get('http://shop.akuru.test/cart')->assertStatus(301)->assertRedirect('https://akuru.test/shop/cart');
-});
-
-it('shows dollar prices as a guide only when the office turns them on, at its rate', function () {
-    [$fitrah] = hostShop();
-    $office = hostOffice();
-    $book = Product::query()->create(['vendor_id' => $fitrah->id, 'slug' => 'tracing-book', 'title' => 'Tracing Book', 'price' => 154.20, 'currency' => 'MVR', 'tax_class' => 'zero_rated', 'track_stock' => false, 'stock' => 0, 'status' => 'active', 'visibility' => 'shop']);
-
-    hostAs()->get(hostPath('public.shop.product', $book->slug))->assertOk()->assertDontSee('data-testid="product-usd"', false);
-
-    hostAs(User::factory()->create())->post(hostPath('admin.bookshop.usd'), ['on' => 1, 'rate' => 15.42])->assertForbidden();
-    hostAs($office)->post(hostPath('admin.bookshop.usd'), ['on' => 1, 'rate' => 0])->assertSessionHasErrors('rate');
-    hostAs($office)->post(hostPath('admin.bookshop.usd'), ['on' => 1, 'rate' => 15.42])->assertSessionHasNoErrors();
-    hostAs($office)->get(hostPath('admin.bookshop.index'))->assertInertia(fn ($page) => $page->where('usd.on', true)->where('usd.rate', 15.42));
-
-    hostAs()->get(hostPath('public.shop.product', $book->slug))->assertSee('≈ USD 10.00')->assertSee(__('shop.usd_guide_note'));
-    hostAs()->get(hostPath('public.shop.vendor', 'fitrah'))->assertSee('data-testid="card-usd"', false)->assertSee('≈ USD 10.00');
-    $customer = User::factory()->create();
-    hostAs($customer)->post(hostPath('public.shop.cart.add'), ['product' => $book->slug, 'quantity' => 2]);
-    hostAs($customer)->get(hostPath('public.shop.cart'))->assertSee('≈ USD 20.00')->assertSee(__('shop.usd_charged_in_mvr'));
-
-    hostAs($office)->post(hostPath('admin.bookshop.usd'), ['on' => 0, 'rate' => 15.42]);
-    hostAs()->get(hostPath('public.shop.product', $book->slug))->assertDontSee('≈ USD');
 });
