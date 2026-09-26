@@ -279,24 +279,70 @@ final class NavigationMap
             // admin-panel audit, STATUS §5hs). Visibility still comes off each
             // route's own gate — `role:super_admin` hides Users and Settings
             // from everyone else, `can:commerce.manage` hides Commerce.
-            ['key' => 'admin_group', 'items' => [
-                // The front door. Its route is `auth`-only (the hub decides
-                // what to show), so the hint says who it is for.
-                ['key' => 'admin_home', 'href' => '/admin', 'roles' => ['super_admin', 'admin', 'headmaster', 'supervisor', 'bookshop_manager']],
-                ['key' => 'ops_checklist', 'href' => '/admin/operations'],
-                ['key' => 'admin_enrolments', 'href' => '/admin/enrollments', 'hard' => true],
-                ['key' => 'admin_instructors', 'href' => '/admin/instructors', 'hard' => true],
-                ['key' => 'website_cms', 'href' => '/admin/public-site/pages', 'hard' => true],
-                ['key' => 'commerce', 'href' => '/admin/commerce'],
-                ['key' => 'library_office', 'href' => '/admin/library'],
-                ['key' => 'bookshop', 'href' => '/admin/bookshop', 'can' => ['bookshop.manage']],
-                ['key' => 'prayer_times', 'href' => '/admin/prayer-times/islands', 'hard' => true],
-                ['key' => 'pronunciation_office', 'href' => '/admin/pronunciation'],
-                ['key' => 'feature_walkthrough', 'href' => '/admin/operations/features'],
-                ['key' => 'translations', 'href' => '/admin/translations'],
-                ['key' => 'manage_users', 'href' => '/admin/users', 'hard' => true],
-                ['key' => 'system_settings', 'href' => '/admin/settings', 'hard' => true],
+            //
+            // The panel is one map in four parts (the owner, 2026-09-26: "still
+            // admin page is too much complicated — can't u categorize and
+            // group everything"): each section carries its `section` — the
+            // part it belongs to — and, where it is a cluster of screens, its
+            // `children`. The hub at /admin lays the parts out; the shell's
+            // More menu heads its admin column with them; the Blade menus
+            // carry the same headings by hand.
+            ['key' => 'admin_group', 'items' => self::adminPanel()],
+        ];
+    }
+
+    /**
+     * The admin panel, in the order the hub shows it. The front door first;
+     * then Admissions, Website & content, Shops & money, System.
+     *
+     * @return list<array{key: string, href: string, roles?: list<string>, can?: list<string>, hard?: bool, section?: string, children?: list<array{key: string, href: string, hard?: bool}>}>
+     */
+    public static function adminPanel(): array
+    {
+        return [
+            // The front door. Its route is `auth`-only (the hub decides
+            // what to show), so the hint says who it is for.
+            ['key' => 'admin_home', 'href' => '/admin', 'roles' => ['super_admin', 'admin', 'headmaster', 'supervisor', 'bookshop_manager']],
+
+            // Admissions: who studies and who teaches.
+            ['key' => 'admin_enrolments', 'href' => '/admin/enrollments', 'hard' => true, 'section' => 'panel_admissions', 'children' => [
+                ['key' => 'enrolment_payments', 'href' => '/admin/enrollments/payments', 'hard' => true],
             ]],
+            ['key' => 'admin_instructors', 'href' => '/admin/instructors', 'hard' => true, 'section' => 'panel_admissions'],
+
+            // Website & content: what the public sees and receives.
+            ['key' => 'website_cms', 'href' => '/admin/public-site/pages', 'hard' => true, 'section' => 'panel_website', 'children' => [
+                ['key' => 'cms_pages', 'href' => '/admin/public-site/pages', 'hard' => true],
+                ['key' => 'cms_courses', 'href' => '/admin/public-site/courses', 'hard' => true],
+                ['key' => 'cms_research', 'href' => '/admin/public-site/research', 'hard' => true],
+                ['key' => 'cms_daily_content', 'href' => '/admin/public-site/daily-content', 'hard' => true],
+                ['key' => 'cms_daily_queue', 'href' => '/admin/public-site/daily-content/queue', 'hard' => true],
+                ['key' => 'cms_subscriptions', 'href' => '/admin/public-site/daily-subscriptions', 'hard' => true],
+                ['key' => 'cms_leads', 'href' => '/admin/public-site/leads', 'hard' => true],
+                ['key' => 'cms_funnel', 'href' => '/admin/public-site/funnel', 'hard' => true],
+            ]],
+            ['key' => 'prayer_times', 'href' => '/admin/prayer-times/islands', 'hard' => true, 'section' => 'panel_website', 'children' => [
+                ['key' => 'prayer_islands', 'href' => '/admin/prayer-times/islands', 'hard' => true],
+                ['key' => 'prayer_groups', 'href' => '/admin/prayer-times/groups', 'hard' => true],
+                ['key' => 'prayer_broadcasts', 'href' => '/admin/prayer-times/broadcasts', 'hard' => true],
+                ['key' => 'prayer_import', 'href' => '/admin/prayer-times/import', 'hard' => true],
+            ]],
+            ['key' => 'pronunciation_office', 'href' => '/admin/pronunciation', 'section' => 'panel_website'],
+
+            // Shops & money: stored value and the two marketplaces.
+            ['key' => 'commerce', 'href' => '/admin/commerce', 'section' => 'panel_money'],
+            ['key' => 'library_office', 'href' => '/admin/library', 'section' => 'panel_money'],
+            ['key' => 'bookshop', 'href' => '/admin/bookshop', 'can' => ['bookshop.manage'], 'section' => 'panel_money'],
+
+            // System: accounts, the platform and its readiness. The reading
+            // alerts and the OTP-abuse log stay off the map on purpose: a
+            // list that accuses people is opened from its parent screen, by
+            // decision (`AdminPagesAreReachableTest`).
+            ['key' => 'manage_users', 'href' => '/admin/users', 'hard' => true, 'section' => 'panel_system'],
+            ['key' => 'system_settings', 'href' => '/admin/settings', 'hard' => true, 'section' => 'panel_system'],
+            ['key' => 'ops_checklist', 'href' => '/admin/operations', 'section' => 'panel_system'],
+            ['key' => 'feature_walkthrough', 'href' => '/admin/operations/features', 'section' => 'panel_system'],
+            ['key' => 'translations', 'href' => '/admin/translations', 'section' => 'panel_system'],
         ];
     }
 
@@ -317,6 +363,9 @@ final class NavigationMap
         foreach (self::groups() as $group) {
             foreach ($group['items'] as $item) {
                 $hrefs[] = $item['href'];
+                foreach ($item['children'] ?? [] as $child) {
+                    $hrefs[] = $child['href'];
+                }
             }
         }
 

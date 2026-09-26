@@ -93,52 +93,45 @@
                         <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
                     </button>
                     <div x-show="adminOpen" x-transition x-cloak id="nav-more-menu"
-                         style="position:absolute;top:calc(100% + .5rem);inset-inline-start:0;min-width:180px;background:white;border-radius:.625rem;box-shadow:0 8px 30px rgba(0,0,0,.15);border:1px solid #E5E7EB;padding:.375rem;z-index:200">
+                         style="position:absolute;top:calc(100% + .5rem);inset-inline-start:0;min-width:220px;background:white;border-radius:.625rem;box-shadow:0 8px 30px rgba(0,0,0,.15);border:1px solid #E5E7EB;padding:.375rem;z-index:200">
+                        {{-- The admin panel in its four parts — Admissions, Website & content,
+                             Shops & money, System — the same headings as the hub at /admin
+                             and the Inertia shell's More menu (`NavigationMap::adminPanel()`).
+                             Each link keeps its own gate; a heading shows only when a link
+                             under it does. --}}
                         @if(auth()->user()->hasAnyRole(['super_admin','admin','headmaster','supervisor','bookshop_manager']))
                         <a href="{{ route('admin.index') }}" style="display:block;padding:.5rem .75rem;border-radius:.375rem;font-size:.8rem;color:#374151;text-decoration:none;font-weight:600" onmouseover="this.style.background='#F9FAFB'" onmouseout="this.style.background='transparent'">🛠️ Admin panel</a>
                         <div style="height:1px;background:#F3F4F6;margin:.25rem 0"></div>
                         @endif
+                        <span style="display:block;padding:.5rem .75rem .15rem;font-size:.65rem;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:#9CA3AF" data-nav-section="school">School</span>
                         @if(auth()->user()->hasAnyRole(['super_admin','admin','headmaster','supervisor','teacher']))
                         <a href="{{ route('announcements.index') }}" style="display:block;padding:.5rem .75rem;border-radius:.375rem;font-size:.8rem;color:#374151;text-decoration:none" onmouseover="this.style.background='#F9FAFB'" onmouseout="this.style.background='transparent'">📢 Announcements</a>
-                        @endif
-                        @if(auth()->user()->hasAnyRole(['super_admin','admin','headmaster','supervisor','teacher']))
                         <a href="{{ route('substitutions.requests.index') }}" style="display:block;padding:.5rem .75rem;border-radius:.375rem;font-size:.8rem;color:#374151;text-decoration:none" onmouseover="this.style.background='#F9FAFB'" onmouseout="this.style.background='transparent'">🔄 Substitutions</a>
                         @endif
+                        <a href="{{ route('e-learning.index') }}" style="display:block;padding:.5rem .75rem;border-radius:.375rem;font-size:.8rem;color:#374151;text-decoration:none" onmouseover="this.style.background='#F9FAFB'" onmouseout="this.style.background='transparent'">💻 E-Learning</a>
                         @if(auth()->user()->hasAnyRole(['super_admin','admin','headmaster','supervisor']))
+                        <span style="display:block;padding:.5rem .75rem .15rem;font-size:.65rem;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:#9CA3AF" data-nav-section="panel_admissions">Admissions</span>
+                        <a href="{{ route('admin.enrollments.index') }}" style="display:block;padding:.5rem .75rem;border-radius:.375rem;font-size:.8rem;color:#374151;text-decoration:none" onmouseover="this.style.background='#F9FAFB'" onmouseout="this.style.background='transparent'">📝 Enrolments</a>
                         <a href="{{ route('admin.instructors.index') }}" style="display:block;padding:.5rem .75rem;border-radius:.375rem;font-size:.8rem;color:#374151;text-decoration:none" onmouseover="this.style.background='#F9FAFB'" onmouseout="this.style.background='transparent'">👨‍🏫 Instructors</a>
                         @endif
+                        @if(auth()->user()->hasAnyRole(['super_admin','admin']) || auth()->user()->canAny(['prayer.manage', 'pronunciation.manage']))
+                        <span style="display:block;padding:.5rem .75rem .15rem;font-size:.65rem;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:#9CA3AF" data-nav-section="panel_website">Website &amp; content</span>
+                        @endif
                         @if(auth()->user()->hasAnyRole(['super_admin','admin']))
-                        <div style="height:1px;background:#F3F4F6;margin:.25rem 0"></div>
                         <a href="{{ route('admin.pages.index') }}" style="display:block;padding:.5rem .75rem;border-radius:.375rem;font-size:.8rem;color:#374151;text-decoration:none" onmouseover="this.style.background='#F9FAFB'" onmouseout="this.style.background='transparent'">🌐 Website CMS</a>
                         <a href="{{ route('admin.courses.index') }}" style="display:block;padding:.5rem .75rem;border-radius:.375rem;font-size:.8rem;color:#374151;text-decoration:none" onmouseover="this.style.background='#F9FAFB'" onmouseout="this.style.background='transparent'">📚 Manage Courses</a>
                         @endif
-                        @if(auth()->user()->hasRole('super_admin'))
-                        <div style="height:1px;background:#F3F4F6;margin:.25rem 0"></div>
-                        <a href="{{ route('admin.users.index') }}" style="display:block;padding:.5rem .75rem;border-radius:.375rem;font-size:.8rem;color:#991B1B;text-decoration:none;font-weight:600" onmouseover="this.style.background='#FEF2F2'" onmouseout="this.style.background='transparent'">👥 Manage Users</a>
-                        <a href="{{ route('admin.settings.index') }}" style="display:block;padding:.5rem .75rem;border-radius:.375rem;font-size:.8rem;color:#991B1B;text-decoration:none;font-weight:600" onmouseover="this.style.background='#FEF2F2'" onmouseout="this.style.background='transparent'">⚙️ Settings</a>
-                        @endif
-                        {{-- Operations tools. Gated by the same permissions the
-                             routes check, not by role, so nav and access agree.
-                             These pages were previously linked only from the
-                             Inertia AppShell, which Blade landings never render
-                             — so admins on a Blade dashboard could not find them. --}}
-                        @canany(['operations.manage', 'translations.manage'])
-                        <div style="height:1px;background:#F3F4F6;margin:.25rem 0"></div>
-                        @endcanany
-                        @can('operations.manage')
-                        <a href="{{ route('admin.operations.index') }}" style="display:block;padding:.5rem .75rem;border-radius:.375rem;font-size:.8rem;color:#374151;text-decoration:none" onmouseover="this.style.background='#F9FAFB'" onmouseout="this.style.background='transparent'">📋 Ops checklist</a>
-                        <a href="{{ route('admin.operations.features') }}" style="display:block;padding:.5rem .75rem;border-radius:.375rem;font-size:.8rem;color:#374151;text-decoration:none" onmouseover="this.style.background='#F9FAFB'" onmouseout="this.style.background='transparent'">✅ Feature walkthrough</a>
+                        @can('prayer.manage')
+                        <a href="{{ route('admin.prayer-times.islands') }}" style="display:block;padding:.5rem .75rem;border-radius:.375rem;font-size:.8rem;color:#374151;text-decoration:none" onmouseover="this.style.background='#F9FAFB'" onmouseout="this.style.background='transparent'">🕌 Prayer times</a>
                         @endcan
-                        @can('translations.manage')
-                        <a href="{{ route('admin.translations.index') }}" style="display:block;padding:.5rem .75rem;border-radius:.375rem;font-size:.8rem;color:#374151;text-decoration:none" onmouseover="this.style.background='#F9FAFB'" onmouseout="this.style.background='transparent'">🌐 Translations</a>
+                        @can('pronunciation.manage')
+                        <a href="{{ route('admin.pronunciation.index') }}" style="display:block;padding:.5rem .75rem;border-radius:.375rem;font-size:.8rem;color:#374151;text-decoration:none" onmouseover="this.style.background='#F9FAFB'" onmouseout="this.style.background='transparent'">🎤 Pronunciation</a>
                         @endcan
-                        {{-- Admin areas that had no inbound link from anywhere:
-                             commerce, library and pronunciation were linked from
-                             no view at all, and the five prayer-times pages only
-                             linked to each other — a closed island reachable only
-                             by typing the URL. --}}
-                        @canany(['commerce.manage', 'library.manage', 'bookshop.manage', 'pronunciation.manage', 'prayer.manage'])
-                        <div style="height:1px;background:#F3F4F6;margin:.25rem 0"></div>
+                        {{-- Commerce, the Library office and the Bookstore had no inbound link
+                             from anywhere until STATUS §5ab; the prayer-times pages only linked
+                             to each other. --}}
+                        @canany(['commerce.manage', 'library.manage', 'bookshop.manage'])
+                        <span style="display:block;padding:.5rem .75rem .15rem;font-size:.65rem;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:#9CA3AF" data-nav-section="panel_money">Shops &amp; money</span>
                         @endcanany
                         @can('commerce.manage')
                         <a href="{{ route('admin.commerce.index') }}" style="display:block;padding:.5rem .75rem;border-radius:.375rem;font-size:.8rem;color:#374151;text-decoration:none" onmouseover="this.style.background='#F9FAFB'" onmouseout="this.style.background='transparent'">🎁 Commerce</a>
@@ -149,13 +142,22 @@
                         @can('bookshop.manage')
                         <a href="{{ route('admin.bookshop.index') }}" style="display:block;padding:.5rem .75rem;border-radius:.375rem;font-size:.8rem;color:#374151;text-decoration:none" onmouseover="this.style.background='#F9FAFB'" onmouseout="this.style.background='transparent'">🛍️ Akuru Bookstore</a>
                         @endcan
-                        @can('prayer.manage')
-                        <a href="{{ route('admin.prayer-times.islands') }}" style="display:block;padding:.5rem .75rem;border-radius:.375rem;font-size:.8rem;color:#374151;text-decoration:none" onmouseover="this.style.background='#F9FAFB'" onmouseout="this.style.background='transparent'">🕌 Prayer times</a>
+                        {{-- Operations tools are gated by the permissions the routes check,
+                             not by role, so nav and access agree. --}}
+                        @if(auth()->user()->hasRole('super_admin') || auth()->user()->canAny(['operations.manage', 'translations.manage']))
+                        <span style="display:block;padding:.5rem .75rem .15rem;font-size:.65rem;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:#9CA3AF" data-nav-section="panel_system">System</span>
+                        @endif
+                        @if(auth()->user()->hasRole('super_admin'))
+                        <a href="{{ route('admin.users.index') }}" style="display:block;padding:.5rem .75rem;border-radius:.375rem;font-size:.8rem;color:#991B1B;text-decoration:none;font-weight:600" onmouseover="this.style.background='#FEF2F2'" onmouseout="this.style.background='transparent'">👥 Manage Users</a>
+                        <a href="{{ route('admin.settings.index') }}" style="display:block;padding:.5rem .75rem;border-radius:.375rem;font-size:.8rem;color:#991B1B;text-decoration:none;font-weight:600" onmouseover="this.style.background='#FEF2F2'" onmouseout="this.style.background='transparent'">⚙️ Settings</a>
+                        @endif
+                        @can('operations.manage')
+                        <a href="{{ route('admin.operations.index') }}" style="display:block;padding:.5rem .75rem;border-radius:.375rem;font-size:.8rem;color:#374151;text-decoration:none" onmouseover="this.style.background='#F9FAFB'" onmouseout="this.style.background='transparent'">📋 Ops checklist</a>
+                        <a href="{{ route('admin.operations.features') }}" style="display:block;padding:.5rem .75rem;border-radius:.375rem;font-size:.8rem;color:#374151;text-decoration:none" onmouseover="this.style.background='#F9FAFB'" onmouseout="this.style.background='transparent'">✅ Feature walkthrough</a>
                         @endcan
-                        @can('pronunciation.manage')
-                        <a href="{{ route('admin.pronunciation.index') }}" style="display:block;padding:.5rem .75rem;border-radius:.375rem;font-size:.8rem;color:#374151;text-decoration:none" onmouseover="this.style.background='#F9FAFB'" onmouseout="this.style.background='transparent'">🎤 Pronunciation</a>
+                        @can('translations.manage')
+                        <a href="{{ route('admin.translations.index') }}" style="display:block;padding:.5rem .75rem;border-radius:.375rem;font-size:.8rem;color:#374151;text-decoration:none" onmouseover="this.style.background='#F9FAFB'" onmouseout="this.style.background='transparent'">🌐 Translations</a>
                         @endcan
-                        <a href="{{ route('e-learning.index') }}" style="display:block;padding:.5rem .75rem;border-radius:.375rem;font-size:.8rem;color:#374151;text-decoration:none" onmouseover="this.style.background='#F9FAFB'" onmouseout="this.style.background='transparent'">💻 E-Learning</a>
                     </div>
                 </div>
                 @endif
@@ -240,30 +242,38 @@
         @endauth
 
         @auth
+        {{-- The whole admin panel on a phone, in the same four parts as the desktop
+             More menu and the hub at /admin, with the same gates. Until the layout
+             audit (STATUS §5ht) the mobile menu stopped at the CMS, and the
+             reachability test could not tell, because it counted a link anywhere
+             in this file. --}}
+        <span class="block px-3 pb-0.5 pt-3 text-[.65rem] font-semibold uppercase tracking-wider text-white/50" data-nav-section="school">School</span>
         @if(auth()->user()->hasAnyRole(['super_admin','admin','headmaster','supervisor']))
-        <a href="{{ route('admin.enrollments.index') }}" style="display:block;padding:.625rem .75rem;color:rgba(255,255,255,.85);font-size:.85rem;text-decoration:none;border-radius:.375rem" onmouseover="this.style.background='rgba(255,255,255,.1)'" onmouseout="this.style.background='transparent'">Enrollments</a>
-        <a href="{{ route('people.students.index') }}" style="display:block;padding:.625rem .75rem;color:rgba(255,255,255,.85);font-size:.85rem;text-decoration:none;border-radius:.375rem" onmouseover="this.style.background='rgba(255,255,255,.1)'" onmouseout="this.style.background='transparent'">Students</a>
-        <a href="{{ route('people.staff.index') }}" style="display:block;padding:.625rem .75rem;color:rgba(255,255,255,.85);font-size:.85rem;text-decoration:none;border-radius:.375rem" onmouseover="this.style.background='rgba(255,255,255,.1)'" onmouseout="this.style.background='transparent'">Teachers</a>
+        <a href="{{ route('people.students.index') }}" class="block rounded px-3 py-2.5 text-[.85rem] text-white/85 hover:bg-white/10">Students</a>
+        <a href="{{ route('people.staff.index') }}" class="block rounded px-3 py-2.5 text-[.85rem] text-white/85 hover:bg-white/10">Teachers</a>
         @endif
-        <a href="{{ route('announcements.index') }}" style="display:block;padding:.625rem .75rem;color:rgba(255,255,255,.85);font-size:.85rem;text-decoration:none;border-radius:.375rem" onmouseover="this.style.background='rgba(255,255,255,.1)'" onmouseout="this.style.background='transparent'">Announcements</a>
-        @if(auth()->user()->hasAnyRole(['super_admin','admin']))
-        <a href="{{ route('admin.pages.index') }}" style="display:block;padding:.625rem .75rem;color:rgba(255,255,255,.85);font-size:.85rem;text-decoration:none;border-radius:.375rem" onmouseover="this.style.background='rgba(255,255,255,.1)'" onmouseout="this.style.background='transparent'">Website CMS</a>
-        <a href="{{ route('admin.courses.index') }}" class="block rounded px-3 py-2.5 text-[.85rem] text-white/85 hover:bg-white/10">Manage Courses</a>
-        @endif
-        {{-- The rest of the admin panel, on a phone: the same links and gates as
-             the desktop More menu above. Until the layout audit (STATUS §5ht) the
-             mobile menu stopped at the CMS, and the reachability test could not
-             tell, because it counted a link anywhere in this file. --}}
+        <a href="{{ route('announcements.index') }}" class="block rounded px-3 py-2.5 text-[.85rem] text-white/85 hover:bg-white/10">Announcements</a>
         @if(auth()->user()->hasAnyRole(['super_admin','admin','headmaster','supervisor']))
+        <span class="block px-3 pb-0.5 pt-3 text-[.65rem] font-semibold uppercase tracking-wider text-white/50" data-nav-section="panel_admissions">Admissions</span>
+        <a href="{{ route('admin.enrollments.index') }}" class="block rounded px-3 py-2.5 text-[.85rem] text-white/85 hover:bg-white/10">Enrollments</a>
         <a href="{{ route('admin.instructors.index') }}" class="block rounded px-3 py-2.5 text-[.85rem] text-white/85 hover:bg-white/10">Instructors</a>
         @endif
-        @can('operations.manage')
-        <a href="{{ route('admin.operations.index') }}" class="block rounded px-3 py-2.5 text-[.85rem] text-white/85 hover:bg-white/10">Ops checklist</a>
-        <a href="{{ route('admin.operations.features') }}" class="block rounded px-3 py-2.5 text-[.85rem] text-white/85 hover:bg-white/10">Feature walkthrough</a>
+        @if(auth()->user()->hasAnyRole(['super_admin','admin']) || auth()->user()->canAny(['prayer.manage', 'pronunciation.manage']))
+        <span class="block px-3 pb-0.5 pt-3 text-[.65rem] font-semibold uppercase tracking-wider text-white/50" data-nav-section="panel_website">Website &amp; content</span>
+        @endif
+        @if(auth()->user()->hasAnyRole(['super_admin','admin']))
+        <a href="{{ route('admin.pages.index') }}" class="block rounded px-3 py-2.5 text-[.85rem] text-white/85 hover:bg-white/10">Website CMS</a>
+        <a href="{{ route('admin.courses.index') }}" class="block rounded px-3 py-2.5 text-[.85rem] text-white/85 hover:bg-white/10">Manage Courses</a>
+        @endif
+        @can('prayer.manage')
+        <a href="{{ route('admin.prayer-times.islands') }}" class="block rounded px-3 py-2.5 text-[.85rem] text-white/85 hover:bg-white/10">Prayer times</a>
         @endcan
-        @can('translations.manage')
-        <a href="{{ route('admin.translations.index') }}" class="block rounded px-3 py-2.5 text-[.85rem] text-white/85 hover:bg-white/10">Translations</a>
+        @can('pronunciation.manage')
+        <a href="{{ route('admin.pronunciation.index') }}" class="block rounded px-3 py-2.5 text-[.85rem] text-white/85 hover:bg-white/10">Pronunciation</a>
         @endcan
+        @canany(['commerce.manage', 'library.manage', 'bookshop.manage'])
+        <span class="block px-3 pb-0.5 pt-3 text-[.65rem] font-semibold uppercase tracking-wider text-white/50" data-nav-section="panel_money">Shops &amp; money</span>
+        @endcanany
         @can('commerce.manage')
         <a href="{{ route('admin.commerce.index') }}" class="block rounded px-3 py-2.5 text-[.85rem] text-white/85 hover:bg-white/10">Commerce</a>
         @endcan
@@ -273,16 +283,20 @@
         @can('bookshop.manage')
         <a href="{{ route('admin.bookshop.index') }}" class="block rounded px-3 py-2.5 text-[.85rem] text-white/85 hover:bg-white/10">Akuru Bookstore</a>
         @endcan
-        @can('prayer.manage')
-        <a href="{{ route('admin.prayer-times.islands') }}" class="block rounded px-3 py-2.5 text-[.85rem] text-white/85 hover:bg-white/10">Prayer times</a>
-        @endcan
-        @can('pronunciation.manage')
-        <a href="{{ route('admin.pronunciation.index') }}" class="block rounded px-3 py-2.5 text-[.85rem] text-white/85 hover:bg-white/10">Pronunciation</a>
-        @endcan
+        @if(auth()->user()->hasRole('super_admin') || auth()->user()->canAny(['operations.manage', 'translations.manage']))
+        <span class="block px-3 pb-0.5 pt-3 text-[.65rem] font-semibold uppercase tracking-wider text-white/50" data-nav-section="panel_system">System</span>
+        @endif
         @if(auth()->user()->hasRole('super_admin'))
         <a href="{{ route('admin.users.index') }}" class="block rounded px-3 py-2.5 text-[.85rem] font-semibold text-red-200 hover:bg-white/10">Manage Users</a>
         <a href="{{ route('admin.settings.index') }}" class="block rounded px-3 py-2.5 text-[.85rem] font-semibold text-red-200 hover:bg-white/10">Settings</a>
         @endif
+        @can('operations.manage')
+        <a href="{{ route('admin.operations.index') }}" class="block rounded px-3 py-2.5 text-[.85rem] text-white/85 hover:bg-white/10">Ops checklist</a>
+        <a href="{{ route('admin.operations.features') }}" class="block rounded px-3 py-2.5 text-[.85rem] text-white/85 hover:bg-white/10">Feature walkthrough</a>
+        @endcan
+        @can('translations.manage')
+        <a href="{{ route('admin.translations.index') }}" class="block rounded px-3 py-2.5 text-[.85rem] text-white/85 hover:bg-white/10">Translations</a>
+        @endcan
 
         <div style="border-top:1px solid rgba(255,255,255,.1);margin:.75rem 0;padding-top:.75rem">
             <a href="{{ route('profile.edit') }}" style="display:block;padding:.625rem .75rem;color:rgba(255,255,255,.85);font-size:.85rem;text-decoration:none;border-radius:.375rem">My Profile</a>

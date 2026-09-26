@@ -32,17 +32,28 @@ KNOWN_ISSUES or BACKLOG.
 | `admin/bookshop` | 37 | `role:super_admin\|admin\|bookshop_manager` + `can:bookshop.manage` | Inertia | yes, all ten | 17 files | 15 walks |
 
 **The front door.** `/admin` (the owner, 2026-09-26: "in Bake & Grill admin is a
-separate app at `/admin` — is the way admin is set correct?"). Akuru's admin
-is not a separate app: it is these sections inside the one application,
-under two shells, and until that day nothing answered at `/admin` itself.
-It now shows one card per section the signed-in person may open — the
-navigation map's admin group filtered by each route's own gate, so a
-Bookstore manager sees the Bookstore and a super admin sees all thirteen
-— with a line on what each is for, in EN/DV/AR; a person who may open
-none gets 403. Linked first in both menus. Whether the panel should
-become a separate app with its own shell is BACKLOG C9's port, not a
-fact about routing: one application with `/admin/*` behind role and
-permission gates is the ordinary Laravel shape and holds.
+separate app at `/admin` — is the way admin is set correct?", then "still admin
+page is too much complicated — can't u categorize and group everything to make
+it easy"). Akuru's admin is not a separate app: it is these sections inside the
+one application, under two shells, and until that day nothing answered at
+`/admin` itself. It now shows the panel **in four parts** — *Admissions*
+(enrolments, instructors), *Website & content* (the CMS, prayer times,
+pronunciation), *Shops & money* (Commerce, the Library office, the Bookstore),
+*System* (users, settings, the ops checklist, the feature walkthrough,
+translations) — each a row of cards, one per section the signed-in person may
+open, with a line on what it is for and, on a card that is a cluster of
+screens, the screens inside it (the CMS's eight, prayer times' four, enrolment
+payments). The map is `NavigationMap::adminPanel()`, filtered by each route's
+own gate through `BuildNavigationAction`, so a Bookstore manager sees one part
+with one section and a super admin sees all thirteen; a person who may open
+none gets 403. The Inertia shell's More menu heads its admin column with the
+same four parts, and the Blade More dropdown and mobile menu carry the same
+headings (with a *School* heading for announcements, substitutions and
+e-learning). The reading alerts and the OTP-abuse log stay off the map on
+purpose (§3's reasoning: opened from their parent screen, by decision). Whether
+the panel should become a separate app with its own shell is BACKLOG C9's
+port, not a fact about routing: one application with `/admin/*` behind role
+and permission gates is the ordinary Laravel shape and holds.
 
 **Landing.** `/dashboard` resolves by role (`ResolveDashboardLandingAction`):
 `super_admin` gets the Blade super-admin dashboard, `admin`/`headmaster`
@@ -197,6 +208,7 @@ viewports, nothing lacking); `admin-mobile.mjs`, `admin-layout.mjs`,
 `admin.mjs` and `operations.mjs` re-walked on the changed shell.
 
 | L21 | **Nothing answered at `/admin`.** The panel had thirteen sections and no front door; an administrator reached them from a menu or by URL. | medium | **Fixed**: `/admin`, an Inertia hub of the sections the person may open, described in three languages, linked first in both menus; `AdminHubTest` (a super admin sees all, a Bookstore manager one, a teacher 403, a guest the login). In both sweeps. |
+| L22 | **The hub was a flat list.** Thirteen cards in one grid, in map order, with no grouping; the Blade More dropdown mixed school links and fourteen admin links with only rules between them (the owner: "still admin page is too much complicated"). | medium | **Fixed**: the panel in four parts — Admissions, Website & content, Shops & money, System — on the hub (a row of cards per part, a part-link row on top, the screens inside a section on its card), in the Inertia More menu (the admin column headed by the parts) and in both Blade menus (the same headings, plus *School*). `NavigationMap::adminPanel()` is the one map; `AdminHubTest` (3) pins the parts, the sections, the inner screens and the headings in both shells and in Dhivehi. `admin-hub.mjs` (20/20) walks it on desktop and phone. |
 
 ## 6. What the owner still owns
 

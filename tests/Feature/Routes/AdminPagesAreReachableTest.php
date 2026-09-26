@@ -113,12 +113,19 @@ it('reaches every admin landing page from the Inertia More menu too', function (
 
     expect($orphans)->toBeEmpty("Admin pages missing from NavigationMap's admin group:\n  ".implode("\n  ", $orphans));
 
-    // Every Blade admin screen in the map is marked `hard`; every Inertia one is not.
-    $blade = ['/admin/enrollments', '/admin/instructors', '/admin/public-site/pages', '/admin/prayer-times/islands', '/admin/users', '/admin/settings'];
+    // Every Blade admin screen in the map is marked `hard`; every Inertia one
+    // is not — the sections and the screens inside them alike.
+    $blade = [
+        '/admin/enrollments', '/admin/enrollments/payments', '/admin/instructors', '/admin/users', '/admin/settings',
+        '/admin/public-site/pages', '/admin/public-site/courses', '/admin/public-site/research', '/admin/public-site/daily-content', '/admin/public-site/daily-content/queue', '/admin/public-site/daily-subscriptions', '/admin/public-site/leads', '/admin/public-site/funnel',
+        '/admin/prayer-times/islands', '/admin/prayer-times/groups', '/admin/prayer-times/broadcasts', '/admin/prayer-times/import',
+    ];
     foreach (\App\Support\Navigation\NavigationMap::groups() as $group) {
         foreach ($group['items'] as $item) {
-            if (str_starts_with($item['href'], '/admin/')) {
-                expect(! empty($item['hard']))->toBe(in_array($item['href'], $blade, true), $item['href']);
+            foreach ([$item, ...($item['children'] ?? [])] as $entry) {
+                if (str_starts_with($entry['href'], '/admin/')) {
+                    expect(! empty($entry['hard']))->toBe(in_array($entry['href'], $blade, true), $entry['href']);
+                }
             }
         }
     }

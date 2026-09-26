@@ -17,12 +17,12 @@ class AdminHubController extends Controller
 {
     public function index(Request $request, ListAdminSectionsAction $sections): Response
     {
-        $list = $sections->execute($request->user(), app()->getLocale());
-        abort_if($list === [], 403);
+        $parts = $sections->execute($request->user(), app()->getLocale());
+        abort_if($parts === [], 403);
 
         return Inertia::render('Settings/AdminHub', [
             't' => trans('admin'),
-            'sections' => $list,
+            'parts' => $parts,
         ]);
     }
 }

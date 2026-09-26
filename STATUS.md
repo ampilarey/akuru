@@ -4414,6 +4414,58 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5hy. The admin panel in four parts (2026-09-26)
+
+The owner, on the hub of §5hx: "still admin page is too much complicated.
+I told u to audit each and everything in the admin. Can't u categorize and
+group everything to make it easy." Thirteen cards in one grid, in the map's
+order, is a list; the Blade More dropdown was fourteen admin links and three
+school links with only rules between them.
+
+**Built**: one map of the panel, `NavigationMap::adminPanel()`, in four
+parts — *Admissions* (enrolments with its payments screen; instructors),
+*Website & content* (the CMS with its eight screens; prayer times with its
+four; pronunciation), *Shops & money* (Commerce, the Library office, the
+Bookstore), *System* (users, settings, the ops checklist, the feature
+walkthrough, translations). Each section carries its part and, where it is
+a cluster, its inner screens; `BuildNavigationAction` filters the inner
+screens by their own route gates like everything else and passes the part
+through. Three places read it: `/admin` (`ListAdminSectionsAction` now
+returns the parts; the page shows a part-link row, then a row of cards per
+part, each card its description and its inner screens as small links, Blade
+ones as full page loads), the Inertia shell's More menu (the admin column
+headed by the parts), and both Blade menus (the same four headings, plus
+*School* for announcements, substitutions and e-learning; a heading shows
+only when a link under it does). The reading alerts and the OTP-abuse log
+stay off the map by the standing decision (`AdminPagesAreReachableTest`).
+Labels for the parts and the inner screens in EN/DV/AR (`nav.php`); the
+hub's intro reworded. `docs/ADMIN_PANEL.md` §1 and L22.
+
+**Tests**: `AdminHubTest` (3) — a super admin: four parts, 2/3/3/5
+sections, thirteen in all, the inner screens with `hard`; a Bookstore
+manager: one part, one section; an admin without `prayer.manage`: Website
+& content without prayer times, System without Users and Settings; every
+inner screen a real route inside its section; the shell's admin items
+carry their part and the front door none; both Blade menus carry the four
+headings twice (desktop and mobile) and no Users link for a plain admin;
+Dhivehi labels for a part and an inner screen. `AdminPagesAreReachableTest`
+now checks `hard` on the inner screens too (twelve more Blade paths).
+`AdminPanelAuditTest` pins the part on an item. Architecture green.
+
+**Walked**: `scripts/smoke/admin-hub.mjs` (20/20; 21 with
+`SMOKE_SUPER_ADMIN`): the four parts in order with their counts; eleven
+sections for a plain admin; the CMS card's eight screens and prayer
+times' four; Recipient groups opens as its Blade page from the card and
+Commerce as an Inertia visit; the Inertia More menu headed by the parts
+with the inner screens kept off it; the Blade dropdown's five headings,
+fitting the screen; at 390 px one column, nothing cut off, a part link
+jumps to its part; the mobile menu's headings; a super admin's thirteen
+with Users and Settings first under System. `admin.mjs` 18/18,
+`admin-layout.mjs` 14/14, `admin-pages.mjs` 3/3 and `admin-mobile.mjs` 3/3
+re-run (the two sweeps as a super admin, granted and revoked locally).
+
+**Production**: nothing to migrate; the pull line as usual.
+
 ## 5hx. `/admin`: the panel's front door (2026-09-26)
 
 The owner: "in Bake & Grill admin is a separate app at /admin — is the
