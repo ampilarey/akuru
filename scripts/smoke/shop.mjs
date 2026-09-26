@@ -143,7 +143,7 @@ check('in stock, dearest first', sorted[0] === 'smoke-wooden-alphabet-puzzle' &&
 await guest.goto(`${BASE}/en/shop/products/${BOOK}`, { waitUntil: 'networkidle' });
 const product = await text(guest);
 check('the product page shows the price, the seller and the tax note', product.includes('MVR 85.00') && product.includes('Sold by Fitrah') && product.includes('Prices include any tax.'), product.slice(0, 160));
-check('its stock, its details and that ordering opens soon', /In stock|Only \d+ left/.test(product) && product.includes('Author') && product.includes('Online ordering opens soon'));
+check('its stock, its details and an add-to-cart button', /In stock|Only \d+ left/.test(product) && product.includes('Author') && (await guest.locator('[data-testid="add-to-cart"]').count()) === 1);
 const large = await guest.locator('[data-main-image]').getAttribute('src').catch(() => null);
 check('its photo is a large copy that loads', Boolean(large) && /-w1200\.webp$/.test(large) && (await loads(guest, large)), large ?? 'no image');
 

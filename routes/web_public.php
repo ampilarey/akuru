@@ -54,13 +54,28 @@ Route::get('articles/{post:slug}', [\App\Domains\Website\Http\Controllers\Public
 
 // BOOKSHOP_PLAN B1b: the Akuru Online Bookshop. `shop/{vendor}` is last and
 // refuses the words the shop itself uses, so a vendor can never be named
-// "products", "c", "export", "cart" or "checkout".
+// "products", "c", "export", "cart", "checkout" or "slips".
 Route::get('shop', [\App\Domains\Bookshop\Http\Controllers\ShopController::class, 'index'])->name('public.shop.index');
 Route::get('shop/export', [\App\Domains\Bookshop\Http\Controllers\ShopController::class, 'export'])->name('public.shop.export');
 Route::get('shop/products/{slug}', [\App\Domains\Bookshop\Http\Controllers\ShopController::class, 'product'])->name('public.shop.product');
 Route::get('shop/c/{slug}', [\App\Domains\Bookshop\Http\Controllers\ShopController::class, 'category'])->name('public.shop.category');
+// B2: the cart is a guest's too (by session token), so it is public and
+// throttled; checkout, its status page, slips and orders need a sign-in.
+Route::get('shop/cart', [\App\Domains\Bookshop\Http\Controllers\ShopCartController::class, 'index'])->name('public.shop.cart');
+Route::post('shop/cart', [\App\Domains\Bookshop\Http\Controllers\ShopCartController::class, 'add'])->name('public.shop.cart.add')->middleware('throttle:60,1');
+Route::post('shop/cart/{item}', [\App\Domains\Bookshop\Http\Controllers\ShopCartController::class, 'update'])->name('public.shop.cart.update')->middleware('throttle:60,1')->whereNumber('item');
+Route::middleware('auth')->group(function () {
+    Route::get('shop/checkout', [\App\Domains\Bookshop\Http\Controllers\CheckoutController::class, 'show'])->name('public.shop.checkout');
+    Route::post('shop/checkout', [\App\Domains\Bookshop\Http\Controllers\CheckoutController::class, 'store'])->name('public.shop.checkout.store')->middleware('throttle:10,1');
+    Route::get('shop/checkout/{number}', [\App\Domains\Bookshop\Http\Controllers\CheckoutController::class, 'status'])->name('public.shop.checkout.status');
+    Route::post('shop/checkout/{number}/slip', [\App\Domains\Bookshop\Http\Controllers\CheckoutController::class, 'uploadSlip'])->name('public.shop.checkout.slip')->middleware('throttle:10,1');
+    Route::get('shop/slips/{slip}', [\App\Domains\Bookshop\Http\Controllers\CheckoutController::class, 'slip'])->name('public.shop.slip')->whereNumber('slip');
+    Route::get('my-orders', [\App\Domains\Bookshop\Http\Controllers\MyOrdersController::class, 'index'])->name('public.shop.orders');
+    Route::get('my-orders/export', [\App\Domains\Bookshop\Http\Controllers\MyOrdersController::class, 'export'])->name('public.shop.orders.export');
+    Route::get('my-orders/{number}', [\App\Domains\Bookshop\Http\Controllers\MyOrdersController::class, 'show'])->name('public.shop.orders.show');
+});
 Route::get('shop/{vendor}', [\App\Domains\Bookshop\Http\Controllers\ShopController::class, 'vendor'])->name('public.shop.vendor')
-    ->where('vendor', '(?!(products|c|export|cart|checkout)$)[a-z0-9-]+');
+    ->where('vendor', '(?!(products|c|export|cart|checkout|slips)$)[a-z0-9-]+');
 
 Route::get('library/export', [PublicLibraryController::class, 'export'])->name('public.library.export');
 Route::get('library', [PublicLibraryController::class, 'index'])->name('public.library.index');

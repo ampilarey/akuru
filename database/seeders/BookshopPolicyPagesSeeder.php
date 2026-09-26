@@ -96,6 +96,42 @@ $updated
 <h3>6. What the office may do</h3>
 <p>Akuru may hide or edit a product listing, require changes to a vendor's page, or suspend a vendor, where a listing breaks this agreement or the law, or on a credible complaint, and will tell the vendor why. Either side may end this agreement by written notice; orders already placed are completed or refunded.</p>
 HTML],
+            // B2: what a customer accepts by placing an order.
+            'shop-terms' => ['Terms of Sale', 'How buying in the Akuru Bookstore works.', <<<HTML
+<h2>Terms of Sale</h2>
+$updated
+<p>These terms apply to every order placed in the Akuru Bookstore. The bookstore is run by Akuru Institute ("Akuru"); the products in it are sold by Akuru and by the independent shops it works with, and each product page says who sells it.</p>
+<h3>1. Your order</h3>
+<p>An order is placed when you complete checkout. It becomes a confirmed order when your payment is received: at once for a card or wallet payment, and when the office confirms your bank transfer slip. Items are held for you for thirty minutes while you pay; a checkout not paid in that time is released and its items go back on sale.</p>
+<p>A basket with products from more than one shop becomes one order per shop, each with its own delivery. You receive one receipt per order.</p>
+<h3>2. Prices and tax</h3>
+<p>Prices are in Maldivian rufiyaa and include any tax. Where a shop is registered for GST, your receipt shows the tax and the shop's TIN. Delivery fees are shown before you place the order and are never discounted.</p>
+<h3>3. Paying</h3>
+<p>You may pay by card through Bank of Maldives, from your Akuru wallet, or by bank transfer to Akuru's account with the slip uploaded on the order page. Payment is made to Akuru, which passes the shop its share. Akuru never asks for card details by message or phone.</p>
+<h3>4. Discount codes</h3>
+<p>A discount code reduces the price of goods, not delivery, and cannot be used to buy gift cards. One code per order.</p>
+<h3>5. Stock</h3>
+<p>Stock is checked when you add to the cart, again when you place the order, and once more when payment arrives. In the rare case an item runs out between your payment and the shop preparing it, the shop will contact you to replace or refund it.</p>
+<h3>6. Cancelling, returns and refunds</h3>
+<p>See the <a href="/page/delivery-and-returns">Delivery and Returns Policy</a>. Refunds go back the way you paid.</p>
+<h3>7. Your details</h3>
+<p>Your name, phone number and address are given to the shop that fulfils your order, for that purpose only. See Akuru's <a href="/page/privacy">privacy policy</a>.</p>
+HTML],
+            'delivery-and-returns' => ['Delivery and Returns', 'How orders reach you, and what to do if something is wrong.', <<<HTML
+<h2>Delivery and Returns Policy</h2>
+$updated
+<h3>1. Delivery</h3>
+<p>Each shop chooses how it delivers, and the options and fees for your basket are shown at checkout: collection from the shop or from Akuru Institute, courier in Malé, Hulhumalé and Villimalé, courier to the atolls, or a boat to your island. A boat's fee is paid to the boat on arrival, not at checkout. Each option shows how many days the shop needs to prepare the order.</p>
+<p>The shop tells you when your order is ready or on its way. Please check the phone number on your address: it is how the shop and the boat reach you.</p>
+<h3>2. If something is wrong</h3>
+<p>If an item arrives damaged, faulty or not as described, tell the shop within 7 days of receiving it and it will replace or refund it, with return delivery at the shop's cost.</p>
+<h3>3. Returns</h3>
+<p>Unless the shop offers longer, you may return an unused item in its original condition within 7 days of receiving it. Return delivery is at your cost unless the item was faulty or not as described. Sealed items that have been opened, and items made to order, can be returned only if faulty.</p>
+<h3>4. Refunds</h3>
+<p>A refund goes back the way you paid — to your card, your Akuru wallet, or your bank account — once the shop has accepted the return. Delivery fees are refunded only when the return is the shop's fault.</p>
+<h3>5. Cancelling</h3>
+<p>An order that is not yet paid can simply be left; it is released after thirty minutes. To cancel a paid order before it is prepared, contact the shop or Akuru's office.</p>
+HTML],
         ];
     }
 }

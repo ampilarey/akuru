@@ -7,6 +7,8 @@ use App\Domains\Bookshop\Actions\ResolveVendorScopeAction;
 use App\Domains\Bookshop\Actions\Vendor\AcceptVendorAgreementAction;
 use App\Domains\Bookshop\Actions\Vendor\ListVendorProductsAction;
 use App\Domains\Bookshop\Actions\Vendor\ManageVendorMembersAction;
+use App\Domains\Bookshop\Actions\Vendor\SaveVendorDeliveryMethodsAction;
+use App\Domains\Bookshop\Enums\DeliveryKind;
 use App\Domains\Bookshop\Http\Controllers\Concerns\AuthorizesVendor;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
@@ -46,6 +48,8 @@ class VendorPortalController extends Controller
             'agreement_url' => route('public.page.show', 'vendor-agreement'),
             'products' => $scope->agreementAccepted ? app(ListVendorProductsAction::class)->execute($scope, $filters) : [],
             'members' => $scope->agreementAccepted ? app(ManageVendorMembersAction::class)->list($scope) : [],
+            'delivery_methods' => $scope->agreementAccepted ? app(SaveVendorDeliveryMethodsAction::class)->list($scope) : [],
+            'delivery_kinds' => array_map(fn (DeliveryKind $k) => $k->value, DeliveryKind::cases()),
             'options' => app(ListCatalogueOptionsAction::class)->execute(),
             'filters' => $filters + ['q' => null, 'status' => null],
             'must_set_password' => (bool) $request->user()->force_password_change,
@@ -91,6 +95,43 @@ class VendorPortalController extends Controller
         return back()
             ->with('success', __('shop.member_added_flash'))
             ->with('temporary_password', $result['temporary_password']);
+    }
+
+    /** B2: the owner replaces the shop's delivery methods as a whole. */
+    public function saveDeliveryMethods(Request $request): RedirectResponse
+    {
+        $scope = $this->authorizeVendor($request);
+        abort_unless($scope->isOwner(), 403, __('shop.owner_only'));
+        $data = $request->validate([
+            'methods' => 'present|array|max:12',
+            'methods.*.id' => 'nullable|integer',
+            'methods.*.kind' => 'required|string|max:20',
+            'methods.*.name' => 'nullable|string|max:120',
+            'methods.*.name_dv' => 'nullable|string|max:120',
+            'methods.*.name_ar' => 'nullable|string|max:120',
+            'methods.*.fee' => 'nullable|numeric|min:0|max:100000',
+            'methods.*.free_over' => 'nullable|numeric|min:0|max:1000000',
+            'methods.*.minimum_order' => 'nullable|numeric|min:0|max:1000000',
+            'methods.*.carrier_paid_on_arrival' => 'nullable|boolean',
+            'methods.*.handling_days' => 'nullable|integer|min:0|max:60',
+            'methods.*.note' => 'nullable|string|max:255',
+            'methods.*.is_active' => 'nullable|boolean',
+        ]);
+
+        app(SaveVendorDeliveryMethodsAction::class)->replace($scope, $data['methods']);
+
+        return back()->with('success', __('shop.delivery_saved_flash'));
+    }
+
+    /** B2: the office's template becomes the shop's own rows, to edit. */
+    public function useDeliveryTemplate(Request $request): RedirectResponse
+    {
+        $scope = $this->authorizeVendor($request);
+        abort_unless($scope->isOwner(), 403, __('shop.owner_only'));
+
+        app(SaveVendorDeliveryMethodsAction::class)->template($scope);
+
+        return back()->with('success', __('shop.delivery_saved_flash'));
     }
 
     /** Every listing gets a CSV (conventions): the vendor's products. */

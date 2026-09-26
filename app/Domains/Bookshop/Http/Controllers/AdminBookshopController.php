@@ -2,8 +2,11 @@
 
 namespace App\Domains\Bookshop\Http\Controllers;
 
+use App\Domains\Bookshop\Actions\Checkout\DecideBankTransferSlipAction;
 use App\Domains\Bookshop\Actions\CreateVendorAction;
+use App\Domains\Bookshop\Actions\ListBankTransferSlipsAction;
 use App\Domains\Bookshop\Actions\ListCatalogueOptionsAction;
+use App\Domains\Bookshop\Actions\ListOrdersAction;
 use App\Domains\Bookshop\Actions\ListVendorsAction;
 use App\Domains\Bookshop\Actions\SaveCatalogueTermAction;
 use App\Domains\Bookshop\Actions\UpdateVendorAction;
@@ -30,6 +33,8 @@ class AdminBookshopController extends Controller
             't' => trans('shop'),
             'vendors' => app(ListVendorsAction::class)->execute(),
             'catalogue' => app(ListCatalogueOptionsAction::class)->execute(activeOnly: false),
+            'slips' => app(ListBankTransferSlipsAction::class)->execute(),
+            'orders' => app(ListOrdersAction::class)->execute(200),
             'default_commission_rate' => number_format((float) config('bookshop.default_commission_rate'), 2, '.', ''),
             'agreement_url' => route('public.page.show', 'vendor-agreement'),
             'sign_in_url' => route('login'),
@@ -111,6 +116,39 @@ class AdminBookshopController extends Controller
         app(SaveCatalogueTermAction::class)->brand($data);
 
         return back()->with('success', __('shop.brand_saved_flash'));
+    }
+
+    /** B2 (decision 7): the office confirms or rejects a bank-transfer slip. */
+    public function decideSlip(Request $request, int $slip): RedirectResponse
+    {
+        abort_unless($request->user()?->can('bookshop.manage'), 403);
+        $data = $request->validate([
+            'decision' => 'required|string|in:confirm,reject',
+            'note' => 'nullable|string|max:500|required_if:decision,reject',
+        ]);
+
+        app(DecideBankTransferSlipAction::class)->execute($slip, $data['decision'] === 'confirm', (int) $request->user()->id, $data['note'] ?? null);
+
+        return back()->with('success', $data['decision'] === 'confirm' ? __('shop.slip_confirmed_flash') : __('shop.slip_rejected_flash'));
+    }
+
+    /** Every listing gets a CSV (conventions): the orders. */
+    public function exportOrders(Request $request): StreamedResponse
+    {
+        abort_unless($request->user()?->can('bookshop.manage'), 403);
+        $rows = app(ListOrdersAction::class)->execute(5000);
+
+        return response()->streamDownload(function () use ($rows): void {
+            $out = fopen('php://output', 'w');
+            Csv::put($out, ['number', 'status', 'vendor', 'customer', 'customer_email', 'payment_method', 'items', 'subtotal', 'discount', 'delivery', 'delivery_fee', 'tax', 'total', 'currency', 'island', 'placed_at', 'paid_at']);
+            foreach ($rows as $row) {
+                Csv::put($out, [
+                    $row['number'], $row['status'], $row['vendor'], $row['customer'], $row['customer_email'], $row['payment_method'], $row['items'],
+                    $row['subtotal'], $row['discount'], $row['delivery'], $row['delivery_fee'], $row['tax'], $row['total'], $row['currency'], $row['island'], $row['placed_at'], $row['paid_at'],
+                ]);
+            }
+            fclose($out);
+        }, 'bookstore-orders.csv', ['Content-Type' => 'text/csv']);
     }
 
     /** Every listing gets a CSV (conventions): the vendors. */

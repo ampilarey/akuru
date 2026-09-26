@@ -8,7 +8,8 @@
 // Actions (rule 5), which the detector cannot follow. Each entry says why it is
 // here, and which ones were actually read.
 //
-// Baseline may only shrink. Count: 61.
+// Baseline may only shrink. Count: 62 (the add-to-cart route of BOOKSHOP_PLAN
+// B2 joined 2026-09-26: a guest's basket has no session to authorise).
 
 return [
     // ---------------------------------------------------------------------
@@ -52,6 +53,7 @@ return [
     'courses/{course}/syllabus' => 'PublicSite\CourseController@syllabus — READ: sends a public marketing course its published syllabus; writes nothing.',
     'courses/{course}/waitlist' => 'PublicSite\CourseController@waitlist — public waitlist signup.',
     'events/{event}/register' => 'EventController@register — public event signup.',
+    'shop/cart' => 'ShopCartController@add — BOOKSHOP_PLAN B2: a guest\'s basket, by a token in their own session; throttled. READ: the cart comes from ResolvesCart, never from the request; the sibling shop/cart/{item} aborts 404 without a basket and so passes the detector.',
 
     // ---------------------------------------------------------------------
     // Scoped to the caller's own data — the identity IS the authorisation, so

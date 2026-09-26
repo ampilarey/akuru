@@ -18,7 +18,7 @@ use Illuminate\Validation\ValidationException;
  */
 class CreateVendorAction
 {
-    public const RESERVED_SLUGS = ['products', 'c', 'export', 'cart', 'checkout', 'orders', 'search'];
+    public const RESERVED_SLUGS = ['products', 'c', 'export', 'cart', 'checkout', 'orders', 'search', 'slips'];
 
     /**
      * @param  array<string, mixed>  $data

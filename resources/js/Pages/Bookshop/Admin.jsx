@@ -1,12 +1,13 @@
 import { useState } from 'react';
-import { useForm, usePage } from '@inertiajs/react';
+import { router, useForm, usePage } from '@inertiajs/react';
 import AppShell from '../../Layouts/AppShell';
 import FormErrors from '../../Components/FormErrors';
 
 /**
  * BOOKSHOP_PLAN slice B1a — the office's side of the Akuru Bookstore:
  * invite a vendor with its owner, edit or suspend it, and keep the shared
- * categories and brands.
+ * categories and brands. B2 adds the bank-transfer slips to confirm and
+ * the orders list.
  */
 
 function InviteVendor({ t, defaultRate }) {
@@ -205,7 +206,100 @@ function Catalogue({ catalogue, t }) {
     );
 }
 
-export default function Admin({ t, vendors, catalogue, default_commission_rate, sign_in_url }) {
+/** B2 (decision 7): the office reads a slip against the bank and decides. */
+function SlipRow({ slip, t }) {
+    const [note, setNote] = useState('');
+    const decide = (decision) => router.post(`/admin/bookshop/slips/${slip.id}/decide`, { decision, note }, { preserveScroll: true });
+
+    return (
+        <tr className="border-t" data-testid={`slip-row-${slip.id}`} data-slip-status={slip.status}>
+            <td className="p-2"><span className="font-mono">{slip.checkout_number}</span><span className="block text-xs text-gray-500">{t[`status_${slip.checkout_status}`] || slip.checkout_status}</span></td>
+            <td className="p-2">{slip.customer}<span className="block text-xs text-gray-500">{slip.customer_email}</span></td>
+            <td className="p-2 text-end">{slip.currency} {slip.total}</td>
+            <td className="p-2">{slip.reference || t.none}{slip.note && <span className="block text-xs text-gray-500">{slip.note}</span>}</td>
+            <td className="p-2">{slip.uploaded_at}<a href={`/shop/slips/${slip.id}`} target="_blank" rel="noreferrer" className="block text-xs text-blue-700 underline">{t.view_slip}</a></td>
+            <td className="p-2">
+                {slip.status === 'waiting' ? (
+                    <div className="flex flex-wrap items-center gap-2">
+                        <input className="form-input w-40" placeholder={t.decision_note} value={note} onChange={(e) => setNote(e.target.value)} data-testid={`slip-note-${slip.id}`} />
+                        <button type="button" className="btn-primary" onClick={() => decide('confirm')} data-testid={`confirm-slip-${slip.id}`}>{t.confirm}</button>
+                        <button type="button" className="text-red-700 underline" onClick={() => decide('reject')} data-testid={`reject-slip-${slip.id}`}>{t.reject}</button>
+                    </div>
+                ) : (
+                    <span>{t[`slip_status_${slip.status}`] || slip.status}{slip.decision_note && <span className="block text-xs text-gray-500">{slip.decision_note}</span>}</span>
+                )}
+            </td>
+        </tr>
+    );
+}
+
+function Slips({ slips, t }) {
+    return (
+        <section className="mt-8" data-testid="bank-slips">
+            <h2 className="mb-2 text-lg font-semibold">{t.bank_slips}</h2>
+            {slips.length === 0 ? (
+                <p className="rounded border bg-white p-4 text-gray-600">{t.no_slips}</p>
+            ) : (
+                <table className="w-full rounded border bg-white text-sm">
+                    <thead className="bg-gray-50">
+                        <tr>
+                            <th className="p-2 text-start">{t.checkout_col}</th>
+                            <th className="p-2 text-start">{t.customer}</th>
+                            <th className="p-2 text-end">{t.total}</th>
+                            <th className="p-2 text-start">{t.slip_reference}</th>
+                            <th className="p-2 text-start">{t.uploaded}</th>
+                            <th className="p-2 text-start">{t.status}</th>
+                        </tr>
+                    </thead>
+                    <tbody>{slips.map((s) => <SlipRow key={s.id} slip={s} t={t} />)}</tbody>
+                </table>
+            )}
+        </section>
+    );
+}
+
+function Orders({ orders, t }) {
+    return (
+        <section className="mt-8" data-testid="office-orders">
+            <div className="mb-2 flex items-center justify-between">
+                <h2 className="text-lg font-semibold">{t.orders}</h2>
+                <a href="/admin/bookshop/orders/export" className="btn-secondary" data-testid="export-orders">{t.export_csv}</a>
+            </div>
+            {orders.length === 0 ? (
+                <p className="rounded border bg-white p-4 text-gray-600">{t.no_orders_office}</p>
+            ) : (
+                <table className="w-full rounded border bg-white text-sm">
+                    <thead className="bg-gray-50">
+                        <tr>
+                            <th className="p-2 text-start">{t.order_number}</th>
+                            <th className="p-2 text-start">{t.shop_col}</th>
+                            <th className="p-2 text-start">{t.customer}</th>
+                            <th className="p-2 text-start">{t.delivery_heading}</th>
+                            <th className="p-2 text-end">{t.total}</th>
+                            <th className="p-2 text-start">{t.status}</th>
+                            <th className="p-2 text-start">{t.placed}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {orders.map((o) => (
+                            <tr key={o.id} className="border-t" data-testid={`order-row-${o.number}`}>
+                                <td className="p-2 font-mono">{o.number}</td>
+                                <td className="p-2">{o.vendor}</td>
+                                <td className="p-2">{o.customer}<span className="block text-xs text-gray-500">{o.island}</span></td>
+                                <td className="p-2">{o.delivery}</td>
+                                <td className="p-2 text-end">{o.currency} {o.total}</td>
+                                <td className="p-2">{t[`status_${o.status}`] || o.status}</td>
+                                <td className="p-2">{o.placed_at}</td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            )}
+        </section>
+    );
+}
+
+export default function Admin({ t, vendors, catalogue, slips = [], orders = [], default_commission_rate, sign_in_url }) {
     const { flash = {}, errors } = usePage().props;
 
     return (
@@ -214,6 +308,8 @@ export default function Admin({ t, vendors, catalogue, default_commission_rate, 
             {flash.success && <p className="mb-4 rounded bg-green-50 p-3 text-green-700">{flash.success}</p>}
             {flash.vendor_invite && <InviteCard invite={flash.vendor_invite} t={t} signInUrl={sign_in_url} />}
 
+            {slips.some((s) => s.status === 'waiting') && <Slips slips={slips} t={t} />}
+
             <InviteVendor t={t} defaultRate={default_commission_rate} />
 
             <div className="mb-2 flex items-center justify-between">
@@ -221,6 +317,9 @@ export default function Admin({ t, vendors, catalogue, default_commission_rate, 
                 <a href="/admin/bookshop/vendors/export" className="btn-secondary" data-testid="export-vendors">{t.export_csv}</a>
             </div>
             <VendorTable vendors={vendors} t={t} />
+
+            {!slips.some((s) => s.status === 'waiting') && <Slips slips={slips} t={t} />}
+            <Orders orders={orders} t={t} />
 
             <Catalogue catalogue={catalogue} t={t} />
         </AppShell>

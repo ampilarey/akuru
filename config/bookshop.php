@@ -1,8 +1,8 @@
 <?php
 
 /**
- * Akuru Online Bookshop (docs/BOOKSHOP_PLAN.md). Knobs the office may later
- * move into a settings screen; env-backed until then.
+ * Akuru Bookstore (docs/BOOKSHOP_PLAN.md). Knobs the office may later move
+ * into a settings screen; env-backed until then.
  */
 return [
     // Decision 5 (2026-09-25): 10–15% on goods, none on delivery; the
@@ -20,5 +20,57 @@ return [
 
     'variants' => [
         'max_per_product' => 30,
+    ],
+
+    /*
+     * B2 — checkout (plan §4, §8; decisions 4, 6, 7).
+     */
+    'checkout' => [
+        // Audit finding 2: stock is reserved while the customer pays.
+        'reservation_minutes' => (int) env('BOOKSHOP_RESERVATION_MINUTES', 30),
+        // Payment methods offered at checkout (decision 7). Cash on delivery
+        // is B9.
+        'methods' => ['card', 'wallet', 'bank_transfer'],
+        'max_quantity_per_line' => 50,
+    ],
+
+    /*
+     * Decision 4: prices are tax-inclusive; a tax class per product; a tax
+     * line only for GST-registered vendors. Rates are percentages of the
+     * tax-exclusive price (GST general rate in the Maldives is 8% from
+     * 2023). A change in law is a settings edit, never a code change.
+     */
+    'tax' => [
+        'rates' => [
+            'standard' => (float) env('BOOKSHOP_TAX_STANDARD', 8),
+            'zero_rated' => 0,
+            'exempt' => 0,
+        ],
+    ],
+
+    /*
+     * Decision 6: the delivery methods a vendor starts from ("Start from
+     * the template" in the portal). A vendor with none uses these as they
+     * are, at these fees. Boat fees are paid to the carrier on arrival.
+     */
+    'delivery_template' => [
+        ['kind' => 'collect_vendor', 'name' => 'Collect from the shop', 'fee' => 0, 'handling_days' => 1],
+        ['kind' => 'collect_akuru', 'name' => 'Collect from Akuru Institute', 'fee' => 0, 'handling_days' => 2],
+        ['kind' => 'courier_male', 'name' => 'Delivery in Malé, Hulhumalé and Villimalé', 'fee' => 30, 'free_over' => 500, 'handling_days' => 2],
+        ['kind' => 'courier_atolls', 'name' => 'Courier to the atolls', 'fee' => 80, 'handling_days' => 3],
+        ['kind' => 'boat', 'name' => 'Boat to the atolls (fee paid to the boat on arrival)', 'fee' => 0, 'carrier_paid_on_arrival' => true, 'handling_days' => 3],
+    ],
+
+    /*
+     * Bank transfer (decision 7): the account the customer transfers to.
+     * Set on the host; never committed. With no account number the method
+     * is not offered.
+     */
+    'bank_transfer' => [
+        'bank' => env('BOOKSHOP_BANK_NAME', 'Bank of Maldives'),
+        'account_name' => env('BOOKSHOP_BANK_ACCOUNT_NAME', 'Akuru Institute'),
+        'account_number' => env('BOOKSHOP_BANK_ACCOUNT_NUMBER'),
+        'slip_max_kilobytes' => 8192,
+        'slip_mimes' => ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'],
     ],
 ];
