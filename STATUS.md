@@ -4414,6 +4414,176 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5gz. B2: cart and checkout (2026-09-26)
+
+BOOKSHOP_PLAN slice B2, the owner's "B2". The Akuru Bookstore now sells:
+a basket, a checkout, one order per shop, three ways to pay, and the
+customer's orders and receipts. Fulfilment (B3) is next.
+
+**The cart** (`/shop/cart`, Blade in the public zone). A guest fills one
+from the product page — quantity, and a variant where the product has
+them — and it is theirs by a token in their session; when they sign in it
+merges into their own cart, quantities adding, so nothing chosen before
+signing in is lost. Lines are grouped by shop with a sub-total each.
+Every add and every quantity change re-checks what can be sold now:
+counted stock less what other customers' live checkouts are holding
+(`Stock::available`), a made-to-order product selling without stock. A
+product that went off sale is flagged on the cart page, not silently
+dropped, and the checkout button is held until it is sorted. The phone
+bar gained *Cart* with a count; the header a cart icon; a guest's cart
+page offers both sign-ins (password and SMS code) and keeps the basket.
+
+**Checkout** (`/shop/checkout`, signed in). One address — a saved one or
+new fields, saveable to an address book — a delivery method **per shop**
+priced for that shop's part of the basket, a discount code, a note, and
+the payment method. Delivery options are the vendor's own methods, or the
+office's standard template when the vendor has set none (decision 6): a
+method with a minimum above the sub-total is shown but not offered, one
+with a free-over threshold costs nothing above it, and a boat's fee is
+paid to the carrier on arrival and is zero here. The order is placed in
+one transaction: every line re-checked and priced, the discount resolved
+on goods only and split across shops in proportion (the last shop absorbs
+the rounding), delivery per shop, tax computed per line **only for a
+GST-registered vendor** (decision 4; `price − price/(1+rate)`; 8% from
+config), then one `bookshop_checkout` (`AK-YYYY-NNNNNN` from a locked
+per-year sequence), one order per vendor (`…-FIT`), its items and events,
+and a **stock reservation** for thirty minutes (audit finding 2). The cart
+empties only when the checkout is on its way; a refusal leaves it as it
+was.
+
+**Three ways to pay** (decision 7), all landing on `/shop/checkout/{number}`:
+- **Wallet**: debited at once through Commerce's `DebitWalletAction`
+  (append-only ledger), the checkout paid immediately.
+- **Card (BML)**: `InitiatePayablePaymentAction('bookshop_checkout', …)`,
+  the customer sent to the bank; the checkout is paid **only** by
+  `MarkCheckoutPaidOnPaymentConfirmed` on the webhook's `PaymentConfirmed`
+  (rule 12). The return page displays state and nothing else. A bank
+  that cannot start the payment marks the checkout failed and releases
+  the stock, with the basket kept.
+- **Bank transfer**: offered only when `BOOKSHOP_BANK_ACCOUNT_NUMBER` is
+  set. The page shows the account and asks for the checkout number in
+  the remarks; the customer uploads a slip (photo or PDF, private media),
+  the office is told, and the goods stay held while the office looks.
+  The office confirms (the checkout is paid) or rejects with a reason the
+  customer sees, and the customer may upload another. A slip is readable
+  by its customer and the office only (`ServeBankTransferSlipAction`
+  carries the scope; pinned in `PrivateMediaReadersAreScopedTest`).
+- A discount that brings the total to **zero** is paid at once, no
+  payment row.
+
+**Paid** (`MarkCheckoutPaidAction`, idempotent under a lock — a webhook
+twice decrements once): stock is taken **now**, not at reservation. A
+reservation that lapsed before the money arrived can find the stock gone:
+the order is still paid but `needs_attention`, with an event saying which
+lines ran short, and the vendor and office are told — never a silent
+oversell. The discount redemption is confirmed. Notices go through
+Notifications' one writer under a new `shop` category (*Bookstore
+orders*, switchable): the customer (paid; slip rejected), every member of
+the vendor (a paid order to prepare; attention), the office (a slip to
+confirm; attention).
+
+**Expiry**: `bookshop:expire-checkouts` every ten minutes on the
+scheduler. A pending checkout past its window is expired, its orders
+with it, its reservations deleted and its discount released; a late
+webhook for it changes nothing. A bank-transfer checkout with a slip
+waiting is **kept** and its hold extended — the customer has paid; the
+office has not looked yet.
+
+**My orders** (`/my-orders`, in the app shell beside Bookstore; CSV) and
+the order page with its receipt: the lines, goods, discount, delivery,
+total; a tax line and the vendor's TIN only when the vendor is
+GST-registered; the delivery method and address snapshot; the event
+trail; a print button; *Pay now* back to the checkout while it waits.
+
+**The vendor portal** gained *Delivery methods*: the owner starts from
+the office's template (five rows) or from nothing, edits kind, name (EN/
+DV/AR), fee, free-over, minimum order, days to prepare and a note, and
+saves them as a whole; a boat is always carrier-paid at zero fee. Staff
+see them; only the owner edits. **The office screen** gained the
+bank-transfer slips queue (waiting first, moved to the top of the page
+while one waits) with confirm/reject and a reason, and every order with a
+CSV. **Policy pages**: `BookshopPolicyPagesSeeder` now also seeds *Terms
+of Sale* (`shop-terms`) and *Delivery and Returns* (`delivery-and-returns`),
+linked under the place-order button; first drafts, never overwriting the
+office's edits.
+
+**Data** (one additive migration; every new table's alias in
+`config/morph-map.php`, ADR-005): `vendor_delivery_methods`,
+`customer_addresses`, `carts`, `cart_items`, `bookshop_sequences`,
+`bookshop_checkouts`, `stock_reservations`, `bank_transfer_slips`,
+`orders`, `order_items`, `order_events` (append-only, no `updated_at`).
+Orders snapshot the address, the delivery method and the vendor's TIN
+(audit finding 13). Statuses are string columns cast to enums
+(`CheckoutStatus`, `OrderStatus`, `CheckoutPaymentMethod`,
+`DeliveryKind`, `SlipStatus`). Rule 10 exemption as for the rest of the
+bookshop: orders carry the calendar year in their number, not the school
+year. A `BookshopServiceProvider` registers the listener and the command.
+
+**Boundaries kept**: Bookshop reaches Finance and Commerce only through
+their Actions and event (`InitiatePayablePaymentAction`,
+`PaymentConfirmed`, `DebitWalletAction`, `ListWalletAction`,
+`ResolveDiscountAction`, `RecordDiscountRedemptionAction`), Media through
+`StorePrivateMediaAction`/`ReadPrivateMediaAction`/
+`ResolvePublicImageVariantAction`, Notifications through
+`SendUserNotificationAction`, and people through the auth model from
+config. `DiscountsNeverBuyGiftCardsTest` admits the one new caller: a
+basket holds products, never a gift card. The two cart POSTs are public
+by design (a guest has no session to authorise) and are the two new
+entries in `unguarded_write_routes` (61 → 62: the item route aborts
+without a basket and passes the detector on its own) and
+`public_routes`; `blade_screens` 229 → 234 for the five customer pages;
+`ThinControllersTest` green with the four new controllers.
+
+**Tests**: `BookshopCartTest` (4) and `BookshopCheckoutTest` (9): the
+guest cart, the merge, refusals and the stock cap, the product page and
+phone bar; the checkout page's options and offered methods; wallet with
+two shops, a discount split 16:24, tax only on the GST vendor's order
+(MVR 13.63 on 209), stock taken, cart emptied, address saved, the receipt
+and a stranger's 404s; a short wallet, missing delivery, missing address
+and another customer's reservation each refused with the cart kept; card
+to the bank and paid only on the event, once; a bank that cannot start;
+the whole bank-transfer path with a private slip, the extended hold, a
+rejection with reason, a second slip confirmed and the permission gate;
+expiry with a late webhook ignored and a zero total paid at once; the
+owner's delivery methods and the checkout offering exactly those; my
+orders and the office's orders with both CSVs. `ShopPublicTest`'s product
+page now expects add-to-cart. Full suite **2216 passed**.
+
+**Walked** (`scripts/smoke/checkout.mjs`, **28/28**, no console or server
+errors): a guest puts two tracing books in the cart from the product page,
+sees the sign-in prompt and the phone bar's count; signs in as the
+student and finds the same cart; adds the other shop's item; is refused
+with nothing filled in; pays MVR 269 from the wallet and lands on the
+checkout marked paid with `…-FIT` and `…-SOS`; finds both on My orders and
+the FIT receipt; orders a prayer mat by bank transfer, sees the account
+and reference, uploads a slip and is told the office is looking; the
+office sees the slip with the customer and reference, opens the file,
+confirms it, and has all three orders and the CSV; the customer's page
+says paid and their notifications say so; Fitrah's owner starts delivery
+methods from the template, renames the first and finds it kept.
+`shop.mjs` **24/24** (its product step now looks for the add-to-cart
+button), `vendor.mjs` **25/25**. One walk-found defect fixed on the way:
+the delivery-methods form kept its first values after the template
+landed (Inertia's `useForm` does not re-read props), so it is keyed on
+the rows.
+
+**Staging** (`SmokeMarkerSeeder::vendorCycle()`): clears the walk's carts,
+checkouts, orders, slips, reservations and addresses for the student and
+vendor logins, resets Fitrah's delivery methods, and tops the student's
+wallet back up to 500 (the walk's payment is a real, append-only debit).
+Bank transfer on the walk needs `BOOKSHOP_BANK_ACCOUNT_NUMBER` in the
+host's `.env` (documented in `.env.example` with the other bookstore
+keys).
+
+**Production**: the migration, then once
+`php artisan db:seed --class=BookshopPolicyPagesSeeder --force` for the
+two new pages (idempotent; the Vendor Agreement is untouched). Bank
+transfer is not offered until `BOOKSHOP_BANK_ACCOUNT_NUMBER` (and the
+bank and account name) are in `.env`; card payment stays unwalkable until
+`BML_WEBHOOK_SECRET` exists (OWNER_ACTIONS 2); the expiry sweep needs the
+scheduler's cron. Nothing in B2 is queued, so the plan's queue-worker gate
+did not bite this slice.
+
 ## 5gy. The Akuru Bookstore — the name settled (2026-09-26)
 
 The owner, after §5gx the same day: *"I want to change the name to Akuru

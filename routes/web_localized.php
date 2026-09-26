@@ -768,6 +768,9 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::put('vendors/{vendor}', [\App\Domains\Bookshop\Http\Controllers\AdminBookshopController::class, 'updateVendor'])->name('admin.bookshop.vendors.update')->whereNumber('vendor');
         Route::post('categories', [\App\Domains\Bookshop\Http\Controllers\AdminBookshopController::class, 'storeCategory'])->name('admin.bookshop.categories.store');
         Route::post('brands', [\App\Domains\Bookshop\Http\Controllers\AdminBookshopController::class, 'storeBrand'])->name('admin.bookshop.brands.store');
+        // B2: bank-transfer slips and the orders list.
+        Route::post('slips/{slip}/decide', [\App\Domains\Bookshop\Http\Controllers\AdminBookshopController::class, 'decideSlip'])->name('admin.bookshop.slips.decide')->whereNumber('slip');
+        Route::get('orders/export', [\App\Domains\Bookshop\Http\Controllers\AdminBookshopController::class, 'exportOrders'])->name('admin.bookshop.orders.export');
     });
 
     // BOOKSHOP_PLAN B1a: the vendor portal. `auth` only on the route: the
@@ -781,6 +784,9 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::post('products', [\App\Domains\Bookshop\Http\Controllers\VendorProductController::class, 'store'])->name('vendor.products.store');
         Route::post('products/{product}', [\App\Domains\Bookshop\Http\Controllers\VendorProductController::class, 'update'])->name('vendor.products.update')->whereNumber('product');
         Route::post('product-images/{image}', [\App\Domains\Bookshop\Http\Controllers\VendorProductController::class, 'arrangeImage'])->name('vendor.product-images.arrange')->whereNumber('image');
+        // B2: the owner's delivery methods.
+        Route::post('delivery-methods', [\App\Domains\Bookshop\Http\Controllers\VendorPortalController::class, 'saveDeliveryMethods'])->name('vendor.delivery-methods.save');
+        Route::post('delivery-methods/template', [\App\Domains\Bookshop\Http\Controllers\VendorPortalController::class, 'useDeliveryTemplate'])->name('vendor.delivery-methods.template');
     });
 
     // L7 reviewer portal (§12.2) — own assignments only, enforced in actions.

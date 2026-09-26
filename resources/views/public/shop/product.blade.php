@@ -1,6 +1,6 @@
 @extends('public.layouts.public')
 
-{{-- BOOKSHOP_PLAN §4 "Product page" (slice B1b). Ordering arrives with checkout (B2). --}}
+{{-- BOOKSHOP_PLAN §4 "Product page" (slice B1b); add to cart since B2. --}}
 @section('title', $product['title'] . ' - ' . __('shop.bookshop_title'))
 @section('description', \Illuminate\Support\Str::limit($product['summary'] ?? strip_tags((string) $product['description']), 155))
 @if(isset($product['gallery'][0]))
@@ -75,7 +75,32 @@
                 </div>
             @endif
 
-            <p class="mt-6 rounded-lg bg-brandBeige-50 p-4 text-sm text-brandGray-700" data-testid="ordering-soon">{{ __('shop.ordering_soon') }}</p>
+            @php($buyable = count($product['variants']) > 0
+                ? collect($product['variants'])->contains('in_stock', true)
+                : $product['stock']['state'] !== 'out_of_stock')
+            @if($buyable)
+                <form method="POST" action="{{ route('public.shop.cart.add') }}" class="mt-6 flex flex-wrap items-end gap-3 rounded-lg bg-brandBeige-50 p-4" data-testid="add-to-cart-form">
+                    @csrf
+                    <input type="hidden" name="product" value="{{ $product['slug'] }}">
+                    @if(count($product['variants']) > 0)
+                        <label class="text-sm">{{ __('shop.options_heading') }}
+                            <select name="variant_id" class="form-input block" required data-testid="variant-select">
+                                <option value="">{{ __('shop.choose_option') }}</option>
+                                @foreach($product['variants'] as $variant)
+                                    <option value="{{ $variant['id'] }}" @disabled(! $variant['in_stock'])>{{ $variant['name'] }} · {{ $product['currency'] }} {{ $variant['price'] }}@unless($variant['in_stock']) — {{ __('shop.unavailable') }}@endunless</option>
+                                @endforeach
+                            </select>
+                        </label>
+                    @endif
+                    <label class="text-sm">{{ __('shop.quantity') }}
+                        <input type="number" name="quantity" value="1" min="1" max="{{ config('bookshop.checkout.max_quantity_per_line', 50) }}" class="form-input block w-20" data-testid="quantity">
+                    </label>
+                    <button type="submit" class="btn-primary" data-testid="add-to-cart">{{ __('shop.add_to_cart') }}</button>
+                    @if($errors->any())
+                        <p class="w-full text-sm text-red-700" data-testid="add-error">{{ $errors->first() }}</p>
+                    @endif
+                </form>
+            @endif
             <p class="mt-3"><a href="{{ route('public.shop.vendor', $product['vendor']['slug']) }}" class="text-sm text-brandMaroon-700 hover:underline">{{ __('shop.visit_shop') }} →</a></p>
 
             @php($facts = array_filter([

@@ -57,4 +57,9 @@ class Vendor extends Model
     {
         return $this->hasMany(Product::class);
     }
+
+    public function deliveryMethods(): HasMany
+    {
+        return $this->hasMany(VendorDeliveryMethod::class)->orderBy('sort_order')->orderBy('id');
+    }
 }

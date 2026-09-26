@@ -1,0 +1,87 @@
+<?php
+
+namespace App\Domains\Bookshop\Actions\Cart;
+
+use App\Domains\Bookshop\Actions\Shop\ListShopProductsAction;
+use App\Domains\Bookshop\Models\Cart;
+use App\Domains\Bookshop\Models\CartItem;
+use App\Domains\Bookshop\Models\ProductVariant;
+use App\Domains\Bookshop\Support\Stock;
+use Illuminate\Validation\ValidationException;
+
+/**
+ * Put something in the basket, change how many, or take it out
+ * (BOOKSHOP_PLAN §4 "stock re-checked on every change"). Only a product
+ * for sale can go in; a variant must be the product's own and active; the
+ * quantity may not exceed what can be sold right now.
+ */
+class SaveCartItemAction
+{
+    public function add(Cart $cart, string $productSlug, ?int $variantId, int $quantity): CartItem
+    {
+        $product = ListShopProductsAction::forSale()->where('slug', $productSlug)->with('variants')->first();
+        if ($product === null) {
+            throw ValidationException::withMessages(['product' => __('shop.error_not_for_sale')]);
+        }
+
+        $variant = null;
+        if ($product->variants->where('is_active', true)->isNotEmpty()) {
+            $variant = $variantId !== null ? $product->variants->firstWhere('id', $variantId) : null;
+            if ($variant === null || ! $variant->is_active) {
+                throw ValidationException::withMessages(['variant' => __('shop.error_choose_option')]);
+            }
+        }
+
+        $existing = CartItem::query()
+            ->where('cart_id', $cart->id)
+            ->where('product_id', $product->id)
+            ->where('product_variant_id', $variant?->id)
+            ->first();
+        $wanted = ($existing?->quantity ?? 0) + $quantity;
+
+        return $this->set($cart, $existing ?? new CartItem([
+            'cart_id' => $cart->id,
+            'product_id' => $product->id,
+            'product_variant_id' => $variant?->id,
+        ]), $wanted);
+    }
+
+    public function update(Cart $cart, int $itemId, int $quantity): ?CartItem
+    {
+        $item = CartItem::query()->where('cart_id', $cart->id)->findOrFail($itemId);
+        if ($quantity <= 0) {
+            $item->delete();
+
+            return null;
+        }
+
+        return $this->set($cart, $item, $quantity);
+    }
+
+    private function set(Cart $cart, CartItem $item, int $quantity): CartItem
+    {
+        $max = (int) config('bookshop.checkout.max_quantity_per_line', 50);
+        $quantity = min($quantity, $max);
+
+        $product = ListShopProductsAction::forSale()->whereKey($item->product_id)->first();
+        if ($product === null) {
+            $item->exists && $item->delete();
+            throw ValidationException::withMessages(['product' => __('shop.error_not_for_sale')]);
+        }
+        $variant = $item->product_variant_id !== null ? ProductVariant::query()->find($item->product_variant_id) : null;
+
+        $available = Stock::available($product, $variant);
+        if ($available !== null && $quantity > $available && ! Stock::madeToOrder($product)) {
+            if ($available <= 0) {
+                throw ValidationException::withMessages(['quantity' => __('shop.error_sold_out', ['title' => $product->title])]);
+            }
+            throw ValidationException::withMessages(['quantity' => __('shop.error_only_n_left', ['count' => $available, 'title' => $product->title])]);
+        }
+
+        $item->cart_id = $cart->id;
+        $item->quantity = $quantity;
+        $item->save();
+
+        return $item;
+    }
+}

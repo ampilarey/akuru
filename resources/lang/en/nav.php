@@ -135,6 +135,7 @@ return [
     'my_wallet' => 'My wallet',
     'bookshop' => 'Akuru Bookstore',
     'shop' => 'Bookstore',
+    'my_orders' => 'My orders',
     'vendor_portal' => 'My shop',
     'collecting_my_child' => 'Collecting my child',
     'arrivals' => 'Arrivals',

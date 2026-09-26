@@ -1712,6 +1712,33 @@ class SmokeMarkerSeeder extends Seeder
             DB::table('product_images')->where('media_file_id', $mediaId)->delete();
             DB::table('media_files')->where('id', $mediaId)->delete();
         }
+        // B2 (`checkout.mjs`): what the checkout walk made — its carts,
+        // checkouts, orders, slips, reservations and saved addresses for
+        // the walk's own people, and Fitrah's delivery methods (the walk
+        // sets them from the template). Money stays: the wallet ledger is
+        // append-only (rule 12), so the walk's wallet payment is a real
+        // debit and the top-up below brings the balance back.
+        $walkPeople = DB::table('users')->whereIn('email', ['student@akuru.edu.mv', 'vendor@akuru.edu.mv'])->pluck('id');
+        $walkCheckouts = DB::table('bookshop_checkouts')->whereIn('user_id', $walkPeople)->pluck('id');
+        foreach (DB::table('bank_transfer_slips')->whereIn('bookshop_checkout_id', $walkCheckouts)->pluck('media_file_id') as $mediaId) {
+            $media = DB::table('media_files')->where('id', $mediaId)->first(['disk', 'path']);
+            if ($media !== null) {
+                Storage::disk($media->disk)->delete($media->path);
+            }
+            DB::table('bank_transfer_slips')->where('media_file_id', $mediaId)->delete();
+            DB::table('media_files')->where('id', $mediaId)->delete();
+        }
+        $walkOrders = DB::table('orders')->whereIn('bookshop_checkout_id', $walkCheckouts)->pluck('id');
+        DB::table('order_events')->whereIn('order_id', $walkOrders)->delete();
+        DB::table('order_items')->whereIn('order_id', $walkOrders)->delete();
+        DB::table('orders')->whereIn('id', $walkOrders)->delete();
+        DB::table('stock_reservations')->whereIn('bookshop_checkout_id', $walkCheckouts)->delete();
+        DB::table('bookshop_checkouts')->whereIn('id', $walkCheckouts)->delete();
+        DB::table('cart_items')->whereIn('cart_id', DB::table('carts')->whereIn('user_id', $walkPeople)->pluck('id'))->delete();
+        DB::table('carts')->whereIn('user_id', $walkPeople)->delete();
+        DB::table('customer_addresses')->whereIn('user_id', $walkPeople)->delete();
+        DB::table('vendor_delivery_methods')->whereIn('vendor_id', DB::table('vendors')->where('slug', 'fitrah')->pluck('id'))->delete();
+
         DB::table('products')->whereIn('id', $walkProducts)->delete();
         DB::table('vendors')->whereIn('id', $invited)->delete();
 
@@ -1744,6 +1771,10 @@ class SmokeMarkerSeeder extends Seeder
         $this->smokeProduct($fitrahId, 'smoke-hidden-draft', 'SMOKE-Hidden-Draft', 10, 'standard', null, 1, []);
         DB::table('products')->where('slug', 'smoke-hidden-draft')->update(['status' => 'draft']);
         $this->smokeProductPhoto('smoke-arabic-letters-tracing-book', database_path('seeders/fixtures/vendors/fitrah-logo.jpg'));
+
+        // B2: the walk pays from the student's wallet; the stock the walk
+        // bought last time is put back by the updateOrInsert above.
+        $this->topUpWallet('student@akuru.edu.mv', 500.0, 'SMOKE-Wallet top-up so a customer can pay in the bookstore.');
     }
 
     /** One photo on a staging product, replaced on every run. */

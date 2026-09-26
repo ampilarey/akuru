@@ -6,7 +6,8 @@ import FormErrors from '../../Components/FormErrors';
 /**
  * BOOKSHOP_PLAN slice B1a — the vendor portal. A member accepts the Vendor
  * Agreement once, then lists products: photos, prices, stock, tax class,
- * variants, and the book or educational details the shop will show.
+ * variants, and the book or educational details the shop will show. B2 adds
+ * the owner's delivery methods.
  */
 
 const DETAIL_BOOK = ['author', 'publisher', 'year', 'pages', 'language'];
@@ -275,6 +276,67 @@ function Members({ members, isOwner, t }) {
     );
 }
 
+/**
+ * B2: the owner's delivery methods, replaced as a whole. Until the shop
+ * sets its own, the office's standard methods apply at checkout.
+ */
+function DeliveryMethods({ methods, kinds, isOwner, t }) {
+    const form = useForm({ methods: methods.map((m) => ({ ...m, free_over: m.free_over ?? '', minimum_order: m.minimum_order ?? '', note: m.note ?? '', name_dv: m.name_dv ?? '', name_ar: m.name_ar ?? '' })) });
+    const setRow = (index, key, value) => form.setData('methods', form.data.methods.map((m, i) => (i === index ? { ...m, [key]: value } : m)));
+    const addRow = () => form.setData('methods', [...form.data.methods, { kind: kinds[0], name: '', name_dv: '', name_ar: '', fee: '0', free_over: '', minimum_order: '', carrier_paid_on_arrival: false, handling_days: 1, note: '', is_active: true }]);
+
+    return (
+        <section className="mt-8" data-testid="delivery-methods">
+            <h2 className="mb-1 text-lg font-semibold">{t.delivery_methods_heading}</h2>
+            <p className="mb-3 text-sm text-gray-600">{t.delivery_methods_intro}</p>
+            {methods.length === 0 && (
+                <p className="mb-3 rounded border bg-white p-3 text-sm text-gray-600" data-testid="no-methods">
+                    {t.no_methods_yet}{' '}
+                    {isOwner && <button type="button" className="text-blue-700 underline" data-testid="use-template" onClick={() => router.post('/vendor/delivery-methods/template', {}, { preserveScroll: true })}>{t.use_template}</button>}
+                </p>
+            )}
+            {isOwner ? (
+                <form
+                    className="rounded border bg-white p-3"
+                    data-testid="delivery-form"
+                    onSubmit={(e) => {
+                        e.preventDefault();
+                        form.transform((data) => ({ methods: data.methods.map((m) => ({ ...m, carrier_paid_on_arrival: m.carrier_paid_on_arrival ? 1 : 0, is_active: m.is_active ? 1 : 0 })) }));
+                        form.post('/vendor/delivery-methods', { preserveScroll: true });
+                    }}
+                >
+                    {form.data.methods.map((m, index) => (
+                        <div key={m.id ?? `new-${index}`} className="mb-3 grid gap-2 border-b pb-3 md:grid-cols-6" data-testid={`delivery-row-${index}`}>
+                            <select className="form-input" value={m.kind} onChange={(e) => setRow(index, 'kind', e.target.value)} aria-label={t.kind}>
+                                {kinds.map((k) => <option key={k} value={k}>{t[`kind_${k}`] || k}</option>)}
+                            </select>
+                            <input className="form-input md:col-span-2" placeholder={t.name} value={m.name} onChange={(e) => setRow(index, 'name', e.target.value)} data-testid={`delivery-name-${index}`} />
+                            <input className="form-input" type="number" step="0.01" min="0" placeholder={t.fee} value={m.fee} onChange={(e) => setRow(index, 'fee', e.target.value)} disabled={m.kind === 'boat'} aria-label={t.fee} data-testid={`delivery-fee-${index}`} />
+                            <input className="form-input" type="number" step="0.01" min="0" placeholder={t.free_over} value={m.free_over} onChange={(e) => setRow(index, 'free_over', e.target.value)} aria-label={t.free_over} />
+                            <input className="form-input" type="number" step="0.01" min="0" placeholder={t.minimum_order} value={m.minimum_order} onChange={(e) => setRow(index, 'minimum_order', e.target.value)} aria-label={t.minimum_order} />
+                            <input className="form-input" type="number" min="0" max="60" placeholder={t.handling_days} value={m.handling_days} onChange={(e) => setRow(index, 'handling_days', e.target.value)} aria-label={t.handling_days} />
+                            <input className="form-input md:col-span-2" placeholder={t.note} value={m.note} onChange={(e) => setRow(index, 'note', e.target.value)} />
+                            <input className="form-input" dir="rtl" placeholder={t.name_dv} value={m.name_dv} onChange={(e) => setRow(index, 'name_dv', e.target.value)} />
+                            <input className="form-input" dir="rtl" placeholder={t.name_ar} value={m.name_ar} onChange={(e) => setRow(index, 'name_ar', e.target.value)} />
+                            <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={Boolean(m.is_active)} onChange={(e) => setRow(index, 'is_active', e.target.checked)} /> {t.active}</label>
+                            <button type="button" className="text-sm text-red-700 underline" onClick={() => form.setData('methods', form.data.methods.filter((_, i) => i !== index))}>{t.remove}</button>
+                        </div>
+                    ))}
+                    <FormErrors errors={form.errors} className="mb-2" />
+                    <div className="flex gap-3">
+                        <button type="button" className="btn-secondary" onClick={addRow} data-testid="add-method">{t.add_method}</button>
+                        <button type="submit" className="btn-primary" disabled={form.processing} data-testid="save-methods">{t.save_methods}</button>
+                    </div>
+                </form>
+            ) : (
+                <ul className="divide-y rounded border bg-white text-sm">
+                    {methods.map((m) => <li key={m.id} className="p-2">{m.name} · {t[`kind_${m.kind}`] || m.kind} · {m.fee}</li>)}
+                </ul>
+            )}
+        </section>
+    );
+}
+
 function ProductList({ products, t, onEdit }) {
     if (products.length === 0) {
         return <p className="rounded border bg-white p-4 text-gray-600">{t.no_products}</p>;
@@ -325,7 +387,7 @@ function ProductList({ products, t, onEdit }) {
     );
 }
 
-export default function Vendor({ t, vendor, memberships = [], agreement_url, products = [], members = [], options, filters, must_set_password, set_password_url }) {
+export default function Vendor({ t, vendor, memberships = [], agreement_url, products = [], members = [], delivery_methods = [], delivery_kinds = [], options, filters, must_set_password, set_password_url }) {
     const { flash = {}, errors } = usePage().props;
     const [editing, setEditing] = useState(null);
     const [search, setSearch] = useState(filters.q || '');
@@ -395,6 +457,8 @@ export default function Vendor({ t, vendor, memberships = [], agreement_url, pro
                         )}
                         <ProductList products={products} t={t} onEdit={(p) => setEditing(p)} />
                     </section>
+                    {/* Keyed on the rows, so the form re-reads them after the template or a save (useForm keeps its first values otherwise). */}
+                    <DeliveryMethods key={delivery_methods.map((m) => `${m.id}:${m.name}`).join('|')} methods={delivery_methods} kinds={delivery_kinds} isOwner={isOwner} t={t} />
                     <Members members={members} isOwner={isOwner} t={t} />
                 </>
             )}

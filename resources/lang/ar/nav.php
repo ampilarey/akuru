@@ -132,6 +132,7 @@ return [
     'my_wallet' => 'محفظتي',
     'bookshop' => 'متجر أكورو للكتب',
     'shop' => 'متجر الكتب',
+    'my_orders' => 'طلباتي',
     'vendor_portal' => 'متجري',
     'collecting_my_child' => 'استلام ابني',
     'arrivals' => 'الوصول',

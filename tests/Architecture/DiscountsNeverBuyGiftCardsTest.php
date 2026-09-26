@@ -31,8 +31,12 @@
  *
  * Filesystem only: no database, no HTTP, no fixture.
  */
-it('lets only the two non-gift-card checkouts resolve a discount', function () {
+it('lets only the three non-gift-card checkouts resolve a discount', function () {
     $allowed = [
+        // Goods in the Akuru Bookstore (BOOKSHOP_PLAN B2). A basket holds
+        // products, never a gift card — gift cards are bought only on their
+        // own page, by card (§15.4).
+        'app/Domains/Bookshop/Actions/Checkout/StartBookshopCheckoutAction.php',
         // Course fees. A course is a service, not stored value.
         'app/Domains/Courses/Actions/StartCourseCheckoutAction.php',
         // A book, an article or a research item. Same.

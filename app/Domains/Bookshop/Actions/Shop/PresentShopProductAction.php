@@ -58,6 +58,7 @@ class PresentShopProductAction
             'variants' => $product->variants
                 ->filter(fn (ProductVariant $v) => $v->is_active)
                 ->map(fn (ProductVariant $v) => [
+                    'id' => $v->id,
                     'name' => $v->name,
                     'price' => (string) ($v->price ?? $product->price),
                     'in_stock' => ! $product->track_stock || $v->stock > 0,

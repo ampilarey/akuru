@@ -40,6 +40,11 @@ it('pins every caller that can read a private file', function () {
         'app/Domains/Academics/Actions/ServeMaterialFileAction.php',
         // The found-item controller, which reads through the action above.
         'app/Domains/Academics/Http/Controllers/FoundItemController.php',
+        // A bank-transfer slip (BOOKSHOP_PLAN B2). The id comes from the
+        // route, so the action carries the scope itself: the caller must own
+        // the slip's checkout, or hold `bookshop.manage`. It reaches slips
+        // only — the media id is read from the slip row, never the request.
+        'app/Domains/Bookshop/Actions/Checkout/ServeBankTransferSlipAction.php',
         // **The one that takes an id straight from the route**, and therefore
         // the one carrying an explicit allow-list: catalog media, or a
         // submission attachment a reviewer is opening.

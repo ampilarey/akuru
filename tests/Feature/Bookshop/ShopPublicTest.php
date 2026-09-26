@@ -146,7 +146,7 @@ it('shows a product page with its gallery, variants, stock, details and a saniti
         ->assertSee('9789990000001')
         ->assertSee('<strong>clear</strong>', false)
         ->assertSee('Prices include any tax.')
-        ->assertSee('Online ordering opens soon')
+        ->assertSee('data-testid="add-to-cart"', false)
         ->assertSee('data-product="other-workbook"', false)
         ->assertSee(route('public.shop.vendor', 'fitrah'), false);
 

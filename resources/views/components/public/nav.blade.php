@@ -39,6 +39,10 @@
          class="text-brandGray-600 hover:text-brandMaroon-600 transition-colors duration-200">
         {{ __('shop.nav_shop') }}
       </a>
+      <a href="{{ route('public.shop.cart') }}" data-testid="nav-cart"
+         class="text-brandGray-600 hover:text-brandMaroon-600 transition-colors duration-200" aria-label="{{ __('shop.cart_title') }}">
+        🛒
+      </a>
       <a href="{{ route('public.events.index') }}" 
          class="text-brandGray-600 hover:text-brandGold-600 transition-colors duration-200">
         {{ __('public.Events') }}
@@ -283,6 +287,10 @@
       <a href="{{ route('public.shop.index') }}"
          class="block py-3 px-4 text-brandGray-600 hover:text-brandMaroon-600 hover:bg-brandBeige-100 rounded-lg transition-colors duration-200">
         {{ __('shop.nav_shop') }}
+      </a>
+      <a href="{{ route('public.shop.cart') }}"
+         class="block py-3 px-4 text-brandGray-600 hover:text-brandMaroon-600 hover:bg-brandBeige-100 rounded-lg transition-colors duration-200">
+        {{ __('shop.cart_title') }}
       </a>
       <a href="{{ route('public.events.index') }}" 
          class="block py-3 px-4 text-brandGray-600 hover:text-brandGold-600 hover:bg-brandGold-50 rounded-lg transition-colors duration-200">
