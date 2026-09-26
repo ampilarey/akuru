@@ -43,6 +43,18 @@ class EnsureVendorAccountAction
         return ['user_id' => (int) $created['id'], 'created' => true, 'temporary_password' => $password];
     }
 
+    /**
+     * B9a: an applicant already has an account — they applied signed in.
+     *
+     * @return array{user_id: int, created: bool, temporary_password: ?string}
+     */
+    public function existing(int $userId): array
+    {
+        $this->grantVendorRole($userId);
+
+        return ['user_id' => $userId, 'created' => false, 'temporary_password' => null];
+    }
+
     /** The role on the unified identity, without importing Identity's model (rule 3). */
     private function grantVendorRole(int $userId): void
     {

@@ -1860,6 +1860,23 @@ class SmokeMarkerSeeder extends Seeder
         DB::table('products')->whereIn('vendor_id', [$fitrahId, $otherId])->update(['low_stock_notified_at' => null]);
         DB::table('vendors')->whereIn('id', [$fitrahId, $otherId])->update(['notice_settings' => null]);
         DB::table('settings')->where('key', 'like', 'bookshop_notices_%')->delete();
+
+        // B9a (`apply.mjs`): the parent applies to open `SMOKE-Walk …` and
+        // the office approves. Their applications, the shop that approval
+        // made, and the vendor role it gave them go, and the form is open
+        // again (the office's switch back to its default).
+        $applicant = DB::table('users')->where('email', 'parent@akuru.edu.mv')->value('id');
+        if ($applicant !== null) {
+            $madeShops = DB::table('vendor_applications')->where('user_id', $applicant)->whereNotNull('vendor_id')->pluck('vendor_id');
+            DB::table('vendor_applications')->where('user_id', $applicant)->delete();
+            DB::table('vendor_members')->whereIn('vendor_id', $madeShops)->delete();
+            DB::table('vendors')->whereIn('id', $madeShops)->where('slug', 'like', 'smoke-walk-%')->delete();
+            $vendorRole = DB::table('roles')->where('name', 'vendor')->value('id');
+            if ($vendorRole !== null && ! DB::table('vendor_members')->where('user_id', $applicant)->exists()) {
+                DB::table('model_has_roles')->where('role_id', $vendorRole)->where('model_id', $applicant)->delete();
+            }
+        }
+        DB::table('settings')->where('key', (string) config('bookshop.onboarding.setting_key'))->delete();
     }
 
     /**

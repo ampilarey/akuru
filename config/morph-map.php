@@ -135,6 +135,7 @@ return [
     'wishlist_item' => \App\Domains\Bookshop\Models\WishlistItem::class,
     'stock_alert' => \App\Domains\Bookshop\Models\StockAlert::class,
     'stock_movement' => \App\Domains\Bookshop\Models\StockMovement::class,
+    'vendor_application' => \App\Domains\Bookshop\Models\VendorApplication::class,
     'shop_home_feature' => \App\Domains\Bookshop\Models\ShopHomeFeature::class,
     'cart' => \App\Domains\Bookshop\Models\Cart::class,
     'cart_item' => \App\Domains\Bookshop\Models\CartItem::class,

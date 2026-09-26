@@ -4,6 +4,7 @@ namespace App\Domains\Bookshop\Http\Controllers;
 
 use App\Domains\Bookshop\Actions\ListCatalogueOptionsAction;
 use App\Domains\Bookshop\Actions\ResolveVendorScopeAction;
+use App\Domains\Bookshop\Actions\Shop\ApplyToSellAction;
 use App\Domains\Bookshop\Actions\Vendor\AcceptVendorAgreementAction;
 use App\Domains\Bookshop\Actions\Vendor\ImportVendorProductsAction;
 use App\Domains\Bookshop\Actions\Vendor\ListVendorProductsAction;
@@ -32,16 +33,14 @@ class VendorPortalController extends Controller
 {
     use AuthorizesVendor;
 
-    public function index(Request $request): Response
+    public function index(Request $request): Response|RedirectResponse
     {
+        // B9a: someone with no shop is offered the application, not a 403.
+        if (! app(ApplyToSellAction::class)->belongsToAShop((int) $request->user()->id)) {
+            return redirect()->route('vendor.apply');
+        }
         $scope = $this->authorizeVendor($request, needsAgreement: false);
-        $filters = $request->validate([
-            'q' => 'nullable|string|max:100',
-            'status' => 'nullable|string|in:draft,active,archived',
-            'low' => 'nullable|boolean',
-            'category' => 'nullable|integer',
-            'page' => 'nullable|integer|min:1',
-        ]);
+        $filters = $this->productFilters($request);
         $page = $scope->agreementAccepted ? app(ListVendorProductsAction::class)->page($scope, $filters, (int) ($filters['page'] ?? 1)) : null;
 
         return Inertia::render('Bookshop/Vendor', [
@@ -67,6 +66,22 @@ class VendorPortalController extends Controller
             'filters' => $filters + ['q' => null, 'status' => null, 'low' => null, 'category' => null],
             'must_set_password' => (bool) $request->user()->force_password_change,
             'set_password_url' => route('account.set-password'),
+        ]);
+    }
+
+    /**
+     * B8: the product list's search, filters and page.
+     *
+     * @return array<string, mixed>
+     */
+    private function productFilters(Request $request): array
+    {
+        return $request->validate([
+            'q' => 'nullable|string|max:100',
+            'status' => 'nullable|string|in:draft,active,archived',
+            'low' => 'nullable|boolean',
+            'category' => 'nullable|integer',
+            'page' => 'nullable|integer|min:1',
         ]);
     }
 

@@ -4414,6 +4414,75 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5hg. B9a: open a shop — public vendor applications, approved by the office (2026-09-26)
+
+BOOKSHOP_PLAN slice B9 ("later, on request"), which the owner asked for
+with "B9". B9 is ten separate things, so it ships as a run of sub-slices,
+one PR each; this is the first: **public vendor onboarding, apply →
+approve, like writers** (§3; brief item 3 "public vendors possibly
+later").
+
+**Applying** (`/vendor/apply`, Inertia; any signed-in person; "Open a
+shop" on the shop home while the form is open, and `/vendor` now sends
+someone with no shop here instead of a 403): shop name, island, contact
+email and phone (prefilled from the account), what they sell (at least a
+sentence), optional registered name, TIN and a link, and the Vendor
+Agreement, which must be accepted. One waiting application per person;
+the page shows its state, the office's note if declined (they may apply
+again), and the way into the portal once approved. Throttled to five an
+hour. The office is told.
+
+**Deciding** (`/admin/bookshop`, a *Shop applications* section, at the
+top while any wait): the details, then **approve** — with an optional
+commission rate and three-letter code — or **decline** with a note the
+applicant reads (required). Approving creates the shop through
+`CreateVendorAction`, the office's own invitation path, with the
+applicant's **existing account** as owner (no new login, no temporary
+password), the vendor role on it, and the agreement dated from the
+application, so the new owner is not asked again. The applicant is told
+either way. A CSV of every application. **The form can be closed**: an
+office switch (Settings, default open, `BOOKSHOP_VENDOR_APPLICATIONS_OPEN`
+for the first value); closed, the shop home drops "Open a shop" and the
+form says so.
+
+A suspended shop's owner still gets the portal's own refusal, not the
+form (the redirect is only for someone in no shop at all).
+
+**Data** (`2026_09_26_000009_b9a_vendor_applications`, additive):
+`vendor_applications`. Alias `vendor_application` (ADR-005).
+
+**Baselines**: `POST vendor/apply` declared as the caller's own data;
+the portal's product filters moved into a private method so its index
+stays under the thin-controller line.
+
+**Tests**: `VendorApplicationsTest` (4): apply (agreement required, a
+real description required, one waiting, the office told, guests sent to
+sign in, non-members redirected from `/vendor`); approve (the shop with
+the applicant as owner, code NSR, 8%, registered name and phone carried,
+the vendor role, the agreement dated, told, the portal open as owner,
+decided once); decline (note required, the applicant reads it, may apply
+again, the CSV); close and reopen (the shop home and the form follow, an
+application refused while closed). `VendorPortalTest`'s non-member case
+now expects the redirect. Full suite **2261 passed**.
+
+**Walked** (`scripts/smoke/apply.mjs`, **14/14**, no console or server
+errors): the parent finds "Open a shop" on the shop home, is stopped
+without the agreement, sends the application (waiting); the office sees
+it with the contact details, approves it at 8% as SWA; the parent is told,
+sees it approved, opens the portal of `SMOKE-Walk Applicant Shop` as
+owner with no agreement gate and a New product button, and its public
+page answers; the office closes the form, the shop home drops the offer
+and the form says closed. Re-walked: `vendor.mjs` **25/25**, `shop.mjs`
+**24/24**, `operations.mjs` **21/21**.
+
+**Production**: the migration only. The form is open from the moment
+this deploys ("Open a shop" appears on the shop home); close it from
+`/admin/bookshop` if the office is not ready to read applications.
+
+**Next in B9**: cash on delivery; the newsletter section and
+abandoned-cart reminders; bulk quotes for schools; then the analytics
+funnel, the search-service contract, custom hosts and USD display.
+
 ## 5hf. B8: bulk and operations — stock log, low-stock notices, the product sheet, bulk actions, order exports, email and SMS (2026-09-26)
 
 BOOKSHOP_PLAN slice B8, the owner's "B8": a vendor with 500 items can

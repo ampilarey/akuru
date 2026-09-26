@@ -209,6 +209,16 @@ return [
         'sms_max_length' => 300,
     ],
 
+    /*
+     * B9a: public vendor onboarding (§3 "apply → approve"). Whether the
+     * "Open a shop" form is open is the office's switch (Settings,
+     * `/admin/bookshop`); this is its value until the office sets one.
+     */
+    'onboarding' => [
+        'open_by_default' => (bool) env('BOOKSHOP_VENDOR_APPLICATIONS_OPEN', true),
+        'setting_key' => 'bookshop_vendor_applications_open',
+    ],
+
     'bank_transfer' => [
         'bank' => env('BOOKSHOP_BANK_NAME', 'Bank of Maldives'),
         'account_name' => env('BOOKSHOP_BANK_ACCOUNT_NAME', 'Akuru Institute'),

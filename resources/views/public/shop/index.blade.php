@@ -226,6 +226,20 @@
             </div>
         </section>
     @endif
+    {{-- B9a (§3 "apply → approve"): the way in for a new shop, while the office accepts applications. --}}
+    @if($home['applications_open'] ?? false)
+        <section class="py-8" data-testid="open-a-shop">
+            <div class="container mx-auto px-4">
+                <div class="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-brandMaroon-200 bg-brandBeige-50 p-5">
+                    <div>
+                        <h2 class="text-lg font-semibold text-brandMaroon-900">{{ __('shop.sell_here_heading') }}</h2>
+                        <p class="text-sm text-gray-700">{{ __('shop.sell_here_body') }}</p>
+                    </div>
+                    <a href="{{ route('vendor.apply') }}" class="btn-primary" data-testid="open-a-shop-link">{{ __('shop.apply_title') }}</a>
+                </div>
+            </div>
+        </section>
+    @endif
 @endif
 
 <section class="py-8">

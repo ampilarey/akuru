@@ -73,6 +73,7 @@ return [
     'learn/lessons/{lesson}/complete' => 'LearnLessonController@complete — your own enrolment progress.',
     'payments/bml/initiate' => 'PaymentController@initiate — starts a payment for your own session.',
     'payments/course/{course}/start' => 'CheckoutController@start — your own checkout.',
+    'vendor/apply' => 'VendorApplyController@store — BOOKSHOP_PLAN B9a: your own application to open a shop; auth, throttled 5 an hour. READ: the row is keyed by the signed-in user id; the office decides it behind bookshop.manage.',
     'shop/wishlist/{slug}' => 'ShopAccountController@toggleWishlist — BOOKSHOP_PLAN B7: your own wishlist; auth, throttled. READ: the row is keyed by the signed-in user id, never a request value.',
     'shop/products/{slug}/notify' => 'ShopAccountController@toggleStockAlert — B7: your own back-in-stock notice; auth, throttled, keyed by the signed-in user id.',
     'shop/products/{slug}/reviews' => 'ShopAccountController@review — B7: a review of something you bought. READ: ProductReviewsAction::eligibleItem finds a delivered order line of the signed-in user and refuses otherwise; auth, throttled.',

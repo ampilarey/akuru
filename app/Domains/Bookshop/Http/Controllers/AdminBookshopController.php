@@ -4,6 +4,7 @@ namespace App\Domains\Bookshop\Http\Controllers;
 
 use App\Domains\Bookshop\Actions\Checkout\DecideBankTransferSlipAction;
 use App\Domains\Bookshop\Actions\CreateVendorAction;
+use App\Domains\Bookshop\Actions\DecideVendorApplicationAction;
 use App\Domains\Bookshop\Actions\DecideVendorPayoutAction;
 use App\Domains\Bookshop\Actions\ListBankTransferSlipsAction;
 use App\Domains\Bookshop\Actions\ListCatalogueOptionsAction;
@@ -20,6 +21,7 @@ use App\Domains\Bookshop\Actions\NotifyBookshopUserAction;
 use App\Domains\Bookshop\Actions\Orders\RefundOrderAction;
 use App\Domains\Bookshop\Actions\SaveBookshopNoticeSwitchesAction;
 use App\Domains\Bookshop\Actions\SaveCatalogueTermAction;
+use App\Domains\Bookshop\Actions\Shop\ApplyToSellAction;
 use App\Domains\Bookshop\Actions\Shop\ListShopProductsAction;
 use App\Domains\Bookshop\Actions\Shop\PresentShopVendorAction;
 use App\Domains\Bookshop\Actions\UpdateVendorAction;
@@ -58,6 +60,8 @@ class AdminBookshopController extends Controller
             'low_stock' => app(ListLowStockAction::class)->execute(500),
             'notices' => NotifyBookshopUserAction::officeSwitches(),
             'order_statuses' => array_map(fn (OrderStatus $s) => $s->value, OrderStatus::cases()),
+            'applications' => app(DecideVendorApplicationAction::class)->list(),
+            'applications_open' => app(ApplyToSellAction::class)->isOpen(),
             'default_commission_rate' => number_format((float) config('bookshop.default_commission_rate'), 2, '.', ''),
             'agreement_url' => route('public.page.show', 'vendor-agreement'),
             'sign_in_url' => route('login'),
@@ -392,6 +396,49 @@ class AdminBookshopController extends Controller
             }
             fclose($out);
         }, 'bookstore-low-stock.csv', ['Content-Type' => 'text/csv; charset=UTF-8']);
+    }
+
+    /** B9a: approve a shop application (the shop is created) or decline it with a note. */
+    public function decideApplication(Request $request, int $application): RedirectResponse
+    {
+        abort_unless($request->user()?->can('bookshop.manage'), 403);
+        $data = $request->validate([
+            'decision' => 'required|string|in:approve,decline',
+            'note' => 'nullable|string|max:500',
+            'commission_rate' => 'nullable|numeric|min:0|max:100',
+            'code' => 'nullable|string|size:3|alpha_num',
+        ]);
+
+        $decided = app(DecideVendorApplicationAction::class)->execute($application, (int) $request->user()->id, $data['decision'] === 'approve', $data['note'] ?? null, $data);
+
+        return back()->with('success', __($data['decision'] === 'approve' ? 'shop.application_approved_flash' : 'shop.application_declined_flash', ['shop' => $decided->shop_name]));
+    }
+
+    /** B9a: open or close the "Open a shop" form. */
+    public function setApplicationsOpen(Request $request): RedirectResponse
+    {
+        abort_unless($request->user()?->can('bookshop.manage'), 403);
+        $data = $request->validate(['open' => 'required|boolean']);
+
+        app(ApplyToSellAction::class)->setOpen((bool) $data['open']);
+
+        return back()->with('success', __($data['open'] ? 'shop.applications_opened_flash' : 'shop.applications_closed_flash'));
+    }
+
+    /** Every listing gets a CSV (conventions): the shop applications. */
+    public function exportApplications(Request $request): StreamedResponse
+    {
+        abort_unless($request->user()?->can('bookshop.manage'), 403);
+        $rows = app(DecideVendorApplicationAction::class)->list(5000);
+
+        return response()->streamDownload(function () use ($rows): void {
+            $out = fopen('php://output', 'w');
+            Csv::put($out, ['submitted', 'status', 'shop', 'legal_name', 'tin', 'applicant', 'email', 'phone', 'island', 'sells', 'link', 'decided', 'note', 'shop_address']);
+            foreach ($rows as $r) {
+                Csv::put($out, [$r['submitted_at'], $r['status'], $r['shop_name'], $r['legal_name'], $r['tin'], $r['applicant'], $r['contact_email'], $r['contact_phone'], $r['island'], $r['what_they_sell'], $r['link'], $r['decided_at'], $r['decision_note'], $r['vendor']['slug'] ?? '']);
+            }
+            fclose($out);
+        }, 'bookstore-shop-applications.csv', ['Content-Type' => 'text/csv; charset=UTF-8']);
     }
 
     /** B8 (§7 Settings "email/SMS notice switches"). */

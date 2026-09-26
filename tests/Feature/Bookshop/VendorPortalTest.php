@@ -72,7 +72,8 @@ it('opens with the agreement, refuses writes until it is accepted, then dates th
 });
 
 it('refuses the portal to someone who is not in a shop', function () {
-    portal(User::factory()->create())->get(route('vendor.index'))->assertForbidden();
+    // B9a: someone with no shop is offered the application instead of a 403.
+    portal(User::factory()->create())->get(route('vendor.index'))->assertRedirect(route('vendor.apply'));
     portal(User::factory()->create())->post(route('vendor.products.store'), productInput())->assertForbidden();
 });
 
