@@ -5,6 +5,7 @@ namespace App\Domains\Bookshop\Http\Controllers;
 use App\Domains\Bookshop\Actions\Checkout\CashOnDeliveryAction;
 use App\Domains\Bookshop\Actions\Checkout\DecideBankTransferSlipAction;
 use App\Domains\Bookshop\Actions\CreateVendorAction;
+use App\Domains\Bookshop\Actions\DecideStorefrontCssAction;
 use App\Domains\Bookshop\Actions\DecideVendorApplicationAction;
 use App\Domains\Bookshop\Actions\DecideVendorHostAction;
 use App\Domains\Bookshop\Actions\DecideVendorPayoutAction;
@@ -68,6 +69,7 @@ class AdminBookshopController extends Controller
             'applications' => app(DecideVendorApplicationAction::class)->list(),
             'applications_open' => app(ApplyToSellAction::class)->isOpen(),
             'quotes' => app(ListQuotesAction::class)->summary(),
+            'custom_css' => app(DecideStorefrontCssAction::class)->list(),
             'team' => ['members' => app(ManageBookshopTeamAction::class)->list(), 'can_manage' => (bool) $request->user()?->hasAnyRole(['super_admin', 'admin']), 'added' => $request->session()->get('team_added')],
             'hosts' => ['shops' => app(DecideVendorHostAction::class)->list(), 'shop_host' => config('bookshop.hosts.shop_host'), 'check' => $request->session()->get('host_check')],
             'insights' => ['days' => InsightsReport::days((int) $request->query('insight_days', 30)), 'shops' => InsightsReport::byShop((int) $request->query('insight_days', 30)), 'ranges' => array_map('intval', (array) config('bookshop.insights.ranges'))],
@@ -460,6 +462,23 @@ class AdminBookshopController extends Controller
             }
             fclose($out);
         }, 'bookstore-shop-applications.csv', ['Content-Type' => 'text/csv; charset=UTF-8']);
+    }
+
+    /** B10c (ADR-039): a shop's own CSS — approve it, send it back with a note, or take the live one down. */
+    public function decideCss(Request $request, int $vendor): RedirectResponse
+    {
+        abort_unless($request->user()?->can('bookshop.manage'), 403);
+        $data = $request->validate(['decision' => 'required|string|in:approve,decline,take_down', 'note' => 'nullable|string|max:500']);
+        $css = app(DecideStorefrontCssAction::class);
+        $by = (int) $request->user()->id;
+
+        match ($data['decision']) {
+            'approve' => $css->approve($vendor, $by),
+            'decline' => $css->decline($vendor, $by, (string) ($data['note'] ?? '')),
+            'take_down' => $css->takeDown($vendor, $by, (string) ($data['note'] ?? '')),
+        };
+
+        return back()->with('success', __('shop.css_decided_flash_'.$data['decision']));
     }
 
     /** B10b: a Bookstore admin, by email — an existing account, or a new one with a one-time password. Full admins only. */

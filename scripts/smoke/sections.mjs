@@ -264,7 +264,7 @@ await settle(office);
 await vendor.reload({ waitUntil: 'networkidle' });
 check('locking Video for Fitrah: the designer names the locked type', (await count(vendor, '[data-testid="locked-types"]')) === 1 && (await vendor.locator('[data-testid="locked-types"]').innerText()).includes('Video'));
 await vendor.click('[data-testid="save-sections"]');
-await settle(vendor);
+await vendor.waitForFunction(() => document.body.innerText.includes('locked the “Video” section'), null, { timeout: 20000 }).catch(() => {});
 check('and refuses to save a draft that still has one', (await text(vendor)).includes('locked the “Video” section'), (await text(vendor)).slice(0, 160));
 
 await finish();

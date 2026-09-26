@@ -19,6 +19,7 @@ class VendorStorefront extends Model
         'published_identity', 'published_theme', 'published_sections', 'published_navigation', 'published_seo',
         'published_version_id', 'published_at', 'published_by',
         'held_at', 'held_by', 'moderation_note', 'locked_section_types',
+        'custom_css', 'custom_css_pending', 'custom_css_status', 'custom_css_note', 'custom_css_submitted_at', 'custom_css_reviewed_at', 'custom_css_reviewed_by',
     ];
 
     protected function casts(): array
@@ -37,6 +38,8 @@ class VendorStorefront extends Model
             'locked_section_types' => 'array',
             'published_at' => 'datetime',
             'held_at' => 'datetime',
+            'custom_css_submitted_at' => 'datetime',
+            'custom_css_reviewed_at' => 'datetime',
         ];
     }
 

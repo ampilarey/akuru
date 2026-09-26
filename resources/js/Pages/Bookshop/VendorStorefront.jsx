@@ -32,7 +32,40 @@ function Swatches({ colors }) {
     );
 }
 
-export default function VendorStorefront({ t, vendor, designer, preview_url, public_url }) {
+/** B10c (ADR-039): the shop's own CSS — confined to its page, cleaned, live once the office approves it. */
+function CustomCssEditor({ css, isOwner, t, onSaved }) {
+    const form = useForm({ css: css.pending ?? css.live ?? '' });
+    const status = css.status;
+    const bytes = new Blob([form.data.css]).size;
+
+    return (
+        <section className="rounded-lg border bg-white p-4" data-testid="custom-css">
+            <h2 className="mb-1 text-lg font-semibold">{t.css_heading}</h2>
+            <p className="mb-2 text-sm text-gray-600">{t.css_intro}</p>
+            {status && (
+                <p className={`mb-2 rounded p-2 text-sm ${status === 'approved' ? 'bg-green-50 text-green-800' : status === 'pending' ? 'bg-amber-50 text-amber-900' : 'bg-red-50 text-red-800'}`} data-testid="css-status" data-status={status}>
+                    {t[`css_status_${status}`] || status}{css.note && <span className="block text-xs">{css.note}</span>}
+                </p>
+            )}
+            <form onSubmit={(e) => { e.preventDefault(); form.post('/vendor/storefront/css', { preserveScroll: true, onSuccess: onSaved }); }}>
+                <textarea className="form-input w-full font-mono text-xs" rows={12} dir="ltr" spellCheck={false} value={form.data.css} onChange={(e) => form.setData('css', e.target.value)} disabled={!isOwner}
+                    placeholder={'.sf-hero h2 { letter-spacing: .05em; }\n.sf-card { border-width: 2px; }'} data-testid="css-input" />
+                <p className={`text-xs ${bytes > css.max_bytes ? 'text-red-700' : 'text-gray-500'}`}>{bytes} / {css.max_bytes} · {t.css_rules}</p>
+                <FormErrors errors={form.errors} className="mt-2" />
+                {isOwner && (
+                    <div className="mt-2 flex flex-wrap gap-2">
+                        <button type="submit" className="btn-primary" disabled={form.processing} data-testid="css-send">{t.css_send}</button>
+                        {(css.live || css.pending) && (
+                            <button type="button" className="btn-secondary" onClick={() => { if (window.confirm(t.css_remove_confirm)) router.post('/vendor/storefront/css/remove', {}, { preserveScroll: true, onSuccess: () => { form.setData('css', ''); onSaved(); } }); }} data-testid="css-remove">{t.css_remove}</button>
+                        )}
+                    </div>
+                )}
+            </form>
+        </section>
+    );
+}
+
+export default function VendorStorefront({ t, vendor, designer, preview_url, public_url, custom_css }) {
     const { flash = {}, errors } = usePage().props;
     const isOwner = vendor.role === 'owner';
     const d = designer;
@@ -250,6 +283,8 @@ export default function VendorStorefront({ t, vendor, designer, preview_url, pub
                         <iframe key={previewKey} title={t.preview_heading} src={preview_url} className="h-[70vh] w-full rounded border" data-testid="preview-frame" />
                         <p className="mt-1 px-2 text-xs text-gray-500">{t.preview_hint}</p>
                     </section>
+
+                    {custom_css && <CustomCssEditor css={custom_css} isOwner={isOwner} t={t} onSaved={() => setPreviewKey((k) => k + 1)} />}
 
                     <section className="rounded-lg border bg-white p-4" data-testid="versions">
                         <h2 className="mb-2 text-lg font-semibold">{t.versions_heading}</h2>

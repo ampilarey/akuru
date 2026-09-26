@@ -11,8 +11,10 @@ use App\Domains\Bookshop\Actions\Vendor\PresentStorefrontDesignerAction;
 use App\Domains\Bookshop\Actions\Vendor\PublishStorefrontAction;
 use App\Domains\Bookshop\Actions\Vendor\SaveStorefrontDraftAction;
 use App\Domains\Bookshop\Actions\Vendor\SaveStorefrontSectionsAction;
+use App\Domains\Bookshop\Actions\Vendor\SubmitStorefrontCssAction;
 use App\Domains\Bookshop\Actions\Vendor\UploadStorefrontImagesAction;
 use App\Domains\Bookshop\Http\Controllers\Concerns\AuthorizesVendor;
+use App\Domains\Bookshop\Support\CustomCss;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -41,7 +43,28 @@ class VendorStorefrontController extends Controller
             'designer' => app(PresentStorefrontDesignerAction::class)->execute($scope),
             'preview_url' => route('vendor.storefront.preview'),
             'public_url' => route('public.shop.vendor', $scope->vendorSlug),
+            'custom_css' => app(SubmitStorefrontCssAction::class)->get($scope),
         ]);
+    }
+
+    /** B10c (ADR-039): the shop's own CSS, to the office for approval (empty removes it). Owners only. */
+    public function saveCss(Request $request): RedirectResponse
+    {
+        $scope = $this->authorizeVendor($request);
+        $data = $request->validate(['css' => 'nullable|string|max:'.(CustomCss::MAX_BYTES * 2)]);
+
+        $storefront = app(SubmitStorefrontCssAction::class)->submit($scope, $data['css'] ?? null);
+
+        return back()->with('success', __($storefront->custom_css_status === 'pending' ? 'shop.css_sent_flash' : 'shop.css_saved_flash'));
+    }
+
+    /** B10c: take the shop's own CSS off its page now. Owners only. */
+    public function removeCss(Request $request): RedirectResponse
+    {
+        $scope = $this->authorizeVendor($request);
+        app(SubmitStorefrontCssAction::class)->remove($scope);
+
+        return back()->with('success', __('shop.css_removed_flash'));
     }
 
     public function saveDraft(Request $request): RedirectResponse

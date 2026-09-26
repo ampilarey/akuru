@@ -4414,6 +4414,90 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5ho. B10c: a shop's own CSS, cleaned, confined and approved by the office (2026-09-26)
+
+The owner asked for per-vendor custom CSS, which BOOKSHOP_PLAN §6.8 had
+marked "not planned". Decision in **ADR-039**: allowed, but cleaned,
+confined to the shop's own part of its page, and live only after the
+office approves it.
+
+**The shop's side.** The storefront designer (`/vendor/storefront`)
+gains **Your own CSS**: a text box, the rules listed, and a size count.
+**Send for approval** is owners only. The CSS is cleaned
+(`Support/CustomCss`) and refused with a reason if it contains:
+- `url(`, `image-set(`, `@import`, `@font-face`, `@charset` or `@namespace`;
+- `expression(`, `javascript:`, `behavior` or `-moz-binding`;
+- `<`, any backslash, or `position: fixed`;
+- unbalanced braces, declarations outside a rule, nested rules, or any
+  other at-rule;
+- more than 20,000 bytes.
+
+Clean CSS has **every selector confined under `.storefront`**, and that
+includes rules inside `@media` and `@supports`. `html`, `body` and
+`:root` become `.storefront` itself.
+
+Once sent, the CSS shows **in the preview at once** and waits for the
+office. The currently approved CSS stays live until the new version is
+approved. **Remove my CSS** takes it off the page straight away, with no
+approval needed.
+
+**The office's side.** `/admin/bookshop` gains **Shops' own CSS**. It
+shows the CSS that is waiting, beside a link to the shop's preview with
+it applied. The office can:
+- **approve** it, which makes it live and tells the shop;
+- **send it back**, with a note, which the shop sees;
+- **take down** the live CSS at any time, with a note.
+
+The hint asks the reviewer to check the CSS does not hide Akuru's line,
+the prices or the policies.
+
+**On the page.** Live CSS is rendered after the theme, together with
+`.storefront { position: relative; isolation: isolate; contain: paint }`.
+Nothing the shop draws or positions can leave its own box, so it cannot
+cover the site header, cart or checkout. The published page shows only
+approved CSS; the preview shows the pending CSS.
+
+**Data** (`2026_09_26_000017_b10c_storefront_custom_css`, additive):
+`vendor_storefronts.custom_css` (live), `custom_css_pending`,
+`custom_css_status` (pending, approved, declined or taken_down),
+`custom_css_note`, `custom_css_submitted_at`, `custom_css_reviewed_at` and
+`custom_css_reviewed_by`. The raw render of the CSS is declared in
+`raw_html_renders`, naming its write path.
+
+**Tests**: `StorefrontCustomCssTest` (3):
+- The cleaner confines rules, including inside `@media` and on
+  `:root`/`body`; comments go.
+- Each refused construct is refused with its reason, including
+  hex-escaped `url` and closing the style tag; oversize is refused.
+- Staff are refused. `url()` is refused.
+- Sent CSS shows in the preview (with `contain: paint`) and not on the
+  public page. The office is told.
+- The office cannot send back without a note. Send back, then approve:
+  the CSS is live and the shop is told.
+- A newer version waits while the approved one stays live.
+- Take down, then the shop removes its own.
+- Each shop sees only its own CSS.
+
+Full suite **2285 passed**.
+
+**Walked** (`scripts/smoke/css.mjs`, **9/9**, no console or server
+errors):
+1. Fitrah publishes. CSS with `url()` is refused with the reason.
+2. A letter-spacing and band-border rule is sent. It waits, and the
+   preview has it confined under `.storefront`.
+3. A guest does not see it yet.
+4. The office sees it with the CSS and a preview link, and approves it.
+5. The guest's page now draws the band's 6px border.
+6. The office takes it down with a note. The guest's page is plain again,
+   and the owner sees the reason.
+
+Re-walked: `storefront.mjs` **15/15** and `sections.mjs` **22/22**. One
+step in `sections.mjs` read the page before the refusal had rendered. It
+now waits for the message; the product behaviour is unchanged.
+
+**Production**: the migration only. Nothing changes until a shop sends
+CSS and the office approves it.
+
 ## 5hn. B10b: Bookstore admins (2026-09-26)
 
 The owner: "need admin for bookshops". A **Bookstore admin**

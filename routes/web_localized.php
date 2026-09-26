@@ -783,6 +783,8 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         // B9b: cash on delivery.
         Route::post('cod', [\App\Domains\Bookshop\Http\Controllers\AdminBookshopController::class, 'setCod'])->name('admin.bookshop.cod');
         Route::get('applications/export', [\App\Domains\Bookshop\Http\Controllers\AdminBookshopController::class, 'exportApplications'])->name('admin.bookshop.applications.export');
+        // B10c: shops' own CSS — approve, send back, take down.
+        Route::post('storefronts/{vendor}/css', [\App\Domains\Bookshop\Http\Controllers\AdminBookshopController::class, 'decideCss'])->name('admin.bookshop.storefront.css')->whereNumber('vendor');
         // B10b: the Bookstore admins — full admins add and remove them.
         Route::post('team', [\App\Domains\Bookshop\Http\Controllers\AdminBookshopController::class, 'addTeamMember'])->name('admin.bookshop.team.store');
         Route::post('team/{user}/remove', [\App\Domains\Bookshop\Http\Controllers\AdminBookshopController::class, 'removeTeamMember'])->name('admin.bookshop.team.remove')->whereNumber('user');
@@ -869,6 +871,9 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::get('storefront/preview', [\App\Domains\Bookshop\Http\Controllers\VendorStorefrontController::class, 'preview'])->name('vendor.storefront.preview');
         Route::post('storefront/draft', [\App\Domains\Bookshop\Http\Controllers\VendorStorefrontController::class, 'saveDraft'])->name('vendor.storefront.draft');
         Route::post('storefront/publish', [\App\Domains\Bookshop\Http\Controllers\VendorStorefrontController::class, 'publish'])->name('vendor.storefront.publish');
+        // B10c: the shop's own CSS, approved by the office.
+        Route::post('storefront/css', [\App\Domains\Bookshop\Http\Controllers\VendorStorefrontController::class, 'saveCss'])->name('vendor.storefront.css')->middleware('throttle:20,1,storefront-css');
+        Route::post('storefront/css/remove', [\App\Domains\Bookshop\Http\Controllers\VendorStorefrontController::class, 'removeCss'])->name('vendor.storefront.css.remove');
         Route::post('storefront/versions/{version}/roll-back', [\App\Domains\Bookshop\Http\Controllers\VendorStorefrontController::class, 'rollBack'])->name('vendor.storefront.roll-back')->whereNumber('version');
         // B5: sections, the menu and SEO; pages; collections; the image library.
         Route::get('storefront/sections', [\App\Domains\Bookshop\Http\Controllers\VendorStorefrontController::class, 'sections'])->name('vendor.storefront.sections');

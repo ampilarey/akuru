@@ -587,6 +587,46 @@ function Applications({ applications, open, t }) {
     );
 }
 
+/** B10c (ADR-039): shops' own CSS — read it, open the shop's preview with it, approve or send back; take a live one down. */
+function CustomCssReviews({ rows, t }) {
+    const [notes, setNotes] = useState({});
+    const decide = (vendorId, decision) => router.post(`/admin/bookshop/storefronts/${vendorId}/css`, { decision, note: notes[vendorId] || '' }, { preserveScroll: true });
+
+    return (
+        <section className="mt-8" data-testid="office-css">
+            <h2 className="mb-1 text-lg font-semibold">{t.css_office_heading}</h2>
+            <p className="mb-2 text-sm text-gray-600">{t.css_office_hint}</p>
+            {rows.length === 0 ? (
+                <p className="rounded border bg-white p-3 text-sm text-gray-600">{t.css_office_none}</p>
+            ) : (
+                <ul className="space-y-3">
+                    {rows.map((r) => (
+                        <li key={r.vendor_id} className="rounded border bg-white p-3 text-sm" data-testid={`css-${r.slug}`} data-status={r.status}>
+                            <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+                                <span className="font-semibold">{r.vendor} <span className="ms-2 rounded bg-gray-100 px-2 py-0.5 text-xs font-normal">{t[`css_status_${r.status}`] || r.status}</span></span>
+                                <a href={r.preview_url} target="_blank" rel="noreferrer" className="text-blue-700 underline" data-testid={`css-preview-${r.slug}`}>{t.css_open_preview}</a>
+                            </div>
+                            {r.pending && (
+                                <>
+                                    <p className="text-xs text-gray-500">{t.css_waiting} {r.submitted_at}</p>
+                                    <pre className="max-h-64 overflow-auto rounded bg-gray-50 p-2 text-xs" dir="ltr" data-testid={`css-pending-${r.slug}`}>{r.pending}</pre>
+                                </>
+                            )}
+                            {r.live && !r.pending && <pre className="max-h-40 overflow-auto rounded bg-gray-50 p-2 text-xs" dir="ltr">{r.live}</pre>}
+                            <div className="mt-2 flex flex-wrap items-center gap-2">
+                                <input className="form-input flex-1" placeholder={t.css_note_placeholder} value={notes[r.vendor_id] || ''} onChange={(e) => setNotes({ ...notes, [r.vendor_id]: e.target.value })} data-testid={`css-note-${r.slug}`} />
+                                {r.pending && <button type="button" className="btn-primary" onClick={() => decide(r.vendor_id, 'approve')} data-testid={`css-approve-${r.slug}`}>{t.css_approve}</button>}
+                                {r.pending && <button type="button" className="btn-secondary" onClick={() => decide(r.vendor_id, 'decline')} data-testid={`css-decline-${r.slug}`}>{t.css_decline}</button>}
+                                {r.live && <button type="button" className="btn-secondary text-red-700" onClick={() => decide(r.vendor_id, 'take_down')} data-testid={`css-take-down-${r.slug}`}>{t.css_take_down}</button>}
+                            </div>
+                        </li>
+                    ))}
+                </ul>
+            )}
+        </section>
+    );
+}
+
 /** B10b: the Bookstore admins — they run this screen and nothing else of the school system. */
 function Team({ team, t }) {
     const form = useForm({ email: '', name: '', phone: '' });
@@ -894,7 +934,7 @@ function ShopHome({ home, t }) {
     );
 }
 
-export default function Admin({ t, vendors, catalogue, slips = [], orders = [], refunds = [], money = null, reviews = [], home = null, low_stock = [], notices = null, order_statuses = [], applications = [], applications_open = true, quotes = null, insights = null, hosts = null, team = null, cod_on = true, default_commission_rate, sign_in_url, section_types = [] }) {
+export default function Admin({ t, vendors, catalogue, slips = [], orders = [], refunds = [], money = null, reviews = [], home = null, low_stock = [], notices = null, order_statuses = [], applications = [], applications_open = true, quotes = null, insights = null, hosts = null, team = null, custom_css = null, cod_on = true, default_commission_rate, sign_in_url, section_types = [] }) {
     const { flash = {}, errors } = usePage().props;
 
     return (
@@ -923,6 +963,7 @@ export default function Admin({ t, vendors, catalogue, slips = [], orders = [], 
             {quotes && <Quotes quotes={quotes} t={t} />}
             {insights && <Funnels insights={insights} t={t} />}
             {hosts && <Hosts hosts={hosts} t={t} />}
+            {custom_css && <CustomCssReviews rows={custom_css} t={t} />}
             {team && <Team team={team} t={t} />}
             <Orders orders={orders} vendors={vendors} statuses={order_statuses} t={t} />
             <LowStockAll rows={low_stock} t={t} />
