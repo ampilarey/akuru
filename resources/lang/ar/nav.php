@@ -148,6 +148,7 @@ return [
     'feature_walkthrough' => 'جولة في المزايا',
     'translations' => 'الترجمات',
     // The admin panel in the Inertia shell's More menu (admin-panel audit, STATUS §5hs).
+    'admin_home' => 'لوحة الإدارة',
     'admin_enrolments' => 'التسجيلات',
     'admin_instructors' => 'المدرّسون',
     'website_cms' => 'إدارة محتوى الموقع',

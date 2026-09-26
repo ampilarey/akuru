@@ -280,6 +280,9 @@ final class NavigationMap
             // route's own gate — `role:super_admin` hides Users and Settings
             // from everyone else, `can:commerce.manage` hides Commerce.
             ['key' => 'admin_group', 'items' => [
+                // The front door. Its route is `auth`-only (the hub decides
+                // what to show), so the hint says who it is for.
+                ['key' => 'admin_home', 'href' => '/admin', 'roles' => ['super_admin', 'admin', 'headmaster', 'supervisor', 'bookshop_manager']],
                 ['key' => 'ops_checklist', 'href' => '/admin/operations'],
                 ['key' => 'admin_enrolments', 'href' => '/admin/enrollments', 'hard' => true],
                 ['key' => 'admin_instructors', 'href' => '/admin/instructors', 'hard' => true],

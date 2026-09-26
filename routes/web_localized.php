@@ -543,6 +543,11 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::post('substitutions/requests/{request}/assign', [SubstitutionRequestController::class, 'assign'])->name('substitutions.requests.assign');
     });
 
+    // The admin panel's front door: the sections this person may open
+    // (docs/ADMIN_PANEL.md §1). `auth` only — the action lists what the
+    // routes admit, and a person who may open nothing gets 403.
+    Route::get('admin', [\App\Domains\Settings\Http\Controllers\Admin\AdminHubController::class, 'index'])->name('admin.index');
+
     // Admin user management (super_admin only)
     Route::prefix('admin/users')->middleware(['role:super_admin'])->group(function () {
         Route::get('export', [\App\Domains\Identity\Http\Controllers\AdminUserController::class, 'export'])->name('admin.users.export');

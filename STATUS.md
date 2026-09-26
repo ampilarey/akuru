@@ -4414,6 +4414,33 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5hx. `/admin`: the panel's front door (2026-09-26)
+
+The owner: "in Bake & Grill admin is a separate app at /admin — is the
+way admin is set correct?" Akuru's admin is not a separate app — the
+sections under `/admin/*` inside the one application, under two shells
+— and nothing answered at `/admin` itself. That is the gap, not the
+shape: one application with `/admin/*` behind role and permission gates
+is the ordinary Laravel arrangement (`docs/ADMIN_PANEL.md` §1, L21).
+
+**Built**: `GET /admin` → `AdminHubController` → `ListAdminSectionsAction`
+→ `Settings/AdminHub`: one card per section the signed-in person may
+open (the navigation map's admin group, filtered by each route's own
+gate through `BuildNavigationAction`), each with a line on what it is for
+(`lang/{en,dv,ar}/admin.php`); a person who may open none gets 403. The
+map's admin group leads with it (a `roles` hint, since its route is
+`auth`-only); the Blade More menu and the mobile menu link it first.
+
+**Tests**: `AdminHubTest` (2) — a super admin sees all thirteen with
+`hard` on the Blade ones and the description text; a Bookstore manager
+sees only the Bookstore; a teacher is refused and not offered the door;
+a guest is sent to sign in; the Dhivehi label. Architecture green.
+
+**Walked**: `admin-pages.mjs` and `admin-mobile.mjs` with `/admin` in
+their lists; `admin.mjs`, `admin-layout.mjs`, `operations.mjs` re-walked.
+
+**Production**: nothing to migrate; the pull line as usual.
+
 ## 5hw. Every admin page, desktop and phone (2026-09-26)
 
 The owner: "check each and every admin page, desktop and mobile — the
