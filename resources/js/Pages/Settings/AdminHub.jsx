@@ -18,7 +18,14 @@ function Open({ hard, href, className, children, ...rest }) {
 export default function AdminHub({ t, parts }) {
     return (
         <AppShell title={t.hub_title}>
-            <p className="mb-4 text-sm text-gray-600">{t.hub_intro}</p>
+            <p className="mb-2 text-sm text-gray-600">{t.hub_intro}</p>
+            {/* The other half: the dashboard is the numbers, this page is the
+                doors. Said at the top, with the way back, because the two
+                were confused for each other (the owner, 2026-09-26). */}
+            <p className="mb-4 flex flex-wrap items-center gap-3 text-xs text-gray-500">
+                <a href="/dashboard" className="rounded border border-[#7C2D37] px-3 py-1.5 text-sm font-semibold text-[#7C2D37] hover:bg-[#F3EBE0]" data-testid="hub-dashboard">← {t.hub_dashboard}</a>
+                <span>{t.hub_dashboard_hint}</span>
+            </p>
             {/* The four parts, for a phone: one tap to the part. */}
             <nav aria-label={t.hub_parts} className="mb-6 flex flex-wrap gap-2 text-sm" data-testid="hub-parts">
                 {parts.map((part) => (
@@ -53,7 +60,6 @@ export default function AdminHub({ t, parts }) {
                     </ul>
                 </section>
             ))}
-            <p className="text-sm"><a href="/dashboard" className="text-[#7C2D37] hover:underline" data-testid="hub-dashboard">← {t.hub_dashboard}</a></p>
         </AppShell>
     );
 }

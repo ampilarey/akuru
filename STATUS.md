@@ -4414,6 +4414,51 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5hz. Dashboard is the numbers, Admin panel is the doors (2026-09-26)
+
+The owner, after §5hy: "still I don't understand what's happening
+sometimes, /dashboard or /admin." Fair: an administrator signs in and
+lands on a page of numbers (the Blade super-admin dashboard, or the
+Inertia staff overview for an admin or headmaster, or the supervisor
+dashboard) with no link to the panel except inside a menu, and the hub's
+only way back was a link at its foot. Two screens, two shells, no sentence
+saying which is for what.
+
+**Built**: the sentence, and the links, on every landing. The super-admin
+and supervisor dashboards carry an *Admin panel →* button and "This
+dashboard is today's numbers. To manage enrolments, the website, the
+shops or the system, open the Admin panel." The staff overview carries the
+same button and line for whoever the shell's navigation says may open the
+panel (read off the `nav` prop's admin group, so a teacher on the overview
+is offered no door; the line is a shared `nav.dashboard_hint` string). The
+hub carries *← Dashboard* and "This page is where things are managed.
+Today's numbers are on the Dashboard." at its top, not its foot. EN/DV/AR.
+`docs/ADMIN_PANEL.md` §1 (Landing) and L23. Nothing structural changed:
+`/dashboard` still routes by role as `ResolveDashboardLandingAction` says.
+
+**Tests**: `AdminHubTest` gains a fourth — the super-admin and supervisor
+dashboards render the button and the route; an admin's `/dashboard`
+redirects to the overview, whose props carry the door and the line; a
+teacher's overview carries no admin group; the hub's hint in English, and
+the Dhivehi and Arabic strings. Architecture green (parity).
+
+**Walked**: `admin-hub.mjs` 24/24 as the seeded admin — `/dashboard` lands
+on the overview with the button and the line, the button opens the hub,
+the hub's rule and *← Dashboard* sit at the top and go back to the
+overview; 27 with `SMOKE_SUPER_ADMIN` (the super-admin dashboard's button
+opens the hub). `admin.mjs` 18/18, `admin-layout.mjs` 14/14,
+`admin-pages.mjs` 3/3 and `admin-mobile.mjs` 3/3 re-run.
+
+**Not done, and the owner's call**: whether an administrator should land
+on one page. Today the numbers and the doors are two screens in two
+shells (the super-admin dashboard is Blade, the hub is Inertia). Folding
+the dashboard's numbers into the top of `/admin` and making `/admin` the
+landing for administrators would leave one home; it retires two Blade
+dashboards and is the IA decision BACKLOG C9 already parks, not a
+"while you're there".
+
+**Production**: nothing to migrate; the pull line as usual.
+
 ## 5hy. The admin panel in four parts (2026-09-26)
 
 The owner, on the hub of §5hx: "still admin page is too much complicated.

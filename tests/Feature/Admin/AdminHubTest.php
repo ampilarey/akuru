@@ -125,3 +125,36 @@ it('heads the shell’s admin column and both Blade menus with the same four par
     $teacherNav = app(BuildNavigationAction::class)->execute(hubUser('teacher'), 'en');
     expect(collect($teacherNav['groups'])->firstWhere('key', 'admin_group'))->toBeNull();
 });
+
+it('says on every administrator landing that the dashboard is the numbers and the Admin panel is the doors, each linking the other', function () {
+    // The owner, 2026-09-26: "I don't understand what's happening sometimes,
+    // /dashboard or /admin." Neither screen linked the other except from a
+    // menu. Now: the super-admin and supervisor dashboards carry the button
+    // and the line; the staff overview carries them for whoever may open the
+    // panel; the hub says it at the top with the way back.
+    $super = hubUser('super_admin', HUB_PERMISSIONS);
+    test()->withoutLocalizationMiddleware()->actingAs($super)->get(route('dashboard'))->assertOk()
+        ->assertSee('data-testid="open-admin-panel"', false)->assertSee(route('admin.index'))->assertSee("today's numbers", false);
+
+    test()->withoutLocalizationMiddleware()->actingAs(hubUser('supervisor'))->get(route('dashboard'))->assertOk()
+        ->assertSee('data-testid="open-admin-panel"', false)->assertSee(route('admin.index'));
+
+    // The admin lands on the Inertia overview; the shell's nav carries the
+    // door and the shared strings carry the line, so the page can show both.
+    $admin = hubUser('admin', ['operations.manage', 'registers.manage']);
+    test()->withoutLocalizationMiddleware()->actingAs($admin)->get(route('dashboard'))->assertRedirect(route('portal.overview'));
+    test()->withoutLocalizationMiddleware()->actingAs($admin)->get(route('portal.overview'))->assertOk()
+        ->assertInertia(fn ($page) => $page->component('Portal/StaffOverview')
+            ->where('nav.groups', fn ($groups) => collect($groups)->firstWhere('key', 'admin_group')['items'][0]['href'] === '/admin')
+            ->where('i18n.nav.dashboard_hint', trans('nav.dashboard_hint')));
+
+    // A teacher on the overview is offered no door (they cannot open it).
+    $teacher = hubUser('teacher', ['registers.manage']);
+    test()->withoutLocalizationMiddleware()->actingAs($teacher)->get(route('portal.overview'))->assertOk()
+        ->assertInertia(fn ($page) => $page->where('nav.groups', fn ($groups) => collect($groups)->firstWhere('key', 'admin_group') === null));
+
+    // The hub, in Dhivehi too.
+    test()->withoutLocalizationMiddleware()->actingAs($super)->get(route('admin.index'))->assertOk()
+        ->assertInertia(fn ($page) => $page->where('t.hub_dashboard_hint', "This page is where things are managed. Today's numbers are on the Dashboard."));
+    expect(trans('admin.hub_dashboard_hint', [], 'dv'))->toContain('ޑޭޝްބޯޑު')->and(trans('nav.dashboard_hint', [], 'ar'))->toContain('لوحة الإدارة');
+});

@@ -7,6 +7,7 @@ return [
     'primary_nav' => 'Primary',
     'all_screens' => 'All screens',
     'alerts' => 'Alerts',
+    'dashboard_hint' => "This overview is today's numbers. To manage enrolments, the website, the shops or the system, open the Admin panel.",
     'skip_to_content' => 'Skip to content',
 
     // Groups
