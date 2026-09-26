@@ -4414,6 +4414,52 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5hq. The Bookstore audit (2026-09-26)
+
+The owner: "audit everything related to bookstore". Done against the
+code, section by section of BOOKSHOP_PLAN, and written up as **plan
+§15**: what was checked and held (routes and gates, the vendor scope,
+rule 12, the money maths, raw HTML, uploads, cross-domain, data, tests,
+walks), twenty-one findings, and what the owner still owns.
+
+**Held**: all 36 office routes and 35 controller methods gated; all 87
+vendor routes under `auth` with every portal method and every
+`Actions/Vendor/*` public method behind the `VendorScope`; every customer
+route under `auth`; every public write throttled; a card checkout paid
+only by the webhook listener; commission on goods only with the funding
+source honoured; every raw render declared; slips private; no
+cross-domain model imports; 18 additive migrations, every model
+aliased; 107 Bookstore tests in 21 files; **all eighteen Bookstore
+walks, 315 steps, run in one batch on one seed** — sixteen green at once,
+two with walk-only timing races.
+
+**Fixed in this PR**: the two walk races (`vendor-money.mjs` read the
+payout figures while the bank-details flash still satisfied its wait;
+`operations.mjs` read the list before the low-stock filter's visit
+landed) — both now wait for the thing itself; `.env.example` lacked
+`BOOKSHOP_DEFAULT_COMMISSION_RATE`; ROADMAP §2's domain map had no
+`Bookshop/`; the plan had no B10 row, no record of the three 2026-09-26
+decisions (17–19) and still called USD "a decision if a vendor asks";
+the Fitrah kit said the theme "arrives with B4".
+
+**Recorded, not fixed here**: money-table foreign keys cascade on user
+and vendor delete — the platform's precedent (`payments.user_id` does the
+same), no delete path exists, but a platform-wide `restrictOnDelete`
+migration is the right fix (KNOWN_ISSUES); a suspended shop's owner is
+shut out of the portal, so in-flight orders fall to the office
+(KNOWN_ISSUES; a `paused` state would soften it).
+
+**Gaps against the plan, all small, parked in BACKLOG C7**: the "read the
+e-book" link (`library_item_id` is written and read by nothing); a gift
+message at checkout; a returns rate on the shop's money page; an office
+shop-on/off switch; a summed GST-collected column; alt text asked for on
+product images; gallery zoom; the per-filter listing cache.
+
+**Re-walked after the fixes**: `vendor-money.mjs` **16/16**,
+`operations.mjs` **21/21**. Full suite **2287 passed**.
+
+**Production**: nothing to run — docs and walks only.
+
 ## 5hp. B10d: the theme gallery (2026-09-26)
 
 This is the owner's "theme marketplace", which BOOKSHOP_PLAN §6.8 had

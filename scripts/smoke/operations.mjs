@@ -178,6 +178,9 @@ check('the new products\' opening stock is in the log', (await count(vendor, '[d
 await vendor.goto(`${BASE}/en/vendor`, { waitUntil: 'networkidle' });
 await vendor.check('[data-testid="filter-low"]');
 await vendor.click('[data-testid="filter-products"]');
+// The list is an Inertia visit: wait for the filtered page, not for the network to go quiet.
+await vendor.waitForURL(/low=1/, { timeout: 20000 }).catch(() => {});
+await vendor.waitForSelector(`[data-testid="product-row-${BOOK}"]`, { state: 'detached', timeout: 20000 }).catch(() => {});
 await settle(vendor);
 check('low stock only: the stand, not the tracing book', (await count(vendor, '[data-testid="product-row-smoke-quran-stand"]')) === 1 && (await count(vendor, `[data-testid="product-row-${BOOK}"]`)) === 0, await inner(vendor, '[data-testid="products-total"]'));
 await vendor.uncheck('[data-testid="filter-low"]');
