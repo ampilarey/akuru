@@ -1,9 +1,8 @@
 /**
- * Can a shop use its own domain, and can visitors from abroad see prices in
- * dollars? (BOOKSHOP_PLAN slice B9f.)
+ * Can a shop use its own domain? (BOOKSHOP_PLAN slice B9f; its dollar
+ * prices were removed in B10a.)
  *
- * `SmokeMarkerSeeder::vendorCycle()` clears Fitrah's domain and the dollar
- * switch.
+ * `SmokeMarkerSeeder::vendorCycle()` clears Fitrah's domain.
  *
  * Fitrah's owner:
  *   1. enters "https://www.Smoke-Fitrah.test/" as the shop's domain; it is
@@ -16,11 +15,7 @@
  * A request on that domain:
  *   4. now goes to Fitrah's page on the canonical site;
  * The owner:
- *   5. sees the domain is on;
- * The office:
- *   6. shows prices in dollars at 15.42; a guest sees "≈ USD" beside the
- *      tracing book's price and on the cards; the office turns it off and
- *      the dollars go.
+ *   5. sees the domain is on.
  *
  *   php artisan db:seed --class=SmokeMarkerSeeder
  *   node scripts/smoke/hosts.mjs
@@ -34,7 +29,6 @@ const ADMIN = process.env.SMOKE_ADMIN ?? 'admin@akuru.edu.mv';
 const PASSWORD = process.env.SMOKE_PASSWORD ?? 'password';
 const VENDOR = process.env.SMOKE_VENDOR ?? 'vendor@akuru.edu.mv';
 const DOMAIN = 'www.smoke-fitrah.test';
-const BOOK = 'smoke-arabic-letters-tracing-book';
 
 const HERMETIC_ARGS = [
     '--disable-background-networking',
@@ -155,25 +149,5 @@ check('a path goes under the shop page', deep.location === `${BASE}/shop/fitrah/
 await vendor.reload({ waitUntil: 'networkidle' });
 await settle(vendor, '[data-testid="host-status"]');
 check('the owner sees the domain is on', (await vendor.locator('[data-testid="host-status"]').getAttribute('data-status')) === 'active');
-
-// ------------------------------------------------------------ 6. dollars
-
-await office.fill('[data-testid="usd-rate"]', '15.42');
-await office.check('[data-testid="usd-on"]');
-await office.click('[data-testid="usd-save"]');
-await settle(office, '[data-testid="flash-success"]');
-const guestContext = await browser.newContext();
-await guestContext.route('**/*', (route) => (route.request().url().startsWith(BASE) ? route.continue() : route.abort()));
-const guest = await guestContext.newPage();
-guest.on('response', (r) => { if (r.status() >= 500) problems.push(`guest: HTTP ${r.status()} ${r.url()}`); });
-await guest.goto(`${BASE}/en/shop/products/${BOOK}`, { waitUntil: 'networkidle' });
-check('a guest sees the price in dollars as a guide', (await inner(guest, '[data-testid="product-usd"]')).includes('≈ USD 5.51'), await inner(guest, '[data-testid="product-usd"]'));
-await guest.goto(`${BASE}/en/shop/fitrah`, { waitUntil: 'networkidle' });
-check('and on the cards', (await count(guest, '[data-testid="card-usd"]')) > 0);
-await office.uncheck('[data-testid="usd-on"]');
-await office.click('[data-testid="usd-save"]');
-await settle(office, '[data-testid="flash-success"]');
-await guest.goto(`${BASE}/en/shop/products/${BOOK}`, { waitUntil: 'networkidle' });
-check('turned off, the dollars go', (await count(guest, '[data-testid="product-usd"]')) === 0);
 
 await finish();

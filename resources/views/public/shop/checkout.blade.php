@@ -119,8 +119,6 @@
                     @endforeach
                 </ul>
                 <p class="flex justify-between text-sm"><span>{{ __('shop.goods') }}</span><span data-testid="summary-goods">{{ $currency }} {{ $basket['subtotal'] }}</span></p>
-                @php($usd = \App\Domains\Bookshop\Support\Usd::line($basket['subtotal']))
-                @if($usd !== '')<p class="text-end text-xs text-gray-500" data-testid="checkout-usd">{{ $usd }} · {{ __('shop.usd_charged_in_mvr') }}</p>@endif
                 <p class="mb-3 text-xs text-gray-500">{{ __('shop.delivery_at_checkout') }} {{ __('shop.prices_include_tax') }}</p>
                 <p class="mb-3 text-xs text-gray-500">{{ __('shop.reservation_note', ['minutes' => $checkout['reservation_minutes']]) }}</p>
                 <button type="submit" class="btn-primary w-full" data-testid="place-order" @disabled(count($basket['problems']) > 0)>{{ __('shop.place_order') }}</button>

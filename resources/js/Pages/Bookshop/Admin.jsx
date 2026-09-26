@@ -622,23 +622,6 @@ function Hosts({ hosts, t }) {
     );
 }
 
-/** B9f (§11): prices in dollars, as a guide — always charged in MVR. */
-function UsdDisplay({ usd, t }) {
-    const form = useForm({ on: usd.on ? 1 : 0, rate: String(usd.rate) });
-
-    return (
-        <section className="mt-8" data-testid="office-usd">
-            <h2 className="mb-1 text-lg font-semibold">{t.usd_heading}</h2>
-            <p className="mb-2 text-sm text-gray-600">{t.usd_hint}</p>
-            <form className="flex flex-wrap items-end gap-3 rounded border bg-white p-3 text-sm" onSubmit={(e) => { e.preventDefault(); form.post('/admin/bookshop/usd', { preserveScroll: true }); }}>
-                <label className="flex items-center gap-2"><input type="checkbox" checked={!!form.data.on} onChange={(e) => form.setData('on', e.target.checked ? 1 : 0)} data-testid="usd-on" /> {t.usd_show}</label>
-                <label>{t.usd_rate}<input className="form-input block w-28" type="number" min="1" step="0.01" value={form.data.rate} onChange={(e) => form.setData('rate', e.target.value)} data-testid="usd-rate" /></label>
-                <button type="submit" className="btn-secondary" disabled={form.processing} data-testid="usd-save">{t.save}</button>
-            </form>
-        </section>
-    );
-}
-
 /** B9e: every shop's funnel side by side. */
 function Funnels({ insights, t }) {
     const fill = (s, vars) => Object.entries(vars).reduce((out, [k, v]) => out.replaceAll(`:${k}`, v), s || '');
@@ -869,7 +852,7 @@ function ShopHome({ home, t }) {
     );
 }
 
-export default function Admin({ t, vendors, catalogue, slips = [], orders = [], refunds = [], money = null, reviews = [], home = null, low_stock = [], notices = null, order_statuses = [], applications = [], applications_open = true, quotes = null, insights = null, hosts = null, usd = null, cod_on = true, default_commission_rate, sign_in_url, section_types = [] }) {
+export default function Admin({ t, vendors, catalogue, slips = [], orders = [], refunds = [], money = null, reviews = [], home = null, low_stock = [], notices = null, order_statuses = [], applications = [], applications_open = true, quotes = null, insights = null, hosts = null, cod_on = true, default_commission_rate, sign_in_url, section_types = [] }) {
     const { flash = {}, errors } = usePage().props;
 
     return (
@@ -898,7 +881,6 @@ export default function Admin({ t, vendors, catalogue, slips = [], orders = [], 
             {quotes && <Quotes quotes={quotes} t={t} />}
             {insights && <Funnels insights={insights} t={t} />}
             {hosts && <Hosts hosts={hosts} t={t} />}
-            {usd && <UsdDisplay usd={usd} t={t} />}
             <Orders orders={orders} vendors={vendors} statuses={order_statuses} t={t} />
             <LowStockAll rows={low_stock} t={t} />
             <Reviews reviews={reviews} t={t} />
