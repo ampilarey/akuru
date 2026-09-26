@@ -771,6 +771,10 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         // B2: bank-transfer slips and the orders list.
         Route::post('slips/{slip}/decide', [\App\Domains\Bookshop\Http\Controllers\AdminBookshopController::class, 'decideSlip'])->name('admin.bookshop.slips.decide')->whereNumber('slip');
         Route::get('orders/export', [\App\Domains\Bookshop\Http\Controllers\AdminBookshopController::class, 'exportOrders'])->name('admin.bookshop.orders.export');
+        // B8: order lines, low stock across shops, the email/SMS switches.
+        Route::get('orders/lines/export', [\App\Domains\Bookshop\Http\Controllers\AdminBookshopController::class, 'exportOrderLines'])->name('admin.bookshop.orders.lines.export');
+        Route::get('low-stock/export', [\App\Domains\Bookshop\Http\Controllers\AdminBookshopController::class, 'exportLowStock'])->name('admin.bookshop.low-stock.export');
+        Route::post('notices', [\App\Domains\Bookshop\Http\Controllers\AdminBookshopController::class, 'saveNotices'])->name('admin.bookshop.notices.save');
         // B3: card refunds, returned through BML and recorded.
         Route::get('refunds/export', [\App\Domains\Bookshop\Http\Controllers\AdminBookshopController::class, 'exportRefunds'])->name('admin.bookshop.refunds.export');
         Route::post('refunds/{refund}', [\App\Domains\Bookshop\Http\Controllers\AdminBookshopController::class, 'processRefund'])->name('admin.bookshop.refunds.process')->whereNumber('refund');
@@ -800,6 +804,17 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::get('products/export', [\App\Domains\Bookshop\Http\Controllers\VendorPortalController::class, 'exportProducts'])->name('vendor.products.export');
         Route::post('products', [\App\Domains\Bookshop\Http\Controllers\VendorProductController::class, 'store'])->name('vendor.products.store');
         Route::post('products/{product}', [\App\Domains\Bookshop\Http\Controllers\VendorProductController::class, 'update'])->name('vendor.products.update')->whereNumber('product');
+        // B8: duplicate a product, act on a selection, the stock page and the product sheet.
+        Route::post('products/{product}/duplicate', [\App\Domains\Bookshop\Http\Controllers\VendorProductController::class, 'duplicate'])->name('vendor.products.duplicate')->whereNumber('product');
+        Route::post('products/bulk', [\App\Domains\Bookshop\Http\Controllers\VendorProductController::class, 'bulk'])->name('vendor.products.bulk');
+        Route::get('stock', [\App\Domains\Bookshop\Http\Controllers\VendorStockController::class, 'index'])->name('vendor.stock.index');
+        Route::post('stock/adjust', [\App\Domains\Bookshop\Http\Controllers\VendorStockController::class, 'adjust'])->name('vendor.stock.adjust');
+        Route::post('stock/import', [\App\Domains\Bookshop\Http\Controllers\VendorStockController::class, 'preview'])->name('vendor.stock.import');
+        Route::post('stock/import/{token}', [\App\Domains\Bookshop\Http\Controllers\VendorStockController::class, 'apply'])->name('vendor.stock.import.apply')->where('token', '[A-Za-z0-9]{32}');
+        Route::get('stock/template', [\App\Domains\Bookshop\Http\Controllers\VendorStockController::class, 'template'])->name('vendor.stock.template');
+        Route::get('stock/movements/export', [\App\Domains\Bookshop\Http\Controllers\VendorStockController::class, 'exportMovements'])->name('vendor.stock.movements.export');
+        Route::get('stock/low/export', [\App\Domains\Bookshop\Http\Controllers\VendorStockController::class, 'exportLowStock'])->name('vendor.stock.low.export');
+        Route::post('notices', [\App\Domains\Bookshop\Http\Controllers\VendorPortalController::class, 'saveNotices'])->name('vendor.notices.save');
         Route::post('product-images/{image}', [\App\Domains\Bookshop\Http\Controllers\VendorProductController::class, 'arrangeImage'])->name('vendor.product-images.arrange')->whereNumber('image');
         // B2: the owner's delivery methods.
         Route::post('delivery-methods', [\App\Domains\Bookshop\Http\Controllers\VendorPortalController::class, 'saveDeliveryMethods'])->name('vendor.delivery-methods.save');
@@ -808,6 +823,7 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::post('settings', [\App\Domains\Bookshop\Http\Controllers\VendorPortalController::class, 'saveShopSettings'])->name('vendor.settings.save');
         Route::get('orders', [\App\Domains\Bookshop\Http\Controllers\VendorOrderController::class, 'index'])->name('vendor.orders.index');
         Route::get('orders/export', [\App\Domains\Bookshop\Http\Controllers\VendorOrderController::class, 'export'])->name('vendor.orders.export');
+        Route::get('orders/lines/export', [\App\Domains\Bookshop\Http\Controllers\VendorOrderController::class, 'exportLines'])->name('vendor.orders.lines.export');
         Route::get('orders/{order}/print', [\App\Domains\Bookshop\Http\Controllers\VendorOrderController::class, 'print'])->name('vendor.orders.print')->whereNumber('order');
         Route::post('orders/{order}/advance', [\App\Domains\Bookshop\Http\Controllers\VendorOrderController::class, 'advance'])->name('vendor.orders.advance')->whereNumber('order');
         Route::post('orders/{order}/cancel', [\App\Domains\Bookshop\Http\Controllers\VendorOrderController::class, 'cancel'])->name('vendor.orders.cancel')->whereNumber('order');

@@ -167,6 +167,48 @@ return [
      * Set on the host; never committed. With no account number the method
      * is not offered.
      */
+    /*
+     * B8: bulk and operations. A CSV import is read, checked and shown
+     * before anything is written; the preview is kept this long. Order
+     * exports cap at `export_max_rows`.
+     */
+    'operations' => [
+        'import_max_rows' => 2000,
+        'import_max_kilobytes' => 2048,
+        'import_preview_minutes' => 30,
+        'products_per_page' => 50,
+        'movements_per_page' => 100,
+        'export_max_rows' => 20000,
+    ],
+
+    /*
+     * B8 (§5 and §7 "email/SMS switches"): every shop notice is in the app;
+     * these say which also go by email or SMS. The office's switches
+     * (Settings, `/admin/bookshop`) gate each channel for everyone; a shop
+     * then chooses per event. SMS is off unless the office turns it on, and
+     * only sends where `SMS_LIVE` allows it.
+     */
+    'notices' => [
+        'customer_events' => ['order_paid', 'slip_decided', 'order_progress', 'order_cancelled', 'return_decided', 'refund', 'back_in_stock'],
+        'vendor_events' => ['new_order', 'customer_cancelled', 'return_requested', 'low_stock', 'review', 'payout_decided', 'invoice'],
+        'vendor_defaults' => [
+            'new_order' => ['email' => true, 'sms' => false],
+            'customer_cancelled' => ['email' => true, 'sms' => false],
+            'return_requested' => ['email' => true, 'sms' => false],
+            'low_stock' => ['email' => true, 'sms' => false],
+            'review' => ['email' => false, 'sms' => false],
+            'payout_decided' => ['email' => true, 'sms' => false],
+            'invoice' => ['email' => true, 'sms' => false],
+        ],
+        'office_defaults' => [
+            'customer_email' => true,
+            'customer_sms' => false,
+            'vendor_email' => true,
+            'vendor_sms' => false,
+        ],
+        'sms_max_length' => 300,
+    ],
+
     'bank_transfer' => [
         'bank' => env('BOOKSHOP_BANK_NAME', 'Bank of Maldives'),
         'account_name' => env('BOOKSHOP_BANK_ACCOUNT_NAME', 'Akuru Institute'),

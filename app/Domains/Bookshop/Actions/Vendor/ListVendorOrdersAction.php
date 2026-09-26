@@ -46,6 +46,9 @@ class ListVendorOrdersAction
             ->when($status === 'returns', fn ($q) => $q->whereHas('returns', fn ($r) => $r->where('status', ReturnStatus::Requested->value)))
             ->when($status !== null && $status !== 'returns', fn ($q) => $q->where('status', $status))
             ->when(($filters['q'] ?? '') !== '', fn ($q) => $q->where('number', 'like', '%'.$filters['q'].'%'))
+            // B8: an export by date — orders placed from … to … (Maldives dates).
+            ->when(! empty($filters['from']), fn ($q) => $q->where('created_at', '>=', $filters['from'].' 00:00:00'))
+            ->when(! empty($filters['to']), fn ($q) => $q->where('created_at', '<=', $filters['to'].' 23:59:59'))
             ->with(['items', 'events', 'returns.item', 'refunds', 'vendor', 'checkout.orders', 'checkout.slips'])
             ->orderByDesc('id')->limit($limit)->get();
 
@@ -56,6 +59,30 @@ class ListVendorOrdersAction
             'orders' => $orders->map(fn (Order $o) => $this->row($o, $people->get($o->user_id)?->name))->values()->all(),
             'counts' => $counts,
         ];
+    }
+
+    /**
+     * B8: one row per order line, for the shop's books and its stock — what
+     * sold, when, at what price. The same orders and filters as the list.
+     *
+     * @param  array{status?: ?string, q?: ?string, from?: ?string, to?: ?string}  $filters
+     * @return list<array<string, mixed>>
+     */
+    public function lines(VendorScope $scope, array $filters = [], int $limit = 5000): array
+    {
+        $out = [];
+        foreach ($this->execute($scope, $filters, $limit)['orders'] as $order) {
+            foreach ($order['items'] as $item) {
+                $out[] = [
+                    'number' => $order['number'], 'status' => $order['status'], 'placed_at' => $order['placed_at'], 'paid_at' => $order['paid_at'],
+                    'sku' => $item['sku'], 'title' => $item['title'], 'variant' => $item['variant'], 'quantity' => $item['quantity'],
+                    'unit_price' => $item['unit_price'], 'line_total' => $item['line_total'], 'currency' => $order['currency'],
+                    'island' => $order['address']['island'] ?? '', 'atoll' => $order['address']['atoll'] ?? '',
+                ];
+            }
+        }
+
+        return $out;
     }
 
     /**

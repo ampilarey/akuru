@@ -5,13 +5,16 @@ namespace App\Domains\Bookshop\Http\Controllers;
 use App\Domains\Bookshop\Actions\ListCatalogueOptionsAction;
 use App\Domains\Bookshop\Actions\ResolveVendorScopeAction;
 use App\Domains\Bookshop\Actions\Vendor\AcceptVendorAgreementAction;
+use App\Domains\Bookshop\Actions\Vendor\ImportVendorProductsAction;
 use App\Domains\Bookshop\Actions\Vendor\ListVendorProductsAction;
 use App\Domains\Bookshop\Actions\Vendor\ManageVendorDiscountCodesAction;
 use App\Domains\Bookshop\Actions\Vendor\ManageVendorMembersAction;
 use App\Domains\Bookshop\Actions\Vendor\SaveVendorDeliveryMethodsAction;
+use App\Domains\Bookshop\Actions\Vendor\SaveVendorNoticeSettingsAction;
 use App\Domains\Bookshop\Actions\Vendor\SaveVendorShopSettingsAction;
 use App\Domains\Bookshop\Enums\DeliveryKind;
 use App\Domains\Bookshop\Http\Controllers\Concerns\AuthorizesVendor;
+use App\Domains\Bookshop\Support\ProductSheet;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
 use Illuminate\Http\RedirectResponse;
@@ -35,7 +38,11 @@ class VendorPortalController extends Controller
         $filters = $request->validate([
             'q' => 'nullable|string|max:100',
             'status' => 'nullable|string|in:draft,active,archived',
+            'low' => 'nullable|boolean',
+            'category' => 'nullable|integer',
+            'page' => 'nullable|integer|min:1',
         ]);
+        $page = $scope->agreementAccepted ? app(ListVendorProductsAction::class)->page($scope, $filters, (int) ($filters['page'] ?? 1)) : null;
 
         return Inertia::render('Bookshop/Vendor', [
             't' => trans('shop'),
@@ -48,14 +55,16 @@ class VendorPortalController extends Controller
             ],
             'memberships' => app(ResolveVendorScopeAction::class)->memberships($scope->userId),
             'agreement_url' => route('public.page.show', 'vendor-agreement'),
-            'products' => $scope->agreementAccepted ? app(ListVendorProductsAction::class)->execute($scope, $filters) : [],
+            'products' => $page['rows'] ?? [],
+            'products_page' => $page === null ? null : array_diff_key($page, ['rows' => true]),
             'members' => $scope->agreementAccepted ? app(ManageVendorMembersAction::class)->list($scope) : [],
             'delivery_methods' => $scope->agreementAccepted ? app(SaveVendorDeliveryMethodsAction::class)->list($scope) : [],
             'delivery_kinds' => array_map(fn (DeliveryKind $k) => $k->value, DeliveryKind::cases()),
             'shop_settings' => $scope->agreementAccepted ? app(SaveVendorShopSettingsAction::class)->get($scope) : null,
             'discount_codes' => $scope->agreementAccepted ? app(ManageVendorDiscountCodesAction::class)->list($scope) : [],
+            'notice_settings' => $scope->agreementAccepted ? app(SaveVendorNoticeSettingsAction::class)->get($scope) : null,
             'options' => app(ListCatalogueOptionsAction::class)->execute(),
-            'filters' => $filters + ['q' => null, 'status' => null],
+            'filters' => $filters + ['q' => null, 'status' => null, 'low' => null, 'category' => null],
             'must_set_password' => (bool) $request->user()->force_password_change,
             'set_password_url' => route('account.set-password'),
         ]);
@@ -178,6 +187,17 @@ class VendorPortalController extends Controller
         return back()->with('success', __($data['active'] ? 'shop.code_on_flash' : 'shop.code_off_flash'));
     }
 
+    /** B8: which shop notices also go by email or SMS. Owners only (in the Action). */
+    public function saveNotices(Request $request): RedirectResponse
+    {
+        $scope = $this->authorizeVendor($request);
+        $data = $request->validate(['events' => 'required|array', 'events.*.email' => 'nullable|boolean', 'events.*.sms' => 'nullable|boolean']);
+
+        app(SaveVendorNoticeSettingsAction::class)->save($scope, $data['events']);
+
+        return back()->with('success', __('shop.notices_saved_flash'));
+    }
+
     /** B2: the office's template becomes the shop's own rows, to edit. */
     public function useDeliveryTemplate(Request $request): RedirectResponse
     {
@@ -189,23 +209,22 @@ class VendorPortalController extends Controller
         return back()->with('success', __('shop.delivery_saved_flash'));
     }
 
-    /** Every listing gets a CSV (conventions): the vendor's products. */
+    /**
+     * Every listing gets a CSV (conventions): the vendor's products — since
+     * B8 in the product sheet's layout, so the same file imports back.
+     */
     public function exportProducts(Request $request): StreamedResponse
     {
         $scope = $this->authorizeVendor($request);
-        $rows = app(ListVendorProductsAction::class)->execute($scope, [], 5000);
+        $rows = app(ImportVendorProductsAction::class)->export($scope);
 
         return response()->streamDownload(function () use ($rows): void {
             $out = fopen('php://output', 'w');
-            Csv::put($out, ['id', 'title', 'sku', 'barcode', 'category', 'brand', 'price', 'compare_at_price', 'tax_class', 'track_stock', 'stock', 'status', 'visibility', 'variants', 'photos', 'updated_at']);
+            Csv::put($out, ProductSheet::COLUMNS);
             foreach ($rows as $row) {
-                Csv::put($out, [
-                    $row['id'], $row['title'], $row['sku'], $row['barcode'], $row['category'], $row['brand'],
-                    $row['price'], $row['compare_at_price'], $row['tax_class'], $row['track_stock'] ? 'yes' : 'no',
-                    $row['stock'], $row['status'], $row['visibility'], count($row['variants']), count($row['images']), $row['updated_at'],
-                ]);
+                Csv::put($out, $row);
             }
             fclose($out);
-        }, $scope->vendorSlug.'-products.csv', ['Content-Type' => 'text/csv']);
+        }, $scope->vendorSlug.'-products.csv', ['Content-Type' => 'text/csv; charset=UTF-8']);
     }
 }

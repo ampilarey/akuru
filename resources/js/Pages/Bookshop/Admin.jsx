@@ -309,12 +309,30 @@ function Slips({ slips, t }) {
     );
 }
 
-function Orders({ orders, t }) {
+function Orders({ orders, vendors, statuses, t }) {
+    // B8: the exports take a shop, a status and dates; per order or per line.
+    const [f, setF] = useState({ vendor: '', status: '', from: '', to: '' });
+    const query = new URLSearchParams(Object.fromEntries(Object.entries(f).filter(([, v]) => v))).toString();
+    const suffix = query ? `?${query}` : '';
+
     return (
         <section className="mt-8" data-testid="office-orders">
-            <div className="mb-2 flex items-center justify-between">
+            <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
                 <h2 className="text-lg font-semibold">{t.orders}</h2>
-                <a href="/admin/bookshop/orders/export" className="btn-secondary" data-testid="export-orders">{t.export_csv}</a>
+                <span className="flex flex-wrap items-center gap-2 text-sm" data-testid="office-order-exports">
+                    <select className="form-input" value={f.vendor} onChange={(e) => setF({ ...f, vendor: e.target.value })} aria-label={t.shop_col} data-testid="export-vendor">
+                        <option value="">{t.all_shops}</option>
+                        {vendors.map((v) => <option key={v.id} value={v.id}>{v.name}</option>)}
+                    </select>
+                    <select className="form-input" value={f.status} onChange={(e) => setF({ ...f, status: e.target.value })} aria-label={t.status}>
+                        <option value="">{t.all_statuses}</option>
+                        {statuses.map((s) => <option key={s} value={s}>{t[`status_${s}`] || s}</option>)}
+                    </select>
+                    <input className="form-input" type="date" value={f.from} onChange={(e) => setF({ ...f, from: e.target.value })} aria-label={t.from} />
+                    <input className="form-input" type="date" value={f.to} onChange={(e) => setF({ ...f, to: e.target.value })} aria-label={t.to} />
+                    <a href={`/admin/bookshop/orders/export${suffix}`} className="btn-secondary" data-testid="export-orders">{t.export_orders_csv}</a>
+                    <a href={`/admin/bookshop/orders/lines/export${suffix}`} className="btn-secondary" data-testid="export-order-lines">{t.export_lines_csv}</a>
+                </span>
             </div>
             {orders.length === 0 ? (
                 <p className="rounded border bg-white p-4 text-gray-600">{t.no_orders_office}</p>
@@ -516,6 +534,54 @@ function Money({ money, t }) {
 }
 
 /** B7 (plan §4 "office may hide"; decision 12): the newest reviews, those waiting first; hide with a note, or publish. */
+/** B8 (§7 Reports "low stock across vendors"). */
+function LowStockAll({ rows, t }) {
+    return (
+        <section className="mt-8" data-testid="office-low-stock">
+            <div className="mb-2 flex items-center justify-between">
+                <h2 className="text-lg font-semibold">{t.low_stock_heading} <span className="text-sm font-normal text-gray-500">({rows.length})</span></h2>
+                <a href="/admin/bookshop/low-stock/export" className="btn-secondary" data-testid="export-low-stock-all">{t.export_csv}</a>
+            </div>
+            {rows.length === 0 ? (
+                <p className="rounded border bg-white p-3 text-sm text-gray-600">{t.no_low_stock}</p>
+            ) : (
+                <table className="w-full rounded border bg-white text-sm">
+                    <thead className="bg-gray-50"><tr><th className="p-2 text-start">{t.shop_col}</th><th className="p-2 text-start">{t.product}</th><th className="p-2 text-start">SKU</th><th className="p-2 text-end">{t.stock}</th><th className="p-2 text-start">{t.state}</th></tr></thead>
+                    <tbody>
+                        {rows.slice(0, 100).map((r) => (
+                            <tr key={`${r.product_id}-${r.variant_id || 0}`} className="border-t">
+                                <td className="p-2">{r.vendor}</td>
+                                <td className="p-2" dir="auto">{r.title}{r.variant && <span className="text-gray-500"> · {r.variant}</span>}</td>
+                                <td className="p-2">{r.sku || '—'}</td>
+                                <td className="p-2 text-end">{r.stock}</td>
+                                <td className="p-2">{t[`stock_state_${r.state}`] || r.state}</td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            )}
+        </section>
+    );
+}
+
+/** B8 (§7 Settings "email/SMS notice switches"): the in-app notice always goes; these add channels. */
+function NoticeSwitches({ notices, t }) {
+    const form = useForm({ ...notices });
+
+    return (
+        <section className="mt-8" data-testid="office-notices">
+            <h2 className="mb-1 text-lg font-semibold">{t.notices_heading}</h2>
+            <p className="mb-2 text-sm text-gray-600">{t.office_notices_hint}</p>
+            <form className="flex flex-wrap items-center gap-4 rounded border bg-white p-3 text-sm" onSubmit={(e) => { e.preventDefault(); form.post('/admin/bookshop/notices', { preserveScroll: true }); }}>
+                {['customer_email', 'customer_sms', 'vendor_email', 'vendor_sms'].map((k) => (
+                    <label key={k} className="flex items-center gap-2"><input type="checkbox" checked={!!form.data[k]} onChange={(e) => form.setData(k, e.target.checked)} data-testid={`switch-${k}`} /> {t[`switch_${k}`]}</label>
+                ))}
+                <button type="submit" className="btn-primary" disabled={form.processing} data-testid="save-switches">{t.save}</button>
+            </form>
+        </section>
+    );
+}
+
 function Reviews({ reviews, t }) {
     const [notes, setNotes] = useState({});
     const act = (id, action) => router.post(`/admin/bookshop/reviews/${id}/moderate`, { action, note: notes[id] || '' }, { preserveScroll: true });
@@ -621,13 +687,13 @@ function ShopHome({ home, t }) {
     );
 }
 
-export default function Admin({ t, vendors, catalogue, slips = [], orders = [], refunds = [], money = null, reviews = [], home = null, default_commission_rate, sign_in_url, section_types = [] }) {
+export default function Admin({ t, vendors, catalogue, slips = [], orders = [], refunds = [], money = null, reviews = [], home = null, low_stock = [], notices = null, order_statuses = [], default_commission_rate, sign_in_url, section_types = [] }) {
     const { flash = {}, errors } = usePage().props;
 
     return (
         <AppShell title={t.office_title}>
             <FormErrors errors={errors} className="mb-4" />
-            {flash.success && <p className="mb-4 rounded bg-green-50 p-3 text-green-700">{flash.success}</p>}
+            {flash.success && <p className="mb-4 rounded bg-green-50 p-3 text-green-700" data-testid="flash-success">{flash.success}</p>}
             {flash.vendor_invite && <InviteCard invite={flash.vendor_invite} t={t} signInUrl={sign_in_url} />}
 
             {slips.some((s) => s.status === 'waiting') && <Slips slips={slips} t={t} />}
@@ -645,9 +711,11 @@ export default function Admin({ t, vendors, catalogue, slips = [], orders = [], 
             {!slips.some((s) => s.status === 'waiting') && <Slips slips={slips} t={t} />}
             {!refunds.some((r) => r.status === 'pending') && <Refunds refunds={refunds} t={t} />}
             {money && money.requests.length === 0 && <Money money={money} t={t} />}
-            <Orders orders={orders} t={t} />
+            <Orders orders={orders} vendors={vendors} statuses={order_statuses} t={t} />
+            <LowStockAll rows={low_stock} t={t} />
             <Reviews reviews={reviews} t={t} />
             {home && <ShopHome home={home} t={t} />}
+            {notices && <NoticeSwitches key={JSON.stringify(notices)} notices={notices} t={t} />}
 
             <Catalogue catalogue={catalogue} t={t} />
         </AppShell>

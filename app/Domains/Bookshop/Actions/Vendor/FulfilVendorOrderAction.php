@@ -62,6 +62,7 @@ class FulfilVendorOrderAction
                 __('shop.notice_'.$key.'_title', ['number' => $order->number]),
                 __('shop.notice_'.$key.'_body', ['number' => $order->number, 'vendor' => $scope->vendorName, 'tracking' => $order->tracking_note ?? '']),
                 '/my-orders/'.$order->number,
+                'order_progress',
             );
         }
 
@@ -116,7 +117,7 @@ class FulfilVendorOrderAction
 
             if ($accept) {
                 if ($restock) {
-                    Restock::item($return->item, (int) $return->quantity);
+                    Restock::item($return->item, (int) $return->quantity, 'return', $scope->userId);
                 }
                 $amount = (float) $return->refund_amount + ($delivery ? (float) $order->delivery_fee : 0.0);
                 app(RefundOrderAction::class)->request($order, $amount, 'Return: '.$return->item->title, $scope->userId, $return->id);
@@ -131,6 +132,7 @@ class FulfilVendorOrderAction
             __($accept ? 'shop.notice_return_accepted_title' : 'shop.notice_return_declined_title'),
             __($accept ? 'shop.notice_return_accepted_body' : 'shop.notice_return_declined_body', ['number' => $order->number, 'note' => (string) $return->decision_note]),
             '/my-orders/'.$order->number,
+            'return_decided',
         );
 
         return $return;

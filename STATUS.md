@@ -4414,6 +4414,125 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5hf. B8: bulk and operations — stock log, low-stock notices, the product sheet, bulk actions, order exports, email and SMS (2026-09-26)
+
+BOOKSHOP_PLAN slice B8, the owner's "B8": a vendor with 500 items can
+manage them (§5 "Bulk", "Notifications", "Reports: low stock"; §7
+"Settings: email/SMS notice switches", "Orders: export", "Reports: low
+stock across vendors"; §9 `stock_movements`).
+
+**The stock log** (`stock_movements`, append-only: the model refuses
+updates and deletes). Every change to a counted product's or variant's
+stock leaves a line with the quantity (signed), the stock it left, the
+order where there is one, a note, and who did it: `in` (opening stock of
+a new product or variant, stock received), `sale` (the moment a checkout is
+paid, as much as was really there), `cancel` and `return` (put back),
+`adjustment` (a vendor's edit, a count, a correction) and `import`. One
+helper, `Support\StockLedger`, is called by the paths that already
+changed stock under their own lock. A product whose stock is not counted
+leaves no line.
+
+**Low-stock notices.** When a product or variant falls to the product's
+low-stock level, or sells out, every member of the shop is told once;
+the flag clears when stock is back above the level, so the next fall
+tells them again. Low and sold-out lists (products on sale only) for the
+shop and, across every shop, for the office; both with CSVs.
+
+**The stock page** (`/vendor/stock`, Inertia; *Stock* on the portal):
+what is low; receive stock, set a counted number or correct by + or −,
+with a note (never below zero, a variant chosen where there are some);
+the stock log filtered by product, kind and dates, a hundred to a page,
+with its CSV.
+
+**The product sheet** (§5 "CSV import/export of products and stock").
+One layout for the export, the blank template and the import, so a shop
+exports, edits prices or stock in a spreadsheet and imports the same file:
+one row per product and one per variant under it. The import is two
+steps: **check** reads the file, matches each row to one of this shop's
+products (by id, then SKU, then a variant's SKU), validates it with the
+product form's rules and shows what would happen — new, changed and which
+fields, a variant's price or stock, unchanged, or the error on that line
+— writing nothing; **apply** re-checks and writes the good rows through
+the same save as the form (so a sheet product is exactly a form product,
+and stock changes log as `import`), skipping the bad ones. A column left
+out is left alone; an empty cell clears an optional field; title, price,
+tax class, status and visibility are never cleared by a blank. Up to
+2,000 rows and 2 MB (config). New variants and photos stay on the form.
+
+**Working in bulk.** The portal's product list is now fifty to a page,
+searchable by title or any SKU, filterable by status, category and "low
+or sold out"; a selection can go on sale, back to draft or into the
+archive at once; any product can be **duplicated** as a draft (words,
+prices, category, details and variants; no SKU, stock or photos).
+
+**Order exports.** The shop's orders CSV takes a date range and the tab's
+status; a new **order lines** CSV has one row per line (SKU, quantity,
+prices, island). The office's orders CSV takes a shop, a status and
+dates, and has its own order-lines CSV with tax per line. The customer's
+contact stays masked after the return window, as before (decision 15).
+
+**Email and SMS** (§4 "Notices in app and by email (SMS where the office
+enables it)"). Every bookstore notice stays in the app; a notice now
+names its event, and may also go by **email** (queued, a plain branded
+message with a link) or **SMS** (through Notifications' SMS contract, so
+it only really sends where `SMS_LIVE` allows; the text starts "Akuru
+Bookstore:"). The office's four switches on `/admin/bookshop` — email
+customers (on), SMS customers (off), let shops get email (on), let shops
+get SMS (off) — are settings. Each shop's owner then picks per event
+(a paid order to prepare, a customer cancels, a return requested, low
+stock, a review, a payout decided, an invoice): email to each member,
+SMS to the shop's contact phone. A person who switched shop notices off
+gets none of them in any channel. Both wait for the change to commit.
+
+**Data** (`2026_09_26_000008_b8_bulk_and_operations`, additive):
+`stock_movements`; `low_stock_notified_at` on `products` and
+`product_variants`; `vendors.notice_settings`. Alias `stock_movement`
+(ADR-005).
+
+**Baselines**: `emails/bookshop-notice.blade.php` (Blade count 241, an
+email, beside the gift card's). `VendorStockController` is behind the
+`VendorScope` by its `authorizeVendor` calls. The office's order-status
+filter is built from `OrderStatus` rather than listed, so the status
+test's "invoices cannot be cancelled" stays true.
+
+**Tests**: `BulkOperationsTest` (8): the log through opening stock, an
+edit, a sale with its order, a cancellation, nothing for uncounted
+stock, and an update or delete refused; the low-stock notice once, to
+every member and by email, cleared above the level and sent again when it
+sells out; receive, count and correct (below zero refused, a variant
+required, another shop's 404) with both CSVs; the sheet exported in the
+import layout, a seven-row sheet checked (1 new, 1 changed, 1 variant, 4
+errors) without writing, then applied (price, stock, category, a detail
+cleared, a variant's stock, the new product and its `in` line, the errors
+skipped), a used preview refused, another shop's id refused, a headerless
+file refused; **a 500-row import** then fifty to a page, the low filter,
+a SKU search and a bulk archive that leaves another shop's product alone;
+duplicate; order and line exports by date, by shop and forbidden to a
+vendor; the notices by email and SMS as the switches and the shop allow,
+and none to someone who opted out. Full suite **2257 passed**.
+
+**Walked** (`scripts/smoke/operations.mjs`, **21/21**, no console or
+server errors): Fitrah's owner opens Stock, sees the prayer mat low and
+the Quran stand sold out, receives five mats (the log shows +5 with the
+note and her name, the mat leaves the list), exports the sheet and the
+template, checks a four-row sheet (2 new, 1 changed, 1 error naming the
+bad price, nothing written), applies it (the tracing book is MVR 95.00 on
+the shop, the new products' opening stock logged), filters products to
+low stock, archives the two imported products together, duplicates the
+tracing book as a draft, turns email off for new orders (SMS shown closed
+by the office) and exports order lines from a date; the office sees low
+stock across shops, exports every shop's order lines and lets shops get
+SMS, which Fitrah's settings then offer. Re-walked: `shop.mjs` **24/24**,
+`checkout.mjs` **28/28**, `vendor.mjs` **25/25**, `fulfilment.mjs`
+**21/21**, `storefront.mjs` **15/15**, `sections.mjs` **22/22**,
+`vendor-money.mjs` **16/16**, `polish.mjs` **29/29**, `money.mjs`
+**21/21**.
+
+**Production**: the migration only. Email notices need the queue worker
+(OWNER_ACTIONS item 3); without it the in-app notice still arrives. SMS
+stays off until the office turns it on, and sends for real only where
+`SMS_LIVE` is set.
+
 ## 5he. B7: shop polish and trust — find, save, review, be told, be nudged (2026-09-26)
 
 BOOKSHOP_PLAN slice B7, the owner's "B7": the shop feels like a shop

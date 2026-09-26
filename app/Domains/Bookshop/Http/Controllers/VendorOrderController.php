@@ -125,7 +125,7 @@ class VendorOrderController extends Controller
     public function export(Request $request): StreamedResponse
     {
         $scope = $this->authorizeVendor($request);
-        $rows = app(ListVendorOrdersAction::class)->execute($scope, [], 5000)['orders'];
+        $rows = app(ListVendorOrdersAction::class)->execute($scope, $this->exportFilters($request), (int) config('bookshop.operations.export_max_rows', 20000))['orders'];
 
         return response()->streamDownload(function () use ($rows): void {
             $out = fopen('php://output', 'w');
@@ -138,5 +138,33 @@ class VendorOrderController extends Controller
             }
             fclose($out);
         }, $scope->vendorSlug.'-orders.csv', ['Content-Type' => 'text/csv']);
+    }
+
+    /** B8: one row per order line, for the shop's books — same filters as the orders export. */
+    public function exportLines(Request $request): StreamedResponse
+    {
+        $scope = $this->authorizeVendor($request);
+        $rows = app(ListVendorOrdersAction::class)->lines($scope, $this->exportFilters($request), (int) config('bookshop.operations.export_max_rows', 20000));
+
+        return response()->streamDownload(function () use ($rows): void {
+            $out = fopen('php://output', 'w');
+            Csv::put($out, ['number', 'status', 'placed_at', 'paid_at', 'sku', 'title', 'variant', 'quantity', 'unit_price', 'line_total', 'currency', 'island', 'atoll']);
+            foreach ($rows as $r) {
+                Csv::put($out, [$r['number'], $r['status'], $r['placed_at'], $r['paid_at'], $r['sku'], $r['title'], $r['variant'], $r['quantity'], $r['unit_price'], $r['line_total'], $r['currency'], $r['island'], $r['atoll']]);
+            }
+            fclose($out);
+        }, $scope->vendorSlug.'-order-lines.csv', ['Content-Type' => 'text/csv; charset=UTF-8']);
+    }
+
+    /**
+     * @return array{status?: string, from?: string, to?: string}
+     */
+    private function exportFilters(Request $request): array
+    {
+        return array_filter($request->validate([
+            'status' => 'nullable|string|in:returns,pending_payment,paid,needs_attention,processing,ready,dispatched,delivered,cancelled',
+            'from' => 'nullable|date_format:Y-m-d',
+            'to' => 'nullable|date_format:Y-m-d',
+        ]), fn ($v) => $v !== null && $v !== '');
     }
 }

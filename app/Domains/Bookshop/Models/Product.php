@@ -43,6 +43,7 @@ class Product extends Model
         'track_stock',
         'stock',
         'low_stock_at',
+        'low_stock_notified_at',
         'lead_days',
         'status',
         'visibility',
@@ -72,6 +73,7 @@ class Product extends Model
             'featured' => 'boolean',
             'rating_avg' => 'decimal:2',
             'rating_count' => 'integer',
+            'low_stock_notified_at' => 'datetime',
             'tags' => 'array',
             'details' => 'array',
         ];

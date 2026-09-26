@@ -11,13 +11,14 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class ProductVariant extends Model
 {
-    protected $fillable = ['product_id', 'name', 'sku', 'price', 'stock', 'sort_order', 'is_active'];
+    protected $fillable = ['product_id', 'name', 'sku', 'price', 'stock', 'low_stock_notified_at', 'sort_order', 'is_active'];
 
     protected function casts(): array
     {
         return [
             'price' => 'decimal:2',
             'is_active' => 'boolean',
+            'low_stock_notified_at' => 'datetime',
         ];
     }
 

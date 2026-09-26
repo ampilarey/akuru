@@ -92,7 +92,7 @@ class ProductReviewsAction
         Merchandise::refreshRating((int) $product->id);
 
         $notify = app(NotifyBookshopUserAction::class);
-        $notify->vendor((int) $product->vendor_id, __('shop.notice_review_title'), __('shop.notice_review_body', ['title' => $product->title, 'rating' => $rating]), '/vendor/reviews');
+        $notify->vendor((int) $product->vendor_id, __('shop.notice_review_title'), __('shop.notice_review_body', ['title' => $product->title, 'rating' => $rating]), '/vendor/reviews', 'review');
         if ($premoderate) {
             $notify->office(__('shop.notice_review_pending_title'), __('shop.notice_review_body', ['title' => $product->title, 'rating' => $rating]), '/admin/bookshop');
         }

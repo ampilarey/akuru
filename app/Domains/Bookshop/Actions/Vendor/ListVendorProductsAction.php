@@ -15,27 +15,70 @@ use App\Domains\Media\Actions\ResolvePublicMediaUrlAction;
 class ListVendorProductsAction
 {
     /**
-     * @param  array{q?: ?string, status?: ?string}  $filters
+     * @param  array{q?: ?string, status?: ?string, low?: mixed, category?: mixed}  $filters
      * @return list<array<string, mixed>>
      */
     public function execute(VendorScope $scope, array $filters = [], int $limit = 500): array
     {
+        $products = $this->query($scope, $filters)->limit($limit)->get();
+
+        return $this->rows($products);
+    }
+
+    /**
+     * B8: one page of the shop's products — a shop with 500 items gets them
+     * fifty at a time, searchable and filterable, not all at once.
+     *
+     * @param  array{q?: ?string, status?: ?string, low?: mixed, category?: mixed}  $filters
+     * @return array{rows: list<array<string, mixed>>, total: int, page: int, last_page: int, per_page: int}
+     */
+    public function page(VendorScope $scope, array $filters = [], int $page = 1): array
+    {
+        $perPage = (int) config('bookshop.operations.products_per_page', 50);
+        $query = $this->query($scope, $filters);
+        $total = (clone $query)->count();
+        $lastPage = max(1, (int) ceil($total / $perPage));
+        $page = min(max(1, $page), $lastPage);
+
+        return [
+            'rows' => $this->rows($query->forPage($page, $perPage)->get()),
+            'total' => $total,
+            'page' => $page,
+            'last_page' => $lastPage,
+            'per_page' => $perPage,
+        ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $filters
+     */
+    private function query(VendorScope $scope, array $filters)
+    {
         $q = trim((string) ($filters['q'] ?? ''));
         $status = (string) ($filters['status'] ?? '');
 
-        $products = Product::query()
+        return Product::query()
             ->where('vendor_id', $scope->vendorId)
             ->with(['images', 'variants', 'category:id,name', 'brand:id,name'])
             ->when($q !== '', fn ($query) => $query->where(fn ($w) => $w
                 ->where('title', 'like', '%'.$q.'%')
                 ->orWhere('sku', 'like', '%'.$q.'%')
-                ->orWhere('barcode', 'like', '%'.$q.'%')))
+                ->orWhere('barcode', 'like', '%'.$q.'%')
+                ->orWhereHas('variants', fn ($v) => $v->where('sku', 'like', '%'.$q.'%'))))
             ->when($status !== '', fn ($query) => $query->where('status', $status))
+            ->when(! empty($filters['category']), fn ($query) => $query->where('product_category_id', (int) $filters['category']))
+            ->when(! empty($filters['low']), fn ($query) => $query->where('track_stock', true)->where(fn ($w) => $w
+                ->whereColumn('stock', '<=', 'low_stock_at')->orWhere('stock', '<=', 0)
+                ->orWhereHas('variants', fn ($v) => $v->where('is_active', true)->where('product_variants.stock', '<=', 0))))
             ->orderByDesc('updated_at')
-            ->orderByDesc('id')
-            ->limit($limit)
-            ->get();
+            ->orderByDesc('id');
+    }
 
+    /**
+     * @return list<array<string, mixed>>
+     */
+    private function rows($products): array
+    {
         $urls = app(ResolvePublicMediaUrlAction::class);
 
         return $products->map(fn (Product $p): array => [

@@ -440,15 +440,53 @@ function DiscountCodes({ codes, isOwner, t }) {
     );
 }
 
-function ProductList({ products, t, onEdit }) {
+/** B8 (§5 "Notifications: which events email or SMS them"): every notice is in the app; these add email or SMS. */
+function Notices({ settings, isOwner, t }) {
+    const form = useForm({ events: settings.events });
+    const set = (event, channel, value) => form.setData('events', { ...form.data.events, [event]: { ...form.data.events[event], [channel]: value } });
+    const office = settings.office;
+
+    return (
+        <section className="mt-8" data-testid="shop-notices">
+            <h2 className="mb-1 text-lg font-semibold">{t.notices_heading}</h2>
+            <p className="mb-2 text-sm text-gray-600">{t.notices_hint}{!settings.phone && <span className="ms-1 text-amber-800">{t.notices_no_phone}</span>}</p>
+            {(!office.vendor_email || !office.vendor_sms) && (
+                <p className="mb-2 rounded bg-gray-50 p-2 text-xs text-gray-600" data-testid="notices-office-off">
+                    {!office.vendor_email && t.notices_email_off_by_office} {!office.vendor_sms && t.notices_sms_off_by_office}
+                </p>
+            )}
+            <form onSubmit={(e) => { e.preventDefault(); form.post('/vendor/notices', { preserveScroll: true }); }}>
+                <table className="w-full rounded border bg-white text-sm">
+                    <thead className="bg-gray-50"><tr><th className="p-2 text-start">{t.notice_event}</th><th className="p-2">{t.in_app}</th><th className="p-2">{t.email}</th><th className="p-2">SMS</th></tr></thead>
+                    <tbody>
+                        {Object.keys(form.data.events).map((event) => (
+                            <tr key={event} className="border-t" data-testid={`notice-${event}`}>
+                                <td className="p-2">{t[`notice_event_${event}`] || event}</td>
+                                <td className="p-2 text-center">✓</td>
+                                <td className="p-2 text-center"><input type="checkbox" checked={!!form.data.events[event].email} disabled={!isOwner || !office.vendor_email} onChange={(e) => set(event, 'email', e.target.checked)} data-testid={`notice-${event}-email`} /></td>
+                                <td className="p-2 text-center"><input type="checkbox" checked={!!form.data.events[event].sms} disabled={!isOwner || !office.vendor_sms} onChange={(e) => set(event, 'sms', e.target.checked)} data-testid={`notice-${event}-sms`} /></td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+                {isOwner && <button type="submit" className="btn-primary mt-2" disabled={form.processing} data-testid="save-notices">{t.save}</button>}
+            </form>
+        </section>
+    );
+}
+
+function ProductList({ products, t, onEdit, selected, setSelected }) {
     if (products.length === 0) {
         return <p className="rounded border bg-white p-4 text-gray-600">{t.no_products}</p>;
     }
+    const all = products.every((p) => selected.includes(p.id));
+    const toggle = (id) => setSelected(selected.includes(id) ? selected.filter((x) => x !== id) : [...selected, id]);
 
     return (
         <table className="w-full overflow-hidden rounded border bg-white text-sm" data-testid="product-list">
             <thead className="bg-gray-50 text-start">
                 <tr>
+                    <th className="p-2 text-start"><input type="checkbox" checked={all} onChange={() => setSelected(all ? [] : products.map((p) => p.id))} aria-label={t.select_all} data-testid="select-all" /></th>
                     <th className="p-2 text-start" />
                     <th className="p-2 text-start">{t.product_title}</th>
                     <th className="p-2 text-start">{t.sku}</th>
@@ -461,6 +499,7 @@ function ProductList({ products, t, onEdit }) {
             <tbody>
                 {products.map((p) => (
                     <tr key={p.id} className="border-t" data-testid={`product-row-${p.slug}`}>
+                        <td className="p-2"><input type="checkbox" checked={selected.includes(p.id)} onChange={() => toggle(p.id)} aria-label={p.title} data-testid={`select-${p.slug}`} /></td>
                         <td className="p-2">{p.images[0]?.url ? <img src={p.images[0].url} alt="" className="h-12 w-12 rounded object-cover" loading="lazy" /> : <span className="block h-12 w-12 rounded bg-gray-100" />}</td>
                         <td className="p-2">
                             <span className="font-medium">{p.title}</span>
@@ -479,6 +518,7 @@ function ProductList({ products, t, onEdit }) {
                         <td className="p-2">{t[`status_${p.status}`] || p.status}</td>
                         <td className="p-2 text-end">
                             <button type="button" className="text-blue-700 underline" onClick={() => onEdit(p)} data-testid={`edit-${p.slug}`}>{t.edit}</button>
+                            <button type="button" className="ms-3 text-blue-700 underline" onClick={() => router.post(`/vendor/products/${p.id}/duplicate`, {}, { preserveScroll: true })} data-testid={`duplicate-${p.slug}`}>{t.duplicate}</button>
                             {p.status === 'active' && (
                                 <a href={`/shop/products/${p.slug}`} target="_blank" rel="noreferrer" className="ms-3 text-blue-700 underline" data-testid={`view-${p.slug}`}>{t.view_on_shop}</a>
                             )}
@@ -490,17 +530,23 @@ function ProductList({ products, t, onEdit }) {
     );
 }
 
-export default function Vendor({ t, vendor, memberships = [], agreement_url, products = [], members = [], delivery_methods = [], delivery_kinds = [], shop_settings = null, discount_codes = [], options, filters, must_set_password, set_password_url }) {
+export default function Vendor({ t, vendor, memberships = [], agreement_url, products = [], products_page = null, members = [], delivery_methods = [], delivery_kinds = [], shop_settings = null, discount_codes = [], notice_settings = null, options, filters, must_set_password, set_password_url }) {
     const { flash = {}, errors } = usePage().props;
     const [editing, setEditing] = useState(null);
     const [search, setSearch] = useState(filters.q || '');
     const [status, setStatus] = useState(filters.status || '');
+    const [low, setLow] = useState(!!filters.low);
+    const [category, setCategory] = useState(filters.category || '');
+    const [selected, setSelected] = useState([]);
+    const [bulkStatus, setBulkStatus] = useState('active');
     const isOwner = vendor.role === 'owner';
+    const listQuery = (page) => ({ q: search || undefined, status: status || undefined, low: low ? 1 : undefined, category: category || undefined, page: page > 1 ? page : undefined });
+    const goPage = (page) => router.get('/vendor', listQuery(page), { preserveState: true, preserveScroll: true, onSuccess: () => setSelected([]) });
 
     return (
         <AppShell title={t.portal_title}>
             <FormErrors errors={errors} className="mb-4" />
-            {flash.success && <p className="mb-4 rounded bg-green-50 p-3 text-green-700">{flash.success}</p>}
+            {flash.success && <p className="mb-4 rounded bg-green-50 p-3 text-green-700" data-testid="flash-success">{flash.success}</p>}
             {must_set_password && (
                 <p className="mb-4 rounded bg-amber-50 p-3 text-amber-900" data-testid="set-password-notice">
                     {t.set_password_notice} <a href={set_password_url} className="font-semibold underline">{t.set_password_link}</a>
@@ -521,6 +567,7 @@ export default function Vendor({ t, vendor, memberships = [], agreement_url, pro
                             <a href="/vendor/storefront/sections" className="btn-secondary" data-testid="open-sections">{t.sections_title}</a>
                             <a href="/vendor/money" className="btn-secondary" data-testid="open-money">{t.money_title}</a>
                             <a href="/vendor/reviews" className="btn-secondary" data-testid="open-reviews">{t.reviews_heading}</a>
+                            <a href="/vendor/stock" className="btn-secondary" data-testid="open-stock">{t.stock_title}</a>
                         </span>
                     )}
                 </div>
@@ -540,12 +587,12 @@ export default function Vendor({ t, vendor, memberships = [], agreement_url, pro
                 <>
                     <section>
                         <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-                            <h2 className="text-lg font-semibold">{t.products_heading} <span className="text-sm font-normal text-gray-500">{t.products_count.replace(':count', products.length)}</span></h2>
+                            <h2 className="text-lg font-semibold">{t.products_heading} <span className="text-sm font-normal text-gray-500" data-testid="products-total">{t.products_count.replace(':count', products_page ? products_page.total : products.length)}</span></h2>
                             <form
                                 className="flex flex-wrap gap-2"
                                 onSubmit={(e) => {
                                     e.preventDefault();
-                                    router.get('/vendor', { q: search || undefined, status: status || undefined }, { preserveState: true });
+                                    goPage(1);
                                 }}
                             >
                                 <input className="form-input" placeholder={t.search_products} value={search} onChange={(e) => setSearch(e.target.value)} />
@@ -553,8 +600,14 @@ export default function Vendor({ t, vendor, memberships = [], agreement_url, pro
                                     <option value="">{t.all_statuses}</option>
                                     {options.statuses.map((s) => <option key={s} value={s}>{t[`status_${s}`] || s}</option>)}
                                 </select>
-                                <button type="submit" className="btn-secondary">{t.search}</button>
+                                <select className="form-input" value={category} onChange={(e) => setCategory(e.target.value)} data-testid="filter-category">
+                                    <option value="">{t.all_categories}</option>
+                                    {options.categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+                                </select>
+                                <label className="flex items-center gap-1 text-sm"><input type="checkbox" checked={low} onChange={(e) => setLow(e.target.checked)} data-testid="filter-low" /> {t.low_stock_only}</label>
+                                <button type="submit" className="btn-secondary" data-testid="filter-products">{t.search}</button>
                                 <a href="/vendor/products/export" className="btn-secondary" data-testid="export-products">{t.export_csv}</a>
+                                <a href="/vendor/stock#import" className="btn-secondary" data-testid="open-import">{t.import_heading}</a>
                                 <button type="button" className="btn-primary" onClick={() => setEditing('new')} data-testid="new-product">{t.new_product}</button>
                             </form>
                         </div>
@@ -567,11 +620,29 @@ export default function Vendor({ t, vendor, memberships = [], agreement_url, pro
                                 onDone={() => setEditing(null)}
                             />
                         )}
-                        <ProductList products={products} t={t} onEdit={(p) => setEditing(p)} />
+                        {selected.length > 0 && (
+                            <div className="mb-2 flex flex-wrap items-center gap-2 rounded border border-blue-200 bg-blue-50 p-2 text-sm" data-testid="bulk-bar">
+                                <span>{t.selected_count.replace(':count', selected.length)}</span>
+                                <select className="form-input" value={bulkStatus} onChange={(e) => setBulkStatus(e.target.value)} data-testid="bulk-status">
+                                    {['active', 'draft', 'archived'].map((s) => <option key={s} value={s}>{t[`bulk_to_${s}`]}</option>)}
+                                </select>
+                                <button type="button" className="btn-primary" onClick={() => router.post('/vendor/products/bulk', { ids: selected, status: bulkStatus }, { preserveScroll: true, onSuccess: () => setSelected([]) })} data-testid="bulk-apply">{t.apply}</button>
+                                <button type="button" className="text-gray-600 underline" onClick={() => setSelected([])}>{t.cancel}</button>
+                            </div>
+                        )}
+                        <ProductList products={products} t={t} onEdit={(p) => setEditing(p)} selected={selected} setSelected={setSelected} />
+                        {products_page && products_page.last_page > 1 && (
+                            <nav className="mt-2 flex items-center gap-2 text-sm" aria-label={t.pages} data-testid="products-pages">
+                                <button type="button" className="btn-secondary" disabled={products_page.page <= 1} onClick={() => goPage(products_page.page - 1)} data-testid="products-prev">{t.previous}</button>
+                                <span data-testid="products-page">{t.page_of.replace(':page', products_page.page).replace(':pages', products_page.last_page)}</span>
+                                <button type="button" className="btn-secondary" disabled={products_page.page >= products_page.last_page} onClick={() => goPage(products_page.page + 1)} data-testid="products-next">{t.next}</button>
+                            </nav>
+                        )}
                     </section>
                     {/* Keyed on the rows, so the form re-reads them after the template or a save (useForm keeps its first values otherwise). */}
                     {shop_settings && <ShopSettings settings={shop_settings} isOwner={isOwner} t={t} />}
                     <DiscountCodes codes={discount_codes} isOwner={isOwner} t={t} />
+                    {notice_settings && <Notices key={JSON.stringify(notice_settings.events)} settings={notice_settings} isOwner={isOwner} t={t} />}
                     <DeliveryMethods key={delivery_methods.map((m) => `${m.id}:${m.name}`).join('|')} methods={delivery_methods} kinds={delivery_kinds} isOwner={isOwner} t={t} />
                     <Members members={members} isOwner={isOwner} t={t} />
                 </>

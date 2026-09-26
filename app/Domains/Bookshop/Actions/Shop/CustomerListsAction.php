@@ -118,6 +118,7 @@ class CustomerListsAction
                 __('shop.notice_back_in_stock_title'),
                 __('shop.notice_back_in_stock_body', ['title' => $product->title, 'vendor' => $product->vendor->name]),
                 '/shop/products/'.$product->slug,
+                'back_in_stock',
             );
         }
         StockAlert::query()->whereIn('id', $waiting->pluck('id'))->update(['notified_at' => now()]);
