@@ -7,6 +7,7 @@ use App\Domains\Courses\Models\CourseEnrollment;
 use App\Domains\Identity\Models\Otp;
 use App\Domains\Identity\Models\OtpAbuseEvent;
 use App\Domains\Library\Models\LibraryReadingEvent;
+use App\Domains\Library\Models\LibrarySearchLog;
 use Illuminate\Console\Command;
 
 class PruneExpiredDataCommand extends Command
@@ -100,6 +101,15 @@ class PruneExpiredDataCommand extends Command
         $this->line("Library reading events older than {$retentionDays} days to delete: {$eventCount}");
         if (! $dryRun) {
             $eventQuery->delete();
+        }
+
+        // B14: the shelf's search log goes with the reading events — a term
+        // somebody typed is no more worth keeping than a page they opened.
+        $searchQuery = LibrarySearchLog::query()->where('created_at', '<', now('Indian/Maldives')->subDays($retentionDays));
+        $searchCount = $searchQuery->count();
+        $this->line("Library searches older than {$retentionDays} days to delete: {$searchCount}");
+        if (! $dryRun) {
+            $searchQuery->delete();
         }
 
         // --- OTP abuse events past retention (SPEC §32) ---

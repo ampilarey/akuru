@@ -181,6 +181,8 @@ return [
     'library_review_assignment' => \App\Domains\Library\Models\LibraryReviewAssignment::class,
     'library_reading_alert' => \App\Domains\Library\Models\LibraryReadingAlert::class,
     'library_reading_event' => \App\Domains\Library\Models\LibraryReadingEvent::class,
+    // B14: the shelf's search log (STATUS §5it).
+    'library_search_log' => \App\Domains\Library\Models\LibrarySearchLog::class,
     'library_reading_progress' => \App\Domains\Library\Models\LibraryReadingProgress::class,
     'library_tag' => \App\Domains\Library\Models\LibraryTag::class,
     'lesson' => \App\Domains\Courses\Models\Lesson::class,

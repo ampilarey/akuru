@@ -761,6 +761,9 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         // B12 (LIBRARY_PLAN §42): the commercial knobs, on a screen.
         Route::get('settings', [\App\Domains\Library\Http\Controllers\AdminLibrarySettingsController::class, 'edit'])->name('admin.library.settings');
         Route::put('settings', [\App\Domains\Library\Http\Controllers\AdminLibrarySettingsController::class, 'update'])->name('admin.library.settings.update');
+        // B14 (LIBRARY_PLAN §29): the Library over a period.
+        Route::get('insights/export', [\App\Domains\Library\Http\Controllers\AdminLibraryInsightsController::class, 'export'])->name('admin.library.insights.export');
+        Route::get('insights', [\App\Domains\Library\Http\Controllers\AdminLibraryInsightsController::class, 'index'])->name('admin.library.insights');
         Route::post('items', [AdminLibraryController::class, 'storeItem'])->name('admin.library.items.store');
         Route::put('items/{item}', [AdminLibraryController::class, 'updateItem'])->name('admin.library.items.update')->whereNumber('item');
         Route::post('items/{item}/publish', [AdminLibraryController::class, 'publish'])->name('admin.library.items.publish')->whereNumber('item');

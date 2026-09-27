@@ -224,6 +224,8 @@ Search: title, author, description, abstract, tags, category, language, content 
 - **Writer:** views, readers, purchases, earnings, completion rate, best content, monthly sales, free vs paid reads, promotion impact, discounted vs normal sales. Aggregated only — no personal reading details.
 - **Admin:** platform sales, active readers, writers, content, pending submissions, top categories/writers, suspicious activity, payment reports, gift card usage, wallet liability, promotion/discount performance, refunds.
 
+> **Admin analytics built 2026-09-27 (B14, STATUS §5it):** `/admin/library/insights` by period (7, 30, 90 days, all time) — active readers, pages opened, items completed, purchases and revenue, searches; most-read items with readers, completions and sales; categories by pages opened; writers by sales; what people search for and what they search for and do not find (the shelf's searches are recorded, term and hit count only, pruned with the reading events). Sales per item, pending submissions, suspicious activity, gift cards and wallet liability were already on their own screens. Not built: promotion performance (no promotions, B4).
+
 ## 30. Security & Anti-Abuse
 
 - **30.1 Files:** private storage, never expose original URLs, signed temporary links only, protect converted pages, permission-checked access, log every session.
