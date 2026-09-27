@@ -764,6 +764,11 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         // B14 (LIBRARY_PLAN §29): the Library over a period.
         Route::get('insights/export', [\App\Domains\Library\Http\Controllers\AdminLibraryInsightsController::class, 'export'])->name('admin.library.insights.export');
         Route::get('insights', [\App\Domains\Library\Http\Controllers\AdminLibraryInsightsController::class, 'index'])->name('admin.library.insights');
+        // B4 (LIBRARY_PLAN §18): promotion campaigns.
+        Route::get('promotions/export', [\App\Domains\Library\Http\Controllers\AdminLibraryPromotionsController::class, 'export'])->name('admin.library.promotions.export');
+        Route::get('promotions', [\App\Domains\Library\Http\Controllers\AdminLibraryPromotionsController::class, 'index'])->name('admin.library.promotions');
+        Route::post('promotions', [\App\Domains\Library\Http\Controllers\AdminLibraryPromotionsController::class, 'store'])->name('admin.library.promotions.store');
+        Route::post('promotions/{campaign}/end', [\App\Domains\Library\Http\Controllers\AdminLibraryPromotionsController::class, 'end'])->name('admin.library.promotions.end')->whereNumber('campaign');
         Route::post('items', [AdminLibraryController::class, 'storeItem'])->name('admin.library.items.store');
         Route::put('items/{item}', [AdminLibraryController::class, 'updateItem'])->name('admin.library.items.update')->whereNumber('item');
         Route::post('items/{item}/publish', [AdminLibraryController::class, 'publish'])->name('admin.library.items.publish')->whereNumber('item');

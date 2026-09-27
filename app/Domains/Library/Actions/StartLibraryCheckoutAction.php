@@ -44,10 +44,20 @@ class StartLibraryCheckoutAction
 
         $amount = (float) $item->price;
         $resolvedDiscount = null;
+        $promotion = null;
         if ($discountCode !== null && trim($discountCode) !== '') {
             $resolvedDiscount = app(ResolveDiscountAction::class)
                 ->execute($discountCode, $userId, $amount, $payWithWallet);
             $amount = $resolvedDiscount['final_amount'];
+        } else {
+            // B4 (§18): with no code typed, a live campaign covering the item
+            // applies by itself — the price the page showed. A code and a
+            // campaign do not stack: the code is the reader's choice to use
+            // instead, on the full price.
+            $promotion = app(ResolveLibraryItemPromotionAction::class)->execute($item);
+            if ($promotion !== null) {
+                $amount = $promotion['price'];
+            }
         }
 
         $purchase = LibraryPurchase::query()->create([
@@ -65,6 +75,14 @@ class StartLibraryCheckoutAction
                 'library_purchase',
                 $purchase->id,
                 $resolvedDiscount['amount_discounted'],
+            );
+        } elseif ($promotion !== null) {
+            app(RecordDiscountRedemptionAction::class)->forCampaign(
+                $promotion['campaign_id'],
+                $userId,
+                'library_purchase',
+                $purchase->id,
+                $promotion['amount_off'],
             );
         }
 

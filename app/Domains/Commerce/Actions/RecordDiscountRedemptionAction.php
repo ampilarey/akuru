@@ -29,6 +29,28 @@ class RecordDiscountRedemptionAction
         ]);
     }
 
+    /**
+     * B4: a promotion campaign applied by itself at checkout. Recorded the
+     * same way as a code — pending, then confirmed or released by purchase —
+     * so funding, the webhook and refunds need not know which it was.
+     */
+    public function forCampaign(
+        int $campaignId,
+        int $userId,
+        string $purchaseType,
+        ?int $purchaseId,
+        float $amountDiscounted,
+    ): DiscountRedemption {
+        return DiscountRedemption::query()->create([
+            'promotion_campaign_id' => $campaignId,
+            'user_id' => $userId,
+            'purchase_type' => $purchaseType,
+            'purchase_id' => $purchaseId,
+            'amount_discounted' => round($amountDiscounted, 2),
+            'status' => 'pending',
+        ]);
+    }
+
     public function transition(string $purchaseType, int $purchaseId, string $status): int
     {
         return DiscountRedemption::query()

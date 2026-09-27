@@ -344,4 +344,30 @@ const pagesOpened = Number(await su.locator('[data-testid="headline-pages_opened
 const insightsCsv = await csvOf(su, '/en/admin/library/insights/export?period=all');
 check('the Library insights page counts the reading and carries a CSV', Number.isFinite(pagesOpened) && pagesOpened > 0 && (await count(su, '[data-testid="most-read"] tbody tr')) > 0 && insightsCsv.status === 200 && insightsCsv.text.startsWith('period,title'), `${pagesOpened} pages opened · CSV ${insightsCsv.status}`);
 
+// B4a (LIBRARY_PLAN §18, STATUS §5ix): the office starts an offer, the shelf
+// shows it, the office ends it and the shelf forgets it. Unique per run, and
+// ended at the end, so a later run finds the shelf as it was.
+const offerName = `SMOKE-Offer ${Date.now().toString(36)}`;
+await su.goto(`${BASE}/en/admin/library/promotions`, { waitUntil: 'networkidle' });
+await settle(su, '[data-testid="campaign-form"]');
+await su.fill('[data-testid="campaign-form"] input[name="name"]', offerName);
+await su.fill('[data-testid="campaign-form"] input[name="discount_value"]', '10');
+await su.click('[data-testid="campaign-form"] button[type=submit]');
+const offerStarted = await su.waitForFunction(() => document.body.innerText.includes('Campaign started.'), null, { timeout: 20000 }).then(() => true).catch(() => false);
+const offersCsv = await csvOf(su, '/en/admin/library/promotions/export');
+check('the office starts a campaign and it is listed live, with a CSV', offerStarted && (await count(su, `tr:has-text("${offerName}") [data-state="live"]`)) === 1 && offersCsv.status === 200 && offersCsv.text.includes(offerName), `started ${offerStarted} · CSV ${offersCsv.status}`);
+// The offers strip is on the shelf front (a filtered list is an answer, not
+// a shop window); the struck prices are on every card the filter returns.
+const shelf = await su.context().newPage();
+await shelf.goto(`${BASE}/en/library`, { waitUntil: 'networkidle' });
+const stripNamesIt = (await text(shelf)).includes(offerName);
+await shelf.goto(`${BASE}/en/library?discounted=1`, { waitUntil: 'networkidle' });
+const discountedCards = await count(shelf, '[data-testid="shelf"] a[data-item]');
+const struckPrices = await count(shelf, '[data-testid="shelf"] [data-promo]');
+check('the shelf names the offer and every discounted card shows the struck price', stripNamesIt && struckPrices > 0 && discountedCards === struckPrices, `strip ${stripNamesIt} · ${struckPrices}/${discountedCards} cards`);
+await shelf.close();
+await su.click(`tr:has-text("${offerName}") button:has-text("End now")`);
+const offerEnded = await su.waitForFunction(() => document.body.innerText.includes('Campaign ended.'), null, { timeout: 20000 }).then(() => true).catch(() => false);
+check('the office ends it and the shelf forgets it', offerEnded && !((await (await su.context().request.get(`${BASE}/en/library`)).text()).includes(offerName)));
+
 await finish();

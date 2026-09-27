@@ -327,6 +327,7 @@ export default function Admin({ items, categories, options, sales = [], queues =
                     <a className="btn-secondary" href="/admin/library/reading-alerts">Reading alerts</a>
                     <a className="btn-secondary" href="/admin/library/settings" data-testid="library-settings-link">Settings</a>
                     <a className="btn-secondary" href="/admin/library/insights" data-testid="library-insights-link">Insights</a>
+                    <a className="btn-secondary" href="/admin/library/promotions" data-testid="library-promotions-link">Promotions</a>
                     <a className="btn-secondary" href="/admin/library/earnings/export">Earnings CSV</a>
                     <a className="btn-secondary" href="/admin/library?format=csv">Export CSV</a>
                 </span>

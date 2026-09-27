@@ -4,6 +4,7 @@ namespace App\Domains\Commerce\Actions;
 
 use App\Domains\Commerce\Models\DiscountCode;
 use App\Domains\Commerce\Models\DiscountRedemption;
+use App\Domains\Commerce\Models\PromotionCampaign;
 
 /**
  * L6 (§21): which pocket funded a purchase's discount — shared (default),
@@ -28,9 +29,11 @@ class ResolveRedemptionFundingSourceAction
             return null;
         }
 
-        $fundingSource = DiscountCode::query()
-            ->whereKey($redemption->discount_code_id)
-            ->value('discount_funding_source') ?? 'shared';
+        // B4: a campaign's redemption is funded by the campaign.
+        $fundingSource = $redemption->promotion_campaign_id !== null
+            ? PromotionCampaign::query()->whereKey($redemption->promotion_campaign_id)->value('funding_source')
+            : DiscountCode::query()->whereKey($redemption->discount_code_id)->value('discount_funding_source');
+        $fundingSource ??= 'shared';
 
         return [
             'amount_discounted' => (float) $redemption->amount_discounted,
