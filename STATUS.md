@@ -4414,6 +4414,25 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5jc. Every Inertia tab read the bare app name (2026-09-27)
+
+Seen while walking §5jb: `page.title()` on the ported settings screen was
+"Laravel" — the app name the Blade root writes into `<title inertia>`,
+and nothing after it. Every Inertia page hands `AppShell` a `title`, and
+the shell showed it as the heading and nowhere else, so a person with
+several tabs open could not tell them apart, and the browser history
+read the same word over and over.
+
+**Fix.** `AppShell` renders Inertia's `<Head title={title} />`, and
+`app.jsx` gives `createInertiaApp` a `title` callback that appends the
+app name (read once from the document at boot, so it is whatever
+`APP_NAME` says on that host): "System Settings · Akuru Institute".
+`InertiaDocumentTitleTest` pins the two lines and the `<title inertia>`
+root — the title is client-rendered, so a PHP request cannot see it.
+Walked: four pages carried their own title with the app name after it,
+and an in-app visit from the Library office to Insights changed the tab
+without a page load.
+
 ## 5jb. C9 slice 1: System Settings leaves Blade, and speaks three languages (2026-09-27)
 
 BACKLOG C9, `docs/ADMIN_PANEL.md` findings 9 and 10. Twenty-four of the
@@ -4441,7 +4460,7 @@ in place with no page load; the shell's Settings link is an Inertia visit;
 no English leftovers; `/ar/admin/settings` the Arabic heading. `admin.mjs`
 clicks the new button. Seen in passing: every Inertia page's browser tab
 reads "Laravel" — `AppShell` sets the heading, nothing sets the document
-title — a one-line `<Head>` for a later slice. Next in line, office
+title — fixed in §5jc. Next in line, office
 first: Manage users, then the enrolment screens.
 
 ## 5ja. The login page fetched an image that did not exist, on every visit (2026-09-27)

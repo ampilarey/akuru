@@ -1,4 +1,4 @@
-import { Link, router, usePage } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
 
 /**
@@ -48,6 +48,8 @@ export default function AppShell({ title, children }) {
 
     return (
         <div dir={rtl ? 'rtl' : 'ltr'} className="min-h-screen bg-[#F9F4EE] text-gray-900">
+            {/* The tab reads the page, not the bare app name (STATUS §5jc); app.jsx appends the app name. */}
+            <Head title={title} />
             {/* Keyboard users land on the content, not on the menu (admin-panel layout audit, STATUS §5ht). */}
             <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:start-2 focus:top-2 focus:z-50 focus:rounded focus:bg-white focus:px-3 focus:py-2 focus:text-sm focus:text-[#7C2D37]">
                 {n.skip_to_content || 'Skip to content'}
