@@ -147,6 +147,29 @@ const office = await signIn(ADMIN);
 check('the educational admin lands on the School office', /\/school$/.test(office.url()), office.url().replace(BASE, ''));
 const schoolFailed = await landingsOpen(office, schoolLandings);
 check(`the School's ${schoolLandings.length} admin landing pages open for the educational admin`, schoolFailed.length === 0, schoolFailed.join(', '));
+
+// A decision records who made it (STATUS §5ih): suspend and reinstate a live
+// enrolment and read the stamp on the page.
+await office.goto(`${BASE}/en/admin/enrollments?status=active`, { waitUntil: 'networkidle' });
+const enrolmentHref = await office.locator('a[href*="/admin/enrollments/"]:not([href$="/payments"]):not([href*="export"])').first().getAttribute('href').catch(() => null);
+if (enrolmentHref) {
+    await office.goto(enrolmentHref.startsWith('http') ? enrolmentHref : `${BASE}${enrolmentHref}`, { waitUntil: 'networkidle' });
+    const suspendForm = office.locator('form[action$="/suspend"]');
+    if (await suspendForm.count()) {
+        office.once('dialog', (d) => d.accept());
+        await Promise.all([office.waitForNavigation({ waitUntil: 'networkidle' }).catch(() => {}), suspendForm.locator('button').click()]);
+        const stamped = (await office.locator('[data-testid="last-decision"]').textContent().catch(() => '')) || '';
+        check('suspending an enrolment records who did it and when', /Suspended by .+ on \d{2} \w{3} \d{4}/.test(stamped), stamped.trim().slice(0, 80));
+        office.once('dialog', (d) => d.accept());
+        await Promise.all([office.waitForNavigation({ waitUntil: 'networkidle' }).catch(() => {}), office.locator('form[action$="/reinstate"] button').click()]);
+        const restamped = (await office.locator('[data-testid="last-decision"]').textContent().catch(() => '')) || '';
+        check('and reinstating it overwrites the stamp', /Reinstated by .+ on/.test(restamped), restamped.trim().slice(0, 80));
+    } else {
+        check('suspending an enrolment records who did it and when', false, 'no live enrolment to suspend on ' + enrolmentHref);
+    }
+} else {
+    check('suspending an enrolment records who did it and when', false, 'no enrolment listed');
+}
 const admitted = [];
 for (const [path] of instituteLandings) {
     const status = await statusOf(office, path);

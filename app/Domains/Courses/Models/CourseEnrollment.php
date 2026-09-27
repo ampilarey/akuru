@@ -29,6 +29,12 @@ class CourseEnrollment extends Model
         'access_ends_at',
         'completed_at',
         'created_by_user_id',
+        // The last decision made about this enrolment and who made it
+        // (STATUS §5ih); empty for the webhook's activation, which is the
+        // system's.
+        'decided_by_user_id',
+        'decided_at',
+        'decision',
         'payment_status',
         'payment_id',
     ];
@@ -40,8 +46,15 @@ class CourseEnrollment extends Model
             'access_starts_at' => 'datetime',
             'access_ends_at' => 'datetime',
             'completed_at' => 'datetime',
+            'decided_at' => 'datetime',
             'progress_percentage' => 'integer',
         ];
+    }
+
+    /** Who made the last decision (activate, reject, suspend, reinstate, the access window). */
+    public function decider(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'decided_by_user_id');
     }
 
     /** Canonical student (Deploy 2). */

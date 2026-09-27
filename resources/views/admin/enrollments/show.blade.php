@@ -73,6 +73,19 @@
                 <dt class="text-gray-500 font-medium">Registered by</dt>
                 <dd class="text-gray-900">{{ $enrollment->creator?->name ?? '—' }}</dd>
             </div>
+            {{-- Who made the last decision, and when (STATUS §5ih). Empty for a
+                 place the payment webhook activated, or one decided before the
+                 stamp existed. --}}
+            <div class="col-span-2">
+                <dt class="text-gray-500 font-medium">Last decision</dt>
+                <dd class="text-gray-900" data-testid="last-decision">
+                    @if($enrollment->decided_at)
+                        {{ ucfirst(str_replace('_', ' ', $enrollment->decision ?? 'decided')).' by '.($enrollment->decider?->name ?? 'a removed account').' on '.$enrollment->decided_at->format('d M Y, H:i') }}
+                    @else
+                        — (no decision recorded: made by the system, or before decisions were recorded)
+                    @endif
+                </dd>
+            </div>
         </dl>
     </div>
 

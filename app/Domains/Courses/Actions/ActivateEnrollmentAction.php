@@ -35,7 +35,10 @@ class ActivateEnrollmentAction
     /** Statuses that already hold a seat — `ReserveOfferingSeatAction`'s list. */
     private const OCCUPYING = ['active', 'approved', 'pending', 'completed'];
 
-    public function execute(CourseEnrollment $enrollment): CourseEnrollment
+    /**
+     * @param  ?int  $decidedBy  the administrator activating it; null for the system (STATUS §5ih)
+     */
+    public function execute(CourseEnrollment $enrollment, ?int $decidedBy = null): CourseEnrollment
     {
         if ($enrollment->status === 'active') {
             return $enrollment;
@@ -43,7 +46,7 @@ class ActivateEnrollmentAction
 
         $wasOccupying = in_array((string) $enrollment->status, self::OCCUPYING, true);
 
-        return DB::transaction(function () use ($enrollment, $wasOccupying): CourseEnrollment {
+        return DB::transaction(function () use ($enrollment, $wasOccupying, $decidedBy): CourseEnrollment {
             // The reservation locks the offering row and counts the occupying
             // enrolments; the status change has to happen inside the same
             // transaction so that lock still holds when this row joins them.
@@ -55,6 +58,7 @@ class ActivateEnrollmentAction
                 'status' => 'active',
                 'enrolled_at' => $enrollment->enrolled_at ?? now(),
             ]);
+            app(RecordEnrollmentDecisionAction::class)->execute($enrollment, RecordEnrollmentDecisionAction::ACTIVATED, $decidedBy);
 
             return $enrollment->refresh();
         });

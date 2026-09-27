@@ -3,7 +3,6 @@
 namespace App\Domains\Admissions\Http\Controllers;
 
 use App\Domains\Courses\Actions\ActivateEnrollmentAction;
-use App\Domains\Courses\Actions\ResolveEnrollmentAccessWindowAction;
 use App\Domains\Courses\Actions\SuspendEnrollmentAction;
 use App\Domains\Courses\Models\Course;
 use App\Domains\Courses\Models\CourseEnrollment;
@@ -25,7 +24,7 @@ class AdminEnrollmentController extends Controller
 {
     public function index(Request $request)
     {
-        $query = CourseEnrollment::with(['student', 'course', 'payment', 'creator'])
+        $query = CourseEnrollment::with(['student', 'course', 'payment', 'creator', 'decider'])
             ->latest();
 
         if ($courseId = $request->input('course_id')) {
@@ -60,7 +59,7 @@ class AdminEnrollmentController extends Controller
 
     public function show(CourseEnrollment $enrollment)
     {
-        $enrollment->load(['student.guardians', 'course', 'payment.items.course', 'creator']);
+        $enrollment->load(['student.guardians', 'course', 'payment.items.course', 'creator', 'decider']);
         // SPEC §38's payment-method vocabulary, fetched through Finance's
         // Action rather than its enum (rule 3).
         $paymentMethods = app(ListManualPaymentMethodsAction::class)->execute();
@@ -71,7 +70,7 @@ class AdminEnrollmentController extends Controller
     public function activate(CourseEnrollment $enrollment)
     {
         try {
-            app(ActivateEnrollmentAction::class)->execute($enrollment);
+            app(ActivateEnrollmentAction::class)->execute($enrollment, (int) auth()->id());
         } catch (ValidationException $e) {
             // Same shape as suspend/reinstate below: this screen is Blade and
             // does not render a validation bag, so a thrown seat refusal would
@@ -87,7 +86,7 @@ class AdminEnrollmentController extends Controller
 
     public function reject(CourseEnrollment $enrollment)
     {
-        $enrollment->update(['status' => 'rejected']);
+        app(\App\Domains\Courses\Actions\RejectEnrollmentAction::class)->execute($enrollment, (int) auth()->id());
 
         $this->notifyUser($enrollment, 'rejected');
         $this->sendRejectionSms($enrollment);
@@ -109,7 +108,7 @@ class AdminEnrollmentController extends Controller
     public function suspend(CourseEnrollment $enrollment)
     {
         try {
-            app(SuspendEnrollmentAction::class)->execute($enrollment);
+            app(SuspendEnrollmentAction::class)->execute($enrollment, null, (int) auth()->id());
         } catch (ValidationException $e) {
             return back()->with('error', $e->validator->errors()->first());
         }
@@ -120,7 +119,7 @@ class AdminEnrollmentController extends Controller
     public function reinstate(CourseEnrollment $enrollment)
     {
         try {
-            app(SuspendEnrollmentAction::class)->reinstate($enrollment);
+            app(SuspendEnrollmentAction::class)->reinstate($enrollment, (int) auth()->id());
         } catch (ValidationException $e) {
             return back()->with('error', $e->validator->errors()->first());
         }
@@ -143,11 +142,10 @@ class AdminEnrollmentController extends Controller
     public function setAccessWindow(Request $request, CourseEnrollment $enrollment)
     {
         try {
-            $enrollment->update(
-                app(ResolveEnrollmentAccessWindowAction::class)->validated($request->only([
-                    'access_starts_at',
-                    'access_ends_at',
-                ]))
+            app(\App\Domains\Courses\Actions\SetEnrollmentAccessWindowAction::class)->execute(
+                $enrollment,
+                $request->only(['access_starts_at', 'access_ends_at']),
+                (int) auth()->id(),
             );
         } catch (ValidationException $e) {
             return back()->with('error', $e->validator->errors()->first());
@@ -194,33 +192,45 @@ class AdminEnrollmentController extends Controller
             Csv::put($handle, [
                 'ID', 'Course', 'Student Name', 'Enrolled By (Mobile/Email)',
                 'Status', 'Payment Status', 'Amount (MVR)', 'Payment Ref',
-                'Enrolled At', 'Created At',
+                'Enrolled At', 'Created At', 'Last Decision', 'Decided By', 'Decided At',
             ]);
 
             foreach ($enrollments as $e) {
-                $user = $e->creator;
-                $mobile = $user?->mobile ?? $user?->contacts()->where('type', 'mobile')->value('value') ?? '';
-                $email = $user?->email ?? $user?->contacts()->where('type', 'email')->value('value') ?? '';
-                $contact = $mobile ?: $email;
-
-                Csv::put($handle, [
-                    $e->id,
-                    $e->course?->title ?? '',
-                    $e->student?->full_name ?? '',
-                    $contact,
-                    $e->status,
-                    $e->payment_status,
-                    $e->payment?->amount ?? '',
-                    $e->payment?->merchant_reference ?? '',
-                    $e->enrolled_at?->format('Y-m-d H:i') ?? '',
-                    $e->created_at?->format('Y-m-d H:i') ?? '',
-                ]);
+                Csv::put($handle, $this->exportRow($e));
             }
 
             fclose($handle);
         };
 
         return response()->stream($callback, 200, $headers);
+    }
+
+    /**
+     * One enrolment as the CSV lists it (the decision stamp last, STATUS §5ih).
+     *
+     * @return list<string|int|float|null>
+     */
+    private function exportRow(CourseEnrollment $e): array
+    {
+        $user = $e->creator;
+        $mobile = $user?->mobile ?? $user?->contacts()->where('type', 'mobile')->value('value') ?? '';
+        $email = $user?->email ?? $user?->contacts()->where('type', 'email')->value('value') ?? '';
+
+        return [
+            $e->id,
+            $e->course?->title ?? '',
+            $e->student?->full_name ?? '',
+            $mobile ?: $email,
+            $e->status,
+            $e->payment_status,
+            $e->payment?->amount ?? '',
+            $e->payment?->merchant_reference ?? '',
+            $e->enrolled_at?->format('Y-m-d H:i') ?? '',
+            $e->created_at?->format('Y-m-d H:i') ?? '',
+            $e->decision ?? '',
+            $e->decider?->name ?? '',
+            $e->decided_at?->format('Y-m-d H:i') ?? '',
+        ];
     }
 
     private function notifyUser(CourseEnrollment $enrollment, string $status): void
