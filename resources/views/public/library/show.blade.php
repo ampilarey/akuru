@@ -37,6 +37,9 @@
                 @if($item['published_at'])
                     <span>{{ $item['published_at'] }}</span>
                 @endif
+                @if($item['difficulty'] ?? null)
+                    <span data-testid="difficulty">{{ __('public.difficulty_'.$item['difficulty']) }}</span>
+                @endif
                 @if($item['reading_time'])
                     <span>{{ $item['reading_time'] }} {{ __('public.min read') }}</span>
                 @endif

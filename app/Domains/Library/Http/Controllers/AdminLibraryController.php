@@ -273,6 +273,7 @@ class AdminLibraryController extends Controller
             'preview_enabled' => 'nullable|boolean',
             'preview_pages' => 'nullable|integer|min:1|max:1000',
             'reading_time' => 'nullable|integer|min:1',
+            'difficulty' => 'nullable|in:'.implode(',', \App\Domains\Library\Actions\ListLibraryItemsAction::DIFFICULTIES),
             'tags' => 'nullable|array',
             'tags.*' => 'string|max:60',
             'authors' => 'nullable|array',

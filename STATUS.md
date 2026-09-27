@@ -4414,6 +4414,36 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5in. Library B5: the remaining shelf filters (2026-09-27)
+
+BACKLOG B5, LIBRARY_PLAN §8.2–§8.4. The shelf filtered by type,
+category, access, language, price and author; the plan's other asks —
+difficulty, reading time, popular by period, and for research whether a
+peer has reviewed it and whether it is open to all — were parked as
+"small, once the data exists". Most of the data did exist:
+`reading_time` has been a column since L1, every page opened is a
+reading event with a time, and a research review that has reported is a
+row in `library_review_assignments`. Difficulty was the one gap.
+
+**Built.** Migration `2026_09_27_000006` adds `library_items.difficulty`
+(beginner / intermediate / advanced, nullable, additive) and an index on
+the reading events by item and time. `ListLibraryItemsAction` gains the
+`difficulty` filter, the `reading` band (short up to 10 minutes, medium
+to 30, long beyond; an item with no time is in no band), `peer_reviewed`
+(research with a reviewer's report) and `open_access` (free public
+research), and two sorts, `popular_week` and `popular_month`, counting
+pages opened in the window. The public shelf offers all of them and its
+CSV carries difficulty and reading time; the item page says how hard.
+The writer's draft editor and the office's item form both take
+difficulty (and the writer now sets the reading time too); a save that
+does not mention difficulty leaves it alone. EN/DV/AR (DV/AR first pass
+pending native review, as the rest of the Library's strings).
+`ShelfFiltersTest` (4). Walked in `library.mjs`: the writer marks the
+book beginner and five minutes, the reader's filtered shelf finds it and
+the other filter leaves it out. Not built from the plan's lists:
+*discounted* (no promotions yet, B4), a published-date range, a research
+area field.
+
 ## 5im. Library B6: the author page's featured works and links (2026-09-27)
 
 BACKLOG B6, LIBRARY_PLAN §8.7. The L8 author page (§5gp) had a name, a

@@ -71,6 +71,29 @@
                     <input type="number" name="price_max" min="0" step="1" value="{{ $filters['price_max'] ?? '' }}" class="form-input w-24" placeholder="{{ __('public.max') }}" aria-label="{{ __('public.Max price') }}">
                 </div>
             </div>
+            {{-- B5 (§8.2–§8.4): the remaining filters. --}}
+            <div>
+                <label class="block text-xs text-gray-500 mb-1">{{ __('public.Difficulty') }}</label>
+                <select name="difficulty" class="form-input">
+                    <option value="">{{ __('public.Any difficulty') }}</option>
+                    @foreach($difficulties as $level)
+                        <option value="{{ $level }}" @selected(($filters['difficulty'] ?? '') === $level)>{{ __('public.difficulty_'.$level) }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div>
+                <label class="block text-xs text-gray-500 mb-1">{{ __('public.Reading time') }}</label>
+                <select name="reading" class="form-input">
+                    <option value="">{{ __('public.Any length') }}</option>
+                    @foreach($reading_bands as $band)
+                        <option value="{{ $band }}" @selected(($filters['reading'] ?? '') === $band)>{{ __('public.reading_'.$band) }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="flex flex-wrap items-end gap-3 text-sm">
+                <label class="flex items-center gap-1"><input type="checkbox" name="peer_reviewed" value="1" @checked(filter_var($filters['peer_reviewed'] ?? false, FILTER_VALIDATE_BOOL))> {{ __('public.Peer-reviewed') }}</label>
+                <label class="flex items-center gap-1"><input type="checkbox" name="open_access" value="1" @checked(filter_var($filters['open_access'] ?? false, FILTER_VALIDATE_BOOL))> {{ __('public.Open access') }}</label>
+            </div>
             <div>
                 <label class="block text-xs text-gray-500 mb-1">{{ __('public.Sort') }}</label>
                 <select name="sort" class="form-input">

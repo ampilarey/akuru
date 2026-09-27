@@ -166,6 +166,9 @@ class WriterPortalController extends Controller
             'citations' => 'nullable|string|max:20000',
             'affiliation' => 'nullable|string|max:255',
             'research_field' => 'nullable|string|max:255',
+            // B5 (§8.2–§8.3): how hard, and how long — the writer knows best.
+            'difficulty' => 'nullable|in:'.implode(',', \App\Domains\Library\Actions\ListLibraryItemsAction::DIFFICULTIES),
+            'reading_time' => 'nullable|integer|min:1|max:10000',
             'suggested_reviewer' => 'nullable|string|max:255',
             'tags' => 'nullable|array|max:20',
             'tags.*' => 'string|max:60',

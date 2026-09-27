@@ -233,6 +233,9 @@ if (!portal.includes('Apply to publish')) {
     // editor's default in this walk is the first type — set it), and the
     // copyright declaration, without which the submission below is refused.
     await writer.locator('[data-testid="draft-editor"] select').first().selectOption('book');
+    // B5 (§8.2–§8.3): how hard and how long, so the reader's filters below find it.
+    await writer.locator('[data-testid="draft-editor"] select[aria-label="Difficulty"]').selectOption('beginner');
+    await writer.fill('[data-testid="draft-editor"] input[placeholder="Reading time (min)"]', '5');
     await writer.fill('input[placeholder*="Co-authors"]', CO_AUTHOR);
     await writer.fill('textarea[placeholder*="Table of contents"]', `${TOC_ONE}\n${TOC_TWO}`);
     await writer.check('input[name="declarations[copyright]"]');
@@ -373,6 +376,14 @@ if (resubmitted) {
     check('and the portrait shows in their portal', (await portrait.count()) === 1, (await portrait.count()) ? await portrait.getAttribute('src') : 'no portrait image after saving');
 
     // ------------------------------------------ 9. a reader follows the name
+
+    // B5: the shelf filtered by what the writer said — a beginner's book of
+    // five minutes — still lists it, and filtered the other way does not.
+    await reader.goto(`${BASE}/en/library?difficulty=beginner&reading=short`, { waitUntil: 'networkidle' });
+    const filteredIn = (await reader.locator('a', { hasText: TITLE }).count()) > 0;
+    await reader.goto(`${BASE}/en/library?difficulty=advanced`, { waitUntil: 'networkidle' });
+    const filteredOut = (await reader.locator('a', { hasText: TITLE }).count()) === 0;
+    check('the difficulty and reading-time filters find the work and leave it out', filteredIn && filteredOut, `${filteredIn ? 'in' : 'NOT in'} beginner+short, ${filteredOut ? 'out of' : 'STILL in'} advanced`);
 
     await reader.goto(`${BASE}/en/library`, { waitUntil: 'networkidle' });
     await reader.locator('a', { hasText: TITLE }).first().click();

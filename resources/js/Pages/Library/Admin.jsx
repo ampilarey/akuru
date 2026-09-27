@@ -204,6 +204,7 @@ function ItemForm({ categories, options }) {
         body: '',
         cover_image: '',
         reading_time: '',
+        difficulty: '',
         tags_text: '',
         authors_text: '',
         pdf: null,
@@ -253,6 +254,12 @@ function ItemForm({ categories, options }) {
             </label>
             <input className="form-input" placeholder="…or a cover image URL" value={form.data.cover_image} onChange={(e) => form.setData('cover_image', e.target.value)} />
             <input className="form-input" type="number" min="1" placeholder="Reading time (min)" value={form.data.reading_time} onChange={(e) => form.setData('reading_time', e.target.value)} />
+            <select className="form-input" value={form.data.difficulty} onChange={(e) => form.setData('difficulty', e.target.value)} aria-label="Difficulty">
+                <option value="">Difficulty: not set</option>
+                <option value="beginner">Beginner</option>
+                <option value="intermediate">Intermediate</option>
+                <option value="advanced">Advanced</option>
+            </select>
 
             <textarea className="form-input md:col-span-4" rows="6" placeholder="Body (HTML — the free-reading content)" value={form.data.body} onChange={(e) => form.setData('body', e.target.value)} />
 

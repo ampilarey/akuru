@@ -20,7 +20,7 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 class PublicLibraryController extends Controller
 {
     /** The query-string keys the shelf understands (§8.2/§8.3). */
-    private const FILTERS = ['q', 'content_type', 'category', 'tag', 'author', 'access', 'language', 'price_min', 'price_max', 'sort'];
+    private const FILTERS = ['q', 'content_type', 'category', 'tag', 'author', 'access', 'language', 'price_min', 'price_max', 'difficulty', 'reading', 'peer_reviewed', 'open_access', 'sort'];
 
     public function index(Request $request)
     {
@@ -32,6 +32,8 @@ class PublicLibraryController extends Controller
             'categories' => app(ListLibraryCategoriesAction::class)->execute(withCounts: true),
             'filters' => $filters,
             'sorts' => ListLibraryItemsAction::SORTS,
+            'difficulties' => ListLibraryItemsAction::DIFFICULTIES,
+            'reading_bands' => array_keys(ListLibraryItemsAction::READING_BANDS),
             'languages' => ['en' => 'English', 'dv' => 'Dhivehi', 'ar' => 'Arabic'],
             // §8.1: the office's picks and the reader's own half-read books,
             // on the front of the shelf and nowhere else — a filtered list
@@ -51,7 +53,7 @@ class PublicLibraryController extends Controller
 
         return response()->streamDownload(function () use ($rows): void {
             $out = fopen('php://output', 'w');
-            Csv::put($out, ['id', 'title', 'type', 'access', 'category', 'authors', 'published_at']);
+            Csv::put($out, ['id', 'title', 'type', 'access', 'category', 'authors', 'difficulty', 'reading_time', 'published_at']);
             foreach ($rows as $row) {
                 Csv::put($out, [
                     $row['id'],
@@ -60,6 +62,8 @@ class PublicLibraryController extends Controller
                     $row['access_type'],
                     $row['category']['name'] ?? '',
                     implode('; ', $row['authors']),
+                    $row['difficulty'] ?? '',
+                    $row['reading_time'] ?? '',
                     $row['published_at'],
                 ]);
             }
