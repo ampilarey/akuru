@@ -31,10 +31,12 @@ class DashboardController extends Controller
         $landing = app(ResolveDashboardLandingAction::class)
             ->execute($user->getRoleNames()->all());
 
+        // An administrator's home is the admin panel, `/admin`, with today's
+        // numbers at its top (the owner, 2026-09-26: two pages — the numbers
+        // and the doors — were one too many). The full dashboards they used
+        // to land on keep their own addresses, linked from the panel.
         $response = match ($landing['kind']) {
-            'super_admin' => $this->superAdminDashboard(),
-            'overview' => redirect()->route('portal.overview'),
-            'supervisor' => $this->supervisorDashboard(),
+            'super_admin', 'overview', 'supervisor' => redirect()->route('admin.index'),
             'registers' => $this->teacherDashboard(),
             'portal_home' => redirect()->route('portal.home'),
             'bookshop' => redirect()->route('admin.bookshop.index'),
@@ -54,6 +56,18 @@ class DashboardController extends Controller
         }
 
         return $response;
+    }
+
+    /** `/dashboard/numbers`: the super admin's full dashboard (route-gated to the role). */
+    public function numbers()
+    {
+        return $this->superAdminDashboard();
+    }
+
+    /** `/dashboard/supervisor`: the supervisor's full dashboard (route-gated to the role). */
+    public function supervisor()
+    {
+        return $this->supervisorDashboard();
     }
 
     private function publicUserDashboard()

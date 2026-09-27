@@ -38,13 +38,15 @@ it('sends a teacher from the dashboard to their own home', function () {
         ->assertInertia(fn (Assert $page) => $page->component('Academics/Registers/Today'));
 });
 
-it('sends an admin from the dashboard to the composed staff overview', function () {
+it('sends an admin from the dashboard to the admin panel, which links the composed staff overview', function () {
+    // STATUS §5ia: one home for administrators — `/admin`, with today's
+    // numbers on top — instead of a numbers page and a doors page.
     $user = actingPeopleAdmin(['registers.manage', 'exams.manage']);
 
     $this->withoutLocalizationMiddleware()
         ->actingAs($user)
         ->get(route('dashboard'))
-        ->assertRedirect(route('portal.overview'));
+        ->assertRedirect(route('admin.index'));
 
     $this->withoutLocalizationMiddleware()
         ->actingAs($user)
@@ -101,34 +103,32 @@ it('sends a student from the dashboard to the composed portal home', function ()
         );
 });
 
-// The three branches above redirect; the three below still render a view
-// from the dashboard itself. They are the branches that could silently be
-// pointed at a deleted view, so pin the view each one renders.
+// The super admin and the supervisor land on the admin panel too (STATUS
+// §5ia); their full dashboards keep their own addresses, gated to the role,
+// and are the views that could silently be pointed at a deleted file.
 
-it('renders the super admin dashboard in place', function () {
+it('sends the super admin to the admin panel and keeps the full dashboard at its own address', function () {
     Role::findOrCreate('super_admin', 'web');
+    Role::findOrCreate('supervisor', 'web');
 
     $user = User::factory()->create();
     $user->assignRole('super_admin');
 
-    $this->withoutLocalizationMiddleware()
-        ->actingAs($user)
-        ->get(route('dashboard'))
-        ->assertOk()
-        ->assertViewIs('dashboard.super-admin');
+    $this->withoutLocalizationMiddleware()->actingAs($user)->get(route('dashboard'))->assertRedirect(route('admin.index'));
+    $this->withoutLocalizationMiddleware()->actingAs($user)->get(route('dashboard.numbers'))->assertOk()->assertViewIs('dashboard.super-admin');
+    $this->withoutLocalizationMiddleware()->actingAs($user)->get(route('dashboard.supervisor'))->assertForbidden();
 });
 
-it('renders the supervisor dashboard in place', function () {
+it('sends the supervisor to the admin panel and keeps the full dashboard at its own address', function () {
     Role::findOrCreate('supervisor', 'web');
+    Role::findOrCreate('super_admin', 'web');
 
     $user = User::factory()->create();
     $user->assignRole('supervisor');
 
-    $this->withoutLocalizationMiddleware()
-        ->actingAs($user)
-        ->get(route('dashboard'))
-        ->assertOk()
-        ->assertViewIs('dashboard.supervisor');
+    $this->withoutLocalizationMiddleware()->actingAs($user)->get(route('dashboard'))->assertRedirect(route('admin.index'));
+    $this->withoutLocalizationMiddleware()->actingAs($user)->get(route('dashboard.supervisor'))->assertOk()->assertViewIs('dashboard.supervisor');
+    $this->withoutLocalizationMiddleware()->actingAs($user)->get(route('dashboard.numbers'))->assertForbidden();
 });
 
 it('falls through to the public-user dashboard when the account has no role', function () {

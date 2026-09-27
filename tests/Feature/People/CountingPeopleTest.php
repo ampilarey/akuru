@@ -84,7 +84,7 @@ it('shows the supervisor the roll rather than the row count', function () {
 
     $response = $this->withoutLocalizationMiddleware()
         ->actingAs($user)
-        ->get(route('dashboard'))
+        ->get(route('dashboard.supervisor'))
         ->assertOk()
         ->assertViewIs('dashboard.supervisor');
 

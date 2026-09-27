@@ -103,7 +103,9 @@ check('a Blade screen inside a section is a plain link; an Inertia section a vis
 await Promise.all([office.waitForNavigation({ waitUntil: 'networkidle' }).catch(() => {}), office.click('[data-testid="child-prayer_groups"]')]);
 check('Recipient groups (a screen inside Prayer times) opens as its Blade page', /\/admin\/prayer-times\/groups$/.test(office.url()) && (await office.textContent('body')).includes('ecipient'), office.url().replace(BASE, ''));
 await office.goto(`${BASE}/en/admin`, { waitUntil: 'networkidle' });
-await Promise.all([office.waitForNavigation({ waitUntil: 'networkidle' }).catch(() => {}), office.click('[data-testid="open-commerce"]')]);
+// An Inertia visit: wait for the address, not a navigation.
+await office.click('[data-testid="open-commerce"]');
+await office.waitForURL(/\/admin\/commerce$/, { timeout: 15000 }).catch(() => {});
 check('Commerce opens from its card', /\/admin\/commerce$/.test(office.url()), office.url().replace(BASE, ''));
 
 // ------------------------------------------------------------ 2. the Inertia More menu: the admin column headed by the parts
@@ -150,17 +152,24 @@ await phone.waitForSelector('#nav-mobile-menu', { state: 'visible' });
 const mobileHeads = await texts(phone, '#nav-mobile-menu [data-nav-section]');
 check('the Blade mobile menu carries the same headings', mobileHeads.map((t) => t.trim()).join(' | ') === 'School | Admissions | Website & content | Shops & money | System', mobileHeads.join(' | '));
 
-// ------------------------------------------------------------ 5. dashboard ↔ admin panel (the owner: "I don't understand
-// what's happening sometimes, /dashboard or /admin"): each landing says what it is and links the other.
+// ------------------------------------------------------------ 5. one home (the owner: "I don't understand what's
+// happening sometimes, /dashboard or /admin", then "I don't know"): /dashboard lands an administrator here, with
+// today's numbers on top and the full dashboard a link away.
 await office.goto(`${BASE}/en/dashboard`, { waitUntil: 'networkidle' });
-check('an admin’s /dashboard is the staff overview, with the Admin panel button and the line', /\/portal\/overview$/.test(office.url()) && (await count(office, '[data-testid="open-admin-panel"]')) === 1 && (await office.textContent('[data-testid="dashboard-hint"]')).includes('numbers'), office.url().replace(BASE, ''));
+check('an admin’s /dashboard lands on the admin panel', /\/admin$/.test(office.url()), office.url().replace(BASE, ''));
+const tiles = await texts(office, '[data-testid="today"] [data-testid^="today-"] span:last-child');
+check('with Today on top: pending payment, enrolled today, paid today, new accounts, unfilled registers, ungraded exams', tiles.length === 6 && tiles[0] === 'Pending payment' && tiles[5] === 'Ungraded exams', tiles.join(', '));
+const values = await texts(office, '[data-testid="today"] [data-testid^="today-"] span:first-child');
+check('each with a number', values.length === 6 && values.every((v) => /^[\d,.]+$/.test(v)), values.join(', '));
+await Promise.all([office.waitForNavigation({ waitUntil: 'networkidle' }).catch(() => {}), office.click('[data-testid="today-pending_payment"] a')]);
+check('the pending-payment tile opens the enrolments', /\/admin\/enrollments$/.test(office.url()), office.url().replace(BASE, ''));
+await office.goto(`${BASE}/en/admin`, { waitUntil: 'networkidle' });
+await office.click('[data-testid="today-more"]');
+await office.waitForURL(/\/portal\/overview$/, { timeout: 15000 }).catch(() => {});
+check('and the full-dashboard link opens the staff overview, which still carries the Admin panel button', /\/portal\/overview$/.test(office.url()) && (await count(office, '[data-testid="open-admin-panel"]')) === 1, office.url().replace(BASE, ''));
 await office.click('[data-testid="open-admin-panel"]');
 await office.waitForURL(/\/admin$/, { timeout: 15000 }).catch(() => {});
-check('the button opens the Admin panel', /\/admin$/.test(office.url()), office.url().replace(BASE, ''));
-const hubTop = await office.locator('[data-testid="hub-dashboard"]').evaluate((el) => el.getBoundingClientRect().top);
-check('the hub says at the top that it is the doors and the dashboard the numbers, with the way back', hubTop > 0 && hubTop < 300 && (await office.textContent('[data-testid="hub-dashboard"] + span')).includes('Dashboard'), `${Math.round(hubTop)}px`);
-await Promise.all([office.waitForNavigation({ waitUntil: 'networkidle' }).catch(() => {}), office.click('[data-testid="hub-dashboard"]')]);
-check('and Dashboard from the hub goes back to it', /\/portal\/overview$/.test(office.url()), office.url().replace(BASE, ''));
+check('whose button comes back here', /\/admin$/.test(office.url()), office.url().replace(BASE, ''));
 
 // ------------------------------------------------------------ 6. a super admin, when given
 if (SUPER) {
@@ -168,9 +177,11 @@ if (SUPER) {
     await su.goto(`${BASE}/en/admin`, { waitUntil: 'networkidle' });
     check('a super admin sees all thirteen sections, Users and Settings first under System', (await count(su, '[data-testid^="section-"]')) === 13 && (await texts(su, '[data-testid="part-panel_system"] [data-testid^="open-"]')).slice(0, 2).join(' | ') === 'Manage users | System settings');
     await su.goto(`${BASE}/en/dashboard`, { waitUntil: 'networkidle' });
-    check('the super-admin dashboard carries the Admin panel button and the line', /\/dashboard$/.test(su.url()) && (await count(su, '[data-testid="open-admin-panel"]')) === 1 && (await su.textContent('[data-testid="dashboard-hint"]')).includes('numbers'), su.url().replace(BASE, ''));
+    check('a super admin’s /dashboard lands on the admin panel too, with the full dashboard a link away', /\/admin$/.test(su.url()) && (await office.locator('[data-testid="today-more"]').count()) >= 0 && (await su.getAttribute('[data-testid="today-more"]', 'href') || '').endsWith('/dashboard/numbers'), su.url().replace(BASE, ''));
+    await Promise.all([su.waitForNavigation({ waitUntil: 'networkidle' }).catch(() => {}), su.click('[data-testid="today-more"]')]);
+    check('the full dashboard opens, and carries the Admin panel button', /\/dashboard\/numbers$/.test(su.url()) && (await count(su, '[data-testid="open-admin-panel"]')) === 1 && (await su.textContent('body')).includes('Super Admin Dashboard'), su.url().replace(BASE, ''));
     await Promise.all([su.waitForNavigation({ waitUntil: 'networkidle' }).catch(() => {}), su.click('[data-testid="open-admin-panel"]')]);
-    check('and it opens the Admin panel', /\/admin$/.test(su.url()), su.url().replace(BASE, ''));
+    check('and it comes back here', /\/admin$/.test(su.url()), su.url().replace(BASE, ''));
 }
 
 await finish();
