@@ -101,23 +101,23 @@ check('and nothing overflows the phone sideways', !overflow);
 // ------------------------------------------------------------ 2. a desktop, left to right
 
 const desk = await signIn(SUPER, { width: 1400, height: 950 });
-// The numbers dashboard is the Institute's Blade-shell fixture: every /admin/* screen is Inertia since C9 slice 12.
-await desk.goto(`${BASE}/en/dashboard/numbers`, { waitUntil: 'networkidle' });
-check('the tab is titled after the screen', (await desk.title()).startsWith('Dashboard Numbers - '), await desk.title());
+// The substitution requests list is the system admin's Blade-shell fixture: every /admin/* screen and both dashboards are Inertia since C9 slices 12–13.
+await desk.goto(`${BASE}/en/substitutions/requests`, { waitUntil: 'networkidle' });
+check('the tab is titled after the screen', (await desk.title()).startsWith('Substitutions Requests - '), await desk.title());
 const more = desk.locator('button[aria-controls="nav-more-menu"]');
 check('the More menu starts closed', (await more.getAttribute('aria-expanded')) === 'false' && !(await desk.locator('#nav-more-menu').isVisible()));
 await more.click();
 await desk.locator('#nav-more-menu').waitFor({ state: 'visible', timeout: 10000 }).catch(() => {});
 check('and says when it is open', (await more.getAttribute('aria-expanded')) === 'true' && (await desk.locator('#nav-more-menu').isVisible()));
 // From a fresh load: the browser resumes tabbing from the last focused element otherwise.
-await desk.goto(`${BASE}/en/dashboard/numbers`, { waitUntil: 'networkidle' });
+await desk.goto(`${BASE}/en/substitutions/requests`, { waitUntil: 'networkidle' });
 await desk.keyboard.press('Tab');
 const focused = await desk.evaluate(() => ({ href: document.activeElement?.getAttribute('href'), text: document.activeElement?.textContent?.trim() }));
 check('the first Tab lands on the skip link', focused.href === '#main' && /Skip to content/.test(focused.text || ''), JSON.stringify(focused));
 
 // ------------------------------------------------------------ 3. a desktop, right to left
 
-await desk.goto(`${BASE}/dv/dashboard/numbers`, { waitUntil: 'networkidle' });
+await desk.goto(`${BASE}/dv/substitutions/requests`, { waitUntil: 'networkidle' });
 check('in Dhivehi the page is right-to-left', (await desk.locator('html').getAttribute('dir')) === 'rtl');
 const userButton = desk.locator('button[aria-controls]').filter({ has: desk.locator('svg') }).nth(1);
 await desk.locator('nav button[\\:aria-expanded="userMenuOpen"]').click().catch(async () => userButton.click());

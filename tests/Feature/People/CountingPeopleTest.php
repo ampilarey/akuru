@@ -82,22 +82,19 @@ it('shows the supervisor the roll rather than the row count', function () {
     $user = User::factory()->create();
     $user->assignRole('supervisor');
 
-    $response = $this->withoutLocalizationMiddleware()
+    // Inertia since C9 slice 13: the numbers and their labels are props.
+    $this->withoutLocalizationMiddleware()
         ->actingAs($user)
         ->get(route('dashboard.supervisor'))
         ->assertOk()
-        ->assertViewIs('dashboard.supervisor');
-
-    $stats = $response->viewData('stats');
-
-    expect($stats['students_on_roll'])->toBe(1)
-        ->and($stats['teachers_teaching'])->toBe(1);
-
-    // And the labels say which number it is, so the tile cannot be read as the
-    // other one. This is half the fix: the old tiles were headed "Students"
-    // and "Teachers", which is true of either count.
-    $response->assertSee('Students on the roll')
-        ->assertSee('Teachers on staff');
+        ->assertInertia(fn ($page) => $page->component('Portal/SupervisorDashboard')
+            ->where('stats.students_on_roll', 1)
+            ->where('stats.teachers_teaching', 1)
+            // And the labels say which number it is, so the tile cannot be read as the
+            // other one. This is half the fix: the old tiles were headed "Students"
+            // and "Teachers", which is true of either count.
+            ->where('t.supervisor_students', 'Students on the roll')
+            ->where('t.supervisor_teachers', 'Teachers on staff'));
 });
 
 it('reports the roll, not every record, in the catalog totals', function () {

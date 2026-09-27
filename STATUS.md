@@ -4414,6 +4414,55 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5jo. C9 slice 13: the two full dashboards leave Blade (2026-09-27)
+
+BACKLOG C9, `docs/ADMIN_PANEL.md` finding 10 and L24; the thirteenth
+port, and the last Blade screen an administrator is sent to.
+`/dashboard/numbers` (the super admin's numbers, 244 lines) and
+`/dashboard/supervisor` (the supervisor's, 48 lines) were Blade, hardcoded
+English, reached from the hub's *Today* strip with a full page load; since
+§5jn the numbers dashboard was also the Institute's Blade-shell fixture.
+
+**Built, at the same addresses.** C9 leaves *retiring* these pages as an
+IA decision (where the rest of their content goes); this slice ports them
+as they are, so the decision stays open and nothing is lost meanwhile.
+`DashboardController::numbers` renders `Portal/NumbersDashboard` (the
+twelve stats with the two revenues formatted, the three health checks, the
+last ten enrolments as rows, today's date and the Hijri date, the prayer
+times and current prayer as `HH:MM` strings, the way home, the six quick
+links, the tranche) and `supervisor` renders `Portal/SupervisorDashboard`
+(the roll, the staff, today's Quran progress, whether the Hifz door shows,
+the way home). The stats query stays in the controller, which is already
+in the cross-domain baselines; the presentation is two private methods.
+The pages: the brand bar with *Institute →* (`open-admin-panel`) and the
+hint, six KPI cards, the enrolments table with keyed statuses, system
+health with keyed values, the prayer card, the enrolment overview, the
+quick actions (four Inertia links, the public site, a logout that posts);
+the supervisor's three cards and the Hifz door. 71 keys in the admin
+tranche, EN/DV/AR. The two Blade views are deleted (`blade_screens` 214);
+`ComposeAdminTodayAction`'s two *Full dashboard* links are no longer
+`hard`. **The system admin has no Blade screen of their own now**: the
+Blade-shell fixtures (`AdminLayoutTest` title, `AdminPagesAreReachableTest`
+Institute menus, `WorkspacesTest` Institute nav, `admin-layout.mjs`) use
+the substitution requests list, a School staff screen the system admin
+may open and whose tab is titled from the route; `AdminHubTest`,
+`RoleLandingTest` and `CountingPeopleTest` read the dashboards' props
+(the counting test's *Students on the roll* / *Teachers on staff* labels
+are now the keyed strings); `admin-hub.mjs` waits for the Inertia visit.
+`DashboardScreensTest` (2): the numbers props (stats, health, the empty
+recent list, the Hijri date, the links, the keys), the DV/AR keys, the
+403 across roles; the supervisor props with the Hifz flag. Walked: a
+scratch walk — the Today strip opening the numbers as an Inertia visit in
+the Inertia shell, six KPIs, the enrolments table, system health, the
+prayer card, six quick actions, the way home to `/admin`, Dhivehi
+right-to-left with no English chrome, the supervisor refused; the seeded
+supervisor's three cards and the way home to `/school` (8/8);
+`admin-hub.mjs` 25/25; `admin-layout.mjs` 15/15 (on the substitution
+requests list now); `admin-pages.mjs` 3/3. Full suite 2378 passed.
+**BACKLOG C9's port is complete**: every screen an administrator is sent
+to is Inertia and keyed EN/DV/AR. What remains is the owner's IA decision
+on whether the two dashboard addresses stay.
+
 ## 5jn. C9 slice 12: prayer times leaves Blade — every `/admin/*` screen is Inertia (2026-09-27)
 
 BACKLOG C9, `docs/ADMIN_PANEL.md` findings 9 and 10; the twelfth port, and

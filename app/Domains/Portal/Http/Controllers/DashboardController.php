@@ -13,6 +13,8 @@ use App\Http\Controllers\Controller;
 use App\Support\Navigation\ResolveWorkspacesAction;
 use App\Support\Navigation\WorkspaceMap;
 use Illuminate\Support\Facades\DB;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class DashboardController extends Controller
 {
@@ -52,16 +54,42 @@ class DashboardController extends Controller
         return $response;
     }
 
-    /** `/dashboard/numbers`: the super admin's full dashboard (route-gated to the role). */
-    public function numbers()
+    /**
+     * `/dashboard/numbers`: the super admin's full dashboard (route-gated to
+     * the role). Inertia since C9 slice 13 (STATUS §5jo), every string keyed.
+     */
+    public function numbers(): Response
     {
-        return $this->superAdminDashboard();
+        $prayer = app(ComposeDashboardPrayerAction::class)->execute();
+        $current = $prayer['currentPrayer'];
+
+        return Inertia::render('Portal/NumbersDashboard', [
+            'stats' => $this->superAdminStats(),
+            'health' => $this->getSystemHealth(),
+            'recent' => $this->recentEnrollments(),
+            'today' => now()->format('l, d F Y'),
+            'islamic_date' => ['day' => $prayer['islamicDate']['day'] ?? '', 'month_name' => $prayer['islamicDate']['month_name'] ?? '', 'year' => $prayer['islamicDate']['year'] ?? ''],
+            'prayer_times' => array_map(fn ($time) => is_object($time) ? $time->format('H:i') : $time, $prayer['prayerTimes']),
+            'current_prayer' => ['prayer' => $current['prayer'] ?? null, 'time' => is_object($current['time'] ?? null) ? $current['time']->format('H:i') : ($current['time'] ?? null)],
+            'home' => route('admin.index'),
+            'links' => ['courses' => route('admin.courses.index'), 'enrollments' => route('admin.enrollments.index'), 'users' => route('admin.users.index'), 'settings' => route('admin.settings.index'), 'website' => route('public.home'), 'logout' => route('logout')],
+            't' => trans('admin'),
+        ]);
     }
 
-    /** `/dashboard/supervisor`: the supervisor's full dashboard (route-gated to the role). */
-    public function supervisor()
+    /**
+     * `/dashboard/supervisor`: the supervisor's full dashboard (route-gated to
+     * the role). Inertia since C9 slice 13 (STATUS §5jo).
+     */
+    public function supervisor(): Response
     {
-        return $this->supervisorDashboard();
+        return Inertia::render('Portal/SupervisorDashboard', [
+            'stats' => $this->supervisorStats(),
+            'can_hifz' => (bool) auth()->user()?->can('view_hifz_programs'),
+            'hifz_href' => route('hifz.supervisor.dashboard'),
+            'home' => route('school.index'),
+            't' => trans('admin'),
+        ]);
     }
 
     private function publicUserDashboard()
@@ -97,7 +125,10 @@ class DashboardController extends Controller
         ));
     }
 
-    private function superAdminDashboard()
+    /**
+     * @return array<string, mixed>
+     */
+    private function superAdminStats(): array
     {
         // Eleven values used to be computed here and thrown away: this page's
         // view reads twelve `$stats` keys and exactly one `$metrics` key
@@ -130,33 +161,36 @@ class DashboardController extends Controller
             'pending_enrollments' => \App\Domains\Courses\Models\CourseEnrollment::whereIn('status', ['pending', 'pending_payment'])->count(),
             'active_enrollments' => \App\Domains\Courses\Models\CourseEnrollment::where('status', 'active')->count(),
             'enrollments_today' => \App\Domains\Courses\Models\CourseEnrollment::whereDate('created_at', today())->count(),
-            'revenue_total' => \App\Domains\Finance\Models\Payment::where('status', 'paid')->sum('amount'),
-            'revenue_today' => \App\Domains\Finance\Models\Payment::where('status', 'paid')->whereDate('created_at', today())->sum('amount'),
+            'revenue_total' => number_format((float) \App\Domains\Finance\Models\Payment::where('status', 'paid')->sum('amount'), 0),
+            'revenue_today' => number_format((float) \App\Domains\Finance\Models\Payment::where('status', 'paid')->whereDate('created_at', today())->sum('amount'), 0),
             'new_users_today' => \App\Domains\Identity\Models\User::whereDate('created_at', today())->count(),
             'new_users_this_month' => \App\Domains\Identity\Models\User::whereMonth('created_at', now()->month)->whereYear('created_at', now()->year)->count(),
         ];
 
-        $metrics = [
-            'system_health' => $this->getSystemHealth(),
-        ];
+        return $stats;
+    }
 
-        // Recent enrollments (last 10)
-        $recentEnrollments = \App\Domains\Courses\Models\CourseEnrollment::with(['student', 'course', 'payment'])
+    /**
+     * The last ten enrolments, as the dashboard lists them.
+     *
+     * @return list<array<string, mixed>>
+     */
+    private function recentEnrollments(): array
+    {
+        return \App\Domains\Courses\Models\CourseEnrollment::with(['student', 'course', 'payment'])
             ->latest()
             ->take(10)
-            ->get();
-
-        $prayer = app(ComposeDashboardPrayerAction::class)->execute();
-        $islamicDate = $prayer['islamicDate'];
-        $prayerTimes = $prayer['prayerTimes'];
-        $currentPrayer = $prayer['currentPrayer'];
-        $specialDays = $prayer['specialDays'];
-
-        return view('dashboard.super-admin', compact(
-            'stats', 'metrics',
-            'recentEnrollments',
-            'islamicDate', 'prayerTimes', 'currentPrayer', 'specialDays'
-        ));
+            ->get()
+            ->map(fn ($enrollment) => [
+                'id' => $enrollment->id,
+                'student' => $enrollment->student?->full_name,
+                'course' => $enrollment->course?->title,
+                'status' => (string) $enrollment->status,
+                'fee' => $enrollment->payment?->amount ? number_format($enrollment->payment->amount, 0) : null,
+                'date' => $enrollment->created_at?->format('d M'),
+            ])
+            ->values()
+            ->all();
     }
 
     /**
@@ -185,15 +219,16 @@ class DashboardController extends Controller
      * Whether this screen should instead be scoped to a class remains the IA
      * decision it was filed as; a wrong number is not.
      */
-    private function supervisorDashboard()
+    /**
+     * @return array{students_on_roll: int, teachers_teaching: int, quran_progress_today: int}
+     */
+    private function supervisorStats(): array
     {
-        $stats = [
+        return [
             'students_on_roll' => app(CountStudentsAction::class)->onTheRoll(),
             'teachers_teaching' => app(CountTeachersAction::class)->teaching(),
             'quran_progress_today' => QuranProgress::whereDate('created_at', today())->count(),
         ];
-
-        return view('dashboard.supervisor', compact('stats'));
     }
 
     // Super Admin specific methods

@@ -22,11 +22,12 @@ function layoutAdmin(): User
 
 it('titles every admin Blade screen from its route when the screen sets none', function () {
     $admin = layoutAdmin();
-    // Every `/admin/*` screen is Inertia since C9 slice 12 (STATUS §5jn). The
-    // Blade shell survives on the numbers dashboard, the Institute's last
-    // Blade screen, which titles from the route.
-    test()->withoutLocalizationMiddleware()->actingAs($admin)->get(route('dashboard.numbers'))->assertOk()
-        ->assertSee('<title>Dashboard Numbers - '.config('app.name'), false);
+    // Every admin screen and both dashboards are Inertia since C9 slices 12
+    // and 13 (STATUS §5jn, §5jo). The Blade shell survives on the School's
+    // staff screens, which the system admin may open too; the substitution
+    // requests list sets no title of its own, so the route names the tab.
+    test()->withoutLocalizationMiddleware()->actingAs($admin)->get(route('substitutions.requests.index'))->assertOk()
+        ->assertSee('<title>Substitutions Requests - '.config('app.name'), false);
     // No admin Blade screen names itself — there is none left to (the last
     // two that did, the instructors list and form, left for Inertia in C9
     // slice 3, STATUS §5je). Pinned, so a new `views/admin/**` Blade screen

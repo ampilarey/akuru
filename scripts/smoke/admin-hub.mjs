@@ -172,7 +172,9 @@ if (SUPER) {
     if (SUPER !== ADMIN) {
         check('no switcher for one workspace', (await count(su, '[data-testid="workspace-switcher"]')) === 0);
     }
-    await Promise.all([su.waitForNavigation({ waitUntil: 'networkidle' }).catch(() => {}), su.click('[data-testid="today-more"]')]);
+    // An Inertia visit since C9 slice 13: wait for the address, then the page.
+    await Promise.all([su.waitForURL(/\/dashboard\/numbers$/), su.click('[data-testid="today-more"]')]);
+    await su.waitForSelector('[data-testid="numbers-kpis"]');
     check('the full dashboard opens, and carries the way home', /\/dashboard\/numbers$/.test(su.url()) && (await count(su, '[data-testid="open-admin-panel"]')) === 1 && (await su.textContent('body')).includes('Super Admin Dashboard'), su.url().replace(BASE, ''));
 }
 

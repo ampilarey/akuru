@@ -43,7 +43,7 @@ class ComposeAdminTodayAction
             if ($user->hasRole('super_admin')) {
                 $tiles[] = $this->tile('new_accounts', (string) app(CountUsersAction::class)->today(), '/admin/users', true);
                 $tiles[] = $this->tile('paid_today', number_format(app(SumPaidPaymentsAction::class)->today(), 2), '/admin/enrollments/payments', false);
-                $more = ['label' => __('admin.today_full_dashboard'), 'href' => '/dashboard/numbers', 'hard' => true];
+                $more = ['label' => __('admin.today_full_dashboard'), 'href' => '/dashboard/numbers', 'hard' => false];
             }
 
             return ['tiles' => $tiles, 'more' => $more];
@@ -70,7 +70,7 @@ class ComposeAdminTodayAction
         if ($user->hasRole('supervisor')) {
             $tiles[] = $this->tile('students_on_roll', (string) app(CountStudentsAction::class)->onTheRoll(), '/people/students', false);
             $tiles[] = $this->tile('teachers_teaching', (string) app(CountTeachersAction::class)->teaching(), '/people/staff', false);
-            $more ??= ['label' => __('admin.today_full_dashboard'), 'href' => '/dashboard/supervisor', 'hard' => true];
+            $more ??= ['label' => __('admin.today_full_dashboard'), 'href' => '/dashboard/supervisor', 'hard' => false];
         }
 
         return ['tiles' => $tiles, 'more' => $more];
