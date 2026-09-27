@@ -126,10 +126,12 @@ it('reaches every admin landing page from a Blade screen, as the role that runs 
 
         return $user;
     };
-    // The Institute's Blade shell: the numbers dashboard, the system admin's
-    // last Blade screen now that every `/admin/*` page is Inertia (C9 slice 12).
+    // The Institute's Blade shell: the system admin has no Blade screen of
+    // their own since C9 slice 13 (every admin page and both dashboards are
+    // Inertia), but the Blade nav shows them the Institute on any Blade
+    // screen they may open — the substitution requests list here.
     $institute = $this->withoutLocalizationMiddleware()->actingAs($seed('super_admin', ['bookshop.manage', 'commerce.manage', 'library.manage', 'prayer.manage', 'pronunciation.manage', 'operations.manage', 'translations.manage']))
-        ->get(route('dashboard.numbers'))->assertOk()->getContent();
+        ->get(route('substitutions.requests.index'))->assertOk()->getContent();
     // The School's Blade shell: the Quran progress list, since the enrolment lists are Inertia (C9 slice 4).
     $school = $this->withoutLocalizationMiddleware()->actingAs($seed('admin', ['registers.manage', 'exams.manage']))
         ->get(route('quran-progress.index'))->assertOk()->getContent();

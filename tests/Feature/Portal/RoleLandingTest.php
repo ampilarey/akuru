@@ -115,7 +115,7 @@ it('sends the super admin to the Institute home and keeps the full dashboard at 
     $user->assignRole('super_admin');
 
     $this->withoutLocalizationMiddleware()->actingAs($user)->get(route('dashboard'))->assertRedirect(route('admin.index'));
-    $this->withoutLocalizationMiddleware()->actingAs($user)->get(route('dashboard.numbers'))->assertOk()->assertViewIs('dashboard.super-admin');
+    $this->withoutLocalizationMiddleware()->actingAs($user)->get(route('dashboard.numbers'))->assertOk()->assertInertia(fn ($page) => $page->component('Portal/NumbersDashboard'));
     $this->withoutLocalizationMiddleware()->actingAs($user)->get(route('dashboard.supervisor'))->assertForbidden();
 });
 
@@ -127,7 +127,7 @@ it('sends the supervisor to the School office and keeps the full dashboard at it
     $user->assignRole('supervisor');
 
     $this->withoutLocalizationMiddleware()->actingAs($user)->get(route('dashboard'))->assertRedirect(route('school.index'));
-    $this->withoutLocalizationMiddleware()->actingAs($user)->get(route('dashboard.supervisor'))->assertOk()->assertViewIs('dashboard.supervisor');
+    $this->withoutLocalizationMiddleware()->actingAs($user)->get(route('dashboard.supervisor'))->assertOk()->assertInertia(fn ($page) => $page->component('Portal/SupervisorDashboard'));
     $this->withoutLocalizationMiddleware()->actingAs($user)->get(route('dashboard.numbers'))->assertForbidden();
 });
 

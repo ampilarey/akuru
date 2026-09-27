@@ -101,14 +101,15 @@ it('puts today’s numbers on each home and keeps the full dashboards a link awa
     // A supervisor: the roll and the staff, and their full dashboard.
     $supervisor = hubUser('supervisor');
     test()->withoutLocalizationMiddleware()->actingAs($supervisor)->get(route('school.index'))->assertOk()
-        ->assertInertia(fn (Assert $page) => $page->has('today.tiles', 2)->where('today.tiles.0.key', 'students_on_roll')->where('today.more.href', '/dashboard/supervisor')->where('today.more.hard', true));
+        ->assertInertia(fn (Assert $page) => $page->has('today.tiles', 2)->where('today.tiles.0.key', 'students_on_roll')->where('today.more.href', '/dashboard/supervisor')->where('today.more.hard', false));
 
     // The full dashboards still say what they are and link home; the staff
     // overview offers the door to whoever may open the School, not to nobody.
+    // Both dashboards are Inertia since C9 slice 13; the way home is a prop.
     test()->withoutLocalizationMiddleware()->actingAs($super)->get(route('dashboard.numbers'))->assertOk()
-        ->assertSee('data-testid="open-admin-panel"', false)->assertSee(route('admin.index'));
+        ->assertInertia(fn (Assert $page) => $page->component('Portal/NumbersDashboard')->where('home', route('admin.index')));
     test()->withoutLocalizationMiddleware()->actingAs($supervisor)->get(route('dashboard.supervisor'))->assertOk()
-        ->assertSee('data-testid="open-admin-panel"', false)->assertSee(route('school.index'));
+        ->assertInertia(fn (Assert $page) => $page->component('Portal/SupervisorDashboard')->where('home', route('school.index')));
     test()->withoutLocalizationMiddleware()->actingAs($admin)->get(route('portal.overview'))->assertOk()
         ->assertInertia(fn (Assert $page) => $page->component('Portal/StaffOverview')
             ->where('auth.workspaces.0.href', '/school')

@@ -264,9 +264,10 @@ it('renders the Blade shell from the same map, with the switcher for a person wh
 
     // The system admin on a Blade screen sees the Institute, not the School.
     $super = workspaceUser(['super_admin'], INSTITUTE_PERMISSIONS);
-    // The numbers dashboard: every `/admin/*` screen is Inertia since C9 slice 12.
-    $cms = $this->withoutLocalizationMiddleware()->actingAs($super)->get(route('dashboard.numbers'))->assertOk()->getContent();
-    // The nav alone: the dashboard's own body links the enrolments list.
+    // The substitution requests list: the system admin's last Blade screens
+    // are the School's staff pages, since every admin page and both
+    // dashboards are Inertia (C9 slices 12 and 13). The nav alone.
+    $cms = $this->withoutLocalizationMiddleware()->actingAs($super)->get(route('substitutions.requests.index'))->assertOk()->getContent();
     $nav = substr($cms, 0, (int) strpos($cms, '</nav>'));
     expect($nav)->toContain('data-nav-section="panel_website"')->toContain('/admin/commerce')
         ->not->toContain('data-nav-section="school_year"')->not->toContain('/admin/enrollments');
