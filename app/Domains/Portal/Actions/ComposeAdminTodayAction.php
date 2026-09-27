@@ -42,7 +42,7 @@ class ComposeAdminTodayAction
         if ($workspace === 'institute') {
             if ($user->hasRole('super_admin')) {
                 $tiles[] = $this->tile('new_accounts', (string) app(CountUsersAction::class)->today(), '/admin/users', true);
-                $tiles[] = $this->tile('paid_today', number_format(app(SumPaidPaymentsAction::class)->today(), 2), '/admin/enrollments/payments', true);
+                $tiles[] = $this->tile('paid_today', number_format(app(SumPaidPaymentsAction::class)->today(), 2), '/admin/enrollments/payments', false);
                 $more = ['label' => __('admin.today_full_dashboard'), 'href' => '/dashboard/numbers', 'hard' => true];
             }
 
@@ -55,9 +55,9 @@ class ComposeAdminTodayAction
 
         if ($user->hasAnyRole(['admin', 'headmaster'])) {
             $enrolments = app(CountEnrollmentsAction::class);
-            $tiles[] = $this->tile('pending_payment', (string) $enrolments->pendingPayment(), '/admin/enrollments', true);
-            $tiles[] = $this->tile('enrolled_today', (string) $enrolments->today(), '/admin/enrollments', true);
-            $tiles[] = $this->tile('paid_today', number_format(app(SumPaidPaymentsAction::class)->today(), 2), '/admin/enrollments/payments', true);
+            $tiles[] = $this->tile('pending_payment', (string) $enrolments->pendingPayment(), '/admin/enrollments', false);
+            $tiles[] = $this->tile('enrolled_today', (string) $enrolments->today(), '/admin/enrollments', false);
+            $tiles[] = $this->tile('paid_today', number_format(app(SumPaidPaymentsAction::class)->today(), 2), '/admin/enrollments/payments', false);
         }
 
         if ($can('registers.manage') || $can('exams.manage')) {

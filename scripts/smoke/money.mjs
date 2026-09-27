@@ -40,12 +40,16 @@
  *   php artisan db:seed --class=SmokeMarkerSeeder
  *   node scripts/smoke/money.mjs
  *
- * Environment: SMOKE_BASE_URL, SMOKE_STAFF, SMOKE_PASSWORD, SMOKE_CHROMIUM.
+ * Environment: SMOKE_BASE_URL, SMOKE_STAFF, SMOKE_CATALOG_STAFF, SMOKE_PASSWORD, SMOKE_CHROMIUM.
  */
 import { chromium } from 'playwright';
 
 const BASE = process.env.SMOKE_BASE_URL ?? 'http://127.0.0.1:8000';
 const STAFF = process.env.SMOKE_STAFF ?? 'admin@akuru.edu.mv';
+// The offering's price override is the catalogue's (`courses.manage`), which the
+// educational admin no longer holds (ADR-040 slice 2, STATUS §5ie): a catalogue
+// editor — the system admin locally, or the dean — does that part.
+const CATALOG_STAFF = process.env.SMOKE_CATALOG_STAFF ?? 'superadmin@akuru.edu.mv';
 const PASSWORD = process.env.SMOKE_PASSWORD ?? 'password';
 
 const COURSE = 'SMOKE-Payable-Course';
@@ -351,8 +355,9 @@ check(
 // each run would set a price nobody reads — the seeder plants exactly one and
 // resets it to "no override", which is what makes the reading above mean
 // something on the second run as well as the first.
-await staff.goto(`${BASE}/en/catalog/offerings`, { waitUntil: 'networkidle' });
-const offeringRow = staff.locator('tr', { hasText: OFFERING }).first();
+const catalog = await signIn(CATALOG_STAFF);
+await catalog.goto(`${BASE}/en/catalog/offerings`, { waitUntil: 'networkidle' });
+const offeringRow = catalog.locator('tr', { hasText: OFFERING }).first();
 const haveOffering = (await offeringRow.count()) > 0;
 
 check(
@@ -362,7 +367,7 @@ check(
 );
 
 const offeringRowText = async () =>
-    (await staff.locator('tr', { hasText: OFFERING }).first().innerText()).replace(/\s+/g, ' ').trim();
+    (await catalog.locator('tr', { hasText: OFFERING }).first().innerText()).replace(/\s+/g, ' ').trim();
 
 /**
  * The saved price, once the table agrees it was saved.
@@ -374,11 +379,11 @@ const offeringRowText = async () =>
  * showing the new price on the very next step — as a failure.
  */
 const setOverride = async (value, expected) => {
-    await staff.goto(`${BASE}/en/catalog/offerings`, { waitUntil: 'networkidle' });
-    await staff.locator('tr', { hasText: OFFERING }).first().locator('button').first().click();
+    await catalog.goto(`${BASE}/en/catalog/offerings`, { waitUntil: 'networkidle' });
+    await catalog.locator('tr', { hasText: OFFERING }).first().locator('button').first().click();
 
-    const field = staff.locator('input[placeholder="Price override (MVR)"]');
-    const form = staff.locator('form').filter({ has: field }).first();
+    const field = catalog.locator('input[placeholder="Price override (MVR)"]');
+    const form = catalog.locator('form').filter({ has: field }).first();
     await field.fill(value);
     await form.locator('button[type=submit]').first().click();
 
@@ -386,7 +391,7 @@ const setOverride = async (value, expected) => {
         if (expected.test(await offeringRowText())) {
             break;
         }
-        await staff.waitForTimeout(250);
+        await catalog.waitForTimeout(250);
     }
 
     return offeringRowText();

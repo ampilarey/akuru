@@ -99,7 +99,8 @@ it('offers the admin panel in the Inertia More menu by workspace, Blade screens 
     $adminItems = collect($adminNav['groups'])->flatMap(fn ($group) => $group['items'])->keyBy('href');
     expect(array_column($adminNav['groups'], 'key'))->toContain('panel_admissions')->not->toContain('panel_website', 'panel_money', 'panel_system')
         ->and($adminItems->keys()->all())->toContain('/admin/enrollments')->not->toContain('/admin/commerce', '/admin/users', '/admin/public-site/pages')
-        ->and($adminItems['/admin/enrollments']['hard'] ?? false)->toBeTrue()
+        // C9 slice 4: the enrolment lists are Inertia pages now.
+        ->and($adminItems['/admin/enrollments'])->not->toHaveKey('hard')
         ->and($adminItems['/admin/enrollments']['label'])->toBe('Enrolments');
 
     // A teacher sees none of the panel.

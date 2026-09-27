@@ -81,7 +81,8 @@ const count = (page, selector) => page.locator(selector).count();
 // ------------------------------------------------------------ 1. a phone
 
 const phone = await signIn(ADMIN, { width: 390, height: 844 });
-await phone.goto(`${BASE}/en/admin/enrollments`, { waitUntil: 'networkidle' });
+// The Quran progress list: the School's Blade shell, since the enrolment lists are Inertia (C9 slice 4).
+await phone.goto(`${BASE}/en/quran-progress`, { waitUntil: 'networkidle' });
 check('on a phone the mobile menu starts closed and cloaked', !(await phone.locator('#nav-mobile-menu').isVisible()));
 await phone.click('button[aria-controls="nav-mobile-menu"]');
 await phone.locator('#nav-mobile-menu').waitFor({ state: 'visible', timeout: 10000 }).catch(() => {});

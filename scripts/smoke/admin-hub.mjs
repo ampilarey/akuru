@@ -121,11 +121,11 @@ const school = await moreGroups(office);
 check('the More menu is the School’s: Admissions first, School year … Library, Mine; nothing of the Institute', school.groups[0] === 'Admissions' && school.groups.includes('School year') && school.groups.includes('HR') && school.groups.at(-1) === 'Mine' && !school.groups.includes('Website & content') && !school.groups.includes('System'), school.groups.join(' | '));
 check('with the Blade screens the Blade nav used to link by hand', school.hrefs.includes('/announcements') && school.hrefs.includes('/quran-progress') && school.hrefs.includes('/substitutions/requests'));
 check('and the inner screens kept off the menu (they are on the home)', !school.hrefs.includes('/admin/enrollments/payments'));
-await office.click('#app-shell-more a[href$="/admin/enrollments"]').catch(() => {});
+// C9 slice 4: the enrolment lists are Inertia; the Quran progress list is the School's Blade entry.
 await office.click('button[aria-controls="app-shell-more"]');
 await office.waitForSelector('#app-shell-more', { state: 'visible' });
-await Promise.all([office.waitForNavigation({ waitUntil: 'networkidle' }).catch(() => {}), office.click('#app-shell-more a[data-nav-hard][href$="/admin/enrollments"]')]);
-check('a Blade entry in the More menu opens its Blade screen', /\/admin\/enrollments$/.test(office.url()), office.url().replace(BASE, ''));
+await Promise.all([office.waitForNavigation({ waitUntil: 'networkidle' }).catch(() => {}), office.click('#app-shell-more a[data-nav-hard][href$="/quran-progress"]')]);
+check('a Blade entry in the More menu opens its Blade screen', /\/quran-progress$/.test(office.url()), office.url().replace(BASE, ''));
 
 // The full dashboard, and back.
 await office.goto(`${BASE}/en/school`, { waitUntil: 'networkidle' });

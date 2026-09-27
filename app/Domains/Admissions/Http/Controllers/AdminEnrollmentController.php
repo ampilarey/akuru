@@ -3,58 +3,45 @@
 namespace App\Domains\Admissions\Http\Controllers;
 
 use App\Domains\Courses\Actions\ActivateEnrollmentAction;
+use App\Domains\Courses\Actions\ListAdminEnrollmentsAction;
 use App\Domains\Courses\Actions\SuspendEnrollmentAction;
-use App\Domains\Courses\Models\Course;
 use App\Domains\Courses\Models\CourseEnrollment;
+use App\Domains\Finance\Actions\ListAdminPaymentsAction;
 use App\Domains\Finance\Actions\ListManualPaymentMethodsAction;
 use App\Domains\Finance\Actions\RecordManualPaymentAction;
-use App\Domains\Finance\Models\Payment;
 use App\Domains\Notifications\Contracts\SmsSenderInterface;
 use App\Http\Controllers\Controller;
 use App\Mail\EnrollmentStatusMail;
 use App\Support\Csv;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
+use Inertia\Inertia;
+use Inertia\Response;
 
+/**
+ * The office's enrolments and payments (docs/ADMIN_PANEL.md). The two lists
+ * are Inertia since C9 slice 4 (STATUS §5jf), with their strings keyed for
+ * Dhivehi and Arabic; the one-enrolment page (`show`) and its decisions are
+ * still Blade until their own slice. `role:super_admin|admin|headmaster` on
+ * the route group.
+ */
 class AdminEnrollmentController extends Controller
 {
-    public function index(Request $request)
+    private const FILTERS = ['search', 'course_id', 'status', 'payment_status'];
+
+    public function index(Request $request): Response
     {
-        $query = CourseEnrollment::with(['student', 'course', 'payment', 'creator', 'decider'])
-            ->latest();
+        $filters = $request->only(self::FILTERS);
 
-        if ($courseId = $request->input('course_id')) {
-            $query->where('course_id', $courseId);
-        }
-
-        if ($status = $request->input('status')) {
-            $query->where('status', $status);
-        }
-
-        if ($paymentStatus = $request->input('payment_status')) {
-            $query->where('payment_status', $paymentStatus);
-        }
-
-        if ($search = $request->input('search')) {
-            $query->where(function ($q) use ($search) {
-                $q->whereHas('student', function ($s) use ($search) {
-                    $s->where('first_name', 'like', "%{$search}%")
-                        ->orWhere('last_name', 'like', "%{$search}%");
-                })->orWhereHas('creator', function ($u) use ($search) {
-                    $u->where('name', 'like', "%{$search}%")
-                        ->orWhereHas('contacts', fn ($c) => $c->where('value', 'like', "%{$search}%"));
-                });
-            });
-        }
-
-        $enrollments = $query->paginate(20)->withQueryString();
-        $courses = Course::orderBy('title')->get(['id', 'title']);
-
-        return view('admin.enrollments.index', compact('enrollments', 'courses'));
+        return Inertia::render('Admissions/Enrollments', app(ListAdminEnrollmentsAction::class)->execute($filters) + [
+            'filters' => array_map(fn ($key) => (string) ($filters[$key] ?? ''), array_combine(self::FILTERS, self::FILTERS)),
+            'statuses' => ListAdminEnrollmentsAction::STATUSES,
+            'payment_statuses' => ListAdminEnrollmentsAction::PAYMENT_STATUSES,
+            't' => trans('admin'),
+        ]);
     }
 
     public function show(CourseEnrollment $enrollment)
@@ -156,28 +143,7 @@ class AdminEnrollmentController extends Controller
 
     public function export(Request $request)
     {
-        $query = CourseEnrollment::with(['student', 'course', 'payment', 'creator'])
-            ->latest();
-
-        if ($courseId = $request->input('course_id')) {
-            $query->where('course_id', $courseId);
-        }
-        if ($status = $request->input('status')) {
-            $query->where('status', $status);
-        }
-        if ($search = $request->input('search')) {
-            $query->where(function ($q) use ($search) {
-                $q->whereHas('student', function ($s) use ($search) {
-                    $s->where('first_name', 'like', "%{$search}%")
-                        ->orWhere('last_name', 'like', "%{$search}%");
-                })->orWhereHas('creator', function ($u) use ($search) {
-                    $u->where('name', 'like', "%{$search}%")
-                        ->orWhereHas('contacts', fn ($c) => $c->where('value', 'like', "%{$search}%"));
-                });
-            });
-        }
-
-        $enrollments = $query->get();
+        $enrollments = app(ListAdminEnrollmentsAction::class)->query($request->only(self::FILTERS))->get();
 
         $filename = 'enrollments-'.now()->format('Ymd-His').'.csv';
 
@@ -294,17 +260,22 @@ class AdminEnrollmentController extends Controller
         }
     }
 
-    public function payments(Request $request)
+    public function payments(Request $request): Response
     {
-        $payments = $this->paymentsQuery($request)->paginate(20)->withQueryString();
+        $filters = $request->only(['search', 'status']);
 
-        return view('admin.enrollments.payments', compact('payments'));
+        return Inertia::render('Admissions/Payments', app(ListAdminPaymentsAction::class)->execute($filters) + [
+            'filters' => ['search' => (string) ($filters['search'] ?? ''), 'status' => (string) ($filters['status'] ?? '')],
+            'statuses' => ListAdminPaymentsAction::STATUSES,
+            'can_refund' => (bool) $request->user()?->can('payments.refund'),
+            't' => trans('admin'),
+        ]);
     }
 
     /** P4.4 (SPEC §49 payment reports): CSV of the filtered payments listing. */
     public function exportPayments(Request $request)
     {
-        $payments = $this->paymentsQuery($request)->get();
+        $payments = app(ListAdminPaymentsAction::class)->query($request->only(['search', 'status']))->get();
 
         return response()->streamDownload(function () use ($payments): void {
             $out = fopen('php://output', 'w');
@@ -366,32 +337,5 @@ class AdminEnrollmentController extends Controller
         );
 
         return back()->with('success', 'Manual payment recorded — enrollment updated.');
-    }
-
-    private function paymentsQuery(Request $request): Builder
-    {
-        $query = Payment::with(['user', 'student', 'items.course', 'refunds'])
-            ->latest();
-
-        if ($status = $request->input('status')) {
-            $query->where('status', $status);
-        }
-
-        if ($search = $request->input('search')) {
-            $query->where(function ($q) use ($search) {
-                $q->where('merchant_reference', 'like', "%{$search}%")
-                    ->orWhere('local_id', 'like', "%{$search}%")
-                    ->orWhereHas('user', function ($u) use ($search) {
-                        $u->where('name', 'like', "%{$search}%")
-                            ->orWhereHas('contacts', fn ($c) => $c->where('value', 'like', "%{$search}%"));
-                    })
-                    ->orWhereHas('student', function ($s) use ($search) {
-                        $s->where('first_name', 'like', "%{$search}%")
-                            ->orWhere('last_name', 'like', "%{$search}%");
-                    });
-            });
-        }
-
-        return $query;
     }
 }

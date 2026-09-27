@@ -81,7 +81,6 @@ it('names every admin landing page in the map, Blade screens marked for a full p
     // Every Blade admin screen in the map is marked `hard`; every Inertia one
     // is not — the sections and the screens inside them alike.
     $blade = [
-        '/admin/enrollments', '/admin/enrollments/payments',
         '/admin/public-site/pages', '/admin/public-site/courses', '/admin/public-site/research', '/admin/public-site/daily-content', '/admin/public-site/daily-content/queue', '/admin/public-site/daily-subscriptions', '/admin/public-site/leads', '/admin/public-site/funnel',
         '/admin/prayer-times/islands', '/admin/prayer-times/groups', '/admin/prayer-times/broadcasts', '/admin/prayer-times/import',
     ];
@@ -130,8 +129,9 @@ it('reaches every admin landing page from a Blade screen, as the role that runs 
     };
     $institute = $this->withoutLocalizationMiddleware()->actingAs($seed('super_admin', ['bookshop.manage', 'commerce.manage', 'library.manage', 'prayer.manage', 'pronunciation.manage', 'operations.manage', 'translations.manage']))
         ->get(route('admin.pages.index'))->assertOk()->getContent();
+    // The School's Blade shell: the Quran progress list, since the enrolment lists are Inertia (C9 slice 4).
     $school = $this->withoutLocalizationMiddleware()->actingAs($seed('admin', ['registers.manage', 'exams.manage']))
-        ->get(route('admin.enrollments.index'))->assertOk()->getContent();
+        ->get(route('quran-progress.index'))->assertOk()->getContent();
 
     $unreachable = [];
     foreach (adminLandingRoutes() as $name => $uri) {
