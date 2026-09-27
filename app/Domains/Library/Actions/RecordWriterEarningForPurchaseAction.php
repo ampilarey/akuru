@@ -77,7 +77,7 @@ class RecordWriterEarningForPurchaseAction
             'status' => 'pending',
             'available_at' => ($purchase->purchased_at ?? now())
                 ->copy()
-                ->addDays((int) config('library.refund_window_days', 7)),
+                ->addDays((int) app(\App\Domains\Library\Actions\ResolveLibrarySettingAction::class)->execute('refund_window_days')),
         ]);
     }
 
@@ -90,6 +90,6 @@ class RecordWriterEarningForPurchaseAction
             return (float) $writer->default_commission;
         }
 
-        return (float) config('library.default_writer_commission', 70);
+        return (float) app(\App\Domains\Library\Actions\ResolveLibrarySettingAction::class)->execute('default_writer_commission');
     }
 }

@@ -53,6 +53,8 @@ function adminPagesOpenedFromAParent(): array
         // Deliberately not in the menu: a list that accuses readers of
         // theft should take a decision to open, not sit in a nav bar.
         'admin.library.reading-alerts' => 'opened from the Library admin hub (admin.library.index)',
+        // B12: the money rules, behind a Settings button on the same hub.
+        'admin.library.settings' => 'opened from the Library admin hub (admin.library.index)',
         // Same call as the reading alerts: a security log naming contacts that
         // have been refused should be opened deliberately, not sat in a menu.
         'admin.users.otp-abuse' => 'opened from User management (admin.users.index)',

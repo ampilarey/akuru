@@ -756,6 +756,9 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
 
     Route::prefix('admin/library')->middleware(['role:super_admin', 'can:library.manage'])->group(function () {
         Route::get('/', [AdminLibraryController::class, 'index'])->name('admin.library.index');
+        // B12 (LIBRARY_PLAN §42): the commercial knobs, on a screen.
+        Route::get('settings', [\App\Domains\Library\Http\Controllers\AdminLibrarySettingsController::class, 'edit'])->name('admin.library.settings');
+        Route::put('settings', [\App\Domains\Library\Http\Controllers\AdminLibrarySettingsController::class, 'update'])->name('admin.library.settings.update');
         Route::post('items', [AdminLibraryController::class, 'storeItem'])->name('admin.library.items.store');
         Route::put('items/{item}', [AdminLibraryController::class, 'updateItem'])->name('admin.library.items.update')->whereNumber('item');
         Route::post('items/{item}/publish', [AdminLibraryController::class, 'publish'])->name('admin.library.items.publish')->whereNumber('item');

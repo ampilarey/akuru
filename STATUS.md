@@ -4414,6 +4414,33 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5ip. Library B12: the office's settings screen for the Library's money rules (2026-09-27)
+
+BACKLOG B12, LIBRARY_PLAN §42. The Library's commercial knobs — the
+refund window, the writer's share, the minimum payout, the gift-card
+range, the research review gate, the payouts switch — lived in
+`config/library.php` and so in `.env`: changing one meant a deploy and
+somebody at the host, and thirteen call sites across Library and
+Commerce each read config for themselves.
+
+**Built.** `/admin/library/settings` (Inertia, `Library/Settings`,
+under the Library office's gate: `role:super_admin` + `library.manage`)
+shows each knob with the deploy's default beside it and saves them
+through `SaveLibrarySettingsAction`, which checks the shape (a share is
+0–100, a floor is not above its ceiling) and writes the Settings rows in
+group `library`. `ResolveLibrarySettingAction` is now the one door every
+reader goes through — the thirteen `config('library.…')` reads in the
+earnings, payout, review and gift-card code are replaced — returning the
+office's value where one is set and the config default where not, so a
+typed value and a deployed one cannot disagree in two places (rule 11).
+The reading-abuse thresholds stay in config on purpose (they are guesses
+to be corrected from watching readers, not office policy), and the
+preview limit is per item already. The payouts switch is on the screen
+and off by default, with the note that it waits on the tax treatment
+(OWNER_ACTIONS, BACKLOG A9). EN/DV/AR in `admin.php`.
+`LibrarySettingsScreenTest` (3). Walked in `admin.mjs`: the system admin
+changes the refund window, reads the flash, and restores it.
+
 ## 5io. Library B8: a parent's view of a child's library (2026-09-27)
 
 BACKLOG B8, LIBRARY_PLAN §10. A parent could see a child's attendance,
