@@ -34,7 +34,7 @@ class ReviewLibraryItemSubmissionAction
         // editor can publish, while the requirement is switched on.
         if ($decision === 'approved'
             && $item->content_type === LibraryContentType::Research
-            && config('library.research_review_required')
+            && app(\App\Domains\Library\Actions\ResolveLibrarySettingAction::class)->execute('research_review_required')
             && ! LibraryReviewAssignment::query()
                 ->where('library_item_id', $item->id)
                 ->where('status', 'done')

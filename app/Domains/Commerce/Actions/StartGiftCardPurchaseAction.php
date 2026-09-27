@@ -26,8 +26,8 @@ class StartGiftCardPurchaseAction
     public function execute(int $userId, array $data, ?string $returnUrl = null): array
     {
         $amount = (float) ($data['amount'] ?? 0);
-        $min = (float) config('library.gift_cards.min', 50);
-        $max = (float) config('library.gift_cards.max', 5000);
+        $min = (float) app(\App\Domains\Library\Actions\ResolveLibrarySettingAction::class)->execute('gift_card_min');
+        $max = (float) app(\App\Domains\Library\Actions\ResolveLibrarySettingAction::class)->execute('gift_card_max');
         if ($amount < $min || $amount > $max || abs($amount - round($amount)) > 0.0001) {
             throw ValidationException::withMessages([
                 'amount' => sprintf('Choose a whole amount between MVR %s and MVR %s.', number_format($min), number_format($max)),

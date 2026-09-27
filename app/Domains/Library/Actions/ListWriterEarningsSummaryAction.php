@@ -37,11 +37,11 @@ class ListWriterEarningsSummaryAction
             'available' => $available,
             'paid' => round((float) ($totals['paid'] ?? 0), 2),
             'refunded' => round((float) ($totals['refunded'] ?? 0), 2),
-            'payouts_enabled' => (bool) config('library.payouts_enabled'),
-            'min_payout' => (float) config('library.min_payout', 100),
+            'payouts_enabled' => (bool) app(\App\Domains\Library\Actions\ResolveLibrarySettingAction::class)->execute('payouts_enabled'),
+            'min_payout' => (float) app(\App\Domains\Library\Actions\ResolveLibrarySettingAction::class)->execute('min_payout'),
             'has_bank_details' => WriterBankDetail::query()->where('writer_id', $profile->id)->exists(),
-            'can_request' => (bool) config('library.payouts_enabled')
-                && $available >= (float) config('library.min_payout', 100),
+            'can_request' => (bool) app(\App\Domains\Library\Actions\ResolveLibrarySettingAction::class)->execute('payouts_enabled')
+                && $available >= (float) app(\App\Domains\Library\Actions\ResolveLibrarySettingAction::class)->execute('min_payout'),
         ];
     }
 }

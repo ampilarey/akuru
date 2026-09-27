@@ -19,8 +19,8 @@ class GiftCardPurchaseController extends Controller
     {
         return view('public.commerce.gift-cards', [
             'presets' => (array) config('library.gift_cards.presets', [100, 250, 500, 1000]),
-            'min' => (int) config('library.gift_cards.min', 50),
-            'max' => (int) config('library.gift_cards.max', 5000),
+            'min' => (int) app(\App\Domains\Library\Actions\ResolveLibrarySettingAction::class)->execute('gift_card_min'),
+            'max' => (int) app(\App\Domains\Library\Actions\ResolveLibrarySettingAction::class)->execute('gift_card_max'),
             'signedIn' => $request->user() !== null,
         ]);
     }

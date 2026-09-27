@@ -321,4 +321,20 @@ await Promise.all([su.waitForNavigation({ waitUntil: 'networkidle' }).catch(() =
 const cacheFlash = await text(su);
 check('Clear all caches reports what it did, and the screen is still there', /All caches cleared/.test(cacheFlash) && cacheFlash.includes('Cache Management'));
 
+// B12 (LIBRARY_PLAN §42, STATUS §5ip): the Library's money rules on a screen — change one, read it back, restore it.
+await su.goto(`${BASE}/en/admin/library/settings`, { waitUntil: 'networkidle' });
+await settle(su, '[data-testid="library-settings"]');
+const refundBox = su.locator('[data-testid="library-settings"] input[name="refund_window_days"]');
+const refundBefore = await refundBox.inputValue();
+await refundBox.fill(String(Number(refundBefore) + 1));
+await su.click('[data-testid="library-settings"] button[type=submit]');
+const savedFlash = await su.waitForFunction(() => document.body.innerText.includes('Library settings saved.'), null, { timeout: 20000 }).then(() => true).catch(() => false);
+await su.goto(`${BASE}/en/admin/library/settings`, { waitUntil: 'networkidle' });
+await settle(su, '[data-testid="library-settings"]');
+const refundAfter = await su.locator('[data-testid="library-settings"] input[name="refund_window_days"]').inputValue();
+check('the Library settings screen saves a changed refund window and reads it back', savedFlash && Number(refundAfter) === Number(refundBefore) + 1, `${refundBefore} → ${refundAfter}`);
+await su.locator('[data-testid="library-settings"] input[name="refund_window_days"]').fill(refundBefore);
+await su.click('[data-testid="library-settings"] button[type=submit]');
+await su.waitForFunction(() => document.body.innerText.includes('Library settings saved.'), null, { timeout: 20000 }).catch(() => {});
+
 await finish();

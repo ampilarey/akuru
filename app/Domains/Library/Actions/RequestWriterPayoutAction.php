@@ -19,7 +19,7 @@ class RequestWriterPayoutAction
 {
     public function execute(int $userId): WriterPayout
     {
-        if (! config('library.payouts_enabled')) {
+        if (! app(\App\Domains\Library\Actions\ResolveLibrarySettingAction::class)->execute('payouts_enabled')) {
             throw ValidationException::withMessages([
                 'payout' => 'Payouts are not open yet — your earnings keep accruing and stay yours.',
             ]);
@@ -43,7 +43,7 @@ class RequestWriterPayoutAction
                 ->lockForUpdate()
                 ->get();
             $amount = round((float) $earnings->sum('writer_amount'), 2);
-            $minimum = (float) config('library.min_payout', 100);
+            $minimum = (float) app(\App\Domains\Library\Actions\ResolveLibrarySettingAction::class)->execute('min_payout');
             if ($amount < $minimum) {
                 throw ValidationException::withMessages([
                     'payout' => "Available balance ({$amount}) is below the minimum payout ({$minimum}).",
