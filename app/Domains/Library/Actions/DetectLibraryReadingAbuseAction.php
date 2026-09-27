@@ -149,7 +149,7 @@ class DetectLibraryReadingAbuseAction
 
         $year = app(ResolveAcademicYearForDateAction::class)->execute();
 
-        return LibraryReadingAlert::query()->create([
+        $alert = LibraryReadingAlert::query()->create([
             'user_id' => $userId,
             'library_item_id' => $libraryItemId,
             'signal' => $signal->value,
@@ -158,5 +158,15 @@ class DetectLibraryReadingAbuseAction
             'detail' => $detail,
             'academic_year_id' => $year === null ? null : (int) $year['id'],
         ]);
+
+        // B11 (§41 "suspicious activity to admins"): a new alert is worth a
+        // word to the office, once — a widened one above is the same alert.
+        app(NotifyLibraryUserAction::class)->office(
+            'Reading alert',
+            'A reader tripped the "'.str_replace('_', ' ', $signal->value).'" signal ('.$observed.' against '.$threshold.'). Open the queue to review it.',
+            '/admin/library/reading-alerts',
+        );
+
+        return $alert;
     }
 }

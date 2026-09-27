@@ -20,6 +20,7 @@ class LibraryReadingProgress extends Model
         'progress_percent',
         'last_read_at',
         'completed_at',
+        'reminded_at',
         'total_reading_seconds',
     ];
 
@@ -28,6 +29,7 @@ class LibraryReadingProgress extends Model
         return [
             'last_read_at' => 'datetime',
             'completed_at' => 'datetime',
+            'reminded_at' => 'datetime',
         ];
     }
 

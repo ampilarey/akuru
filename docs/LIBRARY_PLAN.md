@@ -310,6 +310,8 @@ Full DOI, journal issue/volume system, complex peer review, subscriptions, offli
 - **Writer:** application decision, submission received, changes requested, approved, published, new sale, discount applied to content, payout processed.
 - **Admin:** new writer application, new submission, payment issue, gift card purchase, large wallet adjustment, suspicious activity, copyright complaint.
 
+> **Three more built 2026-09-27 (B11, STATUS §5iu):** *new content published* — the readers who have read or bought that writer before are told; *continue-reading reminder* — a book opened, unfinished and untouched for a week gets one in-app nudge with its page, not again for a fortnight, never once a month cold (`library:remind-readers`, daily); *suspicious activity* — the office hears of each new reading alert. All in-app, category `library`, switchable. Not built: discount used, payment issue, large wallet adjustment, copyright complaint; email/SMS channels.
+
 > **Built 2026-09-25 (STATUS §5go), in-app:** writer — application decision, submission received, changes requested, rejected, published, new sale, payout decided; reader — purchase ready, gift card redeemed; admin — new writer application, new submission. Not built: new content published to readers, continue-reading reminder, discount used, payment issue, large wallet adjustment, suspicious activity (reading alerts have their own admin screen), copyright complaint. Email/SMS channels for these: not built (in-app only).
 
 ## 42. Admin Settings
