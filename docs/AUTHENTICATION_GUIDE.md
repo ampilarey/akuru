@@ -103,10 +103,13 @@ roles in both workspaces sees one at a time and a switcher in the header.
 - **Role-based access control** (RBAC): every route carries a `role:` gate,
   the money and office screens a `can:` permission on top
 - **Policy-based authorization** for models
-- **The educational admin's permission set is a decision**, not
-  `Permission::all()`: `App\Support\Authorization\RoleGrants::educationalAdmin()`,
-  shipped by migration `2026_09_27_000001` and read by `RoleSeeder`. Changing
-  it is a new migration, because deployments run `migrate` and never `db:seed`.
+- **Every school role's permission set is a decision**, not a seeder's
+  convenience: `App\Support\Authorization\RoleGrants` (the educational
+  admin, the dean, the supervisor, the teacher, the student, the parent),
+  shipped by migrations `2026_09_27_000001` and `2026_09_27_000004`, which
+  create the roles and *sync* their sets, and read by `RoleSeeder`. Changing
+  a set is a new migration, because deployments run `migrate` and never
+  `db:seed`. The system admin holds everything.
 
 ### 7 User Roles
 

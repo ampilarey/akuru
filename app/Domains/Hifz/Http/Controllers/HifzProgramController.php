@@ -25,7 +25,7 @@ class HifzProgramController extends Controller
         $user = auth()->user();
         $query = HifzProgram::with(['classRoom', 'supervisor', 'defaultTeacher.user']);
 
-        if (! $user->isHifzDean() && ! $user->isAdminLevel()) {
+        if (! $user->isHifzDean()) {
             $query->whereIn('id', $this->scope->assignedProgramIds($user));
         }
 

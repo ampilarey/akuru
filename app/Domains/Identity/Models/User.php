@@ -208,9 +208,14 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasAnyRole(['super_admin', 'admin', 'headmaster']);
     }
 
+    /**
+     * Hifz is education: the dean's (and the system admin passes every gate).
+     * Until STATUS §5ij the educational admin counted too, by role, while
+     * holding none of the Hifz permissions the dean's screens need.
+     */
     public function isHifzDean(): bool
     {
-        return $this->hasAnyRole(['super_admin', 'admin', 'headmaster']);
+        return $this->hasAnyRole(['super_admin', 'headmaster']);
     }
 
     /**

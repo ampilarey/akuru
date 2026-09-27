@@ -27,13 +27,14 @@
  *   php artisan db:seed --class=SmokeMarkerSeeder
  *   node scripts/smoke/hifz.mjs
  *
- * Environment: SMOKE_BASE_URL, SMOKE_ADMIN, SMOKE_SUPERVISOR, SMOKE_TEACHER,
+ * Environment: SMOKE_BASE_URL, SMOKE_ADMIN, SMOKE_DEAN, SMOKE_SUPERVISOR, SMOKE_TEACHER,
  * SMOKE_STUDENT, SMOKE_PARENT, SMOKE_PASSWORD, SMOKE_CHROMIUM.
  */
 import { chromium } from 'playwright';
 
 const BASE = process.env.SMOKE_BASE_URL ?? 'http://127.0.0.1:8000';
 const ADMIN = process.env.SMOKE_ADMIN ?? 'admin@akuru.edu.mv';
+const DEAN = process.env.SMOKE_DEAN ?? 'headmaster@akuru.edu.mv';
 const SUPERVISOR = process.env.SMOKE_SUPERVISOR ?? 'supervisor@akuru.edu.mv';
 const TEACHER = process.env.SMOKE_TEACHER ?? 'teacher@akuru.edu.mv';
 const STUDENT = process.env.SMOKE_STUDENT ?? 'student@akuru.edu.mv';
@@ -170,7 +171,8 @@ check('the pupil has a name the office will see', NAME.length > 0, NAME || 'no h
 
 // ----------------------------------------------------------------- the dean
 
-const dean = await signIn(ADMIN);
+// The dean is the headmaster login: since STATUS §5ij the educational admin is not a Hifz dean.
+const dean = await signIn(DEAN);
 check('the dean signs in', !dean.url().includes('/login'), dean.url());
 let landing = await hub(dean, 'dean');
 check('the hub sends the dean to the dean dashboard', landing.ok && (await text(dean)).includes('Active Students'), landing.detail);

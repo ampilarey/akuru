@@ -11,7 +11,7 @@ class HifzHubController extends Controller
     {
         $user = auth()->user();
 
-        if ($user->isHifzDean() || $user->isAdminLevel()) {
+        if ($user->isHifzDean()) {
             return redirect()->route('hifz.dean.dashboard');
         }
 

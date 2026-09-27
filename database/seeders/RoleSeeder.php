@@ -158,7 +158,7 @@ class RoleSeeder extends Seeder
             'prayer.manage',
         ];
 
-        foreach ([...$permissions, ...RoleGrants::educationalAdmin()] as $permission) {
+        foreach ([...$permissions, ...array_merge(...array_values(RoleGrants::matrix()))] as $permission) {
             Permission::firstOrCreate(['name' => $permission, 'guard_name' => 'web']);
         }
 
@@ -176,162 +176,15 @@ class RoleSeeder extends Seeder
         $admin = Role::findByName('admin');
         $admin->syncPermissions(RoleGrants::educationalAdmin());
 
-        $headmaster = Role::findByName('headmaster');
-        $headmaster->givePermissionTo([
-            'view_school',
-            'manage_users',
-            'view_users',
-            'create_users',
-            'edit_users',
-            'manage_students',
-            'view_students',
-            'create_students',
-            'edit_students',
-            'manage_teachers',
-            'view_teachers',
-            'create_teachers',
-            'edit_teachers',
-            'manage_classes',
-            'view_classes',
-            'create_classes',
-            'edit_classes',
-            'manage_subjects',
-            'view_subjects',
-            'create_subjects',
-            'edit_subjects',
-            'view_grades',
-            'view_attendance',
-            'view_quran_progress',
-            'manage_timetables',
-            'view_timetables',
-            'create_timetables',
-            'edit_timetables',
-            'rooms.manage',
-            'meetings.manage',
-            'timetables.allow_conflict',
-            'calendar.manage',
-            'events.manage',
-            'daily_content.manage',
-            'daily_content.approve',
-            'prayer.manage',
-            'registers.fill',
-            'registers.manage',
-            'messages.broadcast',
-            'forms.manage',
-            'behavior.record',
-            'behavior.manage',
-            'requests.submit',
-            'requests.review',
-            'exams.manage',
-            'exams.enter-any',
-            'finance.manage',
-            'finance.record-manual-payment',
-            'hr.manage',
-            'payroll.run',
-            'courses.manage',
-            'manage_announcements',
-            'view_announcements',
-            'create_announcements',
-            'edit_announcements',
-            'view_reports',
-            'generate_reports',
-            'view_hifz_programs', 'manage_hifz_programs', 'assign_hifz_supervisors',
-            'create_hifz_sessions', 'update_hifz_sessions', 'review_hifz_sessions', 'lock_hifz_sessions',
-            'create_hifz_session_records', 'update_hifz_session_records', 'review_hifz_session_records', 'override_hifz_records',
-            'create_hifz_mistakes', 'view_hifz_mistakes',
-            'recommend_hifz_milestones', 'review_hifz_milestones', 'approve_hifz_milestones',
-            'manage_quran_mushaf', 'approve_quran_mushaf', 'review_quran_mapping',
-            'view_hifz_reports', 'export_hifz_reports', 'record_hifz_as_substitute',
-        ]);
-
-        $supervisor = Role::findByName('supervisor');
-        $supervisor->givePermissionTo([
-            'view_school',
-            'view_users',
-            'view_students',
-            'view_teachers',
-            'view_classes',
-            'view_subjects',
-            'view_grades',
-            'view_attendance',
-            'view_quran_progress',
-            'view_timetables',
-            'rooms.manage',
-            'meetings.manage',
-            'daily_content.manage',
-            'daily_content.approve',
-            'prayer.manage',
-            'calendar.manage',
-            'events.manage',
-            'registers.fill',
-            'registers.manage',
-            'requests.submit',
-            'requests.review',
-            'exams.manage',
-            'exams.enter-any',
-            'view_announcements',
-            'view_reports',
-            'view_hifz_programs',
-            'review_hifz_sessions', 'review_hifz_session_records',
-            'view_hifz_mistakes',
-            'recommend_hifz_milestones', 'review_hifz_milestones',
-            'view_hifz_reports', 'export_hifz_reports',
-        ]);
-
-        $teacher = Role::findByName('teacher');
-        $teacher->givePermissionTo([
-            'view_school',
-            'view_students',
-            'view_classes',
-            'view_subjects',
-            'manage_grades',
-            'view_grades',
-            'create_grades',
-            'edit_grades',
-            'manage_attendance',
-            'view_attendance',
-            'mark_attendance',
-            'manage_quran_progress',
-            'view_quran_progress',
-            'update_quran_progress',
-            'view_timetables',
-            'registers.fill',
-            'messages.broadcast',
-            'forms.manage',
-            'behavior.record',
-            'requests.submit',
-            'view_announcements',
-            'view_hifz_programs',
-            'create_hifz_sessions', 'update_hifz_sessions',
-            'create_hifz_session_records', 'update_hifz_session_records',
-            'create_hifz_mistakes', 'view_hifz_mistakes',
-            'recommend_hifz_milestones',
-        ]);
-
-        $student = Role::findByName('student');
-        $student->givePermissionTo([
-            'view_school',
-            'view_grades',
-            'view_attendance',
-            'view_quran_progress',
-            'view_timetables',
-            'view_announcements',
-            'view_hifz_programs',
-            'view_hifz_mistakes',
-        ]);
-
-        $parent = Role::findByName('parent');
-        $parent->givePermissionTo([
-            'view_school',
-            'view_grades',
-            'view_attendance',
-            'view_quran_progress',
-            'view_timetables',
-            'view_announcements',
-            'view_hifz_programs',
-            'view_hifz_mistakes',
-            'requests.submit',
-        ]);
+        // The school roles: each synced to its set in `RoleGrants`, which is
+        // also what migration `2026_09_27_000004` ships (STATUS §5ij), so a
+        // seeded database and a migrate-only one hold the same matrix.
+        foreach (RoleGrants::matrix() as $roleName => $permissions) {
+            if ($roleName === 'admin') {
+                continue; // synced above
+            }
+            Role::findByName($roleName)->syncPermissions($permissions);
+        }
 
         // Seed grants must be visible in this process; stale Spatie cache
         // (cache table + in-memory registrar) can 403 admin HTTP checks.

@@ -33,9 +33,11 @@ a question with a default, so "do nothing" is always a legible choice.
    (STATUS §5bp), so **with no secret and no opt-out, no payment will confirm**.
    The implementation's assumption about their scheme has never been checked
    against BML's own documentation.
-3. **Verify the `permissions` table** on `test.akuru.edu.mv` holds all 34 dotted
-   names, and that the six seeder-only roles exist. §5bo fixed three rows going
-   forward; it cannot tell you what that database currently holds.
+3. ~~**Verify the `permissions` table** on `test.akuru.edu.mv` holds all 34 dotted
+   names, and that the six seeder-only roles exist.~~ — since 2026-09-27
+   (STATUS §5ij) the pull line's `migrate --force` creates every school role
+   and syncs its set, so the table holds what the code checks after the
+   next pull; nothing to verify by hand.
 4. **Rotate the super-admin password.** Raised repeatedly; the seeded
    credentials are in `docs/AUTHENTICATION_GUIDE.md`.
 5. **Apply branch protection** (`docs/BRANCH_PROTECTION.md`). Structurally
@@ -124,10 +126,11 @@ a question with a default, so "do nothing" is always a legible choice.
     migration that ships its permission set, so a migrate-only database gets
     a correctly scoped educational admin.
 
-    **Still open, and still yours:** `teacher`, `student`, `parent` and
-    `headmaster` remain seeder-only. `SpecRolesExistTest` carries an
-    expectation that **fails when this is fixed**, pointing back here, so the
-    note cannot rot into a false claim.
+    **Closed 2026-09-27 (STATUS §5ij, BACKLOG C10):** every school role is
+    now created and synced to its set by migration `2026_09_27_000004`,
+    from `RoleGrants`, which the seeder reads too — so a migrate-only
+    database and a seeded one hold the same matrix, and a role change is
+    one more migration. `SpecRolesExistTest` asserts all seven.
 12. ~~**A supervisor can grant a place on a paid course.** The admissions group is
     guarded by role alone, while the money endpoints next door also require
     `can:payments.refund` / `can:payments.record`. Tightening it changes who can
