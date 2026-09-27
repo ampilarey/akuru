@@ -95,9 +95,15 @@ Bookstore office `super_admin` and `bookshop_manager`, admissions
 `super_admin`, `admin` and `headmaster`. The seeded logins gain
 `superadmin@` (staging and local only) so the walks can run the Institute.
 
-**Still owner-owned after this** (slices 3–4 of the decision): the role
-labels people read (System admin, Dean, Educational admin), and a role
-screen so the owner can hand out roles without the server.
+**Slice 3 (2026-09-27, STATUS §5if)**: the role labels people read are the
+owner's names for the jobs — System admin, Educational admin, Dean,
+Bookstore admin — from `lang/roles.php` in EN/DV/AR through `RoleLabels`,
+on the users screen and its filter (now every role), the Blade user menu,
+the linked-accounts list and the staff form. The keys in the database do
+not change.
+
+**Still owner-owned after this** (slice 4 of the decision): a role screen
+so the owner can hand out roles without the server (BACKLOG C8).
 
 ## 2. Checked and held
 

@@ -57,8 +57,12 @@ kept for an outside author.
    screens. A teacher's, a family's, a vendor's and a writer's homes stay
    their own pages. A person opening a home they do not hold is sent to
    their own.
-5. **Roles keep their keys.** The labels people read change in a later
-   slice (System admin, Dean, Educational admin). The educational admin's
+5. **Roles keep their keys.** The labels people read are the owner's names
+   for the jobs — System admin, Educational admin, Dean — in
+   `lang/roles.php` (EN/DV/AR) through `App\Support\Authorization\RoleLabels`
+   (slice 3, 2026-09-27, STATUS §5if), wherever a role is shown: the users
+   screen and its filter, the Blade user menu, the linked-accounts list, the
+   staff form. The educational admin's
    permission set is a decision, not `Permission::all()` (slice 2,
    2026-09-27, STATUS §5ie): `App\Support\Authorization\RoleGrants` names
    it — the school's office (admissions and their money, the people, fees,

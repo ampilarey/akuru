@@ -3,7 +3,7 @@ import { useState } from 'react';
 import AppShell from '../../../Layouts/AppShell';
 import FormErrors from '../../../Components/FormErrors';
 
-export default function Index({ roles = ['teacher'], staff }) {
+export default function Index({ roles = { teacher: 'Teacher' }, staff }) {
     // "New account" is the default: the retired Blade teacher form was the
     // only screen that could create a staff login, and this took its place.
     // "Existing account" covers a person who already has one (a parent who
@@ -49,7 +49,7 @@ export default function Index({ roles = ['teacher'], staff }) {
                         <input className="form-input" type="email" placeholder="Email (their login)" value={form.data.email} onChange={(e) => form.setData('email', e.target.value)} />
                         <input className="form-input" type="password" placeholder="Password (8+ characters)" value={form.data.password} onChange={(e) => form.setData('password', e.target.value)} />
                         <select className="form-input" value={form.data.role} onChange={(e) => form.setData('role', e.target.value)}>
-                            {roles.map((role) => <option key={role} value={role}>{role}</option>)}
+                            {Object.entries(roles).map(([role, label]) => <option key={role} value={role}>{label}</option>)}
                         </select>
                     </>
                 )}

@@ -4414,6 +4414,46 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5if. The role labels people read (2026-09-27)
+
+Slice 3 of ADR-040. A role was shown by humanising its key — "Super
+Admin", "Admin", "Headmaster" — on the users screen, in the Blade user
+menu, in the linked-accounts list and the staff form's role picker (which
+showed the raw keys). The owner's names for the jobs are System admin,
+Educational admin and Dean; the keys in the database do not change.
+
+**Built.** `resources/lang/{en,dv,ar}/roles.php` names the twelve roles
+(`super_admin` → System admin, `admin` → Educational admin, `headmaster` →
+Dean, `bookshop_manager` → Bookstore admin, …) and "No role";
+`App\Support\Authorization\RoleLabels` reads it (`label`, `all`, `list`)
+and humanises a role the file does not know, so a new role never renders
+as its key. `User::primaryRoleLabel()` uses it; `nameDuplicatesPrimaryRole()`
+matches the label and the old humanised key, so the seeded "System Admin"
+and an old "Super Admin" both fall back to the email in the nav. The
+users screen's badge and its filter (now every role, by label, where it
+offered five by key), the Blade user menu and phone menu, the
+linked-accounts list ("Teacher, Parent"), the staff form's role picker
+(`roles` is now key → label). Docs: ADR-040 decision 5, ADMIN_PANEL §1,
+AUTHENTICATION_GUIDE.
+
+**Tests.** `RoleLabelsTest` (4, new): every role in the three languages and
+the fallback; the primary label and the duplicate-name check; the users
+screen's badges, filter options and filtering by key, and the user menu
+on a School Blade screen; the staff form's roles and the linked accounts.
+`TranslationParityTest` covers the new file. Full suite **2312 passed**;
+architecture green.
+
+**Walked.** `admin.mjs` 27/27 with three new steps: the educational
+admin's Blade user menu says "Educational admin"; the users screen's
+badges read System admin, Educational admin and Dean (filtered by role,
+the list being newest first) and never "Super Admin"; the filter offers
+Dean and Bookstore admin. `workspaces.mjs` 15/15, `admin-hub.mjs` 25/25.
+
+**Next**: slice 4 (task #72) — the role and activation screen under
+Manage users (BACKLOG C8).
+
+**Production.** Nothing to migrate; the pull line as usual.
+
 ## 5ie. The educational admin's permission set, and the gates that agree with the menus (2026-09-27)
 
 Slice 2 of ADR-040 (the owner's "Go" on the recommendation in §5id).
