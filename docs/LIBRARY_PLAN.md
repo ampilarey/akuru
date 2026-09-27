@@ -77,7 +77,7 @@ Not a simple PDF upload page — a publishing platform with connected modules: P
 > **8.1–8.3 built 2026-09-25 (STATUS §5gp):** free/paid, language, price range, newest / most read / most purchased / price / title; featured (office toggle) and continue reading on the front of the shelf; gift card link. Not built: discounted/promotions (no campaigns), difficulty, reading-time filter, peer-reviewed/open-access filters, popular-by-period.
 - **8.5 Promotions page:** Ramadan offers, back-to-school, new writer launches, free article campaigns, bundles, gift card bonus campaigns.
 - **8.6 Gift Card page:** buy, choose amount, recipient name/email/mobile, gift message, BML payment, code delivery, redeem into Akuru wallet.
-- **8.7 Author page:** name, photo, bio, qualifications, published works, featured, totals, social links (optional). **Built 2026-09-25 (L8, STATUS §5g)** — all but *featured* and *social links*.
+- **8.7 Author page:** name, photo, bio, qualifications, published works, featured, totals, social links (optional). **Built 2026-09-25 (L8, STATUS §5g)** — all but *featured* and *social links*, which followed **2026-09-27 (B6, STATUS §5im)**: up to three own published works pinned first, and a link row of website plus six social addresses.
 - **8.8 Content detail page:** cover, title, subtitle, author, category, language, description, abstract, price, discount price, free/paid label, page count/reading time, publication date, preview, buy, read (if access), wishlist, gift card/wallet at checkout, related content, table of contents (books), copyright notice. Research adds: abstract, keywords, citation format, references, DOI field (future), review status.
 
 ## 9. Protected Reader Plan (most important module)

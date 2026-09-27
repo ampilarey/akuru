@@ -59,6 +59,7 @@ const BODY = 'SMOKE-Library-Body: the sun letters assimilate the laam of the def
 const CHANGES = 'SMOKE-Changes: please add a citation for the assimilation rule.';
 const BIO = `SMOKE-Bio ${STAMP}: teaches the sun and moon letters.`;
 const CO_AUTHOR = `SMOKE-CoAuthor ${STAMP}`;
+const WEBSITE = `https://smoke-${STAMP}.example.mv/`;
 const TOC_ONE = `SMOKE-Chapter-One ${STAMP}`;
 const TOC_TWO = `SMOKE-Chapter-Two ${STAMP}`;
 
@@ -362,8 +363,12 @@ if (resubmitted) {
     const authorForm = writer.locator('[data-testid="author-page-form"]');
     await authorForm.locator('textarea[placeholder="Bio"]').fill(BIO);
     await authorForm.locator('input[type=file]').setInputFiles(PORTRAIT);
+    // B6 (§8.7): a website for the link row, and the published work pinned as featured.
+    await authorForm.locator('input[placeholder^="Website"]').fill(WEBSITE);
+    const pin = authorForm.locator('[data-testid="featured-works"] label', { hasText: TITLE }).locator('input[type=checkbox]');
+    if (await pin.count()) await pin.check();
     await authorForm.locator('button:has-text("Save author page")').click();
-    check('the writer puts a bio and a portrait on their author page', await settles(writer, 'Author page updated.'), (await text(writer)).slice(0, 160));
+    check('the writer puts a bio, a portrait, a website and a featured work on their author page', await settles(writer, 'Author page updated.'), (await text(writer)).slice(0, 160));
     const portrait = writer.locator('[data-testid="author-portrait"]');
     check('and the portrait shows in their portal', (await portrait.count()) === 1, (await portrait.count()) ? await portrait.getAttribute('src') : 'no portrait image after saving');
 
@@ -394,6 +399,9 @@ if (resubmitted) {
         // this needs `php artisan storage:link`, as every host already has.)
         const drawn = (await img.count()) === 1 && await img.evaluate((el) => el.complete && el.naturalWidth > 0);
         check('and lands on an author page with their bio, portrait and this work', page.includes(BIO) && page.includes(TITLE) && drawn, drawn ? page.slice(0, 200) : `portrait did not load (${(await img.count()) ? await img.getAttribute('src') : 'no img'})`);
+        const siteLink = reader.locator('[data-testid="author-links"] a[href="' + WEBSITE + '"]');
+        const featured = reader.locator('[data-testid="featured-works"]', { hasText: TITLE });
+        check('with the website link and the work pinned under Featured works', (await siteLink.count()) === 1 && (await featured.count()) === 1, `${await siteLink.count()} link, ${await featured.count()} featured shelf`);
         const url = reader.url();
         const guest = await (await browser.newContext()).newPage();
         const open = await guest.goto(url, { waitUntil: 'domcontentloaded' });

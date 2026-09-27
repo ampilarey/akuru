@@ -175,3 +175,88 @@ it('refuses a portrait that is not an image, and a profile edit from somebody wh
 
     expect(WriterProfile::query()->where('display_name', 'Impostor')->exists())->toBeFalse();
 });
+
+/**
+ * B6 (§8.7, STATUS §5im): featured works and links. A writer pins up to
+ * three of their own published works at the top of the page and gives
+ * readers a website and social addresses.
+ */
+it('pins the writer\'s featured works first and shows their links', function () {
+    [$user, $profile] = authorPageWriter();
+    $first = authorPageItem($user->id, 'Sun letters', 'book');
+    $second = authorPageItem($user->id, 'Moon letters');
+    authorPageItem($user->id, 'Shadda rules');
+
+    $this->withoutLocalizationMiddleware()->actingAs($user)
+        ->post(route('write.profile'), [
+            'display_name' => 'Ustadha Aminath',
+            'featured_item_ids' => [$second->id, $first->id],
+            'social_links' => ['website' => 'https://aminath.example.mv', 'x' => 'https://x.com/aminath', 'facebook' => ''],
+        ])
+        ->assertSessionHasNoErrors()
+        ->assertRedirect();
+
+    $profile->refresh();
+    // The pins keep their order (a JSON array); the links are a JSON object,
+    // whose key order MySQL 8 normalises on write (shorter keys first) while
+    // MariaDB keeps insertion order — the page orders them itself, so the
+    // comparison here is by content.
+    expect($profile->featured_item_ids)->toBe([$second->id, $first->id])
+        ->and($profile->social_links)->toEqualCanonicalizing(['website' => 'https://aminath.example.mv', 'x' => 'https://x.com/aminath']);
+
+    $html = $this->withoutLocalizationMiddleware()->get(route('public.library.author', $profile->slug))->assertOk()
+        ->assertSee('Featured works')
+        ->assertSee('https://aminath.example.mv', false)
+        ->assertSee('https://x.com/aminath', false)
+        ->assertSee('rel="nofollow noopener"', false)
+        ->getContent();
+
+    // The pins come first, in the writer's order, and the full shelf still lists everything.
+    expect(strpos($html, 'data-testid="featured-works"'))->toBeLessThan(strpos($html, 'Published works'))
+        ->and(strpos($html, 'Moon letters'))->toBeLessThan(strpos($html, 'Sun letters'))
+        // Titles as headings: an unpinned work once, a pinned one on both shelves.
+        ->and(substr_count($html, '>Shadda rules<'))->toBe(1)
+        ->and(substr_count($html, '>Sun letters<'))->toBe(2);
+
+    // The writer's own editor reads the pins and the links back.
+    $this->withoutLocalizationMiddleware()->actingAs($user)->get(route('write.index'))
+        ->assertInertia(fn ($page) => $page->where('dashboard.profile.featured_item_ids', [$second->id, $first->id])
+            ->where('dashboard.profile.social_links.website', 'https://aminath.example.mv'));
+});
+
+it('refuses a pin that is not the writer\'s own published work, a fourth pin, and a bare address', function () {
+    [$user, $profile] = authorPageWriter();
+    $own = authorPageItem($user->id, 'Sun letters');
+    $draft = authorPageItem($user->id, 'Unfinished thoughts', 'article', publish: false);
+    [$other] = authorPageWriter('Somebody Else');
+    $theirs = authorPageItem($other->id, 'Not hers');
+
+    foreach ([[$draft->id], [$theirs->id], [$own->id, 999999]] as $ids) {
+        $this->withoutLocalizationMiddleware()->actingAs($user)
+            ->post(route('write.profile'), ['display_name' => 'Ustadha Aminath', 'featured_item_ids' => $ids])
+            ->assertSessionHasErrors('featured_item_ids');
+    }
+    $more = [$own->id, authorPageItem($user->id, 'B')->id, authorPageItem($user->id, 'C')->id, authorPageItem($user->id, 'D')->id];
+    $this->withoutLocalizationMiddleware()->actingAs($user)
+        ->post(route('write.profile'), ['display_name' => 'Ustadha Aminath', 'featured_item_ids' => $more])
+        ->assertSessionHasErrors('featured_item_ids');
+
+    $this->withoutLocalizationMiddleware()->actingAs($user)
+        ->post(route('write.profile'), ['display_name' => 'Ustadha Aminath', 'social_links' => ['website' => 'aminath.example.mv']])
+        ->assertSessionHasErrors('social_links.website');
+    // An address the page does not know is dropped, not kept.
+    $this->withoutLocalizationMiddleware()->actingAs($user)
+        ->post(route('write.profile'), ['display_name' => 'Ustadha Aminath', 'social_links' => ['myspace' => 'https://myspace.com/a']])
+        ->assertSessionHasNoErrors();
+
+    expect($profile->refresh()->featured_item_ids)->toBeEmpty()
+        ->and($profile->social_links)->toBe([]);
+
+    // A pin the office has since archived leaves the shelf without an error.
+    $this->withoutLocalizationMiddleware()->actingAs($user)
+        ->post(route('write.profile'), ['display_name' => 'Ustadha Aminath', 'featured_item_ids' => [$own->id]])
+        ->assertSessionHasNoErrors();
+    $own->forceFill(['status' => 'archived'])->save();
+    $this->withoutLocalizationMiddleware()->get(route('public.library.author', $profile->slug))
+        ->assertOk()->assertDontSee('Featured works');
+});

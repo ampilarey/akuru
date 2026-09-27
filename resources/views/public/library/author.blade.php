@@ -35,8 +35,35 @@
                     · {{ __('public.Writing with Akuru since :year', ['year' => $author['writing_since']]) }}
                 @endif
             </p>
+            @if(count($author['links']) > 0)
+                {{-- B6 (§8.7): the writer's own addresses. Each opens elsewhere and is not vouched for. --}}
+                <ul class="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-sm" data-testid="author-links">
+                    @foreach($author['links'] as $key => $url)
+                        <li><a href="{{ $url }}" rel="nofollow noopener" target="_blank" class="text-brandMaroon-700 underline hover:text-brandMaroon-900">{{ $key === 'website' ? __('public.Website') : ['facebook' => 'Facebook', 'instagram' => 'Instagram', 'x' => 'X', 'youtube' => 'YouTube', 'linkedin' => 'LinkedIn', 'telegram' => 'Telegram'][$key] }}</a></li>
+                    @endforeach
+                </ul>
+            @endif
         </div>
     </header>
+
+    @if(count($author['featured']) > 0)
+        {{-- B6 (§8.7): up to three works the writer pinned, before the full shelf. --}}
+        <h2 class="text-2xl font-bold text-brandMaroon-900 mb-4">{{ __('public.Featured works') }}</h2>
+        <div class="mb-10 grid gap-6 md:grid-cols-3" data-testid="featured-works">
+            @foreach($author['featured'] as $item)
+                <a href="{{ route('public.library.show', $item['slug']) }}" class="block rounded-lg border-2 border-brandMaroon-200 bg-white p-5 hover:shadow-md transition">
+                    @if($item['cover_url'])
+                        <img src="{{ $item['cover_url'] }}" alt="" class="mb-3 aspect-[3/4] w-full rounded object-cover" loading="lazy">
+                    @endif
+                    <span class="rounded bg-brandBeige-100 px-2 py-0.5 text-xs text-gray-500">{{ __('public.'.$item['content_type']) }}</span>
+                    <h3 class="mt-2 text-lg font-semibold text-brandMaroon-900">{{ $item['title'] }}</h3>
+                    @if($item['subtitle'])
+                        <p class="text-sm text-gray-600">{{ $item['subtitle'] }}</p>
+                    @endif
+                </a>
+            @endforeach
+        </div>
+    @endif
 
     <h2 class="text-2xl font-bold text-brandMaroon-900 mb-4">{{ __('public.Published works') }}</h2>
     @if(count($author['items']) === 0)

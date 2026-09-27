@@ -499,6 +499,7 @@ return [
 
     // Library author page (L8)
     'Published works' => 'Published works',
+    'Featured works' => 'Featured works',
     ':count published work|:count published works' => ':count published work|:count published works',
     'Writing with Akuru since :year' => 'Writing with Akuru since :year',
     'Nothing published yet.' => 'Nothing published yet.',
