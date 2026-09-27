@@ -153,3 +153,68 @@ it('lets a teacher-parent actually open the family view', function () {
             ->where('title', 'Parent Dashboard')
         );
 });
+
+it('lists every identity a person holds as a view, and none for a person with one', function () {
+    // The owner, 2026-09-27: "a parent may be enrolled in a course, and he may
+    // be a vendor and a writer." The landing still picks one home; the others
+    // are offered from every page (STATUS §5ic).
+    $action = app(ResolveDashboardLandingAction::class);
+
+    expect(array_column($action->execute(['teacher', 'parent'])['views'], 'key'))->toBe(['teacher', 'family'])
+        ->and(array_column($action->execute(['parent', 'student', 'vendor', 'writer'])['views'], 'route'))->toBe(['portal.home', 'learn.dashboard', 'vendor.index', 'write.index'])
+        ->and(array_column($action->execute(['super_admin', 'reviewer', 'course_creator'])['views'], 'key'))->toBe(['admin', 'review', 'catalog'])
+        ->and($action->execute(['super_admin'])['views'])->toHaveCount(1)
+        ->and($action->execute([])['views'])->toBe([]);
+
+    // A vendor, a writer, a reviewer or a course creator alone lands on their
+    // job, not on the public course dashboard.
+    expect($action->execute(['vendor'])['kind'])->toBe('vendor')
+        ->and($action->execute(['writer'])['kind'])->toBe('writer')
+        ->and($action->execute(['reviewer'])['kind'])->toBe('reviewer')
+        ->and($action->execute(['course_creator'])['kind'])->toBe('catalog')
+        // A parent who is also a vendor: the family first, the shop a pill away.
+        ->and($action->execute(['vendor', 'parent'])['kind'])->toBe('portal_home');
+});
+
+it('shares the views with every Inertia page and lists them in the Blade menus, translated', function () {
+    foreach (['vendor', 'writer'] as $role) {
+        Role::findOrCreate($role, 'web');
+    }
+    $user = makeTeacherParent();
+    $user->assignRole('vendor');
+
+    $this->withoutLocalizationMiddleware()
+        ->actingAs($user)
+        ->get(route('academics.registers.today'))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->has('auth.views', 3)
+            ->where('auth.views.0', ['key' => 'teacher', 'label' => 'My day', 'href' => '/portal/teacher'])
+            ->where('auth.views.1.label', 'Family')
+            ->where('auth.views.2', ['key' => 'vendor', 'label' => 'My shop', 'href' => '/vendor']));
+
+    app()->setLocale('dv');
+    expect(trans('nav.view_vendor'))->toBe('އަހަރެންގެ ފިހާރަ');
+    app()->setLocale('en');
+
+    // A person with one identity is offered nothing extra.
+    Role::findOrCreate('teacher', 'web');
+    Permission::findOrCreate('registers.fill', 'web');
+    $teacher = User::query()->findOrFail(makeTeacherRow()->user_id);
+    $teacher->assignRole('teacher');
+    $teacher->givePermissionTo('registers.fill');
+    $this->withoutLocalizationMiddleware()->actingAs($teacher)->get(route('academics.registers.today'))->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->has('auth.views', 1));
+
+    // The Blade shell: the user menu and the phone menu list the same views.
+    Role::findOrCreate('admin', 'web');
+    $admin = User::factory()->create();
+    $admin->assignRole('admin');
+    $admin->assignRole('vendor');
+    $html = $this->withoutLocalizationMiddleware()->actingAs($admin)->get(route('admin.enrollments.index'))->assertOk()->getContent();
+    expect(substr_count($html, 'data-testid="view-vendor"'))->toBe(2)
+        ->and(substr_count($html, 'data-testid="view-admin"'))->toBe(2)
+        ->and($html)->toContain('Your views');
+    $alone = $this->withoutLocalizationMiddleware()->actingAs(User::factory()->create()->assignRole('admin'))->get(route('admin.enrollments.index'))->assertOk()->getContent();
+    expect($alone)->not->toContain('Your views');
+});

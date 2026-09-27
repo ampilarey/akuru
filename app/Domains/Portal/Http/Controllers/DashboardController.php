@@ -40,6 +40,12 @@ class DashboardController extends Controller
             'registers' => $this->teacherDashboard(),
             'portal_home' => redirect()->route('portal.home'),
             'bookshop' => redirect()->route('admin.bookshop.index'),
+            // A vendor, a writer, a reviewer or a course creator: their job's
+            // home, not the public "My Dashboard" (STATUS §5ic).
+            'vendor' => redirect()->route('vendor.index'),
+            'writer' => redirect()->route('write.index'),
+            'reviewer' => redirect()->route('review.index'),
+            'catalog' => redirect()->route('catalog.courses.index'),
             // Public users (registered via OTP for course enrollment)
             default => $this->publicUserDashboard(),
         };

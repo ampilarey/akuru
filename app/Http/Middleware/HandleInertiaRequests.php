@@ -82,6 +82,11 @@ class HandleInertiaRequests extends Middleware
                 // UI can say it exists. Costs no query: Spatie already has the
                 // roles in memory, and this runs on every Inertia response.
                 'alternate' => $this->alternateIdentity($request),
+                // Every home this person holds — the admin panel, a teacher's
+                // day, the family portal, Learn, a shop, a writer's desk — so
+                // the shell can offer the others from any page (STATUS §5ic).
+                // Roles only, no query; one view for almost everybody.
+                'views' => $this->identityViews($request, $locale),
                 // E7: the accounts this person has proved they also own, so
                 // the switch is two taps from any screen rather than a trip to
                 // a settings page. One indexed lookup on a tiny table, and it
@@ -142,6 +147,23 @@ class HandleInertiaRequests extends Middleware
      *
      * @return ?array{label: string, href: string}
      */
+    /**
+     * @return list<array{key: string, label: string, href: string}>
+     */
+    private function identityViews(Request $request, string $locale): array
+    {
+        $user = $request->user();
+        if ($user === null) {
+            return [];
+        }
+
+        return array_map(fn (array $view) => [
+            'key' => $view['key'],
+            'label' => trans('nav.'.$view['label'], [], $locale),
+            'href' => route($view['route'], [], false),
+        ], app(ResolveDashboardLandingAction::class)->execute($user->getRoleNames()->all())['views']);
+    }
+
     private function alternateIdentity(Request $request): ?array
     {
         $user = $request->user();

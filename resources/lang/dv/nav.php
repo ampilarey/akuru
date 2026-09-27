@@ -181,4 +181,14 @@ return [
     'prayer_groups' => 'ލިބޭ ގްރޫޕްތައް',
     'prayer_broadcasts' => 'ބްރޯޑްކާސްޓް',
     'prayer_import' => 'އިމްޕޯޓް',
+    // Every identity's home, offered from any page to a person who holds several (STATUS §5ic).
+    'view_admin' => 'އެޑްމިން ޕެނަލް',
+    'view_bookshop' => 'ބުކްސްޓޯރު އޮފީސް',
+    'view_teacher' => 'އަހަރެންގެ ދުވަސް',
+    'view_family' => 'ޢާއިލާ',
+    'view_learn' => 'ކިޔެވުން',
+    'view_vendor' => 'އަހަރެންގެ ފިހާރަ',
+    'view_write' => 'ލިޔުން',
+    'view_review' => 'ރިވިއު',
+    'view_catalog' => 'ކެޓަލޮގް',
 ];

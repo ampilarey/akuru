@@ -74,6 +74,18 @@ carries an *Admin panel →* button (L23). The two navigations: the Blade nav
 `AdminPagesAreReachableTest`); the Inertia shell's More menu does too
 (§3, finding 1).
 
+**Who lands where, and how the other identities are reached.** Only the
+staff roles (`super_admin`, `admin`, `headmaster`, `supervisor`) land on
+`/admin`. A teacher lands on their day, a Bookstore manager on the Bookstore
+office, a parent or student on the family portal, a vendor on their shop, a
+writer on their desk, a reviewer on their queue, a course creator on the
+catalogue, and an account with no role on the public course dashboard. A
+person holding several of these lands by that order and sees the others as
+pills in the header (Inertia) or under *Your views* in the user menu (Blade):
+a parent who is also a vendor and a writer lands on the family portal with
+*My shop* and *Write* a tap away (L26). Nobody sees the admin panel who may
+not open it: the pill, the menu entry and the route are all gated.
+
 ## 2. Checked and held
 
 - **Every one of the 149 routes is behind `auth` and a role.** 96 also
@@ -223,6 +235,7 @@ viewports, nothing lacking); `admin-mobile.mjs`, `admin-layout.mjs`,
 | L23 | **`/dashboard` and `/admin` did not explain each other.** An administrator's landing was a page of numbers with no link to the panel except in a menu, and the hub's only way back was a link at its bottom; the owner could not tell which was for what. | medium | **Fixed**: the rule in one line — *the dashboard is today's numbers, the Admin panel is where things are managed* — with an *Admin panel →* button on the super-admin dashboard, the supervisor dashboard and the staff overview (offered to whoever may open it), and *← Dashboard* with the rule at the top of the hub. EN/DV/AR. `AdminHubTest` (4th test) pins all four landings and a teacher's absence of the door; `admin-hub.mjs` walks the round trip (24/24; 27 with a super admin). |
 | L24 | **Two homes.** Even with each linking the other (L23), an administrator still landed on a numbers page and went looking for the doors; offered one page or two, the owner said "I don't know". | medium | **Fixed**: one home. `/dashboard` sends administrators to `/admin`; the hub leads with a *Today* strip — pending payment, enrolled today, paid today, new accounts, unfilled registers, ungraded exams for the institute's roles; the roll and the staff for a supervisor — each tile opening where its number comes from, then a *Full dashboard* / *Staff overview* link. The full dashboards keep their own role-gated addresses (`/dashboard/numbers`, `/dashboard/supervisor`, `/portal/overview`). Numbers are asked of owning-domain Actions (rule 3). `AdminHubTest` (4th test rewritten), `RoleLandingTest`, `CountingPeopleTest`, `StaffOverviewTest` updated; `admin-hub.mjs` 26/26 (30 with a super admin); both sweeps carry `/dashboard/numbers`. Retiring the two Blade dashboards is BACKLOG C9's port. |
 | L25 | **The Inertia shell had no brand bar.** `/admin` and every Inertia screen opened under a plain white strip with maroon text links, while every Blade screen opened under the wine bar with the logo, "Akuru Institute" and white links; an administrator sent to `/admin` at sign-in read it as a page with no header (the owner's phone screenshot, 2026-09-27). | medium | **Fixed**: `AppShell.jsx` renders the same brand bar — the wine gradient, the on-dark logo, the wordmark linking home, white primary links with the current one highlighted, More, Alerts (gold badge), the account pill with an initial, Log out, the language switcher — sticky from `sm:` (on a phone the bar wraps, so it stays in the flow); the page title moves into the content as its `h1`, as on a Blade page; the More panel is capped at 80 vh and scrolls. Walked: `nav.mjs` 14/14, `admin-layout.mjs` (a brand-bar step added), `admin-hub.mjs`, `admin-pages.mjs`, `admin-mobile.mjs`. |
+| L26 | **A person with several identities saw one.** `/dashboard` picks one home by precedence (staff first); the only other identity ever offered was a *Family view* pill for a staff member who is also a parent (E7). A parent who is also a vendor and a writer, or a super admin who is also a learner, had to find the other homes in the More menu. A vendor, writer, reviewer or course creator with no other role landed on the public "My Dashboard", a course page (the owner, 2026-09-27: "any one will see the admin panel? students, parents? vendors? writers?"). | medium | **Fixed**: `ResolveDashboardLandingAction` lists every home a person holds (`views`: admin panel, Bookstore office, a teacher's day, Family, Learn, My shop, Write, Review, Catalog — by role, no query) and lands a lone vendor/writer/reviewer/course creator on their job. Both shells offer the other views: pills in the Inertia header (the current one hidden), *Your views* in the Blade user menu and phone menu; a person with one identity sees none. EN/DV/AR. `DualIdentityLandingTest` (2 new), `RoleLandingTest` (1 new); `views.mjs` 8/8. |
 
 ## 6. What the owner still owns
 
