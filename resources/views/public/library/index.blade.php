@@ -93,6 +93,11 @@
             <div class="flex flex-wrap items-end gap-3 text-sm">
                 <label class="flex items-center gap-1"><input type="checkbox" name="peer_reviewed" value="1" @checked(filter_var($filters['peer_reviewed'] ?? false, FILTER_VALIDATE_BOOL))> {{ __('public.Peer-reviewed') }}</label>
                 <label class="flex items-center gap-1"><input type="checkbox" name="open_access" value="1" @checked(filter_var($filters['open_access'] ?? false, FILTER_VALIDATE_BOOL))> {{ __('public.Open access') }}</label>
+                {{-- B4 (§8.2–§8.4): what a live campaign covers. --}}
+                <label class="flex items-center gap-1"><input type="checkbox" name="discounted" value="1" @checked(filter_var($filters['discounted'] ?? false, FILTER_VALIDATE_BOOL))> {{ __('public.Discounted') }}</label>
+                @if($filters['campaign'] ?? null)
+                    <input type="hidden" name="campaign" value="{{ $filters['campaign'] }}">
+                @endif
             </div>
             <div>
                 <label class="block text-xs text-gray-500 mb-1">{{ __('public.Sort') }}</label>
@@ -107,6 +112,21 @@
         </form>
     </div>
 </section>
+
+{{-- B4 (§8.1, §18): the offers running now, on the front of the shelf. --}}
+@if(count($promotions) > 0)
+    <section class="bg-red-50 py-3" data-testid="promotions-strip">
+        <div class="container mx-auto flex flex-wrap items-center gap-3 px-4 text-sm">
+            <span class="font-semibold text-brandMaroon-900">{{ __('public.Current offers') }}:</span>
+            @foreach($promotions as $promotion)
+                <a href="{{ route('public.library.index', ['campaign' => $promotion['slug']]) }}" class="rounded bg-white px-2 py-0.5 hover:underline">
+                    {{ $promotion['name'] }} · {{ $promotion['discount_type'] === 'percentage' ? rtrim(rtrim(number_format($promotion['discount_value'], 2), '0'), '.').'%' : 'MVR '.number_format($promotion['discount_value'], 2) }} {{ __('public.off') }}
+                </a>
+            @endforeach
+            <a href="{{ route('public.library.promotions') }}" class="ms-auto underline">{{ __('public.See all offers') }}</a>
+        </div>
+    </section>
+@endif
 
 @if(count($continue_reading) > 0)
     <section class="bg-brandBeige-50 py-6" data-testid="continue-reading">
@@ -165,7 +185,9 @@
                     @endif
                     <div class="flex items-center gap-2 text-xs text-gray-500 mb-2">
                         <span class="rounded bg-brandBeige-100 px-2 py-0.5">{{ __('public.'.$item['content_type']) }}</span>
-                        @if($item['access_type'] === 'paid')
+                        @if($item['access_type'] === 'paid' && $item['promotion'])
+                            <span class="rounded bg-red-50 px-2 py-0.5 text-red-800" data-promo="{{ $item['slug'] }}" title="{{ $item['promotion']['name'] }}"><s class="text-gray-400">{{ $item['price'] }}</s> {{ $item['currency'] }} {{ number_format($item['promotion']['price'], 2) }}</span>
+                        @elseif($item['access_type'] === 'paid')
                             <span class="rounded bg-gray-100 px-2 py-0.5">{{ $item['currency'] }} {{ $item['price'] }}</span>
                         @elseif($item['access_type'] !== 'free_public')
                             <span class="rounded bg-gray-100 px-2 py-0.5">{{ $item['access_type'] === 'free_login' ? __('public.Login to read') : __('public.Coming soon') }}</span>

@@ -27,6 +27,9 @@ class ListLibraryItemsAction
      */
     public const READING_BANDS = ['short' => [null, 10], 'medium' => [11, 30], 'long' => [31, null]];
 
+    /** B4: one resolver per listing, so the live campaigns load once. */
+    private ?ResolveLibraryItemPromotionAction $promotions = null;
+
     /**
      * @param  array<string, mixed>  $filters
      * @return list<array<string, mixed>>
@@ -64,6 +67,10 @@ class ListLibraryItemsAction
             ->when(filter_var($filters['open_access'] ?? false, FILTER_VALIDATE_BOOL), fn ($query) => $query
                 ->where('content_type', 'research')
                 ->where('access_type', 'free_public'))
+            // B4 (§8.2–§8.4 "discounted", §18): what a live campaign covers —
+            // any campaign, or the one named.
+            ->when(filter_var($filters['discounted'] ?? false, FILTER_VALIDATE_BOOL), fn ($query) => $this->promotions()->constrain($query))
+            ->when($filters['campaign'] ?? null, fn ($query, $slug) => $this->promotions()->constrain($query, (string) $slug))
             // Bookstore B11: one item by id, for a product that links to it.
             ->when(is_numeric($filters['id'] ?? null), fn ($query) => $query->whereKey((int) $filters['id']))
             ->when(($filters['access'] ?? null) === 'free', fn ($query) => $query->whereIn('access_type', ['free_public', 'free_login']))
@@ -126,6 +133,8 @@ class ListLibraryItemsAction
             'featured' => (bool) $item->featured,
             'price' => $item->price !== null ? (string) $item->price : null,
             'currency' => $item->currency ?: 'MVR',
+            // B4: the live offer on a paid item, if one covers it.
+            'promotion' => $this->promotions()->execute($item),
             'readers_count' => (int) ($item->readers_count ?? 0),
             'published_at' => $item->published_at?->toDateString(),
             'reading_time' => $item->reading_time,
@@ -146,6 +155,11 @@ class ListLibraryItemsAction
             ] : null,
             'has_pdf' => $item->pdf_media_file_id !== null,
         ];
+    }
+
+    private function promotions(): ResolveLibraryItemPromotionAction
+    {
+        return $this->promotions ??= app(ResolveLibraryItemPromotionAction::class);
     }
 
     public function coverUrl(LibraryItem $item): ?string

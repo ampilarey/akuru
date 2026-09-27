@@ -2,6 +2,7 @@
 
 namespace App\Domains\Library\Http\Controllers;
 
+use App\Domains\Commerce\Actions\ListPromotionCampaignsAction;
 use App\Domains\Library\Actions\ListLibraryCategoriesAction;
 use App\Domains\Library\Actions\ListLibraryItemsAction;
 use App\Domains\Library\Actions\ListMyLibraryAction;
@@ -21,7 +22,7 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 class PublicLibraryController extends Controller
 {
     /** The query-string keys the shelf understands (§8.2/§8.3). */
-    private const FILTERS = ['q', 'content_type', 'category', 'tag', 'author', 'access', 'language', 'price_min', 'price_max', 'difficulty', 'reading', 'peer_reviewed', 'open_access', 'sort'];
+    private const FILTERS = ['q', 'content_type', 'category', 'tag', 'author', 'access', 'language', 'price_min', 'price_max', 'difficulty', 'reading', 'peer_reviewed', 'open_access', 'discounted', 'campaign', 'sort'];
 
     public function index(Request $request)
     {
@@ -45,6 +46,8 @@ class PublicLibraryController extends Controller
             // on the front of the shelf and nowhere else — a filtered list
             // is an answer to a question, not a shop window.
             'featured' => $browsing ? app(ListLibraryItemsAction::class)->execute(['featured' => true]) : [],
+            // B4 (§8.1): the offers running now, a strip on the front of the shelf.
+            'promotions' => $browsing ? app(ListPromotionCampaignsAction::class)->active() : [],
             'continue_reading' => $browsing && $request->user()
                 ? array_slice(array_values(array_filter(app(ListMyLibraryAction::class)->execute((int) $request->user()->id)['continue'], fn ($row) => ! $row['completed'])), 0, 3)
                 : [],
@@ -88,6 +91,19 @@ class PublicLibraryController extends Controller
         }
 
         return view('public.library.show', ['item' => $item]);
+    }
+
+    /** B4 (§8.5, §18): the offers running now, each with what it covers. */
+    public function promotions()
+    {
+        $campaigns = app(ListPromotionCampaignsAction::class)->active();
+        $items = app(ListLibraryItemsAction::class);
+
+        return view('public.library.promotions', [
+            'promotions' => array_map(fn (array $campaign) => $campaign + [
+                'items' => array_slice($items->execute(['campaign' => $campaign['slug']]), 0, 8),
+            ], $campaigns),
+        ]);
     }
 
     /** L8 (§8.7): an author and everything of theirs that is published. */

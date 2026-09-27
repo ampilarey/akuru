@@ -90,6 +90,8 @@ return [
     'device' => \App\Domains\Notifications\Models\Device::class,
     'discount_code' => \App\Domains\Commerce\Models\DiscountCode::class,
     'discount_redemption' => \App\Domains\Commerce\Models\DiscountRedemption::class,
+    'promotion_campaign' => \App\Domains\Commerce\Models\PromotionCampaign::class,
+    'promotion_campaign_target' => \App\Domains\Commerce\Models\PromotionCampaignTarget::class,
     'document' => \App\Domains\Media\Models\Document::class,
     'emergency_contact' => \App\Domains\People\Models\EmergencyContact::class,
     'exam' => \App\Domains\ExamsGrades\Models\Exam::class,

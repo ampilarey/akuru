@@ -90,7 +90,18 @@
             <div class="prose max-w-none">{!! $item['body'] !!}</div>
         @elseif($item['requires_login'] && $item['access_type'] === 'paid')
             <div class="rounded-lg border bg-brandBeige-50 p-6 text-center">
-                <p class="mb-3 text-gray-700">{{ $item['currency'] }} {{ $item['price'] }} — {{ __('public.Sign in to buy and read this item.') }}</p>
+                {{-- B4: a visitor sees the offer too — it is the reason to sign in. --}}
+                @if($item['promotion'])
+                    <p class="mb-2 text-sm text-brandMaroon-800" data-testid="item-promotion">
+                        <span class="font-semibold">{{ $item['promotion']['name'] }}</span> —
+                        <s class="text-gray-500">{{ $item['currency'] }} {{ $item['price'] }}</s>
+                        <span class="font-semibold">{{ $item['currency'] }} {{ number_format($item['promotion']['price'], 2) }}</span>
+                        @if($item['promotion']['ends_on'])
+                            · {{ __('public.Offer ends :date', ['date' => $item['promotion']['ends_on']]) }}
+                        @endif
+                    </p>
+                @endif
+                <p class="mb-3 text-gray-700">{{ $item['currency'] }} {{ $item['promotion'] ? number_format($item['promotion']['price'], 2) : $item['price'] }} — {{ __('public.Sign in to buy and read this item.') }}</p>
                 <a href="{{ route('login') }}" class="btn-primary">{{ __('public.Sign in') }}</a>
             </div>
         @elseif($item['requires_login'])
@@ -100,10 +111,21 @@
             </div>
         @elseif($item['locked'] && $item['access_type'] === 'paid' && $item['price'])
             <div class="rounded-lg border bg-brandBeige-50 p-6 text-center">
+                {{-- B4 (§18): a live campaign's price, with the old one struck through. --}}
+                @if($item['promotion'])
+                    <p class="mb-3 text-sm text-brandMaroon-800" data-testid="item-promotion">
+                        <span class="font-semibold">{{ $item['promotion']['name'] }}</span> —
+                        <s class="text-gray-500">{{ $item['currency'] }} {{ $item['price'] }}</s>
+                        <span class="font-semibold">{{ $item['currency'] }} {{ number_format($item['promotion']['price'], 2) }}</span>
+                        @if($item['promotion']['ends_on'])
+                            · {{ __('public.Offer ends :date', ['date' => $item['promotion']['ends_on']]) }}
+                        @endif
+                    </p>
+                @endif
                 <form method="POST" action="{{ route('public.library.checkout', $item['slug']) }}" class="inline-flex flex-wrap items-center justify-center gap-2">
                     @csrf
                     <input type="text" name="discount_code" class="form-input" placeholder="{{ __('public.Discount code') }}">
-                    <button type="submit" class="btn-primary">{{ __('public.Buy for') }} {{ $item['currency'] }} {{ $item['price'] }}</button>
+                    <button type="submit" class="btn-primary">{{ __('public.Buy for') }} {{ $item['currency'] }} {{ $item['promotion'] ? number_format($item['promotion']['price'], 2) : $item['price'] }}</button>
                     <button type="submit" name="pay_with_wallet" value="1" class="btn-secondary">{{ __('public.Pay with wallet') }}</button>
                 </form>
                 <p class="mt-2 text-sm text-gray-500">{{ __('public.Access opens as soon as the bank confirms your payment.') }}</p>

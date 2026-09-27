@@ -4414,6 +4414,53 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5ix. Library B4a: promotion campaigns — an offer with a name, a window and a reach (2026-09-27)
+
+BACKLOG B4, LIBRARY_PLAN §18/§8.5/§35.10, ADR-041. The Library had
+discount codes a reader types and nothing a reader is *offered*: no
+Ramadan price on the shelf, no "discounted" filter, no offers page, and
+the plan's `promotion_campaigns` table had never been created.
+
+**Built.** In Commerce (rule 11, one discount system): `promotion_campaigns`
+(name, slug, description, window, percentage or fixed with a maximum,
+funding source, status) and `promotion_campaign_targets` (`all`,
+`library_item`, `library_category`, `writer_profile` — strings and ids,
+morph aliases per ADR-005), migration `2026_09_27_000011`. A campaign's
+use is a `discount_redemptions` row with `promotion_campaign_id` set
+(`discount_code_id` widened to nullable — no live rows, ADR-021), so the
+webhook confirmation, the abandonment release, the refund release and
+the funding lookup behind the writer's earning all work unchanged.
+`SavePromotionCampaignAction`, `EndPromotionCampaignAction`,
+`ListPromotionCampaignsAction` (live campaigns for the shelf; every
+campaign with uses, paid and given for the office). In the Library:
+`ResolveLibraryItemPromotionAction` says which live campaign covers an
+item and at what price (the biggest saving wins), loaded once per
+listing; the shelf carries a *Current offers* strip, the struck price
+on each covered card, a *Discounted* checkbox and a `?campaign=` filter;
+the item page shows the offer to visitors and readers alike;
+`/library/promotions` lists live offers with what they cover; checkout
+applies the campaign by itself when no code is typed (a typed code is
+used *instead*, on the full price — no stacking, ADR-041). The office
+screen `/admin/library/promotions` starts a campaign (window, discount,
+funding, everything or picked categories/writers/items), ends one, and
+exports the list. Labels EN/DV/AR in `admin.php` and `public.php`.
+
+`LibraryPromotionsTest` (3): the offer on the shelf, item page and offers
+page and the filter's edges; a wallet checkout at the campaign price with
+the redemption confirmed against the campaign and the writer's 70% taken
+of the original price because Akuru funds it, a typed code used instead;
+the office's start / bad input refused / list / CSV / end, after which the
+offer is gone and a reader gets 403 on the screen. Walked: the office
+opened Promotions from the Library hub, started a 10% offer on
+everything, the shelf strip named it and every paid card showed the
+struck price, the *Discounted* filter returned exactly those, the item
+page showed the offer line, the public offers page listed it with eight
+items, the CSV downloaded, *End now* removed it from the shelf. One
+finding fixed before commit: a signed-out visitor's item page showed the
+old price only — the offer is the reason to sign in, so it shows there
+too. Not built (BACKLOG B4): bundles, gift card bonus campaigns, a banner
+image, code-required campaigns.
+
 ## 5iw. Library B3: the article body is written, not pasted (2026-09-27)
 
 BACKLOG B3, LIBRARY_PLAN §36. A writer's draft body was a textarea of raw
