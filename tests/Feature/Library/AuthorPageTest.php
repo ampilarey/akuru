@@ -197,8 +197,12 @@ it('pins the writer\'s featured works first and shows their links', function () 
         ->assertRedirect();
 
     $profile->refresh();
+    // The pins keep their order (a JSON array); the links are a JSON object,
+    // whose key order MySQL 8 normalises on write (shorter keys first) while
+    // MariaDB keeps insertion order — the page orders them itself, so the
+    // comparison here is by content.
     expect($profile->featured_item_ids)->toBe([$second->id, $first->id])
-        ->and($profile->social_links)->toBe(['website' => 'https://aminath.example.mv', 'x' => 'https://x.com/aminath']);
+        ->and($profile->social_links)->toEqualCanonicalizing(['website' => 'https://aminath.example.mv', 'x' => 'https://x.com/aminath']);
 
     $html = $this->withoutLocalizationMiddleware()->get(route('public.library.author', $profile->slug))->assertOk()
         ->assertSee('Featured works')
