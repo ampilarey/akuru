@@ -185,9 +185,10 @@ it('lists leads for staff and exports CSV', function () {
         ->actingAs($admin)
         ->get(route('admin.leads.index'))
         ->assertOk()
-        ->assertSee('Fatima Lead', false)
-        ->assertSee('W14 Listed Course', false)
-        ->assertSee('7771111', false);
+        // Inertia since C9 slice 6: the rows are props.
+        ->assertInertia(fn (\Inertia\Testing\AssertableInertia $page) => $page->component('Website/Leads')
+            ->where('leads.0.name', 'Fatima Lead')->where('leads.0.course_title', 'W14 Listed Course')->where('leads.0.mobile', '7771111')
+            ->where('sources', ['syllabus', 'waiting_list', 'callback'])->where('t.leads_title', 'Leads'));
 
     $csv = $this->withoutLocalizationMiddleware()
         ->actingAs($admin)

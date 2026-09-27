@@ -3,21 +3,32 @@
 namespace App\Domains\Website\Http\Controllers\Admin\PublicSite;
 
 use App\Domains\Website\Actions\ListLeadsAction;
+use App\Domains\Website\Enums\LeadSource;
+use App\Domains\Website\Enums\LeadStatus;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
+use Inertia\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
+/**
+ * Leads from the public website (W14). Inertia since C9 slice 6 (STATUS
+ * §5jh), with its strings keyed for Dhivehi and Arabic. `role:super_admin`
+ * on the route group.
+ */
 class LeadController extends Controller
 {
-    public function index(Request $request)
+    public function index(Request $request): Response
     {
         $filters = $request->only(['source', 'status', 'course_id']);
-        $leads = app(ListLeadsAction::class)->execute($filters);
 
-        return view('admin.public-site.leads.index', [
-            'leads' => $leads,
-            'filters' => $filters,
+        return Inertia::render('Website/Leads', [
+            'leads' => app(ListLeadsAction::class)->execute($filters)->all(),
+            'filters' => ['source' => (string) ($filters['source'] ?? ''), 'status' => (string) ($filters['status'] ?? ''), 'course_id' => (string) ($filters['course_id'] ?? '')],
+            'sources' => array_map(fn (LeadSource $s) => $s->value, LeadSource::cases()),
+            'statuses' => array_map(fn (LeadStatus $s) => $s->value, LeadStatus::cases()),
+            't' => trans('admin'),
         ]);
     }
 

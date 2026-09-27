@@ -154,9 +154,11 @@ it('lists the admin funnel report and exports CSV', function () {
         ->actingAs($admin)
         ->get(route('admin.funnel.index'))
         ->assertOk()
-        ->assertSee('W16 Listed Funnel', false)
-        ->assertSee('Keep iterating W1 content from this funnel', false)
-        ->assertSee('ADR-022', false);
+        // Inertia since C9 slice 6: the report and the rule are props.
+        ->assertInertia(fn (\Inertia\Testing\AssertableInertia $page) => $page->component('Website/Funnel')
+            ->where('reports.0.course_title', 'W16 Listed Funnel')
+            ->where('reports.0.decision', fn ($d) => str_contains($d, 'Keep iterating W1 content from this funnel'))
+            ->where('t.funnel_rule', fn ($rule) => str_contains($rule, 'ADR-022')));
 
     $csv = $this->withoutLocalizationMiddleware()
         ->actingAs($admin)
