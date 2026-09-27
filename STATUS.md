@@ -4414,6 +4414,105 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5id. Workspaces: one shell, one job at a time (2026-09-27)
+
+The owner, after §5ic: "still login and admin setting is really confusing
+… I think super admin or admin role is to control everything related to
+website, users, business etc, everything related education should be
+managed by principal/dean or supervisor, teacher … admin or super admin
+can be a principal/dean or supervisor, teacher but their setting should
+be seen when he changes to his specific role." A recommendation was put
+first (workspaces; the roles mapped onto the existing ones; three
+decisions with defaults), the owner decided — Finance and HR are school
+administration and the dean sees fees; no School without a school role;
+payroll with the educational admin; website instructors and course pages
+with the system admin; course creator kept — and said "Go". ADR-040.
+
+**Built (slice 1 of 4)**: `WorkspaceMap` names the workspaces, in the
+order a person who holds several lands and is offered them: Institute
+(`super_admin`), School (`admin`, `headmaster`, `supervisor`, `teacher`),
+Bookstore office, Family, Learn, My shop, Writing, Catalog; a person with
+no role holds their account alone. Each names its home route, the primary
+bars its roles draw from and the *More* groups it holds. The admin panel's
+four parts became four groups — Admissions the School's, the other three
+the Institute's — and the Institute got a bar of its own (Website CMS,
+Commerce, Library office, Bookstore, Manage users). `ResolveWorkspacesAction`
+lists what a person holds and which is active: the one asked for, else
+the one remembered in the session, else the first. `BuildNavigationAction`
+builds the bar and the groups for that workspace only. `RememberWorkspace`
+(web middleware, before the Inertia share) makes a workspace active when
+its home is opened; `POST /workspace/{key}` switches outright and goes to
+the home. `/dashboard` goes to the active workspace's home;
+`ResolveDashboardLandingAction` is gone, its precedence now the map's
+order. `/admin` (Institute) and `/school` (School, new) are one page —
+`Portal/WorkspaceHome`, `ComposeWorkspaceHomeAction`: today's numbers for
+that job (`ComposeAdminTodayAction` by workspace), then the workspace's
+groups as parts of cards (the Institute's panel parts; the School's
+Admissions, Academics and Office, each group a card whose chips are its
+screens, with a line each in EN/DV/AR); a person opening a home they do
+not hold is sent to their own. Both shells render the map: the Inertia
+shell's header gains the switcher pill (a menu of the person's
+workspaces, posting the choice) and renders `hard` items in the bar too;
+the Blade nav is rewritten to read the same map — the bar, the More menu
+(headed by the workspace's home), the phone menu, and the switcher in the
+header, the user menu and the phone menu — instead of 66 hand-gated
+links. The Blade-only screens it used to link by hand (announcements,
+substitutions, Hifz, Qur'an progress, e-learning) are map items marked
+`hard`. The staff overview's door and the two Blade dashboards' doors
+point at the person's workspace home. Labels EN/DV/AR.
+`docs/ADMIN_PANEL.md` §1 rewritten around the table and L27;
+`docs/APPSHELL_NAV_IA.md` gains the workspace layer; `docs/adr/ADR-040`.
+
+**Tests**: `WorkspacesTest` (6, new) — what each set of roles holds and
+lands on, order-insensitive; the bar and the groups per workspace (the
+Institute's five, the School's eleven; a workspace asked for outright;
+the account alone); the switch (a post, remembered on the next page, the
+School's home re-arming it, a workspace not held is 404); `/dashboard` for
+seven kinds of person and the wrong home sending each to their own; the
+two homes' parts, sections, chips, descriptions and today tiles for the
+system admin, the educational admin, the supervisor and a teacher, and
+in Dhivehi; the Blade shell's groups, switcher (three places), home link,
+and none of it for one workspace. `DualIdentityLandingTest` rewritten on
+the map's precedence and the shared workspaces. `AdminPagesAreReachableTest`
+rewritten: every admin landing in the map with `hard` right; the Blade
+nav renders the map (no hand-written admin link survives, both menus
+loop the groups); every admin landing reachable from a rendered Blade
+menu as the role that runs its workspace. `AdminHubTest`,
+`AdminPanelAuditTest`, `RoleLandingTest`, `StaffOverviewTest`,
+`NavigationIsGroupedByRoleTest` follow. Full suite 2302 passed;
+architecture green.
+
+**Walked**: `workspaces.mjs` 15/15 — the seeded admin granted parent and
+vendor locally lands on the School office, the switcher reads School and
+lists School, Family and My shop, the School's More menu holds nothing of
+the Institute, Family switches and lands on the family portal with the
+family's groups only, the choice holds on the next page, opening `/school`
+re-arms the School, a School Blade screen's More menu and header switcher
+follow, switching to My shop from Blade works, the phone menu lists the
+three by name then the home and the groups; the seeded vendor lands on the
+shop with no switcher. `admin-hub.mjs` 17/17 as the educational admin
+(School office: five tiles, three parts, the School year card's eleven
+chips, Payments as a Blade load and Years as a visit, the School's More
+menu with the hand-linked Blade screens and no Institute, the overview
+and back) and 23/23 with `SMOKE_SUPER_ADMIN` (the Institute: twelve
+sections, the CMS's eight chips, the Institute bar, the four-group More
+menu, the full dashboard and back). `admin.mjs` 18/18 and 19/19 with the
+super admin, `nav.mjs` 14/14, `admin-layout.mjs` 15/15 (the phone menu
+is the School's), `admin-pages.mjs` 3/3 and `admin-mobile.mjs` 3/3 with
+`/school` in their lists. Fixed on the way in the walks themselves: menu
+headings must be read by textContent (CSS uppercases them), a switcher
+left open swallows the next click, and one account holding two workspaces
+makes "lands on" steps conditional.
+
+**Next (slices 2–4, tasks #70–#72)**: the educational admin's permission
+set and the tightened gates (until then `admin` still holds every
+permission — the menus hide the Institute, the routes admit it); the
+role labels (System admin, Dean, Educational admin); the role screen.
+
+**Production**: nothing to migrate; the pull line as usual. After it, a
+super admin signs in to the Institute, an admin/headmaster/supervisor to
+the School office, and anyone with several roles sees the switcher.
+
 ## 5ic. Every identity, one tap away (2026-09-27)
 
 The owner: "when logged in, any one will see the admin panel? how about

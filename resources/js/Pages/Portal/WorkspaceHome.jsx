@@ -2,12 +2,12 @@ import { Link } from '@inertiajs/react';
 import AppShell from '../../Layouts/AppShell';
 
 /**
- * The admin panel's front door at /admin (docs/ADMIN_PANEL.md §1): the
- * panel in four parts — Admissions, Website & content, Shops & money,
- * System — each a row of cards, one per section this person may open,
- * and on a card the screens inside that section, so the whole panel is
- * one page to read. A Blade screen opens with a full page load; an
- * Inertia one with a visit.
+ * A workspace's home — `/admin` for the Institute, `/school` for the School
+ * (docs/ADMIN_PANEL.md §1, STATUS §5id): today's numbers first, then the
+ * workspace in parts, each a row of cards, one per section this person may
+ * open, and on a card the screens inside that section, so the whole
+ * workspace is one page to read. A Blade screen opens with a full page load;
+ * an Inertia one with a visit.
  */
 function Open({ hard, href, className, children, ...rest }) {
     return hard
@@ -15,14 +15,14 @@ function Open({ hard, href, className, children, ...rest }) {
         : <Link href={href} className={className} {...rest}>{children}</Link>;
 }
 
-export default function AdminHub({ t, parts, today = { tiles: [], more: null } }) {
+export default function WorkspaceHome({ t, workspace, parts, today = { tiles: [], more: null } }) {
     return (
-        <AppShell title={t.hub_title}>
-            <p className="mb-4 text-sm text-gray-600">{t.hub_intro}</p>
-            {/* Today's numbers first — the three dashboards' tiles, so an
-                administrator has one home, not a numbers page and a doors page
-                (the owner, 2026-09-26). Each tile opens where its number comes
-                from; the link after them opens the full dashboard. */}
+        <AppShell title={t[`${workspace}_title`]}>
+            <p className="mb-4 text-sm text-gray-600">{t[`${workspace}_intro`]}</p>
+            {/* Today's numbers first — the dashboards' tiles, so a person has one
+                home, not a numbers page and a doors page (STATUS §5ia). Each tile
+                opens where its number comes from; the link after them opens the
+                full dashboard. */}
             {today.tiles.length > 0 && (
                 <section className="mb-8" data-testid="today">
                     <h2 className="mb-3 border-b border-[#E6D9C8] pb-1 text-base font-semibold uppercase tracking-wide text-gray-700">{t.today_title}</h2>
@@ -51,11 +51,10 @@ export default function AdminHub({ t, parts, today = { tiles: [], more: null } }
                     )}
                 </section>
             )}
-            {/* The four parts, for a phone: one tap to the part. */}
+            {/* The parts, for a phone: one tap to the part. Scrolled from here, not
+                by the fragment: a hash navigation fires a history event that Inertia
+                answers by restoring the old scroll position. */}
             <nav aria-label={t.hub_parts} className="mb-6 flex flex-wrap gap-2 text-sm" data-testid="hub-parts">
-                {/* Scrolled from here, not by the fragment: a hash navigation fires a
-                    history event that Inertia answers by restoring the old scroll
-                    position, so the jump was undone under it. */}
                 {parts.map((part) => (
                     <a
                         key={part.key}

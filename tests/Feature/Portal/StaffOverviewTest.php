@@ -96,7 +96,7 @@ it('composes staff overview from unfilled registers, ungraded exams, and plan ad
     $this->withoutLocalizationMiddleware()
         ->actingAs($admin)
         ->get(route('dashboard'))
-        ->assertRedirect(route('admin.index'));
+        ->assertRedirect(route('school.index'));
 
     $this->withoutLocalizationMiddleware()
         ->actingAs($admin)

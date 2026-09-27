@@ -20,6 +20,9 @@ return Application::configure(basePath: dirname(__DIR__))
         // the canonical site before anything else runs.
         $middleware->prepend(\App\Domains\Bookshop\Http\Middleware\RedirectShopHosts::class);
         $middleware->web(append: [
+            // Opening a workspace's home makes it the active one (STATUS §5id).
+            // Before the Inertia shell shares its props, which read the choice.
+            \App\Http\Middleware\RememberWorkspace::class,
             \App\Http\Middleware\HandleInertiaRequests::class,
             \App\Http\Middleware\SetLocale::class,
             \App\Http\Middleware\SecurityHeaders::class,

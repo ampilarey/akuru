@@ -3,7 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Domains\Notifications\Actions\ListUserNotificationsAction;
-use App\Domains\Portal\Actions\ResolveDashboardLandingAction;
+use App\Support\Navigation\ResolveWorkspacesAction;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 use Mcamara\LaravelLocalization\Facades\LaravelLocalization;
@@ -61,6 +61,9 @@ class HandleInertiaRequests extends Middleware
     public function share(Request $request): array
     {
         $locale = app()->getLocale();
+        // The workspaces this person holds and the active one (STATUS §5id):
+        // the shell shows one at a time and a switcher for the others.
+        $workspaces = app(ResolveWorkspacesAction::class)->execute($request->user());
 
         return [
             ...parent::share($request),
@@ -77,16 +80,10 @@ class HandleInertiaRequests extends Middleware
                     'operations_manage' => (bool) $request->user()?->can('operations.manage'),
                     'translations_manage' => (bool) $request->user()?->can('translations.manage'),
                 ],
-                // E7: someone with two identities — a teacher who is also a
-                // parent — lands on one of them. This is the other one, so the
-                // UI can say it exists. Costs no query: Spatie already has the
-                // roles in memory, and this runs on every Inertia response.
-                'alternate' => $this->alternateIdentity($request),
-                // Every home this person holds — the admin panel, a teacher's
-                // day, the family portal, Learn, a shop, a writer's desk — so
-                // the shell can offer the others from any page (STATUS §5ic).
-                // Roles only, no query; one view for almost everybody.
-                'views' => $this->identityViews($request, $locale),
+                // The active workspace and every one this person holds, so
+                // the shell can offer the switch from any page (STATUS §5id).
+                'workspace' => $workspaces['active'],
+                'workspaces' => $workspaces['list'],
                 // E7: the accounts this person has proved they also own, so
                 // the switch is two taps from any screen rather than a trip to
                 // a settings page. One indexed lookup on a tiny table, and it
@@ -102,7 +99,7 @@ class HandleInertiaRequests extends Middleware
             // bar for their roles and the *More* groups, with every link they
             // could only be refused left out (docs/APPSHELL_NAV_IA.md). Read
             // off each route's own guard, so it cannot drift from the gates.
-            'nav' => app(\App\Support\Navigation\BuildNavigationAction::class)->execute($request->user(), $locale),
+            'nav' => app(\App\Support\Navigation\BuildNavigationAction::class)->execute($request->user(), $locale, $workspaces['active']),
             'flash' => [
                 'success' => $request->session()->get('success'),
                 'error' => $request->session()->get('error'),
@@ -116,7 +113,7 @@ class HandleInertiaRequests extends Middleware
                 'learn' => trans('learn'),
                 // The shell's own words — the *More* button and the menu's
                 // labels; item labels arrive already translated in `nav`.
-                'nav' => array_intersect_key((array) trans('nav'), array_flip(['more', 'close', 'primary_nav', 'all_screens', 'alerts', 'skip_to_content', 'dashboard_hint'])),
+                'nav' => array_intersect_key((array) trans('nav'), array_flip(['more', 'close', 'primary_nav', 'all_screens', 'alerts', 'skip_to_content', 'dashboard_hint', 'workspaces', 'switch_workspace', 'workspace_home'])),
                 // Only the page-facing subset: sharing the whole group would
                 // serialize every common string into every page's payload
                 // (and unrelated strings then leak into page assertions).
@@ -137,50 +134,5 @@ class HandleInertiaRequests extends Middleware
         return $user === null
             ? 0
             : app(ListUserNotificationsAction::class)->unreadCount((int) $user->id);
-    }
-
-    /**
-     * The identity `/dashboard` did not land this person on, as a link.
-     *
-     * Returns null for everyone with a single identity, which is almost
-     * everyone — the prop only appears for the teacher-parent case E7 is about.
-     *
-     * @return ?array{label: string, href: string}
-     */
-    /**
-     * @return list<array{key: string, label: string, href: string}>
-     */
-    private function identityViews(Request $request, string $locale): array
-    {
-        $user = $request->user();
-        if ($user === null) {
-            return [];
-        }
-
-        return array_map(fn (array $view) => [
-            'key' => $view['key'],
-            'label' => trans('nav.'.$view['label'], [], $locale),
-            'href' => route($view['route'], [], false),
-        ], app(ResolveDashboardLandingAction::class)->execute($user->getRoleNames()->all())['views']);
-    }
-
-    private function alternateIdentity(Request $request): ?array
-    {
-        $user = $request->user();
-        if ($user === null) {
-            return null;
-        }
-
-        $alternate = app(ResolveDashboardLandingAction::class)
-            ->execute($user->getRoleNames()->all())['alternate'];
-
-        if ($alternate === null) {
-            return null;
-        }
-
-        return [
-            'label' => $alternate['label'],
-            'href' => route($alternate['route'], [], false),
-        ];
     }
 }

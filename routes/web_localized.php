@@ -547,10 +547,13 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::post('substitutions/requests/{request}/assign', [SubstitutionRequestController::class, 'assign'])->name('substitutions.requests.assign');
     });
 
-    // The admin panel's front door: the sections this person may open
-    // (docs/ADMIN_PANEL.md §1). `auth` only — the action lists what the
-    // routes admit, and a person who may open nothing gets 403.
-    Route::get('admin', [\App\Domains\Settings\Http\Controllers\Admin\AdminHubController::class, 'index'])->name('admin.index');
+    // The workspace homes (STATUS §5id): `/admin` is the Institute's, `/school`
+    // the School's. `auth` only — each shows what the routes admit, and a
+    // person who does not hold the workspace is sent to their own home.
+    Route::get('admin', [\App\Domains\Portal\Http\Controllers\WorkspaceHomeController::class, 'institute'])->name('admin.index');
+    Route::get('school', [\App\Domains\Portal\Http\Controllers\WorkspaceHomeController::class, 'school'])->name('school.index');
+    // The switcher: make one of this person's workspaces the active one.
+    Route::post('workspace/{workspace}', [\App\Domains\Portal\Http\Controllers\WorkspaceController::class, 'switch'])->name('workspace.switch');
 
     // Admin user management (super_admin only)
     Route::prefix('admin/users')->middleware(['role:super_admin'])->group(function () {

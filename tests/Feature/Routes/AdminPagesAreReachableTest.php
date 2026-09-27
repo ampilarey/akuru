@@ -1,16 +1,24 @@
 <?php
 
+use App\Domains\Identity\Models\User;
+use App\Support\Navigation\NavigationMap;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Route;
+use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
+
+uses(RefreshDatabase::class);
 
 /**
  * A page nobody can navigate to is not shipped.
  *
  * The operator checklist and feature walkthrough were built, permissioned and
  * CI-green, but linked only from the Inertia AppShell — which a Blade landing
- * never renders — so an admin could not find them. Commerce, Library and
+ * never rendered — so an admin could not find them. Commerce, Library and
  * Pronunciation had no inbound link from any view, and the prayer-times pages
- * only linked to each other. This pins every admin landing page to at least one
- * inbound link so the next one cannot go missing quietly.
+ * only linked to each other. Since STATUS §5id both shells render the one
+ * navigation map, so the checks are: every admin landing is in the map, and
+ * the Blade shell really renders the map rather than a hand-written list.
  */
 function adminLandingRoutes(): array
 {
@@ -26,67 +34,11 @@ function adminLandingRoutes(): array
         ->all();
 }
 
-it('reaches every admin landing page from the Blade nav', function () {
-    // Reachability is measured from the Blade nav, not from "mentioned
-    // somewhere". Two real bugs hid behind the weaker rule: pages linked only
-    // from the Inertia AppShell (which a Blade landing never renders), and the
-    // prayer-times cluster, whose pages linked only to each other.
-    //
-    // Pages legitimately opened from a parent screen rather than the menu.
-    // Add here only with the parent named.
-    $allowed = [
-        'admin.prayer-times.groups.index' => 'opened from the admin.prayer-times.islands hub',
-        'admin.prayer-times.broadcasts.index' => 'opened from the admin.prayer-times.islands hub',
-        'admin.daily-content.queue' => 'opened from admin.daily-content.index',
-        'admin.daily-content.ayah-preview' => 'opened from admin.daily-content.index',
-        'admin.enrollments.payments' => 'opened from admin.enrollments.index',
-        'admin.leads.index' => 'opened from the Website CMS hub (admin.pages.index)',
-        'admin.funnel.index' => 'opened from the Website CMS hub (admin.pages.index)',
-        'admin.research.index' => 'opened from the Website CMS hub (admin.pages.index)',
-        'admin.daily-content.index' => 'opened from the Website CMS hub (admin.pages.index)',
-        'admin.daily-subscriptions.index' => 'opened from the Website CMS hub (admin.pages.index)',
-        // Deliberately not in the menu: a list that accuses readers of
-        // theft should take a decision to open, not sit in a nav bar.
-        'admin.library.reading-alerts' => 'opened from the Library admin hub (admin.library.index)',
-        // Same call as the reading alerts: a security log naming contacts that
-        // have been refused should be opened deliberately, not sat in a menu.
-        'admin.users.otp-abuse' => 'opened from User management (admin.users.index)',
-        'admin.courses.deleted' => 'opened from Manage Courses (admin.courses.index)',
-    ];
-
-    $nav = (string) file_get_contents(resource_path('views/layouts/navigation.blade.php'));
-    $orphans = [];
-
-    foreach (adminLandingRoutes() as $name => $uri) {
-        if (array_key_exists($name, $allowed)) {
-            continue;
-        }
-        $linked = str_contains($nav, "route('{$name}')")
-            || str_contains($nav, "route(\"{$name}\")");
-
-        if (! $linked) {
-            $orphans[] = "{$name}  (/{$uri})";
-        }
-    }
-
-    expect($orphans)->toBeEmpty(
-        "Admin pages not reachable from the Blade nav — an admin on a Blade\n"
-        ."dashboard can only get to these by typing the URL:\n  "
-        .implode("\n  ", $orphans)
-        ."\nAdd a nav entry gated by the same permission the route checks, or list\n"
-        ."it in \$allowed naming the parent screen it opens from.\n"
-        .'A link in AppShell.jsx does NOT count: Blade landings never render it.'
-    );
-});
-
-it('reaches every admin landing page from the Inertia More menu too', function () {
-    // The mirror of the Blade check above, found by the admin-panel audit
-    // (STATUS §5hs): an admin on an Inertia screen — Operations, Commerce,
-    // the Library office — saw a More menu with four admin entries and no
-    // way to Users, Settings, Enrolments, Instructors, the CMS or the
-    // prayer-times pages except by typing the URL. The map's Blade entries
-    // carry `hard`, so the shell opens them with a full page load.
-    $allowed = [
+// Pages legitimately opened from a parent screen rather than the menu.
+// Add here only with the parent named.
+function adminPagesOpenedFromAParent(): array
+{
+    return [
         'admin.prayer-times.groups.index' => 'opened from the admin.prayer-times.islands hub',
         'admin.prayer-times.broadcasts.index' => 'opened from the admin.prayer-times.islands hub',
         'admin.daily-content.queue' => 'opened from admin.daily-content.index',
@@ -98,20 +50,29 @@ it('reaches every admin landing page from the Inertia More menu too', function (
         'admin.daily-content.index' => 'opened from the Website CMS hub (admin.pages.index)',
         'admin.daily-subscriptions.index' => 'opened from the Website CMS hub (admin.pages.index)',
         'admin.courses.index' => 'opened from the Website CMS hub (admin.pages.index)',
+        // Deliberately not in the menu: a list that accuses readers of
+        // theft should take a decision to open, not sit in a nav bar.
         'admin.library.reading-alerts' => 'opened from the Library admin hub (admin.library.index)',
+        // Same call as the reading alerts: a security log naming contacts that
+        // have been refused should be opened deliberately, not sat in a menu.
         'admin.users.otp-abuse' => 'opened from User management (admin.users.index)',
         'admin.courses.deleted' => 'opened from Manage Courses (admin.courses.index)',
+        // The workspace homes themselves (STATUS §5id).
+        'admin.index' => 'the Institute home: the wordmark, Dashboard and the switcher',
     ];
-    $hrefs = \App\Support\Navigation\NavigationMap::hrefs();
+}
+
+it('names every admin landing page in the map, Blade screens marked for a full page load', function () {
+    $hrefs = NavigationMap::hrefs();
     $orphans = [];
     foreach (adminLandingRoutes() as $name => $uri) {
-        if (array_key_exists($name, $allowed) || in_array('/'.$uri, $hrefs, true)) {
+        if (array_key_exists($name, adminPagesOpenedFromAParent()) || in_array('/'.$uri, $hrefs, true)) {
             continue;
         }
         $orphans[] = "{$name}  (/{$uri})";
     }
 
-    expect($orphans)->toBeEmpty("Admin pages missing from NavigationMap's admin group:\n  ".implode("\n  ", $orphans));
+    expect($orphans)->toBeEmpty("Admin pages missing from NavigationMap (both shells render it):\n  ".implode("\n  ", $orphans));
 
     // Every Blade admin screen in the map is marked `hard`; every Inertia one
     // is not — the sections and the screens inside them alike.
@@ -120,7 +81,7 @@ it('reaches every admin landing page from the Inertia More menu too', function (
         '/admin/public-site/pages', '/admin/public-site/courses', '/admin/public-site/research', '/admin/public-site/daily-content', '/admin/public-site/daily-content/queue', '/admin/public-site/daily-subscriptions', '/admin/public-site/leads', '/admin/public-site/funnel',
         '/admin/prayer-times/islands', '/admin/prayer-times/groups', '/admin/prayer-times/broadcasts', '/admin/prayer-times/import',
     ];
-    foreach (\App\Support\Navigation\NavigationMap::groups() as $group) {
+    foreach ([...NavigationMap::groups(), ...array_map(fn ($items, $bar) => ['key' => $bar, 'items' => $items], NavigationMap::primary(), array_keys(NavigationMap::primary()))] as $group) {
         foreach ($group['items'] as $item) {
             foreach ([$item, ...($item['children'] ?? [])] as $entry) {
                 if (str_starts_with($entry['href'], '/admin/')) {
@@ -131,35 +92,52 @@ it('reaches every admin landing page from the Inertia More menu too', function (
     }
 });
 
-it('reaches the admin panel from the Blade mobile menu as well as the desktop one', function () {
-    // The first check above counts a link anywhere in the file, so the desktop
-    // More menu satisfied it while the phone menu stopped at the CMS (the
-    // admin-panel layout audit, STATUS §5ht). The mobile block is marked, and
-    // must carry the same admin landings.
+it('renders the Blade nav from the map rather than by hand, in the More menu and the phone menu alike', function () {
+    // Two real bugs hid behind a hand-written nav: pages linked only from the
+    // Inertia shell, and a phone menu that stopped at the CMS (STATUS §5ht).
     $nav = (string) file_get_contents(resource_path('views/layouts/navigation.blade.php'));
-    $start = strpos($nav, 'data-testid="mobile-menu"');
-    expect($start)->not->toBeFalse();
-    $mobile = substr($nav, $start);
 
-    foreach ([
-        'admin.enrollments.index', 'admin.instructors.index', 'admin.pages.index', 'admin.courses.index',
-        'admin.operations.index', 'admin.operations.features', 'admin.translations.index',
-        'admin.commerce.index', 'admin.library.index', 'admin.bookshop.index',
-        'admin.prayer-times.islands', 'admin.pronunciation.index', 'admin.users.index', 'admin.settings.index',
-    ] as $name) {
-        expect(str_contains($mobile, "route('{$name}')"))->toBeTrue("{$name} is missing from the mobile menu");
-    }
+    expect($nav)->toContain('ResolveWorkspacesAction')->toContain('BuildNavigationAction')
+        ->and(preg_match("/route\\('admin\\./", $nav))->toBe(0, 'a hand-written admin link survives in the Blade nav')
+        ->and(substr_count($nav, "@foreach(\$nav['groups'] as \$group)"))->toBe(2)
+        ->and(substr_count($nav, "@foreach(\$nav['primary'] as \$item)"))->toBe(2);
+
+    $mobile = substr($nav, strpos($nav, 'data-testid="mobile-menu"'));
+    expect($mobile)->toContain("@foreach(\$nav['groups'] as \$group)")->toContain("data-nav-section=\"{{ \$group['key'] }}\"");
+
     // And the menus say what they are to a screen reader.
     expect($nav)->toContain(':aria-expanded="adminOpen"')->toContain(':aria-expanded="open"')->toContain('aria-controls="nav-mobile-menu"')->toContain('href="#main"');
 });
 
-it('gates the operations nav entries on the permission the routes require', function () {
-    $nav = (string) file_get_contents(resource_path('views/layouts/navigation.blade.php'));
+it('reaches every admin landing page from a Blade screen, as the role that runs it', function () {
+    // The map says a page is there; this opens a Blade screen as the system
+    // admin (the Institute) and as the educational admin (the School) and
+    // reads the rendered menus, so a gate the map does not know about cannot
+    // hide a page quietly.
+    $seed = function (string $role, array $permissions): User {
+        foreach ($permissions as $permission) {
+            Permission::findOrCreate($permission, 'web');
+        }
+        $user = User::factory()->create();
+        $user->assignRole(Role::findOrCreate($role, 'web'));
+        $user->givePermissionTo($permissions);
 
-    // The routes require can:operations.manage / can:translations.manage; the
-    // nav must gate on the same thing, so what is shown matches what is allowed.
-    expect($nav)->toContain("@can('operations.manage')")
-        ->and($nav)->toContain("route('admin.operations.index')")
-        ->and($nav)->toContain("route('admin.operations.features')")
-        ->and($nav)->toContain("@can('translations.manage')");
+        return $user;
+    };
+    $institute = $this->withoutLocalizationMiddleware()->actingAs($seed('super_admin', ['bookshop.manage', 'commerce.manage', 'library.manage', 'prayer.manage', 'pronunciation.manage', 'operations.manage', 'translations.manage']))
+        ->get(route('admin.pages.index'))->assertOk()->getContent();
+    $school = $this->withoutLocalizationMiddleware()->actingAs($seed('admin', ['registers.manage', 'exams.manage']))
+        ->get(route('admin.enrollments.index'))->assertOk()->getContent();
+
+    $unreachable = [];
+    foreach (adminLandingRoutes() as $name => $uri) {
+        if (array_key_exists($name, adminPagesOpenedFromAParent())) {
+            continue;
+        }
+        if (! str_contains($institute, '/'.$uri.'"') && ! str_contains($school, '/'.$uri.'"')) {
+            $unreachable[] = "{$name}  (/{$uri})";
+        }
+    }
+
+    expect($unreachable)->toBeEmpty("Admin pages in neither the Institute's nor the School's Blade menus:\n  ".implode("\n  ", $unreachable));
 });

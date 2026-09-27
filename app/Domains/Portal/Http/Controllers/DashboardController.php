@@ -9,8 +9,9 @@ use App\Domains\Hifz\Models\QuranProgress;
 use App\Domains\People\Actions\CountStudentsAction;
 use App\Domains\People\Actions\CountTeachersAction;
 use App\Domains\Portal\Actions\ComposeDashboardPrayerAction;
-use App\Domains\Portal\Actions\ResolveDashboardLandingAction;
 use App\Http\Controllers\Controller;
+use App\Support\Navigation\ResolveWorkspacesAction;
+use App\Support\Navigation\WorkspaceMap;
 use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
@@ -24,31 +25,18 @@ class DashboardController extends Controller
             return redirect()->route('login');
         }
 
-        // Precedence lives in the action, not in the order of an elseif chain.
-        // With two identities the old chain let branch order decide silently:
-        // a teacher who is also a parent matched isTeacher() first and the
-        // dashboard never offered them their child's view (E7).
-        $landing = app(ResolveDashboardLandingAction::class)
-            ->execute($user->getRoleNames()->all());
+        // `/dashboard` sends a person to the home of their active workspace
+        // (`WorkspaceMap`, STATUS §5id): the Institute, the School, a
+        // teacher's day, the family portal, a shop, a writer's desk. Which
+        // one is theirs when they hold several is the map's order — staff
+        // first (E7) — or the one they last switched to. Only a person with
+        // no role at all is shown a page here: the public course dashboard.
+        $workspaces = app(ResolveWorkspacesAction::class)->execute($user);
+        $active = collect($workspaces['list'])->firstWhere('key', $workspaces['active']);
 
-        // An administrator's home is the admin panel, `/admin`, with today's
-        // numbers at its top (the owner, 2026-09-26: two pages — the numbers
-        // and the doors — were one too many). The full dashboards they used
-        // to land on keep their own addresses, linked from the panel.
-        $response = match ($landing['kind']) {
-            'super_admin', 'overview', 'supervisor' => redirect()->route('admin.index'),
-            'registers' => $this->teacherDashboard(),
-            'portal_home' => redirect()->route('portal.home'),
-            'bookshop' => redirect()->route('admin.bookshop.index'),
-            // A vendor, a writer, a reviewer or a course creator: their job's
-            // home, not the public "My Dashboard" (STATUS §5ic).
-            'vendor' => redirect()->route('vendor.index'),
-            'writer' => redirect()->route('write.index'),
-            'reviewer' => redirect()->route('review.index'),
-            'catalog' => redirect()->route('catalog.courses.index'),
-            // Public users (registered via OTP for course enrollment)
-            default => $this->publicUserDashboard(),
-        };
+        $response = ($active === null || $active['key'] === WorkspaceMap::ACCOUNT)
+            ? $this->publicUserDashboard()
+            : redirect($active['href']);
 
         // `/dashboard` is a pure router: for most people it does not render
         // anything, it works out where they belong and sends them on. A flash
