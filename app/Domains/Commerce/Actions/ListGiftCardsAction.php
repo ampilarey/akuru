@@ -16,6 +16,8 @@ class ListGiftCardsAction
     public function execute(): array
     {
         return GiftCard::query()
+            // B10: the deactivation row, for its reason.
+            ->with(['transactions' => fn ($query) => $query->where('type', 'deactivate')])
             ->orderByDesc('id')
             ->limit(200)
             ->get()
@@ -30,6 +32,7 @@ class ListGiftCardsAction
                 // §15.4: bought through the shop, or issued by the office.
                 'source' => $card->purchaser_user_id !== null ? 'purchased' : 'office',
                 'expires_at' => $card->expires_at?->toDateString(),
+                'deactivated_reason' => $card->transactions->first()?->note,
                 'created_at' => $card->created_at?->toDateString(),
             ])
             ->values()

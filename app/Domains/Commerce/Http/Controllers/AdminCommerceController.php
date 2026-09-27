@@ -3,6 +3,7 @@
 namespace App\Domains\Commerce\Http\Controllers;
 
 use App\Domains\Commerce\Actions\CreditWalletAction;
+use App\Domains\Commerce\Actions\DeactivateGiftCardAction;
 use App\Domains\Commerce\Actions\IssueGiftCardAction;
 use App\Domains\Commerce\Actions\ListGiftCardOrdersAction;
 use App\Domains\Commerce\Actions\ListGiftCardsAction;
@@ -86,6 +87,17 @@ class AdminCommerceController extends Controller
 
         // The one and only exposure of the plain code (§43.19).
         return back()->with('gift_card_code', $result['plain_code']);
+    }
+
+    /** B10 (§15.2): take a card out of circulation, with the reason on the ledger. */
+    public function deactivateGiftCard(Request $request, int $card): RedirectResponse
+    {
+        abort_unless($request->user()?->can('commerce.manage'), 403);
+        $data = $request->validate(['reason' => 'required|string|max:500']);
+
+        app(DeactivateGiftCardAction::class)->execute($card, (int) $request->user()->id, $data['reason']);
+
+        return back()->with('success', 'Gift card deactivated.');
     }
 
     public function creditWallet(Request $request): RedirectResponse

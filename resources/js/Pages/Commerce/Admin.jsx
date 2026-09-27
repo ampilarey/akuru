@@ -1,4 +1,4 @@
-import { useForm, usePage } from '@inertiajs/react';
+import { router, useForm, usePage } from '@inertiajs/react';
 import AppShell from '../../Layouts/AppShell';
 import FormErrors from '../../Components/FormErrors';
 
@@ -183,21 +183,41 @@ export default function Admin({ gift_cards, gift_card_orders = [], discount_code
                             <th className="px-3 py-2">Status</th>
                             <th className="px-3 py-2">Source</th>
                             <th className="px-3 py-2">Expires</th>
+                            <th className="px-3 py-2"></th>
                         </tr>
                     </thead>
                     <tbody>
                         {gift_cards.length === 0 && (
-                            <tr><td className="px-3 py-4 text-gray-500" colSpan={7}>No gift cards issued.</td></tr>
+                            <tr><td className="px-3 py-4 text-gray-500" colSpan={8}>No gift cards issued.</td></tr>
                         )}
                         {gift_cards.map((card) => (
-                            <tr key={card.id} className="border-t">
+                            <tr key={card.id} className="border-t" data-testid="gift-card-row">
                                 <td className="px-3 py-2">#{card.id}</td>
                                 <td className="px-3 py-2">{card.recipient_name ?? card.recipient_email ?? '—'}</td>
                                 <td className="px-3 py-2">{card.currency} {card.original_amount}</td>
                                 <td className="px-3 py-2">{card.balance_amount}</td>
-                                <td className="px-3 py-2">{card.status}</td>
+                                <td className="px-3 py-2">
+                                    {card.status}
+                                    {card.status === 'deactivated' && card.deactivated_reason && <span className="block text-xs text-gray-500" data-testid="deactivated-reason">{card.deactivated_reason}</span>}
+                                </td>
                                 <td className="px-3 py-2">{card.source}</td>
                                 <td className="px-3 py-2">{card.expires_at ?? '—'}</td>
+                                <td className="px-3 py-2">
+                                    {/* B10 (§15.2): a leaked code or a disputed purchase; the reason goes on the ledger. */}
+                                    {['active', 'partially_used'].includes(card.status) && (
+                                        <button
+                                            type="button"
+                                            className="text-sm text-red-600"
+                                            data-testid="deactivate-gift-card"
+                                            onClick={() => {
+                                                const reason = window.prompt('Why is this card being deactivated? The reason is kept on the card\'s history.');
+                                                if (reason && reason.trim()) router.post(`/admin/commerce/gift-cards/${card.id}/deactivate`, { reason: reason.trim() }, { preserveScroll: true });
+                                            }}
+                                        >
+                                            Deactivate
+                                        </button>
+                                    )}
+                                </td>
                             </tr>
                         ))}
                     </tbody>

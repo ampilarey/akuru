@@ -16,6 +16,8 @@ class GiftCardTransaction extends Model
         'user_id',
         'type',
         'amount',
+        // B10: the office's reason on a `deactivate` row (§15.2 fraud log).
+        'note',
     ];
 
     protected function casts(): array

@@ -148,7 +148,7 @@ Includes: gift cards, wallet/store credit, discount codes, free access coupons, 
 - **15.3 Purchase flow:** select amount → recipient details → message → BML → webhook → generate code → deliver → recipient redeems → amount credited to recipient's Akuru Wallet.
 - **15.4 CRITICAL RULE:** discount codes can NEVER be used to buy gift cards (abuse: 50% code buys MVR 1000 card for 500, spends 1000). Gift cards purchased only via real payment (BML) unless admin-issued.
 
-> **15.3 built 2026-09-25 (STATUS §5gn):** `/gift-cards` → `StartGiftCardPurchaseAction` → BML → `IssueGiftCardOnPaymentConfirmed` issues and delivers the code by email/SMS, never stored. No discount, no wallet payment, by construction (§15.4). Not built: optional expiry on purchased cards.
+> **15.3 built 2026-09-25 (STATUS §5gn):** `/gift-cards` → `StartGiftCardPurchaseAction` → BML → `IssueGiftCardOnPaymentConfirmed` issues and delivers the code by email/SMS, never stored. No discount, no wallet payment, by construction (§15.4). **Expiry and deactivation built 2026-09-27 (B10, STATUS §5is):** bought cards take the office's expiry rule (months from purchase, `/admin/library/settings`, 0 = never); the office deactivates a card from `/admin/commerce` with a reason that stays on the card's ledger as the fraud log, and redemption refuses it.
 
 ## 16. Akuru Wallet / Store Credit
 

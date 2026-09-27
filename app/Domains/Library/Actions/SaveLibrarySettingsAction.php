@@ -48,6 +48,9 @@ class SaveLibrarySettingsAction
         if ($next['gift_card_max'] < $next['gift_card_min']) {
             $errors['gift_card_max'] = 'The largest gift card cannot be smaller than the smallest.';
         }
+        if ($next['gift_card_expiry_months'] < 0 || $next['gift_card_expiry_months'] > 120) {
+            $errors['gift_card_expiry_months'] = 'Gift cards expire after 0 (never) to 120 months.';
+        }
         if ($errors !== []) {
             throw ValidationException::withMessages($errors);
         }

@@ -15,6 +15,7 @@ export default function Settings({ settings, t = {} }) {
         ['min_payout', t.library_settings_min_payout || 'Minimum payout (MVR)'],
         ['gift_card_min', t.library_settings_gift_min || 'Smallest gift card (MVR)'],
         ['gift_card_max', t.library_settings_gift_max || 'Largest gift card (MVR)'],
+        ['gift_card_expiry_months', t.library_settings_gift_expiry || 'Bought gift cards expire after (months; 0 = never)'],
     ];
     const switches = [
         ['research_review_required', t.library_settings_review_required || 'Research needs a peer reviewer\'s recommendation before it can be approved'],

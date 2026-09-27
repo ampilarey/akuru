@@ -4414,6 +4414,32 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5is. Library B10: gift cards that expire, and the office's deactivate (2026-09-27)
+
+BACKLOG B10, LIBRARY_PLAN §15.2. A bought gift card never expired (the
+column existed; the purchase flow left it null by design), and the
+office had no way to take a card out of circulation — a leaked code, a
+disputed purchase, a card issued by mistake — except to wait for it to
+be spent. §15.2 asks for optional expiry, admin deactivation and a fraud
+log.
+
+**Built.** A knob on the Library settings screen (§5ip): *bought gift
+cards expire after N months*, 0 meaning never, applied by
+`IssueGiftCardOnPaymentConfirmed` when a bought card is issued (office-
+issued cards keep the date typed on the form). *Deactivate* on each
+spendable row of the office's card list (`/admin/commerce`) asks for a
+reason; `DeactivateGiftCardAction` locks the card, refuses one with no
+money left on it, freezes the balance under status `deactivated`, and
+appends a `deactivate` row to the card's ledger with the frozen amount
+and the reason — the ledger is append-only (§43.20), so that row is the
+fraud log, and the list shows the reason under the status.
+`RedeemGiftCardAction` accepts `active` alone, so a deactivated card is
+refused at the till as an expired one already was. Migration
+`2026_09_27_000007` adds `gift_card_transactions.note` (additive).
+`GiftCardExpiryAndDeactivationTest` (2). Walked in `reader.mjs`: the
+office issues a second card, deactivates it with a reason, and the row
+says so.
+
 ## 5iq. Library B7: search inside an item, from the reader (2026-09-27)
 
 BACKLOG B7 (the search third of it), LIBRARY_PLAN §9.1. The reader
