@@ -73,32 +73,37 @@ it('exports the instructors, the prayer recipient groups, the CMS pages and the 
     }
 });
 
-it('lists the whole admin panel in the Inertia More menu, Blade screens marked for a full page load and gated by their routes', function () {
-    $admin = auditAdmin('admin', ['commerce.manage', 'library.manage', 'prayer.manage', 'pronunciation.manage', 'operations.manage', 'translations.manage', 'bookshop.manage']);
-    $nav = app(BuildNavigationAction::class)->execute($admin, 'en');
-    $group = collect($nav['groups'])->firstWhere('key', 'admin_group');
-    $items = collect($group['items'])->keyBy('href');
+it('offers the admin panel in the Inertia More menu by workspace, Blade screens marked for a full page load and gated by their routes', function () {
+    // The Institute's three parts to the system admin; Admissions to the
+    // school office; nothing of the panel to a teacher (STATUS §5id).
+    $super = auditAdmin('super_admin', ['commerce.manage', 'library.manage', 'prayer.manage', 'pronunciation.manage', 'operations.manage', 'translations.manage', 'bookshop.manage']);
+    $nav = app(BuildNavigationAction::class)->execute($super, 'en');
+    expect(array_column($nav['groups'], 'key'))->toBe(['panel_website', 'panel_money', 'panel_system', 'mine']);
+    $items = collect($nav['groups'])->flatMap(fn ($group) => $group['items'])->keyBy('href');
+    expect($items->keys()->all())->toContain('/admin/instructors', '/admin/public-site/pages', '/admin/commerce', '/admin/library', '/admin/bookshop', '/admin/prayer-times/islands', '/admin/pronunciation', '/admin/translations', '/admin/operations', '/admin/users', '/admin/settings')
+        ->not->toContain('/admin/enrollments');
+    expect($items['/admin/public-site/pages']['hard'] ?? false)->toBeTrue()
+        ->and($items['/admin/users']['hard'] ?? false)->toBeTrue()
+        ->and($items['/admin/commerce'])->not->toHaveKey('hard');
 
-    expect($items->keys()->all())->toContain('/admin/enrollments', '/admin/instructors', '/admin/public-site/pages', '/admin/commerce', '/admin/library', '/admin/bookshop', '/admin/prayer-times/islands', '/admin/pronunciation', '/admin/translations', '/admin/operations')
-        // super_admin only: hidden from an admin by the route's own gate.
-        ->not->toContain('/admin/users', '/admin/settings');
-    expect($items['/admin/enrollments']['hard'] ?? false)->toBeTrue()
-        ->and($items['/admin/public-site/pages']['hard'] ?? false)->toBeTrue()
-        ->and($items['/admin/commerce'])->not->toHaveKey('hard')
-        ->and($items['/admin/commerce']['section']['key'])->toBe('panel_money')
-        ->and($items['/admin/enrollments']['label'])->toBe('Enrolments');
+    // The educational admin: Admissions, and none of the Institute.
+    $admin = auditAdmin('admin', ['operations.manage']);
+    $adminNav = app(BuildNavigationAction::class)->execute($admin, 'en');
+    $adminItems = collect($adminNav['groups'])->flatMap(fn ($group) => $group['items'])->keyBy('href');
+    expect(array_column($adminNav['groups'], 'key'))->toContain('panel_admissions')->not->toContain('panel_website', 'panel_money', 'panel_system')
+        ->and($adminItems->keys()->all())->toContain('/admin/enrollments')->not->toContain('/admin/commerce', '/admin/users', '/admin/public-site/pages')
+        ->and($adminItems['/admin/enrollments']['hard'] ?? false)->toBeTrue()
+        ->and($adminItems['/admin/enrollments']['label'])->toBe('Enrolments');
 
-    // A super admin sees the two; a teacher sees none of the panel.
-    $superNav = app(BuildNavigationAction::class)->execute(auditAdmin('super_admin'), 'en');
-    $superItems = collect(collect($superNav['groups'])->firstWhere('key', 'admin_group')['items'] ?? [])->pluck('href');
-    expect($superItems->all())->toContain('/admin/users', '/admin/settings', '/admin/enrollments');
+    // A teacher sees none of the panel.
     $teacherNav = app(BuildNavigationAction::class)->execute(auditAdmin('teacher'), 'en');
-    expect(collect($teacherNav['groups'])->firstWhere('key', 'admin_group'))->toBeNull();
+    expect(collect($teacherNav['groups'])->pluck('key')->filter(fn ($key) => str_starts_with($key, 'panel_'))->all())->toBe([]);
 
-    // The shell receives the flag.
-    auditAs($admin)->get(route('admin.operations.index'))->assertInertia(fn ($page) => $page->has('nav.groups'));
+    // The shell receives it, labelled in the request language.
+    auditAs($super)->get(route('admin.operations.index'))->assertInertia(fn ($page) => $page->has('nav.groups')->where('nav.workspace', 'institute'));
     app()->setLocale('dv');
-    expect(collect(collect(app(BuildNavigationAction::class)->execute($admin, 'dv')['groups'])->firstWhere('key', 'admin_group')['items'])->firstWhere('href', '/admin/enrollments')['label'])->toBe('އެންރޯލްމަންޓް');
+    expect(collect(app(BuildNavigationAction::class)->execute($admin, 'dv')['groups'])->firstWhere('key', 'panel_admissions')['items'][0]['label'])->toBe('އެންރޯލްމަންޓް');
+    app()->setLocale('en');
 });
 
 it('refuses a prayer-times database over 20 MB', function () {

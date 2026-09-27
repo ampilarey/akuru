@@ -4,6 +4,27 @@
 **Source:** `resources/js/Layouts/AppShell.jsx` (every Inertia screen). Round 3 ranked this #2 in `docs/KNOWN_ISSUES.md`. Proposal PR: **#98**.  
 **Out of scope:** Hifz Blade chrome, public marketing nav, this file’s logout/locale row (those stay).
 
+## Workspaces (2026-09-27, ADR-040)
+
+The map now has a layer above the groups: **workspaces**, one per job a
+person holds (`App\Support\Navigation\WorkspaceMap`): Institute (the
+system admin), School (the dean, the supervisor, the educational admin,
+the teacher), Bookstore office, Family, Learn, My shop, Writing, Catalog.
+Each names its home route, the primary bars its roles draw from, and the
+groups it holds; `BuildNavigationAction::execute($user, $locale,
+$workspace)` builds the bar and the groups for that workspace only, and
+both shells render it — the Blade nav (`layouts/navigation.blade.php`)
+reads the same map instead of listing links by hand. The active workspace
+is the one last switched to (`POST /workspace/{key}`, from the header
+pill, the user menu or the phone menu), or the last workspace home opened
+(`RememberWorkspace`), or the first held; `HandleInertiaRequests` shares
+`auth.workspace` and `auth.workspaces`. The admin panel's four parts are
+four groups (`panel_admissions` is the School's; `panel_website`,
+`panel_money`, `panel_system` the Institute's), and the Blade-only
+screens the Blade nav used to link by hand (announcements,
+substitutions, Hifz, Qur'an progress, e-learning) are map items marked
+`hard`. `docs/ADMIN_PANEL.md` §1 has the table; STATUS §5id the slice.
+
 ## Implemented (2026-09-24)
 
 - **`App\Support\Navigation\NavigationMap`** — the map: a primary bar per

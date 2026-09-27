@@ -38,15 +38,15 @@ it('sends a teacher from the dashboard to their own home', function () {
         ->assertInertia(fn (Assert $page) => $page->component('Academics/Registers/Today'));
 });
 
-it('sends an admin from the dashboard to the admin panel, which links the composed staff overview', function () {
-    // STATUS §5ia: one home for administrators — `/admin`, with today's
-    // numbers on top — instead of a numbers page and a doors page.
+it('sends an admin from the dashboard to the School office, which links the composed staff overview', function () {
+    // STATUS §5id: the educational admin's workspace is the School, and its
+    // home is the School office with today's numbers on top.
     $user = actingPeopleAdmin(['registers.manage', 'exams.manage']);
 
     $this->withoutLocalizationMiddleware()
         ->actingAs($user)
         ->get(route('dashboard'))
-        ->assertRedirect(route('admin.index'));
+        ->assertRedirect(route('school.index'));
 
     $this->withoutLocalizationMiddleware()
         ->actingAs($user)
@@ -107,7 +107,7 @@ it('sends a student from the dashboard to the composed portal home', function ()
 // §5ia); their full dashboards keep their own addresses, gated to the role,
 // and are the views that could silently be pointed at a deleted file.
 
-it('sends the super admin to the admin panel and keeps the full dashboard at its own address', function () {
+it('sends the super admin to the Institute home and keeps the full dashboard at its own address', function () {
     Role::findOrCreate('super_admin', 'web');
     Role::findOrCreate('supervisor', 'web');
 
@@ -119,14 +119,14 @@ it('sends the super admin to the admin panel and keeps the full dashboard at its
     $this->withoutLocalizationMiddleware()->actingAs($user)->get(route('dashboard.supervisor'))->assertForbidden();
 });
 
-it('sends the supervisor to the admin panel and keeps the full dashboard at its own address', function () {
+it('sends the supervisor to the School office and keeps the full dashboard at its own address', function () {
     Role::findOrCreate('supervisor', 'web');
     Role::findOrCreate('super_admin', 'web');
 
     $user = User::factory()->create();
     $user->assignRole('supervisor');
 
-    $this->withoutLocalizationMiddleware()->actingAs($user)->get(route('dashboard'))->assertRedirect(route('admin.index'));
+    $this->withoutLocalizationMiddleware()->actingAs($user)->get(route('dashboard'))->assertRedirect(route('school.index'));
     $this->withoutLocalizationMiddleware()->actingAs($user)->get(route('dashboard.supervisor'))->assertOk()->assertViewIs('dashboard.supervisor');
     $this->withoutLocalizationMiddleware()->actingAs($user)->get(route('dashboard.numbers'))->assertForbidden();
 });

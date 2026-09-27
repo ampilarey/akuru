@@ -2,8 +2,22 @@
 
 // The admin panel's front door at /admin (docs/ADMIN_PANEL.md §1).
 return [
-    'hub_title' => 'Admin panel',
-    'hub_intro' => 'Your home: today\'s numbers, then everything the office runs, in four parts. Open a section, or go straight to a screen inside it. You see only what your role may open.',
+    // The workspace homes (STATUS §5id): the Institute's at /admin, the School's at /school.
+    'institute_title' => 'Institute',
+    'institute_intro' => 'Your home: today\'s numbers, then everything the institute runs — the website, the shops and money, the system. Open a section, or go straight to a screen inside it.',
+    'school_title' => 'School office',
+    'school_intro' => 'Your home: today\'s numbers, then everything the school runs — admissions, academics, the office. Open a section, or go straight to a screen inside it. You see only what your role may open.',
+    'part_school_academics' => 'Academics',
+    'part_school_office' => 'Office',
+    'desc_school_year' => 'Years, terms, rooms, periods, the timetable, calendar, events and clubs.',
+    'desc_people' => 'Students and staff records, custom fields, sensitive information.',
+    'desc_day_loop' => 'The school day: registers, plans, materials, attendance, behaviour, pick-up, the gate, notices.',
+    'desc_exams_group' => 'Exams, weights, the gradebook, scales, report cards and awards.',
+    'desc_catalog_group' => 'The teaching catalogue: courses, offerings, questions, subjects, certificates, reports.',
+    'desc_learn_group' => 'Teaching and learning: your timetable, meetings, recitations, pronunciation, Hifz.',
+    'desc_finance_group' => 'Fees, invoices, arrears, payment plans, receipts, collections, reconciliation.',
+    'desc_hr_group' => 'Staff attendance, leave, contracts, compliance, hiring, appraisals, payroll.',
+    'desc_library_group' => 'The lending library: circulation and borrower cards.',
     'hub_parts' => 'Parts of the panel',
     // Today's numbers at the top of the hub (STATUS §5ia).
     'today_title' => 'Today',

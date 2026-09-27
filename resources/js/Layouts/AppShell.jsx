@@ -5,12 +5,13 @@ import { useEffect, useState } from 'react';
  * The shell every Inertia screen renders inside.
  *
  * Navigation comes from the server (`nav` shared prop, built by
- * `App\Support\Navigation\BuildNavigationAction`): a short primary bar for the
- * signed-in person's roles, and the *More* menu — every other screen, in nine
- * labelled groups, with anything the person could only be refused left out.
- * The shell decides nothing about who sees what; it renders what it is given.
- * Until 2026-09-24 it was 109 links in one wrapping strip, for everybody
- * (docs/APPSHELL_NAV_IA.md, KNOWN_ISSUES P3 #11).
+ * `App\Support\Navigation\BuildNavigationAction` for the person's active
+ * workspace): a short primary bar and the *More* menu — every other screen
+ * of that workspace, in labelled groups, with anything the person could only
+ * be refused left out. A person who holds several workspaces (the Institute,
+ * the School, a family, a shop) switches between them from the header, and
+ * the bar and the menu change with it (STATUS §5id). The shell decides
+ * nothing about who sees what; it renders what it is given.
  */
 export default function AppShell({ title, children }) {
     const { url, props } = usePage();
@@ -19,22 +20,31 @@ export default function AppShell({ title, children }) {
     const t = i18n?.learn || {};
     const n = i18n?.nav || {};
     const [open, setOpen] = useState(false);
+    const [switching, setSwitching] = useState(false);
+    const workspaces = auth?.workspaces ?? [];
+    const activeWorkspace = workspaces.find((workspace) => workspace.key === auth?.workspace);
 
     // A menu left open across a page change is a menu the person has to close
     // twice. Close it whenever the URL moves, and on Escape.
-    useEffect(() => setOpen(false), [url]);
+    useEffect(() => { setOpen(false); setSwitching(false); }, [url]);
     useEffect(() => {
-        if (!open) return undefined;
-        const onKey = (event) => event.key === 'Escape' && setOpen(false);
+        if (!open && !switching) return undefined;
+        const onKey = (event) => { if (event.key === 'Escape') { setOpen(false); setSwitching(false); } };
         window.addEventListener('keydown', onKey);
         return () => window.removeEventListener('keydown', onKey);
-    }, [open]);
+    }, [open, switching]);
 
     // Hrefs from the server carry the locale prefix (`/en/admin`); the map's
     // do not. Compare both without it.
     const unlocalised = (href) => (href || '').replace(/^\/(en|dv|ar)(?=\/|$)/, '') || '/';
     const path = unlocalised(url.split('?')[0]);
     const isCurrent = (href) => path === unlocalised(href) || path.startsWith(`${unlocalised(href)}/`);
+
+    // `hard`: a Blade screen, opened with a full page load — an Inertia visit
+    // would get a non-Inertia response and show it in a modal.
+    const Item = ({ item, className, ...rest }) => (item.hard
+        ? <a href={item.href} className={className} data-nav-hard {...rest}>{item.label}</a>
+        : <Link href={item.href} aria-current={isCurrent(item.href) ? 'page' : undefined} className={className} {...rest}>{item.label}</Link>);
 
     return (
         <div dir={rtl ? 'rtl' : 'ltr'} className="min-h-screen bg-[#F9F4EE] text-gray-900">
@@ -44,33 +54,68 @@ export default function AppShell({ title, children }) {
             </a>
             {/* The same brand bar as the Blade shell — wine gradient, the logo,
                 "Akuru Institute", white links — so an administrator moving between
-                the two shells sees one application (the owner's phone screenshot
-                of /admin, 2026-09-27: "that page doesn't have header"). Until then
-                the Inertia shell was a plain white strip with maroon text. */}
-            {/* Sticky from sm: only — on a phone the bar wraps to several rows and
-                a sticky one would cover a third of the screen. */}
+                the two shells sees one application (STATUS §5ib). Sticky from sm:
+                only — on a phone the bar wraps to several rows. */}
             <header className="relative z-30 bg-gradient-to-br from-[#3D1219] to-[#7C2D37] text-white shadow-md sm:sticky sm:top-0">
                 <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-x-6 gap-y-2 px-4 py-2 sm:px-6">
-                    <a href="/dashboard" className="flex shrink-0 items-center gap-2.5 no-underline" data-testid="shell-home">
-                        <img src="/images/logos/akuru-logo-on-dark.svg?v=3" alt="Akuru Institute" className="h-8 w-auto object-contain" />
-                        <span className="text-[.95rem] font-bold tracking-wide text-white">Akuru Institute</span>
-                    </a>
+                    <div className="flex items-center gap-3">
+                        <a href="/dashboard" className="flex shrink-0 items-center gap-2.5 no-underline" data-testid="shell-home">
+                            <img src="/images/logos/akuru-logo-on-dark.svg?v=3" alt="Akuru Institute" className="h-8 w-auto object-contain" />
+                            <span className="text-[.95rem] font-bold tracking-wide text-white">Akuru Institute</span>
+                        </a>
+                        {/* The workspace switcher: shown only to a person who holds more
+                            than one. Switching posts the choice, so the server remembers
+                            it and sends them to that workspace's home. */}
+                        {workspaces.length > 1 && (
+                            <div className="relative">
+                                <button
+                                    type="button"
+                                    aria-expanded={switching}
+                                    aria-controls="app-shell-workspaces"
+                                    data-testid="workspace-switcher"
+                                    title={n.switch_workspace || 'Switch workspace'}
+                                    onClick={() => setSwitching((value) => !value)}
+                                    className={`rounded-full border border-white/40 px-3 py-1 text-sm font-medium text-white hover:bg-white/10 ${switching ? 'bg-white/20' : ''}`}
+                                >
+                                    {activeWorkspace?.label} {switching ? '▴' : '▾'}
+                                </button>
+                                {switching && (
+                                    <>
+                                        <button type="button" aria-label={n.close || 'Close'} onClick={() => setSwitching(false)} className="fixed inset-0 z-10 cursor-default bg-transparent" />
+                                        <div id="app-shell-workspaces" role="menu" aria-label={n.workspaces || 'Workspaces'} className="absolute start-0 top-full z-20 mt-1 min-w-[12rem] rounded-lg border border-[#E6D9C8] bg-white p-1 text-sm text-gray-900 shadow-lg">
+                                            <span className="block px-3 pb-1 pt-2 text-[11px] font-semibold uppercase tracking-wide text-gray-400">{n.workspaces || 'Workspaces'}</span>
+                                            {workspaces.map((workspace) => (
+                                                <button
+                                                    key={workspace.key}
+                                                    type="button"
+                                                    role="menuitem"
+                                                    data-testid={`workspace-${workspace.key}`}
+                                                    aria-current={workspace.key === auth?.workspace ? 'true' : undefined}
+                                                    onClick={() => { setSwitching(false); router.post(`/workspace/${workspace.key}`); }}
+                                                    className={`block w-full rounded px-3 py-1.5 text-start hover:bg-[#F3EBE0] ${workspace.key === auth?.workspace ? 'font-semibold text-[#7C2D37]' : 'text-gray-700'}`}
+                                                >
+                                                    {workspace.label}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </>
+                                )}
+                            </div>
+                        )}
+                    </div>
                     <nav aria-label={n.primary_nav || 'Primary'} className="flex flex-wrap items-center gap-x-1 gap-y-1 text-sm">
                         {/* On a phone the primary links are one row that scrolls sideways;
                             More, Alerts, the account and the language switcher stay in view
                             beneath it (the mobile sweep, STATUS §5hu). */}
                         <div className="order-last flex w-full flex-nowrap items-center gap-x-1 overflow-x-auto whitespace-nowrap sm:order-none sm:w-auto sm:flex-wrap sm:gap-y-1 sm:overflow-visible sm:whitespace-normal">
                         {nav.primary.map((item) => (
-                            <Link
+                            <Item
                                 key={item.href}
-                                href={item.href}
-                                aria-current={isCurrent(item.href) ? 'page' : undefined}
+                                item={item}
                                 className={isCurrent(item.href)
                                     ? 'rounded-md bg-white/20 px-3 py-1.5 font-medium text-white'
                                     : 'rounded-md px-3 py-1.5 font-medium text-white/80 hover:bg-white/10 hover:text-white'}
-                            >
-                                {item.label}
-                            </Link>
+                            />
                         ))}
                         </div>
                         {nav.groups.length > 0 && (
@@ -99,20 +144,6 @@ export default function AppShell({ title, children }) {
                                 )}
                             </Link>
                         )}
-                        {/* Every other identity this person holds — a parent who is also
-                            a vendor and a writer, a teacher who is also a parent (E7) — as a
-                            pill each, from any page. The one whose home this is stays out;
-                            a person with one identity sees none (STATUS §5ic). */}
-                        {(auth?.views ?? []).length > 1 && (auth.views).filter((view) => !isCurrent(view.href)).map((view) => (
-                            <Link
-                                key={view.key}
-                                href={view.href}
-                                data-testid={`view-${view.key}`}
-                                className="rounded-full border border-white/40 px-3 py-1 font-medium text-white hover:bg-white/10"
-                            >
-                                {view.label}
-                            </Link>
-                        ))}
                         {/* E7: the switch itself, not a link to a page that
                             offers it — the plan's acceptance is "two taps", and
                             a settings page in between makes it four. Rendered
@@ -175,37 +206,15 @@ export default function AppShell({ title, children }) {
                         >
                             <div className="mx-auto grid max-w-6xl grid-cols-2 gap-x-8 gap-y-6 px-6 py-6 text-sm sm:grid-cols-3 lg:grid-cols-5">
                                 {nav.groups.map((group) => (
-                                    <section key={group.key}>
+                                    <section key={group.key} data-nav-section={group.key}>
                                         <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500">{group.label}</h2>
                                         <ul className="space-y-1">
-                                            {group.items.map((item, index) => (
+                                            {group.items.map((item) => (
                                                 <li key={item.href}>
-                                                    {/* The admin panel's parts (Admissions, Website & content,
-                                                        Shops & money, System): a small heading where a new
-                                                        part begins, so the column reads as the hub does. */}
-                                                    {item.section && item.section.key !== group.items[index - 1]?.section?.key && (
-                                                        <span className="mb-0.5 mt-2 block text-[11px] font-semibold uppercase tracking-wide text-gray-400" data-nav-section={item.section.key}>{item.section.label}</span>
-                                                    )}
-                                                    {/* `hard`: a Blade screen, opened with a full page
-                                                        load — an Inertia visit would get a non-Inertia
-                                                        response and show it in a modal. */}
-                                                    {item.hard ? (
-                                                        <a
-                                                            href={item.href}
-                                                            className="text-[#7C2D37] hover:underline"
-                                                            data-nav-hard
-                                                        >
-                                                            {item.label}
-                                                        </a>
-                                                    ) : (
-                                                        <Link
-                                                            href={item.href}
-                                                            aria-current={isCurrent(item.href) ? 'page' : undefined}
-                                                            className={isCurrent(item.href) ? 'font-semibold text-[#7C2D37]' : 'text-[#7C2D37] hover:underline'}
-                                                        >
-                                                            {item.label}
-                                                        </Link>
-                                                    )}
+                                                    <Item
+                                                        item={item}
+                                                        className={!item.hard && isCurrent(item.href) ? 'font-semibold text-[#7C2D37]' : 'text-[#7C2D37] hover:underline'}
+                                                    />
                                                 </li>
                                             ))}
                                         </ul>

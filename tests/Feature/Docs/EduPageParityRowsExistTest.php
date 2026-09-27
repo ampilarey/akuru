@@ -40,7 +40,7 @@ it('still has the code behind every EduPage parity row', function () {
         'E4 noticeboard' => ['routes' => [], 'classes' => ['Announcement', 'AnnouncementController']],
         'E5 requests and approvals' => ['routes' => [], 'classes' => ['SchoolRequest', 'ReviewSchoolRequestAction']],
         'E6 forms' => ['routes' => [], 'classes' => ['FormAdminController']],
-        'E7 landing and identity' => ['routes' => [], 'classes' => ['ResolveDashboardLandingAction', 'SwitchAccountAction']],
+        'E7 landing and identity' => ['routes' => [], 'classes' => ['ResolveWorkspacesAction', 'SwitchAccountAction']],
         'E8 timetable' => ['routes' => [], 'classes' => ['Timetable']],
         'E9 absence to substitution' => ['routes' => [], 'classes' => ['RecordApprovedTeacherLeaveAction', 'SubstitutionRequest']],
         'E10 attendance reporting' => ['routes' => [], 'classes' => ['ListClassAttendanceAction']],

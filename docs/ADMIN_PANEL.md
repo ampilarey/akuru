@@ -31,60 +31,64 @@ KNOWN_ISSUES or BACKLOG.
 | `admin/pronunciation` | 5 | `role:super_admin\|admin` + `can:pronunciation.manage` | Inertia | yes | 1 file | `pronounce.mjs` |
 | `admin/bookshop` | 37 | `role:super_admin\|admin\|bookshop_manager` + `can:bookshop.manage` | Inertia | yes, all ten | 17 files | 15 walks |
 
-**The front door.** `/admin` (the owner, 2026-09-26: "in Bake & Grill admin is a
-separate app at `/admin` — is the way admin is set correct?", then "still admin
-page is too much complicated — can't u categorize and group everything to make
-it easy"). Akuru's admin is not a separate app: it is these sections inside the
-one application, under two shells, and until that day nothing answered at
-`/admin` itself. It now shows the panel **in four parts** — *Admissions*
-(enrolments, instructors), *Website & content* (the CMS, prayer times,
-pronunciation), *Shops & money* (Commerce, the Library office, the Bookstore),
-*System* (users, settings, the ops checklist, the feature walkthrough,
-translations) — each a row of cards, one per section the signed-in person may
-open, with a line on what it is for and, on a card that is a cluster of
-screens, the screens inside it (the CMS's eight, prayer times' four, enrolment
-payments). The map is `NavigationMap::adminPanel()`, filtered by each route's
-own gate through `BuildNavigationAction`, so a Bookstore manager sees one part
-with one section and a super admin sees all thirteen; a person who may open
-none gets 403. The Inertia shell's More menu heads its admin column with the
-same four parts, and the Blade More dropdown and mobile menu carry the same
-headings (with a *School* heading for announcements, substitutions and
-e-learning). The reading alerts and the OTP-abuse log stay off the map on
-purpose (§3's reasoning: opened from their parent screen, by decision). Whether
-the panel should become a separate app with its own shell is BACKLOG C9's
-port, not a fact about routing: one application with `/admin/*` behind role
-and permission gates is the ordinary Laravel shape and holds.
+**Workspaces (2026-09-27, ADR-040, STATUS §5id).** The panel is not a
+separate app: it is the sections under `/admin/*` inside the one
+application. What an administrator sees is decided by their **workspace** —
+one per job, `App\Support\Navigation\WorkspaceMap`:
 
-**Landing.** An administrator's home is `/admin` (the owner, 2026-09-26: "I
-don't understand what's happening sometimes, /dashboard or /admin"; offered one
-page or two, "I don't know" — so one page, STATUS §5ia). `/dashboard` still
-resolves by role (`ResolveDashboardLandingAction`), and for `super_admin`,
-`admin`/`headmaster` and `supervisor` it now sends the person to `/admin`;
-`bookshop_manager` still lands on the Bookstore office, a teacher on their home,
-a family on the portal. The hub leads with **Today**: the numbers the three
-dashboards led with, asked of their owning domains (`ComposeAdminTodayAction`
-→ Courses' `CountEnrollmentsAction`, Finance's `SumPaidPaymentsAction`,
-Identity's `CountUsersAction`, People's counts, the staff overview), each tile
-a link to where its number comes from, then a link to the full dashboard the
-person used to land on. Those keep their own addresses, gated to the role:
-`/dashboard/numbers` (the Blade super-admin dashboard), `/dashboard/supervisor`,
-`/portal/overview` (Inertia). Each of them still says it is the numbers and
-carries an *Admin panel →* button (L23). The two navigations: the Blade nav
-(`layouts/navigation.blade.php`) lists every admin landing (gated by
-`AdminPagesAreReachableTest`); the Inertia shell's More menu does too
-(§3, finding 1).
+| Workspace | Roles | Home | Bar | More |
+|---|---|---|---|---|
+| Institute | `super_admin` | `/admin` | Website CMS · Commerce · Library office · Bookstore · Manage users | Website & content · Shops & money · System · Mine |
+| School | `admin`, `headmaster`, `supervisor`, `teacher` | `/school` (a teacher: their day) | the office's or the teacher's bar | Admissions · School year · People · Day loop · Exams · Catalog · Learn · Finance · HR · Library · Mine |
+| Bookstore office | `bookshop_manager` | `/admin/bookshop` | Bookstore · Shop | Mine |
+| Family / Learn | `parent` / `student` | the family portal | the family's or the pupil's bar | Learn · Mine |
+| My shop / Writing / Catalog | `vendor` / `writer`, `reviewer` / `course_creator` | the shop, the desk or the queue, the catalogue | their own | Mine (+ Learn, Catalog) |
 
-**Who lands where, and how the other identities are reached.** Only the
-staff roles (`super_admin`, `admin`, `headmaster`, `supervisor`) land on
-`/admin`. A teacher lands on their day, a Bookstore manager on the Bookstore
-office, a parent or student on the family portal, a vendor on their shop, a
-writer on their desk, a reviewer on their queue, a course creator on the
-catalogue, and an account with no role on the public course dashboard. A
-person holding several of these lands by that order and sees the others as
-pills in the header (Inertia) or under *Your views* in the user menu (Blade):
-a parent who is also a vendor and a writer lands on the family portal with
-*My shop* and *Write* a tap away (L26). Nobody sees the admin panel who may
-not open it: the pill, the menu entry and the route are all gated.
+The shell shows one workspace at a time: `BuildNavigationAction` builds the
+bar and the More groups for the active one, and both shells render that one
+map — the Blade nav no longer lists links by hand. A person who holds
+several switches from the header (a pill reading the active workspace), the
+user menu or the phone menu; the choice is posted and remembered, and
+opening a workspace's home (`/admin`, `/school`) makes it active too. A
+person with one workspace sees no switcher. A workspace never grants
+access: every route keeps its own gate and the map hides what the person
+could only be refused.
+
+**The homes.** `/admin` (the Institute) and `/school` (the School) are one
+page shape (`Portal/WorkspaceHome`, `ComposeWorkspaceHomeAction`): today's
+numbers for that job (`ComposeAdminTodayAction` — the Institute: new
+accounts, paid today; the School: enrolments pending payment, enrolled
+today, paid today, unfilled registers, ungraded exams, the roll and the
+staff for a supervisor), then the workspace in parts. The Institute's parts
+are the panel's: Website & content (the CMS with its eight screens, the
+instructors, prayer times with its four, pronunciation), Shops & money
+(Commerce, the Library office, the Bookstore), System (users, settings, the
+ops checklist, the feature walkthrough, translations). The School's are
+Admissions (enrolments with its payments screen), Academics (school year,
+day loop, exams, catalog, teaching — each a card whose chips are its
+screens) and Office (people, finance, HR, the lending library). The reading
+alerts and the OTP-abuse log stay off the map on purpose (§3: opened from
+their parent screen, by decision). A person opening a home they do not hold
+is sent to their own, not refused.
+
+**Who lands where.** `/dashboard` sends a person to the home of their
+active workspace: the system admin to the Institute; the educational
+admin, the dean and the supervisor to the School office; a teacher to their
+day; a Bookstore manager to the office; a parent or student to the family
+portal; a vendor to their shop, a writer to their desk, a reviewer to their
+queue, a course creator to the catalogue; an account with no role to the
+public course dashboard. Holding several, they land on the first by the
+map's order — staff first (E7) — or the one they last switched to. The full
+dashboards keep their own role-gated addresses (`/dashboard/numbers`,
+`/dashboard/supervisor`, `/portal/overview`), each carrying the way home.
+Nobody sees the admin panel who may not open it: the pill, the menu entry
+and the route are all gated.
+
+**Still owner-owned after this** (slices 2–4 of the decision): the
+educational admin's permission set (today `admin` holds every permission,
+so the menus hide the Institute but the gates admit it), the role labels
+people read (System admin, Dean, Educational admin), and a role screen so
+the owner can hand out roles without the server.
 
 ## 2. Checked and held
 
@@ -236,6 +240,7 @@ viewports, nothing lacking); `admin-mobile.mjs`, `admin-layout.mjs`,
 | L24 | **Two homes.** Even with each linking the other (L23), an administrator still landed on a numbers page and went looking for the doors; offered one page or two, the owner said "I don't know". | medium | **Fixed**: one home. `/dashboard` sends administrators to `/admin`; the hub leads with a *Today* strip — pending payment, enrolled today, paid today, new accounts, unfilled registers, ungraded exams for the institute's roles; the roll and the staff for a supervisor — each tile opening where its number comes from, then a *Full dashboard* / *Staff overview* link. The full dashboards keep their own role-gated addresses (`/dashboard/numbers`, `/dashboard/supervisor`, `/portal/overview`). Numbers are asked of owning-domain Actions (rule 3). `AdminHubTest` (4th test rewritten), `RoleLandingTest`, `CountingPeopleTest`, `StaffOverviewTest` updated; `admin-hub.mjs` 26/26 (30 with a super admin); both sweeps carry `/dashboard/numbers`. Retiring the two Blade dashboards is BACKLOG C9's port. |
 | L25 | **The Inertia shell had no brand bar.** `/admin` and every Inertia screen opened under a plain white strip with maroon text links, while every Blade screen opened under the wine bar with the logo, "Akuru Institute" and white links; an administrator sent to `/admin` at sign-in read it as a page with no header (the owner's phone screenshot, 2026-09-27). | medium | **Fixed**: `AppShell.jsx` renders the same brand bar — the wine gradient, the on-dark logo, the wordmark linking home, white primary links with the current one highlighted, More, Alerts (gold badge), the account pill with an initial, Log out, the language switcher — sticky from `sm:` (on a phone the bar wraps, so it stays in the flow); the page title moves into the content as its `h1`, as on a Blade page; the More panel is capped at 80 vh and scrolls. Walked: `nav.mjs` 14/14, `admin-layout.mjs` (a brand-bar step added), `admin-hub.mjs`, `admin-pages.mjs`, `admin-mobile.mjs`. |
 | L26 | **A person with several identities saw one.** `/dashboard` picks one home by precedence (staff first); the only other identity ever offered was a *Family view* pill for a staff member who is also a parent (E7). A parent who is also a vendor and a writer, or a super admin who is also a learner, had to find the other homes in the More menu. A vendor, writer, reviewer or course creator with no other role landed on the public "My Dashboard", a course page (the owner, 2026-09-27: "any one will see the admin panel? students, parents? vendors? writers?"). | medium | **Fixed**: `ResolveDashboardLandingAction` lists every home a person holds (`views`: admin panel, Bookstore office, a teacher's day, Family, Learn, My shop, Write, Review, Catalog — by role, no query) and lands a lone vendor/writer/reviewer/course creator on their job. Both shells offer the other views: pills in the Inertia header (the current one hidden), *Your views* in the Blade user menu and phone menu; a person with one identity sees none. EN/DV/AR. `DualIdentityLandingTest` (2 new), `RoleLandingTest` (1 new); `views.mjs` 8/8. |
+| L27 | **One person saw the union of every role's screens, in two shells that each decided by hand.** An administrator got the school's bar, eleven More groups and the admin panel at once; the `admin` role holds every permission; a person with several roles reached the others through the menu, if at all (the owner, 2026-09-27: "still login and admin setting is really confusing … their setting should be seen when he changes to his specific role"). | high | **Fixed** (slice 1 of ADR-040): workspaces — Institute, School, Bookstore office, Family, Learn, My shop, Writing, Catalog — one per job, each with its home, bar and More groups; the shell shows one at a time and a switcher for the others; both shells render the one map; `/admin` and `/school` are the workspace homes with today's numbers and the parts; `/dashboard` goes to the active home. `WorkspacesTest` (6), `DualIdentityLandingTest`, `AdminPagesAreReachableTest` (rewritten: the Blade nav renders the map and reaches every landing as the role that runs it), `AdminHubTest`, `AdminPanelAuditTest`, `RoleLandingTest`; `workspaces.mjs`, `admin-hub.mjs`, `admin.mjs`, `nav.mjs`, `admin-layout.mjs`, the two sweeps with `/school`. |
 
 ## 6. What the owner still owns
 

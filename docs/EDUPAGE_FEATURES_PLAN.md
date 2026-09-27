@@ -86,7 +86,7 @@ the 2026-09-04 audit found: work recorded as missing that already shipped.**
 | E2 | not started | `Message`, threads, participants, reply policy, polls all ship (E2a/E2b). |
 | E3 | not started | Homework reader, ticks and due-date defaults ship (E3a). |
 | E6 | not started | Forms domain ships end to end including fees (E6a–E6c). |
-| E7 | not started | `ResolveDashboardLandingAction` + the alternate-identity switcher ship. |
+| E7 | not started | `ResolveWorkspacesAction` + the workspace switcher ship (since STATUS §5id every identity is a workspace). |
 | E10 | ~1 week | Mostly shipped; only lateness aggregation (E10a) and the absence list (E10b) were genuinely missing. |
 | E13 | ~2 weeks | Was genuinely missing and is now complete (E13a–E13c). **The one row that held.** |
 | E11 | "half built — `CalendarDay` covers only holiday/exam day types" | `CalendarDayType` has had **five** cases since it shipped — holiday, event, exam_day, closure, special_schedule — with full CRUD, a month grid, CSV export and trilingual titles. The staff calendar is done. The real gap was that the **portal** read only published two of the five (fixed as E11b). |
@@ -297,7 +297,7 @@ forms reject submissions; anonymous surveys store no person id.
 
 ### E7. Account switcher + role-routing fix — ~1 week
 **Reference:** EduPage multi-account sidebar.
-**⚠ THE ORDERING BUG WAS ALREADY FIXED** — `ResolveDashboardLandingAction`
+**⚠ THE ORDERING BUG WAS ALREADY FIXED** — `ResolveDashboardLandingAction` (since STATUS §5id `ResolveWorkspacesAction` and `WorkspaceMap`)
 replaced the `elseif` chain and shares the other identity as `auth.alternate`.
 The row below claimed it was outstanding; that was **the seventeenth time this
 document recorded shipped work as missing**. Corrected 2026-09-11. The switcher

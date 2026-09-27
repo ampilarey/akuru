@@ -130,31 +130,47 @@ for (const [path, word] of landings) {
 check(`all ${landings.length} admin landing pages open for the office, each with its heading`, failedLandings.length === 0, failedLandings.join(', '));
 
 // The two super_admin-only screens: refused to a plain admin, open to a super admin.
-const users = await office.goto(`${BASE}/en/admin/users`, { waitUntil: 'networkidle' });
-const settings = await office.goto(`${BASE}/en/admin/settings`, { waitUntil: 'networkidle' });
-check('Users and Settings refuse the admin role (super_admin only)', users?.status() === 403 && settings?.status() === 403, `${users?.status()} ${settings?.status()}`);
+if (SUPER !== ADMIN) {
+    const users = await office.goto(`${BASE}/en/admin/users`, { waitUntil: 'networkidle' });
+    const settings = await office.goto(`${BASE}/en/admin/settings`, { waitUntil: 'networkidle' });
+    check('Users and Settings refuse the admin role (super_admin only)', users?.status() === 403 && settings?.status() === 403, `${users?.status()} ${settings?.status()}`);
+}
+let su = null;
 if (SUPER) {
-    const su = await signIn(SUPER);
+    su = await signIn(SUPER);
     const u = await su.goto(`${BASE}/en/admin/users`, { waitUntil: 'networkidle' });
     const s = await su.goto(`${BASE}/en/admin/settings`, { waitUntil: 'networkidle' });
     const o = await su.goto(`${BASE}/en/admin/users/otp-abuse`, { waitUntil: 'networkidle' });
     check('and open for the super admin', u?.status() === 200 && s?.status() === 200 && o?.status() === 200, `${u?.status()} ${s?.status()} ${o?.status()}`);
 }
 
-// ------------------------------------------------------------ 2. the Inertia shell's More menu lists the panel
+// ------------------------------------------------------------ 2. the Inertia shell's More menu is the workspace's (STATUS §5id)
 
+// Opening the School office makes the School the active workspace (the
+// same account may also hold the Institute, when granted for the sweeps).
+await office.goto(`${BASE}/en/school`, { waitUntil: 'networkidle' });
 await office.goto(`${BASE}/en/admin/operations`, { waitUntil: 'networkidle' });
 await office.click('button[aria-controls="app-shell-more"]');
 await settle(office, '#app-shell-more');
 const hardLinks = await office.locator('#app-shell-more a[data-nav-hard]').evaluateAll((els) => els.map((el) => el.getAttribute('href')));
 const menuLinks = await office.locator('#app-shell-more a').evaluateAll((els) => els.map((el) => el.getAttribute('href')));
-const wanted = ['/admin/enrollments', '/admin/instructors', '/admin/public-site/pages', '/admin/prayer-times/islands', '/admin/commerce', '/admin/library', '/admin/pronunciation', '/admin/bookshop', '/admin/translations', '/admin/operations/features'];
+const wanted = ['/admin/enrollments', '/academics/years', '/people/students', '/exams/schedule', '/finance/invoices', '/hr/payroll', '/announcements'];
 const missing = wanted.filter((href) => !menuLinks.some((h) => h && h.endsWith(href)));
-check('from an Inertia admin screen, the More menu reaches the whole panel', missing.length === 0, missing.join(', '));
-check('its Blade entries are plain links (a full page load), the Inertia ones are not', hardLinks.length === 4 && hardLinks.every((h) => /enrollments|instructors|public-site\/pages|prayer-times/.test(h)), hardLinks.join(', '));
-check('and Users and Settings are not offered to a plain admin', !menuLinks.some((h) => h && (h.endsWith('/admin/users') || h.endsWith('/admin/settings'))));
-await Promise.all([office.waitForNavigation({ waitUntil: 'networkidle' }).catch(() => {}), office.click('#app-shell-more a[data-nav-hard][href$="/admin/instructors"]')]);
-check('clicking a Blade entry lands on the Blade screen', /\/admin\/instructors$/.test(office.url()) && (await text(office)).includes('Instructors'), office.url().replace(BASE, ''));
+check('from an Inertia admin screen, the educational admin\'s More menu reaches the whole School', missing.length === 0, missing.join(', '));
+check('its Blade entries are plain links (a full page load), the Inertia ones are not', hardLinks.some((h) => h.endsWith('/admin/enrollments')) && hardLinks.some((h) => h.endsWith('/announcements')) && !hardLinks.some((h) => h.endsWith('/academics/years')), hardLinks.join(', '));
+check('and nothing of the Institute is offered: no Website CMS, Commerce, Users or Settings', !menuLinks.some((h) => h && /\/admin\/(public-site\/pages|commerce|users|settings)$/.test(h)));
+await Promise.all([office.waitForNavigation({ waitUntil: 'networkidle' }).catch(() => {}), office.click('#app-shell-more a[data-nav-hard][href$="/admin/enrollments"]')]);
+check('clicking a Blade entry lands on the Blade screen', /\/admin\/enrollments$/.test(office.url()) && (await text(office)).includes('Enrol'), office.url().replace(BASE, ''));
+if (SUPER) {
+    await su.goto(`${BASE}/en/admin`, { waitUntil: 'networkidle' });
+    await su.goto(`${BASE}/en/admin/operations`, { waitUntil: 'networkidle' });
+    await su.click('button[aria-controls="app-shell-more"]');
+    await settle(su, '#app-shell-more');
+    const suLinks = await su.locator('#app-shell-more a').evaluateAll((els) => els.map((el) => el.getAttribute('href')));
+    const suWanted = ['/admin/instructors', '/admin/public-site/pages', '/admin/prayer-times/islands', '/admin/commerce', '/admin/library', '/admin/pronunciation', '/admin/bookshop', '/admin/translations', '/admin/operations/features', '/admin/users', '/admin/settings'];
+    const suMissing = suWanted.filter((href) => !suLinks.some((h) => h && h.endsWith(href)));
+    check('and the system admin\'s More menu reaches the whole Institute', suMissing.length === 0 && !suLinks.some((h) => h && h.endsWith('/admin/enrollments')), suMissing.join(', '));
+}
 
 // ------------------------------------------------------------ 3. the four new CSVs
 

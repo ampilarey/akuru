@@ -86,20 +86,15 @@ final class NavigationMap
                 ['key' => 'bookshop', 'href' => '/admin/bookshop'],
                 ['key' => 'shop', 'href' => '/shop'],
             ],
+            // The Institute workspace (STATUS §5id): the business side's doors.
+            'institute' => [
+                ['key' => 'website_cms', 'href' => '/admin/public-site/pages', 'hard' => true],
+                ['key' => 'commerce', 'href' => '/admin/commerce'],
+                ['key' => 'library_office', 'href' => '/admin/library'],
+                ['key' => 'bookshop', 'href' => '/admin/bookshop', 'can' => ['bookshop.manage']],
+                ['key' => 'manage_users', 'href' => '/admin/users', 'hard' => true],
+            ],
         ];
-    }
-
-    /**
-     * Which primary bars a role draws from.
-     *
-     * @return list<string>
-     */
-    public static function barsFor(string $role): array
-    {
-        return match ($role) {
-            'super_admin', 'admin', 'headmaster', 'supervisor' => ['admins'],
-            default => [$role],
-        };
     }
 
     /**
@@ -154,6 +149,10 @@ final class NavigationMap
                 ['key' => 'gate_cards', 'href' => '/academics/gate/cards'],
                 ['key' => 'work_showcase', 'href' => '/academics/work'],
                 ['key' => 'lost_and_found', 'href' => '/academics/found-items'],
+                // Blade screens the Blade nav used to link by hand; `hard`,
+                // so the Inertia shell loads them whole (STATUS §5id).
+                ['key' => 'announcements', 'href' => '/announcements', 'hard' => true, 'roles' => $staff],
+                ['key' => 'substitutions', 'href' => '/substitutions/requests', 'hard' => true, 'roles' => $staff],
             ]],
             ['key' => 'exams_group', 'items' => [
                 ['key' => 'exams', 'href' => '/exams/schedule'],
@@ -195,6 +194,10 @@ final class NavigationMap
                 ['key' => 'write', 'href' => '/write', 'roles' => ['writer']],
                 ['key' => 'review', 'href' => '/review', 'roles' => ['reviewer']],
                 ['key' => 'vendor_portal', 'href' => '/vendor', 'roles' => ['vendor']],
+                // Blade screens the Blade nav used to link by hand (STATUS §5id).
+                ['key' => 'hifz', 'href' => '/hifz', 'hard' => true, 'can' => ['view_hifz_programs']],
+                ['key' => 'quran_progress', 'href' => '/quran-progress', 'hard' => true],
+                ['key' => 'e_learning', 'href' => '/e-learning', 'hard' => true, 'roles' => $everyone],
             ]],
             ['key' => 'finance_group', 'items' => [
                 ['key' => 'fee_items', 'href' => '/finance/fee-items'],
@@ -279,70 +282,65 @@ final class NavigationMap
             // admin-panel audit, STATUS §5hs). Visibility still comes off each
             // route's own gate — `role:super_admin` hides Users and Settings
             // from everyone else, `can:commerce.manage` hides Commerce.
-            //
-            // The panel is one map in four parts (the owner, 2026-09-26: "still
-            // admin page is too much complicated — can't u categorize and
-            // group everything"): each section carries its `section` — the
-            // part it belongs to — and, where it is a cluster of screens, its
-            // `children`. The hub at /admin lays the parts out; the shell's
-            // More menu heads its admin column with them; the Blade menus
-            // carry the same headings by hand.
-            ['key' => 'admin_group', 'items' => self::adminPanel()],
+            // The admin panel, in four parts, each a group of its own
+            // (`adminPanel()`): Admissions belongs to the School workspace,
+            // the other three to the Institute (STATUS §5id).
+            ...self::adminPanel(),
         ];
     }
 
     /**
-     * The admin panel, in the order the hub shows it. The front door first;
-     * then Admissions, Website & content, Shops & money, System.
+     * The admin panel as four groups, in the order the homes show them:
+     * Admissions (the School's), then Website & content, Shops & money and
+     * System (the Institute's). A section that is a cluster of screens
+     * carries them as `children`; the homes list them as chips and the
+     * More menus leave them out. The reading alerts and the OTP-abuse log
+     * stay off the map on purpose: a list that accuses people is opened
+     * from its parent screen, by decision (`AdminPagesAreReachableTest`).
      *
-     * @return list<array{key: string, href: string, roles?: list<string>, can?: list<string>, hard?: bool, section?: string, children?: list<array{key: string, href: string, hard?: bool}>}>
+     * @return list<array{key: string, items: list<array{key: string, href: string, can?: list<string>, hard?: bool, children?: list<array{key: string, href: string, hard?: bool}>}>}>
      */
     public static function adminPanel(): array
     {
         return [
-            // The front door. Its route is `auth`-only (the hub decides
-            // what to show), so the hint says who it is for.
-            ['key' => 'admin_home', 'href' => '/admin', 'roles' => ['super_admin', 'admin', 'headmaster', 'supervisor', 'bookshop_manager']],
-
-            // Admissions: who studies and who teaches.
-            ['key' => 'admin_enrolments', 'href' => '/admin/enrollments', 'hard' => true, 'section' => 'panel_admissions', 'children' => [
-                ['key' => 'enrolment_payments', 'href' => '/admin/enrollments/payments', 'hard' => true],
+            ['key' => 'panel_admissions', 'items' => [
+                ['key' => 'admin_enrolments', 'href' => '/admin/enrollments', 'hard' => true, 'children' => [
+                    ['key' => 'enrolment_payments', 'href' => '/admin/enrollments/payments', 'hard' => true],
+                ]],
             ]],
-            ['key' => 'admin_instructors', 'href' => '/admin/instructors', 'hard' => true, 'section' => 'panel_admissions'],
-
-            // Website & content: what the public sees and receives.
-            ['key' => 'website_cms', 'href' => '/admin/public-site/pages', 'hard' => true, 'section' => 'panel_website', 'children' => [
-                ['key' => 'cms_pages', 'href' => '/admin/public-site/pages', 'hard' => true],
-                ['key' => 'cms_courses', 'href' => '/admin/public-site/courses', 'hard' => true],
-                ['key' => 'cms_research', 'href' => '/admin/public-site/research', 'hard' => true],
-                ['key' => 'cms_daily_content', 'href' => '/admin/public-site/daily-content', 'hard' => true],
-                ['key' => 'cms_daily_queue', 'href' => '/admin/public-site/daily-content/queue', 'hard' => true],
-                ['key' => 'cms_subscriptions', 'href' => '/admin/public-site/daily-subscriptions', 'hard' => true],
-                ['key' => 'cms_leads', 'href' => '/admin/public-site/leads', 'hard' => true],
-                ['key' => 'cms_funnel', 'href' => '/admin/public-site/funnel', 'hard' => true],
+            ['key' => 'panel_website', 'items' => [
+                ['key' => 'website_cms', 'href' => '/admin/public-site/pages', 'hard' => true, 'children' => [
+                    ['key' => 'cms_pages', 'href' => '/admin/public-site/pages', 'hard' => true],
+                    ['key' => 'cms_courses', 'href' => '/admin/public-site/courses', 'hard' => true],
+                    ['key' => 'cms_research', 'href' => '/admin/public-site/research', 'hard' => true],
+                    ['key' => 'cms_daily_content', 'href' => '/admin/public-site/daily-content', 'hard' => true],
+                    ['key' => 'cms_daily_queue', 'href' => '/admin/public-site/daily-content/queue', 'hard' => true],
+                    ['key' => 'cms_subscriptions', 'href' => '/admin/public-site/daily-subscriptions', 'hard' => true],
+                    ['key' => 'cms_leads', 'href' => '/admin/public-site/leads', 'hard' => true],
+                    ['key' => 'cms_funnel', 'href' => '/admin/public-site/funnel', 'hard' => true],
+                ]],
+                // The instructors shown on the public website: website content.
+                ['key' => 'admin_instructors', 'href' => '/admin/instructors', 'hard' => true],
+                ['key' => 'prayer_times', 'href' => '/admin/prayer-times/islands', 'hard' => true, 'children' => [
+                    ['key' => 'prayer_islands', 'href' => '/admin/prayer-times/islands', 'hard' => true],
+                    ['key' => 'prayer_groups', 'href' => '/admin/prayer-times/groups', 'hard' => true],
+                    ['key' => 'prayer_broadcasts', 'href' => '/admin/prayer-times/broadcasts', 'hard' => true],
+                    ['key' => 'prayer_import', 'href' => '/admin/prayer-times/import', 'hard' => true],
+                ]],
+                ['key' => 'pronunciation_office', 'href' => '/admin/pronunciation'],
             ]],
-            ['key' => 'prayer_times', 'href' => '/admin/prayer-times/islands', 'hard' => true, 'section' => 'panel_website', 'children' => [
-                ['key' => 'prayer_islands', 'href' => '/admin/prayer-times/islands', 'hard' => true],
-                ['key' => 'prayer_groups', 'href' => '/admin/prayer-times/groups', 'hard' => true],
-                ['key' => 'prayer_broadcasts', 'href' => '/admin/prayer-times/broadcasts', 'hard' => true],
-                ['key' => 'prayer_import', 'href' => '/admin/prayer-times/import', 'hard' => true],
+            ['key' => 'panel_money', 'items' => [
+                ['key' => 'commerce', 'href' => '/admin/commerce'],
+                ['key' => 'library_office', 'href' => '/admin/library'],
+                ['key' => 'bookshop', 'href' => '/admin/bookshop', 'can' => ['bookshop.manage']],
             ]],
-            ['key' => 'pronunciation_office', 'href' => '/admin/pronunciation', 'section' => 'panel_website'],
-
-            // Shops & money: stored value and the two marketplaces.
-            ['key' => 'commerce', 'href' => '/admin/commerce', 'section' => 'panel_money'],
-            ['key' => 'library_office', 'href' => '/admin/library', 'section' => 'panel_money'],
-            ['key' => 'bookshop', 'href' => '/admin/bookshop', 'can' => ['bookshop.manage'], 'section' => 'panel_money'],
-
-            // System: accounts, the platform and its readiness. The reading
-            // alerts and the OTP-abuse log stay off the map on purpose: a
-            // list that accuses people is opened from its parent screen, by
-            // decision (`AdminPagesAreReachableTest`).
-            ['key' => 'manage_users', 'href' => '/admin/users', 'hard' => true, 'section' => 'panel_system'],
-            ['key' => 'system_settings', 'href' => '/admin/settings', 'hard' => true, 'section' => 'panel_system'],
-            ['key' => 'ops_checklist', 'href' => '/admin/operations', 'section' => 'panel_system'],
-            ['key' => 'feature_walkthrough', 'href' => '/admin/operations/features', 'section' => 'panel_system'],
-            ['key' => 'translations', 'href' => '/admin/translations', 'section' => 'panel_system'],
+            ['key' => 'panel_system', 'items' => [
+                ['key' => 'manage_users', 'href' => '/admin/users', 'hard' => true],
+                ['key' => 'system_settings', 'href' => '/admin/settings', 'hard' => true],
+                ['key' => 'ops_checklist', 'href' => '/admin/operations'],
+                ['key' => 'feature_walkthrough', 'href' => '/admin/operations/features'],
+                ['key' => 'translations', 'href' => '/admin/translations'],
+            ]],
         ];
     }
 

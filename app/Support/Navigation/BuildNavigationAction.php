@@ -7,9 +7,9 @@ use Illuminate\Routing\Route as RouteInstance;
 use Illuminate\Support\Facades\Route;
 
 /**
- * The shell's navigation for one signed-in person: a short primary bar for
- * their roles and the *More* groups, with every link they could only be
- * refused left out.
+ * The shell's navigation for one signed-in person in one workspace: the
+ * workspace's primary bar for their roles and its *More* groups, with every
+ * link they could only be refused left out.
  *
  * Visibility is read off the **route**, not duplicated here. Each nav href is
  * matched to its GET route and that route's gathered middleware is evaluated
@@ -19,15 +19,20 @@ use Illuminate\Support\Facades\Route;
  * link. The `roles` hint on `auth`-only pages (portal, learning, teaching)
  * covers what a route cannot say: which kind of person the page is *for*.
  *
+ * The workspace (`WorkspaceMap`, STATUS §5id) decides which bar and which
+ * groups are offered — the Institute's, the School's, a family's — never
+ * whether a link may be opened. Given none, the person's active workspace
+ * is resolved: the one they last switched to, else the first they hold.
+ *
  * Labels come back translated (`lang/nav.php`, English fallback), so the
  * shell renders text and nothing else.
  */
 class BuildNavigationAction
 {
     /**
-     * @return array{primary: list<array{key: string, label: string, href: string}>, groups: list<array{key: string, label: string, items: list<array{key: string, label: string, href: string}>}>}
+     * @return array{primary: list<array{key: string, label: string, href: string}>, groups: list<array{key: string, label: string, items: list<array{key: string, label: string, href: string}>}>, workspace?: string}
      */
-    public function execute(?object $user, string $locale): array
+    public function execute(?object $user, string $locale, ?string $workspace = null): array
     {
         if ($user === null || ! method_exists($user, 'hasAnyRole')) {
             return ['primary' => [], 'groups' => []];
@@ -35,23 +40,30 @@ class BuildNavigationAction
 
         $roles = $user->getRoleNames()->all();
         $routes = Route::getRoutes()->getRoutesByMethod()['GET'] ?? [];
+        $workspace ??= app(ResolveWorkspacesAction::class)->execute($user)['active'] ?? WorkspaceMap::ACCOUNT;
 
         $primary = [];
         $seen = [];
-        foreach ($roles as $role) {
-            foreach (NavigationMap::barsFor($role) as $bar) {
-                foreach (NavigationMap::primary()[$bar] ?? [] as $item) {
-                    if (isset($seen[$item['href']]) || ! $this->mayOpen($user, $roles, $item, $routes, $locale)) {
-                        continue;
-                    }
-                    $seen[$item['href']] = true;
-                    $primary[] = $this->present($item);
+        foreach (WorkspaceMap::barsFor($workspace, $roles) as $bar) {
+            foreach (NavigationMap::primary()[$bar] ?? [] as $item) {
+                if (isset($seen[$item['href']]) || ! $this->mayOpen($user, $roles, $item, $routes, $locale)) {
+                    continue;
                 }
+                $seen[$item['href']] = true;
+                $primary[] = $this->present($item);
             }
         }
 
-        $groups = [];
+        $all = [];
         foreach (NavigationMap::groups() as $group) {
+            $all[$group['key']] = $group;
+        }
+        $groups = [];
+        foreach (WorkspaceMap::definition($workspace)['groups'] as $key) {
+            $group = $all[$key] ?? null;
+            if ($group === null) {
+                continue;
+            }
             $items = [];
             foreach ($group['items'] as $item) {
                 if (! $this->mayOpen($user, $roles, $item, $routes, $locale)) {
@@ -69,14 +81,14 @@ class BuildNavigationAction
             }
             if ($items !== []) {
                 $groups[] = [
-                    'key' => $group['key'],
-                    'label' => $this->label($group['key']),
+                    'key' => $key,
+                    'label' => $this->label($key),
                     'items' => $items,
                 ];
             }
         }
 
-        return ['primary' => $primary, 'groups' => $groups];
+        return ['primary' => $primary, 'groups' => $groups, 'workspace' => $workspace];
     }
 
     /**
@@ -138,9 +150,9 @@ class BuildNavigationAction
     }
 
     /**
-     * @param  array{key: string, href: string, hard?: bool, section?: string}  $item
+     * @param  array{key: string, href: string, hard?: bool}  $item
      * @param  list<array{key: string, label: string, href: string, hard?: bool}>  $children
-     * @return array{key: string, label: string, href: string, hard?: bool, section?: array{key: string, label: string}, children?: list<array{key: string, label: string, href: string, hard?: bool}>}
+     * @return array{key: string, label: string, href: string, hard?: bool, children?: list<array{key: string, label: string, href: string, hard?: bool}>}
      */
     private function present(array $item, array $children = []): array
     {
@@ -148,10 +160,6 @@ class BuildNavigationAction
         // A Blade screen: the shell must load it whole, not as an Inertia visit.
         if (! empty($item['hard'])) {
             $presented['hard'] = true;
-        }
-        // The part of the admin panel it belongs to, for a heading.
-        if (! empty($item['section'])) {
-            $presented['section'] = ['key' => $item['section'], 'label' => $this->label($item['section'])];
         }
         if ($children !== []) {
             $presented['children'] = $children;

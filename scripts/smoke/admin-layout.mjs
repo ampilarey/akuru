@@ -84,10 +84,12 @@ await phone.click('button[aria-controls="nav-mobile-menu"]');
 await phone.locator('#nav-mobile-menu').waitFor({ state: 'visible', timeout: 10000 }).catch(() => {});
 const expanded = await phone.locator('button[aria-controls="nav-mobile-menu"]').getAttribute('aria-expanded');
 const mobileLinks = await phone.locator('#nav-mobile-menu a').evaluateAll((els) => els.map((el) => el.getAttribute('href')));
-const wanted = ['/admin/enrollments', '/admin/instructors', '/admin/public-site/pages', '/admin/public-site/courses', '/admin/operations', '/admin/translations', '/admin/commerce', '/admin/library', '/admin/bookshop', '/admin/prayer-times/islands', '/admin/pronunciation'];
+// The School workspace's screens (STATUS §5id): the educational admin's
+// phone menu is the School's map, not the whole panel.
+const wanted = ['/admin/enrollments', '/academics/years', '/people/students', '/exams/schedule', '/finance/invoices', '/hr/payroll', '/announcements', '/quran-progress'];
 const missing = wanted.filter((href) => !mobileLinks.some((h) => h && h.endsWith(href)));
 check('the hamburger opens it and says so', (await phone.locator('#nav-mobile-menu').isVisible()) && expanded === 'true', `aria-expanded=${expanded}`);
-check('and the phone menu reaches the whole admin panel the admin role may open', missing.length === 0, missing.join(', '));
+check('and the phone menu reaches the whole School the educational admin may open, and nothing of the Institute', missing.length === 0 && !mobileLinks.some((h) => h && /\/admin\/(commerce|users|settings|public-site\/pages)$/.test(h)), missing.join(', '));
 check('without Users or Settings for a plain admin', !mobileLinks.some((h) => h && (h.endsWith('/admin/users') || h.endsWith('/admin/settings'))));
 const overflow = await phone.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1);
 check('and nothing overflows the phone sideways', !overflow);

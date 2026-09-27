@@ -163,7 +163,7 @@ class NotifyFamilyDailyDigestAction
 
     /**
      * Role names without importing Identity\Models (rule 3) — the same reason
-     * ResolveDashboardLandingAction takes them as an array.
+     * ResolveWorkspacesAction takes the user for the same reason.
      *
      * @return list<string>
      */

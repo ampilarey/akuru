@@ -91,17 +91,24 @@ it('gives a student Learn first and no family-only screens', function () {
         ->and($hrefs)->not->toContain('/portal/children', '/portal/pickup', '/academics/registers/today');
 });
 
-it('lists each screen once and gives a guest nothing', function () {
-    $hrefs = hrefsIn(navFor(signedInAs('super_admin')));
-    $primaryAndGroups = count($hrefs);
-    // A screen may sit in the bar and in its group; never twice in the groups.
-    $groupHrefs = [];
-    foreach (navFor(signedInAs('super_admin'))['groups'] as $group) {
-        $groupHrefs = [...$groupHrefs, ...array_column($group['items'], 'href')];
+it('lists each screen once per workspace and gives a guest nothing', function () {
+    // A system admin who is also the dean holds the Institute and the School
+    // (STATUS §5id); together they carry the whole map.
+    $user = signedInAs('super_admin');
+    $user->assignRole(Role::findOrCreate('headmaster', 'web'));
+    $all = [];
+    foreach (['institute', 'school'] as $workspace) {
+        $nav = app(BuildNavigationAction::class)->execute($user, 'en', $workspace);
+        // A screen may sit in the bar and in its group; never twice in the groups.
+        $groupHrefs = [];
+        foreach ($nav['groups'] as $group) {
+            $groupHrefs = [...$groupHrefs, ...array_column($group['items'], 'href')];
+        }
+        expect($groupHrefs)->toBe(array_values(array_unique($groupHrefs)), $workspace);
+        $all = [...$all, ...hrefsIn($nav)];
     }
 
-    expect($groupHrefs)->toBe(array_values(array_unique($groupHrefs)))
-        ->and($primaryAndGroups)->toBeGreaterThan(60)
+    expect(count($all))->toBeGreaterThan(60)
         ->and(app(BuildNavigationAction::class)->execute(null, 'en'))->toBe(['primary' => [], 'groups' => []]);
 });
 
