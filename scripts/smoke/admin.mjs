@@ -203,6 +203,38 @@ const deanBadges = await su.locator('[data-testid="role-badge"]').allTextContent
 check('the users screen badges read System admin, Educational admin, Dean — never "Super Admin"', badges.some((b) => b.trim() === 'System admin') && adminBadges.length > 0 && adminBadges.every((b) => b.trim() === 'Educational admin') && deanBadges.length > 0 && deanBadges.every((b) => b.trim() === 'Dean') && !badges.some((b) => /Super Admin|Headmaster/.test(b)), [...new Set([...badges, ...adminBadges, ...deanBadges].map((b) => b.trim()))].join(', '));
 check('and its filter offers every role by that name', filterOptions.map((o) => o.trim()).includes('Dean') && filterOptions.map((o) => o.trim()).includes('Bookstore admin'), filterOptions.map((o) => o.trim()).join(', '));
 
+// The role and access screen (STATUS §5ig): the seeded parent is made a
+// supervisor and back, deactivated and reactivated, from the panel.
+await su.goto(`${BASE}/en/admin/users?role=parent`, { waitUntil: 'networkidle' });
+const parentRow = su.locator('tr', { hasText: 'parent@akuru.edu.mv' }).first();
+await Promise.all([su.waitForNavigation({ waitUntil: 'networkidle' }).catch(() => {}), parentRow.locator('[data-testid="user-roles-link"]').click()]);
+await settle(su, '[data-testid="roles-form"]');
+const rolesBefore = (await su.locator('[data-testid="roles-current"]').textContent()) || '';
+check('the users list opens a person’s Roles & access screen', /\/admin\/users\/\d+\/roles$/.test(su.url()) && rolesBefore.includes('Parent'), `${su.url().replace(BASE, '')} ${rolesBefore}`);
+// The seeded parent may hold side roles from other walks, so the check is
+// "Supervisor joins what was there, and leaves again".
+await su.locator('[data-testid="role-supervisor"]').check();
+await su.click('[data-testid="roles-save"]');
+await su.waitForFunction((was) => (document.querySelector('[data-testid="roles-current"]')?.textContent || '') !== was, rolesBefore, { timeout: 15000 }).catch(() => {});
+const rolesAfter = (await su.locator('[data-testid="roles-current"]').textContent()) || '';
+check('ticking Supervisor and saving makes them a supervisor too', rolesAfter.includes('Supervisor') && rolesAfter.includes('Parent') && rolesAfter !== rolesBefore, rolesAfter);
+await su.locator('[data-testid="role-supervisor"]').uncheck();
+await su.click('[data-testid="roles-save"]');
+await su.waitForFunction((was) => (document.querySelector('[data-testid="roles-current"]')?.textContent || '') === was, rolesBefore, { timeout: 15000 }).catch(() => {});
+check('and unticking it takes the role away again', (await su.locator('[data-testid="roles-current"]').textContent()) === rolesBefore, await su.locator('[data-testid="roles-current"]').textContent());
+await su.click('[data-testid="access-toggle"]');
+await su.waitForFunction(() => /Deactivated/.test(document.querySelector('[data-testid="access-state"]')?.textContent || ''), null, { timeout: 15000 }).catch(() => {});
+check('Deactivate turns the account off', /Deactivated/.test(await su.locator('[data-testid="access-state"]').textContent()));
+await su.click('[data-testid="access-toggle"]');
+await su.waitForFunction(() => /Can sign in/.test(document.querySelector('[data-testid="access-state"]')?.textContent || ''), null, { timeout: 15000 }).catch(() => {});
+check('and Reactivate turns it back on', /Can sign in/.test(await su.locator('[data-testid="access-state"]').textContent()));
+// The system admin's own screen keeps their role and their access.
+await su.goto(`${BASE}/en/admin/users?role=super_admin`, { waitUntil: 'networkidle' });
+const selfRow = su.locator('tr', { hasText: SUPER }).first();
+await Promise.all([su.waitForNavigation({ waitUntil: 'networkidle' }).catch(() => {}), selfRow.locator('[data-testid="user-roles-link"]').click()]);
+await settle(su, '[data-testid="roles-form"]');
+check('on their own screen the System admin role is locked and there is no deactivate button', (await su.locator('[data-testid="role-super_admin"]').isDisabled()) && (await count(su, '[data-testid="access-toggle"]')) === 0);
+
 await su.goto(`${BASE}/en/admin`, { waitUntil: 'networkidle' });
 await su.goto(`${BASE}/en/admin/operations`, { waitUntil: 'networkidle' });
 await su.click('button[aria-controls="app-shell-more"]');

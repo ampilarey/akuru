@@ -564,6 +564,12 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         // to the index it is linked from.
         Route::get('otp-abuse/export', [\App\Domains\Identity\Http\Controllers\OtpAbuseController::class, 'export'])->name('admin.users.otp-abuse.export');
         Route::get('otp-abuse', [\App\Domains\Identity\Http\Controllers\OtpAbuseController::class, 'index'])->name('admin.users.otp-abuse');
+        // The role and access screen (ADR-040 slice 4, BACKLOG C8): opened
+        // from the users list; the system admin hands out roles and
+        // reactivates accounts without the server.
+        Route::get('/{user}/roles', [\App\Domains\Identity\Http\Controllers\AdminUserRolesController::class, 'edit'])->name('admin.users.roles')->whereNumber('user');
+        Route::put('/{user}/roles', [\App\Domains\Identity\Http\Controllers\AdminUserRolesController::class, 'update'])->name('admin.users.roles.update')->whereNumber('user');
+        Route::post('/{user}/active', [\App\Domains\Identity\Http\Controllers\AdminUserRolesController::class, 'setActive'])->name('admin.users.active')->whereNumber('user');
         Route::delete('/{user}', [\App\Domains\Identity\Http\Controllers\AdminUserController::class, 'destroy'])->name('admin.users.destroy');
     });
 

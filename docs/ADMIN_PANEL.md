@@ -17,7 +17,7 @@ KNOWN_ISSUES or BACKLOG.
 
 | Group | Routes | Gate on the route | Screens | CSV | Tests | Walk |
 |---|---|---|---|---|---|---|
-| `admin/users` | 5 | `role:super_admin` | Blade (users, OTP abuse) | yes, both | 5 files | `admin.mjs` |
+| `admin/users` | 8 | `role:super_admin` | Blade (users, OTP abuse); Inertia (roles & access, §5ig) | yes, both | 6 files | `admin.mjs` |
 | `admin/settings` | 2 | `role:super_admin` | Blade | n/a | 4 files | `admin.mjs` |
 | `admin/enrollments` | 11 | `role:super_admin\|admin\|headmaster\|supervisor`; `can:payments.record` on the manual payment | Blade (3) | yes, both lists | 5 files | `admin.mjs`, 2 others |
 | `admin/payments` | 1 | `role:super_admin\|admin` + `can:payments.refund` | write only | n/a | 1 file | — |
@@ -102,8 +102,13 @@ on the users screen and its filter (now every role), the Blade user menu,
 the linked-accounts list and the staff form. The keys in the database do
 not change.
 
-**Still owner-owned after this** (slice 4 of the decision): a role screen
-so the owner can hand out roles without the server (BACKLOG C8).
+**Slice 4 (2026-09-27, STATUS §5ig)**: *Roles & access* under Manage
+users — the system admin ticks the roles a person holds (by the names
+people read) and deactivates or reactivates their account, never their
+own System admin role or account and never the last System admin's. The
+first system admin on a host is still made by tinker
+(`docs/AUTHENTICATION_GUIDE.md`); every role after that comes from this
+screen. All four slices of ADR-040 are built.
 
 ## 2. Checked and held
 
@@ -145,7 +150,7 @@ so the owner can hand out roles without the server (BACKLOG C8).
 | 2 | **Four listings had no CSV** against the every-listing convention: instructors, prayer recipient groups, CMS pages, CMS courses. | low | **Fixed**: four exports, each the screen's own query, with an *Export CSV* link and a test; declared before the resource routes so `pages/export` is not swallowed by `pages/{page}`. |
 | 3 | **`users:clear-non-admin` had no production guard.** It turns foreign-key checks off, hard-deletes every non-admin user and their `payments` rows (rule 12), and `--force` skips the only confirmation. Its purpose is test data; on production one line would have wiped every family. | high (latent — nobody runs it there) | **Fixed**: refused outright on production, before any count; tested. The rule-12 delete of `payments` on non-production stays, because that is the command's job on staging. |
 | 4 | **The prayer-times import accepted any file size** (`required|file`). | low | **Fixed**: capped at 20 MB (the bundled `salat.db` is 470 KB); tested. |
-| 5 | **No screen assigns or removes a role.** `/admin/users` lists, exports and deletes; roles are granted by seeders, `bookshop:grant-manager`, or tinker. A super admin cannot make someone an admin, a teacher or a Bookstore manager from the panel, and cannot reactivate a deactivated account. | medium (gap) | Not built here — a slice of its own (a role and activation screen with the super-admin protections `DeleteUserAccountAction` already has). BACKLOG C8. |
+| 5 | **No screen assigns or removes a role.** `/admin/users` lists, exports and deletes; roles are granted by seeders, `bookshop:grant-manager`, or tinker. A super admin cannot make someone an admin, a teacher or a Bookstore manager from the panel, and cannot reactivate a deactivated account. | medium (gap) | **Built 2026-09-27** (ADR-040 slice 4, STATUS §5ig): *Roles & access* on every row of `/admin/users` — tick the roles by the names people read, deactivate and reactivate — with the protections `DeleteUserAccountAction` has (never the actor's own System admin role or account, never the last System admin). `UserRolesScreenTest`; walked in `admin.mjs`. |
 | 6 | **Enrolment decisions record no actor.** Activate, reject, suspend, reinstate and the access window write the status and nothing about who did it or when; `reject` writes the status straight from the controller. Refunds, manual payments and wallet credits do record the actor. | medium (audit trail) | Not fixed here — a `decided_by` / `decided_at` pair is a schema change on a live-data table (rule 9 discipline) and belongs with the admissions work. KNOWN_ISSUES. |
 | 7 | **The CMS, instructors and enrolments are gated by role alone.** Any headmaster or supervisor may edit the public website, add instructors and (KNOWN_ISSUES 12) grant a place on a paid course, while the Blade nav shows *Website CMS* only to `super_admin` and `admin`. `daily_content.manage` and `daily_content.approve` exist and are checked inside their controllers; `hr.manage` exists but the instructor screens do not check it; no `cms.manage` exists. | medium (policy) | **Decided and fixed, 2026-09-27** (ADR-040 slice 2, STATUS §5ie): the website, its instructors and prayer times are the system admin's — `role:super_admin` on those groups; admissions `role:super_admin\|admin\|headmaster`. `EducationalAdminPermissionSetTest`, `EnrollmentDecisionRouteTest`. |
 | 8 | **`admin` holds `Permission::all()`**, identical to `super_admin` (KNOWN_ISSUES 10); six of the nine roles exist only if `RoleSeeder` ran (KNOWN_ISSUES 11). | — | **Fixed, 2026-09-27** for the first half: `RoleGrants::educationalAdmin()` is the set, shipped by migration `2026_09_27_000001` and read by the seeder; `admin` is now migration-created too. `headmaster`, `teacher`, `student` and `parent` remain seeder-only (KNOWN_ISSUES 11). |

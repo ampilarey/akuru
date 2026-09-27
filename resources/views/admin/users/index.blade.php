@@ -114,6 +114,9 @@
                         @if($isSelf)
                         <div style="font-size:.68rem;color:#D97706;font-weight:600">YOU</div>
                         @endif
+                        @unless($u->is_active)
+                        <div style="font-size:.68rem;color:#991B1B;font-weight:600" data-testid="user-inactive">{{ __('admin.users_inactive') }}</div>
+                        @endunless
                     </td>
                     <td style="padding:.75rem 1rem;color:#374151">
                         @if($mobile)
@@ -141,7 +144,12 @@
                     <td style="padding:.75rem 1rem;color:#9CA3AF;white-space:nowrap">
                         {{ $u->created_at->format('d M Y') }}
                     </td>
-                    <td style="padding:.75rem 1rem">
+                    <td style="padding:.75rem 1rem;white-space:nowrap">
+                        {{-- The role and access screen (ADR-040 slice 4): every row, the protected ones included — a System admin grants themselves the dean's role here. --}}
+                        <a href="{{ route('admin.users.roles', $u) }}" data-testid="user-roles-link"
+                           style="display:inline-block;margin-inline-end:.5rem;padding:.35rem .75rem;background:#FFFBF0;color:#7C2D37;border:1px solid #E6D9C8;border-radius:.375rem;font-size:.75rem;font-weight:600;text-decoration:none">
+                            {{ __('admin.users_roles_link') }}
+                        </a>
                         @if($isSelf || $isSuperAdmin)
                         <span style="font-size:.75rem;color:#D1D5DB">Protected</span>
                         @else

@@ -42,8 +42,14 @@ final class RoleLabels
      */
     public static function list(iterable $roles, ?string $locale = null): string
     {
+        // In the label file's order (System admin first, the side roles last),
+        // whatever order the roles were granted in.
+        $held = is_array($roles) ? $roles : iterator_to_array($roles, false);
+        $order = array_flip(self::KNOWN);
+        usort($held, fn (string $a, string $b): int => ($order[$a] ?? PHP_INT_MAX) <=> ($order[$b] ?? PHP_INT_MAX));
+
         $labels = [];
-        foreach ($roles as $role) {
+        foreach ($held as $role) {
             $labels[] = self::label($role, $locale);
         }
 
