@@ -4414,6 +4414,29 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5ja. The login page fetched an image that did not exist, on every visit (2026-09-27)
+
+Seen in passing during the B3 walk (§5iw): every load of the login page
+requested `/en/%EF%BF%BD` as an image and got a 404. Nobody saw it —
+it is a background — but it was one 404 per guest page in the server
+log, and the pattern it was meant to draw never drew.
+
+**Cause.** `layouts/guest.blade.php` (login, register, password reset)
+and `public/home.blade.php` paint a faint SVG pattern through an inline
+`style="…background-image:url(\"data:image/svg+xml,…\")"`. A backslash
+is not an escape inside an HTML attribute: the attribute ended at the
+first `"`, the CSS parser was left with `url(\` — a dangling escape,
+which it reads as U+FFFD — and the browser fetched that character as a
+URL. The rest of the data URI became junk attributes on the `div`.
+
+**Fix.** The quotes are `&quot;` entities, which the browser decodes
+inside the attribute to a well-formed `url("data:…")`. The pattern now
+draws on both pages and the 404 is gone (checked in a browser: no
+request with the replacement character). `InlineSvgBackgroundsAreWellFormedTest`
+pins the **rendered** HTML of the login and home pages — no `url(\"`, no
+U+FFFD, the pattern inside one `style` attribute — so a copy of the
+pattern into a third template is caught the same way.
+
 ## 5iz. Library B4c: a picture for the offer (2026-09-27)
 
 BACKLOG B4, LIBRARY_PLAN §18 ("banner"). The offers page listed campaigns
@@ -4559,7 +4582,7 @@ draft showed the dashed break between the pages; the office form
 mounted the same editor. `library.mjs`, `earnings.mjs` and
 `peer-review.mjs` type into the editor now. Unrelated, seen in passing:
 the login page requests an image at `/en/%EF%BF%BD` (a U+FFFD in a
-`src`), a 404 on every visit — noted, not chased (rule 1).
+`src`), a 404 on every visit — noted then, chased and fixed in §5ja.
 
 ## 5iv. Library B9: what an applicant may add — portrait, publications, ID (2026-09-27)
 
