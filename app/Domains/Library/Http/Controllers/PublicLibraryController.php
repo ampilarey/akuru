@@ -7,6 +7,7 @@ use App\Domains\Library\Actions\ListLibraryItemsAction;
 use App\Domains\Library\Actions\ListMyLibraryAction;
 use App\Domains\Library\Actions\PresentLibraryItemAction;
 use App\Domains\Library\Actions\PresentWriterPublicProfileAction;
+use App\Domains\Library\Actions\RecordLibrarySearchAction;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
 use Illuminate\Http\Request;
@@ -26,9 +27,14 @@ class PublicLibraryController extends Controller
     {
         $filters = array_filter($request->only(self::FILTERS), fn ($value) => $value !== null && $value !== '');
         $browsing = array_diff_key($filters, ['sort' => 1]) === [];
+        $items = app(ListLibraryItemsAction::class)->execute($filters);
+        // B14 (§29): what was looked for, and whether it was found.
+        if (isset($filters['q'])) {
+            app(RecordLibrarySearchAction::class)->execute((string) $filters['q'], count($items), $request->user()?->id);
+        }
 
         return view('public.library.index', [
-            'items' => app(ListLibraryItemsAction::class)->execute($filters),
+            'items' => $items,
             'categories' => app(ListLibraryCategoriesAction::class)->execute(withCounts: true),
             'filters' => $filters,
             'sorts' => ListLibraryItemsAction::SORTS,

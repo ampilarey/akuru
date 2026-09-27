@@ -337,4 +337,11 @@ await su.locator('[data-testid="library-settings"] input[name="refund_window_day
 await su.click('[data-testid="library-settings"] button[type=submit]');
 await su.waitForFunction(() => document.body.innerText.includes('Library settings saved.'), null, { timeout: 20000 }).catch(() => {});
 
+// B14 (LIBRARY_PLAN §29, STATUS §5it): the Library over a period, with its CSV.
+await su.goto(`${BASE}/en/admin/library/insights?period=all`, { waitUntil: 'networkidle' });
+await settle(su, '[data-testid="insights-headline"]');
+const pagesOpened = Number(await su.locator('[data-testid="headline-pages_opened"]').innerText());
+const insightsCsv = await csvOf(su, '/en/admin/library/insights/export?period=all');
+check('the Library insights page counts the reading and carries a CSV', Number.isFinite(pagesOpened) && pagesOpened > 0 && (await count(su, '[data-testid="most-read"] tbody tr')) > 0 && insightsCsv.status === 200 && insightsCsv.text.startsWith('period,title'), `${pagesOpened} pages opened · CSV ${insightsCsv.status}`);
+
 await finish();

@@ -4414,6 +4414,30 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5it. Library B14: the Library over a period, for the office (2026-09-27)
+
+BACKLOG B14, LIBRARY_PLAN §29. The office had sales per item, the
+reading-abuse queue, the payouts — and no answer to "how is the Library
+doing this month": who reads, what is read most, which categories and
+writers carry it, what people look for and do not find.
+
+**Built.** `/admin/library/insights` (Inertia `Library/Insights`, from
+the *Insights* button on the Library office, under its gate) by period —
+7, 30, 90 days or all time. `ListLibraryInsightsAction` returns
+aggregates only: active readers, pages opened, items completed,
+purchases and revenue, searches; the ten most-read items with readers,
+completions and sales in the period; categories by pages opened; writers
+by sales; the top search terms and the ones that found nothing. The
+shelf's searches are recorded now (`library_search_logs`, migration
+`2026_09_27_000008`: the term lower-cased and trimmed, the hit count,
+the searcher's id if signed in, nothing else; pruned with the reading
+events by `prune:expired-data`). The most-read table has a CSV per
+period. EN/DV/AR in `admin.php`; the page is listed as opened from the
+Library hub in `AdminPagesAreReachableTest`. `LibraryInsightsTest` (2).
+Walked in `admin.mjs`: the page counts the seeded reading and its CSV
+downloads. Not built: *conversion* proper — item-page views are not
+recorded, so purchases against readers stand in.
+
 ## 5is. Library B10: gift cards that expire, and the office's deactivate (2026-09-27)
 
 BACKLOG B10, LIBRARY_PLAN §15.2. A bought gift card never expired (the
