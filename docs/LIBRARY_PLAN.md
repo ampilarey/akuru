@@ -95,6 +95,8 @@ Never expose a PDF URL directly. Original files in private storage; reading happ
 
 > **9.1 reading comfort built 2026-09-25 (STATUS §5gq):** font size, light/sepia/dark, text direction, full screen (kept in the reader's browser), and *Mark as completed*. Not built: private highlights, in-book search, reading time per session.
 
+> **Parent's view built 2026-09-27 (B8, STATUS §5io):** from *My children* a parent opens a verified child's reading progress and purchases (`/portal/children/{student}/library`, with a CSV). Bookmarks and notes are the child's private words and stay on the child's own *My Library*.
+
 - **My Library:** purchased books/articles/research, free saved, course-included, gifted, recently opened.
 - **Continue Reading:** title, last page/chapter, %, continue button, last read date.
 - **Reading Progress:** started / in progress / completed, last read, total time (optional), %.

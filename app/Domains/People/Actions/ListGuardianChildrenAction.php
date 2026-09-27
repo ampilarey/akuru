@@ -59,6 +59,9 @@ class ListGuardianChildrenAction
             ->whereIn('guardian_student.guardian_id', $guardianIds->isEmpty() ? [0] : $guardianIds->all())
             ->select([
                 'students.id',
+                // B8: the child's own login, when they have one — what their
+                // Library reading hangs off.
+                'students.user_id',
                 'students.student_id',
                 'students.first_name',
                 'students.last_name',

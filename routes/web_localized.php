@@ -196,6 +196,9 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
     Route::post('/portal/meetings/{slot}/book', [PortalMeetingController::class, 'book'])->name('portal.meetings.book')->whereNumber('slot');
     Route::post('/portal/meetings/bookings/{booking}/cancel', [PortalMeetingController::class, 'cancel'])->name('portal.meetings.cancel')->whereNumber('booking');
     Route::get('/portal/children', [GuardianChildrenController::class, 'index'])->name('portal.children');
+    // B8 (LIBRARY_PLAN §10): what a child is reading and has bought, for their parent.
+    Route::get('/portal/children/{student}/library/export', [\App\Domains\Portal\Http\Controllers\GuardianChildLibraryController::class, 'export'])->name('portal.children.library.export')->whereNumber('student');
+    Route::get('/portal/children/{student}/library', [\App\Domains\Portal\Http\Controllers\GuardianChildLibraryController::class, 'show'])->name('portal.children.library')->whereNumber('student');
     Route::get('/portal/holidays', [PortalHolidayController::class, 'index'])->name('portal.holidays');
     // E15: what is still on the shelf. Families only ever see unreturned items.
     // E8, the family side.
