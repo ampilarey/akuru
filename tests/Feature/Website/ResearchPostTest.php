@@ -264,7 +264,8 @@ it('lets an admin save research and export CSV', function () {
         ->actingAs($admin)
         ->get(route('admin.research.index'))
         ->assertOk()
-        ->assertSee('W25 Admin Saved', false);
+        // Inertia since C9 slice 8: the rows are props.
+        ->assertInertia(fn (\Inertia\Testing\AssertableInertia $page) => $page->component('Website/Research')->where('posts.0.title', 'W25 Admin Saved')->where('posts.0.authors_label', 'Ustadha W25 CSV, Dr External'));
 
     $adminCsv = $this->withoutLocalizationMiddleware()
         ->actingAs($admin)

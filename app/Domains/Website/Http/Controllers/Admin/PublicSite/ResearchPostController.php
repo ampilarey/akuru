@@ -12,19 +12,27 @@ use App\Support\Csv;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
+use Inertia\Inertia;
+use Inertia\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
+/**
+ * Research posts (W25). Inertia since C9 slice 8 (STATUS §5jj), with its
+ * strings keyed for Dhivehi and Arabic. `role:super_admin` on the route
+ * group. Validation is SaveResearchPostAction's, surfaced as field errors.
+ */
 class ResearchPostController extends Controller
 {
-    public function index(Request $request)
+    public function index(Request $request): Response
     {
         $filters = $request->only(['year', 'instructor_id', 'q']);
 
-        return view('admin.public-site.research.index', [
-            'posts' => app(ListResearchPostsAction::class)->execute($filters, false),
+        return Inertia::render('Website/Research', [
+            'posts' => app(ListResearchPostsAction::class)->execute($filters, false)->all(),
             'years' => app(ListResearchPostsAction::class)->years(false),
             'instructors' => app(ListPublicInstructorProfilesAction::class)->execute(),
-            'filters' => $filters,
+            'filters' => ['year' => (string) ($filters['year'] ?? ''), 'instructor_id' => (string) ($filters['instructor_id'] ?? ''), 'q' => (string) ($filters['q'] ?? '')],
+            't' => trans('admin'),
         ]);
     }
 
@@ -51,11 +59,12 @@ class ResearchPostController extends Controller
         }, 'research.csv', ['Content-Type' => 'text/csv; charset=UTF-8']);
     }
 
-    public function create()
+    public function create(): Response
     {
-        return view('admin.public-site.research.form', [
+        return Inertia::render('Website/ResearchForm', [
             'item' => null,
             'instructors' => app(ListPublicInstructorProfilesAction::class)->execute(),
+            't' => trans('admin'),
         ]);
     }
 
@@ -71,17 +80,18 @@ class ResearchPostController extends Controller
 
         return redirect()
             ->route('admin.research.edit', $row)
-            ->with('success', 'Research post saved.');
+            ->with('success', trans('admin.research_saved'));
     }
 
-    public function edit(Post $post)
+    public function edit(Post $post): Response
     {
         $item = app(PresentResearchPostAction::class)->execute($post);
         abort_if($item === null, 404);
 
-        return view('admin.public-site.research.form', [
+        return Inertia::render('Website/ResearchForm', [
             'item' => $item,
             'instructors' => app(ListPublicInstructorProfilesAction::class)->execute(),
+            't' => trans('admin'),
         ]);
     }
 
@@ -99,6 +109,6 @@ class ResearchPostController extends Controller
 
         return redirect()
             ->route('admin.research.edit', $post)
-            ->with('success', 'Research post updated.');
+            ->with('success', trans('admin.research_updated'));
     }
 }

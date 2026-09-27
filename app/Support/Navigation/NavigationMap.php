@@ -312,7 +312,7 @@ final class NavigationMap
                 ['key' => 'website_cms', 'href' => '/admin/public-site/pages', 'hard' => true, 'children' => [
                     ['key' => 'cms_pages', 'href' => '/admin/public-site/pages', 'hard' => true],
                     ['key' => 'cms_courses', 'href' => '/admin/public-site/courses', 'hard' => true],
-                    ['key' => 'cms_research', 'href' => '/admin/public-site/research', 'hard' => true],
+                    ['key' => 'cms_research', 'href' => '/admin/public-site/research'],
                     ['key' => 'cms_daily_content', 'href' => '/admin/public-site/daily-content', 'hard' => true],
                     ['key' => 'cms_daily_queue', 'href' => '/admin/public-site/daily-content/queue', 'hard' => true],
                     ['key' => 'cms_subscriptions', 'href' => '/admin/public-site/daily-subscriptions'],
