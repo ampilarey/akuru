@@ -170,7 +170,7 @@ it('dual-writes a waiting-list inquiry onto the leads table', function () {
 });
 
 it('lists leads for staff and exports CSV', function () {
-    $admin = actingPeopleAdmin();
+    $admin = actingSystemAdmin();
     $course = leadCourse(['title' => 'W14 Listed Course']);
     Lead::query()->create([
         'course_id' => $course->id,
@@ -202,7 +202,7 @@ it('lists leads for staff and exports CSV', function () {
 });
 
 it('saves WhatsApp and syllabus ids from the public-site admin form', function () {
-    $admin = actingPeopleAdmin();
+    $admin = actingSystemAdmin();
     $file = publicSyllabusFile();
     $course = leadCourse();
 

@@ -29,7 +29,7 @@
 import { chromium } from 'playwright';
 
 const BASE = process.env.SMOKE_BASE_URL ?? 'http://127.0.0.1:8000';
-const ADMIN = process.env.SMOKE_ADMIN ?? 'admin@akuru.edu.mv';
+const ADMIN = process.env.SMOKE_ADMIN ?? 'superadmin@akuru.edu.mv';
 const STUDENT = process.env.SMOKE_STUDENT ?? 'student@akuru.edu.mv';
 const PASSWORD = process.env.SMOKE_PASSWORD ?? 'password';
 const VENDOR = process.env.SMOKE_VENDOR ?? 'vendor@akuru.edu.mv';

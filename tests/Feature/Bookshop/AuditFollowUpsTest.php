@@ -63,9 +63,9 @@ function followAs(?User $user = null)
 function followOffice(): User
 {
     Permission::findOrCreate('bookshop.manage', 'web');
-    Role::findOrCreate('admin', 'web')->givePermissionTo('bookshop.manage');
+    Role::findOrCreate('super_admin', 'web')->givePermissionTo('bookshop.manage');
     $office = User::factory()->create();
-    $office->assignRole('admin');
+    $office->assignRole('super_admin');
 
     return $office;
 }
@@ -191,7 +191,7 @@ it('shows a shop its returns rate and the office the GST the shops collected, in
 it('links a printed book to its Digital Library edition, wants a few words for every photo, and opens the gallery in a lightbox', function () {
     Storage::fake('public');
     [$fitrah, $owner] = followShop();
-    Role::findOrCreate('admin', 'web');
+    Role::findOrCreate('super_admin', 'web');
     $published = LibraryItem::query()->create(['title' => 'Tracing Book (e-book)', 'slug' => 'tracing-book-ebook', 'content_type' => 'book', 'access_type' => 'free_public', 'status' => 'published', 'published_at' => now()]);
     $draft = LibraryItem::query()->create(['title' => 'Unfinished', 'slug' => 'unfinished', 'content_type' => 'book', 'access_type' => 'free_public', 'status' => 'draft']);
 

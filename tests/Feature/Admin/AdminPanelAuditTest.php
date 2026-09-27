@@ -43,7 +43,8 @@ function auditAs(User $user)
 }
 
 it('exports the instructors, the prayer recipient groups, the CMS pages and the CMS courses as the screens list them', function () {
-    $office = auditAdmin('admin', ['prayer.manage']);
+    // The website's screens are the system admin's (ADR-040 slice 2).
+    $office = auditAdmin('super_admin', ['prayer.manage']);
     $teacher = auditAdmin('teacher');
 
     Instructor::query()->create(['name' => 'Ustaadh Audit', 'email' => 'audit@example.test', 'specialization' => 'Tajweed', 'is_active' => true, 'sort_order' => 1]);
@@ -107,7 +108,7 @@ it('offers the admin panel in the Inertia More menu by workspace, Blade screens 
 });
 
 it('refuses a prayer-times database over 20 MB', function () {
-    $office = auditAdmin('admin', ['prayer.manage']);
+    $office = auditAdmin('super_admin', ['prayer.manage']);
     auditAs($office)->post(route('admin.prayer-times.import.store'), ['salat_db' => UploadedFile::fake()->create('salat.db', 21000)])
         ->assertSessionHasErrors('salat_db');
 });

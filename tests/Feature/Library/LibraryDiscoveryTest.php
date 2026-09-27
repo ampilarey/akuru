@@ -73,7 +73,7 @@ it('narrows the shelf by access, language and price, and orders it six ways', fu
 it('puts the office\'s featured picks and the reader\'s half-read books on the front of the shelf only', function () {
     $plain = shelfItem('Plain Book');
     $starred = shelfItem('Starred Book');
-    $admin = actingPeopleAdmin(['library.manage']);
+    $admin = actingSystemAdmin(['library.manage']);
 
     $this->withoutLocalizationMiddleware()->actingAs($admin)
         ->post(route('admin.library.items.feature', $starred->id), ['featured' => 1])

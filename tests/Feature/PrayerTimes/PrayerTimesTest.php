@@ -33,7 +33,7 @@ beforeEach(function () {
 
 function consentedPrayerUser(string $phone = '+9607772434'): array
 {
-    $admin = actingPeopleAdmin(['prayer.manage']);
+    $admin = actingSystemAdmin(['prayer.manage']);
     $user = makePrayerContactUser($phone);
     $student = makeStudent(['user_id' => $user->id]);
     app(RecordConsentAction::class)->execute('student', $student->id, 'prayer_reminders', true, $admin->id, 'admin');
@@ -191,7 +191,7 @@ it('change-only sends when tomorrow differs and skips when identical', function 
 
 it('excludes contacts without prayer_reminders consent and honors STOP', function () {
     seedPrayerTimesFixture();
-    $admin = actingPeopleAdmin(['prayer.manage']);
+    $admin = actingSystemAdmin(['prayer.manage']);
     $plain = makePrayerContactUser('+9607771001');
     makeStudent(['user_id' => $plain->id]);
     $ctx = consentedPrayerUser('+9607772434');
@@ -281,7 +281,7 @@ it('blocks a changing range until it is split', function () {
 
 it('serves admin island CSV and public homepage widget from the contract', function () {
     seedPrayerTimesFixture();
-    $admin = actingPeopleAdmin(['prayer.manage']);
+    $admin = actingSystemAdmin(['prayer.manage']);
     $csv = $this->actingAs($admin)
         ->withoutLocalizationMiddleware()
         ->get(route('admin.prayer-times.islands.export'))

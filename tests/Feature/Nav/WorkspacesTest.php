@@ -219,11 +219,15 @@ it('composes the Institute and the School homes from the workspace’s own menu'
             ->has('today.tiles', 5)->where('today.tiles.0.key', 'pending_payment')->where('today.tiles.3.key', 'unfilled_registers')
             ->where('today.more.href', '/portal/overview'));
 
+    // A supervisor runs no admissions (ADR-040 slice 2), so the School office
+    // opens on the academics for them.
     $supervisor = workspaceUser(['supervisor']);
     $this->withoutLocalizationMiddleware()->actingAs($supervisor)->get(route('school.index'))->assertOk()
         ->assertInertia(fn (Assert $page) => $page->where('workspace', 'school')
             ->where('today.tiles', fn ($tiles) => collect($tiles)->pluck('key')->contains('students_on_roll'))
-            ->where('parts.0.key', 'panel_admissions'));
+            ->where('parts.0.key', 'school_academics'));
+    $this->withoutLocalizationMiddleware()->actingAs(workspaceUser(['headmaster']))->get(route('school.index'))->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->where('parts.0.key', 'panel_admissions'));
 
     // A teacher opens the School office too, shaped by what they may open.
     $teacher = workspaceUser(['teacher'], ['registers.fill']);

@@ -7,10 +7,11 @@
  * Admissions, Academics and Office; a card lists the screens inside its
  * group; a screen inside a Blade section opens with a full page load and an
  * Inertia one with a visit; the More menu is the School's; at 390 px the
- * cards stack and nothing is cut off. With SMOKE_SUPER_ADMIN (an account
- * holding super_admin): /dashboard lands on the Institute, with Website &
- * content, Shops & money and System, the CMS card's eight screens, the
- * Institute bar, and the full dashboard a link away.
+ * cards stack and nothing is cut off. As the seeded system admin
+ * (SMOKE_SUPER_ADMIN, `superadmin@` by default): /dashboard lands on the
+ * Institute, with Website & content, Shops & money and System, the CMS
+ * card's eight screens, the Institute bar, and the full dashboard a link
+ * away.
  *
  *   php artisan db:seed --class=SmokeMarkerSeeder
  *   node scripts/smoke/admin-hub.mjs
@@ -21,7 +22,7 @@ import { chromium } from 'playwright';
 
 const BASE = process.env.SMOKE_BASE_URL ?? 'http://127.0.0.1:8000';
 const ADMIN = process.env.SMOKE_ADMIN ?? 'admin@akuru.edu.mv';
-const SUPER = process.env.SMOKE_SUPER_ADMIN ?? null;
+const SUPER = process.env.SMOKE_SUPER_ADMIN ?? 'superadmin@akuru.edu.mv';
 const PASSWORD = process.env.SMOKE_PASSWORD ?? 'password';
 
 const HERMETIC_ARGS = [

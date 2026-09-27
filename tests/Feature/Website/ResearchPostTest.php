@@ -204,7 +204,7 @@ it('shows an instructor profile with their research', function () {
 
 it('links a stored research PDF on the public show page', function () {
     Storage::fake('public');
-    $admin = actingPeopleAdmin();
+    $admin = actingSystemAdmin();
     $pdf = UploadedFile::fake()->create('w25-paper.pdf', 40, 'application/pdf');
 
     $this->withoutLocalizationMiddleware()
@@ -236,7 +236,7 @@ it('links a stored research PDF on the public show page', function () {
 });
 
 it('lets an admin save research and export CSV', function () {
-    $admin = actingPeopleAdmin();
+    $admin = actingSystemAdmin();
     $shifa = w25Instructor(['name' => 'Ustadha W25 CSV', 'slug' => 'ustadha-w25-csv']);
 
     $this->withoutLocalizationMiddleware()

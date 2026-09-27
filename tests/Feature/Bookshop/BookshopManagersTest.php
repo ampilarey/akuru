@@ -21,9 +21,9 @@ function teamAs(User $user)
 function fullAdmin(): User
 {
     Permission::findOrCreate('bookshop.manage', 'web');
-    Role::findOrCreate('admin', 'web')->givePermissionTo('bookshop.manage');
+    Role::findOrCreate('super_admin', 'web')->givePermissionTo('bookshop.manage');
     $admin = User::factory()->create();
-    $admin->assignRole('admin');
+    $admin->assignRole('super_admin');
 
     return $admin;
 }

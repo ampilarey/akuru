@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Support\Authorization\RoleGrants;
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
@@ -15,9 +16,9 @@ class RoleSeeder extends Seeder
     {
         // Create roles
         $roles = [
-            'super_admin',  // System owner - full access
-            'admin',        // School admin - fees, payments, operations
-            'headmaster',   // Academic leadership
+            'super_admin',  // System admin - the Institute: website, users, system, shops, library office
+            'admin',        // Educational admin - the school's office: admissions, people, fees, HR
+            'headmaster',   // Dean - everything education
             'supervisor',   // Academic monitoring
             'teacher',      // Teaching staff
             'student',      // Students
@@ -157,7 +158,7 @@ class RoleSeeder extends Seeder
             'prayer.manage',
         ];
 
-        foreach ($permissions as $permission) {
+        foreach ([...$permissions, ...RoleGrants::educationalAdmin()] as $permission) {
             Permission::firstOrCreate(['name' => $permission, 'guard_name' => 'web']);
         }
 
@@ -167,9 +168,13 @@ class RoleSeeder extends Seeder
         $superAdmin = Role::findByName('super_admin');
         $superAdmin->givePermissionTo(Permission::all());
 
-        // Admin gets most permissions (school operations, not system-level)
+        // The educational admin runs the school's office and reads its
+        // academics — and holds nothing of the Institute (ADR-040 slice 2).
+        // The set is `RoleGrants::educationalAdmin()`, shipped by migration
+        // `2026_09_27_000001`; `sync`, so a re-seed removes what a set change
+        // took away rather than only adding.
         $admin = Role::findByName('admin');
-        $admin->givePermissionTo(Permission::all());
+        $admin->syncPermissions(RoleGrants::educationalAdmin());
 
         $headmaster = Role::findByName('headmaster');
         $headmaster->givePermissionTo([

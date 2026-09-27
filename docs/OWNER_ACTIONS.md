@@ -212,10 +212,12 @@ nurse or counsellor ever needs their own door, it is a named role, not
 `admin`.
 
 Health and welfare notes are readable by `super_admin` and `headmaster` only.
-`admin` is **deliberately excluded**, because `RoleSeeder`'s blanket
-`Permission::all()` would otherwise have granted every admin account access by
-accident. Widening it is one line in a migration; narrowing it later is a
-disclosure.
+`admin` is **deliberately excluded** — from the route's role list, and since
+2026-09-27 from the educational admin's permission set as well
+(`RoleGrants`, ADR-040 slice 2; until then `RoleSeeder`'s blanket
+`Permission::all()` would have granted every admin account access by
+accident, which is why the role list was the lock). Widening it is one line
+in a migration; narrowing it later is a disclosure.
 
 ### 13. `guardian_student` verification flag — **decided 2026-09-25: it is a gate, built**
 

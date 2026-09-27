@@ -7,7 +7,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 uses(RefreshDatabase::class);
 
 it('lets an operator tick and untick shared checklist items with attribution', function () {
-    $admin = actingPeopleAdmin(['operations.manage']);
+    $admin = actingSystemAdmin(['operations.manage']);
 
     $this->withoutLocalizationMiddleware()->actingAs($admin)
         ->get(route('admin.operations.index'))
@@ -40,7 +40,7 @@ it('lets an operator tick and untick shared checklist items with attribution', f
 });
 
 it('serves the feature walkthrough with the same shared tick store', function () {
-    $admin = actingPeopleAdmin(['operations.manage']);
+    $admin = actingSystemAdmin(['operations.manage']);
 
     $this->withoutLocalizationMiddleware()->actingAs($admin)
         ->get(route('admin.operations.features'))

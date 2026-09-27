@@ -58,9 +58,20 @@ kept for an outside author.
    their own pages. A person opening a home they do not hold is sent to
    their own.
 5. **Roles keep their keys.** The labels people read change in a later
-   slice (System admin, Dean, Educational admin); the educational admin's
-   permission set is defined in a later slice so the `admin` role stops
-   holding everything.
+   slice (System admin, Dean, Educational admin). The educational admin's
+   permission set is a decision, not `Permission::all()` (slice 2,
+   2026-09-27, STATUS §5ie): `App\Support\Authorization\RoleGrants` names
+   it — the school's office (admissions and their money, the people, fees,
+   HR and payroll, the noticeboard, messages, forms, requests, the calendar,
+   rooms, meetings and events, the registers' oversight, reports), the
+   academics read only, nothing of the Institute — and one migration ships
+   it (`syncPermissions`, so the role also *stops* holding things) while
+   `RoleSeeder` reads the same list. The Institute's routes (the website,
+   instructors, prayer times, commerce, the library office, pronunciation,
+   operations, translations) admit `super_admin` alone; the Bookstore office
+   admits `super_admin` and `bookshop_manager`; admissions admit
+   `super_admin`, `admin` and `headmaster` (a supervisor no longer grants a
+   place on a paid course).
 
 ## Consequences
 
@@ -80,6 +91,14 @@ kept for an outside author.
   remember-on-open rule stays silent when a home is ambiguous.
 - A super admin who needs the School grants themselves the dean's role
   (the role screen, slice 4) — by design, not a gap.
-- Until slice 2 the `admin` role still holds every permission, so an
-  educational admin who types an Institute address is admitted; only the
-  menus hide it. The gates follow in that slice.
+- Since slice 2 the gates agree with the menus: an educational admin who
+  types an Institute address is refused, and a headmaster or supervisor can
+  no longer edit the public website by URL. An educational admin sees the
+  academics and cannot mark, grade, run exams or edit the timetable — the
+  screens still open, their writes refuse — which is the decision: the dean
+  and the supervisor run the academics.
+- A deployment gets the set by `migrate`, never by `db:seed`; changing the
+  set later is a new migration, and a re-seed syncs to the same list.
+- The seeded logins gain a system admin (`superadmin@`, staging and local
+  only; production still makes its own by tinker) because the walks that
+  run the Institute can no longer do so as `admin@`.

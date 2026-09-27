@@ -16,7 +16,7 @@
  *
  * Environment:
  *   SMOKE_BASE_URL   default http://127.0.0.1:8000
- *   SMOKE_USER       default admin@akuru.edu.mv
+ *   SMOKE_USER       default superadmin@akuru.edu.mv (the seeded system admin)
  *   SMOKE_PASSWORD   default password
  *   SMOKE_CHROMIUM   path to a Chromium binary; omit to let Playwright resolve
  *                    its own (this repo's container pre-installs one under
@@ -31,7 +31,7 @@
 import { chromium } from 'playwright';
 
 const BASE = process.env.SMOKE_BASE_URL ?? 'http://127.0.0.1:8000';
-const USER = process.env.SMOKE_USER ?? 'admin@akuru.edu.mv';
+const USER = process.env.SMOKE_USER ?? 'superadmin@akuru.edu.mv';
 const PASSWORD = process.env.SMOKE_PASSWORD ?? 'password';
 
 // slice · path · the exact string SmokeMarkerSeeder planted, or null for a

@@ -13,8 +13,9 @@ use Illuminate\Support\Facades\DB;
  * `public/page/show.blade.php` renders `{!! $page->body !!}`.
  *
  * The blast radius is wider than the block case on every axis. `admin/public-site`
- * is gated to `super_admin|admin|headmaster|supervisor` — a **broader** role
- * than the block path, which excluded supervisor — and the audience is
+ * was gated to `super_admin|admin|headmaster|supervisor` — a **broader** role
+ * than the block path, which excluded supervisor (since ADR-040 slice 2 the
+ * public website is the system admin's alone) — and the audience is
  * anonymous visitors rather than enrolled students.
  *
  * Sanitised on write rather than at each render, so the stored value is the safe

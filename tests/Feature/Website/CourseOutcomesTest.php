@@ -126,7 +126,7 @@ it('surfaces instructor qualifications prominently', function () {
 });
 
 it('saves trilingual learning outcomes from the public-site admin form', function () {
-    $admin = actingPeopleAdmin();
+    $admin = actingSystemAdmin();
     $course = outcomesCourse();
 
     $this->withoutLocalizationMiddleware()

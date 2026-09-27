@@ -163,10 +163,10 @@ it('previews the draft on the real page, publishes it as version 1, and the publ
 
 it('keeps versions to roll back to, and the office\'s badges unlock Akuru\'s palette and show on the page', function () {
     [$vendor, $owner] = designShop();
-    Role::findOrCreate('admin', 'web');
+    Role::findOrCreate('super_admin', 'web');
     Permission::findOrCreate('bookshop.manage', 'web');
     $office = User::factory()->create();
-    $office->assignRole('admin');
+    $office->assignRole('super_admin');
     $office->givePermissionTo('bookshop.manage');
 
     designAs($owner)->post(route('vendor.storefront.draft'), draftInput());

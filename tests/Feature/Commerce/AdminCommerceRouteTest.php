@@ -26,23 +26,26 @@ uses(RefreshDatabase::class);
 function commerceAdmin(): User
 {
     $user = User::factory()->create();
-    Role::findOrCreate('admin', 'web');
+    Role::findOrCreate('super_admin', 'web');
     Permission::findOrCreate('commerce.manage', 'web');
-    $user->assignRole('admin');
+    $user->assignRole('super_admin');
     $user->givePermissionTo('commerce.manage');
 
     return $user;
 }
 
-/** The role without the permission — the half-privileged case. */
+/**
+ * The role without the permission — the half-privileged case. The L4
+ * migration grants `commerce.manage` to `super_admin`, so it is revoked here.
+ */
 function commerceAdminWithoutPermission(): User
 {
     $user = User::factory()->create();
-    Role::findOrCreate('admin', 'web');
-    Permission::findOrCreate('commerce.manage', 'web');
-    $user->assignRole('admin');
+    Role::findOrCreate('super_admin', 'web')->revokePermissionTo(Permission::findOrCreate('commerce.manage', 'web'));
+    $user->assignRole('super_admin');
+    app(\Spatie\Permission\PermissionRegistrar::class)->forgetCachedPermissions();
 
-    return $user;
+    return $user->fresh();
 }
 
 it('refuses a signed-in account with no role', function () {

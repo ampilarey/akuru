@@ -73,7 +73,7 @@ class AdminBookshopController extends Controller
             'quotes' => app(ListQuotesAction::class)->summary(),
             'custom_css' => app(DecideStorefrontCssAction::class)->list(),
             'themes' => app(DecideStorefrontThemeAction::class)->list(),
-            'team' => ['members' => app(ManageBookshopTeamAction::class)->list(), 'can_manage' => (bool) $request->user()?->hasAnyRole(['super_admin', 'admin']), 'added' => $request->session()->get('team_added')],
+            'team' => ['members' => app(ManageBookshopTeamAction::class)->list(), 'can_manage' => (bool) $request->user()?->hasRole('super_admin'), 'added' => $request->session()->get('team_added')],
             'hosts' => ['shops' => app(DecideVendorHostAction::class)->list(), 'shop_host' => config('bookshop.hosts.shop_host'), 'check' => $request->session()->get('host_check')],
             'insights' => ['days' => InsightsReport::days((int) $request->query('insight_days', 30)), 'shops' => InsightsReport::byShop((int) $request->query('insight_days', 30)), 'ranges' => array_map('intval', (array) config('bookshop.insights.ranges'))],
             'cod_on' => app(CashOnDeliveryAction::class)->isOn(),
@@ -513,10 +513,10 @@ class AdminBookshopController extends Controller
         return back()->with('success', __('shop.css_decided_flash_'.$data['decision']));
     }
 
-    /** B10b: a Bookstore admin, by email — an existing account, or a new one with a one-time password. Full admins only. */
+    /** B10b: a Bookstore admin, by email — an existing account, or a new one with a one-time password. The system admin only (ADR-040). */
     public function addTeamMember(Request $request): RedirectResponse
     {
-        abort_unless($request->user()?->hasAnyRole(['super_admin', 'admin']), 403);
+        abort_unless($request->user()?->hasRole('super_admin'), 403);
         $data = $request->validate(['email' => 'required|email|max:255', 'name' => 'nullable|string|max:120', 'phone' => 'nullable|string|max:30']);
 
         $added = app(ManageBookshopTeamAction::class)->add($data['email'], $data['name'] ?? null, $data['phone'] ?? null);
@@ -524,10 +524,10 @@ class AdminBookshopController extends Controller
         return back()->with('success', __('shop.team_added_flash', ['name' => $added['name']]))->with('team_added', $added['created'] ? ['email' => strtolower($data['email']), 'password' => $added['temporary_password']] : null);
     }
 
-    /** B10b: no longer a Bookstore admin (their account stays). Full admins only. */
+    /** B10b: no longer a Bookstore admin (their account stays). The system admin only (ADR-040). */
     public function removeTeamMember(Request $request, int $user): RedirectResponse
     {
-        abort_unless($request->user()?->hasAnyRole(['super_admin', 'admin']), 403);
+        abort_unless($request->user()?->hasRole('super_admin'), 403);
         app(ManageBookshopTeamAction::class)->remove($user, (int) $request->user()->id);
 
         return back()->with('success', __('shop.team_removed_flash'));

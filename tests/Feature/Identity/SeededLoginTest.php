@@ -16,13 +16,14 @@ it('lets documented seed emails log in via verified user_contacts', function () 
     ]);
 
     expect(UserContact::query()->where('type', 'email')->whereNotNull('verified_at')->whereIn('value', [
+        'superadmin@akuru.edu.mv',
         'admin@akuru.edu.mv',
         'teacher@akuru.edu.mv',
         'parent@akuru.edu.mv',
         'student@akuru.edu.mv',
         'headmaster@akuru.edu.mv',
         'supervisor@akuru.edu.mv',
-    ])->count())->toBe(6);
+    ])->count())->toBe(7);
 
     $this->post(route('login'), [
         'identifier' => 'admin@akuru.edu.mv',

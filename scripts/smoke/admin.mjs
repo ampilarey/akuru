@@ -1,24 +1,28 @@
 /**
- * The admin panel, walked as the office (the admin-panel audit, STATUS §5hs).
+ * The admin panel, walked as the two people who run it (the admin-panel
+ * audit, STATUS §5hs; the educational admin's permission set, STATUS §5ie).
  *
- * Every admin landing page opens for the seeded `admin` account, the two
- * `super_admin`-only screens refuse it (or open, when SMOKE_SUPER_ADMIN is
- * given), the Inertia shell's More menu now lists the whole panel and its
- * Blade entries open with a full page load, the four listings that had no
- * CSV now have one, and three writes go through: a CMS page is created and
- * deleted, an operations checklist item is ticked and unticked, and a
- * Dhivehi translation override is saved.
+ * As the seeded educational admin (`admin@`): the School's two admin landing
+ * pages open, every Institute screen — the website, instructors, prayer
+ * times, the shops, the library office, the system — answers 403, and from an
+ * Inertia School screen the More menu reaches the whole School and nothing of
+ * the Institute. As the seeded system admin (`superadmin@`): every Institute
+ * landing page opens with its heading, Users, Settings and the OTP log open,
+ * the More menu reaches the whole Institute, the four listings that had no
+ * CSV have one, and three writes go through: a CMS page is created and
+ * deleted, an operations checklist item is ticked and unticked, and the
+ * translation editor opens with rows.
  *
  *   php artisan db:seed --class=SmokeMarkerSeeder
  *   node scripts/smoke/admin.mjs
  *
- * Environment: SMOKE_BASE_URL, SMOKE_ADMIN, SMOKE_SUPER_ADMIN (optional), SMOKE_PASSWORD, SMOKE_CHROMIUM.
+ * Environment: SMOKE_BASE_URL, SMOKE_ADMIN, SMOKE_SUPER_ADMIN, SMOKE_PASSWORD, SMOKE_CHROMIUM.
  */
 import { chromium } from 'playwright';
 
 const BASE = process.env.SMOKE_BASE_URL ?? 'http://127.0.0.1:8000';
 const ADMIN = process.env.SMOKE_ADMIN ?? 'admin@akuru.edu.mv';
-const SUPER = process.env.SMOKE_SUPER_ADMIN ?? null;
+const SUPER = process.env.SMOKE_SUPER_ADMIN ?? 'superadmin@akuru.edu.mv';
 const PASSWORD = process.env.SMOKE_PASSWORD ?? 'password';
 
 const HERMETIC_ARGS = [
@@ -89,13 +93,10 @@ const csvOf = async (page, path) => {
     const response = await page.request.get(`${BASE}${path}`);
     return { status: response.status(), text: await response.text(), type: response.headers()['content-type'] ?? '' };
 };
+const statusOf = async (page, path) => (await page.request.get(`${BASE}${path}`, { maxRedirects: 0 })).status();
 
-// ------------------------------------------------------------ 1. every landing page, as the office
-
-const office = await signIn(ADMIN);
-const landings = [
-    ['/en/admin/enrollments', 'Enrol'],
-    ['/en/admin/enrollments/payments', 'Payment'],
+// The Institute's landing pages: the system admin's alone.
+const instituteLandings = [
     ['/en/admin/instructors', 'Instructors'],
     ['/en/admin/public-site/pages', 'Manage Pages'],
     ['/en/admin/public-site/courses', 'Manage Courses'],
@@ -118,61 +119,85 @@ const landings = [
     ['/en/admin/library/reading-alerts', 'lert'],
     ['/en/admin/pronunciation', 'ronunciation'],
     ['/en/admin/bookshop', 'ookstore'],
+    ['/en/admin/users', 'User Management'],
+    ['/en/admin/users/otp-abuse', 'OTP'],
+    ['/en/admin/settings', 'Settings'],
 ];
-const failedLandings = [];
-for (const [path, word] of landings) {
-    const response = await office.goto(`${BASE}${path}`, { waitUntil: 'networkidle' });
-    const body = await text(office);
-    if (!response || response.status() !== 200 || !body.includes(word) || body.trim() === '') {
-        failedLandings.push(`${path}→${response?.status()}${body.includes(word) ? '' : ' (no "' + word + '")'}`);
+// The School's: the educational admin's (and the dean's).
+const schoolLandings = [
+    ['/en/admin/enrollments', 'Enrol'],
+    ['/en/admin/enrollments/payments', 'Payment'],
+];
+
+const landingsOpen = async (page, landings) => {
+    const failed = [];
+    for (const [path, word] of landings) {
+        const response = await page.goto(`${BASE}${path}`, { waitUntil: 'networkidle' });
+        const body = await text(page);
+        if (!response || response.status() !== 200 || !body.includes(word) || body.trim() === '') {
+            failed.push(`${path}→${response?.status()}${body.includes(word) ? '' : ' (no "' + word + '")'}`);
+        }
+    }
+    return failed;
+};
+
+// ------------------------------------------------------------ 1. the educational admin: the School, and none of the Institute
+
+const office = await signIn(ADMIN);
+check('the educational admin lands on the School office', /\/school$/.test(office.url()), office.url().replace(BASE, ''));
+const schoolFailed = await landingsOpen(office, schoolLandings);
+check(`the School's ${schoolLandings.length} admin landing pages open for the educational admin`, schoolFailed.length === 0, schoolFailed.join(', '));
+const admitted = [];
+for (const [path] of instituteLandings) {
+    const status = await statusOf(office, path);
+    if (status !== 403) {
+        admitted.push(`${path}→${status}`);
     }
 }
-check(`all ${landings.length} admin landing pages open for the office, each with its heading`, failedLandings.length === 0, failedLandings.join(', '));
-
-// The two super_admin-only screens: refused to a plain admin, open to a super admin.
-if (SUPER !== ADMIN) {
-    const users = await office.goto(`${BASE}/en/admin/users`, { waitUntil: 'networkidle' });
-    const settings = await office.goto(`${BASE}/en/admin/settings`, { waitUntil: 'networkidle' });
-    check('Users and Settings refuse the admin role (super_admin only)', users?.status() === 403 && settings?.status() === 403, `${users?.status()} ${settings?.status()}`);
+check(`every one of the Institute's ${instituteLandings.length} screens refuses the educational admin (403)`, admitted.length === 0, admitted.join(', '));
+const csvRefused = [];
+for (const path of ['/en/admin/instructors/export', '/en/admin/public-site/pages/export', '/en/admin/prayer-times/groups/export', '/en/admin/commerce/gift-card-orders/export', '/en/admin/bookshop/vendors/export']) {
+    const status = await statusOf(office, path);
+    if (status !== 403) {
+        csvRefused.push(`${path}→${status}`);
+    }
 }
-let su = null;
-if (SUPER) {
-    su = await signIn(SUPER);
-    const u = await su.goto(`${BASE}/en/admin/users`, { waitUntil: 'networkidle' });
-    const s = await su.goto(`${BASE}/en/admin/settings`, { waitUntil: 'networkidle' });
-    const o = await su.goto(`${BASE}/en/admin/users/otp-abuse`, { waitUntil: 'networkidle' });
-    check('and open for the super admin', u?.status() === 200 && s?.status() === 200 && o?.status() === 200, `${u?.status()} ${s?.status()} ${o?.status()}`);
-}
+check('and so do the CSVs behind them', csvRefused.length === 0, csvRefused.join(', '));
 
-// ------------------------------------------------------------ 2. the Inertia shell's More menu is the workspace's (STATUS §5id)
-
-// Opening the School office makes the School the active workspace (the
-// same account may also hold the Institute, when granted for the sweeps).
+// From an Inertia School screen, the More menu is the School's (STATUS §5id).
 await office.goto(`${BASE}/en/school`, { waitUntil: 'networkidle' });
-await office.goto(`${BASE}/en/admin/operations`, { waitUntil: 'networkidle' });
+await office.goto(`${BASE}/en/academics/years`, { waitUntil: 'networkidle' });
 await office.click('button[aria-controls="app-shell-more"]');
 await settle(office, '#app-shell-more');
 const hardLinks = await office.locator('#app-shell-more a[data-nav-hard]').evaluateAll((els) => els.map((el) => el.getAttribute('href')));
 const menuLinks = await office.locator('#app-shell-more a').evaluateAll((els) => els.map((el) => el.getAttribute('href')));
 const wanted = ['/admin/enrollments', '/academics/years', '/people/students', '/exams/schedule', '/finance/invoices', '/hr/payroll', '/announcements'];
 const missing = wanted.filter((href) => !menuLinks.some((h) => h && h.endsWith(href)));
-check('from an Inertia admin screen, the educational admin\'s More menu reaches the whole School', missing.length === 0, missing.join(', '));
+check('from an Inertia School screen, the educational admin\'s More menu reaches the whole School', missing.length === 0, missing.join(', '));
 check('its Blade entries are plain links (a full page load), the Inertia ones are not', hardLinks.some((h) => h.endsWith('/admin/enrollments')) && hardLinks.some((h) => h.endsWith('/announcements')) && !hardLinks.some((h) => h.endsWith('/academics/years')), hardLinks.join(', '));
-check('and nothing of the Institute is offered: no Website CMS, Commerce, Users or Settings', !menuLinks.some((h) => h && /\/admin\/(public-site\/pages|commerce|users|settings)$/.test(h)));
+check('and nothing of the Institute is offered: no Website CMS, Commerce, Users or Settings', !menuLinks.some((h) => h && /\/admin\/(public-site\/pages|commerce|users|settings|operations)$/.test(h)));
 await Promise.all([office.waitForNavigation({ waitUntil: 'networkidle' }).catch(() => {}), office.click('#app-shell-more a[data-nav-hard][href$="/admin/enrollments"]')]);
 check('clicking a Blade entry lands on the Blade screen', /\/admin\/enrollments$/.test(office.url()) && (await text(office)).includes('Enrol'), office.url().replace(BASE, ''));
-if (SUPER) {
-    await su.goto(`${BASE}/en/admin`, { waitUntil: 'networkidle' });
-    await su.goto(`${BASE}/en/admin/operations`, { waitUntil: 'networkidle' });
-    await su.click('button[aria-controls="app-shell-more"]');
-    await settle(su, '#app-shell-more');
-    const suLinks = await su.locator('#app-shell-more a').evaluateAll((els) => els.map((el) => el.getAttribute('href')));
-    const suWanted = ['/admin/instructors', '/admin/public-site/pages', '/admin/prayer-times/islands', '/admin/commerce', '/admin/library', '/admin/pronunciation', '/admin/bookshop', '/admin/translations', '/admin/operations/features', '/admin/users', '/admin/settings'];
-    const suMissing = suWanted.filter((href) => !suLinks.some((h) => h && h.endsWith(href)));
-    check('and the system admin\'s More menu reaches the whole Institute', suMissing.length === 0 && !suLinks.some((h) => h && h.endsWith('/admin/enrollments')), suMissing.join(', '));
-}
 
-// ------------------------------------------------------------ 3. the four new CSVs
+// ------------------------------------------------------------ 2. the system admin: the whole Institute
+
+const su = await signIn(SUPER);
+check('the system admin lands on the Institute', /\/admin$/.test(su.url()), su.url().replace(BASE, ''));
+const instituteFailed = await landingsOpen(su, instituteLandings);
+check(`all ${instituteLandings.length} Institute landing pages open for the system admin, each with its heading`, instituteFailed.length === 0, instituteFailed.join(', '));
+const paidToday = await su.goto(`${BASE}/en/admin/enrollments/payments`, { waitUntil: 'networkidle' });
+check('and the enrolment payments list, which the Institute home’s "paid today" tile opens', paidToday?.status() === 200);
+
+await su.goto(`${BASE}/en/admin`, { waitUntil: 'networkidle' });
+await su.goto(`${BASE}/en/admin/operations`, { waitUntil: 'networkidle' });
+await su.click('button[aria-controls="app-shell-more"]');
+await settle(su, '#app-shell-more');
+const suLinks = await su.locator('#app-shell-more a').evaluateAll((els) => els.map((el) => el.getAttribute('href')));
+const suWanted = ['/admin/instructors', '/admin/public-site/pages', '/admin/prayer-times/islands', '/admin/commerce', '/admin/library', '/admin/pronunciation', '/admin/bookshop', '/admin/translations', '/admin/operations/features', '/admin/users', '/admin/settings'];
+const suMissing = suWanted.filter((href) => !suLinks.some((h) => h && h.endsWith(href)));
+check('the system admin\'s More menu reaches the whole Institute, and not the School\'s admissions', suMissing.length === 0 && !suLinks.some((h) => h && h.endsWith('/admin/enrollments')), suMissing.join(', '));
+
+// ------------------------------------------------------------ 3. the four CSVs
 
 for (const [path, head] of [
     ['/en/admin/instructors/export', 'id,name,email'],
@@ -180,43 +205,43 @@ for (const [path, head] of [
     ['/en/admin/public-site/pages/export', 'id,title,slug'],
     ['/en/admin/public-site/courses/export', 'id,title,slug,category'],
 ]) {
-    const csv = await csvOf(office, path);
+    const csv = await csvOf(su, path);
     check(`CSV ${path.replace('/en/admin/', '')}`, csv.status === 200 && csv.type.includes('text/csv') && csv.text.startsWith(head), `${csv.status} ${csv.text.split('\n')[0].slice(0, 60)}`);
 }
 for (const [path] of [['/en/admin/instructors'], ['/en/admin/prayer-times/groups'], ['/en/admin/public-site/pages'], ['/en/admin/public-site/courses']]) {
-    await office.goto(`${BASE}${path}`, { waitUntil: 'networkidle' });
-    check(`the Export CSV link is on ${path.replace('/en/admin/', '')}`, (await count(office, '[data-testid="export-csv"]')) === 1);
+    await su.goto(`${BASE}${path}`, { waitUntil: 'networkidle' });
+    check(`the Export CSV link is on ${path.replace('/en/admin/', '')}`, (await count(su, '[data-testid="export-csv"]')) === 1);
 }
 
 // ------------------------------------------------------------ 4. three writes
 
 const slug = `smoke-audit-${Date.now()}`;
-await office.goto(`${BASE}/en/admin/public-site/pages/create`, { waitUntil: 'networkidle' });
-await office.fill('input[name="title"]', 'SMOKE audit page');
-await office.fill('input[name="slug"]', slug);
-await office.fill('textarea[name="body"]', '<p>Hello</p><script>alert(1)</script>');
+await su.goto(`${BASE}/en/admin/public-site/pages/create`, { waitUntil: 'networkidle' });
+await su.fill('input[name="title"]', 'SMOKE audit page');
+await su.fill('input[name="slug"]', slug);
+await su.fill('textarea[name="body"]', '<p>Hello</p><script>alert(1)</script>');
 // Scoped to the page form: the Blade nav carries a sign-out form with its own submit button.
-await Promise.all([office.waitForNavigation({ waitUntil: 'networkidle' }).catch(() => {}), office.click('form[action*="public-site/pages"] button[type=submit]')]);
-await office.goto(`${BASE}/en/admin/public-site/pages`, { waitUntil: 'networkidle' });
-check('a CMS page is created from the form', (await text(office)).includes('SMOKE audit page'));
-const row = office.locator('tr', { hasText: 'SMOKE audit page' }).first();
-office.once('dialog', (d) => d.accept());
-await Promise.all([office.waitForNavigation({ waitUntil: 'networkidle' }).catch(() => {}), row.locator('form button[type=submit], form button').last().click()]);
-check('and deleted again', !(await text(office)).includes('SMOKE audit page'));
+await Promise.all([su.waitForNavigation({ waitUntil: 'networkidle' }).catch(() => {}), su.click('form[action*="public-site/pages"] button[type=submit]')]);
+await su.goto(`${BASE}/en/admin/public-site/pages`, { waitUntil: 'networkidle' });
+check('a CMS page is created from the form', (await text(su)).includes('SMOKE audit page'));
+const row = su.locator('tr', { hasText: 'SMOKE audit page' }).first();
+su.once('dialog', (d) => d.accept());
+await Promise.all([su.waitForNavigation({ waitUntil: 'networkidle' }).catch(() => {}), row.locator('form button[type=submit], form button').last().click()]);
+check('and deleted again', !(await text(su)).includes('SMOKE audit page'));
 
-await office.goto(`${BASE}/en/admin/operations`, { waitUntil: 'networkidle' });
-const firstBox = office.locator('input[type=checkbox]').first();
+await su.goto(`${BASE}/en/admin/operations`, { waitUntil: 'networkidle' });
+const firstBox = su.locator('input[type=checkbox]').first();
 const before = await firstBox.isChecked();
 await firstBox.click();
-await office.waitForFunction((was) => document.querySelector('input[type=checkbox]')?.checked !== was, before, { timeout: 20000 }).catch(() => {});
-const after = await office.locator('input[type=checkbox]').first().isChecked();
-await office.locator('input[type=checkbox]').first().click();
-await office.waitForFunction((was) => document.querySelector('input[type=checkbox]')?.checked === was, before, { timeout: 20000 }).catch(() => {});
-check('an operations checklist item is ticked and unticked', after !== before && (await office.locator('input[type=checkbox]').first().isChecked()) === before);
+await su.waitForFunction((was) => document.querySelector('input[type=checkbox]')?.checked !== was, before, { timeout: 20000 }).catch(() => {});
+const after = await su.locator('input[type=checkbox]').first().isChecked();
+await su.locator('input[type=checkbox]').first().click();
+await su.waitForFunction((was) => document.querySelector('input[type=checkbox]')?.checked === was, before, { timeout: 20000 }).catch(() => {});
+check('an operations checklist item is ticked and unticked', after !== before && (await su.locator('input[type=checkbox]').first().isChecked()) === before);
 
-await office.goto(`${BASE}/en/admin/translations?q=ops_checklist`, { waitUntil: 'networkidle' });
-await settle(office, 'textarea');
-const translationRows = await count(office, 'textarea');
+await su.goto(`${BASE}/en/admin/translations?q=ops_checklist`, { waitUntil: 'networkidle' });
+await settle(su, 'textarea');
+const translationRows = await count(su, 'textarea');
 check('the translation editor opens with rows to correct', translationRows > 0, `${translationRows} rows`);
 
 await finish();

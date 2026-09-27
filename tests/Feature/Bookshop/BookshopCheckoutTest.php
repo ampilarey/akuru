@@ -286,10 +286,10 @@ it('marks a checkout failed when the bank cannot start the payment, releasing th
 it('waits for a bank-transfer slip, which the office confirms or rejects; a slip is private to its customer and the office', function () {
     Storage::fake('local');
     config(['bookshop.bank_transfer.account_number' => '7730000012345']);
-    Role::findOrCreate('admin', 'web');
+    Role::findOrCreate('super_admin', 'web');
     Permission::findOrCreate('bookshop.manage', 'web');
     $office = User::factory()->create();
-    $office->assignRole('admin');
+    $office->assignRole('super_admin');
     $office->givePermissionTo('bookshop.manage');
 
     $fitrah = checkoutVendor('fitrah');
@@ -417,10 +417,10 @@ it('lets an owner set delivery methods the checkout then offers, and nobody else
 });
 
 it('lists my orders with a CSV, and the office lists every order with a CSV', function () {
-    Role::findOrCreate('admin', 'web');
+    Role::findOrCreate('super_admin', 'web');
     Permission::findOrCreate('bookshop.manage', 'web');
     $office = User::factory()->create();
-    $office->assignRole('admin');
+    $office->assignRole('super_admin');
     $office->givePermissionTo('bookshop.manage');
     $fitrah = checkoutVendor('fitrah');
     $book = checkoutProduct($fitrah, 'Workbook', 100);

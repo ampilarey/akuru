@@ -128,9 +128,9 @@ it('shows the shop its own funnel with rates, products, pages and CSVs, and the 
     expect(insightAs($owner)->get(route('vendor.insights.export', ['list' => 'products']))->streamedContent())->toContain('"Tracing Book",20,5,2,170.00');
 
     Permission::findOrCreate('bookshop.manage', 'web');
-    Role::findOrCreate('admin', 'web');
+    Role::findOrCreate('super_admin', 'web');
     $office = User::factory()->create();
-    $office->assignRole('admin');
+    $office->assignRole('super_admin');
     $office->givePermissionTo('bookshop.manage');
     insightAs($office)->get(route('admin.bookshop.index'))->assertInertia(fn ($page) => $page->where('insights.days', 30)->where('insights.shops.0.vendor', 'Fitrah')->where('insights.shops.0.order_paid', 2)->where('insights.shops.1.shop_view', 0));
     expect(insightAs($office)->get(route('admin.bookshop.insights.export'))->streamedContent())->toContain('Fitrah,fitrah,45,20,5,4,2,170.00,10');

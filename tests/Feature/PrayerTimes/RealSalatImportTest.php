@@ -54,7 +54,7 @@ it('imports the real Bake&Grill column shape: IslandId, Island, Status, Fajuru, 
 });
 
 it('lets an admin import the bundled dataset in one click with Malé defaulted', function () {
-    $admin = actingPeopleAdmin(['prayer.manage']);
+    $admin = actingSystemAdmin(['prayer.manage']);
 
     $this->withoutLocalizationMiddleware()->actingAs($admin)
         ->post(route('admin.prayer-times.import.store'), ['use_bundled' => '1'])

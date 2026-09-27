@@ -1,21 +1,24 @@
 /**
  * The admin panel's two shells, as the office (the layout audit, STATUS §5ht).
  *
- * On a phone: the Blade hamburger opens a menu that reaches the whole panel.
- * On a desktop: the More dropdown says whether it is open; the user menu in a
- * right-to-left locale stays inside the viewport; the tab title names the
- * screen; Tab lands on the skip link first. In the Inertia shell: the skip
- * link, the translated Alerts, the language switcher.
+ * On a phone, as the educational admin: the Blade hamburger opens a menu that
+ * reaches the whole School. On a desktop, as the system admin (the CMS and
+ * the operations screens are the Institute's, STATUS §5ie): the More dropdown
+ * says whether it is open; the user menu in a right-to-left locale stays
+ * inside the viewport; the tab title names the screen; Tab lands on the skip
+ * link first. In the Inertia shell: the skip link, the translated Alerts, the
+ * language switcher.
  *
  *   php artisan db:seed --class=SmokeMarkerSeeder
  *   node scripts/smoke/admin-layout.mjs
  *
- * Environment: SMOKE_BASE_URL, SMOKE_ADMIN, SMOKE_PASSWORD, SMOKE_CHROMIUM.
+ * Environment: SMOKE_BASE_URL, SMOKE_ADMIN, SMOKE_SUPER_ADMIN, SMOKE_PASSWORD, SMOKE_CHROMIUM.
  */
 import { chromium } from 'playwright';
 
 const BASE = process.env.SMOKE_BASE_URL ?? 'http://127.0.0.1:8000';
 const ADMIN = process.env.SMOKE_ADMIN ?? 'admin@akuru.edu.mv';
+const SUPER = process.env.SMOKE_SUPER_ADMIN ?? 'superadmin@akuru.edu.mv';
 const PASSWORD = process.env.SMOKE_PASSWORD ?? 'password';
 
 const HERMETIC_ARGS = [
@@ -96,7 +99,7 @@ check('and nothing overflows the phone sideways', !overflow);
 
 // ------------------------------------------------------------ 2. a desktop, left to right
 
-const desk = await signIn(ADMIN, { width: 1400, height: 950 });
+const desk = await signIn(SUPER, { width: 1400, height: 950 });
 await desk.goto(`${BASE}/en/admin/public-site/pages`, { waitUntil: 'networkidle' });
 check('the tab is titled after the screen', (await desk.title()).startsWith('Pages - '), await desk.title());
 const more = desk.locator('button[aria-controls="nav-more-menu"]');

@@ -94,10 +94,16 @@ a question with a default, so "do nothing" is always a legible choice.
    load `/hifz/supervisor` and see a supervisor-shaped page scoped to their own
    children, which is confusing — but it is a **tidiness** decision, not an
    exposure. Default: leave the routes as they are and keep the test.
-10. **`admin` is granted `Permission::all()`, identical to `super_admin`**,
+10. ~~**`admin` is granted `Permission::all()`, identical to `super_admin`**,
     while the comment directly above it in `RoleSeeder` says "most permissions
     (school operations, not system-level)". The code and its comment disagree;
-    which one is wrong is yours to say.
+    which one is wrong is yours to say.~~ — **decided and built 2026-09-27
+    (ADR-040 slice 2, STATUS §5ie).** The comment was right. The educational
+    admin's set is `App\Support\Authorization\RoleGrants::educationalAdmin()`
+    — the school's office and its money, the academics read only, nothing of
+    the Institute — shipped by migration `2026_09_27_000001` (`sync`, so the
+    role also stops holding things) and read by the seeder. The Institute's
+    routes admit `super_admin` alone.
 11. **Only three of the nine roles are created by a migration** (`super_admin`,
     `reviewer`, `writer`). The other six exist only if `RoleSeeder` has run, so
     every permission-granting migration no-ops its role grants on a
@@ -114,14 +120,22 @@ a question with a default, so "do nothing" is always a legible choice.
     database, where the grant would otherwise have silently done nothing and
     left §8.4 as broken as it was found.
 
-    **Still open, and still yours:** `admin`, `teacher`, `student`, `parent`
-    and `headmaster` remain seeder-only. `SpecRolesExistTest` carries an
+    **Further acted on, 2026-09-27 (§5ie):** `admin` is now created by the
+    migration that ships its permission set, so a migrate-only database gets
+    a correctly scoped educational admin.
+
+    **Still open, and still yours:** `teacher`, `student`, `parent` and
+    `headmaster` remain seeder-only. `SpecRolesExistTest` carries an
     expectation that **fails when this is fixed**, pointing back here, so the
     note cannot rot into a false claim.
-12. **A supervisor can grant a place on a paid course.** The admissions group is
+12. ~~**A supervisor can grant a place on a paid course.** The admissions group is
     guarded by role alone, while the money endpoints next door also require
     `can:payments.refund` / `can:payments.record`. Tightening it changes who can
-    do their job during admissions.
+    do their job during admissions.~~ — **decided and built 2026-09-27
+    (ADR-040 slice 2).** Admissions are administration: `admin/enrollments/*`
+    admits `super_admin`, `admin` and `headmaster` (the owner: "school fees,
+    principal can see"); a supervisor is refused
+    (`EnrollmentDecisionRouteTest`).
 
 **Data model**
 
@@ -183,18 +197,19 @@ Actions, shown on the enrolment page. A general activity log of admin
 writes is a separate, platform-wide decision (only behaviour records and
 exam status carry audits today).
 
-### The CMS, instructors and enrolments are gated by role alone — **owner's call**
+### The CMS, instructors and enrolments are gated by role alone — **decided and fixed (2026-09-27)**
 
 `admin/public-site/*`, `admin/instructors/*` and the non-money half of
-`admin/enrollments/*` carry `role:super_admin|admin|headmaster|supervisor`
-and no permission, while the Blade nav shows *Website CMS* to `super_admin`
-and `admin` only — so a headmaster or supervisor can edit the public site
-by URL. `daily_content.manage` and `.approve` exist and are checked in
-their controllers; `hr.manage` exists and the instructor screens do not
-check it; no `cms.manage` exists. This sits with item 12 above: which
-roles run the website, admissions and instructors is a policy question.
-Tightening is one `can:` per group and a permission migration; widening
-the nav is one `@if`.
+`admin/enrollments/*` carried `role:super_admin|admin|headmaster|supervisor`
+and no permission, while the Blade nav showed *Website CMS* to `super_admin`
+and `admin` only — so a headmaster or supervisor could edit the public site
+by URL. **Decided with the workspaces (ADR-040 slice 2, STATUS §5ie)**: the
+website, its instructors and prayer times are the system admin's, so those
+groups admit `super_admin` alone; admissions admit `super_admin`, `admin`
+and `headmaster` (item 12). The roles now say who runs what, so a `can:`
+per group was not needed; `daily_content.*` and `prayer.manage` stay
+granted to the headmaster and supervisor in the seeder but no route admits
+them there any more (BACKLOG C10, the role-matrix tidy-up).
 
 ## Found by the bookstore's B3 walk (2026-09-26)
 

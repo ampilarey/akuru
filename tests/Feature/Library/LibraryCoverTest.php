@@ -25,7 +25,7 @@ function coverFile(string $name = 'cover.png'): UploadedFile
 
 it('lets the office upload a cover, which every public view shows', function () {
     Storage::fake('public');
-    $admin = actingPeopleAdmin(['library.manage']);
+    $admin = actingSystemAdmin(['library.manage']);
 
     $this->withoutLocalizationMiddleware()->actingAs($admin)
         ->post(route('admin.library.items.store'), [
@@ -133,7 +133,7 @@ it('lets a writer upload a cover with a draft and see it in their list and on th
 
 it('refuses a cover that is not an image', function () {
     Storage::fake('public');
-    $admin = actingPeopleAdmin(['library.manage']);
+    $admin = actingSystemAdmin(['library.manage']);
 
     $this->withoutLocalizationMiddleware()->actingAs($admin)
         ->from(route('admin.library.index'))

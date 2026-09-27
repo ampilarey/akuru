@@ -95,10 +95,10 @@ function fulfilCustomer(float $wallet = 1000): User
 
 function fulfilOffice(): User
 {
-    Role::findOrCreate('admin', 'web');
+    Role::findOrCreate('super_admin', 'web');
     Permission::findOrCreate('bookshop.manage', 'web');
     $office = User::factory()->create();
-    $office->assignRole('admin');
+    $office->assignRole('super_admin');
     $office->givePermissionTo('bookshop.manage');
 
     return $office;

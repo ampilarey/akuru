@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Queue;
 uses(RefreshDatabase::class);
 
 it('walks admin create -> publish -> public listing, search and free reading', function () {
-    $admin = actingPeopleAdmin(['library.manage']);
+    $admin = actingSystemAdmin(['library.manage']);
 
     $this->withoutLocalizationMiddleware()
         ->actingAs($admin)
@@ -100,7 +100,7 @@ it('gates admin routes and stores the PDF original privately', function () {
         ->get(route('admin.library.index'))
         ->assertForbidden();
 
-    $admin = actingPeopleAdmin(['library.manage']);
+    $admin = actingSystemAdmin(['library.manage']);
     $this->withoutLocalizationMiddleware()
         ->actingAs($admin)
         ->get(route('admin.library.index'))

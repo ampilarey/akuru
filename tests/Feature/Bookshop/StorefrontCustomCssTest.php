@@ -43,9 +43,9 @@ function cssAs(?User $user = null)
 function cssOffice(): User
 {
     Permission::findOrCreate('bookshop.manage', 'web');
-    Role::findOrCreate('admin', 'web')->givePermissionTo('bookshop.manage');
+    Role::findOrCreate('super_admin', 'web')->givePermissionTo('bookshop.manage');
     $office = User::factory()->create();
-    $office->assignRole('admin');
+    $office->assignRole('super_admin');
 
     return $office;
 }

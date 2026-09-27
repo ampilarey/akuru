@@ -34,8 +34,11 @@ function bookkeeperWithout(string $missing): User
         }
     }
 
-    // The route group is role-gated as well; `admin` carries it.
-    Role::findOrCreate('admin', 'web');
+    // The route group is role-gated as well; `admin` carries it. The role
+    // holds the educational admin's real set by migration (ADR-040 slice 2,
+    // finance.manage included), so it is stripped to a bare key here: the
+    // point is the bookkeeper role's one missing permission.
+    Role::findOrCreate('admin', 'web')->syncPermissions([]);
     $user = User::factory()->create(['name' => 'Bookkeeper']);
     $user->assignRole('admin');
     $user->assignRole($role->name);

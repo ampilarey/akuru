@@ -30,9 +30,9 @@ function hostShop(string $slug = 'fitrah'): array
 function hostOffice(): User
 {
     Permission::findOrCreate('bookshop.manage', 'web');
-    Role::findOrCreate('admin', 'web');
+    Role::findOrCreate('super_admin', 'web');
     $office = User::factory()->create();
-    $office->assignRole('admin');
+    $office->assignRole('super_admin');
     $office->givePermissionTo('bookshop.manage');
 
     return $office;

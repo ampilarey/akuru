@@ -567,8 +567,11 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::delete('/{user}', [\App\Domains\Identity\Http\Controllers\AdminUserController::class, 'destroy'])->name('admin.users.destroy');
     });
 
-    // Admin enrollment management
-    Route::prefix('admin/enrollments')->middleware(['role:super_admin|admin|headmaster|supervisor'])->group(function () {
+    // Admissions: the educational admin's, and the dean sees fees (ADR-040
+    // slice 2, STATUS §5ie). `supervisor` left the list — a supervisor could
+    // grant a place on a paid course (KNOWN_ISSUES 12). `super_admin` stays
+    // because the Institute home's "paid today" tile opens the payments list.
+    Route::prefix('admin/enrollments')->middleware(['role:super_admin|admin|headmaster'])->group(function () {
         Route::get('/', [AdminEnrollmentController::class, 'index'])->name('admin.enrollments.index');
         Route::get('/export', [AdminEnrollmentController::class, 'export'])->name('admin.enrollments.export');
         Route::get('/payments', [AdminEnrollmentController::class, 'payments'])->name('admin.enrollments.payments');
@@ -594,8 +597,11 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::post('/{enrollment}/record-payment', [AdminEnrollmentController::class, 'recordManualPayment'])->name('admin.enrollments.record-payment');
     });
 
+    // The Institute's screens — the website, the shops, the library office, the
+    // system — admit the system admin alone (ADR-040 slice 2, STATUS §5ie):
+    // the educational admin runs the school's office and holds none of these.
     // Operator close-out checklist (docs/OPERATOR_CHECKLIST.md, in-app)
-    Route::prefix('admin/operations')->middleware(['role:super_admin|admin', 'can:operations.manage'])->group(function () {
+    Route::prefix('admin/operations')->middleware(['role:super_admin', 'can:operations.manage'])->group(function () {
         Route::get('/', [\App\Domains\Settings\Http\Controllers\Admin\OperationsController::class, 'index'])->name('admin.operations.index');
         Route::post('/{item}/toggle', [\App\Domains\Settings\Http\Controllers\Admin\OperationsController::class, 'toggle'])->name('admin.operations.toggle');
         Route::get('/export', [\App\Domains\Settings\Http\Controllers\Admin\OperationsController::class, 'export'])->name('admin.operations.export');
@@ -631,10 +637,9 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
 
     // E19 sensitive information. Narrower than every other admin group on
     // purpose: `admin` is not in the role list and is not granted
-    // `sensitive.read`, because RoleSeeder's blanket Permission::all() would
-    // otherwise hand every admin account every child's health note by
-    // accident. Widening this is a decision for the Institute to make
-    // explicitly — see the E19 migration.
+    // `sensitive.read` (the educational admin's set, `RoleGrants`, leaves it
+    // out by decision — OWNER_ACTIONS 12). Widening this is a decision for
+    // the Institute to make explicitly — see the E19 migration.
     Route::prefix('people/sensitive')->middleware(['role:super_admin|headmaster', 'can:sensitive.read'])->group(function () {
         Route::get('/', [SensitiveNoteController::class, 'index'])->name('people.sensitive.index');
         Route::post('/', [SensitiveNoteController::class, 'store'])->middleware('can:sensitive.write')->name('people.sensitive.store');
@@ -642,15 +647,16 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::post('/{note}/archive', [SensitiveNoteController::class, 'archive'])->middleware('can:sensitive.write')->name('people.sensitive.archive')->whereNumber('note');
     });
 
-    Route::prefix('admin/translations')->middleware(['role:super_admin|admin', 'can:translations.manage'])->group(function () {
+    Route::prefix('admin/translations')->middleware(['role:super_admin', 'can:translations.manage'])->group(function () {
         Route::get('/', [\App\Domains\Settings\Http\Controllers\Admin\TranslationController::class, 'index'])->name('admin.translations.index');
         Route::post('/save', [\App\Domains\Settings\Http\Controllers\Admin\TranslationController::class, 'save'])->name('admin.translations.save');
         Route::post('/suggest', [\App\Domains\Settings\Http\Controllers\Admin\TranslationController::class, 'suggest'])->name('admin.translations.suggest');
         Route::get('/export', [\App\Domains\Settings\Http\Controllers\Admin\TranslationController::class, 'export'])->name('admin.translations.export');
     });
 
-    // Instructor management
-    Route::prefix('admin/instructors')->middleware(['role:super_admin|admin|headmaster|supervisor'])->group(function () {
+    // The instructors shown on the public website: website content, the
+    // system admin's (the owner, 2026-09-27).
+    Route::prefix('admin/instructors')->middleware(['role:super_admin'])->group(function () {
         Route::get('/', [AdminInstructorController::class, 'index'])->name('admin.instructors.index');
         Route::get('/export', [AdminInstructorController::class, 'export'])->name('admin.instructors.export');
         Route::get('/create', [AdminInstructorController::class, 'create'])->name('admin.instructors.create');
@@ -666,8 +672,10 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::post('/clear-cache', [AdminSettingsController::class, 'clearCache'])->name('admin.settings.clear-cache');
     });
 
-    // Admin CMS routes
-    Route::prefix('admin/public-site')->middleware(['role:super_admin|admin|headmaster|supervisor'])->group(function () {
+    // Admin CMS routes: the public website is the system admin's. Until
+    // ADR-040 slice 2 a headmaster or supervisor could edit the public site by
+    // URL (the admin-panel audit, finding 7).
+    Route::prefix('admin/public-site')->middleware(['role:super_admin'])->group(function () {
         // "Every listing gets CSV export" (admin-panel audit, STATUS §5hs).
         // Declared before the resources, or `pages/export` is swallowed by
         // `pages/{page}` and `courses/export` by `courses/{course}`.
@@ -729,7 +737,7 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::put('research/{post}', [AdminResearchPostController::class, 'update'])->name('admin.research.update')->whereNumber('post');
     });
 
-    Route::prefix('admin/commerce')->middleware(['role:super_admin|admin', 'can:commerce.manage'])->group(function () {
+    Route::prefix('admin/commerce')->middleware(['role:super_admin', 'can:commerce.manage'])->group(function () {
         Route::get('/', [AdminCommerceController::class, 'index'])->name('admin.commerce.index');
         Route::post('gift-cards', [AdminCommerceController::class, 'issueGiftCard'])->name('admin.commerce.gift-cards.store');
         Route::get('gift-card-orders/export', [AdminCommerceController::class, 'exportGiftCardOrders'])->name('admin.commerce.gift-card-orders.export');
@@ -737,7 +745,7 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::post('discount-codes', [AdminCommerceController::class, 'storeDiscount'])->name('admin.commerce.discount-codes.store');
     });
 
-    Route::prefix('admin/library')->middleware(['role:super_admin|admin|headmaster', 'can:library.manage'])->group(function () {
+    Route::prefix('admin/library')->middleware(['role:super_admin', 'can:library.manage'])->group(function () {
         Route::get('/', [AdminLibraryController::class, 'index'])->name('admin.library.index');
         Route::post('items', [AdminLibraryController::class, 'storeItem'])->name('admin.library.items.store');
         Route::put('items/{item}', [AdminLibraryController::class, 'updateItem'])->name('admin.library.items.update')->whereNumber('item');
@@ -756,7 +764,7 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
     });
 
     // Arabic B (§51.16 steps 6–9): dataset, samples, model shelf.
-    Route::prefix('admin/pronunciation')->middleware(['role:super_admin|admin', 'can:pronunciation.manage'])->group(function () {
+    Route::prefix('admin/pronunciation')->middleware(['role:super_admin', 'can:pronunciation.manage'])->group(function () {
         Route::get('/', [\App\Domains\Pronunciation\Http\Controllers\AdminPronunciationController::class, 'index'])->name('admin.pronunciation.index');
         Route::post('samples/{sample}/decide', [\App\Domains\Pronunciation\Http\Controllers\AdminPronunciationController::class, 'decideSample'])->name('admin.pronunciation.samples.decide')->whereNumber('sample');
         Route::post('export', [\App\Domains\Pronunciation\Http\Controllers\AdminPronunciationController::class, 'export'])->name('admin.pronunciation.export');
@@ -780,8 +788,9 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
     // BOOKSHOP_PLAN B1a: the office invites vendors and keeps the shared
     // catalogue taxonomy.
     // B10b: a Bookstore admin (`bookshop_manager`) runs this screen without
-    // being a full admin.
-    Route::prefix('admin/bookshop')->middleware(['role:super_admin|admin|bookshop_manager', 'can:bookshop.manage'])->group(function () {
+    // being a full admin. The Bookstore is the Institute's, so the system
+    // admin and the Bookstore admin, and not the school's office (ADR-040).
+    Route::prefix('admin/bookshop')->middleware(['role:super_admin|bookshop_manager', 'can:bookshop.manage'])->group(function () {
         Route::get('/', [\App\Domains\Bookshop\Http\Controllers\AdminBookshopController::class, 'index'])->name('admin.bookshop.index');
         Route::get('vendors/export', [\App\Domains\Bookshop\Http\Controllers\AdminBookshopController::class, 'exportVendors'])->name('admin.bookshop.vendors.export');
         Route::post('vendors', [\App\Domains\Bookshop\Http\Controllers\AdminBookshopController::class, 'storeVendor'])->name('admin.bookshop.vendors.store');
@@ -936,7 +945,8 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::post('{assignment}', [\App\Domains\Library\Http\Controllers\ReviewerPortalController::class, 'store'])->name('review.store')->whereNumber('assignment');
     });
 
-    Route::prefix('admin/prayer-times')->middleware(['role:super_admin|admin|headmaster|supervisor', 'can:prayer.manage'])->group(function () {
+    // Prayer times and their broadcasts are website content (ADR-040 slice 2).
+    Route::prefix('admin/prayer-times')->middleware(['role:super_admin', 'can:prayer.manage'])->group(function () {
         Route::get('islands/export', [AdminPrayerIslandController::class, 'export'])->name('admin.prayer-times.islands.export');
         Route::get('islands', [AdminPrayerIslandController::class, 'index'])->name('admin.prayer-times.islands');
         Route::get('import', [AdminPrayerImportController::class, 'index'])->name('admin.prayer-times.import');
