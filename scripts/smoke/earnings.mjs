@@ -166,7 +166,7 @@ if ((await text(writer)).includes('Apply to publish')) {
     await writer.selectOption('select >> nth=1', 'paid');
     await writer.fill('input[placeholder*="price"]', String(PRICE));
     await writer.fill('textarea[placeholder="Abstract"]', 'SMOKE-Paid-Abstract');
-    await writer.fill('textarea[placeholder*="Body"]', 'SMOKE-Paid-Body: worth a hundred rufiyaa.');
+    await writer.locator('[data-testid="body-editor"] .ProseMirror').fill('SMOKE-Paid-Body: worth a hundred rufiyaa.');
     await writer.click('button:has-text("Save draft")');
 
     const drafted = await settles(writer, TITLE);

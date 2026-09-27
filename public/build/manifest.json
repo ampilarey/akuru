@@ -4,11 +4,21 @@
     "name": "index"
   },
   "resources/css/app.css": {
-    "file": "assets/app-DflUsD5U.css",
+    "file": "assets/app-2oxCGddS.css",
     "src": "resources/css/app.css",
     "isEntry": true,
     "names": [
       "app.css"
+    ]
+  },
+  "resources/js/Components/RichTextEditor.jsx": {
+    "file": "assets/RichTextEditor-BuBUgAxJ.js",
+    "name": "RichTextEditor",
+    "src": "resources/js/Components/RichTextEditor.jsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.jsx",
+      "_index-BjtuyMK1.js"
     ]
   },
   "resources/js/app.js": {
@@ -21,12 +31,15 @@
     ]
   },
   "resources/js/app.jsx": {
-    "file": "assets/app-lfRuWg6C.js",
+    "file": "assets/app-B43T__Tb.js",
     "name": "app",
     "src": "resources/js/app.jsx",
     "isEntry": true,
     "imports": [
       "_index-BjtuyMK1.js"
+    ],
+    "dynamicImports": [
+      "resources/js/Components/RichTextEditor.jsx"
     ]
   }
 }

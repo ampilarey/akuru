@@ -244,7 +244,9 @@ if (!portal.includes('Apply to publish')) {
 
     await writer.fill('input[placeholder="Title"]', TITLE);
     await writer.fill('textarea[placeholder="Abstract"]', 'SMOKE-Abstract');
-    await writer.fill('textarea[placeholder*="Body"]', BODY);
+    // B3: the body is a rich text editor (a textarea only while its chunk
+    // loads); typing into it is what a writer does.
+    await writer.locator('[data-testid="body-editor"] .ProseMirror').fill(BODY);
     // §11.3: a co-author, a table of contents (the type is `book`, the
     // editor's default in this walk is the first type — set it), and the
     // copyright declaration, without which the submission below is refused.

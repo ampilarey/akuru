@@ -190,7 +190,7 @@ if ((await text(writer)).includes('Apply to publish')) {
     }
 
     await writer.fill('textarea[placeholder="Abstract"]', 'SMOKE-Research-Abstract');
-    await writer.fill('textarea[placeholder*="Body"]', 'SMOKE-Research-Body: assimilation across the sun letters.');
+    await writer.locator('[data-testid="body-editor"] .ProseMirror').fill('SMOKE-Research-Body: assimilation across the sun letters.');
     await writer.click('button:has-text("Save draft")');
 
     const drafted = await settles(writer, TITLE);

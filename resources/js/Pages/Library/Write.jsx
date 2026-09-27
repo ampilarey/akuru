@@ -1,7 +1,24 @@
 import { router, useForm, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 import AppShell from '../../Layouts/AppShell';
+import BodyEditor from '../../Components/BodyEditor';
 import FormErrors from '../../Components/FormErrors';
+
+// The toolbar's labels, from the common tranche (EN/DV/AR).
+const editorLabels = (t) => ({
+    toolbar: t.library_editor_toolbar,
+    bold: t.library_editor_bold,
+    italic: t.library_editor_italic,
+    heading: t.library_editor_heading,
+    subheading: t.library_editor_subheading,
+    bullets: t.library_editor_bullets,
+    numbers: t.library_editor_numbers,
+    quote: t.library_editor_quote,
+    link: t.library_editor_link,
+    link_prompt: t.library_editor_link_prompt,
+    page_break: t.library_editor_page_break,
+    source: t.library_editor_source,
+});
 
 function ApplyForm({ t }) {
     const form = useForm({
@@ -156,7 +173,8 @@ function ItemEditor({ item, options, onDone, t }) {
             <input className="form-input md:col-span-2" placeholder="Co-authors (comma-separated)" value={form.data.co_authors_text} onChange={(e) => form.setData('co_authors_text', e.target.value)} />
             <textarea className="form-input md:col-span-2" rows="2" placeholder="Description" value={form.data.description} onChange={(e) => form.setData('description', e.target.value)} />
             <textarea className="form-input md:col-span-2" rows="2" placeholder="Abstract" value={form.data.abstract} onChange={(e) => form.setData('abstract', e.target.value)} />
-            <textarea className="form-input md:col-span-4" rows="6" placeholder="Body (HTML — use <!-- pagebreak --> between pages)" value={form.data.body} onChange={(e) => form.setData('body', e.target.value)} />
+            {/* B3: the body is written, not pasted — page breaks from the toolbar. */}
+            <BodyEditor className="md:col-span-4" value={form.data.body} onChange={(html) => form.setData('body', html)} placeholder={t.library_editor_body || 'Body — the text readers will read; insert a page break between pages'} labels={editorLabels(t)} />
             {isBook && (
                 <textarea className="form-input md:col-span-4" rows="4" placeholder="Table of contents (one entry per line)" value={form.data.toc} onChange={(e) => form.setData('toc', e.target.value)} />
             )}
