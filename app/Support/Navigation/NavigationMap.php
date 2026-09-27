@@ -88,7 +88,7 @@ final class NavigationMap
             ],
             // The Institute workspace (STATUS §5id): the business side's doors.
             'institute' => [
-                ['key' => 'website_cms', 'href' => '/admin/public-site/pages', 'hard' => true],
+                ['key' => 'website_cms', 'href' => '/admin/public-site/pages'],
                 ['key' => 'commerce', 'href' => '/admin/commerce'],
                 ['key' => 'library_office', 'href' => '/admin/library'],
                 ['key' => 'bookshop', 'href' => '/admin/bookshop', 'can' => ['bookshop.manage']],
@@ -309,8 +309,8 @@ final class NavigationMap
                 ]],
             ]],
             ['key' => 'panel_website', 'items' => [
-                ['key' => 'website_cms', 'href' => '/admin/public-site/pages', 'hard' => true, 'children' => [
-                    ['key' => 'cms_pages', 'href' => '/admin/public-site/pages', 'hard' => true],
+                ['key' => 'website_cms', 'href' => '/admin/public-site/pages', 'children' => [
+                    ['key' => 'cms_pages', 'href' => '/admin/public-site/pages'],
                     ['key' => 'cms_courses', 'href' => '/admin/public-site/courses', 'hard' => true],
                     ['key' => 'cms_research', 'href' => '/admin/public-site/research'],
                     ['key' => 'cms_daily_content', 'href' => '/admin/public-site/daily-content'],

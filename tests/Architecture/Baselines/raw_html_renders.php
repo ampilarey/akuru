@@ -49,8 +49,7 @@
  */
 return [
     // --- CMS bodies: sanitised in the admin controllers ---------------------
-    'admin/public-site/pages/show.blade.php :: $page->body' => 'PageController sanitises `body` with HtmlSanitizer::PROFILE_CMS on both store and update.',
-    'public/page/show.blade.php :: $page->body' => 'Same column, same write path as the admin preview above.',
+    'public/page/show.blade.php :: $page->body' => 'PageController sanitises `body` with HtmlSanitizer::PROFILE_CMS on both store and update; the office preview (Website/PagePreview, Inertia since C9 slice 10) renders the same stored value.',
     'public/about/index.blade.php :: $page->body' => 'Same `pages.body` column and the same sanitised write path.',
     'public/courses/show.blade.php :: $course->body' => 'Admin PublicSite CourseController sanitises `body` with PROFILE_CMS on store and update.',
 
@@ -84,6 +83,7 @@ return [
     // The Blade sweep would have missed these entirely, and the new UI is
     // React. Four sites, all checked against their write paths.
     "Pages/Courses/Player/Show.jsx :: wrapHtml(block.data?.html || '', glossary)" => 'ValidateContentBlockDataAction cleans block HTML with PROFILE_LESSON. `wrapHtml` then wraps glossary matches — it interpolates only `item.id` (an integer) and `$1` (text from the already-sanitised HTML), and escapes the label before building the RegExp, so it adds no new input.',
+    'Pages/Website/PagePreview.jsx :: page.body' => 'The office preview of a website page (C9 slice 10): PageController sanitises `pages.body` with HtmlSanitizer::PROFILE_CMS on both store and update, the same stored value public/page/show.blade.php renders.',
     'Pages/Library/Review.jsx :: item.body' => 'The reviewer previews the same `library_items.body` the public page renders, and SaveLibraryItemAction cleans it on save — so a submission is sanitised before a reviewer ever opens it, not on approval.',
     'Pages/Circulation/Labels.jsx :: label.barcode' => 'Circulation\\Support\\Code39 — an SVG we generate from an accession number.',
     'Pages/Circulation/BorrowerCards.jsx :: card.barcode' => 'The same generated Code39 SVG.',

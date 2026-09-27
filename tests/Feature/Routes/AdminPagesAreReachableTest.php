@@ -81,7 +81,7 @@ it('names every admin landing page in the map, Blade screens marked for a full p
     // Every Blade admin screen in the map is marked `hard`; every Inertia one
     // is not — the sections and the screens inside them alike.
     $blade = [
-        '/admin/public-site/pages', '/admin/public-site/courses',
+        '/admin/public-site/courses',
         '/admin/prayer-times/islands', '/admin/prayer-times/groups', '/admin/prayer-times/broadcasts', '/admin/prayer-times/import',
     ];
     foreach ([...NavigationMap::groups(), ...array_map(fn ($items, $bar) => ['key' => $bar, 'items' => $items], NavigationMap::primary(), array_keys(NavigationMap::primary()))] as $group) {
@@ -128,7 +128,7 @@ it('reaches every admin landing page from a Blade screen, as the role that runs 
         return $user;
     };
     $institute = $this->withoutLocalizationMiddleware()->actingAs($seed('super_admin', ['bookshop.manage', 'commerce.manage', 'library.manage', 'prayer.manage', 'pronunciation.manage', 'operations.manage', 'translations.manage']))
-        ->get(route('admin.pages.index'))->assertOk()->getContent();
+        ->get(route('admin.courses.index'))->assertOk()->getContent();
     // The School's Blade shell: the Quran progress list, since the enrolment lists are Inertia (C9 slice 4).
     $school = $this->withoutLocalizationMiddleware()->actingAs($seed('admin', ['registers.manage', 'exams.manage']))
         ->get(route('quran-progress.index'))->assertOk()->getContent();

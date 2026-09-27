@@ -292,17 +292,18 @@ for (const [path] of [['/en/admin/instructors'], ['/en/admin/prayer-times/groups
 // ------------------------------------------------------------ 4. three writes
 
 const slug = `smoke-audit-${Date.now()}`;
+// C9 slice 10: the pages CMS is Inertia — the save is a request that lands on the list, the delete a confirmed request that repaints it.
 await su.goto(`${BASE}/en/admin/public-site/pages/create`, { waitUntil: 'networkidle' });
-await su.fill('input[name="title"]', 'SMOKE audit page');
-await su.fill('input[name="slug"]', slug);
-await su.fill('textarea[name="body"]', '<p>Hello</p><script>alert(1)</script>');
-// Scoped to the page form: the Blade nav carries a sign-out form with its own submit button.
-await Promise.all([su.waitForNavigation({ waitUntil: 'networkidle' }).catch(() => {}), su.click('form[action*="public-site/pages"] button[type=submit]')]);
-await su.goto(`${BASE}/en/admin/public-site/pages`, { waitUntil: 'networkidle' });
+await su.fill('#page-title', 'SMOKE audit page');
+await su.fill('#page-slug', slug);
+await su.fill('#page-body', '<p>Hello</p><script>alert(1)</script>');
+await Promise.all([su.waitForURL(/\/admin\/public-site\/pages$/), su.click('[data-testid="page-save"]')]);
+await su.waitForSelector('[data-testid="pages-table"]');
 check('a CMS page is created from the form', (await text(su)).includes('SMOKE audit page'));
-const row = su.locator('tr', { hasText: 'SMOKE audit page' }).first();
+const row = su.locator('[data-testid="page-row"]', { hasText: 'SMOKE audit page' }).first();
 su.once('dialog', (d) => d.accept());
-await Promise.all([su.waitForNavigation({ waitUntil: 'networkidle' }).catch(() => {}), row.locator('form button[type=submit], form button').last().click()]);
+await row.locator('[data-testid="page-delete"]').click();
+await su.waitForFunction(() => !document.body.innerText.includes('SMOKE audit page'), null, { timeout: 20000 }).catch(() => {});
 check('and deleted again', !(await text(su)).includes('SMOKE audit page'));
 
 await su.goto(`${BASE}/en/admin/operations`, { waitUntil: 'networkidle' });
