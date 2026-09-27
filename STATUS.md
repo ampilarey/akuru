@@ -4414,6 +4414,65 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5ii. Money records refuse a delete at the database (2026-09-27)
+
+The Bookstore audit's finding 7, KNOWN_ISSUES "Deleting a customer or a
+vendor would take their orders and money records with them". Every
+money-table foreign key cascaded on delete — `payments.user_id` from the
+start, and the wallet ledger, gift-card orders and redemptions, refunds,
+the Bookstore's checkouts, orders, earnings and payouts, the Library's
+purchases and writer earnings and payouts following that precedent — so
+deleting a person, a vendor or a writer would have taken every money
+record that hung off them. Nothing deletes those rows today (accounts are
+deactivated, shops suspended), so the cascade was latent; rule 12 says
+money records are kept, and a rule that holds only while nobody writes a
+delete is not a rule.
+
+**Built.** Migration `2026_09_27_000003` drops and re-creates twenty-one
+foreign keys `restrictOnDelete`: `payments.user_id`; `wallets.user_id`;
+`wallet_transactions.user_id` and `.wallet_id`; `gift_card_orders.user_id`;
+`gift_card_transactions.user_id` and `.gift_card_id`;
+`payment_refunds.payment_id`; `bookshop_checkouts.user_id`;
+`orders.user_id`, `.vendor_id` and `.bookshop_checkout_id`;
+`vendor_earnings.vendor_id` and `.order_id`; `vendor_payouts.vendor_id`;
+`library_purchases.user_id` and `.library_item_id`;
+`writer_earnings.writer_id`, `.library_purchase_id` and
+`.library_item_id`; `writer_payouts.writer_id`. No column or data changes
+(rule 9: additive in effect; `down()` restores the cascade).
+`DeleteUserAccountAction` now counts the eight user-keyed money tables
+before anything else, so "remove this user" deactivates rather than
+meeting the database's refusal as an error. `users:clear-non-admin`, the
+staging test-data command, runs with foreign-key checks off and is
+unaffected (never on production, by its own guard). `SmokeMarkerSeeder`'s
+reset of the checkout walk deleted the walk's orders and let the cascade
+take their earnings; it now deletes those earnings first (walk residue,
+not money) — the first full run found it, 18 smoke-reset tests red on
+"cannot delete a parent row", which is the rule working.
+
+**Tests.** `MoneyTablesRestrictOnDeleteTest` (2, new): every listed key
+reads RESTRICT on the migrated schema (the test names any that still
+cascade); a raw delete of a person with a wallet ledger throws and leaves
+both rows, and the account delete degrades to a deactivation that names
+the wallet and its ledger. `DeleteUserAccountTest`,
+`ClearNonAdminUsersTest`, `SuperAdminNotDeletableTest`, the Bookstore
+money and Library earnings tests and Commerce unchanged and green. Full
+suite **2320 passed**; architecture green.
+
+**Verification, captured** (`Schema::getForeignKeys` on the migrated local
+database, before and after — the gate for a schema rule): before, every
+key above read `cascade`; after, every one reads `RESTRICT`, and the
+`decided_by`, `requested_by`, `cancelled_by` and other actor keys still
+read `set null`, as they should (an actor may leave; their decision stays).
+Not a browser task: the office's screen for "remove this user" is
+unchanged and already walked (`admin.mjs`); what changed is what the
+database allows underneath it.
+
+**Docs.** KNOWN_ISSUES entry closed; BOOKSHOP_PLAN §15 finding 7.
+
+**Production.** `migrate --force` in the pull line rebuilds the keys in
+place; MariaDB rewrites no rows for a constraint change. Nothing to
+backfill.
+
 ## 5ih. Enrolment decisions record who decided, and when (2026-09-27)
 
 Admin-panel audit finding 6, KNOWN_ISSUES "Enrolment decisions record no

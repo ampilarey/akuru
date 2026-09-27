@@ -156,7 +156,17 @@ a question with a default, so "do nothing" is always a legible choice.
 
 ## Found by the Bookstore audit (2026-09-26)
 
-### Deleting a customer or a vendor would take their orders and money records with them — **open, latent, platform-wide**
+### Deleting a customer or a vendor would take their orders and money records with them — **fixed (2026-09-27, STATUS §5ii)**
+
+**Fixed**: migration `2026_09_27_000003` re-creates twenty-one money-table
+foreign keys `restrictOnDelete` — payments, the wallet and its ledger,
+gift-card orders and redemptions, refunds, the Bookstore's checkouts,
+orders, earnings and payouts, the Library's purchases and writer earnings
+and payouts — so the database refuses a delete while money hangs off the
+row, whatever code asks. `DeleteUserAccountAction` counts those tables
+first and deactivates instead, so the office never meets the refusal as an
+error. `MoneyTablesRestrictOnDeleteTest`. The record below is the finding
+as it stood.
 
 `bookshop_checkouts.user_id`, `orders.user_id` and the `vendor_id` foreign
 keys on `orders`, `vendor_earnings` and `vendor_payouts` are
