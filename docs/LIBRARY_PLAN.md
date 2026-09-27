@@ -74,6 +74,8 @@ Not a simple PDF upload page — a publishing platform with connected modules: P
 - **8.3 Articles page filters:** free/paid, discounted, category, author, language, reading time, latest, popular.
 - **8.4 Research page extra filters:** research area, author, keywords, published date, peer-reviewed, open access, paid/free, discounted.
 
+> **8.2–8.4 remaining filters built 2026-09-27 (B5, STATUS §5in):** difficulty (beginner / intermediate / advanced, set by the writer or the office), the reading-time band (up to 10, 10–30, over 30 minutes), *popular this week / this month* (pages opened in the window), peer-reviewed (a reviewer has reported) and open access (free public research), on the one shelf and in its CSV. Not built: *discounted* (no promotions yet, B4), *published date* range, *research area* as its own field (the category and keywords stand in).
+
 > **8.1–8.3 built 2026-09-25 (STATUS §5gp):** free/paid, language, price range, newest / most read / most purchased / price / title; featured (office toggle) and continue reading on the front of the shelf; gift card link. Not built: discounted/promotions (no campaigns), difficulty, reading-time filter, peer-reviewed/open-access filters, popular-by-period.
 - **8.5 Promotions page:** Ramadan offers, back-to-school, new writer launches, free article campaigns, bundles, gift card bonus campaigns.
 - **8.6 Gift Card page:** buy, choose amount, recipient name/email/mobile, gift message, BML payment, code delivery, redeem into Akuru wallet.

@@ -61,6 +61,9 @@ function ItemEditor({ item, options, onDone, t }) {
         affiliation: item?.affiliation || '',
         research_field: item?.research_field || '',
         suggested_reviewer: item?.suggested_reviewer || '',
+        // B5 (§8.2–§8.3): how hard, and how long.
+        difficulty: item?.difficulty || '',
+        reading_time: item?.reading_time ?? '',
         tags_text: (item?.tags || []).join(', '),
         co_authors_text: (item?.co_authors || []).join(', '),
         preview_enabled: Boolean(item?.preview_enabled),
@@ -126,6 +129,13 @@ function ItemEditor({ item, options, onDone, t }) {
                 <option value="">Category…</option>
                 {(options.categories || []).map((category) => <option key={category.id} value={category.id}>{category.name}</option>)}
             </select>
+            <select className="form-input" value={form.data.difficulty} onChange={(e) => form.setData('difficulty', e.target.value)} aria-label="Difficulty">
+                <option value="">Difficulty: not set</option>
+                <option value="beginner">Beginner</option>
+                <option value="intermediate">Intermediate</option>
+                <option value="advanced">Advanced</option>
+            </select>
+            <input className="form-input" type="number" min="1" placeholder="Reading time (min)" value={form.data.reading_time} onChange={(e) => form.setData('reading_time', e.target.value)} />
             <input className="form-input" placeholder="Keywords (comma-separated)" value={form.data.tags_text} onChange={(e) => form.setData('tags_text', e.target.value)} />
             <input className="form-input md:col-span-2" placeholder="Co-authors (comma-separated)" value={form.data.co_authors_text} onChange={(e) => form.setData('co_authors_text', e.target.value)} />
             <textarea className="form-input md:col-span-2" rows="2" placeholder="Description" value={form.data.description} onChange={(e) => form.setData('description', e.target.value)} />

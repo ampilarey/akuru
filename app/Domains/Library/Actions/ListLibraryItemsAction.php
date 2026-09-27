@@ -14,7 +14,18 @@ use App\Domains\Media\Actions\ResolvePublicMediaUrlAction;
  */
 class ListLibraryItemsAction
 {
-    public const SORTS = ['newest', 'most_read', 'most_purchased', 'price_asc', 'price_desc', 'title'];
+    public const SORTS = ['newest', 'most_read', 'most_purchased', 'popular_week', 'popular_month', 'price_asc', 'price_desc', 'title'];
+
+    /** B5 (§8.2): the three words a writer or the office may put on an item. */
+    public const DIFFICULTIES = ['beginner', 'intermediate', 'advanced'];
+
+    /**
+     * B5 (§8.3): reading-time bands in minutes — short up to ten, medium to
+     * thirty, long beyond. An item with no reading time is in no band.
+     *
+     * @var array<string, array{0: int|null, 1: int|null}>
+     */
+    public const READING_BANDS = ['short' => [null, 10], 'medium' => [11, 30], 'long' => [31, null]];
 
     /**
      * @param  array<string, mixed>  $filters
@@ -25,11 +36,34 @@ class ListLibraryItemsAction
         $sort = in_array($filters['sort'] ?? null, self::SORTS, true) ? $filters['sort'] : 'newest';
         $priceMin = is_numeric($filters['price_min'] ?? null) ? (float) $filters['price_min'] : null;
         $priceMax = is_numeric($filters['price_max'] ?? null) ? (float) $filters['price_max'] : null;
+        $band = self::READING_BANDS[$filters['reading'] ?? ''] ?? null;
 
         return LibraryItem::query()
             ->with(['category', 'tags', 'authors', 'writer'])
             ->withCount(['readers', 'paidPurchases'])
+            // B5: "popular this week / month" counts pages opened in the window.
+            ->when(str_starts_with($sort, 'popular_'), fn ($query) => $query
+                ->withCount(['readingEvents as popular_count' => fn ($sub) => $sub
+                    ->where('occurred_at', '>=', now()->subDays($sort === 'popular_week' ? 7 : 30))]))
             ->when($publishedOnly, fn ($query) => $query->where('status', 'published'))
+            // B5 (§8.2–§8.4): difficulty, the reading-time band, and for
+            // research: reviewed by a peer, or open to everyone.
+            ->when(in_array($filters['difficulty'] ?? null, self::DIFFICULTIES, true), fn ($query) => $query->where('difficulty', $filters['difficulty']))
+            ->when($band !== null, function ($query) use ($band) {
+                $query->whereNotNull('reading_time');
+                if ($band[0] !== null) {
+                    $query->where('reading_time', '>=', $band[0]);
+                }
+                if ($band[1] !== null) {
+                    $query->where('reading_time', '<=', $band[1]);
+                }
+            })
+            ->when(filter_var($filters['peer_reviewed'] ?? false, FILTER_VALIDATE_BOOL), fn ($query) => $query
+                ->where('content_type', 'research')
+                ->whereHas('reviewAssignments', fn ($sub) => $sub->where('status', 'done')))
+            ->when(filter_var($filters['open_access'] ?? false, FILTER_VALIDATE_BOOL), fn ($query) => $query
+                ->where('content_type', 'research')
+                ->where('access_type', 'free_public'))
             // Bookstore B11: one item by id, for a product that links to it.
             ->when(is_numeric($filters['id'] ?? null), fn ($query) => $query->whereKey((int) $filters['id']))
             ->when(($filters['access'] ?? null) === 'free', fn ($query) => $query->whereIn('access_type', ['free_public', 'free_login']))
@@ -56,6 +90,7 @@ class ListLibraryItemsAction
             })
             ->when($sort === 'most_read', fn ($query) => $query->orderByDesc('readers_count'))
             ->when($sort === 'most_purchased', fn ($query) => $query->orderByDesc('paid_purchases_count'))
+            ->when(str_starts_with($sort, 'popular_'), fn ($query) => $query->orderByDesc('popular_count'))
             ->when($sort === 'price_asc', fn ($query) => $query->orderByRaw('COALESCE(price, 0) asc'))
             ->when($sort === 'price_desc', fn ($query) => $query->orderByRaw('COALESCE(price, 0) desc'))
             ->when($sort === 'title', fn ($query) => $query->orderBy('title'))
@@ -95,6 +130,7 @@ class ListLibraryItemsAction
             'published_at' => $item->published_at?->toDateString(),
             'reading_time' => $item->reading_time,
             'page_count' => $item->page_count,
+            'difficulty' => $item->difficulty,
             'category' => $item->category ? [
                 'id' => $item->category->id,
                 'name' => $item->category->name,

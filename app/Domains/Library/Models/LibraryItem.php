@@ -46,6 +46,7 @@ class LibraryItem extends Model
         'writer_id',
         'page_count',
         'reading_time',
+        'difficulty',
         'preview_enabled',
         'preview_pages',
         'commission_type',
@@ -96,6 +97,18 @@ class LibraryItem extends Model
     public function readers(): HasMany
     {
         return $this->hasMany(LibraryReadingProgress::class);
+    }
+
+    /** B5: every page opened, for "popular this week / month". */
+    public function readingEvents(): HasMany
+    {
+        return $this->hasMany(LibraryReadingEvent::class);
+    }
+
+    /** B5: a research item is peer-reviewed once a reviewer has reported. */
+    public function reviewAssignments(): HasMany
+    {
+        return $this->hasMany(LibraryReviewAssignment::class);
     }
 
     /** Paid purchases (§8.2 "most purchased"). */

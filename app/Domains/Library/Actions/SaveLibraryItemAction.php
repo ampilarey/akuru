@@ -102,6 +102,11 @@ class SaveLibraryItemAction
             'pdf_media_file_id' => $pdfId,
             'page_count' => $data['page_count'] ?? null,
             'reading_time' => $data['reading_time'] ?? null,
+            // B5: one of three words or nothing; a form that does not carry
+            // the field leaves it alone, as for the cover.
+            'difficulty' => array_key_exists('difficulty', $data)
+                ? (in_array($data['difficulty'], ListLibraryItemsAction::DIFFICULTIES, true) ? $data['difficulty'] : null)
+                : $item?->difficulty,
         ];
 
         // §9.4 free preview. Written only when the caller says something about
