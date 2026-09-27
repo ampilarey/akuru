@@ -42,9 +42,9 @@ Route::get('about', [\App\Domains\Website\Http\Controllers\PublicSite\AboutContr
 Route::get('careers', [\App\Domains\Website\Http\Controllers\PublicSite\CareersController::class, 'index'])->name('public.careers');
 Route::get('courses', [CourseController::class, 'index'])->name('public.courses.index');
 Route::get('courses/{course}', [CourseController::class, 'show'])->name('public.courses.show');
-Route::post('courses/{course}/waitlist', [CourseController::class, 'waitlist'])->name('public.courses.waitlist')->middleware('throttle:10,1');
-Route::post('courses/{course}/syllabus', [CourseController::class, 'syllabus'])->name('public.courses.syllabus')->middleware('throttle:10,1');
-Route::post('funnel-events', [\App\Domains\Website\Http\Controllers\PublicSite\FunnelEventController::class, 'store'])->name('public.funnel.store')->middleware('throttle:60,1');
+Route::post('courses/{course}/waitlist', [CourseController::class, 'waitlist'])->name('public.courses.waitlist')->middleware('throttle:10,1,course-waitlist');
+Route::post('courses/{course}/syllabus', [CourseController::class, 'syllabus'])->name('public.courses.syllabus')->middleware('throttle:10,1,course-syllabus');
+Route::post('funnel-events', [\App\Domains\Website\Http\Controllers\PublicSite\FunnelEventController::class, 'store'])->name('public.funnel.store')->middleware('throttle:60,1,funnel-events');
 // Search
 Route::get('search', [\App\Domains\Website\Http\Controllers\PublicSite\SearchController::class, 'index'])->name('public.search');
 
@@ -114,17 +114,17 @@ Route::get('library', [PublicLibraryController::class, 'index'])->name('public.l
 Route::get('library/authors/{slug}', [PublicLibraryController::class, 'author'])->name('public.library.author');
 Route::get('my-library', [LibraryReaderController::class, 'myLibrary'])->name('public.library.my');
 Route::get('my-wallet', [WalletController::class, 'show'])->name('public.wallet');
-Route::post('my-wallet/redeem', [WalletController::class, 'redeem'])->name('public.wallet.redeem')->middleware('throttle:10,1');
+Route::post('my-wallet/redeem', [WalletController::class, 'redeem'])->name('public.wallet.redeem')->middleware('throttle:10,1,wallet-redeem');
 // L4 §15.3: buy a gift card. BML only; no discount, no wallet (§15.4).
 Route::get('gift-cards', [\App\Domains\Commerce\Http\Controllers\GiftCardPurchaseController::class, 'index'])->name('public.gift-cards.index');
-Route::post('gift-cards', [\App\Domains\Commerce\Http\Controllers\GiftCardPurchaseController::class, 'purchase'])->name('public.gift-cards.purchase')->middleware('throttle:10,1');
+Route::post('gift-cards', [\App\Domains\Commerce\Http\Controllers\GiftCardPurchaseController::class, 'purchase'])->name('public.gift-cards.purchase')->middleware('throttle:10,1,gift-card-buy');
 Route::get('gift-cards/return', [\App\Domains\Commerce\Http\Controllers\GiftCardPurchaseController::class, 'paymentReturn'])->name('public.gift-cards.return');
 Route::get('library/{slug}/read', [LibraryReaderController::class, 'read'])->name('public.library.read');
-Route::post('library/{slug}/checkout', [LibraryCheckoutController::class, 'checkout'])->name('public.library.checkout')->middleware('throttle:10,1');
+Route::post('library/{slug}/checkout', [LibraryCheckoutController::class, 'checkout'])->name('public.library.checkout')->middleware('throttle:10,1,library-checkout');
 Route::get('library/{slug}/payment-return', [LibraryCheckoutController::class, 'paymentReturn'])->name('public.library.payment-return');
-Route::post('library/{slug}/progress', [LibraryReaderController::class, 'progress'])->name('public.library.progress')->middleware('throttle:60,1');
-Route::post('library/{slug}/bookmark', [LibraryReaderController::class, 'bookmark'])->name('public.library.bookmark')->middleware('throttle:30,1');
-Route::post('library/{slug}/note', [LibraryReaderController::class, 'note'])->name('public.library.note')->middleware('throttle:30,1');
+Route::post('library/{slug}/progress', [LibraryReaderController::class, 'progress'])->name('public.library.progress')->middleware('throttle:60,1,library-progress');
+Route::post('library/{slug}/bookmark', [LibraryReaderController::class, 'bookmark'])->name('public.library.bookmark')->middleware('throttle:30,1,library-bookmark');
+Route::post('library/{slug}/note', [LibraryReaderController::class, 'note'])->name('public.library.note')->middleware('throttle:30,1,library-note');
 Route::get('library/{slug}', [PublicLibraryController::class, 'show'])->name('public.library.show');
 
 Route::get('research/export', [ResearchPostController::class, 'export'])->name('public.research.export');
@@ -133,12 +133,12 @@ Route::get('research/{post:slug}', [ResearchPostController::class, 'show'])->nam
 Route::get('instructors/{slug}', [InstructorProfileController::class, 'show'])->name('public.instructors.show');
 Route::get('prayer-times', [PrayerTimesController::class, 'index'])->name('public.prayer-times');
 Route::post('prayer-times/sms-opt-out', [PrayerTimesController::class, 'smsOptOut'])
-    ->middleware('throttle:10,1')
+    ->middleware('throttle:10,1,prayer-sms-opt-out')
     ->name('public.prayer-times.sms-opt-out');
 
 // Calendar .ics download for individual event
 Route::get('events/{event}/calendar.ics', [\App\Domains\Website\Http\Controllers\PublicSite\EventController::class, 'downloadCalendar'])->name('public.events.calendar');
-Route::post('events/{event}/register', [\App\Domains\Website\Http\Controllers\PublicSite\EventController::class, 'register'])->name('public.events.register')->middleware('throttle:20,1');
+Route::post('events/{event}/register', [\App\Domains\Website\Http\Controllers\PublicSite\EventController::class, 'register'])->name('public.events.register')->middleware('throttle:20,1,event-register');
 
 Route::get('news', [\App\Domains\Website\Http\Controllers\PublicSite\PostController::class, 'newsIndex'])->name('public.news.index');
 Route::get('news/{post:slug}', [\App\Domains\Website\Http\Controllers\PublicSite\PostController::class, 'show'])->name('public.news.show');
@@ -181,7 +181,7 @@ Route::post('daily/subscribe/{subscription}/resume', [DailySubscriptionControlle
 Route::get('daily/unsubscribe/{token}', [DailyUnsubscribeController::class, 'show'])
     ->name('public.daily.unsubscribe');
 Route::post('daily/sms-opt-out', [DailyUnsubscribeController::class, 'smsOptOut'])
-    ->middleware('throttle:10,1')
+    ->middleware('throttle:10,1,daily-sms-opt-out')
     ->name('public.daily.sms-opt-out');
 Route::get('daily/{type}', [DailyContentController::class, 'index'])
     ->name('public.daily.index')
@@ -196,18 +196,18 @@ Route::get('daily/{type}/{date}', [DailyContentController::class, 'show'])
 Route::get('courses/{course}/checkout', [\App\Domains\Admissions\Http\Controllers\CourseRegistrationController::class, 'checkout'])
     ->name('courses.checkout.show');
 Route::post('courses/{course}/checkout/login', [\App\Domains\Admissions\Http\Controllers\CourseRegistrationController::class, 'checkoutLogin'])
-    ->name('courses.checkout.login')->middleware('throttle:10,1');
+    ->name('courses.checkout.login')->middleware('throttle:10,1,register-login');
 // Legacy register route kept for backward compatibility
 Route::get('courses/{course}/register', [\App\Domains\Admissions\Http\Controllers\CourseRegistrationController::class, 'show'])
     ->name('courses.register.show');
 Route::post('courses/register/start', [\App\Domains\Admissions\Http\Controllers\CourseRegistrationController::class, 'start'])
-    ->name('courses.register.start')->middleware('throttle:10,1');
+    ->name('courses.register.start')->middleware('throttle:10,1,register-start');
 Route::get('courses/register/otp', [\App\Domains\Admissions\Http\Controllers\CourseRegistrationController::class, 'otpForm'])
     ->name('courses.register.otp');
 Route::post('courses/register/verify', [\App\Domains\Admissions\Http\Controllers\CourseRegistrationController::class, 'verify'])
-    ->name('courses.register.verify')->middleware('throttle:10,1');
+    ->name('courses.register.verify')->middleware('throttle:10,1,register-verify');
 Route::post('courses/register/otp/resend-new', [\App\Domains\Admissions\Http\Controllers\CourseRegistrationController::class, 'resendNewRegistrationOtp'])
-    ->name('courses.register.otp.resend-new')->middleware('throttle:5,1');
+    ->name('courses.register.otp.resend-new')->middleware('throttle:5,1,register-otp-resend');
 Route::get('courses/register/set-password', [\App\Domains\Admissions\Http\Controllers\CourseRegistrationController::class, 'passwordForm'])
     ->name('courses.register.set-password');
 Route::post('courses/register/set-password', [\App\Domains\Admissions\Http\Controllers\CourseRegistrationController::class, 'setPassword'])
@@ -215,7 +215,7 @@ Route::post('courses/register/set-password', [\App\Domains\Admissions\Http\Contr
 Route::get('courses/register/continue', [\App\Domains\Admissions\Http\Controllers\CourseRegistrationController::class, 'continueForm'])
     ->name('courses.register.continue');
 Route::post('courses/register/enroll', [\App\Domains\Admissions\Http\Controllers\CourseRegistrationController::class, 'enroll'])
-    ->name('courses.register.enroll')->middleware('throttle:10,1');
+    ->name('courses.register.enroll')->middleware('throttle:10,1,register-enroll');
 // Graceful GET fallback — browser history / stale link navigation
 Route::get('courses/register/enroll', function () {
     if (session('enroll_pending_course_ids')) {
@@ -231,9 +231,9 @@ Route::get('courses/register/enroll', function () {
 Route::get('courses/register/enroll/confirm', [\App\Domains\Admissions\Http\Controllers\CourseRegistrationController::class, 'enrollOtpForm'])
     ->name('courses.register.enroll.otp');
 Route::post('courses/register/enroll/confirm', [\App\Domains\Admissions\Http\Controllers\CourseRegistrationController::class, 'enrollConfirm'])
-    ->name('courses.register.enroll.confirm')->middleware('throttle:10,1');
+    ->name('courses.register.enroll.confirm')->middleware('throttle:10,1,register-enroll-confirm');
 Route::post('courses/register/enroll/resend', [\App\Domains\Admissions\Http\Controllers\CourseRegistrationController::class, 'enrollResendOtp'])
-    ->name('courses.register.enroll.resend')->middleware('throttle:5,1');
+    ->name('courses.register.enroll.resend')->middleware('throttle:5,1,register-enroll-resend');
 Route::get('courses/register/complete', [\App\Domains\Admissions\Http\Controllers\CourseRegistrationController::class, 'complete'])
     ->name('courses.register.complete');
 Route::get('courses/register/resume', [\App\Domains\Admissions\Http\Controllers\CourseRegistrationController::class, 'resume'])

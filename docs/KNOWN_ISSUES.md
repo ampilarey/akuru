@@ -230,7 +230,7 @@ them there any more (BACKLOG C10, the role-matrix tidy-up).
 
 ## Found by the bookstore's B3 walk (2026-09-26)
 
-### Ten cart adds in a minute got the checkout refused (429) — **fixed for the bookstore (2026-09-26); open elsewhere**
+### Ten cart adds in a minute got the checkout refused (429) — **fixed for the bookstore (2026-09-26); everywhere else (2026-09-27, STATUS §5ik)**
 
 Laravel's plain `throttle:N,1` keys on the signed-in user alone
 (`ThrottleRequests::resolveRequestSignature`), not on the route, so every
@@ -246,14 +246,23 @@ prefix, the third argument (`throttle:60,1,shop-cart`,
 `BookshopCheckoutTest` fills twelve cart lines and checks out, and fails with
 a 429 on the old routes.
 
-**Still open**: about thirty other routes use a plain `throttle:N,1`
-(library checkout, wallet redeem, gift cards, course waitlist and syllabus,
-the public forms), so they still share one counter per person or IP — a
-parent who sends several forms and then buys a book in the same minute can
-be refused. Harm is low (one minute's wait) and nobody uses the site for
-real yet (ADR-021). The fix is the same one-word prefix per route, best done
-in one sweep with a test that pins every `throttle:` in the route files to
-carry a prefix. Not done here: outside B3's scope (rule 1).
+**Fixed everywhere else (2026-09-27, STATUS §5ik)**: the other twenty-nine
+plain `throttle:N,1` strings (library checkout and reader, wallet redeem,
+gift cards, course waitlist and syllabus, the whole course registration
+flow, event registration, the SMS opt-outs, the learner uploads, e-mail
+verification, the BML webhook, certificate verify, the prayer-times API)
+each carry a prefix of their own now. The registration flow was the worst
+of it: start, verify, enrol and confirm all shared one counter of ten a
+minute, so a registrant who fumbled the form a few times was refused the
+OTP check itself. `RouteThrottlesCarryPrefixesTest` reads every registered
+route and fails on the next bare numeric throttle, and posts the
+registration start until it is refused to show the verify step is not.
+
+The record below is the finding as it stood: about thirty other routes used
+a plain `throttle:N,1` (library checkout, wallet redeem, gift cards, course
+waitlist and syllabus, the public forms), so they still shared one counter
+per person or IP — a parent who sent several forms and then bought a book in
+the same minute could be refused. Not done in B3: outside its scope (rule 1).
 
 ---
 

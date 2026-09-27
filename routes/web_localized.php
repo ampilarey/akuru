@@ -283,10 +283,10 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
     // private media upload + authenticated streaming"; both shipped afterwards,
     // so the student half of the recitation loop had an Action, a queue, an
     // audio route and no way in.
-    Route::post('/learn/quran/recitations', [LearnQuranController::class, 'store'])->name('learn.quran.recitations.store')->middleware('throttle:30,1');
+    Route::post('/learn/quran/recitations', [LearnQuranController::class, 'store'])->name('learn.quran.recitations.store')->middleware('throttle:30,1,learn-recitation');
     // Arabic B (§51): pronunciation practice + teacher review queue.
     Route::get('/learn/pronounce', [\App\Domains\Pronunciation\Http\Controllers\PronunciationPracticeController::class, 'index'])->name('learn.pronounce');
-    Route::post('/learn/pronounce', [\App\Domains\Pronunciation\Http\Controllers\PronunciationPracticeController::class, 'store'])->name('learn.pronounce.store')->middleware('throttle:30,1');
+    Route::post('/learn/pronounce', [\App\Domains\Pronunciation\Http\Controllers\PronunciationPracticeController::class, 'store'])->name('learn.pronounce.store')->middleware('throttle:30,1,learn-pronounce');
     Route::get('/teach/pronunciation', [\App\Domains\Pronunciation\Http\Controllers\TeachPronunciationController::class, 'index'])->name('teach.pronunciation');
     Route::post('/teach/pronunciation/{attempt}/review', [\App\Domains\Pronunciation\Http\Controllers\TeachPronunciationController::class, 'review'])->name('teach.pronunciation.review')->whereNumber('attempt');
     Route::get('/teach/schedule', [TeacherScheduleController::class, 'index'])->name('teach.schedule');
@@ -342,7 +342,7 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
     // SPEC §36 "Play audio/voice submissions · View uploaded files". The
     // submission kind was storable and unreadable until this slice: no route
     // accepted a file against an attempt, so the teacher had nothing to open.
-    Route::post('/learn/activities/{activity}/upload', [LearnActivityController::class, 'upload'])->name('learn.activities.upload')->whereNumber('activity')->middleware('throttle:30,1');
+    Route::post('/learn/activities/{activity}/upload', [LearnActivityController::class, 'upload'])->name('learn.activities.upload')->whereNumber('activity')->middleware('throttle:30,1,learn-upload');
     Route::delete('/learn/activities/{activity}/attachments/{media}', [LearnActivityController::class, 'removeAttachment'])->name('learn.activities.attachments.destroy')->whereNumber('activity')->whereNumber('media');
     Route::get('/learn/assessments/{assessment}', [LearnAssessmentController::class, 'show'])->name('learn.assessments.show')->whereNumber('assessment');
     Route::post('/learn/assessments/{assessment}/autosave', [LearnAssessmentController::class, 'autosave'])->name('learn.assessments.autosave')->whereNumber('assessment');

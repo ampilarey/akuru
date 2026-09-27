@@ -4414,6 +4414,30 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5ik. Every numeric route throttle carries its own prefix (2026-09-27)
+
+KNOWN_ISSUES, "Ten cart adds in a minute got the checkout refused", the
+half the B3 walk left open. Laravel's `throttle:N,1` keys on the signed-in
+user alone, or the IP for a guest, not on the route, so every route with a
+plain numeric throttle shared **one counter per person**, each checking it
+against its own limit. B3 fixed the bookstore's seven; twenty-nine others
+still shared — and the course registration flow was the worst of them:
+start, verify, enrol and confirm all sat on one counter of ten a minute,
+so a registrant who fumbled the form a few times was refused the OTP
+check itself, with a bare 429.
+
+**Built.** Each of the twenty-nine (`routes/api.php`, `web.php`,
+`auth.php`, `web_public.php`, `web_localized.php`) carries a prefix as
+its third argument — `register-start`, `library-checkout`,
+`wallet-redeem`, `gift-card-buy`, `email-verify`, `bml-webhook`,
+`learn-upload`, … — so each has a counter of its own. No limit changed.
+`RouteThrottlesCarryPrefixesTest` (architecture) reads every registered
+route's middleware and fails on the next bare numeric throttle, and posts
+the registration start until it is refused to show the verify step is
+not; the second test fails on the old routes. Full suite green; walked
+`register.mjs` (the funnel that shared the counter) 14/14 and
+`checkout.mjs` 28/28 on the branch.
+
 ## 5ij. The role matrix by migration, and Hifz stays with the dean (2026-09-27)
 
 BACKLOG C10, KNOWN_ISSUES 11 (and item 3 of the owner's list). Three

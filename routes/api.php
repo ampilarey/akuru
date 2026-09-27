@@ -18,8 +18,8 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('v1/prayer-times', [PrayerTimesController::class, 'json'])->middleware('throttle:60,1');
-Route::get('v1/prayer-times/islands', [PrayerTimesController::class, 'islands'])->middleware('throttle:60,1');
+Route::get('v1/prayer-times', [PrayerTimesController::class, 'json'])->middleware('throttle:60,1,api-prayer-times');
+Route::get('v1/prayer-times/islands', [PrayerTimesController::class, 'islands'])->middleware('throttle:60,1,api-prayer-islands');
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
@@ -28,7 +28,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 // TEST-only immediate deploy trigger (GitHub Actions -> cPanel self-pull). Disabled
 // when TEST_DEPLOY_WEBHOOK_SECRET is unset; always 404 on non-test hosts.
 Route::post('/deploy/test-pull', TestDeployWebhookController::class)
-    ->middleware('throttle:10,1');
+    ->middleware('throttle:10,1,deploy-test-pull');
 
 // SMS API (akuru.edu.mv/api/v2) - API key auth
 Route::prefix('v2')->group(function () {

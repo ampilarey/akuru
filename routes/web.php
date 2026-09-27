@@ -29,7 +29,7 @@ Route::post('payments/bml/callback', [\App\Domains\Finance\Http\Controllers\Paym
 
 // BML webhook (PRIMARY method for payment confirmation; no locale)
 Route::post('webhooks/bml', \App\Domains\Finance\Http\Controllers\BmlWebhookController::class)
-    ->name('webhooks.bml')->middleware('throttle:120,1');
+    ->name('webhooks.bml')->middleware('throttle:120,1,bml-webhook');
 
 // BML return URL and status poll - must be outside localized group so BML's
 // redirect lands here directly without a locale-prefix 302 redirect dropping query params.
@@ -41,7 +41,7 @@ Route::get('payments/status/{payment}', [\App\Domains\Finance\Http\Controllers\P
 // Public certificate QR verify (SPEC §39 / §48). Unlocalized so scanners hit a stable URL. No auth.
 Route::get('verify/certificates/{publicId}', [\App\Domains\Courses\Http\Controllers\PublicCertificateVerifyController::class, 'show'])
     ->name('public.certificates.verify')
-    ->middleware('throttle:30,1');
+    ->middleware('throttle:30,1,certificate-verify');
 
 // Localized routes
 Route::group([
