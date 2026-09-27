@@ -107,6 +107,9 @@ class ListWriterDashboardAction
                     : null,
                 'status' => $profile->status,
                 'approved_at' => $profile->approved_at?->toDateString(),
+                // B6: the page's featured works and links, edited on the same form.
+                'featured_item_ids' => array_map('intval', (array) $profile->featured_item_ids),
+                'social_links' => (array) $profile->social_links,
             ] : null,
             'application' => $application ? [
                 'status' => $application->status,

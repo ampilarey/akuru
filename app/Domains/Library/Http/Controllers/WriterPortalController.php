@@ -71,6 +71,12 @@ class WriterPortalController extends Controller
             'qualifications' => 'nullable|string|max:5000',
             'expertise' => 'nullable|string|max:255',
             'photo' => 'nullable|image|mimes:jpeg,png,webp|max:4096',
+            // B6: up to three own published works, and the known addresses;
+            // ownership and the URL shape are the action's to check.
+            'featured_item_ids' => 'nullable|array|max:'.SaveWriterPublicProfileAction::FEATURED_LIMIT,
+            'featured_item_ids.*' => 'integer',
+            'social_links' => 'nullable|array',
+            'social_links.*' => 'nullable|string|max:255',
         ]);
 
         app(SaveWriterPublicProfileAction::class)->execute((int) $request->user()->id, $data, $request->file('photo'));

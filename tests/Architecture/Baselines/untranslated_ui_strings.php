@@ -3,7 +3,7 @@
 // CLAUDE.md Conventions: "All screens trilingual-ready (EN/DV/AR)".
 // English UI-string keys with no Dhivehi AND no Arabic entry in resources/lang.
 // Baseline may only shrink when strings are translated — never grow.
-// Baseline count: 199
+// Baseline count: 198
 
 return [
     'common.assignment_completion',
@@ -175,7 +175,6 @@ return [
     'public.View Details',
     'public.View larger map',
     'public.Waitlist only',
-    'public.Website',
     'public.Wednesday',
     'public.What happens next?',
     'public.WhatsApp',

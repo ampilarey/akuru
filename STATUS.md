@@ -4414,6 +4414,32 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5im. Library B6: the author page's featured works and links (2026-09-27)
+
+BACKLOG B6, LIBRARY_PLAN §8.7. The L8 author page (§5gp) had a name, a
+portrait, a bio and the full shelf; the plan's two extras — works the
+writer wants seen first, and where else to find them — were parked as
+"two columns and the form".
+
+**Built.** Migration `2026_09_27_000005` adds `featured_item_ids` and
+`social_links` (JSON, nullable, additive) to `writer_profiles`.
+`SaveWriterPublicProfileAction` takes up to three pins and refuses any
+that is not the writer's own **published** work (a draft, somebody
+else's, an unknown id: the writer is told, not silently trimmed), and
+keeps the seven known addresses (`website`, `facebook`, `instagram`,
+`x`, `youtube`, `linkedin`, `telegram`) only as full http(s) URLs, an
+unknown key dropped. `PresentWriterPublicProfileAction` puts the pins
+first in the writer's order, and a pin the office has since archived
+simply leaves the shelf. The public page shows a *Featured works* shelf
+above *Published works* and a link row under the bio (`rel="nofollow
+noopener"`, new tab: the writer's addresses, not vouched for). The
+writer's author-page form on `/write` ticks the pins among their
+published works (a fourth box disables) and takes the addresses; the
+dashboard payload reads them back. EN/DV/AR for the two new strings.
+`AuthorPageTest` +2 (pins first and the links; every refusal). Walked in
+`library.mjs`: the writer pins the work and gives a website, the reader
+finds both on the author page.
+
 ## 5il. Clear caches rebuilds a cached configuration instead of dropping it (2026-09-27)
 
 Admin-panel audit finding 13 (`docs/ADMIN_PANEL.md` §3), held as a note.

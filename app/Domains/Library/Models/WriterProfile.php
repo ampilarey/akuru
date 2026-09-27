@@ -15,6 +15,8 @@ class WriterProfile extends Model
         'qualifications',
         'expertise',
         'photo_media_file_id',
+        'featured_item_ids',
+        'social_links',
         'status',
         'approved_at',
         'approved_by',
@@ -26,6 +28,8 @@ class WriterProfile extends Model
         return [
             'approved_at' => 'datetime',
             'default_commission' => 'decimal:2',
+            'featured_item_ids' => 'array',
+            'social_links' => 'array',
         ];
     }
 

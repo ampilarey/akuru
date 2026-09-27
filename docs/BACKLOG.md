@@ -38,7 +38,7 @@ Everything below was audited against the code on 2026-09-25 (STATUS
 | B3 | §36 | **Rich text editor** for articles (the body is HTML in a textarea). | TipTap or similar in `Write.jsx` and `Admin.jsx`; sanitiser already in place. |
 | B4 | §8.1, §8.5, §18, §19 | **Promotions and campaigns**: promotions page, "discounted" filter, bundles, Ramadan/back-to-school offers, gift card bonus campaigns. | `promotion_campaigns` table exists (§35.10); no writer, no UI. |
 | B5 | §8.2–§8.4 | **Remaining filters**: difficulty, reading time, popular-by-period, research's peer-reviewed / open-access filters. | Small, once the data exists (difficulty is not a column yet). |
-| B6 | §8.7 | **Author page extras**: featured works, social links. | Two columns on `writer_profiles` and the form. |
+| B6 | §8.7 | ~~**Author page extras**: featured works, social links.~~ **Built 2026-09-27** (STATUS §5im): up to three own published works pinned first, a website and six social addresses in a link row, edited on the writer's author-page form. | `featured_item_ids` and `social_links` on `writer_profiles`. |
 | B7 | §9.1 | **Private highlights, in-book search, per-session reading time.** | Highlights need a range model; search is a LIKE over `library_item_pages` scoped to the reader's access. |
 | B8 | §10 | **Parent's view of a child's library** (reading progress of a linked child). | `VerifiedGuardianLink` gives the children; a portal page reads `library_reading_progress` for them. |
 | B9 | §11.1 | **Writer application extras**: photo, previous publications, ID document at application time. | Portrait is on the author page already; publications and ID are new fields. |

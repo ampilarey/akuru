@@ -200,14 +200,29 @@ function ItemEditor({ item, options, onDone, t }) {
  * L8: what readers see on the author's public page. The address is fixed
  * at approval and kept across renames, so it is shown, not edited.
  */
-function AuthorPageForm({ profile, onDone, t }) {
+const LINK_KEYS = [
+    ['website', 'Website'], ['facebook', 'Facebook'], ['instagram', 'Instagram'], ['x', 'X'],
+    ['youtube', 'YouTube'], ['linkedin', 'LinkedIn'], ['telegram', 'Telegram'],
+];
+
+function AuthorPageForm({ profile, items = [], onDone, t }) {
+    const links = profile.social_links || {};
     const form = useForm({
         display_name: profile.display_name || '',
         bio: profile.bio || '',
         qualifications: profile.qualifications || '',
         expertise: profile.expertise || '',
         photo: null,
+        featured_item_ids: profile.featured_item_ids || [],
+        social_links: Object.fromEntries(LINK_KEYS.map(([key]) => [key, links[key] || ''])),
     });
+    // B6: only what readers can already open may be pinned.
+    const published = items.filter((item) => item.status === 'published');
+    const toggleFeatured = (id) => {
+        const current = form.data.featured_item_ids;
+        if (current.includes(id)) form.setData('featured_item_ids', current.filter((x) => x !== id));
+        else if (current.length < 3) form.setData('featured_item_ids', [...current, id]);
+    };
 
     return (
         <form
@@ -227,6 +242,37 @@ function AuthorPageForm({ profile, onDone, t }) {
                 {t.library_author_photo || 'Portrait (JPEG, PNG or WebP, up to 4 MB) — shown publicly on your author page'}
                 <input className="form-input" type="file" accept="image/jpeg,image/png,image/webp" onChange={(e) => form.setData('photo', e.target.files[0] ?? null)} />
             </label>
+            {published.length > 0 && (
+                <fieldset className="md:col-span-2" data-testid="featured-works">
+                    <legend className="text-sm font-medium">{t.library_author_featured || 'Featured works (up to three, shown first on your page)'}</legend>
+                    <div className="mt-1 flex flex-wrap gap-3">
+                        {published.map((item) => (
+                            <label key={item.id} className="flex items-center gap-1 text-sm">
+                                <input
+                                    type="checkbox"
+                                    checked={form.data.featured_item_ids.includes(item.id)}
+                                    disabled={!form.data.featured_item_ids.includes(item.id) && form.data.featured_item_ids.length >= 3}
+                                    onChange={() => toggleFeatured(item.id)}
+                                />
+                                {item.title}
+                            </label>
+                        ))}
+                    </div>
+                </fieldset>
+            )}
+            <fieldset className="grid gap-2 md:col-span-2 md:grid-cols-2" data-testid="author-links">
+                <legend className="text-sm font-medium">{t.library_author_links || 'Links (full addresses, shown on your page)'}</legend>
+                {LINK_KEYS.map(([key, label]) => (
+                    <input
+                        key={key}
+                        className="form-input"
+                        type="url"
+                        placeholder={`${label} — https://…`}
+                        value={form.data.social_links[key]}
+                        onChange={(e) => form.setData('social_links', { ...form.data.social_links, [key]: e.target.value })}
+                    />
+                ))}
+            </fieldset>
             <div className="flex flex-wrap items-center gap-2 md:col-span-2">
                 <button type="submit" className="btn-primary" disabled={form.processing}>{t.library_author_save || 'Save author page'}</button>
                 {onDone && <button type="button" className="btn-secondary" onClick={onDone}>{t.library_close || 'Close'}</button>}
@@ -360,7 +406,7 @@ export default function Write({ dashboard, options, earnings = null, item_sales 
                         </div>
                     </div>
 
-                    {editingProfile && <AuthorPageForm profile={profile} onDone={() => setEditingProfile(false)} t={t} />}
+                    {editingProfile && <AuthorPageForm profile={profile} items={dashboard.items || []} onDone={() => setEditingProfile(false)} t={t} />}
 
                     <EarningsCard earnings={earnings} itemSales={item_sales} t={t} />
 
