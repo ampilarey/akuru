@@ -178,6 +178,14 @@ if (!alreadyWriter) {
     await writer.fill('input[placeholder*="Display name"]', `SMOKE-Writer ${STAMP}`);
     await writer.fill('textarea[placeholder="Bio"]', 'SMOKE-Bio: teaches Arabic.');
     await writer.fill('input[placeholder*="Expertise"]', 'SMOKE-Expertise');
+    // B9 (§11.1): previous publications and an identity document. A corner
+    // of the page itself is the document — a real PNG with no fixture file.
+    await writer.fill('[data-testid="apply-publications"]', `SMOKE-Publications ${STAMP}`);
+    await writer.setInputFiles('[data-testid="apply-id-document"]', {
+        name: 'smoke-id.png',
+        mimeType: 'image/png',
+        buffer: await writer.screenshot({ clip: { x: 0, y: 0, width: 80, height: 80 } }),
+    });
     await writer.check('input[type=checkbox]');
     await writer.click('button:has-text("Submit application")');
 
@@ -188,6 +196,14 @@ if (!alreadyWriter) {
     await staff.goto(`${BASE}/en/admin/library`, { waitUntil: 'networkidle' });
     const queue = await text(staff);
     check('the application reaches the office queue', queue.includes(`SMOKE-Writer ${STAMP}`), queue.slice(0, 200));
+    check('the office sees what they have published', queue.includes(`SMOKE-Publications ${STAMP}`), queue.slice(0, 200));
+    const idLink = staff.locator('[data-testid="application-id-document"]').first();
+    if (await idLink.count()) {
+        const opened = await staff.context().request.get(`${BASE}${await idLink.getAttribute('href')}`);
+        check('the office can open the ID document', opened.ok() && String(opened.headers()['content-type']).startsWith('image/'), `HTTP ${opened.status()} ${opened.headers()['content-type']}`);
+    } else {
+        check('the office can open the ID document', false, 'no ID document link in the queue');
+    }
 
     const approve = staff.locator('button:has-text("Approve")').first();
     if (await approve.count()) {

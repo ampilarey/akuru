@@ -106,6 +106,10 @@ function unresolvedDetailScreens(): array
         // shop with an order under that checkout. BookshopFulfilmentTest loads
         // it as that shop (200) and as another shop (404).
         'vendor/slips/{slip}' => 'streams a private slip file; covered by BookshopFulfilmentTest (own shop 200, other shop 404)',
+        // B9: a writer applicant's identity document, served inline to the
+        // office. WriterApplicationExtrasTest loads it as the office (200),
+        // as the applicant (403) and for an application without one (404).
+        'admin/library/applications/{application}/document' => 'streams a private identity document; covered by WriterApplicationExtrasTest',
         // Not screens of their own: both render the public vendor page from
         // the storefront's draft, for a designer's or the office's iframe.
         // StorefrontSectionsTest loads the page preview as its shop and the

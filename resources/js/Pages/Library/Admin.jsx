@@ -24,13 +24,24 @@ function ApplicationsQueue({ applications }) {
                     {applications.map((app) => (
                         <tr key={app.id} className="border-t align-top">
                             <td className="px-3 py-2">
-                                <p className="font-medium">{app.display_name}</p>
-                                <p className="text-xs text-gray-500">Applied {app.applied_at}</p>
-                                {app.motivation && <p className="mt-1 text-xs text-gray-600">{app.motivation}</p>}
+                                <div className="flex items-start gap-2">
+                                    {app.photo_url && <img src={app.photo_url} alt="" className="h-10 w-10 rounded-full object-cover" data-testid="application-portrait" />}
+                                    <div>
+                                        <p className="font-medium">{app.display_name}</p>
+                                        <p className="text-xs text-gray-500">Applied {app.applied_at}</p>
+                                        {app.motivation && <p className="mt-1 text-xs text-gray-600">{app.motivation}</p>}
+                                    </div>
+                                </div>
                             </td>
                             <td className="px-3 py-2 text-xs text-gray-600">
                                 {app.expertise && <p>{app.expertise}</p>}
                                 {app.qualifications && <p>{app.qualifications}</p>}
+                                {/* B9 (§11.1): what they have published, and the identity
+                                    document — private, served to the office only. */}
+                                {app.previous_publications && <p className="mt-1 whitespace-pre-line">{app.previous_publications}</p>}
+                                {app.has_id_document && (
+                                    <a className="mt-1 inline-block text-[#7C2D37] underline" href={`/admin/library/applications/${app.id}/document`} target="_blank" rel="noopener" data-testid="application-id-document">ID document</a>
+                                )}
                             </td>
                             <td className="px-3 py-2">
                                 <input

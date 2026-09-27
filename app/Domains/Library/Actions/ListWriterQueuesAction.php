@@ -8,6 +8,7 @@ use App\Domains\Library\Models\LibraryItemReview;
 use App\Domains\Library\Models\LibraryReviewAssignment;
 use App\Domains\Library\Models\WriterApplication;
 use App\Domains\Library\Models\WriterProfile;
+use App\Domains\Media\Actions\ResolvePublicMediaUrlAction;
 
 /**
  * L5 admin queues: pending writer applications and submitted items,
@@ -31,6 +32,14 @@ class ListWriterQueuesAction
                 'qualifications' => $application->qualifications,
                 'expertise' => $application->expertise,
                 'motivation' => $application->motivation,
+                // B9 (§11.1): what the applicant added. The portrait is public
+                // media; the identity document is private and only ever
+                // reached through the office's document route.
+                'previous_publications' => $application->previous_publications,
+                'photo_url' => $application->photo_media_file_id
+                    ? app(ResolvePublicMediaUrlAction::class)->execute((int) $application->photo_media_file_id)
+                    : null,
+                'has_id_document' => $application->id_document_media_file_id !== null,
                 'applied_at' => $application->created_at?->toDateString(),
             ])->values()->all();
 

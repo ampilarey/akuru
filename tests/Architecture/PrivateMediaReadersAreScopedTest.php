@@ -53,6 +53,10 @@ it('pins every caller that can read a private file', function () {
         // grant is deliberate and documented — whoever may mark a recitation
         // may hear it — and it reaches recitations only, never arbitrary files.
         'app/Domains/Courses/Components/Quran/Actions/ServeRecitationAudioAction.php',
+        // B9: a writer applicant's identity document. Resolves the media id
+        // from the application row and reaches those documents only; the
+        // route that calls it is the office's (`library.manage`).
+        'app/Domains/Library/Actions/ReadWriterApplicationDocumentAction.php',
         // Server-side only: reads the item's own PDF original (the id comes
         // from the library item record, never a request) to make reader
         // pages. The bytes never leave the process; the reader serves pages.
