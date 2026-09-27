@@ -55,7 +55,8 @@ it('creates, lists and edits a recipient group as props with keyed flashes', fun
         'name_en' => 'Friday reminders', 'name_dv' => 'ހުކުރު', 'name_ar' => 'الجمعة', 'description' => 'Every Friday.', 'member_refs' => '4, 5', 'is_active' => true,
     ])->assertSessionHas('success', 'Group saved.');
     $group = PrayerRecipientGroup::query()->where('name_en', 'Friday reminders')->sole();
-    expect($group->member_refs)->toBe([['type' => 'user', 'id' => 4], ['type' => 'user', 'id' => 5]])->and($group->is_active)->toBeTrue();
+    // MySQL 8 hands JSON object keys back in its own order, so canonically.
+    expect($group->member_refs)->toEqualCanonicalizing([['type' => 'user', 'id' => 4], ['type' => 'user', 'id' => 5]])->and($group->is_active)->toBeTrue();
 
     $this->withoutLocalizationMiddleware()->actingAs($office)->get(route('admin.prayer-times.groups.index'))->assertOk()
         ->assertInertia(fn (Assert $page) => $page->component('PrayerTimes/Groups')
@@ -87,7 +88,7 @@ it('drafts, previews and refuses to confirm a broadcast with nobody consented, a
         'mode' => 'daily', 'island_id' => 1, 'date_from' => '2025-01-10', 'language' => 'dv', 'recipient_group_id' => '', 'recipient_refs' => (string) $plain->id,
     ])->assertSessionHas('success', 'Draft saved.');
     $broadcast = PrayerBroadcast::query()->latest('id')->first();
-    expect($broadcast->status->value)->toBe('draft')->and($broadcast->recipient_refs)->toBe([['type' => 'user', 'id' => $plain->id]]);
+    expect($broadcast->status->value)->toBe('draft')->and($broadcast->recipient_refs)->toEqualCanonicalizing([['type' => 'user', 'id' => $plain->id]]);
 
     $this->withoutLocalizationMiddleware()->actingAs($office)->get(route('admin.prayer-times.broadcasts.edit', $broadcast))->assertOk()
         ->assertInertia(fn (Assert $page) => $page->component('PrayerTimes/BroadcastForm')->where('broadcast.id', $broadcast->id)->where('broadcast.status', 'draft')
