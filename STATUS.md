@@ -4414,6 +4414,55 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5jl. C9 slice 10: the pages CMS leaves Blade (2026-09-27)
+
+BACKLOG C9, `docs/ADMIN_PANEL.md` findings 9 and 10; the tenth port.
+`/admin/public-site/pages` — the website's *Manage Pages* — was a
+116-line Blade list, an 85-line create form, an 86-line edit form and a
+54-line preview, hardcoded English, a delete form per row, Laravel's
+paginator; and it was the Institute's Blade-shell fixture in four tests
+and two walks.
+
+**Built.** `PageController` renders `Website/Pages` (the rows by title
+with the page's public URL, pages, the count, the tranche),
+`Website/PageForm` for create and edit (keyed on the page, §5jj) and
+`Website/PagePreview`; store, update and destroy flash keyed strings
+(EN identical); one `validated()` keeps the sanitised write
+(`HtmlSanitizer::PROFILE_CMS`) and the publish flag and date exactly as
+before. The list: *Export CSV*, the courses link (still a full load),
+*Add New Page*, the table with the excerpt under the title, the slug,
+*Published* / *Draft*, *View* (the public page), *Preview* and *Edit* as
+Inertia visits and *Delete* as a confirmed Inertia request, pages. The
+form: title, slug, excerpt, the HTML body with a note that unsafe markup
+is removed on save, the cover URL, the switch, field errors and the
+first at the top. The preview: the stored body rendered raw — declared
+in `raw_html_renders.php` naming the controller's sanitised write, with
+the Blade entry for the deleted view retired. 33 keys in the admin
+tranche, EN/DV/AR. The four Blade views are deleted (`blade_screens`
+227); `NavigationMap` drops the three `hard` flags on the CMS entry; the
+reachability test's Blade list loses it. **The Institute's Blade-shell
+fixture moved** to the courses CMS (`admin.courses.index`, the last
+Blade CMS screen): `AdminLayoutTest` (the route-derived title, now
+*Courses*), `AdminPanelAuditTest` (the export link read from the props;
+prayer times as the `hard` example), `AdminPagesAreReachableTest`,
+`WorkspacesTest` (the CMS Blade shell, and the Institute home's
+`website_cms` section no longer `hard`); `admin.mjs` creates and deletes
+its audit page through the Inertia form; `admin-layout.mjs` opens the
+courses list for its desktop and Dhivehi checks. `AdminPagesScreensTest`
+(1): the form for new, a create with the script stripped and the flash,
+the list's props with the public URL, the preview and edit props, an
+unpublish clearing the date, a taken slug as a field error, the delete,
+the DV/AR keys, the educational admin's 403. Walked: a scratch walk —
+the list in the Inertia shell, a page created with the flash and its
+row published, the preview rendering the body with the script gone, the
+edit reading back and saving as a draft, a taken slug refused inline,
+`/dv/…/pages` right-to-left with no English leftovers, the delete with
+the confirm (9/9); `admin.mjs` 41/41 (its audit page written and deleted
+through the new form); `admin-pages.mjs` 3/3 (the preview and edit
+pages found from the list, on desktop and phone); `admin-layout.mjs`
+15/15 (on the courses list now). Full suite 2372 passed. Next: the
+courses CMS, then prayer times.
+
 ## 5jk. C9 slice 9: the daily content screens leave Blade (2026-09-27)
 
 BACKLOG C9, `docs/ADMIN_PANEL.md` findings 9 and 10; the ninth port and

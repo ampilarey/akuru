@@ -194,7 +194,7 @@ it('composes the Institute and the School homes from the workspace’s own menu'
             ->where('t.institute_title', 'Institute')
             ->has('parts', 3)
             ->where('parts.0.key', 'panel_website')->where('parts.0.label', 'Website & content')->has('parts.0.sections', 4)
-            ->where('parts.0.sections.0.key', 'website_cms')->has('parts.0.sections.0.children', 8)->where('parts.0.sections.0.hard', true)
+            ->where('parts.0.sections.0.key', 'website_cms')->has('parts.0.sections.0.children', 8)->where('parts.0.sections.0.hard', false)
             ->where('parts.0.sections.1.key', 'admin_instructors')
             ->where('parts.0.sections.2.key', 'prayer_times')->has('parts.0.sections.2.children', 4)
             ->where('parts.1.key', 'panel_money')->has('parts.1.sections', 3)
@@ -264,7 +264,8 @@ it('renders the Blade shell from the same map, with the switcher for a person wh
 
     // The system admin on a Blade CMS screen sees the Institute, not the School.
     $super = workspaceUser(['super_admin'], INSTITUTE_PERMISSIONS);
-    $cms = $this->withoutLocalizationMiddleware()->actingAs($super)->get(route('admin.pages.index'))->assertOk()->getContent();
+    // The courses CMS: the pages CMS is Inertia since C9 slice 10.
+    $cms = $this->withoutLocalizationMiddleware()->actingAs($super)->get(route('admin.courses.index'))->assertOk()->getContent();
     expect($cms)->toContain('data-nav-section="panel_website"')->toContain('/admin/commerce')
         ->not->toContain('data-nav-section="school_year"')->not->toContain('/admin/enrollments');
 });
