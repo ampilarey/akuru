@@ -4414,6 +4414,49 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5je. C9 slice 3: the instructors screens leave Blade (2026-09-27)
+
+BACKLOG C9, `docs/ADMIN_PANEL.md` findings 9 and 10; the third port, the
+first of the Institute's website screens. `/admin/instructors` was an
+81-line Blade table and a 96-line Blade form, hardcoded English, a
+hand-written delete form per row and Laravel's paginator; they were also
+the last two admin Blade views that set their own `@section('title')`.
+
+**Built.** `ListAdminInstructorsAction` owns the roster query (the
+website's order: sort order, then name; the course count) and serves the
+screen, the edit form and the CSV, so none can drift from the others;
+`SaveInstructorAction` creates or updates — the slug is taken from the
+name once, at creation, so a renamed instructor keeps the address the
+website links to; the portrait is stored on the `public` disk as before.
+`InstructorController` is thin again: validate, call, redirect, with the
+three flashes keyed. `Instructors/Index` (Inertia): the count, *Export
+CSV*, *Add instructor*, the table with the portrait or an initial, the
+qualification under the name, specialization, courses, *Active* /
+*Inactive*, *Edit* as an Inertia visit and *Delete* as a confirmed
+Inertia request with the flash in the shell, previous/next pages.
+`Instructors/Form` serves add and edit alike: the fields, the current
+portrait with a file input, sort order, the *Active (show publicly)*
+switch, the first error at the top and each under its field; the edit
+posts a spoofed PUT because a browser cannot send a file on a real one.
+Every string in the admin tranche, EN/DV/AR (43 keys). The two Blade
+views are deleted (`blade_screens` 242), `NavigationMap` drops the
+`hard` flag, the reachability test's Blade list follows, the audit test
+reads the export link from the page's props, and `AdminLayoutTest` now
+pins that no admin Blade screen names itself. `AdminInstructorsScreenTest`
+(2): the list's props and order, the DV/AR keys, the educational admin's
+403, create with a portrait, the edit reading it back, a rename keeping
+the slug and the portrait, a PDF refused as a photo, delete. Walked: a
+scratch walk 11/11 — the Inertia shell and tab title, an instructor
+created with a portrait that is served, the edit form with the current
+portrait, a rename and switch-off reading *Inactive*, an empty name
+refused on the form, the CSV carrying the row, `/dv/admin/instructors`
+and its form right-to-left with no English leftovers, the delete with
+the confirm and the flash; `admin.mjs` 41/41 (the landing, the CSV and
+its link, the More menu); `admin-pages.mjs` 3/3 (the list and the create
+form on desktop and phone with heading, navigation, home and back links
+and nothing cut off — no seeded instructor, so its edit page is the
+scratch walk's). Next: the enrolment screens.
+
 ## 5jd. C9 slice 2: Manage users leaves Blade (2026-09-27)
 
 BACKLOG C9, `docs/ADMIN_PANEL.md` findings 9 and 10; the second port,

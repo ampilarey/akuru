@@ -10,6 +10,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Inertia\Testing\AssertableInertia as Assert;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 
@@ -68,8 +69,12 @@ it('exports the instructors, the prayer recipient groups, the CMS pages and the 
         auditAs($teacher)->get(route($route))->assertForbidden();
     }
 
-    // The link is on each screen.
-    foreach (['admin.instructors.index', 'admin.prayer-times.groups.index', 'admin.pages.index', 'admin.courses.index'] as $screen) {
+    // The link is on each screen. The instructors list is Inertia since C9
+    // slice 3, so its link is in the page's props (and `admin.mjs` sees the
+    // rendered `export-csv` test id); the three Blade screens carry it in HTML.
+    auditAs($office)->get(route('admin.instructors.index'))->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->component('Instructors/Index')->where('t.instructors_export', 'Export CSV'));
+    foreach (['admin.prayer-times.groups.index', 'admin.pages.index', 'admin.courses.index'] as $screen) {
         auditAs($office)->get(route($screen))->assertOk()->assertSee('data-testid="export-csv"', false);
     }
 });

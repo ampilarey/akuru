@@ -320,7 +320,7 @@ final class NavigationMap
                     ['key' => 'cms_funnel', 'href' => '/admin/public-site/funnel', 'hard' => true],
                 ]],
                 // The instructors shown on the public website: website content.
-                ['key' => 'admin_instructors', 'href' => '/admin/instructors', 'hard' => true],
+                ['key' => 'admin_instructors', 'href' => '/admin/instructors'],
                 ['key' => 'prayer_times', 'href' => '/admin/prayer-times/islands', 'hard' => true, 'children' => [
                     ['key' => 'prayer_islands', 'href' => '/admin/prayer-times/islands', 'hard' => true],
                     ['key' => 'prayer_groups', 'href' => '/admin/prayer-times/groups', 'hard' => true],
