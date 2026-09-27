@@ -770,6 +770,8 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::post('items/{item}/feature', [AdminLibraryController::class, 'feature'])->name('admin.library.items.feature')->whereNumber('item');
         Route::post('items/{item}/review', [AdminLibraryController::class, 'reviewSubmission'])->name('admin.library.items.review')->whereNumber('item');
         Route::post('applications/{application}/decide', [AdminLibraryController::class, 'decideApplication'])->name('admin.library.applications.decide')->whereNumber('application');
+        // B9 (§11.1): the applicant's identity document, for the office only.
+        Route::get('applications/{application}/document', [AdminLibraryController::class, 'applicationDocument'])->name('admin.library.applications.document')->whereNumber('application');
         Route::post('payouts/{payout}/decide', [AdminLibraryController::class, 'decidePayout'])->name('admin.library.payouts.decide')->whereNumber('payout');
         Route::post('items/{item}/assign-reviewer', [AdminLibraryController::class, 'assignReviewer'])->name('admin.library.items.assign-reviewer')->whereNumber('item');
         Route::get('earnings/export', [AdminLibraryController::class, 'exportEarnings'])->name('admin.library.earnings.export');

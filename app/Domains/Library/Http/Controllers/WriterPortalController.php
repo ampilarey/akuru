@@ -92,10 +92,15 @@ class WriterPortalController extends Controller
             'qualifications' => 'nullable|string|max:5000',
             'expertise' => 'nullable|string|max:255',
             'motivation' => 'nullable|string|max:5000',
+            // B9 (§11.1): the optional extras. The action sniffs the MIME
+            // types again; these rules are the early, friendlier refusal.
+            'previous_publications' => 'nullable|string|max:5000',
+            'photo' => 'nullable|image|mimes:jpeg,png,webp|max:4096',
+            'id_document' => 'nullable|file|mimes:jpeg,jpg,png,webp,pdf|max:8192',
             'agreement_accepted' => 'accepted',
         ]);
 
-        app(ApplyAsWriterAction::class)->execute((int) $request->user()->id, $data);
+        app(ApplyAsWriterAction::class)->execute((int) $request->user()->id, $data, $request->file('photo'), $request->file('id_document'));
 
         return back()->with('success', 'Application submitted — we will review it soon.');
     }

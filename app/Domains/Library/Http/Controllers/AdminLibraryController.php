@@ -12,6 +12,7 @@ use App\Domains\Library\Actions\ListLibraryReadingAlertsAction;
 use App\Domains\Library\Actions\ListWriterPayoutReportAction;
 use App\Domains\Library\Actions\ListWriterQueuesAction;
 use App\Domains\Library\Actions\PublishLibraryItemAction;
+use App\Domains\Library\Actions\ReadWriterApplicationDocumentAction;
 use App\Domains\Library\Actions\ReviewLibraryItemSubmissionAction;
 use App\Domains\Library\Actions\ReviewLibraryReadingAlertAction;
 use App\Domains\Library\Actions\SaveLibraryCategoryAction;
@@ -24,6 +25,7 @@ use App\Http\Controllers\Controller;
 use App\Support\Csv;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response as HttpResponse;
 use Inertia\Inertia;
 use Inertia\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -211,6 +213,27 @@ class AdminLibraryController extends Controller
         );
 
         return back()->with('success', 'Application decided.');
+    }
+
+    /**
+     * B9 (§11.1): the identity document an applicant attached. Private
+     * media, so it is served rather than linked — and only to the office,
+     * from the queue; the applicant's own copy is the one they uploaded.
+     */
+    public function applicationDocument(Request $request, int $application): HttpResponse
+    {
+        abort_unless($request->user()?->can('library.manage'), 403);
+
+        // No application, no document, or a row that outlived its file (a
+        // cleared disk, a failed restore): all the same "nothing here".
+        $media = app(ReadWriterApplicationDocumentAction::class)->execute($application);
+        abort_if($media === null, 404);
+
+        return response($media['contents'], 200, [
+            'Content-Type' => $media['mime'],
+            'Content-Disposition' => 'inline; filename="'.addslashes($media['original_name']).'"',
+            'Cache-Control' => 'private, no-store',
+        ]);
     }
 
     /** L5 (§43.3): decide a submitted item — approve publishes it. */

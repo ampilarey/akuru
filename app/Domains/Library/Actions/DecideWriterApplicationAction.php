@@ -44,6 +44,9 @@ class DecideWriterApplicationAction
                         'bio' => $application->bio,
                         'qualifications' => $application->qualifications,
                         'expertise' => $application->expertise,
+                        // B9: the portrait given at application time is the
+                        // author page's face from day one.
+                        'photo_media_file_id' => $application->photo_media_file_id,
                         'status' => 'active',
                         'approved_at' => now(),
                         'approved_by' => $decidedBy,

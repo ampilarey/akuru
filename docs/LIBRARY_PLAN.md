@@ -113,6 +113,8 @@ Never expose a PDF URL directly. Original files in private storage; reading happ
 - **11.5 Upload Research:** title, abstract, keywords, author details, co-authors, affiliation, field, manuscript, references, originality declaration, conflict-of-interest declaration, ethics declaration (if needed), suggested reviewer (optional), submit for editorial review.
 
 > **11.3 and 11.5 built 2026-09-25 (STATUS §5go):** every field above is on the writer's editor and saved; the copyright declaration (and for research originality + conflict of interest) gates submission. Not built from 11.1: photo, previous publications, ID document, bank details at application time (bank details come later, L6).
+>
+> **11.1 extras built 2026-09-27 (B9, STATUS §5iv):** the application takes a portrait (public media, carried onto the author page at approval), previous publications and an optional identity document (private media; the office opens it from the queue through `ReadWriterApplicationDocumentAction`, which resolves the file from the application row and is pinned in the private-media readers test). Bank details remain an approved writer's step (L6), not an applicant's.
 - **11.6 Writer promotion requests** (NOT MVP): writer-funded discount requests with admin approval; earnings follow the funding rule.
 
 ## 12. Editorial Workflow

@@ -4414,6 +4414,37 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5iv. Library B9: what an applicant may add — portrait, publications, ID (2026-09-27)
+
+BACKLOG B9, LIBRARY_PLAN §11.1. The application form asked for a name,
+a bio, qualifications, expertise and a motivation. The plan also lists a
+photo, previous publications and an identity document; none was taken,
+so the office decided on words alone and a new writer's author page had
+no face until they went back to edit it.
+
+**Built.** Three optional fields on the application (`Write.jsx`),
+`writer_applications.previous_publications`, `photo_media_file_id` and
+`id_document_media_file_id` (migration `2026_09_27_000010`, additive).
+The portrait is **public** media, as the author page's is, and approval
+copies it onto the new profile — the page has a face from day one. The
+identity document is **private** media: the office's queue shows an
+*ID document* link that serves it inline through
+`ReadWriterApplicationDocumentAction`, which resolves the file from the
+application row (never a media id from the request) and is pinned in
+`PrivateMediaReadersAreScopedTest` with that sentence; the route sits
+under the office's `library.manage` gate, so the applicant's own request
+gets 403 and an application with no document gets 404. MIME is checked
+in the request rules and sniffed again in the Media store actions;
+8 MB for the document. `WriterApplicationExtrasTest` (2). Walked: a
+fresh account applied with all three, the queue showed the publications,
+the portrait thumbnail and the link, the office opened the document
+(200, image/png, `no-store`), the applicant could not (403), approval
+put the portrait on their portal. `library.mjs` attaches a document on
+a first run (a corner of the page as a PNG, no fixture) and checks the
+office can open it. Bank details at application time are deliberately
+not added: L6 takes them from an approved writer, which is where money
+details belong.
+
 ## 5iu. Library B11: the notices the data supports (2026-09-27)
 
 BACKLOG B11, LIBRARY_PLAN §41. The Library told writers and the office

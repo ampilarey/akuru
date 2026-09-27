@@ -10,6 +10,11 @@ function ApplyForm({ t }) {
         qualifications: '',
         expertise: '',
         motivation: '',
+        // B9 (§11.1): the optional extras — what they have published, a
+        // portrait for the author page, an identity document for the office.
+        previous_publications: '',
+        photo: null,
+        id_document: null,
         agreement_accepted: false,
     });
 
@@ -17,7 +22,7 @@ function ApplyForm({ t }) {
         <form
             onSubmit={(e) => {
                 e.preventDefault();
-                form.post('/write/apply', { preserveScroll: true });
+                form.post('/write/apply', { preserveScroll: true, forceFormData: true });
             }}
             className="grid max-w-2xl gap-3 rounded-lg border bg-white p-4"
         >
@@ -28,6 +33,17 @@ function ApplyForm({ t }) {
             <textarea className="form-input" rows="2" placeholder="Qualifications" value={form.data.qualifications} onChange={(e) => form.setData('qualifications', e.target.value)} />
             <input className="form-input" placeholder="Expertise (e.g. Tafsir, Arabic grammar)" value={form.data.expertise} onChange={(e) => form.setData('expertise', e.target.value)} />
             <textarea className="form-input" rows="3" placeholder="Why do you want to publish with us?" value={form.data.motivation} onChange={(e) => form.setData('motivation', e.target.value)} />
+            <textarea className="form-input" rows="3" placeholder={t.library_apply_publications || 'Previous publications (titles, where, when)'} value={form.data.previous_publications} onChange={(e) => form.setData('previous_publications', e.target.value)} data-testid="apply-publications" />
+            <label className="grid gap-1 text-sm">
+                <span>{t.library_apply_photo || 'Portrait (optional; shown on your author page)'}</span>
+                <input className="form-input" type="file" accept="image/jpeg,image/png,image/webp" onChange={(e) => form.setData('photo', e.target.files[0] ?? null)} data-testid="apply-photo" />
+                {form.errors.photo && <p className="text-red-600">{form.errors.photo}</p>}
+            </label>
+            <label className="grid gap-1 text-sm">
+                <span>{t.library_apply_id_document || 'ID document (optional; seen only by the office)'}</span>
+                <input className="form-input" type="file" accept="image/jpeg,image/png,image/webp,application/pdf" onChange={(e) => form.setData('id_document', e.target.files[0] ?? null)} data-testid="apply-id-document" />
+                {form.errors.id_document && <p className="text-red-600">{form.errors.id_document}</p>}
+            </label>
             <label className="flex items-start gap-2 text-sm">
                 <input type="checkbox" checked={form.data.agreement_accepted} onChange={(e) => form.setData('agreement_accepted', e.target.checked)} />
                 <span>
