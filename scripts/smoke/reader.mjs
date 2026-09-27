@@ -238,6 +238,20 @@ await reader.goto(`${BASE}/en/library/${SLUG}/read?page=3`, { waitUntil: 'networ
 await reader.goto(`${BASE}/en/my-library`, { waitUntil: 'networkidle' });
 check('the last page marks it completed', (await text(reader)).includes('100% · Completed'), (await text(reader)).match(new RegExp(`${TITLE} Page 3[^R]*`))?.[0] ?? (await text(reader)).slice(0, 160));
 
+// B7 (§9.1): search inside the book from page one, and follow the hit to
+// page three. After the progress checks above, because following a hit to
+// the last page is reading it.
+await reader.goto(`${BASE}/en/library/${SLUG}/read?page=1`, { waitUntil: 'networkidle' });
+await reader.fill('[data-testid="reader-search"] input[name="q"]', 'Page-Three');
+await Promise.all([reader.waitForNavigation({ waitUntil: 'networkidle' }).catch(() => {}), reader.click('[data-testid="reader-search"] button[type=submit]')]);
+const hits = reader.locator('[data-testid="reader-search-hits"] a');
+const hitPages = await hits.evaluateAll((els) => els.map((el) => el.textContent.trim()));
+check('searching the book finds the page that has the words', hitPages.length === 1 && hitPages[0] === 'Page 3' && (await text(reader)).includes('1 page matches "Page-Three".'), hitPages.join(', ') || (await text(reader)).slice(0, 160));
+if (hitPages.length) {
+    await Promise.all([reader.waitForNavigation({ waitUntil: 'networkidle' }).catch(() => {}), hits.first().click()]);
+    check('and the hit opens that page, with the search still in the box', /Page 3 \/ 3/.test(await text(reader)) && (await reader.inputValue('[data-testid="reader-search"] input[name="q"]')) === 'Page-Three', (await text(reader)).match(/Page \d \/ 3/)?.[0] ?? reader.url());
+}
+
 // ----------------------------------------------------------- a PDF original
 
 // 5. `SMOKE-Primer-PDF` has no body: its pages come from the PDF the seeder

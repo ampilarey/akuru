@@ -19,6 +19,28 @@
         </div>
     @endif
 
+    {{-- B7 (§9.1): search inside this item, over the pages this reader may open. --}}
+    <form method="GET" action="{{ route('public.library.read', $reader['slug']) }}" class="mb-3 flex items-center gap-2 text-sm" role="search" data-testid="reader-search">
+        <input type="hidden" name="page" value="{{ $reader['page'] }}">
+        <label class="sr-only" for="reader-search-q">{{ __('public.Search in this item') }}</label>
+        <input id="reader-search-q" type="search" name="q" value="{{ $search['term'] ?? '' }}" minlength="2" maxlength="100" placeholder="{{ __('public.Search in this item') }}" class="form-input flex-1 py-1">
+        <button type="submit" class="btn-secondary px-3 py-1">{{ __('public.Search') }}</button>
+    </form>
+    @if(($search['term'] ?? '') !== '')
+        <div class="mb-4 rounded border bg-white px-4 py-3 text-sm" data-testid="reader-search-hits">
+            @if(count($search['hits']) === 0)
+                <p class="text-gray-600">{{ __('public.No pages match ":term".', ['term' => $search['term']]) }}</p>
+            @else
+                <p class="mb-2 text-gray-600">{{ trans_choice('public.:count page matches ":term".|:count pages match ":term".', count($search['hits']), ['count' => count($search['hits']), 'term' => $search['term']]) }}@if($search['truncated']) {{ __('public.Showing the first :count.', ['count' => count($search['hits'])]) }}@endif</p>
+                <ul class="space-y-1">
+                    @foreach($search['hits'] as $hit)
+                        <li><a class="underline text-brandMaroon-700" href="{{ route('public.library.read', ['slug' => $reader['slug'], 'page' => $hit['page'], 'q' => $search['term']]) }}">{{ __('public.Page :page', ['page' => $hit['page']]) }}</a> <span class="text-gray-600">{{ $hit['snippet'] }}</span></li>
+                    @endforeach
+                </ul>
+            @endif
+        </div>
+    @endif
+
     {{-- §9.1 reading comfort: text size, light/sepia/dark, direction, full
          screen. Kept in this browser (localStorage) — a preference, not a
          record — and applied before first paint so the page does not flash. --}}

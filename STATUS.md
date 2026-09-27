@@ -4414,6 +4414,25 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5iq. Library B7: search inside an item, from the reader (2026-09-27)
+
+BACKLOG B7 (the search third of it), LIBRARY_PLAN §9.1. The reader
+served one page at a time and nothing else; a reader looking for where a
+book treats a topic had to page through it.
+
+**Built.** A search box in the reader (`?q=` on the read route, so the
+gate, the watermark and the reading log are exactly as before — nothing
+new serves a page). `SearchLibraryItemPagesAction` searches the item's
+pages over the window the reader may open, the same decision the page
+gate makes: every page for a reader with access, the first N for a
+previewer, none for anyone else. A hit is a page number and a short
+plain-text snippet around the first visible match (a match inside a
+tag or an attribute is not one); the first twenty are listed as links
+to the page, with the term kept in the address so the box still holds
+it on arrival. Terms under two characters search nothing. EN/DV/AR.
+`ReaderSearchTest` (2). Walked in `reader.mjs`: the reader searches and
+lands on the page found.
+
 ## 5ip. Library B12: the office's settings screen for the Library's money rules (2026-09-27)
 
 BACKLOG B12, LIBRARY_PLAN §42. The Library's commercial knobs — the

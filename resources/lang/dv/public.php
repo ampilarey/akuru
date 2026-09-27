@@ -196,6 +196,12 @@ return [
     // Library author page (L8) — DV/AR first pass pending native review (operator item)
     'Published works' => 'Published works',
     'Featured works' => 'ޚާއްޞަ ލިޔުންތައް',
+    // B7 (§9.1): search inside an item — DV first pass pending native review
+    'Search in this item' => 'މި ފޮތުގެ ތެރޭގައި ހޯދާ',
+    'No pages match ":term".' => '":term" އާ ދިމާވާ ޞަފްޙާއެއް ނެތް.',
+    ':count page matches ":term".|:count pages match ":term".' => '":term" އާ ދިމާވަނީ :count ޞަފްޙާ.|":term" އާ ދިމާވަނީ :count ޞަފްޙާ.',
+    'Showing the first :count.' => 'ފުރަތަމަ :count ދައްކަނީ.',
+    'Page :page' => 'ޞަފްޙާ :page',
     'Website' => 'ވެބްސައިޓް',
     ':count published work|:count published works' => ':count published work|:count published works',
     'Writing with Akuru since :year' => 'Writing with Akuru since :year',

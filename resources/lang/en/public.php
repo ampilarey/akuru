@@ -515,6 +515,12 @@ return [
     // Library author page (L8)
     'Published works' => 'Published works',
     'Featured works' => 'Featured works',
+    // B7 (§9.1): search inside an item, from the reader.
+    'Search in this item' => 'Search in this item',
+    'No pages match ":term".' => 'No pages match ":term".',
+    ':count page matches ":term".|:count pages match ":term".' => ':count page matches ":term".|:count pages match ":term".',
+    'Showing the first :count.' => 'Showing the first :count.',
+    'Page :page' => 'Page :page',
     ':count published work|:count published works' => ':count published work|:count published works',
     'Writing with Akuru since :year' => 'Writing with Akuru since :year',
     'Nothing published yet.' => 'Nothing published yet.',
