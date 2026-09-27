@@ -85,7 +85,7 @@ it('puts today’s numbers on each home and keeps the full dashboards a link awa
         ->assertInertia(fn (Assert $page) => $page
             ->where('t.today_title', 'Today')
             ->has('today.tiles', 5)
-            ->where('today.tiles.0.key', 'pending_payment')->where('today.tiles.0.value', '2')->where('today.tiles.0.href', '/admin/enrollments')->where('today.tiles.0.hard', true)
+            ->where('today.tiles.0.key', 'pending_payment')->where('today.tiles.0.value', '2')->where('today.tiles.0.href', '/admin/enrollments')->where('today.tiles.0.hard', false)
             ->where('today.tiles.1.key', 'enrolled_today')->where('today.tiles.1.value', '3')
             ->where('today.tiles.2.key', 'paid_today')->where('today.tiles.2.value', '0.00')
             ->where('today.tiles.3.key', 'unfilled_registers')->where('today.tiles.3.hard', false)

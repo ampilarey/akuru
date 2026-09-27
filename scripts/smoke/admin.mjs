@@ -197,10 +197,11 @@ const menuLinks = await office.locator('#app-shell-more a').evaluateAll((els) =>
 const wanted = ['/admin/enrollments', '/academics/years', '/people/students', '/exams/schedule', '/finance/invoices', '/hr/payroll', '/announcements'];
 const missing = wanted.filter((href) => !menuLinks.some((h) => h && h.endsWith(href)));
 check('from an Inertia School screen, the educational admin\'s More menu reaches the whole School', missing.length === 0, missing.join(', '));
-check('its Blade entries are plain links (a full page load), the Inertia ones are not', hardLinks.some((h) => h.endsWith('/admin/enrollments')) && hardLinks.some((h) => h.endsWith('/announcements')) && !hardLinks.some((h) => h.endsWith('/academics/years')), hardLinks.join(', '));
+// C9 slice 4: the enrolment lists are Inertia now; the Quran progress list is the School's Blade fixture.
+check('its Blade entries are plain links (a full page load), the Inertia ones are not', hardLinks.some((h) => h.endsWith('/quran-progress')) && hardLinks.some((h) => h.endsWith('/announcements')) && !hardLinks.some((h) => h.endsWith('/academics/years')) && !hardLinks.some((h) => h.endsWith('/admin/enrollments')), hardLinks.join(', '));
 check('and nothing of the Institute is offered: no Website CMS, Commerce, Users or Settings', !menuLinks.some((h) => h && /\/admin\/(public-site\/pages|commerce|users|settings|operations)$/.test(h)));
-await Promise.all([office.waitForNavigation({ waitUntil: 'networkidle' }).catch(() => {}), office.click('#app-shell-more a[data-nav-hard][href$="/admin/enrollments"]')]);
-check('clicking a Blade entry lands on the Blade screen', /\/admin\/enrollments$/.test(office.url()) && (await text(office)).includes('Enrol'), office.url().replace(BASE, ''));
+await Promise.all([office.waitForNavigation({ waitUntil: 'networkidle' }).catch(() => {}), office.click('#app-shell-more a[data-nav-hard][href$="/quran-progress"]')]);
+check('clicking a Blade entry lands on the Blade screen', /\/quran-progress$/.test(office.url()) && (await text(office)).includes('Quran'), office.url().replace(BASE, ''));
 // The role as people read it (STATUS §5if): the Blade user menu names the job.
 // textContent, not innerText: the user menu is closed (hidden) until clicked.
 const officeMenu = (await office.locator('nav').first().textContent().catch(() => '')) || '';

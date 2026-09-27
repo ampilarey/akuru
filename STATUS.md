@@ -4414,6 +4414,69 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5jf. C9 slice 4: the enrolment and payments lists leave Blade (2026-09-27)
+
+BACKLOG C9, `docs/ADMIN_PANEL.md` findings 9 and 10; the fourth port and
+the first of the School office's screens. `/admin/enrollments` and
+`/admin/enrollments/payments` were a 133-line and a 137-line Blade table:
+hardcoded English, `@php` blocks choosing badge colours, a refund form
+per row in a `details`, Laravel's paginator. The one-enrolment page
+(`show`, 273 lines, six decision forms) stays Blade until its own slice.
+
+**Built.** `ListAdminEnrollmentsAction` (Courses) owns the enrolment
+query — newest first with the id breaking ties; the course, status and
+payment filters, known values only, so a typed status is ignored rather
+than trusted; the search over the student's name and the enrolling
+account's name and contacts — and serves the screen and its CSV.
+`ListAdminPaymentsAction` (Finance) does the same for payments and works
+out the refundable balance, so the screen offers a refund form only
+where money can still come back. `AdminEnrollmentController` no longer
+imports `Course` or `Payment` (two cross-domain baseline entries gone)
+and its `export` left the long-methods baseline. `Admissions/Enrollments`
+(Inertia): the count, the two tabs, *Export CSV* carrying the filters,
+the filter form as an Inertia visit, the table with keyed status and
+payment badges, *View* as a plain link to the Blade page, pages.
+`Admissions/Payments`: the same shape, plus the refunded amount and, for
+whoever holds `payments.refund`, the refund form (a real `action` on the
+`form`, so the money walk finds it as before; the submit is an Inertia
+post with the confirm), *Fully refunded* otherwise. 79 keys in the admin
+tranche, EN/DV/AR. The two Blade views are deleted (`blade_screens` 240);
+`NavigationMap` and the Today tiles drop their `hard` flags; the
+reachability test's Blade list loses both.
+
+**The Blade-shell fixture moved.** Five tests and four walks used the
+enrolment list as *the* Blade screen an educational admin opens — the
+skip link, the RTL `html` tag, the role name in the user menu, the
+workspace switcher, the phone hamburger, the "a Blade entry in the More
+menu is a plain link" checks. They now use the Quran progress list
+(`/quran-progress`, Blade, `hard`, open to the office and the dean):
+`AdminLayoutTest`, `WorkspacesTest`, `RoleLabelsTest`,
+`AdminPagesAreReachableTest`, `AdminHubTest`, `AdminPanelAuditTest`;
+`admin.mjs`, `admin-layout.mjs`, `workspaces.mjs`, `admin-hub.mjs`.
+`AdminEnrollmentListsTest` (2): order, each filter, the ignored status,
+the CSV as the filtered list, the DV/AR keys, the supervisor's 403; the
+payments' payer, student, amount, reference and refundable balance, the
+dean without the permission seeing no form and the office admin (who
+holds it by `RoleGrants`) seeing it, the search and status filter, the
+CSV. Walked: a scratch walk 13/13 — both lists in the Inertia shell with
+their tab titles, the status filter narrowing as an Inertia visit and the
+CSV link carrying it, *View* opening the Blade page, the refund form on
+confirmed rows only, the tab link back, `/dv/admin/enrollments` and its
+payments right-to-left with no English leftovers, and the Quran progress
+list still Blade. The six repo walks that touch these screens:
+`admin.mjs` 41/41, `admin-pages.mjs` 3/3, `admin-layout.mjs` 15/15,
+`workspaces.mjs` 15/15 (with the parent and vendor roles granted to the
+office admin locally and revoked after, as its header says),
+`admin-hub.mjs` 25/25, `money.mjs` 21/21 — recording a manual payment
+from the Blade enrolment page, the payment on the new payments screen,
+the refund through the new form, the enrolment revoked, the wallet
+credited, the refunded filter and the CSV. **Found on the way:**
+`money.mjs` had been failing its offering-override step since ADR-040
+slice 2 (§5ie) took `courses.manage` from the educational admin, so its
+staff got a 403 on `/catalog/offerings`; the walk now signs in a
+catalogue editor (`SMOKE_CATALOG_STAFF`, the system admin locally) for
+that block. Next: the one-enrolment page.
+
 ## 5je. C9 slice 3: the instructors screens leave Blade (2026-09-27)
 
 BACKLOG C9, `docs/ADMIN_PANEL.md` findings 9 and 10; the third port, the

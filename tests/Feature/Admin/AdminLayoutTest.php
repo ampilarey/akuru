@@ -37,7 +37,8 @@ it('titles every admin Blade screen from its route when the screen sets none', f
 
 it('gives keyboard and screen-reader users a skip link, labelled menus and a main landmark', function () {
     $admin = layoutAdmin();
-    test()->withoutLocalizationMiddleware()->actingAs($admin)->get(route('admin.enrollments.index'))->assertOk()
+    // The Quran progress list is the Blade-shell fixture: the enrolment lists are Inertia since C9 slice 4.
+    test()->withoutLocalizationMiddleware()->actingAs($admin)->get(route('quran-progress.index'))->assertOk()
         ->assertSee('href="#main"', false)
         ->assertSee('<main id="main">', false)
         ->assertSee('aria-controls="nav-more-menu"', false)
@@ -48,9 +49,9 @@ it('gives keyboard and screen-reader users a skip link, labelled menus and a mai
 it('turns the admin shell right-to-left for Dhivehi and Arabic', function () {
     $admin = layoutAdmin();
     app()->setLocale('dv');
-    test()->withoutLocalizationMiddleware()->actingAs($admin)->get(route('admin.enrollments.index'))->assertOk()
+    test()->withoutLocalizationMiddleware()->actingAs($admin)->get(route('quran-progress.index'))->assertOk()
         ->assertSee('<html lang="dv" dir="rtl">', false);
     app()->setLocale('en');
-    test()->withoutLocalizationMiddleware()->actingAs($admin)->get(route('admin.enrollments.index'))->assertOk()
+    test()->withoutLocalizationMiddleware()->actingAs($admin)->get(route('quran-progress.index'))->assertOk()
         ->assertSee('<html lang="en" dir="ltr">', false);
 });

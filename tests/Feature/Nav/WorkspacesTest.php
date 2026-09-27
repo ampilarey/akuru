@@ -209,7 +209,7 @@ it('composes the Institute and the School homes from the workspace’s own menu'
             ->where('t.school_title', 'School office')
             ->has('parts', 3)
             ->where('parts.0.key', 'panel_admissions')->has('parts.0.sections', 1)
-            ->where('parts.0.sections.0.key', 'admin_enrolments')->where('parts.0.sections.0.href', '/admin/enrollments')->where('parts.0.sections.0.hard', true)->has('parts.0.sections.0.children', 1)
+            ->where('parts.0.sections.0.key', 'admin_enrolments')->where('parts.0.sections.0.href', '/admin/enrollments')->where('parts.0.sections.0.hard', false)->has('parts.0.sections.0.children', 1)
             ->where('parts.1.key', 'school_academics')->where('parts.1.label', 'Academics')
             ->where('parts.1.sections', fn ($sections) => collect($sections)->pluck('key')->all() === ['school_year', 'day_loop', 'exams_group', 'catalog_group', 'learn_group'])
             ->where('parts.1.sections.0.href', '/academics/years')->where('parts.1.sections.0.hard', false)->has('parts.1.sections.0.children', 11)
@@ -245,7 +245,8 @@ it('composes the Institute and the School homes from the workspace’s own menu'
 
 it('renders the Blade shell from the same map, with the switcher for a person who holds several workspaces', function () {
     $adminVendor = workspaceUser(['admin', 'vendor'], SCHOOL_PERMISSIONS);
-    $html = $this->withoutLocalizationMiddleware()->actingAs($adminVendor)->get(route('admin.enrollments.index'))->assertOk()->getContent();
+    // The Quran progress list is the School's Blade-shell fixture: the enrolment lists are Inertia since C9 slice 4.
+    $html = $this->withoutLocalizationMiddleware()->actingAs($adminVendor)->get(route('quran-progress.index'))->assertOk()->getContent();
     // The School's groups, in the More menu and the phone menu.
     expect(substr_count($html, 'data-nav-section="school_year"'))->toBe(2)
         ->and(substr_count($html, 'data-nav-section="panel_admissions"'))->toBe(2)
@@ -258,7 +259,7 @@ it('renders the Blade shell from the same map, with the switcher for a person wh
         ->and(substr_count($html, 'data-testid="workspace-home"'))->toBe(2);
 
     // One workspace: no switcher anywhere.
-    $lone = $this->withoutLocalizationMiddleware()->actingAs(workspaceUser(['admin']))->get(route('admin.enrollments.index'))->assertOk()->getContent();
+    $lone = $this->withoutLocalizationMiddleware()->actingAs(workspaceUser(['admin']))->get(route('quran-progress.index'))->assertOk()->getContent();
     expect($lone)->not->toContain('Workspaces')->not->toContain('data-testid="workspace-switcher"');
 
     // The system admin on a Blade CMS screen sees the Institute, not the School.

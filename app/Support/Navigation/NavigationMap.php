@@ -304,8 +304,8 @@ final class NavigationMap
     {
         return [
             ['key' => 'panel_admissions', 'items' => [
-                ['key' => 'admin_enrolments', 'href' => '/admin/enrollments', 'hard' => true, 'children' => [
-                    ['key' => 'enrolment_payments', 'href' => '/admin/enrollments/payments', 'hard' => true],
+                ['key' => 'admin_enrolments', 'href' => '/admin/enrollments', 'children' => [
+                    ['key' => 'enrolment_payments', 'href' => '/admin/enrollments/payments'],
                 ]],
             ]],
             ['key' => 'panel_website', 'items' => [

@@ -125,8 +125,8 @@ check('the choice holds on the next page', (await switcherLabel(person)) === 'Fa
 await person.goto(`${BASE}/en/school`, { waitUntil: 'networkidle' });
 check('opening /school makes the School active again', (await switcherLabel(person)) === 'School' && (await count(person, '[data-testid="today"]')) === 1, await switcherLabel(person));
 
-// The Blade shell: the same workspace, the same switcher.
-await person.goto(`${BASE}/en/admin/enrollments`, { waitUntil: 'networkidle' });
+// The Blade shell: the same workspace, the same switcher (the Quran progress list; the enrolment lists are Inertia since C9 slice 4).
+await person.goto(`${BASE}/en/quran-progress`, { waitUntil: 'networkidle' });
 const bladeSections = await person.locator('#nav-more-menu [data-nav-section]').evaluateAll((els) => els.map((el) => el.getAttribute('data-nav-section')));
 check('a School Blade screen’s More menu carries the School’s groups', bladeSections.includes('panel_admissions') && bladeSections.includes('school_year') && !bladeSections.includes('panel_website'), bladeSections.join(','));
 await person.click('nav [data-testid="workspace-switcher"]');
@@ -137,7 +137,7 @@ await Promise.all([person.waitForNavigation({ waitUntil: 'networkidle' }).catch(
 check('switching to My shop from a Blade screen lands on the vendor portal', /\/vendor(\/apply)?$/.test(person.url()), person.url().replace(BASE, ''));
 
 const phone = await signIn(MULTI, { width: 390, height: 844 }, true);
-await phone.goto(`${BASE}/en/admin/enrollments`, { waitUntil: 'networkidle' });
+await phone.goto(`${BASE}/en/quran-progress`, { waitUntil: 'networkidle' });
 await phone.click('button[aria-controls="nav-mobile-menu"]');
 await phone.waitForSelector('#nav-mobile-menu', { state: 'visible' });
 const phoneSwitch = await texts(phone, '#nav-mobile-menu [data-testid^="workspace-"]:not([data-testid="workspace-home"])');

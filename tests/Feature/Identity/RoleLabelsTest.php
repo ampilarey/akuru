@@ -73,7 +73,7 @@ it('shows the labels on the users screen, its filter and the Blade user menu', f
 
     // The Blade user menu names the role under the person, on a School screen too.
     $admin = User::query()->where('name', 'Office Admin')->sole();
-    $menu = test()->withoutLocalizationMiddleware()->actingAs($admin)->get(route('admin.enrollments.index'))->assertOk()->getContent();
+    $menu = test()->withoutLocalizationMiddleware()->actingAs($admin)->get(route('quran-progress.index'))->assertOk()->getContent();
     expect(substr_count($menu, 'Educational admin'))->toBeGreaterThanOrEqual(2);
 });
 
