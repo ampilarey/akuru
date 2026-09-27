@@ -30,8 +30,11 @@ export default function AppShell({ title, children }) {
         return () => window.removeEventListener('keydown', onKey);
     }, [open]);
 
-    const path = url.replace(/^\/(en|dv|ar)(?=\/|$)/, '').split('?')[0] || '/';
-    const isCurrent = (href) => path === href || path.startsWith(`${href}/`);
+    // Hrefs from the server carry the locale prefix (`/en/admin`); the map's
+    // do not. Compare both without it.
+    const unlocalised = (href) => (href || '').replace(/^\/(en|dv|ar)(?=\/|$)/, '') || '/';
+    const path = unlocalised(url.split('?')[0]);
+    const isCurrent = (href) => path === unlocalised(href) || path.startsWith(`${unlocalised(href)}/`);
 
     return (
         <div dir={rtl ? 'rtl' : 'ltr'} className="min-h-screen bg-[#F9F4EE] text-gray-900">
@@ -96,17 +99,20 @@ export default function AppShell({ title, children }) {
                                 )}
                             </Link>
                         )}
-                        {/* E7: a person with two identities lands on one of them.
-                            Given as a bordered pill rather than a link in the
-                            menu, because a link in there is not findable. */}
-                        {auth?.alternate && (
+                        {/* Every other identity this person holds — a parent who is also
+                            a vendor and a writer, a teacher who is also a parent (E7) — as a
+                            pill each, from any page. The one whose home this is stays out;
+                            a person with one identity sees none (STATUS §5ic). */}
+                        {(auth?.views ?? []).length > 1 && (auth.views).filter((view) => !isCurrent(view.href)).map((view) => (
                             <Link
-                                href={auth.alternate.href}
+                                key={view.key}
+                                href={view.href}
+                                data-testid={`view-${view.key}`}
                                 className="rounded-full border border-white/40 px-3 py-1 font-medium text-white hover:bg-white/10"
                             >
-                                {auth.alternate.label}
+                                {view.label}
                             </Link>
-                        )}
+                        ))}
                         {/* E7: the switch itself, not a link to a page that
                             offers it — the plan's acceptance is "two taps", and
                             a settings page in between makes it four. Rendered

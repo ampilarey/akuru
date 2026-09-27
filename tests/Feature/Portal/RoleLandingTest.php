@@ -142,3 +142,16 @@ it('falls through to the public-user dashboard when the account has no role', fu
         ->assertOk()
         ->assertViewIs('dashboard.public-user');
 });
+
+it('sends a vendor to their shop and a writer to their desk, not to the public course dashboard', function () {
+    foreach (['vendor', 'writer'] as $role) {
+        Role::findOrCreate($role, 'web');
+    }
+    $vendor = User::factory()->create();
+    $vendor->assignRole('vendor');
+    $this->withoutLocalizationMiddleware()->actingAs($vendor)->get(route('dashboard'))->assertRedirect(route('vendor.index'));
+
+    $writer = User::factory()->create();
+    $writer->assignRole('writer');
+    $this->withoutLocalizationMiddleware()->actingAs($writer)->get(route('dashboard'))->assertRedirect(route('write.index'));
+});

@@ -203,6 +203,16 @@
                             @endif
                         </div>
                         <a href="{{ route('profile.edit') }}" style="display:block;padding:.5rem .75rem;border-radius:.375rem;font-size:.8rem;color:#374151;text-decoration:none" onmouseover="this.style.background='#F9FAFB'" onmouseout="this.style.background='transparent'">👤 My Profile</a>
+                        {{-- Every other identity this person holds (STATUS §5ic): the same
+                             list the Inertia shell shows as pills. --}}
+                        @php $navViews = app(\App\Domains\Portal\Actions\ResolveDashboardLandingAction::class)->execute($navUser->getRoleNames()->all())['views']; @endphp
+                        @if(count($navViews) > 1)
+                        <div style="height:1px;background:#F3F4F6;margin:.25rem 0"></div>
+                        <span style="display:block;padding:.5rem .75rem .15rem;font-size:.65rem;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:#9CA3AF">Your views</span>
+                        @foreach($navViews as $view)
+                        <a href="{{ route($view['route']) }}" data-testid="view-{{ $view['key'] }}" style="display:block;padding:.5rem .75rem;border-radius:.375rem;font-size:.8rem;color:#374151;text-decoration:none" onmouseover="this.style.background='#F9FAFB'" onmouseout="this.style.background='transparent'">{{ __('nav.'.$view['label']) }}</a>
+                        @endforeach
+                        @endif
                         <div style="height:1px;background:#F3F4F6;margin:.25rem 0"></div>
                         <form method="POST" action="{{ route('logout') }}" style="margin:0">
                             @csrf
@@ -238,6 +248,13 @@
         @auth
         @if(auth()->user()->hasAnyRole(['super_admin','admin','headmaster','supervisor','bookshop_manager']))
         <a href="{{ route('admin.index') }}" class="block rounded px-3 py-2.5 text-[.85rem] font-semibold text-white hover:bg-white/10">Admin panel</a>
+        @endif
+        @php $mobileViews = app(\App\Domains\Portal\Actions\ResolveDashboardLandingAction::class)->execute(auth()->user()->getRoleNames()->all())['views']; @endphp
+        @if(count($mobileViews) > 1)
+        <span class="block px-3 pb-0.5 pt-3 text-[.65rem] font-semibold uppercase tracking-wider text-white/50" data-nav-section="views">Your views</span>
+        @foreach($mobileViews as $view)
+        <a href="{{ route($view['route']) }}" data-testid="view-{{ $view['key'] }}" class="block rounded px-3 py-2.5 text-[.85rem] text-white/85 hover:bg-white/10">{{ __('nav.'.$view['label']) }}</a>
+        @endforeach
         @endif
         @endauth
 

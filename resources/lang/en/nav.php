@@ -180,4 +180,14 @@ return [
     'prayer_groups' => 'Recipient groups',
     'prayer_broadcasts' => 'Broadcasts',
     'prayer_import' => 'Import',
+    // Every identity's home, offered from any page to a person who holds several (STATUS §5ic).
+    'view_admin' => 'Admin panel',
+    'view_bookshop' => 'Bookstore office',
+    'view_teacher' => 'My day',
+    'view_family' => 'Family',
+    'view_learn' => 'Learn',
+    'view_vendor' => 'My shop',
+    'view_write' => 'Write',
+    'view_review' => 'Review',
+    'view_catalog' => 'Catalog',
 ];

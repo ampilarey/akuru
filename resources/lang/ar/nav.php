@@ -177,4 +177,14 @@ return [
     'prayer_groups' => 'مجموعات المستلمين',
     'prayer_broadcasts' => 'البث',
     'prayer_import' => 'الاستيراد',
+    // Every identity's home, offered from any page to a person who holds several (STATUS §5ic).
+    'view_admin' => 'لوحة الإدارة',
+    'view_bookshop' => 'مكتب المكتبة',
+    'view_teacher' => 'يومي',
+    'view_family' => 'العائلة',
+    'view_learn' => 'التعلّم',
+    'view_vendor' => 'متجري',
+    'view_write' => 'الكتابة',
+    'view_review' => 'المراجعة',
+    'view_catalog' => 'الفهرس',
 ];

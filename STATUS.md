@@ -4414,6 +4414,53 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5ic. Every identity, one tap away (2026-09-27)
+
+The owner: "when logged in, any one will see the admin panel? how about
+students, parents? vendors? writers? … a parent may be enrolled in a
+course, and he may be a vendor and a writer. when i login with super
+admin, i see only admin." Two facts and one gap. Nobody who may not open
+the panel sees it: only the four staff roles land there, and the pill,
+the menu entry and the route are all gated. A person with several
+identities lands on one by precedence (staff first, E7) — and until
+today saw only that one, unless they were staff-and-parent, the single
+case E7 offered a *Family view* for. A vendor, writer, reviewer or course
+creator with no other role fell through to the public "My Dashboard", a
+page about course enrolments they may not have.
+
+**Built**: `ResolveDashboardLandingAction::execute` now returns `views`
+— every home this person holds, by role and without a query: the admin
+panel, the Bookstore office, a teacher's day, Family, Learn, My shop,
+Write, Review, Catalog — and lands a lone vendor, writer, reviewer or
+course creator on their job (`DashboardController` gains the four
+redirects). `HandleInertiaRequests` shares `auth.views` translated; the
+Inertia header shows the others as pills (the current one hidden, none
+for a single identity); the Blade user menu and phone menu list them
+under *Your views*. The E7 `alternate` stays for its tests. Labels
+EN/DV/AR. `docs/ADMIN_PANEL.md` §1 and L26.
+
+**Tests**: `DualIdentityLandingTest` — the views for teacher+parent,
+parent+student+vendor+writer, super_admin+reviewer+course_creator, one
+for a single role, none for none; the four lone-role landings; a
+vendor-parent lands on the family portal; the shared prop for a
+teacher-parent-vendor (three, translated), one for a lone teacher; the
+Blade menus list the views twice (user menu and phone menu) and not at
+all for a single identity. `RoleLandingTest` — a lone vendor lands on the
+shop, a lone writer on the desk. 154 in the affected suites, parity and
+boundaries green.
+
+**Walked**: `scripts/smoke/views.mjs` 8/8 — the seeded admin granted
+parent and vendor locally (and revoked): lands on the panel; the header
+offers Family and My shop and not Admin panel; Family opens the family
+portal, where the pills are Admin panel and My shop; My shop opens the
+vendor portal (to apply, since that account has no shop); the Blade user
+menu and phone menu list the three; the seeded vendor lands on their shop
+and is offered no pill. `nav.mjs` 14/14, `admin-hub.mjs` 26/26,
+`admin-layout.mjs` 15/15 re-run. Found and fixed on the way: the shared
+hrefs carry the locale prefix, so the shell's "current" test now strips it.
+
+**Production**: nothing to migrate; the pull line as usual.
+
 ## 5ib. The Inertia shell gets the brand bar (2026-09-27)
 
 The owner's phone screenshot of `/admin` after §5ia: "when login, it
