@@ -333,7 +333,11 @@ host, to a real account:
 php artisan tinker --execute="\App\Domains\Identity\Models\User::where('email', 'you@akuru.edu.mv')->firstOrFail()->assignRole('super_admin');"
 ```
 
-Then rotate that account's password (KNOWN_ISSUES item 4).
+Then rotate that account's password (KNOWN_ISSUES item 4). Every role after
+that is handed out on **Roles & access** (`/admin/users` → the row's
+*Roles & access* button; ADR-040 slice 4): tick the roles, deactivate or
+reactivate the account. The screen never removes your own System admin role
+or the last one, and never deactivates you or the last active System admin.
 
 ---
 

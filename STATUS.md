@@ -4414,6 +4414,55 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5ig. Roles & access: the role screen under Manage users (2026-09-27)
+
+Slice 4 of ADR-040, BACKLOG C8, admin-panel audit finding 5. No screen
+assigned or removed a role or reactivated a deactivated account: roles
+came from seeders, `bookshop:grant-manager` or tinker, so the owner could
+not make somebody a dean, a teacher or a Bookstore admin from the panel,
+and an account deactivated by "remove this user" stayed deactivated
+unless somebody reached the database.
+
+**Built.** *Roles & access* on every row of `/admin/users` (the protected
+rows too — a system admin grants themselves the dean's role here, which
+is how they open the School, ADR-040). `Identity/UserRoles` (Inertia): the
+person, the roles they hold as people read them, a checkbox per role the
+label file names (`RoleLabels::KNOWN`, twelve), and the access panel with
+Deactivate / Reactivate. `SetUserRolesAction` syncs the roles (only known
+roles; a new teacher gets their `teachers` row, read the way
+`CreateStaffAccountAction` reads the school, not through another domain's
+model) and refuses to remove the actor's own `super_admin` or the last
+System admin's. `SetUserActiveAction` sets `is_active` and refuses to
+deactivate the actor or the last *active* System admin. The screen locks
+those checkboxes and hides the deactivate button rather than letting the
+refusal be the first word. Routes `admin.users.roles`, `.roles.update`,
+`.active` (`role:super_admin`). The users list marks a deactivated account.
+Strings in EN/DV/AR (`admin.roles_*`, `access_*`). The first system admin
+on a host is still made by tinker; every role after that comes from here.
+
+**Tests.** `UserRolesScreenTest` (4, new): the link from the list, the
+screen's props and the locked role for the last or own System admin, an
+educational admin refused; setting roles with the teachers row and the
+success line in label order, taking one away, an unknown role refused at
+validation and in the action and never minted; the two role protections
+through the screen and the action, and a System admin adding themselves
+the dean; deactivating and reactivating with the list's marker, never the
+actor, never the last active System admin, and allowed once another is
+active. `FormErrorsAreShownTest` made the page show its refusals. Full
+suite **2316 passed**; architecture green (rule 1 caught the first draft
+importing a Settings model; fixed).
+
+**Walked.** `admin.mjs` 33/33 with six new steps as the system admin: the
+list opens the seeded parent's screen, Supervisor ticked and saved joins
+their roles, unticked leaves again, Deactivate turns the account off and
+Reactivate back on, and on their own screen the System admin role is
+locked and there is no deactivate button.
+
+**Docs.** ADMIN_PANEL §1 (all four slices built), the route table and
+finding 5; ADR-040 consequences; AUTHENTICATION_GUIDE; BACKLOG C8 struck.
+
+**Production.** Nothing to migrate; the pull line as usual.
+
 ## 5if. The role labels people read (2026-09-27)
 
 Slice 3 of ADR-040. A role was shown by humanising its key — "Super

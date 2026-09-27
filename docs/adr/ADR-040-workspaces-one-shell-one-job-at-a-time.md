@@ -93,8 +93,12 @@ kept for an outside author.
 - Two workspaces share a home (Family and Learn both open the family
   portal); the switcher tells them apart by posting the choice, and the
   remember-on-open rule stays silent when a home is ambiguous.
-- A super admin who needs the School grants themselves the dean's role
-  (the role screen, slice 4) — by design, not a gap.
+- A super admin who needs the School grants themselves the dean's role on
+  *Roles & access* under Manage users (slice 4, 2026-09-27, STATUS §5ig) —
+  by design, not a gap. That screen also deactivates and reactivates an
+  account; it never removes the actor's own System admin role or the last
+  System admin's, and never deactivates the actor or the last active
+  System admin.
 - Since slice 2 the gates agree with the menus: an educational admin who
   types an Institute address is refused, and a headmaster or supervisor can
   no longer edit the public website by URL. An educational admin sees the
