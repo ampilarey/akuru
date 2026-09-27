@@ -287,8 +287,9 @@ it('exports an admin CSV of subscribers', function () {
         ->actingAs($admin)
         ->get(route('admin.daily-subscriptions.index'))
         ->assertOk()
-        ->assertSee('sms', false)
-        ->assertSee('1 active', false);
+        // Inertia since C9 slice 7: the metrics are props.
+        ->assertInertia(fn (\Inertia\Testing\AssertableInertia $page) => $page->component('Website/DailySubscriptions')
+            ->where('metrics.totals.sms_active', 1)->where('metrics.rows.0.channel', 'sms')->where('t.subs_active', ':count active'));
 
     $csv = $this->withoutLocalizationMiddleware()
         ->actingAs($admin)
