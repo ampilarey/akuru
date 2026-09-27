@@ -58,11 +58,10 @@
         <select name="role"
                 style="padding:.625rem .875rem;border:1px solid #E5E7EB;border-radius:.5rem;font-size:.85rem;outline:none;background:white">
             <option value="">All roles</option>
-            <option value="super_admin"  {{ request('role')==='super_admin'  ? 'selected' : '' }}>Super Admin</option>
-            <option value="admin"        {{ request('role')==='admin'        ? 'selected' : '' }}>Admin</option>
-            <option value="student"      {{ request('role')==='student'      ? 'selected' : '' }}>Student</option>
-            <option value="teacher"      {{ request('role')==='teacher'      ? 'selected' : '' }}>Teacher</option>
-            <option value="parent"       {{ request('role')==='parent'       ? 'selected' : '' }}>Parent</option>
+            {{-- Every role, by the name people read (ADR-040 slice 3). --}}
+            @foreach(\App\Support\Authorization\RoleLabels::all() as $roleKey => $roleLabel)
+            <option value="{{ $roleKey }}" {{ request('role')===$roleKey ? 'selected' : '' }}>{{ $roleLabel }}</option>
+            @endforeach
         </select>
         <button type="submit"
                 style="padding:.625rem 1.25rem;background:#7C2D37;color:white;border:none;border-radius:.5rem;font-size:.85rem;font-weight:600;cursor:pointer">
@@ -132,8 +131,8 @@
                     </td>
                     <td style="padding:.75rem 1rem">
                         @if($role)
-                        <span style="font-size:.7rem;font-weight:700;padding:.2rem .55rem;border-radius:9999px;{{ $roleStyle }}">
-                            {{ ucwords(str_replace('_', ' ', $role)) }}
+                        <span data-testid="role-badge" style="font-size:.7rem;font-weight:700;padding:.2rem .55rem;border-radius:9999px;{{ $roleStyle }}">
+                            {{ \App\Support\Authorization\RoleLabels::label($role) }}
                         </span>
                         @else
                         <span style="color:#D1D5DB">—</span>

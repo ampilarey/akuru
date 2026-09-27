@@ -178,6 +178,10 @@ check('its Blade entries are plain links (a full page load), the Inertia ones ar
 check('and nothing of the Institute is offered: no Website CMS, Commerce, Users or Settings', !menuLinks.some((h) => h && /\/admin\/(public-site\/pages|commerce|users|settings|operations)$/.test(h)));
 await Promise.all([office.waitForNavigation({ waitUntil: 'networkidle' }).catch(() => {}), office.click('#app-shell-more a[data-nav-hard][href$="/admin/enrollments"]')]);
 check('clicking a Blade entry lands on the Blade screen', /\/admin\/enrollments$/.test(office.url()) && (await text(office)).includes('Enrol'), office.url().replace(BASE, ''));
+// The role as people read it (STATUS §5if): the Blade user menu names the job.
+// textContent, not innerText: the user menu is closed (hidden) until clicked.
+const officeMenu = (await office.locator('nav').first().textContent().catch(() => '')) || '';
+check('the Blade user menu calls the educational admin by that name, not "Admin"', officeMenu.includes('Educational admin') && !/\bHeadmaster\b|Super Admin/.test(officeMenu), officeMenu.replace(/\s+/g, ' ').slice(0, 120));
 
 // ------------------------------------------------------------ 2. the system admin: the whole Institute
 
@@ -187,6 +191,17 @@ const instituteFailed = await landingsOpen(su, instituteLandings);
 check(`all ${instituteLandings.length} Institute landing pages open for the system admin, each with its heading`, instituteFailed.length === 0, instituteFailed.join(', '));
 const paidToday = await su.goto(`${BASE}/en/admin/enrollments/payments`, { waitUntil: 'networkidle' });
 check('and the enrolment payments list, which the Institute home’s "paid today" tile opens', paidToday?.status() === 200);
+// The users screen names the roles as the owner does (STATUS §5if).
+// The list is newest first, so the seeded logins are filtered to by role.
+await su.goto(`${BASE}/en/admin/users`, { waitUntil: 'networkidle' });
+const badges = await su.locator('[data-testid="role-badge"]').allTextContents();
+const filterOptions = await su.locator('select[name="role"] option').allTextContents();
+await su.goto(`${BASE}/en/admin/users?role=admin`, { waitUntil: 'networkidle' });
+const adminBadges = await su.locator('[data-testid="role-badge"]').allTextContents();
+await su.goto(`${BASE}/en/admin/users?role=headmaster`, { waitUntil: 'networkidle' });
+const deanBadges = await su.locator('[data-testid="role-badge"]').allTextContents();
+check('the users screen badges read System admin, Educational admin, Dean — never "Super Admin"', badges.some((b) => b.trim() === 'System admin') && adminBadges.length > 0 && adminBadges.every((b) => b.trim() === 'Educational admin') && deanBadges.length > 0 && deanBadges.every((b) => b.trim() === 'Dean') && !badges.some((b) => /Super Admin|Headmaster/.test(b)), [...new Set([...badges, ...adminBadges, ...deanBadges].map((b) => b.trim()))].join(', '));
+check('and its filter offers every role by that name', filterOptions.map((o) => o.trim()).includes('Dean') && filterOptions.map((o) => o.trim()).includes('Bookstore admin'), filterOptions.map((o) => o.trim()).join(', '));
 
 await su.goto(`${BASE}/en/admin`, { waitUntil: 'networkidle' });
 await su.goto(`${BASE}/en/admin/operations`, { waitUntil: 'networkidle' });

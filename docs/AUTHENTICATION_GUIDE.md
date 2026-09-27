@@ -93,8 +93,10 @@ supervisor: related to education; educational admin: everything related to
 administration of education like fees, students, parents, teachers,
 supervisors; teacher; parent; student." The role keys are the old ones
 (`super_admin`, `admin`, `headmaster`, `supervisor`, …); the labels people
-read change in a later slice. A person with roles in both workspaces sees
-one at a time and a switcher in the header.
+read are the owner's names — System admin, Educational admin, Dean — from
+`resources/lang/{en,dv,ar}/roles.php` through
+`App\Support\Authorization\RoleLabels` (ADR-040 slice 3). A person with
+roles in both workspaces sees one at a time and a switcher in the header.
 
 ### Permission System
 - **Spatie Laravel Permission** package

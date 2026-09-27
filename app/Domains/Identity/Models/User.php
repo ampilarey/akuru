@@ -254,18 +254,28 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->contacts()->whereNotNull('verified_at')->exists();
     }
 
+    /** The first role's label as people read it (System admin, Dean, …; ADR-040 slice 3). */
     public function primaryRoleLabel(): ?string
     {
         $role = $this->getRoleNames()->first();
 
-        return $role ? ucwords(str_replace('_', ' ', $role)) : null;
+        return $role ? \App\Support\Authorization\RoleLabels::label($role) : null;
     }
 
+    /**
+     * A seeded account named after its role ("Super Admin", "System Admin")
+     * would show the role twice; the old humanised key counts as a match too.
+     */
     public function nameDuplicatesPrimaryRole(): bool
     {
-        $roleLabel = $this->primaryRoleLabel();
+        $role = $this->getRoleNames()->first();
+        $name = trim((string) $this->name);
+        if (! $role || $name === '') {
+            return false;
+        }
 
-        return $roleLabel && $this->name && strcasecmp(trim($this->name), $roleLabel) === 0;
+        return strcasecmp($name, \App\Support\Authorization\RoleLabels::label($role)) === 0
+            || strcasecmp($name, \App\Support\Authorization\RoleLabels::humanise($role)) === 0;
     }
 
     /** Short label for nav buttons when account name matches role title (e.g. "Super Admin"). */

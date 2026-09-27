@@ -29,7 +29,10 @@ class StaffDirectoryController extends Controller
                 ->orderBy('first_name')
                 ->get()
                 ->map(fn (StaffProfile $profile) => $this->serialize($profile)),
-            'roles' => CreateStaffAccountAction::ROLES,
+            // key => the label people read (Dean, Educational admin; ADR-040 slice 3).
+            'roles' => collect(CreateStaffAccountAction::ROLES)
+                ->mapWithKeys(fn (string $role) => [$role => \App\Support\Authorization\RoleLabels::label($role)])
+                ->all(),
         ]);
     }
 

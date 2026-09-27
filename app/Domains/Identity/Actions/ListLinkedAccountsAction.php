@@ -38,9 +38,7 @@ class ListLinkedAccountsAction
             ->map(fn (User $user): array => [
                 'id' => (int) $user->id,
                 'name' => $user->name,
-                'roles' => $user->getRoleNames()
-                    ->map(fn (string $role): string => str_replace('_', ' ', $role))
-                    ->implode(', ') ?: 'No role',
+                'roles' => \App\Support\Authorization\RoleLabels::list($user->getRoleNames()),
             ])
             ->values();
     }
