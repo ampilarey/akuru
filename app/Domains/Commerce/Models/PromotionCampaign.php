@@ -22,6 +22,7 @@ class PromotionCampaign extends Model
         'discount_type',
         'discount_value',
         'max_discount_amount',
+        'minimum_amount',
         'funding_source',
         'status',
         'created_by',
@@ -33,6 +34,7 @@ class PromotionCampaign extends Model
             'discount_type' => DiscountType::class,
             'discount_value' => 'decimal:2',
             'max_discount_amount' => 'decimal:2',
+            'minimum_amount' => 'decimal:2',
             'starts_at' => 'datetime',
             'ends_at' => 'datetime',
         ];

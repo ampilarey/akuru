@@ -15,6 +15,9 @@ class GiftCardOrder extends Model
     protected $fillable = [
         'user_id',
         'amount',
+        // B4b: a live campaign's bonus on the card, funded by the Institute.
+        'bonus_amount',
+        'promotion_campaign_id',
         'currency',
         'recipient_name',
         'recipient_email',
@@ -33,6 +36,7 @@ class GiftCardOrder extends Model
     {
         return [
             'amount' => 'decimal:2',
+            'bonus_amount' => 'decimal:2',
             'delivered_at' => 'datetime',
             'paid_at' => 'datetime',
         ];

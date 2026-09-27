@@ -42,6 +42,7 @@ class AdminLibraryPromotionsController extends Controller
             'discount_type' => 'required|in:percentage,fixed',
             'discount_value' => 'required|numeric|min:0.01',
             'max_discount_amount' => 'nullable|numeric|min:0',
+            'minimum_amount' => 'nullable|numeric|min:0',
             'funding_source' => 'required|in:'.implode(',', SavePromotionCampaignAction::FUNDING_SOURCES),
             'targets' => 'nullable|array|max:200',
             'targets.*.type' => 'required|in:'.implode(',', SavePromotionCampaignAction::TARGET_TYPES),

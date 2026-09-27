@@ -3,7 +3,9 @@
 namespace App\Domains\Commerce\Listeners;
 
 use App\Domains\Commerce\Actions\IssueGiftCardAction;
+use App\Domains\Commerce\Actions\RecordDiscountRedemptionAction;
 use App\Domains\Commerce\Models\GiftCardOrder;
+use App\Domains\Commerce\Models\GiftCardTransaction;
 use App\Domains\Finance\Events\PaymentConfirmed;
 use App\Domains\Notifications\Contracts\SmsSenderInterface;
 use App\Mail\GiftCardCodeMail;
@@ -36,8 +38,12 @@ class IssueGiftCardOnPaymentConfirmed
                 return null;
             }
 
+            // B4b (§18): the card carries the campaign's bonus on top of what
+            // was paid; the bonus is a row on the card's own ledger, so the
+            // liability report and the office can see where it came from.
+            $bonus = round((float) $order->bonus_amount, 2);
             $result = app(IssueGiftCardAction::class)->execute([
-                'amount' => (float) $order->amount,
+                'amount' => (float) $order->amount + $bonus,
                 'currency' => $order->currency,
                 'purchaser_user_id' => $order->user_id,
                 'recipient_name' => $order->recipient_name,
@@ -51,6 +57,17 @@ class IssueGiftCardOnPaymentConfirmed
                     ? now()->addMonths($months)
                     : null,
             ]);
+
+            if ($bonus > 0) {
+                GiftCardTransaction::query()->create([
+                    'gift_card_id' => $result['gift_card']->id,
+                    'user_id' => $order->user_id,
+                    'type' => 'bonus',
+                    'amount' => $bonus,
+                    'note' => 'Campaign bonus'.($order->promotion_campaign_id ? ' (campaign #'.$order->promotion_campaign_id.')' : ''),
+                ]);
+                app(RecordDiscountRedemptionAction::class)->transition('gift_card_order', $order->id, 'confirmed');
+            }
 
             $order->status = 'paid';
             $order->paid_at = now();
@@ -72,10 +89,13 @@ class IssueGiftCardOnPaymentConfirmed
         $via = [];
         $to = [];
 
+        // The card's worth, bonus included — what the recipient can spend.
+        $worth = number_format((float) $order->amount + (float) $order->bonus_amount, 2, '.', '');
+
         if ($order->recipient_email !== null) {
             Mail::to($order->recipient_email)->queue(new GiftCardCodeMail(
                 recipientName: $order->recipient_name,
-                amount: (string) $order->amount,
+                amount: $worth,
                 currency: $order->currency,
                 plainCode: $plainCode,
                 message: $order->message,
@@ -92,7 +112,7 @@ class IssueGiftCardOnPaymentConfirmed
                         'Akuru Institute gift card for %s: %s %s. Code %s. Redeem at %s',
                         $order->recipient_name,
                         $order->currency,
-                        number_format((float) $order->amount, 2),
+                        $worth,
                         $plainCode,
                         rtrim((string) config('app.url'), '/').'/my-wallet',
                     ),

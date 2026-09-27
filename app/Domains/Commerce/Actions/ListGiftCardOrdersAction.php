@@ -30,6 +30,8 @@ class ListGiftCardOrdersAction
             'buyer' => $buyers->get($order->user_id)?->name ?? ('#'.$order->user_id),
             'buyer_email' => $buyers->get($order->user_id)?->email,
             'amount' => (string) $order->amount,
+            // B4b: what a campaign added on top, if anything.
+            'bonus_amount' => (float) $order->bonus_amount > 0 ? (string) $order->bonus_amount : null,
             'currency' => $order->currency,
             'recipient_name' => $order->recipient_name,
             'status' => $order->status,

@@ -153,4 +153,9 @@ return [
     'library_promotions_none' => 'އަދި ކެމްޕެއިނެއް ނެތް.',
     'library_promotions_saved' => 'ކެމްޕެއިން ފެށުނީ.',
     'library_promotions_ended' => 'ކެމްޕެއިން ނިމުނީ.',
+    'library_promotions_covers_gift_card' => 'ގަންނަ ގިފްޓް ކާޑުތައް (ކާޑަށް ބޯނަސް)',
+    'library_promotions_gift_card_label' => 'ގިފްޓް ކާޑު (ކާޑަށް ބޯނަސް)',
+    'library_promotions_minimum' => 'މި އަދަދުން ފެށިގެން (ރުފިޔާ، އިޚްތިޔާރީ) — "500 ގަނެފިނަމަ ބޯނަސް"',
+    'library_promotions_bonus' => 'ބޯނަސް',
+    'library_promotions_from' => 'ފެށިގެން',
 ];
