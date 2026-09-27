@@ -202,6 +202,10 @@ if (enrolHref) {
             await form.locator('input[name=amount]').fill(AMOUNT);
             await form.locator('input[name=note]').fill(RECEIPT);
             await form.locator('button[type=submit]').click();
+            // C9 slice 5: the page is Inertia, so the record is a request and a
+            // repaint, not a navigation — `networkidle` resolves at once on an
+            // idle page. Wait for the status badge to change, then read.
+            await staff.waitForFunction(() => /active/i.test(document.querySelector('[data-testid="enrolment-status"]')?.textContent || ''), null, { timeout: 20000 }).catch(() => {});
             await staff.waitForLoadState('networkidle');
 
             const after = await body(staff);

@@ -4,6 +4,7 @@ namespace App\Domains\Admissions\Http\Controllers;
 
 use App\Domains\Courses\Actions\ActivateEnrollmentAction;
 use App\Domains\Courses\Actions\ListAdminEnrollmentsAction;
+use App\Domains\Courses\Actions\ReadAdminEnrollmentAction;
 use App\Domains\Courses\Actions\SuspendEnrollmentAction;
 use App\Domains\Courses\Models\CourseEnrollment;
 use App\Domains\Finance\Actions\ListAdminPaymentsAction;
@@ -23,10 +24,9 @@ use Inertia\Response;
 
 /**
  * The office's enrolments and payments (docs/ADMIN_PANEL.md). The two lists
- * are Inertia since C9 slice 4 (STATUS §5jf), with their strings keyed for
- * Dhivehi and Arabic; the one-enrolment page (`show`) and its decisions are
- * still Blade until their own slice. `role:super_admin|admin|headmaster` on
- * the route group.
+ * are Inertia since C9 slice 4 (STATUS §5jf) and the one-enrolment page with
+ * its decisions since slice 5 (§5jg), with every string keyed for Dhivehi
+ * and Arabic. `role:super_admin|admin|headmaster` on the route group.
  */
 class AdminEnrollmentController extends Controller
 {
@@ -44,14 +44,16 @@ class AdminEnrollmentController extends Controller
         ]);
     }
 
-    public function show(CourseEnrollment $enrollment)
+    public function show(Request $request, CourseEnrollment $enrollment): Response
     {
-        $enrollment->load(['student.guardians', 'course', 'payment.items.course', 'creator', 'decider']);
-        // SPEC §38's payment-method vocabulary, fetched through Finance's
-        // Action rather than its enum (rule 3).
-        $paymentMethods = app(ListManualPaymentMethodsAction::class)->execute();
-
-        return view('admin.enrollments.show', compact('enrollment', 'paymentMethods'));
+        return Inertia::render('Admissions/Enrollment', [
+            'enrollment' => app(ReadAdminEnrollmentAction::class)->execute($enrollment),
+            // SPEC §38's payment-method vocabulary, fetched through Finance's
+            // Action rather than its enum (rule 3).
+            'payment_methods' => app(ListManualPaymentMethodsAction::class)->execute(),
+            'can_record_payment' => (bool) $request->user()?->can('payments.record'),
+            't' => trans('admin'),
+        ]);
     }
 
     public function activate(CourseEnrollment $enrollment)
@@ -59,16 +61,16 @@ class AdminEnrollmentController extends Controller
         try {
             app(ActivateEnrollmentAction::class)->execute($enrollment, (int) auth()->id());
         } catch (ValidationException $e) {
-            // Same shape as suspend/reinstate below: this screen is Blade and
-            // does not render a validation bag, so a thrown seat refusal would
-            // look to the admin like the button did nothing.
+            // Same shape as suspend/reinstate below: a seat refusal comes back
+            // as a flash the page shows, not a thrown error that would look
+            // to the admin like the button did nothing.
             return back()->with('error', $e->validator->errors()->first());
         }
 
         $this->notifyUser($enrollment, 'active');
         $this->sendActivationSms($enrollment);
 
-        return back()->with('success', 'Enrollment activated and student notified via SMS.');
+        return back()->with('success', trans('admin.enrolment_flash_activated'));
     }
 
     public function reject(CourseEnrollment $enrollment)
@@ -78,7 +80,7 @@ class AdminEnrollmentController extends Controller
         $this->notifyUser($enrollment, 'rejected');
         $this->sendRejectionSms($enrollment);
 
-        return back()->with('success', 'Enrollment rejected and student notified.');
+        return back()->with('success', trans('admin.enrolment_flash_rejected'));
     }
 
     /**
@@ -100,7 +102,7 @@ class AdminEnrollmentController extends Controller
             return back()->with('error', $e->validator->errors()->first());
         }
 
-        return back()->with('success', 'Enrollment suspended. The seat is released and their record is kept.');
+        return back()->with('success', trans('admin.enrolment_flash_suspended'));
     }
 
     public function reinstate(CourseEnrollment $enrollment)
@@ -111,7 +113,7 @@ class AdminEnrollmentController extends Controller
             return back()->with('error', $e->validator->errors()->first());
         }
 
-        return back()->with('success', 'Enrollment reinstated.');
+        return back()->with('success', trans('admin.enrolment_flash_reinstated'));
     }
 
     /**
@@ -138,7 +140,7 @@ class AdminEnrollmentController extends Controller
             return back()->with('error', $e->validator->errors()->first());
         }
 
-        return back()->with('success', 'Access window saved.');
+        return back()->with('success', trans('admin.enrolment_flash_access_saved'));
     }
 
     public function export(Request $request)
@@ -336,6 +338,6 @@ class AdminEnrollmentController extends Controller
             ],
         );
 
-        return back()->with('success', 'Manual payment recorded — enrollment updated.');
+        return back()->with('success', trans('admin.enrolment_flash_payment_recorded'));
     }
 }

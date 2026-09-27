@@ -6,6 +6,7 @@ use App\Domains\Courses\Models\Course;
 use App\Domains\Courses\Models\CourseEnrollment;
 use App\Domains\Identity\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Inertia\Testing\AssertableInertia as Assert;
 use Spatie\Permission\Models\Role;
 
 uses(RefreshDatabase::class);
@@ -83,13 +84,14 @@ it('stamps nobody when the system decides, and shows the stamp on the page and i
     app(ActivateEnrollmentAction::class)->execute($webhookActivated);
     expect($webhookActivated->refresh()->status)->toBe('active')->and($webhookActivated->decided_at)->toBeNull();
 
+    // The page is Inertia since C9 slice 5: the stamp is a prop, composed by the reader.
     decideAs($admin)->get(route('admin.enrollments.show', $webhookActivated))->assertOk()
-        ->assertSee('no decision recorded');
+        ->assertInertia(fn (Assert $page) => $page->component('Admissions/Enrollment')->where('enrollment.last_decision', fn ($stamp) => str_contains($stamp, 'no decision recorded')));
 
     $decided = decidableEnrollment();
     decideAs($admin)->patch(route('admin.enrollments.activate', $decided));
     decideAs($admin)->get(route('admin.enrollments.show', $decided))->assertOk()
-        ->assertSee('Activated by Office Admin on');
+        ->assertInertia(fn (Assert $page) => $page->where('enrollment.last_decision', fn ($stamp) => str_starts_with($stamp, 'Activated by Office Admin on')));
 
     $csv = decideAs($admin)->get(route('admin.enrollments.export'))->assertOk()->streamedContent();
     expect($csv)->toContain('"Last Decision","Decided By","Decided At"')

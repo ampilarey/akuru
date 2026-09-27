@@ -4414,6 +4414,57 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5jg. C9 slice 5: the one-enrolment page leaves Blade (2026-09-27)
+
+BACKLOG C9, `docs/ADMIN_PANEL.md` findings 9 and 10; the fifth port, and
+the last of the School office's screens. `/admin/enrollments/{id}` was a
+273-line Blade page: the details, the student and guardians, the payment,
+the decision stamp (§5ih), and six hand-written forms — activate,
+reject, suspend, reinstate, the access window (§11.7), a manual payment
+(P4.4) — each with an `onclick` confirm and a full page load back.
+
+**Built.** `ReadAdminEnrollmentAction` (Courses) reads the one enrolment
+for the office: the details, the student with date of birth, gender, ID
+and guardians (relationship from the pivot), the payment if any, the
+access window in the form's format, the suggested amount, and which
+decisions the page may offer (`can_activate` … `awaits_payment`) — worked
+out here, so the page renders what it is given. The decision stamp is
+composed here too, in the reader's language (`:decision by :who on
+:when`, the decision word keyed, *a removed account* keyed), so the page
+and its test read one string and the Dhivehi office reads a Dhivehi
+stamp. `AdminEnrollmentController::show` renders `Admissions/Enrollment`
+with the payment-method vocabulary (through Finance's Action, rule 3)
+and whether the reader may record money; the six flashes are keyed (EN
+identical to before, so nothing that read them changed). The page: the
+breadcrumb as an Inertia link, the flashes and the first validation
+error in the shell, the four sections, the four decision buttons as
+Inertia patches with the same confirms, the access-window form and the
+manual-payment form as Inertia requests — every form keeps a real
+`action` attribute, so `admin.mjs` and `money.mjs` find them where they
+always were. 57 keys in the admin tranche, EN/DV/AR. The Blade view is
+deleted (`blade_screens` 239). `admin.mjs` waits for the stamp to change
+rather than for a navigation; `EnrollmentDecisionActorTest` reads the
+stamp from the props. `AdminEnrollmentPageTest` (2): the props and the
+offered decisions for a pending enrolment, the payment methods, the
+office admin's `payments.record`, the DV/AR keys, the supervisor's 403;
+suspend → the stamp, *Reinstate* offered instead, the Dhivehi stamp, the
+access window saving and reading back with its own stamp, reinstate
+making the place live again, each flash. Walked: a scratch walk 11/11 —
+the page in the Inertia shell with its tab title, suspend stamping
+*Suspended by … on …* without a page load with the flash and the badge,
+reinstate overwriting the stamp, the access window saving and reading
+back after a reload, a manual payment confirming the payment and
+activating the place with the form gone after, `/dv/admin/enrollments/N`
+right-to-left with no English leftovers; `admin.mjs` 41/41 (suspend and
+reinstate stamping the decision through the new forms), `admin-pages.mjs`
+3/3 (the page found from the list, on desktop and phone), `money.mjs`
+21/21 (cash recorded on the new page activating the place, the payment
+on the payments screen, the refund, the place revoked, the wallet
+credited). `money.mjs` now waits for the status badge after recording,
+since an Inertia request is not a navigation and `networkidle` resolved
+before the repaint. Full suite 2367 passed. Next: the website CMS
+screens.
+
 ## 5jf. C9 slice 4: the enrolment and payments lists leave Blade (2026-09-27)
 
 BACKLOG C9, `docs/ADMIN_PANEL.md` findings 9 and 10; the fourth port and

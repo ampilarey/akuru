@@ -156,12 +156,16 @@ if (enrolmentHref) {
     await office.goto(enrolmentHref.startsWith('http') ? enrolmentHref : `${BASE}${enrolmentHref}`, { waitUntil: 'networkidle' });
     const suspendForm = office.locator('form[action$="/suspend"]');
     if (await suspendForm.count()) {
+        // C9 slice 5: the page is Inertia, so the decision is a request and a repaint, not a navigation — wait for the stamp.
+        const stampReads = (word) => office.waitForFunction((w) => new RegExp(w).test(document.querySelector('[data-testid="last-decision"]')?.textContent || ''), word, { timeout: 20000 }).catch(() => {});
         office.once('dialog', (d) => d.accept());
-        await Promise.all([office.waitForNavigation({ waitUntil: 'networkidle' }).catch(() => {}), suspendForm.locator('button').click()]);
+        await suspendForm.locator('button').click();
+        await stampReads('Suspended by');
         const stamped = (await office.locator('[data-testid="last-decision"]').textContent().catch(() => '')) || '';
         check('suspending an enrolment records who did it and when', /Suspended by .+ on \d{2} \w{3} \d{4}/.test(stamped), stamped.trim().slice(0, 80));
         office.once('dialog', (d) => d.accept());
-        await Promise.all([office.waitForNavigation({ waitUntil: 'networkidle' }).catch(() => {}), office.locator('form[action$="/reinstate"] button').click()]);
+        await office.locator('form[action$="/reinstate"] button').click();
+        await stampReads('Reinstated by');
         const restamped = (await office.locator('[data-testid="last-decision"]').textContent().catch(() => '')) || '';
         check('and reinstating it overwrites the stamp', /Reinstated by .+ on/.test(restamped), restamped.trim().slice(0, 80));
     } else {
