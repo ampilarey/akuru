@@ -22,9 +22,10 @@ uses(RefreshDatabase::class);
  *
  * `RefreshDatabase` runs migrations and no seeders, which is exactly the state
  * of a deployment that has only ever run `migrate`. Only `super_admin`,
- * `reviewer` and `writer` are created by migrations — the other six roles come
- * from `RoleSeeder` — so the grant matrix is asserted further down against a
- * database seeded to look like the real one.
+ * `reviewer`, `writer`, `course_creator`, `supervisor`, `bookshop_manager` and
+ * (since ADR-040 slice 2) `admin` are created by migrations — the other roles
+ * come from `RoleSeeder` — so the grant matrix is asserted further down
+ * against a database seeded to look like the real one.
  */
 it('creates the three seeder-only permissions in a migration', function () {
     foreach (['events.manage', 'forms.manage', 'messages.broadcast'] as $permission) {

@@ -101,7 +101,7 @@ it('shows the figures to an admin on the commerce screen', function () {
     $issued = app(IssueGiftCardAction::class)->execute(['amount' => 500.0, 'created_by' => User::factory()->create()->id]);
     app(RedeemGiftCardAction::class)->execute(User::factory()->create()->id, $issued['plain_code']);
 
-    $admin = actingPeopleAdmin(['commerce.manage']);
+    $admin = actingSystemAdmin(['commerce.manage']);
 
     $this->withoutLocalizationMiddleware()
         ->actingAs($admin)

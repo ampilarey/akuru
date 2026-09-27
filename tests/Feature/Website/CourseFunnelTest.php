@@ -145,7 +145,7 @@ it('records payment_completed through the action and hooks PaymentService webhoo
 });
 
 it('lists the admin funnel report and exports CSV', function () {
-    $admin = actingPeopleAdmin();
+    $admin = actingSystemAdmin();
     $course = funnelCourse(['title' => 'W16 Listed Funnel']);
     app(RecordFunnelEventAction::class)->execute($course->id, 'course_view');
     app(RecordFunnelEventAction::class)->execute($course->id, 'register_click', 'client');

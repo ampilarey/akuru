@@ -189,7 +189,7 @@ it('approves samples, exports a manifest, and audits model activation and rollba
         ]);
     $sample = TrainingSample::query()->firstOrFail();
 
-    $admin = actingPeopleAdmin(['pronunciation.manage']);
+    $admin = actingSystemAdmin(['pronunciation.manage']);
     app(DecideTrainingSampleAction::class)->execute($sample->id, $admin->id, true);
     expect($sample->fresh()->status)->toBe('approved');
     expect(app(GetAiDatasetStatsAction::class)->execute()['cells'][0]['samples'])->toBe(1);

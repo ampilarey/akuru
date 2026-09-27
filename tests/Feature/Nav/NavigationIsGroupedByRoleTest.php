@@ -56,7 +56,10 @@ it('names only real GET routes, so the menu cannot carry a dead link', function 
 it('gives the office Today, Years and Exams in the bar, and the rest in groups', function () {
     $nav = navFor(signedInAs('admin'));
 
-    expect(array_column($nav['primary'], 'label'))->toBe(['Today', 'Years', 'Students', 'Exams', 'Gradebook', 'Invoices'])
+    // No Gradebook: the educational admin reads the academics and does not
+    // run exams (ADR-040 slice 2); the dean gets it.
+    expect(array_column($nav['primary'], 'label'))->toBe(['Today', 'Years', 'Students', 'Exams', 'Invoices'])
+        ->and(array_column(navFor(signedInAs('headmaster'))['primary'], 'label'))->toContain('Gradebook')
         ->and(array_column($nav['groups'], 'label'))->toContain('School year', 'People', 'Exams', 'Finance', 'HR')
         ->and(hrefsIn($nav))->toContain('/hr/payroll', '/finance/settings', '/academics/registers/today')
         // Portal pages for families are not the office's; staff self-service is.

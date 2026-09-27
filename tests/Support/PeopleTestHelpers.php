@@ -77,9 +77,20 @@ function makeCourseStudent(array $overrides = []): Student
     ], $overrides));
 }
 
+/**
+ * An educational admin holding exactly `$permissions`.
+ *
+ * The `admin` role carries the educational admin's real set by migration
+ * (`RoleGrants::educationalAdmin()`, ADR-040 slice 2), so a bare `assignRole`
+ * would hand the actor forty-nine abilities and "forbids X without
+ * `x.manage`" could never be asserted. These tests say which abilities the
+ * actor holds — the gate under test is the permission, not the role — so
+ * the role is stripped to a bare key inside the test's transaction. The real
+ * set is asserted where it is the subject: `EducationalAdminPermissionSetTest`.
+ */
 function actingPeopleAdmin(array $permissions = ['custom_fields.manage', 'students.view-sensitive']): User
 {
-    Role::findOrCreate('admin', 'web');
+    Role::findOrCreate('admin', 'web')->syncPermissions([]);
 
     foreach ($permissions as $permission) {
         Permission::findOrCreate($permission, 'web');
@@ -88,6 +99,31 @@ function actingPeopleAdmin(array $permissions = ['custom_fields.manage', 'studen
     $user = User::factory()->create();
     $user->assignRole('admin');
     $user->givePermissionTo($permissions);
+    app(\Spatie\Permission\PermissionRegistrar::class)->forgetCachedPermissions();
+
+    return $user;
+}
+
+/**
+ * The system admin (`super_admin`) — the Institute's screens admit that role
+ * alone (ADR-040 slice 2). The role is migration-created and the Institute
+ * migrations grant it their permissions, so `$permissions` is for the ones a
+ * test wants to be explicit about; a "without" case revokes from the role.
+ */
+function actingSystemAdmin(array $permissions = []): User
+{
+    Role::findOrCreate('super_admin', 'web');
+
+    foreach ($permissions as $permission) {
+        Permission::findOrCreate($permission, 'web');
+    }
+
+    $user = User::factory()->create();
+    $user->assignRole('super_admin');
+    if ($permissions !== []) {
+        $user->givePermissionTo($permissions);
+    }
+    app(\Spatie\Permission\PermissionRegistrar::class)->forgetCachedPermissions();
 
     return $user;
 }

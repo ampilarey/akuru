@@ -10,7 +10,7 @@ uses(RefreshDatabase::class);
 it('saves an ayah draft through the Quran provider and lists meanings on the calendar', function () {
     $ayah = w22Ayah();
     w22ImportMeanings();
-    $admin = actingPeopleAdmin(['daily_content.manage', 'daily_content.approve']);
+    $admin = actingSystemAdmin(['daily_content.manage', 'daily_content.approve']);
 
     $this->withoutLocalizationMiddleware()
         ->actingAs($admin)
@@ -48,8 +48,8 @@ it('saves an ayah draft through the Quran provider and lists meanings on the cal
 });
 
 it('blocks publishing a hadith that is missing collection, number, grading, or source', function () {
-    $maker = actingPeopleAdmin(['daily_content.manage', 'daily_content.approve']);
-    $checker = actingPeopleAdmin(['daily_content.manage', 'daily_content.approve']);
+    $maker = actingSystemAdmin(['daily_content.manage', 'daily_content.approve']);
+    $checker = actingSystemAdmin(['daily_content.manage', 'daily_content.approve']);
 
     $this->withoutLocalizationMiddleware()
         ->actingAs($maker)
@@ -74,8 +74,8 @@ it('blocks publishing a hadith that is missing collection, number, grading, or s
 });
 
 it('enforces maker-checker: creator cannot approve; a second reviewer can publish a complete hadith', function () {
-    $maker = actingPeopleAdmin(['daily_content.manage', 'daily_content.approve']);
-    $checker = actingPeopleAdmin(['daily_content.manage', 'daily_content.approve']);
+    $maker = actingSystemAdmin(['daily_content.manage', 'daily_content.approve']);
+    $checker = actingSystemAdmin(['daily_content.manage', 'daily_content.approve']);
 
     $this->withoutLocalizationMiddleware()
         ->actingAs($maker)
@@ -134,7 +134,7 @@ it('enforces maker-checker: creator cannot approve; a second reviewer can publis
 });
 
 it('rejects save attempts that skip approval and create a reminder theme batch', function () {
-    $admin = actingPeopleAdmin(['daily_content.manage', 'daily_content.approve']);
+    $admin = actingSystemAdmin(['daily_content.manage', 'daily_content.approve']);
 
     $this->withoutLocalizationMiddleware()
         ->actingAs($admin)
@@ -173,8 +173,12 @@ it('rejects save attempts that skip approval and create a reminder theme batch',
 });
 
 it('forbids staff without daily_content permissions and approvers without daily_content.approve', function () {
-    $viewer = actingPeopleAdmin([]);
-    $maker = actingPeopleAdmin(['daily_content.manage']);
+    // The website is the system admin's alone (ADR-040 slice 2), and the W22
+    // migration grants that role both abilities — so the maker-checker split
+    // is asserted on system admins whose role has been stripped of them.
+    \Spatie\Permission\Models\Role::findOrCreate('super_admin', 'web')->revokePermissionTo(['daily_content.manage', 'daily_content.approve']);
+    $viewer = actingSystemAdmin([]);
+    $maker = actingSystemAdmin(['daily_content.manage']);
     $row = DailyContent::query()->create([
         'content_type' => 'reminder',
         'publish_date' => '2026-09-10',

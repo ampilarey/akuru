@@ -97,7 +97,7 @@ it('saves everything §11.3 asks for, and shows the contents and copyright notic
     // Published: readers see the contents, the copyright line and the AI note.
     app(ReviewLibraryItemSubmissionAction::class); // autoload check only
     $this->withoutLocalizationMiddleware()->actingAs($writer)->post(route('write.items.submit', $item->id))->assertSessionHasNoErrors();
-    $admin = actingPeopleAdmin(['library.manage']);
+    $admin = actingSystemAdmin(['library.manage']);
     $this->withoutLocalizationMiddleware()->actingAs($admin)
         ->post(route('admin.library.items.review', $item->id), ['decision' => 'approved'])
         ->assertSessionHasNoErrors();
@@ -168,7 +168,7 @@ it('refuses a submission until the declarations are made — copyright for all, 
 });
 
 it('tells the writer, the office and the reader what happened (§41)', function () {
-    Role::findOrCreate('admin', 'web');
+    Role::findOrCreate('super_admin', 'web');
     Permission::findOrCreate('library.manage', 'web');
     $office = User::factory()->create();
     $office->givePermissionTo('library.manage');

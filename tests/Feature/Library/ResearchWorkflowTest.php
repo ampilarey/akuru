@@ -24,7 +24,7 @@ function approveResearchWriter(User $user): WriterProfile
 it('walks the research peer-review loop: assign → revise → accept → publish', function () {
     $writerUser = User::factory()->create();
     approveResearchWriter($writerUser);
-    $admin = actingPeopleAdmin(['library.manage']);
+    $admin = actingSystemAdmin(['library.manage']);
     $reviewerUser = User::factory()->create(['email' => 'reviewer@akuru.test']);
 
     // Writer submits research with citations.
@@ -92,7 +92,7 @@ it('walks the research peer-review loop: assign → revise → accept → publis
 it('publishes non-research without any reviewer and can bypass via config', function () {
     $writerUser = User::factory()->create();
     approveResearchWriter($writerUser);
-    $admin = actingPeopleAdmin(['library.manage']);
+    $admin = actingSystemAdmin(['library.manage']);
 
     // Articles never need a peer reviewer.
     $this->withoutLocalizationMiddleware()->actingAs($writerUser)

@@ -7,11 +7,15 @@ use Illuminate\Database\Seeder;
 class UserSeeder extends Seeder
 {
     /**
-     * The six pilot logins, by email. `firstOrCreate` so this can run on a
+     * The seven pilot logins, by email. `firstOrCreate` so this can run on a
      * database that already has some of them — staging had admin@ and not
      * teacher@, and a plain `create` stopped at the first duplicate email
      * with nothing planted (STATUS §5fz). A user that exists is left as is,
      * password included; only the role and the verified contact are ensured.
+     *
+     * Never run on production (docs/legacy/DEPLOYMENT.md): these are the
+     * staging and local logins, and the system admin among them holds the
+     * Institute — users, settings, the website, the shops.
      */
     public function run(): void
     {
@@ -21,7 +25,20 @@ class UserSeeder extends Seeder
             $school = \App\Domains\Settings\Models\School::query()->first();
         }
 
-        // Create Admin User
+        // The system admin (ADR-040 slice 2): since the educational admin no
+        // longer holds the Institute, the walks need an account that does.
+        $systemAdmin = \App\Domains\Identity\Models\User::firstOrCreate(['email' => 'superadmin@akuru.edu.mv'], [
+            'name' => 'System Admin',
+            'password' => bcrypt('password'),
+            'phone' => '+960 782 0288',
+            'address' => 'Malé, Maldives',
+            'date_of_birth' => '1980-01-01',
+            'gender' => 'male',
+            'is_active' => true,
+        ]);
+        $systemAdmin->assignRole('super_admin');
+
+        // Create Admin User (the educational admin: the school's office)
         $admin = \App\Domains\Identity\Models\User::firstOrCreate(['email' => 'admin@akuru.edu.mv'], [
             'name' => 'Admin User',
             'password' => bcrypt('password'),
@@ -95,7 +112,7 @@ class UserSeeder extends Seeder
         $supervisor->assignRole('supervisor');
 
         $ensure = app(\App\Domains\Identity\Actions\EnsureVerifiedEmailContactAction::class);
-        foreach ([$admin, $headmaster, $teacher, $student, $parent, $supervisor] as $user) {
+        foreach ([$systemAdmin, $admin, $headmaster, $teacher, $student, $parent, $supervisor] as $user) {
             $ensure->execute($user);
         }
     }

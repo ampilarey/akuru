@@ -80,38 +80,69 @@ Comprehensive guide to the authentication system in Akuru Institute LMS, includi
 
 ## 👥 User Roles & Access Control
 
-### Role Hierarchy
+### Two workspaces, not a hierarchy (ADR-040, 2026-09-27)
+
 ```
-Super Admin > Admin > Headmaster > Supervisor > Teacher > Student/Parent
+Institute  (super_admin)                      the website, users, system, shops, the library office
+School     (admin, headmaster, supervisor, teacher)   admissions, the people, the academics, fees, HR
 ```
+
+The owner's words: "system admin: everything related to website, system,
+shop, bookstore, library; dean: everything related to education;
+supervisor: related to education; educational admin: everything related to
+administration of education like fees, students, parents, teachers,
+supervisors; teacher; parent; student." The role keys are the old ones
+(`super_admin`, `admin`, `headmaster`, `supervisor`, …); the labels people
+read change in a later slice. A person with roles in both workspaces sees
+one at a time and a switcher in the header.
 
 ### Permission System
 - **Spatie Laravel Permission** package
-- **Role-based access control** (RBAC)
-- **Middleware protection** on routes
+- **Role-based access control** (RBAC): every route carries a `role:` gate,
+  the money and office screens a `can:` permission on top
 - **Policy-based authorization** for models
+- **The educational admin's permission set is a decision**, not
+  `Permission::all()`: `App\Support\Authorization\RoleGrants::educationalAdmin()`,
+  shipped by migration `2026_09_27_000001` and read by `RoleSeeder`. Changing
+  it is a new migration, because deployments run `migrate` and never `db:seed`.
 
 ### 7 User Roles
 
-#### 1. Super Admin
-- **Access**: Full system access
-- **Functions**: System management, user creation, role assignment
-- **Restrictions**: None
+#### 1. System admin (`super_admin`)
+- **Workspace**: the Institute — `/admin`
+- **Functions**: the public website (pages, courses, research, daily
+  content, leads, funnel), the instructors shown on it, prayer times,
+  commerce (gift cards, wallets, discounts), the library office, the
+  Bookstore office and its team, pronunciation, the operations checklist,
+  translations, user management, system settings
+- **Restrictions**: none — passes every gate. Needs a School role (the
+  dean's, say) to work in the School.
 
-#### 2. Admin
-- **Access**: School operations management
-- **Functions**: Student/teacher management, fees, admissions
-- **Restrictions**: Cannot access system settings
+#### 2. Educational admin (`admin`)
+- **Workspace**: the School office — `/school`
+- **Functions**: admissions and their payments (activate, reject, record a
+  manual payment, refund), students, families and staff, custom fields,
+  fees and invoices, HR and payroll, the noticeboard, messages and forms,
+  the requests families send in, the calendar, rooms, meetings and events,
+  the registers' oversight, reports
+- **Restrictions**: reads the academics (classes, subjects, timetables,
+  grades, attendance, Qur'an progress, Hifz) and does not run them; nothing
+  of the Institute — every `/admin/*` screen but admissions answers 403;
+  never the sensitive notes (OWNER_ACTIONS 12)
 
-#### 3. Headmaster
-- **Access**: Academic leadership and oversight
-- **Functions**: Academic management, approvals, reports
-- **Restrictions**: No financial operations
+#### 3. Dean (`headmaster`)
+- **Workspace**: the School office
+- **Functions**: everything education — classes, subjects, timetables,
+  exams and grades, registers, behaviour, Hifz programmes, the course
+  catalogue — and the fees ("school fees, principal can see"), HR
+- **Restrictions**: nothing of the Institute (no website, no library office)
 
 #### 4. Supervisor
-- **Access**: Academic monitoring and supervision
-- **Functions**: Monitoring, reports, substitution management
-- **Restrictions**: Cannot add/edit users directly
+- **Workspace**: the School office
+- **Functions**: academic monitoring, registers and exams oversight,
+  course reviews and approvals (SPEC §8.4), events, substitutions
+- **Restrictions**: cannot add/edit users; does not run admissions
+  (KNOWN_ISSUES 12); nothing of the Institute
 
 #### 5. Teacher
 - **Access**: Teaching functions and class management
@@ -276,20 +307,25 @@ Super Admin > Admin > Headmaster > Supervisor > Teacher > Student/Parent
 
 ### Test Data
 ```php
-// Test users with different roles (UserSeeder). No super_admin account is
-// seeded — see "Making a super admin" below.
-'admin@akuru.edu.mv' => 'Admin',
-'teacher@akuru.edu.mv' => 'Teacher',
-'student@akuru.edu.mv' => 'Student',
-'parent@akuru.edu.mv' => 'Parent'
+// Test users with different roles (UserSeeder; staging and local only —
+// never run on production).
+'superadmin@akuru.edu.mv' => 'System admin (super_admin)',   // since 2026-09-27, ADR-040 slice 2
+'admin@akuru.edu.mv'      => 'Educational admin (admin)',
+'headmaster@akuru.edu.mv' => 'Dean (headmaster)',
+'supervisor@akuru.edu.mv' => 'Supervisor',
+'teacher@akuru.edu.mv'    => 'Teacher',
+'student@akuru.edu.mv'    => 'Student',
+'parent@akuru.edu.mv'     => 'Parent'
 ```
 
 ### Making a super admin
 
-No seeder creates a `super_admin` account (the admin-panel audit,
-`docs/ADMIN_PANEL.md` finding 11, found this guide naming one). `/admin/users`
-and `/admin/settings` are `role:super_admin` only, so on a fresh host grant
-the role once, on the host, to a real account:
+`UserSeeder` plants `superadmin@` for staging and local walks, and is never
+run on production (`docs/legacy/DEPLOYMENT.md`), so production has no
+`super_admin` account until one is made. `/admin/users`, `/admin/settings`
+and every Institute screen (the website, the shops, the library office) are
+`role:super_admin` only, so on a fresh host grant the role once, on the
+host, to a real account:
 
 ```
 php artisan tinker --execute="\App\Domains\Identity\Models\User::where('email', 'you@akuru.edu.mv')->firstOrFail()->assignRole('super_admin');"

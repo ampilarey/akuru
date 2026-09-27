@@ -17,10 +17,10 @@ uses(RefreshDatabase::class);
  */
 function giftOrdersOffice(): User
 {
-    Role::findOrCreate('admin', 'web');
+    Role::findOrCreate('super_admin', 'web');
     Permission::findOrCreate('commerce.manage', 'web');
     $admin = User::factory()->create();
-    $admin->assignRole('admin');
+    $admin->assignRole('super_admin');
     $admin->givePermissionTo('commerce.manage');
 
     return $admin;

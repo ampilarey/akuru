@@ -42,7 +42,7 @@ import { chromium } from 'playwright';
 const BASE = process.env.SMOKE_BASE_URL ?? 'http://127.0.0.1:8000';
 const WRITER = process.env.SMOKE_APPLICANT ?? 'student@akuru.edu.mv';
 const REVIEWER = process.env.SMOKE_REVIEWER ?? 'parent@akuru.edu.mv';
-const STAFF = process.env.SMOKE_STAFF ?? 'admin@akuru.edu.mv';
+const STAFF = process.env.SMOKE_STAFF ?? 'superadmin@akuru.edu.mv';
 const PASSWORD = process.env.SMOKE_PASSWORD ?? 'password';
 
 // Unique per run: the loop ends published, and publication is not reversible

@@ -25,7 +25,7 @@ function freshDvTranslation(string $key): string
 
 it('serves a Dhivehi override over the file string and falls back when cleared', function () {
     $fileValue = freshDvTranslation('common.dashboard');
-    $admin = actingPeopleAdmin(['translations.manage']);
+    $admin = actingSystemAdmin(['translations.manage']);
 
     // Save a correction — it wins immediately.
     $this->withoutLocalizationMiddleware()->actingAs($admin)
@@ -49,7 +49,7 @@ it('serves a Dhivehi override over the file string and falls back when cleared',
 });
 
 it('rejects unknown groups and keys and renders the editor with suspects flagged', function () {
-    $admin = actingPeopleAdmin(['translations.manage']);
+    $admin = actingSystemAdmin(['translations.manage']);
 
     $this->withoutLocalizationMiddleware()->actingAs($admin)
         ->post(route('admin.translations.save'), ['group' => 'nope', 'key' => 'dashboard', 'value' => 'x'])
@@ -68,7 +68,7 @@ it('rejects unknown groups and keys and renders the editor with suspects flagged
 });
 
 it('suggests via the bound translator and stays silent on the null default', function () {
-    $admin = actingPeopleAdmin(['translations.manage']);
+    $admin = actingSystemAdmin(['translations.manage']);
 
     // Null default: endpoint answers, suggestion is null, no external calls.
     $this->withoutLocalizationMiddleware()->actingAs($admin)
@@ -115,7 +115,7 @@ it('forbids the editor without translations.manage', function () {
  * table and the loader were already locale-generic.
  */
 it('edits Arabic without touching the Dhivehi override for the same key', function () {
-    $admin = actingPeopleAdmin(['translations.manage']);
+    $admin = actingSystemAdmin(['translations.manage']);
     $arFile = freshTranslation('common.dashboard', 'ar');
     $dvFile = freshTranslation('common.dashboard', 'dv');
 
@@ -152,7 +152,7 @@ it('edits Arabic without touching the Dhivehi override for the same key', functi
 });
 
 it('renders and exports each editable language, and defaults to Dhivehi', function () {
-    $admin = actingPeopleAdmin(['translations.manage']);
+    $admin = actingSystemAdmin(['translations.manage']);
 
     // No ?locale= means Dhivehi, so links written before Arabic existed
     // still land where they used to.
@@ -188,7 +188,7 @@ it('renders and exports each editable language, and defaults to Dhivehi', functi
 });
 
 it('refuses a locale it does not edit, English included', function () {
-    $admin = actingPeopleAdmin(['translations.manage']);
+    $admin = actingSystemAdmin(['translations.manage']);
 
     // English is the reference. Correcting it is a code change, not an
     // override — accepting one here would let the editor quietly fork the
@@ -221,7 +221,7 @@ it('refuses a locale it does not edit, English included', function () {
 });
 
 it('suggests into the language being edited', function () {
-    $admin = actingPeopleAdmin(['translations.manage']);
+    $admin = actingSystemAdmin(['translations.manage']);
 
     app()->instance(\App\Support\Contracts\MachineTranslatorInterface::class, new class implements \App\Support\Contracts\MachineTranslatorInterface
     {
@@ -274,7 +274,7 @@ it('lists nested language lines as editable rows', function () {
 });
 
 it('saves and clears an override on a nested key', function () {
-    $admin = actingPeopleAdmin(['translations.manage']);
+    $admin = actingSystemAdmin(['translations.manage']);
     $fileValue = freshTranslation('notifications.attendance.status.absent', 'ar');
 
     // The save action validates with Lang::get($group.'.'.$key) and the loader
@@ -334,7 +334,7 @@ it('resolves framework messages as well as application ones', function () {
 });
 
 it('still lets a database override win after the loader keeps both paths', function () {
-    $admin = actingPeopleAdmin(['translations.manage']);
+    $admin = actingSystemAdmin(['translations.manage']);
 
     $this->withoutLocalizationMiddleware()->actingAs($admin)
         ->post(route('admin.translations.save'), [

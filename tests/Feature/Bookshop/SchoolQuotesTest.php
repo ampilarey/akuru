@@ -176,9 +176,9 @@ it('declines with a note, withdraws with the lines leaving the cart, and the off
     expect($second->refresh()->status)->toBe('withdrawn')->and(CartItem::query()->count())->toBe(0);
 
     Permission::findOrCreate('bookshop.manage', 'web');
-    Role::findOrCreate('admin', 'web');
+    Role::findOrCreate('super_admin', 'web');
     $office = User::factory()->create();
-    $office->assignRole('admin');
+    $office->assignRole('super_admin');
     $office->givePermissionTo('bookshop.manage');
     quoteAs($office)->get(route('admin.bookshop.index'))->assertInertia(fn ($page) => $page->where('quotes.counts.declined', 1)->where('quotes.counts.withdrawn', 1));
     expect(quoteAs($office)->get(route('admin.bookshop.quotes.export'))->streamedContent())->toContain($first->number)->toContain($second->number);

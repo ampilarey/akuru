@@ -34,11 +34,11 @@ function applyInput(array $overrides = []): array
 
 function applyOffice(): User
 {
-    Role::findOrCreate('admin', 'web');
+    Role::findOrCreate('super_admin', 'web');
     Role::findOrCreate('vendor', 'web');
     Permission::findOrCreate('bookshop.manage', 'web');
     $office = User::factory()->create();
-    $office->assignRole('admin');
+    $office->assignRole('super_admin');
     $office->givePermissionTo('bookshop.manage');
 
     return $office;

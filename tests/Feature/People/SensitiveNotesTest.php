@@ -24,8 +24,11 @@ uses(RefreshDatabase::class);
  *
  * These tests assert that each of those **fails closed and stays visible**
  * rather than being answered quietly — especially the first, because
- * `RoleSeeder` grants `admin` `Permission::all()` and doing nothing would have
- * handed every admin account every child's health note by accident.
+ * `RoleSeeder` granted `admin` `Permission::all()` until ADR-040 slice 2 and
+ * doing nothing would have handed every admin account every child's health
+ * note by accident. The educational admin's set now leaves `sensitive.read`
+ * out by decision (OWNER_ACTIONS 12); the role list is the second lock, and
+ * this test grants the permission anyway to prove the lock holds on its own.
  */
 function sensitiveSetup(): array
 {
@@ -38,9 +41,9 @@ function sensitiveSetup(): array
     $head = Role::findOrCreate('headmaster', 'web');
     $head->givePermissionTo(['sensitive.read', 'sensitive.write']);
 
-    // An ordinary admin, granted everything the seeder grants — which is
-    // everything that exists. The point of the test below is that this is
-    // still not enough.
+    // An ordinary admin, granted everything that exists — more than the
+    // seeder grants since ADR-040 slice 2. The point of the test below is
+    // that this is still not enough.
     $adminRole = Role::findOrCreate('admin', 'web');
     $adminRole->givePermissionTo(Permission::all());
 
@@ -58,8 +61,9 @@ function sensitiveSetup(): array
 }
 
 it('keeps the screen away from an admin who holds every permission', function () {
-    // RoleSeeder gives admin Permission::all(), so the permission alone cannot
-    // be the gate — the role list has to exclude admin as well, and it does.
+    // The permission alone cannot be the gate — a grant by hand, or the old
+    // blanket seeder grant, would open it — so the role list has to exclude
+    // admin as well, and it does.
     ['headmaster' => $headmaster, 'admin' => $admin] = sensitiveSetup();
 
     expect($admin->can('sensitive.read'))->toBeTrue();

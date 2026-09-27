@@ -53,10 +53,14 @@ it('shows the system admin every Institute section, each inner screen a real rou
         }
     }
 
-    // The gates do their work for everyone else: an educational admin
-    // without the registers ability gets the admissions numbers only.
-    test()->withoutLocalizationMiddleware()->actingAs(hubUser('admin', ['operations.manage']))->get(route('school.index'))->assertOk()
+    // The gates do their work for everyone else: a dean without the registers
+    // ability gets the admissions numbers only (the `admin` role holds
+    // `registers.manage` by its set, so it cannot be the example here).
+    test()->withoutLocalizationMiddleware()->actingAs(hubUser('headmaster', ['operations.manage']))->get(route('school.index'))->assertOk()
         ->assertInertia(fn (Assert $page) => $page->has('today.tiles', 3)->where('today.more', null));
+    // The educational admin, by their set alone, gets the registers numbers too.
+    test()->withoutLocalizationMiddleware()->actingAs(hubUser('admin'))->get(route('school.index'))->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->has('today.tiles', 5)->where('today.more.href', '/portal/overview'));
 
     // A Bookstore manager's home is the Bookstore office, not the Institute.
     test()->withoutLocalizationMiddleware()->actingAs(hubUser('bookshop_manager', ['bookshop.manage']))->get(route('admin.index'))->assertRedirect(route('dashboard'));

@@ -28,7 +28,7 @@ function approveWriter(User $user, string $name = 'Ustadh Ali'): WriterProfile
 
 it('walks apply → approve → draft → review loop → publish', function () {
     $writerUser = User::factory()->create();
-    $admin = actingPeopleAdmin(['library.manage']);
+    $admin = actingSystemAdmin(['library.manage']);
 
     // Apply with the agreement accepted.
     $this->withoutLocalizationMiddleware()->actingAs($writerUser)

@@ -47,9 +47,10 @@ const BASE = process.env.SMOKE_BASE_URL ?? 'http://127.0.0.1:8000';
 const PASSWORD = process.env.SMOKE_PASSWORD ?? 'password';
 const ONLY = process.env.SMOKE_ONLY ?? '';
 
-// The six roles `UserSeeder` creates. A 403 for one of them is usually the
+// The seven roles `UserSeeder` creates. A 403 for one of them is usually the
 // system working; a runtime error for one of them is never.
 const ACCOUNTS = (process.env.SMOKE_ACCOUNTS ?? [
+  'super_admin:superadmin@akuru.edu.mv',
   'admin:admin@akuru.edu.mv',
   'headmaster:headmaster@akuru.edu.mv',
   'supervisor:supervisor@akuru.edu.mv',

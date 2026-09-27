@@ -271,7 +271,7 @@ it('delivers the email channel through Laravel Mail', function () {
 });
 
 it('exports an admin CSV of subscribers', function () {
-    $admin = actingPeopleAdmin(['daily_content.manage']);
+    $admin = actingSystemAdmin(['daily_content.manage']);
     $user = w24VerifiedUser('+9607771006');
 
     $this->withoutLocalizationMiddleware()

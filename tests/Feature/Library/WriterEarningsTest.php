@@ -251,8 +251,8 @@ it('breaks sales down per book with the writer share and refunds', function () {
  * **who may call the endpoint**, and the obvious abuse is a writer approving
  * their own payout.
  *
- * `admin/library/*` requires `role:super_admin|admin|headmaster` **and**
- * `can:library.manage`. These pin that.
+ * `admin/library/*` requires `role:super_admin` **and** `can:library.manage`
+ * (the library office is the Institute's, ADR-040 slice 2). These pin that.
  */
 function requestedPayout(): array
 {
@@ -275,9 +275,9 @@ function requestedPayout(): array
 function libraryAdmin(): User
 {
     $user = User::factory()->create();
-    \Spatie\Permission\Models\Role::findOrCreate('admin', 'web');
+    \Spatie\Permission\Models\Role::findOrCreate('super_admin', 'web');
     \Spatie\Permission\Models\Permission::findOrCreate('library.manage', 'web');
-    $user->assignRole('admin');
+    $user->assignRole('super_admin');
     $user->givePermissionTo('library.manage');
 
     return $user;

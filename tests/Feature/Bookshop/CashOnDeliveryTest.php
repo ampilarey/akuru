@@ -181,10 +181,10 @@ it('is not offered, or is refused, where the office, the shop, the delivery or t
     expect(BookshopCheckout::query()->count())->toBe(0);
 
     // The office turns it off for everyone.
-    Role::findOrCreate('admin', 'web');
+    Role::findOrCreate('super_admin', 'web');
     Permission::findOrCreate('bookshop.manage', 'web');
     $office = User::factory()->create();
-    $office->assignRole('admin');
+    $office->assignRole('super_admin');
     $office->givePermissionTo('bookshop.manage');
     codAs($office)->post(route('admin.bookshop.cod'), ['on' => 0])->assertSessionHas('success');
     Cart::query()->where('user_id', $customer->id)->first()->items()->delete();

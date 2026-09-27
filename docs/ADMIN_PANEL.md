@@ -84,11 +84,20 @@ dashboards keep their own role-gated addresses (`/dashboard/numbers`,
 Nobody sees the admin panel who may not open it: the pill, the menu entry
 and the route are all gated.
 
-**Still owner-owned after this** (slices 2–4 of the decision): the
-educational admin's permission set (today `admin` holds every permission,
-so the menus hide the Institute but the gates admit it), the role labels
-people read (System admin, Dean, Educational admin), and a role screen so
-the owner can hand out roles without the server.
+**Slice 2 (2026-09-27, STATUS §5ie)** made the gates agree with the
+menus: the educational admin's permission set is
+`App\Support\Authorization\RoleGrants::educationalAdmin()` — the school's
+office and its money, the academics read only, nothing of the Institute —
+shipped by migration and read by the seeder; the Institute's route groups
+(the website, instructors, prayer times, commerce, the library office,
+pronunciation, operations, translations) admit `super_admin` alone, the
+Bookstore office `super_admin` and `bookshop_manager`, admissions
+`super_admin`, `admin` and `headmaster`. The seeded logins gain
+`superadmin@` (staging and local only) so the walks can run the Institute.
+
+**Still owner-owned after this** (slices 3–4 of the decision): the role
+labels people read (System admin, Dean, Educational admin), and a role
+screen so the owner can hand out roles without the server.
 
 ## 2. Checked and held
 
@@ -132,11 +141,11 @@ the owner can hand out roles without the server.
 | 4 | **The prayer-times import accepted any file size** (`required|file`). | low | **Fixed**: capped at 20 MB (the bundled `salat.db` is 470 KB); tested. |
 | 5 | **No screen assigns or removes a role.** `/admin/users` lists, exports and deletes; roles are granted by seeders, `bookshop:grant-manager`, or tinker. A super admin cannot make someone an admin, a teacher or a Bookstore manager from the panel, and cannot reactivate a deactivated account. | medium (gap) | Not built here — a slice of its own (a role and activation screen with the super-admin protections `DeleteUserAccountAction` already has). BACKLOG C8. |
 | 6 | **Enrolment decisions record no actor.** Activate, reject, suspend, reinstate and the access window write the status and nothing about who did it or when; `reject` writes the status straight from the controller. Refunds, manual payments and wallet credits do record the actor. | medium (audit trail) | Not fixed here — a `decided_by` / `decided_at` pair is a schema change on a live-data table (rule 9 discipline) and belongs with the admissions work. KNOWN_ISSUES. |
-| 7 | **The CMS, instructors and enrolments are gated by role alone.** Any headmaster or supervisor may edit the public website, add instructors and (KNOWN_ISSUES 12) grant a place on a paid course, while the Blade nav shows *Website CMS* only to `super_admin` and `admin`. `daily_content.manage` and `daily_content.approve` exist and are checked inside their controllers; `hr.manage` exists but the instructor screens do not check it; no `cms.manage` exists. | medium (policy) | Owner's decision: which roles run the website and admissions. Tightening is one `can:` per group plus a permission migration; widening the nav is one `@if`. Recorded in KNOWN_ISSUES next to item 12. |
-| 8 | **`admin` holds `Permission::all()`**, identical to `super_admin` (KNOWN_ISSUES 10); six of the nine roles exist only if `RoleSeeder` ran (KNOWN_ISSUES 11). | — | Already recorded; owner's. Still true on the day. |
+| 7 | **The CMS, instructors and enrolments are gated by role alone.** Any headmaster or supervisor may edit the public website, add instructors and (KNOWN_ISSUES 12) grant a place on a paid course, while the Blade nav shows *Website CMS* only to `super_admin` and `admin`. `daily_content.manage` and `daily_content.approve` exist and are checked inside their controllers; `hr.manage` exists but the instructor screens do not check it; no `cms.manage` exists. | medium (policy) | **Decided and fixed, 2026-09-27** (ADR-040 slice 2, STATUS §5ie): the website, its instructors and prayer times are the system admin's — `role:super_admin` on those groups; admissions `role:super_admin\|admin\|headmaster`. `EducationalAdminPermissionSetTest`, `EnrollmentDecisionRouteTest`. |
+| 8 | **`admin` holds `Permission::all()`**, identical to `super_admin` (KNOWN_ISSUES 10); six of the nine roles exist only if `RoleSeeder` ran (KNOWN_ISSUES 11). | — | **Fixed, 2026-09-27** for the first half: `RoleGrants::educationalAdmin()` is the set, shipped by migration `2026_09_27_000001` and read by the seeder; `admin` is now migration-created too. `headmaster`, `teacher`, `student` and `parent` remain seeder-only (KNOWN_ISSUES 11). |
 | 9 | **The whole panel is English-only.** All 24 Blade admin screens and the six Inertia admin pages outside the Bookstore (Operations, Features, Translations, Commerce, Library office, Reading alerts, Pronunciation, OTP abuse) carry hardcoded English; only `/admin/bookshop` uses `trans('shop')`. `TranslationParityTest` cannot see this — it checks keys that exist in EN against DV/AR, not strings that were never keyed. STATUS §5n deferred exactly this. | low (convention) | Not fixed — a long tail, one page at a time (Bookstore's `t` pattern). BACKLOG C9. The office reads English; families never see these screens. |
 | 10 | **24 of the 36 admin screens are Blade** (users, settings, enrolments, instructors, the CMS, prayer times) against the Inertia convention. They are grandfathered by `NoNewBladeScreensTest`'s baseline and work; retiring them is IA, not a defect. | note | Recorded; BACKLOG C9 with finding 9, since a port is the moment to key the strings. |
-| 11 | **`docs/AUTHENTICATION_GUIDE.md` names a `super_admin@akuru.edu.mv` test account** that no seeder creates; `admin@` is seeded with the `admin` role, so on a seeded database nobody can open `/admin/users` or `/admin/settings` without tinker. | low (docs) | **Fixed** in the guide: the line now says how a super admin is made. The walk asserts the two screens refuse `admin@`, and opens them when `SMOKE_SUPER_ADMIN` is given. |
+| 11 | **`docs/AUTHENTICATION_GUIDE.md` names a `super_admin@akuru.edu.mv` test account** that no seeder creates; `admin@` is seeded with the `admin` role, so on a seeded database nobody can open `/admin/users` or `/admin/settings` without tinker. | low (docs) | **Fixed** in the guide: the line now says how a super admin is made. Since 2026-09-27 `UserSeeder` plants `superadmin@` (`super_admin`; staging and local only — production still makes its own by tinker), and the walks run the Institute as that login. |
 | 12 | **The super-admin dashboard** queries `total_users`, course counts and the database size on every load; a placeholder attendance figure and a wrong month-over-month growth were removed earlier (comment in `DashboardController`). | note | Held. |
 | 13 | **Clear cache** on `/admin/settings` runs `config:clear`, so a production host that deployed with `config:cache` runs uncached until the next deploy. Harmless (slower), and the deploy line re-caches. | note | Held; noted on the screen would be enough. |
 | 14 | **Search on `/admin/users`** matches `national_id` and contact values with `LIKE`; parameter-bound, `super_admin` only. | note | Held. |
@@ -144,15 +153,17 @@ the owner can hand out roles without the server.
 
 ## 4. Walked
 
-`scripts/smoke/admin.mjs`, as the seeded `admin@`: all 24 admin landing
-pages open with their heading; Users and Settings answer 403 to the admin
-role (and 200 to a super admin when `SMOKE_SUPER_ADMIN` is set); from an
-Inertia admin screen the More menu lists the whole panel, its Blade entries
-as plain links, Users and Settings absent for a plain admin; a Blade entry
-opens the Blade screen; the four new CSVs download with their headers and
-each screen shows the link; a CMS page is created with a `<script>` in its
-body (sanitised) and deleted; a checklist item is ticked and unticked; the
-translation editor opens with rows. The result is in STATUS §5hs.
+`scripts/smoke/admin.mjs`, as the seeded `admin@` and `superadmin@` (since
+STATUS §5ie): the educational admin lands on the School office, opens the
+two admissions pages, is refused every one of the 25 Institute screens and
+the CSVs behind them, and from an Inertia School screen the More menu
+reaches the whole School with nothing of the Institute; the system admin
+lands on the Institute, opens all 25 landing pages with their headings and
+the enrolment payments list, the More menu reaches the whole Institute; the
+four CSVs download with their headers and each screen shows the link; a CMS
+page is created with a `<script>` in its body (sanitised) and deleted; a
+checklist item is ticked and unticked; the translation editor opens with
+rows. The results are in STATUS §5hs and §5ie.
 
 ## 5. The layouts (2026-09-26, the owner: "did u audit admin layouts")
 

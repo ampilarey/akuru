@@ -49,7 +49,7 @@
 import { chromium } from 'playwright';
 
 const BASE = process.env.SMOKE_BASE_URL ?? 'http://127.0.0.1:8000';
-const STAFF = process.env.SMOKE_STAFF ?? 'admin@akuru.edu.mv';
+const STAFF = process.env.SMOKE_STAFF ?? 'superadmin@akuru.edu.mv';
 const TEACHER = process.env.SMOKE_TEACHER ?? 'teacher@akuru.edu.mv';
 const STUDENT = process.env.SMOKE_STUDENT ?? 'student@akuru.edu.mv';
 const PASSWORD = process.env.SMOKE_PASSWORD ?? 'password';

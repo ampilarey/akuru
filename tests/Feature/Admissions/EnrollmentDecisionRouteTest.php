@@ -92,7 +92,9 @@ it('refuses an anonymous visitor', function () {
 });
 
 it('activates for each role that runs admissions', function () {
-    foreach (['super_admin', 'admin', 'headmaster', 'supervisor'] as $role) {
+    // The educational admin's, and the dean's (the owner: "school fees,
+    // principal can see"); the system admin passes every gate.
+    foreach (['super_admin', 'admin', 'headmaster'] as $role) {
         $enrollment = pendingEnrollment();
 
         $this->withoutLocalizationMiddleware()
@@ -102,6 +104,23 @@ it('activates for each role that runs admissions', function () {
 
         expect($enrollment->refresh()->status)->toBe('active');
     }
+});
+
+it('refuses a supervisor, who used to be able to grant a place on a paid course', function () {
+    // KNOWN_ISSUES 12, decided with the educational admin's permission set
+    // (ADR-040 slice 2): admissions are administration, not supervision.
+    $enrollment = pendingEnrollment();
+
+    $this->withoutLocalizationMiddleware()
+        ->actingAs(enrollmentStaff('supervisor'))
+        ->patch(route('admin.enrollments.activate', $enrollment))
+        ->assertForbidden();
+    $this->withoutLocalizationMiddleware()
+        ->actingAs(enrollmentStaff('supervisor'))
+        ->get(route('admin.enrollments.index'))
+        ->assertForbidden();
+
+    expect($enrollment->refresh()->status)->toBe('pending');
 });
 
 it('stamps enrolled_at when it activates', function () {
@@ -166,11 +185,11 @@ it('activates a place that has not been paid for', function () {
     // named member of staff deciding to admit an unpaid pupil is a different
     // thing from the system admitting them by accident.
     //
-    // ⚠ Worth an owner decision: this endpoint is guarded by role only, so a
-    // **supervisor** can grant a place on a paid course. The money endpoints
-    // next door (refund, record-payment) additionally require
-    // `can:payments.refund` / `can:payments.record`. Tightening this one would
-    // change who can do their job, so it is raised rather than changed.
+    // This endpoint is guarded by role — the educational admin's and the
+    // dean's since ADR-040 slice 2, a supervisor no longer (KNOWN_ISSUES 12).
+    // The money endpoints next door (refund, record-payment) additionally
+    // require `can:payments.refund` / `can:payments.record`, which the
+    // educational admin's set holds.
     expect($enrollment->refresh()->status)->toBe('active')
         ->and($enrollment->payment_status)->toBe('pending');
 });

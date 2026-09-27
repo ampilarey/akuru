@@ -4414,6 +4414,137 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5ie. The educational admin's permission set, and the gates that agree with the menus (2026-09-27)
+
+Slice 2 of ADR-040 (the owner's "Go" on the recommendation in §5id).
+Since slice 1 the menus hid the Institute from an educational admin and
+the routes still admitted them: `RoleSeeder` gave `admin`
+`Permission::all()`, identical to `super_admin`, while its own comment
+said "most permissions (school operations, not system-level)"
+(KNOWN_ISSUES 10). The owner's role list settled which was right: "system
+admin: everything related to website, system, shop, bookstore, library;
+dean: everything related to education; supervisor: related to education;
+educational admin: everything related to administration of education like
+fees, students, parents, teachers, supervisors" — Finance and HR as school
+administration, payroll with the educational admin, the dean seeing fees.
+
+**Built.** `App\Support\Authorization\RoleGrants::educationalAdmin()` is
+the set, 49 permissions in five groups: the school and its people
+(students incl. delete, `students.view-sensitive`, `custom_fields.manage`,
+teachers, users without delete); the academics **read only**
+(`view_classes`, `view_subjects`, `view_timetables`, `view_grades`,
+`view_attendance`, `view_quran_progress`, the Hifz programmes and reports,
+reports); the day (`registers.manage`, announcements, `messages.broadcast`,
+`forms.manage`, `requests.submit`/`review`); the office
+(`calendar.manage`, `events.manage`, `rooms.manage`, `meetings.manage`);
+the money (`finance.manage`, `finance.record-manual-payment`,
+`payments.record`, `payments.refund`, `hr.manage`, `payroll.run`,
+`payroll.approve`). Not in it, by decision: marking and exams
+(`exams.*`, `manage_grades`, `mark_attendance`), academic setup
+(`manage_timetables`, `manage_classes`, `timetables.allow_conflict`), the
+course catalogue (`courses.*`), Hifz management, behaviour, `registers.fill`,
+the website (`daily_content.*`, `prayer.manage`), every Institute
+permission (`commerce`, `library`, `bookshop`, `translations`,
+`operations`, `pronunciation`), `sensitive.read` (OWNER_ACTIONS 12),
+`manage_school`, `delete_users`. Migration `2026_09_27_000001` creates
+every permission the set names, `firstOrCreate`s the `admin` role (so a
+migrate-only database gets a correctly scoped educational admin —
+KNOWN_ISSUES 11, for this role) and **`syncPermissions`** it to the set —
+the point is what the role stops holding — then grants the set to
+`super_admin`; `down()` restores the blanket grant it found. `RoleSeeder`
+reads the same list and `sync`s too, so a re-seed cannot re-widen it.
+
+**The gates.** `admin/public-site/*`, `admin/instructors/*` and
+`admin/prayer-times/*` are `role:super_admin` (the website is the system
+admin's; until now a headmaster or supervisor could edit the public site by
+URL — admin-panel audit finding 7). `admin/operations`, `admin/translations`,
+`admin/commerce`, `admin/library`, `admin/pronunciation` drop `admin` (and
+`headmaster` from the library office) and keep their `can:`. The Bookstore
+office is `role:super_admin|bookshop_manager`, and its team management
+(`AdminBookshopController::addTeamMember`/`removeTeamMember`, the
+`can_manage` flag) is the system admin's alone. `admin/enrollments/*` is
+`role:super_admin|admin|headmaster`: a supervisor no longer grants a place
+on a paid course (KNOWN_ISSUES 12); `super_admin` stays because the
+Institute home's "paid today" tile opens the payments list. The money
+endpoints keep `can:payments.refund` / `can:payments.record` on top, which
+the set holds.
+
+**What an educational admin now sees.** The School office as before, with
+the bar Today, Years, Students, Exams, Invoices — no Gradebook, which needs
+`exams.manage`; the exams, timetable and register screens open and their
+writes refuse; every `/admin/*` address but admissions answers 403, the
+CSVs behind them too. A supervisor's School office opens on the academics
+(no Admissions card). The dean's is unchanged.
+
+**The seeded logins gain a system admin.** `UserSeeder` plants
+`superadmin@akuru.edu.mv` (`super_admin`; staging and local only — the
+seeder is never run on production, which still makes its own super admin
+by tinker, `docs/AUTHENTICATION_GUIDE.md`), because the 26 walks that run
+the Institute as "the office" could no longer do so as `admin@`. Their
+office account defaults to it (`SMOKE_ADMIN`/`SMOKE_STAFF`), as do
+`sweep.mjs`, `admin-pages.mjs` and `admin-mobile.mjs`; `page-errors.mjs`
+sweeps seven roles.
+
+**Tests.** `EducationalAdminPermissionSetTest` (5, new): the role exists
+with exactly the set on a migrate-only database and the system admin holds
+each permission; a re-seed after a blanket grant leaves exactly the set,
+and 22 abilities held / 24 not held by name; the educational admin opens
+nine School screens and is refused 18 Institute screens, six CSVs and the
+Institute home; the dean and the supervisor are refused the website, the
+library office, commerce and the Bookstore, the dean opens admissions and
+the supervisor is refused; the system admin opens thirteen Institute
+screens, the Bookstore manager runs the office without `team.can_manage`.
+`EnrollmentDecisionRouteTest` gains the supervisor's refusal;
+`SpecRolesExistTest` asserts `admin` is migration-created;
+`UserSeederRunsTwiceTest` and `SeededLoginTest` count seven logins.
+`actingPeopleAdmin()` now strips the `admin` role to a bare key inside the
+test (the role carries 49 abilities by migration, and "forbids X without
+`x.manage`" is asserted by 40-odd tests), with `actingSystemAdmin()` beside
+it for the 19 Institute-side test files (Library, Website, Settings,
+Pronunciation, PrayerTimes, Commerce), which now act as the role the routes
+admit; the 17 Bookstore office helpers and the Library/Commerce ones
+likewise; `AdminCommerceRouteTest`'s "without the permission" case revokes
+it from `super_admin`, `DailyContentStoreTest`'s maker-checker likewise;
+`AdminHubTest`, `WorkspacesTest` and `NavigationIsGroupedByRoleTest`
+follow the decision (the dean without registers gets three tiles, the
+supervisor's office opens on the academics, no Gradebook for the
+educational admin). Full suite **2308 passed**; architecture green.
+
+**Walked.** `admin.mjs` rewritten, 24/24: the educational admin lands on
+the School office, opens both admissions pages, is refused every one of the
+25 Institute screens and five CSVs, and from an Inertia School screen the
+More menu reaches the whole School with nothing of the Institute; the
+system admin lands on the Institute, opens all 25 landing pages with their
+headings and the enrolment payments list, the More menu reaches the whole
+Institute, the four CSVs download, a CMS page is created and deleted, a
+checklist item toggles, the translation editor opens. `admin-hub.mjs`
+25/25 (both homes, by default now), `admin-layout.mjs` 15/15 (the phone
+menu as the educational admin, the desktop and the Inertia shell as the
+system admin), `workspaces.mjs` 15/15, `admin-pages.mjs` 3/3 and
+`admin-mobile.mjs` 3/3 as the system admin, `nav.mjs` 14/14, `team.mjs`
+8/8 and `gift.mjs` 17/17 (two Institute flows on the switched office
+account).
+
+**Left as found, parked (BACKLOG C10):** the headmaster's and supervisor's
+`prayer.manage` and `daily_content.*` grants, which no route admits them to
+any more; the Hifz module's `isHifzDean()` treating `admin` as a dean by
+role; `headmaster`, `teacher`, `student` and `parent` still seeder-only.
+Docs: KNOWN_ISSUES 10 and 12 closed and 11 narrowed, the "gated by role
+alone" finding closed; `docs/ADMIN_PANEL.md` §1, findings 7, 8 and 11, §4;
+`docs/AUTHENTICATION_GUIDE.md` roles rewritten around the two workspaces
+and the seeded logins; ADR-040 decision 5 and consequences; OWNER_ACTIONS
+12.
+
+**Production.** `php artisan migrate --force` in the pull line runs the
+migration: the `admin` role's permissions are synced to the set on the
+spot, and every account holding `admin` loses the Institute at once. **A
+super admin must exist on production before this is pulled** — none does
+(`docs/AUTHENTICATION_GUIDE.md`, "Making a super admin"), so until the
+owner grants `super_admin` to a real account by tinker, nobody there can
+open the website CMS, the shops, the library office, users or settings.
+`UserSeeder` is never run on production, so `superadmin@` does not appear
+there.
+
 ## 5id. Workspaces: one shell, one job at a time (2026-09-27)
 
 The owner, after §5ic: "still login and admin setting is really confusing
@@ -4506,8 +4637,9 @@ makes "lands on" steps conditional.
 
 **Next (slices 2–4, tasks #70–#72)**: the educational admin's permission
 set and the tightened gates (until then `admin` still holds every
-permission — the menus hide the Institute, the routes admit it); the
-role labels (System admin, Dean, Educational admin); the role screen.
+permission — the menus hide the Institute, the routes admit it) — **done
+in §5ie**; the role labels (System admin, Dean, Educational admin); the
+role screen.
 
 **Production**: nothing to migrate; the pull line as usual. After it, a
 super admin signs in to the Institute, an admin/headmaster/supervisor to

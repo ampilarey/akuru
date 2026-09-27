@@ -22,7 +22,7 @@ uses(RefreshDatabase::class);
 function uploadPdfItem(string $bytes, array $overrides = []): LibraryItem
 {
     Storage::fake('local');
-    $admin = actingPeopleAdmin(['library.manage']);
+    $admin = actingSystemAdmin(['library.manage']);
     $path = tempnam(sys_get_temp_dir(), 'pdf');
     file_put_contents($path, $bytes);
 

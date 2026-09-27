@@ -18,10 +18,10 @@ uses(RefreshDatabase::class);
  */
 function bookshopOffice(): User
 {
-    Role::findOrCreate('admin', 'web');
+    Role::findOrCreate('super_admin', 'web');
     Permission::findOrCreate('bookshop.manage', 'web');
     $admin = User::factory()->create();
-    $admin->assignRole('admin');
+    $admin->assignRole('super_admin');
     $admin->givePermissionTo('bookshop.manage');
 
     return $admin;
