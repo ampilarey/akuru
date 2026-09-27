@@ -31,7 +31,7 @@ it('shows the deploy defaults until the office saves, then what the office saved
     settingsAs($admin)->from(route('admin.library.settings'))
         ->put(route('admin.library.settings.update'), [
             'refund_window_days' => 10, 'default_writer_commission' => 60, 'min_payout' => 200,
-            'gift_card_min' => 100, 'gift_card_max' => 2000, 'research_review_required' => false, 'payouts_enabled' => false,
+            'gift_card_min' => 100, 'gift_card_max' => 2000, 'gift_card_expiry_months' => 12, 'research_review_required' => false, 'payouts_enabled' => false,
         ])
         ->assertSessionHasNoErrors()
         ->assertRedirect(route('admin.library.settings'))
@@ -58,7 +58,7 @@ it('shows the deploy defaults until the office saves, then what the office saved
 
 it('refuses a share over a hundred and a gift-card floor above its ceiling', function () {
     $admin = actingSystemAdmin(['library.manage']);
-    $base = ['refund_window_days' => 7, 'default_writer_commission' => 70, 'min_payout' => 100, 'gift_card_min' => 50, 'gift_card_max' => 5000, 'research_review_required' => true, 'payouts_enabled' => false];
+    $base = ['refund_window_days' => 7, 'default_writer_commission' => 70, 'min_payout' => 100, 'gift_card_min' => 50, 'gift_card_max' => 5000, 'gift_card_expiry_months' => 0, 'research_review_required' => true, 'payouts_enabled' => false];
 
     settingsAs($admin)->put(route('admin.library.settings.update'), ['default_writer_commission' => 150] + $base)
         ->assertSessionHasErrors('default_writer_commission');

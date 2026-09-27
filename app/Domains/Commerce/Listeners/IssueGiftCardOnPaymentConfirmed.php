@@ -45,6 +45,11 @@ class IssueGiftCardOnPaymentConfirmed
                 'recipient_mobile' => $order->recipient_mobile,
                 'message' => $order->message,
                 'created_by' => $order->user_id,
+                // B10 (§15.2): the office's expiry rule for bought cards —
+                // months from purchase, or none while the knob is zero.
+                'expires_at' => ($months = app(\App\Domains\Library\Actions\ResolveLibrarySettingAction::class)->execute('gift_card_expiry_months')) > 0
+                    ? now()->addMonths($months)
+                    : null,
             ]);
 
             $order->status = 'paid';

@@ -749,6 +749,8 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
     Route::prefix('admin/commerce')->middleware(['role:super_admin', 'can:commerce.manage'])->group(function () {
         Route::get('/', [AdminCommerceController::class, 'index'])->name('admin.commerce.index');
         Route::post('gift-cards', [AdminCommerceController::class, 'issueGiftCard'])->name('admin.commerce.gift-cards.store');
+        // B10 (§15.2): deactivate a card, reason on the ledger.
+        Route::post('gift-cards/{card}/deactivate', [AdminCommerceController::class, 'deactivateGiftCard'])->name('admin.commerce.gift-cards.deactivate')->whereNumber('card');
         Route::get('gift-card-orders/export', [AdminCommerceController::class, 'exportGiftCardOrders'])->name('admin.commerce.gift-card-orders.export');
         Route::post('wallet-credits', [AdminCommerceController::class, 'creditWallet'])->name('admin.commerce.wallet-credits.store');
         Route::post('discount-codes', [AdminCommerceController::class, 'storeDiscount'])->name('admin.commerce.discount-codes.store');

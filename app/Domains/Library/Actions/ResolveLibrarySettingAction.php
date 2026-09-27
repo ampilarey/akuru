@@ -27,6 +27,7 @@ class ResolveLibrarySettingAction
         'min_payout' => ['library.min_payout', 'int'],
         'gift_card_min' => ['library.gift_cards.min', 'int'],
         'gift_card_max' => ['library.gift_cards.max', 'int'],
+        'gift_card_expiry_months' => ['library.gift_cards.expiry_months', 'int'],
         'research_review_required' => ['library.research_review_required', 'bool'],
         'payouts_enabled' => ['library.payouts_enabled', 'bool'],
     ];

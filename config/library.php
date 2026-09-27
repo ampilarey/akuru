@@ -28,6 +28,9 @@ return [
         'presets' => [100, 250, 500, 1000],
         'min' => env('LIBRARY_GIFT_CARD_MIN', 50),
         'max' => env('LIBRARY_GIFT_CARD_MAX', 5000),
+        // B10 (§15.2): months a bought card stays redeemable; 0 means it
+        // never expires. Office-issued cards take their date on the form.
+        'expiry_months' => (int) env('LIBRARY_GIFT_CARD_EXPIRY_MONTHS', 0),
     ],
 
     // L7 (§12.2/§29): research cannot be approved without a peer-review

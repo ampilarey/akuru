@@ -183,6 +183,21 @@ check('a gift card is issued and its code shown exactly once', Boolean(CODE) && 
 await admin.reload({ waitUntil: 'networkidle' });
 check('the code is gone after a reload — only its hash is kept', CODE !== null && !(await text(admin)).includes(CODE), CODE ? 'not on the page' : 'no code to look for');
 
+// B10 (§15.2): a second card, issued and then taken out of circulation with a
+// reason — the newest row is the one just issued, so it is the one deactivated.
+await giftForm.locator('input[placeholder="Amount (MVR)"]').fill('25');
+await giftForm.locator('input[placeholder="Recipient name"]').fill('SMOKE-Deactivate');
+await giftForm.locator('button:has-text("Issue")').click();
+await settles(admin, 'shown only once');
+await admin.reload({ waitUntil: 'networkidle' });
+admin.once('dialog', (d) => d.accept('SMOKE-reason: code leaked'));
+const topRow = admin.locator('[data-testid="gift-card-row"]').first();
+await topRow.locator('[data-testid="deactivate-gift-card"]').click();
+await settles(admin, 'Gift card deactivated.');
+await admin.reload({ waitUntil: 'networkidle' });
+const deactivated = admin.locator('[data-testid="gift-card-row"]', { hasText: 'SMOKE-Deactivate' }).first();
+check('the office deactivates a card and its reason stays on the row', (await deactivated.count()) === 1 && (await deactivated.innerText()).includes('deactivated') && (await deactivated.innerText()).includes('SMOKE-reason: code leaked') && (await deactivated.locator('[data-testid="deactivate-gift-card"]').count()) === 0, (await deactivated.count()) ? (await deactivated.innerText()).replace(/\s+/g, ' ').slice(0, 160) : 'no row for SMOKE-Deactivate');
+
 // ------------------------------------------------------- the reader, redeeming
 
 // 2. wallet money
