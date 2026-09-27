@@ -4414,6 +4414,53 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5jk. C9 slice 9: the daily content screens leave Blade (2026-09-27)
+
+BACKLOG C9, `docs/ADMIN_PANEL.md` findings 9 and 10; the ninth port and
+the largest of the CMS. `/admin/public-site/daily-content` (W23) was a
+167-line Blade calendar and table with a theme-batch form, a 172-line
+Blade form with an inline script driving type-specific fields and a live
+preview, and a 61-line Blade approval queue — hardcoded English
+throughout.
+
+**Built.** `DailyContentController` renders `Website/DailyContent`
+(the month's items from `ListDailyContentsAction`, the filters, the
+month, the tranche), `Website/DailyContentForm` for new and edit (the
+presented item or null, the type, the tranche) and
+`Website/DailyContentQueue` (the approval queue, the tranche); the four
+flashes are keyed (EN identical), the batch one carrying its count; the
+two `daily_content.*` gates stay in the controller. The calendar page:
+the cross-links (the queue, subscribers, research, leads and funnel as
+Inertia visits; prayer times still a full load), *Export CSV* carrying
+the filters, *New item*, the maker–checker note, the five filters as an
+Inertia visit, the month grid built in the browser (Sunday first, whole
+weeks, each item a link to its form coloured by status), the table with
+a preview per type, and the theme-batch form as an Inertia post with
+its errors in the shell. The form: keyed on the item (§5jj's lesson),
+the type select locked once saved, the type choosing the fields, the
+live preview reading the fields as they are typed and, for an ayah,
+asking the ayah-preview route with a debounce, the archive switch on
+edit sending `status`, the action's validation as field errors. The
+queue: each draft with a preview, *Schedule* and *Approve & publish* as
+Inertia posts for a reviewer who is not the creator, *Waiting for
+another reviewer* otherwise. 66 keys in the admin tranche, EN/DV/AR.
+The three Blade views are deleted (`blade_screens` 231); `NavigationMap`
+drops both `hard` flags; the reachability test's Blade list loses both;
+`DailyContentStoreTest` reads the props. `AdminDailyContentScreensTest`
+(1): a reminder saved with the keyed flash, the calendar's props and
+filters, the form for new (with a type) and edit, archive through the
+edit, the queue's props, a checker scheduling, the batch's counted
+flash, the DV/AR keys. Walked: a scratch walk — the calendar in the
+Inertia shell with its grid and batch form, the new form switching
+fields with the type and previewing the typed text, a save landing on
+the edit form with the type locked, an empty date refused inline, the
+item on its calendar day and in the filtered table, the queue saying
+the creator must wait, a two-day batch with its counted flash, the
+Dhivehi form and queue right-to-left with no English leftovers (11/11);
+`admin.mjs` 41/41; `admin-pages.mjs` 3/3 (the edit page found from the
+calendar, the queue's back link, on desktop and phone). Full suite 2371
+passed. Next: the pages CMS, then the courses CMS, then prayer times.
+
 ## 5jj. C9 slice 8: the research posts screens leave Blade (2026-09-27)
 
 BACKLOG C9, `docs/ADMIN_PANEL.md` findings 9 and 10; the eighth port.
