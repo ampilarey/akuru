@@ -71,6 +71,19 @@ class DeleteUserAccountAction
      *
      * @var array<string, string>
      */
+    /**
+     * The money tables keyed on the account (rule 12): payments, the wallet
+     * and its ledger, gift-card orders and redemptions, the Bookstore's
+     * checkouts and orders, the Library's purchases. All refuse a delete at
+     * the database since STATUS §5ii.
+     *
+     * @var list<string>
+     */
+    private const MONEY_DEPENDENTS = [
+        'payments', 'wallets', 'wallet_transactions', 'gift_card_orders', 'gift_card_transactions',
+        'bookshop_checkouts', 'orders', 'library_purchases',
+    ];
+
     private const STUDENT_DEPENDENTS = [
         'course_enrollments' => 'unified_student_id',
         'attendance_records' => 'student_id',
@@ -141,11 +154,17 @@ class DeleteUserAccountAction
     {
         $counts = [];
 
-        // Rule 12 first and unconditionally: money is never deleted.
-        if (Schema::hasTable('payments')) {
-            $payments = DB::table('payments')->where('user_id', $user->id)->count();
-            if ($payments > 0) {
-                $counts['payments'] = $payments;
+        // Rule 12 first and unconditionally: money is never deleted. Since
+        // STATUS §5ii the database refuses a delete while any of these hangs
+        // off the account, so counting them here is what turns "remove this
+        // user" into a deactivation rather than an error.
+        foreach (self::MONEY_DEPENDENTS as $table) {
+            if (! Schema::hasTable($table)) {
+                continue;
+            }
+            $count = DB::table($table)->where('user_id', $user->id)->count();
+            if ($count > 0) {
+                $counts[$table] = $count;
             }
         }
 

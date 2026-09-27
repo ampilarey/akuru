@@ -1740,6 +1740,10 @@ class SmokeMarkerSeeder extends Seeder
         DB::table('order_returns')->whereIn('order_id', $walkOrders)->delete();
         DB::table('order_events')->whereIn('order_id', $walkOrders)->delete();
         DB::table('order_items')->whereIn('order_id', $walkOrders)->delete();
+        // The walk orders' earnings go first: since STATUS §5ii the money
+        // keys restrict rather than cascade, so an order with an earning
+        // row cannot be deleted from underneath it. Walk residue, not money.
+        DB::table('vendor_earnings')->whereIn('order_id', $walkOrders)->delete();
         DB::table('orders')->whereIn('id', $walkOrders)->delete();
         DB::table('stock_reservations')->whereIn('bookshop_checkout_id', $walkCheckouts)->delete();
         DB::table('bookshop_checkouts')->whereIn('id', $walkCheckouts)->delete();
