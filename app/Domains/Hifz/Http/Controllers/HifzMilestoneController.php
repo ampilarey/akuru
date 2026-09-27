@@ -21,8 +21,13 @@ class HifzMilestoneController extends Controller
         $user = auth()->user();
         $query = HifzMilestone::with(['student.user', 'program'])->latest();
 
-        if (! $user->isHifzDean() && ! $user->isAdminLevel()) {
-            $query->whereIn('hifz_program_id', $this->scope->assignedProgramIds($user));
+        // Scoped by pupil, not by programme: a parent or a pupil in a halaqa
+        // used to see every child's milestones in it (STATUS §5ij, found
+        // when the parent role gained its real grants by migration and
+        // `HifzCrossRoleAccessTest` could finally open the page). A teacher's
+        // and a supervisor's pupils are the ones assigned to them.
+        if (! $user->isHifzDean()) {
+            $query->whereIn('student_id', $this->scope->assignedStudentIds($user));
         }
 
         $milestones = $query->paginate(20);

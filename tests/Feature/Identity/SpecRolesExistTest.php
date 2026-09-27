@@ -56,20 +56,12 @@ it('creates §8.3 and §8.4 by migration, not by seeder', function () {
     expect($migrated)->toContain('course_creator');
     expect($migrated)->toContain('supervisor');
 
-    // `admin` joined the migration-created roles with its permission set
-    // (`2026_09_27_000001`, ADR-040 slice 2): a migrate-only database gets a
-    // correctly scoped educational admin.
-    expect($migrated)->toContain('admin');
-
-    // Recorded rather than asserted (rule 1): `headmaster`, `teacher`,
-    // `student` and `parent` are still seeder-only and so are absent here.
-    // That is the same defect class and its own slice — see STATUS and
-    // KNOWN_ISSUES item 11. Pinning it now would fail on a truth this slice
-    // is not fixing.
-    expect(array_diff(['headmaster', 'teacher', 'student', 'parent'], $migrated))->not->toBeEmpty(
-        'These §8 roles are now created by a migration. Delete this expectation '
-        .'and assert all seven roles instead — KNOWN_ISSUES item 11 is fixed.'
-    );
+    // All seven §8 roles by migration — `admin` with its set since ADR-040
+    // slice 2, the rest with theirs since `2026_09_27_000004` (STATUS §5ij,
+    // KNOWN_ISSUES 11 closed).
+    foreach (['super_admin', 'admin', 'headmaster', 'supervisor', 'teacher', 'student', 'parent'] as $role) {
+        expect($migrated)->toContain($role);
+    }
 });
 
 it('lets a course creator build but not publish, which is §8.3 rule', function () {

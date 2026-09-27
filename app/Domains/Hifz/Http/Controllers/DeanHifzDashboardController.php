@@ -19,7 +19,7 @@ class DeanHifzDashboardController extends Controller
 
     public function index(): View
     {
-        abort_unless(auth()->user()->isHifzDean() || auth()->user()->isAdminLevel(), 403);
+        abort_unless(auth()->user()->isHifzDean(), 403);
 
         $cards = [
             // Enrolments do not end when a pupil leaves the Institute — the

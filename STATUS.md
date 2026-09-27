@@ -4414,6 +4414,68 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5ij. The role matrix by migration, and Hifz stays with the dean (2026-09-27)
+
+BACKLOG C10, KNOWN_ISSUES 11 (and item 3 of the owner's list). Three
+things slice 2 of ADR-040 left as found: `headmaster`, `teacher`,
+`student` and `parent` existed only if `RoleSeeder` had run, so every
+permission-granting migration since the repo started no-oped its grants
+to them on a migrate-only database and no role change could be shipped
+by deploy; the dean and the supervisor still held `prayer.manage`,
+`daily_content.manage` and `daily_content.approve`, which no route has
+admitted them to since §5ie; and the Hifz module counted the educational
+admin as a dean by role (`isHifzDean()`, `isAdminLevel()` in the hub, the
+scope service and three controllers) while their set held three Hifz
+view permissions and no Hifz screen to use them on.
+
+**Built.** `RoleGrants` now names every school role's set — `dean()`,
+`supervisor()`, `teacher()`, `student()`, `parent()` beside
+`educationalAdmin()`, and `matrix()` for all six — transcribed from what
+each role held on a seeded database (seeder plus every migration's
+grants), minus the dead website grants for the dean and the supervisor
+and the three Hifz views for the educational admin. Migration
+`2026_09_27_000004` creates every permission the matrix names, creates
+each role where missing and **syncs** it to its set, and gives
+`super_admin` all of it; `RoleSeeder` reads the same lists and syncs too,
+so a re-seed cannot re-widen a role. `User::isHifzDean()` is
+`super_admin|headmaster`; the eight `|| isAdminLevel()` in Hifz are gone,
+so an educational admin at `/hifz` is refused and the School menu no
+longer offers it to them (the item needs `view_hifz_programs`).
+
+**Found on the way, fixed: a leak.** `HifzCrossRoleAccessTest` builds a
+parent and a pupil with bare roles; once those roles carried their real
+grants by migration the milestones page opened for them and the test
+saw one family's child on another family's screen. `/hifz/milestones`
+scoped non-deans by *programme*, so a parent or a pupil in a halaqa saw
+every child's milestones in it — on a seeded database, where parents do
+hold `view_hifz_programs`, that was live. It is scoped by pupil now
+(`assignedStudentIds`: a teacher's and a supervisor's own pupils, a
+parent's children, a pupil themselves).
+
+**Tests.** `RoleMatrixByMigrationTest` (3, new): every school role holds
+exactly its set on a migrate-only database, the dead grants gone and the
+live ones present, the system admin holding all of it; a re-seed after a
+stray grant leaves exactly the matrix; the educational admin is not a
+Hifz dean — refused at the hub and the dean dashboard, no Hifz in their
+menu — and the dean lands on the dean dashboard. `SpecRolesExistTest`
+asserts all seven roles by migration; `EducationalAdminPermissionSetTest`
+moves the three Hifz views to "not held"; `AdminHubTest`'s helper and
+`PortalClassBroadcastPageTest`'s refusal strip the role to a bare key, as
+`actingPeopleAdmin()` does (a teacher now holds `messages.broadcast` by
+migration, so "without the permission" has to say so). Full suite **2323
+passed**; architecture green.
+
+**Walked.** `hifz.mjs` 20/20 with the dean as `headmaster@` (it signed in
+as `admin@` before, which is no longer a dean); `admin-hub.mjs` 25/25.
+
+**Docs.** KNOWN_ISSUES 11 closed and item 3 retired; BACKLOG C10 struck;
+ADMIN_PANEL finding 8; AUTHENTICATION_GUIDE.
+
+**Production.** `migrate --force` in the pull line creates the roles that
+are missing and syncs every school role's set on the spot — the dean and
+the supervisor lose the two website grants, the educational admin the
+three Hifz views. Nothing to backfill.
+
 ## 5ii. Money records refuse a delete at the database (2026-09-27)
 
 The Bookstore audit's finding 7, KNOWN_ISSUES "Deleting a customer or a

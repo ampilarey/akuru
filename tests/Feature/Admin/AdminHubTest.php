@@ -19,11 +19,14 @@ const HUB_PERMISSIONS = ['bookshop.manage', 'commerce.manage', 'library.manage',
 
 function hubUser(string $role, array $permissions = []): User
 {
+    // Every school role carries its set by migration (STATUS §5ij); these
+    // tests are about the gates, so the role is a bare key and the actor
+    // holds exactly `$permissions`.
     foreach ($permissions as $permission) {
         Permission::findOrCreate($permission, 'web');
     }
     $user = User::factory()->create();
-    $user->assignRole(Role::findOrCreate($role, 'web'));
+    $user->assignRole(Role::findOrCreate($role, 'web')->syncPermissions([]));
     if ($permissions !== []) {
         $user->givePermissionTo($permissions);
     }
@@ -58,8 +61,8 @@ it('shows the system admin every Institute section, each inner screen a real rou
     // `registers.manage` by its set, so it cannot be the example here).
     test()->withoutLocalizationMiddleware()->actingAs(hubUser('headmaster', ['operations.manage']))->get(route('school.index'))->assertOk()
         ->assertInertia(fn (Assert $page) => $page->has('today.tiles', 3)->where('today.more', null));
-    // The educational admin, by their set alone, gets the registers numbers too.
-    test()->withoutLocalizationMiddleware()->actingAs(hubUser('admin'))->get(route('school.index'))->assertOk()
+    // The educational admin, whose set holds `registers.manage`, gets the registers numbers too.
+    test()->withoutLocalizationMiddleware()->actingAs(hubUser('admin', ['registers.manage']))->get(route('school.index'))->assertOk()
         ->assertInertia(fn (Assert $page) => $page->has('today.tiles', 5)->where('today.more.href', '/portal/overview'));
 
     // A Bookstore manager's home is the Bookstore office, not the Institute.

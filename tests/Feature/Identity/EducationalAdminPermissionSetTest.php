@@ -68,11 +68,11 @@ it('seeds the admin role to the same set, removing what a blanket grant gave it'
     $admin = seededRoleUser('admin');
     foreach (['finance.manage', 'finance.record-manual-payment', 'payments.record', 'payments.refund', 'hr.manage', 'payroll.run', 'payroll.approve',
         'registers.manage', 'requests.review', 'calendar.manage', 'events.manage', 'rooms.manage', 'meetings.manage', 'messages.broadcast', 'forms.manage',
-        'custom_fields.manage', 'students.view-sensitive', 'view_grades', 'view_attendance', 'view_timetables', 'view_hifz_programs', 'generate_reports'] as $permission) {
+        'custom_fields.manage', 'students.view-sensitive', 'view_grades', 'view_attendance', 'view_timetables', 'generate_reports'] as $permission) {
         expect($admin->can($permission))->toBeTrue("the educational admin should hold {$permission}");
     }
     foreach (['exams.manage', 'exams.enter-any', 'manage_grades', 'mark_attendance', 'manage_attendance', 'manage_timetables', 'manage_classes', 'courses.manage', 'courses.publish',
-        'manage_hifz_programs', 'approve_hifz_milestones', 'behavior.manage', 'registers.fill', 'daily_content.manage', 'prayer.manage',
+        'manage_hifz_programs', 'approve_hifz_milestones', 'view_hifz_programs', 'view_hifz_reports', 'behavior.manage', 'registers.fill', 'daily_content.manage', 'prayer.manage',
         'commerce.manage', 'library.manage', 'bookshop.manage', 'translations.manage', 'operations.manage', 'pronunciation.manage', 'sensitive.read', 'manage_school', 'delete_users'] as $permission) {
         expect($admin->can($permission))->toBeFalse("the educational admin should not hold {$permission}");
     }

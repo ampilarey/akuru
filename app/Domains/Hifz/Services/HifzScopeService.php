@@ -14,7 +14,7 @@ class HifzScopeService
 {
     public function canAccessProgram(User $user, HifzProgram $program): bool
     {
-        if ($user->isHifzDean() || $user->isAdminLevel()) {
+        if ($user->isHifzDean()) {
             return true;
         }
 
@@ -47,7 +47,7 @@ class HifzScopeService
 
     public function canAccessStudent(User $user, Student $student): bool
     {
-        if ($user->isHifzDean() || $user->isAdminLevel()) {
+        if ($user->isHifzDean()) {
             return true;
         }
 
@@ -87,7 +87,7 @@ class HifzScopeService
 
     public function assignedProgramIds(User $user): Collection
     {
-        if ($user->isHifzDean() || $user->isAdminLevel()) {
+        if ($user->isHifzDean()) {
             return HifzProgram::pluck('id');
         }
 
@@ -116,7 +116,7 @@ class HifzScopeService
 
     public function assignedStudentIds(User $user): Collection
     {
-        if ($user->isHifzDean() || $user->isAdminLevel()) {
+        if ($user->isHifzDean()) {
             return HifzEnrollment::where('status', 'active')->pluck('student_id');
         }
 

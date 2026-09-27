@@ -74,7 +74,9 @@ it('lets a teacher send to a class and a parent reply to the teacher only', func
 
 it('refuses a class broadcast from someone without the permission', function () {
     $seed = seedClassWithFamilies(3);
-    Role::findOrCreate('teacher', 'web');
+    // The teacher role holds `messages.broadcast` by migration (STATUS §5ij);
+    // the gate under test is the permission, so the role is a bare key here.
+    Role::findOrCreate('teacher', 'web')->syncPermissions([]);
     $teacherUser = $seed['teacherUser'];
     $teacherUser->assignRole('teacher');
 
