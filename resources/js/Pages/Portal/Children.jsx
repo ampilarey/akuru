@@ -1,3 +1,4 @@
+import { Link } from '@inertiajs/react';
 import AppShell from '../../Layouts/AppShell';
 
 export default function Children({ children, pending = [] }) {
@@ -28,12 +29,13 @@ export default function Children({ children, pending = [] }) {
                             <th className="px-3 py-2">Number</th>
                             <th className="px-3 py-2">Relationship</th>
                             <th className="px-3 py-2">Status</th>
+                            <th className="px-3 py-2">Library</th>
                         </tr>
                     </thead>
                     <tbody>
                         {children.length === 0 && (
                             <tr>
-                                <td className="px-3 py-4 text-gray-500" colSpan={4}>
+                                <td className="px-3 py-4 text-gray-500" colSpan={5}>
                                     {pending.length > 0 ? 'No confirmed children yet.' : 'No linked children.'}
                                 </td>
                             </tr>
@@ -44,6 +46,8 @@ export default function Children({ children, pending = [] }) {
                                 <td className="px-3 py-2">{child.student_id}</td>
                                 <td className="px-3 py-2">{child.relationship}</td>
                                 <td className="px-3 py-2">{child.status}</td>
+                                {/* B8: what they are reading and have bought. */}
+                                <td className="px-3 py-2"><Link href={`/portal/children/${child.id}/library`} className="underline" data-testid="child-library">Library</Link></td>
                             </tr>
                         ))}
                     </tbody>

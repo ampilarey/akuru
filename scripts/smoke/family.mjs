@@ -386,4 +386,14 @@ check('the office verifies the link', verified === 'Verified', verified);
 await parent.goto(`${BASE}/en/portal/children`, { waitUntil: 'networkidle' });
 check('and the parent sees the child again, with their number', (await parent.locator('[data-testid="pending-links"]').count()) === 0 && (await parent.locator('tbody tr', { hasText: NAME }).count()) === 1, (await text(parent)).slice(0, 160));
 
+// B8 (LIBRARY_PLAN §10): from the row, what the child is reading and has bought.
+// An Inertia link: wait for the address to change, not for the network to go quiet.
+await Promise.all([
+    parent.waitForURL(/\/portal\/children\/\d+\/library$/, { timeout: 15000 }).catch(() => {}),
+    parent.locator('tbody tr', { hasText: NAME }).locator('[data-testid="child-library"]').click(),
+]);
+await parent.waitForLoadState('networkidle');
+const childLibrary = await text(parent);
+check('the parent opens the child\'s library: reading and purchases, with a CSV', /\/portal\/children\/\d+\/library$/.test(parent.url()) && childLibrary.includes(NAME) && childLibrary.includes('Reading') && childLibrary.includes('Purchases') && (await parent.locator('[data-testid="export-csv"]').count()) === 1, `${parent.url().replace(BASE, '')} · ${childLibrary.slice(0, 120)}`);
+
 await finish();

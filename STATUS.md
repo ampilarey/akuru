@@ -4414,6 +4414,32 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5io. Library B8: a parent's view of a child's library (2026-09-27)
+
+BACKLOG B8, LIBRARY_PLAN §10. A parent could see a child's attendance,
+invoices, homework and report cards from the portal, and nothing of what
+the child reads in the Digital Library, though the child's login and the
+reading progress both existed.
+
+**Built.** *Library* on each row of *My children* opens
+`/portal/children/{student}/library`: what the child is reading (title,
+page, progress, last read) and what was bought (title, amount, status,
+when), with a CSV. `GuardianChildLibraryController` (Portal) asks People
+for the parent's **verified** children (item 13; an unverified link, a
+stranger's child or an unknown id is refused) and, for a child with a
+login, asks the Library's new `ListReaderLibraryForFamilyAction`, which
+returns reading progress and purchases and nothing else: bookmarks and
+notes are the child's private words (§9.1) and stay on the child's own
+*My Library*. A child with no login shows an empty page that says so.
+`ListGuardianChildrenAction` now carries `students.user_id`, the one
+additive change on the People side. `ChildLibraryTest` (2). The step is
+in `family.mjs` (the parent opens the child's library from the row),
+and was walked directly today as the seeded parent — `family.mjs` stops
+at its fourth step on a Sunday, because the seeded timetable has lessons
+Monday to Friday and no register can be generated for the day; a walk
+precondition, not a defect. Reading and Purchases rendered, the CSV
+came back `text/csv` with its header.
+
 ## 5in. Library B5: the remaining shelf filters (2026-09-27)
 
 BACKLOG B5, LIBRARY_PLAN §8.2–§8.4. The shelf filtered by type,
