@@ -27,10 +27,9 @@ export default function Leads({ leads = [], filters = {}, sources = [], statuses
     return (
         <AppShell title={t.leads_title || 'Leads'}>
             <div className="mb-4 flex flex-wrap items-center gap-3 text-sm">
-                {/* The CMS screens still on Blade open with a full page load; the funnel is an Inertia visit. */}
-                <a href="/admin/public-site/courses" className="underline">{t.leads_link_courses || 'Manage Courses →'}</a>
+                <Link href="/admin/public-site/courses" className="underline">{t.leads_link_courses || 'Manage Courses →'}</Link>
                 <Link href="/admin/public-site/funnel" className="underline" data-testid="leads-funnel-link">{t.leads_link_funnel || 'Funnel →'}</Link>
-                <a href="/admin/public-site/daily-content" className="underline">{t.leads_link_daily || 'Daily content →'}</a>
+                <Link href="/admin/public-site/daily-content" className="underline">{t.leads_link_daily || 'Daily content →'}</Link>
                 <p className="text-gray-600" data-testid="leads-total">{(t.leads_total || ':count leads').replace(':count', leads.length)}</p>
                 <a href={`/admin/public-site/leads/export${query ? `?${query}` : ''}`} className="ms-auto underline" data-testid="export-csv">{t.leads_export || 'Export CSV'}</a>
             </div>

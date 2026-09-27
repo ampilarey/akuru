@@ -69,16 +69,17 @@ it('exports the instructors, the prayer recipient groups, the CMS pages and the 
         auditAs($teacher)->get(route($route))->assertForbidden();
     }
 
-    // The link is on each screen. The instructors list is Inertia since C9
-    // slice 3, so its link is in the page's props (and `admin.mjs` sees the
-    // rendered `export-csv` test id); the three Blade screens carry it in HTML.
+    // The link is on each screen. The Inertia lists (instructors since C9
+    // slice 3, pages since slice 10, courses since slice 11) carry it in the
+    // page's props (and `admin.mjs` sees the rendered `export-csv` test id);
+    // the Blade prayer-times groups screen carries it in HTML.
     auditAs($office)->get(route('admin.instructors.index'))->assertOk()
         ->assertInertia(fn (Assert $page) => $page->component('Instructors/Index')->where('t.instructors_export', 'Export CSV'));
     auditAs($office)->get(route('admin.pages.index'))->assertOk()
         ->assertInertia(fn (Assert $page) => $page->component('Website/Pages')->where('t.pages_export', 'Export CSV'));
-    foreach (['admin.prayer-times.groups.index', 'admin.courses.index'] as $screen) {
-        auditAs($office)->get(route($screen))->assertOk()->assertSee('data-testid="export-csv"', false);
-    }
+    auditAs($office)->get(route('admin.courses.index'))->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->component('Website/Courses')->where('t.courses_export', 'Export CSV'));
+    auditAs($office)->get(route('admin.prayer-times.groups.index'))->assertOk()->assertSee('data-testid="export-csv"', false);
 });
 
 it('offers the admin panel in the Inertia More menu by workspace, Blade screens marked for a full page load and gated by their routes', function () {

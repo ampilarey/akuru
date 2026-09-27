@@ -24,9 +24,8 @@ export default function Funnel({ reports = [], course_id: courseId = null, t = {
         <AppShell title={t.funnel_title || 'Course funnel'}>
             <div className="mb-4 flex flex-wrap items-center gap-3 text-sm">
                 <Link href="/admin/public-site/leads" className="underline" data-testid="funnel-leads-link">{t.funnel_link_leads || 'Leads →'}</Link>
-                {/* The CMS screens still on Blade open with a full page load. */}
-                <a href="/admin/public-site/courses" className="underline">{t.leads_link_courses || 'Manage Courses →'}</a>
-                <a href="/admin/public-site/daily-content" className="underline">{t.leads_link_daily || 'Daily content →'}</a>
+                <Link href="/admin/public-site/courses" className="underline">{t.leads_link_courses || 'Manage Courses →'}</Link>
+                <Link href="/admin/public-site/daily-content" className="underline">{t.leads_link_daily || 'Daily content →'}</Link>
                 <a href={`/admin/public-site/funnel/export${query}`} className="ms-auto underline" data-testid="export-csv">{t.funnel_export || 'Export CSV'}</a>
             </div>
             <p className="mb-4 text-sm text-gray-600" data-testid="funnel-rule">{t.funnel_rule || 'Decision rule (ADR-022): iterate W1 content from this funnel — hero, urgency, outcomes, sticky CTA, checkout, or payment copy — when a stage is stuck.'}</p>

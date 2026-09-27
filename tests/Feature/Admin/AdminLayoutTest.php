@@ -22,9 +22,10 @@ function layoutAdmin(): User
 
 it('titles every admin Blade screen from its route when the screen sets none', function () {
     $admin = layoutAdmin();
-    // The courses CMS is the Institute's Blade-shell fixture: the pages CMS is Inertia since C9 slice 10.
-    $page = test()->withoutLocalizationMiddleware()->actingAs($admin)->get(route('admin.courses.index'))->assertOk();
-    $page->assertSee('<title>Courses - '.config('app.name'), false);
+    // Prayer times is the Institute's Blade-shell fixture: the whole website CMS is Inertia since C9 slice 11.
+    $admin->givePermissionTo(\Spatie\Permission\Models\Permission::findOrCreate('prayer.manage', 'web'));
+    $page = test()->withoutLocalizationMiddleware()->actingAs($admin)->get(route('admin.prayer-times.islands'))->assertOk();
+    $page->assertSee('<title>Prayer Times Islands - '.config('app.name'), false);
     test()->withoutLocalizationMiddleware()->actingAs($admin)->get(route('admin.prayer-times.groups.index'))->assertOk()
         ->assertSee('<title>Prayer Times Groups - '.config('app.name'), false);
     // No remaining admin Blade screen names itself: the last two that did (the

@@ -4414,6 +4414,56 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5jm. C9 slice 11: the courses CMS leaves Blade (2026-09-27)
+
+BACKLOG C9, `docs/ADMIN_PANEL.md` findings 9 and 10; the eleventh port,
+and the last of the website CMS. `/admin/public-site/courses` — *Manage
+Courses* — was a 113-line Blade list, a 137-line create form, a 119-line
+edit form and two partials (the trilingual learning outcomes, the
+WhatsApp and syllabus CTA), hardcoded English, a delete form per row;
+and since §5jl it was the Institute's Blade-shell fixture in four tests
+and one walk.
+
+**Built.** `CourseController` renders `Website/Courses` (the rows by
+title with category, status and the short description, pages, the
+count, the tranche) and `Website/CourseForm` for create and edit (keyed
+on the course, §5jj; the categories as props); store, update, destroy
+and restore flash keyed strings (EN identical), the deleted-slug refusal
+is keyed with the course's title in it, and the soft-delete message
+counts what the course holds through `trans_choice` keys per table. One
+`validated()` keeps the sanitised write (`HtmlSanitizer::PROFILE_CMS`)
+and one `save()` the two Actions (outcomes one per line, the CTA), so
+`store` left the long-method baseline (47). The list: *Export CSV*, the
+CMS links (all Inertia visits now), *Deleted courses*, *Add New Course*,
+the table, *Edit* and a confirmed *Delete*, pages. The form: category,
+title, slug, short description, the HTML body with the sanitise note,
+the outcomes fieldset (EN, DV and AR right-to-left), the CTA pair with
+their hints, language, level, cover URL, status, fee and seats, field
+errors and the first at the top. 55 keys in the admin tranche, EN/DV/AR.
+The five Blade views are deleted (`blade_screens` 222); `NavigationMap`
+drops the last `hard` under the CMS; the reachability test's Blade list
+is prayer times alone; the CMS links in `Pages`, `Leads`, `Funnel` and
+`DeletedCourses` are Inertia links. **The Institute's Blade-shell
+fixture moved** to prayer times (`admin.prayer-times.islands`):
+`AdminLayoutTest` (the route-derived title, *Prayer Times Islands*),
+`AdminPanelAuditTest` (the courses export link read from the props),
+`AdminPagesAreReachableTest`, `WorkspacesTest`, `admin-layout.mjs`.
+`AdminCoursesScreensTest` (1): the form for new with its categories, a
+create with the script stripped, the outcomes and the WhatsApp digits
+saved, the list's props, the edit props with the outcomes joined back
+one per line, an update clearing the outcomes and CTA, a taken slug as
+a field error, the delete, the DV/AR keys, the educational admin's 403.
+Walked: a scratch walk — the list in the Inertia shell, a course
+created from the form with every field and the flash, the edit reading
+it all back with the script gone, a save, a taken slug refused inline,
+`/dv/…/courses` right-to-left with no English leftovers, the *Deleted
+courses* door and back as Inertia visits, the delete with the confirm
+(10/10 — the row-count check first failed because the list is paginated
+and another row slid onto page one; the walk now waits for the flash);
+`admin.mjs` 41/41; `admin-pages.mjs` 3/3; `admin-layout.mjs` 15/15 (on
+prayer times now). Full suite 2373 passed. Next: prayer times (four
+screens), then OTP abuse and the two Blade dashboards.
+
 ## 5jl. C9 slice 10: the pages CMS leaves Blade (2026-09-27)
 
 BACKLOG C9, `docs/ADMIN_PANEL.md` findings 9 and 10; the tenth port.

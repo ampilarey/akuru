@@ -12,17 +12,47 @@ use App\Domains\Courses\Models\CourseCategory;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
 use App\Support\Html\HtmlSanitizer;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use Inertia\Inertia;
+use Inertia\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
+/**
+ * Manage Courses (the website CMS). Inertia since C9 slice 11 (STATUS
+ * §5jm), with its strings keyed for Dhivehi and Arabic. `role:super_admin`
+ * on the route group. The body is authored HTML, sanitised here on every
+ * write because `public/courses/show.blade.php` renders it raw.
+ */
 class CourseController extends Controller
 {
-    public function index()
-    {
-        $courses = Course::with('category')->orderBy('title')->paginate(15);
+    private const RULES = [
+        'course_category_id' => 'required|exists:course_categories,id',
+        'title' => 'required|string|max:255',
+        'short_desc' => 'required|string',
+        'body' => 'required|string',
+        'cover_image' => 'required|string|max:255',
+        'language' => 'required|in:en,ar,dv,mixed',
+        'level' => 'required|in:kids,youth,adult,all',
+        'fee' => 'nullable|numeric|min:0',
+        'status' => 'required|in:open,closed,upcoming',
+        'seats' => 'nullable|integer|min:1',
+        'whatsapp_number' => 'nullable|string|max:32',
+        'syllabus_media_file_id' => 'nullable|integer|exists:media_files,id',
+    ];
 
-        return view('admin.public-site.courses.index', compact('courses'));
+    public function index(): Response
+    {
+        $courses = Course::with('category')->orderBy('title')->paginate(15)->withQueryString();
+
+        return Inertia::render('Website/Courses', [
+            'courses' => collect($courses->items())->map(fn (Course $course) => $this->row($course))->values()->all(),
+            'pagination' => ['current_page' => $courses->currentPage(), 'last_page' => $courses->lastPage(), 'prev' => $courses->previousPageUrl(), 'next' => $courses->nextPageUrl()],
+            'total' => $courses->total(),
+            't' => trans('admin'),
+        ]);
     }
 
     /** "Every listing gets CSV export" (admin-panel audit, STATUS §5hs). */
@@ -40,34 +70,18 @@ class CourseController extends Controller
         }, 'public-site-courses.csv', ['Content-Type' => 'text/csv']);
     }
 
-    public function create()
+    public function create(): Response
     {
-        $categories = CourseCategory::ordered()->get();
-
-        return view('admin.public-site.courses.create', compact('categories'));
+        return Inertia::render('Website/CourseForm', ['course' => null] + $this->formProps());
     }
 
-    public function store(Request $request)
+    public function store(Request $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'course_category_id' => 'required|exists:course_categories,id',
-            'title' => 'required|string|max:255',
-            // Scoped to live rows so the generic "already been taken" fires
-            // only when there is a course the admin can actually go and look
-            // at. A deleted row holding the slug is handled below, with a
-            // message that says so.
-            'slug' => ['required', 'string', 'max:255', Rule::unique('courses', 'slug')->whereNull('deleted_at')],
-            'short_desc' => 'required|string',
-            'body' => 'required|string',
-            'cover_image' => 'required|string|max:255',
-            'language' => 'required|in:en,ar,dv,mixed',
-            'level' => 'required|in:kids,youth,adult,all',
-            'fee' => 'nullable|numeric|min:0',
-            'status' => 'required|in:open,closed,upcoming',
-            'seats' => 'nullable|integer|min:1',
-            'whatsapp_number' => 'nullable|string|max:32',
-            'syllabus_media_file_id' => 'nullable|integer|exists:media_files,id',
-        ]);
+        // Scoped to live rows so the generic "already been taken" fires only
+        // when there is a course the admin can actually go and look at. A
+        // deleted row holding the slug is handled below, with a message that
+        // says so.
+        $validated = $this->validated($request, ['slug' => ['required', 'string', 'max:255', Rule::unique('courses', 'slug')->whereNull('deleted_at')]]);
 
         // A deleted course keeps its slug, deliberately: the slug is the
         // course's public address, and handing it to different content would
@@ -75,89 +89,38 @@ class CourseController extends Controller
         // is recoverable; serving unrelated content under a known URL is not.
         // So the answer is to refuse, and to say which course is holding it.
         if ($deleted = Course::onlyTrashed()->where('slug', $validated['slug'])->first()) {
-            return back()->withInput()->withErrors([
-                'slug' => 'The deleted course "'.$deleted->title.'" still uses this address. '
-                    .'Restore it from Deleted courses, or choose a different slug.',
-            ]);
+            return back()->withInput()->withErrors(['slug' => trans('admin.courses_slug_held', ['title' => $deleted->title])]);
         }
 
-        // Rendered raw at `public/courses/show.blade.php`.
-        $validated['body'] = app(HtmlSanitizer::class)
-            ->clean($validated['body'], HtmlSanitizer::PROFILE_CMS);
+        $this->save(Course::create($validated), $request);
 
-        $course = Course::create($validated);
-        app(SaveCourseLearningOutcomesAction::class)->execute((int) $course->id, [
-            'en' => $request->input('learning_outcomes_en', ''),
-            'dv' => $request->input('learning_outcomes_dv', ''),
-            'ar' => $request->input('learning_outcomes_ar', ''),
-        ]);
-        app(SaveCoursePublicCtaAction::class)->execute(
-            (int) $course->id,
-            $request->input('whatsapp_number'),
-            $request->input('syllabus_media_file_id'),
-        );
-
-        return redirect()->route('admin.courses.index')
-            ->with('success', 'Course created successfully.');
+        return redirect()->route('admin.courses.index')->with('success', trans('admin.courses_flash_created'));
     }
 
-    public function edit(Course $course)
+    public function edit(Course $course): Response
     {
-        $categories = CourseCategory::ordered()->get();
-
-        return view('admin.public-site.courses.edit', compact('course', 'categories'));
+        return Inertia::render('Website/CourseForm', ['course' => $this->full($course)] + $this->formProps());
     }
 
-    public function update(Request $request, Course $course)
+    public function update(Request $request, Course $course): RedirectResponse
     {
-        $validated = $request->validate([
-            'course_category_id' => 'required|exists:course_categories,id',
-            'title' => 'required|string|max:255',
-            'slug' => 'required|string|max:255|unique:courses,slug,'.$course->id,
-            'short_desc' => 'required|string',
-            'body' => 'required|string',
-            'cover_image' => 'required|string|max:255',
-            'language' => 'required|in:en,ar,dv,mixed',
-            'level' => 'required|in:kids,youth,adult,all',
-            'fee' => 'nullable|numeric|min:0',
-            'status' => 'required|in:open,closed,upcoming',
-            'seats' => 'nullable|integer|min:1',
-            'whatsapp_number' => 'nullable|string|max:32',
-            'syllabus_media_file_id' => 'nullable|integer|exists:media_files,id',
-        ]);
-
-        $validated['body'] = app(HtmlSanitizer::class)
-            ->clean($validated['body'], HtmlSanitizer::PROFILE_CMS);
-
+        $validated = $this->validated($request, ['slug' => 'required|string|max:255|unique:courses,slug,'.$course->id]);
         $course->update($validated);
-        app(SaveCourseLearningOutcomesAction::class)->execute((int) $course->id, [
-            'en' => $request->input('learning_outcomes_en', ''),
-            'dv' => $request->input('learning_outcomes_dv', ''),
-            'ar' => $request->input('learning_outcomes_ar', ''),
-        ]);
-        app(SaveCoursePublicCtaAction::class)->execute(
-            (int) $course->id,
-            $request->input('whatsapp_number'),
-            $request->input('syllabus_media_file_id'),
-        );
+        $this->save($course, $request);
 
-        return redirect()->route('admin.courses.index')
-            ->with('success', 'Course updated successfully.');
+        return redirect()->route('admin.courses.index')->with('success', trans('admin.courses_flash_updated'));
     }
 
     /**
      * The recovery list for #272's safe delete. Not the catalogue's Archive,
      * which is a workflow state on an ordinary visible row.
      */
-    public function deleted()
+    public function deleted(): Response
     {
-        return \Inertia\Inertia::render(
-            'Courses/DeletedCourses',
-            app(ListDeletedCoursesAction::class)->execute(),
-        );
+        return Inertia::render('Courses/DeletedCourses', app(ListDeletedCoursesAction::class)->execute());
     }
 
-    public function restore(int $course)
+    public function restore(int $course): RedirectResponse
     {
         // Route-model binding cannot reach this row: `Course` binds by slug and
         // the default query excludes soft-deleted records, so a deleted course
@@ -166,16 +129,15 @@ class CourseController extends Controller
 
         $result = app(RestoreCourseAction::class)->execute($model);
 
-        $message = 'Restored "'.$result['title'].'".';
+        $message = trans('admin.courses_flash_restored', ['title' => $result['title']]);
         if ($result['was_published']) {
-            $message .= ' It is back as a draft — publish it again when you are ready,'
-                .' so restoring does not put it back on the public site by itself.';
+            $message .= ' '.trans('admin.courses_flash_restored_draft');
         }
 
         return redirect()->route('admin.courses.deleted')->with('success', $message);
     }
 
-    public function destroy(Course $course)
+    public function destroy(Course $course): RedirectResponse
     {
         // SPEC §29 via `DeleteCourseAction`: a course with a roster, attempts,
         // progress, certificates or payment line items is kept rather than
@@ -188,11 +150,91 @@ class CourseController extends Controller
         // for `workflow_status`, which is a different thing done from a
         // different screen and reversed a different way.
         $message = $result['soft']
-            ? 'Course removed from the catalogue. It has '.$this->describe($result['blocked_by'])
-                .', which stay on the record (SPEC §29) — you can restore it from Deleted courses.'
-            : 'Course deleted.';
+            ? trans('admin.courses_flash_kept', ['holds' => $this->describe($result['blocked_by'])])
+            : trans('admin.courses_flash_deleted');
 
         return redirect()->route('admin.courses.index')->with('success', $message);
+    }
+
+    /**
+     * Validate and sanitise the body (PROFILE_CMS: the public site renders it raw).
+     *
+     * @param  array<string, mixed>  $slugRule
+     * @return array<string, mixed>
+     */
+    private function validated(Request $request, array $slugRule): array
+    {
+        $validated = $request->validate(self::RULES + $slugRule);
+        $validated['body'] = app(HtmlSanitizer::class)->clean($validated['body'], HtmlSanitizer::PROFILE_CMS);
+
+        return $validated;
+    }
+
+    /** The outcomes (one per line, EN/DV/AR) and the public CTA live in their own Actions. */
+    private function save(Course $course, Request $request): void
+    {
+        app(SaveCourseLearningOutcomesAction::class)->execute((int) $course->id, [
+            'en' => $request->input('learning_outcomes_en', ''),
+            'dv' => $request->input('learning_outcomes_dv', ''),
+            'ar' => $request->input('learning_outcomes_ar', ''),
+        ]);
+        app(SaveCoursePublicCtaAction::class)->execute((int) $course->id, $request->input('whatsapp_number'), $request->input('syllabus_media_file_id'));
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function formProps(): array
+    {
+        return [
+            'categories' => CourseCategory::ordered()->get()->map(fn (CourseCategory $category) => ['id' => $category->id, 'name' => $category->name])->values()->all(),
+            't' => trans('admin'),
+        ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function row(Course $course): array
+    {
+        return [
+            'id' => $course->id,
+            'slug' => $course->slug,
+            'title' => $course->title,
+            'short_desc' => $course->short_desc ? Str::limit($course->short_desc, 60) : null,
+            'category' => $course->category->name ?? null,
+            'status' => $course->status,
+            'updated_at' => $course->updated_at?->format('M d, Y'),
+        ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function full(Course $course): array
+    {
+        $outcomes = is_array($course->learning_outcomes) ? $course->learning_outcomes : [];
+        $lines = fn (string $locale) => implode("\n", is_array($outcomes[$locale] ?? null) ? $outcomes[$locale] : []);
+
+        return [
+            'id' => $course->id,
+            'slug' => $course->slug,
+            'title' => $course->title,
+            'course_category_id' => $course->course_category_id,
+            'short_desc' => $course->short_desc,
+            'body' => $course->body,
+            'cover_image' => $course->cover_image,
+            'language' => $course->language,
+            'level' => $course->level,
+            'status' => $course->status,
+            'fee' => $course->fee,
+            'seats' => $course->seats,
+            'whatsapp_number' => $course->whatsapp_number,
+            'syllabus_media_file_id' => $course->syllabus_media_file_id,
+            'learning_outcomes_en' => $lines('en'),
+            'learning_outcomes_dv' => $lines('dv'),
+            'learning_outcomes_ar' => $lines('ar'),
+        ];
     }
 
     /**
@@ -200,20 +242,11 @@ class CourseController extends Controller
      */
     private function describe(array $counts): string
     {
-        $labels = [
-            'course_enrollments' => 'enrolment',
-            'attendance_records' => 'attendance record',
-            'activity_attempts' => 'activity attempt',
-            'assessment_attempts' => 'assessment attempt',
-            'student_lesson_progress' => 'progress record',
-            'issued_certificates' => 'issued certificate',
-            'payment_items' => 'payment record',
-        ];
-
         $parts = [];
         foreach ($counts as $table => $count) {
-            $label = $labels[$table] ?? $table;
-            $parts[] = $count.' '.$label.($count === 1 ? '' : 's');
+            $parts[] = trans()->has('admin.courses_hold_'.$table)
+                ? trans_choice('admin.courses_hold_'.$table, $count, ['count' => $count])
+                : $count.' '.$table;
         }
 
         return implode(', ', $parts);
