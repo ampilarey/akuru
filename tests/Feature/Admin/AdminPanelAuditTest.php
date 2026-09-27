@@ -84,7 +84,8 @@ it('offers the admin panel in the Inertia More menu by workspace, Blade screens 
     expect($items->keys()->all())->toContain('/admin/instructors', '/admin/public-site/pages', '/admin/commerce', '/admin/library', '/admin/bookshop', '/admin/prayer-times/islands', '/admin/pronunciation', '/admin/translations', '/admin/operations', '/admin/users', '/admin/settings')
         ->not->toContain('/admin/enrollments');
     expect($items['/admin/public-site/pages']['hard'] ?? false)->toBeTrue()
-        ->and($items['/admin/users']['hard'] ?? false)->toBeTrue()
+        // C9 slice 2: Manage users is an Inertia page now, like Commerce.
+        ->and($items['/admin/users'])->not->toHaveKey('hard')
         ->and($items['/admin/commerce'])->not->toHaveKey('hard');
 
     // The educational admin: Admissions, and none of the Institute.

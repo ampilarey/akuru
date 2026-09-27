@@ -230,7 +230,8 @@ check('and its filter offers every role by that name', filterOptions.map((o) => 
 // supervisor and back, deactivated and reactivated, from the panel.
 await su.goto(`${BASE}/en/admin/users?role=parent`, { waitUntil: 'networkidle' });
 const parentRow = su.locator('tr', { hasText: 'parent@akuru.edu.mv' }).first();
-await Promise.all([su.waitForNavigation({ waitUntil: 'networkidle' }).catch(() => {}), parentRow.locator('[data-testid="user-roles-link"]').click()]);
+// C9 slice 2: the users list is an Inertia page, so the link is an Inertia visit.
+await Promise.all([su.waitForURL(/\/admin\/users\/\d+\/roles$/), parentRow.locator('[data-testid="user-roles-link"]').click()]);
 await settle(su, '[data-testid="roles-form"]');
 const rolesBefore = (await su.locator('[data-testid="roles-current"]').textContent()) || '';
 check('the users list opens a person’s Roles & access screen', /\/admin\/users\/\d+\/roles$/.test(su.url()) && rolesBefore.includes('Parent'), `${su.url().replace(BASE, '')} ${rolesBefore}`);
@@ -254,7 +255,7 @@ check('and Reactivate turns it back on', /Can sign in/.test(await su.locator('[d
 // The system admin's own screen keeps their role and their access.
 await su.goto(`${BASE}/en/admin/users?role=super_admin`, { waitUntil: 'networkidle' });
 const selfRow = su.locator('tr', { hasText: SUPER }).first();
-await Promise.all([su.waitForNavigation({ waitUntil: 'networkidle' }).catch(() => {}), selfRow.locator('[data-testid="user-roles-link"]').click()]);
+await Promise.all([su.waitForURL(/\/admin\/users\/\d+\/roles$/), selfRow.locator('[data-testid="user-roles-link"]').click()]);
 await settle(su, '[data-testid="roles-form"]');
 check('on their own screen the System admin role is locked and there is no deactivate button', (await su.locator('[data-testid="role-super_admin"]').isDisabled()) && (await count(su, '[data-testid="access-toggle"]')) === 0);
 

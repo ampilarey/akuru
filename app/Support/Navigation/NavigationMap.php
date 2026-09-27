@@ -92,7 +92,7 @@ final class NavigationMap
                 ['key' => 'commerce', 'href' => '/admin/commerce'],
                 ['key' => 'library_office', 'href' => '/admin/library'],
                 ['key' => 'bookshop', 'href' => '/admin/bookshop', 'can' => ['bookshop.manage']],
-                ['key' => 'manage_users', 'href' => '/admin/users', 'hard' => true],
+                ['key' => 'manage_users', 'href' => '/admin/users'],
             ],
         ];
     }
@@ -335,7 +335,7 @@ final class NavigationMap
                 ['key' => 'bookshop', 'href' => '/admin/bookshop', 'can' => ['bookshop.manage']],
             ]],
             ['key' => 'panel_system', 'items' => [
-                ['key' => 'manage_users', 'href' => '/admin/users', 'hard' => true],
+                ['key' => 'manage_users', 'href' => '/admin/users'],
                 ['key' => 'system_settings', 'href' => '/admin/settings'],
                 ['key' => 'ops_checklist', 'href' => '/admin/operations'],
                 ['key' => 'feature_walkthrough', 'href' => '/admin/operations/features'],

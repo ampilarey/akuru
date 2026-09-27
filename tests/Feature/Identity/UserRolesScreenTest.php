@@ -36,8 +36,10 @@ it('opens from the users list and shows the roles by label, with the protected o
     $teacher = User::factory()->create(['name' => 'Ustadh Ali']);
     $teacher->assignRole(Role::findOrCreate('teacher', 'web'));
 
-    $list = rolesAs($super)->get(route('admin.users.index'))->assertOk()->getContent();
-    expect($list)->toContain(route('admin.users.roles', $teacher))->toContain('data-testid="user-roles-link"');
+    // The list (Inertia since C9 slice 2) carries the teacher's row, newest first,
+    // and the page links every row to its Roles & access screen by id.
+    rolesAs($super)->get(route('admin.users.index'))->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->component('Identity/Users')->where('users.0.id', $teacher->id)->where('users.0.role_label', 'Teacher'));
 
     rolesAs($super)->get(route('admin.users.roles', $teacher))->assertOk()
         ->assertInertia(fn (Assert $page) => $page->component('Identity/UserRoles')
@@ -116,7 +118,7 @@ it('deactivates and reactivates an account, never the actor’s own nor the last
     expect((bool) $person->fresh()->is_active)->toBeFalse();
 
     // The list says so, and the screen offers the way back.
-    expect(rolesAs($super)->get(route('admin.users.index'))->getContent())->toContain('data-testid="user-inactive"');
+    rolesAs($super)->get(route('admin.users.index'))->assertInertia(fn (Assert $page) => $page->where('users.0.name', 'Hassan')->where('users.0.is_active', false));
     rolesAs($super)->get(route('admin.users.roles', $person))->assertInertia(fn (Assert $page) => $page->where('user.is_active', false));
 
     rolesAs($super)->post(route('admin.users.active', $person), ['active' => 1])

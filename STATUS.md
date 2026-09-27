@@ -4414,6 +4414,35 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5jd. C9 slice 2: Manage users leaves Blade (2026-09-27)
+
+BACKLOG C9, `docs/ADMIN_PANEL.md` findings 9 and 10; the second port,
+the system admin's other own screen. `/admin/users` was a 188-line Blade
+table with inline styles, hardcoded English, a hand-written delete form
+and Laravel's paginator.
+
+**Built.** `ListAdminUsersAction` owns the roster query (search over
+name, ID card and contacts; the role filter, known roles only; newest
+first with the id breaking same-second ties, so two loads agree) and
+serves both the screen and its CSV, so the download cannot drift from
+the list. `Identity/Users` (Inertia): the count, *Export CSV* carrying
+the filters, the OTP-abuse door, the search and role filter as an
+Inertia visit that keeps its state, the table with the role badges by
+the names people read, *YOU* and *Deactivated*, the *Roles & access*
+link on every row (an Inertia visit now), *Delete* as a confirmed
+Inertia request with the flash in the shell (the "history is kept"
+wording keyed too), and previous/next pages. Every string in the admin
+tranche, EN/DV/AR (26 keys). The Blade view is deleted (`blade_screens`
+244), `NavigationMap` drops both `hard` flags, the reachability and
+audit tests follow, `RoleLabelsTest` and `UserRolesScreenTest` read the
+page's props instead of its HTML. Walked: `admin.mjs` 41/41 through the
+badges, the filter, the Roles & access door and back; separately, the
+search narrowed to one row without a page load, the filtered CSV came
+back with one line, a throwaway account was deleted with the confirm
+and the flash, and `/dv/admin/users` rendered right-to-left with the
+Dhivehi heading, no English leftovers and a Dhivehi role badge. Next:
+the enrolment screens.
+
 ## 5jc. Every Inertia tab read the bare app name (2026-09-27)
 
 Seen while walking §5jb: `page.title()` on the ported settings screen was
