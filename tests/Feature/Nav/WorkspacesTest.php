@@ -264,8 +264,8 @@ it('renders the Blade shell from the same map, with the switcher for a person wh
 
     // The system admin on a Blade CMS screen sees the Institute, not the School.
     $super = workspaceUser(['super_admin'], INSTITUTE_PERMISSIONS);
-    // The courses CMS: the pages CMS is Inertia since C9 slice 10.
-    $cms = $this->withoutLocalizationMiddleware()->actingAs($super)->get(route('admin.courses.index'))->assertOk()->getContent();
+    // Prayer times: the whole website CMS is Inertia since C9 slice 11.
+    $cms = $this->withoutLocalizationMiddleware()->actingAs($super)->get(route('admin.prayer-times.islands'))->assertOk()->getContent();
     expect($cms)->toContain('data-nav-section="panel_website"')->toContain('/admin/commerce')
         ->not->toContain('data-nav-section="school_year"')->not->toContain('/admin/enrollments');
 });
