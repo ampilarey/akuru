@@ -3,21 +3,34 @@
 namespace App\Domains\Identity\Http\Controllers;
 
 use App\Domains\Identity\Actions\DeleteUserAccountAction;
+use App\Domains\Identity\Actions\ListAdminUsersAction;
 use App\Domains\Identity\Models\User;
 use App\Http\Controllers\Controller;
+use App\Support\Authorization\RoleLabels;
 use App\Support\Csv;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
+use Inertia\Inertia;
+use Inertia\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
+/**
+ * Manage users (docs/ADMIN_PANEL.md). Inertia since C9 slice 2 (STATUS
+ * §5jd), with its strings keyed for Dhivehi and Arabic. `role:super_admin`
+ * on the route group.
+ */
 class AdminUserController extends Controller
 {
-    public function index(Request $request)
+    public function index(Request $request): Response
     {
-        $users = $this->filtered($request)->paginate(25)->withQueryString();
+        $filters = $request->only(['search', 'role']);
 
-        return view('admin.users.index', compact('users'));
+        return Inertia::render('Identity/Users', app(ListAdminUsersAction::class)->execute($filters, (int) $request->user()->id, app()->getLocale()) + [
+            'filters' => ['search' => (string) ($filters['search'] ?? ''), 'role' => (string) ($filters['role'] ?? '')],
+            // Every role, by the name people read (ADR-040 slice 3).
+            'roles' => collect(RoleLabels::all())->map(fn ($label, $key) => ['key' => $key, 'label' => $label])->values()->all(),
+            't' => trans('admin'),
+        ]);
     }
 
     /**
@@ -35,7 +48,7 @@ class AdminUserController extends Controller
      */
     public function export(Request $request): StreamedResponse
     {
-        $users = $this->filtered($request)->get();
+        $users = app(ListAdminUsersAction::class)->query($request->only(['search', 'role']))->get();
 
         return response()->streamDownload(function () use ($users): void {
             $handle = fopen('php://output', 'w');
@@ -54,31 +67,6 @@ class AdminUserController extends Controller
 
             fclose($handle);
         }, 'users.csv', ['Content-Type' => 'text/csv']);
-    }
-
-    /**
-     * The screen's query, shared so the export cannot drift away from the list
-     * it claims to be a copy of.
-     */
-    private function filtered(Request $request): Builder
-    {
-        $query = User::with(['contacts', 'roles'])
-            ->withCount(['contacts'])
-            ->latest();
-
-        if ($search = $request->input('search')) {
-            $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                    ->orWhere('national_id', 'like', "%{$search}%")
-                    ->orWhereHas('contacts', fn ($c) => $c->where('value', 'like', "%{$search}%"));
-            });
-        }
-
-        if ($role = $request->input('role')) {
-            $query->role($role);
-        }
-
-        return $query;
     }
 
     /**
@@ -105,14 +93,13 @@ class AdminUserController extends Controller
         }
 
         if ($result['deleted']) {
-            return back()->with('success', "User \"{$name}\" has been deleted.");
+            return back()->with('success', trans('admin.users_deleted', ['name' => $name]));
         }
 
-        return back()->with('success', sprintf(
-            'User "%s" has been deactivated and can no longer sign in. Their history is kept: %s.',
-            $name,
-            $this->describe($result['blocked_by']),
-        ));
+        return back()->with('success', trans('admin.users_deactivated_kept', [
+            'name' => $name,
+            'kept' => $this->describe($result['blocked_by']),
+        ]));
     }
 
     /**

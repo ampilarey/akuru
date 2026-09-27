@@ -56,16 +56,20 @@ it('shows the labels on the users screen, its filter and the Blade user menu', f
     labelledUser('admin', 'Office Admin');
     labelledUser('headmaster', 'The Dean');
 
-    $html = test()->withoutLocalizationMiddleware()->actingAs($super)->get(route('admin.users.index'))->assertOk()->getContent();
-    expect($html)->toContain('>Educational admin<')->toContain('>Dean<')->toContain('>System admin<')
-        ->not->toContain('>Super Admin<')->not->toContain('>Headmaster<')
-        // Every role is offered by the filter, by label.
-        ->toContain('<option value="headmaster" >Dean</option>')
-        ->toContain('<option value="bookshop_manager" >Bookstore admin</option>');
+    // Since C9 slice 2 (STATUS §5jd) the users screen is an Inertia page: the
+    // labels are its props, and so is the filter's list of roles.
+    $page = test()->withoutLocalizationMiddleware()->actingAs($super)->get(route('admin.users.index'))->assertOk()
+        ->viewData('page');
+    $labels = array_column($page['props']['users'], 'role_label');
+    expect($labels)->toContain('Educational admin', 'Dean', 'System admin')
+        ->not->toContain('Super Admin', 'Headmaster');
+    // Every role is offered by the filter, by label.
+    $roles = collect($page['props']['roles'])->pluck('label', 'key');
+    expect($roles['headmaster'])->toBe('Dean')->and($roles['bookshop_manager'])->toBe('Bookstore admin');
 
     // The filter still works on the key.
-    $filtered = test()->withoutLocalizationMiddleware()->actingAs($super)->get(route('admin.users.index', ['role' => 'headmaster']))->assertOk()->getContent();
-    expect($filtered)->toContain('The Dean')->not->toContain('Office Admin');
+    $filtered = test()->withoutLocalizationMiddleware()->actingAs($super)->get(route('admin.users.index', ['role' => 'headmaster']))->assertOk()->viewData('page');
+    expect(array_column($filtered['props']['users'], 'name'))->toBe(['The Dean']);
 
     // The Blade user menu names the role under the person, on a School screen too.
     $admin = User::query()->where('name', 'Office Admin')->sole();
