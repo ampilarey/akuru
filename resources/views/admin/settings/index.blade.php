@@ -88,6 +88,9 @@
         <div style="padding:1.1rem 1.25rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.75rem">
             <p style="font-size:.85rem;color:#6B7280;margin:0">
                 Clear all caches (application, views, routes, config). Safe to run at any time.
+                @if (app()->configurationIsCached())
+                    The configuration is cached on this host; it is rebuilt, not left off.
+                @endif
             </p>
             <form method="POST" action="{{ route('admin.settings.clear-cache') }}">
                 @csrf

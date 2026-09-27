@@ -2,8 +2,8 @@
 
 namespace App\Domains\Settings\Http\Controllers\Admin;
 
+use App\Domains\Settings\Actions\ClearApplicationCachesAction;
 use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\Artisan;
 
 class SettingsController extends Controller
 {
@@ -50,13 +50,12 @@ class SettingsController extends Controller
         return view('admin.settings.index', compact('settings', 'smsConfigured', 'bmlConfigured', 'bmlWebhookReady'));
     }
 
-    public function clearCache()
+    public function clearCache(ClearApplicationCachesAction $action)
     {
-        Artisan::call('cache:clear');
-        Artisan::call('view:clear');
-        Artisan::call('route:clear');
-        Artisan::call('config:clear');
+        $ran = $action->execute(app()->configurationIsCached());
 
-        return back()->with('success', 'All caches cleared successfully.');
+        return back()->with('success', in_array('config:cache', $ran, true)
+            ? 'All caches cleared and the configuration re-cached.'
+            : 'All caches cleared successfully.');
     }
 }

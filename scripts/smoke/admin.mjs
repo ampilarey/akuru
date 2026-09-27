@@ -314,4 +314,11 @@ await settle(su, 'textarea');
 const translationRows = await count(su, 'textarea');
 check('the translation editor opens with rows to correct', translationRows > 0, `${translationRows} rows`);
 
+// Admin-panel audit finding 13 (STATUS §5il): the button clears, and where
+// the configuration was cached it is rebuilt rather than left off.
+await su.goto(`${BASE}/en/admin/settings`, { waitUntil: 'networkidle' });
+await Promise.all([su.waitForNavigation({ waitUntil: 'networkidle' }).catch(() => {}), su.click('form[action*="clear-cache"] button[type=submit]')]);
+const cacheFlash = await text(su);
+check('Clear all caches reports what it did, and the screen is still there', /All caches cleared/.test(cacheFlash) && cacheFlash.includes('Cache Management'));
+
 await finish();
