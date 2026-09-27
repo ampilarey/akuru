@@ -22,6 +22,7 @@ function CampaignForm({ options, fundingSources, t }) {
     const form = useForm({
         name: '', description: '', starts_at: '', ends_at: '',
         discount_type: 'percentage', discount_value: '', max_discount_amount: '', minimum_amount: '', funding_source: 'akuru',
+        banner: null,
     });
     const toggle = (type, id) => setPicked((current) => ({
         ...current,
@@ -37,7 +38,7 @@ function CampaignForm({ options, fundingSources, t }) {
                     ? [{ type: 'gift_card' }]
                     : Object.entries(picked).flatMap(([type, ids]) => ids.map((id) => ({ type, id }))),
         }));
-        form.post('/admin/library/promotions', { preserveScroll: true, onSuccess: () => { form.reset(); setPicked({ library_category: [], writer_profile: [], library_item: [] }); setMode('all'); } });
+        form.post('/admin/library/promotions', { preserveScroll: true, forceFormData: true, onSuccess: () => { form.reset(); setPicked({ library_category: [], writer_profile: [], library_item: [] }); setMode('all'); } });
     };
     const pickList = (type, rows, label) => (
         <fieldset className="rounded border p-2">
@@ -60,7 +61,12 @@ function CampaignForm({ options, fundingSources, t }) {
             <input className="form-input md:col-span-2" name="name" placeholder={t.library_promotions_name || 'Name (readers see it)'} value={form.data.name} onChange={(e) => form.setData('name', e.target.value)} />
             <label className="text-sm">{t.library_promotions_starts || 'Starts'}<input className="form-input" type="datetime-local" value={form.data.starts_at} onChange={(e) => form.setData('starts_at', e.target.value)} /></label>
             <label className="text-sm">{t.library_promotions_ends || 'Ends (optional)'}<input className="form-input" type="datetime-local" value={form.data.ends_at} onChange={(e) => form.setData('ends_at', e.target.value)} /></label>
-            <textarea className="form-input md:col-span-4" rows="2" placeholder={t.library_promotions_description || 'Description (optional)'} value={form.data.description} onChange={(e) => form.setData('description', e.target.value)} />
+            <textarea className="form-input md:col-span-3" rows="2" placeholder={t.library_promotions_description || 'Description (optional)'} value={form.data.description} onChange={(e) => form.setData('description', e.target.value)} />
+            {/* B4c: the offer's picture, shown on the public offers page. */}
+            <label className="text-sm">
+                {t.library_promotions_banner || 'Banner image (optional; JPEG, PNG or WebP)'}
+                <input className="form-input" type="file" accept="image/jpeg,image/png,image/webp" onChange={(e) => form.setData('banner', e.target.files[0] ?? null)} data-testid="campaign-banner" />
+            </label>
             <select className="form-input" value={form.data.discount_type} onChange={(e) => form.setData('discount_type', e.target.value)} aria-label={t.library_promotions_type || 'Discount'}>
                 <option value="percentage">{t.library_promotions_percentage || 'Percentage off'}</option>
                 <option value="fixed">{t.library_promotions_fixed || 'Fixed amount off (MVR)'}</option>
@@ -136,6 +142,7 @@ export default function Promotions({ campaigns = [], options = { categories: [],
                         {campaigns.map((c) => (
                             <tr key={c.id} className="border-t align-top" data-campaign={c.slug}>
                                 <td className="px-3 py-2">
+                                    {c.banner_url && <img src={c.banner_url} alt="" className="mb-1 h-12 w-24 rounded object-cover" data-testid="campaign-banner-thumb" />}
                                     <p className="font-medium">{c.name}</p>
                                     {c.description && <p className="text-xs text-gray-500">{c.description}</p>}
                                     <p className="text-xs text-gray-400">{t[`library_promotions_funding_${c.funding_source}`] || c.funding_source}</p>

@@ -158,4 +158,5 @@ return [
     'library_promotions_minimum' => 'މި އަދަދުން ފެށިގެން (ރުފިޔާ، އިޚްތިޔާރީ) — "500 ގަނެފިނަމަ ބޯނަސް"',
     'library_promotions_bonus' => 'ބޯނަސް',
     'library_promotions_from' => 'ފެށިގެން',
+    'library_promotions_banner' => 'ބެނަރ ފޮޓޯ (އިޚްތިޔާރީ؛ JPEG، PNG ނުވަތަ WebP)',
 ];

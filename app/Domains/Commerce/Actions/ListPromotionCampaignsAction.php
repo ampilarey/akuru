@@ -4,6 +4,7 @@ namespace App\Domains\Commerce\Actions;
 
 use App\Domains\Commerce\Models\DiscountRedemption;
 use App\Domains\Commerce\Models\PromotionCampaign;
+use App\Domains\Media\Actions\ResolvePublicMediaUrlAction;
 
 /**
  * B4 (§18): campaigns as arrays, for whoever applies or administers them.
@@ -124,6 +125,10 @@ class ListPromotionCampaignsAction
             'name' => $campaign->name,
             'slug' => $campaign->slug,
             'description' => $campaign->description,
+            // B4c: the offer's picture, public media.
+            'banner_url' => $campaign->banner_media_file_id
+                ? app(ResolvePublicMediaUrlAction::class)->execute((int) $campaign->banner_media_file_id)
+                : null,
             'starts_at' => $campaign->starts_at?->toDateTimeString(),
             'ends_at' => $campaign->ends_at?->toDateTimeString(),
             'ends_on' => $campaign->ends_at?->timezone(config('app.timezone'))->toDateString(),

@@ -17,6 +17,7 @@ class PromotionCampaign extends Model
         'name',
         'slug',
         'description',
+        'banner_media_file_id',
         'starts_at',
         'ends_at',
         'discount_type',
