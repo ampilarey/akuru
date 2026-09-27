@@ -4414,6 +4414,44 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5iw. Library B3: the article body is written, not pasted (2026-09-27)
+
+BACKLOG B3, LIBRARY_PLAN §36. A writer's draft body was a textarea of raw
+HTML with the instruction "use `<!-- pagebreak -->` between pages"; the
+office's item form was the same. A writer who does not write HTML had
+no way to bold a word or break a page.
+
+**Built.** A rich text editor (TipTap, `@tiptap/react` + starter kit) in
+`resources/js/Components/RichTextEditor.jsx`, mounted through
+`BodyEditor.jsx` on the writer's draft editor and the office's item form.
+Toolbar: bold, italic, heading and subheading, bulleted and numbered
+lists, quote, link, **page break**, and a `</>` toggle that shows the
+HTML for anyone who would rather paste it. The page break is the
+`<!-- pagebreak -->` marker in disguise: an editor cannot hold a
+comment, so it travels as `<hr data-pagebreak>` inside the editor and
+is converted back before the form posts; `SaveLibraryItemAction` now
+accepts either form, so a body that reaches it straight from the editor
+still paginates (`RichTextBodyTest`, 2 — the second also pins that the
+sanitiser's CMS profile keeps everything the toolbar can produce, and
+that a plain rule is not a page break). Loaded as its own chunk
+(`RichTextEditor-*.js`, ~128 kB gzipped) only when one of those two
+screens opens; `dir="auto"` so a Dhivehi or Arabic body edits
+right-to-left. Labels in the common tranche, EN/DV/AR.
+
+**Two things the walk caught** before anyone else could: the first cut
+read the editor's HTML back in an effect before TipTap had initialised
+it (a crash on open — fixed by tracking the last value emitted instead),
+and a freshly inserted page break stays *selected*, so the next
+keystroke replaced it (fixed by moving the cursor into the paragraph
+after it, as the rule extension does). Walked: a writer typed page one,
+pressed *Page break*, typed page two in bold; the source view showed
+the marker; *Save draft* answered "2 reader pages ready"; reopening the
+draft showed the dashed break between the pages; the office form
+mounted the same editor. `library.mjs`, `earnings.mjs` and
+`peer-review.mjs` type into the editor now. Unrelated, seen in passing:
+the login page requests an image at `/en/%EF%BF%BD` (a U+FFFD in a
+`src`), a 404 on every visit — noted, not chased (rule 1).
+
 ## 5iv. Library B9: what an applicant may add — portrait, publications, ID (2026-09-27)
 
 BACKLOG B9, LIBRARY_PLAN §11.1. The application form asked for a name,

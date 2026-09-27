@@ -212,6 +212,12 @@ class SaveLibraryItemAction
         // shared sanitiser should not carry one domain's formatting rules.
         $sanitizer = app(HtmlSanitizer::class);
 
+        // B3: the rich text editor cannot hold a comment, so its page break
+        // is `<hr data-pagebreak>`. The client turns it back into the marker
+        // before posting; accepting it here too means a body that arrives
+        // straight from the editor's HTML still paginates.
+        $body = (string) preg_replace('~<hr\b[^>]*\bdata-pagebreak\b[^>]*>~i', SyncLibraryItemPagesAction::PAGE_BREAK, $body);
+
         $parts = array_map(
             fn (string $part): string => $sanitizer->clean($part, HtmlSanitizer::PROFILE_CMS),
             explode(SyncLibraryItemPagesAction::PAGE_BREAK, $body),

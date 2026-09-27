@@ -170,3 +170,33 @@ html[lang="dv"] body,
 .hijri-badge {
   @apply inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800;
 }
+/* B3 (LIBRARY_PLAN §36): the article body's editor. A page break is a
+   labelled rule so the writer sees where the reader's page turns; the
+   placeholder shows on the empty first paragraph only. */
+.ProseMirror hr.akuru-pagebreak {
+    border: 0;
+    border-top: 2px dashed #7C2D37;
+    margin: 1rem 0;
+    position: relative;
+}
+.ProseMirror hr.akuru-pagebreak::after {
+    content: '⤓';
+    position: absolute;
+    inset-inline-end: 0;
+    top: -0.9rem;
+    font-size: 0.75rem;
+    color: #7C2D37;
+    background: #fff;
+    padding: 0 0.25rem;
+}
+.ProseMirror.ProseMirror-focused hr.akuru-pagebreak.ProseMirror-selectednode {
+    outline: 2px solid #7C2D37;
+}
+.ProseMirror p.is-editor-empty:first-child::before,
+.ProseMirror[data-placeholder]:has(> p:only-child:empty)::before {
+    content: attr(data-placeholder);
+    color: #9ca3af;
+    float: inline-start;
+    pointer-events: none;
+    height: 0;
+}

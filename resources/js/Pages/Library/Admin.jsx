@@ -1,6 +1,7 @@
 import { router, useForm, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 import AppShell from '../../Layouts/AppShell';
+import BodyEditor from '../../Components/BodyEditor';
 import FormErrors from '../../Components/FormErrors';
 
 function ApplicationsQueue({ applications }) {
@@ -272,7 +273,8 @@ function ItemForm({ categories, options }) {
                 <option value="advanced">Advanced</option>
             </select>
 
-            <textarea className="form-input md:col-span-4" rows="6" placeholder="Body (HTML — the free-reading content)" value={form.data.body} onChange={(e) => form.setData('body', e.target.value)} />
+            {/* B3: the same editor the writer has; the `</>` toggle takes pasted HTML. */}
+            <BodyEditor className="md:col-span-4" value={form.data.body} onChange={(html) => form.setData('body', html)} placeholder="Body — the free-reading content; insert a page break between pages" testId="admin-body-editor" />
 
             <label className="text-sm md:col-span-3">
                 Original PDF (stored privately — never exposed)

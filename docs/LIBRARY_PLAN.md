@@ -279,6 +279,8 @@ Build as a module inside the Laravel monolith. (Per ROADMAP §9.1 correction: do
 
 PDF: upload original to private storage → convert pages to protected page images or secure HTML → store privately → reader loads one page/chapter at a time with permission check → dynamic user watermark → original never exposed. Articles: structured HTML/JSON; protected reader if paid, normal web view if free public. Cover image upload; rich text editor for articles.
 
+> **Rich text editor built 2026-09-27 (B3, STATUS §5iw):** TipTap on the writer's draft editor and the office's item form, lazily loaded. Its *Page break* is the `<!-- pagebreak -->` marker (an editor cannot hold a comment, so it travels as `<hr data-pagebreak>` and is converted back on the way out; `SaveLibraryItemAction` accepts either). The sanitiser's CMS profile already allows everything the toolbar produces.
+
 > **Built 2026-09-25 (STATUS §5gl):** the "secure HTML" path. A PDF's pages are read on save by `App\Support\Pdf\PdfTextExtractor` (pure PHP, behind `Library\Contracts\PdfPageTextExtractor`) into `library_item_pages` as escaped, direction-aware paragraphs; the body wins when both exist; a scan yields no pages and the uploader is told. Page *images* are not produced (no rasteriser on the hosts); two-column layouts read across; OCR is out of reach. `php artisan library:sync-pages` backfills earlier uploads. **Cover image upload** built the same day (STATUS §5gm): public media on both forms, shown on the shelf, item page, author page and the writer's list; the typed URL remains the office's fallback. Rich text editor for articles: not built (the body is HTML in a textarea).
 
 ## 37. Recommended MVP
