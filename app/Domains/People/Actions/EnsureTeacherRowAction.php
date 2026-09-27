@@ -25,7 +25,9 @@ class EnsureTeacherRowAction
             'first_name' => $parts[0] ?: 'Teacher',
             'last_name' => $parts[1] ?? $parts[0],
             'date_of_birth' => $user->date_of_birth ?? '1985-01-01',
-            'gender' => $user->gender ?? 'male',
+            // Nullable since 2026-09-27: a user with no gender on file gets a
+            // teacher row with none, not an invented one (KNOWN_ISSUES).
+            'gender' => $user->gender,
             // `users` makes all three of these nullable; `teachers` makes them
             // NOT NULL. Copying them straight across threw for any user missing
             // one — the same mismatch the two lines above already guard against.

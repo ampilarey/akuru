@@ -4414,6 +4414,31 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5jp. An empty gender is stored as empty, not as male (2026-09-27)
+
+KNOWN_ISSUES "A registrant who leaves gender empty is recorded as male"
+(BOOKSHOP_PLAN §15 finding 7), the last open defect there that needed no
+owner decision to fix honestly. The public registration forms let gender be
+left empty; `students.gender` was a required enum, so the writer filled the
+gap with `male` — a value nobody gave — and the teacher row made from a
+user with no gender on file did the same.
+
+**Fixed.** One additive migration (rule 9) makes `students.gender` and
+`teachers.gender` nullable; `RegisterCourseStudentAction::create` stores an
+empty answer as empty (a later registration that names it still fills it
+in, one that leaves it empty still does not blank it) and
+`EnsureTeacherRowAction` copies the user's gender as it is. Every reader
+coped with an empty value — the enrolment page shows a dash, the CSVs an
+empty cell, no view compares it — except one the walk caught: the office's
+student page had a gender select with no empty option, so a student with
+none on file *read as female* (the first option). It has an empty option
+now, and the walk (a student with no gender on file: the page renders, the
+select reads empty, the CSV exports; 3/3) is why. The forms stay optional: requiring the
+field on the public forms is the owner's call, and the office's own student
+form requires it as before. `GenderIsNotInventedTest` (2): a registrant's
+own record and a child stored with no gender, one given kept, the later
+fill-in and the non-blanking, and the teacher row.
+
 ## 5jo. C9 slice 13: the two full dashboards leave Blade (2026-09-27)
 
 BACKLOG C9, `docs/ADMIN_PANEL.md` finding 10 and L24; the thirteenth

@@ -355,14 +355,22 @@ registers a child with a password, checks the login is on the student, and
 requests a reset by the child's ID card to check the code goes to the
 parent's phone.
 
-### A registrant who leaves gender empty is recorded as male — **open**
+### A registrant who leaves gender empty is recorded as male — **fixed (2026-09-27, STATUS §5jp)**
 
 **Severity:** wrong data, small. The registration forms let gender be left
-empty; `students.gender` is a required `enum('male','female')`. The dual
-write filled the gap with `male`, and `RegisterCourseStudentAction` keeps
-that default so this slice changes no behaviour. The honest fix is a
-nullable column plus every reader that assumes a value, or a required field
-on the form. That is a product choice, not a cleanup step.
+empty; `students.gender` was a required `enum('male','female')`. The dual
+write filled the gap with `male`, and `RegisterCourseStudentAction` kept
+that default. The honest fix was a nullable column plus every reader that
+assumes a value, or a required field on the form.
+
+**Fixed** the first way: `students.gender` and `teachers.gender` are
+nullable (one additive migration, rule 9), `RegisterCourseStudentAction`
+stores an empty answer as empty and `EnsureTeacherRowAction` gives a user
+with no gender on file a teacher row with none. Every reader already coped
+with an empty value (the enrolment page, the student pages, the CSVs) and
+no view compared it. The public forms stay optional — **requiring the field
+is the owner's call** — and the office's own student form still requires it.
+`GenderIsNotInventedTest`.
 
 ## Found by the gate card slice (2026-09-24)
 
