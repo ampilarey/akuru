@@ -316,10 +316,14 @@ check('the translation editor opens with rows to correct', translationRows > 0, 
 
 // Admin-panel audit finding 13 (STATUS §5il): the button clears, and where
 // the configuration was cached it is rebuilt rather than left off.
+// C9 slice 1 (STATUS §5jb): the screen is an Inertia page now; the button
+// posts without a page load and the flash arrives in the shell.
 await su.goto(`${BASE}/en/admin/settings`, { waitUntil: 'networkidle' });
-await Promise.all([su.waitForNavigation({ waitUntil: 'networkidle' }).catch(() => {}), su.click('form[action*="clear-cache"] button[type=submit]')]);
+await settle(su, '[data-testid="cache-management"]');
+await su.click('[data-testid="clear-caches"]');
+const cacheCleared = await su.waitForFunction(() => /All caches cleared/.test(document.body.innerText), null, { timeout: 20000 }).then(() => true).catch(() => false);
 const cacheFlash = await text(su);
-check('Clear all caches reports what it did, and the screen is still there', /All caches cleared/.test(cacheFlash) && cacheFlash.includes('Cache Management'));
+check('Clear all caches reports what it did, and the screen is still there', cacheCleared && cacheFlash.includes('Cache management') && (await count(su, '[data-testid="integration-status"] > div')) === 4, cacheFlash.slice(0, 160));
 
 // B12 (LIBRARY_PLAN §42, STATUS §5ip): the Library's money rules on a screen — change one, read it back, restore it.
 await su.goto(`${BASE}/en/admin/library/settings`, { waitUntil: 'networkidle' });

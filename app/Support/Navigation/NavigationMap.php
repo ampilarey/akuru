@@ -336,7 +336,7 @@ final class NavigationMap
             ]],
             ['key' => 'panel_system', 'items' => [
                 ['key' => 'manage_users', 'href' => '/admin/users', 'hard' => true],
-                ['key' => 'system_settings', 'href' => '/admin/settings', 'hard' => true],
+                ['key' => 'system_settings', 'href' => '/admin/settings'],
                 ['key' => 'ops_checklist', 'href' => '/admin/operations'],
                 ['key' => 'feature_walkthrough', 'href' => '/admin/operations/features'],
                 ['key' => 'translations', 'href' => '/admin/translations'],
