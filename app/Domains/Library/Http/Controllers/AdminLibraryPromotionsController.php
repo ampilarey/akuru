@@ -47,9 +47,11 @@ class AdminLibraryPromotionsController extends Controller
             'targets' => 'nullable|array|max:200',
             'targets.*.type' => 'required|in:'.implode(',', SavePromotionCampaignAction::TARGET_TYPES),
             'targets.*.id' => 'nullable|integer',
+            // B4c: the offer's picture; the action sniffs the type again.
+            'banner' => 'nullable|image|mimes:jpeg,png,webp|max:4096',
         ]);
 
-        app(SavePromotionCampaignAction::class)->execute($data, (int) $request->user()->id);
+        app(SavePromotionCampaignAction::class)->execute($data, (int) $request->user()->id, $request->file('banner'));
 
         return back()->with('success', trans('admin.library_promotions_saved'));
     }

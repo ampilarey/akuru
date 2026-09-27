@@ -4,6 +4,8 @@ namespace App\Domains\Commerce\Actions;
 
 use App\Domains\Commerce\Enums\DiscountType;
 use App\Domains\Commerce\Models\PromotionCampaign;
+use App\Domains\Media\Actions\StorePublicMediaAction;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -33,7 +35,7 @@ class SavePromotionCampaignAction
     /**
      * @param  array<string, mixed>  $data
      */
-    public function execute(array $data, ?int $createdBy = null): PromotionCampaign
+    public function execute(array $data, ?int $createdBy = null, ?UploadedFile $banner = null): PromotionCampaign
     {
         $name = trim((string) ($data['name'] ?? ''));
         if ($name === '') {
@@ -58,11 +60,19 @@ class SavePromotionCampaignAction
         }
         $targets = $this->targets((array) ($data['targets'] ?? []));
 
-        return DB::transaction(function () use ($name, $data, $starts, $ends, $type, $value, $funding, $targets, $createdBy) {
+        // B4c: the banner is public media — an offer's picture is published
+        // on purpose, like a cover. Stored before the row so a refused file
+        // leaves no campaign behind.
+        $bannerId = $banner !== null
+            ? app(StorePublicMediaAction::class)->execute($banner, $createdBy, ['image/jpeg', 'image/png', 'image/webp'], ['alt' => $name], 'promotion-banners')['id']
+            : null;
+
+        return DB::transaction(function () use ($name, $data, $starts, $ends, $type, $value, $funding, $targets, $createdBy, $bannerId) {
             $campaign = PromotionCampaign::query()->create([
                 'name' => $name,
                 'slug' => $this->slugFor($name),
                 'description' => trim((string) ($data['description'] ?? '')) ?: null,
+                'banner_media_file_id' => $bannerId,
                 'starts_at' => $starts,
                 'ends_at' => $ends,
                 'discount_type' => $type,

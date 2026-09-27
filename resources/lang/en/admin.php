@@ -158,4 +158,5 @@ return [
     'library_promotions_minimum' => 'From a card of (MVR, optional) — "buy 500, get the bonus"',
     'library_promotions_bonus' => 'bonus',
     'library_promotions_from' => 'from',
+    'library_promotions_banner' => 'Banner image (optional; JPEG, PNG or WebP)',
 ];

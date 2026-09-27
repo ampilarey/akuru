@@ -4414,6 +4414,27 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5iz. Library B4c: a picture for the offer (2026-09-27)
+
+BACKLOG B4, LIBRARY_PLAN §18 ("banner"). The offers page listed campaigns
+as text. A Ramadan offer wants its picture.
+
+**Built.** `promotion_campaigns.banner_media_file_id` (migration
+`2026_09_27_000013`, additive), public media like a cover — an offer's
+picture is published on purpose — stored through `StorePublicMediaAction`
+under `promotion-banners` by `SavePromotionCampaignAction` before the row
+is written, so a refused file leaves no campaign behind. The office form
+takes it (JPEG, PNG or WebP, 4 MB; the request rule refuses the rest and
+the Media store sniffs again), the office list shows a thumbnail, the
+public offers page shows the banner above the campaign. `PromotionBannerTest`
+(1): stored, resolved to a URL, shown on the offers page; a PDF refused
+with no second campaign left behind. Walked: the office started a
+campaign with a banner (a corner of the page as a PNG), the list showed
+the thumbnail, the offers page showed the banner (200, image/png), *End
+now* ended it. With this, §18's campaign features are all built but
+code-required campaigns (a discount code with a window already is one)
+and bundles (§19, "not MVP unless trivial").
+
 ## 5iy. Library B4b: a bonus on gift cards — buy 500, the card is worth 550 (2026-09-27)
 
 BACKLOG B4, LIBRARY_PLAN §18 ("gift card bonus buy-500-get-50"), ADR-041

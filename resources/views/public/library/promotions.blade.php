@@ -19,6 +19,10 @@
     {{-- B4 (§8.5, §18): one card per live campaign, with what it covers. --}}
     @foreach($promotions as $promotion)
         <section class="mb-8 rounded-lg border bg-white p-5" data-campaign="{{ $promotion['slug'] }}">
+            @if($promotion['banner_url'])
+                {{-- B4c: the offer's picture. --}}
+                <img src="{{ $promotion['banner_url'] }}" alt="{{ $promotion['name'] }}" class="mb-4 max-h-56 w-full rounded object-cover" loading="lazy" data-banner="{{ $promotion['slug'] }}">
+            @endif
             <div class="flex flex-wrap items-baseline justify-between gap-2">
                 <h2 class="text-xl font-semibold text-brandMaroon-900">{{ $promotion['name'] }}</h2>
                 @php($figure = $promotion['discount_type'] === 'percentage' ? rtrim(rtrim(number_format($promotion['discount_value'], 2), '0'), '.').'%' : 'MVR '.number_format($promotion['discount_value'], 2))
