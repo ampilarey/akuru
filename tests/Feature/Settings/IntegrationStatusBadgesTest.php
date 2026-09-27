@@ -2,6 +2,7 @@
 
 use App\Domains\Identity\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Inertia\Testing\AssertableInertia as Assert;
 
 uses(RefreshDatabase::class);
 
@@ -26,6 +27,9 @@ uses(RefreshDatabase::class);
  * Each badge now reads what the code it describes actually requires:
  * `SmsGatewayService` needs the Dhiraagu credentials or the gateway api_key,
  * and `BmlPaymentProvider::initiate` needs `bml.api_key` and `bml.base_url`.
+ *
+ * Since C9 slice 1 (STATUS §5jb) the screen is an Inertia page, so the badges
+ * are props: `sms_configured`, `bml_configured`, `bml_webhook_ready`.
  */
 function settingsPage(array $config): \Illuminate\Testing\TestResponse
 {
@@ -39,20 +43,18 @@ function settingsPage(array $config): \Illuminate\Testing\TestResponse
 
 it('does not call SMS configured when only the defaulted url is set', function () {
     // The regression. url is non-empty by default; api_key is what matters.
-    $page = settingsPage([
+    settingsPage([
         'services.sms_gateway.url' => 'https://akuru.edu.mv/api/v2',
         'services.sms_gateway.api_key' => '',
         'services.dhiraagu.enabled' => false,
-    ]);
-
-    $page->assertOk()->assertViewHas('smsConfigured', false);
+    ])->assertOk()->assertInertia(fn (Assert $page) => $page->component('Settings/Index')->where('sms_configured', false));
 });
 
 it('calls SMS configured with a gateway key, or with Dhiraagu credentials', function () {
     settingsPage([
         'services.sms_gateway.api_key' => 'a-real-key',
         'services.dhiraagu.enabled' => false,
-    ])->assertOk()->assertViewHas('smsConfigured', true);
+    ])->assertOk()->assertInertia(fn (Assert $page) => $page->where('sms_configured', true));
 
     // The other path SmsGatewayService can take.
     settingsPage([
@@ -60,7 +62,7 @@ it('calls SMS configured with a gateway key, or with Dhiraagu credentials', func
         'services.dhiraagu.enabled' => true,
         'services.dhiraagu.username' => 'akuru',
         'services.dhiraagu.password' => null,
-    ])->assertOk()->assertViewHas('smsConfigured', true);
+    ])->assertOk()->assertInertia(fn (Assert $page) => $page->where('sms_configured', true));
 
     // Enabled but with no credentials is not configured.
     settingsPage([
@@ -68,7 +70,7 @@ it('calls SMS configured with a gateway key, or with Dhiraagu credentials', func
         'services.dhiraagu.enabled' => true,
         'services.dhiraagu.username' => null,
         'services.dhiraagu.password' => null,
-    ])->assertOk()->assertViewHas('smsConfigured', false);
+    ])->assertOk()->assertInertia(fn (Assert $page) => $page->where('sms_configured', false));
 });
 
 it('reads the BML key from config/bml.php rather than a key that does not exist', function () {
@@ -78,34 +80,46 @@ it('reads the BML key from config/bml.php rather than a key that does not exist'
     settingsPage([
         'bml.api_key' => 'a-real-key',
         'bml.base_url' => 'https://api.example.mv',
-    ])->assertOk()->assertViewHas('bmlConfigured', true);
+    ])->assertOk()->assertInertia(fn (Assert $page) => $page->where('bml_configured', true));
 
     settingsPage([
         'bml.api_key' => null,
         'bml.base_url' => 'https://api.example.mv',
-    ])->assertOk()->assertViewHas('bmlConfigured', false);
+    ])->assertOk()->assertInertia(fn (Assert $page) => $page->where('bml_configured', false));
 });
 
 it('warns when BML can take a payment but never confirm one', function () {
     // The trap the webhook fix (§5bp) creates: an api_key is enough to send a
     // family to the payment page, but with no webhook secret the payment can
-    // never be confirmed, so they pay and get nothing.
+    // never be confirmed, so they pay and get nothing. The page says so in
+    // every language the panel speaks.
     settingsPage([
         'bml.api_key' => 'a-real-key',
         'bml.base_url' => 'https://api.example.mv',
         'bml.webhook_secret' => null,
         'bml.webhook_allow_unsigned' => false,
-    ])->assertOk()
-        ->assertViewHas('bmlWebhookReady', false)
-        ->assertSee('payments will not confirm', false);
+    ])->assertOk()->assertInertia(fn (Assert $page) => $page
+        ->where('bml_configured', true)
+        ->where('bml_webhook_ready', false)
+        ->where('t.system_settings_bml_no_webhook', 'No webhook secret — payments will not confirm.'));
 
     settingsPage([
         'bml.api_key' => 'a-real-key',
         'bml.base_url' => 'https://api.example.mv',
         'bml.webhook_secret' => 'a-secret',
-    ])->assertOk()
-        ->assertViewHas('bmlWebhookReady', true)
-        ->assertDontSee('payments will not confirm', false);
+    ])->assertOk()->assertInertia(fn (Assert $page) => $page->where('bml_webhook_ready', true));
+
+    foreach (['dv', 'ar'] as $locale) {
+        expect(trans('admin.system_settings_bml_no_webhook', [], $locale))->not->toBe('No webhook secret — payments will not confirm.');
+    }
+});
+
+it('carries the application info and the quick links that exist', function () {
+    settingsPage([])->assertOk()->assertInertia(fn (Assert $page) => $page
+        ->where('settings.php_version', PHP_VERSION)
+        ->has('settings.laravel_version')
+        ->has('configuration_cached')
+        ->has('links', fn (Assert $links) => $links->each(fn (Assert $link) => $link->hasAll(['key', 'href']))));
 });
 
 it('falls back to the config default for tardies per absence', function () {

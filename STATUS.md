@@ -4414,6 +4414,36 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5jb. C9 slice 1: System Settings leaves Blade, and speaks three languages (2026-09-27)
+
+BACKLOG C9, `docs/ADMIN_PANEL.md` findings 9 and 10. Twenty-four of the
+panel's screens are Blade and every one of them is hardcoded English;
+a port is the moment to key the strings. The first, because it is the
+system admin's own and the smallest self-contained one: `/admin/settings`.
+
+**Built.** `SettingsController::index` renders `Settings/Index` (Inertia)
+from `ResolveIntegrationStatusAction`, which now owns what the Blade
+controller computed inline — the configuration overview, the SMS and BML
+badges with their reasons (`IntegrationStatusBadgesTest`'s history is in
+its docblock), whether the configuration is cached, and the quick links
+that exist. Every string is a key in the admin tranche, EN/DV/AR (32
+keys). *Clear all caches* posts through Inertia and the flash arrives in
+the shell; the flash text is keyed too. The Blade view is deleted, the
+`blade_screens` baseline is 245, `NavigationMap` no longer marks the
+entry `hard`, and `AdminPagesAreReachableTest`'s Blade list loses it.
+`IntegrationStatusBadgesTest` reads the props (`sms_configured`,
+`bml_configured`, `bml_webhook_ready`) instead of view data, adds the
+Dhivehi and Arabic wording of the webhook warning, and pins the
+application info and quick links. Walked: the page rendered its four
+status cards, five info rows and quick links; *Clear all caches* answered
+in place with no page load; the shell's Settings link is an Inertia visit;
+`/dv/admin/settings` rendered right-to-left with the Dhivehi heading and
+no English leftovers; `/ar/admin/settings` the Arabic heading. `admin.mjs`
+clicks the new button. Seen in passing: every Inertia page's browser tab
+reads "Laravel" — `AppShell` sets the heading, nothing sets the document
+title — a one-line `<Head>` for a later slice. Next in line, office
+first: Manage users, then the enrolment screens.
+
 ## 5ja. The login page fetched an image that did not exist, on every visit (2026-09-27)
 
 Seen in passing during the B3 walk (§5iw): every load of the login page
