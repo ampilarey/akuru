@@ -186,16 +186,20 @@ shell's missing admin links, four listings without CSV, the unguarded
 `users:clear-non-admin`, the uncapped prayer-times upload, the phantom
 `super_admin@` account in the auth guide.
 
-### Enrolment decisions record no actor — **open**
+### Enrolment decisions record no actor — **fixed (2026-09-27, STATUS §5ih)**
 
 Activate, reject, suspend, reinstate and the access window on
-`/admin/enrollments` write the status and nothing about who decided or
-when; `reject` writes it straight from the controller. Refunds, manual
-payments and wallet credits do record the actor. **Fix**: a `decided_by`
-/ `decided_at` pair on `course_enrollments` (additive, rule 9), set by the
-Actions, shown on the enrolment page. A general activity log of admin
-writes is a separate, platform-wide decision (only behaviour records and
-exam status carry audits today).
+`/admin/enrollments` wrote the status and nothing about who decided or
+when; `reject` wrote it straight from the controller. Refunds, manual
+payments and wallet credits do record the actor. **Fixed**: an additive
+`decided_by_user_id` / `decided_at` / `decision` triple on
+`course_enrollments` (rule 9), stamped by the five Actions (`reject` and
+the access window moved into Actions of their own), shown as "Last
+decision" on the enrolment page and carried in the CSV; the payment
+webhook's activation stamps nobody, because the system decided. The last
+decision is kept, not a log — a general activity log of admin writes is a
+separate, platform-wide decision (only behaviour records and exam status
+carry audits today).
 
 ### The CMS, instructors and enrolments are gated by role alone — **decided and fixed (2026-09-27)**
 

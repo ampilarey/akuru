@@ -48,7 +48,7 @@ class SuspendEnrollmentAction
      */
     public const SUSPENDABLE = ['pending', 'approved', 'active', 'completed'];
 
-    public function execute(CourseEnrollment $enrollment, ?string $reason = null): CourseEnrollment
+    public function execute(CourseEnrollment $enrollment, ?string $reason = null, ?int $decidedBy = null): CourseEnrollment
     {
         if (! in_array((string) $enrollment->status, self::SUSPENDABLE, true)) {
             throw ValidationException::withMessages([
@@ -58,6 +58,7 @@ class SuspendEnrollmentAction
 
         $enrollment->status = 'suspended';
         $enrollment->save();
+        app(RecordEnrollmentDecisionAction::class)->execute($enrollment, RecordEnrollmentDecisionAction::SUSPENDED, $decidedBy);
 
         return $enrollment->refresh();
     }
@@ -71,7 +72,7 @@ class SuspendEnrollmentAction
      * that was `pending` before suspension and comes back `active` is a
      * decision an admin can see and undo; a guess stored in a new column is not.
      */
-    public function reinstate(CourseEnrollment $enrollment): CourseEnrollment
+    public function reinstate(CourseEnrollment $enrollment, ?int $decidedBy = null): CourseEnrollment
     {
         if ((string) $enrollment->status !== 'suspended') {
             throw ValidationException::withMessages([
@@ -88,7 +89,7 @@ class SuspendEnrollmentAction
         // occupancy must be written before that lock is released. The check and
         // the status change used to be two statements, so two admins
         // reinstating at once could both pass a count of one free seat.
-        return DB::transaction(function () use ($enrollment): CourseEnrollment {
+        return DB::transaction(function () use ($enrollment, $decidedBy): CourseEnrollment {
             if ($enrollment->course_offering_id) {
                 app(ReserveOfferingSeatAction::class)
                     ->execute((int) $enrollment->course_offering_id);
@@ -96,6 +97,7 @@ class SuspendEnrollmentAction
 
             $enrollment->status = 'active';
             $enrollment->save();
+            app(RecordEnrollmentDecisionAction::class)->execute($enrollment, RecordEnrollmentDecisionAction::REINSTATED, $decidedBy);
 
             return $enrollment->refresh();
         });

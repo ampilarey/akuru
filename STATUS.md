@@ -4414,6 +4414,49 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5ih. Enrolment decisions record who decided, and when (2026-09-27)
+
+Admin-panel audit finding 6, KNOWN_ISSUES "Enrolment decisions record no
+actor". Activate, reject, suspend, reinstate and the access window on
+`/admin/enrollments` wrote the status and nothing about who decided or
+when; `reject` wrote it straight from the controller — the one status
+write the audit found in a controller. Refunds, manual payments and wallet
+credits do record the actor.
+
+**Built.** Migration `2026_09_27_000002`: three additive nullable columns
+on `course_enrollments` (rule 9) — `decided_by_user_id` (FK users,
+null on delete), `decided_at`, `decision` (`activated`, `rejected`,
+`suspended`, `reinstated`, `access_window`). Every existing row reads
+"no decision recorded". `RecordEnrollmentDecisionAction` stamps them and
+does nothing for a decision with no actor, so the payment webhook's
+activation (`ActivateEnrollmentAction` without an actor) never names a
+person. `ActivateEnrollmentAction` and `SuspendEnrollmentAction`
+(`execute`, `reinstate`) take the actor; `RejectEnrollmentAction` and
+`SetEnrollmentAccessWindowAction` are new, so the controller keeps no
+status write. The enrolment page shows "Last decision: Activated by
+Office Admin on 27 Sep 2026, 10:14" (or why there is none); the CSV
+gains Last Decision, Decided By, Decided At, and its export method got
+shorter, not longer (`ThinControllersTest`'s baseline may only shrink, so
+the row moved to `exportRow()`). The last decision is kept, not a log —
+a platform-wide activity log is its own decision (finding 15).
+
+**Tests.** `EnrollmentDecisionActorTest` (2, new): the five decisions
+through their routes each stamp the actor, the time and the decision, a
+second actor's access window overwrites the first's; the system's
+activation stamps nobody, the page says so, a decided one shows the
+stamp, the CSV carries the three columns. `EnrollmentDecisionRouteTest`,
+`EnrollmentSuspensionTest`, `EnrollmentAccessWindowTest` unchanged and
+green. Full suite **2318 passed**; architecture green.
+
+**Walked.** `admin.mjs` +2 steps as the educational admin: a live
+enrolment is suspended and the page reads "Suspended by Admin User on
+…", reinstated and it reads "Reinstated by …".
+
+**Docs.** KNOWN_ISSUES entry closed; ADMIN_PANEL finding 6.
+
+**Production.** `migrate --force` in the pull line adds the three columns;
+nothing to backfill.
+
 ## 5ig. Roles & access: the role screen under Manage users (2026-09-27)
 
 Slice 4 of ADR-040, BACKLOG C8, admin-panel audit finding 5. No screen
