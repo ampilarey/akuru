@@ -10,15 +10,22 @@ use App\Domains\Settings\Actions\SetSettingAction;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
+use Inertia\Response;
 
+/**
+ * Import prayer times: the bundled dataset, an uploaded salat.db or the
+ * synthetic fixture. Inertia since C9 slice 12 (STATUS §5jn).
+ */
 class ImportController extends Controller
 {
-    public function index()
+    public function index(): Response
     {
         abort_unless(auth()->user()?->can('prayer.manage'), 403);
 
-        return view('admin.prayer-times.import', [
-            'cacheVersion' => app(GetSettingAction::class)->execute('prayer_times_cache_version', 1),
+        return Inertia::render('PrayerTimes/Import', [
+            'cache_version' => (int) app(GetSettingAction::class)->execute('prayer_times_cache_version', 1),
+            't' => trans('admin'),
         ]);
     }
 
@@ -29,7 +36,7 @@ class ImportController extends Controller
         if ($request->boolean('seed_fixture')) {
             app(SeedSyntheticPrayerTimesAction::class)->execute();
 
-            return back()->with('success', 'Synthetic 366-day Malé fixture imported (not Bake&Grill).');
+            return back()->with('success', trans('admin.prayer_flash_fixture'));
         }
 
         if ($request->boolean('use_bundled')) {
@@ -52,7 +59,7 @@ class ImportController extends Controller
 
         $this->ensureDefaultIsland();
 
-        return back()->with('success', "Imported {$counts['categories']} categories, {$counts['islands']} islands, {$counts['times']} times.");
+        return back()->with('success', trans('admin.prayer_flash_imported', $counts));
     }
 
     /**

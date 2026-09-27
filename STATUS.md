@@ -4414,6 +4414,57 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5jn. C9 slice 12: prayer times leaves Blade — every `/admin/*` screen is Inertia (2026-09-27)
+
+BACKLOG C9, `docs/ADMIN_PANEL.md` findings 9 and 10; the twelfth port, and
+the last Blade under `/admin/*`. `/admin/prayer-times/*` — the islands
+hub, the import, the recipient groups list and form, the broadcasts list
+and draft form — was six Blade views (259 lines), hardcoded English, and
+since §5jm the Institute's Blade-shell fixture in four tests and one walk.
+
+**Built.** `IslandController` renders `PrayerTimes/Islands` (every island
+as the DTO's array, the cache version, the default island, the tranche);
+`ImportController` renders `PrayerTimes/Import` and its three posts flash
+keyed strings (the fixture, the counts of an import); `RecipientGroupController`
+renders `PrayerTimes/Groups` and `PrayerTimes/GroupForm` (keyed on the
+group, §5jj — a new group's save lands on its edit page, so the form must
+start afresh) with the member refs pretty-printed back; `BroadcastController`
+renders `PrayerTimes/Broadcasts` (rows with mode, status, island, sent and
+failed, cost; the filters; the modes and statuses from the enums; pages)
+and `PrayerTimes/BroadcastForm` (keyed; the islands and active groups as
+options; the snapshot presented: included, excluded, cost, whether the
+range must split with the blocks, the messages in three languages), with
+Preview and Confirm & queue as Inertia posts and the confirm button gated
+by the snapshot as the Blade was. The Actions' refusals keep their own
+words, shown as the first error. 86 keys in the admin tranche, EN/DV/AR.
+`resources/views/admin/` is gone (`blade_screens` 216); `NavigationMap`
+carries no `hard` under the panel and its comment says so; the reachability
+test's Blade list is empty (the loop now asserts nothing is marked);
+`AdminPanelAuditTest` reads every export link from props and pins that no
+panel item is `hard`. **The Institute's Blade-shell fixture moved** to the
+numbers dashboard (`dashboard.numbers`, the system admin's last Blade
+screen): `AdminLayoutTest` (title *Dashboard Numbers*), `AdminPagesAreReachableTest`,
+`WorkspacesTest` (reading the nav alone, since the dashboard's own body
+links the enrolments list), `admin-layout.mjs`. `AdminPrayerTimesScreensTest`
+(3): the islands hub and import as props, the fixture seeded from the
+import page with its flash and Malé listed after (ordered by atoll then
+name, so not first), the DV/AR keys, the educational admin's 403; a group
+created (refs parsed from "4, 5"), listed, read back for edit, updated
+inactive; a broadcast drafted from the form's options, read back, previewed
+(nobody consented: included 0, excluded 1, the Dhivehi message present),
+the confirm refused in the Action's words, the list filtered by status.
+Walked: a scratch walk — the hub in the Inertia shell with its three doors
+and CSV, the fixture seeded from the import page, a group saved and landing
+on its edit page then edited inactive and listed, a broadcast draft saved
+and landing on its page, the preview writing the snapshot with the confirm
+disabled, the list filtered with the export link carrying the filter, the
+Dhivehi broadcasts list and islands hub right-to-left with no English
+chrome (12/12); `admin.mjs` 41/41; `admin-pages.mjs` 3/3; `admin-hub.mjs`
+25/25; `admin-layout.mjs` 15/15 (on the numbers dashboard now). Full suite
+2376 passed. **Every `/admin/*` screen is Inertia.** What remains of
+BACKLOG C9 is the two Blade dashboards, an IA decision (their content's
+new home) rather than a port.
+
 ## 5jm. C9 slice 11: the courses CMS leaves Blade (2026-09-27)
 
 BACKLOG C9, `docs/ADMIN_PANEL.md` findings 9 and 10; the eleventh port,

@@ -79,10 +79,10 @@ it('names every admin landing page in the map, Blade screens marked for a full p
     expect($orphans)->toBeEmpty("Admin pages missing from NavigationMap (both shells render it):\n  ".implode("\n  ", $orphans));
 
     // Every Blade admin screen in the map is marked `hard`; every Inertia one
-    // is not — the sections and the screens inside them alike.
-    $blade = [
-        '/admin/prayer-times/islands', '/admin/prayer-times/groups', '/admin/prayer-times/broadcasts', '/admin/prayer-times/import',
-    ];
+    // is not — the sections and the screens inside them alike. Since C9
+    // slice 12 (STATUS §5jn) there is no Blade admin screen left, so the
+    // list is empty and the loop asserts that nothing is marked.
+    $blade = [];
     foreach ([...NavigationMap::groups(), ...array_map(fn ($items, $bar) => ['key' => $bar, 'items' => $items], NavigationMap::primary(), array_keys(NavigationMap::primary()))] as $group) {
         foreach ($group['items'] as $item) {
             foreach ([$item, ...($item['children'] ?? [])] as $entry) {
@@ -126,9 +126,10 @@ it('reaches every admin landing page from a Blade screen, as the role that runs 
 
         return $user;
     };
-    // The Institute's Blade shell: prayer times, since the whole website CMS is Inertia (C9 slice 11).
+    // The Institute's Blade shell: the numbers dashboard, the system admin's
+    // last Blade screen now that every `/admin/*` page is Inertia (C9 slice 12).
     $institute = $this->withoutLocalizationMiddleware()->actingAs($seed('super_admin', ['bookshop.manage', 'commerce.manage', 'library.manage', 'prayer.manage', 'pronunciation.manage', 'operations.manage', 'translations.manage']))
-        ->get(route('admin.prayer-times.islands'))->assertOk()->getContent();
+        ->get(route('dashboard.numbers'))->assertOk()->getContent();
     // The School's Blade shell: the Quran progress list, since the enrolment lists are Inertia (C9 slice 4).
     $school = $this->withoutLocalizationMiddleware()->actingAs($seed('admin', ['registers.manage', 'exams.manage']))
         ->get(route('quran-progress.index'))->assertOk()->getContent();

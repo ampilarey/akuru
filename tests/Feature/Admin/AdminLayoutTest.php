@@ -22,16 +22,15 @@ function layoutAdmin(): User
 
 it('titles every admin Blade screen from its route when the screen sets none', function () {
     $admin = layoutAdmin();
-    // Prayer times is the Institute's Blade-shell fixture: the whole website CMS is Inertia since C9 slice 11.
-    $admin->givePermissionTo(\Spatie\Permission\Models\Permission::findOrCreate('prayer.manage', 'web'));
-    $page = test()->withoutLocalizationMiddleware()->actingAs($admin)->get(route('admin.prayer-times.islands'))->assertOk();
-    $page->assertSee('<title>Prayer Times Islands - '.config('app.name'), false);
-    test()->withoutLocalizationMiddleware()->actingAs($admin)->get(route('admin.prayer-times.groups.index'))->assertOk()
-        ->assertSee('<title>Prayer Times Groups - '.config('app.name'), false);
-    // No remaining admin Blade screen names itself: the last two that did (the
-    // instructors list and form) left for Inertia in C9 slice 3 (STATUS §5je),
-    // so every Blade title now comes from the route. Pinned, so a new
-    // `@section('title'` is a deliberate choice rather than a leftover.
+    // Every `/admin/*` screen is Inertia since C9 slice 12 (STATUS §5jn). The
+    // Blade shell survives on the numbers dashboard, the Institute's last
+    // Blade screen, which titles from the route.
+    test()->withoutLocalizationMiddleware()->actingAs($admin)->get(route('dashboard.numbers'))->assertOk()
+        ->assertSee('<title>Dashboard Numbers - '.config('app.name'), false);
+    // No admin Blade screen names itself — there is none left to (the last
+    // two that did, the instructors list and form, left for Inertia in C9
+    // slice 3, STATUS §5je). Pinned, so a new `views/admin/**` Blade screen
+    // with a `@section('title'` is a deliberate choice rather than a leftover.
     $titled = collect(glob(resource_path('views/admin/**/*.blade.php')))->merge(glob(resource_path('views/admin/**/**/*.blade.php')))
         ->filter(fn ($f) => str_contains((string) file_get_contents($f), "@section('title'"));
     expect($titled->count())->toBe(0);

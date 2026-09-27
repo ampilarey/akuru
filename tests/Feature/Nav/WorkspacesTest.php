@@ -262,10 +262,12 @@ it('renders the Blade shell from the same map, with the switcher for a person wh
     $lone = $this->withoutLocalizationMiddleware()->actingAs(workspaceUser(['admin']))->get(route('quran-progress.index'))->assertOk()->getContent();
     expect($lone)->not->toContain('Workspaces')->not->toContain('data-testid="workspace-switcher"');
 
-    // The system admin on a Blade CMS screen sees the Institute, not the School.
+    // The system admin on a Blade screen sees the Institute, not the School.
     $super = workspaceUser(['super_admin'], INSTITUTE_PERMISSIONS);
-    // Prayer times: the whole website CMS is Inertia since C9 slice 11.
-    $cms = $this->withoutLocalizationMiddleware()->actingAs($super)->get(route('admin.prayer-times.islands'))->assertOk()->getContent();
-    expect($cms)->toContain('data-nav-section="panel_website"')->toContain('/admin/commerce')
+    // The numbers dashboard: every `/admin/*` screen is Inertia since C9 slice 12.
+    $cms = $this->withoutLocalizationMiddleware()->actingAs($super)->get(route('dashboard.numbers'))->assertOk()->getContent();
+    // The nav alone: the dashboard's own body links the enrolments list.
+    $nav = substr($cms, 0, (int) strpos($cms, '</nav>'));
+    expect($nav)->toContain('data-nav-section="panel_website"')->toContain('/admin/commerce')
         ->not->toContain('data-nav-section="school_year"')->not->toContain('/admin/enrollments');
 });

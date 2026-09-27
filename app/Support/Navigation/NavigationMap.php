@@ -276,12 +276,14 @@ final class NavigationMap
                 ['key' => 'my_performance', 'href' => '/portal/appraisals', 'roles' => $staff],
                 ['key' => 'payslips', 'href' => '/portal/payslips', 'roles' => $staff],
             ]],
-            // The admin panel. Its Blade screens carry `hard`: the shell opens
-            // them with a full page load, because an Inertia visit to a Blade
-            // route gets a non-Inertia response and shows it in a modal (the
-            // admin-panel audit, STATUS §5hs). Visibility still comes off each
-            // route's own gate — `role:super_admin` hides Users and Settings
-            // from everyone else, `can:commerce.manage` hides Commerce.
+            // The admin panel. A Blade screen would carry `hard` (the shell
+            // opens it with a full page load, because an Inertia visit to a
+            // Blade route gets a non-Inertia response and shows it in a modal —
+            // the admin-panel audit, STATUS §5hs); since C9 slice 12 (STATUS
+            // §5jn) every screen here is Inertia and none does. Visibility
+            // still comes off each route's own gate — `role:super_admin` hides
+            // Users and Settings from everyone else, `can:commerce.manage`
+            // hides Commerce.
             // The admin panel, in four parts, each a group of its own
             // (`adminPanel()`): Admissions belongs to the School workspace,
             // the other three to the Institute (STATUS §5id).
@@ -321,11 +323,11 @@ final class NavigationMap
                 ]],
                 // The instructors shown on the public website: website content.
                 ['key' => 'admin_instructors', 'href' => '/admin/instructors'],
-                ['key' => 'prayer_times', 'href' => '/admin/prayer-times/islands', 'hard' => true, 'children' => [
-                    ['key' => 'prayer_islands', 'href' => '/admin/prayer-times/islands', 'hard' => true],
-                    ['key' => 'prayer_groups', 'href' => '/admin/prayer-times/groups', 'hard' => true],
-                    ['key' => 'prayer_broadcasts', 'href' => '/admin/prayer-times/broadcasts', 'hard' => true],
-                    ['key' => 'prayer_import', 'href' => '/admin/prayer-times/import', 'hard' => true],
+                ['key' => 'prayer_times', 'href' => '/admin/prayer-times/islands', 'children' => [
+                    ['key' => 'prayer_islands', 'href' => '/admin/prayer-times/islands'],
+                    ['key' => 'prayer_groups', 'href' => '/admin/prayer-times/groups'],
+                    ['key' => 'prayer_broadcasts', 'href' => '/admin/prayer-times/broadcasts'],
+                    ['key' => 'prayer_import', 'href' => '/admin/prayer-times/import'],
                 ]],
                 ['key' => 'pronunciation_office', 'href' => '/admin/pronunciation'],
             ]],
