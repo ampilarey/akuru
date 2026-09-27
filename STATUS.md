@@ -4414,6 +4414,28 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5il. Clear caches rebuilds a cached configuration instead of dropping it (2026-09-27)
+
+Admin-panel audit finding 13 (`docs/ADMIN_PANEL.md` §3), held as a note.
+*Clear all caches* on `/admin/settings` ran `config:clear`, so a
+production host that had deployed with `config:cache` — the deploy line
+does — ran uncached from that click until the next deploy, every request
+re-reading forty config files and `.env`. Harmless, slower, and the kind
+of thing nobody notices.
+
+**Built.** `Settings\Actions\ClearApplicationCachesAction` takes whether
+the configuration was cached (`app()->configurationIsCached()`, passed
+in by the thin controller) and runs `config:cache` — clear and rebuild in
+one step — where it was, `config:clear` where it was not; the app cache,
+views and routes are cleared as before, and routes are never cached
+(the deploy line does not, and this button must not start). The screen
+says the configuration is cached and will be rebuilt when that is so;
+the flash says which happened. `ClearCachesKeepsConfigCachedTest` (3)
+mocks the Artisan facade, because a real `config:cache` writes
+`bootstrap/cache/config.php` and every later test would read it; the
+route test also reads the educational admin refused. Walked in
+`admin.mjs`.
+
 ## 5ik. Every numeric route throttle carries its own prefix (2026-09-27)
 
 KNOWN_ISSUES, "Ten cart adds in a minute got the checkout refused", the
