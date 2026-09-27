@@ -196,6 +196,12 @@ return [
     // Library author page (L8) — DV/AR first pass pending native review (operator item)
     'Published works' => 'Published works',
     'Featured works' => 'أعمال مميزة',
+    // B7 (§9.1): search inside an item — AR first pass pending native review
+    'Search in this item' => 'ابحث داخل هذا العمل',
+    'No pages match ":term".' => 'لا توجد صفحات تطابق ":term".',
+    ':count page matches ":term".|:count pages match ":term".' => 'صفحة واحدة تطابق ":term".|:count صفحات تطابق ":term".',
+    'Showing the first :count.' => 'تُعرض أول :count.',
+    'Page :page' => 'الصفحة :page',
     'Website' => 'الموقع الإلكتروني',
     ':count published work|:count published works' => ':count published work|:count published works',
     'Writing with Akuru since :year' => 'Writing with Akuru since :year',

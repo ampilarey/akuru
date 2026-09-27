@@ -9,6 +9,7 @@ use App\Domains\Library\Actions\RecordLibraryReadingEventAction;
 use App\Domains\Library\Actions\ResolveLibraryAccessAction;
 use App\Domains\Library\Actions\SaveLibraryPageNoteAction;
 use App\Domains\Library\Actions\SaveReadingProgressAction;
+use App\Domains\Library\Actions\SearchLibraryItemPagesAction;
 use App\Domains\Library\Actions\ToggleLibraryBookmarkAction;
 use App\Domains\Library\Models\LibraryItem;
 use App\Http\Controllers\Controller;
@@ -66,7 +67,12 @@ class LibraryReaderController extends Controller
             }
         }
 
-        return view('public.library.reader', ['reader' => $reader]);
+        // B7 (§9.1): search inside the item, over the same window the gate
+        // above allowed — the action asks the gate itself, so a previewer
+        // cannot search past their sample. Null when nothing was asked.
+        $search = app(SearchLibraryItemPagesAction::class)->forQuery((int) $reader['id'], $user?->id, $request->query('q'));
+
+        return view('public.library.reader', ['reader' => $reader, 'search' => $search]);
     }
 
     public function progress(Request $request, string $slug): RedirectResponse

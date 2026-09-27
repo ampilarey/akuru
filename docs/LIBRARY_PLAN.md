@@ -93,7 +93,7 @@ Never expose a PDF URL directly. Original files in private storage; reading happ
 
 ## 10. Reader Dashboard
 
-> **9.1 reading comfort built 2026-09-25 (STATUS §5gq):** font size, light/sepia/dark, text direction, full screen (kept in the reader's browser), and *Mark as completed*. Not built: private highlights, in-book search, reading time per session.
+> **9.1 reading comfort built 2026-09-25 (STATUS §5gq):** font size, light/sepia/dark, text direction, full screen (kept in the reader's browser), and *Mark as completed*. **In-book search built 2026-09-27 (B7, STATUS §5iq)**: a search box in the reader, over the pages this reader may open (all with access, the first N on a preview, none otherwise), hits as page links with a plain-text snippet. Not built: private highlights, reading time per session.
 
 > **Parent's view built 2026-09-27 (B8, STATUS §5io):** from *My children* a parent opens a verified child's reading progress and purchases (`/portal/children/{student}/library`, with a CSV). Bookmarks and notes are the child's private words and stay on the child's own *My Library*.
 
