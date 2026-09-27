@@ -2,20 +2,39 @@
 
 namespace App\Domains\HR\Http\Controllers;
 
+use App\Domains\HR\Actions\ListAdminInstructorsAction;
+use App\Domains\HR\Actions\SaveInstructorAction;
 use App\Domains\HR\Models\Instructor;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
+use Inertia\Inertia;
+use Inertia\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
+/**
+ * The instructors shown on the public website (docs/ADMIN_PANEL.md).
+ * Inertia since C9 slice 3 (STATUS §5je), with its strings keyed for
+ * Dhivehi and Arabic. `role:super_admin` on the route group.
+ */
 class InstructorController extends Controller
 {
-    public function index()
-    {
-        $instructors = Instructor::withCount('courses')->ordered()->paginate(20);
+    private const RULES = [
+        'name' => 'required|string|max:255',
+        'bio' => 'nullable|string',
+        'qualification' => 'nullable|string|max:255',
+        'specialization' => 'nullable|string|max:255',
+        'email' => 'nullable|email|max:255',
+        'phone' => 'nullable|string|max:30',
+        'is_active' => 'boolean',
+        'sort_order' => 'nullable|integer|min:0',
+        'photo' => 'nullable|image|max:2048',
+    ];
 
-        return view('admin.instructors.index', compact('instructors'));
+    public function index(): Response
+    {
+        return Inertia::render('Instructors/Index', app(ListAdminInstructorsAction::class)->execute() + ['t' => trans('admin')]);
     }
 
     /**
@@ -24,7 +43,7 @@ class InstructorController extends Controller
      */
     public function export(): StreamedResponse
     {
-        $rows = Instructor::withCount('courses')->ordered()->get();
+        $rows = app(ListAdminInstructorsAction::class)->query()->get();
 
         return response()->streamDownload(function () use ($rows): void {
             $out = fopen('php://output', 'w');
@@ -36,75 +55,37 @@ class InstructorController extends Controller
         }, 'instructors.csv', ['Content-Type' => 'text/csv']);
     }
 
-    public function create()
+    public function create(): Response
     {
-        return view('admin.instructors.form', ['instructor' => new Instructor]);
+        return Inertia::render('Instructors/Form', ['instructor' => null, 't' => trans('admin')]);
     }
 
-    public function store(Request $request)
+    public function store(Request $request): RedirectResponse
     {
-        $data = $request->validate([
-            'name' => 'required|string|max:255',
-            'bio' => 'nullable|string',
-            'qualification' => 'nullable|string|max:255',
-            'specialization' => 'nullable|string|max:255',
-            'email' => 'nullable|email|max:255',
-            'phone' => 'nullable|string|max:30',
-            'is_active' => 'boolean',
-            'sort_order' => 'integer|min:0',
-            'photo' => 'nullable|image|max:2048',
-        ]);
+        $data = $request->validate(self::RULES);
+        app(SaveInstructorAction::class)->execute(null, $data, $request->file('photo'));
 
-        $data['slug'] = Str::slug($data['name']);
-        $data['is_active'] = $request->boolean('is_active', true);
-
-        if ($request->hasFile('photo')) {
-            $data['photo'] = $request->file('photo')->store('instructors', 'public');
-        }
-
-        Instructor::create($data);
-
-        return redirect()->route('admin.instructors.index')
-            ->with('success', 'Instructor created.');
+        return redirect()->route('admin.instructors.index')->with('success', trans('admin.instructors_created'));
     }
 
-    public function edit(Instructor $instructor)
+    public function edit(Instructor $instructor): Response
     {
-        return view('admin.instructors.form', compact('instructor'));
+        return Inertia::render('Instructors/Form', ['instructor' => app(ListAdminInstructorsAction::class)->one($instructor), 't' => trans('admin')]);
     }
 
-    public function update(Request $request, Instructor $instructor)
+    public function update(Request $request, Instructor $instructor): RedirectResponse
     {
-        $data = $request->validate([
-            'name' => 'required|string|max:255',
-            'bio' => 'nullable|string',
-            'qualification' => 'nullable|string|max:255',
-            'specialization' => 'nullable|string|max:255',
-            'email' => 'nullable|email|max:255',
-            'phone' => 'nullable|string|max:30',
-            'is_active' => 'boolean',
-            'sort_order' => 'integer|min:0',
-            'photo' => 'nullable|image|max:2048',
-        ]);
+        $data = $request->validate(self::RULES);
+        app(SaveInstructorAction::class)->execute($instructor, $data, $request->file('photo'));
 
-        $data['is_active'] = $request->boolean('is_active', true);
-
-        if ($request->hasFile('photo')) {
-            $data['photo'] = $request->file('photo')->store('instructors', 'public');
-        }
-
-        $instructor->update($data);
-
-        return redirect()->route('admin.instructors.index')
-            ->with('success', 'Instructor updated.');
+        return redirect()->route('admin.instructors.index')->with('success', trans('admin.instructors_updated'));
     }
 
-    public function destroy(Instructor $instructor)
+    public function destroy(Instructor $instructor): RedirectResponse
     {
         $instructor->courses()->detach();
         $instructor->delete();
 
-        return redirect()->route('admin.instructors.index')
-            ->with('success', 'Instructor deleted.');
+        return redirect()->route('admin.instructors.index')->with('success', trans('admin.instructors_deleted'));
     }
 }

@@ -81,7 +81,7 @@ it('names every admin landing page in the map, Blade screens marked for a full p
     // Every Blade admin screen in the map is marked `hard`; every Inertia one
     // is not — the sections and the screens inside them alike.
     $blade = [
-        '/admin/enrollments', '/admin/enrollments/payments', '/admin/instructors',
+        '/admin/enrollments', '/admin/enrollments/payments',
         '/admin/public-site/pages', '/admin/public-site/courses', '/admin/public-site/research', '/admin/public-site/daily-content', '/admin/public-site/daily-content/queue', '/admin/public-site/daily-subscriptions', '/admin/public-site/leads', '/admin/public-site/funnel',
         '/admin/prayer-times/islands', '/admin/prayer-times/groups', '/admin/prayer-times/broadcasts', '/admin/prayer-times/import',
     ];
