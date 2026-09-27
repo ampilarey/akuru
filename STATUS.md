@@ -4414,6 +4414,33 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5ji. C9 slice 7: the daily subscriptions list leaves Blade (2026-09-27)
+
+BACKLOG C9, `docs/ADMIN_PANEL.md` findings 9 and 10; the seventh port.
+`/admin/public-site/daily-subscriptions` (W24) was a 75-line read-only
+Blade page: three channel tiles, subscribers per type, the delivery
+failures and the subscription table, with a CSV.
+
+**Built.** `DailySubscriptionController::index` renders
+`Website/DailySubscriptions` with the metrics from
+`ListDailyContentSubscriptionsAction` (unchanged) and the tranche; the
+`daily_content.manage` gate stays in the controller as before. The page:
+the cross-links (leads as an Inertia visit; daily content, research and
+prayer times as full loads, still Blade), *Export CSV*, the opt-in note,
+the three channel tiles (`data-metric-channel` kept), subscribers per
+type, the failures (`data-delivery-failure` kept) and the table, with
+channel, type and status labels keyed. 29 keys in the admin tranche,
+EN/DV/AR. The Blade view is deleted (`blade_screens` 236); `NavigationMap`
+drops the `hard` flag; the reachability test's Blade list loses it;
+`DailyContentSubscriptionTest` reads the metrics from the props.
+`AdminDailySubscriptionsScreenTest` (1): the empty metrics as props, the
+DV/AR keys, the educational admin's 403. Walked: a scratch walk — the
+page in the Inertia shell with its tab title and CSV, the three tiles,
+the leads link as an Inertia visit, `/dv/…/daily-subscriptions`
+right-to-left with no English leftovers (6/6); `admin.mjs` 41/41;
+`admin-pages.mjs` 3/3. Full suite 2369 passed. Next: the research posts
+list and form.
+
 ## 5jh. C9 slice 6: the CMS leads and funnel lists leave Blade (2026-09-27)
 
 BACKLOG C9, `docs/ADMIN_PANEL.md` findings 9 and 10; the sixth port and

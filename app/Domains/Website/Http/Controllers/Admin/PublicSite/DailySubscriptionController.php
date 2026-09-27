@@ -6,18 +6,24 @@ use App\Domains\Website\Actions\ListDailyContentSubscriptionsAction;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
+use Inertia\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
+/**
+ * Daily content subscribers (W24). Inertia since C9 slice 7 (STATUS §5ji),
+ * with its strings keyed for Dhivehi and Arabic. `role:super_admin` on the
+ * route group and `daily_content.manage` here.
+ */
 class DailySubscriptionController extends Controller
 {
-    public function index(Request $request)
+    public function index(Request $request): Response
     {
         abort_unless($request->user()?->can('daily_content.manage'), 403);
 
-        $metrics = app(ListDailyContentSubscriptionsAction::class)->metrics();
-
-        return view('admin.public-site.daily-subscriptions.index', [
-            'metrics' => $metrics,
+        return Inertia::render('Website/DailySubscriptions', [
+            'metrics' => app(ListDailyContentSubscriptionsAction::class)->metrics(),
+            't' => trans('admin'),
         ]);
     }
 

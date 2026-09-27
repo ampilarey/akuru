@@ -315,7 +315,7 @@ final class NavigationMap
                     ['key' => 'cms_research', 'href' => '/admin/public-site/research', 'hard' => true],
                     ['key' => 'cms_daily_content', 'href' => '/admin/public-site/daily-content', 'hard' => true],
                     ['key' => 'cms_daily_queue', 'href' => '/admin/public-site/daily-content/queue', 'hard' => true],
-                    ['key' => 'cms_subscriptions', 'href' => '/admin/public-site/daily-subscriptions', 'hard' => true],
+                    ['key' => 'cms_subscriptions', 'href' => '/admin/public-site/daily-subscriptions'],
                     ['key' => 'cms_leads', 'href' => '/admin/public-site/leads'],
                     ['key' => 'cms_funnel', 'href' => '/admin/public-site/funnel'],
                 ]],
