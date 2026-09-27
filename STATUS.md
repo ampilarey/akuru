@@ -4414,6 +4414,43 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5jh. C9 slice 6: the CMS leads and funnel lists leave Blade (2026-09-27)
+
+BACKLOG C9, `docs/ADMIN_PANEL.md` findings 9 and 10; the sixth port and
+the first of the website CMS. `/admin/public-site/leads` (W14) and
+`/admin/public-site/funnel` (W16, ADR-022) were an 80-line and a 79-line
+Blade table, hardcoded English, read-only, each with a GET filter form
+and a CSV.
+
+**Built.** `LeadController::index` renders `Website/Leads` with the rows
+from `ListLeadsAction` (unchanged: unknown filter values are already
+ignored there), the filters, the source and status vocabularies from the
+enums, and the tranche; `FunnelController::index` renders
+`Website/Funnel` with the report from `ComposeCourseFunnelReportAction`
+and the course-id filter. The pages: the cross-links to the other CMS
+screens (the funnel and leads as Inertia visits; courses and daily
+content as full loads, still Blade), *Export CSV* carrying the filters,
+the filter form as an Inertia visit with *Clear*, keyed source and
+status labels and a status badge, the decision rule (ADR-022) and per
+course the counts, the view-to-click rate and the decision sentence.
+**The decision sentence stays the domain's English** ("Iterate checkout
+first step …", "Keep iterating W1 content …"): it is the same string on
+the page and in the CSV, and it is analyst copy referencing ADR-022, not
+UI; keying it would belong to the Website domain, not to this port. 40
+keys in the admin tranche, EN/DV/AR. The two Blade views are deleted
+(`blade_screens` 237); `NavigationMap` drops both `hard` flags; the
+reachability test's Blade list loses both; `CourseFunnelTest` and
+`CourseLeadCaptureTest` read the props. `AdminLeadsFunnelScreensTest`
+(1): the rows, the filters, an unknown source ignored, the funnel's
+course-id filter, the DV/AR keys, the educational admin's 403 on both.
+Walked: a scratch walk — both lists in the Inertia shell, the source
+filter as an Inertia visit with the CSV link carrying it, the funnel
+opened from the leads as an Inertia visit with the rule and its CSV, the
+course-id filter narrowing with *Clear*, `/dv/…/leads` and `/dv/…/funnel`
+right-to-left with no English UI leftovers (8/8); `admin.mjs` 41/41;
+`admin-pages.mjs` 3/3. Full suite 2368 passed. Next: the daily subscriptions list,
+then research, then the pages and courses CMS with their forms.
+
 ## 5jg. C9 slice 5: the one-enrolment page leaves Blade (2026-09-27)
 
 BACKLOG C9, `docs/ADMIN_PANEL.md` findings 9 and 10; the fifth port, and

@@ -316,8 +316,8 @@ final class NavigationMap
                     ['key' => 'cms_daily_content', 'href' => '/admin/public-site/daily-content', 'hard' => true],
                     ['key' => 'cms_daily_queue', 'href' => '/admin/public-site/daily-content/queue', 'hard' => true],
                     ['key' => 'cms_subscriptions', 'href' => '/admin/public-site/daily-subscriptions', 'hard' => true],
-                    ['key' => 'cms_leads', 'href' => '/admin/public-site/leads', 'hard' => true],
-                    ['key' => 'cms_funnel', 'href' => '/admin/public-site/funnel', 'hard' => true],
+                    ['key' => 'cms_leads', 'href' => '/admin/public-site/leads'],
+                    ['key' => 'cms_funnel', 'href' => '/admin/public-site/funnel'],
                 ]],
                 // The instructors shown on the public website: website content.
                 ['key' => 'admin_instructors', 'href' => '/admin/instructors'],

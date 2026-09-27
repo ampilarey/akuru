@@ -6,18 +6,26 @@ use App\Domains\Website\Actions\ComposeCourseFunnelReportAction;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
+use Inertia\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
+/**
+ * The course funnel report (W16, ADR-022). Inertia since C9 slice 6 (STATUS
+ * §5jh), with its UI strings keyed for Dhivehi and Arabic; the decision
+ * sentence is the domain's, the same on the page and in the CSV.
+ * `role:super_admin` on the route group.
+ */
 class FunnelController extends Controller
 {
-    public function index(Request $request)
+    public function index(Request $request): Response
     {
         $courseId = $request->filled('course_id') ? (int) $request->input('course_id') : null;
-        $reports = app(ComposeCourseFunnelReportAction::class)->execute($courseId);
 
-        return view('admin.public-site.funnel.index', [
-            'reports' => $reports,
-            'courseId' => $courseId,
+        return Inertia::render('Website/Funnel', [
+            'reports' => app(ComposeCourseFunnelReportAction::class)->execute($courseId),
+            'course_id' => $courseId,
+            't' => trans('admin'),
         ]);
     }
 
