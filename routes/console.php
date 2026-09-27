@@ -22,6 +22,8 @@ Schedule::command('bookshop:mature-earnings')->dailyAt('03:10')->timezone('India
 Schedule::command('bookshop:issue-commission-invoices')->monthlyOn(1, '03:20')->timezone('Indian/Maldives');
 // BOOKSHOP_PLAN B9c: one reminder for a signed-in customer's cart left for a day.
 Schedule::command('bookshop:remind-abandoned-carts')->hourly();
+// B11 (LIBRARY_PLAN §41): the continue-reading nudge, once a day, in-app.
+Schedule::command('library:remind-readers')->dailyAt('09:00')->timezone('Indian/Maldives');
 // BOOKSHOP_PLAN B9e: the catalogue to the search server, only while one is chosen.
 Schedule::command('bookshop:search-sync')->hourly()->when(fn () => config('bookshop.search.driver') === 'meilisearch');
 

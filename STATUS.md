@@ -4414,6 +4414,32 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5iu. Library B11: the notices the data supports (2026-09-27)
+
+BACKLOG B11, LIBRARY_PLAN §41. The Library told writers and the office
+what happened to submissions and money, and told a reader when a
+purchase granted access; the reader-facing notices the plan lists — a
+writer you read published again, a book you left half-read — and the
+office's "suspicious activity" were not built.
+
+**Built.** Three, all in-app through `NotifyLibraryUserAction` (category
+`library`, switchable in preferences). (1) `NotifyReadersOfNewWorkAction`,
+from `PublishLibraryItemAction`: there is no "follow a writer", so the
+readers told are those who have read or bought another work by the
+same writer — the people with a reason to hear — capped at five hundred.
+(2) `RemindReadersToContinueAction`, run by `library:remind-readers`
+daily at 09:00: a book opened, not finished, untouched for seven days
+or more, gets one nudge with a link back to its page; not again for a
+fortnight (`library_reading_progress.reminded_at`, migration
+`2026_09_27_000009`, additive), and never once thirty days cold. (3)
+`DetectLibraryReadingAbuseAction` tells the office when it raises a
+**new** alert (a widened one is the same alert), with the queue's
+address. `LibraryNotificationsTest` (3). Walked directly: a reader with
+a ten-day-old half-read book, the command run, the nudge on their
+portal Notifications page linking to the page. Not built: discount
+used, payment issue, large wallet adjustment, copyright complaint (no
+event or form behind them yet); email/SMS channels.
+
 ## 5it. Library B14: the Library over a period, for the office (2026-09-27)
 
 BACKLOG B14, LIBRARY_PLAN §29. The office had sales per item, the
