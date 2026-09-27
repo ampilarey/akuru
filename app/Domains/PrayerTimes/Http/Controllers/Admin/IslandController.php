@@ -3,22 +3,29 @@
 namespace App\Domains\PrayerTimes\Http\Controllers\Admin;
 
 use App\Domains\PrayerTimes\Actions\ListPrayerIslandsAction;
+use App\Domains\PrayerTimes\DTOs\IslandDTO;
 use App\Domains\Settings\Actions\GetSettingAction;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
-use Illuminate\Http\Request;
+use Inertia\Inertia;
+use Inertia\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
+/**
+ * The prayer islands list — the prayer-times hub. Inertia since C9 slice 12
+ * (STATUS §5jn), with its strings keyed for Dhivehi and Arabic.
+ */
 class IslandController extends Controller
 {
-    public function index(Request $request)
+    public function index(): Response
     {
         $this->authorizeManage();
 
-        return view('admin.prayer-times.islands', [
-            'islands' => app(ListPrayerIslandsAction::class)->execute(false),
-            'cacheVersion' => app(GetSettingAction::class)->execute('prayer_times_cache_version', 1),
-            'defaultIslandId' => app(GetSettingAction::class)->execute('prayer.default_island_id'),
+        return Inertia::render('PrayerTimes/Islands', [
+            'islands' => app(ListPrayerIslandsAction::class)->execute(false)->map(fn (IslandDTO $island) => $island->toArray())->values()->all(),
+            'cache_version' => (int) app(GetSettingAction::class)->execute('prayer_times_cache_version', 1),
+            'default_island_id' => app(GetSettingAction::class)->execute('prayer.default_island_id'),
+            't' => trans('admin'),
         ]);
     }
 

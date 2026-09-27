@@ -69,17 +69,19 @@ it('exports the instructors, the prayer recipient groups, the CMS pages and the 
         auditAs($teacher)->get(route($route))->assertForbidden();
     }
 
-    // The link is on each screen. The Inertia lists (instructors since C9
-    // slice 3, pages since slice 10, courses since slice 11) carry it in the
-    // page's props (and `admin.mjs` sees the rendered `export-csv` test id);
-    // the Blade prayer-times groups screen carries it in HTML.
-    auditAs($office)->get(route('admin.instructors.index'))->assertOk()
-        ->assertInertia(fn (Assert $page) => $page->component('Instructors/Index')->where('t.instructors_export', 'Export CSV'));
-    auditAs($office)->get(route('admin.pages.index'))->assertOk()
-        ->assertInertia(fn (Assert $page) => $page->component('Website/Pages')->where('t.pages_export', 'Export CSV'));
-    auditAs($office)->get(route('admin.courses.index'))->assertOk()
-        ->assertInertia(fn (Assert $page) => $page->component('Website/Courses')->where('t.courses_export', 'Export CSV'));
-    auditAs($office)->get(route('admin.prayer-times.groups.index'))->assertOk()->assertSee('data-testid="export-csv"', false);
+    // The link is on each screen. Every list is Inertia now (instructors since
+    // C9 slice 3, pages since slice 10, courses since slice 11, the prayer
+    // groups since slice 12), so the link is in the page's props — and
+    // `admin.mjs` sees the rendered `export-csv` test id on each.
+    foreach ([
+        'admin.instructors.index' => ['Instructors/Index', 't.instructors_export'],
+        'admin.pages.index' => ['Website/Pages', 't.pages_export'],
+        'admin.courses.index' => ['Website/Courses', 't.courses_export'],
+        'admin.prayer-times.groups.index' => ['PrayerTimes/Groups', 't.prayer_export'],
+    ] as $screen => [$component, $key]) {
+        auditAs($office)->get(route($screen))->assertOk()
+            ->assertInertia(fn (Assert $page) => $page->component($component)->where($key, 'Export CSV'));
+    }
 });
 
 it('offers the admin panel in the Inertia More menu by workspace, Blade screens marked for a full page load and gated by their routes', function () {
@@ -91,8 +93,10 @@ it('offers the admin panel in the Inertia More menu by workspace, Blade screens 
     $items = collect($nav['groups'])->flatMap(fn ($group) => $group['items'])->keyBy('href');
     expect($items->keys()->all())->toContain('/admin/instructors', '/admin/public-site/pages', '/admin/commerce', '/admin/library', '/admin/bookshop', '/admin/prayer-times/islands', '/admin/pronunciation', '/admin/translations', '/admin/operations', '/admin/users', '/admin/settings')
         ->not->toContain('/admin/enrollments');
-    // C9 slice 10: the pages CMS is Inertia; prayer times is still Blade.
-    expect($items['/admin/prayer-times/islands']['hard'] ?? false)->toBeTrue()
+    // C9 slice 12: every admin screen is Inertia, so nothing in the panel is
+    // marked for a full page load any more.
+    expect($items->filter(fn ($item) => ! empty($item['hard']))->keys()->all())->toBe([])
+        ->and($items['/admin/prayer-times/islands'])->not->toHaveKey('hard')
         ->and($items['/admin/public-site/pages'])->not->toHaveKey('hard')
         // C9 slice 2: Manage users is an Inertia page now, like Commerce.
         ->and($items['/admin/users'])->not->toHaveKey('hard')

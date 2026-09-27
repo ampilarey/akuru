@@ -13,7 +13,7 @@
 // expected direction, and the test asks you to update the count below when you
 // do.
 //
-// Count: 222 (a document template, not a screen — see the documents block;
+// Count: 216 (a document template, not a screen — see the documents block;
 // the five public bookshop views of BOOKSHOP_PLAN B1b, the five customer
 // pages of B2, the two storefront partials of B4, the sections, menu and
 // vendor page of B5 and the customer's wishlist of B7 — see the public
@@ -34,12 +34,6 @@ return [
     'account/set-password.blade.php',
 
     // admin — 30
-    'admin/prayer-times/broadcasts/form.blade.php',
-    'admin/prayer-times/broadcasts/index.blade.php',
-    'admin/prayer-times/groups/form.blade.php',
-    'admin/prayer-times/groups/index.blade.php',
-    'admin/prayer-times/import.blade.php',
-    'admin/prayer-times/islands.blade.php',
 
     // analytics — 2
     'analytics/dashboard.blade.php',
