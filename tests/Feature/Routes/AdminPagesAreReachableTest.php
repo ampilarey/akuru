@@ -81,7 +81,7 @@ it('names every admin landing page in the map, Blade screens marked for a full p
     // Every Blade admin screen in the map is marked `hard`; every Inertia one
     // is not — the sections and the screens inside them alike.
     $blade = [
-        '/admin/public-site/pages', '/admin/public-site/courses', '/admin/public-site/research', '/admin/public-site/daily-content', '/admin/public-site/daily-content/queue',
+        '/admin/public-site/pages', '/admin/public-site/courses', '/admin/public-site/daily-content', '/admin/public-site/daily-content/queue',
         '/admin/prayer-times/islands', '/admin/prayer-times/groups', '/admin/prayer-times/broadcasts', '/admin/prayer-times/import',
     ];
     foreach ([...NavigationMap::groups(), ...array_map(fn ($items, $bar) => ['key' => $bar, 'items' => $items], NavigationMap::primary(), array_keys(NavigationMap::primary()))] as $group) {

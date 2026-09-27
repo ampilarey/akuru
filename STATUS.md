@@ -4414,6 +4414,46 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5jj. C9 slice 8: the research posts screens leave Blade (2026-09-27)
+
+BACKLOG C9, `docs/ADMIN_PANEL.md` findings 9 and 10; the eighth port.
+`/admin/public-site/research` (W25) was a 79-line Blade list and an
+86-line Blade form (new and edit, a PDF upload, a multi-select of
+instructor authors), hardcoded English.
+
+**Built.** `ResearchPostController` renders `Website/Research` (the
+rows from `ListResearchPostsAction`, the years, the instructors, the
+filters, the tranche) and `Website/ResearchForm` for new and edit alike
+(the presented post or null, the instructors, the tranche); store and
+update flash keyed strings (EN identical). The list: cross-links, the
+count, *Export CSV* carrying the filters, *New research* as an Inertia
+visit, the year, author and search filters as an Inertia visit with
+*Clear*, the table with *Edit* as an Inertia link. The form: every field,
+the instructor multi-select, external authors one per line, the PDF
+input with the current PDF link, published-at and the switch, the
+action's validation as field errors (first at the top), posting a
+spoofed PUT on edit so the file goes through. **Found on the way:** new
+and edit are one page component, and Inertia keeps a mounted component
+when only its props change — so a save from *New* that redirects to
+*Edit* kept the new form's state (no `_method`, the file still selected)
+and the next save posted to a route that does not exist. The form is
+keyed on the post, so it remounts with the edit's values; a note in the
+component says why. 34 keys in the admin tranche, EN/DV/AR. The two
+Blade views are deleted (`blade_screens` 234); `NavigationMap` drops the
+`hard` flag; the reachability test's Blade list loses it;
+`ResearchPostTest` reads the props. `AdminResearchScreensTest` (1): the
+list props and filters, the form for new and edit, the action's
+validation reaching the form, a rename keeping the slug, the flashes,
+the DV/AR keys. Walked: a scratch walk 8/8 — the list in the Inertia
+shell, an empty title refused inline, a new post with a PDF saved and
+landing on the edit form with the flash, the values and the PDF link,
+the edit saved with its flash, the list showing the renamed unpublished
+post with its authors, the search as an Inertia visit with the CSV link
+carrying it, `/dv/…/research/N/edit` right-to-left with no English
+labels; `admin.mjs` 41/41; `admin-pages.mjs` 3/3 (the edit page found
+from the list, on desktop and phone). Full suite 2370 passed. Next: daily
+content (list, form, queue), then the pages and courses CMS.
+
 ## 5ji. C9 slice 7: the daily subscriptions list leaves Blade (2026-09-27)
 
 BACKLOG C9, `docs/ADMIN_PANEL.md` findings 9 and 10; the seventh port.
