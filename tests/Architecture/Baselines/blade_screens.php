@@ -13,7 +13,7 @@
 // expected direction, and the test asks you to update the count below when you
 // do.
 //
-// Count: 234 (a document template, not a screen — see the documents block;
+// Count: 231 (a document template, not a screen — see the documents block;
 // the five public bookshop views of BOOKSHOP_PLAN B1b, the five customer
 // pages of B2, the two storefront partials of B4, the sections, menu and
 // vendor page of B5 and the customer's wishlist of B7 — see the public
@@ -45,9 +45,6 @@ return [
     'admin/public-site/courses/create.blade.php',
     'admin/public-site/courses/edit.blade.php',
     'admin/public-site/courses/index.blade.php',
-    'admin/public-site/daily-content/form.blade.php',
-    'admin/public-site/daily-content/index.blade.php',
-    'admin/public-site/daily-content/queue.blade.php',
     'admin/public-site/pages/create.blade.php',
     'admin/public-site/pages/edit.blade.php',
     'admin/public-site/pages/index.blade.php',

@@ -12,11 +12,19 @@ use App\Http\Controllers\Controller;
 use App\Support\Csv;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
+use Inertia\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
+/**
+ * Daily content (W23): the calendar, the form and the maker–checker queue.
+ * Inertia since C9 slice 9 (STATUS §5jk), with every string keyed for
+ * Dhivehi and Arabic. `role:super_admin` on the route group and the two
+ * `daily_content.*` permissions checked here, as before.
+ */
 class DailyContentController extends Controller
 {
-    public function index(Request $request)
+    public function index(Request $request): Response
     {
         abort_unless($request->user()?->can('daily_content.manage'), 403);
 
@@ -26,19 +34,21 @@ class DailyContentController extends Controller
             ? (string) $filters['month']
             : now()->timezone(config('app.timezone'))->format('Y-m');
 
-        return view('admin.public-site.daily-content.index', [
-            'items' => $items,
-            'filters' => $filters,
+        return Inertia::render('Website/DailyContent', [
+            'items' => $items->all(),
+            'filters' => array_map(fn ($key) => (string) ($filters[$key] ?? ''), array_combine(['month', 'status', 'content_type', 'theme_tag', 'q'], ['month', 'status', 'content_type', 'theme_tag', 'q'])),
             'month' => $month,
+            't' => trans('admin'),
         ]);
     }
 
-    public function queue(Request $request)
+    public function queue(Request $request): Response
     {
         abort_unless($request->user()?->can('daily_content.approve'), 403);
 
-        return view('admin.public-site.daily-content.queue', [
+        return Inertia::render('Website/DailyContentQueue', [
             'items' => app(ListDailyContentsAction::class)->approvalQueue(),
+            't' => trans('admin'),
         ]);
     }
 
@@ -52,13 +62,14 @@ class DailyContentController extends Controller
         ));
     }
 
-    public function create(Request $request)
+    public function create(Request $request): Response
     {
         abort_unless($request->user()?->can('daily_content.manage'), 403);
 
-        return view('admin.public-site.daily-content.form', [
+        return Inertia::render('Website/DailyContentForm', [
             'item' => null,
-            'type' => $request->input('content_type', 'ayah'),
+            'type' => (string) $request->input('content_type', 'ayah'),
+            't' => trans('admin'),
         ]);
     }
 
@@ -70,16 +81,17 @@ class DailyContentController extends Controller
 
         return redirect()
             ->route('admin.daily-content.edit', $row)
-            ->with('success', 'Draft saved. A second reviewer must approve before it is scheduled.');
+            ->with('success', trans('admin.daily_flash_saved'));
     }
 
-    public function edit(Request $request, DailyContent $dailyContent)
+    public function edit(Request $request, DailyContent $dailyContent): Response
     {
         abort_unless($request->user()?->can('daily_content.manage'), 403);
 
-        return view('admin.public-site.daily-content.form', [
+        return Inertia::render('Website/DailyContentForm', [
             'item' => app(ListDailyContentsAction::class)->present($dailyContent),
             'type' => $dailyContent->content_type->value,
+            't' => trans('admin'),
         ]);
     }
 
@@ -91,7 +103,7 @@ class DailyContentController extends Controller
 
         return redirect()
             ->route('admin.daily-content.edit', $dailyContent)
-            ->with('success', 'Daily content updated.');
+            ->with('success', trans('admin.daily_flash_updated'));
     }
 
     public function approve(Request $request, DailyContent $dailyContent): RedirectResponse
@@ -105,7 +117,7 @@ class DailyContentController extends Controller
 
         return redirect()
             ->route('admin.daily-content.queue')
-            ->with('success', 'Approved.');
+            ->with('success', trans('admin.daily_flash_approved'));
     }
 
     public function batch(Request $request): RedirectResponse
@@ -116,7 +128,7 @@ class DailyContentController extends Controller
 
         return redirect()
             ->route('admin.daily-content.index')
-            ->with('success', count($created).' reminder drafts created. Each still needs a second approver.');
+            ->with('success', trans('admin.daily_flash_batch', ['count' => count($created)]));
     }
 
     public function export(Request $request): StreamedResponse

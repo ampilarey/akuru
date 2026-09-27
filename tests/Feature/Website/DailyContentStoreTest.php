@@ -32,9 +32,10 @@ it('saves an ayah draft through the Quran provider and lists meanings on the cal
         ->actingAs($admin)
         ->get(route('admin.daily-content.index', ['month' => '2026-08']))
         ->assertOk()
-        ->assertSee('ayah', false)
-        ->assertSee('2026-08-27', false)
-        ->assertSee('In the name of Allah, the Beneficent, the Merciful.', false);
+        // Inertia since C9 slice 9: the month's items are props.
+        ->assertInertia(fn (\Inertia\Testing\AssertableInertia $page) => $page->component('Website/DailyContent')
+            ->where('month', '2026-08')->where('items.0.content_type', 'ayah')->where('items.0.publish_date', '2026-08-27')
+            ->where('items.0.ayah.meanings.en', 'In the name of Allah, the Beneficent, the Merciful.'));
 
     $this->withoutLocalizationMiddleware()
         ->actingAs($admin)
@@ -98,8 +99,9 @@ it('enforces maker-checker: creator cannot approve; a second reviewer can publis
         ->actingAs($maker)
         ->get(route('admin.daily-content.queue'))
         ->assertOk()
-        ->assertSee('Bukhari', false)
-        ->assertSee('Waiting for another reviewer', false);
+        // The queue is props too; the page shows "Waiting for another reviewer" where created_by is the viewer.
+        ->assertInertia(fn (\Inertia\Testing\AssertableInertia $page) => $page->component('Website/DailyContentQueue')
+            ->where('items.0.hadith_collection', 'Bukhari')->where('items.0.created_by', $maker->id)->where('t.daily_waiting_reviewer', 'Waiting for another reviewer'));
 
     $this->withoutLocalizationMiddleware()
         ->actingAs($maker)
