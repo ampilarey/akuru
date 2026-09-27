@@ -18,8 +18,10 @@ uses(RefreshDatabase::class);
  * them made it throw.
  *
  * That the author saw the mismatch is not in doubt — `date_of_birth` and
- * `gender` are nullable on `users` and NOT NULL on `teachers` too, and both were
+ * `gender` were nullable on `users` and NOT NULL on `teachers` too, and both were
  * already given fallbacks on the lines above. Three columns were simply missed.
+ * (Since 2026-09-27 `teachers.gender` is nullable and copied as it is, so a
+ * user with no gender on file no longer gets an invented one — STATUS §5jp.)
  *
  * The fallback is an empty string rather than an invented value. A blank phone
  * says "we do not know"; a fabricated one is a number somebody might dial.

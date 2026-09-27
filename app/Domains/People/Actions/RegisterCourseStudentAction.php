@@ -167,10 +167,11 @@ class RegisterCourseStudentAction
             'first_name' => trim($details['first_name']),
             'last_name' => trim($details['last_name']),
             'date_of_birth' => $details['dob'],
-            // `students.gender` is required and the registration forms let it
-            // be left empty. This is the default the dual write applied, kept
-            // as it was; KNOWN_ISSUES records it.
-            'gender' => $this->plain($details['gender'] ?? null) ?? 'male',
+            // The registration forms let gender be left empty, and an empty
+            // answer is stored as one: `students.gender` is nullable since
+            // 2026-09-27. The dual write used to fill the gap with `male`
+            // (KNOWN_ISSUES, BOOKSHOP_PLAN §15 finding 7) — a value nobody gave.
+            'gender' => $this->plain($details['gender'] ?? null),
             'national_id' => $this->identity($details['national_id'] ?? null),
             'passport' => $this->identity($details['passport'] ?? null),
             'status' => StudentStatus::Prospective,

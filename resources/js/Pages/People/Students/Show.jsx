@@ -227,7 +227,9 @@ export default function Show({
                         </label>
                         <label className="text-xs text-gray-500">
                             Gender
-                            <select className="form-input mt-1 w-full" value={editForm.data.gender} onChange={(e) => editForm.setData('gender', e.target.value)}>
+                            {/* A student registered without a gender has none on file (STATUS §5jp); the empty option says so rather than showing the first one. */}
+                            <select className="form-input mt-1 w-full" value={editForm.data.gender} onChange={(e) => editForm.setData('gender', e.target.value)} data-testid="student-gender">
+                                <option value="">—</option>
                                 <option value="female">female</option>
                                 <option value="male">male</option>
                             </select>
