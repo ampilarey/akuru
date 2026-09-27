@@ -4414,6 +4414,38 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5ib. The Inertia shell gets the brand bar (2026-09-27)
+
+The owner's phone screenshot of `/admin` after §5ia: "when login, it
+directly opens admin page but that page doesn't have header". It had one
+— the Inertia shell's: a white strip, "AKURU" in small caps, the title,
+maroon text links. Every Blade screen has the other one: the wine bar
+with the logo, "Akuru Institute", white links, the account pill. Two
+shells, two headers (`docs/ADMIN_PANEL.md` L7–L10, BACKLOG C9); sending
+administrators to an Inertia page at sign-in made the difference the
+first thing they saw.
+
+**Built**: `AppShell.jsx` renders the brand bar the Blade nav renders —
+the wine gradient, the on-dark logo and wordmark linking home, the
+primary links in white with the current one on a white/20 pill, More,
+Alerts with a gold badge, the account pill with an initial and Log out,
+the language switcher — sticky from `sm:` only (on a phone the bar wraps
+to three rows, so it stays in the flow rather than covering a third of
+the screen); the page title moves into the content as the `h1`, as on a
+Blade page; the More panel is capped at 80 vh and scrolls; the hub's
+part anchors offset for the sticky bar. Every selector the walks and
+tests read is kept (`shell-home`, `header nav`, `app-shell-more`,
+`data-nav-hard`, `data-nav-section`, `aria-current`, the skip link,
+`main#main`). `docs/ADMIN_PANEL.md` L25.
+
+**Walked**: `nav.mjs` 14/14 (three people's bars and More), `admin-hub.mjs`
+26/26, `admin-layout.mjs` 15/15 with a step that the Inertia header
+carries the logo, the wordmark and the wine background, `admin.mjs`
+18/18; `admin-pages.mjs` 3/3 and `admin-mobile.mjs` 3/3 as a super admin
+(nothing cut off at 390 px, the More button inside the viewport).
+
+**Production**: nothing to migrate; the pull line as usual.
+
 ## 5ia. One home: `/admin` leads with today's numbers (2026-09-26)
 
 The owner, offered one page or two after §5hz: "I don't know." So one

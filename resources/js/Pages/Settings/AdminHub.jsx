@@ -53,14 +53,22 @@ export default function AdminHub({ t, parts, today = { tiles: [], more: null } }
             )}
             {/* The four parts, for a phone: one tap to the part. */}
             <nav aria-label={t.hub_parts} className="mb-6 flex flex-wrap gap-2 text-sm" data-testid="hub-parts">
+                {/* Scrolled from here, not by the fragment: a hash navigation fires a
+                    history event that Inertia answers by restoring the old scroll
+                    position, so the jump was undone under it. */}
                 {parts.map((part) => (
-                    <a key={part.key} href={`#${part.key}`} className="rounded-full border border-[#E6D9C8] bg-white px-3 py-1 text-[#7C2D37] hover:border-[#7C2D37]">
+                    <a
+                        key={part.key}
+                        href={`#${part.key}`}
+                        onClick={(event) => { event.preventDefault(); document.getElementById(part.key)?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }}
+                        className="rounded-full border border-[#E6D9C8] bg-white px-3 py-1 text-[#7C2D37] hover:border-[#7C2D37]"
+                    >
                         {part.label} <span className="text-gray-500">{part.sections.length}</span>
                     </a>
                 ))}
             </nav>
             {parts.map((part) => (
-                <section key={part.key} id={part.key} className="mb-8 scroll-mt-4" data-testid={`part-${part.key}`}>
+                <section key={part.key} id={part.key} className="mb-8 scroll-mt-4 sm:scroll-mt-24" data-testid={`part-${part.key}`}>
                     <h2 className="mb-3 border-b border-[#E6D9C8] pb-1 text-base font-semibold uppercase tracking-wide text-gray-700">{part.label}</h2>
                     <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                         {part.sections.map((section) => (
