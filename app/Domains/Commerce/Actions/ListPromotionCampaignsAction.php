@@ -60,6 +60,35 @@ class ListPromotionCampaignsAction
     }
 
     /**
+     * B4b (§18 "buy 500, get 50"): the bonus a live gift-card campaign puts
+     * on a card bought for `$amount` — nothing off the price, value added
+     * to the card, funded by the Institute. Only campaigns that name
+     * `gift_card` as a target, only from their minimum amount up, the
+     * biggest bonus if several.
+     *
+     * @return array{campaign_id: int, name: string, slug: string, bonus: float}|null
+     */
+    public function giftCardBonus(float $amount): ?array
+    {
+        $best = null;
+        foreach ($this->active() as $campaign) {
+            if (! $campaign['is_gift_card_bonus']) {
+                continue;
+            }
+            if ($campaign['minimum_amount'] !== null && $amount < (float) $campaign['minimum_amount']) {
+                continue;
+            }
+            $bonus = self::amountOff($campaign, $amount);
+            if ($bonus <= 0 || ($best !== null && $bonus <= $best['bonus'])) {
+                continue;
+            }
+            $best = ['campaign_id' => (int) $campaign['id'], 'name' => $campaign['name'], 'slug' => $campaign['slug'], 'bonus' => $bonus];
+        }
+
+        return $best;
+    }
+
+    /**
      * What a campaign takes off a price: its percentage or fixed amount,
      * capped by its maximum and by the price itself.
      *
@@ -101,6 +130,7 @@ class ListPromotionCampaignsAction
             'discount_type' => $campaign->discount_type?->value,
             'discount_value' => (float) $campaign->discount_value,
             'max_discount_amount' => $campaign->max_discount_amount !== null ? (float) $campaign->max_discount_amount : null,
+            'minimum_amount' => $campaign->minimum_amount !== null ? (float) $campaign->minimum_amount : null,
             'funding_source' => $campaign->funding_source,
             'status' => $campaign->status,
             'state' => $state,
@@ -108,6 +138,8 @@ class ListPromotionCampaignsAction
                 'type' => $target->target_type,
                 'id' => $target->target_id !== null ? (int) $target->target_id : null,
             ])->values()->all(),
+            // B4b: a bonus on gift cards rather than a price off an item.
+            'is_gift_card_bonus' => $campaign->targets->contains(fn ($target) => $target->target_type === 'gift_card'),
         ];
     }
 }

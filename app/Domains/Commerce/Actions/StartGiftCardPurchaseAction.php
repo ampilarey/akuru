@@ -46,9 +46,15 @@ class StartGiftCardPurchaseAction
             ]);
         }
 
+        // B4b (§18): a live bonus campaign adds value to the card the buyer
+        // pays full price for — nothing here reduces what is paid (§15.4).
+        $bonus = app(ListPromotionCampaignsAction::class)->giftCardBonus($amount);
+
         $order = GiftCardOrder::query()->create([
             'user_id' => $userId,
             'amount' => $amount,
+            'bonus_amount' => $bonus['bonus'] ?? 0,
+            'promotion_campaign_id' => $bonus['campaign_id'] ?? null,
             'currency' => 'MVR',
             'recipient_name' => $name,
             'recipient_email' => $email,
@@ -56,6 +62,11 @@ class StartGiftCardPurchaseAction
             'message' => trim((string) ($data['message'] ?? '')) ?: null,
             'status' => 'pending',
         ]);
+
+        if ($bonus !== null) {
+            // Counted like any campaign use: pending now, confirmed by the webhook.
+            app(RecordDiscountRedemptionAction::class)->forCampaign($bonus['campaign_id'], $userId, 'gift_card_order', $order->id, $bonus['bonus']);
+        }
 
         $initiated = app(InitiatePayablePaymentAction::class)->execute(
             'gift_card_order',

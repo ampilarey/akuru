@@ -2,6 +2,7 @@
 
 namespace App\Domains\Commerce\Http\Controllers;
 
+use App\Domains\Commerce\Actions\ListPromotionCampaignsAction;
 use App\Domains\Commerce\Actions\StartGiftCardPurchaseAction;
 use App\Domains\Commerce\Models\GiftCardOrder;
 use App\Http\Controllers\Controller;
@@ -22,6 +23,8 @@ class GiftCardPurchaseController extends Controller
             'min' => (int) app(\App\Domains\Library\Actions\ResolveLibrarySettingAction::class)->execute('gift_card_min'),
             'max' => (int) app(\App\Domains\Library\Actions\ResolveLibrarySettingAction::class)->execute('gift_card_max'),
             'signedIn' => $request->user() !== null,
+            // B4b (§18): the bonus offers running on gift cards right now.
+            'bonuses' => array_values(array_filter(app(ListPromotionCampaignsAction::class)->active(), fn ($campaign) => $campaign['is_gift_card_bonus'])),
         ]);
     }
 

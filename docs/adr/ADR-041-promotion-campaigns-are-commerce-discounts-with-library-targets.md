@@ -52,6 +52,21 @@ Three questions had to be answered before writing anything:
    never edited once started — end it and start another — so a redemption's
    terms stay what they were.
 
+## Addendum, 2026-09-27 (B4b): a bonus on gift cards is not a discount
+
+The plan's "gift card bonus buy-500-get-50" (§18) is the one campaign
+shape that is not a price reduction, and §15.4 / rule 12 forbid reducing
+what a gift card costs. So a campaign that names the `gift_card` target
+**adds value to the card the buyer pays full price for**: the payment is
+for the amount typed, the card is issued for the amount plus the bonus,
+the bonus is a `bonus` row on the card's own ledger, and the Institute
+funds it (`funding_source` is recorded; nothing else is owed). The use is
+still a `discount_redemptions` row against the campaign — the office's
+count of uses and value given is one report — and the `all` target never
+reaches gift cards: "everything paid in the library" is items. The
+stored-value liability rises by the bonus, as it should; that is the
+campaign's cost, and the liability report is where it shows.
+
 ## Consequences
 
 - One discount ledger, one funding model, one refund path. A future

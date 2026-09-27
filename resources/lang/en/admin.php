@@ -153,4 +153,9 @@ return [
     'library_promotions_none' => 'No campaigns yet.',
     'library_promotions_saved' => 'Campaign started.',
     'library_promotions_ended' => 'Campaign ended.',
+    'library_promotions_covers_gift_card' => 'Gift cards bought (a bonus on the card)',
+    'library_promotions_gift_card_label' => 'Gift cards (a bonus on the card)',
+    'library_promotions_minimum' => 'From a card of (MVR, optional) — "buy 500, get the bonus"',
+    'library_promotions_bonus' => 'bonus',
+    'library_promotions_from' => 'from',
 ];

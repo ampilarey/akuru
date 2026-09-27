@@ -119,9 +119,17 @@
         <div class="container mx-auto flex flex-wrap items-center gap-3 px-4 text-sm">
             <span class="font-semibold text-brandMaroon-900">{{ __('public.Current offers') }}:</span>
             @foreach($promotions as $promotion)
-                <a href="{{ route('public.library.index', ['campaign' => $promotion['slug']]) }}" class="rounded bg-white px-2 py-0.5 hover:underline">
-                    {{ $promotion['name'] }} · {{ $promotion['discount_type'] === 'percentage' ? rtrim(rtrim(number_format($promotion['discount_value'], 2), '0'), '.').'%' : 'MVR '.number_format($promotion['discount_value'], 2) }} {{ __('public.off') }}
-                </a>
+                @php($figure = $promotion['discount_type'] === 'percentage' ? rtrim(rtrim(number_format($promotion['discount_value'], 2), '0'), '.').'%' : 'MVR '.number_format($promotion['discount_value'], 2))
+                @if($promotion['is_gift_card_bonus'])
+                    {{-- B4b: a bonus on gift cards leads to the gift card page, not the shelf. --}}
+                    <a href="{{ route('public.gift-cards.index') }}" class="rounded bg-white px-2 py-0.5 hover:underline">
+                        {{ $promotion['name'] }} · {{ __('public.:bonus bonus on gift cards', ['bonus' => $figure]) }}
+                    </a>
+                @else
+                    <a href="{{ route('public.library.index', ['campaign' => $promotion['slug']]) }}" class="rounded bg-white px-2 py-0.5 hover:underline">
+                        {{ $promotion['name'] }} · {{ $figure }} {{ __('public.off') }}
+                    </a>
+                @endif
             @endforeach
             <a href="{{ route('public.library.promotions') }}" class="ms-auto underline">{{ __('public.See all offers') }}</a>
         </div>

@@ -161,7 +161,7 @@ export default function Admin({ gift_cards, gift_card_orders = [], discount_code
                                 <td className="px-3 py-2">#{order.id}</td>
                                 <td className="px-3 py-2">{order.buyer}{order.buyer_email ? <span className="block text-xs text-gray-500">{order.buyer_email}</span> : null}</td>
                                 <td className="px-3 py-2">{order.recipient_name}</td>
-                                <td className="px-3 py-2">{order.currency} {order.amount}</td>
+                                <td className="px-3 py-2">{order.currency} {order.amount}{order.bonus_amount ? <span className="block text-xs text-green-700" data-testid="order-bonus">+ {order.bonus_amount} bonus</span> : null}</td>
                                 <td className="px-3 py-2">{order.status}{order.gift_card_id ? ` · card #${order.gift_card_id}` : ''}</td>
                                 <td className="px-3 py-2">{order.delivered_via ? `${order.delivered_via} → ${order.delivered_to}` : '—'}</td>
                                 <td className="px-3 py-2">{order.paid_at ?? order.created_at}</td>

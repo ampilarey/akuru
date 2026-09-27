@@ -4414,6 +4414,47 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5iy. Library B4b: a bonus on gift cards — buy 500, the card is worth 550 (2026-09-27)
+
+BACKLOG B4, LIBRARY_PLAN §18 ("gift card bonus buy-500-get-50"), ADR-041
+addendum. B4a's campaigns took money off items. The plan's one campaign
+shape that is *not* a price cut — and must not be, §15.4 / rule 12 —
+had no home: the Institute could not say "buy a gift card of 500 or more
+this Ramadan and we add 50".
+
+**Built.** A campaign may name `gift_card` as its target (B4a's
+`promotion_campaign_targets`), with a new `minimum_amount` on the
+campaign (migration `2026_09_27_000012`, additive; `gift_card_orders`
+gain `bonus_amount` and `promotion_campaign_id`). The buyer pays exactly
+the amount typed — `StartGiftCardPurchaseAction` still resolves no
+discount, and `DiscountsNeverBuyGiftCardsTest` still passes — and the
+bonus is worked out then (`ListPromotionCampaignsAction::giftCardBonus`:
+percentage or fixed, capped, from the minimum up, the biggest if several)
+and recorded on the order. The webhook listener issues the card for
+amount plus bonus, writes a `bonus` row on the card's own ledger, and
+confirms the campaign use, so the office's Promotions list counts it
+(uses, given) beside the item campaigns. The recipient's email and SMS
+name the card's real worth. The buy page announces live bonus offers
+("Buy MVR 500 or more and get 10% extra on the card"); the shelf's
+offers strip and the offers page point such a campaign at the gift card
+page, not the shelf; `all` never reaches gift cards; the office form has
+a third *covers* choice with the minimum amount; the office's gift card
+orders show the bonus under the amount. The stored-value liability rises
+by the bonus — the campaign's cost, where it should show. Labels
+EN/DV/AR.
+
+`GiftCardBonusCampaignTest` (2): a 10% bonus capped at 50 from 500 up —
+a 200 card is plain, a 1000 card is paid at 1000 and issued at 1050 with
+the ledger row, the confirmed use, the mail naming 1050 and the
+liability at 1250; the offer shown on the buy page, the shelf strip and
+the offers page. Walked: the office started a gift-card bonus campaign
+from the Promotions screen (listed "10% bonus from MVR 500 · Gift
+cards"), the gift card page showed the offer to a visitor, the shelf
+strip linked it to the gift card page, the offers page carried *Buy a
+gift card*, the *Discounted* filter stayed empty of it, *End now* took
+it off the buy page. Not built (BACKLOG B4): bundles, a banner image,
+code-required campaigns.
+
 ## 5ix. Library B4a: promotion campaigns — an offer with a name, a window and a reach (2026-09-27)
 
 BACKLOG B4, LIBRARY_PLAN §18/§8.5/§35.10, ADR-041. The Library had

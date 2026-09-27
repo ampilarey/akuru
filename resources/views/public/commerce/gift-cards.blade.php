@@ -25,6 +25,30 @@
         </div>
     @endif
 
+    {{-- B4b (§18): a bonus campaign on gift cards — the buyer pays the full amount and the card is worth more. --}}
+    @if(count($bonuses) > 0)
+        <div class="mb-6 rounded-lg border border-green-200 bg-green-50 p-4 text-sm text-green-900" data-testid="gift-card-bonuses">
+            <p class="font-semibold">{{ __('public.Bonus on gift cards') }}</p>
+            @foreach($bonuses as $bonus)
+                @php($extra = $bonus['discount_type'] === 'percentage' ? rtrim(rtrim(number_format($bonus['discount_value'], 2), '0'), '.').'%' : 'MVR '.number_format($bonus['discount_value'], 2))
+                <p class="mt-1">
+                    <span class="font-medium">{{ $bonus['name'] }}:</span>
+                    @if($bonus['minimum_amount'])
+                        {{ __('public.Buy MVR :min or more and get :bonus extra on the card', ['min' => number_format($bonus['minimum_amount']), 'bonus' => $extra]) }}
+                    @else
+                        {{ __('public.Get :bonus extra on every card', ['bonus' => $extra]) }}
+                    @endif
+                    @if($bonus['max_discount_amount'])
+                        ({{ __('public.up to MVR :max', ['max' => number_format($bonus['max_discount_amount'], 2)]) }})
+                    @endif
+                    @if($bonus['ends_on'])
+                        · {{ __('public.Offer ends :date', ['date' => $bonus['ends_on']]) }}
+                    @endif
+                </p>
+            @endforeach
+        </div>
+    @endif
+
     @if(! $signedIn)
         <div class="mb-6 rounded-lg border bg-brandBeige-50 p-6 text-center">
             <p class="mb-3 text-gray-700">{{ __('public.Sign in to buy a gift card.') }}</p>

@@ -153,4 +153,9 @@ return [
     'library_promotions_none' => 'لا حملات بعد.',
     'library_promotions_saved' => 'بدأت الحملة.',
     'library_promotions_ended' => 'أُنهيت الحملة.',
+    'library_promotions_covers_gift_card' => 'بطاقات الهدايا المشتراة (مكافأة على البطاقة)',
+    'library_promotions_gift_card_label' => 'بطاقات الهدايا (مكافأة على البطاقة)',
+    'library_promotions_minimum' => 'من بطاقة بقيمة (روفيا، اختياري) — "اشترِ 500 واحصل على المكافأة"',
+    'library_promotions_bonus' => 'مكافأة',
+    'library_promotions_from' => 'من',
 ];

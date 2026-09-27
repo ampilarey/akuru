@@ -18,8 +18,14 @@ use Illuminate\Validation\ValidationException;
  */
 class SavePromotionCampaignAction
 {
-    /** @var list<string> */
-    public const TARGET_TYPES = ['all', 'library_item', 'library_category', 'writer_profile'];
+    /**
+     * `all` is everything paid in the library; `gift_card` (B4b) is a bonus
+     * on gift cards bought while the campaign runs — the one target that is
+     * not a price reduction, so `all` never reaches it.
+     *
+     * @var list<string>
+     */
+    public const TARGET_TYPES = ['all', 'library_item', 'library_category', 'writer_profile', 'gift_card'];
 
     /** @var list<string> */
     public const FUNDING_SOURCES = ['shared', 'akuru', 'writer'];
@@ -62,6 +68,8 @@ class SavePromotionCampaignAction
                 'discount_type' => $type,
                 'discount_value' => $value,
                 'max_discount_amount' => is_numeric($data['max_discount_amount'] ?? null) && (float) $data['max_discount_amount'] > 0 ? (float) $data['max_discount_amount'] : null,
+                // B4b: "buy 500" — the order amount from which the offer applies.
+                'minimum_amount' => is_numeric($data['minimum_amount'] ?? null) && (float) $data['minimum_amount'] > 0 ? (float) $data['minimum_amount'] : null,
                 'funding_source' => $funding,
                 'status' => 'active',
                 'created_by' => $createdBy,
@@ -90,6 +98,11 @@ class SavePromotionCampaignAction
             }
             if ($type === 'all') {
                 return [['target_type' => 'all', 'target_id' => null]];
+            }
+            if ($type === 'gift_card') {
+                $kept['gift_card'] = ['target_type' => 'gift_card', 'target_id' => null];
+
+                continue;
             }
             if (! is_numeric($target['id'] ?? null)) {
                 throw ValidationException::withMessages(['targets' => 'Each '.$type.' target needs an id.']);

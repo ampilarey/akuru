@@ -10,6 +10,7 @@ import FormErrors from '../../Components/FormErrors';
  */
 function targetLabel(target, options, t) {
     if (target.type === 'all') return t.library_promotions_covers_all || 'Everything paid in the library';
+    if (target.type === 'gift_card') return t.library_promotions_gift_card_label || 'Gift cards (a bonus on the card)';
     const pool = { library_category: options.categories, writer_profile: options.writers, library_item: options.items }[target.type] || [];
     const found = pool.find((row) => row.id === target.id);
     return found ? found.label : `${target.type} #${target.id}`;
@@ -20,7 +21,7 @@ function CampaignForm({ options, fundingSources, t }) {
     const [picked, setPicked] = useState({ library_category: [], writer_profile: [], library_item: [] });
     const form = useForm({
         name: '', description: '', starts_at: '', ends_at: '',
-        discount_type: 'percentage', discount_value: '', max_discount_amount: '', funding_source: 'akuru',
+        discount_type: 'percentage', discount_value: '', max_discount_amount: '', minimum_amount: '', funding_source: 'akuru',
     });
     const toggle = (type, id) => setPicked((current) => ({
         ...current,
@@ -32,7 +33,9 @@ function CampaignForm({ options, fundingSources, t }) {
             ...data,
             targets: mode === 'all'
                 ? [{ type: 'all' }]
-                : Object.entries(picked).flatMap(([type, ids]) => ids.map((id) => ({ type, id }))),
+                : mode === 'gift_card'
+                    ? [{ type: 'gift_card' }]
+                    : Object.entries(picked).flatMap(([type, ids]) => ids.map((id) => ({ type, id }))),
         }));
         form.post('/admin/library/promotions', { preserveScroll: true, onSuccess: () => { form.reset(); setPicked({ library_category: [], writer_profile: [], library_item: [] }); setMode('all'); } });
     };
@@ -72,7 +75,15 @@ function CampaignForm({ options, fundingSources, t }) {
                 <div className="mb-2 flex flex-wrap gap-4 text-sm">
                     <label className="flex items-center gap-1"><input type="radio" name="covers" checked={mode === 'all'} onChange={() => setMode('all')} /> {t.library_promotions_covers_all || 'Everything paid in the library'}</label>
                     <label className="flex items-center gap-1"><input type="radio" name="covers" checked={mode === 'pick'} onChange={() => setMode('pick')} /> {t.library_promotions_covers_pick || 'Only what I pick'}</label>
+                    {/* B4b: not a price off — value added to a gift card the buyer pays full price for. */}
+                    <label className="flex items-center gap-1"><input type="radio" name="covers" checked={mode === 'gift_card'} onChange={() => setMode('gift_card')} data-testid="covers-gift-card" /> {t.library_promotions_covers_gift_card || 'Gift cards bought (a bonus on the card)'}</label>
                 </div>
+                {mode === 'gift_card' && (
+                    <label className="block text-sm md:w-1/2">
+                        {t.library_promotions_minimum || 'From a card of (MVR, optional) — "buy 500, get the bonus"'}
+                        <input className="form-input" name="minimum_amount" type="number" min="0" step="1" value={form.data.minimum_amount} onChange={(e) => form.setData('minimum_amount', e.target.value)} />
+                    </label>
+                )}
                 {mode === 'pick' && (
                     <div className="grid gap-2 md:grid-cols-3">
                         {pickList('library_category', options.categories, t.library_promotions_covers_categories || 'Categories')}
@@ -89,7 +100,10 @@ function CampaignForm({ options, fundingSources, t }) {
 
 export default function Promotions({ campaigns = [], options = { categories: [], writers: [], items: [] }, funding_sources = [], t = {} }) {
     const { flash = {} } = usePage().props;
-    const describe = (c) => (c.discount_type === 'percentage' ? `${c.discount_value}%` : `MVR ${c.discount_value}`) + (c.max_discount_amount ? ` (max MVR ${c.max_discount_amount})` : '');
+    const describe = (c) => (c.discount_type === 'percentage' ? `${c.discount_value}%` : `MVR ${c.discount_value}`)
+        + (c.max_discount_amount ? ` (max MVR ${c.max_discount_amount})` : '')
+        + (c.is_gift_card_bonus ? ` ${t.library_promotions_bonus || 'bonus'}` : '')
+        + (c.minimum_amount ? ` ${t.library_promotions_from || 'from'} MVR ${c.minimum_amount}` : '');
     const stateLabel = (state) => t[`library_promotions_state_${state}`] || { live: 'Live', scheduled: 'Scheduled', expired: 'Expired', ended: 'Ended' }[state] || state;
 
     return (
