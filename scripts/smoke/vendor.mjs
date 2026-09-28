@@ -176,6 +176,15 @@ const list = vendor.locator('[data-testid="product-list"]');
 const listText = (await list.count()) ? (await list.innerText()).replace(/\s+/g, ' ') : '';
 check('accepting opens the shop with Fitrah\'s products', listText.includes('Arabic Letters Tracing Book') && listText.includes('Wooden Alphabet Puzzle'), listText.slice(0, 160) || (await text(vendor)).slice(0, 160));
 check('and never another shop\'s', !listText.includes('SMOKE-Other-Secret'));
+// The owner's screenshot, 2026-09-28: on a phone the section buttons ran off
+// the screen in one row and the products table was 562px wide, so the page
+// was 826px and the phone shrank it. At 390px it must fit.
+await vendor.setViewportSize({ width: 390, height: 844 });
+await vendor.reload({ waitUntil: 'networkidle' });
+const phoneWidth = await vendor.evaluate(() => document.documentElement.scrollWidth);
+check('the shop page fits a phone: nothing runs off the side', phoneWidth <= 390, `${phoneWidth}px wide at 390`);
+await vendor.setViewportSize({ width: 1280, height: 800 });
+await vendor.reload({ waitUntil: 'networkidle' });
 check('a product at its warning level says low stock', /Kids Prayer Mat.*Low stock/.test(listText), listText.match(/Kids Prayer Mat[^]*?(Draft|For sale)/)?.[0] ?? '');
 
 // A new product, with a photo, a variant and book details.

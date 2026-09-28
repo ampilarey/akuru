@@ -4,7 +4,7 @@
     "name": "index"
   },
   "resources/css/app.css": {
-    "file": "assets/app-DwFx74vc.css",
+    "file": "assets/app-DTFPVimF.css",
     "src": "resources/css/app.css",
     "isEntry": true,
     "names": [
@@ -12,7 +12,7 @@
     ]
   },
   "resources/js/Components/RichTextEditor.jsx": {
-    "file": "assets/RichTextEditor-f0G59_Yk.js",
+    "file": "assets/RichTextEditor-BOpWZcKN.js",
     "name": "RichTextEditor",
     "src": "resources/js/Components/RichTextEditor.jsx",
     "isDynamicEntry": true,
@@ -31,7 +31,7 @@
     ]
   },
   "resources/js/app.jsx": {
-    "file": "assets/app-C0q_1O84.js",
+    "file": "assets/app-BptHMVmj.js",
     "name": "app",
     "src": "resources/js/app.jsx",
     "isEntry": true,
