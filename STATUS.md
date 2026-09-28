@@ -4414,6 +4414,70 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5jt. Every walk, one answer again: the academic walks sign in as the dean, and two office lists admit the office (2026-09-28)
+
+After §5js the whole runner was pointed at `main` for the first time
+since the role matrix landed: `node scripts/smoke/all.mjs` read
+**22/38**. The admin-hub walk had been quietly red for a day (§5js);
+sixteen others turned out to have been red since 2026-09-27, and nobody
+had run the runner to see it. CLAUDE.md's definition of done is a walk
+per slice, and each slice had walked its own — the runner is the check
+that the *rest* still stand, and it had not been read.
+
+**One cause for eleven of them.** ADR-040 slice 2 (§5ie) made `admin@`
+the *educational admin*, who by the owner's decision sees the academics
+and does not run them — no `courses.manage`, `exams.manage`,
+`behavior.*`, `manage_timetables`. §5ie re-pointed the 26 Institute walks
+to the new system admin and said so; the academic walks — author, assess,
+certify, arabic, intake, quran, timetable, exams, review, rtl,
+create-sweep — kept signing in as `admin@` to author a course, schedule
+an exam, record behaviour and build a timetable, and were refused before
+their first step (a 403 page has no `main`, so "waiting for locator
+main" and "locator.fill timeout" were the symptoms). They sign in as the
+dean now (`SMOKE_DEAN`, `headmaster@`), each with a comment saying why.
+In the author walk the *supervisor* publishes the module the dean wrote:
+publishing is `courses.publish`, which the supervisor holds and the dean
+does not (SPEC §8.4, approving is publishing), and before the matrix the
+one account held everything.
+
+**Two gates the decision did not mean.** *Who is not in today*
+(`AbsencesTodayController`) admitted only the attendance-marking pair,
+and the absence-note review (`AbsenceNoteReviewController`) only
+`manage_attendance`; the educational admin, the dean and the supervisor
+hold neither — they hold `registers.manage` and `requests.review` — so
+the two office lists answered the office 403 while §5ie said the register
+screens open. "Who is not in today" now also admits `registers.manage`
+(the registers' oversight, the same principle as the register lists);
+the absence-note review also admits `requests.review` (an absence note
+is a family's request, and the office answers families). Tests:
+`AbsencesTodayTest` gains the oversight case, `AbsenceNoteTest` the
+office case and the refusal with neither permission (95 in the two
+files plus the attachment test).
+
+**Three Library walks had drifted on their own.** `peer-review` and
+`earnings` saved drafts without the L4 declarations and were told so at
+submit, then looked for an Approve button on a submission that never
+arrived; both tick the declarations now (copyright, and for research
+originality and conflict of interest). `library` pinned a featured work
+on the author page and, on the third run against one database, found
+three already pinned and a fourth box disabled — it unpins earlier runs'
+works first. `quran` needed the surah reference seeded locally
+(`SurahSeeder`; staging has it), and `exams` needs a queue worker for
+the render job, as its own failure line says.
+
+**Walked.** Each of the sixteen on the fixed tree: rtl 8/8, create-sweep
+6/6, absence 13/13, school-day 14/14, timetable 12/12, author 24/24,
+intake 13/13, assess 14/14, certify 16/16, arabic 10/10, quran 22/22,
+review 15/15, exams 28/28 (worker running), library 25/25, peer-review
+12/12, earnings 13/13. Full suite 2389 passed.
+
+**What this leaves.** A runner that reads 38/38 is the gate the go-live
+path waits on (`OWNER_ACTIONS` item 7), and it was believed green on the
+strength of per-slice walks. It should be run after any slice that
+touches roles, routes or the shell — the three things every walk
+depends on — and its table read, not assumed (ADR-027's rule, applied to
+walks).
+
 ## 5js. The phone-first pass over the parent and student screens (2026-09-28)
 
 The second half of the owner's "Do it" on the EduPage comparison (§5jr was

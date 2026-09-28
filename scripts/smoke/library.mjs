@@ -389,7 +389,8 @@ if (resubmitted) {
     // Three is the most a writer may pin, and the fourth box is disabled: a
     // third run of this walk found three earlier works pinned and waited on a
     // box it could never tick. Unpin what earlier runs pinned, then pin this one.
-    for (const box of await authorForm.locator('[data-testid="featured-works"] input[type=checkbox]:checked').all()) await box.uncheck();
+    const pinned = authorForm.locator('[data-testid="featured-works"] input[type=checkbox]:checked');
+    while (await pinned.count()) await pinned.first().uncheck();
     const pin = authorForm.locator('[data-testid="featured-works"] label', { hasText: TITLE }).locator('input[type=checkbox]');
     if (await pin.count()) await pin.check();
     await authorForm.locator('button:has-text("Save author page")').click();

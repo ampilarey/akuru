@@ -39,6 +39,14 @@ SMOKE_BASE_URL=https://test.akuru.edu.mv node scripts/smoke/all.mjs
 It exits non-zero if any walk fails and prints the full output of the failures
 only, so a green run is one screen and a red one explains itself.
 
+**Who the walks sign in as** (ADR-040): the Institute walks as the system admin
+(`SMOKE_ADMIN`/`SMOKE_STAFF`, `superadmin@`), the academic walks — authoring,
+exams, timetable, Qur'an, Arabic, marking — as the dean (`SMOKE_DEAN`,
+`headmaster@`), the office walks as the educational admin (`admin@`), and
+the family ones as the seeded parent and student. Run the whole runner after
+any slice that touches roles, routes or the shell, and read its table:
+sixteen walks were red for a day before anyone did (STATUS §5jt).
+
 **Thirty-two of the thirty-eight write data** — they submit absence notes, request
 that children be collected, book meetings, enrol people, hand in recordings
 for a teacher to judge, publish exam results to families, issue them
