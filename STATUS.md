@@ -4414,6 +4414,46 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5jy. The sign-in audit, twice, and the plan for the EduPage account model (2026-09-28)
+
+The owner, with five EduPage screenshots: "Logged in with a vendor
+account but I see educational items also. I need the login style used in
+EduPage … a parent enrolled in a course: when he changes to student he
+sees the educational items, as parent he sees all his children. But all
+see a home page including promotional items that is main website content
+before login. First audit and let me know." Then: "re-audit and write a
+plan."
+
+**Audited** (locally, phone width, the seeded logins, and the workspace
+and navigation actions dumped per account). Twelve findings, each with
+the code that produces it, in `docs/SIGN_IN_PLAN.md` §2. The three the
+owner saw: a vendor's *More* carries Home, Messages, Notices and Forms
+because the `mine` group is "everyone" and every workspace holds it
+(F1); that *Home* is `/portal/home`, which shows a vendor an empty
+**Student Dashboard** (F2); an adult course learner holds no role, so
+`/dashboard` renders the Blade public-user page in the *website* layout
+— menu, hero, *Browse Courses*, open courses, footer (F4). Also found: a
+parent's own learning sits inside the Family menu with no Learner
+identity to switch to (F3); a second, older *My Portal* in the website
+chrome that the website's bottom bar sends every signed-in person to
+(F5); *Set password* redirecting to the marketing home (F6); the mobile
+app opening the website (F9); the parity document's E7 describing linked
+separate logins, which is not what shipped nor what EduPage's school
+accounts are (F11). Sign-in itself and the workspace landings are right
+(F7); the gates hold.
+
+**Planned**: `docs/SIGN_IN_PLAN.md` — the EduPage model mapped onto
+workspaces (an EduPage account is a workspace), seven decisions with
+defaults, six slices: ID1 workspace-scoped menus (Communication,
+Education, Evaluation, Other per workspace; a shared Me group; Home is
+the workspace's home), ID2a the Learner workspace derived from enrolment
+with an Inertia *My learning* home (the parent-learner then switches
+Family ↔ Learner), ID2b the old course portal retired (eight Blade
+views), ID3 every door into the shell (set-password, the website's *My
+Portal*, the app's start address), ID4 the account list in the drawer,
+ID5 tile-grid homes. BACKLOG C11 points at it. Nothing built yet:
+awaiting the owner's word on the defaults.
+
 ## 5jx. The Hifz port, slice 3: milestones and reports leave Blade, and C1 closes (2026-09-28)
 
 The last of the three slices decided in §5jv. No Hifz screen is Blade
