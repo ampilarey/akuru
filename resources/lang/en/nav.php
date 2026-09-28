@@ -9,6 +9,9 @@ return [
     'alerts' => 'Alerts',
     'dashboard_hint' => 'This overview is today\'s numbers. Your home has everything else.',
     'skip_to_content' => 'Skip to content',
+    // On a phone the account and the language switch live in the More panel (STATUS §5js).
+    'account' => 'Account',
+    'language' => 'Language',
 
     // Groups
     'school_year' => 'School year',

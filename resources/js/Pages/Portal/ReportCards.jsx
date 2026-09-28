@@ -31,7 +31,7 @@ export default function ReportCards({ children, studentId, cards }) {
                 </form>
             </div>
             <div className="overflow-x-auto rounded-lg border bg-white">
-                <table className="min-w-full text-sm">
+                <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">Student</th>
@@ -46,11 +46,11 @@ export default function ReportCards({ children, studentId, cards }) {
                         )}
                         {cards.map((card) => (
                             <tr key={card.id} className="border-t">
-                                <td className="px-3 py-2">{card.student_name}</td>
-                                <td className="px-3 py-2">{card.term_name}</td>
-                                <td className="px-3 py-2">{card.published_at || '—'}</td>
-                                <td className="px-3 py-2">
-                                    <a className="text-[#7C2D37] underline" href={`/portal/report-cards/${card.id}/download`}>Download HTML</a>
+                                <td className="px-3 py-2" data-label="Student">{card.student_name}</td>
+                                <td className="px-3 py-2" data-label="Term">{card.term_name}</td>
+                                <td className="px-3 py-2" data-label="Published">{card.published_at || '—'}</td>
+                                <td className="table-actions px-3 py-2">
+                                    <a className="chip-link" href={`/portal/report-cards/${card.id}/download`}>Download HTML</a>
                                 </td>
                             </tr>
                         ))}

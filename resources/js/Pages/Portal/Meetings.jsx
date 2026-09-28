@@ -27,7 +27,7 @@ export default function Meetings({ children = [], slots = [], bookings = [], csv
                                 <span>{row.student_name} · {row.date} {row.start_time}–{row.end_time} · {row.teacher_name}</span>
                                 <button
                                     type="button"
-                                    className="text-[#7C2D37] hover:underline"
+                                    className="chip-link"
                                     onClick={() => router.post(`/portal/meetings/bookings/${row.id}/cancel`)}
                                 >
                                     Cancel
@@ -41,7 +41,7 @@ export default function Meetings({ children = [], slots = [], bookings = [], csv
             {children.length === 0 && <p className="text-sm text-gray-600">No student or linked children.</p>}
 
             <div className="overflow-x-auto rounded-lg border bg-white">
-                <table className="min-w-full text-sm">
+                <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">When</th>
@@ -58,11 +58,11 @@ export default function Meetings({ children = [], slots = [], bookings = [], csv
                         )}
                         {slots.map((slot) => (
                             <tr key={slot.id} className="border-t">
-                                <td className="px-3 py-2">{slot.date} {slot.start_time}–{slot.end_time}</td>
-                                <td className="px-3 py-2">{slot.teacher_name}</td>
-                                <td className="px-3 py-2">{slot.class_name || '—'}</td>
-                                <td className="px-3 py-2">{slot.remaining} left</td>
-                                <td className="px-3 py-2">
+                                <td className="px-3 py-2" data-label="When">{slot.date} {slot.start_time}–{slot.end_time}</td>
+                                <td className="px-3 py-2" data-label="Teacher">{slot.teacher_name}</td>
+                                <td className="px-3 py-2" data-label="Class">{slot.class_name || '—'}</td>
+                                <td className="px-3 py-2" data-label="Seats">{slot.remaining} left</td>
+                                <td className="px-3 py-2" data-label="Child">
                                     <select
                                         className="form-input"
                                         value={form.data.student_id}
@@ -75,7 +75,7 @@ export default function Meetings({ children = [], slots = [], bookings = [], csv
                                             ))}
                                     </select>
                                 </td>
-                                <td className="px-3 py-2 text-end">
+                                <td className="table-actions px-3 py-2 text-end">
                                     {slot.booked_student_ids.includes(Number(form.data.student_id)) ? (
                                         <span className="text-gray-500">Booked</span>
                                     ) : (

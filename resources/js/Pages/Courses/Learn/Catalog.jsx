@@ -111,7 +111,7 @@ export default function Catalog({ rows }) {
                                 <td className="px-3 py-2">{row.enrolled ? `${row.progress_percentage}%` : '—'}</td>
                                 <td className="px-3 py-2">
                                     {row.enrolled ? (
-                                        <a className="text-[#7C2D37] hover:underline" href={`/learn/courses/${row.id}`}>{t.open || 'Open'}</a>
+                                        <a className="chip-link" href={`/learn/courses/${row.id}`}>{t.open || 'Open'}</a>
                                     ) : row.fee > 0 ? (
                                         <PaidEnroll row={row} t={t} />
                                     ) : (

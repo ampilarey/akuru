@@ -5,7 +5,7 @@ function Section({ title, href, children, empty }) {
         <section className="rounded-lg border bg-white p-4">
             <div className="mb-2 flex items-center justify-between gap-3">
                 <h3 className="text-sm font-medium">{title}</h3>
-                {href && <a className="text-sm text-[#7C2D37] hover:underline" href={href}>Open</a>}
+                {href && <a className="chip-link" href={href}>Open</a>}
             </div>
             {empty ? <p className="text-sm text-gray-500">{empty}</p> : children}
         </section>
@@ -153,9 +153,9 @@ export default function Home({ title = 'Dashboard', students = [], csvUrl = '/po
                     inner group is a single unwrappable unit, so six links and a
                     CSV button ran to 492px inside a 393px phone and pushed the
                     whole portal sideways under the thumb (STATUS §5em). */}
-                <div className="flex flex-wrap items-center gap-3 text-sm">
+                <div className="flex flex-wrap items-center gap-2 text-sm">
                     {extras.map((section) => (
-                        <a key={section.key} className="text-[#7C2D37] hover:underline" href={section.href}>{section.label}</a>
+                        <a key={section.key} className="chip-link" href={section.href}>{section.label}</a>
                     ))}
                     <a className="btn-secondary" href={csvUrl}>Export CSV</a>
                 </div>

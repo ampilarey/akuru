@@ -123,18 +123,23 @@ export default function AppShell({ title, children }) {
                                 key={item.href}
                                 item={item}
                                 className={isCurrent(item.href)
-                                    ? 'rounded-md bg-white/20 px-3 py-1.5 font-medium text-white'
-                                    : 'rounded-md px-3 py-1.5 font-medium text-white/80 hover:bg-white/10 hover:text-white'}
+                                    ? 'rounded-md bg-white/20 px-3 py-2 font-medium text-white sm:py-1.5'
+                                    : 'rounded-md px-3 py-2 font-medium text-white/80 hover:bg-white/10 hover:text-white sm:py-1.5'}
                             />
                         ))}
                         </div>
-                        {nav.groups.length > 0 && (
+                        {/* On a phone the More panel also holds the account and the
+                            language switch (below), so the button is there for a signed-in
+                            person even when the workspace has no groups; on a desktop it is
+                            only there when there is something to list. */}
+                        {(nav.groups.length > 0 || user) && (
                             <button
                                 type="button"
                                 aria-expanded={open}
                                 aria-controls="app-shell-more"
+                                data-testid="shell-more"
                                 onClick={() => setOpen((value) => !value)}
-                                className={`rounded-md px-3 py-1.5 font-medium text-white/80 hover:bg-white/10 hover:text-white ${open ? 'bg-white/20 text-white' : ''}`}
+                                className={`rounded-md px-3 py-2 font-medium text-white/80 hover:bg-white/10 hover:text-white sm:py-1.5 ${open ? 'bg-white/20 text-white' : ''} ${nav.groups.length === 0 ? 'sm:hidden' : ''}`}
                             >
                                 {n.more || 'More'} {open ? '▴' : '▾'}
                             </button>
@@ -144,7 +149,7 @@ export default function AppShell({ title, children }) {
                         {user && (
                             <Link
                                 href="/portal/notifications"
-                                className="flex items-center gap-1 rounded-md px-3 py-1.5 font-medium text-white/80 hover:bg-white/10 hover:text-white"
+                                className="flex items-center gap-1 rounded-md px-3 py-2 font-medium text-white/80 hover:bg-white/10 hover:text-white sm:py-1.5"
                             >
                                 {n.alerts || 'Alerts'}
                                 {auth?.unread_notifications > 0 && (
@@ -170,8 +175,26 @@ export default function AppShell({ title, children }) {
                                 Switch to {account.name}
                             </button>
                         ))}
+                        {/* The account pill and the language switch: in the bar from sm:,
+                            in the More panel on a phone. Five header rows took three fifths
+                            of a phone's first screen before a parent saw a word of their
+                            own page (the phone-first pass, STATUS §5js); three rows is the
+                            most a header gets. The initial stays in the bar so a shared
+                            phone still shows who is signed in — and opens the panel. */}
                         {user && (
-                            <span className="flex items-center gap-2 rounded-lg border border-white/20 bg-white/10 px-2.5 py-1">
+                            <button
+                                type="button"
+                                aria-label={n.account || 'Account'}
+                                title={user.name}
+                                data-testid="shell-avatar"
+                                onClick={() => setOpen((value) => !value)}
+                                className="ms-auto flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/25 text-sm font-bold text-white sm:hidden"
+                            >
+                                {(user.name || '?').slice(0, 1).toUpperCase()}
+                            </button>
+                        )}
+                        {user && (
+                            <span className="hidden items-center gap-2 rounded-lg border border-white/20 bg-white/10 px-2.5 py-1 sm:flex">
                                 <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-white/25 text-xs font-bold text-white" aria-hidden="true">{(user.name || '?').slice(0, 1).toUpperCase()}</span>
                                 <Link href="/account/linked" className="max-w-[10rem] truncate text-white hover:underline">
                                     {user.name}
@@ -185,7 +208,7 @@ export default function AppShell({ title, children }) {
                                 </button>
                             </span>
                         )}
-                        <span className="flex items-center gap-1 rounded bg-white/15 px-2 py-0.5 text-xs uppercase">
+                        <span className="hidden items-center gap-1 rounded bg-white/15 px-2 py-0.5 text-xs uppercase sm:flex">
                             {locales.map((code) => (
                                 <a
                                     key={code}
@@ -214,23 +237,57 @@ export default function AppShell({ title, children }) {
                             aria-label={n.all_screens || 'All screens'}
                             className="absolute inset-x-0 top-full z-20 max-h-[80vh] overflow-y-auto border-b border-[#E6D9C8] bg-white text-gray-900 shadow-lg"
                         >
-                            <div className="mx-auto grid max-w-6xl grid-cols-2 gap-x-8 gap-y-6 px-6 py-6 text-sm sm:grid-cols-3 lg:grid-cols-5">
-                                {nav.groups.map((group) => (
-                                    <section key={group.key} data-nav-section={group.key}>
-                                        <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500">{group.label}</h2>
-                                        <ul className="space-y-1">
-                                            {group.items.map((item) => (
-                                                <li key={item.href}>
-                                                    <Item
-                                                        item={item}
-                                                        className={!item.hard && isCurrent(item.href) ? 'font-semibold text-[#7C2D37]' : 'text-[#7C2D37] hover:underline'}
-                                                    />
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    </section>
-                                ))}
+                            {/* The phone's account and language rows (see the bar above) — first,
+                                so they are in reach without scrolling a long list of groups. */}
+                            <div className="border-b border-[#E6D9C8] bg-[#FDFBF8] px-6 py-4 text-sm sm:hidden" data-testid="shell-account">
+                                {user && (
+                                    <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                                        <Link href="/account/linked" className="flex min-w-0 items-center gap-2 text-gray-900 hover:underline">
+                                            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#7C2D37] text-xs font-bold text-white" aria-hidden="true">{(user.name || '?').slice(0, 1).toUpperCase()}</span>
+                                            <span className="truncate font-medium">{user.name}</span>
+                                        </Link>
+                                        <button
+                                            type="button"
+                                            className="rounded-md border border-[#7C2D37] px-3 py-2 font-medium text-[#7C2D37]"
+                                            onClick={() => forgetPushDevice().finally(() => router.post('/logout'))}
+                                        >
+                                            {t.logout || 'Log out'}
+                                        </button>
+                                    </div>
+                                )}
+                                <div className="flex flex-wrap items-center gap-2">
+                                    <span className="text-xs font-semibold uppercase tracking-wide text-gray-500">{n.language || 'Language'}</span>
+                                    {locales.map((code) => (
+                                        <a
+                                            key={code}
+                                            href={locale_urls[code] || `/${code}`}
+                                            className={`rounded-full px-3 py-1.5 ${code === locale ? 'bg-[#7C2D37] font-semibold text-white' : 'border border-[#E6D9C8] bg-white text-gray-700'}`}
+                                            hrefLang={code}
+                                        >
+                                            {t[`locale_${code}`] || code}
+                                        </a>
+                                    ))}
+                                </div>
                             </div>
+                            {nav.groups.length > 0 && (
+                                <div className="mx-auto grid max-w-6xl grid-cols-2 gap-x-8 gap-y-6 px-6 py-6 text-sm sm:grid-cols-3 lg:grid-cols-5">
+                                    {nav.groups.map((group) => (
+                                        <section key={group.key} data-nav-section={group.key}>
+                                            <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500">{group.label}</h2>
+                                            <ul className="space-y-1">
+                                                {group.items.map((item) => (
+                                                    <li key={item.href}>
+                                                        <Item
+                                                            item={item}
+                                                            className={`block py-1 sm:py-0 ${!item.hard && isCurrent(item.href) ? 'font-semibold text-[#7C2D37]' : 'text-[#7C2D37] hover:underline'}`}
+                                                        />
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </section>
+                                    ))}
+                                </div>
+                            )}
                         </div>
                     </>
                 )}

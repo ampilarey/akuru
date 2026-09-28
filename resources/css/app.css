@@ -121,6 +121,12 @@
   .form-label {
     @apply block text-sm font-medium text-gray-700 mb-1;
   }
+
+  /* A link a thumb can hit (STATUS §5js): the portal's quick links were
+     20 px of underlined text. A chip is the same link with room around it. */
+  .chip-link {
+    @apply inline-flex min-h-[2.25rem] items-center rounded-full border border-[#E6D9C8] bg-white px-3 py-1.5 text-sm text-[#7C2D37] hover:border-[#7C2D37] hover:underline;
+  }
 }
 
 .glossary-term {
@@ -169,6 +175,57 @@ html[lang="dv"] body,
 
 .hijri-badge {
   @apply inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800;
+}
+
+/*
+ * Phone-first tables (STATUS §5js). Below `sm` a `.table-stack` table becomes
+ * a list of cards: the header row goes, each row is a block, and each cell is
+ * a label–value line whose label is the cell's own `data-label`. A parent
+ * reads an invoice or an attendance row top to bottom instead of dragging a
+ * six-column table sideways under the thumb. A cell with no label — an action
+ * cell, a `colSpan` "nothing yet" row — stays a plain block. Flex puts the
+ * label on the start side, so Dhivehi and Arabic come out right without
+ * another rule. Generated content is not in `innerText`, so tests and walks
+ * that read a row's text see exactly what they saw before.
+ */
+@media (max-width: 639.98px) {
+  .table-stack thead {
+    display: none;
+  }
+  .table-stack,
+  .table-stack tbody,
+  .table-stack tr,
+  .table-stack td {
+    display: block;
+    width: 100%;
+  }
+  .table-stack tr {
+    padding: 0.5rem 0.75rem;
+  }
+  .table-stack td {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.25rem 0;
+  }
+  .table-stack td[data-label]::before {
+    content: attr(data-label);
+    flex: 0 0 38%;
+    font-weight: 600;
+    color: #6b7280;
+  }
+  .table-stack td[colspan] {
+    display: block;
+  }
+  /* An action cell — Pay, Receipt, Book, Download — is one wrapping row of
+     buttons under the card's lines, not a label–value pair. */
+  .table-stack td.table-actions {
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    gap: 0.5rem;
+    padding-top: 0.5rem;
+  }
 }
 /* B3 (LIBRARY_PLAN §36): the article body's editor. A page break is a
    labelled rule so the writer sees where the reader's page turns; the

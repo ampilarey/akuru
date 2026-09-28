@@ -10,7 +10,7 @@ export default function Behavior({ children, studentId, records }) {
                 </select>
             </div>
             <div className="overflow-x-auto rounded-lg border bg-white">
-                <table className="min-w-full text-sm">
+                <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">Date</th>
@@ -25,10 +25,10 @@ export default function Behavior({ children, studentId, records }) {
                         )}
                         {records.map((row) => (
                             <tr key={row.id} className="border-t">
-                                <td className="px-3 py-2">{row.date}</td>
-                                <td className="px-3 py-2">{row.type}</td>
-                                <td className="px-3 py-2">{row.category}</td>
-                                <td className="px-3 py-2">{row.description}</td>
+                                <td className="px-3 py-2" data-label="Date">{row.date}</td>
+                                <td className="px-3 py-2" data-label="Type">{row.type}</td>
+                                <td className="px-3 py-2" data-label="Category">{row.category}</td>
+                                <td className="px-3 py-2" data-label="Description">{row.description}</td>
                             </tr>
                         ))}
                     </tbody>

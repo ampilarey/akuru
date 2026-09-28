@@ -143,7 +143,16 @@ const phoneMeasure = await phone.evaluate(() => {
     const vw = window.innerWidth;
     const cards = Array.from(document.querySelectorAll('[data-testid^="section-"]')).map((el) => el.getBoundingClientRect());
     const lefts = new Set(cards.map((r) => Math.round(r.left)));
-    const wide = Array.from(document.querySelectorAll('body *')).filter((el) => el.getBoundingClientRect().right > vw + 1).length;
+    // A link inside the header's sideways-scrolling strip (STATUS §5hu, §5jq)
+    // sits past the edge by design and is reached by a swipe; only an element
+    // with no scrolling ancestor is cut off.
+    const scrolls = (el) => {
+        for (let a = el.parentElement; a && a !== document.body; a = a.parentElement) {
+            if (/auto|scroll/.test(getComputedStyle(a).overflowX)) return true;
+        }
+        return false;
+    };
+    const wide = Array.from(document.querySelectorAll('body *')).filter((el) => el.getBoundingClientRect().right > vw + 1 && !scrolls(el)).length;
     return { overflow: document.documentElement.scrollWidth - vw, columns: lefts.size, wide, parts: document.querySelectorAll('[data-testid="hub-parts"] a').length };
 });
 check('at 390 px the cards stack in one column and nothing is cut off', phoneMeasure.overflow <= 1 && phoneMeasure.columns === 1 && phoneMeasure.wide === 0 && phoneMeasure.parts === 3, JSON.stringify(phoneMeasure));

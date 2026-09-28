@@ -14,7 +14,7 @@ export default function Awards({ children, studentId, awards }) {
                 </select>
             </div>
             <div className="overflow-x-auto rounded-lg border bg-white">
-                <table className="min-w-full text-sm">
+                <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">Award</th>
@@ -28,9 +28,9 @@ export default function Awards({ children, studentId, awards }) {
                         )}
                         {awards.map((row) => (
                             <tr key={row.id} className="border-t">
-                                <td className="px-3 py-2">{row.award}</td>
-                                <td className="px-3 py-2">{row.student_name}</td>
-                                <td className="px-3 py-2">{row.awarded_date}</td>
+                                <td className="px-3 py-2" data-label="Award">{row.award}</td>
+                                <td className="px-3 py-2" data-label="Student">{row.student_name}</td>
+                                <td className="px-3 py-2" data-label="Date">{row.awarded_date}</td>
                             </tr>
                         ))}
                     </tbody>
