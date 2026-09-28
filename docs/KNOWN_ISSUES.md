@@ -296,7 +296,9 @@ course; library items and gift cards have their own listeners.
 ### Nothing linked a signed-in reader to the Library — **fixed (2026-09-25)**
 
 `/my-library` and `/my-wallet` were addresses to type. The shell's *Mine*
-group and the public site's account menu now carry them (STATUS §5gn).
+group and the public site's account menu now carry them (STATUS §5gn). Since
+SIGN_IN_PLAN ID1 the group is *Personal*, every workspace's last, and its
+Blade pages open as full pages rather than in a modal (STATUS §5jz).
 
 ### PDF text extraction has known limits — open, by design of the hosts
 

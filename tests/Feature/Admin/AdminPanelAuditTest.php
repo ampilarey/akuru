@@ -89,13 +89,16 @@ it('offers the admin panel in the Inertia More menu by workspace, Blade screens 
     // school office; nothing of the panel to a teacher (STATUS §5id).
     $super = auditAdmin('super_admin', ['commerce.manage', 'library.manage', 'prayer.manage', 'pronunciation.manage', 'operations.manage', 'translations.manage', 'bookshop.manage']);
     $nav = app(BuildNavigationAction::class)->execute($super, 'en');
-    expect(array_column($nav['groups'], 'key'))->toBe(['panel_website', 'panel_money', 'panel_system', 'mine']);
+    expect(array_column($nav['groups'], 'key'))->toBe(['panel_website', 'panel_money', 'panel_system', 'me']);
     $items = collect($nav['groups'])->flatMap(fn ($group) => $group['items'])->keyBy('href');
     expect($items->keys()->all())->toContain('/admin/instructors', '/admin/public-site/pages', '/admin/commerce', '/admin/library', '/admin/bookshop', '/admin/prayer-times/islands', '/admin/pronunciation', '/admin/translations', '/admin/operations', '/admin/users', '/admin/settings')
         ->not->toContain('/admin/enrollments');
     // C9 slice 12: every admin screen is Inertia, so nothing in the panel is
-    // marked for a full page load any more.
-    expect($items->filter(fn ($item) => ! empty($item['hard']))->keys()->all())->toBe([])
+    // marked for a full page load any more. (The Personal group's Library and
+    // Bookstore pages are Blade and carry `hard` since SIGN_IN_PLAN ID1; they
+    // are not the panel's.)
+    $panel = collect($nav['groups'])->filter(fn ($group) => str_starts_with($group['key'], 'panel_'))->flatMap(fn ($group) => $group['items']);
+    expect($panel->filter(fn ($item) => ! empty($item['hard']))->pluck('href')->all())->toBe([])
         ->and($items['/admin/prayer-times/islands'])->not->toHaveKey('hard')
         ->and($items['/admin/public-site/pages'])->not->toHaveKey('hard')
         // C9 slice 2: Manage users is an Inertia page now, like Commerce.

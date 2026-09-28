@@ -19,11 +19,20 @@ namespace App\Support\Navigation;
  * Order matters: a person who holds several lands on the first they hold,
  * and the switcher lists them in this order. Staff first, because running
  * the institute or the school is the job the person signed in to do (E7).
+ *
+ * A workspace's groups are its own, the way an EduPage account's drawer is
+ * (docs/SIGN_IN_PLAN.md, ID1): the School's office groups, its teaching and
+ * its communication; a household's Communication, Education, Evaluation
+ * and Other; a shop, a writer's desk or the Bookstore office nothing of
+ * the school's. Every workspace ends with the same Personal group (`me`).
  */
 final class WorkspaceMap
 {
     /** The workspace of a signed-in person with no role at all: their own account. */
     public const ACCOUNT = 'account';
+
+    /** The groups a family and a pupil hold, in EduPage's order. */
+    private const HOUSEHOLD = ['communication', 'education', 'evaluation', 'other', 'me'];
 
     /**
      * @return array<string, array{roles: list<string>, groups: list<string>, home: string}>
@@ -31,14 +40,14 @@ final class WorkspaceMap
     public static function all(): array
     {
         return [
-            'institute' => ['roles' => ['super_admin'], 'groups' => ['panel_website', 'panel_money', 'panel_system', 'mine'], 'home' => 'admin.index'],
-            'school' => ['roles' => ['admin', 'headmaster', 'supervisor', 'teacher'], 'groups' => ['panel_admissions', 'school_year', 'people', 'day_loop', 'exams_group', 'catalog_group', 'learn_group', 'finance_group', 'hr_group', 'library_group', 'mine'], 'home' => 'school.index'],
-            'bookstore' => ['roles' => ['bookshop_manager'], 'groups' => ['mine'], 'home' => 'admin.bookshop.index'],
-            'family' => ['roles' => ['parent'], 'groups' => ['learn_group', 'mine'], 'home' => 'portal.home'],
-            'learn' => ['roles' => ['student'], 'groups' => ['learn_group', 'mine'], 'home' => 'portal.home'],
-            'vendor' => ['roles' => ['vendor'], 'groups' => ['mine'], 'home' => 'vendor.index'],
-            'writing' => ['roles' => ['writer', 'reviewer'], 'groups' => ['learn_group', 'mine'], 'home' => 'write.index'],
-            'catalog' => ['roles' => ['course_creator'], 'groups' => ['catalog_group', 'mine'], 'home' => 'catalog.courses.index'],
+            'institute' => ['roles' => ['super_admin'], 'groups' => ['panel_website', 'panel_money', 'panel_system', 'me'], 'home' => 'admin.index'],
+            'school' => ['roles' => ['admin', 'headmaster', 'supervisor', 'teacher'], 'groups' => ['panel_admissions', 'school_year', 'people', 'day_loop', 'exams_group', 'catalog_group', 'teaching', 'finance_group', 'hr_group', 'library_group', 'communication', 'my_work', 'me'], 'home' => 'school.index'],
+            'bookstore' => ['roles' => ['bookshop_manager'], 'groups' => ['me'], 'home' => 'admin.bookshop.index'],
+            'family' => ['roles' => ['parent'], 'groups' => self::HOUSEHOLD, 'home' => 'portal.home'],
+            'learn' => ['roles' => ['student'], 'groups' => self::HOUSEHOLD, 'home' => 'portal.home'],
+            'vendor' => ['roles' => ['vendor'], 'groups' => ['me'], 'home' => 'vendor.index'],
+            'writing' => ['roles' => ['writer', 'reviewer'], 'groups' => ['me'], 'home' => 'write.index'],
+            'catalog' => ['roles' => ['course_creator'], 'groups' => ['catalog_group', 'me'], 'home' => 'catalog.courses.index'],
         ];
     }
 
@@ -47,7 +56,7 @@ final class WorkspaceMap
      */
     public static function definition(string $workspace): array
     {
-        return self::all()[$workspace] ?? ['roles' => [], 'groups' => ['mine'], 'home' => 'dashboard'];
+        return self::all()[$workspace] ?? ['roles' => [], 'groups' => ['me'], 'home' => 'dashboard'];
     }
 
     /**

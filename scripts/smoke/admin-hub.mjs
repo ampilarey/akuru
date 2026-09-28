@@ -118,7 +118,7 @@ await office.waitForURL(/\/academics\/years$/, { timeout: 15000 }).catch(() => {
 check('Years (inside School year) opens as an Inertia visit', /\/academics\/years$/.test(office.url()), office.url().replace(BASE, ''));
 
 const school = await moreGroups(office);
-check('the More menu is the School’s: Admissions first, School year … Library, Mine; nothing of the Institute', school.groups[0] === 'Admissions' && school.groups.includes('School year') && school.groups.includes('HR') && school.groups.at(-1) === 'Mine' && !school.groups.includes('Website & content') && !school.groups.includes('System'), school.groups.join(' | '));
+check('the More menu is the School’s: Admissions first, School year … Library, Personal last; nothing of the Institute', school.groups[0] === 'Admissions' && school.groups.includes('School year') && school.groups.includes('HR') && school.groups.at(-1) === 'Personal' && !school.groups.includes('Website & content') && !school.groups.includes('System'), school.groups.join(' | '));
 check('with the Blade screens the Blade nav used to link by hand', school.hrefs.includes('/announcements') && school.hrefs.includes('/quran-progress') && school.hrefs.includes('/substitutions/requests'));
 check('and the inner screens kept off the menu (they are on the home)', !school.hrefs.includes('/admin/enrollments/payments'));
 // C9 slice 4: the enrolment lists are Inertia; the Quran progress list is the School's Blade entry.
@@ -176,7 +176,7 @@ if (SUPER) {
     const bar = (await su.locator('header nav a[aria-current], header nav a:not([hrefLang])').allInnerTexts()).map((t) => t.trim()).filter(Boolean);
     check('the Institute bar: Website CMS, Commerce, Library office, Akuru Bookstore, Manage users', ['Website CMS', 'Commerce', 'Library office', 'Akuru Bookstore', 'Manage users'].every((label) => bar.includes(label)), bar.join(' | '));
     const institute = await moreGroups(su);
-    check('the More menu: Website & content, Shops & money, System, Mine — nothing of the School', institute.groups.join(',') === 'Website & content,Shops & money,System,Mine', institute.groups.join(' | '));
+    check('the More menu: Website & content, Shops & money, System, Personal — nothing of the School', institute.groups.join(',') === 'Website & content,Shops & money,System,Personal', institute.groups.join(' | '));
     check('and the full dashboard a link away', (await su.getAttribute('[data-testid="today-more"]', 'href') || '').endsWith('/dashboard/numbers'));
     if (SUPER !== ADMIN) {
         check('no switcher for one workspace', (await count(su, '[data-testid="workspace-switcher"]')) === 0);

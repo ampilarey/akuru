@@ -79,7 +79,7 @@ it('builds the bar and the More menu for the active workspace only', function ()
     $nav = app(BuildNavigationAction::class)->execute($super, 'en');
     expect($nav['workspace'])->toBe('institute')
         ->and(array_column($nav['primary'], 'label'))->toBe(['Website CMS', 'Commerce', 'Library office', 'Akuru Bookstore', 'Manage users'])
-        ->and(array_column($nav['groups'], 'key'))->toBe(['panel_website', 'panel_money', 'panel_system', 'mine']);
+        ->and(array_column($nav['groups'], 'key'))->toBe(['panel_website', 'panel_money', 'panel_system', 'me']);
     $hrefs = navHrefs($nav);
     expect($hrefs)->toContain('/admin/public-site/pages', '/admin/instructors', '/admin/prayer-times/islands', '/admin/commerce', '/admin/library', '/admin/bookshop', '/admin/users', '/admin/settings', '/admin/translations')
         ->not->toContain('/admin/enrollments', '/academics/years', '/hr/payroll', '/exams/schedule');
@@ -88,7 +88,7 @@ it('builds the bar and the More menu for the active workspace only', function ()
     $nav = app(BuildNavigationAction::class)->execute($admin, 'en');
     expect($nav['workspace'])->toBe('school')
         ->and(array_column($nav['primary'], 'label'))->toBe(['Today', 'Years', 'Students', 'Exams', 'Gradebook', 'Invoices'])
-        ->and(array_column($nav['groups'], 'key'))->toBe(['panel_admissions', 'school_year', 'people', 'day_loop', 'exams_group', 'catalog_group', 'learn_group', 'finance_group', 'hr_group', 'library_group', 'mine']);
+        ->and(array_column($nav['groups'], 'key'))->toBe(['panel_admissions', 'school_year', 'people', 'day_loop', 'exams_group', 'catalog_group', 'teaching', 'finance_group', 'hr_group', 'library_group', 'communication', 'my_work', 'me']);
     $hrefs = navHrefs($nav);
     expect($hrefs)->toContain('/admin/enrollments', '/academics/years', '/hr/payroll', '/finance/invoices', '/announcements', '/quran-progress')
         ->not->toContain('/admin/commerce', '/admin/public-site/pages', '/admin/users', '/admin/settings');
@@ -109,7 +109,7 @@ it('builds the bar and the More menu for the active workspace only', function ()
         ->and(array_column($institute['primary'], 'label'))->toBe(['Website CMS', 'Commerce', 'Library office', 'Akuru Bookstore', 'Manage users']);
 
     // A person with no role: their account, and only that.
-    expect(array_column(app(BuildNavigationAction::class)->execute(workspaceUser([]), 'en')['groups'], 'key'))->toBe(['mine']);
+    expect(array_column(app(BuildNavigationAction::class)->execute(workspaceUser([]), 'en')['groups'], 'key'))->toBe(['me']);
 });
 
 function navHrefs(array $nav): array
@@ -151,7 +151,7 @@ it('switches with a post, remembers the choice, and remembers a home that is ope
         ->assertInertia(fn (Assert $page) => $page
             ->where('auth.workspace', 'family')
             ->where('nav.workspace', 'family')
-            ->where('nav.groups', fn ($groups) => collect($groups)->pluck('key')->all() === ['learn_group', 'mine']));
+            ->where('nav.groups', fn ($groups) => collect($groups)->pluck('key')->all() === ['communication', 'education', 'evaluation', 'other', 'me']));
     // The choice holds on any other page.
     $this->withoutLocalizationMiddleware()->actingAs($user)->get(route('portal.notifications'))->assertOk()
         ->assertInertia(fn (Assert $page) => $page->where('auth.workspace', 'family'));
@@ -211,7 +211,7 @@ it('composes the Institute and the School homes from the workspace’s own menu'
             ->where('parts.0.key', 'panel_admissions')->has('parts.0.sections', 1)
             ->where('parts.0.sections.0.key', 'admin_enrolments')->where('parts.0.sections.0.href', '/admin/enrollments')->where('parts.0.sections.0.hard', false)->has('parts.0.sections.0.children', 1)
             ->where('parts.1.key', 'school_academics')->where('parts.1.label', 'Academics')
-            ->where('parts.1.sections', fn ($sections) => collect($sections)->pluck('key')->all() === ['school_year', 'day_loop', 'exams_group', 'catalog_group', 'learn_group'])
+            ->where('parts.1.sections', fn ($sections) => collect($sections)->pluck('key')->all() === ['school_year', 'day_loop', 'exams_group', 'catalog_group', 'teaching'])
             ->where('parts.1.sections.0.href', '/academics/years')->where('parts.1.sections.0.hard', false)->has('parts.1.sections.0.children', 11)
             ->where('parts.1.sections.0.description', 'Years, terms, rooms, periods, the timetable, calendar, events and clubs.')
             ->where('parts.2.key', 'school_office')->where('parts.2.label', 'Office')

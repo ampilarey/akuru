@@ -38,11 +38,13 @@ one per job, `App\Support\Navigation\WorkspaceMap`:
 
 | Workspace | Roles | Home | Bar | More |
 |---|---|---|---|---|
-| Institute | `super_admin` | `/admin` | Website CMS · Commerce · Library office · Bookstore · Manage users | Website & content · Shops & money · System · Mine |
-| School | `admin`, `headmaster`, `supervisor`, `teacher` | `/school` (a teacher: their day) | the office's or the teacher's bar | Admissions · School year · People · Day loop · Exams · Catalog · Learn · Finance · HR · Library · Mine |
-| Bookstore office | `bookshop_manager` | `/admin/bookshop` | Bookstore · Shop | Mine |
-| Family / Learn | `parent` / `student` | the family portal | the family's or the pupil's bar | Learn · Mine |
-| My shop / Writing / Catalog | `vendor` / `writer`, `reviewer` / `course_creator` | the shop, the desk or the queue, the catalogue | their own | Mine (+ Learn, Catalog) |
+| Institute | `super_admin` | `/admin` | Website CMS · Commerce · Library office · Bookstore · Manage users | Website & content · Shops & money · System · Personal |
+| School | `admin`, `headmaster`, `supervisor`, `teacher` | `/school` (a teacher: their day) | the office's or the teacher's bar | Admissions · School year · People · Day loop · Exams · Catalog · Teaching · Finance · HR · Library · Communication · My work · Personal |
+| Bookstore office | `bookshop_manager` | `/admin/bookshop` | Bookstore · Shop | Personal |
+| Family / Learn | `parent` / `student` | the family portal | the family's or the pupil's bar | Communication · Education · Evaluation · Other · Personal |
+| My shop / Writing / Catalog | `vendor` / `writer`, `reviewer` / `course_creator` | the shop, the desk or the queue, the catalogue | their own | Personal (+ Catalog) |
+
+Since SIGN_IN_PLAN ID1 (STATUS §5jz) a workspace's More menu is only its own: a vendor sees their shop and the Personal group, nothing of the school; Home, first in the panel, is the workspace's home.
 
 The shell shows one workspace at a time: `BuildNavigationAction` builds the
 bar and the More groups for the active one, and both shells render that one

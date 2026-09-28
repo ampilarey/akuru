@@ -14,7 +14,7 @@ return [
     'desc_day_loop' => 'The school day: registers, plans, materials, attendance, behaviour, pick-up, the gate, notices.',
     'desc_exams_group' => 'Exams, weights, the gradebook, scales, report cards and awards.',
     'desc_catalog_group' => 'The teaching catalogue: courses, offerings, questions, subjects, certificates, reports.',
-    'desc_learn_group' => 'Teaching and learning: your timetable, meetings, recitations, pronunciation, Hifz.',
+    'desc_teaching' => 'Teaching: your timetable, meetings, recitations, pronunciation, Hifz, Qur\'an progress and e-learning.',
     'desc_finance_group' => 'Fees, invoices, arrears, payment plans, receipts, collections, reconciliation.',
     'desc_hr_group' => 'Staff attendance, leave, contracts, compliance, hiring, appraisals, payroll.',
     'desc_library_group' => 'The lending library: circulation and borrower cards.',

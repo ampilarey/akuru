@@ -110,14 +110,14 @@ check('the header’s switcher reads School', (await switcherLabel(person)) === 
 let listed = await openSwitcher(person);
 check('and lists School, Family and My shop', listed.join(',') === 'school,family,vendor', listed.join(','));
 let groups = await moreGroups(person);
-check('the School’s More menu: Admissions, the academics, the office, Mine — nothing of the Institute', groups.includes('Admissions') && groups.includes('School year') && groups.includes('Finance') && groups.includes('Mine') && !groups.includes('Website & content'), groups.join(' | '));
+check('the School’s More menu: Admissions, the academics, teaching, the office, Personal last — nothing of the Institute', groups.includes('Admissions') && groups.includes('School year') && groups.includes('Teaching') && groups.includes('Finance') && groups.at(-1) === 'Personal' && !groups.includes('Learn') && !groups.includes('Website & content'), groups.join(' | '));
 
 await switchTo(person, 'family');
 await person.waitForURL(/\/portal\/home$/, { timeout: 15000 }).catch(() => {});
 check('Family switches (a post) and lands on the family portal', /\/portal\/home$/.test(person.url()), person.url().replace(BASE, ''));
 check('where the switcher reads Family', (await switcherLabel(person)) === 'Family', await switcherLabel(person));
 groups = await moreGroups(person);
-check('and the More menu holds the family’s groups only', groups.join(',') === 'Learn,Mine', groups.join(' | '));
+check('and the More menu holds the family’s groups only', groups.join(',') === 'Communication,Education,Evaluation,Other,Personal', groups.join(' | '));
 await person.goto(`${BASE}/en/portal/notifications`, { waitUntil: 'networkidle' });
 check('the choice holds on the next page', (await switcherLabel(person)) === 'Family', await switcherLabel(person));
 

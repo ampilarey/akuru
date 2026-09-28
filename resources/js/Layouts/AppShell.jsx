@@ -269,6 +269,19 @@ export default function AppShell({ title, children }) {
                                     ))}
                                 </div>
                             </div>
+                            {/* Home is the workspace's home — the shop for a vendor, the
+                                School office, the family portal — never one page for
+                                everybody (docs/SIGN_IN_PLAN.md F2). A plain link, as the
+                                wordmark is: a home may still be a Blade page. */}
+                            {activeWorkspace && (
+                                <div className="mx-auto max-w-6xl px-6 pt-4 text-sm">
+                                    <a href={activeWorkspace.href} data-testid="workspace-home" className="inline-flex items-center gap-2 py-1 font-semibold text-[#7C2D37] hover:underline">
+                                        <span aria-hidden="true">🏠</span>
+                                        {n.workspace_home || 'Home'}
+                                        <span className="font-normal text-gray-500">· {activeWorkspace.label}</span>
+                                    </a>
+                                </div>
+                            )}
                             {nav.groups.length > 0 && (
                                 <div className="mx-auto grid max-w-6xl grid-cols-2 gap-x-8 gap-y-6 px-6 py-6 text-sm sm:grid-cols-3 lg:grid-cols-5">
                                     {nav.groups.map((group) => (

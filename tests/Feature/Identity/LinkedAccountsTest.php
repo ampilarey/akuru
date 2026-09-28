@@ -200,8 +200,10 @@ it('offers the switcher on every screen, not just a settings page', function () 
     ['teacher' => $teacher, 'parent' => $parent] = linkSetup();
     app(LinkAccountAction::class)->execute($teacher, $parent->email, 'parent-pass', '127.0.0.1');
 
+    // Any Inertia screen will do; the family home is not a lone teacher's
+    // since SIGN_IN_PLAN ID1 (it sends them to their own).
     $this->withoutLocalizationMiddleware()->actingAs($teacher)
-        ->get(route('portal.home'))
+        ->get(route('portal.notifications'))
         ->assertOk()
         ->assertInertia(fn ($page) => $page
             ->has('auth.linked_accounts', 1)

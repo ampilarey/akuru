@@ -20,11 +20,16 @@ return [
     'day_loop' => 'ދުވަހުގެ މަސައްކަތް',
     'exams_group' => 'އިމްތިހާން',
     'catalog_group' => 'ކޯސްތައް',
-    'learn_group' => 'އުނގެނުން',
     'finance_group' => 'ފައިސާ',
     'hr_group' => 'މުވައްޒަފުން',
     'library_group' => 'ލައިބްރަރީ',
-    'mine' => 'އަހަރެންގެ',
+    'teaching' => 'ކިޔަވައިދިނުން',
+    'communication' => 'މުވާސަލާތު',
+    'education' => 'ތައުލީމު',
+    'evaluation' => 'ވަޒަންކުރުން',
+    'other' => 'އެހެނިހެން',
+    'my_work' => 'އަހަރެންގެ މަސައްކަތް',
+    'me' => 'ޝަޚްސީ',
     'admin_group' => 'އެޑްމިން',
 
     'today' => 'މިއަދު',
@@ -200,4 +205,6 @@ return [
     'hifz' => 'ޙިފްޒު',
     'quran_progress' => 'ޤުރުއާން ކުރިއެރުން',
     'e_learning' => 'އީ-ލާނިންގ',
+    // SIGN_IN_PLAN ID1: the Personal group's first item.
+    'profile' => 'އަހަރެންގެ ޕްރޮފައިލް',
 ];
