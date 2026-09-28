@@ -14,6 +14,7 @@ This file governs every AI-assisted coding session in this repo. It encodes the 
 | `docs/BACKLOG.md` | parked items and ideas kept for later, with why — update it in the PR that parks or builds one |
 | `docs/BOOKSHOP_PLAN.md` | Akuru Bookstore (named 2026-09-26; multi-vendor books and educational items) plan: slices B0–B9, the owner's decisions (all made 2026-09-25) and the audit |
 | `docs/ADMIN_PANEL.md` | the admin panel (`/admin/*`): inventory of every group with its gate, screens, CSV, tests and walk; the 2026-09-26 audit's findings and what the owner still owns |
+| `docs/SIGN_IN_PLAN.md` | sign-in and workspaces as the EduPage account model: the 2026-09-28 audit (twelve findings with their code), the target, seven decisions with defaults, slices ID1–ID5 |
 | `docs/PHASE_0_CHECKLIST.md`, `docs/S1_SPEC.md`, `docs/S2_SPEC.md`, `docs/S3_SPEC.md`, `docs/W1_SPEC.md` | per-phase build specs |
 | `STATUS.md` | what is done, in progress, next — UPDATE AFTER EVERY SLICE |
 | `docs/adr/` | architecture decision records |

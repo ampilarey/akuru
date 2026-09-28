@@ -86,7 +86,7 @@ the 2026-09-04 audit found: work recorded as missing that already shipped.**
 | E2 | not started | `Message`, threads, participants, reply policy, polls all ship (E2a/E2b). |
 | E3 | not started | Homework reader, ticks and due-date defaults ship (E3a). |
 | E6 | not started | Forms domain ships end to end including fees (E6a–E6c). |
-| E7 | not started | `ResolveWorkspacesAction` + the workspace switcher ship (since STATUS §5id every identity is a workspace). |
+| E7 | not started | `ResolveWorkspacesAction` + the workspace switcher ship (since STATUS §5id every identity is a workspace). The EduPage *account* model itself — a workspace's menu being only its own, a Learner workspace, the account list in the drawer — is audited and planned in `docs/SIGN_IN_PLAN.md` (2026-09-28); E7's `linked_accounts` (separate logins linked) is that plan's D7, later. |
 | E10 | ~1 week | Mostly shipped; only lateness aggregation (E10a) and the absence list (E10b) were genuinely missing. |
 | E13 | ~2 weeks | Was genuinely missing and is now complete (E13a–E13c). **The one row that held.** |
 | E11 | "half built — `CalendarDay` covers only holiday/exam day types" | `CalendarDayType` has had **five** cases since it shipped — holiday, event, exam_day, closure, special_schedule — with full CRUD, a month grid, CSV export and trilingual titles. The staff calendar is done. The real gap was that the **portal** read only published two of the five (fixed as E11b). |
