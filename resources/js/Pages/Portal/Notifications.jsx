@@ -16,7 +16,7 @@ function when(iso) {
     return Number.isNaN(date.getTime()) ? '' : date.toLocaleString();
 }
 
-export default function Notifications({ notifications = [], categories = {}, preferences = {} }) {
+export default function Notifications({ notifications = [], categories = {}, preferences = {}, devices = [], t = {} }) {
     const unread = notifications.filter((n) => !n.is_read).length;
     const prefs = useForm({ preferences });
 
@@ -66,6 +66,28 @@ export default function Notifications({ notifications = [], categories = {}, pre
                     </form>
                 </details>
             )}
+
+            {/* SPEC §50 (STATUS §5jr): the phones the mobile app registered for push. */}
+            <details className="mb-4 rounded-lg border bg-white p-4" data-testid="devices">
+                <summary className="cursor-pointer text-sm font-medium">{t.devices_title || 'Your phones'}</summary>
+                <p className="mt-2 text-xs text-gray-500">{t.devices_hint || 'The Akuru app registers each phone you sign in on, so notifications reach it. Remove a phone you no longer use.'}</p>
+                {devices.length === 0 && <p className="mt-2 text-sm text-gray-600" data-testid="devices-none">{t.devices_none || 'No phone has registered yet. Sign in on the Akuru app and it will appear here.'}</p>}
+                <ul className="mt-2 divide-y">
+                    {devices.map((device) => (
+                        <li key={device.id} className="flex flex-wrap items-center justify-between gap-2 py-2 text-sm" data-testid="device-row">
+                            <span>
+                                <span className="font-medium">{t[`devices_platform_${device.platform}`] || device.platform}</span>
+                                {device.name && <span className="ms-2 text-xs text-gray-500">{device.name.slice(0, 40)}</span>}
+                                <span className="block text-xs text-gray-500">
+                                    {device.active ? (t.devices_active || 'Receiving') : (t.devices_inactive || 'Signed out')}
+                                    {' · '}{device.last_seen_at ? (t.devices_last_seen || 'Last seen :when').replace(':when', when(device.last_seen_at)) : (t.devices_never_seen || 'Never seen')}
+                                </span>
+                            </span>
+                            <button type="button" className="text-xs text-red-700 hover:underline" onClick={() => router.delete(`/account/devices/${device.id}`, { preserveScroll: true })} data-testid="device-remove">{t.devices_remove || 'Remove'}</button>
+                        </li>
+                    ))}
+                </ul>
+            </details>
 
             {notifications.length === 0 && (
                 <p className="rounded-lg border bg-white p-4 text-sm text-gray-600">

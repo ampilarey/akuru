@@ -4414,6 +4414,67 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5jr. Push notifications: the app registers its phone, and notifications fan out to it (2026-09-28)
+
+SPEC §50; `docs/MOBILE.md`'s last unticked box; the owner, 2026-09-28,
+on the EduPage comparison: "Do it." Push is what makes the wrapped app an
+app — EduPage's parents open it when a notification arrives — and it was
+the piece §5j left as "future". The `devices` table, `PushSenderInterface`
+and `SendPushNotificationAction` already existed (the latter honest about
+delivering nothing); what was missing was a way for a phone to register,
+a real sender behind the contract, and the fan-out.
+
+**Built.** *Registration:* `POST /account/devices` (token, platform,
+device name, app version, locale) upserts the phone by its token through
+`RegisterDeviceAction` — the same token seen again refreshes the row and
+switches it back on, a token that was another person's moves to whoever
+holds the phone now, so a push never reaches a phone that is no longer
+theirs; `POST /account/devices/forget` deactivates it at sign-out;
+`DELETE /account/devices/{id}` removes one from the person's own list.
+All three sit under `auth` alone, like the account switcher, scoped by
+user id in `ForgetDeviceAction`, and are named in the write-route baseline
+(65). *The senders (rule 4):* `config/push.php` picks `null` (default:
+nothing leaves, the app records so), `log` (`LogPushSender`: written to
+the log and counted as sent, the staging rehearsal, the shape of
+`LogSmsSender`) or `fcm` (`FcmPushSender`: Firebase Cloud Messaging HTTP
+v1 with no SDK — a service-account key signs an RS256 assertion, Google's
+token endpoint exchanges it, the access token is cached fifty minutes, one
+POST per device). `PushChannel` fails `fcm` closed to `null` when the
+project id or the key file is missing. FCM's UNREGISTERED and
+INVALID_ARGUMENT raise `InvalidDeviceTokenException`, and
+`SendPushNotificationAction` retires that device rather than retrying it
+forever. *The fan-out:* `SendUserNotificationAction`, the one writer of
+in-app notifications, also pushes when a sender is configured — title,
+body, and a `url` to open (the notification's `href`, else the
+notification centre) — best-effort and logged, never failing the in-app
+row. *The app side:* `Platform/push.js` (the platform layer, SPEC §6.3)
+asks for permission inside the Capacitor shell, registers, posts the
+token, remembers it, and opens the notification's URL when tapped; a
+browser has no plugin and the call returns at once; sign-out from the
+shell forgets the token first. `@capacitor/push-notifications` joins the
+Capacitor dev dependencies for `npx cap sync`. *The person's view:* *Your
+phones* on `/portal/notifications` lists each registered phone (platform,
+name, receiving or signed out, last seen) with *Remove*; 13 keys EN/DV/AR.
+`DeviceRegistrationTest` (6): register, refresh, re-home, forget by the
+owner only, validation, the guest refused; the list and removal scoped to
+one's own phones, the DV/AR keys; the fan-out off by default, on with a
+sender (the live phone only, with the URL and category), a dead token
+retired; the binding by config with `fcm` failing closed; the FCM sender's
+signed assertion, bearer header, message shape (data as strings) and the
+UNREGISTERED path, against a faked Google. Walked at 390 px: the shell's
+registration call answered ok, *Your phones* listing the Android phone as
+receiving with the page fitting the screen, *Remove* taking it off with
+the flash, the section in Dhivehi (5/5); and the fan-out rehearsed with
+`PUSH_DRIVER=log` — one notification, one line in the log naming the
+phone. Full suite 2386 passed.
+
+**What stays with the owner** (`docs/MOBILE.md`): a Firebase project with
+the Android app's `google-services.json` and the iOS APNs key uploaded;
+`npx cap sync` on a machine with Android Studio or Xcode; on the host
+`PUSH_DRIVER=fcm`, `FCM_PROJECT_ID`, and `FCM_CREDENTIALS_PATH` pointing at
+a service-account JSON kept outside the web root. Until then
+`PUSH_DRIVER=null` and nothing changes for anyone.
+
 ## 5jq. The Inertia shell fits a phone again, and the mobile walk can see when it does not (2026-09-28)
 
 The owner's screenshot, 2026-09-28: on their phone the Institute home

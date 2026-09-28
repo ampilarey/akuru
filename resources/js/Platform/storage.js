@@ -22,3 +22,11 @@ export function writePreference(key, value) {
         // Not kept; the page carries on with what it has.
     }
 }
+
+export function clearPreference(key) {
+    try {
+        window.localStorage.removeItem(key);
+    } catch {
+        // Nothing to clear, or nowhere to clear it from.
+    }
+}

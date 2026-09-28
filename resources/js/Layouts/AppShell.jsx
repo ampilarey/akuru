@@ -1,4 +1,5 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
+import { forgetPushDevice } from '../Platform';
 import { useEffect, useState } from 'react';
 
 /**
@@ -178,7 +179,7 @@ export default function AppShell({ title, children }) {
                                 <button
                                     type="button"
                                     className="text-white/80 hover:text-white hover:underline"
-                                    onClick={() => router.post('/logout')}
+                                    onClick={() => forgetPushDevice().finally(() => router.post('/logout'))}
                                 >
                                     {t.logout || 'Log out'}
                                 </button>
