@@ -396,4 +396,29 @@ await parent.waitForLoadState('networkidle');
 const childLibrary = await text(parent);
 check('the parent opens the child\'s library: reading and purchases, with a CSV', /\/portal\/children\/\d+\/library$/.test(parent.url()) && childLibrary.includes(NAME) && childLibrary.includes('Reading') && childLibrary.includes('Purchases') && (await parent.locator('[data-testid="export-csv"]').count()) === 1, `${parent.url().replace(BASE, '')} · ${childLibrary.slice(0, 120)}`);
 
+// 8. a website parent's Family (docs/SIGN_IN_PLAN.md ID2c)
+//
+// SmokeMarkerSeeder::webParent plants a parent who registered their child on
+// the website: linked, not checked, no role. Signed in, they have no Family.
+// The office verifies the link on the child's Guardians tab, and the parent
+// signs in again to the family portal with the child on it.
+const WEB_PARENT = process.env.SMOKE_WEB_PARENT ?? 'smoke-web-parent@akuru.edu.mv';
+const WEB_CHILD = 'SMOKE-WebChild';
+let webParent = await signIn(WEB_PARENT);
+check('a website parent, not yet checked by the office, has no Family', !/\/portal\/home$/.test(webParent.url()), webParent.url().replace(BASE, ''));
+
+await admin.goto(`${BASE}/en/people/students?awaiting_verification=1&search=${encodeURIComponent(WEB_CHILD)}`, { waitUntil: 'networkidle' });
+const webChildHref = (await hrefs(admin)).find((h) => /\/people\/students\/\d+$/.test(h));
+check('the office finds the child under "awaiting parent verification"', Boolean(webChildHref), webChildHref ?? `no /people/students/{id} link for ${WEB_CHILD}`);
+if (webChildHref) {
+    await admin.goto(`${BASE}${webChildHref.replace(/^https?:\/\/[^/]+/, '')}?tab=guardians`, { waitUntil: 'networkidle' });
+    const row = admin.locator('tr', { has: admin.locator('select[aria-label="Verification status"]') }).first();
+    await row.locator('select[aria-label="Verification status"]').selectOption({ label: 'Verified' });
+    await row.locator('button:has-text("Save")').click();
+    await admin.waitForLoadState('networkidle');
+}
+webParent = await signIn(WEB_PARENT);
+check('verified, the parent signs in to the family portal', /\/portal\/home$/.test(webParent.url()), webParent.url().replace(BASE, ''));
+check('with their child on it', (await text(webParent)).includes(WEB_CHILD), (await text(webParent)).slice(0, 160));
+
 await finish();

@@ -4,10 +4,10 @@
 request); the owner said "Next" to the plan and its defaults the same day.
 **ID1 shipped 2026-09-28 (STATUS §5jz)**: F1, F2 and F3 closed, and a
 thirteenth finding (F13, below) fixed with it. **ID2a shipped 2026-09-28
-(STATUS §5ka)**: *My learning*, and F14 found. Next: ID2c (a website
-parent's Family), then ID2b (the old course portal retired) — in that
-order, because ID2b removes the only page a website parent can see their
-children's enrolments on.
+(STATUS §5ka)**: *My learning*, and F14 found. **ID2c shipped 2026-09-28
+(STATUS §5kb)**: the office verifying a guardian link makes the guardian a
+parent. Next: ID2b (the old course portal retired, *My account* in the
+shell).
 **Owner's brief (2026-09-28, with five EduPage screenshots):** "Still there
 is a problem with the login system. Logged in with a vendor account but I
 see educational items also. I need the login style used in EduPage. When a
@@ -73,7 +73,7 @@ for each kind of account. Each finding names the code that produces it.
 | F11 | **The parity document's E7 describes a different switcher.** E7 specifies `linked_accounts` (two *separate* logins linked, the session swapped between them). What shipped is one login with several workspaces (§5ic, §5id), which is what EduPage's *School accounts* are. Linked separate logins are EduPage's *Logout / add user* — a different, later thing. | `docs/EDUPAGE_FEATURES_PLAN.md` §E7. |
 | F12 | **The Blade shell has the same menu.** **Closed with ID1**: the Blade shell renders the same regrouped map. The 24 signed-in Blade screens (`layouts/app.blade.php`: e-learning, Qur'an progress, substitutions, analytics, the auth pages) read the same map since §5id, so F1–F3 show there too and one fix covers both shells. | `layouts/navigation.blade.php`. |
 | F13 | **The Personal items opened as a modal.** Found building ID1: the Digital Library, My library, My wallet, Bookstore, My orders, My wishlist and My quotes are Blade pages in the website layout, but the map did not mark them `hard`, so the Inertia shell opened each as a visit — a non-Inertia response, shown in a modal over the page. **Fixed in ID1**: all seven marked; `WorkspaceMenusAreTheirOwnTest` asks every map item as Inertia asks and fails on any Blade answer without `hard` (it fails on a one-line mutation of the Library item). | `NavigationMap::groups()` `mine` (now `me`). |
-| F14 | **A parent who registers their children on the website never becomes a parent.** Found building ID2a. The public form's parent flow creates or matches the child and links the registering login as a guardian (`RegisterCourseStudentAction::forChild`), and a child given a password gets `student` — but nothing grants the registering adult `parent`, so they hold no Family workspace and see their children only on the Blade *My enrolments* list. **Planned: ID2c.** | `EnrollmentService` parent flow; `grep assignRole` finds no `parent` grant anywhere in `app/`. |
+| F14 | **A parent who registers their children on the website never becomes a parent.** **Fixed in ID2c (STATUS §5kb)**: the office verifying the link grants `parent`. Found building ID2a. The public form's parent flow creates or matches the child and links the registering login as a guardian (`RegisterCourseStudentAction::forChild`), and a child given a password gets `student` — but nothing grants the registering adult `parent`, so they hold no Family workspace and see their children only on the Blade *My enrolments* list. **Planned: ID2c.** | `EnrollmentService` parent flow; `grep assignRole` finds no `parent` grant anywhere in `app/`. |
 
 What is **not** broken, so the plan does not touch it: the gates (a vendor
 who opens `/portal/home` is shown an empty page, never another family's
@@ -212,7 +212,22 @@ it replaces is retired. The original bullets follow.
   first, Learner offered); `LearnerWorkspaceTest`.
 - **Walk:** `identity.mjs` gains the learner and the parent-learner.
 
-### ID2c — A website parent's Family (one PR) — added 2026-09-28 (F14)
+### ID2c — A website parent's Family (one PR) — added 2026-09-28 (F14), **shipped the same day, STATUS §5kb**
+
+As built, one change from the bullets below: the role is granted when the
+office **verifies** the link, not when the form makes it. The `parent`
+role reads the notices the school addresses to families, and the public
+form links whoever fills it in (STATUS §5gk), so granting at registration
+would have given a stranger the school's family notices.
+`RecordGuardianLinkPolicyAction` — the one place a link's verification is
+written, by the office's attach and its Guardians tab — grants `parent`
+through `Identity\Actions\GrantRoleAction` when a link becomes verified; a
+migration grants it to every login that already holds a verified link.
+Setting a link back leaves the role (the role screen removes roles); the
+child's records close anyway, because the verification gate scopes them.
+Until the office verifies, a website parent sees their children's
+enrolments on My enrolments, and after ID2b on their account home.
+
 
 - The public registration's parent flow links the registering login to the
   child as a guardian but never grants `parent`, so a parent who registers

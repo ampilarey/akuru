@@ -4414,6 +4414,58 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5kb. ID2c: a parent who registered on the website gets their Family once the office verifies them (2026-09-28)
+
+Finding F14 of `docs/SIGN_IN_PLAN.md`, found building ID2a: the public
+form's parent flow links the registering login to the child as a
+guardian — unverified, by design since §5gk — and nothing in `app/` ever
+granted `parent`, so a parent who registered their children online never
+held the Family workspace, however long ago the office had checked them.
+Only the role screen or a seeder gave the role.
+
+**What changed.** The office verifying a guardian link grants the
+guardian's login `parent`. `RecordGuardianLinkPolicyAction` is the one
+place a link's verification is written — the office's attach (verified as
+it goes) and the Guardians tab both go through it, and self-registration
+passes `unverified` — so the grant sits there, through a new
+`Identity\Actions\GrantRoleAction` (additive, idempotent; the role screen
+stays the only place roles are set outright). A migration
+(`2026_09_28_000001_grant_parent_to_verified_guardians`) gives the role to
+every login that already holds a verified link, by the `user` morph alias.
+
+**Why at verification, not at registration** (the plan said "where the
+link is made"). The `parent` role reads the notices the school addresses
+to families, and the public form links whoever fills it in. Granting at
+registration would have handed a stranger who typed a real pupil's ID
+card number the school's family notices — the hole §5gk closed for the
+child's records. So a website parent is a parent once the office has
+checked them, and not before; until then their children's enrolments are
+on *My enrolments* (and, after ID2b, their account home). Setting a link
+back to "not checked" leaves the role — the role screen takes roles away
+— but the child's records close anyway, because the verification gate
+scopes them (`GuardianVerificationGrantsParentTest` pins both).
+
+**Tests.** `GuardianVerificationGrantsParentTest` (new, 3): a website
+parent has no role and no Family after registering, is a parent with the
+Family workspace, lands on the family portal and sees the child once the
+office verifies, and keeps the role but loses the child's records when the
+link is set back; the office's attach grants the role once however many
+children it links; the migration grants it to a login with a verified
+link and not to one awaiting the office, and running it twice changes
+nothing. People, Portal, Nav and architecture: 307 passed. Full suite 2423
+passed.
+
+**Walked.** `family.mjs` **39/39** (four new steps):
+`SmokeMarkerSeeder::webParent` plants a website parent the way the public
+form makes one, reset on every run; signed in, they have no Family; the
+office finds the child under "awaiting parent verification", verifies the
+link on the Guardians tab; the parent signs in to the family portal with
+the child on it.
+
+**Production.** The pull line's `migrate --force` runs the backfill.
+
+**Next.** ID2b: the old course portal retired, *My account* in the shell.
+
 ## 5ka. ID2a: My learning — a parent who enrols switches between their children and their own courses (2026-09-28)
 
 The owner's case, from the brief of §5jy: "When a parent is enrolled in a
