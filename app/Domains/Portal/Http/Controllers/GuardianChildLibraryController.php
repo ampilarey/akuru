@@ -45,12 +45,12 @@ class GuardianChildLibraryController extends Controller
 
         return response()->streamDownload(function () use ($library): void {
             $out = fopen('php://output', 'w');
-            Csv::put($out, ['kind', 'title', 'page', 'progress_percent', 'completed', 'last_read_at', 'amount', 'status', 'purchased_at']);
+            Csv::put($out, ['kind', 'title', 'page', 'progress_percent', 'completed', 'last_read_at', 'minutes_read', 'amount', 'status', 'purchased_at']);
             foreach ($library['continue'] as $row) {
-                Csv::put($out, ['reading', $row['title'], $row['current_page'], $row['progress_percent'], $row['completed'] ? 'yes' : 'no', $row['last_read_at'], '', '', '']);
+                Csv::put($out, ['reading', $row['title'], $row['current_page'], $row['progress_percent'], $row['completed'] ? 'yes' : 'no', $row['last_read_at'], $row['reading_minutes'], '', '', '']);
             }
             foreach ($library['purchases'] as $row) {
-                Csv::put($out, ['purchase', $row['title'], '', '', '', '', $row['amount'], $row['status'], $row['purchased_at']]);
+                Csv::put($out, ['purchase', $row['title'], '', '', '', '', '', $row['amount'], $row['status'], $row['purchased_at']]);
             }
             fclose($out);
         }, 'child-library.csv', ['Content-Type' => 'text/csv; charset=UTF-8']);

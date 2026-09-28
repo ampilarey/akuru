@@ -364,6 +364,22 @@ differently. Then invite Fitrah from *Admin → Akuru Bookstore* with the
 details in `docs/vendors/FITRAH.md`, and send Inaaya the one-time password
 the screen shows (once) with the sign-in address.
 
+### 19. Private highlights in the Library reader — §9.1 or §9.2
+
+LIBRARY_PLAN §9.1 lists *private highlights* among the reader's features;
+§9.2 requires text selection to be **disabled** in the reader, and the
+reader honours it (`select-none` on the page, part of the copy deterrent
+alongside the watermark). A highlight is a selection, so the two cannot
+both hold. Every other §9.1 item is built (STATUS §5gq, §5iq, §5ju); this
+is the one that waits on you.
+
+**What to decide:** (a) keep §9.2 as it is and drop highlights from the
+plan, or (b) allow selection for a signed-in reader who holds access —
+with copy and drag still blocked and the watermark still on — so that a
+highlight can be made, kept privately like a note, and listed under My
+Library. (b) is about a day's slice once said. "Not yet" is a legible
+answer.
+
 ## Parked items and later ideas
 
 Everything deferred or left unbuilt on purpose — the BML secret, branch

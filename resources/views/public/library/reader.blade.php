@@ -83,6 +83,21 @@
     </div>
 
     @auth
+        @if($reader['can_read'] && $reader['total_pages'] > 0)
+            {{-- §9.1 reading time (STATUS §5ju). `total_reading_seconds`, the
+                 endpoint's `seconds` and the action's argument had existed since
+                 L2 for "the beacon" — and no reader ever sent one. This is it:
+                 the seconds this page was *visible* (a tab in the background is
+                 not reading), sent when the page is left or hidden, as time only
+                 so a late beacon cannot move the reader back a page. Not on a
+                 preview: a sample is not reading (§9.4). --}}
+            <form id="reading-time" method="POST" action="{{ route('public.library.progress', $reader['slug']) }}" data-testid="reading-time" hidden>
+                @csrf
+                <input type="hidden" name="page" value="{{ $reader['page'] }}">
+                <input type="hidden" name="time_only" value="1">
+                <input type="hidden" name="seconds" value="0">
+            </form>
+        @endif
         {{-- §9.1 private notes. Everything behind this box already existed —
              the column, the action argument, the controller's validation, and
              My Library's rendering of it. There was simply nowhere to type. --}}
@@ -176,6 +191,30 @@
             });
         });
         apply();
+    })();
+    (function () {
+        // The reading-time beacon (see the form above). Visible time only,
+        // banked across hide/show, sent on hide and on leaving; a second or
+        // less is not a reading and is dropped.
+        var form = document.getElementById('reading-time');
+        if (!form || !navigator.sendBeacon) { return; }
+        var visibleSince = document.visibilityState === 'visible' ? Date.now() : null;
+        var banked = 0;
+        function bank() {
+            if (visibleSince !== null) { banked += Date.now() - visibleSince; visibleSince = null; }
+        }
+        function send() {
+            bank();
+            var seconds = Math.min(3600, Math.round(banked / 1000));
+            banked = 0;
+            if (seconds < 1) { return; }
+            form.elements.seconds.value = String(seconds);
+            navigator.sendBeacon(form.action, new FormData(form));
+        }
+        document.addEventListener('visibilitychange', function () {
+            if (document.visibilityState === 'hidden') { send(); } else { visibleSince = Date.now(); }
+        });
+        window.addEventListener('pagehide', send);
     })();
 </script>
 @endsection

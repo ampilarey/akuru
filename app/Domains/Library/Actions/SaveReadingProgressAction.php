@@ -28,4 +28,33 @@ class SaveReadingProgressAction
 
         return $progress->refresh();
     }
+
+    /**
+     * §9.1 "reading time": the reader's beacon, on leaving a page, reports
+     * how long that page was in front of them. Time only — the page they are
+     * on is the *next* request's business, and a beacon that also moved the
+     * page could land after it and move the reader backwards (STATUS §5ju).
+     * No row means no reading has been recorded, so there is nothing to add
+     * to; a preview never has a row (a sample is not reading, §9.4).
+     */
+    public function addSeconds(int $userId, int $itemId, int $seconds): ?LibraryReadingProgress
+    {
+        if ($seconds <= 0) {
+            return null;
+        }
+
+        $progress = LibraryReadingProgress::query()
+            ->where('user_id', $userId)
+            ->where('library_item_id', $itemId)
+            ->first();
+        if ($progress === null) {
+            return null;
+        }
+
+        $progress->total_reading_seconds = (int) $progress->total_reading_seconds + min($seconds, 3600);
+        $progress->last_read_at = now();
+        $progress->save();
+
+        return $progress->refresh();
+    }
 }

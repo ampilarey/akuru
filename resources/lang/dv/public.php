@@ -192,6 +192,7 @@ return [
     'Get the full item' => 'ފުރިހަމަ ފޮތް ހޯދާ',
     'Your private note on this page' => 'މި ޞަފްޙާގެ ޒާތީ ނޯޓު',
     'Save note' => 'ނޯޓު ރައްކާކުރޭ',
+    'min read' => 'މިނެޓުގެ ކިޔުން',
 
     // Library author page (L8) — DV/AR first pass pending native review (operator item)
     'Published works' => 'Published works',
