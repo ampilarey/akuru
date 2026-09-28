@@ -60,7 +60,7 @@ export default function AppShell({ title, children }) {
                 only — on a phone the bar wraps to several rows. */}
             <header className="relative z-30 bg-gradient-to-br from-[#3D1219] to-[#7C2D37] text-white shadow-md sm:sticky sm:top-0">
                 <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-x-6 gap-y-2 px-4 py-2 sm:px-6">
-                    <div className="flex items-center gap-3">
+                    <div className="flex min-w-0 items-center gap-3">
                         <a href="/dashboard" className="flex shrink-0 items-center gap-2.5 no-underline" data-testid="shell-home">
                             <img src="/images/logos/akuru-logo-on-dark.svg?v=3" alt="Akuru Institute" className="h-8 w-auto object-contain" />
                             <span className="text-[.95rem] font-bold tracking-wide text-white">Akuru Institute</span>
@@ -105,11 +105,18 @@ export default function AppShell({ title, children }) {
                             </div>
                         )}
                     </div>
-                    <nav aria-label={n.primary_nav || 'Primary'} className="flex flex-wrap items-center gap-x-1 gap-y-1 text-sm">
+                    {/* `w-full min-w-0` on a phone: a flex item's minimum width is its
+                        content's, and the nowrap link row below made this nav as wide
+                        as every link laid end to end (608 px for the Institute) — wider
+                        than the phone, so the header ran off the screen and Safari
+                        zoomed the whole page out to fit it (the owner's screenshot,
+                        2026-09-28, STATUS §5jq). Full width and a zero minimum let the
+                        row scroll inside the screen instead. */}
+                    <nav aria-label={n.primary_nav || 'Primary'} className="flex w-full min-w-0 flex-wrap items-center gap-x-1 gap-y-1 text-sm sm:w-auto">
                         {/* On a phone the primary links are one row that scrolls sideways;
                             More, Alerts, the account and the language switcher stay in view
                             beneath it (the mobile sweep, STATUS §5hu). */}
-                        <div className="order-last flex w-full flex-nowrap items-center gap-x-1 overflow-x-auto whitespace-nowrap sm:order-none sm:w-auto sm:flex-wrap sm:gap-y-1 sm:overflow-visible sm:whitespace-normal">
+                        <div className="order-last flex w-full min-w-0 flex-nowrap items-center gap-x-1 overflow-x-auto whitespace-nowrap sm:order-none sm:w-auto sm:flex-wrap sm:gap-y-1 sm:overflow-visible sm:whitespace-normal">
                         {nav.primary.map((item) => (
                             <Item
                                 key={item.href}

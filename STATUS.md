@@ -4414,6 +4414,43 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5jq. The Inertia shell fits a phone again, and the mobile walk can see when it does not (2026-09-28)
+
+The owner's screenshot, 2026-09-28: on their phone the Institute home
+rendered narrower than the screen with white to the right, the header's
+link row cut off at *Akuru Books…* and the language switcher at *ENGLISH
+DH…* — "the page can be shrunk, it doesn't fit automatically". Safari
+was zooming the whole page out to fit a document wider than the screen.
+
+**Why.** The shell's `<nav>` is a flex item of the header row, and a
+flex item's minimum width defaults to its content's. Its content is the
+primary link row, which on a phone is one `nowrap` row that is meant to
+scroll sideways — but that row's minimum width is every link laid end to
+end, so the nav was 608 px on a 390 px phone (491 px in Dhivehi), the
+header ran off the screen, and the scroller never scrolled because it
+already had the width it wanted. `w-full min-w-0` on the nav (and
+`min-w-0` on the row and the logo group) lets the row scroll inside the
+screen; at 390 px and 360 px, in English and Dhivehi, and with text
+scaled 1.3×, the document is now exactly the screen's width.
+
+**Why the walk missed it.** `admin-mobile.mjs` measured
+`scrollWidth − innerWidth` under mobile emulation, and mobile emulation
+does what the phone does: a document wider than the screen widens the
+*layout viewport* to match, so `innerWidth` grew with the overflow and
+the difference read 0 for exactly the page that was broken. It measures
+against `screen.width` now, and reported three more pages the phone
+zooms out on: the enrolments list (the `sr-only` heading of its last
+column is positioned, and a scroller that is not itself positioned does
+not contain a positioned descendant — the span sat 135 px past the edge;
+the wrapper is `relative` now), the library office (a six-button row
+that did not wrap, 649 px; it wraps) and the bookshop office (ten tables
+with no scrolling wrapper, and the money section's two grid columns
+with no `min-w-0`, so their tables pushed each column past the edge; all
+wrapped, both columns freed). Every one measures 390/390 now.
+`admin-mobile.mjs` 3/3 (39 screens, every menu button in view, nothing
+cut off); `admin-layout.mjs` 15/15; the Bookshop, Library and Admissions
+feature tests 258 passed. Full suite 2380 passed.
+
 ## 5jp. An empty gender is stored as empty, not as male (2026-09-27)
 
 KNOWN_ISSUES "A registrant who leaves gender empty is recorded as male"
