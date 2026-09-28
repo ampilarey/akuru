@@ -94,7 +94,13 @@ await Promise.all([page.waitForNavigation({ waitUntil: 'networkidle' }).catch(()
 // cut off (no ancestor does: the page-level overflow number cannot see this,
 // because an `overflow: hidden` ancestor swallows it).
 const measure = () => page.evaluate(() => {
-    const vw = window.innerWidth;
+    // The phone's width, not `innerWidth`: under mobile emulation (as on a
+    // real phone) a document wider than the screen widens the *layout
+    // viewport* to match, so `innerWidth` grows with the overflow and
+    // `scrollWidth - innerWidth` reads 0 for exactly the page that is broken.
+    // That is how a 608 px header on a 390 px phone passed this walk while
+    // Safari zoomed the whole page out to fit it (STATUS §5jq).
+    const vw = Math.min(window.innerWidth, window.screen.width);
     const doc = document.documentElement.scrollWidth;
     const name = (el) => {
         const id = el.getAttribute('data-testid') || el.id || (typeof el.className === 'string' ? el.className.split(' ').filter(Boolean).slice(0, 3).join('.') : '');

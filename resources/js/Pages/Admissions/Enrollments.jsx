@@ -81,7 +81,10 @@ export default function Enrollments({ enrollments = [], pagination, total = 0, c
                 {filtered && <Link href="/admin/enrollments" className="btn-secondary">{t.enrolments_clear || 'Clear'}</Link>}
             </form>
 
-            <div className="overflow-x-auto rounded-lg border bg-white" data-testid="enrolments-table">
+            {/* `relative`: the sr-only heading in the last column is positioned, and a scroller
+                that is not itself positioned does not contain it — it stuck out past the phone's
+                edge and made Safari zoom the whole page out (STATUS §5jq). */}
+            <div className="relative overflow-x-auto rounded-lg border bg-white" data-testid="enrolments-table">
                 <table className="min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>

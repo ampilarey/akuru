@@ -298,7 +298,7 @@ function CategoryForm() {
                 e.preventDefault();
                 form.post('/admin/library/categories', { preserveScroll: true, onSuccess: () => form.reset() });
             }}
-            className="flex gap-2"
+            className="flex flex-wrap gap-2"
         >
             <input className="form-input" placeholder="New category" value={form.data.name} onChange={(e) => form.setData('name', e.target.value)} />
             <button type="submit" className="btn-secondary" disabled={form.processing}>Add</button>
@@ -323,7 +323,8 @@ export default function Admin({ items, categories, options, sales = [], queues =
             <FormErrors errors={usePage().props.errors} className="mb-4" />
             <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
                 <CategoryForm />
-                <span className="flex gap-2">
+                {/* Wraps on a phone: six buttons in one row were 649 px wide and made Safari zoom the page out (STATUS §5jq). */}
+                <span className="flex flex-wrap gap-2">
                     <a className="btn-secondary" href="/admin/library/reading-alerts">Reading alerts</a>
                     <a className="btn-secondary" href="/admin/library/settings" data-testid="library-settings-link">Settings</a>
                     <a className="btn-secondary" href="/admin/library/insights" data-testid="library-insights-link">Insights</a>
