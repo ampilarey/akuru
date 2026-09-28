@@ -157,7 +157,7 @@ return [
     'my_performance' => 'އަހަރެންގެ ކުރިއެރުން',
     'payslips' => 'މުސާރަ ސްލިޕް',
     'ops_checklist' => 'އޮޕަރޭޝަން ލިސްޓު',
-    'feature_walkthrough' => 'ފީޗަރ ތަޢާރަފު',
+    'feature_walkthrough' => 'ފީޗަރ ޓެސްޓްކުރުން',
     'translations' => 'ތަރުޖަމާ',
     // The admin panel in the Inertia shell's More menu (admin-panel audit, STATUS §5hs).
     'admin_enrolments' => 'އެންރޯލްމަންޓް',

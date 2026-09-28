@@ -624,6 +624,7 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::get('/export', [\App\Domains\Settings\Http\Controllers\Admin\OperationsController::class, 'export'])->name('admin.operations.export');
         Route::get('/features', [\App\Domains\Settings\Http\Controllers\Admin\OperationsController::class, 'features'])->name('admin.operations.features');
         Route::get('/features/export', [\App\Domains\Settings\Http\Controllers\Admin\OperationsController::class, 'featuresExport'])->name('admin.operations.features.export');
+        Route::post('/features/{item}', [\App\Domains\Settings\Http\Controllers\Admin\OperationsController::class, 'recordFeature'])->name('admin.operations.features.record');
     });
 
     // Dhivehi translation overrides (UI strings; override wins, file is fallback)

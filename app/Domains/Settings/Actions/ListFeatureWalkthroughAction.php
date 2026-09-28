@@ -2,16 +2,18 @@
 
 namespace App\Domains\Settings\Actions;
 
-use App\Domains\Settings\Models\OperatorCheck;
+use App\Domains\Settings\Models\FeatureTestNote;
 use Illuminate\Support\Facades\DB;
 
 /**
- * The whole platform as a testable inventory — every shipped feature
- * area with what to try and where, distilled from STATUS.md's phase
- * table. Same shared tick store as the close-out checklist
- * (operator_checklist_checks); keys are namespaced `fw-…` and stable.
- * A tick means "a person walked this in a browser and it worked" —
- * the USABLE column of STATUS.md, made clickable.
+ * The whole platform as a testing checklist (System → Feature testing):
+ * every main feature, by who uses it, with where to find it. The owner,
+ * 2026-09-28, starting to test "each and every feature one by one": a
+ * tester marks each one working, broken or blocked with a comment, and
+ * every mark is kept (`feature_test_notes`), so the history can be read
+ * later. Keys (`ft-…`) are stable: a result stays with its feature when
+ * the wording changes. Until then this was a list of ticks in the shared
+ * close-out store, with no comment and no way to say "broken".
  */
 class ListFeatureWalkthroughAction
 {
@@ -21,122 +23,164 @@ class ListFeatureWalkthroughAction
     public static function definitions(): array
     {
         return [
-            ['key' => 'fw-public', 'title' => 'Public website (guest)', 'items' => [
-                ['key' => 'fw-pub1', 'label' => 'Homepage trust signals: accreditation line, years, students count, partner logos', 'where' => '/en'],
-                ['key' => 'fw-pub2', 'label' => 'Open Courses urgency: seats-left badges, deadline countdown, early-bird strike-through', 'where' => '/en/courses'],
-                ['key' => 'fw-pub3', 'label' => 'Course page: outcomes above description, testimonials, instructor qualifications, FAQ', 'where' => '/en/courses/{slug}'],
-                ['key' => 'fw-pub4', 'label' => 'Mobile sticky CTA: price + Register + WhatsApp; syllabus lead magnet form', 'where' => '/en/courses/{slug}'],
-                ['key' => 'fw-pub5', 'label' => 'Full course shows waitlist form; submission lands in leads + inquiries', 'where' => '/en/courses/{slug}'],
-                ['key' => 'fw-pub6', 'label' => 'SEO view-source: Course/Organization/FAQPage JSON-LD, hreflang en/dv/ar, sitemap.xml', 'where' => '/sitemap.xml'],
-                ['key' => 'fw-pub7', 'label' => 'Daily content widget on homepage; archive + dated permalink; 1080px share card', 'where' => '/en/daily/ayah'],
-                ['key' => 'fw-pub8', 'label' => 'Prayer times page + homepage widget + JSON API; island picker', 'where' => '/en/prayer-times'],
-                ['key' => 'fw-pub9', 'label' => 'Research listing, permalink with PDF download, instructor profile page', 'where' => '/en/research'],
-                ['key' => 'fw-pub10', 'label' => 'Careers page lists open positions', 'where' => '/en/careers'],
-                ['key' => 'fw-pub11', 'label' => 'Certificate QR verification shows the certificate face to a guest', 'where' => '/verify/certificates/{ulid}'],
-                ['key' => 'fw-pub12', 'label' => 'Public library: browse, item page, watermarked reader, paid item purchase gate', 'where' => '/en/library'],
-                ['key' => 'fw-pub13', 'label' => 'Trilingual: /dv and /ar render RTL with Thaana/Arabic fonts', 'where' => '/dv'],
+            ['key' => 'ft-signin', 'title' => 'Sign-in and accounts (everyone)', 'items' => [
+                ['key' => 'ft-signin-1', 'label' => 'Sign in with email, phone or ID card and a password', 'where' => '/login'],
+                ['key' => 'ft-signin-2', 'label' => 'Sign in with a one-time code (OTP) by SMS', 'where' => '/login'],
+                ['key' => 'ft-signin-3', 'label' => 'An OTP-only account is asked on its home to set a password; setting it returns home', 'where' => '/account/set-password'],
+                ['key' => 'ft-signin-4', 'label' => 'Each role lands on its own home (office, teacher day, family, shop, My learning, My account)', 'where' => '/dashboard'],
+                ['key' => 'ft-signin-5', 'label' => 'A person with several roles switches workspace: header pill on a computer, Your accounts in the phone menu', 'where' => '/dashboard'],
+                ['key' => 'ft-signin-6', 'label' => 'Menus hold only the current workspace; every tile on a home opens', 'where' => '/dashboard'],
+                ['key' => 'ft-signin-7', 'label' => 'Language switch EN / DV / AR; Dhivehi and Arabic read right to left', 'where' => '/dv'],
+                ['key' => 'ft-signin-8', 'label' => 'Alerts (notifications) and the profile page', 'where' => '/portal/notifications'],
+                ['key' => 'ft-signin-9', 'label' => 'Linked accounts: prove another login and switch to it', 'where' => '/account/linked'],
             ]],
-            ['key' => 'fw-admissions', 'title' => 'Admissions & checkout', 'items' => [
-                ['key' => 'fw-adm1', 'label' => 'Public registration: start → OTP SMS verify → enroll in selected courses', 'where' => '/en/register'],
-                ['key' => 'fw-adm2', 'label' => 'Paid checkout: BML redirect → webhook (not return URL) activates the enrollment', 'where' => '/en/register'],
-                ['key' => 'fw-adm3', 'label' => 'Free + paid cart: free courses activate immediately, paid wait for the webhook', 'where' => '/en/register'],
-                ['key' => 'fw-adm4', 'label' => 'Discount code applies at checkout; wallet and gift cards usable as payment', 'where' => '/en/register'],
-                ['key' => 'fw-adm5', 'label' => 'Funnel report: course_view → register_click → started → paid, with CSV', 'where' => '/admin/public-site/funnel'],
-                ['key' => 'fw-adm6', 'label' => 'Leads listing (waitlist + syllabus) with CSV', 'where' => '/admin/public-site/leads'],
+            ['key' => 'ft-website', 'title' => 'Public website (visitors)', 'items' => [
+                ['key' => 'ft-website-1', 'label' => 'Home, courses, news, articles, research, events, gallery, achievements, contact', 'where' => '/en'],
+                ['key' => 'ft-website-2', 'label' => 'Course page: outcomes, instructor, FAQ, seats and price', 'where' => '/en/courses'],
+                ['key' => 'ft-website-3', 'label' => 'Register for a course for yourself: form, SMS code, confirm, complete', 'where' => '/en/courses'],
+                ['key' => 'ft-website-4', 'label' => 'Register a child for a course; the child then waits for the office to verify the parent', 'where' => '/en/courses'],
+                ['key' => 'ft-website-5', 'label' => 'Paid course: payment page, and access only after the bank confirms', 'where' => '/en/courses'],
+                ['key' => 'ft-website-6', 'label' => 'Admissions / apply form and the contact form reach the office', 'where' => '/en/apply'],
+                ['key' => 'ft-website-7', 'label' => 'Prayer times page and widget; daily content (ayah)', 'where' => '/en/prayer-times'],
+                ['key' => 'ft-website-8', 'label' => 'Certificate check by QR code', 'where' => '/verify/certificates/'],
             ]],
-            ['key' => 'fw-engine', 'title' => 'Course engine — authoring', 'items' => [
-                ['key' => 'fw-eng1', 'label' => 'Catalog CRUD: categories, courses, publish state, i18n preview', 'where' => '/catalog/courses'],
-                ['key' => 'fw-eng2', 'label' => 'Outline: modules, lessons, revisions; pin a revision; preview toggle', 'where' => '/catalog/courses/{id}'],
-                ['key' => 'fw-eng3', 'label' => 'Blocks: text, media, and the extra block types render in the player', 'where' => '/catalog/courses/{id}'],
-                ['key' => 'fw-eng4', 'label' => 'Glossary term bank; terms attached to lessons show in the player', 'where' => '/catalog/glossary'],
-                ['key' => 'fw-eng5', 'label' => 'Activities: all four patterns; question bank; standards tagging', 'where' => '/catalog/courses/{id}'],
-                ['key' => 'fw-eng6', 'label' => 'Offerings: create, seats, pin, price override; sessions + session attendance', 'where' => '/catalog/offerings'],
-                ['key' => 'fw-eng7', 'label' => 'Certificate templates; issue to a completer; CSV of issued', 'where' => '/catalog/certificates'],
+            ['key' => 'ft-institute', 'title' => 'Institute (System admin)', 'items' => [
+                ['key' => 'ft-institute-1', 'label' => 'Website pages: create, edit, preview, publish', 'where' => '/admin/public-site/pages'],
+                ['key' => 'ft-institute-2', 'label' => 'Website courses, research posts, daily content calendar and approval queue', 'where' => '/admin/public-site/courses'],
+                ['key' => 'ft-institute-3', 'label' => 'Leads, the enrolment funnel and daily subscriptions, each with CSV', 'where' => '/admin/public-site/leads'],
+                ['key' => 'ft-institute-4', 'label' => 'Instructors shown on the website', 'where' => '/admin/instructors'],
+                ['key' => 'ft-institute-5', 'label' => 'Prayer times: islands, groups, broadcasts, import', 'where' => '/admin/prayer-times/islands'],
+                ['key' => 'ft-institute-6', 'label' => 'Manage users: create, set roles, activate and deactivate', 'where' => '/admin/users'],
+                ['key' => 'ft-institute-7', 'label' => 'System settings and clear caches', 'where' => '/admin/settings'],
+                ['key' => 'ft-institute-8', 'label' => 'Commerce: gift cards, discounts, wallets', 'where' => '/admin/commerce'],
+                ['key' => 'ft-institute-9', 'label' => 'Payments list and refunds', 'where' => '/admin/enrollments/payments'],
+                ['key' => 'ft-institute-10', 'label' => 'Translations: edit Dhivehi and Arabic wording', 'where' => '/admin/translations'],
             ]],
-            ['key' => 'fw-learning', 'title' => 'Learning (student/parent)', 'items' => [
-                ['key' => 'fw-lrn1', 'label' => 'Player: sequential unlock, completion from required lessons + sessions', 'where' => '/learn'],
-                ['key' => 'fw-lrn2', 'label' => 'Quiz attempt scores; teacher-marked activity goes to review; feedback visible', 'where' => '/learn'],
-                ['key' => 'fw-lrn3', 'label' => 'Teacher review queue: pending, weakness report, revision suggestions, CSV', 'where' => '/catalog/reviews'],
-                ['key' => 'fw-lrn4', 'label' => 'Completion report for staff; performance card in the parent portal', 'where' => '/catalog/reports/completions'],
-                ['key' => 'fw-lrn5', 'label' => 'Scheduled session views for learners and teachers', 'where' => '/learn/schedule'],
+            ['key' => 'ft-office', 'title' => 'School office (Educational admin, Dean)', 'items' => [
+                ['key' => 'ft-office-1', 'label' => 'Course enrolments: approve, reject, set access dates, record a payment', 'where' => '/admin/enrollments'],
+                ['key' => 'ft-office-2', 'label' => 'Academic years and terms; rooms; periods', 'where' => '/academics/years'],
+                ['key' => 'ft-office-3', 'label' => 'Timetable builder refuses a double-booked teacher or room', 'where' => '/academics/timetable'],
+                ['key' => 'ft-office-4', 'label' => 'Room bookings, calendar and holidays, events, clubs', 'where' => '/academics/calendar'],
+                ['key' => 'ft-office-5', 'label' => 'Students: add, edit, guardians, verify a parent link', 'where' => '/people/students'],
+                ['key' => 'ft-office-6', 'label' => 'Staff, custom fields, sensitive information', 'where' => '/people/staff'],
+                ['key' => 'ft-office-7', 'label' => 'Registers and the whole-school attendance report', 'where' => '/academics/registers'],
+                ['key' => 'ft-office-8', 'label' => 'Absences, absence notes review, attendance policy', 'where' => '/academics/attendance/absences'],
+                ['key' => 'ft-office-9', 'label' => 'Behaviour records', 'where' => '/academics/behavior'],
+                ['key' => 'ft-office-10', 'label' => 'Pick-up, gate and gate cards', 'where' => '/academics/pickup'],
+                ['key' => 'ft-office-11', 'label' => 'Student work showcase; lost and found', 'where' => '/academics/work'],
+                ['key' => 'ft-office-12', 'label' => 'Notices and substitutions', 'where' => '/announcements'],
+                ['key' => 'ft-office-13', 'label' => 'Forms and requests (leave, family requests)', 'where' => '/academics/requests'],
+                ['key' => 'ft-office-14', 'label' => 'Parent–teacher meeting slots', 'where' => '/academics/meetings'],
             ]],
-            ['key' => 'fw-arabic', 'title' => 'Arabic & Qur\'an components', 'items' => [
-                ['key' => 'fw-ara1', 'label' => 'Arabic letters/harakas reference data drives skill-tagged activities', 'where' => '/catalog/courses/{id}'],
-                ['key' => 'fw-ara2', 'label' => 'Arabic skill reports aggregate per-skill performance', 'where' => '/catalog/reports'],
-                ['key' => 'fw-qur1', 'label' => 'Hifz assignment → student recitation submission → teacher review queue', 'where' => '/teach/recitations'],
-                ['key' => 'fw-qur2', 'label' => 'Qur\'an milestones and session records review', 'where' => '/teach/milestones'],
-                ['key' => 'fw-qur3', 'label' => 'Qur\'an translations via provider on ayah displays (licensed import pending)', 'where' => '/en/daily/ayah'],
-                ['key' => 'fw-qur4', 'label' => 'Legacy Hifz Blade dashboards still function (frozen, pre-retirement)', 'where' => '/hifz'],
+            ['key' => 'ft-exams', 'title' => 'Exams and report cards', 'items' => [
+                ['key' => 'ft-exams-1', 'label' => 'Exam schedule, exam types, weights', 'where' => '/exams/schedule'],
+                ['key' => 'ft-exams-2', 'label' => 'Gradebook: enter marks', 'where' => '/exams/gradebook'],
+                ['key' => 'ft-exams-3', 'label' => 'Grading scales, competencies, standards', 'where' => '/exams/scales'],
+                ['key' => 'ft-exams-4', 'label' => 'Report card templates and report cards (issue, download)', 'where' => '/exams/report-cards'],
+                ['key' => 'ft-exams-5', 'label' => 'Awards', 'where' => '/exams/awards'],
             ]],
-            ['key' => 'fw-ai', 'title' => 'Pronunciation AI (flag off by default)', 'items' => [
-                ['key' => 'fw-ai1', 'label' => 'Practice recorder stores attempts; human queue when AI is off', 'where' => '/learn/pronounce'],
-                ['key' => 'fw-ai2', 'label' => 'Teacher verdicts become training samples; admin approves + exports dataset', 'where' => '/admin/pronunciation'],
-                ['key' => 'fw-ai3', 'label' => 'Model shelf: register/activate/rollback, audited, one active per type', 'where' => '/admin/pronunciation'],
+            ['key' => 'ft-finance', 'title' => 'School finance', 'items' => [
+                ['key' => 'ft-finance-1', 'label' => 'Fee items and fee structures', 'where' => '/finance/fee-structures'],
+                ['key' => 'ft-finance-2', 'label' => 'Invoices: generate, issue, reminders', 'where' => '/finance/invoices'],
+                ['key' => 'ft-finance-3', 'label' => 'Arrears, payment plans, adjustments', 'where' => '/finance/arrears'],
+                ['key' => 'ft-finance-4', 'label' => 'Manual receipt and collections', 'where' => '/finance/receipts/manual'],
+                ['key' => 'ft-finance-5', 'label' => 'Bank reconciliation: import a statement and match', 'where' => '/finance/reconciliation'],
             ]],
-            ['key' => 'fw-academics', 'title' => 'School — academics', 'items' => [
-                ['key' => 'fw-aca1', 'label' => 'Academic years/terms: single active year, close-after-terms, promotion dry-run', 'where' => '/academics/years'],
-                ['key' => 'fw-aca2', 'label' => 'Classes with rosters; class teacher assignment; year+name uniqueness', 'where' => '/academics/classes'],
-                ['key' => 'fw-aca3', 'label' => 'Periods CRUD + rooms CRUD with CSV', 'where' => '/academics/periods'],
-                ['key' => 'fw-aca4', 'label' => 'Timetable builder week grid; teacher/room/class conflict rejection', 'where' => '/academics/timetable'],
-                ['key' => 'fw-aca5', 'label' => 'Room bookings; clash against timetable slots', 'where' => '/academics/rooms'],
-                ['key' => 'fw-aca6', 'label' => 'Calendar days: holidays/closures; skip-days affect register generation', 'where' => '/academics/calendar'],
-                ['key' => 'fw-aca7', 'label' => 'Class register: teacher lands on Today; generate, fill (number+DOB grid), submit', 'where' => '/teach/registers'],
-                ['key' => 'fw-aca8', 'label' => 'Class attendance per-lesson/daily modes; SMS throttle; chronic absence list', 'where' => '/academics/attendance'],
-                ['key' => 'fw-aca9', 'label' => 'Absence notes: parent submits, teacher approves → matching rows excused', 'where' => '/academics/absence-notes'],
-                ['key' => 'fw-aca10', 'label' => 'Behavior records; parent visibility flag respected', 'where' => '/academics/behavior'],
-                ['key' => 'fw-aca11', 'label' => 'School requests / leave with review flow', 'where' => '/academics/requests'],
-                ['key' => 'fw-aca12', 'label' => 'Parent-teacher meeting slots: generate, publish, portal booking, CSV', 'where' => '/academics/meetings'],
-                ['key' => 'fw-aca13', 'label' => 'Events/electives: seats, waitlist, parent confirm, second-round promotion', 'where' => '/academics/events'],
+            ['key' => 'ft-hr', 'title' => 'HR and payroll', 'items' => [
+                ['key' => 'ft-hr-1', 'label' => 'Staff attendance and reports', 'where' => '/hr/attendance'],
+                ['key' => 'ft-hr-2', 'label' => 'Leave types and balances; a staff member applies for leave', 'where' => '/hr/leave-balances'],
+                ['key' => 'ft-hr-3', 'label' => 'Contracts and compliance documents', 'where' => '/hr/contracts'],
+                ['key' => 'ft-hr-4', 'label' => 'Job postings and applications; onboarding', 'where' => '/hr/postings'],
+                ['key' => 'ft-hr-5', 'label' => 'Appraisals, lesson observations, training (CPD)', 'where' => '/hr/appraisals'],
+                ['key' => 'ft-hr-6', 'label' => 'Payroll run and payslips', 'where' => '/hr/payroll'],
             ]],
-            ['key' => 'fw-exams', 'title' => 'School — exams & grades', 'items' => [
-                ['key' => 'fw-exa1', 'label' => 'Grading scales, assessment types, weight schemes summing to 100', 'where' => '/exams/settings'],
-                ['key' => 'fw-exa2', 'label' => 'Exam scheduling status machine → published', 'where' => '/exams'],
-                ['key' => 'fw-exa3', 'label' => 'Marks grid with student numbers; CSV', 'where' => '/exams'],
-                ['key' => 'fw-exa4', 'label' => 'Term grades recompute: Term %, grade, rank in the gradebook', 'where' => '/exams/gradebook'],
-                ['key' => 'fw-exa5', 'label' => 'Unified gradebook shows engine quiz/assignment items beside exams', 'where' => '/exams/gradebook'],
-                ['key' => 'fw-exa6', 'label' => 'Report cards: template, queued HTML render (worker required)', 'where' => '/exams/report-cards'],
-                ['key' => 'fw-exa7', 'label' => 'Awards + ID cards render as HTML documents', 'where' => '/academics/awards'],
+            ['key' => 'ft-teacher', 'title' => 'Teacher', 'items' => [
+                ['key' => 'ft-teacher-1', 'label' => 'My day: today\'s lessons and unfilled registers', 'where' => '/portal/teacher'],
+                ['key' => 'ft-teacher-2', 'label' => 'Take a register (attendance) for a class', 'where' => '/academics/registers/today'],
+                ['key' => 'ft-teacher-3', 'label' => 'Lesson plans, materials, homework', 'where' => '/academics/plans'],
+                ['key' => 'ft-teacher-4', 'label' => 'Record behaviour', 'where' => '/academics/behavior'],
+                ['key' => 'ft-teacher-5', 'label' => 'Teaching schedule and my meetings', 'where' => '/teach/schedule'],
+                ['key' => 'ft-teacher-6', 'label' => 'Qur\'an recitations queue', 'where' => '/teach/recitations'],
+                ['key' => 'ft-teacher-7', 'label' => 'Message a parent or a class, with a poll', 'where' => '/portal/messages'],
+                ['key' => 'ft-teacher-8', 'label' => 'Own record: check-in, leave, appraisals, payslips', 'where' => '/portal/staff-check-in'],
             ]],
-            ['key' => 'fw-finance', 'title' => 'School — finance', 'items' => [
-                ['key' => 'fw-fin1', 'label' => 'Fee structures per year/class; invoice generation, issue, arrears', 'where' => '/finance/invoices'],
-                ['key' => 'fw-fin2', 'label' => 'Payment plans and fee adjustments apply to invoices', 'where' => '/finance'],
-                ['key' => 'fw-fin3', 'label' => 'Parent Fees tab: invoices listed, Pay now via BML, receipt on webhook', 'where' => '/portal/fees'],
-                ['key' => 'fw-fin4', 'label' => 'Admin payments: refund to wallet/manual; refunded filter; CSV export', 'where' => '/admin/enrollments/payments'],
-                ['key' => 'fw-fin5', 'label' => 'Manual payment on an enrollment activates without BML', 'where' => '/admin/enrollments/{id}'],
-                ['key' => 'fw-fin6', 'label' => 'payments:reconcile closes pending payments by reference (single path)', 'where' => 'artisan payments:reconcile'],
+            ['key' => 'ft-catalog', 'title' => 'Course catalogue (Course creator)', 'items' => [
+                ['key' => 'ft-catalog-1', 'label' => 'Create a course: modules, lessons, content blocks, media', 'where' => '/catalog/courses'],
+                ['key' => 'ft-catalog-2', 'label' => 'Activities and assessments with the question bank', 'where' => '/catalog/questions'],
+                ['key' => 'ft-catalog-3', 'label' => 'Intakes (offerings): seats, price, sessions', 'where' => '/catalog/offerings'],
+                ['key' => 'ft-catalog-4', 'label' => 'Review queue and publishing', 'where' => '/catalog/reviews'],
+                ['key' => 'ft-catalog-5', 'label' => 'Certificates: template and issue', 'where' => '/catalog/certificates'],
+                ['key' => 'ft-catalog-6', 'label' => 'Reports and completions', 'where' => '/catalog/reports'],
+                ['key' => 'ft-catalog-7', 'label' => 'Arabic skills and Qur\'an course tools', 'where' => '/catalog/arabic'],
+                ['key' => 'ft-catalog-8', 'label' => 'Subjects, glossary, audiences, levels', 'where' => '/catalog/subjects'],
             ]],
-            ['key' => 'fw-people', 'title' => 'People & identity', 'items' => [
-                ['key' => 'fw-peo1', 'label' => 'Student directory: create/edit, custom fields, status via action only', 'where' => '/people/students'],
-                ['key' => 'fw-peo2', 'label' => 'Roster picker matches by identity fields, flags indistinguishable candidates', 'where' => '/academics/classes'],
-                ['key' => 'fw-peo3', 'label' => 'Consent ledger on the student profile (incl. prayer/daily SMS consent)', 'where' => '/people/students/{id}'],
-                ['key' => 'fw-peo4', 'label' => 'Staff profiles; teachers row backs teacher features', 'where' => '/people/staff'],
-                ['key' => 'fw-peo5', 'label' => 'Registration writes students only; legacy registration tables moved to an archive (Deploy 3)', 'where' => '/courses/register'],
+            ['key' => 'ft-parent', 'title' => 'Parent (Family)', 'items' => [
+                ['key' => 'ft-parent-1', 'label' => 'Family home: each child\'s attendance, results, invoices, course progress, Hifz', 'where' => '/portal/home'],
+                ['key' => 'ft-parent-2', 'label' => 'My children and a child\'s library reading', 'where' => '/portal/children'],
+                ['key' => 'ft-parent-3', 'label' => 'Homework and school calendar', 'where' => '/portal/homework'],
+                ['key' => 'ft-parent-4', 'label' => 'Pay fees online', 'where' => '/portal/invoices'],
+                ['key' => 'ft-parent-5', 'label' => 'Send an absence note', 'where' => '/portal/absence-notes'],
+                ['key' => 'ft-parent-6', 'label' => 'Event sign-up with a trip fee', 'where' => '/portal/events'],
+                ['key' => 'ft-parent-7', 'label' => 'Collecting my child: pick-up PIN and request', 'where' => '/portal/pickup'],
+                ['key' => 'ft-parent-8', 'label' => 'Arrivals and departures', 'where' => '/portal/movements'],
+                ['key' => 'ft-parent-9', 'label' => 'Results, report cards, attendance, behaviour, awards, performance', 'where' => '/portal/exams'],
+                ['key' => 'ft-parent-10', 'label' => 'Book a parent–teacher meeting', 'where' => '/portal/meetings'],
+                ['key' => 'ft-parent-11', 'label' => 'Lost property and my child\'s work', 'where' => '/portal/found-items'],
+                ['key' => 'ft-parent-12', 'label' => 'Messages, notices and forms from the school', 'where' => '/portal/messages'],
+                ['key' => 'ft-parent-13', 'label' => 'My enrolments with receipts', 'where' => '/my-enrollments'],
             ]],
-            ['key' => 'fw-portal', 'title' => 'Portal & landings', 'items' => [
-                ['key' => 'fw-por1', 'label' => 'Role landings: teacher → Today, parent/student → Home, admin → Overview', 'where' => '/dashboard'],
-                ['key' => 'fw-por2', 'label' => 'Composed parent/student home: attendance, exams, invoices, courses, Hifz; CSV', 'where' => '/portal/home'],
-                ['key' => 'fw-por3', 'label' => 'Staff overview: unfilled registers, fill rates, ungraded exams, plan adherence', 'where' => '/portal/overview'],
-                ['key' => 'fw-por4', 'label' => 'Portal meetings booking; portal events registration', 'where' => '/portal/meetings'],
+            ['key' => 'ft-pupil', 'title' => 'Pupil (Student)', 'items' => [
+                ['key' => 'ft-pupil-1', 'label' => 'Learn: my courses, lessons, activities', 'where' => '/learn'],
+                ['key' => 'ft-pupil-2', 'label' => 'Assessments, results and retakes', 'where' => '/learn'],
+                ['key' => 'ft-pupil-3', 'label' => 'Timetable / schedule', 'where' => '/learn/schedule'],
+                ['key' => 'ft-pupil-4', 'label' => 'Homework: tick as done', 'where' => '/portal/homework'],
+                ['key' => 'ft-pupil-5', 'label' => 'Results, attendance, report cards', 'where' => '/portal/exams'],
+                ['key' => 'ft-pupil-6', 'label' => 'Arabic report and Qur\'an recitation', 'where' => '/learn/quran'],
+                ['key' => 'ft-pupil-7', 'label' => 'Certificates', 'where' => '/learn'],
             ]],
-            ['key' => 'fw-hr', 'title' => 'HR & payroll', 'items' => [
-                ['key' => 'fw-hr1', 'label' => 'Staff attendance (CSV import supported); leave management', 'where' => '/hr/attendance'],
-                ['key' => 'fw-hr2', 'label' => 'Contracts/compliance; recruitment feeds public careers', 'where' => '/hr'],
-                ['key' => 'fw-hr3', 'label' => 'Performance/CPD records', 'where' => '/hr/performance'],
-                ['key' => 'fw-hr4', 'label' => 'Payroll behind PAYROLL_ENABLED (default off, by design)', 'where' => '/hr/payroll'],
+            ['key' => 'ft-learner', 'title' => 'Adult learner and My account (no role)', 'items' => [
+                ['key' => 'ft-learner-1', 'label' => 'My learning: courses under way, enrolments waiting for payment or the office', 'where' => '/learn'],
+                ['key' => 'ft-learner-2', 'label' => 'Browse courses and enrol; pay by wallet or card', 'where' => '/learn/catalog'],
+                ['key' => 'ft-learner-3', 'label' => 'My account: children waiting for the office, latest enrolments, tiles', 'where' => '/my-account'],
+                ['key' => 'ft-learner-4', 'label' => 'My enrolments: every enrolment and payment, receipt, CSV', 'where' => '/my-enrollments'],
             ]],
-            ['key' => 'fw-notify', 'title' => 'Notifications & SMS', 'items' => [
-                ['key' => 'fw-not1', 'label' => 'Daily content subscriptions: opt-in, 15-min deliverer, STOP + token unsubscribe', 'where' => '/admin/public-site/daily-subscriptions'],
-                ['key' => 'fw-not2', 'label' => 'Prayer broadcast: preview cost → confirm → queue → send via SMS contract', 'where' => '/admin/prayer-times'],
-                ['key' => 'fw-not3', 'label' => 'Maker-checker on daily content: creator cannot approve own item', 'where' => '/admin/public-site/daily-content'],
-                ['key' => 'fw-not4', 'label' => 'SMS binds to log outside production — no live sends from test', 'where' => 'config/services'],
+            ['key' => 'ft-hifz', 'title' => 'Hifz (Qur\'an memorisation)', 'items' => [
+                ['key' => 'ft-hifz-1', 'label' => 'Programmes and enrolments', 'where' => '/hifz'],
+                ['key' => 'ft-hifz-2', 'label' => 'Record progress; the dean, supervisor, teacher, parent and student dashboards', 'where' => '/hifz'],
+                ['key' => 'ft-hifz-3', 'label' => 'Milestones: recommend, review, approve or reject', 'where' => '/hifz'],
+                ['key' => 'ft-hifz-4', 'label' => 'The six Hifz reports with CSV', 'where' => '/hifz'],
             ]],
-            ['key' => 'fw-platform', 'title' => 'Platform & admin', 'items' => [
-                ['key' => 'fw-pla1', 'label' => 'Settings admin; trust/conversion/daily settings groups', 'where' => '/admin/settings'],
-                ['key' => 'fw-pla2', 'label' => 'Users & roles (super_admin); permission-gated admin areas 403 correctly', 'where' => '/admin/users'],
-                ['key' => 'fw-pla3', 'label' => 'morph-map:verify passes — no FQCNs in morph columns', 'where' => 'artisan morph-map:verify'],
-                ['key' => 'fw-pla4', 'label' => 'Operator close-out checklist (this area) shared with attribution', 'where' => '/admin/operations'],
-                ['key' => 'fw-pla5', 'label' => 'PWA: manifest, service worker, offline page; i18n strings aligned en/dv/ar', 'where' => '/offline'],
-                ['key' => 'fw-pla6', 'label' => 'Capacitor mobile shell builds per docs/MOBILE.md (device work)', 'where' => 'docs/MOBILE.md'],
+            ['key' => 'ft-library', 'title' => 'Digital Library', 'items' => [
+                ['key' => 'ft-library-1', 'label' => 'Shelf, filters and search; author pages', 'where' => '/library'],
+                ['key' => 'ft-library-2', 'label' => 'Protected reader: PDF and article, in-book search, reading time', 'where' => '/library'],
+                ['key' => 'ft-library-3', 'label' => 'Buy an item with the wallet; My library', 'where' => '/my-library'],
+                ['key' => 'ft-library-4', 'label' => 'Gift cards: buy, redeem; promotions and offers', 'where' => '/library'],
+                ['key' => 'ft-library-5', 'label' => 'Writer: apply, upload a work, send for review, author page', 'where' => '/write'],
+                ['key' => 'ft-library-6', 'label' => 'Reviewer: review queue', 'where' => '/review'],
+                ['key' => 'ft-library-7', 'label' => 'Office: approve and publish, campaigns, settings, insights, fraud log', 'where' => '/admin/library'],
+            ]],
+            ['key' => 'ft-bookstore', 'title' => 'Bookstore', 'items' => [
+                ['key' => 'ft-bookstore-1', 'label' => 'Shop, categories, product page, search', 'where' => '/shop'],
+                ['key' => 'ft-bookstore-2', 'label' => 'Cart and checkout: card, wallet, bank slip, cash on delivery', 'where' => '/shop/cart'],
+                ['key' => 'ft-bookstore-3', 'label' => 'My orders: tracking, cancel, returns; wishlist; bulk quotes', 'where' => '/my-orders'],
+                ['key' => 'ft-bookstore-4', 'label' => 'Vendor: agreement, products, bulk edit, CSV import and export', 'where' => '/vendor'],
+                ['key' => 'ft-bookstore-5', 'label' => 'Vendor: stock, orders, print and ship', 'where' => '/vendor/orders'],
+                ['key' => 'ft-bookstore-6', 'label' => 'Vendor: storefront designer and sections', 'where' => '/vendor/storefront'],
+                ['key' => 'ft-bookstore-7', 'label' => 'Vendor: money and payouts, reviews, discount codes, insights', 'where' => '/vendor/money'],
+                ['key' => 'ft-bookstore-8', 'label' => 'Vendor: delivery methods, staff members, own domain', 'where' => '/vendor'],
+                ['key' => 'ft-bookstore-9', 'label' => 'Office: vendor applications, moderation, bank slips, payouts, themes', 'where' => '/admin/bookshop'],
+            ]],
+            ['key' => 'ft-money', 'title' => 'Money checks', 'items' => [
+                ['key' => 'ft-money-1', 'label' => 'A payment grants access only after the bank confirms (not on return to the site)', 'where' => '/admin/enrollments/payments'],
+                ['key' => 'ft-money-2', 'label' => 'Receipts open for the payer and show the right lines', 'where' => '/my-enrollments'],
+                ['key' => 'ft-money-3', 'label' => 'Refund a payment; the ledger shows the reversal', 'where' => '/admin/enrollments/payments'],
+                ['key' => 'ft-money-4', 'label' => 'Wallet top-up and spending', 'where' => '/my-wallet'],
+                ['key' => 'ft-money-5', 'label' => 'Gift card purchase and redemption; a discount never reduces a gift card', 'where' => '/library'],
+            ]],
+            ['key' => 'ft-phone', 'title' => 'Phone and app', 'items' => [
+                ['key' => 'ft-phone-1', 'label' => 'Every screen above at phone width in EN, DV and AR: nothing runs off the side', 'where' => '/dashboard'],
+                ['key' => 'ft-phone-2', 'label' => 'Installed app opens on the person\'s home (after the app is rebuilt)', 'where' => '/dashboard'],
+                ['key' => 'ft-phone-3', 'label' => 'Push notifications (after the Firebase and Apple keys are set)', 'where' => '/portal/notifications'],
             ]],
         ];
     }
@@ -157,28 +201,39 @@ class ListFeatureWalkthroughAction
     }
 
     /**
-     * @return array{sections: mixed, checked: array<string, array{by: string|null, at: string}>, done: int, total: int}
+     * The list with each feature's latest result and every earlier one.
+     *
+     * @return array{sections: mixed, results: array<string, array{status: string, comment: ?string, by: ?string, at: string}>, history: array<string, list<array{status: string, comment: ?string, by: ?string, at: string}>>, counts: array{works: int, broken: int, blocked: int, untested: int}, total: int}
      */
     public function execute(): array
     {
-        $rows = OperatorCheck::query()->where('item_key', 'like', 'fw-%')->get();
-        $names = DB::table('users')
-            ->whereIn('id', $rows->pluck('checked_by')->filter()->all())
-            ->pluck('name', 'id');
+        $keys = self::itemKeys();
+        $notes = FeatureTestNote::query()->whereIn('item_key', $keys)->orderByDesc('id')->get();
+        $names = DB::table('users')->whereIn('id', $notes->pluck('user_id')->filter()->unique()->all())->pluck('name', 'id');
 
-        $checked = [];
-        foreach ($rows as $row) {
-            $checked[$row->item_key] = [
-                'by' => $row->checked_by !== null ? ($names[$row->checked_by] ?? null) : null,
-                'at' => $row->checked_at->toDateTimeString(),
+        $history = [];
+        foreach ($notes as $note) {
+            $history[$note->item_key][] = [
+                'status' => (string) $note->status,
+                'comment' => $note->comment,
+                'by' => $note->user_id !== null ? ($names[$note->user_id] ?? null) : null,
+                'at' => $note->created_at?->format('Y-m-d H:i') ?? '',
             ];
         }
+        $results = array_map(fn (array $entries): array => $entries[0], $history);
+
+        $counts = ['works' => 0, 'broken' => 0, 'blocked' => 0];
+        foreach ($results as $result) {
+            $counts[$result['status']] = ($counts[$result['status']] ?? 0) + 1;
+        }
+        $counts['untested'] = count($keys) - count($results);
 
         return [
             'sections' => self::definitions(),
-            'checked' => $checked,
-            'done' => count($checked),
-            'total' => count(self::itemKeys()),
+            'results' => $results,
+            'history' => $history,
+            'counts' => $counts,
+            'total' => count($keys),
         ];
     }
 }

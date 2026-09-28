@@ -157,7 +157,7 @@ return [
     'my_performance' => 'My performance',
     'payslips' => 'Payslips',
     'ops_checklist' => 'Ops checklist',
-    'feature_walkthrough' => 'Feature walkthrough',
+    'feature_walkthrough' => 'Feature testing',
     'translations' => 'Translations',
     // The admin panel in the Inertia shell's More menu (admin-panel audit, STATUS §5hs).
     'admin_enrolments' => 'Enrolments',

@@ -153,7 +153,7 @@ return [
     'my_performance' => 'أدائي',
     'payslips' => 'قسائم الراتب',
     'ops_checklist' => 'قائمة التشغيل',
-    'feature_walkthrough' => 'جولة في المزايا',
+    'feature_walkthrough' => 'اختبار المزايا',
     'translations' => 'الترجمات',
     // The admin panel in the Inertia shell's More menu (admin-panel audit, STATUS §5hs).
     'admin_enrolments' => 'التسجيلات',

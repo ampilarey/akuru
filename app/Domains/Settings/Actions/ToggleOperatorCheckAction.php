@@ -17,11 +17,8 @@ class ToggleOperatorCheckAction
      */
     public function execute(string $itemKey, int $userId): array
     {
-        $known = array_merge(
-            ListOperatorChecklistAction::itemKeys(),
-            ListFeatureWalkthroughAction::itemKeys(),
-        );
-        if (! in_array($itemKey, $known, true)) {
+        // The feature list keeps its own log (`RecordFeatureTestAction`).
+        if (! in_array($itemKey, ListOperatorChecklistAction::itemKeys(), true)) {
             throw ValidationException::withMessages(['item' => 'Unknown checklist item.']);
         }
 
