@@ -58,4 +58,9 @@ return [
     'enroll_intake' => 'سجّل في هذه الدفعة',
     'your_intake' => 'دفعتك',
     'quran_no_surahs' => 'التسجيل غير متاح بعد: لا يوجد مرجع للسور في هذا الموقع. اطلب من المكتب تحميل بيانات القرآن.',
+    // SIGN_IN_PLAN ID2a: §24's access/payment status on My learning.
+    'waiting_title' => 'بانتظار البدء',
+    'waiting_payment' => 'بانتظار الدفع',
+    'waiting_approval' => 'بانتظار موافقة المكتب',
+    'waiting_details' => 'التسجيلات والمدفوعات',
 ];

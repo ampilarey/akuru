@@ -58,4 +58,9 @@ return [
     'enroll_intake' => 'Enroll in this intake',
     'your_intake' => 'Your intake',
     'quran_no_surahs' => 'Recording is not available yet: this site has no surah reference. Ask the office to load the Qur\'an data.',
+    // SIGN_IN_PLAN ID2a: §24's access/payment status on My learning.
+    'waiting_title' => 'Waiting to start',
+    'waiting_payment' => 'Awaiting payment',
+    'waiting_approval' => 'Awaiting approval by the office',
+    'waiting_details' => 'Enrolments and payments',
 ];

@@ -55,6 +55,7 @@ class ListStudentDashboardAction
             return [
                 'student' => null,
                 'enrollments' => [],
+                'waiting' => [],
                 'upcoming_sessions' => [],
                 'certificates' => [],
             ];
@@ -75,7 +76,33 @@ class ListStudentDashboardAction
             'enrollments' => $enrollments->map(
                 fn (CourseEnrollment $enrollment) => $this->enrollment($enrollment, (int) $student['id']),
             )->values()->all(),
+            'waiting' => $this->waiting((int) $student['id']),
         ];
+    }
+
+    /**
+     * §24's last item, "Access/payment status", which it deferred: an
+     * enrolment still waiting — on its payment, or on the office — with the
+     * reason. Since *My learning* became a workspace (docs/SIGN_IN_PLAN.md
+     * ID2a) this page is the home of an adult who registered on the website,
+     * and an unpaid registration listed nowhere reads as a lost one.
+     *
+     * @return list<array{id: int, title: string, awaiting: string}>
+     */
+    private function waiting(int $studentId): array
+    {
+        $rows = CourseEnrollment::query()
+            ->where('unified_student_id', $studentId)
+            ->where('status', 'pending')
+            ->orderByDesc('created_at')
+            ->get();
+        $titles = Course::query()->whereIn('id', $rows->pluck('course_id')->filter()->all())->pluck('title', 'id');
+
+        return $rows->map(fn (CourseEnrollment $enrollment): array => [
+            'id' => (int) $enrollment->id,
+            'title' => (string) ($titles[$enrollment->course_id] ?? 'Course'),
+            'awaiting' => in_array($enrollment->payment_status, ['pending', 'required'], true) ? 'payment' : 'approval',
+        ])->values()->all();
     }
 
     /**

@@ -50,18 +50,33 @@ function AssessmentRow({ row, t }) {
     );
 }
 
-export default function Dashboard({ student, enrollments, upcoming_sessions = [], certificates = [] }) {
+export default function Dashboard({ student, enrollments, waiting = [], upcoming_sessions = [], certificates = [] }) {
     const t = usePage().props.i18n?.learn || {};
 
     return (
         <AppShell title={t.dashboard_title || 'My learning'}>
             {!student && <p className="text-sm text-gray-600">{t.no_profile || 'No student profile is linked to this account.'}</p>}
-            {student && enrollments.length === 0 && <p className="text-sm text-gray-600">{t.not_enrolled || 'You are not enrolled yet. Browse the learn catalog.'}</p>}
+            {student && enrollments.length === 0 && waiting.length === 0 && <p className="text-sm text-gray-600">{t.not_enrolled || 'You are not enrolled yet. Browse the learn catalog.'}</p>}
             <div className="mb-4 flex flex-wrap gap-2">
                 <a className="chip-link" href="/learn/catalog">{t.browse || 'Browse courses'}</a>
                 <a className="chip-link" href="/learn/schedule">{t.schedule || 'Schedule'}</a>
                 <a className="chip-link" href="/learn/arabic-report">{t.arabic_report || 'Arabic skills'}</a>
             </div>
+            {/* §24 "Access/payment status": what is still waiting, and on what
+                (docs/SIGN_IN_PLAN.md ID2a). */}
+            {waiting.length > 0 && (
+                <section className="mb-4 rounded-lg border border-amber-200 bg-amber-50 p-4" data-testid="learn-waiting">
+                    <h2 className="mb-2 font-medium">{t.waiting_title || 'Waiting to start'}</h2>
+                    <ul className="space-y-1 text-sm">
+                        {waiting.map((row) => (
+                            <li key={row.id}>
+                                {row.title} · {row.awaiting === 'payment' ? (t.waiting_payment || 'Awaiting payment') : (t.waiting_approval || 'Awaiting approval by the office')}
+                            </li>
+                        ))}
+                    </ul>
+                    <a className="mt-2 inline-block text-sm text-[#7C2D37] hover:underline" href="/my-enrollments">{t.waiting_details || 'Enrolments and payments'}</a>
+                </section>
+            )}
             {upcoming_sessions.length > 0 && (
                 <section className="mb-4 rounded-lg border bg-white p-4">
                     <h2 className="mb-2 font-medium">{t.upcoming_sessions || 'Upcoming sessions'}</h2>

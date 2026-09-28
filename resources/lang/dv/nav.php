@@ -196,6 +196,7 @@ return [
     'workspace_vendor' => 'އަހަރެންގެ ފިހާރަ',
     'workspace_writing' => 'ލިޔުން',
     'workspace_catalog' => 'ކެޓަލޮގް',
+    'workspace_learner' => 'އަހަރެންގެ ކިޔެވުން',
     'workspace_account' => 'އަހަރެންގެ އެކައުންޓް',
     'workspaces' => 'ވޯކްސްޕޭސްތައް',
     'switch_workspace' => 'ވޯކްސްޕޭސް ބަދަލުކުރޭ',
@@ -207,4 +208,8 @@ return [
     'e_learning' => 'އީ-ލާނިންގ',
     // SIGN_IN_PLAN ID1: the Personal group's first item.
     'profile' => 'އަހަރެންގެ ޕްރޮފައިލް',
+    // SIGN_IN_PLAN ID2a: a person's own learning.
+    'my_learning' => 'އަހަރެންގެ ކިޔެވުން',
+    'browse_courses' => 'ކޯސްތައް ބަލާ',
+    'my_enrolments' => 'އަހަރެންގެ ރަޖިސްޓްރީތައް',
 ];

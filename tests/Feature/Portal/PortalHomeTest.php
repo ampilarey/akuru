@@ -147,8 +147,15 @@ it('composes parent home from attendance, exams, invoices, courses, and hifz con
         ->and($csv->streamedContent())->toContain('Juz Amma track')
         ->and($csv->streamedContent())->toContain('Portal Home Lab');
 
+    // Since SIGN_IN_PLAN ID2a a login with a course of its own and no school
+    // role is a website learner, whose home is My learning; the pupil's own
+    // view below is the school pupil's, who holds the `student` role.
+    $this->withoutLocalizationMiddleware()->actingAs($user)->get(route('portal.home'))->assertRedirect(route('dashboard'));
+    $this->withoutLocalizationMiddleware()->actingAs($user)->get(route('dashboard'))->assertRedirect(route('learn.dashboard'));
+    $user->assignRole(\Spatie\Permission\Models\Role::findOrCreate('student', 'web'));
+
     $this->withoutLocalizationMiddleware()
-        ->actingAs($user)
+        ->actingAs($user->fresh())
         ->get(route('portal.home'))
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
