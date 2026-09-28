@@ -231,8 +231,9 @@ it('marks the order failed and says so when the gateway will not start', functio
 it('gives a signed-in person the Library, My library and My wallet in the shell and on the public site', function () {
     $reader = User::factory()->create();
 
+    // A reader with no role is at home on My account (SIGN_IN_PLAN ID2b).
     $this->withoutLocalizationMiddleware()->actingAs($reader)
-        ->get(route('portal.home'))
+        ->get(route('account.home'))
         ->assertOk()
         ->assertInertia(fn ($page) => $page->where('nav.groups', function ($groups) {
             // The Personal group (`me`) since SIGN_IN_PLAN ID1, every workspace's last.

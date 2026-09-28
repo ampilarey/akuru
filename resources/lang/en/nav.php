@@ -212,4 +212,5 @@ return [
     'my_learning' => 'My learning',
     'browse_courses' => 'Browse courses',
     'my_enrolments' => 'My enrolments',
+    'my_account' => 'My account',
 ];

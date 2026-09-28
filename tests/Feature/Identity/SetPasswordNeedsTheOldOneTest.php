@@ -113,15 +113,22 @@ it('shows the set-password prompt to an account that needs one', function () {
     // accounts carrying a random hash — so it was **always true** and this
     // banner never rendered for anybody. The feature was unreachable through
     // its own entry point.
+    //
+    // The prompt moved with the page that showed it: *My account*, inside the
+    // shell (docs/SIGN_IN_PLAN.md ID2b), where `/dashboard` sends an account
+    // with no other workspace.
     $this->withoutLocalizationMiddleware()->actingAs(setPasswordUser(mustSetOne: true))
-        ->get('/dashboard')
+        ->get('/my-account')
         ->assertOk()
-        ->assertSee('Set a password');
+        ->assertInertia(fn ($page) => $page->component('Portal/AccountHome')
+            ->where('must_set_password', true)
+            ->where('set_password_href', '/account/set-password')
+            ->where('t.set_password_title', 'Set a password for easier sign-in'));
 });
 
 it('does not nag an account that already has a password', function () {
     $this->withoutLocalizationMiddleware()->actingAs(setPasswordUser(mustSetOne: false))
-        ->get('/dashboard')
+        ->get('/my-account')
         ->assertOk()
-        ->assertDontSee('Set a password for easier login');
+        ->assertInertia(fn ($page) => $page->where('must_set_password', false));
 });

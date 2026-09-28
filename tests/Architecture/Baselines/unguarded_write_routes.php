@@ -8,7 +8,7 @@
 // Actions (rule 5), which the detector cannot follow. Each entry says why it is
 // here, and which ones were actually read.
 //
-// Baseline may only shrink. Count: 65 (the three device routes of SPEC §50 joined 2026-09-28: a person's own phones, scoped by user id in the Actions; the add-to-cart route of BOOKSHOP_PLAN
+// Baseline may only shrink. Count: 64 (the old course portal's profile form left 2026-09-28, SIGN_IN_PLAN ID2b; the three device routes of SPEC §50 joined 2026-09-28: a person's own phones, scoped by user id in the Actions; the add-to-cart route of BOOKSHOP_PLAN
 // B2 joined 2026-09-26: a guest's basket has no session to authorise).
 
 return [
@@ -63,7 +63,6 @@ return [
     // ---------------------------------------------------------------------
     'password' => 'PasswordController@update — your own password.',
     'profile' => 'ProfileController@update — your own profile.',
-    'portal/profile' => 'PortalController@updateProfile — your own profile.',
     'account/set-password' => 'AccountController@setPassword — your own password.',
     'portal/notifications/preferences' => 'PortalNotificationController@savePreferences — your own preferences.',
     'portal/notifications/read' => 'PortalNotificationController@markRead — your own notifications.',

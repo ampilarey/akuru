@@ -210,10 +210,11 @@ it('offers the switcher on every screen, not just a settings page', function () 
             ->where('auth.linked_accounts.0.name', 'Aminath Parent')
             ->etc());
 
-    // Somebody with one account carries no extra payload.
+    // Somebody with one account carries no extra payload — on their own home,
+    // My account (ID2b).
     $alone = User::factory()->create();
     $this->withoutLocalizationMiddleware()->actingAs($alone)
-        ->get(route('portal.home'))
+        ->get(route('account.home'))
         ->assertOk()
         ->assertInertia(fn ($page) => $page->has('auth.linked_accounts', 0)->etc());
 });

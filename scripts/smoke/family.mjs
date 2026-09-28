@@ -399,13 +399,15 @@ check('the parent opens the child\'s library: reading and purchases, with a CSV'
 // 8. a website parent's Family (docs/SIGN_IN_PLAN.md ID2c)
 //
 // SmokeMarkerSeeder::webParent plants a parent who registered their child on
-// the website: linked, not checked, no role. Signed in, they have no Family.
-// The office verifies the link on the child's Guardians tab, and the parent
-// signs in again to the family portal with the child on it.
+// the website: linked, not checked, no role. Signed in, they have no Family:
+// they land on My account, inside the app, with the child listed as awaiting
+// the office (ID2b). The office verifies the link on the child's Guardians
+// tab, and the parent signs in again to the family portal with the child on it.
 const WEB_PARENT = process.env.SMOKE_WEB_PARENT ?? 'smoke-web-parent@akuru.edu.mv';
 const WEB_CHILD = 'SMOKE-WebChild';
 let webParent = await signIn(WEB_PARENT);
-check('a website parent, not yet checked by the office, has no Family', !/\/portal\/home$/.test(webParent.url()), webParent.url().replace(BASE, ''));
+check('a website parent, not yet checked by the office, has no Family: My account, inside the app', /\/my-account$/.test(webParent.url()), webParent.url().replace(BASE, ''));
+check('with their child listed as awaiting the office (ID2b)', (await text(webParent)).includes(`${WEB_CHILD} Rasheed · awaiting the office`), (await text(webParent)).slice(0, 200));
 
 await admin.goto(`${BASE}/en/people/students?awaiting_verification=1&search=${encodeURIComponent(WEB_CHILD)}`, { waitUntil: 'networkidle' });
 const webChildHref = (await hrefs(admin)).find((h) => /\/people\/students\/\d+$/.test(h));

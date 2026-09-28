@@ -95,6 +95,7 @@ class SmokeMarkerSeeder extends Seeder
         $this->learner($admin);
         $this->learnerIdentities($admin);
         $this->webParent();
+        $this->accountHolder();
         $this->recruitment();
         $this->requests($admin);
         $this->readerWallet();
@@ -693,6 +694,57 @@ class SmokeMarkerSeeder extends Seeder
             ->where('student_id', $child['id'])
             ->whereIn('guardian_id', DB::table('parent_guardians')->where('user_id', $userId)->pluck('id'))
             ->update(['verification_status' => 'unverified', 'verified_at' => null]);
+    }
+
+    /**
+     * SIGN_IN_PLAN ID2b: a person who holds no workspace but their own
+     * account — no role, no course of their own — so `identity.mjs` can walk
+     * *My account*. They have only ever signed in with a one-time code
+     * (`force_password_change`), registered a child on the website whom the
+     * office has not checked, and enrolled that child in a course, paid and
+     * confirmed, so My enrolments has a receipt to link. The course is
+     * `learnerIdentities`' and the payment is theirs alone, so no other walk's
+     * lists or counts move; the payment is found again by its reference
+     * rather than deleted, because a money table refuses the delete.
+     */
+    private function accountHolder(): void
+    {
+        $email = 'smoke-account@akuru.edu.mv';
+        $userId = (int) DB::table('users')->where('email', $email)->value('id');
+        if ($userId === 0) {
+            $userId = (int) app(\App\Domains\Identity\Actions\CreateUserAction::class)->execute('SMOKE Account-Holder', $email, 'password')['id'];
+        }
+        DB::table('users')->where('id', $userId)->update(['email_verified_at' => now(), 'force_password_change' => true]);
+        DB::table('model_has_roles')->where('model_type', 'user')->where('model_id', $userId)->delete();
+        app(\Spatie\Permission\PermissionRegistrar::class)->forgetCachedPermissions();
+
+        $child = app(\App\Domains\People\Actions\RegisterCourseStudentAction::class)->forChild($userId, [
+            'first_name' => 'SMOKE-AccountChild', 'last_name' => 'Ibrahim', 'dob' => '2015-02-01', 'national_id' => 'SMOKEACC1',
+        ], 'father');
+        DB::table('guardian_student')
+            ->where('student_id', $child['id'])
+            ->whereIn('guardian_id', DB::table('parent_guardians')->where('user_id', $userId)->pluck('id'))
+            ->update(['verification_status' => 'unverified', 'verified_at' => null]);
+
+        $courseId = (int) DB::table('courses')->where('slug', 'smoke-learner-waiting')->value('id');
+        DB::table('course_enrollments')->updateOrInsert(
+            ['unified_student_id' => $child['id'], 'course_id' => $courseId],
+            ['status' => 'active', 'payment_status' => 'confirmed', 'enrolled_at' => now(), 'created_by_user_id' => $userId, 'deleted_at' => null, 'created_at' => now(), 'updated_at' => now()],
+        );
+        $enrollmentId = (int) DB::table('course_enrollments')->where('unified_student_id', $child['id'])->where('course_id', $courseId)->value('id');
+        $payment = \App\Domains\Finance\Models\Payment::query()->firstOrCreate(['merchant_reference' => 'SMOKE-ACCOUNT-1'], [
+            'user_id' => $userId,
+            'unified_student_id' => $child['id'],
+            'course_id' => $courseId,
+            'amount' => 250,
+            'currency' => 'MVR',
+            'status' => 'confirmed',
+            'payable_type' => 'course_enrollment',
+            'payable_id' => $enrollmentId,
+            'confirmed_at' => now(),
+            'paid_at' => now(),
+        ]);
+        DB::table('course_enrollments')->where('id', $enrollmentId)->update(['payment_id' => $payment->id]);
     }
 
     /**

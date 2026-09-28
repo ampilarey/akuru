@@ -100,14 +100,17 @@ it('gives a writer, the Bookstore office and the Institute nothing of the school
     'a course creator' => [['course_creator'], 'catalog'],
 ]);
 
-it('keeps the family home for families, pupils and people with no role yet', function () {
+it('keeps the family home for families and pupils', function () {
     $teacher = menuPerson(['teacher']);
     $teacher->givePermissionTo('registers.fill');
     $this->withoutLocalizationMiddleware()->actingAs($teacher)->get(route('portal.home'))->assertRedirect(route('dashboard'));
 
-    foreach ([menuPerson(['parent']), menuPerson(['student']), User::factory()->create()] as $person) {
+    foreach ([menuPerson(['parent']), menuPerson(['student'])] as $person) {
         $this->withoutLocalizationMiddleware()->actingAs($person)->get(route('portal.home'))->assertOk();
     }
+
+    // A person with no role has a home of their own since ID2b: My account.
+    $this->withoutLocalizationMiddleware()->actingAs(User::factory()->create())->get(route('portal.home'))->assertRedirect(route('dashboard'));
 });
 
 it('marks every screen in the map that is a Blade page for a full page load', function () {

@@ -19,7 +19,11 @@
  *   4. the pupil: their own courses under Education, no parent-only screen;
  *   5. My learning (ID2a): a website learner lands inside the app on their
  *      own courses, the unpaid one listed as waiting; a parent who enrolled
- *      switches from Family to My learning and back.
+ *      switches from Family to My learning and back;
+ *   6. My account (ID2b): a person with no other workspace lands inside the
+ *      app, sees their child awaiting the office and the enrolment they
+ *      made, opens My enrolments and its receipt; the old course portal's
+ *      addresses land in the app.
  *
  * Read-only: it opens menus and pages and changes nothing.
  *
@@ -27,7 +31,7 @@
  *   node scripts/smoke/identity.mjs
  *
  * Environment: SMOKE_BASE_URL, SMOKE_VENDOR, SMOKE_PARENT, SMOKE_TEACHER,
- * SMOKE_STUDENT, SMOKE_LEARNER, SMOKE_PARENT_LEARNER, SMOKE_PASSWORD,
+ * SMOKE_STUDENT, SMOKE_LEARNER, SMOKE_PARENT_LEARNER, SMOKE_ACCOUNT, SMOKE_PASSWORD,
  * SMOKE_CHROMIUM, SMOKE_SHOTS (a folder for the More panels' screenshots).
  */
 import { chromium } from 'playwright';
@@ -179,5 +183,35 @@ await parentLearner.waitForLoadState('networkidle');
 check('switching to My learning shows their own course', path(parentLearner.url()) === '/learn' && (await parentLearner.locator('main').innerText()).includes('SMOKE-Learner-Course'), path(parentLearner.url()));
 menu = await readMore(parentLearner, 'parent-learner');
 check('and My learning’s menu carries none of their children’s screens', menu.groups.join(',') === 'Education,Personal' && !menu.paths.some((p) => ['/portal/children', '/portal/homework', '/portal/pickup'].includes(p)), menu.labels.join(', '));
+
+// ------------------------------------------------------ 6. My account (ID2b)
+// SmokeMarkerSeeder::accountHolder plants a person with no role and no course
+// of their own: a child registered on the website and not yet checked, and a
+// paid enrolment for the child. Until ID2b they landed on a Blade page in the
+// website's layout, and the old course portal's pages were the same.
+const ACCOUNT = process.env.SMOKE_ACCOUNT ?? 'smoke-account@akuru.edu.mv';
+const account = await signIn(ACCOUNT);
+check('a person with no other workspace lands on My account, inside the app', path(account.url()) === '/my-account' && (await account.locator('header [data-testid="shell-home"]').count()) === 1, path(account.url()));
+const accountText = (await account.locator('main').innerText()).replace(/\s+/g, ' ');
+check('asked to choose a password, told their child awaits the office, their enrolment listed', (await account.locator('[data-testid="set-password-notice"]').count()) === 1 && /SMOKE-AccountChild Ibrahim · awaiting the office/.test(accountText) && accountText.includes('SMOKE-Learner-Waiting'), accountText.slice(0, 240));
+check('nothing of the website: no courses open for enrolment', !/Open for enrollment/i.test(accountText));
+const doors = await account.locator('[data-testid="account-doors"] a').evaluateAll((els) => els.map((el) => el.getAttribute('href') || ''));
+check('its doors are its menu: courses, enrolments, profile, the Library, the Bookstore, the wallet', ['/my-enrollments', '/learn/catalog', '/profile', '/library', '/shop', '/my-wallet'].every((p) => doors.map(path).includes(p)), doors.map(path).join(', '));
+menu = await readMore(account, 'account');
+check('their More panel: Education and Personal, and Home is My account', menu.groups.join(',') === 'Education,Personal' && menu.paths.includes('/my-enrollments') && menu.home === '/my-account', `${menu.groups.join(' | ')} — ${menu.home}`);
+await account.click('#app-shell-more a[href$="/my-enrollments"]');
+await account.waitForURL(/\/my-enrollments$/, { timeout: 15000 }).catch(() => {});
+await account.waitForLoadState('networkidle');
+const enrolText = (await account.locator('main').innerText()).replace(/\s+/g, ' ');
+check('My enrolments opens in the app, with the child’s enrolment, paid, and its receipt', path(account.url()) === '/my-enrollments' && enrolText.includes('SMOKE-AccountChild Ibrahim') && (await account.locator('[data-testid="payment-receipt"]').count()) >= 1 && (await account.locator('[data-testid="export-csv"]').count()) === 1, enrolText.slice(0, 200));
+const receiptHref = await account.locator('[data-testid="payment-receipt"]').first().getAttribute('href').catch(() => null);
+if (receiptHref) {
+    await account.goto(`${BASE}${receiptHref.replace(/^https?:\/\/[^/]+/, '')}`, { waitUntil: 'networkidle' });
+    check('the receipt opens', (await account.locator('body').innerText()).includes('SMOKE-Learner-Waiting'), path(account.url()));
+}
+for (const [from, to] of [['/portal/dashboard', '/my-account'], ['/portal/payments', '/my-enrollments']]) {
+    await account.goto(`${BASE}/en${from}`, { waitUntil: 'networkidle' });
+    check(`the old course portal's ${from} lands in the app, on ${to}`, path(account.url()) === to, path(account.url()));
+}
 
 await finish();

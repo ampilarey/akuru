@@ -208,4 +208,5 @@ return [
     'my_learning' => 'تعلّمي',
     'browse_courses' => 'تصفّح الدورات',
     'my_enrolments' => 'تسجيلاتي',
+    'my_account' => 'حسابي',
 ];

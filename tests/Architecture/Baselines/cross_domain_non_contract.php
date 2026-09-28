@@ -2,7 +2,7 @@
 
 // PHASE_0_CHECKLIST §0.5 rule 2: cross-domain non-contract references.
 // Baseline may only shrink when violations are fixed — never grow.
-// Baseline count: 138
+// Baseline count: 135
 
 return [
     'app/Domains/Academics/Http/Controllers/SubstitutionRequestController.php -> App\Domains\People\Models\Teacher',
@@ -33,7 +33,6 @@ return [
     'app/Domains/Admissions/Http/Controllers/CourseRegistrationController.php -> App\Domains\Identity\Services\AccountResolverService',
     'app/Domains/Admissions/Http/Controllers/CourseRegistrationController.php -> App\Domains\Identity\Services\ContactNormalizer',
     'app/Domains/Admissions/Http/Controllers/CourseRegistrationController.php -> App\Domains\Identity\Services\OtpService',
-    'app/Domains/Admissions/Http/Controllers/MyEnrollmentsController.php -> App\Domains\Courses\Models\CourseEnrollment',
     'app/Domains/Admissions/Models/AdmissionApplication.php -> App\Domains\Courses\Models\Course',
     'app/Domains/Admissions/Models/AdmissionApplication.php -> App\Domains\Identity\Models\User',
     'app/Domains/Admissions/Models/RegistrationFlow.php -> App\Domains\Finance\Models\Payment',
@@ -115,8 +114,6 @@ return [
     'app/Domains/People/Models/Teacher.php -> App\Domains\Identity\Models\User',
     'app/Domains/People/Models/Teacher.php -> App\Domains\Settings\Models\School',
     'app/Domains/Portal/Http/Controllers/DashboardController.php -> App\Domains\Hifz\Models\QuranProgress',
-    'app/Domains/Portal/Http/Controllers/PortalController.php -> App\Domains\Courses\Models\CourseEnrollment',
-    'app/Domains/Portal/Http/Controllers/PortalController.php -> App\Domains\Finance\Models\Payment',
     'app/Domains/Settings/Models/DashboardAnalytics.php -> App\Domains\Identity\Models\User',
     'app/Domains/Settings/Models/Report.php -> App\Domains\Identity\Models\User',
     'app/Domains/Settings/Models/School.php -> App\Domains\People\Models\Student',
