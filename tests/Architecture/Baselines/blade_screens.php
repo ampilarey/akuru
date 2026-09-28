@@ -13,7 +13,7 @@
 // expected direction, and the test asks you to update the count below when you
 // do.
 //
-// Count: 214 (a document template, not a screen — see the documents block;
+// Count: 208 (a document template, not a screen — see the documents block;
 // the five public bookshop views of BOOKSHOP_PLAN B1b, the five customer
 // pages of B2, the two storefront partials of B4, the sections, menu and
 // vendor page of B5 and the customer's wishlist of B7 — see the public
@@ -135,20 +135,14 @@ return [
     'errors/404.blade.php',
     'errors/500.blade.php',
 
-    // hifz — 19
+    // hifz — 13 (the programmes and enrolments left with the Hifz port's first slice, STATUS §5jv)
     'hifz/dashboard/dean.blade.php',
     'hifz/dashboard/parent.blade.php',
     'hifz/dashboard/student.blade.php',
     'hifz/dashboard/supervisor.blade.php',
     'hifz/dashboard/teacher.blade.php',
-    'hifz/enrollments/create.blade.php',
-    'hifz/enrollments/index.blade.php',
     'hifz/milestones/index.blade.php',
     'hifz/partials/alerts.blade.php',
-    'hifz/programs/create.blade.php',
-    'hifz/programs/edit.blade.php',
-    'hifz/programs/index.blade.php',
-    'hifz/programs/show.blade.php',
     'hifz/reports/haraka-mistakes.blade.php',
     'hifz/reports/index.blade.php',
     'hifz/reports/milestones.blade.php',

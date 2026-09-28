@@ -4,6 +4,7 @@ namespace App\Domains\Hifz\Http\Controllers;
 
 use App\Domains\Academics\Models\AcademicYear;
 use App\Domains\Academics\Models\ClassRoom;
+use App\Domains\Hifz\Models\HifzEnrollment;
 use App\Domains\Hifz\Models\HifzProgram;
 use App\Domains\Hifz\Services\HifzScopeService;
 use App\Domains\Identity\Models\User;
@@ -12,13 +13,21 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Hifz\StoreHifzProgramRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\View\View;
+use Inertia\Inertia;
+use Inertia\Response;
 
+/**
+ * Hifz programmes. Inertia since the Hifz port's first slice (BACKLOG C1,
+ * STATUS §5jv): the same screens at the same addresses, in the one shell,
+ * every string keyed EN/DV/AR. The scoping and the policies are as they
+ * were — a dean sees every programme, anyone else the ones they are
+ * assigned to (`HifzScopeService`).
+ */
 class HifzProgramController extends Controller
 {
     public function __construct(protected HifzScopeService $scope) {}
 
-    public function index(): View
+    public function index(): Response
     {
         $this->authorize('viewAny', HifzProgram::class);
 
@@ -29,22 +38,27 @@ class HifzProgramController extends Controller
             $query->whereIn('id', $this->scope->assignedProgramIds($user));
         }
 
-        $programs = $query->latest()->paginate(15);
+        $programs = $query->latest()->paginate(15)->through(fn (HifzProgram $program): array => [
+            'id' => $program->id,
+            'name' => $program->name,
+            'class' => $program->classRoom?->name,
+            'supervisor' => $program->supervisor?->name,
+            'teacher' => $program->defaultTeacher?->full_name,
+            'status' => $program->status?->value,
+        ]);
 
-        return view('hifz.programs.index', compact('programs'));
+        return Inertia::render('Hifz/Programs', [
+            'programs' => $programs,
+            'can_create' => $user->can('create', HifzProgram::class),
+            't' => trans('admin'),
+        ]);
     }
 
-    public function create(): View
+    public function create(): Response
     {
         $this->authorize('create', HifzProgram::class);
 
-        return view('hifz.programs.create', [
-            'classes' => ClassRoom::orderBy('name')->get(),
-            'academicYears' => AcademicYear::orderByDesc('start_date')->get(),
-            'supervisors' => User::role('supervisor')->get(),
-            'deans' => User::role(['headmaster', 'admin'])->get(),
-            'teachers' => Teacher::with('user')->get(),
-        ]);
+        return Inertia::render('Hifz/ProgramForm', ['program' => null, 't' => trans('admin')] + $this->options());
     }
 
     public function store(StoreHifzProgramRequest $request): RedirectResponse
@@ -55,30 +69,55 @@ class HifzProgramController extends Controller
         ]);
 
         return redirect()->route('hifz.programs.show', $program)
-            ->with('success', 'Hifz program created successfully.');
+            ->with('success', trans('admin.hifz_flash_created'));
     }
 
-    public function show(HifzProgram $program): View
+    public function show(HifzProgram $program): Response
     {
         $this->authorize('view', $program);
 
-        $program->load(['enrollments.student.user', 'supervisor', 'defaultTeacher.user', 'classRoom']);
+        $program->load(['enrollments.student.user', 'enrollments.teacher.user', 'supervisor', 'defaultTeacher.user', 'classRoom']);
+        $user = auth()->user();
+        $canAssign = $user->can('assignSupervisor', HifzProgram::class) && $user->can('update', $program);
 
-        return view('hifz.programs.show', compact('program'));
+        return Inertia::render('Hifz/Program', [
+            'program' => [
+                'id' => $program->id,
+                'name' => $program->name,
+                'description' => $program->description,
+                'status' => $program->status?->value,
+                'supervisor_id' => $program->supervisor_id,
+            ],
+            'enrollments' => $program->enrollments->map(fn (HifzEnrollment $enrollment): array => [
+                'id' => $enrollment->id,
+                'student' => $enrollment->student?->full_name,
+                'teacher' => $enrollment->teacher?->full_name,
+                'status' => $enrollment->status?->value,
+                'page' => $enrollment->current_page,
+            ])->values(),
+            'can_update' => $user->can('update', $program),
+            'can_assign_supervisor' => $canAssign,
+            'supervisors' => $canAssign ? $this->options()['supervisors'] : [],
+            't' => trans('admin'),
+        ]);
     }
 
-    public function edit(HifzProgram $program): View
+    public function edit(HifzProgram $program): Response
     {
         $this->authorize('update', $program);
 
-        return view('hifz.programs.edit', [
-            'program' => $program,
-            'classes' => ClassRoom::orderBy('name')->get(),
-            'academicYears' => AcademicYear::orderByDesc('start_date')->get(),
-            'supervisors' => User::role('supervisor')->get(),
-            'deans' => User::role(['headmaster', 'admin'])->get(),
-            'teachers' => Teacher::with('user')->get(),
-        ]);
+        return Inertia::render('Hifz/ProgramForm', [
+            'program' => [
+                'id' => $program->id,
+                'name' => $program->name,
+                'description' => $program->description,
+                'status' => $program->status?->value,
+                'class_id' => $program->class_id,
+                'supervisor_id' => $program->supervisor_id,
+                'default_teacher_id' => $program->default_teacher_id,
+            ],
+            't' => trans('admin'),
+        ] + $this->options());
     }
 
     public function update(StoreHifzProgramRequest $request, HifzProgram $program): RedirectResponse
@@ -91,7 +130,7 @@ class HifzProgramController extends Controller
         ]);
 
         return redirect()->route('hifz.programs.show', $program)
-            ->with('success', 'Hifz program updated successfully.');
+            ->with('success', trans('admin.hifz_flash_updated'));
     }
 
     public function assignSupervisor(Request $request, HifzProgram $program): RedirectResponse
@@ -106,6 +145,25 @@ class HifzProgramController extends Controller
             'updated_by' => auth()->id(),
         ]);
 
-        return back()->with('success', 'Supervisor assigned successfully.');
+        return back()->with('success', trans('admin.hifz_flash_supervisor_assigned'));
+    }
+
+    /**
+     * The pickers a programme form offers: classes, years, supervisors,
+     * deans and teachers, each as id and name.
+     *
+     * @return array<string, list<array{id: int, name: string}>>
+     */
+    private function options(): array
+    {
+        $pair = fn ($row, string $name): array => ['id' => (int) $row->id, 'name' => (string) $row->{$name}];
+
+        return [
+            'classes' => ClassRoom::orderBy('name')->get()->map(fn ($row) => $pair($row, 'name'))->values()->all(),
+            'academic_years' => AcademicYear::orderByDesc('start_date')->get()->map(fn ($row) => $pair($row, 'name'))->values()->all(),
+            'supervisors' => User::role('supervisor')->get()->map(fn ($row) => $pair($row, 'name'))->values()->all(),
+            'deans' => User::role(['headmaster', 'admin'])->get()->map(fn ($row) => $pair($row, 'name'))->values()->all(),
+            'teachers' => Teacher::with('user')->get()->map(fn ($row) => $pair($row, 'full_name'))->values()->all(),
+        ];
     }
 }

@@ -195,11 +195,14 @@ check('the enrolment form offers the pupil', Boolean(studentOption), studentOpti
 if (studentOption) {
     await dean.selectOption('select[name="student_id"]', studentOption);
 }
-await dean.click('button:has-text("Enroll")');
-await dean.waitForLoadState('networkidle');
+// An Inertia form since the Hifz port (STATUS §5jv): the save is an XHR and
+// the programme page re-renders in place, so wait for the address and the
+// flash rather than for a page load that never comes.
+await Promise.all([dean.waitForURL(/\/hifz\/programs\/\d+$/, { timeout: 15000 }).catch(() => {}), dean.click('button:has-text("Enroll")')]);
+const enrolledFlash = await settles(dean, 'Student enrolled successfully.');
 const enrolled = await text(dean);
 const enrolRow = await rowText(dean, NAME);
-check('the pupil is enrolled, with the programme\'s default teacher', enrolled.includes('Student enrolled successfully.') && enrolRow.includes('active') && !/—\s*active/.test(enrolRow), enrolRow || enrolled.slice(0, 160));
+check('the pupil is enrolled, with the programme\'s default teacher', enrolledFlash && enrolRow.includes('active') && !/—\s*active/.test(enrolRow), enrolRow || enrolled.slice(0, 160));
 await dean.goto(new URL(`${programHref}/enrollments`, BASE).href, { waitUntil: 'networkidle' });
 check('the enrolment list has them', (await rowText(dean, NAME)) !== '', (await rowText(dean, NAME)) || (await text(dean)).slice(0, 160));
 
