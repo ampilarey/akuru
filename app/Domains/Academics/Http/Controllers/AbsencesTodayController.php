@@ -72,10 +72,16 @@ class AbsencesTodayController extends Controller
 
     private function authorizeUse(Request $request): void
     {
-        // The same pair that guards the attendance screens this reads from:
-        // a list of who is absent is the attendance data, rearranged.
+        // The same pair that guards the attendance screens this reads from —
+        // a list of who is absent is the attendance data, rearranged — and the
+        // registers' oversight: since ADR-040 the educational admin, the dean
+        // and the supervisor hold `registers.manage` and none of the marking
+        // pair, and "who is not in today" is the office's list before it is
+        // any teacher's (STATUS §5jt).
         abort_unless(
-            $request->user()?->can('mark_attendance') || $request->user()?->can('manage_attendance'),
+            $request->user()?->can('mark_attendance')
+                || $request->user()?->can('manage_attendance')
+                || $request->user()?->can('registers.manage'),
             403,
         );
     }

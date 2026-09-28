@@ -246,6 +246,14 @@ it('renders for attendance staff, refuses everyone else, and exports', function 
     expect($csv->streamedContent())->toContain('unexplained');
 });
 
+it('opens the absence list to the registers’ oversight — the educational admin, the dean, the supervisor (ADR-040)', function () {
+    // None of the three holds the marking pair; all three hold `registers.manage`.
+    $this->withoutLocalizationMiddleware()
+        ->actingAs(actingPeopleAdmin(['registers.manage']))
+        ->get(route('academics.attendance.absences'))
+        ->assertOk();
+});
+
 it('keeps the absence list away from staff without attendance permission', function () {
     // Its own test: actingAs persists for the rest of a test, so a refusal
     // tacked after a signed-in assertion would not be testing a refusal.

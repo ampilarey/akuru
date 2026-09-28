@@ -68,6 +68,22 @@ it('approving an absence note excuses matching absent rows via the writer', func
         ->and($row->absence_note_id)->toBe($note->id);
 });
 
+it('opens the review screen to the office by requests.review, and to nobody without either permission (ADR-040)', function () {
+    // The educational admin, the dean and the supervisor answer families'
+    // requests and hold none of the attendance pair.
+    $this->withoutLocalizationMiddleware()
+        ->actingAs(actingPeopleAdmin(['requests.review']))
+        ->get(route('academics.absence-notes.index'))
+        ->assertOk();
+});
+
+it('refuses the review screen to staff with neither attendance nor request review', function () {
+    $this->withoutLocalizationMiddleware()
+        ->actingAs(actingPeopleAdmin([]))
+        ->get(route('academics.absence-notes.index'))
+        ->assertForbidden();
+});
+
 it('lets a parent submit a note for their child and forbids another child', function () {
     $mine = makeStudent(['first_name' => 'Mine']);
     $other = makeStudent(['first_name' => 'Other']);

@@ -29,7 +29,10 @@
 import { chromium } from 'playwright';
 
 const BASE = process.env.SMOKE_BASE_URL ?? 'http://127.0.0.1:8000';
-const USER = process.env.SMOKE_USER ?? 'admin@akuru.edu.mv';
+// The dean, not the educational admin: since ADR-040 slice 2 (STATUS §5ie) the
+// office account `admin@` sees the academics and does not run them, so the walks
+// that author, schedule, mark and map sign in as `headmaster@` (STATUS §5jt).
+const USER = process.env.SMOKE_USER ?? 'headmaster@akuru.edu.mv';
 const PASSWORD = process.env.SMOKE_PASSWORD ?? 'password';
 
 /**
