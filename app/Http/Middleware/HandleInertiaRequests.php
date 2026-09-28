@@ -103,6 +103,10 @@ class HandleInertiaRequests extends Middleware
             'flash' => [
                 'success' => $request->session()->get('success'),
                 'error' => $request->session()->get('error'),
+                // A word that is neither: the registration flow's "you are
+                // already enrolled in …" when it sends a person to My
+                // enrolments (docs/SIGN_IN_PLAN.md ID2b).
+                'info' => $request->session()->get('info'),
                 'gift_card_code' => $request->session()->get('gift_card_code'),
                 // B1a: a new vendor member's one-time password, shown once to
                 // whoever added them (the office or the shop's owner).

@@ -127,6 +127,7 @@ use App\Domains\People\Http\Controllers\StudentConsentController;
 use App\Domains\People\Http\Controllers\StudentDirectoryController;
 use App\Domains\Portal\Http\Controllers\DashboardController;
 use App\Domains\Portal\Http\Controllers\GuardianChildrenController;
+use App\Domains\Portal\Http\Controllers\MyAccountController;
 use App\Domains\Portal\Http\Controllers\PortalAbsenceNoteController;
 use App\Domains\Portal\Http\Controllers\PortalAnnouncementController;
 use App\Domains\Portal\Http\Controllers\PortalAppraisalController;
@@ -187,6 +188,13 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
     Route::get('/dashboard/supervisor', [DashboardController::class, 'supervisor'])->middleware('role:supervisor')->name('dashboard.supervisor');
     Route::get('/portal/home/export', [PortalHomeController::class, 'export'])->name('portal.home.export');
     Route::get('/portal/home', [PortalHomeController::class, 'index'])->name('portal.home');
+    // *My account* — the home of a person with no other workspace — and every
+    // course enrolment a login made, inside the shell (docs/SIGN_IN_PLAN.md
+    // ID2b). `my.enrollments` kept its name and address: the registration
+    // flow, the receipt and the payment pages send people to it.
+    Route::get('/my-account', [MyAccountController::class, 'index'])->name('account.home');
+    Route::get('/my-enrollments/export', [MyAccountController::class, 'export'])->name('my.enrollments.export');
+    Route::get('/my-enrollments', [MyAccountController::class, 'enrolments'])->name('my.enrollments');
     // A teacher's own home (E1b), distinct from the school-wide staff overview.
     Route::get('/portal/teacher', [TeacherHomeController::class, 'index'])->name('portal.teacher');
     Route::get('/portal/overview/export', [StaffOverviewController::class, 'export'])->name('portal.overview.export');

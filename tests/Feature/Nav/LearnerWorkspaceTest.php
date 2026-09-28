@@ -107,10 +107,11 @@ it('lands a learner on My learning, and a parent-learner on Family with My learn
     expect($hrefs)->toContain('/learn', '/learn/schedule', '/my-enrollments')
         ->not->toContain('/portal/children', '/portal/homework', '/portal/holidays', '/portal/loans', '/portal/messages');
 
-    // And Family carries none of theirs.
+    // And Family carries none of their learning. My enrolments is there since
+    // ID2b: the enrolments a parent made, their children's among them.
     $family = app(BuildNavigationAction::class)->execute($parent, 'en', 'family');
     $familyHrefs = collect($family['groups'])->flatMap(fn ($group) => array_column($group['items'], 'href'))->all();
-    expect($familyHrefs)->not->toContain('/learn', '/learn/schedule', '/my-enrollments');
+    expect($familyHrefs)->not->toContain('/learn', '/learn/schedule')->toContain('/my-enrollments');
 });
 
 it('shows the enrolments still waiting on My learning, and on what', function () {

@@ -131,16 +131,16 @@ it('sends the supervisor to the School office and keeps the full dashboard at it
     $this->withoutLocalizationMiddleware()->actingAs($user)->get(route('dashboard.numbers'))->assertForbidden();
 });
 
-it('falls through to the public-user dashboard when the account has no role', function () {
+it('sends a person with no role and no course to My account, inside the shell', function () {
+    // Until SIGN_IN_PLAN ID2b this rendered the public course dashboard, a
+    // Blade page in the website's layout.
     $user = User::factory()->create();
 
     expect($user->getRoleNames())->toBeEmpty();
 
-    $this->withoutLocalizationMiddleware()
-        ->actingAs($user)
-        ->get(route('dashboard'))
-        ->assertOk()
-        ->assertViewIs('dashboard.public-user');
+    $this->withoutLocalizationMiddleware()->actingAs($user)->get(route('dashboard'))->assertRedirect(route('account.home'));
+    $this->withoutLocalizationMiddleware()->actingAs($user)->get(route('account.home'))->assertOk()
+        ->assertInertia(fn ($page) => $page->component('Portal/AccountHome')->where('auth.workspace', 'account'));
 });
 
 it('sends a vendor to their shop and a writer to their desk, not to the public course dashboard', function () {

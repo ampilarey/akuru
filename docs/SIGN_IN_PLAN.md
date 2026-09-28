@@ -6,8 +6,9 @@ request); the owner said "Next" to the plan and its defaults the same day.
 thirteenth finding (F13, below) fixed with it. **ID2a shipped 2026-09-28
 (STATUS §5ka)**: *My learning*, and F14 found. **ID2c shipped 2026-09-28
 (STATUS §5kb)**: the office verifying a guardian link makes the guardian a
-parent. Next: ID2b (the old course portal retired, *My account* in the
-shell).
+parent. **ID2b shipped 2026-09-28 (STATUS §5kc)**: the old course portal
+retired, *My account* and *My enrolments* in the shell; F4 and F5 closed.
+Next: ID3 (every door leads into the shell).
 **Owner's brief (2026-09-28, with five EduPage screenshots):** "Still there
 is a problem with the login system. Logged in with a vendor account but I
 see educational items also. I need the login style used in EduPage. When a
@@ -63,8 +64,8 @@ for each kind of account. Each finding names the code that produces it.
 | F1 | **A vendor's menu carries school items.** **Fixed in ID1 (STATUS §5jz).** The vendor lands on *My shop* (right), but *More* lists Home, Messages, Notices, Forms, Digital Library, My library, My wallet, Bookstore, My orders, My wishlist, My quotes. | `NavigationMap::groups()` group `mine`: those items carry `roles => $everyone`; `WorkspaceMap::all()` gives every workspace the `mine` group. |
 | F2 | **"Home" is the family portal for everyone.** **Fixed in ID1 (STATUS §5jz)**: Home is the workspace's home, and `/portal/home` sends a person who holds neither Family nor Learn to their own. In every workspace *More › Home* opens `/portal/home`, which for a vendor, a member of staff or a role-less account renders **"Student Dashboard"** with empty Attendance, Invoices, Exams, Course progress, Noticeboard, Homework tiles. | `mine` item `home` → `/portal/home`; `ComposePortalHomeAction` line 67 titles the page *Parent* if the person is a parent or has children, else *Student*. |
 | F3 | **A person's own learning is mixed into the family's menu.** **Fixed in ID1 (STATUS §5jz)** for the menus; the parent-learner's Learner workspace is ID2a. A parent's *More* has 34 items in two groups; *Learn* and *Schedule* (the parent's own engine courses) sit inside *Family*; a teacher's School menu carries *Learn* too; a writer's Writing menu carries Learn, Schedule, Hifz, E-Learning. | `learn_group` is in the family, learn, school and writing workspaces; its `learn` and `schedule` items are `roles => $everyone`. |
-| F4 | **An adult course learner has no workspace and leaves the app.** **Fixed for learners in ID2a (STATUS §5ka)**: they hold *My learning* and land on `/learn` inside the shell; a role-less login with no learning still lands on the Blade page until ID2b. A person who registered and enrolled in a public course holds no role, so `/dashboard` renders the Blade **"My Dashboard"** in the *website* layout: website menu (Courses, News, Articles…), hero, *Browse Courses*, *Open for enrollment* course cards, the marketing footer and the cookie banner. No shell, no switcher. This is the "home page with promotional items". | `DashboardController::publicUserDashboard()` → `dashboard/public-user.blade.php` (`@extends('public.layouts.public')`); `RoleLandingTest` pins it ("falls through to the public-user dashboard when the account has no role"). The adult gets a `students` row (`unified_student_id`) and a `CourseEnrollment`, never a role (`EnrollmentService`: only a child's login gets `student`). |
-| F5 | **There are two portals.** Besides the shell there is an older *My Portal* in the website chrome: `/portal/dashboard`, `/portal/enrollments`, `/portal/payments`, `/portal/certificates`, `/portal/profile` (Blade `portal/layout.blade.php`, which extends the public layout), plus `/my-enrollments`. The website's phone bottom bar shows **My Portal** to every signed-in person and links there — so a parent or teacher who taps it from the website lands in the course-learner portal, not their workspace. | `routes/web_public.php` lines 260–269; `public/layouts/public.blade.php` line 205 (`@auth` → `route('portal.dashboard')`). |
+| F4 | **An adult course learner has no workspace and leaves the app.** **Fixed for learners in ID2a (STATUS §5ka)**: they hold *My learning* and land on `/learn` inside the shell; **and for everyone else in ID2b (STATUS §5kc)**: a role-less login with no learning lands on *My account*, inside the shell. A person who registered and enrolled in a public course holds no role, so `/dashboard` renders the Blade **"My Dashboard"** in the *website* layout: website menu (Courses, News, Articles…), hero, *Browse Courses*, *Open for enrollment* course cards, the marketing footer and the cookie banner. No shell, no switcher. This is the "home page with promotional items". | `DashboardController::publicUserDashboard()` → `dashboard/public-user.blade.php` (`@extends('public.layouts.public')`); `RoleLandingTest` pins it ("falls through to the public-user dashboard when the account has no role"). The adult gets a `students` row (`unified_student_id`) and a `CourseEnrollment`, never a role (`EnrollmentService`: only a child's login gets `student`). |
+| F5 | **There are two portals.** **Fixed in ID2b (STATUS §5kc)**: the old portal's five pages and `/my-enrollments` are retired into the shell, their addresses redirects. Besides the shell there is an older *My Portal* in the website chrome: `/portal/dashboard`, `/portal/enrollments`, `/portal/payments`, `/portal/certificates`, `/portal/profile` (Blade `portal/layout.blade.php`, which extends the public layout), plus `/my-enrollments`. The website's phone bottom bar shows **My Portal** to every signed-in person and links there — so a parent or teacher who taps it from the website lands in the course-learner portal, not their workspace. | `routes/web_public.php` lines 260–269; `public/layouts/public.blade.php` line 205 (`@auth` → `route('portal.dashboard')`). |
 | F6 | **Setting a password sends the person to the marketing home.** After *Set password* the redirect is `route('public.home')` with "You can now log in with your mobile number and password" — while they are signed in. | `AccountController::setPassword` line 68. |
 | F7 | **Signing in itself is right.** Email / phone / ID card + password, an OTP path, both redirecting to `/dashboard`, which sends a person with a role to their workspace home (Institute, School office or a teacher's day, Family, Learn, My shop, Writing, Catalog, Bookstore office). | `AuthenticatedSessionController::store`, `OtpLoginController` line 131, `DashboardController::index`. |
 | F8 | **The switcher is a pill, not an account list.** It shows only when a person holds more than one workspace, in the header; the phone *More* panel lists account and language but not the workspaces. Family and Learn share one home (`/portal/home`), told apart only by the switcher. | `AppShell.jsx` lines 69–104 (`workspaces.length > 1`); `WorkspaceMap` `family` and `learn` both `home => 'portal.home'`. |
@@ -239,7 +240,27 @@ enrolments on My enrolments, and after ID2b on their account home.
 - **Tests:** registering a child grants `parent`; the backfill; the family
   home shows the child awaiting verification, then verified.
 
-### ID2b — Retire the old course portal (one PR)
+### ID2b — Retire the old course portal (one PR) — **shipped 2026-09-28, STATUS §5kc**
+
+As built: *My account* (`/my-account`, `Portal/AccountHome`) is the home
+of the account workspace — a person who holds no other — inside the shell:
+the password to set when they have only signed in with a code, the
+children registered on the website that the office has not checked (the
+check opens Family, ID2c), their latest enrolments, and the workspace's own
+menu laid out as tiles. Its bar is My account, My enrolments, Browse
+courses; its groups Education and Personal. *My enrolments*
+(`/my-enrollments`, `Portal/MyEnrolments`, kept its name and address) lists
+every enrolment the login made, a child's included, with where it stands
+and its payment, and the course payments beside them, with a CSV; it is in
+Family, My learning and My account. A receipt is linked where the money is
+confirmed — the old pages tested for statuses the table cannot hold and
+never linked one. The registration flow's "already enrolled" message now
+shows (the shell renders `flash.info`). The old portal's addresses
+redirect: its dashboard to `/dashboard`, its enrolments and payments to My
+enrolments, its certificates to My learning, its profile to the profile;
+its profile form is gone. `/dashboard` is a pure router for everyone now.
+The set-password prompt reaches the account workspace only; ID3 carries it
+to every home. The original bullets follow.
 
 - Delete `dashboard/public-user.blade.php`, `portal/layout.blade.php` and
   its five pages, `my-enrollments/index.blade.php`; their routes redirect
@@ -252,6 +273,10 @@ enrolments on My enrolments, and after ID2b on their account home.
 - `AccountController::setPassword` → `/dashboard`; the website header's
   *My Portal* → `/dashboard`; `capacitor.config.ts` start path
   `/dashboard`; the login page's copy says where each kind of person lands.
+- The set-password prompt on every workspace home, from the shell (added
+  with ID2b): the retired dashboard showed it to a person with no role, who
+  may now be in Family (ID2c) or My learning (ID2a); *My account* and the
+  vendor's shop show their own until then.
 - **Tests:** the three redirects; the header's link for a signed-in person.
 - **Walk:** `identity.mjs` step: from the website, *My Portal* lands on
   the workspace home.

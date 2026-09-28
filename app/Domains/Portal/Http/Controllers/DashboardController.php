@@ -11,7 +11,6 @@ use App\Domains\People\Actions\CountTeachersAction;
 use App\Domains\Portal\Actions\ComposeDashboardPrayerAction;
 use App\Http\Controllers\Controller;
 use App\Support\Navigation\ResolveWorkspacesAction;
-use App\Support\Navigation\WorkspaceMap;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -29,29 +28,25 @@ class DashboardController extends Controller
 
         // `/dashboard` sends a person to the home of their active workspace
         // (`WorkspaceMap`, STATUS §5id): the Institute, the School, a
-        // teacher's day, the family portal, a shop, a writer's desk. Which
-        // one is theirs when they hold several is the map's order — staff
-        // first (E7) — or the one they last switched to. Only a person with
-        // no role at all is shown a page here: the public course dashboard.
+        // teacher's day, the family portal, a shop, a writer's desk, My
+        // learning. Which one is theirs when they hold several is the map's
+        // order — staff first (E7) — or the one they last switched to. A
+        // person who holds none has their account, whose home is *My account*
+        // inside the shell (docs/SIGN_IN_PLAN.md ID2b); until then this
+        // rendered the public course dashboard, in the website's layout.
         $workspaces = app(ResolveWorkspacesAction::class)->execute($user);
         $active = collect($workspaces['list'])->firstWhere('key', $workspaces['active']);
 
-        $response = ($active === null || $active['key'] === WorkspaceMap::ACCOUNT)
-            ? $this->publicUserDashboard()
-            : redirect($active['href']);
+        // `/dashboard` is a pure router: it does not render anything, it works
+        // out where a person belongs and sends them on. A flash message aimed
+        // at that destination would otherwise be consumed *here* and never
+        // seen — which is exactly what happened to E7's "you are now signed in
+        // as …" until a browser walk caught it. Found this way and not by any
+        // test, because every test asserted the redirect rather than what the
+        // person reads at the end of it.
+        session()->reflash();
 
-        // `/dashboard` is a pure router: for most people it does not render
-        // anything, it works out where they belong and sends them on. A flash
-        // message aimed at that destination would otherwise be consumed *here*
-        // and never seen — which is exactly what happened to E7's "you are now
-        // signed in as …" until a browser walk caught it. Found this way and
-        // not by any test, because every test asserted the redirect rather
-        // than what the person reads at the end of it.
-        if ($response instanceof \Illuminate\Http\RedirectResponse) {
-            session()->reflash();
-        }
-
-        return $response;
+        return redirect($active['href'] ?? route('account.home'));
     }
 
     /**
@@ -90,39 +85,6 @@ class DashboardController extends Controller
             'home' => route('school.index'),
             't' => trans('admin'),
         ]);
-    }
-
-    private function publicUserDashboard()
-    {
-        $user = auth()->user();
-
-        $enrollments = \App\Domains\Courses\Models\CourseEnrollment::with(['course', 'student', 'payment'])
-            ->where('created_by_user_id', $user->id)
-            ->latest()
-            ->get();
-
-        $activeEnrollments = $enrollments->whereIn('status', ['active']);
-        $pendingEnrollments = $enrollments->whereIn('status', ['pending', 'pending_payment']);
-        $openCourses = \App\Domains\Courses\Models\Course::where('status', 'open')->latest()->take(4)->get();
-
-        // `users.password` is NOT NULL and an OTP-only account is created with
-        // a random 40-character hash (AccountResolverService), so
-        // `! empty($user->password)` was **always true** and the "Set a
-        // password for easier login" banner this feeds never rendered for
-        // anybody. The feature was unreachable through its own entry point.
-        //
-        // `force_password_change` is the flag that actually records "there is
-        // a password here but nobody knows it".
-        $hasPassword = ! $user->force_password_change;
-
-        return view('dashboard.public-user', compact(
-            'user',
-            'enrollments',
-            'activeEnrollments',
-            'pendingEnrollments',
-            'openCourses',
-            'hasPassword'
-        ));
     }
 
     /**

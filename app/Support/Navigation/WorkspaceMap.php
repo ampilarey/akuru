@@ -28,7 +28,7 @@ namespace App\Support\Navigation;
  */
 final class WorkspaceMap
 {
-    /** The workspace of a signed-in person with no role at all: their own account. */
+    /** The workspace of a signed-in person who holds no other: their own account, *My account*. */
     public const ACCOUNT = 'account';
 
     /**
@@ -41,6 +41,15 @@ final class WorkspaceMap
 
     /** The groups a family and a pupil hold, in EduPage's order. */
     private const HOUSEHOLD = ['communication', 'education', 'evaluation', 'other', 'me'];
+
+    /**
+     * The account's own workspace (docs/SIGN_IN_PLAN.md ID2b): held by a
+     * person who holds no other, and never listed in `all()` because no role
+     * and no fact opens it — it is what is left. Its home is *My account*
+     * inside the shell; its Education group is the courses they may enrol
+     * in and the enrolments they made.
+     */
+    private const ACCOUNT_DEFINITION = ['roles' => [], 'groups' => ['education', 'me'], 'home' => 'account.home'];
 
     /**
      * @return array<string, array{roles: list<string>, groups: list<string>, home: string}>
@@ -65,7 +74,7 @@ final class WorkspaceMap
      */
     public static function definition(string $workspace): array
     {
-        return self::all()[$workspace] ?? ['roles' => [], 'groups' => ['me'], 'home' => 'dashboard'];
+        return self::all()[$workspace] ?? self::ACCOUNT_DEFINITION;
     }
 
     /**
@@ -97,6 +106,7 @@ final class WorkspaceMap
             ],
             'catalog' => ['course_creator'],
             self::LEARNER => ['learner'],
+            self::ACCOUNT => ['account'],
             default => [],
         };
     }

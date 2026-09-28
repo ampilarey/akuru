@@ -69,7 +69,7 @@ it('holds one workspace per job, staff first, and the account alone for a person
         ->and($resolve(['bookshop_manager'])['list'][0]['href'])->toBe('/admin/bookshop');
 
     $nobody = $resolve([]);
-    expect(array_column($nobody['list'], 'key'))->toBe([WorkspaceMap::ACCOUNT])->and($nobody['list'][0]['href'])->toBe('/dashboard');
+    expect(array_column($nobody['list'], 'key'))->toBe([WorkspaceMap::ACCOUNT])->and($nobody['list'][0]['href'])->toBe('/my-account');
 
     expect(app(ResolveWorkspacesAction::class)->execute(null))->toBe(['active' => null, 'list' => []]);
 });
@@ -108,8 +108,11 @@ it('builds the bar and the More menu for the active workspace only', function ()
         ->and(array_column($institute['groups'], 'key'))->toContain('panel_website')->not->toContain('school_year')
         ->and(array_column($institute['primary'], 'label'))->toBe(['Website CMS', 'Commerce', 'Library office', 'Akuru Bookstore', 'Manage users']);
 
-    // A person with no role: their account, and only that.
-    expect(array_column(app(BuildNavigationAction::class)->execute(workspaceUser([]), 'en')['groups'], 'key'))->toBe(['me']);
+    // A person with no role: their account — the courses to start and the
+    // enrolments they made (ID2b), and the Personal group.
+    $account = app(BuildNavigationAction::class)->execute(workspaceUser([]), 'en');
+    expect(array_column($account['groups'], 'key'))->toBe(['education', 'me'])
+        ->and(array_column($account['primary'], 'href'))->toBe(['/my-account', '/my-enrollments', '/learn/catalog']);
 });
 
 function navHrefs(array $nav): array

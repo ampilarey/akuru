@@ -257,15 +257,18 @@ Route::get('payments/ref/{merchant_reference}/status', [\App\Domains\Finance\Htt
 Route::post('payments/bml/initiate', [\App\Domains\Finance\Http\Controllers\PaymentController::class, 'initiate'])
     ->name('payments.bml.initiate');
 
-// Portal (authenticated)
+// The old course portal (docs/SIGN_IN_PLAN.md ID2b). Its five Blade pages,
+// in the website's layout, are retired into the shell: its dashboard is the
+// person's workspace home, its enrolments and payments are My enrolments, its
+// certificates are on My learning, its profile is the profile. The addresses
+// stay, as redirects, for bookmarks, old emails and the website's header.
 Route::middleware('auth')->prefix('portal')->name('portal.')->group(function () {
-    Route::redirect('/', 'portal/dashboard');
-    Route::get('/dashboard', [\App\Domains\Portal\Http\Controllers\PortalController::class, 'dashboard'])->name('dashboard');
-    Route::get('/enrollments', [\App\Domains\Portal\Http\Controllers\PortalController::class, 'enrollments'])->name('enrollments');
-    Route::get('/payments', [\App\Domains\Portal\Http\Controllers\PortalController::class, 'payments'])->name('payments');
-    Route::get('/certificates', [\App\Domains\Portal\Http\Controllers\PortalController::class, 'certificates'])->name('certificates');
-    Route::get('/profile', [\App\Domains\Portal\Http\Controllers\PortalController::class, 'profile'])->name('profile');
-    Route::post('/profile', [\App\Domains\Portal\Http\Controllers\PortalController::class, 'updateProfile'])->name('profile.update');
+    Route::get('/', fn () => redirect()->route('dashboard'));
+    Route::get('/dashboard', fn () => redirect()->route('dashboard'))->name('dashboard');
+    Route::get('/enrollments', fn () => redirect()->route('my.enrollments'))->name('enrollments');
+    Route::get('/payments', fn () => redirect()->route('my.enrollments'))->name('payments');
+    Route::get('/certificates', fn () => redirect()->route('learn.dashboard'))->name('certificates');
+    Route::get('/profile', fn () => redirect()->route('profile.edit'))->name('profile');
 });
 
 // Account management (auth required)
@@ -274,9 +277,6 @@ Route::middleware('auth')->group(function () {
         ->name('account.set-password');
     Route::post('account/set-password', [\App\Domains\Identity\Http\Controllers\AccountController::class, 'setPassword'])
         ->name('account.set-password.store');
-
-    Route::get('my-enrollments', [\App\Domains\Admissions\Http\Controllers\MyEnrollmentsController::class, 'index'])
-        ->name('my.enrollments');
 
     Route::get('payments/{payment}/receipt', [\App\Domains\Finance\Http\Controllers\PaymentReceiptController::class, 'show'])
         ->name('payment.receipt');

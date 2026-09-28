@@ -13,7 +13,7 @@
 // expected direction, and the test asks you to update the count below when you
 // do.
 //
-// Count: 195 (a document template, not a screen — see the documents block;
+// Count: 187 (a document template, not a screen — see the documents block;
 // the five public bookshop views of BOOKSHOP_PLAN B1b, the five customer
 // pages of B2, the two storefront partials of B4, the sections, menu and
 // vendor page of B5 and the customer's wishlist of B7 — see the public
@@ -90,9 +90,6 @@ return [
     'courses/register-set-password.blade.php',
     'courses/register.blade.php',
 
-    // dashboard — 3
-    'dashboard/public-user.blade.php',
-
     // documents — 8
     //
     // Not screens: these are what `DocumentRendererInterface` renders (rule
@@ -142,9 +139,6 @@ return [
     'layouts/guest.blade.php',
     'layouts/navigation.blade.php',
 
-    // my-enrollments — 1
-    'my-enrollments/index.blade.php',
-
     // partials — 1
     'partials/pwa.blade.php',
 
@@ -159,14 +153,6 @@ return [
     'policy/refunds.blade.php',
     'policy/services.blade.php',
     'policy/terms.blade.php',
-
-    // portal — 6
-    'portal/certificates.blade.php',
-    'portal/dashboard.blade.php',
-    'portal/enrollments.blade.php',
-    'portal/layout.blade.php',
-    'portal/payments.blade.php',
-    'portal/profile.blade.php',
 
     // profile — 4
     'profile/edit.blade.php',

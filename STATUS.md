@@ -4414,6 +4414,101 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5kc. ID2b: the old course portal retired — My account and My enrolments inside the app (2026-09-28)
+
+Findings F4 and F5 of `docs/SIGN_IN_PLAN.md`. A signed-in person with no
+role and no course of their own — someone who registered on the website,
+bought a library book, or registered a child the office has not checked —
+landed on the public course dashboard: a Blade page in the *website's*
+layout, with its menu, hero, *Open for enrollment* course cards and the
+marketing footer (the owner's "all see a home page including promotional
+items"). Beside the shell there was a second, older portal in the same
+website chrome — `/portal/dashboard`, `/enrollments`, `/payments`,
+`/certificates`, `/profile` — and a Blade `/my-enrollments`, which the
+website's header linked for everyone.
+
+**What changed.**
+
+- *My account* (`/my-account`, `account.home`, Inertia
+  `Portal/AccountHome`) is the home of the account workspace, inside the
+  shell: the password to set when the person has only ever signed in with a
+  one-time code; the children they registered that the office has not
+  checked yet (the check opens Family, §5kb); their latest enrolments; and
+  the workspace's own menu laid out as tiles — so a tile cannot lead where
+  the menu does not. No course promotion. Anyone who holds another
+  workspace is sent to its home.
+- The account workspace has a bar (My account, My enrolments, Browse
+  courses) and the Education group (Browse courses, My enrolments) beside
+  Personal. `/dashboard` sends it to My account, so `/dashboard` is a pure
+  router for everyone; `DashboardController::publicUserDashboard()` is gone,
+  and the family portal no longer keeps a person with no role.
+- *My enrolments* (`/my-enrollments`, same name and address — the
+  registration flow, the receipt and the payment pages send people there;
+  Inertia `Portal/MyEnrolments`) lists every enrolment the login made, a
+  child's included, with where it stands in one word (active, awaiting
+  payment, awaiting the office…) and its payment, and the course payments
+  beside them, with a CSV. Composed from `Courses\Actions\
+  ListEnrolmentsMadeByAction` and `Finance\Actions\
+  ListCoursePaymentsForUserAction` (a course payment names its course, pays
+  an enrolment or carries course lines; the Bookstore's, the Library's and a
+  school's invoices have pages of their own). It is in the Education group
+  of Family, My learning and My account — a parent's course registrations
+  for their children, with their receipts, are the family's business.
+- **A receipt is linked where the money is confirmed.** The old My
+  enrolments page and the old portal tested the payment for `paid` or
+  `completed`, which `payments.status` cannot hold (`confirmed` is the one
+  status written for money received, `BuildPaymentReceiptAction::
+  isReceiptable`), so neither ever showed a receipt link. Now both the
+  enrolment and the payment rows link it.
+- The registration flow's "You are already enrolled in …" (`with('info')`
+  on its redirect to My enrolments) now shows: the shell shares and renders
+  `flash.info`.
+- The old portal's addresses redirect into the shell: its dashboard to
+  `/dashboard`, its enrolments and payments to My enrolments, its
+  certificates to My learning (where §24's certificates are), its profile
+  to the profile. Its POST profile form, which changed a name and a
+  password with no current-password check, is gone (write-routes baseline
+  65 → 64). Eight Blade views deleted (`dashboard/public-user`,
+  `portal/layout` and its five pages, `my-enrollments/index`; Blade
+  baseline 195 → 187), with `PortalController` and `MyEnrollmentsController`
+  (cross-domain model baselines 64 → 62 and 138 → 135).
+- New strings in `lang/{en,dv,ar}/account.php`; the nav gains `my_account`.
+
+**Tests.** `MyAccountTest` (new, 6): a person with no other workspace
+lands on My account inside the shell, with its bar and groups, the child
+awaiting the office and the enrolment they made; anyone holding another
+workspace is sent to its home, and the family portal sends a role-less
+person away; My enrolments lists only this login's enrolments and course
+payments — not another login's, not a Bookstore payment — links the
+receipt only for confirmed money, the receipt opens, and the CSV carries
+both sections; the registration flow's info message shows; the old
+addresses redirect and the old profile form is gone; My enrolments is in
+Family, My learning and My account and not the School or a shop. Updated:
+`RoleLandingTest`, `SetPasswordNeedsTheOldOneTest` (the prompt is on My
+account), `PortalRouteNamesTest`, `WorkspacesTest`, `LearnerWorkspaceTest`
+(Family now carries My enrolments), `WorkspaceMenusAreTheirOwnTest`,
+`LinkedAccountsTest`, `GiftCardPurchaseTest`. Full suite **2429 passed**.
+
+**Walked.** `identity.mjs` **37/37** (nine new steps):
+`SmokeMarkerSeeder::accountHolder` plants a person with no role, a code-only
+sign-in, a child the office has not checked and a paid enrolment for the
+child. Signed in on a phone they land on `/my-account` inside the app —
+asked to choose a password, the child awaiting the office, the enrolment
+listed, no course promotion, the doors their menu; More reads Education and
+Personal with Home at My account; My enrolments opens in the app with the
+child's paid enrolment and its receipt, which opens; `/portal/dashboard`
+and `/portal/payments` land in the app. `family.mjs` **40/40**: the
+website parent, before the office checks them, lands on My account with
+their child listed as awaiting the office. Screenshots at 390px in English
+and Dhivehi: no horizontal scroll, the tables stack.
+
+**Not changed.** The website header still links the old portal's addresses
+(now redirects) and set-password still returns to the marketing home: both
+are ID3. The set-password prompt reaches My account (and a vendor's shop,
+which has its own); ID3 carries it to every home.
+
+**Next.** ID3: every door leads into the shell.
+
 ## 5kb. ID2c: a parent who registered on the website gets their Family once the office verifies them (2026-09-28)
 
 Finding F14 of `docs/SIGN_IN_PLAN.md`, found building ID2a: the public
@@ -4464,7 +4559,8 @@ the child on it.
 
 **Production.** The pull line's `migrate --force` runs the backfill.
 
-**Next.** ID2b: the old course portal retired, *My account* in the shell.
+**Next.** ID2b: the old course portal retired, *My account* in the shell
+(shipped, §5kc).
 
 ## 5ka. ID2a: My learning — a parent who enrols switches between their children and their own courses (2026-09-28)
 
