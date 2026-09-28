@@ -86,7 +86,7 @@ export default function Show({
                             <li key={row.id} className="flex flex-wrap items-center justify-between gap-2 border-t pt-2 first:border-t-0 first:pt-0">
                                 <span>{row.title} <span className="text-xs uppercase text-gray-500">{row.assessment_type}</span></span>
                                 {enrollment ? (
-                                    <a className="text-[#7C2D37] hover:underline" href={`/learn/assessments/${row.id}`}>{t.open || 'Open'}</a>
+                                    <a className="chip-link" href={`/learn/assessments/${row.id}`}>{t.open || 'Open'}</a>
                                 ) : (
                                     <span className="text-xs text-gray-400">{t.enroll || 'Enroll'}</span>
                                 )}
@@ -103,7 +103,7 @@ export default function Show({
                             <li key={row.id} className="flex flex-wrap items-center justify-between gap-2 border-t pt-2 first:border-t-0 first:pt-0">
                                 <span>{row.title} <span className="text-xs uppercase text-gray-500">{row.pattern}</span></span>
                                 {enrollment ? (
-                                    <a className="text-[#7C2D37] hover:underline" href={`/learn/activities/${row.id}`}>{t.open || 'Open'}</a>
+                                    <a className="chip-link" href={`/learn/activities/${row.id}`}>{t.open || 'Open'}</a>
                                 ) : (
                                     <span className="text-xs text-gray-400">{t.enroll || 'Enroll'}</span>
                                 )}
@@ -136,7 +136,7 @@ export default function Show({
                                         )}
                                     </span>
                                     {lesson.unlocked ? (
-                                        <a className="text-[#7C2D37] hover:underline" href={`/learn/lessons/${lesson.id}`}>{t.open || 'Open'}</a>
+                                        <a className="chip-link" href={`/learn/lessons/${lesson.id}`}>{t.open || 'Open'}</a>
                                     ) : (
                                         <span className="text-xs text-gray-400">{t.locked || 'Locked'}</span>
                                     )}

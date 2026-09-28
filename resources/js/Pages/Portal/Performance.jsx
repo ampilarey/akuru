@@ -20,7 +20,7 @@ export default function Performance({ students = [] }) {
                         {student.rows.length === 0 && <p className="text-sm text-gray-500">No enrollments.</p>}
                         {student.rows.length > 0 && (
                             <div className="overflow-x-auto">
-                                <table className="min-w-full text-sm">
+                                <table className="table-stack min-w-full text-sm">
                                     <thead className="bg-[#F3EBE0] text-start">
                                         <tr>
                                             <th className="px-3 py-2">Course</th>
@@ -34,12 +34,12 @@ export default function Performance({ students = [] }) {
                                     <tbody>
                                         {student.rows.map((row) => (
                                             <tr key={row.enrollment_id} className="border-t">
-                                                <td className="px-3 py-2">{row.course_title}</td>
-                                                <td className="px-3 py-2">{row.offering_title || '—'}</td>
-                                                <td className="px-3 py-2">{row.progress_percentage}%</td>
-                                                <td className="px-3 py-2">{row.attendance_percent == null ? '—' : `${row.attendance_percent}%`}</td>
-                                                <td className="px-3 py-2">{row.lessons_completed}/{row.lessons_required}</td>
-                                                <td className="px-3 py-2">{row.status}</td>
+                                                <td className="px-3 py-2" data-label="Course">{row.course_title}</td>
+                                                <td className="px-3 py-2" data-label="Offering">{row.offering_title || '—'}</td>
+                                                <td className="px-3 py-2" data-label="Progress">{row.progress_percentage}%</td>
+                                                <td className="px-3 py-2" data-label="Attendance">{row.attendance_percent == null ? '—' : `${row.attendance_percent}%`}</td>
+                                                <td className="px-3 py-2" data-label="Lessons">{row.lessons_completed}/{row.lessons_required}</td>
+                                                <td className="px-3 py-2" data-label="Status">{row.status}</td>
                                             </tr>
                                         ))}
                                     </tbody>

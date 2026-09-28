@@ -22,7 +22,7 @@ export default function Children({ children, pending = [] }) {
                 </div>
             )}
             <div className="overflow-x-auto rounded-lg border bg-white">
-                <table className="min-w-full text-sm">
+                <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">Name</th>
@@ -42,12 +42,12 @@ export default function Children({ children, pending = [] }) {
                         )}
                         {children.map((child) => (
                             <tr key={child.id} className="border-t">
-                                <td className="px-3 py-2">{child.first_name} {child.last_name}</td>
-                                <td className="px-3 py-2">{child.student_id}</td>
-                                <td className="px-3 py-2">{child.relationship}</td>
-                                <td className="px-3 py-2">{child.status}</td>
+                                <td className="px-3 py-2" data-label="Name">{child.first_name} {child.last_name}</td>
+                                <td className="px-3 py-2" data-label="Number">{child.student_id}</td>
+                                <td className="px-3 py-2" data-label="Relationship">{child.relationship}</td>
+                                <td className="px-3 py-2" data-label="Status">{child.status}</td>
                                 {/* B8: what they are reading and have bought. */}
-                                <td className="px-3 py-2"><Link href={`/portal/children/${child.id}/library`} className="underline" data-testid="child-library">Library</Link></td>
+                                <td className="table-actions px-3 py-2"><Link href={`/portal/children/${child.id}/library`} className="chip-link" data-testid="child-library">Library</Link></td>
                             </tr>
                         ))}
                     </tbody>

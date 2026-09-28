@@ -22,7 +22,7 @@ export default function ChildLibrary({ child, continue: reading = [], purchases 
 
             <h2 className="mb-2 text-base font-semibold">Reading</h2>
             <div className="mb-6 overflow-x-auto rounded-lg border bg-white">
-                <table className="min-w-full text-sm" data-testid="reading">
+                <table className="table-stack min-w-full text-sm" data-testid="reading">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">Title</th>
@@ -37,10 +37,10 @@ export default function ChildLibrary({ child, continue: reading = [], purchases 
                         )}
                         {reading.map((row) => (
                             <tr key={row.item_id} className="border-t">
-                                <td className="px-3 py-2"><a href={`/library/${row.slug}`} className="underline">{row.title}</a></td>
-                                <td className="px-3 py-2">{row.current_page}</td>
-                                <td className="px-3 py-2">{row.completed ? 'Completed' : `${row.progress_percent}%`}</td>
-                                <td className="px-3 py-2">{row.last_read_at ?? '—'}</td>
+                                <td className="px-3 py-2" data-label="Title"><a href={`/library/${row.slug}`} className="underline">{row.title}</a></td>
+                                <td className="px-3 py-2" data-label="Page">{row.current_page}</td>
+                                <td className="px-3 py-2" data-label="Progress">{row.completed ? 'Completed' : `${row.progress_percent}%`}</td>
+                                <td className="px-3 py-2" data-label="Last read">{row.last_read_at ?? '—'}</td>
                             </tr>
                         ))}
                     </tbody>
@@ -49,7 +49,7 @@ export default function ChildLibrary({ child, continue: reading = [], purchases 
 
             <h2 className="mb-2 text-base font-semibold">Purchases</h2>
             <div className="overflow-x-auto rounded-lg border bg-white">
-                <table className="min-w-full text-sm" data-testid="purchases">
+                <table className="table-stack min-w-full text-sm" data-testid="purchases">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">Title</th>
@@ -64,10 +64,10 @@ export default function ChildLibrary({ child, continue: reading = [], purchases 
                         )}
                         {purchases.map((row) => (
                             <tr key={row.id} className="border-t">
-                                <td className="px-3 py-2">{row.slug ? <a href={`/library/${row.slug}`} className="underline">{row.title}</a> : row.title}</td>
-                                <td className="px-3 py-2">{row.currency} {row.amount}</td>
-                                <td className="px-3 py-2">{row.status}</td>
-                                <td className="px-3 py-2">{row.purchased_at ?? '—'}</td>
+                                <td className="px-3 py-2" data-label="Title">{row.slug ? <a href={`/library/${row.slug}`} className="underline">{row.title}</a> : row.title}</td>
+                                <td className="px-3 py-2" data-label="Amount">{row.currency} {row.amount}</td>
+                                <td className="px-3 py-2" data-label="Status">{row.status}</td>
+                                <td className="px-3 py-2" data-label="When">{row.purchased_at ?? '—'}</td>
                             </tr>
                         ))}
                     </tbody>

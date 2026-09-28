@@ -14,7 +14,7 @@ export default function Exams({ children, studentId, exams }) {
                 </select>
             </div>
             <div className="overflow-x-auto rounded-lg border bg-white">
-                <table className="min-w-full text-sm">
+                <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">Exam</th>
@@ -30,13 +30,13 @@ export default function Exams({ children, studentId, exams }) {
                         )}
                         {exams.map((exam) => (
                             <tr key={exam.id} className="border-t">
-                                <td className="px-3 py-2">{exam.name}</td>
-                                <td className="px-3 py-2">{exam.subject}</td>
-                                <td className="px-3 py-2">{exam.exam_date || '—'}</td>
-                                <td className="px-3 py-2">
+                                <td className="px-3 py-2" data-label="Exam">{exam.name}</td>
+                                <td className="px-3 py-2" data-label="Subject">{exam.subject}</td>
+                                <td className="px-3 py-2" data-label="Date">{exam.exam_date || '—'}</td>
+                                <td className="px-3 py-2" data-label="Mark">
                                     {exam.is_absent ? 'Absent' : exam.is_exempt ? 'Exempt' : (exam.marks ?? '—')}
                                 </td>
-                                <td className="px-3 py-2">{exam.max_marks}</td>
+                                <td className="px-3 py-2" data-label="Max">{exam.max_marks}</td>
                             </tr>
                         ))}
                     </tbody>

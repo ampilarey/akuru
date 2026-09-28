@@ -207,13 +207,18 @@ step is what found #33 (a refunded family could never enrol again).
 
 ### 1g. Mobile shell smoke (Phase 5 — browser part only)
 
-**Partly automated as of 2026-09-15** — `scripts/smoke/mobile.mjs`, 11/11, runs
-the app at a real phone profile (Pixel 5, 393px) and checks what a person on a
-phone notices first: the manifest is served and its icons load, the service
-worker reaches `activated`, the precached offline page is really there, Dhivehi
-renders right-to-left in Thaana with fonts resolved, the recorder is reachable
-and tappable, and **twenty family-facing screens do not scroll sideways** — in
-both directions, because RTL overflows the other way.
+**Partly automated as of 2026-09-15** — `scripts/smoke/mobile.mjs`, 19/19 as of
+2026-09-28 (STATUS §5js), runs the app at a real phone profile (Pixel 5, 393px)
+and checks what a person on a phone notices first: the manifest is served and
+its icons load, the service worker reaches `activated`, the precached offline
+page is really there, Dhivehi renders right-to-left in Thaana with fonts
+resolved, the recorder is reachable and tappable, and **forty-seven
+family-facing screens — a student's, then a parent's, in all three languages —
+answer 200 and do not scroll sideways**, measured against the phone's own width
+rather than a layout viewport that grows with the overflow. It also pins the
+phone-first pass: the header under a fifth of the screen, the account and the
+language switch in the More panel, no link under 32 px on the portal home, and
+a table reading as labelled cards.
 
 **That last check found a real one.** `/portal/home` — the screen parents open
 most — overflowed by **123px** on a 393px phone, in both languages: a `flex`

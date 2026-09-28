@@ -10,7 +10,7 @@ export default function Invoices({ children, studentId, invoices }) {
                 </select>
             </div>
             <div className="overflow-x-auto rounded-lg border bg-white">
-                <table className="min-w-full text-sm">
+                <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">Invoice</th>
@@ -27,12 +27,12 @@ export default function Invoices({ children, studentId, invoices }) {
                         )}
                         {invoices.map((row) => (
                             <tr key={row.id} className="border-t">
-                                <td className="px-3 py-2">{row.invoice_number}</td>
-                                <td className="px-3 py-2">{row.description || '—'}</td>
-                                <td className="px-3 py-2">{row.due_date}</td>
-                                <td className="px-3 py-2">{row.balance}</td>
-                                <td className="px-3 py-2">{row.plan_status || '—'}{row.next_installment ? ` / next ${row.next_installment}` : ''}</td>
-                                <td className="px-3 py-2">
+                                <td className="px-3 py-2" data-label="Invoice">{row.invoice_number}</td>
+                                <td className="px-3 py-2" data-label="For">{row.description || '—'}</td>
+                                <td className="px-3 py-2" data-label="Due">{row.due_date}</td>
+                                <td className="px-3 py-2" data-label="Balance">{row.balance}</td>
+                                <td className="px-3 py-2" data-label="Plan">{row.plan_status || '—'}{row.next_installment ? ` / next ${row.next_installment}` : ''}</td>
+                                <td className="table-actions px-3 py-2">
                                     {Number(row.balance) > 0 && (
                                         <span className="inline-flex flex-wrap gap-2">
                                             {/* S4.6: "pay-now (full / next installment)" — a choice, not a
@@ -48,7 +48,7 @@ export default function Invoices({ children, studentId, invoices }) {
                                         </span>
                                     )}
                                     {row.receipts.map((receipt) => (
-                                        <a key={receipt.id} className="ms-2 text-[#7C2D37] underline" href={`/finance/receipts/${receipt.id}/document`}>Receipt</a>
+                                        <a key={receipt.id} className="chip-link" href={`/finance/receipts/${receipt.id}/document`}>Receipt</a>
                                     ))}
                                 </td>
                             </tr>

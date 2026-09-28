@@ -4414,6 +4414,80 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5js. The phone-first pass over the parent and student screens (2026-09-28)
+
+The second half of the owner's "Do it" on the EduPage comparison (§5jr was
+the first). EduPage's parents live in its phone app; ours open the same
+screens in a browser or the Capacitor shell, so the question was what a
+parent or a student on a 393 px phone actually sees. Measured first, in
+all three languages, at 393, 360 and 320 px, as the seeded parent and
+student across every portal and learn address: **nothing scrolled
+sideways** — §5em and §5jq had already caught that — so the faults were
+of a different kind, and screenshots found them.
+
+**Found.** *The header took three fifths of the first screen:* five rows
+— brand, More and Alerts, the account pill with Log out, the language
+chips, the link strip — before a word of the parent's own page. *Tables
+scrolled inside their wrappers:* Fees at six columns showed Invoice, For,
+Due, Balance and half of Plan; the balance's Pay button and the receipt
+were off the right edge, exactly the two things a parent came for. *Links
+were 16–20 px tall:* the quick links on the portal home, *Open* on each
+section, *Receipt*, *Library*, *Cancel*, the learn home's *Browse courses*
+and *Continue* — underlined text with no room around it for a thumb. *And
+the mobile walk was measuring against a viewport that grows with the
+overflow* (`clientWidth`, the same blind spot §5jq closed in the admin
+walk) and had been measuring a 404 page for a year: `/portal/school-calendar`
+is not an address (the school calendar is `/portal/holidays`), a 404 page
+fits a phone beautifully, and the line passed.
+
+**Built.** *The header on a phone is three rows* (`AppShell`): brand and
+workspace; More, Alerts and the person's initial; the link strip. The
+account (name, Log out) and the three-language switch move into the More
+panel below the groups, on a phone only — from `sm:` the bar is as it was.
+The initial in the bar opens the panel, so a shared phone still shows who
+is signed in; the More button is there for any signed-in person even in a
+workspace with no groups. 132 px of 727, from roughly 250. Primary links,
+More and Alerts gain `py-2` below `sm:`. Two nav keys (`account`,
+`language`) EN/DV/AR. *Tables read as cards on a phone:* one CSS class,
+`.table-stack` (`app.css`), turns a table below `sm` into a list of cards
+— header row gone, each row a block, each cell a label–value line whose
+label is the cell's own `data-label`, action cells (`table-actions`) one
+wrapping row of buttons. Flex puts the label on the start side, so Dhivehi
+and Arabic come out right without a rule. Generated content is not in
+`innerText`, so every test and walk reading a row's text sees what it saw.
+Applied to the ten parent and student tables: Fees, Attendance, Exam
+results, My children, Awards, Behaviour, Meetings, Report cards,
+Performance, and a child's library (reading and purchases). *Links a
+thumb can hit:* `.chip-link` — the same link with a border and 36 px of
+height — on the portal home's quick links and *Open*, Fees' *Receipt*,
+My children's *Library*, Report cards' *Download*, Meetings' *Cancel*,
+and the learn home's, catalog's and course page's links. *The walk*
+(`scripts/smoke/mobile.mjs`, 11 → 19 steps): measures against
+`Math.min(clientWidth, screen.width)`; every screen must answer 200
+before it counts (the 404 line is now `/portal/holidays`); eight more
+student screens and Arabic; then signs in again as the parent and
+measures nineteen parent screens (children, pickup, movements, work,
+lost and found, absence notes, a new message, meetings, learning,
+performance, transcript, fees, attendance, in EN/DV/AR); pins the header
+under a fifth of the screen with the account pill gone from the bar and
+the initial present, the More panel holding Log out and three language
+links, no link on the portal home under 32 px, and the children table
+rendering as cards with its header hidden and its first label painted.
+19/19; `admin-mobile.mjs` 3/3 and `admin-layout.mjs` 15/15 against the
+changed shell; `admin-hub.mjs` 24/25 → 25/25 — its 390 px step counted a
+link inside the header's sideways-scrolling strip as "cut off" (red on
+`main` before this slice, since the strip arrived in §5hu), and now
+ignores an element with a scrolling ancestor. Logging out from the
+panel's button ends the session (a further visit to the portal lands on
+the login). Full suite 2386 passed.
+
+**Left as found, deliberately.** The link strip still scrolls sideways
+on a student's phone (five links, the fifth cut at "My attendan…") —
+that scroll is the design (§5hu), and the alternative, a hamburger over
+everything, is the IA decision the owner has not made. Admin tables are
+not stacked: an administrator's tables have twelve columns and a desktop;
+the class is there for any screen that wants it.
+
 ## 5jr. Push notifications: the app registers its phone, and notifications fan out to it (2026-09-28)
 
 SPEC §50; `docs/MOBILE.md`'s last unticked box; the owner, 2026-09-28,
