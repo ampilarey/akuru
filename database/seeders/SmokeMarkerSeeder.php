@@ -94,6 +94,7 @@ class SmokeMarkerSeeder extends Seeder
         $this->catalog();
         $this->learner($admin);
         $this->learnerIdentities($admin);
+        $this->webParent();
         $this->recruitment();
         $this->requests($admin);
         $this->readerWallet();
@@ -663,6 +664,35 @@ class SmokeMarkerSeeder extends Seeder
                 ]);
             }
         }
+    }
+
+    /**
+     * SIGN_IN_PLAN ID2c: a parent who registered their child on the website —
+     * linked as the child's guardian the way the public form links one
+     * (`RegisterCourseStudentAction::forChild`, unverified), with no role —
+     * so `family.mjs` can have the office verify the link and watch the
+     * parent's Family appear. Reset on every run: the link back to not
+     * checked and the `parent` role the verification gave taken away again.
+     */
+    private function webParent(): void
+    {
+        $email = 'smoke-web-parent@akuru.edu.mv';
+        $userId = (int) DB::table('users')->where('email', $email)->value('id');
+        if ($userId === 0) {
+            $userId = (int) app(\App\Domains\Identity\Actions\CreateUserAction::class)->execute('SMOKE Web-Parent', $email, 'password')['id'];
+        }
+        DB::table('users')->where('id', $userId)->update(['email_verified_at' => now()]);
+        $parentRole = DB::table('roles')->where('name', 'parent')->value('id');
+        DB::table('model_has_roles')->where('model_type', 'user')->where('model_id', $userId)->where('role_id', $parentRole)->delete();
+        app(\Spatie\Permission\PermissionRegistrar::class)->forgetCachedPermissions();
+
+        $child = app(\App\Domains\People\Actions\RegisterCourseStudentAction::class)->forChild($userId, [
+            'first_name' => 'SMOKE-WebChild', 'last_name' => 'Rasheed', 'dob' => '2016-04-01', 'national_id' => 'SMOKEWEB1',
+        ], 'mother');
+        DB::table('guardian_student')
+            ->where('student_id', $child['id'])
+            ->whereIn('guardian_id', DB::table('parent_guardians')->where('user_id', $userId)->pluck('id'))
+            ->update(['verification_status' => 'unverified', 'verified_at' => null]);
     }
 
     /**

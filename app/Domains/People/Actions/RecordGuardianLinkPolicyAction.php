@@ -2,6 +2,7 @@
 
 namespace App\Domains\People\Actions;
 
+use App\Domains\Identity\Actions\GrantRoleAction;
 use App\Domains\People\Enums\GuardianConsentStatus;
 use App\Domains\People\Enums\GuardianVerificationStatus;
 use App\Domains\People\Models\ParentGuardian;
@@ -82,6 +83,16 @@ class RecordGuardianLinkPolicyAction
         }
 
         $student->guardians()->updateExistingPivot($guardian->id, $attributes);
+
+        // A verified link makes the guardian's login a parent, so they hold
+        // the Family workspace (docs/SIGN_IN_PLAN.md ID2c, finding F14). Not
+        // before: the public form links whoever fills it in, unverified, and
+        // the `parent` role reads the notices the school sends families — a
+        // stranger who registered a "child" must not (STATUS §5gk). Setting a
+        // link back does not take the role away; the role screen does that.
+        if (($attributes['verification_status'] ?? null) === GuardianVerificationStatus::Verified->value && $guardian->user_id !== null) {
+            app(GrantRoleAction::class)->execute((int) $guardian->user_id, 'parent');
+        }
 
         return $this->serialize($student, $guardian);
     }
