@@ -255,6 +255,53 @@ export default function AppShell({ title, children }) {
                                         </button>
                                     </div>
                                 )}
+                                {/* Your accounts (SIGN_IN_PLAN ID4): every workspace this person
+                                    holds, and every other login they have proved they own (E7),
+                                    as EduPage's drawer lists them — the current one marked, one
+                                    tap to switch. The header's pill stays for a desktop. */}
+                                {(workspaces.length > 1 || (auth?.linked_accounts ?? []).length > 0) && (
+                                    <div className="mb-3" data-testid="shell-accounts">
+                                        <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-gray-500">{n.your_accounts || 'Your accounts'}</span>
+                                        <ul className="divide-y divide-[#E6D9C8] rounded-lg border border-[#E6D9C8] bg-white">
+                                            {workspaces.map((workspace) => {
+                                                const current = workspace.key === auth?.workspace;
+                                                return (
+                                                    <li key={workspace.key}>
+                                                        <button
+                                                            type="button"
+                                                            data-testid={`account-${workspace.key}`}
+                                                            aria-current={current ? 'true' : undefined}
+                                                            disabled={current}
+                                                            onClick={() => { setOpen(false); router.post(`/workspace/${workspace.key}`); }}
+                                                            className={`flex w-full items-center justify-between gap-3 px-3 py-2.5 text-start ${current ? 'font-semibold text-[#7C2D37]' : 'text-gray-800'}`}
+                                                        >
+                                                            <span className="min-w-0">
+                                                                <span className="block truncate">{user?.name}</span>
+                                                                <span className="block text-xs font-normal text-gray-500">{workspace.label}</span>
+                                                            </span>
+                                                            {current && <span aria-hidden="true">✓</span>}
+                                                        </button>
+                                                    </li>
+                                                );
+                                            })}
+                                            {(auth?.linked_accounts ?? []).map((account) => (
+                                                <li key={`linked-${account.id}`}>
+                                                    <button
+                                                        type="button"
+                                                        data-testid={`linked-account-${account.id}`}
+                                                        onClick={() => router.post(`/account/switch/${account.id}`)}
+                                                        className="flex w-full items-center justify-between gap-3 px-3 py-2.5 text-start text-gray-800"
+                                                    >
+                                                        <span className="min-w-0">
+                                                            <span className="block truncate">{account.name}</span>
+                                                            <span className="block text-xs text-gray-500">{account.roles}</span>
+                                                        </span>
+                                                    </button>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                )}
                                 <div className="flex flex-wrap items-center gap-2">
                                     <span className="text-xs font-semibold uppercase tracking-wide text-gray-500">{n.language || 'Language'}</span>
                                     {locales.map((code) => (

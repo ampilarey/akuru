@@ -196,6 +196,7 @@ return [
     'workspace_account' => 'حسابي',
     'workspaces' => 'مساحات العمل',
     'switch_workspace' => 'تبديل مساحة العمل',
+    'your_accounts' => 'حساباتك',
     'workspace_home' => 'الرئيسية',
     'announcements' => 'الإعلانات',
     'substitutions' => 'الاستبدالات',

@@ -19,7 +19,8 @@
  *   4. the pupil: their own courses under Education, no parent-only screen;
  *   5. My learning (ID2a): a website learner lands inside the app on their
  *      own courses, the unpaid one listed as waiting; a parent who enrolled
- *      switches from Family to My learning and back;
+ *      switches from Family to My learning and back — from the phone's
+ *      drawer too, which opens with Your accounts (ID4);
  *   6. My account (ID2b): a person with no other workspace lands inside the
  *      app, sees their child awaiting the office and the enrolment they
  *      made, opens My enrolments and its receipt; the old course portal's
@@ -187,6 +188,13 @@ await parentLearner.waitForLoadState('networkidle');
 check('switching to My learning shows their own course', path(parentLearner.url()) === '/learn' && (await parentLearner.locator('main').innerText()).includes('SMOKE-Learner-Course'), path(parentLearner.url()));
 menu = await readMore(parentLearner, 'parent-learner');
 check('and My learning’s menu carries none of their children’s screens', menu.groups.join(',') === 'Education,Personal' && !menu.paths.some((p) => ['/portal/children', '/portal/homework', '/portal/pickup'].includes(p)), menu.labels.join(', '));
+// ID4: the drawer — the More panel on a phone, still open from reading it —
+// opens with their accounts, the current one marked; one tap switches back.
+const accounts = await parentLearner.locator('#app-shell-more [data-testid="shell-accounts"] button').evaluateAll((els) => els.map((el) => [el.getAttribute('data-testid'), el.textContent.replace(/\s+/g, ' ').trim(), el.getAttribute('aria-current') === 'true']));
+check('the drawer lists Your accounts: Family, and My learning marked as the one they are in', accounts.map(([id]) => id).join(',') === 'account-family,account-learner' && accounts[1][2] === true && accounts[0][2] === false && accounts[0][1].includes('Family'), accounts.map(([, text, cur]) => `${text}${cur ? ' ✓' : ''}`).join(' | '));
+await Promise.all([parentLearner.waitForURL(/\/portal\/home$/, { timeout: 15000 }).catch(() => {}), parentLearner.click('#app-shell-more [data-testid="account-family"]')]);
+await parentLearner.waitForLoadState('networkidle');
+check('one tap on Family in the drawer takes them back to their children', /\/portal\/home$/.test(parentLearner.url()), path(parentLearner.url()));
 
 // ------------------------------------------------------ 6. My account (ID2b)
 // SmokeMarkerSeeder::accountHolder plants a person with no role and no course
