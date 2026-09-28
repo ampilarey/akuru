@@ -11,8 +11,8 @@ use App\Domains\People\Actions\ListGuardianChildrenAction;
  * that person was shown the public course dashboard, a Blade page in the
  * website's layout with the courses open for enrolment down its side.
  *
- * What it holds is what such a person has: a password to set when they have
- * only ever signed in with a one-time code; the children they registered on
+ * What it holds is what such a person has (the shell asks for a password on
+ * every workspace home, ID3): the children they registered on
  * the website that the office has not checked yet (the check is what opens
  * Family, ID2c); the enrolments they made, with where each stands. The doors
  * to the rest — courses, the Library, the Bookstore, the wallet — are the
@@ -24,15 +24,13 @@ class ComposeAccountHomeAction
     public const RECENT = 5;
 
     /**
-     * @return array{must_set_password: bool, set_password_href: string, children_waiting: list<array{id: int, name: string, refused: bool}>, enrolments: list<array<string, mixed>>, enrolments_total: int}
+     * @return array{children_waiting: list<array{id: int, name: string, refused: bool}>, enrolments: list<array<string, mixed>>, enrolments_total: int}
      */
-    public function execute(int $userId, bool $mustSetPassword): array
+    public function execute(int $userId): array
     {
         $enrolments = app(ListEnrolmentsMadeByAction::class);
 
         return [
-            'must_set_password' => $mustSetPassword,
-            'set_password_href' => route('account.set-password', [], false),
             'children_waiting' => app(ListGuardianChildrenAction::class)->executePendingForGuardianUserId($userId)
                 ->map(fn (object $child): array => [
                     'id' => (int) $child->id,

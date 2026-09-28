@@ -598,7 +598,7 @@ function ProductList({ products, t, onEdit, selected, setSelected }) {
     );
 }
 
-export default function Vendor({ t, vendor, memberships = [], agreement_url, products = [], products_page = null, members = [], delivery_methods = [], delivery_kinds = [], shop_settings = null, discount_codes = [], notice_settings = null, newsletter = null, options, filters, must_set_password, set_password_url }) {
+export default function Vendor({ t, vendor, memberships = [], agreement_url, products = [], products_page = null, members = [], delivery_methods = [], delivery_kinds = [], shop_settings = null, discount_codes = [], notice_settings = null, newsletter = null, options, filters }) {
     const { flash = {}, errors } = usePage().props;
     const [editing, setEditing] = useState(null);
     const [search, setSearch] = useState(filters.q || '');
@@ -615,11 +615,6 @@ export default function Vendor({ t, vendor, memberships = [], agreement_url, pro
         <AppShell title={t.portal_title}>
             <FormErrors errors={errors} className="mb-4" />
             {flash.success && <p className="mb-4 rounded bg-green-50 p-3 text-green-700" data-testid="flash-success">{flash.success}</p>}
-            {must_set_password && (
-                <p className="mb-4 rounded bg-amber-50 p-3 text-amber-900" data-testid="set-password-notice">
-                    {t.set_password_notice} <a href={set_password_url} className="font-semibold underline">{t.set_password_link}</a>
-                </p>
-            )}
 
             <header className="mb-6 flex flex-wrap items-end justify-between gap-3">
                 <div>

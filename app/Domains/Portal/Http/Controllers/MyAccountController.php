@@ -38,7 +38,7 @@ class MyAccountController extends Controller
         }
 
         return Inertia::render('Portal/AccountHome', [
-            ...app(ComposeAccountHomeAction::class)->execute((int) $user->id, (bool) $user->force_password_change),
+            ...app(ComposeAccountHomeAction::class)->execute((int) $user->id),
             't' => trans('account'),
         ]);
     }

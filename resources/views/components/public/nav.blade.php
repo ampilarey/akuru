@@ -180,42 +180,26 @@
             </button>
             <div id="user-menu-dropdown"
                  class="absolute right-0 top-full mt-1 z-50 bg-white rounded-xl shadow-xl border border-gray-200 min-w-44 py-1 hidden">
-              @if(auth()->user()->hasAnyRole(['super_admin','admin','headmaster','supervisor']))
-              <a href="{{ route('dashboard') }}"
+              {{-- One door into the app for everyone (docs/SIGN_IN_PLAN.md ID3):
+                   `/dashboard` sends each person to their own workspace's home —
+                   the office, a teacher's day, the family, a shop, their learning.
+                   Until ID3 this was a role-by-role list beside a link to the old
+                   course portal. --}}
+              <a href="{{ route('dashboard') }}" data-testid="nav-my-portal"
                  class="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-white rounded-lg mx-1 mb-1"
                  style="background:linear-gradient(135deg,#7C2D37,#5A1F28)">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
-                Admin Dashboard
-              </a>
-              <div class="border-t border-gray-100 my-1"></div>
-              @elseif(auth()->user()->isTeacher())
-              <a href="{{ route('academics.registers.today') }}"
-                 class="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-white rounded-lg mx-1 mb-1"
-                 style="background:linear-gradient(135deg,#7C2D37,#5A1F28)">
-                Today
-              </a>
-              <div class="border-t border-gray-100 my-1"></div>
-              @elseif(auth()->user()->isParent())
-              <a href="{{ route('dashboard') }}"
-                 class="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-white rounded-lg mx-1 mb-1"
-                 style="background:linear-gradient(135deg,#7C2D37,#5A1F28)">
-                Parent dashboard
-              </a>
-              <div class="border-t border-gray-100 my-1"></div>
-              @endif
-              <a href="{{ route('portal.dashboard') }}"
-                 class="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-brandBeige-50 hover:text-brandMaroon-700">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
                 </svg>
-                My Portal
+                {{ __('nav.my_portal') }}
               </a>
-              <a href="{{ route('portal.enrollments') }}"
+              <div class="border-t border-gray-100 my-1"></div>
+              <a href="{{ route('my.enrollments') }}"
                  class="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-brandBeige-50 hover:text-brandMaroon-700">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
                 </svg>
-                My Enrollments
+                {{ __('nav.my_enrolments') }}
               </a>
               <a href="{{ route('public.library.my') }}"
                  class="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-brandBeige-50 hover:text-brandMaroon-700" data-testid="nav-my-library">
@@ -313,32 +297,15 @@
       <div class="pt-2 border-t border-gray-200 mt-4">
         @auth
           <p class="px-4 py-1 text-xs text-gray-400">Signed in as {{ auth()->user()->navLabel() }}</p>
-          @if(auth()->user()->hasAnyRole(['super_admin','admin','headmaster','supervisor']))
-          <a href="{{ route('dashboard') }}"
+          {{-- One door into the app for everyone (ID3), as above. --}}
+          <a href="{{ route('dashboard') }}" data-testid="nav-my-portal-mobile"
              class="block py-3 px-4 font-semibold text-white rounded-lg mb-1"
              style="background:linear-gradient(135deg,#7C2D37,#5A1F28)">
-            ⚙️ Admin Dashboard
+            {{ __('nav.my_portal') }}
           </a>
-          @elseif(auth()->user()->isTeacher())
-          <a href="{{ route('academics.registers.today') }}"
-             class="block py-3 px-4 font-semibold text-white rounded-lg mb-1"
-             style="background:linear-gradient(135deg,#7C2D37,#5A1F28)">
-            Today
-          </a>
-          @elseif(auth()->user()->isParent())
-          <a href="{{ route('dashboard') }}"
-             class="block py-3 px-4 font-semibold text-white rounded-lg mb-1"
-             style="background:linear-gradient(135deg,#7C2D37,#5A1F28)">
-            Parent dashboard
-          </a>
-          @endif
-          <a href="{{ route('portal.dashboard') }}"
-             class="block py-3 px-4 text-brandMaroon-700 font-medium hover:bg-brandMaroon-50 rounded-lg transition-colors duration-200">
-            My Portal
-          </a>
-          <a href="{{ route('portal.enrollments') }}"
+          <a href="{{ route('my.enrollments') }}"
              class="block py-3 px-4 text-brandGray-600 hover:text-brandMaroon-600 hover:bg-brandBeige-100 rounded-lg transition-colors duration-200">
-            My Enrollments
+            {{ __('nav.my_enrolments') }}
           </a>
           <a href="{{ route('public.library.my') }}"
              class="block py-3 px-4 text-brandGray-600 hover:text-brandMaroon-600 hover:bg-brandBeige-100 rounded-lg transition-colors duration-200">
@@ -347,10 +314,6 @@
           <a href="{{ route('public.wallet') }}"
              class="block py-3 px-4 text-brandGray-600 hover:text-brandMaroon-600 hover:bg-brandBeige-100 rounded-lg transition-colors duration-200">
             {{ __('public.My Wallet') }}
-          </a>
-          <a href="{{ route('portal.payments') }}"
-             class="block py-3 px-4 text-brandGray-600 hover:text-brandMaroon-600 hover:bg-brandBeige-100 rounded-lg transition-colors duration-200">
-            My Payments
           </a>
           <form method="POST" action="{{ route('logout') }}" class="px-4 pt-1 pb-2">
             @csrf

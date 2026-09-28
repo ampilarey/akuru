@@ -213,4 +213,8 @@ return [
     'browse_courses' => 'Browse courses',
     'my_enrolments' => 'My enrolments',
     'my_account' => 'My account',
+    'set_password_title' => 'Set a password for easier sign-in',
+    'set_password_body' => 'For now you can only sign in with a one-time code. Add a password to sign in with your mobile number or email.',
+    'set_password_link' => 'Set a password',
+    'my_portal' => 'My Portal',
 ];

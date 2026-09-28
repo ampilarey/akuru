@@ -318,4 +318,6 @@ return [
 
     // Library PDF pages (L2, 2026-09-25) — first pass pending native review (operator item)
     'This page has no text — it may be a picture or a blank page.' => 'هذه الصفحة بلا نص — قد تكون صورة أو صفحة فارغة.',
+    // The sign-in page says where each kind of person lands (SIGN_IN_PLAN ID3).
+    'After you sign in you go straight to your own space: your children, your classes, your courses or your shop.' => 'بعد تسجيل الدخول تنتقل مباشرة إلى مساحتك: أبناؤك أو فصولك أو دوراتك أو متجرك.',
 ];

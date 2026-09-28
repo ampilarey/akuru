@@ -542,4 +542,6 @@ return [
     'Showing works by one author.' => 'Showing works by one author.',
     'Author page' => 'Author page',
     'Show everyone' => 'Show everyone',
+    // The sign-in page says where each kind of person lands (SIGN_IN_PLAN ID3).
+    'After you sign in you go straight to your own space: your children, your classes, your courses or your shop.' => 'After you sign in you go straight to your own space: your children, your classes, your courses or your shop.',
 ];

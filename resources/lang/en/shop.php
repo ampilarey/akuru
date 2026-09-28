@@ -80,8 +80,6 @@ return [
     'accept_agreement' => 'I have read and accept the Vendor Agreement',
     'continue' => 'Continue',
     'agreement_accepted_flash' => 'Welcome — your shop is open for listing.',
-    'set_password_notice' => 'You signed in with a one-time password. Choose your own now.',
-    'set_password_link' => 'Set my password',
     'switch_shop' => 'Shop',
     'your_role' => 'You are',
     'role_owner' => 'Owner',

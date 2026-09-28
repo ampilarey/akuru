@@ -317,6 +317,16 @@ export default function AppShell({ title, children }) {
                         {flash.error}
                     </div>
                 )}
+                {/* A person who has only signed in with a one-time code is asked to
+                    choose a password on their workspace home, whichever workspace
+                    it is (SIGN_IN_PLAN ID3) — once, there, not on every screen. */}
+                {auth?.must_set_password && activeWorkspace && path === unlocalised(activeWorkspace.href) && (
+                    <div role="status" className="mb-4 rounded-lg border border-amber-200 bg-amber-50 p-4" data-testid="set-password-notice">
+                        <p className="font-medium text-amber-900">{n.set_password_title || 'Set a password for easier sign-in'}</p>
+                        <p className="mt-1 text-sm text-amber-800">{n.set_password_body}</p>
+                        <Link href="/account/set-password" className="mt-2 inline-block text-sm font-semibold text-amber-900 underline">{n.set_password_link || 'Set a password'}</Link>
+                    </div>
+                )}
                 {flash?.info && (
                     <div role="status" className="mb-4 rounded border border-blue-200 bg-blue-50 px-4 py-2 text-sm text-blue-900" data-testid="flash-info">
                         {flash.info}

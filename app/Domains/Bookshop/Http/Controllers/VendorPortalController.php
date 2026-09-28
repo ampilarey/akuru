@@ -67,8 +67,6 @@ class VendorPortalController extends Controller
             'newsletter' => $scope->agreementAccepted ? app(ListVendorSubscribersAction::class)->summary($scope) : null,
             'options' => app(ListCatalogueOptionsAction::class)->execute(),
             'filters' => $filters + ['q' => null, 'status' => null, 'low' => null, 'category' => null],
-            'must_set_password' => (bool) $request->user()->force_password_change,
-            'set_password_url' => route('account.set-password'),
         ]);
     }
 

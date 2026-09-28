@@ -59,7 +59,8 @@ it('opens with the agreement, refuses writes until it is accepted, then dates th
             ->where('vendor.role', 'owner')
             ->where('vendor.agreement_accepted', false)
             ->where('products', [])
-            ->where('must_set_password', true));
+            // The shell's prompt, on the shop as on every workspace home (ID3).
+            ->where('auth.must_set_password', true));
 
     portal($owner)->post(route('vendor.products.store'), productInput())->assertForbidden();
     portal($owner)->post(route('vendor.agreement'), ['accept' => false])->assertSessionHasErrors('accept');

@@ -82,6 +82,10 @@ class HandleInertiaRequests extends Middleware
                 ],
                 // The active workspace and every one this person holds, so
                 // the shell can offer the switch from any page (STATUS §5id).
+                // Only ever signed in with a one-time code: the shell asks them
+                // to choose a password on their workspace home, whichever it is
+                // (docs/SIGN_IN_PLAN.md ID3).
+                'must_set_password' => (bool) $request->user()?->force_password_change,
                 'workspace' => $workspaces['active'],
                 'workspaces' => $workspaces['list'],
                 // E7: the accounts this person has proved they also own, so
@@ -117,7 +121,7 @@ class HandleInertiaRequests extends Middleware
                 'learn' => trans('learn'),
                 // The shell's own words — the *More* button and the menu's
                 // labels; item labels arrive already translated in `nav`.
-                'nav' => array_intersect_key((array) trans('nav'), array_flip(['more', 'close', 'primary_nav', 'all_screens', 'alerts', 'skip_to_content', 'dashboard_hint', 'workspaces', 'switch_workspace', 'workspace_home'])),
+                'nav' => array_intersect_key((array) trans('nav'), array_flip(['more', 'close', 'primary_nav', 'all_screens', 'alerts', 'skip_to_content', 'dashboard_hint', 'workspaces', 'switch_workspace', 'workspace_home', 'set_password_title', 'set_password_body', 'set_password_link'])),
                 // Only the page-facing subset: sharing the whole group would
                 // serialize every common string into every page's payload
                 // (and unrelated strings then leak into page assertions).

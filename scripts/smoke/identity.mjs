@@ -23,9 +23,13 @@
  *   6. My account (ID2b): a person with no other workspace lands inside the
  *      app, sees their child awaiting the office and the enrolment they
  *      made, opens My enrolments and its receipt; the old course portal's
- *      addresses land in the app.
+ *      addresses land in the app;
+ *   7. every door (ID3): the website's My Portal opens their home; the
+ *      password prompt there opens the form inside the app and saving
+ *      returns home. That step writes — the password it signed in with —
+ *      and the seeder restores the prompt; the rest is read-only.
  *
- * Read-only: it opens menus and pages and changes nothing.
+ * Read-only but for step 7, which sets the password it signed in with.
  *
  *   php artisan db:seed --class=SmokeMarkerSeeder
  *   node scripts/smoke/identity.mjs
@@ -213,5 +217,25 @@ for (const [from, to] of [['/portal/dashboard', '/my-account'], ['/portal/paymen
     await account.goto(`${BASE}/en${from}`, { waitUntil: 'networkidle' });
     check(`the old course portal's ${from} lands in the app, on ${to}`, path(account.url()) === to, path(account.url()));
 }
+
+// ---------------------------------------------- 7. every door into the app (ID3)
+// From the website the header's one door, My Portal, opens their own home; the
+// password prompt there opens the form inside the app, and saving brings them
+// back home with the prompt gone. (It sets the password it signed in with, and
+// the seeder puts the prompt back on every run.)
+await account.goto(`${BASE}/en/library`, { waitUntil: 'networkidle' });
+const portalDoor = account.locator('[data-testid="nav-my-portal-mobile"]');
+check('the website offers one door into the app, and nothing of the old portal', (await portalDoor.count()) === 1 && (await account.locator('a[href*="/portal/dashboard"], a[href*="/portal/payments"]').count()) === 0);
+await account.goto(await portalDoor.getAttribute('href'), { waitUntil: 'networkidle' });
+check('My Portal on the website lands on their own home, inside the app', path(account.url()) === '/my-account' && (await account.locator('header [data-testid="shell-home"]').count()) === 1, path(account.url()));
+await Promise.all([account.waitForURL(/\/account\/set-password$/, { timeout: 15000 }).catch(() => {}), account.click('[data-testid="set-password-notice"] a')]);
+await account.waitForLoadState('networkidle');
+check('the password form opens inside the app, without asking for a password they never had', path(account.url()) === '/account/set-password' && (await account.locator('header [data-testid="shell-home"]').count()) === 1 && (await account.locator('input[name="current_password"]').count()) === 0, path(account.url()));
+await account.fill('input[name="password"]', PASSWORD);
+await account.fill('input[name="password_confirmation"]', PASSWORD);
+await Promise.all([account.waitForURL(/\/my-account$/, { timeout: 15000 }).catch(() => {}), account.click('[data-testid="set-password-form"] button[type=submit]')]);
+await account.waitForLoadState('networkidle');
+const savedText = (await account.locator('main').innerText()).replace(/\s+/g, ' ');
+check('saving brings them back to their home, says so, and asks no more', path(account.url()) === '/my-account' && savedText.includes('Your password is saved') && (await account.locator('[data-testid="set-password-notice"]').count()) === 0, `${path(account.url())} · ${savedText.slice(0, 120)}`);
 
 await finish();
