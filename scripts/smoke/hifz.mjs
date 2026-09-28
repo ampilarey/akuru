@@ -2,15 +2,14 @@
  * Does what survives of the Hifz app still work for the people who use it?
  *
  * ADR-029 moved the Qur'an dataset and the session, assignment and milestone
- * *recommendation* workflows onto the engine, and kept the rest of the Blade
- * Hifz app — the hub, the five dashboards, programmes, enrolments, the
- * milestone review/approve half, and the reports — because retiring them is
- * an information-architecture decision with its own parity work. The §2 row
- * has said UNVERIFIED for as long as those screens have existed (Hifz audit
- * D1, STATUS §5fn). This walks them, five logins:
+ * *recommendation* workflows onto the engine, and kept the rest of the Hifz
+ * app — the hub, the five dashboards, programmes, enrolments, the milestone
+ * review/approve half, and the reports. Those were Blade until the Hifz
+ * port (STATUS §5jv–§5jx, BACKLOG C1) made them Inertia pages at the same
+ * addresses; this walk is the parity check. Five logins:
  *
  *   1. the dean lands on their dashboard from the hub, finds the seeded
- *      `SMOKE-Halaqa` programme and enrols the smoke pupil through the Blade
+ *      `SMOKE-Halaqa` programme and enrols the smoke pupil through the
  *      form;
  *   2. the programme's supervisor lands on theirs, finds the pupil's pending
  *      milestone (seeded — recommendation lives on the engine board since
@@ -217,11 +216,14 @@ check('the hub sends the supervisor to the supervisor dashboard, with the pendin
 await supervisor.goto(`${BASE}/en/hifz/milestones`, { waitUntil: 'networkidle' });
 const pending = supervisor.locator('tr', { hasText: NAME }).filter({ hasText: 'pending' }).first();
 check('the pending milestone is listed with a Review action', (await pending.count()) > 0 && (await pending.locator('button:has-text("Review")').count()) > 0, (await pending.count()) ? (await pending.innerText()).replace(/\s+/g, ' ') : (await text(supervisor)).slice(0, 160));
+// Review and Approve are Inertia posts since the port's third slice (STATUS
+// §5jx): the list re-renders in place, so wait for the flash, not the network.
+let reviewedFlash = false;
 if (await pending.count()) {
     await pending.locator('button:has-text("Review")').click();
-    await supervisor.waitForLoadState('networkidle');
+    reviewedFlash = await settles(supervisor, 'Milestone reviewed and sent to dean.');
 }
-check('the supervisor reviews it and it goes to the dean', (await text(supervisor)).includes('Milestone reviewed and sent to dean.'), (await text(supervisor)).slice(0, 160));
+check('the supervisor reviews it and it goes to the dean', reviewedFlash, (await text(supervisor)).slice(0, 160));
 
 // ---------------------------------------------------------- the dean, again
 
@@ -229,18 +231,19 @@ check('the supervisor reviews it and it goes to the dean', (await text(superviso
 await dean.goto(`${BASE}/en/hifz/dean`, { waitUntil: 'networkidle' });
 check('the dean dashboard shows it waiting for approval', (await text(dean)).includes(`${NAME} — surah completed`), (await text(dean)).match(new RegExp(`${NAME} — surah completed`))?.[0] ?? (await text(dean)).slice(0, 160));
 await dean.goto(`${BASE}/en/hifz/milestones`, { waitUntil: 'networkidle' });
-const reviewed = dean.locator('tr', { hasText: NAME }).filter({ hasText: 'supervisor_reviewed' }).first();
+const reviewed = dean.locator('tr', { hasText: NAME }).filter({ hasText: 'supervisor reviewed' }).first();
+let approvedFlash = false;
 if (await reviewed.count()) {
     await reviewed.locator('button:has-text("Approve")').click();
-    await dean.waitForLoadState('networkidle');
+    approvedFlash = await settles(dean, 'Milestone approved.');
 }
-check('the dean approves it', (await text(dean)).includes('Milestone approved.') && (await dean.locator('tr', { hasText: NAME }).filter({ hasText: 'approved' }).count()) > 0, (await text(dean)).slice(0, 160));
+check('the dean approves it', approvedFlash && (await dean.locator('tr', { hasText: NAME }).filter({ hasText: 'approved' }).count()) > 0, (await text(dean)).slice(0, 160));
 
 const reports = await dean.goto(`${BASE}/en/hifz/reports`, { waitUntil: 'networkidle' });
 check('the reports hub opens with its five reports', reports.status() === 200 && (await text(dean)).includes('Milestone Approval'), `HTTP ${reports.status()}`);
 await dean.goto(`${BASE}/en/hifz/reports/milestones`, { waitUntil: 'networkidle' });
 const reported = await rowText(dean, PROGRAM);
-check('the milestone report lists it approved under the programme', reported.includes(NAME) && reported.includes('approved'), reported || (await text(dean)).slice(0, 160));
+check('the milestone report lists it approved under the programme', reported.includes(NAME) && /approved/i.test(reported), reported || (await text(dean)).slice(0, 160));
 const csv = await dean.request.get(`${BASE}/en/hifz/reports/export?type=sessions`);
 check('the sessions CSV exports', csv.status() === 200 && /csv/i.test(csv.headers()['content-type'] ?? '') && (await csv.text()).includes(PROGRAM), `HTTP ${csv.status()} ${csv.headers()['content-type'] ?? ''}`);
 

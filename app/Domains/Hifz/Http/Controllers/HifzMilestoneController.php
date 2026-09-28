@@ -4,17 +4,19 @@ namespace App\Domains\Hifz\Http\Controllers;
 
 use App\Domains\Hifz\Models\HifzMilestone;
 use App\Domains\Hifz\Services\HifzScopeService;
+use App\Domains\Hifz\Support\HifzDashboardRows;
 use App\Enums\Hifz\HifzMilestoneStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Hifz\StoreHifzMilestoneRequest;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\View\View;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class HifzMilestoneController extends Controller
 {
     public function __construct(protected HifzScopeService $scope) {}
 
-    public function index(): View
+    public function index(): Response
     {
         $this->authorize('viewAny', HifzMilestone::class);
 
@@ -30,9 +32,20 @@ class HifzMilestoneController extends Controller
             $query->whereIn('student_id', $this->scope->assignedStudentIds($user));
         }
 
-        $milestones = $query->paginate(20);
+        // The Hifz port, slice 3 (STATUS §5jx): the list is an Inertia page.
+        // Review shows on a pending row for whoever the policy lets review
+        // it; Approve on a reviewed row for the dean — as the Blade did by
+        // role, now by the same policy the buttons post through.
+        $milestones = $query->paginate(20)->through(fn (HifzMilestone $milestone): array => [
+            ...HifzDashboardRows::milestoneRow($milestone),
+            'can_review' => $milestone->status === HifzMilestoneStatus::Pending && $user->can('review', $milestone),
+            'can_approve' => $milestone->status === HifzMilestoneStatus::SupervisorReviewed && $user->can('approve', $milestone),
+        ]);
 
-        return view('hifz.milestones.index', compact('milestones'));
+        return Inertia::render('Hifz/Milestones', [
+            'milestones' => $milestones,
+            't' => trans('admin'),
+        ]);
     }
 
     public function store(StoreHifzMilestoneRequest $request): RedirectResponse
@@ -49,7 +62,7 @@ class HifzMilestoneController extends Controller
             'created_by' => auth()->id(),
         ]);
 
-        return back()->with('success', 'Milestone recommended for review.');
+        return back()->with('success', trans('admin.hifz_flash_milestone_recommended'));
     }
 
     public function supervisorReview(HifzMilestone $milestone): RedirectResponse
@@ -63,7 +76,7 @@ class HifzMilestoneController extends Controller
             'supervisor_id' => auth()->id(),
         ]);
 
-        return back()->with('success', 'Milestone reviewed and sent to dean.');
+        return back()->with('success', trans('admin.hifz_flash_milestone_reviewed'));
     }
 
     public function approve(HifzMilestone $milestone): RedirectResponse
@@ -76,7 +89,7 @@ class HifzMilestoneController extends Controller
             'approved_at' => now(),
         ]);
 
-        return back()->with('success', 'Milestone approved.');
+        return back()->with('success', trans('admin.hifz_flash_milestone_approved'));
     }
 
     public function reject(HifzMilestone $milestone): RedirectResponse
@@ -89,6 +102,6 @@ class HifzMilestoneController extends Controller
             'approved_at' => now(),
         ]);
 
-        return back()->with('success', 'Milestone rejected.');
+        return back()->with('success', trans('admin.hifz_flash_milestone_rejected'));
     }
 }

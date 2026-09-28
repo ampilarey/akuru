@@ -43,7 +43,7 @@ export default function DeanDashboard({ cards = {}, haraka_leaders = [], pending
             <div className="flex flex-wrap gap-2">
                 <Link href={links.programs || '/hifz/programs'} className="btn-primary">{t.hifz_programs_button || 'Programs'}</Link>
                 {/* Reports are still Blade until the port's third slice: a full load. */}
-                <a href={links.reports || '/hifz/reports'} className="btn-secondary">{t.hifz_reports_button || 'Reports'}</a>
+                <Link href={links.reports || '/hifz/reports'} className="btn-secondary">{t.hifz_reports_button || 'Reports'}</Link>
                 <Link href={links.mushafs || '/quran/mushafs'} className="btn-secondary">{t.hifz_quran_source || 'Quran Source'}</Link>
             </div>
         </AppShell>

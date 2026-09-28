@@ -4414,6 +4414,64 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5jx. The Hifz port, slice 3: milestones and reports leave Blade, and C1 closes (2026-09-28)
+
+The last of the three slices decided in §5jv. No Hifz screen is Blade
+any more: the Hifz block of the Blade baseline is 0 (the count 195), the
+alerts partial went with its last user, and BACKLOG C1 is closed.
+
+**The milestones list.** `HifzMilestoneController::index` renders
+`Hifz/Milestones`: pupil, programme, type and status, paged, scoped by
+pupil as §5ij left it. *Review* shows on a pending row for whoever the
+policy lets review it and *Approve* on a reviewed row for the dean — the
+Blade decided by role, the page decides by the same policy the buttons
+post through, and each row carries `can_review`/`can_approve` from the
+controller so the page reaches into nothing. Both post to the routes the
+Blade forms did, come back with the flash, and the shell renders it. The
+four milestone flashes are keys now (`hifz_flash_milestone_*`), their
+English unchanged. The status reads as a label (*Supervisor reviewed*,
+not `supervisor_reviewed`), keyed `hifz_ms_*`, with the raw value on the
+row's `data-status`.
+
+**The reports.** `HifzReportController::index` renders `Hifz/Reports`:
+five doors as visits and the sessions CSV as a plain link for whoever may
+export. Four reports are the same shape — a name a row, a figure beside
+it where the report has one, a note under it where it has that — and
+share `Hifz/ReportRows`, which the controller hands the report's name
+(its title and empty line are keys off it), the rows, which field is the
+figure, the unit key that wraps it and whether it reads as a warning: weak
+students (*:count weak sessions*), haraka mistakes (the total, red),
+parent follow-up (the date, the family-facing note), teachers missing
+today's records (names only). The milestone report is its own paged
+table, `Hifz/ReportMilestones`. The gates are as they were —
+`view_hifz_reports` on every report, `export_hifz_reports` on the CSV —
+and the scoping too (`HifzCrossRoleAccessTest` still sweeps every Hifz
+path for one family seeing another and refuses the reports to a parent).
+The row shaping joined `HifzDashboardRows` (a milestone row, the parent
+cases, the teachers). The dean's and the supervisor's report and
+milestone doors are visits now. 29 more `hifz_*` keys EN/DV/AR (139 in
+the tranche). Eight Blade views deleted.
+
+**Tests.** `HifzReportScreensTest` (3): the supervisor's pending row
+with Review and not Approve, the dean's reviewed row the other way round,
+Approve coming back with its flash, and the DV/AR keys; the hub's five
+doors and the export, each of the four shared-page reports with its
+report name, figure and unit, the milestone report's rows; the milestone
+report scoped to the supervisor's programmes. `HifzScreensReportBackTest`
+reads the list's flash from the shared prop. Full suite 2404 passed.
+
+**Walked.** `hifz.mjs` **20/20** — Review and Approve wait for the flash
+rather than the network, since the list re-renders in place, and the
+report check matches *Approved* whatever its case — and the milestones
+list, the reports hub and the weak-students report at 390 px in EN, DV
+and AR: no overflow, the list as cards; a hub door lands on its report as
+a visit.
+
+**C1 closed.** Nineteen views, 322 lines, three PRs (#556, #557, this
+one). What the port did not do, on purpose (rule 1): the Hifz *behaviour*
+— the scoping, the policies, the enum values, the CSV's columns — is as
+it was; the Inertia pages show what the Blade showed.
+
 ## 5jw. The Hifz port, slice 2: the five role dashboards and the hub leave Blade (2026-09-28)
 
 The second of the three slices decided in §5jv (BACKLOG C1). The hub is

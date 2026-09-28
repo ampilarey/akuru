@@ -12,7 +12,7 @@
     ]
   },
   "resources/js/Components/RichTextEditor.jsx": {
-    "file": "assets/RichTextEditor-CIF-Ezng.js",
+    "file": "assets/RichTextEditor-DqMwpCnx.js",
     "name": "RichTextEditor",
     "src": "resources/js/Components/RichTextEditor.jsx",
     "isDynamicEntry": true,
@@ -31,7 +31,7 @@
     ]
   },
   "resources/js/app.jsx": {
-    "file": "assets/app-lxvnEcZw.js",
+    "file": "assets/app-D3qlCg8y.js",
     "name": "app",
     "src": "resources/js/app.jsx",
     "isEntry": true,

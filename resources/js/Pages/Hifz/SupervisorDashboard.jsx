@@ -1,10 +1,11 @@
+import { Link } from '@inertiajs/react';
 import AppShell from '../../Layouts/AppShell';
 
 /**
  * The supervisor's Hifz dashboard, scoped to their programmes (the Hifz
  * port, slice 2, STATUS §5jw): seven cards, the haraka alerts and weak
  * students, the pending milestones by pupil with their Review, and the
- * doors to reports and milestones — both still Blade until slice 3.
+ * doors to reports and milestones (Inertia since slice 3, §5jx).
  */
 const CARDS = ['programs', 'teachers', 'sessions_today', 'pending_review', 'missing_teachers', 'needs_supervisor', 'parent_attention'];
 const LABELS = { programs: 'Programs', teachers: 'Teachers', sessions_today: 'Sessions Today', pending_review: 'Pending Review', missing_teachers: 'Teachers Missing Records', needs_supervisor: 'Needs Supervisor Review', parent_attention: 'Parent Attention' };
@@ -47,13 +48,13 @@ export default function SupervisorDashboard({ cards = {}, haraka_leaders = [], w
                 {pending_milestones.map((m) => (
                     <div key={m.id} className="flex items-center justify-between border-b py-2 text-sm">
                         <span>{m.student} — {m.type}</span>
-                        <a href={links.milestones || '/hifz/milestones'} className="chip-link">{t.hifz_review || 'Review'}</a>
+                        <Link href={links.milestones || '/hifz/milestones'} className="chip-link">{t.hifz_review || 'Review'}</Link>
                     </div>
                 ))}
             </div>
             <div className="mt-6 flex flex-wrap gap-3">
-                <a href={links.reports || '/hifz/reports'} className="btn-secondary">{t.hifz_reports_button || 'Reports'}</a>
-                <a href={links.milestones || '/hifz/milestones'} className="btn-secondary">{t.hifz_milestones_button || 'Milestones'}</a>
+                <Link href={links.reports || '/hifz/reports'} className="btn-secondary">{t.hifz_reports_button || 'Reports'}</Link>
+                <Link href={links.milestones || '/hifz/milestones'} className="btn-secondary">{t.hifz_milestones_button || 'Milestones'}</Link>
             </div>
         </AppShell>
     );

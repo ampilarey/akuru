@@ -6,12 +6,22 @@ use App\Domains\Hifz\Models\HifzMilestone;
 use App\Domains\Hifz\Models\HifzSession;
 use App\Domains\Hifz\Services\HifzReportService;
 use App\Domains\Hifz\Services\HifzScopeService;
+use App\Domains\Hifz\Support\HifzDashboardRows;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
 use Illuminate\Http\Request;
-use Illuminate\View\View;
+use Illuminate\Support\Collection;
+use Inertia\Inertia;
+use Inertia\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
+/**
+ * The Hifz reports (the Hifz port, slice 3, STATUS §5jx): a hub of doors
+ * and five reports, each an Inertia page. Four of them are the same shape
+ * — a name, a figure or a date, sometimes a note — and share one page;
+ * the milestone report is a paged table. Gated on `view_hifz_reports`,
+ * scoped to the caller's pupils or programmes unless they are the dean.
+ */
 class HifzReportController extends Controller
 {
     public function __construct(
@@ -19,54 +29,60 @@ class HifzReportController extends Controller
         protected HifzScopeService $scope,
     ) {}
 
-    public function index(): View
+    public function index(): Response
     {
         abort_unless(auth()->user()->can('view_hifz_reports'), 403);
 
-        return view('hifz.reports.index');
+        return Inertia::render('Hifz/Reports', [
+            'reports' => [
+                ['key' => 'weak_students', 'href' => route('hifz.reports.weak-students')],
+                ['key' => 'haraka', 'href' => route('hifz.reports.haraka-mistakes')],
+                ['key' => 'parent_follow_up', 'href' => route('hifz.reports.parent-follow-up')],
+                ['key' => 'teacher_completion', 'href' => route('hifz.reports.teacher-completion')],
+                ['key' => 'milestones', 'href' => route('hifz.reports.milestones')],
+            ],
+            'export_href' => auth()->user()->can('export_hifz_reports') ? route('hifz.reports.export', ['type' => 'sessions']) : null,
+            't' => trans('admin'),
+        ]);
     }
 
-    public function weakStudents(): View
+    public function weakStudents(): Response
     {
         abort_unless(auth()->user()->can('view_hifz_reports'), 403);
 
-        $studentIds = auth()->user()->isHifzDean() ? null : $this->scope->assignedStudentIds(auth()->user());
-        $rows = $this->reports->weakStudents($studentIds);
+        $rows = $this->reports->weakStudents($this->studentIds());
 
-        return view('hifz.reports.weak-students', compact('rows'));
+        return $this->rows('weak_students', HifzDashboardRows::weakStudents($rows), 'weak_count', 'hifz_weak_unit');
     }
 
-    public function harakaMistakes(): View
+    public function harakaMistakes(): Response
     {
         abort_unless(auth()->user()->can('view_hifz_reports'), 403);
 
-        $studentIds = auth()->user()->isHifzDean() ? null : $this->scope->assignedStudentIds(auth()->user());
-        $rows = $this->reports->harakaMistakeLeaders($studentIds);
+        $rows = $this->reports->harakaMistakeLeaders($this->studentIds());
 
-        return view('hifz.reports.haraka-mistakes', compact('rows'));
+        return $this->rows('haraka', HifzDashboardRows::harakaLeaders($rows), 'total_haraka', null, 'danger');
     }
 
-    public function parentFollowUp(): View
+    public function parentFollowUp(): Response
     {
         abort_unless(auth()->user()->can('view_hifz_reports'), 403);
 
-        $studentIds = auth()->user()->isHifzDean() ? null : $this->scope->assignedStudentIds(auth()->user());
-        $records = $this->reports->parentAttentionCases($studentIds);
+        $records = $this->reports->parentAttentionCases($this->studentIds());
 
-        return view('hifz.reports.parent-follow-up', compact('records'));
+        return $this->rows('parent_follow_up', HifzDashboardRows::parentCases($records), 'date');
     }
 
-    public function teacherCompletion(): View
+    public function teacherCompletion(): Response
     {
         abort_unless(auth()->user()->can('view_hifz_reports'), 403);
 
-        $programIds = auth()->user()->isHifzDean() ? null : $this->scope->assignedProgramIds(auth()->user());
-        $missing = $this->reports->teachersMissingTodayRecords($programIds);
+        $missing = $this->reports->teachersMissingTodayRecords($this->programIds());
 
-        return view('hifz.reports.teacher-completion', compact('missing'));
+        return $this->rows('teacher_completion', HifzDashboardRows::teachers($missing));
     }
 
-    public function milestones(): View
+    public function milestones(): Response
     {
         abort_unless(auth()->user()->can('view_hifz_reports'), 403);
 
@@ -75,9 +91,10 @@ class HifzReportController extends Controller
             $query->whereIn('hifz_program_id', $this->scope->assignedProgramIds(auth()->user()));
         }
 
-        $milestones = $query->paginate(30);
-
-        return view('hifz.reports.milestones', compact('milestones'));
+        return Inertia::render('Hifz/ReportMilestones', [
+            'milestones' => $query->paginate(30)->through(fn (HifzMilestone $milestone): array => HifzDashboardRows::milestoneRow($milestone)),
+            't' => trans('admin'),
+        ]);
     }
 
     public function export(Request $request): StreamedResponse
@@ -98,5 +115,35 @@ class HifzReportController extends Controller
 
             fclose($handle);
         }, "hifz-{$type}-".now()->format('Y-m-d').'.csv', ['Content-Type' => 'text/csv']);
+    }
+
+    /**
+     * The one page four reports share: which report (its title and empty
+     * line are keys off it), the rows, which field is the figure beside the
+     * name, the unit key that wraps it, and whether it reads as a warning.
+     *
+     * @param  list<array<string, mixed>>  $rows
+     */
+    private function rows(string $report, array $rows, ?string $figure = null, ?string $unit = null, ?string $tone = null): Response
+    {
+        return Inertia::render('Hifz/ReportRows', [
+            'report' => $report,
+            'rows' => $rows,
+            'figure' => $figure,
+            'unit' => $unit,
+            'tone' => $tone,
+            'back_href' => route('hifz.reports.index'),
+            't' => trans('admin'),
+        ]);
+    }
+
+    private function studentIds(): ?Collection
+    {
+        return auth()->user()->isHifzDean() ? null : $this->scope->assignedStudentIds(auth()->user());
+    }
+
+    private function programIds(): ?Collection
+    {
+        return auth()->user()->isHifzDean() ? null : $this->scope->assignedProgramIds(auth()->user());
     }
 }
