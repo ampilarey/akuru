@@ -200,6 +200,7 @@ return [
     'workspace_account' => 'އަހަރެންގެ އެކައުންޓް',
     'workspaces' => 'ވޯކްސްޕޭސްތައް',
     'switch_workspace' => 'ވޯކްސްޕޭސް ބަދަލުކުރޭ',
+    'your_accounts' => 'ތިޔަ ބޭފުޅާގެ އެކައުންޓްތައް',
     'workspace_home' => 'ހޯމް',
     'announcements' => 'އިޢުލާންތައް',
     'substitutions' => 'ބަދަލު މުދައްރިސުން',

@@ -200,6 +200,7 @@ return [
     'workspace_account' => 'My account',
     'workspaces' => 'Workspaces',
     'switch_workspace' => 'Switch workspace',
+    'your_accounts' => 'Your accounts',
     'workspace_home' => 'Home',
     'announcements' => 'Announcements',
     'substitutions' => 'Substitutions',

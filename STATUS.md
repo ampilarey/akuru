@@ -4414,6 +4414,38 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5ke. ID4: the phone's drawer opens with Your accounts (2026-09-28)
+
+`docs/SIGN_IN_PLAN.md` ID4, finding F8. EduPage's drawer opens with the
+person's accounts — a parent's, a pupil's — the current one marked, one tap
+to switch. Ours had the switch only as a pill in the header, shown to a
+person with more than one workspace, and the phone's *More* panel listed
+the account and the language but not the workspaces.
+
+**What changed.** On a phone the *More* panel opens with the person and
+*Log out*, then **Your accounts**: every workspace they hold (their name,
+the workspace's label, a tick on the current one; tapping one posts the
+same switch the pill does) and every other login they have proved they own
+(E7's linked accounts), then the language, Home and the groups. It shows
+when there is more than one account to choose between. The desktop keeps
+the pill; the Blade phone menu already listed the workspaces. The drawer's
+*Language* heading read English on every page, because `nav.language` was
+not among the strings the shell shares — it and `nav.your_accounts` now
+are, in EN/DV/AR.
+
+**Tests.** `AccountListTest` (new, 2): a parent who also learns carries
+Family and My learning, labelled and linked, on three different Inertia
+pages with the drawer's words; switching from the drawer's post lands on
+My learning; on a Dhivehi page the labels and the drawer's words are
+Dhivehi. Full suite **2435 passed**.
+
+**Walked.** `identity.mjs` **43/43** (two new steps): the parent-learner's
+drawer, on My learning, lists Your accounts — Family, and My learning
+ticked — and one tap on Family takes them back to their children.
+Screenshot at 390px checked.
+
+**Next.** ID5: tile homes.
+
 ## 5kd. ID3: every door leads into the app (2026-09-28)
 
 `docs/SIGN_IN_PLAN.md` ID3, findings F6 and F9. After ID2b a signed-in
@@ -4467,7 +4499,7 @@ without a current-password field; saving returns to My account with the
 message and no prompt. `vendor.mjs` **25/25**: the invited owner is asked,
 on the shop, to choose a password — now by the shell.
 
-**Next.** ID4: the account list in the drawer.
+**Next.** ID4: the account list in the drawer (shipped, §5ke).
 
 ## 5kc. ID2b: the old course portal retired — My account and My enrolments inside the app (2026-09-28)
 

@@ -121,7 +121,7 @@ class HandleInertiaRequests extends Middleware
                 'learn' => trans('learn'),
                 // The shell's own words — the *More* button and the menu's
                 // labels; item labels arrive already translated in `nav`.
-                'nav' => array_intersect_key((array) trans('nav'), array_flip(['more', 'close', 'primary_nav', 'all_screens', 'alerts', 'skip_to_content', 'dashboard_hint', 'workspaces', 'switch_workspace', 'workspace_home', 'set_password_title', 'set_password_body', 'set_password_link'])),
+                'nav' => array_intersect_key((array) trans('nav'), array_flip(['more', 'close', 'primary_nav', 'all_screens', 'alerts', 'skip_to_content', 'dashboard_hint', 'workspaces', 'switch_workspace', 'workspace_home', 'set_password_title', 'set_password_body', 'set_password_link', 'language', 'your_accounts'])),
                 // Only the page-facing subset: sharing the whole group would
                 // serialize every common string into every page's payload
                 // (and unrelated strings then leak into page assertions).

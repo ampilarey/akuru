@@ -9,7 +9,8 @@ thirteenth finding (F13, below) fixed with it. **ID2a shipped 2026-09-28
 parent. **ID2b shipped 2026-09-28 (STATUS §5kc)**: the old course portal
 retired, *My account* and *My enrolments* in the shell; F4 and F5 closed.
 **ID3 shipped 2026-09-28 (STATUS §5kd)**: every door leads into the shell;
-F6 and F9 closed. Next: ID4 (the account list in the drawer).
+F6 and F9 closed. **ID4 shipped 2026-09-28 (STATUS §5ke)**: the phone's
+drawer opens with *Your accounts*; F8 closed. Next: ID5 (tile homes).
 **Owner's brief (2026-09-28, with five EduPage screenshots):** "Still there
 is a problem with the login system. Logged in with a vendor account but I
 see educational items also. I need the login style used in EduPage. When a
@@ -69,7 +70,7 @@ for each kind of account. Each finding names the code that produces it.
 | F5 | **There are two portals.** **Fixed in ID2b (STATUS §5kc)**: the old portal's five pages and `/my-enrollments` are retired into the shell, their addresses redirects. Besides the shell there is an older *My Portal* in the website chrome: `/portal/dashboard`, `/portal/enrollments`, `/portal/payments`, `/portal/certificates`, `/portal/profile` (Blade `portal/layout.blade.php`, which extends the public layout), plus `/my-enrollments`. The website's phone bottom bar shows **My Portal** to every signed-in person and links there — so a parent or teacher who taps it from the website lands in the course-learner portal, not their workspace. | `routes/web_public.php` lines 260–269; `public/layouts/public.blade.php` line 205 (`@auth` → `route('portal.dashboard')`). |
 | F6 | **Setting a password sends the person to the marketing home.** **Fixed in ID3 (STATUS §5kd)**: the form is inside the shell and saving returns to `/dashboard`. After *Set password* the redirect is `route('public.home')` with "You can now log in with your mobile number and password" — while they are signed in. | `AccountController::setPassword` line 68. |
 | F7 | **Signing in itself is right.** Email / phone / ID card + password, an OTP path, both redirecting to `/dashboard`, which sends a person with a role to their workspace home (Institute, School office or a teacher's day, Family, Learn, My shop, Writing, Catalog, Bookstore office). | `AuthenticatedSessionController::store`, `OtpLoginController` line 131, `DashboardController::index`. |
-| F8 | **The switcher is a pill, not an account list.** It shows only when a person holds more than one workspace, in the header; the phone *More* panel lists account and language but not the workspaces. Family and Learn share one home (`/portal/home`), told apart only by the switcher. | `AppShell.jsx` lines 69–104 (`workspaces.length > 1`); `WorkspaceMap` `family` and `learn` both `home => 'portal.home'`. |
+| F8 | **The switcher is a pill, not an account list.** **Fixed in ID4 (STATUS §5ke)**: the phone's drawer lists the accounts. It shows only when a person holds more than one workspace, in the header; the phone *More* panel lists account and language but not the workspaces. Family and Learn share one home (`/portal/home`), told apart only by the switcher. | `AppShell.jsx` lines 69–104 (`workspaces.length > 1`); `WorkspaceMap` `family` and `learn` both `home => 'portal.home'`. |
 | F9 | **The mobile app opens the website.** **Fixed in ID3 (STATUS §5kd)**: it opens `/dashboard` (a rebuild of the app is needed for installed copies). The Capacitor wrapper loads `https://akuru.edu.mv` — the marketing home — rather than the sign-in or the person's workspace. | `capacitor.config.ts` `server.url`. |
 | F10 | **`student` is granted only one way.** A child's login made by the family form gets the role; a pupil's login made anywhere else needs the role screen; an adult self-enrolment gets a student record and no role (see F4). | `EnrollmentService::createChildUserAccount`; `SetUserRolesAction`. |
 | F11 | **The parity document's E7 describes a different switcher.** E7 specifies `linked_accounts` (two *separate* logins linked, the session swapped between them). What shipped is one login with several workspaces (§5ic, §5id), which is what EduPage's *School accounts* are. Linked separate logins are EduPage's *Logout / add user* — a different, later thing. | `docs/EDUPAGE_FEATURES_PLAN.md` §E7. |
@@ -298,7 +299,18 @@ bullets follow.
 - **Walk:** `identity.mjs` step: from the website, *My Portal* lands on
   the workspace home.
 
-### ID4 — The account list in the drawer (one PR)
+### ID4 — The account list in the drawer (one PR) — **shipped 2026-09-28, STATUS §5ke**
+
+As built: the phone's *More* panel — the drawer — opens with the person
+and *Log out*, then *Your accounts*: each workspace they hold (their name,
+the workspace's label, a tick on the current one; one tap posts the switch)
+and each other login they have proved they own (E7), then the language,
+then Home and the groups. Shown when there is more than one account; the
+desktop pill stays. The Blade phone menu already listed the workspaces.
+The drawer's *Language* heading was English on every page (its key was not
+shared); it and *Your accounts* now come in the request's language. The
+original bullets follow.
+
 
 - `AppShell` phone *More* panel opens with *Your accounts* (name, role
   label, active mark, tap to switch), then language, then the groups; the
