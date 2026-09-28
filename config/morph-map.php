@@ -216,6 +216,7 @@ return [
     'notification' => \App\Domains\Notifications\Models\Notification::class,
     'notification_template' => \App\Domains\Notifications\Models\NotificationTemplate::class,
     'operator_check' => \App\Domains\Settings\Models\OperatorCheck::class,
+    'feature_test_note' => \App\Domains\Settings\Models\FeatureTestNote::class,
     'otp' => \App\Domains\Identity\Models\Otp::class,
     'otp_abuse_event' => \App\Domains\Identity\Models\OtpAbuseEvent::class,
     'page' => \App\Domains\Website\Models\Page::class,
