@@ -4414,6 +4414,56 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5jw. The Hifz port, slice 2: the five role dashboards and the hub leave Blade (2026-09-28)
+
+The second of the three slices decided in §5jv (BACKLOG C1). The hub is
+unchanged in what it does — `/hifz` still sends each role to its own
+dashboard and refuses the rest (`HifzCrossRoleAccessTest` pins it) — but
+every dashboard it lands on is now an Inertia page at its old address,
+so the hub link in the nav no longer needs the `hard` flag, the
+supervisor's portal button is a visit, and the programmes list's *← Hifz*
+is a `Link` again.
+
+**What each role sees, as before.** `DeanHifzDashboardController` renders
+`Hifz/DeanDashboard`: the ten cards (programmes, active pupils, teachers,
+supervisors, sessions today, pending review, teachers missing records,
+needs supervisor, parent attention, milestones to approve), the haraka
+leaders, the milestones waiting on the dean with *Approve* posting to the
+same route as before, and three doors — programmes (a visit), reports
+(a plain link, still Blade until slice 3) and the Quran source.
+`SupervisorHifzDashboardController` renders `Hifz/SupervisorDashboard`
+scoped to their programmes: seven cards, haraka alerts, weak students,
+the pending milestones by pupil with *Review* (the list §5fz surfaced),
+and the reports and milestones doors. `TeacherHifzDashboardController`
+renders `Hifz/TeacherDashboard`: the roll-up only, as since F5 — pupils,
+programmes, whether today's session exists, and the engine schedule.
+`StudentHifzDashboardController` renders `Hifz/StudentDashboard`:
+programme, juz and page, next target, recent sessions with the teacher's
+note, approved milestones. `ParentHifzDashboardController` renders
+`Hifz/ParentDashboard`: the child picker where there is more than one,
+today's record with the family-facing note and the attention flag, the
+week, approved milestones. The row shaping the five Blades did inline
+(names, `d M Y` dates, the milestone type with its underscores as
+spaces) is one support class, `Hifz\Support\HifzDashboardRows`, so the
+controllers stay thin. 57 more `hifz_*` keys EN/DV/AR (110 in the
+tranche now). Five Blade views deleted; the Blade baseline is 203 (the
+Hifz block 8: milestones, the alerts partial, the six reports).
+
+**Tests.** `HifzDashboardScreensTest` (3): the dean's ten cards, leaders,
+milestones and doors with the DV/AR keys; the supervisor's seven cards
+and the pending milestones' shape; the teacher, pupil and parent
+components and the hub's redirect. `HifzScreensReportBackTest` reads the
+supervisor's pending milestones and the milestones door from the props
+(the URL sits JSON-escaped in the page, so `assertSee` could not find
+it). Full suite 2401 passed.
+
+**Walked.** `hifz.mjs` **20/20** — every hub redirect lands on the
+Inertia page, the dean's *Approve* and the pupil's approved milestone
+included — and the dean's dashboard at 390 px in EN, DV and AR: RTL, no
+overflow, the ten cards two abreast.
+
+**Next.** Slice 3: milestones and reports, then C1 closes.
+
 ## 5jv. Four decisions from the owner, and the Hifz port begins: programmes and enrolments leave Blade (2026-09-28)
 
 The owner answered the decision list of §5ju in one message:

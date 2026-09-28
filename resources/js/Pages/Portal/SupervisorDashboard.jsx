@@ -31,8 +31,8 @@ export default function SupervisorDashboard({ stats = {}, can_hifz = false, hifz
             {can_hifz && (
                 <div className="rounded-xl border bg-white p-4" data-testid="supervisor-hifz">
                     <h6 className="mb-3 text-sm font-bold text-[#1D4E89]">{t.supervisor_hifz_title || 'Hifz Progress'}</h6>
-                    {/* The Hifz dashboard is a Blade screen: a full page load. */}
-                    <a href={hifz_href} className="btn-primary">{t.supervisor_hifz_open || 'Open Hifz Supervisor Dashboard'}</a>
+                    {/* Inertia since the Hifz port's second slice (STATUS §5jw). */}
+                    <Link href={hifz_href} className="btn-primary">{t.supervisor_hifz_open || 'Open Hifz Supervisor Dashboard'}</Link>
                 </div>
             )}
         </AppShell>

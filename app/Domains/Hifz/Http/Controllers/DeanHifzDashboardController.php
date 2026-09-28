@@ -8,16 +8,23 @@ use App\Domains\Hifz\Models\HifzProgram;
 use App\Domains\Hifz\Models\HifzSession;
 use App\Domains\Hifz\Models\HifzSessionRecord;
 use App\Domains\Hifz\Services\HifzReportService;
+use App\Domains\Hifz\Support\HifzDashboardRows;
 use App\Domains\Identity\Models\User;
 use App\Domains\People\Actions\ListStudentIdsOnTheRollAction;
 use App\Http\Controllers\Controller;
-use Illuminate\View\View;
+use Inertia\Inertia;
+use Inertia\Response;
 
+/**
+ * The dean's Hifz dashboard. Inertia since the Hifz port's second slice
+ * (BACKLOG C1, STATUS §5jw): the same ten cards, the haraka leaders, the
+ * milestones awaiting approval with their Approve, and the three doors.
+ */
 class DeanHifzDashboardController extends Controller
 {
     public function __construct(protected HifzReportService $reports) {}
 
-    public function index(): View
+    public function index(): Response
     {
         abort_unless(auth()->user()->isHifzDean(), 403);
 
@@ -30,11 +37,8 @@ class DeanHifzDashboardController extends Controller
             //
             // Asked through People's own action rather than by importing its
             // Student model (rule 3), which also means "on the roll" is read
-            // from the one place that defines it.
-            //
-            // It now counts distinct pupils rather than enrolment rows. The
-            // card says "active students" and a pupil enrolled in two
-            // programmes is one student, not two.
+            // from the one place that defines it. Distinct pupils, not
+            // enrolment rows: a pupil in two programmes is one student.
             'active_students' => count(app(ListStudentIdsOnTheRollAction::class)->execute(
                 HifzEnrollment::where('status', 'active')->pluck('student_id')
             )),
@@ -50,10 +54,14 @@ class DeanHifzDashboardController extends Controller
             'missing_teachers' => $this->reports->teachersMissingTodayRecords()->count(),
         ];
 
-        $harakaLeaders = $this->reports->harakaMistakeLeaders();
-        $weakStudents = $this->reports->weakStudents();
-        $pendingMilestones = HifzMilestone::where('status', 'supervisor_reviewed')->with('student.user')->latest()->take(10)->get();
-
-        return view('hifz.dashboard.dean', compact('cards', 'harakaLeaders', 'weakStudents', 'pendingMilestones'));
+        return Inertia::render('Hifz/DeanDashboard', [
+            'cards' => $cards,
+            'haraka_leaders' => HifzDashboardRows::harakaLeaders($this->reports->harakaMistakeLeaders()->take(8)),
+            'pending_milestones' => HifzDashboardRows::milestones(
+                HifzMilestone::where('status', 'supervisor_reviewed')->with('student.user')->latest()->take(10)->get()
+            ),
+            'links' => ['programs' => route('hifz.programs.index'), 'reports' => route('hifz.reports.index'), 'mushafs' => route('quran.mushafs.index')],
+            't' => trans('admin'),
+        ]);
     }
 }
