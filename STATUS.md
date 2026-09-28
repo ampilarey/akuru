@@ -4469,7 +4469,8 @@ the render job, as its own failure line says.
 6/6, absence 13/13, school-day 14/14, timetable 12/12, author 24/24,
 intake 13/13, assess 14/14, certify 16/16, arabic 10/10, quran 22/22,
 review 15/15, exams 28/28 (worker running), library 25/25, peer-review
-12/12, earnings 13/13. Full suite 2389 passed.
+12/12, earnings 13/13. Full suite 2389 passed. **The whole runner on the merged
+`main` (be3685a), with a queue worker: 38/38.**
 
 **What this leaves.** A runner that reads 38/38 is the gate the go-live
 path waits on (`OWNER_ACTIONS` item 7), and it was believed green on the
