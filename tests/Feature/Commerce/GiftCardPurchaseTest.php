@@ -235,8 +235,9 @@ it('gives a signed-in person the Library, My library and My wallet in the shell 
         ->get(route('portal.home'))
         ->assertOk()
         ->assertInertia(fn ($page) => $page->where('nav.groups', function ($groups) {
-            $mine = collect($groups)->firstWhere('key', 'mine');
-            $hrefs = collect($mine['items'] ?? [])->pluck('href')->map(fn ($href) => preg_replace('#^/[a-z]{2}/#', '/', $href))->all();
+            // The Personal group (`me`) since SIGN_IN_PLAN ID1, every workspace's last.
+            $personal = collect($groups)->firstWhere('key', 'me');
+            $hrefs = collect($personal['items'] ?? [])->pluck('href')->map(fn ($href) => preg_replace('#^/[a-z]{2}/#', '/', $href))->all();
 
             return in_array('/library', $hrefs, true) && in_array('/my-library', $hrefs, true) && in_array('/my-wallet', $hrefs, true);
         }));

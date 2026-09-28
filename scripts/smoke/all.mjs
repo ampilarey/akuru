@@ -135,6 +135,7 @@ const WALKS = [
     { name: 'gate', writes: true, asks: 'Does a pupil\'s gate card get them recorded, by scanner and by camera, and does the family see it?' },
     { name: 'mobile', writes: false, asks: 'Does this work on a phone?' },
     { name: 'nav', writes: false, asks: 'Can each kind of person find their way, without reading a wall of links?' },
+    { name: 'identity', writes: false, asks: 'Does each person see only their own workspace — a vendor their shop, a parent their children, nobody the rest?' },
     { name: 'rtl', writes: false, asks: 'Do English sentences read right on a Dhivehi or Arabic page, without the page\'s alignment changing?' },
 ];
 
@@ -168,7 +169,7 @@ if (selected.some((walk) => walk.writes) && !looksSynthetic && process.env.SMOKE
     console.error('book meetings, enrol people, hand in recordings, publish exam results, issue invoices and approve leave. On a host with');
     console.error('real families on it that means real messages to real people.\n');
     console.error('If this host is synthetic, re-run with SMOKE_I_KNOW_THIS_WRITES=yes,');
-    console.error('or use --read for the six walks that only look at screens.\n');
+    console.error('or use --read for the seven walks that only look at screens.\n');
     process.exit(2);
 }
 

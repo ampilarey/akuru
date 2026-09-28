@@ -5,6 +5,9 @@ namespace App\Domains\Portal\Http\Controllers;
 use App\Domains\Portal\Actions\ComposePortalHomeAction;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
+use App\Support\Navigation\ResolveWorkspacesAction;
+use App\Support\Navigation\WorkspaceMap;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -12,10 +15,21 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class PortalHomeController extends Controller
 {
-    public function index(Request $request): Response
+    public function index(Request $request): Response|RedirectResponse
     {
         $user = $request->user();
         abort_unless($user !== null, 403);
+
+        // The family's and the pupil's home. Anyone who holds neither — a
+        // vendor, a member of staff with no child, a writer — is sent to their
+        // own workspace's home, as the School and Institute homes do, rather
+        // than shown an empty "Student Dashboard" (docs/SIGN_IN_PLAN.md F2).
+        // A person with no role keeps it until the Learner workspace gives
+        // them a home of their own (ID2a).
+        $held = array_column(app(ResolveWorkspacesAction::class)->execute($user)['list'], 'key');
+        if (array_intersect($held, ['family', 'learn', WorkspaceMap::ACCOUNT]) === []) {
+            return redirect()->route('dashboard');
+        }
 
         return Inertia::render(
             'Portal/Home',

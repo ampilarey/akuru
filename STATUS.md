@@ -4414,6 +4414,76 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5jz. ID1: a workspace's menu is only its own (2026-09-28)
+
+The owner said "Next" to the plan of §5jy and its seven defaults. The
+first slice, `docs/SIGN_IN_PLAN.md` ID1, closes the three findings the
+owner saw and one found on the way.
+
+**What changed.** `NavigationMap` loses `mine` and `learn_group`, the two
+groups every workspace shared. The School keeps the office's groups and
+gains *Teaching* (teach, meetings, recitations, pronunciation, Hifz,
+Qur'an progress, e-learning — no longer a person's own Learn and
+Schedule), *Communication* (messages, notices, forms, requests) and *My
+work* (check-in, leave, appraisals, payslips); the staff overview moves to
+the top of *Day loop*. Family and Learn hold what an EduPage account's
+drawer holds: *Communication* (plus absence notes, fees, event sign-up,
+pick-up), *Education* (children, their learning, a pupil's own courses,
+homework, calendar, loans, Hifz, e-learning), *Evaluation* (results,
+report cards, attendance, behaviour, awards, performance, arrivals) and
+*Other* (lost property, a child's work). Every workspace ends with
+*Personal* (`me`): My profile, the Digital Library, My library, the
+wallet, the Bookstore, orders, wishlist, quotes. The Institute, the
+Bookstore office, My shop, Writing and Catalog hold nothing of the
+school's. An item in a shared group can name its workspaces
+(`workspaces`, read by `BuildNavigationAction::belongsIn`), so a
+teacher-parent's School shows none of the family's fees or pick-up and
+their Family none of the School's. The Inertia shell's More panel opens
+with *Home · {workspace}*, the active workspace's home (the Blade shell
+already had it). `/portal/home` sends a person who holds neither Family
+nor Learn to their own home instead of an empty "Student Dashboard"; a
+person with no role keeps it until ID2a gives them a Learner home. Labels
+EN/DV/AR; `desc_learn_group` became `desc_teaching` on the School home.
+
+**Found on the way (F13).** The seven Personal items are Blade pages in
+the website layout, and the map never marked them `hard`, so the shell
+opened each as an Inertia visit — a non-Inertia response, shown in a
+modal over the page. All seven marked. `WorkspaceMenusAreTheirOwnTest`
+now asks every screen in the map the way Inertia asks, as a person
+holding every role, and fails on any Blade answer to an item without
+`hard`: 100+ screens checked, and a one-line mutation (the Library
+unmarked) makes it fail.
+
+**One gap, until ID2a.** A member of staff or a parent who is also
+enrolled in a course no longer has *Learn* in their menu; the Learner
+workspace (ID2a, next) gives them one of their own. A pupil keeps theirs
+under *Education*.
+
+**Tests.** `WorkspaceMenusAreTheirOwnTest` (new, 11): the vendor's menu is
+the shop and Personal with nothing of the school, the family home sends
+them to the shop; a parent's Family holds no Learn, a teacher-parent's
+School none of the household's screens and their Family none of the
+School's; a pupil's own courses under Education; a writer, a reviewer,
+the Bookstore office, the system admin and a course creator no school
+communication; the family home kept for families, pupils and role-less
+accounts; the Blade-page check; the new labels in DV and AR, the old keys
+gone. `WorkspacesTest`, `AdminPanelAuditTest` (the panel's `hard` check
+scoped to the panel's groups), `GiftCardPurchaseTest` (the Personal
+group) and `LinkedAccountsTest` (a lone teacher's screen is the
+notifications page, not the family home) follow. Full suite 2415 passed.
+
+**Walked.** `identity.mjs` (new, read-only, in the runner) **19/19** on a
+phone as the seeded vendor, parent, teacher and pupil: the vendor's panel
+is Home · My shop and Personal, Digital Library opens as its own page
+with no modal, `/portal/home` sends them to the shop; the parent's reads
+Communication, Education, Evaluation, Other, Personal with the children
+and no Learn; the teacher's is the School's with no Learn; the pupil's
+courses sit under Education. `workspaces.mjs` 15/15 (admin granted parent
+and vendor locally, revoked after), `admin-hub.mjs` 25/25, `nav.mjs`
+14/14, `mobile.mjs` 19/19, `gift.mjs` 17/17.
+
+**Next.** ID2a: the Learner workspace and its *My learning* home.
+
 ## 5jy. The sign-in audit, twice, and the plan for the EduPage account model (2026-09-28)
 
 The owner, with five EduPage screenshots: "Logged in with a vendor

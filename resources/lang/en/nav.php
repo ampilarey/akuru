@@ -19,11 +19,16 @@ return [
     'day_loop' => 'Day loop',
     'exams_group' => 'Exams',
     'catalog_group' => 'Catalog',
-    'learn_group' => 'Learn',
     'finance_group' => 'Finance',
     'hr_group' => 'HR',
     'library_group' => 'Library',
-    'mine' => 'Mine',
+    'teaching' => 'Teaching',
+    'communication' => 'Communication',
+    'education' => 'Education',
+    'evaluation' => 'Evaluation',
+    'other' => 'Other',
+    'my_work' => 'My work',
+    'me' => 'Personal',
     'admin_group' => 'Admin',
 
     // Items
@@ -200,4 +205,6 @@ return [
     'hifz' => 'Hifz',
     'quran_progress' => 'Qur’an progress',
     'e_learning' => 'E-Learning',
+    // SIGN_IN_PLAN ID1: the Personal group's first item.
+    'profile' => 'My profile',
 ];

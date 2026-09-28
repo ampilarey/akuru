@@ -1,7 +1,9 @@
 # Sign-in and workspaces: the EduPage account model (plan)
 
 **Status:** audit done 2026-09-28 (re-audited the same day at the owner's
-request); plan written, awaiting the owner's "go". Nothing in it is built.
+request); the owner said "Next" to the plan and its defaults the same day.
+**ID1 shipped 2026-09-28 (STATUS §5jz)**: F1, F2 and F3 closed, and a
+thirteenth finding (F13, below) fixed with it. ID2a is next.
 **Owner's brief (2026-09-28, with five EduPage screenshots):** "Still there
 is a problem with the login system. Logged in with a vendor account but I
 see educational items also. I need the login style used in EduPage. When a
@@ -54,9 +56,9 @@ for each kind of account. Each finding names the code that produces it.
 
 | # | Finding | Evidence |
 |---|---|---|
-| F1 | **A vendor's menu carries school items.** The vendor lands on *My shop* (right), but *More* lists Home, Messages, Notices, Forms, Digital Library, My library, My wallet, Bookstore, My orders, My wishlist, My quotes. | `NavigationMap::groups()` group `mine`: those items carry `roles => $everyone`; `WorkspaceMap::all()` gives every workspace the `mine` group. |
-| F2 | **"Home" is the family portal for everyone.** In every workspace *More › Home* opens `/portal/home`, which for a vendor, a member of staff or a role-less account renders **"Student Dashboard"** with empty Attendance, Invoices, Exams, Course progress, Noticeboard, Homework tiles. | `mine` item `home` → `/portal/home`; `ComposePortalHomeAction` line 67 titles the page *Parent* if the person is a parent or has children, else *Student*. |
-| F3 | **A person's own learning is mixed into the family's menu.** A parent's *More* has 34 items in two groups; *Learn* and *Schedule* (the parent's own engine courses) sit inside *Family*; a teacher's School menu carries *Learn* too; a writer's Writing menu carries Learn, Schedule, Hifz, E-Learning. | `learn_group` is in the family, learn, school and writing workspaces; its `learn` and `schedule` items are `roles => $everyone`. |
+| F1 | **A vendor's menu carries school items.** **Fixed in ID1 (STATUS §5jz).** The vendor lands on *My shop* (right), but *More* lists Home, Messages, Notices, Forms, Digital Library, My library, My wallet, Bookstore, My orders, My wishlist, My quotes. | `NavigationMap::groups()` group `mine`: those items carry `roles => $everyone`; `WorkspaceMap::all()` gives every workspace the `mine` group. |
+| F2 | **"Home" is the family portal for everyone.** **Fixed in ID1 (STATUS §5jz)**: Home is the workspace's home, and `/portal/home` sends a person who holds neither Family nor Learn to their own. In every workspace *More › Home* opens `/portal/home`, which for a vendor, a member of staff or a role-less account renders **"Student Dashboard"** with empty Attendance, Invoices, Exams, Course progress, Noticeboard, Homework tiles. | `mine` item `home` → `/portal/home`; `ComposePortalHomeAction` line 67 titles the page *Parent* if the person is a parent or has children, else *Student*. |
+| F3 | **A person's own learning is mixed into the family's menu.** **Fixed in ID1 (STATUS §5jz)** for the menus; the parent-learner's Learner workspace is ID2a. A parent's *More* has 34 items in two groups; *Learn* and *Schedule* (the parent's own engine courses) sit inside *Family*; a teacher's School menu carries *Learn* too; a writer's Writing menu carries Learn, Schedule, Hifz, E-Learning. | `learn_group` is in the family, learn, school and writing workspaces; its `learn` and `schedule` items are `roles => $everyone`. |
 | F4 | **An adult course learner has no workspace and leaves the app.** A person who registered and enrolled in a public course holds no role, so `/dashboard` renders the Blade **"My Dashboard"** in the *website* layout: website menu (Courses, News, Articles…), hero, *Browse Courses*, *Open for enrollment* course cards, the marketing footer and the cookie banner. No shell, no switcher. This is the "home page with promotional items". | `DashboardController::publicUserDashboard()` → `dashboard/public-user.blade.php` (`@extends('public.layouts.public')`); `RoleLandingTest` pins it ("falls through to the public-user dashboard when the account has no role"). The adult gets a `students` row (`unified_student_id`) and a `CourseEnrollment`, never a role (`EnrollmentService`: only a child's login gets `student`). |
 | F5 | **There are two portals.** Besides the shell there is an older *My Portal* in the website chrome: `/portal/dashboard`, `/portal/enrollments`, `/portal/payments`, `/portal/certificates`, `/portal/profile` (Blade `portal/layout.blade.php`, which extends the public layout), plus `/my-enrollments`. The website's phone bottom bar shows **My Portal** to every signed-in person and links there — so a parent or teacher who taps it from the website lands in the course-learner portal, not their workspace. | `routes/web_public.php` lines 260–269; `public/layouts/public.blade.php` line 205 (`@auth` → `route('portal.dashboard')`). |
 | F6 | **Setting a password sends the person to the marketing home.** After *Set password* the redirect is `route('public.home')` with "You can now log in with your mobile number and password" — while they are signed in. | `AccountController::setPassword` line 68. |
@@ -65,7 +67,8 @@ for each kind of account. Each finding names the code that produces it.
 | F9 | **The mobile app opens the website.** The Capacitor wrapper loads `https://akuru.edu.mv` — the marketing home — rather than the sign-in or the person's workspace. | `capacitor.config.ts` `server.url`. |
 | F10 | **`student` is granted only one way.** A child's login made by the family form gets the role; a pupil's login made anywhere else needs the role screen; an adult self-enrolment gets a student record and no role (see F4). | `EnrollmentService::createChildUserAccount`; `SetUserRolesAction`. |
 | F11 | **The parity document's E7 describes a different switcher.** E7 specifies `linked_accounts` (two *separate* logins linked, the session swapped between them). What shipped is one login with several workspaces (§5ic, §5id), which is what EduPage's *School accounts* are. Linked separate logins are EduPage's *Logout / add user* — a different, later thing. | `docs/EDUPAGE_FEATURES_PLAN.md` §E7. |
-| F12 | **The Blade shell has the same menu.** The 24 signed-in Blade screens (`layouts/app.blade.php`: e-learning, Qur'an progress, substitutions, analytics, the auth pages) read the same map since §5id, so F1–F3 show there too and one fix covers both shells. | `layouts/navigation.blade.php`. |
+| F12 | **The Blade shell has the same menu.** **Closed with ID1**: the Blade shell renders the same regrouped map. The 24 signed-in Blade screens (`layouts/app.blade.php`: e-learning, Qur'an progress, substitutions, analytics, the auth pages) read the same map since §5id, so F1–F3 show there too and one fix covers both shells. | `layouts/navigation.blade.php`. |
+| F13 | **The Personal items opened as a modal.** Found building ID1: the Digital Library, My library, My wallet, Bookstore, My orders, My wishlist and My quotes are Blade pages in the website layout, but the map did not mark them `hard`, so the Inertia shell opened each as a visit — a non-Inertia response, shown in a modal over the page. **Fixed in ID1**: all seven marked; `WorkspaceMenusAreTheirOwnTest` asks every map item as Inertia asks and fails on any Blade answer without `hard` (it fails on a one-line mutation of the Library item). | `NavigationMap::groups()` `mine` (now `me`). |
 
 What is **not** broken, so the plan does not touch it: the gates (a vendor
 who opens `/portal/home` is shown an empty page, never another family's
@@ -135,7 +138,22 @@ STATUS section, and keeps `tests/Architecture` green. Every string keyed
 EN/DV/AR. Order matters: ID1 first because everything else renders through
 the map.
 
-### ID1 — Workspace-scoped menus (one PR)
+### ID1 — Workspace-scoped menus (one PR) — **shipped 2026-09-28, STATUS §5jz**
+
+As built: the School keeps its office groups and gains *Teaching*
+(`learn_group` without the person's own learning), *Communication* and
+*My work*; Family and Learn hold *Communication, Education, Evaluation,
+Other*; every workspace ends with *Personal* (`me`: profile, the Digital
+Library, My library, the wallet, the Bookstore, orders, wishlist,
+quotes). A group several workspaces share carries items tagged with
+their workspaces (`workspaces`), so a teacher-parent's School shows none
+of the family's fees or pick-up. The Institute has no school
+communication. *Settings* stayed in the shell (language, log out) rather
+than becoming a group; the family home's sections are fixed, so nothing
+there changed. `/portal/home` sends a person who holds neither Family nor
+Learn to their own home (a role-less account keeps it until ID2a). The
+original bullets follow.
+
 
 - `NavigationMap::groups()` regrouped: `communication`, `education`,
   `evaluation`, `other` per workspace (the existing items, no new screens),

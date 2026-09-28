@@ -16,11 +16,16 @@ return [
     'day_loop' => 'اليوم الدراسي',
     'exams_group' => 'الامتحانات',
     'catalog_group' => 'الدورات',
-    'learn_group' => 'التعلّم',
     'finance_group' => 'المالية',
     'hr_group' => 'الموارد البشرية',
     'library_group' => 'المكتبة',
-    'mine' => 'خاصتي',
+    'teaching' => 'التدريس',
+    'communication' => 'التواصل',
+    'education' => 'التعليم',
+    'evaluation' => 'التقييم',
+    'other' => 'أخرى',
+    'my_work' => 'عملي',
+    'me' => 'شخصي',
     'admin_group' => 'الإدارة',
 
     'today' => 'اليوم',
@@ -196,4 +201,6 @@ return [
     'hifz' => 'الحفظ',
     'quran_progress' => 'تقدّم القرآن',
     'e_learning' => 'التعلّم الإلكتروني',
+    // SIGN_IN_PLAN ID1: the Personal group's first item.
+    'profile' => 'ملفي الشخصي',
 ];

@@ -20,7 +20,7 @@ class ComposeWorkspaceHomeAction
 {
     /** The School's groups, gathered into two parts. */
     private const SCHOOL_PARTS = [
-        'school_academics' => ['school_year', 'day_loop', 'exams_group', 'catalog_group', 'learn_group'],
+        'school_academics' => ['school_year', 'day_loop', 'exams_group', 'catalog_group', 'teaching'],
         'school_office' => ['people', 'finance_group', 'hr_group', 'library_group'],
     ];
 

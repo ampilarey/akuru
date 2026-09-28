@@ -25,6 +25,21 @@ screens the Blade nav used to link by hand (announcements,
 substitutions, Hifz, Qur'an progress, e-learning) are map items marked
 `hard`. `docs/ADMIN_PANEL.md` §1 has the table; STATUS §5id the slice.
 
+**Each workspace's menu is only its own (2026-09-28, `docs/SIGN_IN_PLAN.md`
+ID1, STATUS §5jz).** Until then every workspace held `mine` (Home — the
+family portal — Messages, Notices, Forms, the Library, the Bookstore) and
+four held `learn_group` (a person's own Learn and Schedule, the writer's
+desk, the vendor's shop), so a vendor's menu carried the school's items.
+Now the School holds the office's groups, *Teaching*, *Communication* and
+*My work*; Family and Learn hold *Communication*, *Education*,
+*Evaluation* and *Other*, the order of an EduPage account's drawer; the
+Institute, the Bookstore office, My shop, Writing and Catalog hold
+nothing of the school's. Every workspace ends with *Personal* (`me`). An
+item in a group several workspaces share may name its `workspaces`
+(`BuildNavigationAction::belongsIn`), so a teacher-parent's School shows
+none of the family's fees or pick-up. The shell's More panel opens with
+*Home*, the active workspace's home.
+
 ## Implemented (2026-09-24)
 
 - **`App\Support\Navigation\NavigationMap`** — the map: a primary bar per

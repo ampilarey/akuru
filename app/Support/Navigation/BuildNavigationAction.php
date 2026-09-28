@@ -66,7 +66,7 @@ class BuildNavigationAction
             }
             $items = [];
             foreach ($group['items'] as $item) {
-                if (! $this->mayOpen($user, $roles, $item, $routes, $locale)) {
+                if (! $this->belongsIn($item, $workspace) || ! $this->mayOpen($user, $roles, $item, $routes, $locale)) {
                     continue;
                 }
                 // A section's inner screens (the admin panel), each behind
@@ -89,6 +89,19 @@ class BuildNavigationAction
         }
 
         return ['primary' => $primary, 'groups' => $groups, 'workspace' => $workspace];
+    }
+
+    /**
+     * A group several workspaces share (Communication) may hold items that
+     * belong to some of them only: a family's fees are the household's, not
+     * the School's a teacher-parent is also in. The person's roles cannot say
+     * that — a teacher-parent holds both — so the item names its workspaces.
+     *
+     * @param  array{workspaces?: list<string>}  $item
+     */
+    private function belongsIn(array $item, string $workspace): bool
+    {
+        return ! isset($item['workspaces']) || in_array($workspace, $item['workspaces'], true);
     }
 
     /**
