@@ -4414,6 +4414,36 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5kg. The vendor's shop page fits a phone (2026-09-28)
+
+The owner's screenshot from an iPhone: the shop page (`/vendor`) was
+shrunk and cut off at the side, with the section buttons (Money, Reviews,
+Stock, Quotes, Insights) running off the screen. Measured at 390px, the
+page was **826px** wide, so the phone zoomed out to fit it. Three causes:
+
+- The row of section buttons was an `inline-flex` with no wrap: eight
+  buttons in one line, 810px.
+- The products table was 562px wide with no way to fit, and the discount
+  codes table was the same shape.
+- With the product editor open, the Photos box was 16px too wide: a
+  `<fieldset>` never shrinks below its widest child, here the file picker.
+
+**What changed.** The buttons wrap onto as many lines as they need. The
+products and discount-code tables use the app's phone cards
+(`.table-stack`, STATUS §5js): each row is a card of label–value lines,
+the title stacked over its category, the actions one wrapping row, and
+labels start-aligned on a phone while the desktop table keeps its
+right-aligned numbers. The notices table scrolls inside itself if it must.
+The editor's fieldsets may shrink and the file picker is capped at the
+width.
+
+**Checked.** Every vendor page at 390px — the shop, orders, stock,
+insights, quotes, storefront, money, reviews — in English, Dhivehi and
+Arabic, with the product editor open and with the bulk bar showing: each
+390px wide, no errors. `vendor.mjs` **26/26** with a new step: after the
+owner accepts the agreement, the shop page at 390px is no wider than the
+phone (826px before the fix). Bookshop and architecture tests: 178 passed.
+
 ## 5kf. ID5: the workspace homes lay out their menus as tiles (2026-09-28)
 
 `docs/SIGN_IN_PLAN.md` ID5, the last of its six slices. EduPage's home is

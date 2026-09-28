@@ -172,20 +172,20 @@ function ProductEditor({ product, options, t, onDone }) {
                 </Field>
             </div>
 
-            <fieldset className="grid gap-3 rounded border p-3 md:grid-cols-5">
+            <fieldset className="min-w-0 grid gap-3 rounded border p-3 md:grid-cols-5">
                 <legend className="px-1 text-sm font-semibold">{t.book_details}</legend>
                 {DETAIL_BOOK.map((key) => (
                     <Field key={key} label={t[key]}><input className="form-input w-full" value={form.data.details[key] || ''} onChange={setDetail(key)} data-testid={`detail-${key}`} /></Field>
                 ))}
             </fieldset>
-            <fieldset className="grid gap-3 rounded border p-3 md:grid-cols-3">
+            <fieldset className="min-w-0 grid gap-3 rounded border p-3 md:grid-cols-3">
                 <legend className="px-1 text-sm font-semibold">{t.educational_details}</legend>
                 {DETAIL_EDU.map((key) => (
                     <Field key={key} label={t[key]}><input className="form-input w-full" value={form.data.details[key] || ''} onChange={setDetail(key)} data-testid={`detail-${key}`} /></Field>
                 ))}
             </fieldset>
 
-            <fieldset className="rounded border p-3" data-testid="variants">
+            <fieldset className="min-w-0 rounded border p-3" data-testid="variants">
                 <legend className="px-1 text-sm font-semibold">{t.variants}</legend>
                 <p className="mb-2 text-xs text-gray-500">{t.variants_hint}</p>
                 {form.data.variants.map((v, index) => (
@@ -200,7 +200,7 @@ function ProductEditor({ product, options, t, onDone }) {
                 <button type="button" className="text-sm text-blue-700 underline" data-testid="add-variant" onClick={() => form.setData('variants', [...form.data.variants, { name: '', sku: '', price: '', stock: '0', is_active: true }])}>{t.add_variant}</button>
             </fieldset>
 
-            <fieldset className="rounded border p-3">
+            <fieldset className="min-w-0 rounded border p-3">
                 <legend className="px-1 text-sm font-semibold">{t.photos}</legend>
                 {product?.images?.length > 0 && (
                     <ul className="mb-3 flex flex-wrap gap-3" data-testid="product-images">
@@ -223,7 +223,7 @@ function ProductEditor({ product, options, t, onDone }) {
                         ))}
                     </ul>
                 )}
-                <input type="file" multiple accept="image/jpeg,image/png,image/webp" onChange={(e) => form.setData('photos', Array.from(e.target.files || []))} data-testid="product-photos" />
+                <input type="file" multiple accept="image/jpeg,image/png,image/webp" className="block w-full max-w-full text-sm" onChange={(e) => form.setData('photos', Array.from(e.target.files || []))} data-testid="product-photos" />
                 <p className="mt-1 text-xs text-gray-500">{t.photos_hint} {t.image_alt_hint}</p>
             </fieldset>
 
@@ -450,17 +450,17 @@ function DiscountCodes({ codes, isOwner, t }) {
             <h2 className="mb-1 text-lg font-semibold">{t.discount_codes_heading}</h2>
             <p className="mb-2 text-sm text-gray-600">{t.discount_codes_intro}</p>
             {codes.length > 0 && (
-                <table className="mb-3 w-full rounded border bg-white text-sm">
+                <table className="table-stack mb-3 w-full rounded border bg-white text-sm">
                     <thead className="bg-gray-50"><tr><th className="p-2 text-start">{t.discount_code}</th><th className="p-2 text-start">{t.discount}</th><th className="p-2 text-start">{t.code_valid}</th><th className="p-2 text-end">{t.code_used}</th><th className="p-2 text-start">{t.status}</th><th className="p-2" /></tr></thead>
                     <tbody>
                         {codes.map((c) => (
                             <tr key={c.id} className="border-t" data-testid={`code-${c.code}`} data-code-status={c.status}>
-                                <td className="p-2 font-mono">{c.code}<span className="block text-xs text-gray-500">{c.name}</span></td>
-                                <td className="p-2">{c.discount_type === 'percentage' ? `${Number(c.discount_value)}%` : `MVR ${c.discount_value}`}{c.minimum_order_amount && <span className="block text-xs text-gray-500">{t.code_minimum.replace(':amount', c.minimum_order_amount)}</span>}</td>
-                                <td className="p-2 text-xs">{c.starts_at || '—'} → {c.ends_at || '—'}</td>
-                                <td className="p-2 text-end">{c.used_count}{c.usage_limit ? ` / ${c.usage_limit}` : ''}<span className="block text-xs text-gray-500">MVR {c.discounted_total}</span></td>
-                                <td className="p-2">{c.status === 'active' ? t.active : t.inactive}</td>
-                                <td className="p-2 text-end">{isOwner && <button type="button" className="text-blue-700 underline" onClick={() => router.post(`/vendor/discount-codes/${c.id}/status`, { active: c.status === 'active' ? 0 : 1 }, { preserveScroll: true })} data-testid={`toggle-code-${c.code}`}>{c.status === 'active' ? t.switch_off : t.switch_on}</button>}</td>
+                                <td className="p-2 font-mono" data-label={t.discount_code}>{c.code}<span className="block text-xs text-gray-500">{c.name}</span></td>
+                                <td className="p-2" data-label={t.discount}>{c.discount_type === 'percentage' ? `${Number(c.discount_value)}%` : `MVR ${c.discount_value}`}{c.minimum_order_amount && <span className="block text-xs text-gray-500">{t.code_minimum.replace(':amount', c.minimum_order_amount)}</span>}</td>
+                                <td className="p-2 text-xs" data-label={t.code_valid}>{c.starts_at || '—'} → {c.ends_at || '—'}</td>
+                                <td className="p-2 sm:text-end" data-label={t.code_used}>{c.used_count}{c.usage_limit ? ` / ${c.usage_limit}` : ''}<span className="block text-xs text-gray-500">MVR {c.discounted_total}</span></td>
+                                <td className="p-2" data-label={t.status}>{c.status === 'active' ? t.active : t.inactive}</td>
+                                <td className="table-actions p-2 sm:text-end">{isOwner && <button type="button" className="text-blue-700 underline" onClick={() => router.post(`/vendor/discount-codes/${c.id}/status`, { active: c.status === 'active' ? 0 : 1 }, { preserveScroll: true })} data-testid={`toggle-code-${c.code}`}>{c.status === 'active' ? t.switch_off : t.switch_on}</button>}</td>
                             </tr>
                         ))}
                     </tbody>
@@ -507,6 +507,7 @@ function Notices({ settings, isOwner, t }) {
                 </p>
             )}
             <form onSubmit={(e) => { e.preventDefault(); form.post('/vendor/notices', { preserveScroll: true }); }}>
+                <div className="overflow-x-auto">
                 <table className="w-full rounded border bg-white text-sm">
                     <thead className="bg-gray-50"><tr><th className="p-2 text-start">{t.notice_event}</th><th className="p-2">{t.in_app}</th><th className="p-2">{t.email}</th><th className="p-2">SMS</th></tr></thead>
                     <tbody>
@@ -520,6 +521,7 @@ function Notices({ settings, isOwner, t }) {
                         ))}
                     </tbody>
                 </table>
+                </div>
                 {isOwner && <button type="submit" className="btn-primary mt-2" disabled={form.processing} data-testid="save-notices">{t.save}</button>}
             </form>
         </section>
@@ -552,7 +554,7 @@ function ProductList({ products, t, onEdit, selected, setSelected }) {
     const toggle = (id) => setSelected(selected.includes(id) ? selected.filter((x) => x !== id) : [...selected, id]);
 
     return (
-        <table className="w-full overflow-hidden rounded border bg-white text-sm" data-testid="product-list">
+        <table className="table-stack w-full overflow-hidden rounded border bg-white text-sm" data-testid="product-list">
             <thead className="bg-gray-50 text-start">
                 <tr>
                     <th className="p-2 text-start"><input type="checkbox" checked={all} onChange={() => setSelected(all ? [] : products.map((p) => p.id))} aria-label={t.select_all} data-testid="select-all" /></th>
@@ -570,22 +572,25 @@ function ProductList({ products, t, onEdit, selected, setSelected }) {
                     <tr key={p.id} className="border-t" data-testid={`product-row-${p.slug}`}>
                         <td className="p-2"><input type="checkbox" checked={selected.includes(p.id)} onChange={() => toggle(p.id)} aria-label={p.title} data-testid={`select-${p.slug}`} /></td>
                         <td className="p-2">{p.images[0]?.url ? <img src={p.images[0].url} alt="" className="h-12 w-12 rounded object-cover" loading="lazy" /> : <span className="block h-12 w-12 rounded bg-gray-100" />}</td>
-                        <td className="p-2">
-                            <span className="font-medium">{p.title}</span>
-                            {p.category && <span className="block text-xs text-gray-500">{p.category}</span>}
-                            {p.variants.length > 0 && <span className="block text-xs text-gray-500">{t.variants}: {p.variants.map((v) => v.name).join(', ')}</span>}
+                        <td className="p-2" data-label={t.product_title}>
+                            {/* One block, so a phone's card keeps the title over its category. */}
+                            <span className="min-w-0 break-words">
+                                <span className="font-medium">{p.title}</span>
+                                {p.category && <span className="block text-xs text-gray-500">{p.category}</span>}
+                                {p.variants.length > 0 && <span className="block text-xs text-gray-500">{t.variants}: {p.variants.map((v) => v.name).join(', ')}</span>}
+                            </span>
                         </td>
-                        <td className="p-2">{p.sku || t.none}</td>
-                        <td className="p-2 text-end">
+                        <td className="p-2 break-all" data-label={t.sku}>{p.sku || t.none}</td>
+                        <td className="p-2 sm:text-end" data-label={t.price}>
                             {p.price}
                             {p.compare_at_price && <span className="ms-1 text-xs text-gray-500 line-through">{p.compare_at_price}</span>}
                         </td>
-                        <td className="p-2 text-end">
+                        <td className="p-2 sm:text-end" data-label={t.stock}>
                             {p.track_stock ? p.stock : t.not_tracked}
                             {p.low_stock && <span className="ms-1 rounded bg-amber-100 px-1 text-xs text-amber-800">{t.low_stock}</span>}
                         </td>
-                        <td className="p-2">{t[`status_${p.status}`] || p.status}</td>
-                        <td className="p-2 text-end">
+                        <td className="p-2" data-label={t.status}>{t[`status_${p.status}`] || p.status}</td>
+                        <td className="table-actions p-2 sm:text-end">
                             <button type="button" className="text-blue-700 underline" onClick={() => onEdit(p)} data-testid={`edit-${p.slug}`}>{t.edit}</button>
                             <button type="button" className="ms-3 text-blue-700 underline" onClick={() => router.post(`/vendor/products/${p.id}/duplicate`, {}, { preserveScroll: true })} data-testid={`duplicate-${p.slug}`}>{t.duplicate}</button>
                             {p.status === 'active' && (
@@ -618,14 +623,14 @@ export default function Vendor({ t, vendor, memberships = [], agreement_url, pro
             {flash.success && <p className="mb-4 rounded bg-green-50 p-3 text-green-700" data-testid="flash-success">{flash.success}</p>}
 
             <header className="mb-6 flex flex-wrap items-end justify-between gap-3">
-                <div>
+                <div className="min-w-0">
                     <h1 className="text-2xl font-bold" data-testid="vendor-name">{vendor.name}</h1>
                     <p className="text-sm text-gray-600">
                         {t.at_akuru} · {t.your_role}: {t[`role_${vendor.role}`] || vendor.role} ·{' '}
                         <a href={`/shop/${vendor.slug}`} target="_blank" rel="noreferrer" className="text-blue-700 underline" data-testid="open-shop-page">{t.open_shop_page}</a>
                     </p>
                     {vendor.agreement_accepted && (
-                        <span className="mt-2 inline-flex gap-2">
+                        <span className="mt-2 flex flex-wrap gap-2" data-testid="shop-sections">
                             <a href="/vendor/orders" className="btn-primary" data-testid="open-orders">{t.orders_title}</a>
                             <a href="/vendor/storefront" className="btn-secondary" data-testid="open-designer">{t.designer_title}</a>
                             <a href="/vendor/storefront/sections" className="btn-secondary" data-testid="open-sections">{t.sections_title}</a>
