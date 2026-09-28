@@ -9,9 +9,17 @@ use App\Domains\Hifz\Models\HifzSession;
 use App\Domains\Hifz\Models\HifzSessionRecord;
 use App\Domains\Hifz\Services\HifzReportService;
 use App\Domains\Hifz\Services\HifzScopeService;
+use App\Domains\Hifz\Support\HifzDashboardRows;
 use App\Http\Controllers\Controller;
-use Illuminate\View\View;
+use Inertia\Inertia;
+use Inertia\Response;
 
+/**
+ * The supervisor's Hifz dashboard, scoped to their programmes. Inertia
+ * since the Hifz port's second slice (STATUS §5jw): the seven cards, the
+ * haraka alerts and weak students, the pending milestones by pupil with
+ * their Review, and the two doors.
+ */
 class SupervisorHifzDashboardController extends Controller
 {
     public function __construct(
@@ -19,7 +27,7 @@ class SupervisorHifzDashboardController extends Controller
         protected HifzReportService $reports,
     ) {}
 
-    public function index(): View
+    public function index(): Response
     {
         $user = auth()->user();
         $programIds = $this->scope->assignedProgramIds($user);
@@ -35,11 +43,15 @@ class SupervisorHifzDashboardController extends Controller
             'parent_attention' => HifzSessionRecord::whereIn('student_id', $studentIds)->where('requires_parent_attention', true)->where('created_at', '>=', now()->subDays(7))->count(),
         ];
 
-        $harakaLeaders = $this->reports->harakaMistakeLeaders($studentIds);
-        $weakStudents = $this->reports->weakStudents($studentIds);
-        $pendingMilestones = HifzMilestone::whereIn('hifz_program_id', $programIds)->where('status', 'pending')->with('student.user')->latest()->take(10)->get();
-        $programs = HifzProgram::whereIn('id', $programIds)->with('supervisor')->get();
-
-        return view('hifz.dashboard.supervisor', compact('cards', 'harakaLeaders', 'weakStudents', 'pendingMilestones', 'programs'));
+        return Inertia::render('Hifz/SupervisorDashboard', [
+            'cards' => $cards,
+            'haraka_leaders' => HifzDashboardRows::harakaLeaders($this->reports->harakaMistakeLeaders($studentIds)->take(5)),
+            'weak_students' => HifzDashboardRows::weakStudents($this->reports->weakStudents($studentIds)->take(5)),
+            'pending_milestones' => HifzDashboardRows::milestones(
+                HifzMilestone::whereIn('hifz_program_id', $programIds)->where('status', 'pending')->with('student.user')->latest()->take(10)->get()
+            ),
+            'links' => ['reports' => route('hifz.reports.index'), 'milestones' => route('hifz.milestones.index')],
+            't' => trans('admin'),
+        ]);
     }
 }

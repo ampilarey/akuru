@@ -13,8 +13,7 @@ export default function Programs({ programs = { data: [] }, can_create = false, 
     return (
         <AppShell title={t.hifz_programs_title || 'Hifz Programs'}>
             <div className="mb-4 flex flex-wrap items-center gap-3 text-sm">
-                {/* A plain link, not a visit: the hub redirects to a dashboard that is still Blade until the port's second slice. */}
-                <a href="/hifz" className="underline" data-testid="hifz-hub-link">{t.hifz_back_hub || '← Hifz'}</a>
+                <Link href="/hifz" className="underline" data-testid="hifz-hub-link">{t.hifz_back_hub || '← Hifz'}</Link>
                 {can_create && <Link href="/hifz/programs/create" className="btn-primary ms-auto" data-testid="program-new">{t.hifz_program_new || 'New Program'}</Link>}
             </div>
 

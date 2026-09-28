@@ -195,7 +195,8 @@ final class NavigationMap
                 ['key' => 'review', 'href' => '/review', 'roles' => ['reviewer']],
                 ['key' => 'vendor_portal', 'href' => '/vendor', 'roles' => ['vendor']],
                 // Blade screens the Blade nav used to link by hand (STATUS §5id).
-                ['key' => 'hifz', 'href' => '/hifz', 'hard' => true, 'can' => ['view_hifz_programs']],
+                // The Hifz hub redirects to a role's dashboard, Inertia since STATUS §5jw, so a visit follows it.
+                ['key' => 'hifz', 'href' => '/hifz', 'can' => ['view_hifz_programs']],
                 ['key' => 'quran_progress', 'href' => '/quran-progress', 'hard' => true],
                 ['key' => 'e_learning', 'href' => '/e-learning', 'hard' => true, 'roles' => $everyone],
             ]],

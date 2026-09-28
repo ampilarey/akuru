@@ -89,7 +89,7 @@ it('shows the supervisor the pending milestones by pupil, with a way to review t
         ->actingAs($supervisor)
         ->get(route('hifz.supervisor.dashboard'))
         ->assertOk()
-        ->assertSee('Pending Milestones')
-        ->assertSee($milestone->student->full_name)
-        ->assertSee(route('hifz.milestones.index'));
+        ->assertInertia(fn ($page) => $page->component('Hifz/SupervisorDashboard')
+            ->where('pending_milestones', fn ($rows) => collect($rows)->contains('student', $milestone->student->full_name))
+            ->where('links.milestones', route('hifz.milestones.index')));
 });
