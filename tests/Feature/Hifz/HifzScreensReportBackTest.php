@@ -40,19 +40,17 @@ it('tells the supervisor the milestone went to the dean, on the screen they pres
         ->assertRedirect(route('hifz.milestones.index'))
         ->assertSessionHas('success', 'Milestone reviewed and sent to dean.');
 
+    // The list is Inertia since the Hifz port's third slice (STATUS §5jx):
+    // its flash arrives as the shared `flash` prop the shell renders.
     $this->withoutLocalizationMiddleware()
         ->actingAs($supervisor)
         ->withSession(['success' => 'Milestone reviewed and sent to dean.'])
         ->get(route('hifz.milestones.index'))
         ->assertOk()
-        ->assertSee('Milestone reviewed and sent to dean.');
-
-    foreach (['milestones/index'] as $view) {
-        expect(file_get_contents(resource_path("views/hifz/{$view}.blade.php")))->toContain("@include('hifz.partials.alerts')");
-    }
+        ->assertInertia(fn ($page) => $page->component('Hifz/Milestones')->where('flash.success', 'Milestone reviewed and sent to dean.'));
 
     // The enrolment form is Inertia since the Hifz port's first slice (STATUS
-    // §5jv): its flash arrives as the shared `flash` prop the shell renders.
+    // §5jv): its flash arrives the same way.
     $program = \App\Domains\Hifz\Models\HifzProgram::query()->firstOrFail();
     $this->withoutLocalizationMiddleware()
         ->actingAs(User::where('email', 'headmaster@akuru.edu.mv')->firstOrFail())
