@@ -95,16 +95,17 @@ it('still lets an OTP-only account set its first password without one', function
 
 it('asks for the current password on the form exactly when it will require it', function () {
     // Otherwise the screen is uncompletable: validation demands a field the
-    // view never rendered, and the user sees an error they cannot act on.
+    // view never rendered, and the user sees an error they cannot act on. The
+    // form is an Inertia page inside the shell since SIGN_IN_PLAN ID3.
     $this->withoutLocalizationMiddleware()->actingAs(setPasswordUser(mustSetOne: false))
         ->get('/account/set-password')
         ->assertOk()
-        ->assertSee('name="current_password"', false);
+        ->assertInertia(fn ($page) => $page->component('Identity/SetPassword')->where('needs_current_password', true));
 
     $this->withoutLocalizationMiddleware()->actingAs(setPasswordUser(mustSetOne: true))
         ->get('/account/set-password')
         ->assertOk()
-        ->assertDontSee('name="current_password"', false);
+        ->assertInertia(fn ($page) => $page->component('Identity/SetPassword')->where('needs_current_password', false));
 });
 
 it('shows the set-password prompt to an account that needs one', function () {
@@ -114,21 +115,20 @@ it('shows the set-password prompt to an account that needs one', function () {
     // banner never rendered for anybody. The feature was unreachable through
     // its own entry point.
     //
-    // The prompt moved with the page that showed it: *My account*, inside the
-    // shell (docs/SIGN_IN_PLAN.md ID2b), where `/dashboard` sends an account
+    // The prompt is the shell's since SIGN_IN_PLAN ID3, shown on the person's
+    // workspace home — here *My account*, where `/dashboard` sends an account
     // with no other workspace.
     $this->withoutLocalizationMiddleware()->actingAs(setPasswordUser(mustSetOne: true))
         ->get('/my-account')
         ->assertOk()
         ->assertInertia(fn ($page) => $page->component('Portal/AccountHome')
-            ->where('must_set_password', true)
-            ->where('set_password_href', '/account/set-password')
-            ->where('t.set_password_title', 'Set a password for easier sign-in'));
+            ->where('auth.must_set_password', true)
+            ->where('i18n.nav.set_password_title', 'Set a password for easier sign-in'));
 });
 
 it('does not nag an account that already has a password', function () {
     $this->withoutLocalizationMiddleware()->actingAs(setPasswordUser(mustSetOne: false))
         ->get('/my-account')
         ->assertOk()
-        ->assertInertia(fn ($page) => $page->where('must_set_password', false));
+        ->assertInertia(fn ($page) => $page->where('auth.must_set_password', false));
 });

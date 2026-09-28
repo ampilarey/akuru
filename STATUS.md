@@ -4414,6 +4414,61 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5kd. ID3: every door leads into the app (2026-09-28)
+
+`docs/SIGN_IN_PLAN.md` ID3, findings F6 and F9. After ID2b a signed-in
+person landed inside the app, but the doors around it still led out:
+setting a password was a Blade form in the website's layout that sent
+people on to the marketing home ("you can now log in" — while signed in);
+the website's header offered each role its own button beside links to the
+retired portal; the mobile app opened the marketing home.
+
+**What changed.**
+
+- **Setting a password** is an Inertia page inside the shell
+  (`Identity/SetPassword`; `account/set-password.blade.php` deleted, Blade
+  baseline 187 → 186). It still asks for the current password exactly when
+  the server will require it (§ `SetPasswordNeedsTheOldOneTest`). Saving
+  returns to `/dashboard`, so to the person's own home, with "Your password
+  is saved" in EN/DV/AR.
+- **The prompt to choose a password** is the shell's: HandleInertiaRequests
+  shares `auth.must_set_password` (the `force_password_change` a code-only
+  account carries) and AppShell shows it on the active workspace's home —
+  the family's, a learner's, a teacher's day, a shop, My account — once
+  there, not on every screen. The retired public dashboard used to show it
+  to a person with no role only, and after ID2a/ID2c most of them had moved
+  to My learning or Family, where nothing asked. My account's and the
+  vendor page's own prompts are gone (their strings with them).
+- **The website's header** (desktop menu, phone menu, phone bottom bar)
+  has one door into the app for everyone — *My Portal* → `/dashboard` — and
+  *My enrolments*; the role-by-role buttons (Admin Dashboard, Today, Parent
+  dashboard), the old portal's links and *My Payments* are gone. The labels
+  are the nav's own translations.
+- **The mobile app** (`capacitor.config.ts`) opens `…/dashboard`: signed
+  in, the person's home; signed out, the sign-in, which returns there. An
+  installed app picks this up at its next build (Phase 5 packaging is
+  owner-gated).
+- **The sign-in page** says, in EN/DV/AR, that a person goes straight to
+  their own space.
+
+**Tests.** `EveryDoorLeadsIntoTheShellTest` (new, 4): a code-only parent
+is asked on the family home, the form is the shell's without a current
+password, saving returns to `/dashboard` and on to the family home with
+the prompt gone; the website's header for a teacher, a parent and a person
+with no role carries the one door and My enrolments and none of the old
+portal's addresses or role buttons; the app's start URL; the sign-in
+page's line. Updated: `SetPasswordNeedsTheOldOneTest` (the Inertia form,
+the shared prompt), `VendorPortalTest`. Full suite **2433 passed**.
+
+**Walked.** `identity.mjs` **41/41** (four new steps): the account holder,
+on the website, has one door into the app and no old portal link; *My
+Portal* lands on My account; the prompt there opens the form inside the app
+without a current-password field; saving returns to My account with the
+message and no prompt. `vendor.mjs` **25/25**: the invited owner is asked,
+on the shop, to choose a password — now by the shell.
+
+**Next.** ID4: the account list in the drawer.
+
 ## 5kc. ID2b: the old course portal retired — My account and My enrolments inside the app (2026-09-28)
 
 Findings F4 and F5 of `docs/SIGN_IN_PLAN.md`. A signed-in person with no
@@ -4507,7 +4562,7 @@ and Dhivehi: no horizontal scroll, the tables stack.
 are ID3. The set-password prompt reaches My account (and a vendor's shop,
 which has its own); ID3 carries it to every home.
 
-**Next.** ID3: every door leads into the shell.
+**Next.** ID3: every door leads into the shell (shipped, §5kd).
 
 ## 5kb. ID2c: a parent who registered on the website gets their Family once the office verifies them (2026-09-28)
 

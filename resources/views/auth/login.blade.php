@@ -9,6 +9,7 @@
     <div style="margin-bottom:1.75rem">
         <h2 style="font-size:1.5rem;font-weight:800;color:#111827;margin:0 0 .25rem">Sign In</h2>
         <p style="font-size:.85rem;color:#6B7280;margin:0">Use your email, phone number, or ID card number.</p>
+        <p style="font-size:.8rem;color:#6B7280;margin:.5rem 0 0" data-testid="login-lands">{{ __('public.After you sign in you go straight to your own space: your children, your classes, your courses or your shop.') }}</p>
     </div>
 
     <form method="POST" action="{{ route('login') }}" style="display:flex;flex-direction:column;gap:1.125rem">

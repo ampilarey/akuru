@@ -76,8 +76,6 @@ return [
     'accept_agreement' => 'قرأت اتفاقية البائع وأوافق عليها',
     'continue' => 'متابعة',
     'agreement_accepted_flash' => 'أهلًا بك — متجرك جاهز لإدراج المنتجات.',
-    'set_password_notice' => 'سجّلت الدخول بكلمة مرور لمرة واحدة. اختر كلمة مرورك الآن.',
-    'set_password_link' => 'تعيين كلمة المرور',
     'switch_shop' => 'المتجر',
     'your_role' => 'صفتك',
     'role_owner' => 'المالك',

@@ -8,7 +8,8 @@ thirteenth finding (F13, below) fixed with it. **ID2a shipped 2026-09-28
 (STATUS §5kb)**: the office verifying a guardian link makes the guardian a
 parent. **ID2b shipped 2026-09-28 (STATUS §5kc)**: the old course portal
 retired, *My account* and *My enrolments* in the shell; F4 and F5 closed.
-Next: ID3 (every door leads into the shell).
+**ID3 shipped 2026-09-28 (STATUS §5kd)**: every door leads into the shell;
+F6 and F9 closed. Next: ID4 (the account list in the drawer).
 **Owner's brief (2026-09-28, with five EduPage screenshots):** "Still there
 is a problem with the login system. Logged in with a vendor account but I
 see educational items also. I need the login style used in EduPage. When a
@@ -66,10 +67,10 @@ for each kind of account. Each finding names the code that produces it.
 | F3 | **A person's own learning is mixed into the family's menu.** **Fixed in ID1 (STATUS §5jz)** for the menus; the parent-learner's Learner workspace is ID2a. A parent's *More* has 34 items in two groups; *Learn* and *Schedule* (the parent's own engine courses) sit inside *Family*; a teacher's School menu carries *Learn* too; a writer's Writing menu carries Learn, Schedule, Hifz, E-Learning. | `learn_group` is in the family, learn, school and writing workspaces; its `learn` and `schedule` items are `roles => $everyone`. |
 | F4 | **An adult course learner has no workspace and leaves the app.** **Fixed for learners in ID2a (STATUS §5ka)**: they hold *My learning* and land on `/learn` inside the shell; **and for everyone else in ID2b (STATUS §5kc)**: a role-less login with no learning lands on *My account*, inside the shell. A person who registered and enrolled in a public course holds no role, so `/dashboard` renders the Blade **"My Dashboard"** in the *website* layout: website menu (Courses, News, Articles…), hero, *Browse Courses*, *Open for enrollment* course cards, the marketing footer and the cookie banner. No shell, no switcher. This is the "home page with promotional items". | `DashboardController::publicUserDashboard()` → `dashboard/public-user.blade.php` (`@extends('public.layouts.public')`); `RoleLandingTest` pins it ("falls through to the public-user dashboard when the account has no role"). The adult gets a `students` row (`unified_student_id`) and a `CourseEnrollment`, never a role (`EnrollmentService`: only a child's login gets `student`). |
 | F5 | **There are two portals.** **Fixed in ID2b (STATUS §5kc)**: the old portal's five pages and `/my-enrollments` are retired into the shell, their addresses redirects. Besides the shell there is an older *My Portal* in the website chrome: `/portal/dashboard`, `/portal/enrollments`, `/portal/payments`, `/portal/certificates`, `/portal/profile` (Blade `portal/layout.blade.php`, which extends the public layout), plus `/my-enrollments`. The website's phone bottom bar shows **My Portal** to every signed-in person and links there — so a parent or teacher who taps it from the website lands in the course-learner portal, not their workspace. | `routes/web_public.php` lines 260–269; `public/layouts/public.blade.php` line 205 (`@auth` → `route('portal.dashboard')`). |
-| F6 | **Setting a password sends the person to the marketing home.** After *Set password* the redirect is `route('public.home')` with "You can now log in with your mobile number and password" — while they are signed in. | `AccountController::setPassword` line 68. |
+| F6 | **Setting a password sends the person to the marketing home.** **Fixed in ID3 (STATUS §5kd)**: the form is inside the shell and saving returns to `/dashboard`. After *Set password* the redirect is `route('public.home')` with "You can now log in with your mobile number and password" — while they are signed in. | `AccountController::setPassword` line 68. |
 | F7 | **Signing in itself is right.** Email / phone / ID card + password, an OTP path, both redirecting to `/dashboard`, which sends a person with a role to their workspace home (Institute, School office or a teacher's day, Family, Learn, My shop, Writing, Catalog, Bookstore office). | `AuthenticatedSessionController::store`, `OtpLoginController` line 131, `DashboardController::index`. |
 | F8 | **The switcher is a pill, not an account list.** It shows only when a person holds more than one workspace, in the header; the phone *More* panel lists account and language but not the workspaces. Family and Learn share one home (`/portal/home`), told apart only by the switcher. | `AppShell.jsx` lines 69–104 (`workspaces.length > 1`); `WorkspaceMap` `family` and `learn` both `home => 'portal.home'`. |
-| F9 | **The mobile app opens the website.** The Capacitor wrapper loads `https://akuru.edu.mv` — the marketing home — rather than the sign-in or the person's workspace. | `capacitor.config.ts` `server.url`. |
+| F9 | **The mobile app opens the website.** **Fixed in ID3 (STATUS §5kd)**: it opens `/dashboard` (a rebuild of the app is needed for installed copies). The Capacitor wrapper loads `https://akuru.edu.mv` — the marketing home — rather than the sign-in or the person's workspace. | `capacitor.config.ts` `server.url`. |
 | F10 | **`student` is granted only one way.** A child's login made by the family form gets the role; a pupil's login made anywhere else needs the role screen; an adult self-enrolment gets a student record and no role (see F4). | `EnrollmentService::createChildUserAccount`; `SetUserRolesAction`. |
 | F11 | **The parity document's E7 describes a different switcher.** E7 specifies `linked_accounts` (two *separate* logins linked, the session swapped between them). What shipped is one login with several workspaces (§5ic, §5id), which is what EduPage's *School accounts* are. Linked separate logins are EduPage's *Logout / add user* — a different, later thing. | `docs/EDUPAGE_FEATURES_PLAN.md` §E7. |
 | F12 | **The Blade shell has the same menu.** **Closed with ID1**: the Blade shell renders the same regrouped map. The 24 signed-in Blade screens (`layouts/app.blade.php`: e-learning, Qur'an progress, substitutions, analytics, the auth pages) read the same map since §5id, so F1–F3 show there too and one fix covers both shells. | `layouts/navigation.blade.php`. |
@@ -268,7 +269,23 @@ to every home. The original bullets follow.
   baseline drops by eight.
 - **Tests:** the redirects; `NoNewBladeScreensTest` count.
 
-### ID3 — Every door leads into the shell (one PR)
+### ID3 — Every door leads into the shell (one PR) — **shipped 2026-09-28, STATUS §5kd**
+
+As built: the set-password form is an Inertia page inside the shell
+(`Identity/SetPassword`, its Blade view deleted) and saving returns to
+`/dashboard`, so to the person's own home, with a trilingual message. The
+prompt to choose one is the shell's: shared as `auth.must_set_password` and
+shown on the active workspace's home, whichever it is — the family's, a
+learner's, a shop's, *My account* — once there rather than on every
+screen; the vendor page's and My account's own prompts went with it. The
+website's header, desktop and phone, has one door into the app, *My
+Portal* → `/dashboard`, and *My enrolments*; the role-by-role buttons
+(Admin Dashboard, Today, Parent dashboard), the old portal's links and *My
+Payments* are gone, as is the old portal's link on the phone's bottom bar.
+The mobile app's `server.url` is `…/dashboard`. The sign-in page says, in
+EN/DV/AR, that a person goes straight to their own space. The original
+bullets follow.
+
 
 - `AccountController::setPassword` → `/dashboard`; the website header's
   *My Portal* → `/dashboard`; `capacitor.config.ts` start path

@@ -6,9 +6,6 @@
 return [
     'home_title' => 'My account',
     'home_intro' => 'Your courses, and the enrolments you made for yourself or your children.',
-    'set_password_title' => 'Set a password for easier sign-in',
-    'set_password_body' => 'For now you can only sign in with a one-time code. Add a password to sign in with your mobile number or email.',
-    'set_password_link' => 'Set a password',
     'children_title' => 'Children awaiting the office',
     'children_body' => 'The school checks that you are a child\'s parent or guardian before it shows you their records. Your Family view opens once it has checked.',
     'child_awaiting' => 'awaiting the office',
@@ -52,4 +49,16 @@ return [
     'payment_cancelled' => 'Cancelled',
     'payment_expired' => 'Expired',
     'payment_refunded' => 'Refunded',
+
+    // The set-password page, inside the shell since ID3.
+    'password_title' => 'Choose a password',
+    'password_intro' => 'With a password you can sign in with your mobile number, email or ID card without waiting for a code.',
+    'password_current' => 'Current password',
+    'password_current_hint' => 'Changing a password you already have needs the old one.',
+    'password_new' => 'New password',
+    'password_new_hint' => 'At least 8 characters',
+    'password_confirm' => 'Confirm the password',
+    'password_save' => 'Save password',
+    'password_later' => 'Not now',
+    'password_saved' => 'Your password is saved. Next time you can sign in with it, or with a code as before.',
 ];

@@ -6,11 +6,17 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\View\View;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class AccountController extends Controller
 {
-    public function setPasswordForm(Request $request): View|RedirectResponse
+    /**
+     * Inside the shell since docs/SIGN_IN_PLAN.md ID3: the prompt that sends a
+     * person here is on their workspace home, and the page was a Blade form
+     * in the website's layout that sent them on to the marketing home.
+     */
+    public function setPasswordForm(Request $request): Response|RedirectResponse
     {
         $user = $request->user();
         if (! $user) {
@@ -20,8 +26,10 @@ class AccountController extends Controller
         // The form has to know whether to ask for the current password, or a
         // user who has one would be shown a screen they cannot complete: the
         // validation below would demand a field the view never rendered.
-        return view('account.set-password', [
-            'needsCurrentPassword' => ! $user->force_password_change,
+        return Inertia::render('Identity/SetPassword', [
+            'needs_current_password' => ! $user->force_password_change,
+            'store_href' => route('account.set-password.store', [], false),
+            't' => trans('account'),
         ]);
     }
 
@@ -65,7 +73,10 @@ class AccountController extends Controller
             'force_password_change' => false,
         ]);
 
-        return redirect()->intended(route('public.home'))
-            ->with('success', 'Password set successfully. You can now log in with your mobile number and password.');
+        // Back to the person's own home (ID3, finding F6): this used to be the
+        // marketing home, telling someone who was signed in that they could
+        // "now log in".
+        return redirect()->intended(route('dashboard'))
+            ->with('success', trans('account.password_saved'));
     }
 }

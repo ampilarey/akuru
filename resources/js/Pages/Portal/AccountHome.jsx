@@ -13,7 +13,7 @@ import AppShell from '../../Layouts/AppShell';
  */
 const tile = 'block rounded-lg border bg-white p-4 text-sm font-medium text-[#7C2D37] hover:bg-[#F3EBE0]';
 
-export default function AccountHome({ t = {}, must_set_password = false, set_password_href, children_waiting = [], enrolments = [], enrolments_total = 0 }) {
+export default function AccountHome({ t = {}, children_waiting = [], enrolments = [], enrolments_total = 0 }) {
     const { nav = { primary: [], groups: [] } } = usePage().props;
     const seen = new Set(['/my-account']);
     const doors = [...(nav.primary || []), ...(nav.groups || []).flatMap((group) => group.items)].filter((item) => {
@@ -28,14 +28,6 @@ export default function AccountHome({ t = {}, must_set_password = false, set_pas
     return (
         <AppShell title={t.home_title || 'My account'}>
             <p className="mb-4 text-sm text-gray-600">{t.home_intro}</p>
-
-            {must_set_password && (
-                <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50 p-4" role="status" data-testid="set-password-notice">
-                    <p className="font-medium text-amber-900">{t.set_password_title}</p>
-                    <p className="mt-1 text-sm text-amber-800">{t.set_password_body}</p>
-                    <a href={set_password_href} className="mt-2 inline-block text-sm font-semibold text-amber-900 underline">{t.set_password_link}</a>
-                </div>
-            )}
 
             {/* ID2c: the office's check is what opens Family; until then the
                 children a parent registered on the website wait here. */}
