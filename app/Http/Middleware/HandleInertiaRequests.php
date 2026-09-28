@@ -98,6 +98,8 @@ class HandleInertiaRequests extends Middleware
                 // could see. One indexed COUNT per Inertia response is the
                 // price of them being discoverable from any page.
                 'unread_notifications' => $this->unreadNotifications($request),
+                // ID5: the Messages tile on a workspace home carries its count.
+                'unread_messages' => $request->user() === null ? 0 : app(\App\Domains\Notifications\Actions\ListMessageInboxAction::class)->unreadCount((int) $request->user()->id),
             ],
             // The shell's navigation, built for this person: a short primary
             // bar for their roles and the *More* groups, with every link they

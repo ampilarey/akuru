@@ -123,10 +123,21 @@ async function readMore(page, shot) {
     return { groups, labels: links.map(([label]) => label), paths: links.map(([, href]) => path(href)), hard: links.filter(([, , hard]) => hard).map(([, href]) => path(href)), home: path(home) };
 }
 
+
+// ID5: a home's tiles are its menu — every tile a screen the More panel lists,
+// Messages first where the workspace has it.
+async function tilesAreMenu(page, menu, who) {
+    const tiles = (await page.locator('[data-testid="workspace-tiles"] a').evaluateAll((els) => els.map((el) => el.getAttribute('href') || ''))).map(path);
+    const strays = tiles.filter((t) => !menu.paths.includes(t));
+    const messagesFirst = !tiles.includes('/portal/messages') || tiles[0] === '/portal/messages';
+    check(`${who}: the home's tiles are its menu${tiles.includes('/portal/messages') ? ', Messages first' : ''}`, tiles.length > 0 && strays.length === 0 && messagesFirst, `${tiles.length} tiles${strays.length ? ` · not in the menu: ${strays.join(', ')}` : ''}`);
+}
+
 // ------------------------------------------------------------ 1. the vendor
 const vendor = await signIn(PEOPLE.vendor);
 check('the vendor lands on their shop', /\/vendor(\/apply)?$/.test(vendor.url()), path(vendor.url()));
 let menu = await readMore(vendor, 'vendor');
+await tilesAreMenu(vendor, menu, 'the vendor');
 check('their More panel holds the Personal group and nothing else', menu.groups.join(',') === 'Personal', menu.groups.join(' | '));
 check('with nothing of the school: no Messages, Notices, Forms, family portal or courses', !menu.paths.some((p) => [...SCHOOL_TALK, '/portal/home', '/learn', '/portal/homework'].includes(p)), menu.labels.join(', '));
 check('its Home is the shop', menu.home === '/vendor', menu.home);
@@ -140,6 +151,7 @@ check('the family portal sends a vendor back to their shop', /\/vendor(\/apply)?
 const parent = await signIn(PEOPLE.parent);
 check('the parent lands on the family portal', /\/portal\/home$/.test(parent.url()), path(parent.url()));
 menu = await readMore(parent, 'parent');
+await tilesAreMenu(parent, menu, 'the parent');
 check('their More panel reads Communication, Education, Evaluation, Other, Personal', menu.groups.join(',') === 'Communication,Education,Evaluation,Other,Personal', menu.groups.join(' | '));
 check('with the children, their fees, pick-up and the noticeboard', ['/portal/children', '/portal/invoices', '/portal/pickup', '/portal/announcements'].every((p) => menu.paths.includes(p)), menu.labels.join(', '));
 check('and none of their own learning or the staff’s screens', !menu.paths.some((p) => ['/learn', '/learn/schedule', '/teach/schedule', '/portal/staff-check-in'].includes(p)), menu.paths.filter((p) => /learn|teach|staff/.test(p)).join(', ') || 'none');
@@ -149,6 +161,7 @@ check('Home is the family portal', menu.home === '/portal/home', menu.home);
 const teacher = await signIn(PEOPLE.teacher);
 check('the teacher lands on their day', /\/portal\/teacher$/.test(teacher.url()), path(teacher.url()));
 menu = await readMore(teacher, 'teacher');
+await tilesAreMenu(teacher, menu, 'the teacher');
 check('their More panel is the School’s: Day loop, Teaching, Communication, My work, Personal', ['Day loop', 'Teaching', 'Communication', 'My work'].every((g) => menu.groups.includes(g)) && menu.groups.at(-1) === 'Personal', menu.groups.join(' | '));
 check('with teaching and the school’s messages, and no Learn of their own', menu.paths.includes('/teach/schedule') && menu.paths.includes('/portal/messages') && !menu.paths.includes('/learn') && !menu.paths.includes('/portal/children'), menu.paths.filter((p) => /learn|teach|children/.test(p)).join(', '));
 check('Home is their day', menu.home === '/portal/teacher', menu.home);
@@ -173,6 +186,7 @@ const learnerText = (await learner.locator('main').innerText()).replace(/\s+/g, 
 check('with their course under way, and the one waiting on its payment', learnerText.includes('SMOKE-Learner-Course') && /SMOKE-Learner-Waiting · Awaiting payment/.test(learnerText), learnerText.slice(0, 200));
 check('one workspace, so no switcher', (await switcher(learner)) === 0);
 menu = await readMore(learner, 'learner');
+await tilesAreMenu(learner, menu, 'the learner');
 check('their More panel: Education and Personal, their own courses and enrolments', menu.groups.join(',') === 'Education,Personal' && menu.paths.includes('/learn') && menu.paths.includes('/my-enrollments') && !menu.paths.some((p) => [...SCHOOL_TALK, '/portal/children', '/portal/homework'].includes(p)), `${menu.groups.join(' | ')} — ${menu.labels.join(', ')}`);
 await learner.goto(`${BASE}/en/portal/home`, { waitUntil: 'networkidle' });
 check('the family portal sends them back to My learning', path(learner.url()) === '/learn', path(learner.url()));
@@ -207,7 +221,7 @@ check('a person with no other workspace lands on My account, inside the app', pa
 const accountText = (await account.locator('main').innerText()).replace(/\s+/g, ' ');
 check('asked to choose a password, told their child awaits the office, their enrolment listed', (await account.locator('[data-testid="set-password-notice"]').count()) === 1 && /SMOKE-AccountChild Ibrahim · awaiting the office/.test(accountText) && accountText.includes('SMOKE-Learner-Waiting'), accountText.slice(0, 240));
 check('nothing of the website: no courses open for enrolment', !/Open for enrollment/i.test(accountText));
-const doors = await account.locator('[data-testid="account-doors"] a').evaluateAll((els) => els.map((el) => el.getAttribute('href') || ''));
+const doors = await account.locator('[data-testid="workspace-tiles"] a').evaluateAll((els) => els.map((el) => el.getAttribute('href') || ''));
 check('its doors are its menu: courses, enrolments, profile, the Library, the Bookstore, the wallet', ['/my-enrollments', '/learn/catalog', '/profile', '/library', '/shop', '/my-wallet'].every((p) => doors.map(path).includes(p)), doors.map(path).join(', '));
 menu = await readMore(account, 'account');
 check('their More panel: Education and Personal, and Home is My account', menu.groups.join(',') === 'Education,Personal' && menu.paths.includes('/my-enrollments') && menu.home === '/my-account', `${menu.groups.join(' | ')} — ${menu.home}`);

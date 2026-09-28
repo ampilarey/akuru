@@ -4414,6 +4414,40 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5kf. ID5: the workspace homes lay out their menus as tiles (2026-09-28)
+
+`docs/SIGN_IN_PLAN.md` ID5, the last of its six slices. EduPage's home is
+the account's drawer as tiles: every screen one tap away, Messages first
+with its count. Ours kept the menus behind *More*.
+
+**What changed.** A shared component, `WorkspaceTiles`, lays out the
+active workspace's own menu — the `nav` every Inertia page already carries
+— as a grid of tiles, Messages first with the unread count. It sits on the
+Family and Learn home (under its status tiles, skipping the screens those
+already show), My learning, the teacher's day (under its tiles, likewise),
+My shop and My account (which replaces its own doors with it). The home
+itself and the page it sits on are left out. Because the tiles are drawn
+from `nav`, a tile cannot lead anywhere the menu does not, and a screen
+the person could only be refused is not offered. The unread count is
+shared as `auth.unread_messages` (`ListMessageInboxAction::unreadCount`,
+one indexed count per response, like the notifications badge). The
+Institute and School office homes keep their parts.
+
+**Tests.** `WorkspaceTilesTest` (new, 2): a parent sent a message sees the
+count on their home and the menu the tiles are drawn from, the sender
+does not; a vendor's shop carries only the Personal group, so no school
+tile. Full suite **2437 passed**.
+
+**Walked.** `identity.mjs` **47/47** (four new steps): on the vendor's,
+the parent's, the teacher's and the learner's homes, every tile is a
+screen the More panel lists (8, 25, 27 and 12 tiles). Phone screenshots of
+the family and teacher homes in English, Dhivehi and Arabic: no horizontal
+scroll, the grid mirrors right to left.
+
+**The sign-in plan is done.** ID1–ID5 and ID2c shipped today. What stays
+the owner's: D6 (two separate logins linked, deferred by default), and an
+app rebuild so installed copies open on `/dashboard` (ID3).
+
 ## 5ke. ID4: the phone's drawer opens with Your accounts (2026-09-28)
 
 `docs/SIGN_IN_PLAN.md` ID4, finding F8. EduPage's drawer opens with the
@@ -4444,7 +4478,7 @@ drawer, on My learning, lists Your accounts — Family, and My learning
 ticked — and one tap on Family takes them back to their children.
 Screenshot at 390px checked.
 
-**Next.** ID5: tile homes.
+**Next.** ID5: tile homes (shipped, §5kf).
 
 ## 5kd. ID3: every door leads into the app (2026-09-28)
 

@@ -1,5 +1,6 @@
 import { usePage } from '@inertiajs/react';
 import AppShell from '../../../Layouts/AppShell';
+import WorkspaceTiles from '../../../Components/WorkspaceTiles';
 
 /**
  * SPEC §24's student dashboard, which named twelve things and showed five.
@@ -184,6 +185,9 @@ export default function Dashboard({ student, enrollments, waiting = [], upcoming
                     </article>
                 ))}
             </div>
+
+            {/* The rest of the workspace's menu as tiles (SIGN_IN_PLAN ID5). */}
+            <WorkspaceTiles className="mt-6" />
         </AppShell>
     );
 }

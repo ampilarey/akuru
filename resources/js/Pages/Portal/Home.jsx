@@ -1,4 +1,5 @@
 import AppShell from '../../Layouts/AppShell';
+import WorkspaceTiles from '../../Components/WorkspaceTiles';
 
 function Section({ title, href, children, empty }) {
     return (
@@ -146,6 +147,9 @@ export default function Home({ title = 'Dashboard', students = [], csvUrl = '/po
                     {tiles.map((tile) => <Tile key={tile.key} tile={tile} />)}
                 </div>
             )}
+
+            {/* The rest of the workspace's menu as tiles (SIGN_IN_PLAN ID5). */}
+            <WorkspaceTiles skip={tiles.map((tile) => tile.href)} className="mb-6" />
 
             <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
                 <p className="text-sm text-gray-600">Attendance, exams, invoices, course progress, and Hifz — read from each domain's public contract.</p>

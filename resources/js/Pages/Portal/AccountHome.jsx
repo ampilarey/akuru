@@ -1,5 +1,6 @@
-import { Link, usePage } from '@inertiajs/react';
+import { Link } from '@inertiajs/react';
 import AppShell from '../../Layouts/AppShell';
+import WorkspaceTiles from '../../Components/WorkspaceTiles';
 
 /**
  * *My account* (docs/SIGN_IN_PLAN.md ID2b): the home of a person who holds
@@ -7,24 +8,10 @@ import AppShell from '../../Layouts/AppShell';
  * public course dashboard, a Blade page in the website's layout with the
  * courses open for enrolment down its side.
  *
- * Its doors are the workspace's own menu laid out as tiles, so a tile can
- * never lead anywhere the menu does not, and a door the route would refuse
- * is not offered.
+ * Its doors are the workspace's own menu laid out as tiles
+ * (`WorkspaceTiles`), so a tile can never lead anywhere the menu does not.
  */
-const tile = 'block rounded-lg border bg-white p-4 text-sm font-medium text-[#7C2D37] hover:bg-[#F3EBE0]';
-
 export default function AccountHome({ t = {}, children_waiting = [], enrolments = [], enrolments_total = 0 }) {
-    const { nav = { primary: [], groups: [] } } = usePage().props;
-    const seen = new Set(['/my-account']);
-    const doors = [...(nav.primary || []), ...(nav.groups || []).flatMap((group) => group.items)].filter((item) => {
-        if (seen.has(item.href)) {
-            return false;
-        }
-        seen.add(item.href);
-
-        return true;
-    });
-
     return (
         <AppShell title={t.home_title || 'My account'}>
             <p className="mb-4 text-sm text-gray-600">{t.home_intro}</p>
@@ -70,21 +57,11 @@ export default function AccountHome({ t = {}, children_waiting = [], enrolments 
                 )}
             </section>
 
-            {doors.length > 0 && (
-                <section>
-                    <h2 className="mb-2 font-medium">{t.doors_title}</h2>
-                    <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3" data-testid="account-doors">
-                        {doors.map((item) => (
-                            <li key={item.href}>
-                                {/* A Blade page (the Library, the Bookstore) loads whole. */}
-                                {item.hard
-                                    ? <a href={item.href} className={tile}>{item.label}</a>
-                                    : <Link href={item.href} className={tile}>{item.label}</Link>}
-                            </li>
-                        ))}
-                    </ul>
-                </section>
-            )}
+            <section>
+                <h2 className="mb-2 font-medium">{t.doors_title}</h2>
+                {/* The workspace's own menu as tiles, shared with every home (ID5). */}
+                <WorkspaceTiles />
+            </section>
         </AppShell>
     );
 }
