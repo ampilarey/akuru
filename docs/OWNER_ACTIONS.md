@@ -364,7 +364,7 @@ differently. Then invite Fitrah from *Admin → Akuru Bookstore* with the
 details in `docs/vendors/FITRAH.md`, and send Inaaya the one-time password
 the screen shows (once) with the sign-in address.
 
-### 19. Private highlights in the Library reader — §9.1 or §9.2
+### 19. Private highlights in the Library reader — §9.1 or §9.2 — **decided 2026-09-28: (a), §9.2 wins; highlights are dropped from the plan**
 
 LIBRARY_PLAN §9.1 lists *private highlights* among the reader's features;
 §9.2 requires text selection to be **disabled** in the reader, and the

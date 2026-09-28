@@ -355,7 +355,7 @@ registers a child with a password, checks the login is on the student, and
 requests a reset by the child's ID card to check the code goes to the
 parent's phone.
 
-### A registrant who leaves gender empty is recorded as male — **fixed (2026-09-27, STATUS §5jp)**
+### A registrant who leaves gender empty is recorded as male — **fixed (2026-09-27, STATUS §5jp); gender stays optional on the public forms (owner, 2026-09-28)**
 
 **Severity:** wrong data, small. The registration forms let gender be left
 empty; `students.gender` was a required `enum('male','female')`. The dual

@@ -4414,6 +4414,63 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5jv. Four decisions from the owner, and the Hifz port begins: programmes and enrolments leave Blade (2026-09-28)
+
+The owner answered the decision list of §5ju in one message:
+
+- **Library highlights: (a).** §9.2's disabled selection wins; highlights
+  are dropped from the plan. `OWNER_ACTIONS` item 19 is decided, BACKLOG
+  B7 is closed, the plan's §9.1 note says so.
+- **The two dashboard addresses: "do what's best".** They **stay**. The
+  hub is the landing and leads with today's numbers; the full dashboard is
+  the one *Full dashboard* link away, role-gated at its own address.
+  Retiring it would only move recent enrolments, system health and the
+  prayer card onto a page whose job is to be short, and lose the
+  supervisor's view. BACKLOG C9 is closed; `ADMIN_PANEL` finding 10 and
+  L24 say so.
+- **Gender on the public forms: optional**, as §5jp left it. Recorded on
+  the KNOWN_ISSUES entry.
+- **The Hifz Blade screens: "do the best".** They are ported to Inertia,
+  one screen group per PR, as C9 was: the same screens at the same
+  addresses in the one shell, every string keyed EN/DV/AR, the Blade
+  deleted behind each. Nineteen views, 322 lines in all, so the port is
+  three slices: programmes and enrolments (this one), the five dashboards
+  and the hub, milestones and reports.
+- **Host actions A1–A10: later.** Unchanged in `OWNER_ACTIONS`.
+
+**Slice 1 — programmes and enrolments.** `HifzProgramController` renders
+`Hifz/Programs` (the paged list a dean sees whole and anyone else scoped
+to their assignments, with class, supervisor and status, *View* and *New
+Program* where `create` allows), `Hifz/ProgramForm` (name, description,
+class, supervisor, default teacher; status once it exists; keyed on the
+programme so new and edit never share state; the pickers post null, not
+an empty string, because the request's rules say `nullable|exists`) and
+`Hifz/Program` (description, *Edit* and *Enroll Student* for whoever may
+update, *All enrollments*, the supervisor picker for whoever may assign
+one, the enrolments with teacher, status and page). `HifzEnrollmentController`
+renders `Hifz/Enrollments` (paged) and `Hifz/EnrollmentForm` (pupil,
+teacher or the programme's default, start date, page). The flashes are
+keys now (`hifz_flash_*`) and the shell renders them once; 53 `hifz_*`
+keys EN/DV/AR. Policies, scoping and the enrolment defaults are as they
+were. Six Blade views deleted; the Blade baseline is 208 (the Hifz block
+13). The tables stack on a phone (§5js). `InertiaFormTransformTest`
+caught the chained `transform().post()` on the first run — the guard
+written for exactly this — and both forms are two statements.
+
+**Tests.** `HifzProgramScreensTest` (4): the dean's list with the door
+and the DV/AR keys; create through the form landing on the page with the
+flash, edit holding the programme and a save changing its status; enrol
+through the form defaulting the teacher to the programme's, the enrolment
+list carrying the pupil; the scoping kept — a teacher refused an
+unassigned programme and offered no *New Program*.
+`HifzScreensReportBackTest` reads the enrolment form's flash from the
+shared prop instead of the deleted Blade. Full suite 2398 passed.
+
+**Walked.** `hifz.mjs` **20/20** on the ported screens — the enrol step
+waits for the address and the flash, since an Inertia save re-renders in
+place — and the programmes list, the form and a saved programme at 393
+px in EN, DV and AR, the list as cards.
+
 ## 5ju. Library B7: reading time — the beacon that never was, and the highlights decision that is the owner's (2026-09-28)
 
 The last of B7 (LIBRARY_PLAN §9.1). Two items were left: *reading time

@@ -10,29 +10,50 @@ use App\Domains\People\Models\Teacher;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\View\View;
+use Inertia\Inertia;
+use Inertia\Response;
 
+/**
+ * A programme's enrolments. Inertia since the Hifz port's first slice
+ * (BACKLOG C1, STATUS §5jv); the gates and the defaults (the programme's
+ * supervisor and teacher when the form names none) are as they were.
+ */
 class HifzEnrollmentController extends Controller
 {
     public function __construct(protected HifzScopeService $scope) {}
 
-    public function index(HifzProgram $program): View
+    public function index(HifzProgram $program): Response
     {
         $this->authorize('view', $program);
 
-        $enrollments = $program->enrollments()->with(['student.user', 'teacher.user'])->paginate(20);
+        $enrollments = $program->enrollments()->with(['student.user', 'teacher.user'])->paginate(20)
+            ->through(fn (HifzEnrollment $enrollment): array => [
+                'id' => $enrollment->id,
+                'student' => $enrollment->student?->full_name,
+                'teacher' => $enrollment->teacher?->full_name,
+                'status' => $enrollment->status?->value,
+            ]);
 
-        return view('hifz.enrollments.index', compact('program', 'enrollments'));
+        return Inertia::render('Hifz/Enrollments', [
+            'program' => ['id' => $program->id, 'name' => $program->name],
+            'enrollments' => $enrollments,
+            'can_update' => auth()->user()->can('update', $program),
+            't' => trans('admin'),
+        ]);
     }
 
-    public function create(HifzProgram $program): View
+    public function create(HifzProgram $program): Response
     {
         $this->authorize('update', $program);
 
-        return view('hifz.enrollments.create', [
-            'program' => $program,
-            'students' => Student::with('user')->orderBy('first_name')->get(),
-            'teachers' => Teacher::with('user')->get(),
+        return Inertia::render('Hifz/EnrollmentForm', [
+            'program' => ['id' => $program->id, 'name' => $program->name],
+            'students' => Student::with('user')->orderBy('first_name')->get()
+                ->map(fn (Student $student): array => ['id' => (int) $student->id, 'name' => (string) $student->full_name])->values()->all(),
+            'teachers' => Teacher::with('user')->get()
+                ->map(fn (Teacher $teacher): array => ['id' => (int) $teacher->id, 'name' => (string) $teacher->full_name])->values()->all(),
+            'today' => now()->toDateString(),
+            't' => trans('admin'),
         ]);
     }
 
@@ -60,6 +81,6 @@ class HifzEnrollmentController extends Controller
         ]);
 
         return redirect()->route('hifz.programs.show', $program)
-            ->with('success', 'Student enrolled successfully.');
+            ->with('success', trans('admin.hifz_flash_enrolled'));
     }
 }

@@ -47,9 +47,19 @@ it('tells the supervisor the milestone went to the dean, on the screen they pres
         ->assertOk()
         ->assertSee('Milestone reviewed and sent to dean.');
 
-    foreach (['milestones/index', 'enrollments/create'] as $view) {
+    foreach (['milestones/index'] as $view) {
         expect(file_get_contents(resource_path("views/hifz/{$view}.blade.php")))->toContain("@include('hifz.partials.alerts')");
     }
+
+    // The enrolment form is Inertia since the Hifz port's first slice (STATUS
+    // §5jv): its flash arrives as the shared `flash` prop the shell renders.
+    $program = \App\Domains\Hifz\Models\HifzProgram::query()->firstOrFail();
+    $this->withoutLocalizationMiddleware()
+        ->actingAs(User::where('email', 'headmaster@akuru.edu.mv')->firstOrFail())
+        ->withSession(['success' => 'Student enrolled successfully.'])
+        ->get(route('hifz.enrollments.create', $program))
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page->component('Hifz/EnrollmentForm')->where('flash.success', 'Student enrolled successfully.'));
 });
 
 it('serves the reports export as CSV', function () {
