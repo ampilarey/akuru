@@ -625,6 +625,11 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
     Route::post('/account/linked', [LinkedAccountController::class, 'store'])->name('account.linked.store');
     Route::delete('/account/linked/{account}', [LinkedAccountController::class, 'destroy'])->name('account.linked.destroy')->whereNumber('account');
     Route::post('/account/switch/{account}', [LinkedAccountController::class, 'switch'])->name('account.switch')->whereNumber('account');
+    // SPEC §50: the mobile app's push registration. Every route is the
+    // signed-in person's own devices; the Actions scope by user id.
+    Route::post('/account/devices', [\App\Domains\Notifications\Http\Controllers\DeviceController::class, 'store'])->name('account.devices.store');
+    Route::post('/account/devices/forget', [\App\Domains\Notifications\Http\Controllers\DeviceController::class, 'forget'])->name('account.devices.forget');
+    Route::delete('/account/devices/{device}', [\App\Domains\Notifications\Http\Controllers\DeviceController::class, 'destroy'])->name('account.devices.destroy')->whereNumber('device');
 
     // E16 Circulation — physical lending. Deliberately *not* under
     // admin/library: the L-track Library is a digital reader and bookstore,

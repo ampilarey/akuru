@@ -19,10 +19,13 @@ use App\Domains\Notifications\Listeners\SendBehaviorParentSms;
 use App\Domains\Notifications\Listeners\SendFreeEnrollmentNotices;
 use App\Domains\Notifications\Listeners\SendInvoiceGuardianNotice;
 use App\Domains\Notifications\Listeners\SendPaymentConfirmationNotices;
+use App\Domains\Notifications\Services\FcmPushSender;
+use App\Domains\Notifications\Services\LogPushSender;
 use App\Domains\Notifications\Services\LogSmsSender;
 use App\Domains\Notifications\Services\NullPushSender;
 use App\Domains\Notifications\Services\SmsGatewayService;
 use App\Domains\Notifications\Support\LiveSms;
+use App\Domains\Notifications\Support\PushChannel;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 
@@ -35,7 +38,16 @@ class NotificationsServiceProvider extends ServiceProvider
                 ? $this->app->make(SmsGatewayService::class)
                 : $this->app->make(LogSmsSender::class);
         });
-        $this->app->singleton(PushSenderInterface::class, NullPushSender::class);
+        // Push (SPEC §50, STATUS §5jr): config/push.php picks the sender; `fcm`
+        // without its project id and key file falls back to null, so a
+        // half-configured host records nothing delivered rather than pretending.
+        $this->app->singleton(PushSenderInterface::class, function () {
+            return match (PushChannel::driver()) {
+                'fcm' => new FcmPushSender((string) config('push.fcm.project_id'), (string) config('push.fcm.credentials'), (int) config('push.fcm.timeout', 5)),
+                'log' => $this->app->make(LogPushSender::class),
+                default => $this->app->make(NullPushSender::class),
+            };
+        });
     }
 
     public function boot(): void

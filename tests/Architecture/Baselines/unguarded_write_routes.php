@@ -8,7 +8,7 @@
 // Actions (rule 5), which the detector cannot follow. Each entry says why it is
 // here, and which ones were actually read.
 //
-// Baseline may only shrink. Count: 62 (the add-to-cart route of BOOKSHOP_PLAN
+// Baseline may only shrink. Count: 65 (the three device routes of SPEC §50 joined 2026-09-28: a person's own phones, scoped by user id in the Actions; the add-to-cart route of BOOKSHOP_PLAN
 // B2 joined 2026-09-26: a guest's basket has no session to authorise).
 
 return [
@@ -83,6 +83,9 @@ return [
     // own password; `SwitchAccountAction` re-reads the verified link from the
     // database and refuses anything not linked to the signed-in user, so the
     // request only ever names which account, never grants one.
+    'account/devices' => 'DeviceController@store — READ: RegisterDeviceAction writes only a device for the signed-in user (a token seen again is re-homed to whoever holds the phone now).',
+    'account/devices/forget' => 'DeviceController@forget — READ: ForgetDeviceAction::byToken scopes to the signed-in user\'s own rows.',
+    'account/devices/{device}' => 'DeviceController@destroy — READ: ForgetDeviceAction::byId scopes to the signed-in user\'s own rows.',
     'account/linked' => 'LinkedAccountController@store — READ: LinkAccountAction requires the target account password.',
     'account/linked/{account}' => 'LinkedAccountController@destroy — READ: UnlinkAccountAction scopes to your own links.',
     'account/switch/{account}' => 'LinkedAccountController@switch — READ: SwitchAccountAction re-reads the verified link; refuses an unlinked account.',

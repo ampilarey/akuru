@@ -31,9 +31,17 @@ listing assets are operator tasks.
 - [ ] Scheduled session views (`/learn/schedule`, `/teach/schedule`)
 - [ ] Library reader (watermark overlay, page navigation, purchase flow —
       BML redirect must return into the shell)
-- [ ] Push notifications — NOT wired yet (future; requires FCM/APNs keys
-      and a Notifications-domain device token endpoint; `devices` table
-      already exists)
+- [ ] Push notifications — wired on the app side (STATUS §5jr): the shell
+      registers its token at `/account/devices` after sign-in and forgets it
+      at sign-out; every in-app notification fans out to the person's phones
+      through `PushSenderInterface`. Needs `@capacitor/push-notifications`
+      synced into the native projects (`npx cap sync`), a Firebase project
+      with the Android app (google-services.json) and the iOS APNs key
+      uploaded to it, and on the host `PUSH_DRIVER=fcm`, `FCM_PROJECT_ID`
+      and `FCM_CREDENTIALS_PATH` (a service-account JSON kept outside the
+      web root). Rehearse on staging with `PUSH_DRIVER=log` first: the
+      pushes appear in the log. The person's phones are listed under
+      *Your phones* on `/portal/notifications`.
 
 ## App Store review risk — Apple guideline 4.2 (read before submission)
 
@@ -44,8 +52,8 @@ is. Before the iOS submission:
 - Lead the listing and the first-run experience with the app-like
   capabilities: native mic recording for pronunciation practice, the
   offline page, install-free login persistence — not "browse our site".
-- Wire push notifications first if possible (the strongest 4.2 mitigator;
-  needs FCM/APNs keys + the Notifications-domain token endpoint).
+- Push notifications are wired on the app side (see the checklist); the
+  FCM/APNs keys are what remains, and they are the strongest 4.2 mitigator.
 - If rejected anyway, the fallback is a config change, not a rewrite:
   drop `server.url` and ship the built assets in the binary (`webDir`
   bundling; the app then calls the API remotely). App updates go back

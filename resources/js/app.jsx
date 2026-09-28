@@ -1,5 +1,6 @@
 import { createInertiaApp } from '@inertiajs/react';
 import { createRoot } from 'react-dom/client';
+import { registerPushDevice } from './Platform';
 
 // The Blade root writes the app name into <title inertia>; every page's
 // title (from AppShell's <Head>) is prefixed to it, so a tab reads
@@ -15,5 +16,8 @@ createInertiaApp({
     },
     setup({ el, App, props }) {
         createRoot(el).render(<App {...props} />);
+        // SPEC §50: inside the mobile shell, register this phone for push. A
+        // browser has no Capacitor and the call returns at once.
+        registerPushDevice(props.initialPage?.props?.auth?.user ?? null);
     },
 });

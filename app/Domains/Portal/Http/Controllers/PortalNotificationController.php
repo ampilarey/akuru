@@ -2,6 +2,7 @@
 
 namespace App\Domains\Portal\Http\Controllers;
 
+use App\Domains\Notifications\Actions\ListDevicesAction;
 use App\Domains\Notifications\Actions\ListUserNotificationsAction;
 use App\Domains\Notifications\Actions\MarkUserNotificationsReadAction;
 use App\Domains\Notifications\Actions\ResolveNotificationPreferencesAction;
@@ -32,6 +33,9 @@ class PortalNotificationController extends Controller
             // the page cannot offer a toggle for a category nothing sends.
             'categories' => ResolveNotificationPreferencesAction::CATEGORIES,
             'preferences' => app(ResolveNotificationPreferencesAction::class)->execute($userId),
+            // SPEC §50: the phones the mobile app has registered for this person.
+            'devices' => app(ListDevicesAction::class)->execute($userId),
+            't' => trans('admin'),
         ]);
     }
 

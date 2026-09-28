@@ -34,4 +34,6 @@ export {
 // E18 gate cards (STATUS §5ge): the camera for the QR scanner, and the
 // gate's remembered direction.
 export { CAMERA_DENIED, CAMERA_FAILED, CAMERA_UNSUPPORTED, cameraSupported, closeCamera, openCamera } from './camera';
-export { readPreference, writePreference } from './storage';
+export { clearPreference, readPreference, writePreference } from './storage';
+// SPEC §50 push (STATUS §5jr): the mobile shell's registration and sign-out.
+export { forgetPushDevice, registerPushDevice } from './push';

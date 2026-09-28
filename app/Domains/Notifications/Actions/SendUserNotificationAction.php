@@ -3,6 +3,8 @@
 namespace App\Domains\Notifications\Actions;
 
 use App\Domains\Notifications\Models\UserNotification;
+use App\Domains\Notifications\Support\PushChannel;
+use Illuminate\Support\Facades\Log;
 
 /**
  * The single place a notification is created, and therefore the single place
@@ -25,7 +27,7 @@ class SendUserNotificationAction
             return null;
         }
 
-        return UserNotification::query()->create([
+        $notification = UserNotification::query()->create([
             'user_id' => $userId,
             'type' => 'in_app',
             'category' => $category,
@@ -35,5 +37,37 @@ class SendUserNotificationAction
             'status' => 'sent',
             'sent_at' => now(),
         ]);
+
+        $this->push($notification);
+
+        return $notification;
+    }
+
+    /**
+     * The same notification to the person's phones (SPEC §50, STATUS §5jr),
+     * when a push sender is configured. The in-app row is the record and is
+     * already written; a phone that cannot be reached never fails it, so the
+     * fan-out is best-effort and logged.
+     */
+    private function push(UserNotification $notification): void
+    {
+        if (! PushChannel::enabled()) {
+            return;
+        }
+
+        try {
+            $data = $notification->data ?? [];
+            app(SendPushNotificationAction::class)->execute((int) $notification->user_id, [
+                'title' => $notification->title,
+                'body' => $notification->message,
+                'data' => [
+                    'notification_id' => (string) $notification->id,
+                    'category' => (string) $notification->category,
+                    'url' => (string) ($data['href'] ?? $data['url'] ?? '/portal/notifications'),
+                ],
+            ]);
+        } catch (\Throwable $e) {
+            Log::warning('Push fan-out failed', ['notification_id' => $notification->id, 'error' => $e->getMessage()]);
+        }
     }
 }

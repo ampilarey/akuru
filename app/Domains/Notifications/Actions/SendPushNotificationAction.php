@@ -2,6 +2,7 @@
 
 namespace App\Domains\Notifications\Actions;
 
+use App\Domains\Notifications\Contracts\InvalidDeviceTokenException;
 use App\Domains\Notifications\Contracts\PushSenderInterface;
 use App\Domains\Notifications\Models\Device;
 
@@ -45,8 +46,14 @@ class SendPushNotificationAction
         foreach ($tokens as $token) {
             // One device failing is not the whole notification failing: a
             // person with a dead tablet and a working phone has been reached.
-            if ($sender->sendToDevice((string) $token, $payload)) {
-                $delivered++;
+            try {
+                if ($sender->sendToDevice((string) $token, $payload)) {
+                    $delivered++;
+                }
+            } catch (InvalidDeviceTokenException) {
+                // The provider says the token names no device any more (the
+                // app was uninstalled): retire it rather than try it forever.
+                Device::query()->where('token', $token)->update(['is_active' => false]);
             }
         }
 
