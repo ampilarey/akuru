@@ -81,6 +81,12 @@ final class NavigationMap
             'vendor' => [
                 ['key' => 'vendor_portal', 'href' => '/vendor'],
             ],
+            // *My learning* (SIGN_IN_PLAN ID2a): a person's own courses.
+            'learner' => [
+                ['key' => 'my_learning', 'href' => '/learn'],
+                ['key' => 'schedule', 'href' => '/learn/schedule'],
+                ['key' => 'browse_courses', 'href' => '/learn/catalog'],
+            ],
             // B10b: a Bookstore admin runs the Bookstore office screen.
             'bookshop_manager' => [
                 ['key' => 'bookshop', 'href' => '/admin/bookshop'],
@@ -221,16 +227,23 @@ final class NavigationMap
                 ['key' => 'event_signup', 'href' => '/portal/events', 'roles' => $family, 'workspaces' => $households],
                 ['key' => 'collecting_my_child', 'href' => '/portal/pickup', 'roles' => ['parent'], 'workspaces' => ['family']],
             ]],
-            // A household's learning: a parent's children, a pupil's own courses.
+            // A household's learning — a parent's children, a pupil's own
+            // courses — and, in *My learning*, a person's own (ID2a). The
+            // household's screens name their workspaces, so a parent who also
+            // learns sees none of their children's in My learning.
             ['key' => 'education', 'items' => [
                 ['key' => 'children', 'href' => '/portal/children', 'roles' => ['parent'], 'workspaces' => ['family']],
                 ['key' => 'children_learning', 'href' => '/portal/learning', 'roles' => ['parent'], 'workspaces' => ['family']],
-                ['key' => 'learn', 'href' => '/learn', 'workspaces' => ['learn']],
-                ['key' => 'schedule', 'href' => '/learn/schedule', 'workspaces' => ['learn']],
-                ['key' => 'homework', 'href' => '/portal/homework', 'roles' => $family],
-                ['key' => 'school_calendar', 'href' => '/portal/holidays', 'roles' => $family],
-                ['key' => 'library_books', 'href' => '/portal/loans', 'roles' => $family],
-                ['key' => 'hifz', 'href' => '/hifz', 'can' => ['view_hifz_programs']],
+                ['key' => 'learn', 'href' => '/learn', 'workspaces' => ['learn', 'learner']],
+                ['key' => 'schedule', 'href' => '/learn/schedule', 'workspaces' => ['learn', 'learner']],
+                ['key' => 'browse_courses', 'href' => '/learn/catalog', 'workspaces' => ['learner']],
+                // Every enrolment this login made, a child's included, with its
+                // payment — a Blade page until the old course portal retires (ID2b).
+                ['key' => 'my_enrolments', 'href' => '/my-enrollments', 'hard' => true, 'workspaces' => ['learner']],
+                ['key' => 'homework', 'href' => '/portal/homework', 'roles' => $family, 'workspaces' => $households],
+                ['key' => 'school_calendar', 'href' => '/portal/holidays', 'roles' => $family, 'workspaces' => $households],
+                ['key' => 'library_books', 'href' => '/portal/loans', 'roles' => $family, 'workspaces' => $households],
+                ['key' => 'hifz', 'href' => '/hifz', 'can' => ['view_hifz_programs'], 'workspaces' => $households],
                 ['key' => 'e_learning', 'href' => '/e-learning', 'hard' => true],
             ]],
             ['key' => 'evaluation', 'items' => [

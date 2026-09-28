@@ -3,7 +3,11 @@
 **Status:** audit done 2026-09-28 (re-audited the same day at the owner's
 request); the owner said "Next" to the plan and its defaults the same day.
 **ID1 shipped 2026-09-28 (STATUS §5jz)**: F1, F2 and F3 closed, and a
-thirteenth finding (F13, below) fixed with it. ID2a is next.
+thirteenth finding (F13, below) fixed with it. **ID2a shipped 2026-09-28
+(STATUS §5ka)**: *My learning*, and F14 found. Next: ID2c (a website
+parent's Family), then ID2b (the old course portal retired) — in that
+order, because ID2b removes the only page a website parent can see their
+children's enrolments on.
 **Owner's brief (2026-09-28, with five EduPage screenshots):** "Still there
 is a problem with the login system. Logged in with a vendor account but I
 see educational items also. I need the login style used in EduPage. When a
@@ -59,7 +63,7 @@ for each kind of account. Each finding names the code that produces it.
 | F1 | **A vendor's menu carries school items.** **Fixed in ID1 (STATUS §5jz).** The vendor lands on *My shop* (right), but *More* lists Home, Messages, Notices, Forms, Digital Library, My library, My wallet, Bookstore, My orders, My wishlist, My quotes. | `NavigationMap::groups()` group `mine`: those items carry `roles => $everyone`; `WorkspaceMap::all()` gives every workspace the `mine` group. |
 | F2 | **"Home" is the family portal for everyone.** **Fixed in ID1 (STATUS §5jz)**: Home is the workspace's home, and `/portal/home` sends a person who holds neither Family nor Learn to their own. In every workspace *More › Home* opens `/portal/home`, which for a vendor, a member of staff or a role-less account renders **"Student Dashboard"** with empty Attendance, Invoices, Exams, Course progress, Noticeboard, Homework tiles. | `mine` item `home` → `/portal/home`; `ComposePortalHomeAction` line 67 titles the page *Parent* if the person is a parent or has children, else *Student*. |
 | F3 | **A person's own learning is mixed into the family's menu.** **Fixed in ID1 (STATUS §5jz)** for the menus; the parent-learner's Learner workspace is ID2a. A parent's *More* has 34 items in two groups; *Learn* and *Schedule* (the parent's own engine courses) sit inside *Family*; a teacher's School menu carries *Learn* too; a writer's Writing menu carries Learn, Schedule, Hifz, E-Learning. | `learn_group` is in the family, learn, school and writing workspaces; its `learn` and `schedule` items are `roles => $everyone`. |
-| F4 | **An adult course learner has no workspace and leaves the app.** A person who registered and enrolled in a public course holds no role, so `/dashboard` renders the Blade **"My Dashboard"** in the *website* layout: website menu (Courses, News, Articles…), hero, *Browse Courses*, *Open for enrollment* course cards, the marketing footer and the cookie banner. No shell, no switcher. This is the "home page with promotional items". | `DashboardController::publicUserDashboard()` → `dashboard/public-user.blade.php` (`@extends('public.layouts.public')`); `RoleLandingTest` pins it ("falls through to the public-user dashboard when the account has no role"). The adult gets a `students` row (`unified_student_id`) and a `CourseEnrollment`, never a role (`EnrollmentService`: only a child's login gets `student`). |
+| F4 | **An adult course learner has no workspace and leaves the app.** **Fixed for learners in ID2a (STATUS §5ka)**: they hold *My learning* and land on `/learn` inside the shell; a role-less login with no learning still lands on the Blade page until ID2b. A person who registered and enrolled in a public course holds no role, so `/dashboard` renders the Blade **"My Dashboard"** in the *website* layout: website menu (Courses, News, Articles…), hero, *Browse Courses*, *Open for enrollment* course cards, the marketing footer and the cookie banner. No shell, no switcher. This is the "home page with promotional items". | `DashboardController::publicUserDashboard()` → `dashboard/public-user.blade.php` (`@extends('public.layouts.public')`); `RoleLandingTest` pins it ("falls through to the public-user dashboard when the account has no role"). The adult gets a `students` row (`unified_student_id`) and a `CourseEnrollment`, never a role (`EnrollmentService`: only a child's login gets `student`). |
 | F5 | **There are two portals.** Besides the shell there is an older *My Portal* in the website chrome: `/portal/dashboard`, `/portal/enrollments`, `/portal/payments`, `/portal/certificates`, `/portal/profile` (Blade `portal/layout.blade.php`, which extends the public layout), plus `/my-enrollments`. The website's phone bottom bar shows **My Portal** to every signed-in person and links there — so a parent or teacher who taps it from the website lands in the course-learner portal, not their workspace. | `routes/web_public.php` lines 260–269; `public/layouts/public.blade.php` line 205 (`@auth` → `route('portal.dashboard')`). |
 | F6 | **Setting a password sends the person to the marketing home.** After *Set password* the redirect is `route('public.home')` with "You can now log in with your mobile number and password" — while they are signed in. | `AccountController::setPassword` line 68. |
 | F7 | **Signing in itself is right.** Email / phone / ID card + password, an OTP path, both redirecting to `/dashboard`, which sends a person with a role to their workspace home (Institute, School office or a teacher's day, Family, Learn, My shop, Writing, Catalog, Bookstore office). | `AuthenticatedSessionController::store`, `OtpLoginController` line 131, `DashboardController::index`. |
@@ -69,6 +73,7 @@ for each kind of account. Each finding names the code that produces it.
 | F11 | **The parity document's E7 describes a different switcher.** E7 specifies `linked_accounts` (two *separate* logins linked, the session swapped between them). What shipped is one login with several workspaces (§5ic, §5id), which is what EduPage's *School accounts* are. Linked separate logins are EduPage's *Logout / add user* — a different, later thing. | `docs/EDUPAGE_FEATURES_PLAN.md` §E7. |
 | F12 | **The Blade shell has the same menu.** **Closed with ID1**: the Blade shell renders the same regrouped map. The 24 signed-in Blade screens (`layouts/app.blade.php`: e-learning, Qur'an progress, substitutions, analytics, the auth pages) read the same map since §5id, so F1–F3 show there too and one fix covers both shells. | `layouts/navigation.blade.php`. |
 | F13 | **The Personal items opened as a modal.** Found building ID1: the Digital Library, My library, My wallet, Bookstore, My orders, My wishlist and My quotes are Blade pages in the website layout, but the map did not mark them `hard`, so the Inertia shell opened each as a visit — a non-Inertia response, shown in a modal over the page. **Fixed in ID1**: all seven marked; `WorkspaceMenusAreTheirOwnTest` asks every map item as Inertia asks and fails on any Blade answer without `hard` (it fails on a one-line mutation of the Library item). | `NavigationMap::groups()` `mine` (now `me`). |
+| F14 | **A parent who registers their children on the website never becomes a parent.** Found building ID2a. The public form's parent flow creates or matches the child and links the registering login as a guardian (`RegisterCourseStudentAction::forChild`), and a child given a password gets `student` — but nothing grants the registering adult `parent`, so they hold no Family workspace and see their children only on the Blade *My enrolments* list. **Planned: ID2c.** | `EnrollmentService` parent flow; `grep assignRole` finds no `parent` grant anywhere in `app/`. |
 
 What is **not** broken, so the plan does not touch it: the gates (a vendor
 who opens `/portal/home` is shown an empty page, never another family's
@@ -174,7 +179,24 @@ original bullets follow.
   signs in as the vendor, the parent, the teacher and the pupil and reads
   each *More* panel.
 
-### ID2a — The Learner workspace and its home (one PR)
+### ID2a — The Learner workspace and its home (one PR) — **shipped 2026-09-28, STATUS §5ka**
+
+As built: the workspace is *My learning* (`learner`), held — derived, no
+role — by a login that owns a student record with an enrolment not
+refused, cancelled or withdrawn, unless it holds `student` (a school
+pupil's courses are already in *Learn*); last in the map's order, so a
+parent lands on Family and a teacher on the School. Its home is the
+existing `/learn` ("My learning", SPEC §24), which gains the one §24 item
+it had deferred, "Access/payment status": the enrolments still waiting,
+on their payment or on the office. Its bar is My learning, Schedule,
+Browse courses; its *Education* group adds My enrolments (the Blade list
+of every enrolment the login made, until ID2b); the household's screens
+name their workspaces, so a parent-learner's My learning shows none of
+their children's. The Family home shows a parent's children and not their
+own record once they have children. The query runs once per request per
+person. *My account* inside the shell moved to ID2b, where the Blade page
+it replaces is retired. The original bullets follow.
+
 
 - `WorkspaceMap` gains `learner` (home `learn.home`, bar Learn, Schedule,
   My courses, Payments, Certificates); `ResolveWorkspacesAction` holds it
@@ -189,6 +211,18 @@ original bullets follow.
   the shell); `DualIdentityLandingTest` gains the parent-learner (Family
   first, Learner offered); `LearnerWorkspaceTest`.
 - **Walk:** `identity.mjs` gains the learner and the parent-learner.
+
+### ID2c — A website parent's Family (one PR) — added 2026-09-28 (F14)
+
+- The public registration's parent flow links the registering login to the
+  child as a guardian but never grants `parent`, so a parent who registers
+  their children on the website holds no Family workspace; only the
+  office's role screen gives it. Grant `parent` where the link is made
+  (as a child's login is granted `student`), and backfill it for logins
+  that already hold a guardian link. The verification gate (STATUS §5gk)
+  is unchanged: an unverified child shows as awaiting the office.
+- **Tests:** registering a child grants `parent`; the backfill; the family
+  home shows the child awaiting verification, then verified.
 
 ### ID2b — Retire the old course portal (one PR)
 

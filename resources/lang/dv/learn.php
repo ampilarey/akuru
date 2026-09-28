@@ -58,4 +58,9 @@ return [
     'enroll_intake' => 'މި ބެޗަށް ހުށަހަޅާ',
     'your_intake' => 'ތިޔަ ފަރާތުގެ ބެޗް',
     'quran_no_surahs' => 'އަދި ރެކޯޑް ކުރެވޭކަށް ނެތް: މި ސައިޓުގައި ސޫރަތްތަކުގެ މަޢުލޫމާތެއް ނެތް. ޤުރުއާން ޑޭޓާ ލޯޑްކުރުމަށް އޮފީހަށް އަންގަވާ.',
+    // SIGN_IN_PLAN ID2a: §24's access/payment status on My learning.
+    'waiting_title' => 'ފެށުމަށް މަޑުކުރަނީ',
+    'waiting_payment' => 'ފައިސާ ދެއްކުމަށް މަޑުކުރަނީ',
+    'waiting_approval' => 'އޮފީހުގެ ހުއްދައަށް މަޑުކުރަނީ',
+    'waiting_details' => 'ރަޖިސްޓްރީތަކާއި ފައިސާ',
 ];

@@ -2,15 +2,19 @@
 
 namespace App\Support\Navigation;
 
+use App\Domains\Courses\Actions\HoldsOwnLearningAction;
+
 /**
  * The workspaces one signed-in person holds, and which one is active.
  *
  * Held: every workspace one of their roles opens (`WorkspaceMap`), in the
- * map's order; a person with no role holds their account alone. Active: the
- * one asked for, if held; else the one remembered in the session (the last
- * they switched to, or the last home they visited — `RememberWorkspace`);
- * else the first held. Roles only, no query: Spatie has them in memory and
- * this runs on every response.
+ * map's order, and *My learning* when they have learning of their own
+ * (docs/SIGN_IN_PLAN.md ID2a); a person with neither holds their account
+ * alone. Active: the one asked for, if held; else the one remembered in the
+ * session (the last they switched to, or the last home they visited —
+ * `RememberWorkspace`); else the first held. The roles are in memory; the
+ * one query, whether they learn, is asked once per request per person,
+ * since this runs several times on every response.
  */
 class ResolveWorkspacesAction
 {
@@ -26,7 +30,10 @@ class ResolveWorkspacesAction
         $roles = $user->getRoleNames()->all();
         $list = [];
         foreach (WorkspaceMap::all() as $key => $workspace) {
-            if (array_intersect($workspace['roles'], $roles) !== []) {
+            $holds = $key === WorkspaceMap::LEARNER
+                ? $this->learns($user, $roles)
+                : array_intersect($workspace['roles'], $roles) !== [];
+            if ($holds) {
                 $list[] = $this->present($key, $roles);
             }
         }
@@ -45,6 +52,28 @@ class ResolveWorkspacesAction
         }
 
         return ['active' => $active ?? $keys[0], 'list' => $list];
+    }
+
+    /**
+     * *My learning* is derived, not granted: a login that owns a student
+     * record with a live course enrolment. A school pupil (`student`) already
+     * has their courses in *Learn*, so they do not hold it twice.
+     *
+     * @param  list<string>  $roles
+     */
+    private function learns(object $user, array $roles): bool
+    {
+        if (in_array('student', $roles, true) || ! isset($user->id)) {
+            return false;
+        }
+
+        $key = 'workspaces.learns.'.$user->id;
+        $attributes = request()->attributes;
+        if (! $attributes->has($key)) {
+            $attributes->set($key, app(HoldsOwnLearningAction::class)->execute((int) $user->id));
+        }
+
+        return (bool) $attributes->get($key);
     }
 
     /**

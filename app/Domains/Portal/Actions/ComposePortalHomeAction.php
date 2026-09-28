@@ -288,6 +288,12 @@ class ComposePortalHomeAction
             $unique[] = $person;
         }
 
-        return $unique;
+        // A parent's home is their children. Their own learning, when they
+        // have some, is *My learning*'s (docs/SIGN_IN_PLAN.md ID2a) — the
+        // owner: "when he is in parent, he sees all his children". A pupil,
+        // who has no children, keeps their own record here.
+        $children = array_values(array_filter($unique, fn (array $person): bool => $person['relationship'] !== 'self'));
+
+        return $children !== [] ? $children : $unique;
     }
 }

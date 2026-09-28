@@ -192,6 +192,7 @@ return [
     'workspace_vendor' => 'متجري',
     'workspace_writing' => 'الكتابة',
     'workspace_catalog' => 'الفهرس',
+    'workspace_learner' => 'تعلّمي',
     'workspace_account' => 'حسابي',
     'workspaces' => 'مساحات العمل',
     'switch_workspace' => 'تبديل مساحة العمل',
@@ -203,4 +204,8 @@ return [
     'e_learning' => 'التعلّم الإلكتروني',
     // SIGN_IN_PLAN ID1: the Personal group's first item.
     'profile' => 'ملفي الشخصي',
+    // SIGN_IN_PLAN ID2a: a person's own learning.
+    'my_learning' => 'تعلّمي',
+    'browse_courses' => 'تصفّح الدورات',
+    'my_enrolments' => 'تسجيلاتي',
 ];

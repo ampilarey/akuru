@@ -93,6 +93,7 @@ class SmokeMarkerSeeder extends Seeder
         $this->awards($year, $studentId);
         $this->catalog();
         $this->learner($admin);
+        $this->learnerIdentities($admin);
         $this->recruitment();
         $this->requests($admin);
         $this->readerWallet();
@@ -605,6 +606,63 @@ class SmokeMarkerSeeder extends Seeder
             'created_by_user_id' => $admin?->id,
             'created_at' => now(), 'updated_at' => now(),
         ]);
+    }
+
+    /**
+     * SIGN_IN_PLAN ID2a: the two people *My learning* is held by, so
+     * `identity.mjs` can walk them. `smoke-learner@` has no role — an adult
+     * who registered on the website — with one course under way and one
+     * waiting on its payment; `smoke-parent-learner@` is a parent who enrolled
+     * in a course themselves and switches between Family and My learning.
+     * Their student records are made the way the website makes an adult's
+     * (`RegisterCourseStudentAction::forSelf`), and their courses are their
+     * own, so no other walk's lists or counts move.
+     */
+    private function learnerIdentities(?object $admin): void
+    {
+        $categoryId = DB::table('courses')->where('slug', 'smoke-course')->value('course_category_id');
+        $courses = [];
+        foreach (['smoke-learner-course' => ['SMOKE-Learner-Course', 0], 'smoke-learner-waiting' => ['SMOKE-Learner-Waiting', 250]] as $slug => [$title, $fee]) {
+            DB::table('courses')->updateOrInsert(['slug' => $slug], [
+                'course_category_id' => $categoryId,
+                'title' => $title,
+                'short_desc' => 'Planted by SmokeMarkerSeeder for SIGN_IN_PLAN ID2a.',
+                'body' => 'Planted by SmokeMarkerSeeder.',
+                'cover_image' => '',
+                'status' => 'open',
+                'workflow_status' => 'published',
+                'fee' => $fee,
+                'created_at' => now(), 'updated_at' => now(),
+            ]);
+            $courses[$slug] = (int) DB::table('courses')->where('slug', $slug)->value('id');
+        }
+
+        $people = [
+            'smoke-learner@akuru.edu.mv' => ['SMOKE Learner', null, [['smoke-learner-course', 'active', 'not_required'], ['smoke-learner-waiting', 'pending', 'pending']]],
+            'smoke-parent-learner@akuru.edu.mv' => ['SMOKE Parent-Learner', 'parent', [['smoke-learner-course', 'active', 'not_required']]],
+        ];
+        foreach ($people as $email => [$name, $role, $enrolments]) {
+            $userId = (int) DB::table('users')->where('email', $email)->value('id');
+            if ($userId === 0) {
+                $userId = (int) app(\App\Domains\Identity\Actions\CreateUserAction::class)->execute($name, $email, 'password', null, $role)['id'];
+            }
+            DB::table('users')->where('id', $userId)->update(['email_verified_at' => now()]);
+            [$first, $last] = explode(' ', $name, 2);
+            $student = app(\App\Domains\People\Actions\RegisterCourseStudentAction::class)->forSelf($userId, ['first_name' => $first, 'last_name' => $last, 'dob' => '1990-01-01']);
+
+            DB::table('course_enrollments')->where('unified_student_id', $student['id'])->whereIn('course_id', array_values($courses))->delete();
+            foreach ($enrolments as [$slug, $status, $payment]) {
+                DB::table('course_enrollments')->insert([
+                    'course_id' => $courses[$slug],
+                    'unified_student_id' => $student['id'],
+                    'status' => $status,
+                    'payment_status' => $payment,
+                    'enrolled_at' => $status === 'active' ? now() : null,
+                    'created_by_user_id' => $userId,
+                    'created_at' => now(), 'updated_at' => now(),
+                ]);
+            }
+        }
     }
 
     /**

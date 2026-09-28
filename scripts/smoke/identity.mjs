@@ -16,7 +16,10 @@
  *      the children, fees and pick-up, and none of their own learning;
  *   3. the teacher: the School's day loop, teaching, communication and their
  *      own record, and no Learn;
- *   4. the pupil: their own courses under Education, no parent-only screen.
+ *   4. the pupil: their own courses under Education, no parent-only screen;
+ *   5. My learning (ID2a): a website learner lands inside the app on their
+ *      own courses, the unpaid one listed as waiting; a parent who enrolled
+ *      switches from Family to My learning and back.
  *
  * Read-only: it opens menus and pages and changes nothing.
  *
@@ -24,8 +27,8 @@
  *   node scripts/smoke/identity.mjs
  *
  * Environment: SMOKE_BASE_URL, SMOKE_VENDOR, SMOKE_PARENT, SMOKE_TEACHER,
- * SMOKE_STUDENT, SMOKE_PASSWORD, SMOKE_CHROMIUM, SMOKE_SHOTS (a folder for
- * the More panels' screenshots).
+ * SMOKE_STUDENT, SMOKE_LEARNER, SMOKE_PARENT_LEARNER, SMOKE_PASSWORD,
+ * SMOKE_CHROMIUM, SMOKE_SHOTS (a folder for the More panels' screenshots).
  */
 import { chromium } from 'playwright';
 
@@ -147,5 +150,34 @@ check('the pupil lands on their portal', /\/portal\/home$/.test(student.url()), 
 menu = await readMore(student, 'student');
 check('their More panel reads Communication, Education, Evaluation, Other, Personal', menu.groups.join(',') === 'Communication,Education,Evaluation,Other,Personal', menu.groups.join(' | '));
 check('with their own courses under Education, and no parent-only screen', menu.paths.includes('/learn') && menu.paths.includes('/learn/schedule') && !menu.paths.some((p) => ['/portal/children', '/portal/pickup', '/portal/movements'].includes(p)), menu.labels.join(', '));
+
+// ------------------------------------------------------ 5. My learning (ID2a)
+// SmokeMarkerSeeder::learnerIdentities plants both: an adult who registered
+// on the website (no role) and a parent who enrolled in a course themselves.
+const LEARNER = process.env.SMOKE_LEARNER ?? 'smoke-learner@akuru.edu.mv';
+const PARENT_LEARNER = process.env.SMOKE_PARENT_LEARNER ?? 'smoke-parent-learner@akuru.edu.mv';
+const switcher = async (page) => page.locator('header [data-testid="workspace-switcher"]').count();
+
+const learner = await signIn(LEARNER);
+check('a website learner lands on My learning, inside the app — not on the website', path(learner.url()) === '/learn' && (await learner.locator('header [data-testid="shell-home"]').count()) === 1, path(learner.url()));
+const learnerText = (await learner.locator('main').innerText()).replace(/\s+/g, ' ');
+check('with their course under way, and the one waiting on its payment', learnerText.includes('SMOKE-Learner-Course') && /SMOKE-Learner-Waiting · Awaiting payment/.test(learnerText), learnerText.slice(0, 200));
+check('one workspace, so no switcher', (await switcher(learner)) === 0);
+menu = await readMore(learner, 'learner');
+check('their More panel: Education and Personal, their own courses and enrolments', menu.groups.join(',') === 'Education,Personal' && menu.paths.includes('/learn') && menu.paths.includes('/my-enrollments') && !menu.paths.some((p) => [...SCHOOL_TALK, '/portal/children', '/portal/homework'].includes(p)), `${menu.groups.join(' | ')} — ${menu.labels.join(', ')}`);
+await learner.goto(`${BASE}/en/portal/home`, { waitUntil: 'networkidle' });
+check('the family portal sends them back to My learning', path(learner.url()) === '/learn', path(learner.url()));
+
+const parentLearner = await signIn(PARENT_LEARNER);
+check('a parent who enrolled themselves lands on Family', /\/portal\/home$/.test(parentLearner.url()), path(parentLearner.url()));
+await parentLearner.click('header [data-testid="workspace-switcher"]');
+await parentLearner.waitForSelector('#app-shell-workspaces', { state: 'visible' });
+const offered = await parentLearner.locator('#app-shell-workspaces [data-testid^="workspace-"]').evaluateAll((els) => els.map((el) => el.textContent.trim()));
+check('the switcher offers Family and My learning', offered.join(',') === 'Family,My learning', offered.join(', '));
+await Promise.all([parentLearner.waitForURL(/\/learn$/, { timeout: 15000 }).catch(() => {}), parentLearner.click('#app-shell-workspaces [data-testid="workspace-learner"]')]);
+await parentLearner.waitForLoadState('networkidle');
+check('switching to My learning shows their own course', path(parentLearner.url()) === '/learn' && (await parentLearner.locator('main').innerText()).includes('SMOKE-Learner-Course'), path(parentLearner.url()));
+menu = await readMore(parentLearner, 'parent-learner');
+check('and My learning’s menu carries none of their children’s screens', menu.groups.join(',') === 'Education,Personal' && !menu.paths.some((p) => ['/portal/children', '/portal/homework', '/portal/pickup'].includes(p)), menu.labels.join(', '));
 
 await finish();

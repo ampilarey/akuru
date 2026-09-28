@@ -4414,6 +4414,68 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5ka. ID2a: My learning — a parent who enrols switches between their children and their own courses (2026-09-28)
+
+The owner's case, from the brief of §5jy: "When a parent is enrolled in a
+course … when he changes to student, he will see educational items; when
+he is in parent, he sees all his children." Until now there was nothing
+to change to: a parent's own courses sat in the Family menu (fixed by
+ID1), and an adult who registered on the website held no workspace at all
+and landed on a Blade page in the website's layout (F4).
+
+**What changed.** A new workspace, *My learning* (`learner`), is held —
+derived, not granted — by a login that owns a student record with an
+enrolment not refused, cancelled or withdrawn
+(`Courses\Actions\HoldsOwnLearningAction`), unless it holds `student`: a
+school pupil's courses are already in *Learn*. It is last in the map's
+order, so a parent lands on Family and a teacher on the School, with My
+learning a switch away; a website learner holds it alone and lands there.
+The one query runs once per request per person (cached on the request's
+attributes; `ResolveWorkspacesAction` runs several times a response). Its
+home is the existing `/learn` — already titled "My learning" and already
+SPEC §24's student dashboard — which gains the one item §24 had deferred,
+"Access/payment status": the enrolments still waiting, with why (the
+payment, or the office), and a door to the enrolments-and-payments list.
+Its bar: My learning, Schedule, Browse courses; its *Education* group
+adds My enrolments (Blade, every enrolment the login made, until ID2b);
+the household's screens in *Education* now name their workspaces, so a
+parent-learner's My learning shows none of their children's. The Family
+home shows a parent's children and no longer their own record once they
+have children; a pupil keeps theirs. Labels EN/DV/AR.
+
+**Found (F14, planned as ID2c).** The website's parent flow links the
+registering login to the child as a guardian and never grants `parent` —
+`assignRole('parent')` appears nowhere in `app/` — so a parent who
+registers their children online holds no Family workspace. ID2c grants
+it where the link is made, with a backfill, before ID2b retires the only
+page such a parent sees their children's enrolments on.
+`docs/SIGN_IN_PLAN.md` records ID2a as built, F14, ID2c and the order.
+
+**Tests.** `LearnerWorkspaceTest` (new, 5): who holds My learning — a
+website learner alone, a parent and a teacher beside their job and last,
+not a pupil, not a refused enrolment or none; the landings (a learner on
+`/learn`, the family home sending them back, a parent-learner on Family
+then switching to My learning with its bar and groups, neither
+workspace's menu carrying the other's screens); the waiting list and
+why; the Family home without the parent's own record and the pupil's
+with theirs; the new strings in DV and AR. `PortalHomeTest`: the pupil's
+own view is a `student`'s, and a role-less login with a course of its own
+is sent to My learning. Full suite 2420 passed.
+
+**Walked.** `identity.mjs` **28/28** (nine new steps): the seeded website
+learner (`SmokeMarkerSeeder::learnerIdentities`, their own courses so no
+other walk's lists move) signs in on a phone and lands on My learning
+inside the app — their course under way, the unpaid one "Awaiting
+payment", Education and Personal in the menu, no switcher, the family
+portal sending them back; the parent-learner lands on Family, the
+switcher offers Family and My learning, switching shows their own course
+and a menu with none of their children's screens. `workspaces.mjs` 15/15,
+`nav.mjs` 14/14, `mobile.mjs` 19/19, `learn.mjs` 10/10; the whole runner
+**39/39** with a queue worker (the new seed people and courses moved no
+other walk). The learner's home in Dhivehi at 390 px: no overflow.
+
+**Next.** ID2c: a website parent's Family (F14).
+
 ## 5jz. ID1: a workspace's menu is only its own (2026-09-28)
 
 The owner said "Next" to the plan of §5jy and its seven defaults. The

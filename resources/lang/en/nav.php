@@ -196,6 +196,7 @@ return [
     'workspace_vendor' => 'My shop',
     'workspace_writing' => 'Writing',
     'workspace_catalog' => 'Catalog',
+    'workspace_learner' => 'My learning',
     'workspace_account' => 'My account',
     'workspaces' => 'Workspaces',
     'switch_workspace' => 'Switch workspace',
@@ -207,4 +208,8 @@ return [
     'e_learning' => 'E-Learning',
     // SIGN_IN_PLAN ID1: the Personal group's first item.
     'profile' => 'My profile',
+    // SIGN_IN_PLAN ID2a: a person's own learning.
+    'my_learning' => 'My learning',
+    'browse_courses' => 'Browse courses',
+    'my_enrolments' => 'My enrolments',
 ];

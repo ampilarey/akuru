@@ -31,6 +31,14 @@ final class WorkspaceMap
     /** The workspace of a signed-in person with no role at all: their own account. */
     public const ACCOUNT = 'account';
 
+    /**
+     * *My learning*: held by a login with learning of its own, not by a role
+     * (`ResolveWorkspacesAction::learns`, docs/SIGN_IN_PLAN.md ID2a). Last, so
+     * a parent who enrols lands on Family and switches to their own courses,
+     * and a person with no other workspace lands here.
+     */
+    public const LEARNER = 'learner';
+
     /** The groups a family and a pupil hold, in EduPage's order. */
     private const HOUSEHOLD = ['communication', 'education', 'evaluation', 'other', 'me'];
 
@@ -48,6 +56,7 @@ final class WorkspaceMap
             'vendor' => ['roles' => ['vendor'], 'groups' => ['me'], 'home' => 'vendor.index'],
             'writing' => ['roles' => ['writer', 'reviewer'], 'groups' => ['me'], 'home' => 'write.index'],
             'catalog' => ['roles' => ['course_creator'], 'groups' => ['catalog_group', 'me'], 'home' => 'catalog.courses.index'],
+            self::LEARNER => ['roles' => [], 'groups' => ['education', 'me'], 'home' => 'learn.dashboard'],
         ];
     }
 
@@ -87,6 +96,7 @@ final class WorkspaceMap
                 ...($has('reviewer') ? ['reviewer'] : []),
             ],
             'catalog' => ['course_creator'],
+            self::LEARNER => ['learner'],
             default => [],
         };
     }
