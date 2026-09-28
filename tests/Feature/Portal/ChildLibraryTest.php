@@ -45,7 +45,7 @@ it('shows a parent what their child is reading and has bought, but not the child
     $bought = childLibraryItem('Moon letters');
 
     LibraryReadingProgress::query()->create([
-        'user_id' => $child->user_id, 'library_item_id' => $book->id, 'current_page' => 4, 'progress_percent' => 40, 'last_read_at' => now(),
+        'user_id' => $child->user_id, 'library_item_id' => $book->id, 'current_page' => 4, 'progress_percent' => 40, 'last_read_at' => now(), 'total_reading_seconds' => 150,
     ]);
     LibraryBookmark::query()->create(['user_id' => $child->user_id, 'library_item_id' => $book->id, 'page_number' => 2, 'note' => 'PRIVATE-NOTE']);
     LibraryPurchase::query()->create([
@@ -65,14 +65,17 @@ it('shows a parent what their child is reading and has bought, but not the child
             ->where('child.has_account', true)
             ->where('continue.0.title', 'Sun letters')
             ->where('continue.0.progress_percent', 40)
+            // §9.1 reading time is progress, not private words (STATUS §5ju).
+            ->where('continue.0.reading_minutes', 3)
             ->where('purchases.0.title', 'Moon letters')
             ->where('purchases.0.status', 'paid')
             ->missing('bookmarks'));
 
     $csv = $this->withoutLocalizationMiddleware()->actingAs($parent)
         ->get(route('portal.children.library.export', $child->id))->assertOk()->streamedContent();
-    expect($csv)->toContain('kind,title,page')
+    expect($csv)->toContain('kind,title,page,progress_percent,completed,last_read_at,minutes_read')
         ->and($csv)->toContain('reading,"Sun letters",4,40,no')
+        ->and($csv)->toMatch('/reading,"Sun letters",4,40,no,[^,]*,3,/')
         ->and($csv)->toContain('purchase,"Moon letters"')
         ->and($csv)->not->toContain('PRIVATE-NOTE');
 });

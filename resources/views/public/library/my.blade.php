@@ -15,7 +15,7 @@
             <a href="{{ route('public.library.read', ['slug' => $row['slug'], 'page' => $row['current_page']]) }}" class="flex items-center justify-between rounded-lg border bg-white p-4 hover:shadow-sm">
                 <div>
                     <div class="font-medium text-brandMaroon-900">{{ $row['title'] }}</div>
-                    <div class="text-sm text-gray-500">{{ __('public.Page') }} {{ $row['current_page'] }} · {{ $row['progress_percent'] }}%{{ $row['completed'] ? ' · '.__('public.Completed') : '' }}</div>
+                    <div class="text-sm text-gray-500">{{ __('public.Page') }} {{ $row['current_page'] }} · {{ $row['progress_percent'] }}%{{ $row['completed'] ? ' · '.__('public.Completed') : '' }}@if($row['reading_minutes'] > 0) · <span data-testid="reading-minutes">{{ $row['reading_minutes'] }} {{ __('public.min read') }}</span>@endif</div>
                 </div>
                 <span class="btn-secondary">{{ $row['completed'] ? __('public.Read again') : __('public.Continue') }}</span>
             </a>

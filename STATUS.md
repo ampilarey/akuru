@@ -4414,6 +4414,55 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5ju. Library B7: reading time — the beacon that never was, and the highlights decision that is the owner's (2026-09-28)
+
+The last of B7 (LIBRARY_PLAN §9.1). Two items were left: *reading time
+per session* and *private highlights*. One is built here; the other is
+recorded, again, as a decision and not a build.
+
+**Reading time.** `library_reading_progress.total_reading_seconds`, the
+progress endpoint's `seconds` and `SaveReadingProgressAction`'s argument
+had existed since L2 for "the beacon" — and no reader ever sent one, so
+the column was zero on every row and nothing showed it. The reader page
+now carries the beacon for a signed-in reader with access: the seconds a
+page was *visible* (a tab in the background is not reading; time is
+banked across hide and show), sent when the tab is hidden and when the
+page is left, a second or less dropped. It reports **time only**
+(`time_only=1`, `SaveReadingProgressAction::addSeconds`): the page the
+reader is on is the next request's business, and a beacon that also
+moved the page could land after it and drag the reader backwards. No
+progress row, nothing to add to; a preview carries no beacon (a sample is
+not reading, §9.4); the hour cap stays. *My Library* shows the minutes on
+each *continue reading* row, rounded up (forty seconds is a minute's
+reading, not none); a parent's view of a child's library gains a *Time
+read* column and a `minutes_read` CSV field — progress, not private
+words, so a parent may see it (§10). `min read` gains its Dhivehi and
+Arabic and leaves the untranslated baseline.
+
+**Highlights are not built, and the reason is recorded where the owner
+will see it.** The notes slice found it (STATUS, 2026-09-25): §9.1 asks
+for highlights and §9.2 requires text selection to be disabled in the
+reader, which it is (`select-none`); you cannot highlight what you cannot
+select. That is a product call between two sub-sections of the same plan,
+so it is now `OWNER_ACTIONS` item 19 with the two ways it can go, and
+BACKLOG B7 and the plan's §9.1 note say so.
+
+**Tests.** `LibraryReadingTimeTest` (5): the beacon on a readable page
+and not on a preview; ninety seconds banked over two beacons with the
+page left where the reader is, *2 min read* on My Library, the old
+page-moving call unchanged and the hour cap held; no row, nothing
+written; a guest refused; a parent's view carrying the minutes.
+`ChildLibraryTest` reads the minutes and the CSV column. Full suite
+**2394 passed**.
+
+**Walked.** `reader.mjs` 38 → **39/39**: page three read for a moment,
+the tab switched away, My Library reading *1 min read*. (The walk
+intercepts every request through a route handler, and Chromium drops an
+intercepted request sent while a page unloads — so the walk exercises the
+tab-hidden path, and a plain replay without interception confirmed the
+page-leave path lands too.) The parent's child library at 393 px shows
+the *Time read* column and the CSV its field.
+
 ## 5jt. Every walk, one answer again: the academic walks sign in as the dean, and two office lists admit the office (2026-09-28)
 
 After §5js the whole runner was pointed at `main` for the first time

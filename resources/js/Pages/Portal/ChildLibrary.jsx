@@ -29,11 +29,12 @@ export default function ChildLibrary({ child, continue: reading = [], purchases 
                             <th className="px-3 py-2">Page</th>
                             <th className="px-3 py-2">Progress</th>
                             <th className="px-3 py-2">Last read</th>
+                            <th className="px-3 py-2">Time read</th>
                         </tr>
                     </thead>
                     <tbody>
                         {reading.length === 0 && (
-                            <tr><td className="px-3 py-4 text-gray-500" colSpan={4}>Nothing opened yet.</td></tr>
+                            <tr><td className="px-3 py-4 text-gray-500" colSpan={5}>Nothing opened yet.</td></tr>
                         )}
                         {reading.map((row) => (
                             <tr key={row.item_id} className="border-t">
@@ -41,6 +42,8 @@ export default function ChildLibrary({ child, continue: reading = [], purchases 
                                 <td className="px-3 py-2" data-label="Page">{row.current_page}</td>
                                 <td className="px-3 py-2" data-label="Progress">{row.completed ? 'Completed' : `${row.progress_percent}%`}</td>
                                 <td className="px-3 py-2" data-label="Last read">{row.last_read_at ?? '—'}</td>
+                                {/* §9.1 reading time (STATUS §5ju): progress, not private words, so a parent may see it. */}
+                                <td className="px-3 py-2" data-label="Time read">{row.reading_minutes ? `${row.reading_minutes} min` : '—'}</td>
                             </tr>
                         ))}
                     </tbody>

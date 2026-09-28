@@ -31,6 +31,10 @@ class ListMyLibraryAction
                 'progress_percent' => (int) $row->progress_percent,
                 'completed' => $row->completed_at !== null,
                 'last_read_at' => $row->last_read_at?->toDateTimeString(),
+                // §9.1 reading time, as the reader's beacon banked it (STATUS
+                // §5ju). Whole minutes, rounded up: a page read for forty
+                // seconds is a minute's reading, not none.
+                'reading_minutes' => (int) ceil(((int) $row->total_reading_seconds) / 60),
             ])
             ->values()
             ->all();

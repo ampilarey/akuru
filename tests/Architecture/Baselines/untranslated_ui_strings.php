@@ -194,7 +194,6 @@ return [
     'public.contact_message_placeholder',
     'public.contact_us_for_questions',
     'public.course_material',
-    'public.min read',
     'public.pages',
     'public.pay to complete',
     'public.register',

@@ -81,8 +81,17 @@ class LibraryReaderController extends Controller
         $data = $request->validate([
             'page' => 'required|integer|min:1',
             'seconds' => 'nullable|integer|min:0|max:3600',
+            'time_only' => 'nullable|boolean',
         ]);
         $item = LibraryItem::query()->where('slug', $slug)->where('status', 'published')->firstOrFail();
+
+        // §9.1 reading time: the reader's beacon on leaving a page. Seconds
+        // only — see `SaveReadingProgressAction::addSeconds`.
+        if ($request->boolean('time_only')) {
+            app(SaveReadingProgressAction::class)->addSeconds((int) $request->user()->id, $item->id, (int) ($data['seconds'] ?? 0));
+
+            return back();
+        }
 
         app(SaveReadingProgressAction::class)->execute(
             (int) $request->user()->id,

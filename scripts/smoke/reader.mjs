@@ -250,8 +250,28 @@ check('My Library offers to continue from page two', mine.includes(`${TITLE} Pag
 check('My Library lists the bookmark', /SMOKE-Primer — Page 2/.test(mine), mine.match(/SMOKE-Primer — Page 2/)?.[0] ?? '');
 
 await reader.goto(`${BASE}/en/library/${SLUG}/read?page=3`, { waitUntil: 'networkidle' });
+// A page read for a moment, not flashed past: the reading-time beacon below
+// drops anything under a second, and a walk turns pages faster than any reader.
+await reader.waitForTimeout(1500);
+// Then the reader switches away from the tab. That is one of the two moments
+// the beacon fires (the other is leaving the page) and the one this walk can
+// see: the context intercepts every request, and Chromium drops an intercepted
+// request sent while a page unloads, so a beacon on `pagehide` never reaches
+// this walk's server though it reaches a real one (STATUS §5ju).
+await reader.evaluate(() => {
+    Object.defineProperty(document, 'visibilityState', { value: 'hidden', configurable: true });
+    document.dispatchEvent(new Event('visibilitychange'));
+});
+// A beacon is fire-and-forget (Playwright surfaces no response for it); a
+// moment for it to land before My Library is read.
+await reader.waitForTimeout(800);
 await reader.goto(`${BASE}/en/my-library`, { waitUntil: 'networkidle' });
 check('the last page marks it completed', (await text(reader)).includes('100% · Completed'), (await text(reader)).match(new RegExp(`${TITLE} Page 3[^R]*`))?.[0] ?? (await text(reader)).slice(0, 160));
+
+// §9.1 reading time (STATUS §5ju): the beacon above carried the seconds page
+// three was in front of the reader, and My Library adds them up.
+const minutesRow = (await text(reader)).match(new RegExp(`${TITLE} Page 3 · 100% · Completed · \\d+ min read`))?.[0] ?? '';
+check('switching away sends the reading time, and My Library counts the minutes', minutesRow !== '', minutesRow || ((await text(reader)).match(new RegExp(`${TITLE} Page 3[^R]*`))?.[0]?.slice(0, 100) ?? 'no row'));
 
 // B7 (§9.1): search inside the book from page one, and follow the hit to
 // page three. After the progress checks above, because following a hit to
