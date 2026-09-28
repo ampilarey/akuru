@@ -1,5 +1,6 @@
 import { Link } from '@inertiajs/react';
 import AppShell from '../../Layouts/AppShell';
+import WorkspaceTiles from '../../Components/WorkspaceTiles';
 
 function Tile({ tile }) {
     const body = (
@@ -98,6 +99,9 @@ export default function TeacherHome({
             <div className="mb-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 {tiles.map((tile) => <Tile key={tile.key} tile={tile} />)}
             </div>
+
+            {/* The rest of the School's menu for a teacher, as tiles (SIGN_IN_PLAN ID5). */}
+            <WorkspaceTiles skip={tiles.map((tile) => tile.href)} className="mb-6" />
 
             {unfilled.length > 0 && (
                 <section className="rounded-lg border bg-white p-4">

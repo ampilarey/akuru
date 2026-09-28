@@ -10,7 +10,10 @@ parent. **ID2b shipped 2026-09-28 (STATUS §5kc)**: the old course portal
 retired, *My account* and *My enrolments* in the shell; F4 and F5 closed.
 **ID3 shipped 2026-09-28 (STATUS §5kd)**: every door leads into the shell;
 F6 and F9 closed. **ID4 shipped 2026-09-28 (STATUS §5ke)**: the phone's
-drawer opens with *Your accounts*; F8 closed. Next: ID5 (tile homes).
+drawer opens with *Your accounts*; F8 closed. **ID5 shipped 2026-09-28
+(STATUS §5kf)**: the workspace homes lay out their menus as tiles. The
+plan's six slices are done; what is left is the owner's (D6, linked
+separate logins, stays deferred).
 **Owner's brief (2026-09-28, with five EduPage screenshots):** "Still there
 is a problem with the login system. Logged in with a vendor account but I
 see educational items also. I need the login style used in EduPage. When a
@@ -318,7 +321,18 @@ original bullets follow.
 - **Tests:** `WorkspacesTest` (the list on every Inertia page, in the
   request language); `mobile.mjs` step.
 
-### ID5 — Tile homes (one or two PRs)
+### ID5 — Tile homes (one or two PRs) — **shipped 2026-09-28, STATUS §5kf**
+
+As built, one PR: a shared `WorkspaceTiles` lays out the workspace's own
+menu (`nav`, shared on every page) as a grid of tiles on the Family and
+Learn home, My learning, the teacher's day, My shop and My account —
+Messages first with the unread count (`auth.unread_messages`, one indexed
+count per response), the home itself and the page it sits on left out,
+and anything the home already shows as a status tile of its own skipped.
+Built from `nav`, a tile cannot lead anywhere the menu does not; the walk
+checks it on four homes. The Institute and School office homes keep their
+parts. Phone screenshots in EN/DV/AR. The original bullets follow.
+
 
 - Family, Learn, Learner, the teacher's day and My shop homes gain the
   workspace's tile grid under the today strip: each *More* item as a

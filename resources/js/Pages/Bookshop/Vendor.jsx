@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { router, useForm, usePage } from '@inertiajs/react';
 import AppShell from '../../Layouts/AppShell';
+import WorkspaceTiles from '../../Components/WorkspaceTiles';
 import FormErrors from '../../Components/FormErrors';
 
 /**
@@ -714,6 +715,8 @@ export default function Vendor({ t, vendor, memberships = [], agreement_url, pro
                     <Members members={members} isOwner={isOwner} t={t} />
                 </>
             )}
+            {/* The rest of the workspace's menu as tiles (SIGN_IN_PLAN ID5). */}
+            <WorkspaceTiles className="mt-8" />
         </AppShell>
     );
 }
